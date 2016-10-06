@@ -17,7 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/launch_services_util.h"
+#import "base/mac/launch_services_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
@@ -182,8 +182,7 @@ int LoadFrameworkAndStart(app_mode::ChromeAppModeInfo* info) {
     command_line.AppendSwitchASCII(switches::kAppId, info->app_mode_id);
   }
   // Launch the executable directly since base::mac::OpenApplicationWithPath
-  // uses LSOpenApplication which doesn't pass command line arguments if the
-  // application is already running.
+  // doesn't pass command line arguments if the application is already running.
   if (!base::LaunchProcess(command_line, base::LaunchOptions()).IsValid()) {
     LOG(ERROR) << "Could not launch Chrome: "
                << command_line.GetCommandLineString();

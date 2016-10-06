@@ -9,7 +9,7 @@
 #include "apps/switches.h"
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/launch_services_util.h"
+#import "base/mac/launch_services_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
@@ -330,21 +330,18 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_HostedAppLaunch) {
     HostedAppBrowserListObserver listener(app->id());
     base::CommandLine shim_cmdline(base::CommandLine::NO_PROGRAM);
     shim_cmdline.AppendSwitch(app_mode::kLaunchedForTest);
-    ProcessSerialNumber shim_psn;
-    ASSERT_TRUE(base::mac::OpenApplicationWithPath(
-        shim_path_, shim_cmdline, kLSLaunchDefaults, &shim_psn));
+    base::Process shim_process = base::mac::OpenApplicationWithPath(
+        shim_path_, shim_cmdline, NSWorkspaceLaunchDefault);
+    ASSERT_TRUE(shim_process.IsValid());
     listener.WaitUntilAdded();
 
     ASSERT_TRUE(GetFirstHostedAppWindow());
     EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
 
     // If the window is closed, the shim should quit.
-    pid_t shim_pid;
-    EXPECT_EQ(noErr, GetProcessPID(&shim_psn, &shim_pid));
     GetFirstHostedAppWindow()->window()->Close();
     // Wait for the window to be closed.
     listener.WaitUntilRemoved();
-    base::Process shim_process(shim_pid);
     int exit_code;
     ASSERT_TRUE(shim_process.WaitForExitWithTimeout(
                     TestTimeouts::action_timeout(), &exit_code));
@@ -402,19 +399,16 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
     ExtensionTestMessageListener launched_listener("Launched", false);
     base::CommandLine shim_cmdline(base::CommandLine::NO_PROGRAM);
     shim_cmdline.AppendSwitch(app_mode::kLaunchedForTest);
-    ProcessSerialNumber shim_psn;
-    ASSERT_TRUE(base::mac::OpenApplicationWithPath(
-        shim_path_, shim_cmdline, kLSLaunchDefaults, &shim_psn));
+    base::Process shim_process = base::mac::OpenApplicationWithPath(
+        shim_path_, shim_cmdline, NSWorkspaceLaunchDefault);
+    ASSERT_TRUE(shim_process.IsValid());
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
     ASSERT_TRUE(GetFirstAppWindow());
     EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
 
     // If the window is closed, the shim should quit.
-    pid_t shim_pid;
-    EXPECT_EQ(noErr, GetProcessPID(&shim_psn, &shim_pid));
     GetFirstAppWindow()->GetBaseWindow()->Close();
-    base::Process shim_process(shim_pid);
     int exit_code;
     ASSERT_TRUE(shim_process.WaitForExitWithTimeout(
                     TestTimeouts::action_timeout(), &exit_code));
@@ -610,8 +604,9 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
   //     behave normally.
   ExtensionTestMessageListener launched_listener("Launched", false);
   base::CommandLine shim_cmdline(base::CommandLine::NO_PROGRAM);
-  ASSERT_TRUE(base::mac::OpenApplicationWithPath(
-      shim_path, shim_cmdline, kLSLaunchDefaults, NULL));
+  base::Process shim_process = base::mac::OpenApplicationWithPath(
+      shim_path, shim_cmdline, NSWorkspaceLaunchDefault);
+  ASSERT_TRUE(shim_process.IsValid());
 
   // Wait for the app to start (1). At this point there is no shim host.
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());

@@ -15,7 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/launch_services_util.h"
+#import "base/mac/launch_services_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
@@ -277,9 +277,10 @@ void LaunchShimOnFileThread(
       base::IntToString(base::GetCurrentProcId()));
   if (launched_after_rebuild)
     command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
-  // Launch without activating (kLSLaunchDontSwitch).
+  // Launch without activating (NSWorkspaceLaunchWithoutActivation).
   base::mac::OpenApplicationWithPath(
-      shim_path, command_line, kLSLaunchDefaults | kLSLaunchDontSwitch, NULL);
+      shim_path, command_line,
+      NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation);
 }
 
 base::FilePath GetAppLoaderPath() {

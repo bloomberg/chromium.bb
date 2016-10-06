@@ -17,7 +17,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/launch_services_util.h"
+#import "base/mac/launch_services_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -681,12 +681,12 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
                                     info->profile_dir);
     }
 
-    bool success =
-        base::mac::OpenApplicationWithPath(base::mac::OuterBundlePath(),
-                                           command_line,
-                                           kLSLaunchDefaults,
-                                           &psn);
-    if (!success)
+    base::Process app = base::mac::OpenApplicationWithPath(
+        base::mac::OuterBundlePath(), command_line, NSWorkspaceLaunchDefault);
+
+    // TODO(crbug.com/652563): Do not use deprecated GetProcessForPID. Change
+    // |ReplyEventHandler| to take |pid_t| instead of |ProcessSerialNumber|.
+    if (!app.IsValid() || GetProcessForPID(app.Pid(), &psn) != noErr)
       return 1;
 
     base::Callback<void(bool)> on_ping_chrome_reply =
