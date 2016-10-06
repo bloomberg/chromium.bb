@@ -32,7 +32,7 @@ class ArcNotificationItem {
       mojom::ArcNotificationDataPtr data);
 
   // Methods called from ArcNotificationManager:
-  void OnClosedFromAndroid(bool by_user);
+  void OnClosedFromAndroid();
 
   // Methods called from ArcNotificationItemDelegate:
   void Close(bool by_user);

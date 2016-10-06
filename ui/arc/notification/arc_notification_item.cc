@@ -248,9 +248,9 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
 
 ArcNotificationItem::~ArcNotificationItem() {}
 
-void ArcNotificationItem::OnClosedFromAndroid(bool by_user) {
+void ArcNotificationItem::OnClosedFromAndroid() {
   being_removed_by_manager_ = true;  // Closing is initiated by the manager.
-  message_center_->RemoveNotification(notification_id_, by_user);
+  message_center_->RemoveNotification(notification_id_, false /* by_user */);
 }
 
 void ArcNotificationItem::Close(bool by_user) {

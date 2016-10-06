@@ -62,7 +62,7 @@ void ArcNotificationManager::OnInstanceClosed() {
     auto it = items_.begin();
     std::unique_ptr<ArcNotificationItem> item = std::move(it->second);
     items_.erase(it);
-    item->OnClosedFromAndroid(false /* by_user */);
+    item->OnClosedFromAndroid();
   }
   ready_ = false;
 }
@@ -101,7 +101,7 @@ void ArcNotificationManager::OnNotificationRemoved(const mojo::String& key) {
 
   std::unique_ptr<ArcNotificationItem> item = std::move(it->second);
   items_.erase(it);
-  item->OnClosedFromAndroid(true /* by_user */);
+  item->OnClosedFromAndroid();
 }
 
 void ArcNotificationManager::SendNotificationRemovedFromChrome(
