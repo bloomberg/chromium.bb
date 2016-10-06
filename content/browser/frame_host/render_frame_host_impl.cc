@@ -2351,6 +2351,12 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation,
                                                bool is_reload) {
   DCHECK(for_navigation || !is_reload);
 
+  if (IsBrowserSideNavigationEnabled() && !for_navigation) {
+    // Cancel any pending navigations, to avoid their navigation commit/fail
+    // event from wiping out the is_waiting_for_beforeunload_ack_ state.
+    frame_tree_node_->ResetNavigationRequest(false);
+  }
+
   // TODO(creis): Support beforeunload on subframes.  For now just pretend that
   // the handler ran and allowed the navigation to proceed.
   if (!ShouldDispatchBeforeUnload()) {

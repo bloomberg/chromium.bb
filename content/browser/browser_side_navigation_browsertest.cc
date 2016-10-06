@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -269,6 +270,18 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
                    ->GetController()
                    .GetLastCommittedEntry()
                    ->IsViewSourceMode());
+}
+
+// Ensure that closing a page by running its beforeunload handler doesn't hang
+// if there's an ongoing navigation.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
+                       UnloadDuringNavigation) {
+  content::WindowedNotificationObserver close_observer(
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<content::WebContents>(shell()->web_contents()));
+  shell()->LoadURL(GURL("chrome://resources/css/tabs.css"));
+  shell()->web_contents()->DispatchBeforeUnload();
+  close_observer.Wait();
 }
 
 }  // namespace content
