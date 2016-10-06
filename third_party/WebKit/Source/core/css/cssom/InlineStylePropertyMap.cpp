@@ -208,7 +208,9 @@ InlineStylePropertyMap::getIterationEntries() {
       const CSSCustomPropertyDeclaration& customDeclaration =
           toCSSCustomPropertyDeclaration(propertyReference.value());
       name = customDeclaration.name();
-      // TODO(meade): Eventually custom properties will support other types, so actually return them instead of always returning a CSSUnsupportedStyleValue.
+      // TODO(meade): Eventually custom properties will support other types, so
+      // actually return them instead of always returning a
+      // CSSUnsupportedStyleValue.
       value.setCSSStyleValue(
           CSSUnsupportedStyleValue::create(customDeclaration.customCSSText()));
     } else if (propertyID == CSSPropertyApplyAtRule) {
