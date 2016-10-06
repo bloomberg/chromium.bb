@@ -613,7 +613,7 @@ TEST_F(FrameFetchContextDisplayedCertificateErrorsTest,
   ResourceResponse response;
   response.setURL(url);
   response.setHasMajorCertificateErrors(true);
-  Resource* resource = Resource::create(resourceRequest, Resource::Image);
+  Resource* resource = ImageResource::create(resourceRequest);
   resource->setResponse(response);
   fetchContext->dispatchDidLoadResourceFromMemoryCache(
       createUniqueIdentifier(), resource, WebURLRequest::FrameTypeNone,

@@ -98,13 +98,6 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     DontMarkAsReferenced,
   };
 
-  // Exposed for testing.
-  static Resource* create(
-      const ResourceRequest& request,
-      Type type,
-      const ResourceLoaderOptions& options = ResourceLoaderOptions()) {
-    return new Resource(request, type, options);
-  }
   virtual ~Resource();
 
   DECLARE_VIRTUAL_TRACE();

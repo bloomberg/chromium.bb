@@ -166,18 +166,18 @@ static void TestDeadResourceEviction(Resource* resource1, Resource* resource2) {
 }
 
 TEST_F(MemoryCacheTest, DeadResourceEviction_Basic) {
-  Resource* resource1 =
-      Resource::create(ResourceRequest("http://test/resource1"), Resource::Raw);
-  Resource* resource2 =
-      Resource::create(ResourceRequest("http://test/resource2"), Resource::Raw);
+  Resource* resource1 = RawResource::create(
+      ResourceRequest("http://test/resource1"), Resource::Raw);
+  Resource* resource2 = RawResource::create(
+      ResourceRequest("http://test/resource2"), Resource::Raw);
   TestDeadResourceEviction(resource1, resource2);
 }
 
 TEST_F(MemoryCacheTest, DeadResourceEviction_MultipleResourceMaps) {
-  Resource* resource1 =
-      Resource::create(ResourceRequest("http://test/resource1"), Resource::Raw);
-  Resource* resource2 =
-      Resource::create(ResourceRequest("http://test/resource2"), Resource::Raw);
+  Resource* resource1 = RawResource::create(
+      ResourceRequest("http://test/resource1"), Resource::Raw);
+  Resource* resource2 = RawResource::create(
+      ResourceRequest("http://test/resource2"), Resource::Raw);
   resource2->setCacheIdentifier("foo");
   TestDeadResourceEviction(resource1, resource2);
 }
@@ -239,7 +239,7 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource,
 // is deferred to the end of the task.
 TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask_Basic) {
   Resource* cachedDeadResource =
-      Resource::create(ResourceRequest("hhtp://foo"), Resource::Raw);
+      RawResource::create(ResourceRequest("hhtp://foo"), Resource::Raw);
   Resource* cachedLiveResource = FakeDecodedResource::create(
       ResourceRequest("http://test/resource"), Resource::Raw);
   TestLiveResourceEvictionAtEndOfTask(cachedDeadResource, cachedLiveResource);
@@ -248,7 +248,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask_Basic) {
 TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask_MultipleResourceMaps) {
   {
     Resource* cachedDeadResource =
-        Resource::create(ResourceRequest("hhtp://foo"), Resource::Raw);
+        RawResource::create(ResourceRequest("hhtp://foo"), Resource::Raw);
     cachedDeadResource->setCacheIdentifier("foo");
     Resource* cachedLiveResource = FakeDecodedResource::create(
         ResourceRequest("http://test/resource"), Resource::Raw);
@@ -257,7 +257,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask_MultipleResourceMaps) {
   }
   {
     Resource* cachedDeadResource =
-        Resource::create(ResourceRequest("hhtp://foo"), Resource::Raw);
+        RawResource::create(ResourceRequest("hhtp://foo"), Resource::Raw);
     Resource* cachedLiveResource = FakeDecodedResource::create(
         ResourceRequest("http://test/resource"), Resource::Raw);
     cachedLiveResource->setCacheIdentifier("foo");
@@ -265,7 +265,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask_MultipleResourceMaps) {
     memoryCache()->evictResources();
   }
   {
-    Resource* cachedDeadResource = Resource::create(
+    Resource* cachedDeadResource = RawResource::create(
         ResourceRequest("hhtp://test/resource"), Resource::Raw);
     cachedDeadResource->setCacheIdentifier("foo");
     Resource* cachedLiveResource = FakeDecodedResource::create(

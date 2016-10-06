@@ -5,6 +5,7 @@
 #include "core/fetch/Resource.h"
 
 #include "core/fetch/MemoryCache.h"
+#include "core/fetch/RawResource.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -44,7 +45,7 @@ ResourceResponse createTestResourceResponse() {
 void createTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
   const char testData[] = "test data";
   Resource* resource =
-      Resource::create(ResourceRequest(response.url()), Resource::Raw);
+      RawResource::create(ResourceRequest(response.url()), Resource::Raw);
   resource->setResponse(response);
   resource->cacheHandler()->setCachedMetadata(
       100, testData, sizeof(testData), CachedMetadataHandler::SendToPlatform);
@@ -75,7 +76,7 @@ TEST(ResourceTest, RevalidateWithFragment) {
   ResourceResponse response;
   response.setURL(url);
   response.setHTTPStatusCode(200);
-  Resource* resource = Resource::create(url, Resource::Raw);
+  Resource* resource = RawResource::create(url, Resource::Raw);
   resource->responseReceived(response, nullptr);
   resource->finish();
 

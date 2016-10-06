@@ -7,6 +7,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/IntegrityMetadata.h"
+#include "core/fetch/RawResource.h"
 #include "core/fetch/Resource.h"
 #include "core/html/HTMLScriptElement.h"
 #include "platform/Crypto.h"
@@ -205,7 +206,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
       response.setHTTPHeaderField("access-control-allow-credentials", "true");
     }
     Resource* resource =
-        Resource::create(ResourceRequest(response.url()), Resource::Raw);
+        RawResource::create(ResourceRequest(response.url()), Resource::Raw);
     resource->setResponse(response);
     return resource;
   }

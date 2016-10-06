@@ -26,6 +26,7 @@
 #ifndef FontResource_h
 #define FontResource_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
 #include "platform/Timer.h"
@@ -41,7 +42,7 @@ class FontPlatformData;
 class FontCustomPlatformData;
 class FontResourceClient;
 
-class FontResource final : public Resource {
+class CORE_EXPORT FontResource final : public Resource {
  public:
   using ClientType = FontResourceClient;
 

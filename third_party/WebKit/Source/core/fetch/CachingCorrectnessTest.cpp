@@ -83,7 +83,7 @@ class CachingCorrectnessTest : public ::testing::Test {
     Resource* resource = nullptr;
     switch (type) {
       case Resource::Raw:
-        resource = Resource::create(ResourceRequest(response.url()), type);
+        resource = RawResource::create(ResourceRequest(response.url()), type);
         break;
       case Resource::Image:
         resource = ImageResource::create(ResourceRequest(response.url()));
@@ -104,11 +104,10 @@ class CachingCorrectnessTest : public ::testing::Test {
     return resource;
   }
 
-  Resource* resourceFromResourceRequest(ResourceRequest request,
-                                        Resource::Type type = Resource::Raw) {
+  Resource* resourceFromResourceRequest(ResourceRequest request) {
     if (request.url().isNull())
       request.setURL(KURL(ParsedURLString, kResourceURL));
-    Resource* resource = Resource::create(request, type);
+    Resource* resource = RawResource::create(request, Resource::Raw);
     resource->setResponse(ResourceResponse(KURL(ParsedURLString, kResourceURL),
                                            "text/html", 0, nullAtom, String()));
     resource->finish();
@@ -396,7 +395,7 @@ TEST_F(CachingCorrectnessTest, FreshWithFreshRedirect) {
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
 
   Resource* firstResource =
-      Resource::create(ResourceRequest(redirectUrl), Resource::Raw);
+      RawResource::create(ResourceRequest(redirectUrl), Resource::Raw);
 
   ResourceResponse fresh301Response;
   fresh301Response.setURL(redirectUrl);
@@ -436,7 +435,7 @@ TEST_F(CachingCorrectnessTest, FreshWithStaleRedirect) {
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
 
   Resource* firstResource =
-      Resource::create(ResourceRequest(redirectUrl), Resource::Raw);
+      RawResource::create(ResourceRequest(redirectUrl), Resource::Raw);
 
   ResourceResponse stale301Response;
   stale301Response.setURL(redirectUrl);
@@ -473,7 +472,7 @@ TEST_F(CachingCorrectnessTest, PostToSameURLTwice) {
   ResourceRequest request1(KURL(ParsedURLString, kResourceURL));
   request1.setHTTPMethod(HTTPNames::POST);
   Resource* resource1 =
-      Resource::create(ResourceRequest(request1.url()), Resource::Raw);
+      RawResource::create(ResourceRequest(request1.url()), Resource::Raw);
   resource1->setStatus(Resource::Pending);
   memoryCache()->add(resource1);
 
@@ -492,7 +491,7 @@ TEST_F(CachingCorrectnessTest, 302RedirectNotImplicitlyFresh) {
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
 
   Resource* firstResource =
-      Resource::create(ResourceRequest(redirectUrl), Resource::Raw);
+      RawResource::create(ResourceRequest(redirectUrl), Resource::Raw);
 
   ResourceResponse fresh302Response;
   fresh302Response.setURL(redirectUrl);
@@ -533,7 +532,7 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshMaxAge) {
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
 
   Resource* firstResource =
-      Resource::create(ResourceRequest(redirectUrl), Resource::Raw);
+      RawResource::create(ResourceRequest(redirectUrl), Resource::Raw);
 
   ResourceResponse fresh302Response;
   fresh302Response.setURL(redirectUrl);
@@ -573,7 +572,7 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshExpires) {
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
 
   Resource* firstResource =
-      Resource::create(ResourceRequest(redirectUrl), Resource::Raw);
+      RawResource::create(ResourceRequest(redirectUrl), Resource::Raw);
 
   ResourceResponse fresh302Response;
   fresh302Response.setURL(redirectUrl);
