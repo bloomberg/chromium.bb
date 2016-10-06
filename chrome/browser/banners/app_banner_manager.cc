@@ -126,6 +126,9 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
     return;
   }
 
+  if (validated_url_.is_empty())
+    validated_url_ = validated_url;
+
   manager_->GetData(
       ParamsToGetManifest(),
       base::Bind(&AppBannerManager::OnDidGetManifest, GetWeakPtr()));
@@ -310,6 +313,7 @@ void AppBannerManager::Stop() {
   was_canceled_by_page_ = false;
   page_requested_prompt_ = false;
   need_to_log_status_ = false;
+  validated_url_ = GURL();
   referrer_.erase();
 }
 
