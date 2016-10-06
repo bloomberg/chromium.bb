@@ -765,13 +765,6 @@ source_set("browser") {
   }
 }
 
-# Temporary target to allow upstreaming browser_about_rewriter.{cc,h}
-# without breaking downstream repository when rolling the CL. Will be
-# removed once downstream code no longer use it.
-source_set("browser_about_rewriter") {
-  sources = []
-}
-
 # This is a separate target so that the 'defines' does not leak to the
 # other files (which would increase the compilation time when changing
 # the value).
