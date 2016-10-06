@@ -30,6 +30,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.VSyncMonitor;
+import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -71,6 +72,7 @@ public class WindowAndroid {
     // Native pointer to the c++ WindowAndroid object.
     private long mNativeWindowAndroid = 0;
     private final VSyncMonitor mVSyncMonitor;
+    private final DisplayAndroid mDisplayAndroid;
 
     // A string used as a key to store intent errors in a bundle
     static final String WINDOW_CALLBACK_ERRORS = "window_callback_errors";
@@ -175,6 +177,7 @@ public class WindowAndroid {
         mVSyncMonitor = new VSyncMonitor(context, mVSyncListener);
         mAccessibilityManager = (AccessibilityManager) mApplicationContext.getSystemService(
                 Context.ACCESSIBILITY_SERVICE);
+        mDisplayAndroid = DisplayAndroid.get(context);
     }
 
     @CalledByNative
@@ -389,6 +392,13 @@ public class WindowAndroid {
      */
     public void sendBroadcast(Intent intent) {
         mApplicationContext.sendBroadcast(intent);
+    }
+
+    /**
+     * @return DisplayAndroid instance belong to this window.
+     */
+    public DisplayAndroid getDisplay() {
+        return mDisplayAndroid;
     }
 
     /**

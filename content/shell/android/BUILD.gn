@@ -142,6 +142,7 @@ android_library("content_shell_test_java") {
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//content/shell/android:content_shell_java",
+    "//ui/android:ui_java",
   ]
   java_files = [
     "javatests/src/org/chromium/content_shell_apk/ContentShellPreconditionsTest.java",
