@@ -80,6 +80,8 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
             *constraint_space_for_children_, *current_child_->Style(),
             constraint_space_for_children_->WritingMode(),
             constraint_space_for_children_->Direction());
+        ApplyAutoMargins(*constraint_space_for_children_,
+                         *current_child_->Style(), *fragment, child_margins);
 
         const NGBoxStrut margins =
             CollapseMargins(*constraint_space, child_margins, *fragment);

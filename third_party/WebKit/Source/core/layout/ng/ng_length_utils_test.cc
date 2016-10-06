@@ -5,6 +5,9 @@
 #include "core/layout/ng/ng_length_utils.h"
 
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/CalculationValue.h"
@@ -271,6 +274,50 @@ TEST_F(NGLengthUtilsTest, testPadding) {
   EXPECT_EQ(LayoutUnit(), padding.inline_end);
   EXPECT_EQ(LayoutUnit(22), padding.block_end);
   EXPECT_EQ(LayoutUnit(20), padding.inline_start);
+}
+
+TEST_F(NGLengthUtilsTest, testAutoMargins) {
+  style_->setMarginRight(Length(Auto));
+  style_->setMarginLeft(Length(Auto));
+
+  NGFragmentBuilder builder(NGPhysicalFragmentBase::FragmentBox);
+  builder.SetInlineSize(LayoutUnit(150));
+  NGPhysicalFragment* physical_fragment = builder.ToFragment();
+  NGFragment* fragment =
+      new NGFragment(HorizontalTopBottom, LeftToRight, physical_fragment);
+
+  NGConstraintSpace* constraint_space(ConstructConstraintSpace(200, 300));
+
+  NGBoxStrut margins;
+  ApplyAutoMargins(*constraint_space, *style_, *fragment, margins);
+
+  EXPECT_EQ(LayoutUnit(), margins.block_start);
+  EXPECT_EQ(LayoutUnit(), margins.block_end);
+  EXPECT_EQ(LayoutUnit(25), margins.inline_start);
+  EXPECT_EQ(LayoutUnit(25), margins.inline_end);
+
+  style_->setMarginLeft(Length(0, Fixed));
+  margins = NGBoxStrut();
+  ApplyAutoMargins(*constraint_space, *style_, *fragment, margins);
+  EXPECT_EQ(LayoutUnit(0), margins.inline_start);
+  EXPECT_EQ(LayoutUnit(50), margins.inline_end);
+
+  style_->setMarginLeft(Length(Auto));
+  style_->setMarginRight(Length(0, Fixed));
+  margins = NGBoxStrut();
+  ApplyAutoMargins(*constraint_space, *style_, *fragment, margins);
+  EXPECT_EQ(LayoutUnit(50), margins.inline_start);
+  EXPECT_EQ(LayoutUnit(0), margins.inline_end);
+
+  // Test that we don't end up with negative "auto" margins when the box is too
+  // big.
+  style_->setMarginLeft(Length(Auto));
+  style_->setMarginRight(Length(5000, Fixed));
+  margins = NGBoxStrut();
+  margins.inline_end = LayoutUnit(5000);
+  ApplyAutoMargins(*constraint_space, *style_, *fragment, margins);
+  EXPECT_EQ(LayoutUnit(0), margins.inline_start);
+  EXPECT_EQ(LayoutUnit(5000), margins.inline_end);
 }
 
 }  // namespace

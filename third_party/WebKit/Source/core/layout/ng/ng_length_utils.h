@@ -15,6 +15,7 @@ class LayoutUnit;
 class Length;
 class NGConstraintSpace;
 struct NGBoxStrut;
+class NGFragment;
 
 enum class LengthResolveType {
   MinSize,
@@ -62,6 +63,15 @@ CORE_EXPORT NGBoxStrut computeBorders(const ComputedStyle&);
 
 CORE_EXPORT NGBoxStrut computePadding(const NGConstraintSpace&,
                                       const ComputedStyle&);
+
+// Resolves margin: auto in the inline direction after a box has been laid out.
+// This uses the container size from the constraint space and the box size from
+// the fragment to compute the margins that are auto, if any, and adjusts
+// the given NGBoxStrut accordingly.
+CORE_EXPORT void ApplyAutoMargins(const NGConstraintSpace&,
+                                  const ComputedStyle&,
+                                  const NGFragment&,
+                                  NGBoxStrut& margins);
 
 }  // namespace blink
 

@@ -488,5 +488,36 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageSize) {
   const NGPhysicalFragmentBase* child = frag->Children()[0];
   EXPECT_EQ(child->Width(), LayoutUnit(12));
 }
+
+// A very simple auto margin case. We rely on the tests in ng_length_utils_test
+// for the more complex cases; just make sure we handle auto at all here.
+TEST_F(NGBlockLayoutAlgorithmTest, AutoMargin) {
+  const int kPaddingLeft = 10;
+  const int kWidth = 30;
+  style_->setWidth(Length(kWidth, Fixed));
+  style_->setPaddingLeft(Length(kPaddingLeft, Fixed));
+
+  RefPtr<ComputedStyle> first_style = ComputedStyle::create();
+  const int kChildWidth = 10;
+  first_style->setWidth(Length(kChildWidth, Fixed));
+  first_style->setMarginLeft(Length(Auto));
+  first_style->setMarginRight(Length(Auto));
+  NGBox* first_child = new NGBox(first_style.get());
+
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                            NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
+
+  EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->Width());
+  EXPECT_EQ(NGPhysicalFragmentBase::FragmentBox, frag->Type());
+  EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->WidthOverflow());
+  ASSERT_EQ(1UL, frag->Children().size());
+
+  const NGPhysicalFragmentBase* child = frag->Children()[0];
+  EXPECT_EQ(LayoutUnit(kChildWidth), child->Width());
+  EXPECT_EQ(LayoutUnit(kPaddingLeft + 10), child->LeftOffset());
+  EXPECT_EQ(LayoutUnit(0), child->TopOffset());
+}
 }  // namespace
 }  // namespace blink
