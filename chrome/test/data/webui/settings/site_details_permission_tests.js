@@ -70,16 +70,19 @@ cr.define('site_details_permission', function() {
         return false;
       };
 
-      function validatePermissionFlipWorks(origin, allow) {
-        MockInteractions.tap(allow ? testElement.$.allow : testElement.$.block);
+      function validatePermissionFlipWorks(origin, expectedPermissionValue) {
+        browserProxy.resetResolver('setCategoryPermissionForOrigin');
+
+        // Simulate permission change initiated by the user.
+        testElement.$.permission.value = expectedPermissionValue;
+        testElement.$.permission.dispatchEvent(new CustomEvent('change'));
+
         return browserProxy.whenCalled('setCategoryPermissionForOrigin').then(
-            function(arguments) {
-              assertEquals(origin, arguments[0]);
-              assertEquals('', arguments[1]);
-              assertEquals(testElement.category, arguments[2]);
-              assertEquals(allow ?
-                  settings.PermissionValues.ALLOW :
-                  settings.PermissionValues.BLOCK, arguments[3]);
+            function(args) {
+              assertEquals(origin, args[0]);
+              assertEquals('', args[1]);
+              assertEquals(testElement.category, args[2]);
+              assertEquals(expectedPermissionValue, args[3]);
             });
       };
 
@@ -114,13 +117,14 @@ cr.define('site_details_permission', function() {
               'Widget should be labelled correctly');
 
           // Flip the permission and validate that prefs stay in sync.
-          return validatePermissionFlipWorks(origin, true);
+          return validatePermissionFlipWorks(
+              origin, settings.PermissionValues.ALLOW);
         }).then(function() {
-          browserProxy.resetResolver('setCategoryPermissionForOrigin');
-          return validatePermissionFlipWorks(origin, false);
+          return validatePermissionFlipWorks(
+              origin, settings.PermissionValues.BLOCK);
         }).then(function() {
-          browserProxy.resetResolver('setCategoryPermissionForOrigin');
-          return validatePermissionFlipWorks(origin, true);
+          return validatePermissionFlipWorks(
+              origin, settings.PermissionValues.ALLOW);
         });
       });
 
@@ -141,19 +145,15 @@ cr.define('site_details_permission', function() {
           assertEquals('Cookies', header.innerText.trim(),
               'Widget should be labelled correctly');
 
-          MockInteractions.tap(testElement.$.sessionOnly);
-          return browserProxy.whenCalled('setCategoryPermissionForOrigin');
-        }).then(function(arguments) {
-          assertEquals(origin, arguments[0]);
-          assertEquals('', arguments[1]);
-          assertEquals(testElement.category, arguments[2]);
-          assertEquals(settings.PermissionValues.SESSION_ONLY, arguments[3]);
-          // Flip the permission and validate that prefs stay in sync.
-          browserProxy.resetResolver('setCategoryPermissionForOrigin');
-          return validatePermissionFlipWorks(origin, true);
+          return validatePermissionFlipWorks(
+              origin, settings.PermissionValues.SESSION_ONLY);
         }).then(function() {
-          browserProxy.resetResolver('setCategoryPermissionForOrigin');
-          return validatePermissionFlipWorks(origin, false);
+          // Flip the permission and validate that prefs stay in sync.
+          return validatePermissionFlipWorks(
+              origin, settings.PermissionValues.ALLOW);
+        }).then(function() {
+          return validatePermissionFlipWorks(
+              origin, settings.PermissionValues.BLOCK);
         });
       });
 

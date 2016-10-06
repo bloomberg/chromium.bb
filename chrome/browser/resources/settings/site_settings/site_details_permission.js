@@ -59,7 +59,7 @@ Polymer({
       for (var i = 0; i < exceptionList.length; ++i) {
         if (exceptionList[i].embeddingOrigin == site.embeddingOrigin &&
             this.sameOrigin_(exceptionList[i].origin, site.origin)) {
-          this.$.permission.selected = exceptionList[i].setting;
+          this.$.permission.value = exceptionList[i].setting;
           this.$.details.hidden = false;
           break;
         }
@@ -99,12 +99,11 @@ Polymer({
 
   /**
    * Handles the category permission changing for this origin.
-   * @param {!{detail: !{item: !{dataset: !{permissionValue: string}}}}} event
+   * @private
    */
-  onPermissionMenuIronActivate_: function(event) {
-    var value = event.detail.item.dataset.permissionValue;
+  onPermissionSelectionChange_: function() {
     this.browserProxy.setCategoryPermissionForOrigin(
-        this.site.origin, this.site.embeddingOrigin, this.category, value,
-        this.site.incognito);
+        this.site.origin, this.site.embeddingOrigin, this.category,
+        this.$.permission.value, this.site.incognito);
   },
 });
