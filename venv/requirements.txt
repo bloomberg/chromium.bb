@@ -18,9 +18,11 @@ oauth2client==3.0.0
 pbr==1.10.0
 ply==3.8
 protobuf==3.0.0
+psutil==4.3.1
 pyasn1==0.1.9
 pyasn1-modules==0.0.8
 pyparsing==2.1.8
+PyYAML==3.12
 rsa==3.4.2
 six==1.10.0
 SQLAlchemy==1.0.15
