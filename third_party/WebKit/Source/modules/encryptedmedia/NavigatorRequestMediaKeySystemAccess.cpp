@@ -129,11 +129,11 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
   // See http://crbug.com/605661.
   void checkEmptyCodecs(const WebMediaKeySystemConfiguration&);
 
-  // Log UseCounter if configuration does not have at least one of
+  // Log UseCounter if selected configuration does not have at least one of
   // 'audioCapabilities' and 'videoCapabilities' non-empty.
   // TODO(jrummell): Switch to deprecation message once we have data.
   // See http://crbug.com/616233.
-  void checkCapabilitiesProvided(const WebMediaKeySystemConfiguration&);
+  void checkCapabilities(const WebMediaKeySystemConfiguration&);
 
   Member<ScriptPromiseResolver> m_resolver;
   const String m_keySystem;
@@ -161,8 +161,6 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(
     DCHECK(config.hasVideoCapabilities());
     webConfig.videoCapabilities =
         convertCapabilities(config.videoCapabilities());
-
-    checkCapabilitiesProvided(webConfig);
 
     DCHECK(config.hasDistinctiveIdentifier());
     webConfig.distinctiveIdentifier =
@@ -197,6 +195,7 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(
 void MediaKeySystemAccessInitializer::requestSucceeded(
     WebContentDecryptionModuleAccess* access) {
   checkEmptyCodecs(access->getConfiguration());
+  checkCapabilities(access->getConfiguration());
 
   m_resolver->resolve(
       new MediaKeySystemAccess(m_keySystem, wrapUnique(access)));
@@ -283,8 +282,11 @@ void MediaKeySystemAccessInitializer::checkEmptyCodecs(
   }
 }
 
-void MediaKeySystemAccessInitializer::checkCapabilitiesProvided(
+void MediaKeySystemAccessInitializer::checkCapabilities(
     const WebMediaKeySystemConfiguration& config) {
+  // This is only checking that at least one capability is provided in the
+  // selected configuration, as apps may pass empty capabilities for
+  // compatibility with other implementations.
   bool atLeastOneAudioCapability = config.audioCapabilities.size() > 0;
   bool atLeastOneVideoCapability = config.videoCapabilities.size() > 0;
 
