@@ -233,7 +233,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
         return LayoutInflater.from(parent.getContext()).inflate(resourceId, parent, false);
     }
 
-    private static boolean isCard(@NewTabPageItem.ViewType int type) {
+    public static boolean isCard(@NewTabPageItem.ViewType int type) {
         switch (type) {
             case NewTabPageItem.VIEW_TYPE_SNIPPET:
             case NewTabPageItem.VIEW_TYPE_STATUS:
