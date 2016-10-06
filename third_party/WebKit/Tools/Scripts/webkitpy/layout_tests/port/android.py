@@ -271,7 +271,7 @@ class AndroidPort(base.Port):
         self._operating_system = 'android'
         self._version = 'icecreamsandwich'
 
-        self._host_port = factory.PortFactory(host).get('chromium', **kwargs)
+        self._host_port = factory.PortFactory(host).get(**kwargs)
         self._server_process_constructor = self._android_server_process_constructor
 
         if not self.get_option('disable_breakpad'):
