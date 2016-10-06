@@ -1101,6 +1101,7 @@ ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
     bool create_mailbox)
     : resource_provider_(resource_provider),
       resource_id_(resource_id),
+      has_sync_token_(false),
       synchronized_(false) {
   DCHECK(thread_checker_.CalledOnValidThread());
   Resource* resource = resource_provider->LockForWrite(resource_id);
@@ -1123,7 +1124,10 @@ ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {
   DCHECK(thread_checker_.CalledOnValidThread());
   Resource* resource = resource_provider_->GetResource(resource_id_);
   DCHECK(resource->locked_for_write);
-  if (sync_token_.HasData())
+  // It's not sufficient to check sync_token_.HasData() here because the sync
+  // might be null because of context loss. Even in that case we want to set the
+  // sync token because it's checked in PrepareSendToParent while drawing.
+  if (has_sync_token_)
     resource->UpdateSyncToken(sync_token_);
   if (synchronized_)
     resource->SetSynchronized();

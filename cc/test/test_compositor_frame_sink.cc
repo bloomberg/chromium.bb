@@ -35,6 +35,8 @@ TestCompositorFrameSink::TestCompositorFrameSink(
       surface_id_allocator_(new SurfaceIdAllocator()),
       surface_factory_(
           new SurfaceFactory(frame_sink_id_, surface_manager_.get(), this)),
+      display_context_shared_with_compositor_(
+          display_output_surface->context_provider() == context_provider()),
       weak_ptrs_(this) {
   std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
   std::unique_ptr<DisplayScheduler> scheduler;
@@ -53,8 +55,6 @@ TestCompositorFrameSink::TestCompositorFrameSink(
         begin_frame_source.get(), task_runner,
         display_output_surface->capabilities().max_frames_pending));
   }
-  const bool context_shared_with_compositor =
-      display_output_surface->context_provider() == context_provider();
   display_.reset(
       new Display(shared_bitmap_manager, gpu_memory_buffer_manager,
                   renderer_settings, std::move(begin_frame_source),
@@ -66,8 +66,9 @@ TestCompositorFrameSink::TestCompositorFrameSink(
   // the Display. But we allow tests to disable this to mimic an out-of-process
   // Display.
   capabilities_.can_force_reclaim_resources = !force_disable_reclaim_resources;
-  capabilities_.delegated_sync_points_required =
-      !context_shared_with_compositor;
+  // Always use sync tokens so that code paths in resource provider that deal
+  // with sync tokens are tested.
+  capabilities_.delegated_sync_points_required = true;
 }
 
 TestCompositorFrameSink::~TestCompositorFrameSink() {
@@ -83,11 +84,10 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   if (!CompositorFrameSink::BindToClient(client))
     return false;
 
-  // We want the Display's OutputSurface to hear about lost context, and since
-  // this shares a context with it (when delegated_sync_points_required is
-  // false), we should not be listening for lost context callbacks on the
-  // context here.
-  if (!capabilities_.delegated_sync_points_required && context_provider())
+  // We want the Display's OutputSurface to hear about lost context, and when
+  // this shares a context with it we should not be listening for lost context
+  // callbacks on the context here.
+  if (display_context_shared_with_compositor_ && context_provider())
     context_provider()->SetLostContextCallback(base::Closure());
 
   surface_manager_->RegisterFrameSinkId(frame_sink_id_);

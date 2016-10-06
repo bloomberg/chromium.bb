@@ -76,39 +76,29 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     context3d_ = nullptr;
   }
 
-  virtual std::unique_ptr<TestWebGraphicsContext3D> CreateContext3d() {
-    return TestWebGraphicsContext3D::Create();
-  }
-
   std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
+    base::AutoLock lock(context3d_lock_);
+
+    std::unique_ptr<TestWebGraphicsContext3D> compositor_context3d =
+        TestWebGraphicsContext3D::Create();
+    if (context_should_support_io_surface_) {
+      compositor_context3d->set_have_extension_io_surface(true);
+      compositor_context3d->set_have_extension_egl_image(true);
+    }
+    context3d_ = compositor_context3d.get();
+
     if (times_to_fail_create_) {
       --times_to_fail_create_;
       ExpectCreateToFail();
-      auto test_compositor_context_provider = TestContextProvider::Create();
-      test_compositor_context_provider->UnboundTestContext3d()
-          ->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                                GL_INNOCENT_CONTEXT_RESET_ARB);
-      compositor_context_provider = std::move(test_compositor_context_provider);
+      context3d_->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                                      GL_INNOCENT_CONTEXT_RESET_ARB);
     }
+
     return LayerTreeTest::CreateCompositorFrameSink(
-        std::move(compositor_context_provider),
+        TestContextProvider::Create(std::move(compositor_context3d)),
         std::move(worker_context_provider));
-  }
-
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
-      scoped_refptr<ContextProvider> compositor_context_provider) override {
-    std::unique_ptr<TestWebGraphicsContext3D> context3d = CreateContext3d();
-    if (context_should_support_io_surface_) {
-      context3d->set_have_extension_io_surface(true);
-      context3d->set_have_extension_egl_image(true);
-    }
-
-    base::AutoLock lock(context3d_lock_);
-    context3d_ = context3d.get();
-    return LayerTreeTest::CreateDisplayOutputSurface(
-        TestContextProvider::Create(std::move(context3d)));
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -484,7 +474,9 @@ class FailedCreateDoesNotCreateExtraCompositorFrameSink
     : public LayerTreeHostContextTest {
  public:
   FailedCreateDoesNotCreateExtraCompositorFrameSink()
-      : LayerTreeHostContextTest(), num_requests_(0), has_failed_(false) {}
+      : LayerTreeHostContextTest(), num_requests_(0), has_failed_(false) {
+    times_to_fail_create_ = 1;
+  }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->single_thread_proxy_scheduler = false;
@@ -501,19 +493,6 @@ class FailedCreateDoesNotCreateExtraCompositorFrameSink
     if (num_requests_ > 1)
       return;
     LayerTreeHostContextTest::RequestNewCompositorFrameSink();
-  }
-
-  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
-      scoped_refptr<ContextProvider> compositor_context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider) override {
-    ExpectCreateToFail();
-    auto test_compositor_context_provider = TestContextProvider::Create();
-    test_compositor_context_provider->UnboundTestContext3d()
-        ->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                              GL_INNOCENT_CONTEXT_RESET_ARB);
-    return LayerTreeTest::CreateCompositorFrameSink(
-        std::move(test_compositor_context_provider),
-        std::move(worker_context_provider));
   }
 
   void BeginTest() override {
@@ -729,7 +708,7 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
       ImplThreadTaskRunner()->PostTask(
           FROM_HERE,
           base::Bind(&LayerTreeHostContextTestLostContextAndEvictTextures::
-                          EvictTexturesOnImplThread,
+                         EvictTexturesOnImplThread,
                      base::Unretained(this)));
     } else {
       DebugScopedSetImplThread impl(task_runner_provider());
@@ -906,16 +885,12 @@ class LayerTreeHostContextTestDontUseLostResources
     std::unique_ptr<RenderPass> pass_for_quad = RenderPass::Create();
     pass_for_quad->SetNew(
         // AppendOneOfEveryQuadType() makes a RenderPass quad with this id.
-        RenderPassId(2, 1),
-        gfx::Rect(0, 0, 10, 10),
-        gfx::Rect(0, 0, 10, 10),
+        RenderPassId(2, 1), gfx::Rect(0, 0, 10, 10), gfx::Rect(0, 0, 10, 10),
         gfx::Transform());
 
     std::unique_ptr<RenderPass> pass = RenderPass::Create();
-    pass->SetNew(RenderPassId(1, 1),
-                 gfx::Rect(0, 0, 10, 10),
-                 gfx::Rect(0, 0, 10, 10),
-                 gfx::Transform());
+    pass->SetNew(RenderPassId(1, 1), gfx::Rect(0, 0, 10, 10),
+                 gfx::Rect(0, 0, 10, 10), gfx::Transform());
     gpu::SyncToken mailbox_sync_token;
     AddOneOfEveryQuadType(pass.get(), child_resource_provider_.get(),
                           RenderPassId(2, 1), &mailbox_sync_token);
@@ -1198,9 +1173,8 @@ class UIResourceLostTest : public LayerTreeHostContextTest {
   void PostLoseContextToImplThread() {
     EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&LayerTreeHostContextTest::LoseContext,
-                   base::Unretained(this)));
+        FROM_HERE, base::Bind(&LayerTreeHostContextTest::LoseContext,
+                              base::Unretained(this)));
   }
 
  protected:
@@ -1591,9 +1565,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostEviction);
 class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
     : public LayerTreeHostContextTest {
  protected:
-  void BeginTest() override {
-    PostSetNeedsCommitToMainThread();
-  }
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void WillBeginMainFrame() override {
     // Don't begin a frame with a lost surface.
@@ -1640,6 +1612,51 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostContextTestLoseAfterSendingBeginMainFrame);
+
+// This test causes context loss on the worker context but not the compositor
+// context and checks that draw still occurs. The resources might be in a bad
+// state e.g. null sync tokens but that shouldn't cause the draw to fail.
+class LayerTreeHostContextTestLoseWorkerContextDuringPrepareTiles
+    : public LayerTreeTest {
+ protected:
+  void SetupTree() override {
+    SkPaint paint;
+    client_.set_fill_with_nonsolid_color(true);
+    client_.add_draw_rect(gfx::Rect(5, 5), paint);
+
+    scoped_refptr<FakePictureLayer> picture_layer =
+        FakePictureLayer::Create(&client_);
+    picture_layer->SetBounds(gfx::Size(10, 20));
+    client_.set_bounds(picture_layer->bounds());
+    layer_tree()->SetRootLayer(picture_layer);
+
+    LayerTreeTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillPrepareTilesOnThread(LayerTreeHostImpl* host_impl) override {
+    ContextProvider::ScopedContextLock scoped_context(
+        host_impl->compositor_frame_sink()->worker_context_provider());
+    gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
+    gl->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                            GL_INNOCENT_CONTEXT_RESET_ARB);
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    ++num_draws_;
+  }
+
+  void DidCommitAndDrawFrame() override { EndTest(); }
+
+  void AfterTest() override { EXPECT_EQ(1, num_draws_); }
+
+  FakeContentLayerClient client_;
+  int num_draws_ = 0;
+};
+
+MULTI_THREAD_TEST_F(
+    LayerTreeHostContextTestLoseWorkerContextDuringPrepareTiles);
 
 }  // namespace
 }  // namespace cc

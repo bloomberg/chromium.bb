@@ -93,6 +93,8 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   // Uses surface_manager_.
   std::unique_ptr<Display> display_;
 
+  const bool display_context_shared_with_compositor_;
+
   bool bound_ = false;
   TestCompositorFrameSinkClient* test_client_ = nullptr;
   gfx::Size enlarge_pass_texture_amount_;

@@ -283,6 +283,7 @@ class CC_EXPORT ResourceProvider
 
     void set_sync_token(const gpu::SyncToken& sync_token) {
       sync_token_ = sync_token;
+      has_sync_token_ = true;
     }
 
     void set_synchronized(bool synchronized) { synchronized_ = synchronized; }
@@ -296,6 +297,7 @@ class CC_EXPORT ResourceProvider
     gfx::Size size_;
     TextureMailbox mailbox_;
     gpu::SyncToken sync_token_;
+    bool has_sync_token_;
     bool synchronized_;
     base::ThreadChecker thread_checker_;
     sk_sp<SkColorSpace> sk_color_space_;
