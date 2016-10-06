@@ -55,58 +55,11 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
     fragment_ = fragment;
 
     if (layout_box_) {
-      layout_box_->setWidth(fragment_->Width());
-      layout_box_->setHeight(fragment_->Height());
-      NGBoxStrut border_and_padding =
-          computeBorders(*Style()) +
-          computePadding(*constraint_space, *Style());
-      LayoutUnit intrinsic_logical_height =
-          layout_box_->style()->isHorizontalWritingMode()
-              ? fragment_->HeightOverflow()
-              : fragment_->WidthOverflow();
-      intrinsic_logical_height -= border_and_padding.BlockSum();
-      layout_box_->setIntrinsicContentLogicalHeight(intrinsic_logical_height);
-
-      // Ensure the position of the children are copied across to the
-      // LayoutObject tree.
-      for (NGBox* box = FirstChild(); box; box = box->NextSibling()) {
-        if (box->fragment_)
-          box->PositionUpdated();
-      }
-
-      if (layout_box_->isLayoutBlock())
-        toLayoutBlock(layout_box_)->layoutPositionedObjects(true);
-      layout_box_->clearNeedsLayout();
-      if (layout_box_->isLayoutBlockFlow()) {
-        toLayoutBlockFlow(layout_box_)->updateIsSelfCollapsing();
-      }
+      CopyFragmentDataToLayoutBox(*constraint_space);
     }
   } else {
     DCHECK(layout_box_);
-    // TODO(layout-ng): If fixedSize is true, set the override width/height too
-    NGLogicalSize container_size = constraint_space->ContainerSize();
-    layout_box_->setOverrideContainingBlockContentLogicalWidth(
-        container_size.inline_size);
-    layout_box_->setOverrideContainingBlockContentLogicalHeight(
-        container_size.block_size);
-    if (layout_box_->isLayoutNGBlockFlow() && layout_box_->needsLayout()) {
-      toLayoutNGBlockFlow(layout_box_)->LayoutBlockFlow::layoutBlock(true);
-    } else {
-      layout_box_->forceLayout();
-    }
-    LayoutRect overflow = layout_box_->layoutOverflowRect();
-    // TODO(layout-ng): This does not handle writing modes correctly (for
-    // overflow)
-    NGFragmentBuilder builder(NGPhysicalFragmentBase::FragmentBox);
-    builder.SetInlineSize(layout_box_->logicalWidth())
-        .SetBlockSize(layout_box_->logicalHeight())
-        .SetDirection(
-            FromPlatformDirection(layout_box_->styleRef().direction()))
-        .SetWritingMode(
-            FromPlatformWritingMode(layout_box_->styleRef().getWritingMode()))
-        .SetInlineOverflow(overflow.width())
-        .SetBlockOverflow(overflow.height());
-    fragment_ = builder.ToFragment();
+    fragment_ = RunOldLayout(*constraint_space);
   }
   *out = new NGFragment(constraint_space->WritingMode(),
                         FromPlatformDirection(Style()->direction()),
@@ -165,4 +118,61 @@ bool NGBox::CanUseNewLayout() {
   const LayoutBlockFlow* block_flow = toLayoutBlockFlow(layout_box_);
   return !block_flow->childrenInline() || !block_flow->firstChild();
 }
+
+void NGBox::CopyFragmentDataToLayoutBox(
+    const NGConstraintSpace& constraint_space) {
+  DCHECK(layout_box_);
+  layout_box_->setWidth(fragment_->Width());
+  layout_box_->setHeight(fragment_->Height());
+  NGBoxStrut border_and_padding =
+      computeBorders(*Style()) + computePadding(constraint_space, *Style());
+  LayoutUnit intrinsic_logical_height =
+      layout_box_->style()->isHorizontalWritingMode()
+          ? fragment_->HeightOverflow()
+          : fragment_->WidthOverflow();
+  intrinsic_logical_height -= border_and_padding.BlockSum();
+  layout_box_->setIntrinsicContentLogicalHeight(intrinsic_logical_height);
+
+  // Ensure the position of the children are copied across to the
+  // LayoutObject tree.
+  for (NGBox* box = FirstChild(); box; box = box->NextSibling()) {
+    if (box->fragment_)
+      box->PositionUpdated();
+  }
+
+  if (layout_box_->isLayoutBlock())
+    toLayoutBlock(layout_box_)->layoutPositionedObjects(true);
+  layout_box_->clearNeedsLayout();
+  if (layout_box_->isLayoutBlockFlow()) {
+    toLayoutBlockFlow(layout_box_)->updateIsSelfCollapsing();
+  }
+}
+
+NGPhysicalFragment* NGBox::RunOldLayout(
+    const NGConstraintSpace& constraint_space) {
+  // TODO(layout-ng): If fixedSize is true, set the override width/height too
+  NGLogicalSize container_size = constraint_space.ContainerSize();
+  layout_box_->setOverrideContainingBlockContentLogicalWidth(
+      container_size.inline_size);
+  layout_box_->setOverrideContainingBlockContentLogicalHeight(
+      container_size.block_size);
+  if (layout_box_->isLayoutNGBlockFlow() && layout_box_->needsLayout()) {
+    toLayoutNGBlockFlow(layout_box_)->LayoutBlockFlow::layoutBlock(true);
+  } else {
+    layout_box_->forceLayout();
+  }
+  LayoutRect overflow = layout_box_->layoutOverflowRect();
+  // TODO(layout-ng): This does not handle writing modes correctly (for
+  // overflow)
+  NGFragmentBuilder builder(NGPhysicalFragmentBase::FragmentBox);
+  builder.SetInlineSize(layout_box_->logicalWidth())
+      .SetBlockSize(layout_box_->logicalHeight())
+      .SetDirection(FromPlatformDirection(layout_box_->styleRef().direction()))
+      .SetWritingMode(
+          FromPlatformWritingMode(layout_box_->styleRef().getWritingMode()))
+      .SetInlineOverflow(overflow.width())
+      .SetBlockOverflow(overflow.height());
+  return builder.ToFragment();
+}
+
 }  // namespace blink

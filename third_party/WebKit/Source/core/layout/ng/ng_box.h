@@ -56,6 +56,14 @@ class CORE_EXPORT NGBox final : public GarbageCollectedFinalized<NGBox> {
 
   bool CanUseNewLayout();
 
+  // After we run the layout algorithm, this function copies back the geometry
+  // data to the layout box.
+  void CopyFragmentDataToLayoutBox(const NGConstraintSpace&);
+
+  // Runs layout on layout_box_ and creates a fragment for the resulting
+  // geometry.
+  NGPhysicalFragment* RunOldLayout(const NGConstraintSpace&);
+
   // We can either wrap a layout_box_ or a style_/next_sibling_/first_child_
   // combination.
   LayoutBox* layout_box_;
