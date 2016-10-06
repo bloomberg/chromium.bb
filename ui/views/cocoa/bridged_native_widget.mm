@@ -707,8 +707,10 @@ void BridgedNativeWidget::OnWindowWillClose() {
     parent_->RemoveChildWindow(this);
     parent_ = nullptr;
   }
-  [window_ setDelegate:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:window_delegate_];
+  // Note this also clears the NSWindow delegate, after informing Widget
+  // delegates about the closure. NativeWidgetMac then deletes |this| before
+  // returning.
   native_widget_mac_->OnWindowWillClose();
 }
 

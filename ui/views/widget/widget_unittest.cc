@@ -2076,6 +2076,7 @@ class WidgetBoundsObserver : public WidgetObserver {
   // WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override {
     EXPECT_TRUE(widget->GetNativeWindow());
+    EXPECT_TRUE(Widget::GetWidgetForNativeWindow(widget->GetNativeWindow()));
     bounds_ = widget->GetWindowBoundsInScreen();
   }
 
