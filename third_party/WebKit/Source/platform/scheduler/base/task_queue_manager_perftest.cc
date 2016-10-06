@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -16,12 +17,40 @@
 #include "platform/scheduler/base/task_queue_manager_delegate_for_test.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 #include "platform/scheduler/base/test_task_time_observer.h"
+#include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/base/work_queue_sets.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
 namespace blink {
 namespace scheduler {
+
+// To reduce noise related to the OS timer, we use a virtual time domain to
+// fast forward the timers.
+class PerfTestTimeDomain : public VirtualTimeDomain {
+ public:
+  PerfTestTimeDomain() : VirtualTimeDomain(nullptr, base::TimeTicks::Now()) {}
+  ~PerfTestTimeDomain() override {}
+
+  bool MaybeAdvanceTime() override {
+    base::TimeTicks run_time;
+    if (!NextScheduledRunTime(&run_time))
+      return false;
+
+    AdvanceTo(run_time);
+    return true;
+  }
+
+  void RequestWakeup(base::TimeTicks now, base::TimeDelta delay) override {
+    base::TimeTicks dummy;
+    if (!NextScheduledRunTime(&dummy))
+      RequestDoWork();
+  }
+
+  const char* GetName() const override { return "PerfTestTimeDomain"; }
+
+  DISALLOW_COPY_AND_ASSIGN(PerfTestTimeDomain);
+};
 
 class TaskQueueManagerPerfTest : public testing::Test {
  public:
@@ -37,21 +66,40 @@ class TaskQueueManagerPerfTest : public testing::Test {
       base::ThreadTicks::WaitUntilInitialized();
   }
 
+  void TearDown() override {
+    queues_.clear();
+    manager_->UnregisterTimeDomain(virtual_time_domain_.get());
+    manager_.reset();
+  }
+
   void Initialize(size_t num_queues) {
     num_queues_ = num_queues;
+    message_loop_.reset(new base::MessageLoop());
     manager_ = base::MakeUnique<TaskQueueManager>(
         TaskQueueManagerDelegateForTest::Create(
-            base::ThreadTaskRunnerHandle::Get(),
+            message_loop_->task_runner(),
             base::WrapUnique(new base::DefaultTickClock())),
         "fake.category", "fake.category", "fake.category.debug");
     manager_->AddTaskTimeObserver(&test_task_time_observer_);
-    for (size_t i = 0; i < num_queues; i++)
-      queues_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test")));
+
+    virtual_time_domain_.reset(new PerfTestTimeDomain());
+    manager_->RegisterTimeDomain(virtual_time_domain_.get());
+
+    for (size_t i = 0; i < num_queues; i++) {
+      queue_names_.push_back(base::StringPrintf("test_%zu", i));
+    }
+
+    for (size_t i = 0; i < num_queues; i++) {
+      queues_.push_back(manager_->NewTaskQueue(
+          TaskQueue::Spec(queue_names_[i].c_str())
+              .SetTimeDomain(virtual_time_domain_.get())));
+    }
   }
 
   void TestDelayedTask() {
     if (--num_tasks_to_run_ == 0) {
       run_loop_->QuitWhenIdle();
+      return;
     }
 
     num_tasks_in_flight_--;
@@ -78,7 +126,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
       queues_[queue]->PostDelayedTask(
           FROM_HERE, base::Bind(&TaskQueueManagerPerfTest::TestDelayedTask,
                                 base::Unretained(this)),
-          base::TimeDelta::FromMicroseconds(delay));
+          base::TimeDelta::FromMilliseconds(delay));
       num_tasks_in_flight_++;
       num_tasks_to_post_--;
     }
@@ -113,8 +161,11 @@ class TaskQueueManagerPerfTest : public testing::Test {
   unsigned int num_tasks_in_flight_;
   unsigned int num_tasks_to_post_;
   unsigned int num_tasks_to_run_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<TaskQueueManager> manager_;
   std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<VirtualTimeDomain> virtual_time_domain_;
+  std::vector<std::string> queue_names_;
   std::vector<scoped_refptr<base::SingleThreadTaskRunner>> queues_;
   // TODO(alexclarke): parameterize so we can measure with and without a
   // TaskTimeObserver.
