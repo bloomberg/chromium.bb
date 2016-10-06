@@ -16,7 +16,6 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -97,17 +96,11 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
 
             MenuItem iconRow = menu.findItem(R.id.icon_row_menu_id);
             MenuItem openInChromeItem = menu.findItem(R.id.open_in_browser_id);
-            MenuItem readItLaterItem = menu.findItem(R.id.read_it_later_id);
             if (mIsMediaViewer) {
                 // Most of the menu items don't make sense when viewing media.
                 iconRow.setVisible(false);
                 openInChromeItem.setVisible(false);
-                readItLaterItem.setVisible(false);
-            } else if (ChromeFeatureList.isEnabled("ReadItLaterInMenu")) {
-                // In the read-it-later experiment, Chrome will be the only browser to open the link
-                openInChromeItem.setTitle(R.string.menu_open_in_chrome);
             } else {
-                readItLaterItem.setVisible(false);
                 try {
                     openInChromeItem.setTitle(mDefaultBrowserFetcher.get());
                 } catch (InterruptedException | ExecutionException e) {

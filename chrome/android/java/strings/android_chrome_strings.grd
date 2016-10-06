@@ -2323,14 +2323,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
 However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your internet service provider, or the websites you visit.
       </message>
 
-      <!-- Custom tabs -->
-      <message name="IDS_READ_IT_LATER" desc="Text describing an option for the user to save the tab to Chrome and read it in the future.">
-        Keep tab in Chrome
-      </message>
-      <message name="IDS_TAB_SENT_TO_BACKGROUND" desc="A message to show that the tab has been sent to the background Chrome.">
-        Your tab is now in the background.
-      </message>
-
       <!-- Contextual Search -->
       <message name="IDS_CONTEXTUAL_SEARCH_NETWORK_UNAVAILABLE" desc="Tells the user the network is not accessible.">
         Unable to access the network

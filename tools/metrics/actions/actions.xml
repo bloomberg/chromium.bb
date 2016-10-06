@@ -3306,6 +3306,7 @@ should be able to be added at any place in this file.
 <action name="CustomTabsMenuReadItLater">
   <owner>ianwen@chromium.org</owner>
   <description>User hit &quot;read it later&quot; menu item.</description>
+  <obsolete>Deprecated as of 10/2016, this feature was removed.</obsolete>
 </action>
 
 <action name="CustomTabsRemoteViewsShown">

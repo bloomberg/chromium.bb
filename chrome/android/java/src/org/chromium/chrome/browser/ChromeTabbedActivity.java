@@ -1180,7 +1180,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         Intent intent = new Intent(this, targetActivity);
         MultiWindowUtils.setOpenInOtherWindowIntentExtras(intent, this, targetActivity);
 
-        tab.detachAndStartReparenting(intent, null, null, true);
+        tab.detachAndStartReparenting(intent, null, null);
     }
 
     @Override

@@ -256,7 +256,7 @@ public class TabWindowManagerTest extends InstrumentationTestCase {
         AsyncTabParamsManager.getAsyncTabParams().clear();
         final int asyncTabId = 123;
         final TabReparentingParams dummyParams =
-                new TabReparentingParams(new Tab(0, false, null), null, null, false);
+                new TabReparentingParams(new Tab(0, false, null), null, null);
         assertFalse(manager.tabExistsInAnySelector(asyncTabId));
         AsyncTabParamsManager.add(asyncTabId, dummyParams);
         try {
@@ -290,7 +290,7 @@ public class TabWindowManagerTest extends InstrumentationTestCase {
         AsyncTabParamsManager.getAsyncTabParams().clear();
         final int asyncTabId = 123;
         final TabReparentingParams dummyParams =
-                new TabReparentingParams(new Tab(0, false, null), null, null, false);
+                new TabReparentingParams(new Tab(0, false, null), null, null);
         assertNull(manager.getTabById(asyncTabId));
         AsyncTabParamsManager.add(asyncTabId, dummyParams);
         try {

@@ -33,7 +33,4 @@
         <item android:id="@+id/open_in_browser_id"
             android:title=""
             android:orderInCategory="2" />
-        <item android:id="@+id/read_it_later_id"
-            android:title="@string/read_it_later"
-            android:orderInCategory="2" />
 </menu>

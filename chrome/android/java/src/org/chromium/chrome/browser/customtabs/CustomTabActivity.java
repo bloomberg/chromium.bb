@@ -34,7 +34,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
@@ -732,12 +731,8 @@ public class CustomTabActivity extends ChromeActivity {
                 || id == R.id.open_history_menu_id) {
             return true;
         } else if (id == R.id.open_in_browser_id) {
-            openCurrentUrlInBrowser(false, true);
+            openCurrentUrlInBrowser(false);
             RecordUserAction.record("CustomTabsMenuOpenInChrome");
-            return true;
-        } else if (id == R.id.read_it_later_id) {
-            openCurrentUrlInBrowser(false, false);
-            RecordUserAction.record("CustomTabsMenuReadItLater");
             return true;
         } else if (id == R.id.info_menu_id) {
             if (getTabModelSelector().getCurrentTab() == null) return false;
@@ -783,10 +778,10 @@ public class CustomTabActivity extends ChromeActivity {
     /**
      * Opens the URL currently being displayed in the Custom Tab in the regular browser.
      * @param forceReparenting Whether tab reparenting should be forced for testing.
-     * @param stayInChrome     Whether the user stays in Chrome after the tab is reparented.
+     *
      * @return Whether or not the tab was sent over successfully.
      */
-    boolean openCurrentUrlInBrowser(boolean forceReparenting, boolean stayInChrome) {
+    boolean openCurrentUrlInBrowser(boolean forceReparenting) {
         Tab tab = getActivityTab();
         if (tab == null) return false;
 
@@ -798,10 +793,6 @@ public class CustomTabActivity extends ChromeActivity {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
-        if (ChromeFeatureList.isEnabled("ReadItLaterInMenu")) {
-            // In this trial both "open in chrome" and "read it later" should target Chrome.
-            intent.setPackage(getPackageName());
-        }
 
         boolean willChromeHandleIntent = getIntentDataProvider().isOpenedByChrome();
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
@@ -824,8 +815,7 @@ public class CustomTabActivity extends ChromeActivity {
             };
 
             mMainTab = null;
-            tab.detachAndStartReparenting(intent, startActivityOptions, finalizeCallback,
-                    stayInChrome);
+            tab.detachAndStartReparenting(intent, startActivityOptions, finalizeCallback);
         } else {
             // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
             StrictMode.allowThreadDiskReads();

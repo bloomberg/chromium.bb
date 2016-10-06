@@ -892,10 +892,6 @@ const FeatureEntry kFeatureEntries[] = {
          chromeos::switches::kDisableNetworkPortalNotification)},
 #endif  // OS_CHROMEOS
 #if defined(OS_ANDROID)
-    {"enable-read-it-later-in-menu",
-     IDS_FLAGS_ENABLE_READ_IT_LATER_IN_MENU_NAME,
-     IDS_FLAGS_ENABLE_READ_IT_LATER_IN_MENU_DESCRIPTION, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kReadItLaterInMenu)},
     {"enable-media-document-download-button",
      IDS_FLAGS_MEDIA_DOCUMENT_DOWNLOAD_BUTTON_NAME,
      IDS_FLAGS_MEDIA_DOCUMENT_DOWNLOAD_BUTTON_DESCRIPTION, kOsAndroid,
