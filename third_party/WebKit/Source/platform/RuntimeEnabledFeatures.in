@@ -106,7 +106,6 @@ GamepadExtensions
 GeometryInterfaces status=experimental, implied_by=CompositorWorker
 GetUserMedia status=stable
 GlobalCacheStorage status=stable
-GpuCompositing
 IDBObserver status=experimental
 ImageCapture status=experimental
 ImageOrientation status=test

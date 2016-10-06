@@ -554,6 +554,12 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
+  // Whether the command line flag: --disable-gpu-compositing or --disable-gpu
+  // exists or not
+  // NOTE: This function should not be called from core/ and modules/, but
+  // called by platform/graphics/ is fine.
+  virtual bool isGPUCompositingEnabled() { return true; }
+
   // WebRTC ----------------------------------------------------------
 
   // Creates a WebRTCPeerConnectionHandler for RTCPeerConnection.

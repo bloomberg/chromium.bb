@@ -81,7 +81,6 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enableFeaturePolicy(bool);
   BLINK_EXPORT static void enableFileSystem(bool);
   BLINK_EXPORT static void enableGamepadExtensions(bool);
-  BLINK_EXPORT static void enableGpuCompositing(bool);
   BLINK_EXPORT static void enableInputMultipleFieldsUI(bool);
   BLINK_EXPORT static void enableMediaCapture(bool);
   BLINK_EXPORT static void enableMediaDocumentDownloadButton(bool);

@@ -179,10 +179,10 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   resource.is_overlay_candidate = false;
 
   if (!image->isTextureBacked() &&
-      !RuntimeEnabledFeatures::gpuCompositingEnabled())
+      !Platform::current()->isGPUCompositingEnabled())
     setTransferableResourceInMemory(resource, image);
   else if (!image->isTextureBacked() &&
-           RuntimeEnabledFeatures::gpuCompositingEnabled())
+           Platform::current()->isGPUCompositingEnabled())
     setTransferableResourceMemoryToTexture(resource, image);
   else
     setTransferableResourceInTexture(resource, image);
