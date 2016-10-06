@@ -1228,6 +1228,18 @@ now we are only interested in H264, VP8 and VP9.
   </flags-field>
 </rappor-metric>
 
+<rappor-metric
+    name="PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintNotRecorded"
+    type="ETLD_PLUS_ONE">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL of a page which did not report
+    PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint UMA
+    because the user left the page before the page's network activity settles
+    down.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Permissions.Action.AudioCapture"
     type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>kcarattini@chromium.org</owner>
