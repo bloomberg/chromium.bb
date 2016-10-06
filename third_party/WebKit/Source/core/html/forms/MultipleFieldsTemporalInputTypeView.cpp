@@ -170,7 +170,7 @@ void MultipleFieldsTemporalInputTypeView::didBlurFromControl() {
     return;
   EventQueueScope scope;
   // Remove focus ring by CSS "focus" pseudo class.
-  element().setFocus(false);
+  element().setFocused(false);
   if (SpinButtonElement* spinButton = spinButtonElement())
     spinButton->releaseCapture();
 }
@@ -183,7 +183,7 @@ void MultipleFieldsTemporalInputTypeView::didFocusOnControl() {
     return;
   // Add focus ring by CSS "focus" pseudo class.
   // FIXME: Setting the focus flag to non-focused element is too tricky.
-  element().setFocus(true);
+  element().setFocused(true);
 }
 
 void MultipleFieldsTemporalInputTypeView::editControlValueChanged() {

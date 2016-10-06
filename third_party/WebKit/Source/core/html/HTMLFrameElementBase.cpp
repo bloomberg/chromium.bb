@@ -196,8 +196,8 @@ bool HTMLFrameElementBase::supportsFocus() const {
   return true;
 }
 
-void HTMLFrameElementBase::setFocus(bool received) {
-  HTMLFrameOwnerElement::setFocus(received);
+void HTMLFrameElementBase::setFocused(bool received) {
+  HTMLFrameOwnerElement::setFocused(received);
   if (Page* page = document().page()) {
     if (received)
       page->focusController().setFocusedFrame(contentFrame());

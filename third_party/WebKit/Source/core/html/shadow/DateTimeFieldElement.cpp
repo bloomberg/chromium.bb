@@ -131,10 +131,10 @@ void DateTimeFieldElement::defaultKeyboardEventHandler(
   }
 }
 
-void DateTimeFieldElement::setFocus(bool value) {
+void DateTimeFieldElement::setFocused(bool value) {
   if (m_fieldOwner)
     value ? m_fieldOwner->didFocusOnField() : m_fieldOwner->didBlurFromField();
-  ContainerNode::setFocus(value);
+  ContainerNode::setFocused(value);
 }
 
 void DateTimeFieldElement::focusOnNextField() {

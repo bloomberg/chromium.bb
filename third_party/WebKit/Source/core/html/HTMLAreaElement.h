@@ -67,7 +67,7 @@ class CORE_EXPORT HTMLAreaElement final : public HTMLAnchorElement {
   bool isMouseFocusable() const override;
   bool layoutObjectIsFocusable() const override;
   void updateFocusAppearance(SelectionBehaviorOnFocus) override;
-  void setFocus(bool) override;
+  void setFocused(bool) override;
 
   enum Shape { Default, Poly, Rect, Circle };
   void invalidateCachedPath();

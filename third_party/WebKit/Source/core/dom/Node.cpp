@@ -2240,7 +2240,7 @@ HTMLSlotElement* Node::assignedSlotForBinding() {
   return nullptr;
 }
 
-void Node::setFocus(bool flag) {
+void Node::setFocused(bool flag) {
   document().userActionElements().setFocused(this, flag);
 }
 

@@ -633,8 +633,8 @@ String HTMLFormControlElement::nameForAutofill() const {
   return trimmedName;
 }
 
-void HTMLFormControlElement::setFocus(bool flag) {
-  LabelableElement::setFocus(flag);
+void HTMLFormControlElement::setFocused(bool flag) {
+  LabelableElement::setFocused(flag);
 
   if (!flag && wasChangedSinceLastFormControlChangeEvent())
     dispatchFormControlChangeEvent();

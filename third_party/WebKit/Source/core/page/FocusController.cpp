@@ -366,7 +366,7 @@ inline void dispatchEventsOnWindowAndFocusedElement(Document* document,
 
   if (!focused && document->focusedElement()) {
     Element* focusedElement = document->focusedElement();
-    focusedElement->setFocus(false);
+    focusedElement->setFocused(false);
     dispatchBlurEvent(*document, *focusedElement);
   }
 
@@ -375,7 +375,7 @@ inline void dispatchEventsOnWindowAndFocusedElement(Document* document,
         Event::create(focused ? EventTypeNames::focus : EventTypeNames::blur));
   if (focused && document->focusedElement()) {
     Element* focusedElement(document->focusedElement());
-    focusedElement->setFocus(true);
+    focusedElement->setFocused(true);
     dispatchFocusEvent(*document, *focusedElement);
   }
 }

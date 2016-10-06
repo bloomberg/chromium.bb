@@ -184,8 +184,8 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect) {
   layoutObject->setMayNeedPaintInvalidation();
 }
 
-void WebPluginContainerImpl::setFocus(bool focused, WebFocusType focusType) {
-  Widget::setFocus(focused, focusType);
+void WebPluginContainerImpl::setFocused(bool focused, WebFocusType focusType) {
+  Widget::setFocused(focused, focusType);
   m_webPlugin->updateFocus(focused, focusType);
 }
 

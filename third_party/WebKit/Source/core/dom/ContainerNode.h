@@ -132,7 +132,7 @@ class CORE_EXPORT ContainerNode : public Node {
   void attachLayoutTree(const AttachContext& = AttachContext()) override;
   void detachLayoutTree(const AttachContext& = AttachContext()) override;
   LayoutRect boundingBox() const final;
-  void setFocus(bool) override;
+  void setFocused(bool) override;
   void focusStateChanged();
   void setActive(bool = true) override;
   void setDragged(bool) override;

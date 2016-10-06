@@ -130,7 +130,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
 
   String nameForAutofill() const;
 
-  void setFocus(bool flag) override;
+  void setFocused(bool flag) override;
   void copyNonAttributePropertiesFromElement(const Element&) override;
 
  protected:

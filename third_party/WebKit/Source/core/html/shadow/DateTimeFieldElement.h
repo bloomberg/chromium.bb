@@ -94,7 +94,7 @@ class DateTimeFieldElement : public HTMLSpanElement {
   virtual int valueForARIAValueNow() const;
 
   // Node functions.
-  void setFocus(bool) override;
+  void setFocused(bool) override;
 
  private:
   void defaultKeyboardEventHandler(KeyboardEvent*);

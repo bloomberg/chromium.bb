@@ -91,14 +91,14 @@ int DateTimeNumericFieldElement::defaultValueForStepUp() const {
   return m_range.minimum;
 }
 
-void DateTimeNumericFieldElement::setFocus(bool value) {
+void DateTimeNumericFieldElement::setFocused(bool value) {
   if (!value) {
     int value = typeAheadValue();
     m_typeAheadBuffer.clear();
     if (value >= 0)
       setValueAsInteger(value, DispatchEvent);
   }
-  DateTimeFieldElement::setFocus(value);
+  DateTimeFieldElement::setFocused(value);
 }
 
 String DateTimeNumericFieldElement::formatValue(int value) const {

@@ -93,7 +93,7 @@ class DateTimeNumericFieldElement : public DateTimeFieldElement {
   String value() const final;
 
   // Node functions.
-  void setFocus(bool) final;
+  void setFocused(bool) final;
 
   String formatValue(int) const;
   int roundUp(int) const;

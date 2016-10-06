@@ -73,7 +73,7 @@ class PLATFORM_EXPORT Widget : public GarbageCollectedFinalized<Widget> {
   void invalidate() { invalidateRect(boundsRect()); }
   virtual void invalidateRect(const IntRect&) = 0;
 
-  virtual void setFocus(bool, WebFocusType) {}
+  virtual void setFocused(bool, WebFocusType) {}
 
   virtual void show() {}
   virtual void hide() {}

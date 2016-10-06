@@ -88,7 +88,7 @@ class WEB_EXPORT WebPluginContainerImpl final
   void setFrameRect(const IntRect&) override;
   void paint(GraphicsContext&, const CullRect&) const override;
   void invalidateRect(const IntRect&) override;
-  void setFocus(bool, WebFocusType) override;
+  void setFocused(bool, WebFocusType) override;
   void show() override;
   void hide() override;
   void handleEvent(Event*) override;

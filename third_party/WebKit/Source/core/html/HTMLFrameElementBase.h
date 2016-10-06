@@ -62,7 +62,7 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
 
  private:
   bool supportsFocus() const final;
-  void setFocus(bool) final;
+  void setFocused(bool) final;
 
   bool isURLAttribute(const Attribute&) const final;
   bool hasLegalLinkAttribute(const QualifiedName&) const final;

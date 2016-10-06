@@ -3767,7 +3767,7 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
 
   // Remove focus from the existing focus node (if any)
   if (oldFocusedElement) {
-    oldFocusedElement->setFocus(false);
+    oldFocusedElement->setFocused(false);
 
     // Dispatch the blur event and let the node do any other blur related
     // activities (important for text fields)
@@ -3804,9 +3804,9 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
     if (view()) {
       Widget* oldWidget = widgetForElement(*oldFocusedElement);
       if (oldWidget)
-        oldWidget->setFocus(false, params.type);
+        oldWidget->setFocused(false, params.type);
       else
-        view()->setFocus(false, params.type);
+        view()->setFocused(false, params.type);
     }
   }
 
@@ -3823,8 +3823,8 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
     m_focusedElement = newFocusedElement;
     setSequentialFocusNavigationStartingPoint(m_focusedElement.get());
 
-    m_focusedElement->setFocus(true);
-    // Element::setFocus for frames can dispatch events.
+    m_focusedElement->setFocused(true);
+    // Element::setFocused for frames can dispatch events.
     if (m_focusedElement != newFocusedElement) {
       focusChangeBlocked = true;
       goto SetFocusedElementDone;
@@ -3886,9 +3886,9 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
         focusWidget = widgetForElement(*m_focusedElement);
       }
       if (focusWidget)
-        focusWidget->setFocus(true, params.type);
+        focusWidget->setFocused(true, params.type);
       else
-        view()->setFocus(true, params.type);
+        view()->setFocused(true, params.type);
     }
   }
 

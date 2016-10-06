@@ -201,11 +201,11 @@ bool HTMLAreaElement::layoutObjectIsFocusable() const {
   return supportsFocus() && Element::tabIndex() >= 0;
 }
 
-void HTMLAreaElement::setFocus(bool shouldBeFocused) {
+void HTMLAreaElement::setFocused(bool shouldBeFocused) {
   if (isFocused() == shouldBeFocused)
     return;
 
-  HTMLAnchorElement::setFocus(shouldBeFocused);
+  HTMLAnchorElement::setFocused(shouldBeFocused);
 
   HTMLImageElement* imageElement = this->imageElement();
   if (!imageElement)

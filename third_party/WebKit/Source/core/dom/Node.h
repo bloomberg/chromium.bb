@@ -485,7 +485,7 @@ class CORE_EXPORT Node : public EventTarget {
     setFlag(false, V8CollectableDuringMinorGCFlag);
   }
 
-  virtual void setFocus(bool flag);
+  virtual void setFocused(bool flag);
   virtual void setActive(bool flag = true);
   virtual void setDragged(bool flag);
   virtual void setHovered(bool flag = true);
