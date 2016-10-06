@@ -1141,6 +1141,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void onInstrumentDetailsError() {
+        if (mClient == null) return;
         mUI.onPayButtonProcessingCancelled();
         mPaymentAppRunning = false;
     }
