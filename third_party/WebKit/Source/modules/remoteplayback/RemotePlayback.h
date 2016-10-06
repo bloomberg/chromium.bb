@@ -8,9 +8,11 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/events/EventTarget.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
+#include "wtf/Compiler.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
@@ -22,9 +24,10 @@ class LocalFrame;
 class RemotePlaybackAvailability;
 class ScriptPromiseResolver;
 
-class RemotePlayback final : public EventTargetWithInlineData,
-                             public ActiveScriptWrappable,
-                             private WebRemotePlaybackClient {
+class MODULES_EXPORT RemotePlayback final
+    : public EventTargetWithInlineData,
+      public ActiveScriptWrappable,
+      WTF_NON_EXPORTED_BASE(private WebRemotePlaybackClient) {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 
@@ -48,6 +51,8 @@ class RemotePlayback final : public EventTargetWithInlineData,
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  friend class RemotePlaybackTest;
+
   explicit RemotePlayback(HTMLMediaElement&);
 
   // WebRemotePlaybackClient implementation.

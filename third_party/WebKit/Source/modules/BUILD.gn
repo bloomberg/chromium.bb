@@ -266,6 +266,7 @@ source_set("unit_tests") {
     "presentation/PresentationReceiverTest.cpp",
     "push_messaging/PushManagerTest.cpp",
     "push_messaging/PushMessageDataTest.cpp",
+    "remoteplayback/RemotePlaybackTest.cpp",
     "serviceworkers/ServiceWorkerContainerTest.cpp",
     "webaudio/AudioBasicProcessorHandlerTest.cpp",
     "webaudio/ConvolverNodeTest.cpp",

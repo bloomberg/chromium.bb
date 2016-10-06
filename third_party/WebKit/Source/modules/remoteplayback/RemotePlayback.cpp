@@ -162,7 +162,8 @@ void RemotePlayback::promptCancelled() {
   if (!m_promptPromiseResolver)
     return;
 
-  m_promptPromiseResolver->resolve();
+  m_promptPromiseResolver->reject(
+      DOMException::create(NotAllowedError, "The prompt was dismissed."));
   m_promptPromiseResolver = nullptr;
 }
 
