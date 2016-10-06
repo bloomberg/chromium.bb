@@ -97,6 +97,8 @@ source_set("helium") {
     "helium/helium_errors.h",
     "helium/helium_result.cc",
     "helium/helium_result.h",
+    "helium/helium_sync_manager.cc",
+    "helium/helium_sync_manager.h",
     "helium/vector_clock.cc",
     "helium/vector_clock.h",
   ]
