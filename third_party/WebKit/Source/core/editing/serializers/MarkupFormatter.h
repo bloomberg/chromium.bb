@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -51,8 +52,10 @@ enum EntityMask {
   EntityLineFeed = 0x0040,
   EntityCarriageReturn = 0x0080,
 
-  // Non-breaking space needs to be escaped in innerHTML for compatibility reason. See http://trac.webkit.org/changeset/32879
-  // However, we cannot do this in a XML document because it does not have the entity reference defined (See the bug 19215).
+  // Non-breaking space needs to be escaped in innerHTML for compatibility
+  // reasons. See http://trac.webkit.org/changeset/32879. However, we cannot do
+  // this in an XML document because it does not have the entity reference
+  // defined (see bug 19215).
   EntityMaskInCDATA = 0,
   EntityMaskInPCDATA = EntityAmp | EntityLt | EntityGt,
   EntityMaskInHTMLPCDATA = EntityMaskInPCDATA | EntityNbsp,

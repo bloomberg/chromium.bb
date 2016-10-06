@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2012 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2009, 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -234,7 +235,8 @@ void MarkupFormatter::appendQuotedURLAttributeValue(
     return;
   }
 
-  // FIXME: This does not fully match other browsers. Firefox percent-escapes non-ASCII characters for innerHTML.
+  // FIXME: This does not fully match other browsers. Firefox percent-escapes
+  // non-ASCII characters for innerHTML.
   result.append(quoteChar);
   appendAttributeValue(result, resolvedURLString, false);
   result.append(quoteChar);
@@ -272,7 +274,8 @@ void MarkupFormatter::appendText(StringBuilder& result, Text& text) {
 
 void MarkupFormatter::appendComment(StringBuilder& result,
                                     const String& comment) {
-  // FIXME: Comment content is not escaped, but XMLSerializer (and possibly other callers) should raise an exception if it includes "-->".
+  // FIXME: Comment content is not escaped, but XMLSerializer (and possibly
+  // other callers) should raise an exception if it includes "-->".
   result.append("<!--");
   result.append(comment);
   result.append("-->");
@@ -328,7 +331,8 @@ void MarkupFormatter::appendDocumentType(StringBuilder& result,
 void MarkupFormatter::appendProcessingInstruction(StringBuilder& result,
                                                   const String& target,
                                                   const String& data) {
-  // FIXME: PI data is not escaped, but XMLSerializer (and possibly other callers) this should raise an exception if it includes "?>".
+  // FIXME: PI data is not escaped, but XMLSerializer (and possibly other
+  // callers) this should raise an exception if it includes "?>".
   result.append("<?");
   result.append(target);
   result.append(' ');
@@ -378,7 +382,8 @@ void MarkupFormatter::appendAttribute(StringBuilder& result,
     if (attribute.namespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
       if (!attribute.prefix() && attribute.localName() != xmlnsAtom)
         prefixedName.setPrefix(xmlnsAtom);
-      if (namespaces) {  // Account for the namespace attribute we're about to append.
+      // Account for the namespace attribute we're about to append.
+      if (namespaces) {
         const AtomicString& lookupKey =
             (!attribute.prefix()) ? emptyAtom : attribute.localName();
         namespaces->set(lookupKey, attribute.value());
@@ -394,7 +399,9 @@ void MarkupFormatter::appendAttribute(StringBuilder& result,
 
       if (namespaces && shouldAddNamespaceAttribute(attribute, element)) {
         if (!prefixedName.prefix()) {
-          // This behavior is in process of being standardized. See crbug.com/248044 and https://www.w3.org/Bugs/Public/show_bug.cgi?id=24208
+          // This behavior is in process of being standardized. See
+          // crbug.com/248044 and
+          // https://www.w3.org/Bugs/Public/show_bug.cgi?id=24208
           String prefixPrefix("ns", 2);
           for (unsigned i = attribute.namespaceURI().impl()->existingHash();;
                ++i) {
@@ -429,7 +436,8 @@ void MarkupFormatter::appendAttribute(StringBuilder& result,
 
 void MarkupFormatter::appendCDATASection(StringBuilder& result,
                                          const String& section) {
-  // FIXME: CDATA content is not escaped, but XMLSerializer (and possibly other callers) should raise an exception if it includes "]]>".
+  // FIXME: CDATA content is not escaped, but XMLSerializer (and possibly other
+  // callers) should raise an exception if it includes "]]>".
   result.append("<![CDATA[");
   result.append(section);
   result.append("]]>");
@@ -453,14 +461,16 @@ bool MarkupFormatter::shouldAddNamespaceElement(const Element& element,
 bool MarkupFormatter::shouldAddNamespaceAttribute(
     const Attribute& attribute,
     const Element& element) const {
-  // xmlns and xmlns:prefix attributes should be handled by another branch in appendAttribute.
+  // xmlns and xmlns:prefix attributes should be handled by another branch in
+  // appendAttribute.
   DCHECK_NE(attribute.namespaceURI(), XMLNSNames::xmlnsNamespaceURI);
 
   // Attributes are in the null namespace by default.
   if (!attribute.namespaceURI())
     return false;
 
-  // Attributes without a prefix will need one generated for them, and an xmlns attribute for that prefix.
+  // Attributes without a prefix will need one generated for them, and an xmlns
+  // attribute for that prefix.
   if (!attribute.prefix())
     return true;
 
@@ -485,7 +495,8 @@ EntityMask MarkupFormatter::entityMaskForText(const Text& text) const {
 // Rules of self-closure
 // 1. No elements in HTML documents use the self-closing syntax.
 // 2. Elements w/ children never self-close because they use a separate end tag.
-// 3. HTML elements which do not have a "forbidden" end tag will close with a separate end tag.
+// 3. HTML elements which do not have a "forbidden" end tag will close with a
+// separate end tag.
 // 4. Other elements self-close.
 bool MarkupFormatter::shouldSelfClose(const Element& element) const {
   if (serializeAsHTMLDocument(element))

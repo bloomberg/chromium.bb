@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2008, 2009, 2010, 2011 Google Inc. All rights reserved.
  * Copyright (C) 2011 Igalia S.L.
  * Copyright (C) 2011 Motorola Mobility. All rights reserved.
@@ -98,7 +99,8 @@ void StyledMarkupAccumulator::appendTextWithInlineStyle(
     Text& text,
     EditingStyle* inlineStyle) {
   if (inlineStyle) {
-    // wrappingStyleForAnnotatedSerialization should have removed -webkit-text-decorations-in-effect
+    // wrappingStyleForAnnotatedSerialization should have removed
+    // -webkit-text-decorations-in-effect.
     DCHECK(!shouldAnnotate() ||
            propertyMissingOrEqualToNone(
                inlineStyle->style(), CSSPropertyWebkitTextDecorationsInEffect));
@@ -168,7 +170,8 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out,
 }
 
 void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style) {
-  // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
+  // wrappingStyleForSerialization should have removed
+  // -webkit-text-decorations-in-effect.
   DCHECK(propertyMissingOrEqualToNone(
       style, CSSPropertyWebkitTextDecorationsInEffect));
   DCHECK(m_document);
@@ -193,7 +196,8 @@ String StyledMarkupAccumulator::takeResults() {
 
   result.append(m_result);
 
-  // We remove '\0' characters because they are not visibly rendered to the user.
+  // We remove '\0' characters because they are not visibly rendered to the
+  // user.
   return result.toString().replace(0, "");
 }
 

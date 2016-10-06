@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2008, 2009, 2010, 2011 Google Inc. All rights reserved.
  * Copyright (C) 2011 Igalia S.L.
  * Copyright (C) 2011 Motorola Mobility. All rights reserved.
@@ -141,7 +142,8 @@ static bool needInterchangeNewlineAfter(
       mostBackwardCaretPosition(next.deepEquivalent()).anchorNode();
   Node* downstreamNode =
       mostForwardCaretPosition(v.deepEquivalent()).anchorNode();
-  // Add an interchange newline if a paragraph break is selected and a br won't already be added to the markup to represent it.
+  // Add an interchange newline if a paragraph break is selected and a br won't
+  // already be added to the markup to represent it.
   return isEndOfParagraph(v) && isStartOfParagraph(next) &&
          !(isHTMLBRElement(*upstreamNode) && upstreamNode == downstreamNode);
 }
@@ -167,8 +169,8 @@ static bool areSameRanges(Node* node,
 static EditingStyle* styleFromMatchedRulesAndInlineDecl(
     const HTMLElement* element) {
   EditingStyle* style = EditingStyle::create(element->inlineStyle());
-  // FIXME: Having to const_cast here is ugly, but it is quite a bit of work to untangle
-  // the non-const-ness of styleFromMatchedRulesForElement.
+  // FIXME: Having to const_cast here is ugly, but it is quite a bit of work to
+  // untangle the non-const-ness of styleFromMatchedRulesForElement.
   style->mergeStyleFromRules(const_cast<HTMLElement*>(element));
   return style;
 }
@@ -203,9 +205,10 @@ String StyledMarkupSerializer<Strategy>::createMarkup() {
     }
   }
 
-  // If there is no the highest node in the selected nodes, |m_lastClosed| can be #text
-  // when its parent is a formatting tag. In this case, #text is wrapped by <span> tag,
-  // but this text should be wrapped by the formatting tag. See http://crbug.com/634482
+  // If there is no the highest node in the selected nodes, |m_lastClosed| can
+  // be #text when its parent is a formatting tag. In this case, #text is
+  // wrapped by <span> tag, but this text should be wrapped by the formatting
+  // tag. See http://crbug.com/634482
   bool shouldAppendParentTag = false;
   if (!m_lastClosed) {
     m_lastClosed =
@@ -232,7 +235,8 @@ String StyledMarkupSerializer<Strategy>::createMarkup() {
     if (body && areSameRanges(body, m_start, m_end))
       fullySelectedRoot = body;
 
-    // Also include all of the ancestors of lastClosed up to this special ancestor.
+    // Also include all of the ancestors of lastClosed up to this special
+    // ancestor.
     // FIXME: What is ancestor?
     for (ContainerNode* ancestor = Strategy::parent(*lastClosed); ancestor;
          ancestor = Strategy::parent(*ancestor)) {
@@ -241,8 +245,8 @@ String StyledMarkupSerializer<Strategy>::createMarkup() {
         EditingStyle* fullySelectedRootStyle =
             styleFromMatchedRulesAndInlineDecl(fullySelectedRoot);
 
-        // Bring the background attribute over, but not as an attribute because a background attribute on a div
-        // appears to have no effect.
+        // Bring the background attribute over, but not as an attribute because
+        // a background attribute on a div appears to have no effect.
         if ((!fullySelectedRootStyle || !fullySelectedRootStyle->style() ||
              !fullySelectedRootStyle->style()->getPropertyCSSValue(
                  CSSPropertyBackgroundImage)) &&
@@ -252,9 +256,10 @@ String StyledMarkupSerializer<Strategy>::createMarkup() {
               "url('" + fullySelectedRoot->getAttribute(backgroundAttr) + "')");
 
         if (fullySelectedRootStyle->style()) {
-          // Reset the CSS properties to avoid an assertion error in addStyleMarkup().
-          // This assertion is caused at least when we select all text of a <body> element whose
-          // 'text-decoration' property is "inherit", and copy it.
+          // Reset the CSS properties to avoid an assertion error in
+          // addStyleMarkup(). This assertion is caused at least when we select
+          // all text of a <body> element whose 'text-decoration' property is
+          // "inherit", and copy it.
           if (!propertyMissingOrEqualToNone(fullySelectedRootStyle->style(),
                                             CSSPropertyTextDecoration))
             fullySelectedRootStyle->style()->setProperty(
@@ -268,10 +273,11 @@ String StyledMarkupSerializer<Strategy>::createMarkup() {
         }
       } else {
         EditingStyle* style = traverser.createInlineStyleIfNeeded(*ancestor);
-        // Since this node and all the other ancestors are not in the selection we want
-        // styles that affect the exterior of the node not to be not included.
-        // If the node is not fully selected by the range, then we don't want to keep styles that affect its relationship to the nodes around it
-        // only the ones that affect it and the nodes within it.
+        // Since this node and all the other ancestors are not in the selection
+        // we want styles that affect the exterior of the node not to be not
+        // included.  If the node is not fully selected by the range, then we
+        // don't want to keep styles that affect its relationship to the nodes
+        // around it only the ones that affect it and the nodes within it.
         if (style && style->style())
           style->style()->removeProperty(CSSPropertyFloat);
         traverser.wrapWithNode(*ancestor, style);
@@ -285,7 +291,8 @@ String StyledMarkupSerializer<Strategy>::createMarkup() {
     traverser.wrapWithNode(*toContainerNode(m_lastClosed), style);
   }
 
-  // FIXME: The interchange newline should be placed in the block that it's in, not after all of the content, unconditionally.
+  // FIXME: The interchange newline should be placed in the block that it's in,
+  // not after all of the content, unconditionally.
   if (shouldAnnotate() && needInterchangeNewlineAt(visibleEnd))
     markupAccumulator.appendInterchangeNewline();
 
@@ -362,7 +369,8 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode,
       }
     }
 
-    // If we didn't insert open tag and there's no more siblings or we're at the end of the traversal, take care of ancestors.
+    // If we didn't insert open tag and there's no more siblings or we're at the
+    // end of the traversal, take care of ancestors.
     // FIXME: What happens if we just inserted open tag and reached the end?
     if (Strategy::nextSibling(*n) && next != pastEnd)
       continue;
@@ -373,13 +381,15 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode,
       DCHECK(ancestor);
       if (next && next != pastEnd && Strategy::isDescendantOf(*next, *ancestor))
         break;
-      // Not at the end of the range, close ancestors up to sibling of next node.
+      // Not at the end of the range, close ancestors up to sibling of next
+      // node.
       appendEndMarkup(*ancestor);
       lastClosed = ancestor;
       ancestorsToClose.removeLast();
     }
 
-    // Surround the currently accumulated markup with markup for ancestors we never opened as we leave the subtree(s) rooted at those ancestors.
+    // Surround the currently accumulated markup with markup for ancestors we
+    // never opened as we leave the subtree(s) rooted at those ancestors.
     ContainerNode* nextParent = next ? Strategy::parent(*next) : nullptr;
     if (next == pastEnd || n == nextParent)
       continue;
@@ -390,10 +400,12 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode,
                                                                   : n;
     for (ContainerNode* parent = Strategy::parent(*lastAncestorClosedOrSelf);
          parent && parent != nextParent; parent = Strategy::parent(*parent)) {
-      // All ancestors that aren't in the ancestorsToClose list should either be a) unrendered:
+      // All ancestors that aren't in the ancestorsToClose list should either be
+      // a) unrendered:
       if (!parent->layoutObject())
         continue;
-      // or b) ancestors that we never encountered during a pre-order traversal starting at startNode:
+      // or b) ancestors that we never encountered during a pre-order traversal
+      // starting at startNode:
       DCHECK(startNode);
       DCHECK(Strategy::isDescendantOf(*startNode, *parent));
       EditingStyle* style = createInlineStyleIfNeeded(*parent);
@@ -463,8 +475,10 @@ void StyledMarkupTraverser<Strategy>::appendStartMarkup(Node& node) {
       EditingStyle* inlineStyle = nullptr;
       if (shouldApplyWrappingStyle(text)) {
         inlineStyle = m_wrappingStyle->copy();
-        // FIXME: <rdar://problem/5371536> Style rules that match pasted content can change it's appearance
-        // Make sure spans are inline style in paste side e.g. span { display: block }.
+        // FIXME: <rdar://problem/5371536> Style rules that match pasted content
+        // can change its appearance.
+        // Make sure spans are inline style in paste side e.g. span { display:
+        // block }.
         inlineStyle->forceInline();
         // FIXME: Should this be included in forceInline?
         inlineStyle->style()->setProperty(CSSPropertyFloat, CSSValueNone);

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2008, 2009, 2010, 2011 Google Inc. All rights reserved.
  * Copyright (C) 2011 Igalia S.L.
  * Copyright (C) 2011 Motorola Mobility. All rights reserved.
@@ -177,8 +178,8 @@ static HTMLElement* highestAncestorToWrapMarkup(
   DCHECK(commonAncestor);
   HTMLElement* specialCommonAncestor = nullptr;
   if (shouldAnnotate == AnnotateForInterchange) {
-    // Include ancestors that aren't completely inside the range but are required to retain
-    // the structure and appearance of the copied markup.
+    // Include ancestors that aren't completely inside the range but are
+    // required to retain the structure and appearance of the copied markup.
     specialCommonAncestor =
         ancestorToRetainStructureAndAppearance(commonAncestor);
     if (Node* parentListNode = enclosingNodeOfType(
@@ -215,10 +216,10 @@ static HTMLElement* highestAncestorToWrapMarkup(
       specialCommonAncestor = newSpecialCommonAncestor;
   }
 
-  // If a single tab is selected, commonAncestor will be a text node inside a tab span.
-  // If two or more tabs are selected, commonAncestor will be the tab span.
-  // In either case, if there is a specialCommonAncestor already, it will necessarily be above
-  // any tab span that needs to be included.
+  // If a single tab is selected, commonAncestor will be a text node inside a
+  // tab span. If two or more tabs are selected, commonAncestor will be the tab
+  // span. In either case, if there is a specialCommonAncestor already, it will
+  // necessarily be above any tab span that needs to be included.
   if (!specialCommonAncestor && isTabHTMLSpanElementTextNode(commonAncestor))
     specialCommonAncestor =
         toHTMLSpanElement(Strategy::parent(*commonAncestor));
@@ -248,8 +249,10 @@ class CreateMarkupAlgorithm {
       Node* constrainingAncestor = nullptr);
 };
 
-// FIXME: Shouldn't we omit style info when annotate == DoNotAnnotateForInterchange?
-// FIXME: At least, annotation and style info should probably not be included in range.markupString()
+// FIXME: Shouldn't we omit style info when annotate ==
+// DoNotAnnotateForInterchange?
+// FIXME: At least, annotation and style info should probably not be included in
+// range.markupString()
 template <typename Strategy>
 String CreateMarkupAlgorithm<Strategy>::createMarkup(
     const PositionTemplate<Strategy>& startPosition,
@@ -310,7 +313,8 @@ DocumentFragment* createFragmentFromMarkup(
     const String& markup,
     const String& baseURL,
     ParserContentPolicy parserContentPolicy) {
-  // We use a fake body element here to trick the HTML parser to using the InBody insertion mode.
+  // We use a fake body element here to trick the HTML parser to using the
+  // InBody insertion mode.
   HTMLBodyElement* fakeBody = HTMLBodyElement::create(document);
   DocumentFragment* fragment = DocumentFragment::create(document);
 
@@ -375,7 +379,8 @@ DocumentFragment* createFragmentFromMarkupWithContext(
     unsigned fragmentEnd,
     const String& baseURL,
     ParserContentPolicy parserContentPolicy) {
-  // FIXME: Need to handle the case where the markup already contains these markers.
+  // FIXME: Need to handle the case where the markup already contains these
+  // markers.
 
   StringBuilder taggedMarkup;
   taggedMarkup.append(markup.left(fragmentStart));
@@ -410,9 +415,10 @@ DocumentFragment* createFragmentFromMarkupWithContext(
   HTMLElement* specialCommonAncestor =
       ancestorToRetainStructureAndAppearanceWithNoLayoutObject(commonAncestor);
 
-  // When there's a special common ancestor outside of the fragment, we must include it as well to
-  // preserve the structure and appearance of the fragment. For example, if the fragment contains
-  // TD, we need to include the enclosing TABLE tag as well.
+  // When there's a special common ancestor outside of the fragment, we must
+  // include it as well to preserve the structure and appearance of the
+  // fragment. For example, if the fragment contains TD, we need to include the
+  // enclosing TABLE tag as well.
   DocumentFragment* fragment = DocumentFragment::create(document);
   if (specialCommonAncestor)
     fragment->appendChild(specialCommonAncestor);
@@ -536,7 +542,8 @@ DocumentFragment* createFragmentFromText(const EphemeralRange& context,
     return fragment;
   }
 
-  // A string with no newlines gets added inline, rather than being put into a paragraph.
+  // A string with no newlines gets added inline, rather than being put into a
+  // paragraph.
   if (string.find('\n') == kNotFound) {
     fillContainerFromString(fragment, string);
     return fragment;
@@ -608,10 +615,12 @@ DocumentFragment* createFragmentForTransformToFragment(
   DocumentFragment* fragment = outputDoc.createDocumentFragment();
 
   if (sourceMIMEType == "text/html") {
-    // As far as I can tell, there isn't a spec for how transformToFragment is supposed to work.
-    // Based on the documentation I can find, it looks like we want to start parsing the fragment in the InBody insertion mode.
-    // Unfortunately, that's an implementation detail of the parser.
-    // We achieve that effect here by passing in a fake body element as context for the fragment.
+    // As far as I can tell, there isn't a spec for how transformToFragment is
+    // supposed to work. Based on the documentation I can find, it looks like we
+    // want to start parsing the fragment in the InBody insertion mode.
+    // Unfortunately, that's an implementation detail of the parser. We achieve
+    // that effect here by passing in a fake body element as context for the
+    // fragment.
     HTMLBodyElement* fakeBody = HTMLBodyElement::create(outputDoc);
     fragment->parseHTML(sourceString, fakeBody);
   } else if (sourceMIMEType == "text/plain") {
@@ -709,7 +718,8 @@ void replaceChildrenWithFragment(ContainerNode* container,
     return;
   }
 
-  // FIXME: No need to replace the child it is a text node and its contents are already == text.
+  // FIXME: No need to replace the child it is a text node and its contents are
+  // already == text.
   if (containerNode->hasOneChild()) {
     containerNode->replaceChild(fragment, containerNode->firstChild(),
                                 exceptionState);
@@ -728,7 +738,8 @@ void replaceChildrenWithText(ContainerNode* container,
 
   ChildListMutationScope mutation(*containerNode);
 
-  // FIXME: This is wrong if containerNode->firstChild() has more than one ref! Example:
+  // FIXME: This is wrong if containerNode->firstChild() has more than one ref!
+  // Example:
   // <div>foo</div>
   // <script>
   // var oldText = div.firstChild;
@@ -743,10 +754,12 @@ void replaceChildrenWithText(ContainerNode* container,
     return;
   }
 
-  // NOTE: This method currently always creates a text node, even if that text node will be empty.
+  // NOTE: This method currently always creates a text node, even if that text
+  // node will be empty.
   Text* textNode = Text::create(containerNode->document(), text);
 
-  // FIXME: No need to replace the child it is a text node and its contents are already == text.
+  // FIXME: No need to replace the child it is a text node and its contents are
+  // already == text.
   if (containerNode->hasOneChild()) {
     containerNode->replaceChild(textNode, containerNode->firstChild(),
                                 exceptionState);
