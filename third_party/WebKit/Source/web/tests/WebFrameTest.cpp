@@ -7887,7 +7887,10 @@ TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelf) {
   Resource* resource = fetchManifest(
       document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
 
-  EXPECT_EQ(0, resource);  // Fetching resource wasn't allowed.
+  // Fetching resource wasn't allowed.
+  ASSERT_TRUE(resource);
+  EXPECT_TRUE(resource->errorOccurred());
+  EXPECT_TRUE(resource->resourceError().isAccessCheck());
 }
 
 TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelfReportOnly) {

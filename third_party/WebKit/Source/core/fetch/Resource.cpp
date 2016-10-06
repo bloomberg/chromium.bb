@@ -645,7 +645,7 @@ void Resource::didAddClient(ResourceClient* c) {
   }
 }
 
-static bool shouldSendCachedDataSynchronouslyForType(Resource::Type type) {
+static bool typeNeedsSynchronousCacheHit(Resource::Type type) {
   // Some resources types default to return data synchronously. For most of
   // these, it's because there are layout tests that expect data to return
   // synchronously in case of cache hit. In the case of fonts, there was a
@@ -695,11 +695,10 @@ void Resource::addClient(ResourceClient* client,
     return;
   }
 
-  // If we have existing data to send to the new client and the resource type
-  // supprts it, send it asynchronously.
-  if (!m_response.isNull() &&
-      !shouldSendCachedDataSynchronouslyForType(getType()) &&
-      !m_needsSynchronousCacheHit) {
+  // If an error has occurred or we have existing data to send to the new client
+  // and the resource type supprts it, send it asynchronously.
+  if ((errorOccurred() || !m_response.isNull()) &&
+      !typeNeedsSynchronousCacheHit(getType()) && !m_needsSynchronousCacheHit) {
     m_clientsAwaitingCallback.add(client);
     ResourceCallback::callbackHandler().schedule(this);
     return;

@@ -126,14 +126,16 @@ class TestResourceFactory : public ResourceFactory {
 
 TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach) {
   KURL secureURL(ParsedURLString, "https://secureorigin.test/image.png");
-  // Try to request a url. The request should fail, no resource should be
-  // returned, and no resource should be present in the cache.
+  // Try to request a url. The request should fail, and a resource in an error
+  // state should be returned, and no resource should be present in the cache.
   ResourceFetcher* fetcher = ResourceFetcher::create(nullptr);
   FetchRequest fetchRequest =
       FetchRequest(ResourceRequest(secureURL), FetchInitiatorInfo());
   Resource* resource =
       fetcher->requestResource(fetchRequest, TestResourceFactory());
-  EXPECT_FALSE(resource);
+  ASSERT_TRUE(resource);
+  EXPECT_TRUE(resource->errorOccurred());
+  EXPECT_TRUE(resource->resourceError().isAccessCheck());
   EXPECT_FALSE(memoryCache()->resourceForURL(secureURL));
 
   // Start by calling startLoad() directly, rather than via requestResource().

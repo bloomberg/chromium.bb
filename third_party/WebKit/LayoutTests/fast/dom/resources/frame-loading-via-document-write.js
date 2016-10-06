@@ -10,7 +10,7 @@ function didImageLoad()
     var result = document.getElementById("result");
 
     var myImg = document.getElementById("myImg");
-    if (myImg.height == 0 && myImg.width == 0) {
+    if (myImg.naturalHeight == 0 && myImg.naturalWidth == 0) {
         result.innerHTML = "Image NOT loaded.";
     } else {
         result.innerHTML = "Image loaded.";

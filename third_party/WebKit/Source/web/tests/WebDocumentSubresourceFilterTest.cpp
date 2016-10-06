@@ -90,7 +90,7 @@ class WebDocumentSubresourceFilterTest : public ::testing::Test {
     WebElement webElement = mainFrame()->document().querySelector("img");
     ASSERT_TRUE(isHTMLImageElement(webElement));
     HTMLImageElement* imageElement = toHTMLImageElement(webElement);
-    EXPECT_EQ(loaded, !!imageElement->cachedImage());
+    EXPECT_EQ(loaded, !!imageElement->naturalWidth());
   }
 
   const std::string& baseURL() const { return m_baseURL; }

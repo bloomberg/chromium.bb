@@ -19,7 +19,7 @@
         var result = document.getElementById("result");
         var myImg = document.getElementById("myImg");
 
-        if (myImg.height == 0 && myImg.width == 0)
+        if (myImg.naturalWidth == 0 && myImg.naturalHeight == 0)
             result.innerHTML = "Test Passed. Local image not loaded remotely.";
         else
             result.innerHTML = "Test Failed: Local image loaded remotely.";

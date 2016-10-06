@@ -10,7 +10,7 @@ if (window.testRunner)
 </head>
 <body>
 <script>
-document.write(document.styleSheets.length > 0 ? 'FAIL' : 'PASS');
+document.write(document.styleSheets.length > 0 && document.styleSheets[0].rules.length > 0 ? 'FAIL' : 'PASS');
 </script>
 </body>
 </html>
