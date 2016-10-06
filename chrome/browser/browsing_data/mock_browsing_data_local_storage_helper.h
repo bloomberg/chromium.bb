@@ -26,6 +26,7 @@ class MockBrowsingDataLocalStorageHelper
 
   // Adds some LocalStorageInfo samples.
   void AddLocalStorageSamples();
+  void AddLocalStorageSamplesWithSuborigins();
 
   // Notifies the callback.
   void Notify();

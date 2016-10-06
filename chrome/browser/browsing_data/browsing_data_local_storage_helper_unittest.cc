@@ -48,6 +48,19 @@ TEST_F(CannedBrowsingDataLocalStorageTest, Delete) {
   EXPECT_EQ(2u, helper->GetLocalStorageCount());
   helper->DeleteOrigin(origin1);
   EXPECT_EQ(1u, helper->GetLocalStorageCount());
+
+  // Local storage for a suborigin
+  // (https://www.chromestatus.com/feature/5569465034997760) should be deleted
+  // when the corresponding physical origin is deleted.
+  const GURL suborigin("http-so://suborigin.foo.example.com");
+  helper->AddLocalStorage(suborigin);
+  EXPECT_EQ(2u, helper->GetLocalStorageCount());
+  helper->DeleteOrigin(origin3);
+  EXPECT_EQ(0u, helper->GetLocalStorageCount());
+  helper->AddLocalStorage(suborigin);
+  EXPECT_EQ(1u, helper->GetLocalStorageCount());
+  helper->DeleteOrigin(origin3);
+  EXPECT_EQ(0u, helper->GetLocalStorageCount());
 }
 
 TEST_F(CannedBrowsingDataLocalStorageTest, IgnoreExtensionsAndDevTools) {

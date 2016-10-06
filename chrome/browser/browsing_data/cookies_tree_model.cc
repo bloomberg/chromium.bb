@@ -22,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
@@ -70,19 +71,26 @@ struct HostNodeComparator {
 };
 
 std::string CanonicalizeHost(const GURL& url) {
-  // The canonicalized representation makes the registry controlled domain
-  // come first, and then adds subdomains in reverse order, e.g.
-  // 1.mail.google.com would become google.com.mail.1, and then a standard
-  // string comparison works to order hosts by registry controlled domain
-  // first. Leading dots are ignored, ".google.com" is the same as
-  // "google.com".
-
+  // The canonicalized representation makes the registry controlled domain come
+  // first, and then adds subdomains in reverse order, e.g.  1.mail.google.com
+  // would become google.com.mail.1, and then a standard string comparison works
+  // to order hosts by registry controlled domain first. Leading dots are
+  // ignored, ".google.com" is the same as "google.com".
+  //
+  // Suborigins, an experimental web platform feature defined in
+  // https://w3c.github.io/webappsec-suborigins/, are treated as part of the
+  // physical origin they are associated with. From a users perspective, they
+  // are part of and should be visualized as part of that host. For example,
+  // given a a suborigin 'foobar' at 'https://example.com', this is serialized
+  // into the URL as 'https-so://foobar.example.com'. Thus, the host for this
+  // URL is canonicalized as 'example.com' to treat it as being part of that
+  // host, and thus the suborigin is striped from the URL.
   if (url.SchemeIsFile()) {
     return std::string(url::kFileScheme) +
            url::kStandardSchemeSeparator;
   }
 
-  std::string host = url.host();
+  std::string host = content::StripSuboriginFromUrl(url).host();
   std::string retval =
       net::registry_controlled_domains::GetDomainAndRegistry(
           host,
@@ -615,8 +623,9 @@ CookieTreeNode::DetailedInfo CookieTreeRootNode::GetDetailedInfo() const {
 base::string16 CookieTreeHostNode::TitleForUrl(const GURL& url) {
   const std::string file_origin_node_name(
       std::string(url::kFileScheme) + url::kStandardSchemeSeparator);
-  return base::UTF8ToUTF16(url.SchemeIsFile() ? file_origin_node_name
-                                              : url.host());
+  return base::UTF8ToUTF16(url.SchemeIsFile()
+                               ? file_origin_node_name
+                               : content::StripSuboriginFromUrl(url).host());
 }
 
 CookieTreeHostNode::CookieTreeHostNode(const GURL& url)

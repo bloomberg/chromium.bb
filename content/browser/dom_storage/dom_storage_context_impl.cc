@@ -30,6 +30,7 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "content/public/common/origin_util.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
 namespace content {
@@ -203,12 +204,24 @@ void DOMStorageContextImpl::GetSessionStorageUsage(
 void DOMStorageContextImpl::DeleteLocalStorage(const GURL& origin) {
   DCHECK(!is_shutdown_);
   DOMStorageNamespace* local = GetStorageNamespace(kLocalStorageNamespaceId);
-  local->DeleteLocalStorageOrigin(origin);
-  // Synthesize a 'cleared' event if the area is open so CachedAreas in
-  // renderers get emptied out too.
-  DOMStorageArea* area = local->GetOpenStorageArea(origin);
-  if (area)
-    NotifyAreaCleared(area, origin);
+  std::vector<GURL> origins;
+  local->GetOriginsWithAreas(&origins);
+  // Suborigin storage should be deleted in tandem with the physical origin's
+  // storage. https://w3c.github.io/webappsec-suborigins/
+  for (auto origin_candidate : origins) {
+    // |origin| is guaranteed to be deleted below, so don't delete it until
+    // then.
+    if (origin_candidate == origin ||
+        StripSuboriginFromUrl(origin_candidate) != origin) {
+      continue;
+    }
+    DeleteAndClearStorageNamespaceForOrigin(origin_candidate, local);
+  }
+  // It is important to always explicitly delete |origin|. If it does not appear
+  // it |origins| above, there still may be a directory open in the namespace in
+  // preparation for this storage, and this call will make sure that the
+  // directory is deleted.
+  DeleteAndClearStorageNamespaceForOrigin(origin, local);
 }
 
 void DOMStorageContextImpl::DeleteSessionStorage(
@@ -608,6 +621,17 @@ void DOMStorageContextImpl::DeleteNextUnusedNamespaceInCommitSequence() {
             this),
         base::TimeDelta::FromSeconds(kSessionStoraceScavengingSeconds));
   }
+}
+
+void DOMStorageContextImpl::DeleteAndClearStorageNamespaceForOrigin(
+    const GURL& origin,
+    DOMStorageNamespace* local) {
+  local->DeleteLocalStorageOrigin(origin);
+  // Synthesize a 'cleared' event if the area is open so CachedAreas in
+  // renderers get emptied out too.
+  DOMStorageArea* area = local->GetOpenStorageArea(origin);
+  if (area)
+    NotifyAreaCleared(area, origin);
 }
 
 }  // namespace content

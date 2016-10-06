@@ -175,7 +175,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   bool isGrantedUniversalAccess() const { return m_universalAccess; }
 
   bool canAccessDatabase() const { return !isUnique(); }
-  bool canAccessLocalStorage() const { return !isUnique() && !hasSuborigin(); }
+  bool canAccessLocalStorage() const { return !isUnique(); }
   bool canAccessSharedWorkers() const { return !isUnique(); }
   bool canAccessServiceWorkers() const {
     return !isUnique() && !hasSuborigin();

@@ -223,6 +223,9 @@ class CONTENT_EXPORT DOMStorageContextImpl
   void DeleteNextUnusedNamespace();
   void DeleteNextUnusedNamespaceInCommitSequence();
 
+  void DeleteAndClearStorageNamespaceForOrigin(const GURL& origin,
+                                               DOMStorageNamespace* local);
+
   // Collection of namespaces keyed by id.
   StorageNamespaceMap namespaces_;
 
