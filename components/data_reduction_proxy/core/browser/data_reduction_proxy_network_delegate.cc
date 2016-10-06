@@ -258,7 +258,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   if (proxy_info.proxy_server().host_port_pair().IsEmpty())
     return;
   if (!data_reduction_proxy_config_->IsDataReductionProxy(
-          proxy_info.proxy_server().host_port_pair(), nullptr)) {
+          proxy_info.proxy_server(), nullptr)) {
     return;
   }
 
@@ -442,7 +442,7 @@ bool DataReductionProxyNetworkDelegate::WasEligibleWithoutHoldback(
     const net::ProxyRetryInfoMap& proxy_retry_info) const {
   DCHECK(proxy_info.is_empty() || proxy_info.is_direct() ||
          !data_reduction_proxy_config_->IsDataReductionProxy(
-             proxy_info.proxy_server().host_port_pair(), nullptr));
+             proxy_info.proxy_server(), nullptr));
   if (!util::EligibleForDataReductionProxy(proxy_info, request.url(),
                                            request.method())) {
     return false;

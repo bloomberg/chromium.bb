@@ -64,7 +64,7 @@ void DataReductionProxyDelegate::OnTunnelConnectCompleted(
 void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
                                             int net_error) {
   if (bad_proxy.is_valid() &&
-      config_->IsDataReductionProxy(bad_proxy.host_port_pair(), nullptr)) {
+      config_->IsDataReductionProxy(bad_proxy, nullptr)) {
     event_creator_->AddProxyFallbackEvent(net_log_, bad_proxy.ToURI(),
                                           net_error);
   }
@@ -85,8 +85,7 @@ bool DataReductionProxyDelegate::IsTrustedSpdyProxy(
       !proxy_server.is_valid()) {
     return false;
   }
-  return config_ &&
-         config_->IsDataReductionProxy(proxy_server.host_port_pair(), nullptr);
+  return config_ && config_->IsDataReductionProxy(proxy_server, nullptr);
 }
 
 void DataReductionProxyDelegate::OnTunnelHeadersReceived(
@@ -113,8 +112,7 @@ void DataReductionProxyDelegate::GetAlternativeProxy(
     return;
 
   if (!config_ ||
-      !config_->IsDataReductionProxy(resolved_proxy_server.host_port_pair(),
-                                     nullptr)) {
+      !config_->IsDataReductionProxy(resolved_proxy_server, nullptr)) {
     return;
   }
 
@@ -170,8 +168,7 @@ void OnResolveProxyHandler(const GURL& url,
                            net::ProxyInfo* result) {
   DCHECK(config);
   DCHECK(result->is_empty() || result->is_direct() ||
-         !config->IsDataReductionProxy(result->proxy_server().host_port_pair(),
-                                       NULL));
+         !config->IsDataReductionProxy(result->proxy_server(), NULL));
   if (!util::EligibleForDataReductionProxy(*result, url, method))
     return;
   net::ProxyInfo data_reduction_proxy_info;

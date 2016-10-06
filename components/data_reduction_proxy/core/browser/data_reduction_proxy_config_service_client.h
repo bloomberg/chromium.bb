@@ -27,11 +27,11 @@
 #endif  // OS_ANDROID
 
 namespace net {
-class HostPortPair;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class NetLog;
 struct LoadTimingInfo;
+class ProxyServer;
 class URLFetcher;
 class URLRequestContextGetter;
 class URLRequestStatus;
@@ -127,7 +127,7 @@ class DataReductionProxyConfigServiceClient
   bool ShouldRetryDueToAuthFailure(
       const net::HttpRequestHeaders& request_headers,
       const net::HttpResponseHeaders* response_headers,
-      const net::HostPortPair& proxy_server,
+      const net::ProxyServer& proxy_server,
       const net::LoadTimingInfo& load_timing_info);
 
  protected:

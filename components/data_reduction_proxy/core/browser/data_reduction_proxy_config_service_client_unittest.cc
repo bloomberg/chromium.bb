@@ -699,8 +699,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
       base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1);
   load_timing_info.send_start = load_timing_info.request_start;
   EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
-      request_headers, parsed.get(), origin.host_port_pair(),
-      load_timing_info));
+      request_headers, parsed.get(), origin, load_timing_info));
   EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
   EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
 
@@ -728,8 +727,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   // Calling ShouldRetryDueToAuthFailure should trigger fetching of remote
   // config.
   EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
-      request_headers, parsed.get(), origin.host_port_pair(),
-      load_timing_info));
+      request_headers, parsed.get(), origin, load_timing_info));
   EXPECT_EQ(2, config_client()->GetBackoffErrorCount());
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.ConfigService.AuthExpired", false, 2);
@@ -786,8 +784,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   load_timing_info.send_start = load_timing_info.request_start;
 
   EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
-      request_headers, parsed.get(), origin.host_port_pair(),
-      load_timing_info));
+      request_headers, parsed.get(), origin, load_timing_info));
   EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
   // Persisted config on pref should be cleared.
   EXPECT_FALSE(persisted_config().empty());

@@ -23,6 +23,7 @@ class TickClock;
 namespace net {
 class NetworkQualityEstimator;
 class NetLog;
+class ProxyServer;
 }
 
 namespace data_reduction_proxy {
@@ -133,7 +134,7 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
                void(SecureProxyCheckFetchResult result));
   MOCK_METHOD2(SetProxyPrefs, void(bool enabled, bool at_startup));
   MOCK_CONST_METHOD2(IsDataReductionProxy,
-                     bool(const net::HostPortPair& host_port_pair,
+                     bool(const net::ProxyServer& proxy_server,
                           DataReductionProxyTypeInfo* proxy_info));
   MOCK_CONST_METHOD2(WasDataReductionProxyUsed,
                      bool(const net::URLRequest*,

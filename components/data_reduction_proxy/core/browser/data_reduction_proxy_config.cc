@@ -344,18 +344,17 @@ bool DataReductionProxyConfig::WasDataReductionProxyUsed(
 }
 
 bool DataReductionProxyConfig::IsDataReductionProxy(
-    const net::HostPortPair& host_port_pair,
+    const net::ProxyServer& proxy_server,
     DataReductionProxyTypeInfo* proxy_info) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (!proxy_server.is_valid() || proxy_server.is_direct())
+    return false;
+
   const std::vector<net::ProxyServer>& proxy_list =
       config_values_->proxies_for_http();
-  auto proxy_it =
-      std::find_if(proxy_list.begin(), proxy_list.end(),
-                   [&host_port_pair](const net::ProxyServer& proxy) {
-                     return proxy.is_valid() &&
-                            proxy.host_port_pair().Equals(host_port_pair);
-                   });
+  const auto proxy_it =
+      std::find(proxy_list.begin(), proxy_list.end(), proxy_server);
 
   if (proxy_it != proxy_list.end()) {
     if (proxy_info) {
@@ -382,7 +381,7 @@ bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
     return true;
   if (result.proxy_server().is_direct())
     return true;
-  return !IsDataReductionProxy(result.proxy_server().host_port_pair(), NULL);
+  return !IsDataReductionProxy(result.proxy_server(), NULL);
 }
 
 bool DataReductionProxyConfig::AreDataReductionProxiesBypassed(
@@ -427,7 +426,7 @@ bool DataReductionProxyConfig::AreProxiesBypassed(
       continue;
 
     base::TimeDelta delay;
-    if (IsDataReductionProxy(proxy.host_port_pair(), NULL)) {
+    if (IsDataReductionProxy(proxy, NULL)) {
       if (!IsProxyBypassed(retry_map, proxy, &delay))
         return false;
       if (delay < min_delay)
@@ -594,7 +593,7 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
       proxy_rules.MapUrlSchemeToProxyList("http");
   if (http_proxy_list && !http_proxy_list->IsEmpty() &&
       // Sufficient to check only the first proxy.
-      IsDataReductionProxy(http_proxy_list->Get().host_port_pair(), NULL)) {
+      IsDataReductionProxy(http_proxy_list->Get(), NULL)) {
     return true;
   }
 

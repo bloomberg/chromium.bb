@@ -250,7 +250,7 @@ void DataReductionProxyConfigServiceClient::ApplySerializedConfig(
 bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
     const net::HttpRequestHeaders& request_headers,
     const net::HttpResponseHeaders* response_headers,
-    const net::HostPortPair& proxy_server,
+    const net::ProxyServer& proxy_server,
     const net::LoadTimingInfo& load_timing_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(response_headers);

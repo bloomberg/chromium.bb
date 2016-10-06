@@ -355,8 +355,7 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, ResponseWithoutRetry) {
   EXPECT_EQ(net::OK, delegate().request_status());
   EXPECT_EQ(200, request->GetResponseCode());
   EXPECT_EQ(kBody, delegate().data_received());
-  EXPECT_EQ(origin().host_port_pair().ToString(),
-            request->proxy_server().ToString());
+  EXPECT_EQ(origin(), request->proxy_server());
 }
 
 TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectWithoutRetry) {
@@ -389,8 +388,7 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectWithoutRetry) {
   EXPECT_EQ(net::OK, delegate().request_status());
   EXPECT_EQ(200, request->GetResponseCode());
   EXPECT_EQ(kBody, delegate().data_received());
-  EXPECT_EQ(origin().host_port_pair().ToString(),
-            request->proxy_server().ToString());
+  EXPECT_EQ(origin(), request->proxy_server());
   // The redirect should have been processed and followed normally.
   EXPECT_EQ(1, delegate().received_redirect_count());
 }

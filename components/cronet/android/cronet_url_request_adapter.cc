@@ -23,6 +23,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/proxy/proxy_server.h"
 #include "net/quic/core/quic_protocol.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
@@ -45,6 +46,14 @@ int64_t ConvertTime(const base::TimeTicks& ticks,
   }
   DCHECK(!start_time.is_null());
   return (start_time + (ticks - start_ticks)).ToJavaTime();
+}
+
+// Returns the string representation of the HostPortPair of the proxy server
+// that was used to fetch the response.
+std::string GetProxy(const net::HttpResponseInfo& info) {
+  if (!info.proxy_server.is_valid() || info.proxy_server.is_direct())
+    return net::HostPortPair().ToString();
+  return info.proxy_server.host_port_pair().ToString();
 }
 
 }  // namespace
@@ -227,9 +236,7 @@ void CronetURLRequestAdapter::OnReceivedRedirect(
       ConvertUTF8ToJavaString(env,
                               request->response_info().alpn_negotiated_protocol)
           .obj(),
-      ConvertUTF8ToJavaString(env,
-                              request->response_info().proxy_server.ToString())
-          .obj(),
+      ConvertUTF8ToJavaString(env, GetProxy(request->response_info())).obj(),
       request->GetTotalReceivedBytes());
   *defer_redirect = true;
 }
@@ -276,9 +283,7 @@ void CronetURLRequestAdapter::OnResponseStarted(net::URLRequest* request,
       ConvertUTF8ToJavaString(env,
                               request->response_info().alpn_negotiated_protocol)
           .obj(),
-      ConvertUTF8ToJavaString(env,
-                              request->response_info().proxy_server.ToString())
-          .obj());
+      ConvertUTF8ToJavaString(env, GetProxy(request->response_info())).obj());
 }
 
 void CronetURLRequestAdapter::OnReadCompleted(net::URLRequest* request,

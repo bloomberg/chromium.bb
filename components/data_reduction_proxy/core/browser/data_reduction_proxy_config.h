@@ -36,6 +36,7 @@ class SingleThreadTaskRunner;
 namespace net {
 class HostPortPair;
 class NetLog;
+class ProxyServer;
 class URLFetcher;
 class URLRequest;
 class URLRequestContextGetter;
@@ -130,7 +131,7 @@ class DataReductionProxyConfig
       const net::URLRequest* request,
       DataReductionProxyTypeInfo* proxy_info) const;
 
-  // Returns true if the specified |host_port_pair| matches a Data Reduction
+  // Returns true if the specified |proxy_server| matches a Data Reduction
   // Proxy. If true, |proxy_info.proxy_servers.front()| will contain the name of
   // the proxy that matches. Subsequent entries in |proxy_info.proxy_servers|
   // will contain the name of the Data Reduction Proxy servers that would be
@@ -139,7 +140,7 @@ class DataReductionProxyConfig
   // can be NULL if the caller isn't interested in its values. Virtual for
   // testing.
   virtual bool IsDataReductionProxy(
-      const net::HostPortPair& host_port_pair,
+      const net::ProxyServer& proxy_server,
       DataReductionProxyTypeInfo* proxy_info) const;
 
   // Returns true if this request would be bypassed by the Data Reduction Proxy

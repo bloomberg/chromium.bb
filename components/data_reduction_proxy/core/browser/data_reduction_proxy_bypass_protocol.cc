@@ -93,7 +93,9 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
 
   // Empty implies either that the request was served from cache or that
   // request was served directly from the origin.
-  if (request->proxy_server().IsEmpty()) {
+  if (!request->proxy_server().is_valid() ||
+      request->proxy_server().is_direct() ||
+      request->proxy_server().host_port_pair().IsEmpty()) {
     ReportResponseProxyServerStatusHistogram(
         RESPONSE_PROXY_SERVER_STATUS_EMPTY);
     return false;
@@ -115,10 +117,15 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
     // then apply the bypass logic regardless.
     // TODO(sclittle): Remove this workaround once http://crbug.com/476610 is
     // fixed.
-    data_reduction_proxy_type_info.proxy_servers.push_back(net::ProxyServer(
-        net::ProxyServer::SCHEME_HTTPS, request->proxy_server()));
-    data_reduction_proxy_type_info.proxy_servers.push_back(net::ProxyServer(
-        net::ProxyServer::SCHEME_HTTP, request->proxy_server()));
+    const net::HostPortPair host_port_pair =
+        !request->proxy_server().is_valid() ||
+                request->proxy_server().is_direct()
+            ? net::HostPortPair()
+            : request->proxy_server().host_port_pair();
+    data_reduction_proxy_type_info.proxy_servers.push_back(
+        net::ProxyServer(net::ProxyServer::SCHEME_HTTPS, host_port_pair));
+    data_reduction_proxy_type_info.proxy_servers.push_back(
+        net::ProxyServer(net::ProxyServer::SCHEME_HTTP, host_port_pair));
     data_reduction_proxy_type_info.proxy_index = 0;
   } else {
     ReportResponseProxyServerStatusHistogram(RESPONSE_PROXY_SERVER_STATUS_DRP);

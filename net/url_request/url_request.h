@@ -31,6 +31,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy/proxy_server.h"
 #include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -631,9 +632,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Available at NetworkDelegate::NotifyHeadersReceived() time, which is before
   // the more general response_info() is available, even though it is a subset.
-  const HostPortPair& proxy_server() const {
-    return proxy_server_;
-  }
+  const ProxyServer& proxy_server() const { return proxy_server_; }
 
   // Gets the connection attempts made in the process of servicing this
   // URLRequest. Only guaranteed to be valid if called after the request fails
@@ -849,7 +848,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   LoadTimingInfo load_timing_info_;
 
   // The proxy server used for this request, if any.
-  HostPortPair proxy_server_;
+  ProxyServer proxy_server_;
 
   // The raw header size of the response.
   int raw_header_size_;

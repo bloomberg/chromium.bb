@@ -55,7 +55,8 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
   // due to other proxies overriding the Data Reduction Proxy, and bypasses due
   // to local bypass rules.
   if ((request.load_flags() & net::LOAD_BYPASS_PROXY) ||
-      (!request.proxy_server().IsEmpty() &&
+      (request.proxy_server().is_valid() &&
+       !request.proxy_server().is_direct() &&
        !config.IsDataReductionProxy(request.proxy_server(), NULL)) ||
       config.IsBypassedByDataReductionProxyLocalRules(
           request, data_reduction_proxy_config)) {
