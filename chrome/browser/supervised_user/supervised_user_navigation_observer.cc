@@ -59,7 +59,9 @@ void SupervisedUserNavigationObserver::OnRequestBlocked(
     navigation_observer->OnRequestBlockedInternal(url);
 
   // Show the interstitial.
-  SupervisedUserInterstitial::Show(web_contents, url, reason, callback);
+  const bool initial_page_load = true;
+  SupervisedUserInterstitial::Show(web_contents, url, reason, initial_page_load,
+                                   callback);
 }
 
 void SupervisedUserNavigationObserver::DidFinishNavigation(
@@ -126,8 +128,10 @@ void SupervisedUserNavigationObserver::URLFilterCheckCallback(
   if (url != web_contents()->GetLastCommittedURL())
     return;
 
+  const bool initial_page_load = false;
   if (behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK) {
     SupervisedUserInterstitial::Show(web_contents(), url, reason,
+                                     initial_page_load,
                                      base::Callback<void(bool)>());
   }
 }

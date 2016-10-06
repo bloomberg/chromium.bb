@@ -113,12 +113,13 @@ void SupervisedUserInterstitial::Show(
     WebContents* web_contents,
     const GURL& url,
     supervised_user_error_page::FilteringBehaviorReason reason,
+    bool initial_page_load,
     const base::Callback<void(bool)>& callback) {
   SupervisedUserInterstitial* interstitial =
       new SupervisedUserInterstitial(web_contents, url, reason, callback);
 
   // If Init() does not complete fully, immediately delete the interstitial.
-  if (!interstitial->Init())
+  if (!interstitial->Init(initial_page_load))
     delete interstitial;
   // Otherwise |interstitial_page_| is responsible for deleting it.
 }
@@ -140,7 +141,7 @@ SupervisedUserInterstitial::~SupervisedUserInterstitial() {
   DCHECK(!web_contents_);
 }
 
-bool SupervisedUserInterstitial::Init() {
+bool SupervisedUserInterstitial::Init(bool initial_page_load) {
   if (ShouldProceed()) {
     // It can happen that the site was only allowed very recently and the URL
     // filter on the IO thread had not been updated yet. Proceed with the
@@ -179,8 +180,8 @@ bool SupervisedUserInterstitial::Init() {
       SupervisedUserServiceFactory::GetForProfile(profile_);
   supervised_user_service->AddObserver(this);
 
-  interstitial_page_ =
-      content::InterstitialPage::Create(web_contents_, true, url_, this);
+  interstitial_page_ = content::InterstitialPage::Create(
+      web_contents_, initial_page_load, url_, this);
   interstitial_page_->Show();
 
   return true;

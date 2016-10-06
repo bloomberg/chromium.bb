@@ -35,6 +35,7 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   static void Show(content::WebContents* web_contents,
                    const GURL& url,
                    supervised_user_error_page::FilteringBehaviorReason reason,
+                   bool initial_page_load,
                    const base::Callback<void(bool)>& callback);
 
   static std::string GetHTMLContents(
@@ -49,7 +50,7 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
       const base::Callback<void(bool)>& callback);
   ~SupervisedUserInterstitial() override;
 
-  bool Init();
+  bool Init(bool initial_page_load);
 
   // InterstitialPageDelegate implementation.
   std::string GetHTMLContents() override;
