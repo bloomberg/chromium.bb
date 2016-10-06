@@ -38,7 +38,7 @@
         mouseup.initMouseEvent("mouseup", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
         obj.dispatchEvent(mouseup);
         // ... and we should not be able to open a new popup.
-        shouldBeUndefined("window.open('about:blank')");
+        shouldBeNull("window.open('about:blank')");
         finishJSTest();
     }
 </script> 

@@ -34,7 +34,7 @@
             function clickHandler2()
             {
                 win = window.open("about:blank");
-                shouldBeUndefined("win");
+                shouldBeNull("win");
             }
 
             document.querySelector("#test").addEventListener("mousedown", clickHandler1);

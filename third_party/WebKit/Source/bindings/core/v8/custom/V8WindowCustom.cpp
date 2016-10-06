@@ -259,8 +259,10 @@ void V8Window::openMethodCustom(
   DOMWindow* openedWindow = toLocalDOMWindow(impl)->open(
       urlString, frameName, windowFeaturesString,
       currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()));
-  if (!openedWindow)
+  if (!openedWindow) {
+    v8SetReturnValueNull(info);
     return;
+  }
 
   v8SetReturnValueFast(info, openedWindow, impl);
 }

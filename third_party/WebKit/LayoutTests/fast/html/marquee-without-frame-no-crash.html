@@ -2,7 +2,7 @@
 foo
 <script>
 function handler() {
-    shouldBeUndefined(window.open("foo", "bar"));
+    shouldBeNull('window.open("foo", "bar")');
 }
 </script>
 <template></template>

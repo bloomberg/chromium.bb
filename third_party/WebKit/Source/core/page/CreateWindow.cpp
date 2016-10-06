@@ -139,8 +139,10 @@ static Frame* createWindowHelper(LocalFrame& openerFrame,
 
   created = false;
 
-  Frame* window = reuseExistingWindow(activeFrame, lookupFrame,
-                                      request.frameName(), policy);
+  Frame* window = features.noopener
+                      ? nullptr
+                      : reuseExistingWindow(activeFrame, lookupFrame,
+                                            request.frameName(), policy);
 
   if (!window) {
     // Sandboxed frames cannot open new auxiliary browsing contexts.
