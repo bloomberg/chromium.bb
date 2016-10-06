@@ -64,44 +64,10 @@
 //
 +(NSURL*)URLFromInetloc:(NSString*)inFile
 {
-  FSRef ref;
-  NSURL *ret = nil;
-  
-  if (inFile && FSPathMakeRef((UInt8 *)[inFile fileSystemRepresentation], &ref, NULL) == noErr) {
-    short resRef;
-    
-    resRef = FSOpenResFile(&ref, fsRdPerm);
-    
-    if (resRef != -1) { // Has resouce fork.
-      Handle urlResHandle;
-      
-      if ((urlResHandle = Get1Resource('url ', 256))) { // Has 'url ' resource with ID 256.
-        long size;
-        
-        size = GetMaxResourceSize(urlResHandle);
-// Begin Google Modified
-//        ret = [NSURL URLWithString:[NSString stringWithCString:(char *)*urlResHandle length:size]];
-        NSString *urlString = [[[NSString alloc] initWithBytes:(void *)*urlResHandle
-                                                        length:size
-                                                      encoding:NSMacOSRomanStringEncoding]  // best guess here
-                               autorelease];
-        ret = [NSURL URLWithString:urlString];
-// End Google Modified
-      }
-      
-      CloseResFile(resRef);
-    }
-
-    if (!ret) { // Look for valid plist data.
-      NSDictionary *plist;
-      if ((plist = [[NSDictionary alloc] initWithContentsOfFile:inFile])) {
-        ret = [NSURL URLWithString:[plist objectForKey:@"URL"]];
-        [plist release];
-      }
-    }
-  }
-  
-  return ret;
+  //// Begin Google Modified
+  NSDictionary *plist = [NSDictionary dictionaryWithContentsOfFile:inFile];
+  return [NSURL URLWithString:[plist objectForKey:@"URL"]];
+  //// End Google Modified
 }
 
 //
