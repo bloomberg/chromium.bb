@@ -14,7 +14,6 @@ namespace blink {
 
 class Document;
 class FilterOperations;
-class SVGFilterElement;
 
 class CORE_EXPORT SVGResourceClient : public DocumentResourceClient {
   USING_PRE_FINALIZER(SVGResourceClient, clearFilterReferences);

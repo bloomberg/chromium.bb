@@ -26,6 +26,7 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/PaintLayer.h"
+#include "core/svg/SVGFilterElement.h"
 
 #include "wtf/AutoReset.h"
 

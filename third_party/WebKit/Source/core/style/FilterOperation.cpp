@@ -28,6 +28,7 @@
 #include "platform/LengthFunctions.h"
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 

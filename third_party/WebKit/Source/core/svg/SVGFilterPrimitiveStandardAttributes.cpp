@@ -26,6 +26,7 @@
 #include "core/layout/svg/LayoutSVGResourceFilterPrimitive.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {

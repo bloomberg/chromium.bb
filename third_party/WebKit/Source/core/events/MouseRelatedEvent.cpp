@@ -28,6 +28,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutObject.h"
 #include "core/paint/PaintLayer.h"
+#include "core/svg/SVGElement.h"
 
 namespace blink {
 

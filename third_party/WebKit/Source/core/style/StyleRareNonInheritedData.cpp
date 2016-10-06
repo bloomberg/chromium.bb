@@ -30,7 +30,6 @@
 #include "core/style/StyleFilterData.h"
 #include "core/style/StyleNonInheritedVariables.h"
 #include "core/style/StyleTransformData.h"
-#include "core/layout/svg/ReferenceFilterBuilder.h"
 
 namespace blink {
 

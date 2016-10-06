@@ -28,14 +28,16 @@
 
 #include "core/CoreExport.h"
 #include "platform/Length.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/BoxReflection.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/filters/Filter.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
+class Filter;
 
 // CSS Filters
 

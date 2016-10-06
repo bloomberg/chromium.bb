@@ -7,6 +7,7 @@
 #include "core/fetch/DocumentResourceReference.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
+#include "core/svg/SVGFilterElement.h"
 
 namespace blink {
 

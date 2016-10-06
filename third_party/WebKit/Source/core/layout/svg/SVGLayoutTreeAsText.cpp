@@ -52,6 +52,7 @@
 #include "core/svg/RadialGradientAttributes.h"
 #include "core/svg/SVGCircleElement.h"
 #include "core/svg/SVGEllipseElement.h"
+#include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGLineElement.h"
 #include "core/svg/SVGLinearGradientElement.h"
 #include "core/svg/SVGPathElement.h"
@@ -64,6 +65,7 @@
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 
 #include <math.h>
