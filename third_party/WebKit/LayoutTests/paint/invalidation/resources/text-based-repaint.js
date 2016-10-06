@@ -13,6 +13,10 @@ if (window.internals) {
     internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = true;
 }
 
+// Add string names of objects that should be invalidated here. If you use this feature,
+// you must also include testharness.js.
+window.expectedObjectInvalidations = [];
+
 function runRepaintTest()
 {
     if (!window.testRunner || !window.internals) {
@@ -47,6 +51,21 @@ function forceStyleRecalc()
         document.documentElement.clientTop;
 }
 
+function checkObjectPaintInvalidations(layersWithInvalidationsText)
+{
+    var layersWithInvalidations = JSON.parse(layersWithInvalidationsText);
+    var objectNameSet = new Set();
+    if (layersWithInvalidations["objectPaintInvalidations"]) {
+        layersWithInvalidations["objectPaintInvalidations"].forEach(function(obj) {
+            objectNameSet.add(obj["object"]);
+        });
+    }
+
+    window.expectedObjectInvalidations.forEach(function(objectName) {
+        assert_true(objectNameSet.has(objectName), "Expected object to be invalidated, but it was not: '" + objectName + "'");
+    });
+}
+
 function finishRepaintTest()
 {
     if (!window.testRunner || !window.internals)
@@ -63,7 +82,9 @@ function finishRepaintTest()
     if (window.outputLayerList)
         flags |= window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST;
 
-    var repaintRects = window.internals.layerTreeAsText(document, flags);
+    var layersWithInvalidationsText = window.internals.layerTreeAsText(document, flags);
+
+    checkObjectPaintInvalidations(layersWithInvalidationsText);
 
     internals.stopTrackingRepaints(document);
 
@@ -72,7 +93,7 @@ function finishRepaintTest()
         window.outputRepaintRects = false;
 
     if (window.outputRepaintRects)
-        testRunner.setCustomTextOutput(repaintRects);
+        testRunner.setCustomTextOutput(layersWithInvalidationsText);
 
     if (window.afterTest)
         window.afterTest();
