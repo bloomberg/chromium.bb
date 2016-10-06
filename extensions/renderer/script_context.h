@@ -118,6 +118,13 @@ class ScriptContext : public RequestSender::Source {
   v8::Local<v8::Value> CallFunction(
       const v8::Local<v8::Function>& function) const;
 
+  // Safely calls the v8::Function, respecting the page load deferrer and
+  // possibly executing asynchronously.
+  // TODO(devlin): Remove the above variants in favor of this.
+  void SafeCallFunction(const v8::Local<v8::Function>& function,
+                        int argc,
+                        v8::Local<v8::Value> argv[]);
+
   void DispatchEvent(const char* event_name, v8::Local<v8::Array> args) const;
 
   // Returns the availability of the API |api_name|.

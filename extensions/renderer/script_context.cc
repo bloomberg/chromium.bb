@@ -202,6 +202,22 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
           function, global, argc, argv)));
 }
 
+void ScriptContext::SafeCallFunction(const v8::Local<v8::Function>& function,
+                                     int argc,
+                                     v8::Local<v8::Value> argv[]) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Context::Scope scope(v8_context());
+  v8::MicrotasksScope microtasks(isolate(),
+                                 v8::MicrotasksScope::kDoNotRunMicrotasks);
+  v8::Local<v8::Object> global = v8_context()->Global();
+  if (web_frame_) {
+    web_frame_->requestExecuteV8Function(function, global, argc, argv, nullptr);
+  } else {
+    // TODO(devlin): This probably isn't safe.
+    function->Call(global, argc, argv);
+  }
+}
+
 v8::Local<v8::Value> ScriptContext::CallFunction(
     const v8::Local<v8::Function>& function) const {
   DCHECK(thread_checker_.CalledOnValidThread());

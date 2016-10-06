@@ -184,10 +184,19 @@ class WebLocalFrame : public WebFrame {
   // Executes script in the context of the current page and returns the value
   // that the script evaluated to with callback. Script execution can be
   // suspend.
+  // DEPRECATED: Prefer requestExecuteScriptInIsolatedWorld().
   virtual void requestExecuteScriptAndReturnValue(
       const WebScriptSource&,
       bool userGesture,
       WebScriptExecutionCallback*) = 0;
+
+  // Requests execution of the given function, but allowing for script
+  // suspension and asynchronous execution.
+  virtual void requestExecuteV8Function(v8::Local<v8::Function>,
+                                        v8::Local<v8::Value> receiver,
+                                        int argc,
+                                        v8::Local<v8::Value> argv[],
+                                        WebScriptExecutionCallback*) = 0;
 
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < EmbedderWorldIdLimit, high number used internally.

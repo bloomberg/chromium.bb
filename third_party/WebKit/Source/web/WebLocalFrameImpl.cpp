@@ -774,6 +774,17 @@ void WebLocalFrameImpl::requestExecuteScriptAndReturnValue(
       frame(), 0, createSourcesVector(&source, 1), 0, userGesture, callback);
 }
 
+void WebLocalFrameImpl::requestExecuteV8Function(
+    v8::Local<v8::Function> function,
+    v8::Local<v8::Value> receiver,
+    int argc,
+    v8::Local<v8::Value> argv[],
+    WebScriptExecutionCallback* callback) {
+  DCHECK(frame());
+  SuspendableScriptExecutor::createAndRun(frame(), toIsolate(frame()), function,
+                                          receiver, argc, argv, callback);
+}
+
 void WebLocalFrameImpl::executeScriptInIsolatedWorld(
     int worldID,
     const WebScriptSource* sourcesIn,

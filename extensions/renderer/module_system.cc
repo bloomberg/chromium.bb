@@ -719,7 +719,7 @@ v8::Local<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
   {
     v8::TryCatch try_catch(GetIsolate());
     try_catch.SetCaptureMessage(true);
-    context_->CallFunction(func, arraysize(args), args);
+    context_->SafeCallFunction(func, arraysize(args), args);
     if (try_catch.HasCaught()) {
       HandleException(try_catch);
       return v8::Undefined(GetIsolate());

@@ -119,6 +119,11 @@ class WEB_EXPORT WebLocalFrameImpl final
   void requestExecuteScriptAndReturnValue(const WebScriptSource&,
                                           bool userGesture,
                                           WebScriptExecutionCallback*) override;
+  void requestExecuteV8Function(v8::Local<v8::Function>,
+                                v8::Local<v8::Value> receiver,
+                                int argc,
+                                v8::Local<v8::Value> argv[],
+                                WebScriptExecutionCallback*) override;
   void executeScriptInIsolatedWorld(
       int worldID,
       const WebScriptSource* sourcesIn,
