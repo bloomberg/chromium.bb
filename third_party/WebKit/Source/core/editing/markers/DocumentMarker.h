@@ -33,10 +33,11 @@ namespace blink {
 
 class DocumentMarkerDetails;
 
-// A range of a node within a document that is "marked", such as the range of a misspelled word.
-// It optionally includes a description that could be displayed in the user interface.
-// It also optionally includes a flag specifying whether the match is active, which is ignored
-// for all types other than type TextMatch.
+// A range of a node within a document that is "marked", such as the range of a
+// misspelled word. It optionally includes a description that could be displayed
+// in the user interface. It also optionally includes a flag specifying whether
+// the match is active, which is ignored for all types other than type
+// TextMatch.
 class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
  public:
   enum MarkerTypeIndex {
@@ -58,7 +59,8 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
 
   class MarkerTypes {
    public:
-    // The constructor is intentionally implicit to allow conversion from the bit-wise sum of above types
+    // The constructor is intentionally implicit to allow conversion from the
+    // bit-wise sum of above types
     MarkerTypes(unsigned mask) : m_mask(mask) {}
 
     bool contains(MarkerType type) const { return m_mask & type; }

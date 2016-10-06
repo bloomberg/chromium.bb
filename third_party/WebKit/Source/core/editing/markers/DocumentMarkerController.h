@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -80,9 +82,10 @@ class CORE_EXPORT DocumentMarkerController final
                    int delta);
 
   void prepareForDestruction();
-  // When a marker partially overlaps with range, if removePartiallyOverlappingMarkers is true, we completely
-  // remove the marker. If the argument is false, we will adjust the span of the marker so that it retains
-  // the portion that is outside of the range.
+  // When a marker partially overlaps with range, if
+  // removePartiallyOverlappingMarkers is true, we completely remove the marker.
+  // If the argument is false, we will adjust the span of the marker so that it
+  // retains the portion that is outside of the range.
   enum RemovePartiallyOverlappingMarkerOrNot {
     DoNotRemovePartiallyOverlappingMarker,
     RemovePartiallyOverlappingMarker
@@ -109,7 +112,8 @@ class CORE_EXPORT DocumentMarkerController final
   void shiftMarkers(Node*, unsigned startOffset, int delta);
   // Returns true if markers within a range are found.
   bool setMarkersActive(const EphemeralRange&, bool);
-  // Returns true if markers within a range defined by a node, |startOffset| and |endOffset| are found.
+  // Returns true if markers within a range defined by a node, |startOffset| and
+  // |endOffset| are found.
   bool setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool);
   bool hasMarkers(Node* node) const { return m_markers.contains(node); }
 
@@ -145,7 +149,8 @@ class CORE_EXPORT DocumentMarkerController final
                      RemovePartiallyOverlappingMarkerOrNot);
 
   MarkerMap m_markers;
-  // Provide a quick way to determine whether a particular marker type is absent without going through the map.
+  // Provide a quick way to determine whether a particular marker type is absent
+  // without going through the map.
   DocumentMarker::MarkerTypes m_possiblyExistingMarkerTypes;
   const Member<const Document> m_document;
 };

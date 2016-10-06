@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -95,7 +97,8 @@ void DocumentMarkerController::addMarker(const Position& start,
                                          DocumentMarker::MarkerType type,
                                          const String& description,
                                          uint32_t hash) {
-  // Use a TextIterator to visit the potentially multiple nodes the range covers.
+  // Use a TextIterator to visit the potentially multiple nodes the range
+  // covers.
   for (TextIterator markedText(start, end); !markedText.atEnd();
        markedText.advance()) {
     addMarker(markedText.currentContainer(),
@@ -109,14 +112,16 @@ void DocumentMarkerController::addTextMatchMarker(const EphemeralRange& range,
                                                   bool activeMatch) {
   DCHECK(!m_document->needsLayoutTreeUpdate());
 
-  // Use a TextIterator to visit the potentially multiple nodes the range covers.
+  // Use a TextIterator to visit the potentially multiple nodes the range
+  // covers.
   for (TextIterator markedText(range.startPosition(), range.endPosition());
        !markedText.atEnd(); markedText.advance())
     addMarker(
         markedText.currentContainer(),
         DocumentMarker(markedText.startOffsetInCurrentContainer(),
                        markedText.endOffsetInCurrentContainer(), activeMatch));
-  // Don't invalidate tickmarks here. TextFinder invalidates tickmarks using a throttling algorithm. crbug.com/6819.
+  // Don't invalidate tickmarks here. TextFinder invalidates tickmarks using a
+  // throttling algorithm. crbug.com/6819.
 }
 
 void DocumentMarkerController::addCompositionMarker(const Position& start,
@@ -283,8 +288,9 @@ void DocumentMarkerController::mergeOverlapping(
   }
 }
 
-// copies markers from srcNode to dstNode, applying the specified shift delta to the copies.  The shift is
-// useful if, e.g., the caller has created the dstNode from a non-prefix substring of the srcNode.
+// copies markers from srcNode to dstNode, applying the specified shift delta to
+// the copies. The shift is useful if, e.g., the caller has created the dstNode
+// from a non-prefix substring of the srcNode.
 void DocumentMarkerController::copyMarkers(Node* srcNode,
                                            unsigned startOffset,
                                            int length,
@@ -374,7 +380,8 @@ void DocumentMarkerController::removeMarkers(
     for (MarkerList::iterator i = startPos; i != list->end();) {
       DocumentMarker marker(*i->get());
 
-      // markers are returned in order, so stop if we are now past the specified range
+      // markers are returned in order, so stop if we are now past the specified
+      // range
       if (marker.startOffset() >= endOffset)
         break;
 
@@ -802,7 +809,8 @@ bool DocumentMarkerController::setMarkersActive(Node* node,
       std::upper_bound(list->begin(), list->end(), startOffset, endsBefore);
   for (MarkerList::iterator marker = startPos; marker != list->end();
        ++marker) {
-    // Markers are returned in order, so stop if we are now past the specified range.
+    // Markers are returned in order, so stop if we are now past the specified
+    // range.
     if ((*marker)->startOffset() >= endOffset)
       break;
 
