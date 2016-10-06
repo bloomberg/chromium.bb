@@ -821,24 +821,29 @@ button[disabled] {
 
 .edit-modal-wrapper .container {
   justify-content: center;
+  left: 0;
+  position: absolute;
+  top: 0;
 }
 
 .edit-modal-wrapper .action-buttons {
   justify-content: flex-end;
-  left: 0;
-  position: absolute;
-  top: 0;
 }
 
 .edit-modal button.edit-toolbar {
   background: transparent;
   border: 0 none;
   border-image: none;
+  border-radius: 2px;
   box-sizing: border-box;
   color: white;
   min-width: 0;
   padding: 0;
   position: relative;
+}
+
+.edit-modal button.edit-toolbar:focus {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 .edit-modal button.edit-toolbar .icon {

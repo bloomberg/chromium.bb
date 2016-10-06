@@ -143,6 +143,7 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
     GALLERY_ASPECT_RATIO_16_9: 16 / 9
   };
 
+  // TODO(fukino): The loop order is not guaranteed. Fix it!
   for (var name in aspects) {
     var button = toolbar.addButton(
         name,

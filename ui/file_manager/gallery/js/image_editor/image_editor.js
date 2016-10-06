@@ -1142,7 +1142,14 @@ ImageEditor.Toolbar = function(
    */
   this.updateCallback_ = opt_updateCallback || null;
 
-  // Create action buttons.
+  /**
+   * @private {!HTMLElement}
+   */
+  this.container_ = /** @type {!HTMLElement} */ (document.createElement('div'));
+  this.container_.classList.add('container');
+  this.wrapper_.appendChild(this.container_);
+
+    // Create action buttons.
   if (opt_showActionButtons) {
     var actionButtonsLayer = document.createElement('div');
     actionButtonsLayer.classList.add('action-buttons');
@@ -1159,13 +1166,6 @@ ImageEditor.Toolbar = function(
 
     this.wrapper_.appendChild(actionButtonsLayer);
   }
-
-  /**
-   * @private {!HTMLElement}
-   */
-  this.container_ = /** @type {!HTMLElement} */ (document.createElement('div'));
-  this.container_.classList.add('container');
-  this.wrapper_.appendChild(this.container_);
 };
 
 ImageEditor.Toolbar.prototype.__proto__ = cr.EventTarget.prototype;
@@ -1454,6 +1454,14 @@ ImageEditor.Toolbar.prototype.show = function(on) {
     return;  // Do not show empty toolbar;
 
   this.wrapper_.hidden = !on;
+
+  // Focus the first input on the toolbar.
+  if (on) {
+    var input = this.container_.querySelector(
+       'button, paper-button, input, paper-input, paper-slider');
+    if (input)
+      input.focus();
+  }
 };
 
 /** A prompt panel for the editor.
