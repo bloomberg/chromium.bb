@@ -32,6 +32,7 @@ import org.chromium.base.VisibleForTesting;
  */
 public class TextViewWithClickableSpans extends TextView {
     private AccessibilityManager mAccessibilityManager;
+    private PopupMenu mDisambiguationMenu;
 
     public TextViewWithClickableSpans(Context context) {
         super(context);
@@ -147,11 +148,13 @@ public class TextViewWithClickableSpans extends TextView {
 
     private void openDisambiguationMenu() {
         ClickableSpan[] clickableSpans = getClickableSpans();
-        if (clickableSpans == null || clickableSpans.length == 0) return;
+        if (clickableSpans == null || clickableSpans.length == 0 || mDisambiguationMenu != null) {
+            return;
+        }
 
         SpannableString spannable = (SpannableString) getText();
-        PopupMenu popup = new PopupMenu(getContext(), this);
-        Menu menu = popup.getMenu();
+        mDisambiguationMenu = new PopupMenu(getContext(), this);
+        Menu menu = mDisambiguationMenu.getMenu();
         for (final ClickableSpan clickableSpan : clickableSpans) {
             CharSequence itemText = spannable.subSequence(
                     spannable.getSpanStart(clickableSpan),
@@ -166,6 +169,12 @@ public class TextViewWithClickableSpans extends TextView {
             });
         }
 
-        popup.show();
+        mDisambiguationMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
+            @Override
+            public void onDismiss(PopupMenu menu) {
+                mDisambiguationMenu = null;
+            }
+        });
+        mDisambiguationMenu.show();
     }
 }
