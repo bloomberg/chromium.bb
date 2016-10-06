@@ -112,6 +112,10 @@ DeleteSelectionCommand::DeleteSelectionCommand(
 
 void DeleteSelectionCommand::initializeStartEnd(Position& start,
                                                 Position& end) {
+  DCHECK(!document().needsLayoutTreeUpdate());
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      document().lifecycle());
+
   HTMLElement* startSpecialContainer = nullptr;
   HTMLElement* endSpecialContainer = nullptr;
 
@@ -143,10 +147,10 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start,
     if (!startSpecialContainer && !endSpecialContainer)
       break;
 
-    if (createVisiblePositionDeprecated(start).deepEquivalent() !=
-            m_selectionToDelete.visibleStartDeprecated().deepEquivalent() ||
-        createVisiblePositionDeprecated(end).deepEquivalent() !=
-            m_selectionToDelete.visibleEndDeprecated().deepEquivalent())
+    if (createVisiblePosition(start).deepEquivalent() !=
+            m_selectionToDelete.visibleStart().deepEquivalent() ||
+        createVisiblePosition(end).deepEquivalent() !=
+            m_selectionToDelete.visibleEnd().deepEquivalent())
       break;
 
     // If we're going to expand to include the startSpecialContainer, it must be
@@ -185,17 +189,23 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start,
 void DeleteSelectionCommand::setStartingSelectionOnSmartDelete(
     const Position& start,
     const Position& end) {
+  DCHECK(!document().needsLayoutTreeUpdate());
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      document().lifecycle());
+
   bool isBaseFirst = startingSelection().isBaseFirst();
-  VisiblePosition newBase =
-      createVisiblePositionDeprecated(isBaseFirst ? start : end);
-  VisiblePosition newExtent =
-      createVisiblePositionDeprecated(isBaseFirst ? end : start);
-  setStartingSelection(createVisibleSelectionDeprecated(
+  VisiblePosition newBase = createVisiblePosition(isBaseFirst ? start : end);
+  VisiblePosition newExtent = createVisiblePosition(isBaseFirst ? end : start);
+  setStartingSelection(createVisibleSelection(
       newBase, newExtent, startingSelection().isDirectional()));
 }
 
 void DeleteSelectionCommand::initializePositionData(
     EditingState* editingState) {
+  DCHECK(!document().needsLayoutTreeUpdate());
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      document().lifecycle());
+
   Position start, end;
   initializeStartEnd(start, end);
   DCHECK(start.isNotNull());
@@ -240,8 +250,8 @@ void DeleteSelectionCommand::initializePositionData(
   // together as a result of the deletion. Sometimes they aren't (like when no
   // merge is requested), so we must choose one position to hold the caret
   // and receive the placeholder after deletion.
-  VisiblePosition visibleEnd = createVisiblePositionDeprecated(m_downstreamEnd);
-  if (m_mergeBlocksAfterDelete && !isEndOfParagraphDeprecated(visibleEnd))
+  VisiblePosition visibleEnd = createVisiblePosition(m_downstreamEnd);
+  if (m_mergeBlocksAfterDelete && !isEndOfParagraph(visibleEnd))
     m_endingPosition = m_downstreamEnd;
   else
     m_endingPosition = m_downstreamStart;
@@ -256,8 +266,8 @@ void DeleteSelectionCommand::initializePositionData(
   // (like the process of creating a selection to delete during a backspace),
   // and the user isn't in the situation described above.
   if (numEnclosingMailBlockquotes(start) != numEnclosingMailBlockquotes(end) &&
-      isStartOfParagraphDeprecated(visibleEnd) &&
-      isStartOfParagraph(createVisiblePositionDeprecated(start)) &&
+      isStartOfParagraph(visibleEnd) &&
+      isStartOfParagraph(createVisiblePosition(start)) &&
       endingSelection().isRange()) {
     m_mergeBlocksAfterDelete = false;
     m_pruneStartBlockIfNecessary = true;
@@ -273,9 +283,9 @@ void DeleteSelectionCommand::initializePositionData(
   if (m_smartDelete) {
     // skip smart delete if the selection to delete already starts or ends with
     // whitespace
-    Position pos = createVisiblePositionDeprecated(
-                       m_upstreamStart, m_selectionToDelete.affinity())
-                       .deepEquivalent();
+    Position pos =
+        createVisiblePosition(m_upstreamStart, m_selectionToDelete.affinity())
+            .deepEquivalent();
     bool skipSmartDelete =
         trailingWhitespacePosition(pos, VP_DEFAULT_AFFINITY,
                                    ConsiderNonCollapsibleWhitespace)
@@ -293,9 +303,8 @@ void DeleteSelectionCommand::initializePositionData(
                                   ConsiderNonCollapsibleWhitespace)
             .isNotNull();
     if (!skipSmartDelete && hasLeadingWhitespaceBeforeAdjustment) {
-      VisiblePosition visiblePos =
-          previousPositionOf(createVisiblePositionDeprecated(
-              m_upstreamStart, VP_DEFAULT_AFFINITY));
+      VisiblePosition visiblePos = previousPositionOf(
+          createVisiblePosition(m_upstreamStart, VP_DEFAULT_AFFINITY));
       pos = visiblePos.deepEquivalent();
       // Expand out one character upstream for smart delete and recalculate
       // positions based on this change.
@@ -316,8 +325,8 @@ void DeleteSelectionCommand::initializePositionData(
             .isNotNull()) {
       // Expand out one character downstream for smart delete and recalculate
       // positions based on this change.
-      pos = nextPositionOf(createVisiblePositionDeprecated(m_downstreamEnd,
-                                                           VP_DEFAULT_AFFINITY))
+      pos = nextPositionOf(
+                createVisiblePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY))
                 .deepEquivalent();
       m_upstreamEnd = mostBackwardCaretPosition(pos);
       m_downstreamEnd = mostForwardCaretPosition(pos);
@@ -779,10 +788,11 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState) {
   if (m_upstreamStart == m_downstreamEnd)
     return;
 
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   VisiblePosition startOfParagraphToMove =
-      createVisiblePositionDeprecated(m_downstreamEnd);
-  VisiblePosition mergeDestination =
-      createVisiblePositionDeprecated(m_upstreamStart);
+      createVisiblePosition(m_downstreamEnd);
+  VisiblePosition mergeDestination = createVisiblePosition(m_upstreamStart);
 
   // m_downstreamEnd's block has been emptied out by deletion.  There is no
   // content inside of it to move, so just remove it.
@@ -821,8 +831,8 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState) {
       startOfParagraphToMove.deepEquivalent())
     return;
 
-  VisiblePosition endOfParagraphToMove = endOfParagraphDeprecated(
-      startOfParagraphToMove, CanSkipOverEditingBoundary);
+  VisiblePosition endOfParagraphToMove =
+      endOfParagraph(startOfParagraphToMove, CanSkipOverEditingBoundary);
 
   if (mergeDestination.deepEquivalent() ==
       endOfParagraphToMove.deepEquivalent())
@@ -851,7 +861,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState) {
   // The rule for merging into an empty block is: only do so if its farther to
   // the right.
   // FIXME: Consider RTL.
-  if (!m_startsAtEmptyLine && isStartOfParagraphDeprecated(mergeDestination) &&
+  if (!m_startsAtEmptyLine && isStartOfParagraph(mergeDestination) &&
       absoluteCaretBoundsOf(startOfParagraphToMove).x() >
           absoluteCaretBoundsOf(mergeDestination).x()) {
     if (isHTMLBRElement(
@@ -875,7 +885,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState) {
   // https://bugs.webkit.org/show_bug.cgi?id=25439
   if (isRenderedAsNonInlineTableImageOrHR(
           startOfParagraphToMove.deepEquivalent().anchorNode()) &&
-      !isStartOfParagraphDeprecated(mergeDestination)) {
+      !isStartOfParagraph(mergeDestination)) {
     m_endingPosition = m_upstreamStart;
     return;
   }
@@ -1029,6 +1039,8 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
   // save this to later make the selection with
   TextAffinity affinity = m_selectionToDelete.affinity();
 
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   Position downstreamEnd = mostForwardCaretPosition(m_selectionToDelete.end());
   bool rootWillStayOpenWithoutPlaceholder =
       downstreamEnd.computeContainerNode() ==
@@ -1036,21 +1048,20 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
       (downstreamEnd.computeContainerNode()->isTextNode() &&
        downstreamEnd.computeContainerNode()->parentNode() ==
            rootEditableElement(*downstreamEnd.computeContainerNode()));
-  bool lineBreakAtEndOfSelectionToDelete = lineBreakExistsAtVisiblePosition(
-      m_selectionToDelete.visibleEndDeprecated());
-  m_needPlaceholder =
-      !rootWillStayOpenWithoutPlaceholder &&
-      isStartOfParagraphDeprecated(m_selectionToDelete.visibleStartDeprecated(),
-                                   CanCrossEditingBoundary) &&
-      isEndOfParagraphDeprecated(m_selectionToDelete.visibleEndDeprecated(),
-                                 CanCrossEditingBoundary) &&
-      !lineBreakAtEndOfSelectionToDelete;
+  bool lineBreakAtEndOfSelectionToDelete =
+      lineBreakExistsAtVisiblePosition(m_selectionToDelete.visibleEnd());
+  m_needPlaceholder = !rootWillStayOpenWithoutPlaceholder &&
+                      isStartOfParagraph(m_selectionToDelete.visibleStart(),
+                                         CanCrossEditingBoundary) &&
+                      isEndOfParagraph(m_selectionToDelete.visibleEnd(),
+                                       CanCrossEditingBoundary) &&
+                      !lineBreakAtEndOfSelectionToDelete;
   if (m_needPlaceholder) {
     // Don't need a placeholder when deleting a selection that starts just
     // before a table and ends inside it (we do need placeholders to hold
     // open empty cells, but that's handled elsewhere).
-    if (Element* table = tableElementJustAfter(
-            m_selectionToDelete.visibleStartDeprecated())) {
+    if (Element* table =
+            tableElementJustAfter(m_selectionToDelete.visibleStart())) {
       if (m_selectionToDelete.end().anchorNode()->isDescendantOf(table))
         m_needPlaceholder = false;
     }
@@ -1062,7 +1073,7 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
     return;
 
   bool lineBreakBeforeStart = lineBreakExistsAtVisiblePosition(
-      previousPositionOf(createVisiblePositionDeprecated(m_upstreamStart)));
+      previousPositionOf(createVisiblePosition(m_upstreamStart)));
 
   // Delete any text that may hinder our ability to fixup whitespace after the
   // delete
@@ -1077,7 +1088,8 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
     return;
   if (brResult) {
     calculateTypingStyleAfterDelete();
-    setEndingSelection(createVisibleSelectionDeprecated(
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    setEndingSelection(createVisibleSelection(
         m_endingPosition, affinity, endingSelection().isDirectional()));
     clearTransientState();
     rebalanceWhitespace();
@@ -1099,8 +1111,8 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
     return;
 
   if (!m_needPlaceholder && rootWillStayOpenWithoutPlaceholder) {
-    VisiblePosition visualEnding =
-        createVisiblePositionDeprecated(m_endingPosition);
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    VisiblePosition visualEnding = createVisiblePosition(m_endingPosition);
     bool hasPlaceholder =
         lineBreakExistsAtVisiblePosition(visualEnding) &&
         nextPositionOf(visualEnding, CannotCrossEditingBoundary).isNull();
@@ -1130,8 +1142,10 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
 
   calculateTypingStyleAfterDelete();
 
-  setEndingSelection(createVisibleSelectionDeprecated(
-      m_endingPosition, affinity, endingSelection().isDirectional()));
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+  setEndingSelection(createVisibleSelection(m_endingPosition, affinity,
+                                            endingSelection().isDirectional()));
 
   if (relocatableReferencePosition.position().isNull()) {
     clearTransientState();
@@ -1149,8 +1163,8 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
     m_referenceMovePosition = endingSelection().start();
 
   // Move selection shouldn't left empty <li> block.
-  cleanupAfterDeletion(
-      editingState, createVisiblePositionDeprecated(m_referenceMovePosition));
+  cleanupAfterDeletion(editingState,
+                       createVisiblePosition(m_referenceMovePosition));
   if (editingState->isAborted())
     return;
 
