@@ -26,6 +26,7 @@ extern const base::Feature kScanCardsInWebPayments;
 extern const base::Feature kSpecialLocaleFeature;
 extern const base::Feature kSpecialLocaleWrapper;
 extern const base::Feature kTabReparenting;
+extern const base::Feature kCCTExternalLinkHandling;
 extern const base::Feature kUserMediaScreenCapturing;
 
 bool RegisterChromeFeatureListJni(JNIEnv* env);

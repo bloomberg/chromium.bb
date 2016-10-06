@@ -206,11 +206,7 @@ public class ExternalNavigationHandler {
         // http://crbug/424029 : Need to stay in Chrome for an intent heading explicitly to Chrome.
         if (params.getRedirectHandler() != null) {
             TabRedirectHandler handler = params.getRedirectHandler();
-            if (handler.isFromCustomTabIntent()) {
-                // http://crbug.com/613667 : Custom tabs forbids external navigation for the first
-                // url, unless the first url is a redirect.
-                if (!params.isRedirect()) return OverrideUrlLoadingResult.NO_OVERRIDE;
-            } else if (handler.shouldStayInChrome(isExternalProtocol)
+            if (handler.shouldStayInChrome(isExternalProtocol)
                     || handler.shouldNotOverrideUrlLoading()) {
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             }
