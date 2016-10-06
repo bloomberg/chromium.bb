@@ -8,11 +8,18 @@
 #include <memory>
 #include <vector>
 
-#include "base/values.h"
-#include "chrome/browser/android/vr_shell/animation.h"
-#include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "base/macros.h"
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
 
 namespace vr_shell {
+
+class Animation;
+struct ContentRectangle;
+struct ReversibleTransform;
 
 class UiScene {
  public:

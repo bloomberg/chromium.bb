@@ -8,9 +8,13 @@
 #include <memory>
 #include <vector>
 
-#include "chrome/browser/android/vr_shell/easing.h"
+#include "base/macros.h"
 
 namespace vr_shell {
+
+namespace easing {
+class Easing;
+}
 
 // Describes the characteristics of a transition from an initial set of values
 // to a final set, with timing and interpolation information.  Other classes use
@@ -41,6 +45,9 @@ class Animation {
   std::vector<float> to;
   int64_t start;
   int64_t duration;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Animation);
 };
 
 }  // namespace vr_shell

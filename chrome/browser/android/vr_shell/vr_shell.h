@@ -8,14 +8,12 @@
 #include <jni.h>
 
 #include <memory>
-#include <vector>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/android/vr_shell/ui_elements.h"
-#include "chrome/browser/android/vr_shell/ui_scene.h"
+#include "chrome/browser/android/vr_shell/vr_math.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
@@ -30,11 +28,13 @@ class WindowAndroid;
 
 namespace vr_shell {
 
+class UiScene;
 class VrCompositor;
 class VrController;
 class VrInputManager;
 class VrShellDelegate;
 class VrShellRenderer;
+struct ContentRectangle;
 struct VrGesture;
 
 enum UiAction {
@@ -140,7 +140,7 @@ class VrShell : public device::GvrDelegate {
   float desktop_screen_tilt_;
   float desktop_height_;
 
-  UiScene scene_;
+  std::unique_ptr<UiScene> scene_;
 
   std::unique_ptr<gvr::GvrApi> gvr_api_;
   std::unique_ptr<gvr::BufferViewportList> buffer_viewport_list_;

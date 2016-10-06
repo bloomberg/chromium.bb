@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_H_
 
-#include <cmath>
+#include <memory>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_EASING_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_EASING_H_
 
+#include "base/macros.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 
 namespace vr_shell {

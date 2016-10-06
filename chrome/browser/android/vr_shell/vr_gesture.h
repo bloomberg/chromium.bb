@@ -13,23 +13,23 @@ using blink::WebInputEvent;
 namespace vr_shell {
 
 typedef struct {
-  gvr_vec3f delta;
+  gvr::Vec3f delta;
 } GestureAngularMove;
 
 typedef struct {
-  gvr_vec2f delta;
+  gvr::Vec2f delta;
 
   // If set, stop_fling means that this scroll should stop flinging, thus
   // if an interpreter suppresses it for any reason (e.g., rounds the size
   // down to 0, thus making it a noop), it will replace it with a Fling
   // TAP_DOWN gesture
   unsigned stop_fling : 1;
-  gvr_vec2f initial_touch_pos;
+  gvr::Vec2f initial_touch_pos;
 } GestureScroll;
 
 typedef struct {
   // If a bit is set in both down and up, client should process down first
-  gvr_vec2f pos;
+  gvr::Vec2f pos;
   unsigned down;  // bit field, use GESTURES_BUTTON_*
   unsigned up;    // bit field, use GESTURES_BUTTON_*
 } GestureButtonsChange;

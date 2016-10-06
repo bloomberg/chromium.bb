@@ -5,13 +5,18 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_VR_CONTROLLER_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_CONTROLLER_H_
 
-#include "base/memory/ref_counted.h"
-#include "chrome/browser/android/vr_shell/vr_gesture.h"
-#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"
-#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_controller.h"
+#include <memory>
+
+#include "base/macros.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 
+namespace gvr {
+class ControllerState;
+}
+
 namespace vr_shell {
+
+struct VrGesture;
 
 class VrController {
  public:
@@ -111,7 +116,7 @@ class VrController {
   std::unique_ptr<gvr::ControllerApi> controller_api_;
 
   // The last controller state (updated once per frame).
-  gvr::ControllerState controller_state_;
+  std::unique_ptr<gvr::ControllerState> controller_state_;
 
   float last_qx_;
   bool pinch_started_;

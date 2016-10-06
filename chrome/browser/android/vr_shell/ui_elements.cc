@@ -4,9 +4,9 @@
 
 #include "chrome/browser/android/vr_shell/ui_elements.h"
 
-#include <cmath>
-
+#include "base/logging.h"
 #include "chrome/browser/android/vr_shell/animation.h"
+#include "chrome/browser/android/vr_shell/easing.h"
 
 namespace vr_shell {
 

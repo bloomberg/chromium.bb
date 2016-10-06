@@ -5,7 +5,6 @@
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
-#include "ui/gl/gl_bindings.h"
 
 namespace {
 
@@ -28,7 +27,7 @@ static constexpr float kTexturedQuadTextureCoordinates[12] =
 
 static constexpr int kTextureCoordinateDataSize = 2;
 
-const float kWebVrVertices[32] = {
+static constexpr float kWebVrVertices[32] = {
   //   x     y    u,   v
     -1.f,  1.f, 0.f, 0.f, // Left Eye
     -1.f, -1.f, 0.f, 1.f,
@@ -39,7 +38,7 @@ const float kWebVrVertices[32] = {
      0.f, -1.f, 0.f, 1.f,
      1.f, -1.f, 1.f, 1.f,
      1.f,  1.f, 1.f, 0.f };
-const int kWebVrVerticesSize = sizeof(float) * 32;
+static constexpr int kWebVrVerticesSize = sizeof(float) * 32;
 
 // Reticle constants
 static constexpr float kRingDiameter = 1.0f;

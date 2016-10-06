@@ -7,17 +7,15 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/android/vr_shell/vr_gesture.h"
-#include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+
+namespace content {
+class WebContents;
+}
 
 namespace vr_shell {
 
-class RenderFrameHost;
-
-class VrInputManager
-    : public base::RefCountedThreadSafe<VrInputManager>  {
+class VrInputManager : public base::RefCountedThreadSafe<VrInputManager> {
  public:
   explicit VrInputManager(content::WebContents* web_contents);
 
@@ -61,8 +59,8 @@ class VrInputManager
 
   // Device scale factor.
   float dpi_scale_;
-
   content::WebContents* web_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(VrInputManager);
 };
 

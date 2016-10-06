@@ -6,7 +6,11 @@
 
 #include <cmath>
 
+#include "base/logging.h"
+#include "chrome/browser/android/vr_shell/vr_gesture.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_controller.h"
 
 using blink::WebInputEvent;
 
@@ -94,52 +98,52 @@ void VrController::OnPause() {
 }
 
 bool VrController::IsTouching() {
-  return controller_state_.IsTouching();
+  return controller_state_->IsTouching();
 }
 
 float VrController::TouchPosX() {
-  return controller_state_.GetTouchPos().x;
+  return controller_state_->GetTouchPos().x;
 }
 
 float VrController::TouchPosY() {
-  return controller_state_.GetTouchPos().y;
+  return controller_state_->GetTouchPos().y;
 }
 
 const gvr::Quatf VrController::Orientation() {
-  return controller_state_.GetOrientation();
+  return controller_state_->GetOrientation();
 }
 
 bool VrController::IsTouchDown() {
-  return controller_state_.GetTouchDown();
+  return controller_state_->GetTouchDown();
 }
 
 bool VrController::IsTouchUp() {
-  return controller_state_.GetTouchUp();
+  return controller_state_->GetTouchUp();
 }
 
 bool VrController::IsButtonDown(gvr::ControllerButton button) {
-  return controller_state_.GetButtonDown(button);
+  return controller_state_->GetButtonDown(button);
 }
 
 bool VrController::IsButtonUp(gvr::ControllerButton button) {
-  return controller_state_.GetButtonUp(button);
+  return controller_state_->GetButtonUp(button);
 }
 
 bool VrController::IsConnected() {
-  return controller_state_.GetConnectionState() == gvr::kControllerConnected;
+  return controller_state_->GetConnectionState() == gvr::kControllerConnected;
 }
 
 void VrController::UpdateState() {
-  const int32_t old_status = controller_state_.GetApiStatus();
-  const int32_t old_connection_state = controller_state_.GetConnectionState();
+  const int32_t old_status = controller_state_->GetApiStatus();
+  const int32_t old_connection_state = controller_state_->GetConnectionState();
   // Read current controller state.
-  controller_state_.Update(*controller_api_);
+  controller_state_->Update(*controller_api_);
   // Print new API status and connection state, if they changed.
-  if (controller_state_.GetApiStatus() != old_status ||
-      controller_state_.GetConnectionState() != old_connection_state) {
+  if (controller_state_->GetApiStatus() != old_status ||
+      controller_state_->GetConnectionState() != old_connection_state) {
     VLOG(1) << "Controller Connection status: "
             << gvr_controller_connection_state_to_string(
-                   controller_state_.GetConnectionState());
+                   controller_state_->GetConnectionState());
   }
 }
 
@@ -155,7 +159,7 @@ void VrController::UpdateTouchInfo() {
   Vector::ClampTouchpadPosition(&touch_info_->touch_point.position);
   touch_info_->touch_point.timestamp =
       gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos;
-  if (controller_state_.GetLastTouchTimestamp() == last_touch_timestamp_) {
+  if (controller_state_->GetLastTouchTimestamp() == last_touch_timestamp_) {
     // fill the touch_info
     float duration =
         (gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos -
@@ -167,7 +171,7 @@ void VrController::UpdateTouchInfo() {
     touch_info_->touch_point.position.x = position.x;
     touch_info_->touch_point.position.y = position.y;
   }
-  last_touch_timestamp_ = controller_state_.GetLastTouchTimestamp();
+  last_touch_timestamp_ = controller_state_->GetLastTouchTimestamp();
   last_timestamp_nanos_ =
       gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos;
 }
@@ -175,6 +179,7 @@ void VrController::UpdateTouchInfo() {
 void VrController::Initialize(gvr_context* gvr_context) {
   CHECK(gvr_context != nullptr) << "invalid gvr_context";
   controller_api_.reset(new gvr::ControllerApi);
+  controller_state_.reset(new gvr::ControllerState);
   int32_t options = gvr::ControllerApi::DefaultOptions();
 
   // Enable non-default options, if you need them:
@@ -185,7 +190,7 @@ void VrController::Initialize(gvr_context* gvr_context) {
 
 std::unique_ptr<VrGesture> VrController::DetectGesture() {
   std::unique_ptr<VrGesture> gesture(new VrGesture());
-  if (controller_state_.GetConnectionState() != gvr::kControllerConnected) {
+  if (controller_state_->GetConnectionState() != gvr::kControllerConnected) {
     return gesture;
   }
   UpdateTouchInfo();

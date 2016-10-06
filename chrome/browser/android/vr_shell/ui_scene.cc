@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 
+#include "base/values.h"
+#include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
 

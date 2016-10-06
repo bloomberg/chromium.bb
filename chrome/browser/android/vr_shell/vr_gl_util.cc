@@ -4,9 +4,6 @@
 
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 
-#include <array>
-#include <cmath>
-
 namespace vr_shell {
 
 // This code is adapted from the GVR Treasure Hunt demo source.

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr_shell/animation.h"
 
+#include "chrome/browser/android/vr_shell/easing.h"
+
 namespace vr_shell {
 
 Animation::Animation(int id,

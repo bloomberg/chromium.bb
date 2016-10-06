@@ -4,10 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/vr_math.h"
 
-#include <array>
 #include <cmath>
-
-#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 
 namespace vr_shell {
 

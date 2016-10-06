@@ -4,8 +4,6 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 
-#include <jni.h>
-
 #include "base/android/jni_android.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "jni/VrShellDelegate_jni.h"

@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/jni_weak_ref.h"
+#include "base/macros.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 
 namespace vr_shell {
@@ -35,6 +36,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
   device::GvrDeviceProvider* device_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(VrShellDelegate);
 };
 
 bool RegisterVrShellDelegate(JNIEnv* env);

@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/webui/vr_shell/vr_shell_ui_message_handler.h"
 
-#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/values.h"
+#include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "content/public/browser/web_ui.h"
 

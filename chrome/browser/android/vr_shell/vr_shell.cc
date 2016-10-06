@@ -4,13 +4,13 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 
+#include "chrome/browser/android/vr_shell/ui_elements.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_gesture.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
-#include "chrome/browser/android/vr_shell/vr_math.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 #include "content/public/browser/navigation_controller.h"
@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/screen_info.h"
+
 #include "jni/VrShell_jni.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/android/view_android.h"
@@ -140,6 +141,7 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
   DCHECK(g_instance == nullptr);
   g_instance = this;
   j_vr_shell_.Reset(env, obj);
+  scene_.reset(new UiScene);
   content_compositor_.reset(new VrCompositor(content_window, false));
   ui_compositor_.reset(new VrCompositor(ui_window, true));
 
@@ -149,7 +151,7 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
   rect->id = kBrowserUiElementId;
   rect->size = {screen_width, screen_height, 1.0f};
   rect->translation = kDesktopPositionDefault;
-  scene_.AddUiElement(rect);
+  scene_->AddUiElement(rect);
 
   LoadUIContent();
 
@@ -257,7 +259,7 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   target_element_ = nullptr;
 
   ContentRectangle* content_plane =
-      scene_.GetUiElementById(kBrowserUiElementId);
+      scene_->GetUiElementById(kBrowserUiElementId);
 
   float distance = content_plane->GetRayDistance(origin, forward);
 
@@ -295,17 +297,17 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   int pixel_y = 0;
   VrInputManager* input_target = nullptr;
 
-  for (std::size_t i = 0; i < scene_.GetUiElements().size(); ++i) {
-    const ContentRectangle& plane = *scene_.GetUiElements()[i].get();
-    if (!plane.visible) {
+  for (std::size_t i = 0; i < scene_->GetUiElements().size(); ++i) {
+    const ContentRectangle* plane = scene_->GetUiElements()[i].get();
+    if (!plane->visible) {
       continue;
     }
-    float distance_to_plane = plane.GetRayDistance(kOrigin, eye_to_target);
+    float distance_to_plane = plane->GetRayDistance(kOrigin, eye_to_target);
     gvr::Vec3f plane_intersection_point =
         GetRayPoint(kOrigin, eye_to_target, distance_to_plane);
 
     gvr::Vec3f rect_2d_point =
-        MatrixVectorMul(plane.transform.from_world, plane_intersection_point);
+        MatrixVectorMul(plane->transform.from_world, plane_intersection_point);
     if (distance_to_plane > 0 && distance_to_plane < closest_element_distance) {
       float x = rect_2d_point.x + 0.5f;
       float y = 0.5f - rect_2d_point.y;
@@ -313,13 +315,13 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
       if (is_inside) {
         closest_element_distance = distance_to_plane;
         pixel_x =
-            static_cast<int>(plane.copy_rect.width * x + plane.copy_rect.x);
+            static_cast<int>(plane->copy_rect.width * x + plane->copy_rect.x);
         pixel_y =
-            static_cast<int>(plane.copy_rect.height * y + plane.copy_rect.y);
+            static_cast<int>(plane->copy_rect.height * y + plane->copy_rect.y);
 
         target_point_ = plane_intersection_point;
-        target_element_ = &plane;
-        input_target = (plane.id == kBrowserUiElementId)
+        target_element_ = plane;
+        input_target = (plane->id == kBrowserUiElementId)
             ? content_input_manager_.get() : ui_input_manager_.get();
       }
     }
@@ -423,7 +425,7 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose) {
   HandleQueuedTasks();
 
   // Update the render position of all UI elements (including desktop).
-  scene_.UpdateTransforms(screen_tilt, UiScene::TimeInMicroseconds());
+  scene_->UpdateTransforms(screen_tilt, UiScene::TimeInMicroseconds());
 
   UpdateController(GetForwardVector(head_pose));
 
@@ -486,7 +488,7 @@ Rectf VrShell::MakeUiGlCopyRect(Recti pixel_rect) {
 }
 
 void VrShell::DrawUI(const gvr::Mat4f& render_matrix) {
-  for (const auto& rect : scene_.GetUiElements()) {
+  for (const auto& rect : scene_->GetUiElements()) {
     if (!rect->visible) {
       continue;
     }
@@ -764,7 +766,7 @@ void VrShell::ContentSurfaceChanged(JNIEnv* env,
   main_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost()->
       GetScreenInfo(&result);
   float dpr = result.device_scale_factor;
-  scene_.GetUiElementById(kBrowserUiElementId)->copy_rect =
+  scene_->GetUiElementById(kBrowserUiElementId)->copy_rect =
       { 0, 0, width / dpr, height / dpr };
 }
 
@@ -782,7 +784,7 @@ void VrShell::UiSurfaceChanged(JNIEnv* env,
 }
 
 UiScene* VrShell::GetScene() {
-  return &scene_;
+  return scene_.get();
 }
 
 void VrShell::QueueTask(base::Callback<void()>& callback) {
