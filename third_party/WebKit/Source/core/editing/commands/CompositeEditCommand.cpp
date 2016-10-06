@@ -300,6 +300,7 @@ void CompositeEditCommand::applyCommandToComposite(
 void CompositeEditCommand::appendCommandToComposite(
     CompositeEditCommand* command) {
   ensureComposition()->append(command->ensureComposition());
+  command->m_composition = nullptr;
   command->setParent(this);
   m_commands.append(command);
 }

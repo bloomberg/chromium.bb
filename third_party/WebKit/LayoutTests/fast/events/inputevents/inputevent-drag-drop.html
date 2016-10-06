@@ -5,19 +5,27 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <style>
-div, img {
+div {
     width: 100px;
     height: 100px;
 }
 </style>
 </head>
 <body>
-<div id="editable1" contenteditable><img id="img" src="../resources/greenbox.png"></div>
+<div id="editable1" contenteditable><b id="boldtext">EditableText</b></div>
 <div id="editable2" contenteditable></div>
 <textarea id="textarea1">Text</textarea>
 <textarea id="barrier"></textarea>
 <script>
 function simulateDragDrop(dragElement, dropElement) {
+    if (dragElement.select) {
+        dragElement.select();
+    } else {
+        var selection = window.getSelection();
+        selection.collapse(dragElement, 0);
+        selection.extend(dragElement, 1);
+    }
+
     eventSender.mouseMoveTo(dragElement.offsetLeft + dragElement.offsetWidth / 2,
                             dragElement.offsetTop + dragElement.offsetHeight / 2);
     eventSender.mouseDown();
@@ -32,7 +40,7 @@ function assertCleanInitialDOM(logInfo) {
     const editable2 = document.getElementById('editable2');
     const textarea1 = document.getElementById('textarea1');
     assert_equals(editable1.children.length, 1, `${logInfo}, DOM is dirty`);
-    assert_equals(editable1.children[0].tagName, 'IMG', `${logInfo}, DOM is dirty`);
+    assert_equals(editable1.children[0].innerHTML, 'EditableText', `${logInfo}, DOM is dirty`);
     assert_equals(editable2.children.length, 0, `${logInfo}, DOM is dirty`);
     assert_equals(textarea1.value, 'Text', `${logInfo}, DOM is dirty`);
 }
@@ -59,15 +67,17 @@ test(function() {
     const undoBarrier = document.getElementById('barrier');
     undoBarrier.focus();
     document.execCommand('insertText', false, 'abc');
-    function assertBarrierUnchanged() {
-        assert_equals(undoBarrier.value, 'abc');
+    function assertBarrierUnchanged(log) {
+        assert_equals(undoBarrier.value, 'abc', log);
     }
 
     // Normally Drag&Drop requires a single Undo.
     simulateDragDrop(editable1, editable2);
+    assert_equals(editable1.children.length, 0, `Normal Drag&Drop should remove data from editable1.`);
+    assert_equals(editable2.children.length, 1, `Normal Drag&Drop should insert data into editable2.`);
     testRunner.execCommand('undo');
     assertCleanInitialDOM('Normal Drag&Drop');
-    assertBarrierUnchanged();
+    assertBarrierUnchanged('step 1');
 
     // Canceling |DeleteByDrag|, still require a single Undo.
     editable1.addEventListener('beforeinput', preventDeleteByDragListener);
@@ -75,7 +85,7 @@ test(function() {
     testRunner.execCommand('undo');
     assertCleanInitialDOM('Canceling |DeleteByDrag|');
     editable1.removeEventListener('beforeinput', preventDeleteByDragListener);
-    assertBarrierUnchanged();
+    assertBarrierUnchanged('step 2');
 
     // Canceling |InsertFromDrop|, still require a single Undo.
     editable2.addEventListener('beforeinput', preventInsertFromDropListener);
@@ -83,7 +93,7 @@ test(function() {
     testRunner.execCommand('undo');
     assertCleanInitialDOM('Canceling |InsertFromDrop|');
     editable2.removeEventListener('beforeinput', preventInsertFromDropListener);
-    assertBarrierUnchanged();
+    assertBarrierUnchanged('step 3');
 
     // Canceling both, shouldn't create undo entry.
     editable1.addEventListener('beforeinput', preventDeleteByDragListener);
@@ -93,7 +103,7 @@ test(function() {
     testRunner.execCommand('undo');
     assert_equals(undoBarrier.value, '');
     testRunner.execCommand('redo');
-    assertBarrierUnchanged();
+    assertBarrierUnchanged('step 4');
     editable1.removeEventListener('beforeinput', preventDeleteByDragListener);
     editable2.removeEventListener('beforeinput', preventInsertFromDropListener);
 
@@ -119,7 +129,7 @@ test(function() {
     assert_equals(editable2.innerHTML, '');
     assert_equals(textarea1.value, 'Text');
     // More undo should reach to |undoBarrier|.
-    assertBarrierUnchanged();
+    assertBarrierUnchanged('step 5');
     testRunner.execCommand('undo');
     assert_equals(undoBarrier.value, '');
     testRunner.execCommand('redo');
@@ -150,7 +160,7 @@ test(function() {
 
     // Test Drag and Drop.
     testDragDropEventOrder(editable1, editable2,
-        ['editable2:drop', 'beforeinput:img:deleteByDrag', 'input:editable1:deleteByDrag',
+        ['editable2:drop', 'beforeinput:boldtext:deleteByDrag', 'input:editable1:deleteByDrag',
         'beforeinput:editable2:insertFromDrop', 'input:editable2:insertFromDrop', 'editable1:dragend']);
     testRunner.execCommand('undo');
 }, 'Testing Drag and Drop event order');
@@ -188,7 +198,7 @@ test(function() {
     // Test Drag and Drop.
     testDragDropDataTransfer('deleteByDrag', editable1, editable2, null, null);
     testRunner.execCommand('undo');
-    testDragDropDataTransfer('insertFromDrop', editable1, editable2, '', /^<img.*greenbox\.png".*>$/);
+    testDragDropDataTransfer('insertFromDrop', editable1, editable2, 'EditableText', /^.*EditableText<\/b>$/);
     testRunner.execCommand('undo');
 }, 'Testing Drag and Drop dataTransfer');
 
