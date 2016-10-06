@@ -33,7 +33,10 @@
       #toggleContainer {
         align-items: center;
         display: flex;
+        font: inherit;
         justify-content: center;
+        margin-bottom: 0;
+        margin-top: 0;
       }
 
       #toggleSpacer {
@@ -74,13 +77,13 @@
       <template is="dom-if" if="[[showAdvancedToggle_(
           showPages_.basic, hasExpandedSection_, inSearchMode_)]]">
         <div id="toggleSpacer"></div>
-        <div id="toggleContainer">
+        <h2 id="toggleContainer">
           <paper-button id="advancedToggle" on-tap="toggleAdvancedPage_">
             <span>$i18n{advancedPageTitle}</span>
             <iron-icon icon="[[arrowState_(advancedToggleExpanded_)]]">
             </iron-icon>
           </paper-button>
-        </div>
+        </h2>
       </template>
       <template is="dom-if" if="[[showAdvancedPage_(
           showPages_.advanced, inSearchMode_, hasExpandedSection_)]]">
