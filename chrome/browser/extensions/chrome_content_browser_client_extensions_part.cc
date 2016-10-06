@@ -268,24 +268,30 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
 bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
     content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
-  if (effective_site_url.SchemeIs(extensions::kExtensionScheme)) {
-    // --isolate-extensions should isolate extensions, except for a) hosted
-    // apps, b) platform apps.
-    // a) Isolating hosted apps is a good idea, but ought to be a separate knob.
-    // b) Sandbox pages in platform app can load web content in iframes;
-    //   isolating the app and the iframe leads to StoragePartition mismatch in
-    //   the two processes.
-    //   TODO(lazyboy): We should deprecate this behaviour and not let web
-    //   content load in platform app's process; see http://crbug.com/615585.
-    if (IsIsolateExtensionsEnabled()) {
-      const Extension* extension =
-          ExtensionRegistry::Get(browser_context)
-              ->enabled_extensions()
-              .GetExtensionOrAppByURL(effective_site_url);
-      if (extension && !extension->is_hosted_app() &&
-          !extension->is_platform_app()) {
+  if (IsIsolateExtensionsEnabled()) {
+    const Extension* extension =
+        ExtensionRegistry::Get(browser_context)
+            ->enabled_extensions()
+            .GetExtensionOrAppByURL(effective_site_url);
+    if (extension) {
+      // Always isolate Chrome Web Store.
+      if (extension->id() == kWebStoreAppId)
         return true;
-      }
+
+      // --isolate-extensions should isolate extensions, except for a) hosted
+      // apps, b) platform apps.
+      // a) Isolating hosted apps is a good idea, but ought to be a separate
+      //    knob.
+      // b) Sandbox pages in platform app can load web content in iframes;
+      //    isolating the app and the iframe leads to StoragePartition mismatch
+      //    in the two processes.
+      //    TODO(lazyboy): We should deprecate this behaviour and not let web
+      //    content load in platform app's process; see http://crbug.com/615585.
+      if (extension->is_hosted_app() || extension->is_platform_app())
+        return false;
+
+      // Isolate all extensions.
+      return true;
     }
   }
   return false;
