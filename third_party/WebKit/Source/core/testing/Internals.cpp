@@ -730,6 +730,8 @@ Node* Internals::previousInFlatTree(Node* node,
 String Internals::elementLayoutTreeAsText(Element* element,
                                           ExceptionState& exceptionState) {
   ASSERT(element);
+  element->document().view()->updateAllLifecyclePhases();
+
   String representation = externalRepresentation(element);
   if (representation.isEmpty()) {
     exceptionState.throwDOMException(

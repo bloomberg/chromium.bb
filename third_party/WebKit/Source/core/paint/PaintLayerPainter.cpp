@@ -103,9 +103,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(
   if (m_paintLayer.paintsWithTransparency(paintingInfo.getGlobalPaintFlags()))
     paintFlags |= PaintLayerHaveTransparency;
 
-  // Transforms will be applied by property nodes directly for SPv2.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-      m_paintLayer.paintsWithTransform(paintingInfo.getGlobalPaintFlags()) &&
+  if (m_paintLayer.paintsWithTransform(paintingInfo.getGlobalPaintFlags()) &&
       !(paintFlags & PaintLayerAppliedTransform))
     return paintLayerWithTransform(context, paintingInfo, paintFlags);
 
@@ -194,15 +192,19 @@ static bool shouldRepaintSubsequence(
     needsRepaint = true;
 
   // Repaint if layer's clip changes.
-  ClipRects& clipRects = paintLayer.clipper().paintingClipRects(
-      paintingInfo.rootLayer, respectOverflowClip, subpixelAccumulation);
-  ClipRects* previousClipRects = paintLayer.previousPaintingClipRects();
-  if (&clipRects != previousClipRects &&
-      (!previousClipRects || clipRects != *previousClipRects)) {
-    needsRepaint = true;
-    shouldClearEmptyPaintPhaseFlags = true;
+  // TODO(chrishtr): implement detecting clipping changes in SPv2.
+  // crbug.com/645667
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    ClipRects& clipRects = paintLayer.clipper().paintingClipRects(
+        paintingInfo.rootLayer, respectOverflowClip, subpixelAccumulation);
+    ClipRects* previousClipRects = paintLayer.previousPaintingClipRects();
+    if (&clipRects != previousClipRects &&
+        (!previousClipRects || clipRects != *previousClipRects)) {
+      needsRepaint = true;
+      shouldClearEmptyPaintPhaseFlags = true;
+    }
+    paintLayer.setPreviousPaintingClipRects(clipRects);
   }
-  paintLayer.setPreviousPaintingClipRects(clipRects);
 
   // Repaint if previously the layer might be clipped by paintDirtyRect and
   // paintDirtyRect changes.
@@ -396,18 +398,6 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
                                     respectOverflowClip, &offsetFromRoot,
                                     localPaintingInfo.subPixelAccumulation);
 
-    // TODO(trchen): Needs to adjust cull rect between transform spaces.
-    // https://crbug.com/593596
-    // Disables layer culling for SPv2 for now because the space of the cull
-    // rect doesn't match the space we paint in. Clipping will still be done by
-    // clip nodes, so this won't cause rendering issues, only performance.
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-      layerFragments[0].backgroundRect =
-          LayoutRect(LayoutRect::infiniteIntRect());
-      layerFragments[0].foregroundRect =
-          LayoutRect(LayoutRect::infiniteIntRect());
-    }
-
     if (shouldPaintContent) {
       // TODO(wangxianzhu): This is for old slow scrolling. Implement similar
       // optimization for slimming paint v2.
@@ -564,9 +554,6 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& paintingInfo,
     PaintLayerFlags paintFlags) {
-  // Transforms will be applied by property nodes directly for SPv2.
-  ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-
   TransformationMatrix layerTransform =
       m_paintLayer.renderableTransform(paintingInfo.getGlobalPaintFlags());
   // If the transform can't be inverted, then don't paint anything.
@@ -577,21 +564,6 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(
   // here.  m_paintLayer may be the "root", and then we should avoid looking at
   // its parent.
   PaintLayer* parentLayer = m_paintLayer.parent();
-
-  ClipRect ancestorBackgroundClipRect;
-  if (parentLayer) {
-    // Calculate the clip rectangle that the ancestors establish.
-    ClipRectsContext clipRectsContext(paintingInfo.rootLayer,
-                                      (paintFlags & PaintLayerUncachedClipRects)
-                                          ? UncachedClipRects
-                                          : PaintingClipRects,
-                                      IgnoreOverlayScrollbarSize);
-    if (shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject()) ==
-        IgnoreOverflowClip)
-      clipRectsContext.setIgnoreOverflowClip();
-    ancestorBackgroundClipRect =
-        m_paintLayer.clipper().backgroundClipRect(clipRectsContext);
-  }
 
   LayoutObject* object = m_paintLayer.layoutObject();
   LayoutView* view = object->view();
@@ -650,10 +622,27 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(
   if (fragments.size() > 1)
     cacheSkipper.emplace(context);
 
+  ClipRect ancestorBackgroundClipRect;
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (parentLayer) {
+      // Calculate the clip rectangle that the ancestors establish.
+      ClipRectsContext clipRectsContext(
+          paintingInfo.rootLayer,
+          (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects
+                                                     : PaintingClipRects,
+          IgnoreOverlayScrollbarSize);
+      if (shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject()) ==
+          IgnoreOverflowClip)
+        clipRectsContext.setIgnoreOverflowClip();
+      ancestorBackgroundClipRect =
+          m_paintLayer.clipper().backgroundClipRect(clipRectsContext);
+    }
+  }
+
   PaintResult result = FullyPainted;
   for (const auto& fragment : fragments) {
     Optional<LayerClipRecorder> clipRecorder;
-    if (parentLayer) {
+    if (parentLayer && !RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       ClipRect clipRectForFragment(ancestorBackgroundClipRect);
       // A fixed-position object is repeated on every page, but if it is clipped
       // by an ancestor layer then the repetitions are clipped out.
@@ -690,9 +679,6 @@ PaintLayerPainter::paintFragmentByApplyingTransform(
     const PaintLayerPaintingInfo& paintingInfo,
     PaintLayerFlags paintFlags,
     const LayoutPoint& fragmentTranslation) {
-  // Transforms will be applied by property nodes directly for SPv2.
-  ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-
   // This involves subtracting out the position of the layer in our current
   // coordinate space, but preserving the accumulated error for sub-pixel
   // layout.
@@ -811,11 +797,12 @@ void PaintLayerPainter::paintOverflowControlsForFragments(
     LayoutRect cullRect = fragment.backgroundRect.rect();
 
     Optional<LayerClipRecorder> clipRecorder;
-    if (needsToClip(localPaintingInfo, fragment.backgroundRect))
+    if (needsToClip(localPaintingInfo, fragment.backgroundRect)) {
       clipRecorder.emplace(context, *m_paintLayer.layoutObject(),
                            DisplayItem::kClipLayerOverflowControls,
                            fragment.backgroundRect, &localPaintingInfo,
                            fragment.paginationOffset, paintFlags);
+    }
 
     Optional<ScrollRecorder> scrollRecorder;
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
@@ -878,6 +865,7 @@ void PaintLayerPainter::paintFragmentWithPhase(
            objectPaintProperties->localBorderBoxProperties());
     paintOffset +=
         toSize(objectPaintProperties->localBorderBoxProperties()->paintOffset);
+    newCullRect.move(paintingInfo.scrollOffsetAccumulation);
   } else {
     paintOffset += toSize(fragment.layerBounds.location());
     if (!paintingInfo.scrollOffsetAccumulation.isZero()) {

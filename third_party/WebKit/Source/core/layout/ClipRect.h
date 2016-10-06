@@ -77,6 +77,8 @@ class ClipRect {
     return *this;
   }
 
+  String toString() { return m_rect.toString(); }
+
  private:
   LayoutRect m_rect;
   bool m_hasRadius;

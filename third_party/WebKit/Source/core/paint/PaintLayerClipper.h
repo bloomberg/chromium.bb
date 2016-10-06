@@ -48,6 +48,9 @@
 #include "core/CoreExport.h"
 #include "core/layout/ClipRectsCache.h"
 #include "core/layout/ScrollEnums.h"
+
+#include "platform/graphics/paint/GeometryMapper.h"
+
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -104,6 +107,25 @@ class ClipRectsContext {
 // PaintLayerClipper is responsible for computing and caching clip
 // rects.
 //
+// These clip rects have two types: background and foreground.
+//
+// The "background rect" for a PaintLayer is almost the same as its visual
+// rect in the space of some ancestor PaintLayer (specified by rootLayer on
+// ClipRectsContext).
+// The only differences are that:
+//   * The unclipped rect at the start is LayoutRect::infiniteIntRect,
+// rather than the local overflow bounds of the PaintLayer.
+//   * CSS clip, the extent of visualOverflowRect(), and SVG root viewport
+// clipping is applied.
+// Thus, for example if there are no clips then the background rect will be
+// infinite. Also, whether overflow clip of the ancestor should be applied is a
+// parameter.
+//
+// The "foreground rect" for a PaintLayer is its "background rect", intersected
+// with any clip applied by this PaintLayer to its children.
+
+// Motivation for this class:
+//
 // The main reason for this cache is that we compute the clip rects during
 // a layout tree walk but need them during a paint tree walk (see example
 // below for some explanations).
@@ -150,7 +172,7 @@ class CORE_EXPORT PaintLayerClipper {
   DISALLOW_NEW();
 
  public:
-  explicit PaintLayerClipper(const PaintLayer& layer) : m_layer(layer) {}
+  explicit PaintLayerClipper(const PaintLayer&, bool useGeometryMapper);
 
   void clearClipRectsIncludingDescendants();
   void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
@@ -159,12 +181,13 @@ class CORE_EXPORT PaintLayerClipper {
   // space. Only looks for clips up to the given ancestor.
   LayoutRect localClipRect(const PaintLayer* ancestorLayer) const;
 
+  // Computes the same thing as backgroundRect in calculateRects(), but skips
+  // apllying CSS clip and the visualOverflowRect() of |m_layer|.
   ClipRect backgroundClipRect(const ClipRectsContext&) const;
 
   // This method figures out our layerBounds in coordinates relative to
   // |rootLayer|. It also computes our background and foreground clip rects
-  // for painting/event handling.
-  // Pass offsetFromRoot if known.
+  // for painting/event handling. Pass offsetFromRoot if known.
   void calculateRects(const ClipRectsContext&,
                       const LayoutRect& paintDirtyRect,
                       LayoutRect& layerBounds,
@@ -189,7 +212,24 @@ class CORE_EXPORT PaintLayerClipper {
 
   bool shouldRespectOverflowClip(const ClipRectsContext&) const;
 
+  ClipRect clipRectWithGeometryMapper(const ClipRectsContext&,
+                                      bool isForeground) const;
+  void mapLocalToRootWithGeometryMapper(const ClipRectsContext&,
+                                        LayoutRect& localRect) const;
+  void calculateRectsWithGeometryMapper(
+      const ClipRectsContext&,
+      const LayoutRect& paintDirtyRect,
+      LayoutRect& layerBounds,
+      ClipRect& backgroundRect,
+      ClipRect& foregroundRect,
+      const LayoutPoint* offsetFromRoot = 0) const;
+
+  ClipRect applyOverflowClipToBackgroundRectWithGeometryMapper(
+      const ClipRectsContext&,
+      const ClipRect&) const;
+
   const PaintLayer& m_layer;
+  std::unique_ptr<GeometryMapper> m_geometryMapper;
 };
 
 }  // namespace blink

@@ -147,21 +147,23 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer,
     PaintLayer::RareAncestorDependentCompositingInputs rareProperties;
 
     if (!layer->isRootLayer()) {
-      properties.clippedAbsoluteBoundingBox =
-          enclosingIntRect(m_geometryMap.absoluteRect(
-              FloatRect(layer->boundingBoxForCompositingOverlapTest())));
-      // FIXME: Setting the absBounds to 1x1 instead of 0x0 makes very little
-      // sense, but removing this code will make JSGameBench sad.
-      // See https://codereview.chromium.org/13912020/
-      if (properties.clippedAbsoluteBoundingBox.isEmpty())
-        properties.clippedAbsoluteBoundingBox.setSize(IntSize(1, 1));
+      if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        properties.clippedAbsoluteBoundingBox =
+            enclosingIntRect(m_geometryMap.absoluteRect(
+                FloatRect(layer->boundingBoxForCompositingOverlapTest())));
+        // FIXME: Setting the absBounds to 1x1 instead of 0x0 makes very little
+        // sense, but removing this code will make JSGameBench sad.
+        // See https://codereview.chromium.org/13912020/
+        if (properties.clippedAbsoluteBoundingBox.isEmpty())
+          properties.clippedAbsoluteBoundingBox.setSize(IntSize(1, 1));
 
-      IntRect clipRect =
-          pixelSnappedIntRect(layer->clipper()
-                                  .backgroundClipRect(ClipRectsContext(
-                                      m_rootLayer, AbsoluteClipRects))
-                                  .rect());
-      properties.clippedAbsoluteBoundingBox.intersect(clipRect);
+        IntRect clipRect =
+            pixelSnappedIntRect(layer->clipper()
+                                    .backgroundClipRect(ClipRectsContext(
+                                        m_rootLayer, AbsoluteClipRects))
+                                    .rect());
+        properties.clippedAbsoluteBoundingBox.intersect(clipRect);
+      }
 
       const PaintLayer* parent = layer->parent();
       rareProperties.opacityAncestor =

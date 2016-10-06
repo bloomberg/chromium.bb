@@ -614,7 +614,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return m_scrollableArea.get();
   }
 
-  PaintLayerClipper clipper() const { return PaintLayerClipper(*this); }
+  PaintLayerClipper clipper() const {
+    return PaintLayerClipper(*this,
+                             RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  }
 
   bool scrollsOverflow() const;
 
