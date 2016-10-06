@@ -63,15 +63,9 @@ class CORE_EXPORT CSSRule : public GarbageCollectedFinalized<CSSRule>,
 
   virtual CSSRuleList* cssRules() const { return 0; }
 
-  void setParentStyleSheet(CSSStyleSheet* styleSheet) {
-    m_parentIsRule = false;
-    m_parentStyleSheet = styleSheet;
-  }
+  void setParentStyleSheet(CSSStyleSheet*);
 
-  void setParentRule(CSSRule* rule) {
-    m_parentIsRule = true;
-    m_parentRule = rule;
-  }
+  void setParentRule(CSSRule*);
 
   DECLARE_VIRTUAL_TRACE();
 

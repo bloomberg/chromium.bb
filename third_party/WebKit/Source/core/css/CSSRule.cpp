@@ -21,6 +21,7 @@
 
 #include "core/css/CSSRule.h"
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
@@ -41,6 +42,18 @@ const CSSParserContext& CSSRule::parserContext() const {
   CSSStyleSheet* styleSheet = parentStyleSheet();
   return styleSheet ? styleSheet->contents()->parserContext()
                     : strictCSSParserContext();
+}
+
+void CSSRule::setParentStyleSheet(CSSStyleSheet* styleSheet) {
+  m_parentIsRule = false;
+  m_parentStyleSheet = styleSheet;
+  ScriptWrappableVisitor::writeBarrier(this, m_parentStyleSheet);
+}
+
+void CSSRule::setParentRule(CSSRule* rule) {
+  m_parentIsRule = true;
+  m_parentRule = rule;
+  ScriptWrappableVisitor::writeBarrier(this, m_parentRule);
 }
 
 DEFINE_TRACE(CSSRule) {
