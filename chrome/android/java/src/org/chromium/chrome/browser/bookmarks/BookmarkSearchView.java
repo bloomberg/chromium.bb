@@ -28,6 +28,9 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.ViewSwitcher;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
@@ -36,8 +39,6 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserve
 import org.chromium.chrome.browser.bookmarks.BookmarkSearchRow.SearchHistoryDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.ui.UiUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -356,10 +357,6 @@ public class BookmarkSearchView extends LinearLayout implements OnItemClickListe
     public void onDestroy() {
         mBookmarkModel.removeObserver(mModelObserver);
         mDelegate.removeUIObserver(this);
-    }
-
-    @Override
-    public void onAllBookmarksStateSet() {
     }
 
     @Override

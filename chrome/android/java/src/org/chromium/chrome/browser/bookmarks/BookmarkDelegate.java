@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.bookmarks;
 import android.support.v4.widget.DrawerLayout;
 
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -34,11 +33,6 @@ interface BookmarkDelegate {
      * after upgrading to the new bookmarks.
      */
     boolean isDialogUi();
-
-    /**
-     * Corresponds to "All Items" list item in the side drawer. Shows all bookmarks.
-     */
-    void openAllBookmarks();
 
     /**
      * Corresponds to any folder named list item in the side drawer. Shows bookmarks under the
@@ -116,9 +110,4 @@ interface BookmarkDelegate {
      * @return LargeIconBridge instance. By sharing the instance, we can also share the cache.
      */
     LargeIconBridge getLargeIconBridge();
-
-    /**
-     * @return SnackbarManager instance.
-     */
-    SnackbarManager getSnackbarManager();
 }

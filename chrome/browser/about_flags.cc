@@ -1290,9 +1290,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(app_list::switches::kResetAppListInstallState)},
 #endif  // ENABLE_APP_LIST
 #if defined(OS_ANDROID)
-    {"enable-all-bookmarks-view", IDS_FLAGS_ENABLE_ALL_BOOKMARKS_VIEW_NAME,
-     IDS_FLAGS_SHOW_ALL_BOOKMARKS_VIEW_DESCRIPTION, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAllBookmarksFeature)},
     {"enable-downloads-ui", IDS_FLAGS_ENABLE_DOWNLOADS_UI_NAME,
      IDS_FLAGS_ENABLE_DOWNLOADS_UI_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDownloadsUiFeature)},

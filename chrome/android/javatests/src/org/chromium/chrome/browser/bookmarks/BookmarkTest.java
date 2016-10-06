@@ -171,14 +171,9 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     public void testOpenBookmarkManager() throws InterruptedException {
         openBookmarkManager();
         BookmarkDelegate delegate = mItemsContainer.getDelegateForTesting();
-        if (BookmarkUtils.isAllBookmarksViewEnabled()) {
-            assertEquals(BookmarkUIState.STATE_ALL_BOOKMARKS, delegate.getCurrentState());
-            assertEquals(UrlConstants.BOOKMARKS_URL, BookmarkUtils.getLastUsedUrl(getActivity()));
-        } else {
-            assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
-            assertEquals(BookmarkUIState.createFolderState(delegate.getModel().getDefaultFolder(),
-                    delegate.getModel()).mUrl, BookmarkUtils.getLastUsedUrl(getActivity()));
-        }
+        assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
+        assertEquals("chrome-native://bookmarks/folder/3",
+                BookmarkUtils.getLastUsedUrl(getActivity()));
     }
 
     /**

@@ -249,10 +249,6 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
     }
 
     @Override
-    public void onAllBookmarksStateSet() {
-    }
-
-    @Override
     public void onFolderStateSet(BookmarkId folder) {
     }
 

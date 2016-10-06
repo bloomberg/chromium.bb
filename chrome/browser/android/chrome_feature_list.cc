@@ -36,7 +36,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kCredentialManagementAPI,
     &features::kSimplifiedFullscreenUI,
     &features::kWebPayments,
-    &kAllBookmarksFeature,
     &kAndroidPayIntegrationV1,
     &kDownloadsUiFeature,
     &kImportantSitesInCBD,
@@ -60,9 +59,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
 };
 
 }  // namespace
-
-const base::Feature kAllBookmarksFeature{"AllBookmarks",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
                                              base::FEATURE_ENABLED_BY_DEFAULT};

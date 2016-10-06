@@ -334,9 +334,6 @@ const char kEasyUnlockAppPath[]             = "easy-unlock-app-path";
 // app to their shelf (or platform-specific equivalent)
 const char kEnableAddToShelf[] = "enable-add-to-shelf";
 
-// Enables all bookmarks view in bookmark manager.
-const char kEnableAllBookmarksView[] = "enable-all-bookmarks-view";
-
 // Enable OS integration for Chrome app file associations.
 const char kEnableAppsFileAssociations[]    = "enable-apps-file-associations";
 

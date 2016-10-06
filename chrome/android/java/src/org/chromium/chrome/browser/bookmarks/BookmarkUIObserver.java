@@ -21,11 +21,6 @@ interface BookmarkUIObserver extends SelectionObserver<BookmarkId> {
     void onDestroy();
 
     /**
-     * @see BookmarkDelegate#openAllBookmarks()
-     */
-    void onAllBookmarksStateSet();
-
-    /**
      * @see BookmarkDelegate#openFolder(BookmarkId)
      */
     void onFolderStateSet(BookmarkId folder);

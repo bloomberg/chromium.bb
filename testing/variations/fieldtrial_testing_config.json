@@ -1,19 +1,4 @@
 {
-    "AllBookmarks": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "AllBookmarks"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidSessionNotifications": [
         {
             "platforms": [

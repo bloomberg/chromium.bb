@@ -18,7 +18,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -274,12 +273,5 @@ public class BookmarkUtils {
         if (context instanceof BookmarkActivity) {
             ((Activity) context).finish();
         }
-    }
-
-    /**
-     * @return Whether "all bookmarks" section is enabled.
-     */
-    static boolean isAllBookmarksViewEnabled() {
-        return ChromeFeatureList.isEnabled("AllBookmarks");
     }
 }

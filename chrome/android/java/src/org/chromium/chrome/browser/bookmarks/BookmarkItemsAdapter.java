@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
@@ -244,8 +243,7 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public void onPromoHeaderShowingChanged(boolean isShowing) {
         assert mDelegate != null;
-        if (mDelegate.getCurrentState() != BookmarkUIState.STATE_ALL_BOOKMARKS
-                && mDelegate.getCurrentState() != BookmarkUIState.STATE_FOLDER) {
+        if (mDelegate.getCurrentState() != BookmarkUIState.STATE_FOLDER) {
             return;
         }
 
@@ -274,16 +272,6 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     @Override
-    public void onAllBookmarksStateSet() {
-        assert mDelegate != null;
-        List<BookmarkId> bookmarkIds =
-                mDelegate.getModel().getAllBookmarkIDsOrderedByCreationDate();
-        RecordHistogram.recordCountHistogram("EnhancedBookmarks.AllBookmarksCount",
-                bookmarkIds.size());
-        setBookmarks(null, bookmarkIds);
-    }
-
-    @Override
     public void onFolderStateSet(BookmarkId folder) {
         assert mDelegate != null;
         setBookmarks(mDelegate.getModel().getChildIDs(folder, true, false),
@@ -306,8 +294,7 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         if (currentUIState == BookmarkUIState.STATE_LOADING) return;
 
         mPromoHeaderSection.clear();
-        assert currentUIState == BookmarkUIState.STATE_ALL_BOOKMARKS
-                || currentUIState == BookmarkUIState.STATE_FOLDER : "Unexpected UI state";
+        assert currentUIState == BookmarkUIState.STATE_FOLDER : "Unexpected UI state";
         if (mPromoHeaderManager.shouldShow()) {
             mPromoHeaderSection.add(null);
         }
