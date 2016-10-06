@@ -35,6 +35,8 @@ blink_core_sources("paint") {
     "DetailsMarkerPainter.h",
     "EllipsisBoxPainter.cpp",
     "EllipsisBoxPainter.h",
+    "EmbeddedObjectPaintInvalidator.cpp",
+    "EmbeddedObjectPaintInvalidator.h",
     "EmbeddedObjectPainter.cpp",
     "EmbeddedObjectPainter.h",
     "FieldsetPainter.cpp",

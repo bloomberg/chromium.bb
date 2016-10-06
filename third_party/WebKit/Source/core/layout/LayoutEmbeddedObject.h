@@ -54,10 +54,10 @@ class LayoutEmbeddedObject : public LayoutPart {
   void paintContents(const PaintInfo&, const LayoutPoint&) const final;
   void paintReplaced(const PaintInfo&, const LayoutPoint&) const final;
   void paint(const PaintInfo&, const LayoutPoint&) const final;
+  PaintInvalidationReason invalidatePaintIfNeeded(
+      const PaintInvalidatorContext&) const final;
 
   void layout() final;
-  PaintInvalidationReason invalidatePaintIfNeeded(
-      const PaintInvalidationState&) final;
 
   bool isOfType(LayoutObjectType type) const override {
     return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type);

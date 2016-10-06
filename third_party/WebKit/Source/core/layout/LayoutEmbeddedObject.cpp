@@ -32,6 +32,7 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
+#include "core/paint/EmbeddedObjectPaintInvalidator.h"
 #include "core/paint/EmbeddedObjectPainter.h"
 #include "core/plugins/PluginView.h"
 #include "platform/text/PlatformLocale.h"
@@ -115,6 +116,12 @@ void LayoutEmbeddedObject::paintReplaced(const PaintInfo& paintInfo,
   EmbeddedObjectPainter(*this).paintReplaced(paintInfo, paintOffset);
 }
 
+PaintInvalidationReason LayoutEmbeddedObject::invalidatePaintIfNeeded(
+    const PaintInvalidatorContext& context) const {
+  return EmbeddedObjectPaintInvalidator(*this, context)
+      .invalidatePaintIfNeeded();
+}
+
 void LayoutEmbeddedObject::layout() {
   ASSERT(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
@@ -132,18 +139,6 @@ void LayoutEmbeddedObject::layout() {
     frameView()->addPartToUpdate(*this);
 
   clearNeedsLayout();
-}
-
-PaintInvalidationReason LayoutEmbeddedObject::invalidatePaintIfNeeded(
-    const PaintInvalidationState& paintInvalidationState) {
-  PaintInvalidationReason reason =
-      LayoutPart::invalidatePaintIfNeeded(paintInvalidationState);
-
-  Widget* widget = this->widget();
-  if (widget && widget->isPluginView())
-    toPluginView(widget)->invalidatePaintIfNeeded();
-
-  return reason;
 }
 
 ScrollResult LayoutEmbeddedObject::scroll(ScrollGranularity granularity,
