@@ -48,13 +48,11 @@ std::string OfflineInternalsUIMessageHandler::GetStringFromDeletePageResult(
 }
 
 std::string OfflineInternalsUIMessageHandler::GetStringFromDeleteRequestResults(
-    const offline_pages::RequestQueue::UpdateMultipleRequestResults& results) {
+    const offline_pages::MultipleItemStatuses& results) {
   // If any requests failed, return "failure", else "success".
   for (const auto& result : results) {
-    if (result.second ==
-        offline_pages::RequestQueue::UpdateRequestResult::STORE_FAILURE) {
+    if (result.second == offline_pages::ItemActionStatus::STORE_ERROR)
       return "Store failure, could not delete one or more requests";
-    }
   }
 
   return "Success";
@@ -124,7 +122,7 @@ void OfflineInternalsUIMessageHandler::HandleDeletedPagesCallback(
 
 void OfflineInternalsUIMessageHandler::HandleDeletedRequestsCallback(
     std::string callback_id,
-    const offline_pages::RequestQueue::UpdateMultipleRequestResults& results) {
+    const offline_pages::MultipleItemStatuses& results) {
   ResolveJavascriptCallback(
       base::StringValue(callback_id),
       base::StringValue(GetStringFromDeleteRequestResults(results)));

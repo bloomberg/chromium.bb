@@ -242,8 +242,7 @@ class RequestCoordinatorTest
                        std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Callback for removing requests.
-  void RemoveRequestsDone(
-      const RequestQueue::UpdateMultipleRequestResults& results);
+  void RemoveRequestsDone(const MultipleItemStatuses& results);
 
   // Callback for getting request statuses.
   void GetQueuedRequestsDone(
@@ -260,8 +259,7 @@ class RequestCoordinatorTest
     return last_requests_;
   }
 
-  const RequestQueue::UpdateMultipleRequestResults& last_remove_results()
-      const {
+  const MultipleItemStatuses& last_remove_results() const {
     return last_remove_results_;
   }
 
@@ -314,7 +312,7 @@ class RequestCoordinatorTest
 
  private:
   RequestQueue::GetRequestsResult last_get_requests_result_;
-  RequestQueue::UpdateMultipleRequestResults last_remove_results_;
+  MultipleItemStatuses last_remove_results_;
   std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -368,7 +366,7 @@ void RequestCoordinatorTest::GetRequestsDone(
 }
 
 void RequestCoordinatorTest::RemoveRequestsDone(
-    const RequestQueue::UpdateMultipleRequestResults& results) {
+    const MultipleItemStatuses& results) {
   last_remove_results_ = results;
   waiter_.Signal();
 }

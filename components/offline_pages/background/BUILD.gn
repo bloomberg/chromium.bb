@@ -14,6 +14,8 @@ static_library("background_offliner") {
     "offliner.h",
     "offliner_factory.h",
     "offliner_policy.h",
+    "remove_requests_task.cc",
+    "remove_requests_task.h",
     "request_coordinator.cc",
     "request_coordinator.h",
     "request_coordinator_event_logger.cc",
@@ -47,6 +49,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "change_requests_state_task_unittest.cc",
+    "remove_requests_task_unittest.cc",
     "request_coordinator_event_logger_unittest.cc",
     "request_coordinator_unittest.cc",
     "request_picker_unittest.cc",

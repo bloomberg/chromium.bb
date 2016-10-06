@@ -255,15 +255,13 @@ void RequestPicker::SplitRequests(
 // Callback used after expired requests are deleted from the queue and notifies
 // the coordinator.
 void RequestPicker::OnRequestExpired(
-    const RequestQueue::UpdateMultipleRequestResults& results,
-    const std::vector<std::unique_ptr<SavePageRequest>> requests) {
-    for (const auto& request : requests) {
-    const RequestCoordinator::BackgroundSavePageResult result(
-        RequestCoordinator::BackgroundSavePageResult::EXPIRED);
+    std::unique_ptr<UpdateRequestsResult> result) {
+  const RequestCoordinator::BackgroundSavePageResult save_page_result(
+      RequestCoordinator::BackgroundSavePageResult::EXPIRED);
+  for (const auto& request : result->updated_items) {
     event_logger_->RecordDroppedSavePageRequest(
-        request->client_id().name_space, result,
-        request->request_id());
-    notifier_->NotifyCompleted(*request, result);
+        request.client_id().name_space, save_page_result, request.request_id());
+    notifier_->NotifyCompleted(request, save_page_result);
   }
 }
 

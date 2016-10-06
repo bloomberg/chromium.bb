@@ -48,10 +48,6 @@ class RequestQueue {
                              // exist.
   };
 
-  // Type for a pair of request_id and result.
-  typedef std::vector<std::pair<int64_t, UpdateRequestResult>>
-      UpdateMultipleRequestResults;
-
   // Callback used for |GetRequests|.
   typedef base::Callback<void(GetRequestsResult,
                               std::vector<std::unique_ptr<SavePageRequest>>)>
@@ -67,18 +63,6 @@ class RequestQueue {
 
   // Callback used by |UdpateRequest|.
   typedef base::Callback<void(UpdateRequestResult)> UpdateRequestCallback;
-
-  // Callback used by |ChangeState| for more than one update at a time.
-  typedef base::Callback<void(
-      const UpdateMultipleRequestResults& results,
-      std::vector<std::unique_ptr<SavePageRequest>> requests)>
-      UpdateMultipleRequestsCallback;
-
-  // Callback used by |RemoveRequests|.
-  typedef base::Callback<void(
-      const UpdateMultipleRequestResults& results,
-      std::vector<std::unique_ptr<SavePageRequest>> requests)>
-      RemoveRequestsCallback;
 
   explicit RequestQueue(std::unique_ptr<RequestQueueStore> store);
   ~RequestQueue();
@@ -103,7 +87,7 @@ class RequestQueue {
   // |callback|.  If a request id cannot be removed, this will still remove the
   // others.
   void RemoveRequests(const std::vector<int64_t>& request_ids,
-                      const RemoveRequestsCallback& callback);
+                      const UpdateCallback& callback);
 
   // Changes the state to |new_state| for requests matching the
   // |request_ids|. Results are returned through |callback|.

@@ -167,19 +167,34 @@ void OnGetAllRequestsDone(
   base::android::RunCallbackAndroid(j_callback_obj, j_result_obj);
 }
 
-void OnRemoveRequestsDone(
-    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
-    const RequestQueue::UpdateMultipleRequestResults& removed_request_results) {
+RequestQueue::UpdateRequestResult ToUpdateRequestResult(
+    ItemActionStatus status) {
+  switch (status) {
+    case ItemActionStatus::SUCCESS:
+      return RequestQueue::UpdateRequestResult::SUCCESS;
+    case ItemActionStatus::NOT_FOUND:
+      return RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
+    case ItemActionStatus::STORE_ERROR:
+      return RequestQueue::UpdateRequestResult::STORE_FAILURE;
+    case ItemActionStatus::ALREADY_EXISTS:
+    default:
+      NOTREACHED();
+  }
+  return RequestQueue::UpdateRequestResult::STORE_FAILURE;
+}
+
+void OnRemoveRequestsDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+                          const MultipleItemStatuses& removed_request_results) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   std::vector<int> update_request_results;
   std::vector<int64_t> update_request_ids;
 
-  for (std::pair<int64_t, RequestQueue::UpdateRequestResult> remove_result :
+  for (std::pair<int64_t, ItemActionStatus> remove_result :
        removed_request_results) {
     update_request_ids.emplace_back(std::get<0>(remove_result));
     update_request_results.emplace_back(
-        static_cast<int>(std::get<1>(remove_result)));
+        static_cast<int>(ToUpdateRequestResult(std::get<1>(remove_result))));
   }
 
   ScopedJavaLocalRef<jlongArray> j_result_ids =

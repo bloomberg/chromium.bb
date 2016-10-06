@@ -316,18 +316,16 @@ void RequestCoordinator::UpdateMultipleRequestsCallback(
 void RequestCoordinator::HandleRemovedRequestsAndCallback(
     const RemoveRequestsCallback& callback,
     BackgroundSavePageResult status,
-    const RequestQueue::UpdateMultipleRequestResults& results,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  callback.Run(results);
-  HandleRemovedRequests(status, results, std::move(requests));
+    std::unique_ptr<UpdateRequestsResult> result) {
+  callback.Run(result->item_statuses);
+  HandleRemovedRequests(status, std::move(result));
 }
 
 void RequestCoordinator::HandleRemovedRequests(
     BackgroundSavePageResult status,
-    const RequestQueue::UpdateMultipleRequestResults& results,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  for (const auto& request : requests)
-    NotifyCompleted(*request, status);
+    std::unique_ptr<UpdateRequestsResult> result) {
+  for (const auto& request : result->updated_items)
+    NotifyCompleted(request, status);
 }
 
 void RequestCoordinator::ScheduleAsNeeded() {
@@ -472,10 +470,6 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
       base::Bind(&RequestCoordinator::UpdateRequestCallback,
                  weak_ptr_factory_.GetWeakPtr(), updated_request.client_id()));
   active_request_.reset(new SavePageRequest(updated_request));
-  queue_->UpdateRequest(
-      updated_request,
-      base::Bind(&RequestCoordinator::UpdateRequestCallback,
-                 weak_ptr_factory_.GetWeakPtr(), updated_request.client_id()));
 
   // Start the load and save process in the offliner (Async).
   if (offliner_->LoadAndSave(

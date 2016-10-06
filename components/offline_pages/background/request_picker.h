@@ -78,9 +78,7 @@ class RequestPicker {
       std::vector<std::unique_ptr<SavePageRequest>>* expired_requests);
 
   // Callback used after requests get expired.
-  void OnRequestExpired(
-      const RequestQueue::UpdateMultipleRequestResults& results,
-      const std::vector<std::unique_ptr<SavePageRequest>> requests);
+  void OnRequestExpired(std::unique_ptr<UpdateRequestsResult> result);
 
   // Unowned pointer to the request queue.
   RequestQueue* queue_;

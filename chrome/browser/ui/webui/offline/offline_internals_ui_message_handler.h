@@ -10,6 +10,7 @@
 #include "components/offline_pages/background/request_coordinator.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/offline_store_types.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace offline_internals {
@@ -72,15 +73,15 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Callback for DeleteRequest/DeleteAllRequests calls.
   void HandleDeletedRequestsCallback(
       std::string callback_id,
-      const offline_pages::RequestQueue::UpdateMultipleRequestResults& results);
+      const offline_pages::MultipleItemStatuses& results);
 
   // Turns a DeletePageResult enum into logical string.
   std::string GetStringFromDeletePageResult(
       offline_pages::DeletePageResult value);
 
-  // Summarizes the UpdateMultipleRequestResults vector with a string.
+  // Summarizes the MultipleItemStatuses vector with a string.
   std::string GetStringFromDeleteRequestResults(
-      const offline_pages::RequestQueue::UpdateMultipleRequestResults& result);
+      const offline_pages::MultipleItemStatuses& result);
 
   // Turns a SavePageRequest::Status into logical string.
   std::string GetStringFromSavePageStatus();

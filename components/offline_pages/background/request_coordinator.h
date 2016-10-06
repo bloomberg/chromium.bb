@@ -59,8 +59,17 @@ class RequestCoordinator : public KeyedService,
   // Callback to report when a request was available.
   typedef base::Callback<void(const SavePageRequest& request)>
       RequestPickedCallback;
+
   // Callback to report when no request was available.
   typedef base::Callback<void(bool)> RequestNotPickedCallback;
+
+  // Callback specifying which request IDs were actually removed.
+  typedef base::Callback<void(const MultipleItemStatuses&)>
+      RemoveRequestsCallback;
+
+  // Callback that receives the response for GetAllRequests.
+  typedef base::Callback<void(std::vector<std::unique_ptr<SavePageRequest>>)>
+      GetRequestsCallback;
 
   RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                      std::unique_ptr<OfflinerFactory> factory,
@@ -76,11 +85,6 @@ class RequestCoordinator : public KeyedService,
   bool SavePageLater(
       const GURL& url, const ClientId& client_id, bool user_reqeusted);
 
-  // Callback specifying which request IDs were actually removed.
-  typedef base::Callback<void(
-      const RequestQueue::UpdateMultipleRequestResults&)>
-      RemoveRequestsCallback;
-
   // Remove a list of requests by |request_id|.  This removes requests from the
   // request queue, and cancels an in-progress prerender.
   void RemoveRequests(const std::vector<int64_t>& request_ids,
@@ -92,10 +96,6 @@ class RequestCoordinator : public KeyedService,
 
   // Resume a list of previously paused requests, making them available.
   void ResumeRequests(const std::vector<int64_t>& request_ids);
-
-  // Callback that receives the response for GetAllRequests.
-  typedef base::Callback<void(std::vector<std::unique_ptr<SavePageRequest>>)>
-      GetRequestsCallback;
 
   // Get all save page request items in the callback.
   void GetAllRequests(const GetRequestsCallback& callback);
@@ -196,13 +196,10 @@ class RequestCoordinator : public KeyedService,
   void HandleRemovedRequestsAndCallback(
       const RemoveRequestsCallback& callback,
       BackgroundSavePageResult status,
-      const RequestQueue::UpdateMultipleRequestResults& results,
-      std::vector<std::unique_ptr<SavePageRequest>> requests);
+      std::unique_ptr<UpdateRequestsResult> result);
 
-  void HandleRemovedRequests(
-      BackgroundSavePageResult status,
-      const RequestQueue::UpdateMultipleRequestResults& results,
-      std::vector<std::unique_ptr<SavePageRequest>> requests);
+  void HandleRemovedRequests(BackgroundSavePageResult status,
+                             std::unique_ptr<UpdateRequestsResult> result);
 
   // Start processing now if connected (but with conservative assumption
   // as to other device conditions).

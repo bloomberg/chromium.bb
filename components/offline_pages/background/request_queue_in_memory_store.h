@@ -27,12 +27,8 @@ class RequestQueueInMemoryStore : public RequestQueueStore {
                   const AddCallback& callback) override;
   void UpdateRequests(const std::vector<SavePageRequest>& requests,
                       const UpdateCallback& callback) override;
-
-  // Remove requests by request ID. The callback will get a list of
-  // UpdateMultipleRequestResults and a list of the removed requests (for use by
-  // notifications).
   void RemoveRequests(const std::vector<int64_t>& request_ids,
-                      const RemoveCallback& callback) override;
+                      const UpdateCallback& callback) override;
 
   void Reset(const ResetCallback& callback) override;
   StoreState state() const override;

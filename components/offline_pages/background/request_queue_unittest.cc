@@ -30,6 +30,7 @@ const int64_t kRequestId2 = 77;
 const GURL kUrl2("http://test.com");
 const ClientId kClientId2("bookmark", "567");
 const bool kUserRequested = true;
+const int64_t kRequestId3 = 99;
 }  // namespace
 
 // TODO(fgorski): Add tests for store failures in add/remove/get.
@@ -48,10 +49,6 @@ class RequestQueueTest : public testing::Test {
   // Callback for getting requests.
   void GetRequestsDone(GetRequestsResult result,
                        std::vector<std::unique_ptr<SavePageRequest>> requests);
-  // Callback for removing request.
-  void RemoveRequestsDone(
-      const RequestQueue::UpdateMultipleRequestResults& results,
-      std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   void UpdateRequestDone(UpdateRequestResult result);
   void UpdateRequestsDone(std::unique_ptr<UpdateRequestsResult> result);
@@ -61,16 +58,6 @@ class RequestQueueTest : public testing::Test {
   AddRequestResult last_add_result() const { return last_add_result_; }
   SavePageRequest* last_added_request() {
     return last_added_request_.get();
-  }
-
-  const RequestQueue::UpdateMultipleRequestResults& last_remove_results()
-      const {
-    return last_remove_results_;
-  }
-
-  const RequestQueue::UpdateMultipleRequestResults&
-  last_multiple_update_results() const {
-    return last_multiple_update_results_;
   }
 
   UpdateRequestResult last_update_result() const { return last_update_result_; }
@@ -91,8 +78,6 @@ class RequestQueueTest : public testing::Test {
   AddRequestResult last_add_result_;
   std::unique_ptr<SavePageRequest> last_added_request_;
   std::unique_ptr<UpdateRequestsResult> update_requests_result_;
-  RequestQueue::UpdateMultipleRequestResults last_remove_results_;
-  RequestQueue::UpdateMultipleRequestResults last_multiple_update_results_;
   UpdateRequestResult last_update_result_;
 
   GetRequestsResult last_get_requests_result_;
@@ -132,13 +117,6 @@ void RequestQueueTest::GetRequestsDone(
     GetRequestsResult result,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
   last_get_requests_result_ = result;
-  last_requests_ = std::move(requests);
-}
-
-void RequestQueueTest::RemoveRequestsDone(
-    const RequestQueue::UpdateMultipleRequestResults& results,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  last_remove_results_ = results;
   last_requests_ = std::move(requests);
 }
 
@@ -186,14 +164,17 @@ TEST_F(RequestQueueTest, RemoveRequest) {
   PumpLoop();
   ASSERT_EQ(kRequestId, last_added_request()->request_id());
 
-  std::vector<int64_t> remove_requests;
-  remove_requests.push_back(kRequestId);
+  std::vector<int64_t> remove_requests{kRequestId};
   queue()->RemoveRequests(remove_requests,
-                          base::Bind(&RequestQueueTest::RemoveRequestsDone,
+                          base::Bind(&RequestQueueTest::UpdateRequestsDone,
                                      base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(1ul, last_remove_results().size());
-  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_results().at(0).second);
+  EXPECT_EQ(1ul, update_requests_result()->item_statuses.size());
+  EXPECT_EQ(kRequestId, update_requests_result()->item_statuses.at(0).first);
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            update_requests_result()->item_statuses.at(0).second);
+  EXPECT_EQ(1UL, update_requests_result()->updated_items.size());
+  EXPECT_EQ(request, update_requests_result()->updated_items.at(0));
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
@@ -221,15 +202,24 @@ TEST_F(RequestQueueTest, RemoveSeveralRequests) {
   std::vector<int64_t> remove_requests;
   remove_requests.push_back(kRequestId);
   remove_requests.push_back(kRequestId2);
+  remove_requests.push_back(kRequestId3);
   queue()->RemoveRequests(remove_requests,
-                          base::Bind(&RequestQueueTest::RemoveRequestsDone,
+                          base::Bind(&RequestQueueTest::UpdateRequestsDone,
                                      base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(2ul, last_remove_results().size());
-  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_results().at(0).second);
-  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_results().at(1).second);
-  ASSERT_EQ(kRequestId, last_remove_results().at(0).first);
-  ASSERT_EQ(kRequestId2, last_remove_results().at(1).first);
+  ASSERT_EQ(3ul, update_requests_result()->item_statuses.size());
+  ASSERT_EQ(kRequestId, update_requests_result()->item_statuses.at(0).first);
+  ASSERT_EQ(ItemActionStatus::SUCCESS,
+            update_requests_result()->item_statuses.at(0).second);
+  ASSERT_EQ(kRequestId2, update_requests_result()->item_statuses.at(1).first);
+  ASSERT_EQ(ItemActionStatus::SUCCESS,
+            update_requests_result()->item_statuses.at(1).second);
+  ASSERT_EQ(kRequestId3, update_requests_result()->item_statuses.at(2).first);
+  ASSERT_EQ(ItemActionStatus::NOT_FOUND,
+            update_requests_result()->item_statuses.at(2).second);
+  EXPECT_EQ(2UL, update_requests_result()->updated_items.size());
+  EXPECT_EQ(request, update_requests_result()->updated_items.at(0));
+  EXPECT_EQ(request2, update_requests_result()->updated_items.at(1));
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
@@ -333,12 +323,13 @@ TEST_F(RequestQueueTest, MultipleRequestsAddGetRemove) {
   std::vector<int64_t> remove_requests;
   remove_requests.push_back(request1.request_id());
   queue()->RemoveRequests(remove_requests,
-                          base::Bind(&RequestQueueTest::RemoveRequestsDone,
+                          base::Bind(&RequestQueueTest::UpdateRequestsDone,
                                      base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(1ul, last_remove_results().size());
-  ASSERT_EQ(kRequestId, last_remove_results().at(0).first);
-  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_results().at(0).second);
+  ASSERT_EQ(1ul, update_requests_result()->item_statuses.size());
+  ASSERT_EQ(kRequestId, update_requests_result()->item_statuses.at(0).first);
+  ASSERT_EQ(ItemActionStatus::SUCCESS,
+            update_requests_result()->item_statuses.at(0).second);
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));

@@ -26,12 +26,16 @@ enum class StoreState {
 };
 
 // Statuses referring to actions taken on items in the stores.
+// GENERATED_JAVA_ENUM_PACKAGE:org.chromium.components.offlinepages
 enum class ItemActionStatus {
   SUCCESS,
   ALREADY_EXISTS,
   NOT_FOUND,
   STORE_ERROR,
 };
+
+// List of item action statuses mapped to item ID.
+typedef std::vector<std::pair<int64_t, ItemActionStatus>> MultipleItemStatuses;
 
 // Collective result for store update.
 template <typename T>
@@ -43,7 +47,7 @@ class StoreUpdateResult {
 
   // List of Offline ID to item action status mappings.
   // It is meant to be consumed by the original caller of the operation.
-  std::vector<std::pair<int64_t, ItemActionStatus>> item_statuses;
+  MultipleItemStatuses item_statuses;
 
   // List of successfully updated offline page items as seen after operation
   // concludes. It is meant to be used when passing to the observers.

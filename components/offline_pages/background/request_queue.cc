@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/background/change_requests_state_task.h"
+#include "components/offline_pages/background/remove_requests_task.h"
 #include "components/offline_pages/background/request_queue_store.h"
 #include "components/offline_pages/background/save_page_request.h"
 
@@ -71,14 +72,6 @@ void UpdateRequestsDone(const RequestQueue::UpdateRequestCallback& callback,
   }
 
   callback.Run(result);
-}
-
-// Completes the remove request call.
-void RemoveRequestsDone(
-    const RequestQueue::RemoveRequestsCallback& callback,
-    const RequestQueue::UpdateMultipleRequestResults& results,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  callback.Run(results, std::move(requests));
 }
 
 }  // namespace
@@ -151,8 +144,10 @@ void RequestQueue::GetForUpdateDone(
 }
 
 void RequestQueue::RemoveRequests(const std::vector<int64_t>& request_ids,
-                                  const RemoveRequestsCallback& callback) {
-  store_->RemoveRequests(request_ids, base::Bind(RemoveRequestsDone, callback));
+                                  const UpdateCallback& callback) {
+  std::unique_ptr<Task> task(
+      new RemoveRequestsTask(store_.get(), request_ids, callback));
+  task_queue_.AddTask(std::move(task));
 }
 
 void RequestQueue::ChangeRequestsState(

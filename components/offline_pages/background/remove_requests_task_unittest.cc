@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/background/change_requests_state_task.h"
+#include "components/offline_pages/background/remove_requests_task.h"
 
 #include <memory>
 
@@ -23,19 +23,18 @@ const ClientId kClientId1("bookmark", "1234");
 const ClientId kClientId2("async", "5678");
 }  // namespace
 
-class ChangeRequestsStateTaskTest : public testing::Test {
+class RemoveRequestsTaskTest : public testing::Test {
  public:
-  ChangeRequestsStateTaskTest();
-  ~ChangeRequestsStateTaskTest() override;
+  RemoveRequestsTaskTest();
+  ~RemoveRequestsTaskTest() override;
 
   void PumpLoop();
 
-  void SetUpStore(RequestQueueStore* store);
+  void AddRequestsToStore(RequestQueueStore* store);
 
   void AddRequestDone(ItemActionStatus status);
 
-  void ChangeRequestsStateCallback(
-      std::unique_ptr<UpdateRequestsResult> result);
+  void RemoveRequestsCallback(std::unique_ptr<UpdateRequestsResult> result);
 
   UpdateRequestsResult* last_result() const { return result_.get(); }
 
@@ -45,46 +44,46 @@ class ChangeRequestsStateTaskTest : public testing::Test {
   base::ThreadTaskRunnerHandle task_runner_handle_;
 };
 
-ChangeRequestsStateTaskTest::ChangeRequestsStateTaskTest()
+RemoveRequestsTaskTest::RemoveRequestsTaskTest()
     : task_runner_(new base::TestSimpleTaskRunner),
       task_runner_handle_(task_runner_) {}
 
-ChangeRequestsStateTaskTest::~ChangeRequestsStateTaskTest() {}
+RemoveRequestsTaskTest::~RemoveRequestsTaskTest() {}
 
-void ChangeRequestsStateTaskTest::PumpLoop() {
+void RemoveRequestsTaskTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
-void ChangeRequestsStateTaskTest::SetUpStore(RequestQueueStore* store) {
+void RemoveRequestsTaskTest::AddRequestsToStore(RequestQueueStore* store) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
   store->AddRequest(request_1,
-                    base::Bind(&ChangeRequestsStateTaskTest::AddRequestDone,
+                    base::Bind(&RemoveRequestsTaskTest::AddRequestDone,
                                base::Unretained(this)));
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time,
                             true);
   store->AddRequest(request_2,
-                    base::Bind(&ChangeRequestsStateTaskTest::AddRequestDone,
+                    base::Bind(&RemoveRequestsTaskTest::AddRequestDone,
                                base::Unretained(this)));
   PumpLoop();
 }
 
-void ChangeRequestsStateTaskTest::AddRequestDone(ItemActionStatus status) {
+void RemoveRequestsTaskTest::AddRequestDone(ItemActionStatus status) {
   ASSERT_EQ(ItemActionStatus::SUCCESS, status);
 }
 
-void ChangeRequestsStateTaskTest::ChangeRequestsStateCallback(
+void RemoveRequestsTaskTest::RemoveRequestsCallback(
     std::unique_ptr<UpdateRequestsResult> result) {
   result_ = std::move(result);
 }
 
-TEST_F(ChangeRequestsStateTaskTest, UpdateWhenStoreEmpty) {
+TEST_F(RemoveRequestsTaskTest, RemoveWhenStoreEmpty) {
   RequestQueueInMemoryStore store;
   std::vector<int64_t> request_ids{kRequestId1};
-  ChangeRequestsStateTask task(
-      &store, request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
+  RemoveRequestsTask task(
+      &store, request_ids,
+      base::Bind(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                  base::Unretained(this)));
   task.Run();
   PumpLoop();
@@ -96,13 +95,13 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateWhenStoreEmpty) {
   EXPECT_EQ(0UL, last_result()->updated_items.size());
 }
 
-TEST_F(ChangeRequestsStateTaskTest, UpdateSingleItem) {
+TEST_F(RemoveRequestsTaskTest, RemoveSingleItem) {
   RequestQueueInMemoryStore store;
-  SetUpStore(&store);
+  AddRequestsToStore(&store);
   std::vector<int64_t> request_ids{kRequestId1};
-  ChangeRequestsStateTask task(
-      &store, request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
+  RemoveRequestsTask task(
+      &store, request_ids,
+      base::Bind(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                  base::Unretained(this)));
   task.Run();
   PumpLoop();
@@ -112,17 +111,16 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateSingleItem) {
   EXPECT_EQ(ItemActionStatus::SUCCESS,
             last_result()->item_statuses.at(0).second);
   EXPECT_EQ(1UL, last_result()->updated_items.size());
-  EXPECT_EQ(SavePageRequest::RequestState::PAUSED,
-            last_result()->updated_items.at(0).request_state());
+  EXPECT_EQ(kRequestId1, last_result()->updated_items.at(0).request_id());
 }
 
-TEST_F(ChangeRequestsStateTaskTest, UpdateMultipleItems) {
+TEST_F(RemoveRequestsTaskTest, RemoveMultipleItems) {
   RequestQueueInMemoryStore store;
-  SetUpStore(&store);
+  AddRequestsToStore(&store);
   std::vector<int64_t> request_ids{kRequestId1, kRequestId2};
-  ChangeRequestsStateTask task(
-      &store, request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
+  RemoveRequestsTask task(
+      &store, request_ids,
+      base::Bind(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                  base::Unretained(this)));
   task.Run();
   PumpLoop();
@@ -136,19 +134,15 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateMultipleItems) {
             last_result()->item_statuses.at(1).second);
   EXPECT_EQ(2UL, last_result()->updated_items.size());
   EXPECT_EQ(kRequestId1, last_result()->updated_items.at(0).request_id());
-  EXPECT_EQ(SavePageRequest::RequestState::PAUSED,
-            last_result()->updated_items.at(0).request_state());
   EXPECT_EQ(kRequestId2, last_result()->updated_items.at(1).request_id());
-  EXPECT_EQ(SavePageRequest::RequestState::PAUSED,
-            last_result()->updated_items.at(1).request_state());
 }
 
-TEST_F(ChangeRequestsStateTaskTest, EmptyRequestsList) {
+TEST_F(RemoveRequestsTaskTest, DeleteWithEmptyIdList) {
   RequestQueueInMemoryStore store;
   std::vector<int64_t> request_ids;
-  ChangeRequestsStateTask task(
-      &store, request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
+  RemoveRequestsTask task(
+      &store, request_ids,
+      base::Bind(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                  base::Unretained(this)));
   task.Run();
   PumpLoop();
@@ -157,13 +151,13 @@ TEST_F(ChangeRequestsStateTaskTest, EmptyRequestsList) {
   EXPECT_EQ(0UL, last_result()->updated_items.size());
 }
 
-TEST_F(ChangeRequestsStateTaskTest, UpdateMissingItem) {
+TEST_F(RemoveRequestsTaskTest, RemoveMissingItem) {
   RequestQueueInMemoryStore store;
-  SetUpStore(&store);
+  AddRequestsToStore(&store);
   std::vector<int64_t> request_ids{kRequestId1, kRequestId3};
-  ChangeRequestsStateTask task(
-      &store, request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
+  RemoveRequestsTask task(
+      &store, request_ids,
+      base::Bind(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                  base::Unretained(this)));
   task.Run();
   PumpLoop();
@@ -176,8 +170,7 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateMissingItem) {
   EXPECT_EQ(ItemActionStatus::NOT_FOUND,
             last_result()->item_statuses.at(1).second);
   EXPECT_EQ(1UL, last_result()->updated_items.size());
-  EXPECT_EQ(SavePageRequest::RequestState::PAUSED,
-            last_result()->updated_items.at(0).request_state());
+  EXPECT_EQ(kRequestId1, last_result()->updated_items.at(0).request_id());
 }
 
 }  // namespace offline_pages

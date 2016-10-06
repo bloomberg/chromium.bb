@@ -84,7 +84,7 @@ std::vector<int64_t> FilterRequestsByGuid(
   return request_ids;
 }
 
-void CancelRequestCallback(const RequestQueue::UpdateMultipleRequestResults&) {
+void CancelRequestCallback(const MultipleItemStatuses&) {
   // Results ignored here, as UI uses observer to update itself.
 }
 
