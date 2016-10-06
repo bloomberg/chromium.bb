@@ -38,7 +38,7 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
 
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   set_has_ink_drop_action_on_click(true);
-  set_ink_drop_base_color(kMenuIconColor);
+  set_ink_drop_base_color(SK_ColorBLACK);
 }
 
 SystemMenuButton::~SystemMenuButton() {}
@@ -52,10 +52,7 @@ std::unique_ptr<views::InkDropRipple> SystemMenuButton::CreateInkDropRipple()
 
 std::unique_ptr<views::InkDropHighlight>
 SystemMenuButton::CreateInkDropHighlight() const {
-  gfx::Size size = GetLocalBounds().size();
-  return base::MakeUnique<views::InkDropHighlight>(
-      size, kInkDropSmallCornerRadius,
-      gfx::RectF(gfx::SizeF(size)).CenterPoint(), kMenuIconColor);
+  return nullptr;
 }
 
 bool SystemMenuButton::ShouldShowInkDropForFocus() const {
