@@ -35,7 +35,6 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/suggestions/image_fetcher_impl.h"
 #include "ios/chrome/browser/suggestions/ios_image_decoder_impl.h"
-#include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
@@ -53,8 +52,6 @@ using ntp_snippets::NTPSnippetsService;
 using ntp_snippets::NTPSnippetsStatusService;
 using suggestions::ImageFetcherImpl;
 using suggestions::IOSImageDecoderImpl;
-using suggestions::SuggestionsService;
-using suggestions::SuggestionsServiceFactory;
 
 namespace {
 
@@ -98,7 +95,6 @@ IOSChromeContentSuggestionsServiceFactory::
   DependsOn(ios::HistoryServiceFactory::GetInstance());
   DependsOn(OAuth2TokenServiceFactory::GetInstance());
   DependsOn(ios::SigninManagerFactory::GetInstance());
-  DependsOn(SuggestionsServiceFactory::GetInstance());
 }
 
 IOSChromeContentSuggestionsServiceFactory::
@@ -145,8 +141,6 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
         OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state);
     scoped_refptr<net::URLRequestContextGetter> request_context =
         browser_state->GetRequestContext();
-    SuggestionsService* suggestions_service =
-        SuggestionsServiceFactory::GetForBrowserState(chrome_browser_state);
     NTPSnippetsScheduler* scheduler = nullptr;
     base::FilePath database_dir(
         browser_state->GetStatePath().Append(ntp_snippets::kDatabaseFolder));
@@ -158,7 +152,6 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     std::unique_ptr<NTPSnippetsService> ntp_snippets_service =
         base::MakeUnique<NTPSnippetsService>(
             service.get(), service->category_factory(), prefs,
-            suggestions_service,
             GetApplicationContext()->GetApplicationLocale(),
             service->user_classifier(), scheduler,
             base::MakeUnique<NTPSnippetsFetcher>(

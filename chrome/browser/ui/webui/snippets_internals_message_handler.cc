@@ -260,8 +260,6 @@ void SnippetsInternalsMessageHandler::ClearClassification(
 }
 
 void SnippetsInternalsMessageHandler::SendAllContent() {
-  SendHosts();
-
   SendBoolean("flag-snippets", base::FeatureList::IsEnabled(
                                    ntp_snippets::kContentSuggestionsFeature));
   SendBoolean("flag-recent-offline-tab-suggestions",
@@ -279,11 +277,6 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
                   ntp_snippets::kPhysicalWebPageSuggestionsFeature));
 
   SendClassification();
-
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "chrome.SnippetsInternals.setHostRestricted",
-      base::FundamentalValue(
-          ntp_snippets_service_->snippets_fetcher()->UsesHostRestrictions()));
 
   switch (ntp_snippets_service_->snippets_fetcher()->personalization()) {
     case ntp_snippets::NTPSnippetsFetcher::Personalization::kPersonal:
@@ -322,24 +315,6 @@ void SnippetsInternalsMessageHandler::SendClassification() {
       base::FundamentalValue(
           content_suggestions_service_->user_classifier()->GetEstimatedAvgTime(
               UserClassifier::Metric::SUGGESTIONS_USED)));
-}
-
-void SnippetsInternalsMessageHandler::SendHosts() {
-  std::unique_ptr<base::ListValue> hosts_list(new base::ListValue);
-
-  std::set<std::string> hosts = ntp_snippets_service_->GetSuggestionsHosts();
-
-  for (const std::string& host : hosts) {
-    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-    entry->SetString("url", host);
-
-    hosts_list->Append(std::move(entry));
-  }
-
-  base::DictionaryValue result;
-  result.Set("list", std::move(hosts_list));
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "chrome.SnippetsInternals.receiveHosts", result);
 }
 
 void SnippetsInternalsMessageHandler::SendContentSuggestions() {

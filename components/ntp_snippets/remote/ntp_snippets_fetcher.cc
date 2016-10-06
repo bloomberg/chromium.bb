@@ -23,7 +23,6 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
-#include "components/ntp_snippets/switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -55,8 +54,6 @@ const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 
 // Variation parameter for personalizing fetching of snippets.
 const char kPersonalizationName[] = "fetching_personalization";
-// Variation parameter for setting whether to restrict to a passed set of hosts.
-const char kHostRestrictionName[] = "fetching_host_restrict";
 
 // Variation parameter for chrome-content-suggestions backend.
 const char kContentSuggestionsBackend[] = "content_suggestions_backend";
@@ -66,17 +63,13 @@ const char kPersonalizationPersonalString[] = "personal";
 const char kPersonalizationNonPersonalString[] = "non_personal";
 const char kPersonalizationBothString[] = "both";  // the default value
 
-// Constants for possible values of the "fetching_host_restrict" parameter.
-const char kHostRestrictionOnString[] = "on";  // the default value
-const char kHostRestrictionOffString[] = "off";
-
 const int kMaxExcludedIds = 100;
 
 std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
   switch (result) {
     case NTPSnippetsFetcher::FetchResult::SUCCESS:
       return "OK";
-    case NTPSnippetsFetcher::FetchResult::EMPTY_HOSTS:
+    case NTPSnippetsFetcher::FetchResult::DEPRECATED_EMPTY_HOSTS:
       return "Cannot fetch for empty hosts list.";
     case NTPSnippetsFetcher::FetchResult::URL_REQUEST_STATUS_ERROR:
       return "URLRequestStatus error";
@@ -101,7 +94,7 @@ std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
 
 bool IsFetchPreconditionFailed(NTPSnippetsFetcher::FetchResult result) {
   switch (result) {
-    case NTPSnippetsFetcher::FetchResult::EMPTY_HOSTS:
+    case NTPSnippetsFetcher::FetchResult::DEPRECATED_EMPTY_HOSTS:
     case NTPSnippetsFetcher::FetchResult::OAUTH_TOKEN_ERROR:
     case NTPSnippetsFetcher::FetchResult::INTERACTIVE_QUOTA_ERROR:
     case NTPSnippetsFetcher::FetchResult::NON_INTERACTIVE_QUOTA_ERROR:
@@ -226,18 +219,6 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
         << "Unknown value for " << kPersonalizationName << ": "
         << personalization;
   }
-
-  std::string host_restriction = variations::GetVariationParamValue(
-      ntp_snippets::kStudyName, kHostRestrictionName);
-  if (host_restriction == kHostRestrictionOnString) {
-    use_host_restriction_ = true;
-  } else {
-    use_host_restriction_ = false;
-    LOG_IF(WARNING, !host_restriction.empty() &&
-                        host_restriction != kHostRestrictionOffString)
-        << "Unknown value for " << kHostRestrictionName << ": "
-        << host_restriction;
-  }
 }
 
 NTPSnippetsFetcher::~NTPSnippetsFetcher() {
@@ -268,12 +249,6 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
   hosts_ = hosts;
   fetch_start_time_ = tick_clock_->NowTicks();
   excluded_ids_ = excluded_ids;
-
-  if (UsesHostRestrictions() && hosts_.empty()) {
-    FetchFinished(OptionalSnippets(), FetchResult::EMPTY_HOSTS,
-                  /*extra_message=*/std::string());
-    return;
-  }
 
   locale_ = PosixLocaleFromBCP47Language(language_code);
   count_to_fetch_ = count;
@@ -429,12 +404,6 @@ void NTPSnippetsFetcher::FetchSnippetsImpl(const GURL& url,
   url_fetcher_->Start();
 }
 
-bool NTPSnippetsFetcher::UsesHostRestrictions() const {
-  return use_host_restriction_ &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDontRestrict);
-}
-
 bool NTPSnippetsFetcher::UsesAuthentication() const {
   return (personalization_ == Personalization::kPersonal ||
           personalization_ == Personalization::kBoth);
@@ -447,8 +416,7 @@ void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated() {
 
   RequestParams params;
   params.fetch_api = fetch_api_;
-  params.host_restricts =
-      UsesHostRestrictions() ? hosts_ : std::set<std::string>();
+  params.host_restricts = hosts_;
   params.excluded_ids = excluded_ids_;
   params.count_to_fetch = count_to_fetch_;
   params.interactive_request = interactive_request_;
@@ -465,8 +433,7 @@ void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
   params.only_return_personalized_results =
       personalization_ == Personalization::kPersonal;
   params.user_locale = locale_;
-  params.host_restricts =
-      UsesHostRestrictions() ? hosts_ : std::set<std::string>();
+  params.host_restricts = hosts_;
   params.excluded_ids = excluded_ids_;
   params.count_to_fetch = count_to_fetch_;
   params.interactive_request = interactive_request_;

@@ -26,7 +26,6 @@
 #include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/remote/ntp_snippets_status_service.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
-#include "components/suggestions/suggestions_service.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -39,10 +38,6 @@ namespace image_fetcher {
 class ImageDecoder;
 class ImageFetcher;
 }  // namespace image_fetcher
-
-namespace suggestions {
-class SuggestionsProfile;
-}  // namespace suggestions
 
 namespace ntp_snippets {
 
@@ -72,7 +67,6 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   NTPSnippetsService(Observer* observer,
                      CategoryFactory* category_factory,
                      PrefService* pref_service,
-                     suggestions::SuggestionsService* suggestions_service,
                      const std::string& application_language_code,
                      const UserClassifier* user_classifier,
                      NTPSnippetsScheduler* scheduler,
@@ -101,10 +95,9 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // Useful for requests triggered by the user.
   void FetchSnippets(bool interactive_request);
 
-  // Fetches snippets from the server for specified hosts (overriding
-  // suggestions from the suggestion service) and adds them to the current ones.
-  // Only called from chrome://snippets-internals, DO NOT USE otherwise!
-  // Ignored while ready() is false.
+  // Fetches snippets from the server for specified hosts and adds them to the
+  // current ones. Only called from chrome://snippets-internals, DO NOT USE
+  // otherwise! Ignored while ready() is false.
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts,
                               bool interactive_request);
 
@@ -132,9 +125,6 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
       Category category,
       const DismissedSuggestionsCallback& callback) override;
   void ClearDismissedSuggestionsForDebugging(Category category) override;
-
-  // Returns the lists of suggestion hosts the snippets are restricted to.
-  std::set<std::string> GetSuggestionsHosts() const;
 
   // Returns the maximum number of snippets that will be shown at once.
   static int GetMaxSnippetCountForTesting();
@@ -215,9 +205,6 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   void OnDatabaseLoaded(NTPSnippet::PtrVector snippets);
   void OnDatabaseError();
 
-  // Callback for the SuggestionsService.
-  void OnSuggestionsChanged(const suggestions::SuggestionsProfile& suggestions);
-
   // Callback for the NTPSnippetsFetcher.
   void OnFetchFinished(NTPSnippetsFetcher::OptionalSnippets snippets);
 
@@ -228,9 +215,6 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
 
   // Replace old snippets in |category| by newly available snippets.
   void ReplaceSnippets(Category category, NTPSnippet::PtrVector new_snippets);
-
-  std::set<std::string> GetSnippetHostsFromPrefs() const;
-  void StoreSnippetHostsToPrefs(const std::set<std::string>& hosts);
 
   // Removes expired dismissed snippets from the service and the database.
   void ClearExpiredDismissedSnippets();
@@ -298,8 +282,6 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
 
   PrefService* pref_service_;
 
-  suggestions::SuggestionsService* suggestions_service_;
-
   const Category articles_category_;
 
   // TODO(sfiera): Reduce duplication of CategoryContent with CategoryInfo.
@@ -346,13 +328,6 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
 
   // Scheduler for fetching snippets. Not owned.
   NTPSnippetsScheduler* scheduler_;
-
-  // The subscription to the SuggestionsService. When the suggestions change,
-  // SuggestionsService will call |OnSuggestionsChanged|, which triggers an
-  // update to the set of snippets.
-  using SuggestionsSubscription =
-      suggestions::SuggestionsService::ResponseCallbackList::Subscription;
-  std::unique_ptr<SuggestionsSubscription> suggestions_service_subscription_;
 
   // The snippets fetcher.
   std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher_;

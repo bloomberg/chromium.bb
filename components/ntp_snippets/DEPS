@@ -7,7 +7,6 @@ include_rules = [
   "+components/metrics",
   "+components/prefs",
   "+components/signin",
-  "+components/suggestions",
   "+components/sync/driver",
   "+components/variations",
   "+grit/components_strings.h",

@@ -7,10 +7,6 @@
 namespace ntp_snippets {
 namespace switches {
 
-// If this flag is set, the snippets won't be restricted to the user's NTP
-// suggestions.
-const char kDontRestrict[] = "ntp-snippets-dont-restrict";
-
 // If this flag is set, we will add downloaded snippets that are missing some
 // critical data to the list.
 const char kAddIncompleteSnippets[] = "ntp-snippets-add-incomplete";

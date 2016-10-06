@@ -32,7 +32,6 @@
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/remote/ntp_snippets_test_utils.h"
-#include "components/ntp_snippets/switches.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -378,10 +377,6 @@ class NTPSnippetsServiceTest : public ::testing::Test {
     NTPSnippetsService::RegisterProfilePrefs(utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
 
-    // Since no SuggestionsService is injected in tests, we need to force the
-    // service to fetch from all hosts.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDontRestrict);
     EXPECT_TRUE(database_dir_.CreateUniqueTempDir());
   }
 
@@ -426,8 +421,8 @@ class NTPSnippetsServiceTest : public ::testing::Test {
     EXPECT_FALSE(observer_);
     observer_ = base::MakeUnique<FakeContentSuggestionsProviderObserver>();
     return base::MakeUnique<NTPSnippetsService>(
-        observer_.get(), &category_factory_, utils_.pref_service(), nullptr,
-        "fr", &user_classifier_, &scheduler_, std::move(snippets_fetcher),
+        observer_.get(), &category_factory_, utils_.pref_service(), "fr",
+        &user_classifier_, &scheduler_, std::move(snippets_fetcher),
         std::move(image_fetcher), std::move(image_decoder),
         base::MakeUnique<NTPSnippetsDatabase>(database_dir_.GetPath(),
                                               task_runner),

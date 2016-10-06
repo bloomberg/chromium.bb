@@ -37,9 +37,6 @@ found in the LICENSE file.
         <td class="name">Physical Web Page Suggestions enabled
         <td id="flag-physical-web-page-suggestions" class="value">
       <tr>
-        <td class="name">Snippets restricted to hosts
-        <td id="switch-restrict-to-hosts" class="value">
-      <tr>
         <td class="name">Snippets type
         <td id="switch-personalized" class="value">
       <tr>
@@ -73,8 +70,7 @@ found in the LICENSE file.
     <h2>NTPSnippetsService</h2>
     <div class="forms">
       <button id="submit-download" type="button">Add snippets</button>
-      <span id="hosts-restrict">from hosts <span class="detail">(specify at
-          least one host)</span>:
+      <span id="hosts-restrict">from hosts:
         <textarea id="hosts-input" placeholder="www.wired.com www.bbc.co.uk"
             rows="5" autocapitalize="none"></textarea>
       </span>
@@ -89,15 +85,6 @@ found in the LICENSE file.
       <div id="last-json-text"></div>
       <button id="last-json-dump" type="button">Dump the last JSON</button>
     </div>
-  </div>
-
-  <div id="hosts">
-    <h2>Suggestion hosts</h2>
-    <table class="section-details">
-      <tr jsselect="list">
-        <td jscontent="url">
-    </table>
-    <div class="detail" id="hosts-empty"></div>
   </div>
 
   <div id="content-suggestions">

@@ -8,7 +8,6 @@
 namespace ntp_snippets {
 namespace switches {
 
-extern const char kDontRestrict[];
 extern const char kAddIncompleteSnippets[];
 
 }  // namespace switches

@@ -39,22 +39,8 @@ cr.define('chrome.SnippetsInternals', function() {
     refreshContent();
   }
 
-  function setHostRestricted(restricted) {
-    receiveProperty('switch-restrict-to-hosts', restricted ? 'True' : 'False');
-    if (!restricted) {
-      $('hosts-restrict').classList.add('hidden');
-    }
-  }
-
   function receiveProperty(propertyId, value) {
     $(propertyId).textContent = value;
-  }
-
-  function receiveHosts(hosts) {
-    displayList(hosts, 'hosts');
-
-    $('hosts-input').value = hosts.list.map(
-      function(host) { return host.url;}).join(' ');
   }
 
   function receiveContentSuggestions(categoriesList) {
@@ -167,9 +153,7 @@ cr.define('chrome.SnippetsInternals', function() {
   // Return an object with all of the exports.
   return {
     initialize: initialize,
-    setHostRestricted: setHostRestricted,
     receiveProperty: receiveProperty,
-    receiveHosts: receiveHosts,
     receiveContentSuggestions: receiveContentSuggestions,
     receiveJson: receiveJson,
     receiveClassification: receiveClassification,

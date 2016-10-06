@@ -67,7 +67,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // and update the histogram definition.
   enum class FetchResult {
     SUCCESS,
-    EMPTY_HOSTS,
+    DEPRECATED_EMPTY_HOSTS,
     URL_REQUEST_STATUS_ERROR,
     HTTP_ERROR,
     JSON_PARSE_ERROR,
@@ -100,8 +100,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   void SetCallback(const SnippetsAvailableCallback& callback);
 
   // Fetches snippets from the server. |hosts| restricts the results to a set of
-  // hosts, e.g. "www.google.com". If host restrictions are enabled, an empty
-  // host set produces an error without issuing a fetch.
+  // hosts, e.g. "www.google.com". If |hosts| is empty, no host restrictions are
+  // applied.
   //
   // |excluded_ids| will be reported to the server; the server should not return
   // suggestions with those IDs.
@@ -132,8 +132,6 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // Returns the URL endpoint used by the fetcher.
   GURL fetch_url() const { return fetch_url_; }
 
-  // Does the fetcher use host restrictions?
-  bool UsesHostRestrictions() const;
   // Does the fetcher use authentication to get personalized results?
   bool UsesAuthentication() const;
 
@@ -244,8 +242,6 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
 
   // The variant of the fetching to use, loaded from variation parameters.
   Personalization personalization_;
-  // Should we apply host restriction? It is loaded from variation parameters.
-  bool use_host_restriction_;
 
   // Is the request user initiated?
   bool interactive_request_;

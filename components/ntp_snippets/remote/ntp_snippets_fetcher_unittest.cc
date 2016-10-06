@@ -172,7 +172,6 @@ class NTPSnippetsFetcherTest : public testing::Test {
                    base::Unretained(&mock_callback_)));
     snippets_fetcher_->SetTickClockForTesting(
         mock_task_runner_->GetMockTickClock());
-    test_hosts_.insert("www.somehost.com");
     test_excluded_.insert("1234567890");
     // Increase initial time such that ticks are non-zero.
     mock_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1234));
@@ -236,13 +235,6 @@ class NTPSnippetsContentSuggestionsFetcherTest : public NTPSnippetsFetcherTest {
       : NTPSnippetsFetcherTest(
             GURL(kTestChromeContentSuggestionsUrl),
             {{"content_suggestions_backend", kContentSuggestionsServer}}) {}
-};
-
-class NTPSnippetsFetcherHostRestrictedTest : public NTPSnippetsFetcherTest {
- public:
-  NTPSnippetsFetcherHostRestrictedTest()
-      : NTPSnippetsFetcherTest(GURL(kTestChromeReaderUrl),
-                               {{"fetching_host_restrict", "on"}}) {}
 };
 
 TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
@@ -595,30 +587,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
 }
 
-TEST_F(NTPSnippetsFetcherHostRestrictedTest, ShouldReportEmptyHostsError) {
-  EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
-  snippets_fetcher().FetchSnippetsFromHosts(/*hosts=*/std::set<std::string>(),
-                                            /*language_code=*/"en-US",
-                                            test_excluded(),
-                                            /*count=*/1,
-                                            /*interactive_request=*/true);
-  FastForwardUntilNoTasksRemain();
-  EXPECT_THAT(snippets_fetcher().last_status(),
-              Eq("Cannot fetch for empty hosts list."));
-  EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
-      ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
-  // This particular error gets triggered prior to fetching, so no fetch time
-  // or response should get recorded.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
-              IsEmpty());
-  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
-              IsEmpty());
-}
-
-TEST_F(NTPSnippetsFetcherHostRestrictedTest, ShouldRestrictToHosts) {
+TEST_F(NTPSnippetsFetcherTest, ShouldRestrictToHosts) {
   net::TestURLFetcherFactory test_url_fetcher_factory;
   snippets_fetcher().FetchSnippetsFromHosts(
       {"www.somehost1.com", "www.somehost2.com"}, test_lang(), test_excluded(),

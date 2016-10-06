@@ -54,7 +54,6 @@ class SnippetsInternalsMessageHandler
 
   void SendAllContent();
   void SendClassification();
-  void SendHosts();
   void SendContentSuggestions();
   void SendBoolean(const std::string& name, bool value);
   void SendString(const std::string& name, const std::string& value);

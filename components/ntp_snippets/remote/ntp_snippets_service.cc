@@ -31,17 +31,10 @@
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/suggestions/proto/suggestions.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
-
-using image_fetcher::ImageDecoder;
-using image_fetcher::ImageFetcher;
-using suggestions::ChromeSuggestion;
-using suggestions::SuggestionsProfile;
-using suggestions::SuggestionsService;
 
 namespace ntp_snippets {
 
@@ -105,19 +98,6 @@ base::TimeDelta GetFetchingInterval(bool is_wifi,
   }
 
   return base::TimeDelta::FromSecondsD(value_hours * 3600.0);
-}
-
-// Extracts the hosts from |suggestions| and returns them in a set.
-std::set<std::string> GetSuggestionsHostsImpl(
-    const SuggestionsProfile& suggestions) {
-  std::set<std::string> hosts;
-  for (int i = 0; i < suggestions.suggestions_size(); ++i) {
-    const ChromeSuggestion& suggestion = suggestions.suggestions(i);
-    GURL url(suggestion.url());
-    if (url.is_valid())
-      hosts.insert(url.host());
-  }
-  return hosts;
 }
 
 std::set<std::string> GetAllIDs(const NTPSnippet::PtrVector& snippets) {
@@ -187,19 +167,17 @@ NTPSnippetsService::NTPSnippetsService(
     Observer* observer,
     CategoryFactory* category_factory,
     PrefService* pref_service,
-    SuggestionsService* suggestions_service,
     const std::string& application_language_code,
     const UserClassifier* user_classifier,
     NTPSnippetsScheduler* scheduler,
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
-    std::unique_ptr<ImageFetcher> image_fetcher,
-    std::unique_ptr<ImageDecoder> image_decoder,
+    std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
+    std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
     std::unique_ptr<NTPSnippetsDatabase> database,
     std::unique_ptr<NTPSnippetsStatusService> status_service)
     : ContentSuggestionsProvider(observer, category_factory),
       state_(State::NOT_INITED),
       pref_service_(pref_service),
-      suggestions_service_(suggestions_service),
       articles_category_(
           category_factory->FromKnownCategory(KnownCategories::ARTICLES)),
       application_language_code_(application_language_code),
@@ -240,7 +218,7 @@ NTPSnippetsService::~NTPSnippetsService() = default;
 
 // static
 void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kSnippetHosts);
+  registry->RegisterListPref(prefs::kSnippetHosts); //TODO remove
   registry->RegisterInt64Pref(prefs::kSnippetBackgroundFetchingIntervalWifi, 0);
   registry->RegisterInt64Pref(prefs::kSnippetBackgroundFetchingIntervalFallback,
                               0);
@@ -250,7 +228,7 @@ void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 void NTPSnippetsService::FetchSnippets(bool interactive_request) {
   if (ready())
-    FetchSnippetsFromHosts(GetSuggestionsHosts(), interactive_request);
+    FetchSnippetsFromHosts(std::set<std::string>(), interactive_request);
   else
     fetch_when_ready_ = true;
 }
@@ -442,16 +420,6 @@ void NTPSnippetsService::ClearDismissedSuggestionsForDebugging(
   content->dismissed.clear();
 }
 
-std::set<std::string> NTPSnippetsService::GetSuggestionsHosts() const {
-  // |suggestions_service_| can be null in tests.
-  if (!suggestions_service_)
-    return std::set<std::string>();
-
-  // TODO(treib): This should just call GetSnippetHostsFromPrefs.
-  return GetSuggestionsHostsImpl(
-      suggestions_service_->GetSuggestionsDataFromCache());
-}
-
 // static
 int NTPSnippetsService::GetMaxSnippetCountForTesting() {
   return kMaxSnippetCount;
@@ -528,44 +496,6 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
 void NTPSnippetsService::OnDatabaseError() {
   EnterState(State::ERROR_OCCURRED);
   UpdateAllCategoryStatus(CategoryStatus::LOADING_ERROR);
-}
-
-// TODO(dgn): name clash between content suggestions and suggestions hosts.
-// method name should be changed.
-void NTPSnippetsService::OnSuggestionsChanged(
-    const SuggestionsProfile& suggestions) {
-  DCHECK(initialized());
-
-  std::set<std::string> hosts = GetSuggestionsHostsImpl(suggestions);
-  if (hosts == GetSnippetHostsFromPrefs())
-    return;
-
-  // Remove existing snippets that aren't in the suggestions anymore.
-  //
-  // TODO(treib,maybelle): If there is another source with an allowed host,
-  // then we should fall back to that.
-  //
-  // TODO(sfiera): determine when non-article categories should restrict hosts,
-  // and apply the same logic to them here. Maybe never?
-  //
-  // First, move them over into |to_delete|.
-  CategoryContent* content = &categories_[articles_category_];
-  NTPSnippet::PtrVector to_delete;
-  for (std::unique_ptr<NTPSnippet>& snippet : content->snippets) {
-    if (!hosts.count(snippet->best_source().url.host()))
-      to_delete.emplace_back(std::move(snippet));
-  }
-  Compact(&content->snippets);
-  ArchiveSnippets(articles_category_, &to_delete);
-
-  StoreSnippetHostsToPrefs(hosts);
-
-  // We removed some suggestions, so we want to let the client know about that.
-  // The fetch might take a long time or not complete so we don't want to wait
-  // for its callback.
-  NotifyNewSuggestions();
-
-  FetchSnippetsFromHosts(hosts, /*interactive_request=*/false);
 }
 
 void NTPSnippetsService::OnFetchFinished(
@@ -722,26 +652,6 @@ void NTPSnippetsService::ReplaceSnippets(Category category,
   }
 
   content->snippets = std::move(new_snippets);
-}
-
-std::set<std::string> NTPSnippetsService::GetSnippetHostsFromPrefs() const {
-  std::set<std::string> hosts;
-  const base::ListValue* list = pref_service_->GetList(prefs::kSnippetHosts);
-  for (const auto& value : *list) {
-    std::string str;
-    bool success = value->GetAsString(&str);
-    DCHECK(success) << "Failed to parse snippet host from prefs";
-    hosts.insert(std::move(str));
-  }
-  return hosts;
-}
-
-void NTPSnippetsService::StoreSnippetHostsToPrefs(
-    const std::set<std::string>& hosts) {
-  base::ListValue list;
-  for (const std::string& host : hosts)
-    list.AppendString(host);
-  pref_service_->Set(prefs::kSnippetHosts, list);
 }
 
 void NTPSnippetsService::ClearExpiredDismissedSnippets() {
@@ -902,23 +812,13 @@ void NTPSnippetsService::EnterStateReady() {
       CategoryStatus::AVAILABLE_LOADING) {
     UpdateCategoryStatus(articles_category_, CategoryStatus::AVAILABLE);
   }
-
-  // If host restrictions are enabled, register for host list updates.
-  // |suggestions_service_| can be null in tests.
-  if (snippets_fetcher_->UsesHostRestrictions() && suggestions_service_) {
-    suggestions_service_subscription_ =
-        suggestions_service_->AddCallback(base::Bind(
-            &NTPSnippetsService::OnSuggestionsChanged, base::Unretained(this)));
-  }
 }
 
 void NTPSnippetsService::EnterStateDisabled() {
   NukeAllSnippets();
-  suggestions_service_subscription_.reset();
 }
 
 void NTPSnippetsService::EnterStateError() {
-  suggestions_service_subscription_.reset();
   snippets_status_service_.reset();
 }
 

@@ -15,7 +15,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
-#include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -81,8 +80,6 @@ using ntp_snippets::NTPSnippetsStatusService;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::TabDelegateSyncAdapter;
 using suggestions::ImageDecoderImpl;
-using suggestions::SuggestionsService;
-using suggestions::SuggestionsServiceFactory;
 using syncer::SyncService;
 
 namespace {
@@ -126,7 +123,6 @@ void RegisterPhysicalWebPageProvider(ContentSuggestionsService* service,
 
 void RegisterArticleProvider(SigninManagerBase* signin_manager,
                              OAuth2TokenService* token_service,
-                             SuggestionsService* suggestions_service,
                              ContentSuggestionsService* service,
                              CategoryFactory* category_factory,
                              PrefService* pref_service,
@@ -149,7 +145,7 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
   bool is_stable_channel =
       chrome::GetChannel() == version_info::Channel::STABLE;
   auto provider = base::MakeUnique<NTPSnippetsService>(
-      service, service->category_factory(), pref_service, suggestions_service,
+      service, service->category_factory(), pref_service,
       g_browser_process->GetApplicationLocale(), service->user_classifier(),
       scheduler,
       base::MakeUnique<NTPSnippetsFetcher>(
@@ -211,7 +207,6 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
-  DependsOn(SuggestionsServiceFactory::GetInstance());
 }
 
 ContentSuggestionsServiceFactory::~ContentSuggestionsServiceFactory() {}
@@ -252,8 +247,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       SigninManagerFactory::GetForProfile(profile);
   OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  SuggestionsService* suggestions_service =
-      SuggestionsServiceFactory::GetForProfile(profile);
   SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
 
@@ -280,8 +273,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #endif  // OS_ANDROID
 
   if (base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature)) {
-    RegisterArticleProvider(signin_manager, token_service, suggestions_service,
-                            service, category_factory, pref_service, profile);
+    RegisterArticleProvider(signin_manager, token_service, service,
+                            category_factory, pref_service, profile);
   }
 
   if (base::FeatureList::IsEnabled(
