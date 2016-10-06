@@ -74,7 +74,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/app/ChromiumLinkerParams.java",
     "java/src/org/chromium/content/app/ContentApplication.java",
     "java/src/org/chromium/content/app/ContentMain.java",
-    "java/src/org/chromium/content/app/DownloadProcessService.java",
     "java/src/org/chromium/content/app/PrivilegedProcessService.java",
     "java/src/org/chromium/content/app/PrivilegedProcessService0.java",
     "java/src/org/chromium/content/app/PrivilegedProcessService1.java",

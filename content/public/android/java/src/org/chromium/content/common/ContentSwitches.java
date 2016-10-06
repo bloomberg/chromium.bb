@@ -81,9 +81,6 @@ public abstract class ContentSwitches {
     // Native switch kGPUProcess
     public static final String SWITCH_GPU_PROCESS = "gpu-process";
 
-    // Native switch kDownloadProcess
-    public static final String SWITCH_DOWNLOAD_PROCESS = "download";
-
     // Prevent instantiation.
     private ContentSwitches() {}
 

@@ -115,7 +115,6 @@ template("implement_content_app") {
         "android/content_jni_onload.cc",
         "android/content_main.cc",
         "android/content_main.h",
-        "android/download_main.cc",
         "android/library_loader_hooks.cc",
         "android/library_loader_hooks.h",
       ]

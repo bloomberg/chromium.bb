@@ -320,9 +320,6 @@ const char kDisableZeroCopyDxgiVideo[]      = "disable-zero-copy-dxgi-video";
 // based tests.
 const char kDomAutomationController[]       = "dom-automation";
 
-// Causes the process to run as a download subprocess.
-const char kDownloadProcess[]               = "download";
-
 // Disable antialiasing on 2d canvas clips
 const char kDisable2dCanvasClipAntialiasing[] = "disable-2d-canvas-clip-aa";
 

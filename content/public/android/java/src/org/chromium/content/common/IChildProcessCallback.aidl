@@ -24,8 +24,4 @@ interface IChildProcessCallback {
   void unregisterSurfaceTextureSurface(int surfaceTextureId, int clientId);
 
   SurfaceWrapper getSurfaceTextureSurface(int surfaceTextureId);
-
-  // Callback to inform native that the download service has accepted or
-  // rejected the download.
-  void onDownloadStarted(boolean started, int downloadId);
 }

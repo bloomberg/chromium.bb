@@ -4,14 +4,11 @@
 
 package org.chromium.content.browser;
 
-import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
@@ -29,7 +26,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.content.app.ChromiumLinkerParams;
-import org.chromium.content.app.DownloadProcessService;
 import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.ContentSwitches;
@@ -55,7 +51,6 @@ public class ChildProcessLauncher {
     static final int CALLBACK_FOR_GPU_PROCESS = 1;
     static final int CALLBACK_FOR_RENDERER_PROCESS = 2;
     static final int CALLBACK_FOR_UTILITY_PROCESS = 3;
-    static final int CALLBACK_FOR_DOWNLOAD_PROCESS = 4;
 
     private static class ChildConnectionAllocator {
         // Connections to services. Indices of the array correspond to the service numbers.
@@ -735,39 +730,6 @@ public class ChildProcessLauncher {
                 callbackType, inSandbox, params);
     }
 
-    /**
-     * Spawns a background download process if it hasn't been started. The download process will
-     * manage its own lifecyle and can outlive chrome.
-     *
-     * @param context Context used to obtain the application context.
-     * @param commandLine The child process command line argv.
-     */
-    @SuppressLint("NewApi")
-    @CalledByNative
-    private static void startDownloadProcessIfNecessary(
-            Context context, final String[] commandLine) {
-        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
-        String processType =
-                ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
-        assert ContentSwitches.SWITCH_DOWNLOAD_PROCESS.equals(processType);
-
-        Intent intent = new Intent();
-        intent.setClass(context, DownloadProcessService.class);
-        intent.setPackage(context.getPackageName());
-        intent.putExtra(ChildProcessConstants.EXTRA_COMMAND_LINE, commandLine);
-        Bundle bundle =
-                createsServiceBundle(commandLine, null, Linker.getInstance().getSharedRelros());
-        // Pid doesn't matter for download process.
-        bundle.putBinder(ChildProcessConstants.EXTRA_CHILD_PROCESS_CALLBACK,
-                createCallback(0, CALLBACK_FOR_DOWNLOAD_PROCESS).asBinder());
-        intent.putExtras(bundle);
-        ChromiumLinkerParams linkerParams = getLinkerParamsForNewConnection();
-        if (linkerParams != null) {
-            linkerParams.addIntentExtras(intent);
-        }
-        context.startService(intent);
-    }
-
     private static void startInternal(
             Context context,
             final String[] commandLine,
@@ -971,15 +933,6 @@ public class ChildProcessLauncher {
 
                 return ChildProcessLauncher.getSurfaceTextureSurface(surfaceTextureId,
                         childProcessId);
-            }
-
-            @Override
-            public void onDownloadStarted(boolean started, int downloadId) {
-                // TODO(qinmin): call native to cancel or proceed with the download.
-                if (callbackType != CALLBACK_FOR_DOWNLOAD_PROCESS) {
-                    Log.e(TAG, "Illegal callback for non-download process.");
-                    return;
-                }
             }
         };
     }
