@@ -143,31 +143,28 @@ TEST_F(SafeSearchUtilTest, AddGoogleSafeSearchParams) {
 TEST_F(SafeSearchUtilTest, SetYoutubeHeader) {
   std::unique_ptr<net::URLRequest> request = CreateYoutubeRequest();
   net::HttpRequestHeaders headers;
-  safe_search_util::ForceYouTubeRestrict(
-    request.get(), &headers, safe_search_util::YOUTUBE_RESTRICT_MODERATE);
+  safe_search_util::ForceYouTubeSafetyMode(request.get(), &headers);
   std::string value;
-  EXPECT_TRUE(headers.GetHeader("Youtube-Restrict", &value));
-  EXPECT_EQ("Moderate", value);
+  EXPECT_TRUE(headers.GetHeader("Youtube-Safety-Mode", &value));
+  EXPECT_EQ("Active", value);
 }
 
 TEST_F(SafeSearchUtilTest, OverrideYoutubeHeader) {
   std::unique_ptr<net::URLRequest> request = CreateYoutubeRequest();
   net::HttpRequestHeaders headers;
-  headers.SetHeader("Youtube-Restrict", "Off");
-  safe_search_util::ForceYouTubeRestrict(
-    request.get(), &headers, safe_search_util::YOUTUBE_RESTRICT_MODERATE);
+  headers.SetHeader("Youtube-Safety-Mode", "Off");
+  safe_search_util::ForceYouTubeSafetyMode(request.get(), &headers);
   std::string value;
-  EXPECT_TRUE(headers.GetHeader("Youtube-Restrict", &value));
-  EXPECT_EQ("Moderate", value);
+  EXPECT_TRUE(headers.GetHeader("Youtube-Safety-Mode", &value));
+  EXPECT_EQ("Active", value);
 }
 
 TEST_F(SafeSearchUtilTest, DoesntTouchNonYoutubeURL) {
   std::unique_ptr<net::URLRequest> request = CreateNonYoutubeRequest();
   net::HttpRequestHeaders headers;
-  headers.SetHeader("Youtube-Restrict", "Off");
-  safe_search_util::ForceYouTubeRestrict(
-    request.get(), &headers, safe_search_util::YOUTUBE_RESTRICT_MODERATE);
+  headers.SetHeader("Youtube-Safety-Mode", "Off");
+  safe_search_util::ForceYouTubeSafetyMode(request.get(), &headers);
   std::string value;
-  EXPECT_TRUE(headers.GetHeader("Youtube-Restrict", &value));
+  EXPECT_TRUE(headers.GetHeader("Youtube-Safety-Mode", &value));
   EXPECT_EQ("Off", value);
 }

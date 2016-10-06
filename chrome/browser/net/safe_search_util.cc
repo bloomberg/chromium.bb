@@ -25,11 +25,10 @@
 namespace {
 
 int g_force_google_safe_search_count_for_test = 0;
-int g_force_youtube_restrict_count_for_test = 0;
+int g_force_youtube_safety_mode_count_for_test = 0;
 
-const char kYouTubeRestrictHeaderName[] = "YouTube-Restrict";
-const char kYouTubeRestrictHeaderValueModerate[] = "Moderate";
-const char kYouTubeRestrictHeaderValueStrict[] = "Strict";
+const char kYouTubeSafetyModeHeaderName[] = "YouTube-Safety-Mode";
+const char kYouTubeSafetyModeHeaderValue[] = "Active";
 
 // Returns whether a URL parameter, |first_parameter| (e.g. foo=bar), has the
 // same key as the the |second_parameter| (e.g. foo=baz). Both parameters
@@ -89,10 +88,11 @@ void ForceGoogleSafeSearch(const net::URLRequest* request, GURL* new_url) {
   *new_url = request->url().ReplaceComponents(replacements);
 }
 
-void ForceYouTubeRestrict(const net::URLRequest* request,
-                          net::HttpRequestHeaders* headers,
-                          YouTubeRestrictMode mode) {
-  ++g_force_youtube_restrict_count_for_test;
+// If |request| is a request to YouTube, enforces YouTube's Safety Mode by
+// setting YouTube's Safety Mode header.
+void ForceYouTubeSafetyMode(const net::URLRequest* request,
+                            net::HttpRequestHeaders* headers) {
+  ++g_force_youtube_safety_mode_count_for_test;
 
   if (!google_util::IsYoutubeDomainUrl(
           request->url(),
@@ -100,38 +100,24 @@ void ForceYouTubeRestrict(const net::URLRequest* request,
           google_util::DISALLOW_NON_STANDARD_PORTS))
     return;
 
-  switch (mode) {
-    case YOUTUBE_RESTRICT_OFF:
-    case YOUTUBE_RESTRICT_COUNT:
-      NOTREACHED();
-      break;
-
-    case YOUTUBE_RESTRICT_MODERATE:
-      headers->SetHeader(kYouTubeRestrictHeaderName,
-                         kYouTubeRestrictHeaderValueModerate);
-      break;
-
-    case YOUTUBE_RESTRICT_STRICT:
-      headers->SetHeader(kYouTubeRestrictHeaderName,
-                         kYouTubeRestrictHeaderValueStrict);
-      break;
-  }
+  headers->SetHeader(kYouTubeSafetyModeHeaderName,
+                     kYouTubeSafetyModeHeaderValue);
 }
 
 int GetForceGoogleSafeSearchCountForTesting() {
   return g_force_google_safe_search_count_for_test;
 }
 
-int GetForceYouTubeRestrictCountForTesting() {
-  return g_force_youtube_restrict_count_for_test;
+int GetForceYouTubeSafetyModeCountForTesting() {
+  return g_force_youtube_safety_mode_count_for_test;
 }
 
 void ClearForceGoogleSafeSearchCountForTesting() {
   g_force_google_safe_search_count_for_test = 0;
 }
 
-void ClearForceYouTubeRestrictCountForTesting() {
-  g_force_youtube_restrict_count_for_test = 0;
+void ClearForceYouTubeSafetyModeCountForTesting() {
+  g_force_youtube_safety_mode_count_for_test = 0;
 }
 
 }  // namespace safe_search_util

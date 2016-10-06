@@ -478,7 +478,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       &enable_referrers_,
       &enable_do_not_track_,
       &force_google_safesearch_,
-      &force_youtube_restrict_,
+      &force_youtube_safety_mode_,
       &allowed_domains_for_apps_,
       pref_service);
 
@@ -1059,7 +1059,7 @@ void ProfileIOData::Init(
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
   network_delegate->set_force_google_safe_search(&force_google_safesearch_);
-  network_delegate->set_force_youtube_restrict(&force_youtube_restrict_);
+  network_delegate->set_force_youtube_safety_mode(&force_youtube_safety_mode_);
   network_delegate->set_allowed_domains_for_apps(&allowed_domains_for_apps_);
   network_delegate->set_data_use_aggregator(
       io_thread_globals->data_use_aggregator.get(), IsOffTheRecord());
@@ -1277,7 +1277,7 @@ void ProfileIOData::ShutdownOnUIThread(
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
   force_google_safesearch_.Destroy();
-  force_youtube_restrict_.Destroy();
+  force_youtube_safety_mode_.Destroy();
   allowed_domains_for_apps_.Destroy();
   enable_metrics_.Destroy();
   safe_browsing_enabled_.Destroy();

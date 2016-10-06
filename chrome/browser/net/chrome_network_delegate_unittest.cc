@@ -387,7 +387,7 @@ class ChromeNetworkDelegateSafeSearchTest :
         &enable_referrers_,
         nullptr,
         &force_google_safe_search_,
-        &force_youtube_restrict_,
+        &force_youtube_safety_mode_,
         nullptr,
         profile_.GetTestingPrefService());
   }
@@ -398,20 +398,23 @@ class ChromeNetworkDelegateSafeSearchTest :
         new ChromeNetworkDelegate(forwarder(), &enable_referrers_,
                                   metrics::UpdateUsagePrefCallbackType()));
     network_delegate->set_force_google_safe_search(&force_google_safe_search_);
-    network_delegate->set_force_youtube_restrict(&force_youtube_restrict_);
+    network_delegate->set_force_youtube_safety_mode(
+        &force_youtube_safety_mode_);
     return std::move(network_delegate);
   }
 
-  void SetSafeSearch(bool google_safe_search, int youtube_restrict) {
+  void SetSafeSearch(bool google_safe_search,
+                     bool youtube_safety_mode) {
     force_google_safe_search_.SetValue(google_safe_search);
-    force_youtube_restrict_.SetValue(youtube_restrict);
+    force_youtube_safety_mode_.SetValue(youtube_safety_mode);
   }
 
   // Does a request to an arbitrary URL and verifies that the SafeSearch
   // enforcement utility functions were called/not called as expected.
-  void QueryURL(bool expect_google_safe_search, bool expect_youtube_restrict) {
+  void QueryURL(bool expect_google_safe_search,
+                bool expect_youtube_safety_mode) {
     safe_search_util::ClearForceGoogleSafeSearchCountForTesting();
-    safe_search_util::ClearForceYouTubeRestrictCountForTesting();
+    safe_search_util::ClearForceYouTubeSafetyModeCountForTesting();
 
     std::unique_ptr<net::URLRequest> request(context_.CreateRequest(
         GURL("http://anyurl.com"), net::DEFAULT_PRIORITY, &delegate_));
@@ -420,14 +423,14 @@ class ChromeNetworkDelegateSafeSearchTest :
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(expect_google_safe_search ? 1 : 0,
-              safe_search_util::GetForceGoogleSafeSearchCountForTesting());
-    EXPECT_EQ(expect_youtube_restrict ? 1 : 0,
-              safe_search_util::GetForceYouTubeRestrictCountForTesting());
+        safe_search_util::GetForceGoogleSafeSearchCountForTesting());
+    EXPECT_EQ(expect_youtube_safety_mode ? 1 : 0,
+        safe_search_util::GetForceYouTubeSafetyModeCountForTesting());
   }
 
  private:
   BooleanPrefMember force_google_safe_search_;
-  IntegerPrefMember force_youtube_restrict_;
+  BooleanPrefMember force_youtube_safety_mode_;
 };
 
 TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearch) {
@@ -435,16 +438,12 @@ TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearch) {
   SetDelegate(delegate.get());
 
   // Loop over all combinations of the two policies.
-  for (int i = 0; i < 6; i++) {
-    static_assert(safe_search_util::YOUTUBE_RESTRICT_OFF      == 0 &&
-                  safe_search_util::YOUTUBE_RESTRICT_MODERATE == 1 &&
-                  safe_search_util::YOUTUBE_RESTRICT_STRICT   == 2,
-                  "Adjust youtube_restrict to match YouTubeRestrictMode enum");
-    bool google_safe_search = (i / 3) != 0;
-    int youtube_restrict = i % 3;
-    SetSafeSearch(google_safe_search, youtube_restrict);
+  for (int i = 0; i < 4; i++) {
+    bool google_safe_search = i % 2;
+    bool youtube_safety_mode = i / 2;
+    SetSafeSearch(google_safe_search, youtube_safety_mode);
 
-    QueryURL(google_safe_search, youtube_restrict != 0);
+    QueryURL(google_safe_search, youtube_safety_mode);
   }
 }
 

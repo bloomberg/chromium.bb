@@ -883,16 +883,13 @@ class PolicyTest : public InProcessBrowserTest {
   void ApplySafeSearchPolicy(
       std::unique_ptr<base::FundamentalValue> legacy_safe_search,
       std::unique_ptr<base::FundamentalValue> google_safe_search,
-      std::unique_ptr<base::FundamentalValue> legacy_youtube,
-      std::unique_ptr<base::FundamentalValue> youtube_restrict) {
+      std::unique_ptr<base::FundamentalValue> youtube_safety_mode) {
     PolicyMap policies;
     SetPolicy(&policies, key::kForceSafeSearch, std::move(legacy_safe_search));
     SetPolicy(&policies, key::kForceGoogleSafeSearch,
               std::move(google_safe_search));
     SetPolicy(&policies, key::kForceYouTubeSafetyMode,
-              std::move(legacy_youtube));
-    SetPolicy(&policies, key::kForceYouTubeRestrict,
-              std::move(youtube_restrict));
+              std::move(youtube_safety_mode));
     UpdateProviderPolicy(policies);
   }
 
@@ -1182,86 +1179,38 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
   // First check that nothing happens.
   CheckSafeSearch(false);
 
-  // The code below relies on mapping consecutive ints to
-  // safe_search_util::YouTubeRestrictMode.
-  static_assert(safe_search_util::YOUTUBE_RESTRICT_OFF      == 0 &&
-                safe_search_util::YOUTUBE_RESTRICT_MODERATE == 1 &&
-                safe_search_util::YOUTUBE_RESTRICT_STRICT   == 2 &&
-                safe_search_util::YOUTUBE_RESTRICT_COUNT    == 3,
-                "This test relies on consecutive enum values starting from 0.");
-
-  // Go over all combinations of (undefined, true, false) for the policies
-  // ForceSafeSearch, ForceGoogleSafeSearch and ForceYouTubeSafetyMode as well
-  // as (undefined, off, moderate, strict) for ForceYouTubeRestrict.
-  const int num_restrict_modes = 1 + safe_search_util::YOUTUBE_RESTRICT_COUNT;
-  for (int i = 0; i < 3 * 3 * 3 * num_restrict_modes; i++) {
-    int val = i;
-    int legacy_safe_search = val % 3; val /= 3;
-    int google_safe_search = val % 3; val /= 3;
-    int legacy_youtube     = val % 3; val /= 3;
-    int youtube_restrict   = val % num_restrict_modes;
+  // Go over all combinations of (undefined,true,false) for the three policies.
+  for (int i = 0; i < 3 * 3 * 3; i++) {
+    int legacy = i % 3;
+    int google = (i / 3) % 3;
+    int youtube = i / (3 * 3);
 
     // Override the default SafeSearch setting using policies.
     ApplySafeSearchPolicy(
-        legacy_safe_search == 0
-            ? nullptr
-            : base::MakeUnique<base::FundamentalValue>(legacy_safe_search == 1),
-        google_safe_search == 0
-            ? nullptr
-            : base::MakeUnique<base::FundamentalValue>(google_safe_search == 1),
-        legacy_youtube == 0
-            ? nullptr
-            : base::MakeUnique<base::FundamentalValue>(legacy_youtube == 1),
-        youtube_restrict == 0
-            ? nullptr  // subtracting 1 gives 0,1,2, see above
-            : base::MakeUnique<base::FundamentalValue>(youtube_restrict - 1));
+        legacy == 0 ? nullptr
+                    : base::MakeUnique<base::FundamentalValue>(legacy == 1),
+        google == 0 ? nullptr
+                    : base::MakeUnique<base::FundamentalValue>(google == 1),
+        youtube == 0 ? nullptr
+                     : base::MakeUnique<base::FundamentalValue>(youtube == 1));
 
-    // The legacy ForceSafeSearch policy should only have an effect if none of
-    // the other 3 policies are defined.
-    bool legacy_safe_search_in_effect =
-        google_safe_search == 0 && legacy_youtube == 0 &&
-        youtube_restrict == 0 && legacy_safe_search != 0;
-    bool legacy_safe_search_enabled =
-        legacy_safe_search_in_effect && legacy_safe_search == 1;
+    // The legacy policy should only have an effect if both google and youtube
+    // are undefined.
+    bool legacy_in_effect = (google == 0 && youtube == 0 && legacy != 0);
+    bool legacy_enabled = legacy_in_effect && legacy == 1;
 
-    // Likewise, ForceYouTubeSafetyMode should only have an effect if
-    // ForceYouTubeRestrict is not set.
-    bool legacy_youtube_in_effect =
-        youtube_restrict == 0 && legacy_youtube != 0;
-    bool legacy_youtube_enabled =
-        legacy_youtube_in_effect && legacy_youtube == 1;
-
-    // Consistency check, can't have both legacy modes at the same time.
-    EXPECT_FALSE(legacy_youtube_in_effect && legacy_safe_search_in_effect);
-
-    // Google safe search can be triggered by the ForceGoogleSafeSearch policy
-    // or the legacy safe search mode.
     PrefService* prefs = browser()->profile()->GetPrefs();
-    EXPECT_EQ(google_safe_search != 0 || legacy_safe_search_in_effect,
+    EXPECT_EQ(google != 0 || legacy_in_effect,
               prefs->IsManagedPreference(prefs::kForceGoogleSafeSearch));
-    EXPECT_EQ(google_safe_search == 1 || legacy_safe_search_enabled,
+    EXPECT_EQ(google == 1 || legacy_enabled,
               prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
 
-    // YouTube restrict mode can be triggered by the ForceYouTubeRestrict policy
-    // or any of the legacy modes.
-    EXPECT_EQ(youtube_restrict != 0 || legacy_safe_search_in_effect ||
-              legacy_youtube_in_effect,
-              prefs->IsManagedPreference(prefs::kForceYouTubeRestrict));
+    EXPECT_EQ(youtube != 0 || legacy_in_effect,
+              prefs->IsManagedPreference(prefs::kForceYouTubeSafetyMode));
+    EXPECT_EQ(youtube == 1 || legacy_enabled,
+              prefs->GetBoolean(prefs::kForceYouTubeSafetyMode));
 
-    if (youtube_restrict != 0) {
-      // The ForceYouTubeRestrict policy should map directly to the pref.
-      EXPECT_EQ(youtube_restrict - 1,
-          prefs->GetInteger(prefs::kForceYouTubeRestrict));
-    } else {
-      // The legacy modes should result in MODERATE strictness, if enabled.
-      safe_search_util::YouTubeRestrictMode expected_mode =
-          legacy_safe_search_enabled || legacy_youtube_enabled
-            ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
-            : safe_search_util::YOUTUBE_RESTRICT_OFF;
-      EXPECT_EQ(prefs->GetInteger(prefs::kForceYouTubeRestrict), expected_mode);
-    }
-
-    CheckSafeSearch(google_safe_search == 1 || legacy_safe_search_enabled);
+    CheckSafeSearch(google == 1 || legacy_enabled);
   }
 }
 

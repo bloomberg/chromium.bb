@@ -540,7 +540,7 @@ class ProfileIOData {
   mutable BooleanPrefMember enable_referrers_;
   mutable BooleanPrefMember enable_do_not_track_;
   mutable BooleanPrefMember force_google_safesearch_;
-  mutable IntegerPrefMember force_youtube_restrict_;
+  mutable BooleanPrefMember force_youtube_safety_mode_;
   mutable BooleanPrefMember safe_browsing_enabled_;
   mutable StringPrefMember allowed_domains_for_apps_;
   mutable BooleanPrefMember sync_disabled_;

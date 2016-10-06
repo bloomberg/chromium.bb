@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/safe_search_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -88,10 +87,10 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, LocalPolicies) {
   Profile* profile = browser()->profile();
   PrefService* prefs = profile->GetPrefs();
   EXPECT_FALSE(prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
-  EXPECT_EQ(prefs->GetInteger(prefs::kForceYouTubeRestrict),
-            safe_search_util::YOUTUBE_RESTRICT_OFF);
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kForceYouTubeSafetyMode));
   EXPECT_TRUE(prefs->IsUserModifiablePreference(prefs::kForceGoogleSafeSearch));
-  EXPECT_TRUE(prefs->IsUserModifiablePreference(prefs::kForceYouTubeRestrict));
+  EXPECT_TRUE(
+      prefs->IsUserModifiablePreference(prefs::kForceYouTubeSafetyMode));
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, ProfileName) {
@@ -111,11 +110,11 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, LocalPolicies) {
   Profile* profile = browser()->profile();
   PrefService* prefs = profile->GetPrefs();
   EXPECT_TRUE(prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
-  EXPECT_EQ(prefs->GetInteger(prefs::kForceYouTubeRestrict),
-            safe_search_util::YOUTUBE_RESTRICT_MODERATE);
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kForceYouTubeSafetyMode));
   EXPECT_FALSE(
       prefs->IsUserModifiablePreference(prefs::kForceGoogleSafeSearch));
-  EXPECT_FALSE(prefs->IsUserModifiablePreference(prefs::kForceYouTubeRestrict));
+  EXPECT_FALSE(
+      prefs->IsUserModifiablePreference(prefs::kForceYouTubeSafetyMode));
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {

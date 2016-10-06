@@ -326,8 +326,7 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
   registry->RegisterBooleanPref(prefs::kAllowDeletingBrowserHistory, true);
   registry->RegisterBooleanPref(prefs::kForceGoogleSafeSearch, false);
-  registry->RegisterIntegerPref(prefs::kForceYouTubeRestrict,
-                                safe_search_util::YOUTUBE_RESTRICT_OFF);
+  registry->RegisterBooleanPref(prefs::kForceYouTubeSafetyMode, false);
   registry->RegisterBooleanPref(prefs::kForceSessionSync, false);
   registry->RegisterStringPref(prefs::kAllowedDomainsForApps, std::string());
 

@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/net/safe_search_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/supervised_user/supervised_user_bookmarks_handler.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -50,6 +49,9 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
   },
   {
     supervised_users::kForceSafeSearch, prefs::kForceGoogleSafeSearch,
+  },
+  {
+    supervised_users::kForceSafeSearch, prefs::kForceYouTubeSafetyMode,
   },
   {
     supervised_users::kSafeSitesEnabled, prefs::kSupervisedUserSafeSites,
@@ -114,8 +116,7 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     prefs_->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
                        SupervisedUserURLFilter::ALLOW);
     prefs_->SetBoolean(prefs::kForceGoogleSafeSearch, true);
-    prefs_->SetInteger(prefs::kForceYouTubeRestrict,
-                       safe_search_util::YOUTUBE_RESTRICT_MODERATE);
+    prefs_->SetBoolean(prefs::kForceYouTubeSafetyMode, true);
     prefs_->SetBoolean(prefs::kHideWebStoreIcon, true);
     prefs_->SetBoolean(prefs::kSigninAllowed, false);
 
@@ -127,34 +128,19 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     }
 
     // Manually set preferences that aren't direct copies of the settings value.
-    {
-      bool record_history = true;
-      settings->GetBoolean(supervised_users::kRecordHistory, &record_history);
-      prefs_->SetBoolean(prefs::kAllowDeletingBrowserHistory, !record_history);
-      prefs_->SetInteger(prefs::kIncognitoModeAvailability,
-                         record_history ? IncognitoModePrefs::DISABLED
-                                        : IncognitoModePrefs::ENABLED);
 
-      bool record_history_includes_session_sync = true;
-      settings->GetBoolean(supervised_users::kRecordHistoryIncludesSessionSync,
-                           &record_history_includes_session_sync);
-      prefs_->SetBoolean(
-          prefs::kForceSessionSync,
-          record_history && record_history_includes_session_sync);
-    }
+    bool record_history = true;
+    settings->GetBoolean(supervised_users::kRecordHistory, &record_history);
+    prefs_->SetBoolean(prefs::kAllowDeletingBrowserHistory, !record_history);
+    prefs_->SetInteger(prefs::kIncognitoModeAvailability,
+                       record_history ? IncognitoModePrefs::DISABLED
+                                      : IncognitoModePrefs::ENABLED);
 
-    {
-      // Note that |prefs::kForceGoogleSafeSearch| is set automatically as part
-      // of |kSupervisedUserSettingsPrefMapping|, but this can't be done for
-      // |prefs::kForceYouTubeRestrict| because it is an int, not a bool.
-      bool force_safe_search = true;
-      settings->GetBoolean(supervised_users::kForceSafeSearch,
-                           &force_safe_search);
-      prefs_->SetInteger(
-          prefs::kForceYouTubeRestrict,
-          force_safe_search ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
-                            : safe_search_util::YOUTUBE_RESTRICT_OFF);
-    }
+    bool record_history_includes_session_sync = true;
+    settings->GetBoolean(supervised_users::kRecordHistoryIncludesSessionSync,
+                         &record_history_includes_session_sync);
+    prefs_->SetBoolean(prefs::kForceSessionSync,
+                       record_history && record_history_includes_session_sync);
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableSupervisedUserManagedBookmarksFolder)) {
