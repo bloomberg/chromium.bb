@@ -46,8 +46,6 @@ class PermissionsBrowserTest : public InProcessBrowserTest {
 
   content::WebContents* GetWebContents();
 
-  GURL GetTestUrl();
-
   // Common tests that should be called by subclasses.
   void CommonFailsBeforeRequesting();
   void CommonFailsIfDismissed();

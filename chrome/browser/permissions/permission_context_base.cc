@@ -292,6 +292,8 @@ void PermissionContextBase::UpdateContentSetting(
   DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK);
+  DCHECK(!requesting_origin.SchemeIsFile());
+  DCHECK(!embedding_origin.SchemeIsFile());
 
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->SetContentSettingDefaultScope(requesting_origin, embedding_origin,

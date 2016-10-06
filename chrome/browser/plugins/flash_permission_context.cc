@@ -9,6 +9,7 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -44,6 +45,28 @@ void FlashPermissionContext::UpdateTabContext(const PermissionRequestID& id,
           content::RenderFrameHost::FromID(id.render_process_id(),
                                            id.render_frame_id()));
   web_contents->GetController().Reload(true /* check_for_repost */);
+}
+
+void FlashPermissionContext::UpdateContentSetting(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    ContentSetting content_setting) {
+  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
+  DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
+  DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
+         content_setting == CONTENT_SETTING_BLOCK);
+
+  // If the request was for a file scheme, allow or deny all file:/// URLs.
+  ContentSettingsPattern pattern;
+  if (embedding_origin.SchemeIsFile())
+    pattern = ContentSettingsPattern::FromString("file:///*");
+  else
+    pattern = ContentSettingsPattern::FromURLNoWildcard(embedding_origin);
+
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->SetContentSettingCustomScope(
+          pattern, ContentSettingsPattern::Wildcard(), content_settings_type(),
+          std::string(), content_setting);
 }
 
 bool FlashPermissionContext::IsRestrictedToSecureOrigins() const {

@@ -30,7 +30,8 @@ void PermissionsBrowserTest::SetUpOnMainThread() {
 
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  ui_test_utils::NavigateToURL(browser(), GetTestUrl());
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(test_url()));
 }
 
 void PermissionsBrowserTest::TearDownOnMainThread() {
@@ -48,10 +49,6 @@ bool PermissionsBrowserTest::RunScriptReturnBool(const std::string& script) {
 
 content::WebContents* PermissionsBrowserTest::GetWebContents() {
   return browser()->tab_strip_model()->GetActiveWebContents();
-}
-
-GURL PermissionsBrowserTest::GetTestUrl() {
-  return embedded_test_server()->GetURL(test_url());
 }
 
 void PermissionsBrowserTest::CommonFailsBeforeRequesting() {

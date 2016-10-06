@@ -24,6 +24,9 @@ class FlashPermissionContext : public PermissionContextBase {
   void UpdateTabContext(const PermissionRequestID& id,
                         const GURL& requesting_origin,
                         bool allowed) override;
+  void UpdateContentSetting(const GURL& requesting_origin,
+                            const GURL& embedding_origin,
+                            ContentSetting content_setting) override;
   bool IsRestrictedToSecureOrigins() const override;
 
   DISALLOW_COPY_AND_ASSIGN(FlashPermissionContext);
