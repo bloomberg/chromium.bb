@@ -136,6 +136,12 @@ void QuicChromiumClientStream::OnDataAvailable() {
     return;
   }
 
+  if (!sequencer()->HasBytesToRead() && !FinishedReadingTrailers()) {
+    // If there is no data to read, wait until either FIN is received or
+    // trailers are delivered.
+    return;
+  }
+
   // The delegate will read the data via a posted task, and
   // will be able to, potentially, read all data which has queued up.
   NotifyDelegateOfDataAvailableLater();

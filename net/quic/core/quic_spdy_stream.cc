@@ -293,9 +293,8 @@ void QuicSpdyStream::OnTrailingHeadersComplete(bool fin, size_t /*frame_len*/) {
   // The data on this stream ends at |final_byte_offset|.
   DVLOG(1) << "Stream ends at byte offset: " << final_byte_offset
            << "  currently read: " << stream_bytes_read();
-
-  OnStreamFrame(QuicStreamFrame(id(), fin, final_byte_offset, StringPiece()));
   trailers_decompressed_ = true;
+  OnStreamFrame(QuicStreamFrame(id(), fin, final_byte_offset, StringPiece()));
 }
 
 void QuicSpdyStream::OnTrailingHeadersComplete(
@@ -327,8 +326,8 @@ void QuicSpdyStream::OnTrailingHeadersComplete(
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
-  OnStreamFrame(QuicStreamFrame(id(), fin, final_byte_offset, StringPiece()));
   trailers_decompressed_ = true;
+  OnStreamFrame(QuicStreamFrame(id(), fin, final_byte_offset, StringPiece()));
 }
 
 void QuicSpdyStream::OnStreamReset(const QuicRstStreamFrame& frame) {

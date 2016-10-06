@@ -189,6 +189,9 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // Returns true if headers have been fully read and consumed.
   bool FinishedReadingHeaders() const;
 
+  // Returns true if trailers have been fully read and consumed.
+  bool FinishedReadingTrailers() const;
+
   virtual SpdyPriority priority() const;
 
   // Sets priority_ to priority.  This should only be called before bytes are
@@ -229,9 +232,6 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   friend class test::QuicSpdyStreamPeer;
   friend class test::ReliableQuicStreamPeer;
   friend class QuicStreamUtils;
-
-  // Returns true if trailers have been fully read and consumed.
-  bool FinishedReadingTrailers() const;
 
   QuicSpdySession* spdy_session_;
 

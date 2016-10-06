@@ -417,28 +417,14 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
   stream_->OnStreamHeadersComplete(true, uncompressed_trailers.length());
   EXPECT_FALSE(stream_->IsDoneReading());
 
-  // Now the pending should complete. Make sure that IsDoneReading() is false
-  // even though ReadData returns 0 byte, because OnHeadersAvailable callback
-  // comes after this OnDataAvailable callback.
   base::RunLoop run_loop2;
-  EXPECT_CALL(delegate_, OnDataAvailable())
-      .Times(1)
-      .WillOnce(testing::DoAll(
-          testing::Invoke(CreateFunctor(&QuicChromiumClientStreamTest::ReadData,
-                                        base::Unretained(this), StringPiece())),
-          testing::InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); })));
-  run_loop2.Run();
-  // Make sure that the stream is not closed, even though ReadData returns 0.
-  EXPECT_FALSE(stream_->IsDoneReading());
-
-  // The OnHeadersAvailable call should follow.
-  base::RunLoop run_loop3;
   EXPECT_CALL(delegate_,
               OnHeadersAvailableMock(_, uncompressed_trailers.length()))
       .WillOnce(
-          testing::InvokeWithoutArgs([&run_loop3]() { run_loop3.Quit(); }));
+          testing::InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); }));
 
-  run_loop3.Run();
+  run_loop2.Run();
+
   // Make sure the stream is properly closed since trailers and data are all
   // consumed.
   EXPECT_TRUE(stream_->IsDoneReading());
