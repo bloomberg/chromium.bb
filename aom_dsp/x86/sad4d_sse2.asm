@@ -23,33 +23,41 @@ SECTION .text
   movd                  m4, [ref2q+%3]
   movd                  m7, [ref3q+%3]
   movd                  m5, [ref4q+%3]
-  punpckldq             m0, [srcq +%4]
-  punpckldq             m6, [ref1q+%5]
-  punpckldq             m4, [ref2q+%5]
-  punpckldq             m7, [ref3q+%5]
-  punpckldq             m5, [ref4q+%5]
+  movd                  m1, [srcq +%4]
+  movd                  m2, [ref1q+%5]
+  punpckldq             m0, m1
+  punpckldq             m6, m2
+  movd                  m1, [ref2q+%5]
+  movd                  m2, [ref3q+%5]
+  movd                  m3, [ref4q+%5]
+  punpckldq             m4, m1
+  punpckldq             m7, m2
+  punpckldq             m5, m3
+  movlhps               m0, m0
+  movlhps               m6, m4
+  movlhps               m7, m5
   psadbw                m6, m0
-  psadbw                m4, m0
   psadbw                m7, m0
-  psadbw                m5, m0
-  punpckldq             m6, m4
-  punpckldq             m7, m5
 %else
   movd                  m1, [ref1q+%3]
+  movd                  m5, [ref1q+%5]
   movd                  m2, [ref2q+%3]
+  movd                  m4, [ref2q+%5]
+  punpckldq             m1, m5
+  punpckldq             m2, m4
   movd                  m3, [ref3q+%3]
+  movd                  m5, [ref3q+%5]
+  punpckldq             m3, m5
   movd                  m4, [ref4q+%3]
-  punpckldq             m0, [srcq +%4]
-  punpckldq             m1, [ref1q+%5]
-  punpckldq             m2, [ref2q+%5]
-  punpckldq             m3, [ref3q+%5]
-  punpckldq             m4, [ref4q+%5]
+  movd                  m5, [ref4q+%5]
+  punpckldq             m4, m5
+  movd                  m5, [srcq +%4]
+  punpckldq             m0, m5
+  movlhps               m0, m0
+  movlhps               m1, m2
+  movlhps               m3, m4
   psadbw                m1, m0
-  psadbw                m2, m0
   psadbw                m3, m0
-  psadbw                m4, m0
-  punpckldq             m1, m2
-  punpckldq             m3, m4
   paddd                 m6, m1
   paddd                 m7, m3
 %endif
@@ -170,10 +178,16 @@ SECTION .text
   PROCESS_32x2x4  0, %4, %5, %4 + 32, %5 + 32, %6
 %endmacro
 
+; PROCESS_128x2x4 first, off_{first,second}_{src,ref}, advance_at_end
+%macro PROCESS_128x2x4 5-6 0
+  PROCESS_64x2x4 %1, %2, %3, %2 + 64, %3 + 64
+  PROCESS_64x2x4  0, %4, %5, %4 + 64, %5 + 64, %6
+%endmacro
+
 ; void aom_sadNxNx4d_sse2(uint8_t *src,    int src_stride,
 ;                         uint8_t *ref[4], int ref_stride,
 ;                         uint32_t res[4]);
-; where NxN = 64x64, 32x32, 16x16, 16x8, 8x16 or 8x8
+; where NxN = 64x64, 32x32, 16x16, 16x8, 8x16, 8x8, 8x4, 4x8 and 4x4
 %macro SADNXN4D 2
 %if UNIX64
 cglobal sad%1x%2x4d, 5, 8, 8, src, src_stride, ref1, ref_stride, \
@@ -195,7 +209,7 @@ cglobal sad%1x%2x4d, 4, 7, 8, src, src_stride, ref1, ref_stride, \
 %endrep
   PROCESS_%1x2x4 0, 0, 0, src_strideq, ref_strideq, 0
 
-%if mmsize == 16
+%if %1 > 4
   pslldq                m5, 4
   pslldq                m7, 4
   por                   m4, m5
@@ -210,8 +224,10 @@ cglobal sad%1x%2x4d, 4, 7, 8, src, src_stride, ref1, ref_stride, \
   RET
 %else
   movifnidn             r4, r4mp
-  movq               [r4+0], m6
-  movq               [r4+8], m7
+  pshufd            m6, m6, 0x08
+  pshufd            m7, m7, 0x08
+  movq              [r4+0], m6
+  movq              [r4+8], m7
   RET
 %endif
 %endmacro
@@ -228,7 +244,5 @@ SADNXN4D 16,  8
 SADNXN4D  8, 16
 SADNXN4D  8,  8
 SADNXN4D  8,  4
-
-INIT_MMX sse
 SADNXN4D  4,  8
 SADNXN4D  4,  4

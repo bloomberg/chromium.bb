@@ -250,7 +250,6 @@ unsigned int aom_highbd_12_mse8x8_sse2(const uint8_t *src8, int src_stride,
   return *sse;
 }
 
-#if CONFIG_USE_X86INC
 // The 2 unused parameters are place holders for PIC enabled build.
 // These definitions are for functions defined in
 // highbd_subpel_variance_impl_sse2.asm
@@ -557,7 +556,6 @@ FNS(sse2);
 
 #undef FNS
 #undef FN
-#endif  // CONFIG_USE_X86INC
 
 void aom_highbd_upsampled_pred_sse2(uint16_t *pred, int width, int height,
                                     const uint8_t *ref8, const int ref_stride) {

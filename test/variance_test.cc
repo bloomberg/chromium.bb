@@ -987,8 +987,8 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(3, 4, &aom_sub_pixel_variance8x16_sse2, 0),
                       make_tuple(3, 3, &aom_sub_pixel_variance8x8_sse2, 0),
                       make_tuple(3, 2, &aom_sub_pixel_variance8x4_sse2, 0),
-                      make_tuple(2, 3, &aom_sub_pixel_variance4x8_sse, 0),
-                      make_tuple(2, 2, &aom_sub_pixel_variance4x4_sse, 0)));
+                      make_tuple(2, 3, &aom_sub_pixel_variance4x8_sse2, 0),
+                      make_tuple(2, 2, &aom_sub_pixel_variance4x4_sse2, 0)));
 
 INSTANTIATE_TEST_CASE_P(
     SSE2, AvxSubpelAvgVarianceTest,
@@ -1004,8 +1004,8 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(3, 4, &aom_sub_pixel_avg_variance8x16_sse2, 0),
         make_tuple(3, 3, &aom_sub_pixel_avg_variance8x8_sse2, 0),
         make_tuple(3, 2, &aom_sub_pixel_avg_variance8x4_sse2, 0),
-        make_tuple(2, 3, &aom_sub_pixel_avg_variance4x8_sse, 0),
-        make_tuple(2, 2, &aom_sub_pixel_avg_variance4x4_sse, 0)));
+        make_tuple(2, 3, &aom_sub_pixel_avg_variance4x8_sse2, 0),
+        make_tuple(2, 2, &aom_sub_pixel_avg_variance4x4_sse2, 0)));
 #endif  // CONFIG_USE_X86INC
 
 #if CONFIG_AOM_HIGHBITDEPTH

@@ -335,7 +335,6 @@ unsigned int aom_mse16x16_sse2(const uint8_t *src, int src_stride,
   return *sse;
 }
 
-#if CONFIG_USE_X86INC
 // The 2 unused parameters are place holders for PIC enabled build.
 // These definitions are for functions defined in subpel_variance.asm
 #define DECL(w, opt)                                                           \
@@ -344,11 +343,11 @@ unsigned int aom_mse16x16_sse2(const uint8_t *src, int src_stride,
       const uint8_t *dst, ptrdiff_t dst_stride, int height, unsigned int *sse, \
       void *unused0, void *unused)
 #define DECLS(opt1, opt2) \
-  DECL(4, opt2);          \
+  DECL(4, opt1);          \
   DECL(8, opt1);          \
   DECL(16, opt1)
 
-DECLS(sse2, sse);
+DECLS(sse2, sse2);
 DECLS(ssse3, ssse3);
 #undef DECLS
 #undef DECL
@@ -397,10 +396,10 @@ DECLS(ssse3, ssse3);
   FN(8, 16, 8, 3, 4, opt1, (int32_t), (int32_t));    \
   FN(8, 8, 8, 3, 3, opt1, (int32_t), (int32_t));     \
   FN(8, 4, 8, 3, 2, opt1, (int32_t), (int32_t));     \
-  FN(4, 8, 4, 2, 3, opt2, (int32_t), (int32_t));     \
-  FN(4, 4, 4, 2, 2, opt2, (int32_t), (int32_t))
+  FN(4, 8, 4, 2, 3, opt1, (int32_t), (int32_t));     \
+  FN(4, 4, 4, 2, 2, opt1, (int32_t), (int32_t))
 
-FNS(sse2, sse);
+FNS(sse2, sse2);
 FNS(ssse3, ssse3);
 
 #undef FNS
@@ -414,11 +413,11 @@ FNS(ssse3, ssse3);
       ptrdiff_t sec_stride, int height, unsigned int *sse, void *unused0,   \
       void *unused)
 #define DECLS(opt1, opt2) \
-  DECL(4, opt2);          \
+  DECL(4, opt1);          \
   DECL(8, opt1);          \
   DECL(16, opt1)
 
-DECLS(sse2, sse);
+DECLS(sse2, sse2);
 DECLS(ssse3, ssse3);
 #undef DECL
 #undef DECLS
@@ -468,15 +467,14 @@ DECLS(ssse3, ssse3);
   FN(8, 16, 8, 3, 4, opt1, (uint32_t), (int32_t));   \
   FN(8, 8, 8, 3, 3, opt1, (uint32_t), (int32_t));    \
   FN(8, 4, 8, 3, 2, opt1, (uint32_t), (int32_t));    \
-  FN(4, 8, 4, 2, 3, opt2, (uint32_t), (int32_t));    \
-  FN(4, 4, 4, 2, 2, opt2, (uint32_t), (int32_t))
+  FN(4, 8, 4, 2, 3, opt1, (uint32_t), (int32_t));    \
+  FN(4, 4, 4, 2, 2, opt1, (uint32_t), (int32_t))
 
 FNS(sse2, sse);
 FNS(ssse3, ssse3);
 
 #undef FNS
 #undef FN
-#endif  // CONFIG_USE_X86INC
 
 void aom_upsampled_pred_sse2(uint8_t *pred, int width, int height,
                              const uint8_t *ref, const int ref_stride) {
@@ -683,7 +681,6 @@ void aom_comp_avg_upsampled_pred_sse2(uint8_t *comp_pred, const uint8_t *pred,
         p0 = _mm_packus_epi16(p0, zero);
 
         *(int *)comp_pred = _mm_cvtsi128_si32(p0);
-
         comp_pred += 4;
         pred += 4;
         ref += 4 * 8;

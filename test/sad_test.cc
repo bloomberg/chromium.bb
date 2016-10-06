@@ -677,18 +677,8 @@ INSTANTIATE_TEST_CASE_P(NEON, SADx4Test, ::testing::ValuesIn(x4d_neon_tests));
 
 //------------------------------------------------------------------------------
 // x86 functions
-#if HAVE_SSE
-#if CONFIG_USE_X86INC
-const SadMxNx4Param x4d_sse_tests[] = {
-  make_tuple(4, 8, &aom_sad4x8x4d_sse, -1),
-  make_tuple(4, 4, &aom_sad4x4x4d_sse, -1),
-};
-INSTANTIATE_TEST_CASE_P(SSE, SADx4Test, ::testing::ValuesIn(x4d_sse_tests));
-#endif  // CONFIG_USE_X86INC
-#endif  // HAVE_SSE
 
 #if HAVE_SSE2
-#if CONFIG_USE_X86INC
 const SadMxNParam sse2_tests[] = {
   make_tuple(64, 64, &aom_sad64x64_sse2, -1),
   make_tuple(64, 32, &aom_sad64x32_sse2, -1),
@@ -805,6 +795,8 @@ const SadMxNx4Param x4d_sse2_tests[] = {
   make_tuple(8, 16, &aom_sad8x16x4d_sse2, -1),
   make_tuple(8, 8, &aom_sad8x8x4d_sse2, -1),
   make_tuple(8, 4, &aom_sad8x4x4d_sse2, -1),
+  make_tuple(4, 8, &aom_sad4x8x4d_sse2, -1),
+  make_tuple(4, 4, &aom_sad4x4x4d_sse2, -1),
 #if CONFIG_AOM_HIGHBITDEPTH
   make_tuple(64, 64, &aom_highbd_sad64x64x4d_sse2, 8),
   make_tuple(64, 32, &aom_highbd_sad64x32x4d_sse2, 8),
@@ -848,7 +840,6 @@ const SadMxNx4Param x4d_sse2_tests[] = {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 };
 INSTANTIATE_TEST_CASE_P(SSE2, SADx4Test, ::testing::ValuesIn(x4d_sse2_tests));
-#endif  // CONFIG_USE_X86INC
 #endif  // HAVE_SSE2
 
 #if HAVE_SSE3

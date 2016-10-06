@@ -65,18 +65,14 @@ DSP_SRCS-yes += daalaboolwriter.c
 DSP_SRCS-yes += daalaboolwriter.h
 endif
 
-ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSE) += x86/intrapred_sse2.asm
 DSP_SRCS-$(HAVE_SSE2) += x86/intrapred_sse2.asm
 DSP_SRCS-$(HAVE_SSSE3) += x86/intrapred_ssse3.asm
 DSP_SRCS-$(HAVE_SSSE3) += x86/aom_subpixel_8t_ssse3.asm
-endif  # CONFIG_USE_X86INC
 
 ifeq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
-ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSE)  += x86/highbd_intrapred_sse2.asm
 DSP_SRCS-$(HAVE_SSE2) += x86/highbd_intrapred_sse2.asm
-endif  # CONFIG_USE_X86INC
 endif  # CONFIG_AOM_HIGHBITDEPTH
 
 DSP_SRCS-$(HAVE_NEON_ASM) += arm/intrapred_neon_asm$(ASM)
@@ -116,9 +112,7 @@ ifeq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
 DSP_SRCS-$(HAVE_SSE2)  += x86/aom_high_subpixel_8t_sse2.asm
 DSP_SRCS-$(HAVE_SSE2)  += x86/aom_high_subpixel_bilinear_sse2.asm
 endif
-ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSE2)  += x86/aom_convolve_copy_sse2.asm
-endif
 
 ifeq ($(HAVE_NEON_ASM),yes)
 DSP_SRCS-yes += arm/aom_convolve_copy_neon_asm$(ASM)
@@ -209,9 +203,7 @@ DSP_SRCS-$(HAVE_SSE2)   += x86/fwd_txfm_sse2.c
 DSP_SRCS-$(HAVE_SSE2)   += x86/fwd_txfm_impl_sse2.h
 DSP_SRCS-$(HAVE_SSE2)   += x86/fwd_dct32x32_impl_sse2.h
 ifeq ($(ARCH_X86_64),yes)
-ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSSE3)  += x86/fwd_txfm_ssse3_x86_64.asm
-endif
 endif
 DSP_SRCS-$(HAVE_AVX2)   += x86/fwd_txfm_avx2.c
 DSP_SRCS-$(HAVE_AVX2)   += x86/fwd_dct32x32_impl_avx2.h
@@ -227,12 +219,10 @@ DSP_SRCS-yes            += inv_txfm.h
 DSP_SRCS-yes            += inv_txfm.c
 DSP_SRCS-$(HAVE_SSE2)   += x86/inv_txfm_sse2.h
 DSP_SRCS-$(HAVE_SSE2)   += x86/inv_txfm_sse2.c
-ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSE2)   += x86/inv_wht_sse2.asm
 ifeq ($(ARCH_X86_64),yes)
 DSP_SRCS-$(HAVE_SSSE3)  += x86/inv_txfm_ssse3_x86_64.asm
 endif  # ARCH_X86_64
-endif  # CONFIG_USE_X86INC
 
 ifeq ($(HAVE_NEON_ASM),yes)
 DSP_SRCS-yes  += arm/save_reg_neon$(ASM)
@@ -284,10 +274,8 @@ ifeq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
 DSP_SRCS-$(HAVE_SSE2)   += x86/highbd_quantize_intrin_sse2.c
 endif
 ifeq ($(ARCH_X86_64),yes)
-ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSSE3)  += x86/quantize_ssse3_x86_64.asm
 DSP_SRCS-$(HAVE_AVX)    += x86/quantize_avx_x86_64.asm
-endif
 endif
 
 # avg
@@ -296,9 +284,7 @@ DSP_SRCS-$(HAVE_SSE2)  += x86/avg_intrin_sse2.c
 DSP_SRCS-$(HAVE_NEON)  += arm/avg_neon.c
 DSP_SRCS-$(HAVE_MSA)   += mips/avg_msa.c
 ifeq ($(ARCH_X86_64),yes)
-ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSSE3) += x86/avg_ssse3_x86_64.asm
-endif
 endif
 
 endif  # CONFIG_AV1_ENCODER
@@ -321,7 +307,6 @@ DSP_SRCS-$(HAVE_SSE4_1) += x86/sad_sse4.asm
 DSP_SRCS-$(HAVE_AVX2)   += x86/sad4d_avx2.c
 DSP_SRCS-$(HAVE_AVX2)   += x86/sad_avx2.c
 
-ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSE)    += x86/sad4d_sse2.asm
 DSP_SRCS-$(HAVE_SSE)    += x86/sad_sse2.asm
 DSP_SRCS-$(HAVE_SSE2)   += x86/sad4d_sse2.asm
@@ -332,7 +317,6 @@ ifeq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
 DSP_SRCS-$(HAVE_SSE2) += x86/highbd_sad4d_sse2.asm
 DSP_SRCS-$(HAVE_SSE2) += x86/highbd_sad_sse2.asm
 endif  # CONFIG_AOM_HIGHBITDEPTH
-endif  # CONFIG_USE_X86INC
 
 endif  # CONFIG_ENCODERS
 
@@ -363,17 +347,13 @@ ifeq ($(ARCH_X86_64),yes)
 DSP_SRCS-$(HAVE_SSE2)   += x86/ssim_opt_x86_64.asm
 endif  # ARCH_X86_64
 
-ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSE)    += x86/subpel_variance_sse2.asm
 DSP_SRCS-$(HAVE_SSE2)   += x86/subpel_variance_sse2.asm  # Contains SSE2 and SSSE3
-endif  # CONFIG_USE_X86INC
 
 ifeq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
 DSP_SRCS-$(HAVE_SSE2)   += x86/highbd_variance_sse2.c
 DSP_SRCS-$(HAVE_SSE2)   += x86/highbd_variance_impl_sse2.asm
-ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSE2)   += x86/highbd_subpel_variance_impl_sse2.asm
-endif  # CONFIG_USE_X86INC
 endif  # CONFIG_AOM_HIGHBITDEPTH
 
 ifeq ($(CONFIG_MOTION_VAR),yes)
