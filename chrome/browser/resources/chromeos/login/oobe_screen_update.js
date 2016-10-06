@@ -55,6 +55,7 @@ login.createScreen('UpdateScreen', 'update', function() {
       this.context.addObserver(CONTEXT_KEY_CANCEL_UPDATE_SHORTCUT_ENABLED,
                                function(enabled) {
         $('update-cancel-hint').hidden = !enabled;
+        $('oobe-update-md').cancelAllowed = enabled;
       });
     },
 
@@ -73,8 +74,9 @@ login.createScreen('UpdateScreen', 'update', function() {
       // It's safe to act on the accelerator even if it's disabled on official
       // builds, since Chrome will just ignore this user action in that case.
       var updateCancelHint = $('update-cancel-hint').firstElementChild;
-      updateCancelHint.textContent =
-          loadTimeData.getString('cancelledUpdateMessage');
+      var message = loadTimeData.getString('cancelledUpdateMessage');
+      updateCancelHint.textContent = message;
+      $('oobe-update-md').setCancelHint(message);
       this.send(login.Screen.CALLBACK_USER_ACTED,
                 USER_ACTION_CANCEL_UPDATE_SHORTCUT);
     },
@@ -85,6 +87,7 @@ login.createScreen('UpdateScreen', 'update', function() {
      */
     setUpdateProgress: function(progress) {
       $('update-progress-bar').value = progress;
+      $('oobe-update-md').progressValue = progress;
     },
 
     /**
@@ -94,6 +97,8 @@ login.createScreen('UpdateScreen', 'update', function() {
     showEstimatedTimeLeft: function(visible) {
       $('progress-message').hidden = visible;
       $('estimated-time-left').hidden = !visible;
+      $('oobe-update-md').estimatedTimeLeftShown = visible;
+      $('oobe-update-md').progressMessageShown = !visible;
     },
 
     /**
@@ -116,8 +121,10 @@ login.createScreen('UpdateScreen', 'update', function() {
       } else {
         message = loadTimeData.getString('downloadingTimeLeftSmall');
       }
-      $('estimated-time-left').textContent =
-        loadTimeData.getStringF('downloading', message);
+      var formattedMessage =
+          loadTimeData.getStringF('downloading', message);
+      $('estimated-time-left').textContent = formattedMessage;
+      $('oobe-update-md').estimatedTimeLeft = formattedMessage;
     },
 
     /**
@@ -127,6 +134,8 @@ login.createScreen('UpdateScreen', 'update', function() {
     showProgressMessage: function(visible) {
       $('estimated-time-left').hidden = visible;
       $('progress-message').hidden = !visible;
+      $('oobe-update-md').estimatedTimeLeftShown = !visible;
+      $('oobe-update-md').progressMessageShown = visible;
     },
 
     /**
@@ -135,6 +144,7 @@ login.createScreen('UpdateScreen', 'update', function() {
      */
     setProgressMessage: function(message) {
       $('progress-message').innerText = message;
+      $('oobe-update-md').progressMessage = message;
     },
 
     /**
@@ -143,6 +153,7 @@ login.createScreen('UpdateScreen', 'update', function() {
      */
     setUpdateMessage: function(message) {
       $('update-upper-label').textContent = message;
+      $('oobe-update-md').updateUpperLabel = message;
     },
 
     /**
@@ -152,6 +163,31 @@ login.createScreen('UpdateScreen', 'update', function() {
     showUpdateCurtain: function(visible) {
       $('update-screen-curtain').hidden = !visible;
       $('update-screen-main').hidden = visible;
-    }
+      $('oobe-update-md').checkingForUpdate = visible;
+    },
+
+    /**
+     * This method takes care of switching to material-design OOBE.
+     * @private
+     */
+    setMDMode_: function() {
+      var useMDOobe = (loadTimeData.getString('newOobeUI') == 'on');
+      $('oobe-update-md').hidden = !useMDOobe;
+      $('oobe-update').hidden = useMDOobe;
+    },
+
+    /**
+     * Event handler that is invoked just before the screen is shown.
+     */
+    onBeforeShow: function() {
+      this.setMDMode_();
+    },
+
+    /**
+     * Updates localized content of the screen that is not updated via template.
+     */
+    updateLocalizedContent: function() {
+      this.setMDMode_();
+    },
   };
 });

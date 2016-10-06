@@ -7,6 +7,11 @@
   padding: 70px 17px 69px;    /* Screen has no controls. */
 }
 
+#oobe[md-mode] #update {
+  min-height: unset;
+  padding: unset;
+}
+
 #update #update-screen-curtain {
   -webkit-box-align: start;
   -webkit-box-pack: center;

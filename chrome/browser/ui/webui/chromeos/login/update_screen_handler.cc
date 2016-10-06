@@ -53,6 +53,9 @@ void UpdateScreenHandler::DeclareLocalizedValues(
   builder->Add("cancelUpdateHint", IDS_EMPTY_STRING);
   builder->Add("cancelledUpdateMessage", IDS_EMPTY_STRING);
 #endif
+
+  // For Material Design OOBE
+  builder->Add("updatingScreenTitle", IDS_UPDATING_SCREEN_TITLE);
 }
 
 void UpdateScreenHandler::Initialize() {
