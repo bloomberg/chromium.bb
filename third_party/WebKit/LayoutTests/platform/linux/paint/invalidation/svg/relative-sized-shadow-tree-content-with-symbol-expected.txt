@@ -60,6 +60,22 @@
       "reason": "forced by layout"
     },
     {
+      "object": "LayoutSVGHiddenContainer defs",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer symbol id='targetSymbol'",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "location change"
+    },
+    {
       "object": "LayoutSVGContainer use",
       "reason": "bounds change"
     },

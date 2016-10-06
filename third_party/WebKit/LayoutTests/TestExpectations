@@ -602,16 +602,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-va
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-002.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-003.html [ Failure ]
 
-crbug.com/649760 svg/zoom/page/zoom-foreignObject.svg [ NeedsRebaseline ]
-crbug.com/649760 paint/invalidation/svg/relative-sized-content-with-resources.xhtml [ NeedsRebaseline ]
-crbug.com/649760 paint/invalidation/svg/relative-sized-deep-shadow-tree-content.xhtml [ NeedsRebaseline ]
-crbug.com/649760 paint/invalidation/svg/relative-sized-shadow-tree-content-with-symbol.xhtml [ NeedsRebaseline ]
-crbug.com/649760 paint/invalidation/svg/relative-sized-shadow-tree-content.xhtml [ NeedsRebaseline ]
-crbug.com/649760 paint/invalidation/svg/relative-sized-use-on-symbol.xhtml [ NeedsRebaseline ]
-crbug.com/649760 paint/invalidation/svg/relative-sized-use-without-attributes-on-symbol.xhtml [ NeedsRebaseline ]
-crbug.com/649760 paint/invalidation/svg/use-setAttribute-crash.svg [ NeedsRebaseline ]
-crbug.com/649760 paint/invalidation/svg/absolute-sized-content-with-resources.xhtml [ NeedsRebaseline ]
-
 # These CSS Writing Modes Level 3 tests pass but causes 1px diff on images, notified to the submitter.
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-htb-001.xht [ Failure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-vrl-002.xht [ Failure ]

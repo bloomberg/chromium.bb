@@ -95,6 +95,10 @@
       "reason": "forced by layout"
     },
     {
+      "object": "LayoutSVGHiddenContainer defs",
+      "reason": "location change"
+    },
+    {
       "object": "LayoutSVGRect rect id='targetRect'",
       "reason": "full"
     },

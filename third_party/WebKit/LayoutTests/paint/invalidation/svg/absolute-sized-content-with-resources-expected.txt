@@ -14,14 +14,64 @@
           "reason": "forced by layout"
         },
         {
+          "object": "LayoutSVGContainer g",
+          "rect": [42, 117, 334, 268],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [42, 117, 334, 268],
+          "reason": "bounds change"
+        },
+        {
           "object": "LayoutSVGRoot svg",
           "rect": [42, 117, 334, 268],
           "reason": "forced by layout"
         },
         {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [242, 251, 167, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [242, 51, 167, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [9, 251, 167, 200],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [9, 51, 167, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [17, 217, 84, 68],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [17, 217, 84, 68],
+          "reason": "bounds change"
+        },
+        {
           "object": "LayoutSVGRoot svg",
           "rect": [17, 217, 84, 68],
           "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [67, 251, 42, 67],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [67, 184, 42, 67],
+          "reason": "bounds change"
         }
       ]
     }
@@ -38,6 +88,50 @@
     {
       "object": "LayoutSVGRoot svg",
       "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGHiddenContainer defs",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGResourceLinearGradient linearGradient id='gradient'",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGGradientStop stop",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGGradientStop stop",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGResourceMasker mask id='mask'",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGEllipse circle",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGEllipse circle",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutSVGEllipse circle",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGEllipse circle",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
     }
   ]
 }
