@@ -187,10 +187,10 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             return 'String'
         return 'V8StringResource<%s>' % string_mode()
 
-    if idl_type.base_type == 'ArrayBufferView' and 'FlexibleArrayBufferView' in extended_attributes:
+    if base_idl_type == 'ArrayBufferView' and 'FlexibleArrayBufferView' in extended_attributes:
         return 'FlexibleArrayBufferView'
-    if idl_type.base_type in TYPED_ARRAY_TYPES and 'FlexibleArrayBufferView' in extended_attributes:
-        return 'Flexible' + idl_type.base_type + 'View'
+    if base_idl_type in TYPED_ARRAY_TYPES and 'FlexibleArrayBufferView' in extended_attributes:
+        return 'Flexible' + base_idl_type + 'View'
     if idl_type.is_interface_type:
         implemented_as_class = idl_type.implemented_as
         if raw_type or (used_as_rvalue_type and idl_type.is_garbage_collected) or not used_in_cpp_sequence:
@@ -368,7 +368,7 @@ def includes_for_type(idl_type, extended_attributes=None):
     base_idl_type = idl_type.base_type
     if base_idl_type in INCLUDES_FOR_TYPE:
         return INCLUDES_FOR_TYPE[base_idl_type]
-    if idl_type.base_type in TYPED_ARRAY_TYPES:
+    if base_idl_type in TYPED_ARRAY_TYPES:
         return INCLUDES_FOR_TYPE['ArrayBufferView'].union(
             set(['bindings/%s/v8/V8%s.h' % (component_dir[base_idl_type], base_idl_type)])
         )
@@ -445,7 +445,7 @@ def impl_includes_for_type(idl_type, interfaces_info):
     if idl_type.is_string_type:
         includes_for_type.add('wtf/text/WTFString.h')
     if base_idl_type in interfaces_info:
-        interface_info = interfaces_info[idl_type.base_type]
+        interface_info = interfaces_info[base_idl_type]
         if interface_info['include_path']:
             includes_for_type.add(interface_info['include_path'])
     if base_idl_type in INCLUDES_FOR_TYPE:
