@@ -1305,6 +1305,10 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<AssociatedInterfaceProviderImpl>
       remote_associated_interfaces_;
 
+  // TODO(dcheng): Remove these members.
+  bool committed_first_load_ = false;
+  bool name_changed_before_first_commit_ = false;
+
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);
