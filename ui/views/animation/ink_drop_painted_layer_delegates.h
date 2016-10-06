@@ -114,11 +114,12 @@ class VIEWS_EXPORT RoundedRectangleLayerDelegate
 };
 
 // A BasePaintedLayerDelegate that paints a shadow around the outside of a
-// specified roundrect.
+// specified roundrect, and also fills the round rect.
 class VIEWS_EXPORT BorderShadowLayerDelegate : public BasePaintedLayerDelegate {
  public:
   BorderShadowLayerDelegate(const std::vector<gfx::ShadowValue>& shadows,
                             const gfx::Rect& shadowed_area_bounds,
+                            SkColor fill_color,
                             int corner_radius);
   ~BorderShadowLayerDelegate() override;
 
@@ -133,9 +134,11 @@ class VIEWS_EXPORT BorderShadowLayerDelegate : public BasePaintedLayerDelegate {
   const std::vector<gfx::ShadowValue> shadows_;
 
   // The bounds of the shadowed area.
-  gfx::Rect bounds_;
+  const gfx::Rect bounds_;
 
-  int corner_radius_;
+  const SkColor fill_color_;
+
+  const int corner_radius_;
 
   DISALLOW_COPY_AND_ASSIGN(BorderShadowLayerDelegate);
 };

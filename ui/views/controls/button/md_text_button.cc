@@ -86,6 +86,11 @@ void MdTextButton::SetProminent(bool is_prominent) {
   UpdateColors();
 }
 
+void MdTextButton::SetBgColorOverride(const base::Optional<SkColor>& color) {
+  bg_color_override_ = color;
+  UpdateColors();
+}
+
 void MdTextButton::OnFocus() {
   LabelButton::OnFocus();
   FocusRing::Install(this);
@@ -122,12 +127,11 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
     const {
   if (!ShouldShowInkDropHighlight())
     return nullptr;
-  if (!is_prominent_)
-    return LabelButton::CreateInkDropHighlight();
 
   // The prominent button hover effect is a shadow.
   const int kYOffset = 1;
-  const int kSkiaBlurRadius = 1;
+  const int kSkiaBlurRadius = 2;
+  const int shadow_alpha = is_prominent_ ? 0x3D : 0x1A;
   std::vector<gfx::ShadowValue> shadows;
   // The notion of blur that gfx::ShadowValue uses is twice the Skia/CSS value.
   // Skia counts the number of pixels outside the mask area whereas
@@ -135,11 +139,13 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
   // the mask bounds.
   shadows.push_back(gfx::ShadowValue(gfx::Vector2d(0, kYOffset),
                                      2 * kSkiaBlurRadius,
-                                     SkColorSetA(SK_ColorBLACK, 0x3D)));
+                                     SkColorSetA(SK_ColorBLACK, shadow_alpha)));
+  const SkColor fill_color =
+      SkColorSetA(SK_ColorWHITE, is_prominent_ ? 0x0D : 0x05);
   return base::MakeUnique<InkDropHighlight>(
       gfx::RectF(GetLocalBounds()).CenterPoint(),
       base::WrapUnique(new BorderShadowLayerDelegate(
-          shadows, GetLocalBounds(), kInkDropSmallCornerRadius)));
+          shadows, GetLocalBounds(), fill_color, kInkDropSmallCornerRadius)));
 }
 
 bool MdTextButton::ShouldShowInkDropForFocus() const {
@@ -264,11 +270,8 @@ void MdTextButton::UpdateColors() {
     bg_color = color_utils::GetResultingPaintColor(shade, bg_color);
   }
 
-  const SkAlpha kStrokeOpacity = 0x1A;
-  SkColor stroke_color = (is_prominent_ || color_utils::IsDark(text_color))
-                             ? SkColorSetA(SK_ColorBLACK, kStrokeOpacity)
-                             : SkColorSetA(SK_ColorWHITE, 2 * kStrokeOpacity);
-
+  SkColor stroke_color =
+      is_prominent_ ? SK_ColorTRANSPARENT : SkColorSetA(text_color, 0x33);
   DCHECK_EQ(SK_AlphaOPAQUE, static_cast<int>(SkColorGetA(bg_color)));
   set_background(Background::CreateBackgroundPainter(
       true, Painter::CreateRoundRectWith1PxBorderPainter(

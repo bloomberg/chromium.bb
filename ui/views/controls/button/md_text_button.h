@@ -26,7 +26,9 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
   // See |is_prominent_|.
   void SetProminent(bool is_prominent);
-  void set_bg_color_override(SkColor color) { bg_color_override_ = color; }
+
+  // See |bg_color_override_|.
+  void SetBgColorOverride(const base::Optional<SkColor>& color);
 
   // LabelButton:
   void OnFocus() override;

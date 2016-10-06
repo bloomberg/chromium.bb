@@ -12,6 +12,8 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -309,10 +311,21 @@ bool DownloadShelfView::CanFitFirstDownloadItem() {
 
 void DownloadShelfView::UpdateColorsFromTheme() {
   if (show_all_view_ && close_button_ && GetThemeProvider()) {
-    set_background(views::Background::CreateSolidBackground(
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
+    const SkColor bg_color =
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
+    set_background(views::Background::CreateSolidBackground(bg_color));
     show_all_view_->SetEnabledTextColors(
         GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
+    if (ThemeServiceFactory::GetForProfile(browser_->profile())
+            ->UsingDefaultTheme()) {
+      // For the normal theme, just use the default button bg color.
+      show_all_view_->SetBgColorOverride(base::Optional<SkColor>());
+    } else {
+      // For custom themes, we have to make up a background color for the
+      // button. Use a slight tint of the shelf background.
+      show_all_view_->SetBgColorOverride(
+          color_utils::BlendTowardOppositeLuma(bg_color, 0x10));
+    }
   }
 }
 

@@ -96,7 +96,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
         // TODO(estade): These should be removed and moved into the native
         // theme. Also, infobars should always use the normal (non-incognito)
         // native theme.
-        cancel_button_->set_bg_color_override(SK_ColorWHITE);
+        cancel_button_->SetBgColorOverride(SK_ColorWHITE);
         cancel_button_->SetEnabledTextColors(kTextColor);
       }
       AddViewToContentArea(cancel_button_);
