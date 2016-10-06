@@ -57,7 +57,7 @@ class SoftwareRendererTest : public testing::Test {
 
   std::unique_ptr<SkBitmap> DrawAndCopyOutput(RenderPassList* list,
                                               float device_scale_factor,
-                                              gfx::Rect device_viewport_rect) {
+                                              gfx::Size viewport_size) {
     std::unique_ptr<SkBitmap> bitmap_result;
     base::RunLoop loop;
 
@@ -68,7 +68,7 @@ class SoftwareRendererTest : public testing::Test {
                        loop.QuitClosure())));
 
     renderer()->DrawFrame(list, device_scale_factor, gfx::ColorSpace(),
-                          device_viewport_rect, device_viewport_rect);
+                          viewport_size);
     loop.Run();
     return bitmap_result;
   }
@@ -127,9 +127,8 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
   list.push_back(std::move(root_render_pass));
 
   float device_scale_factor = 1.f;
-  gfx::Rect device_viewport_rect(outer_size);
   std::unique_ptr<SkBitmap> output =
-      DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
+      DrawAndCopyOutput(&list, device_scale_factor, outer_size);
   EXPECT_EQ(outer_rect.width(), output->info().width());
   EXPECT_EQ(outer_rect.height(), output->info().height());
 
@@ -201,9 +200,8 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   list.push_back(std::move(root_render_pass));
 
   float device_scale_factor = 1.f;
-  gfx::Rect device_viewport_rect(outer_size);
   std::unique_ptr<SkBitmap> output =
-      DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
+      DrawAndCopyOutput(&list, device_scale_factor, outer_size);
   EXPECT_EQ(outer_rect.width(), output->info().width());
   EXPECT_EQ(outer_rect.height(), output->info().height());
 
@@ -264,9 +262,8 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   list.push_back(std::move(root_render_pass));
 
   float device_scale_factor = 1.f;
-  gfx::Rect device_viewport_rect(tile_size);
   std::unique_ptr<SkBitmap> output =
-      DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
+      DrawAndCopyOutput(&list, device_scale_factor, tile_size);
   EXPECT_EQ(tile_rect.width(), output->info().width());
   EXPECT_EQ(tile_rect.height(), output->info().height());
 
@@ -292,7 +289,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
 
 TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   float device_scale_factor = 1.f;
-  gfx::Rect device_viewport_rect(0, 0, 100, 100);
+  gfx::Size viewport_size(100, 100);
 
   settings_.should_clear_root_render_pass = false;
   InitializeRenderer(base::WrapUnique(new SoftwareOutputDevice));
@@ -302,20 +299,19 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   // Draw a fullscreen green quad in a first frame.
   RenderPassId root_clear_pass_id(1, 0);
   RenderPass* root_clear_pass = AddRenderPass(
-      &list, root_clear_pass_id, device_viewport_rect, gfx::Transform());
-  AddQuad(root_clear_pass, device_viewport_rect, SK_ColorGREEN);
+      &list, root_clear_pass_id, gfx::Rect(viewport_size), gfx::Transform());
+  AddQuad(root_clear_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
 
   std::unique_ptr<SkBitmap> output =
-      DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
-  EXPECT_EQ(device_viewport_rect.width(), output->info().width());
-  EXPECT_EQ(device_viewport_rect.height(), output->info().height());
+      DrawAndCopyOutput(&list, device_scale_factor, viewport_size);
+  EXPECT_EQ(viewport_size.width(), output->info().width());
+  EXPECT_EQ(viewport_size.height(), output->info().height());
 
   EXPECT_EQ(SK_ColorGREEN, output->getColor(0, 0));
-  EXPECT_EQ(SK_ColorGREEN,
-            output->getColor(device_viewport_rect.width() - 1,
-                             device_viewport_rect.height() - 1));
+  EXPECT_EQ(SK_ColorGREEN, output->getColor(viewport_size.width() - 1,
+                                            viewport_size.height() - 1));
 
   list.clear();
 
@@ -325,20 +321,19 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
 
   RenderPassId root_smaller_pass_id(2, 0);
   RenderPass* root_smaller_pass = AddRenderPass(
-      &list, root_smaller_pass_id, device_viewport_rect, gfx::Transform());
+      &list, root_smaller_pass_id, gfx::Rect(viewport_size), gfx::Transform());
   AddQuad(root_smaller_pass, smaller_rect, SK_ColorMAGENTA);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
 
-  output = DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
-  EXPECT_EQ(device_viewport_rect.width(), output->info().width());
-  EXPECT_EQ(device_viewport_rect.height(), output->info().height());
+  output = DrawAndCopyOutput(&list, device_scale_factor, viewport_size);
+  EXPECT_EQ(viewport_size.width(), output->info().width());
+  EXPECT_EQ(viewport_size.height(), output->info().height());
 
   // If we didn't clear, the borders should still be green.
   EXPECT_EQ(SK_ColorGREEN, output->getColor(0, 0));
-  EXPECT_EQ(SK_ColorGREEN,
-            output->getColor(device_viewport_rect.width() - 1,
-                             device_viewport_rect.height() - 1));
+  EXPECT_EQ(SK_ColorGREEN, output->getColor(viewport_size.width() - 1,
+                                            viewport_size.height() - 1));
 
   EXPECT_EQ(SK_ColorMAGENTA,
             output->getColor(smaller_rect.x(), smaller_rect.y()));
@@ -349,7 +344,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
 
 TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
   float device_scale_factor = 1.f;
-  gfx::Rect device_viewport_rect(0, 0, 100, 100);
+  gfx::Size viewport_size(100, 100);
   InitializeRenderer(base::WrapUnique(new SoftwareOutputDevice));
 
   RenderPassList list;
@@ -364,9 +359,9 @@ TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
   // Root pass is green.
   RenderPassId root_clear_pass_id(1, 0);
   RenderPass* root_clear_pass = AddRenderPass(
-      &list, root_clear_pass_id, device_viewport_rect, gfx::Transform());
+      &list, root_clear_pass_id, gfx::Rect(viewport_size), gfx::Transform());
   AddRenderPassQuad(root_clear_pass, smaller_pass);
-  AddQuad(root_clear_pass, device_viewport_rect, SK_ColorGREEN);
+  AddQuad(root_clear_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
 
   // Interior pass quad has smaller visible rect.
   gfx::Rect interior_visible_rect(30, 30, 40, 40);
@@ -375,14 +370,13 @@ TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
   renderer()->DecideRenderPassAllocationsForFrame(list);
 
   std::unique_ptr<SkBitmap> output =
-      DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
-  EXPECT_EQ(device_viewport_rect.width(), output->info().width());
-  EXPECT_EQ(device_viewport_rect.height(), output->info().height());
+      DrawAndCopyOutput(&list, device_scale_factor, viewport_size);
+  EXPECT_EQ(viewport_size.width(), output->info().width());
+  EXPECT_EQ(viewport_size.height(), output->info().height());
 
   EXPECT_EQ(SK_ColorGREEN, output->getColor(0, 0));
-  EXPECT_EQ(SK_ColorGREEN,
-            output->getColor(device_viewport_rect.width() - 1,
-                             device_viewport_rect.height() - 1));
+  EXPECT_EQ(SK_ColorGREEN, output->getColor(viewport_size.width() - 1,
+                                            viewport_size.height() - 1));
 
   // Part outside visible rect should remain green.
   EXPECT_EQ(SK_ColorGREEN,
@@ -425,7 +419,7 @@ class PartialSwapSoftwareOutputDevice : public SoftwareOutputDevice {
 
 TEST_F(SoftwareRendererTest, PartialSwap) {
   float device_scale_factor = 1.f;
-  gfx::Rect device_viewport_rect(0, 0, 100, 100);
+  gfx::Size viewport_size(100, 100);
 
   settings_.partial_swap_enabled = true;
 
@@ -433,15 +427,12 @@ TEST_F(SoftwareRendererTest, PartialSwap) {
   auto* device = device_owned.get();
   InitializeRenderer(std::move(device_owned));
 
-  gfx::Rect viewport_rect(100, 100);
-  gfx::Rect clip_rect(100, 100);
-
   RenderPassList list;
 
   RenderPassId root_pass_id(1, 0);
-  RenderPass* root_pass =
-      AddRenderPass(&list, root_pass_id, viewport_rect, gfx::Transform());
-  AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
+  RenderPass* root_pass = AddRenderPass(
+      &list, root_pass_id, gfx::Rect(viewport_size), gfx::Transform());
+  AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
 
   // Partial frame, we should pass this rect to the SoftwareOutputDevice.
   // partial swap is enabled.
@@ -449,7 +440,7 @@ TEST_F(SoftwareRendererTest, PartialSwap) {
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
   renderer()->DrawFrame(&list, device_scale_factor, gfx::ColorSpace(),
-                        viewport_rect, clip_rect);
+                        viewport_size);
 
   // The damage rect should be reported to the SoftwareOutputDevice.
   EXPECT_EQ(gfx::Rect(2, 2, 3, 3), device->damage_rect_at_start());

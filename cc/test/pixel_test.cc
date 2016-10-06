@@ -74,18 +74,15 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
     request->set_area(*copy_rect);
   target->copy_requests.push_back(std::move(request));
 
-  float device_scale_factor = 1.f;
-  gfx::Rect device_viewport_rect(device_viewport_size_);
-  gfx::Rect device_clip_rect(device_viewport_size_);
-
   if (software_renderer_) {
     software_renderer_->SetDisablePictureQuadImageFiltering(
         disable_picture_quad_image_filtering_);
   }
 
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
+  float device_scale_factor = 1.f;
   renderer_->DrawFrame(pass_list, device_scale_factor, gfx::ColorSpace(),
-                       device_viewport_rect, device_clip_rect);
+                       device_viewport_size_);
 
   // Wait for the readback to complete.
   if (output_surface_->context_provider())

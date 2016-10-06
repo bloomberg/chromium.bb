@@ -3884,7 +3884,7 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
   // requires creating a dummy DrawingFrame.
   {
     DrawingFrame frame;
-    gfx::Rect frame_rect = external_frame->device_viewport_rect;
+    gfx::Rect frame_rect(external_frame->device_viewport_size);
     force_drawing_frame_framebuffer_unflipped_ = true;
     InitializeViewport(&frame, frame_rect, frame_rect, frame_rect.size());
     force_drawing_frame_framebuffer_unflipped_ = false;

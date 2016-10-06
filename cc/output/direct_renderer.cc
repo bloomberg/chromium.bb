@@ -216,10 +216,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                float device_scale_factor,
                                const gfx::ColorSpace& device_color_space,
-                               const gfx::Rect& device_viewport_rect,
-                               const gfx::Rect& device_clip_rect) {
-  DCHECK(device_viewport_rect.OffsetFromOrigin().IsZero());
-  DCHECK(device_clip_rect == device_viewport_rect);
+                               const gfx::Size& device_viewport_size) {
   DCHECK(visible_);
   TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS(
@@ -234,17 +231,16 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   frame.root_render_pass = root_render_pass;
   frame.root_damage_rect = root_render_pass->damage_rect;
   frame.root_damage_rect.Union(overlay_processor_->GetAndResetOverlayDamage());
-  frame.root_damage_rect.Intersect(gfx::Rect(device_viewport_rect.size()));
-  frame.device_viewport_rect = device_viewport_rect;
-  frame.device_clip_rect = device_clip_rect;
+  frame.root_damage_rect.Intersect(gfx::Rect(device_viewport_size));
+  frame.device_viewport_size = device_viewport_size;
 
   // Only reshape when we know we are going to draw. Otherwise, the reshape
   // can leave the window at the wrong size if we never draw and the proper
   // viewport size is never set.
-  output_surface_->Reshape(device_viewport_rect.size(), device_scale_factor,
+  output_surface_->Reshape(device_viewport_size, device_scale_factor,
                            device_color_space,
                            frame.root_render_pass->has_transparent_background);
-  surface_size_for_swap_buffers_ = device_viewport_rect.size();
+  surface_size_for_swap_buffers_ = device_viewport_size;
 
   BeginDrawingFrame(&frame);
 
@@ -317,24 +313,9 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
   return frame->current_render_pass->damage_rect;
 }
 
-bool DirectRenderer::NeedDeviceClip(const DrawingFrame* frame) const {
-  if (frame->current_render_pass != frame->root_render_pass)
-    return false;
-
-  return !frame->device_clip_rect.Contains(frame->device_viewport_rect);
-}
-
-gfx::Rect DirectRenderer::DeviceClipRectInDrawSpace(
-    const DrawingFrame* frame) const {
-  gfx::Rect device_clip_rect = frame->device_clip_rect;
-  device_clip_rect -= current_viewport_rect_.OffsetFromOrigin();
-  device_clip_rect += current_draw_rect_.OffsetFromOrigin();
-  return device_clip_rect;
-}
-
 gfx::Rect DirectRenderer::DeviceViewportRectInDrawSpace(
     const DrawingFrame* frame) const {
-  gfx::Rect device_viewport_rect = frame->device_viewport_rect;
+  gfx::Rect device_viewport_rect(frame->device_viewport_size);
   device_viewport_rect -= current_viewport_rect_.OffsetFromOrigin();
   device_viewport_rect += current_draw_rect_.OffsetFromOrigin();
   return device_viewport_rect;
@@ -343,7 +324,7 @@ gfx::Rect DirectRenderer::DeviceViewportRectInDrawSpace(
 gfx::Rect DirectRenderer::OutputSurfaceRectInDrawSpace(
     const DrawingFrame* frame) const {
   if (frame->current_render_pass == frame->root_render_pass) {
-    gfx::Rect output_surface_rect = frame->device_viewport_rect;
+    gfx::Rect output_surface_rect(frame->device_viewport_size);
     output_surface_rect -= current_viewport_rect_.OffsetFromOrigin();
     output_surface_rect += current_draw_rect_.OffsetFromOrigin();
     return output_surface_rect;
@@ -471,11 +452,6 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
         ComputeScissorRectForRenderPass(frame));
   }
 
-  if (NeedDeviceClip(frame)) {
-    render_pass_scissor_in_draw_space.Intersect(
-        DeviceClipRectInDrawSpace(frame));
-  }
-
   bool render_pass_is_clipped =
       !render_pass_scissor_in_draw_space.Contains(surface_rect_in_draw_space);
   bool is_root_render_pass =
@@ -554,8 +530,8 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   if (render_pass == frame->root_render_pass) {
     BindFramebufferToOutputSurface(frame);
     InitializeViewport(frame, render_pass->output_rect,
-                       frame->device_viewport_rect,
-                       frame->device_viewport_rect.size());
+                       gfx::Rect(frame->device_viewport_size),
+                       frame->device_viewport_size);
     return true;
   }
 

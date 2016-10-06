@@ -55,8 +55,7 @@ class CC_EXPORT DirectRenderer {
   void DrawFrame(RenderPassList* render_passes_in_draw_order,
                  float device_scale_factor,
                  const gfx::ColorSpace& device_color_space,
-                 const gfx::Rect& device_viewport_rect,
-                 const gfx::Rect& device_clip_rect);
+                 const gfx::Size& device_viewport_size);
 
   // Public interface implemented by subclasses.
   virtual void SwapBuffers(CompositorFrameMetadata metadata) = 0;
@@ -81,8 +80,7 @@ class CC_EXPORT DirectRenderer {
     const ScopedResource* current_texture = nullptr;
 
     gfx::Rect root_damage_rect;
-    gfx::Rect device_viewport_rect;
-    gfx::Rect device_clip_rect;
+    gfx::Size device_viewport_size;
 
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
@@ -111,8 +109,6 @@ class CC_EXPORT DirectRenderer {
   gfx::Rect MoveFromDrawToWindowSpace(const DrawingFrame* frame,
                                       const gfx::Rect& draw_rect) const;
 
-  bool NeedDeviceClip(const DrawingFrame* frame) const;
-  gfx::Rect DeviceClipRectInDrawSpace(const DrawingFrame* frame) const;
   gfx::Rect DeviceViewportRectInDrawSpace(const DrawingFrame* frame) const;
   gfx::Rect OutputSurfaceRectInDrawSpace(const DrawingFrame* frame) const;
   static gfx::Rect ComputeScissorRectForRenderPass(const DrawingFrame* frame);
