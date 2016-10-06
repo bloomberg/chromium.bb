@@ -1795,9 +1795,21 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mContextMenuCloseObservers.removeObserver(callback);
     }
 
+    private boolean shouldDisableHardwareAcceleration() {
+        // Low end devices should disable hardware acceleration for memory gains.
+        if (SysUtils.isLowEndDevice()) return true;
+        // GT-S7580 on JDQ39 accounts for 42% of crashes in libPowerStretch.so. Speculative fix to
+        // see if turning off hardware acceleration fixes this. See http://crbug.com/651918.
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1
+                && Build.MODEL.equals("GT-S7580")) {
+            return true;
+        }
+        return false;
+    }
+
     private void enableHardwareAcceleration() {
-        // HW acceleration is disabled in the manifest. Enable it only on high-end devices.
-        if (!SysUtils.isLowEndDevice()) {
+        // HW acceleration is disabled in the manifest and may be re-enabled here.
+        if (!shouldDisableHardwareAcceleration()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
 
             // When HW acceleration is enabled manually for an activity, child windows (e.g.
