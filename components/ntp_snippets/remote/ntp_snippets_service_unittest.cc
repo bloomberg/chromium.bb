@@ -226,11 +226,17 @@ std::string GetIncompleteSnippet() {
   return json_str;
 }
 
+using ServeImageCallback = base::Callback<void(
+    const std::string&,
+    base::Callback<void(const std::string&, const gfx::Image&)>)>;
+
 void ServeOneByOneImage(
+    image_fetcher::ImageFetcherDelegate* notify,
     const std::string& id,
     base::Callback<void(const std::string&, const gfx::Image&)> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, id, gfx::test::CreateImage(1, 1)));
+  notify->OnImageDataFetched(id, "1-by-1-image-data");
 }
 
 void ParseJson(
@@ -339,6 +345,22 @@ class FakeContentSuggestionsProviderObserver
   DISALLOW_COPY_AND_ASSIGN(FakeContentSuggestionsProviderObserver);
 };
 
+class FakeImageDecoder : public image_fetcher::ImageDecoder {
+ public:
+  FakeImageDecoder() {}
+  ~FakeImageDecoder() override = default;
+  void DecodeImage(
+      const std::string& image_data,
+      const image_fetcher::ImageDecodedCallback& callback) override {
+    callback.Run(decoded_image_);
+  }
+
+  void SetDecodedImage(const gfx::Image& image) { decoded_image_ = image; }
+
+ private:
+  gfx::Image decoded_image_;
+};
+
 }  // namespace
 
 class NTPSnippetsServiceTest : public ::testing::Test {
@@ -351,7 +373,8 @@ class NTPSnippetsServiceTest : public ::testing::Test {
             /*default_factory=*/&failing_url_fetcher_factory_),
         test_url_(kTestContentSuggestionsServerWithAPIKey),
         user_classifier_(/*pref_service=*/nullptr),
-        image_fetcher_(nullptr) {
+        image_fetcher_(nullptr),
+        image_decoder_(nullptr) {
     NTPSnippetsService::RegisterProfilePrefs(utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
 
@@ -395,13 +418,17 @@ class NTPSnippetsServiceTest : public ::testing::Test {
         NTPSnippetsFetcher::Personalization::kNonPersonal);
 
     auto image_fetcher = base::MakeUnique<NiceMock<MockImageFetcher>>();
+
     image_fetcher_ = image_fetcher.get();
+    EXPECT_CALL(*image_fetcher, SetImageFetcherDelegate(_));
+    auto image_decoder = base::MakeUnique<FakeImageDecoder>();
+    image_decoder_ = image_decoder.get();
     EXPECT_FALSE(observer_);
     observer_ = base::MakeUnique<FakeContentSuggestionsProviderObserver>();
     return base::MakeUnique<NTPSnippetsService>(
         observer_.get(), &category_factory_, utils_.pref_service(), nullptr,
         "fr", &user_classifier_, &scheduler_, std::move(snippets_fetcher),
-        std::move(image_fetcher), /*image_decoder=*/nullptr,
+        std::move(image_fetcher), std::move(image_decoder),
         base::MakeUnique<NTPSnippetsDatabase>(database_dir_.GetPath(),
                                               task_runner),
         base::MakeUnique<NTPSnippetsStatusService>(utils_.fake_signin_manager(),
@@ -446,6 +473,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
   FakeContentSuggestionsProviderObserver& observer() { return *observer_; }
   MockScheduler& mock_scheduler() { return scheduler_; }
   NiceMock<MockImageFetcher>* image_fetcher() { return image_fetcher_; }
+  FakeImageDecoder* image_decoder() { return image_decoder_; }
 
   // Provide the json to be returned by the fake fetcher.
   void SetUpFetchResponse(const std::string& json) {
@@ -474,6 +502,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
   std::unique_ptr<FakeContentSuggestionsProviderObserver> observer_;
   CategoryFactory category_factory_;
   NiceMock<MockImageFetcher>* image_fetcher_;
+  FakeImageDecoder* image_decoder_;
 
   base::ScopedTempDir database_dir_;
 
@@ -1025,10 +1054,11 @@ TEST_F(NTPSnippetsServiceTest, ImageReturnedWithTheSameId) {
 
   gfx::Image image;
   MockFunction<void(const gfx::Image&)> image_fetched;
+  ServeImageCallback cb = base::Bind(&ServeOneByOneImage, service.get());
   {
     InSequence s;
     EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
-        .WillOnce(WithArgs<0, 2>(Invoke(ServeOneByOneImage)));
+        .WillOnce(WithArgs<0, 2>(Invoke(&cb, &ServeImageCallback::Run)));
     EXPECT_CALL(image_fetched, Call(_)).WillOnce(SaveArg<0>(&image));
   }
 
@@ -1100,6 +1130,51 @@ TEST_F(NTPSnippetsServiceTest, SuggestionsFetchedOnSignInAndSignOut) {
                                    SnippetsStatus::ENABLED_AND_SIGNED_IN);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(2));
+}
+
+namespace {
+
+gfx::Image FetchImage(NTPSnippetsService* service,
+                      const ContentSuggestion::ID& suggestion_id) {
+  gfx::Image result;
+  base::RunLoop run_loop;
+  service->FetchSuggestionImage(suggestion_id,
+                                base::Bind(
+                                    [](base::Closure signal, gfx::Image* output,
+                                       const gfx::Image& loaded) {
+                                      *output = loaded;
+                                      signal.Run();
+                                    },
+                                    run_loop.QuitClosure(), &result));
+  run_loop.Run();
+  return result;
+}
+
+}  // namespace
+
+TEST_F(NTPSnippetsServiceTest, ShouldClearOrphanedImagesOnRestart) {
+  auto service = MakeSnippetsService();
+
+  LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
+  ServeImageCallback cb = base::Bind(&ServeOneByOneImage, service.get());
+
+  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
+      .WillOnce(WithArgs<0, 2>(Invoke(&cb, &ServeImageCallback::Run)));
+  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
+
+  gfx::Image image = FetchImage(service.get(), MakeArticleID(kSnippetUrl));
+  EXPECT_EQ(1, image.Width());
+  EXPECT_FALSE(image.IsEmpty());
+
+  // Send new suggestion which don't include the snippet referencing the image.
+  LoadFromJSONString(service.get(),
+                     GetTestJson({GetSnippetWithUrl(
+                         "http://something.com/pletely/unrelated")}));
+  // The image should still be available until a restart happens.
+  EXPECT_FALSE(FetchImage(service.get(), MakeArticleID(kSnippetUrl)).IsEmpty());
+  ResetSnippetsService(&service);
+  // After the restart, the image should be garbage collected.
+  EXPECT_TRUE(FetchImage(service.get(), MakeArticleID(kSnippetUrl)).IsEmpty());
 }
 
 }  // namespace ntp_snippets

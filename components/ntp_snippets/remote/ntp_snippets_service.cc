@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
@@ -129,11 +130,20 @@ std::set<std::string> GetAllIDs(const NTPSnippet::PtrVector& snippets) {
   return ids;
 }
 
-std::set<std::string> GetMainIDs(const NTPSnippet::PtrVector& snippets) {
+std::set<std::string> GetSnippetIDSet(const NTPSnippet::PtrVector& snippets) {
   std::set<std::string> ids;
   for (const std::unique_ptr<NTPSnippet>& snippet : snippets)
     ids.insert(snippet->id());
   return ids;
+}
+
+std::unique_ptr<std::vector<std::string>> GetSnippetIDVector(
+    const NTPSnippet::PtrVector& snippets) {
+  auto result = base::MakeUnique<std::vector<std::string>>();
+  for (const auto& snippet : snippets) {
+    result->push_back(snippet->id());
+  }
+  return result;
 }
 
 bool IsSnippetInSet(const std::unique_ptr<NTPSnippet>& snippet,
@@ -382,8 +392,8 @@ void NTPSnippetsService::ClearCachedSuggestions(Category category) {
     return;
 
   if (category == articles_category_) {
-    database_->DeleteSnippets(content->snippets);
-    database_->DeleteImages(content->snippets);
+    database_->DeleteSnippets(GetSnippetIDVector(content->snippets));
+    database_->DeleteImages(GetSnippetIDVector(content->snippets));
   }
   content->snippets.clear();
 
@@ -427,7 +437,7 @@ void NTPSnippetsService::ClearDismissedSuggestionsForDebugging(
 
   if (category == articles_category_) {
     // The image got already deleted when the suggestion was dismissed.
-    database_->DeleteSnippets(content->dismissed);
+    database_->DeleteSnippets(GetSnippetIDVector(content->dismissed));
   }
   content->dismissed.clear();
 }
@@ -507,6 +517,9 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
               return lhs->score() > rhs->score();
             });
 
+  // TODO(tschumann): If I move ClearExpiredDismisedSnippets() to the beginning
+  // of the function, it essentially does nothing but tests are still green. Fix
+  // this!
   ClearExpiredDismissedSnippets();
   ClearOrphanedImages();
   FinishInitialization();
@@ -593,7 +606,6 @@ void NTPSnippetsService::OnFetchFinished(
         UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticlesFetched",
                                     fetched_category.snippets.size());
       }
-
       ReplaceSnippets(category, std::move(fetched_category.snippets));
     }
   }
@@ -629,7 +641,7 @@ void NTPSnippetsService::ArchiveSnippets(Category category,
 
   // TODO(sfiera): handle DB for non-articles too.
   if (category == articles_category_) {
-    database_->DeleteSnippets(*to_archive);
+    database_->DeleteSnippets(GetSnippetIDVector(*to_archive));
     // Do not delete the thumbnail images as they are still handy on open NTPs.
   }
 
@@ -648,7 +660,7 @@ void NTPSnippetsService::ArchiveSnippets(Category category,
         std::make_move_iterator(content->archived.end()));
     content->archived.resize(kMaxArchivedSnippetCount);
     if (category == articles_category_)
-      database_->DeleteImages(to_delete);
+      database_->DeleteImages(GetSnippetIDVector(to_delete));
   }
 }
 
@@ -698,7 +710,7 @@ void NTPSnippetsService::ReplaceSnippets(Category category,
 
   // Remove current snippets that have been fetched again. We do not need to
   // archive those as they will be in the new current set.
-  EraseMatchingSnippets(&content->snippets, GetMainIDs(new_snippets),
+  EraseMatchingSnippets(&content->snippets, GetSnippetIDSet(new_snippets),
                         /*match_all_ids=*/false);
 
   ArchiveSnippets(category, &content->snippets);
@@ -752,7 +764,7 @@ void NTPSnippetsService::ClearExpiredDismissedSnippets() {
     // Delete the removed article suggestions from the DB.
     if (category == articles_category_) {
       // The image got already deleted when the suggestion was dismissed.
-      database_->DeleteSnippets(to_delete);
+      database_->DeleteSnippets(GetSnippetIDVector(to_delete));
     }
 
     if (content->snippets.empty() && content->dismissed.empty() &&
@@ -768,7 +780,14 @@ void NTPSnippetsService::ClearExpiredDismissedSnippets() {
 }
 
 void NTPSnippetsService::ClearOrphanedImages() {
-  // TODO(jkrcal): Implement. crbug.com/649009
+  auto alive_snippets = base::MakeUnique<std::set<std::string>>();
+  for (const auto& snippet_ptr : categories_[articles_category_].snippets) {
+    alive_snippets->insert(snippet_ptr->id());
+  }
+  for (const auto& snippet_ptr : categories_[articles_category_].dismissed) {
+    alive_snippets->insert(snippet_ptr->id());
+  }
+  database_->GarbageCollectImages(std::move(alive_snippets));
 }
 
 void NTPSnippetsService::NukeAllSnippets() {

@@ -235,8 +235,9 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // Removes expired dismissed snippets from the service and the database.
   void ClearExpiredDismissedSnippets();
 
-  // Removes images from the DB that do not have any corresponding snippet
-  // (neither in the current set, nor in the archived set).
+  // Removes images from the DB that are not referenced from any known snippet.
+  // Needs to iterate the whole snippet database -- so do it often enough to
+  // keep it small but not too often as it still iterates over the file system.
   void ClearOrphanedImages();
 
   // Clears all stored snippets and updates the observer.

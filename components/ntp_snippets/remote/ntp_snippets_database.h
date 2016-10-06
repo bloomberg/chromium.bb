@@ -6,6 +6,7 @@
 #define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_DATABASE_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -60,7 +61,7 @@ class NTPSnippetsDatabase {
   // Deletes the snippet with the given ID.
   void DeleteSnippet(const std::string& snippet_id);
   // Deletes all the given snippets (identified by their IDs).
-  void DeleteSnippets(const NTPSnippet::PtrVector& snippets);
+  void DeleteSnippets(std::unique_ptr<std::vector<std::string>> keys_to_remove);
 
   // Loads the image data for the snippet with the given ID and passes it to
   // |callback|. Passes an empty string if not found.
@@ -73,7 +74,11 @@ class NTPSnippetsDatabase {
   // Deletes the image data for the given snippet ID.
   void DeleteImage(const std::string& snippet_id);
   // Deletes the image data for the given snippets (identified by their IDs).
-  void DeleteImages(const NTPSnippet::PtrVector& snippets);
+  void DeleteImages(std::unique_ptr<std::vector<std::string>> snippet_ids);
+  // Deletes all images which are not associated with any of the provided
+  // snippets.
+  void GarbageCollectImages(
+      std::unique_ptr<std::set<std::string>> alive_snippet_ids);
 
  private:
   friend class NTPSnippetsDatabaseTest;
@@ -104,13 +109,13 @@ class NTPSnippetsDatabase {
 
   void LoadSnippetsImpl(const SnippetsCallback& callback);
   void SaveSnippetsImpl(std::unique_ptr<KeyEntryVector> entries_to_save);
-  void DeleteSnippetsImpl(
-      std::unique_ptr<std::vector<std::string>> keys_to_remove);
 
   void LoadImageImpl(const std::string& snippet_id,
                      const SnippetImageCallback& callback);
-  void DeleteImagesImpl(
-      std::unique_ptr<std::vector<std::string>> keys_to_remove);
+  void DeleteUnreferencedImages(
+      std::unique_ptr<std::set<std::string>> references,
+      bool load_keys_success,
+      std::unique_ptr<std::vector<std::string>> image_keys);
 
   std::unique_ptr<leveldb_proto::ProtoDatabase<SnippetProto>> database_;
   bool database_initialized_;

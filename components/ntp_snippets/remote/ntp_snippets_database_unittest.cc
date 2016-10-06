@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -18,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::ElementsAre;
+using testing::Eq;
 using testing::IsEmpty;
 using testing::Mock;
 using testing::_;
@@ -80,6 +82,8 @@ class NTPSnippetsDatabaseTest : public testing::Test {
 
   NTPSnippetsDatabase* db() { return db_.get(); }
 
+  // TODO(tschumann): MOCK_METHODS on non mock objects are an anti-pattern.
+  // Clean up.
   void OnSnippetsLoaded(NTPSnippet::PtrVector snippets) {
     OnSnippetsLoadedImpl(snippets);
   }
@@ -316,6 +320,51 @@ TEST_F(NTPSnippetsDatabaseTest, DeleteImage) {
                   base::Bind(&NTPSnippetsDatabaseTest::OnImageLoaded,
                              base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
+}
+
+namespace {
+
+void LoadExpectedImage(NTPSnippetsDatabase* db,
+                       const std::string& id,
+                       const std::string& expected_data) {
+  base::RunLoop run_loop;
+  db->LoadImage(id, base::Bind(
+                        [](base::Closure signal, std::string expected_data,
+                           std::string actual_data) {
+                          EXPECT_THAT(actual_data, Eq(expected_data));
+                          signal.Run();
+                        },
+                        run_loop.QuitClosure(), expected_data));
+  run_loop.Run();
+}
+
+} // namespace
+
+TEST_F(NTPSnippetsDatabaseTest, ShouldGarbageCollectImages) {
+  CreateDatabase();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(db()->IsInitialized());
+
+  // Store images.
+  db()->SaveImage("snippet-id-1", "pretty-image-1");
+  db()->SaveImage("snippet-id-2", "pretty-image-2");
+  db()->SaveImage("snippet-id-3", "pretty-image-3");
+  base::RunLoop().RunUntilIdle();
+
+  // Make sure the to-be-garbage collected images are there.
+  LoadExpectedImage(db(), "snippet-id-1", "pretty-image-1");
+  LoadExpectedImage(db(), "snippet-id-3", "pretty-image-3");
+
+  // Garbage collect all except the second.
+  db()->GarbageCollectImages(base::MakeUnique<std::set<std::string>>(
+      std::set<std::string>({"snippet-id-2"})));
+  base::RunLoop().RunUntilIdle();
+
+  // Make sure the images are gone.
+  LoadExpectedImage(db(), "snippet-id-1", "");
+  LoadExpectedImage(db(), "snippet-id-3", "");
+  // Make sure the second still exists.
+  LoadExpectedImage(db(), "snippet-id-2", "pretty-image-2");
 }
 
 }  // namespace ntp_snippets
