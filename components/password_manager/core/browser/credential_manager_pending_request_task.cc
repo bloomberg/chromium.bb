@@ -51,17 +51,25 @@ bool IsBetterMatch(const autofill::PasswordForm& form1,
 
 // Remove duplicates in |forms| before displaying them in the account chooser.
 void FilterDuplicates(ScopedVector<autofill::PasswordForm>* forms) {
+  ScopedVector<autofill::PasswordForm> federated_forms;
   std::map<base::string16, std::unique_ptr<autofill::PasswordForm>> credentials;
   for (auto& form : *forms) {
-    auto it = credentials.find(form->username_value);
-    if (it == credentials.end() || IsBetterMatch(*form, *it->second)) {
-      credentials[form->username_value] = base::WrapUnique(form);
+    if (!form->federation_origin.unique()) {
+      federated_forms.push_back(form);
       form = nullptr;
+    } else {
+      auto it = credentials.find(form->username_value);
+      if (it == credentials.end() || IsBetterMatch(*form, *it->second)) {
+        credentials[form->username_value] = base::WrapUnique(form);
+        form = nullptr;
+      }
     }
   }
   forms->clear();
   for (auto& form_pair : credentials)
     forms->push_back(std::move(form_pair.second));
+  forms->insert(forms->end(), federated_forms.begin(), federated_forms.end());
+  federated_forms.weak_clear();
 }
 
 }  // namespace

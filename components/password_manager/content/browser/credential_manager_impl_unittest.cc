@@ -713,8 +713,8 @@ TEST_F(CredentialManagerImplTest,
 
 TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialWithDuplicates) {
-  // Add 7 credentials. Two buckets of duplicates and one empty username. There
-  // should be just two in the account chooser.
+  // Add 8 credentials. Two buckets of duplicates, one empty username and one
+  // federated one. There should be just 3 in the account chooser.
   form_.preferred = true;
   form_.username_element = base::ASCIIToUTF16("username_element");
   store_->AddLogin(form_);
@@ -740,16 +740,24 @@ TEST_F(CredentialManagerImplTest,
   duplicate.username_element = base::ASCIIToUTF16("username_element4");
   duplicate.preferred = false;
   store_->AddLogin(duplicate);
+  autofill::PasswordForm federated = origin_path_form_;
+  federated.password_value.clear();
+  federated.federation_origin = url::Origin(GURL("https://google.com/"));
+  federated.signon_realm =
+      "federation://" + federated.origin.host() + "/google.com";
+  store_->AddLogin(federated);
 
   EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(
                             UnorderedElementsAre(Pointee(form_),
-                                                 Pointee(origin_path_form_)),
+                                                 Pointee(origin_path_form_),
+                                                 Pointee(federated)),
                             testing::IsEmpty(), _, _));
 
   bool called = false;
   mojom::CredentialManagerError error;
   base::Optional<CredentialInfo> credential;
   std::vector<GURL> federations;
+  federations.push_back(GURL("https://google.com/"));
   CallGet(false, true, federations,
           base::Bind(&GetCredentialCallback, &called, &error, &credential));
 
