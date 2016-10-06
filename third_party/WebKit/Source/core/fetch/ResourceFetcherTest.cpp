@@ -434,13 +434,8 @@ class ServeRequestsOnCompleteClient final
 // WebURLLoader before notifying its clients, a nested run loop  may send a
 // network response, leading to an invalid state transition in ResourceLoader.
 TEST_F(ResourceFetcherTest, ResponseOnCancel) {
-  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
-  ResourceResponse response;
-  response.setURL(url);
-  response.setHTTPStatusCode(200);
-  URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-      url, testImageFilename, WebString::fromUTF8(""),
-      WrappedResourceResponse(response));
+  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
+  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
 
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
@@ -477,11 +472,7 @@ class ScopedMockRedirectRequester {
 
   void registerFinalResource(const WebString& url) {
     KURL finalURL(ParsedURLString, url);
-    WebURLResponse finalResponse;
-    finalResponse.setURL(finalURL);
-    finalResponse.setHTTPStatusCode(200);
-    URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-        finalURL, testImageFilename, "", finalResponse);
+    URLTestHelpers::registerMockedURLLoad(finalURL, testImageFilename);
   }
 
   void request(const WebString& url) {
@@ -544,13 +535,8 @@ TEST_F(ResourceFetcherTest, ComplexCrossOriginRedirect) {
 }
 
 TEST_F(ResourceFetcherTest, SynchronousRequest) {
-  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
-  ResourceResponse response;
-  response.setURL(url);
-  response.setHTTPStatusCode(200);
-  URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-      url, testImageFilename, WebString::fromUTF8(""),
-      WrappedResourceResponse(response));
+  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
+  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
 
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
@@ -569,13 +555,8 @@ TEST_F(ResourceFetcherTest, PreloadImageTwice) {
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
 
-  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
-  ResourceResponse response;
-  response.setURL(url);
-  response.setHTTPStatusCode(200);
-  URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-      url, testImageFilename, WebString::fromUTF8(""),
-      WrappedResourceResponse(response));
+  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
+  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
 
   FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
   Resource* resource = fetcher->requestResource(
@@ -600,13 +581,8 @@ TEST_F(ResourceFetcherTest, LinkPreloadImageAndUse) {
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
 
-  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
-  ResourceResponse response;
-  response.setURL(url);
-  response.setHTTPStatusCode(200);
-  URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-      url, testImageFilename, WebString::fromUTF8(""),
-      WrappedResourceResponse(response));
+  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
+  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
 
   // Link preload preload scanner
   FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
@@ -648,13 +624,8 @@ TEST_F(ResourceFetcherTest, LinkPreloadImageMultipleFetchersAndUse) {
   ResourceFetcher* fetcher2 =
       ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
 
-  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
-  ResourceResponse response;
-  response.setURL(url);
-  response.setHTTPStatusCode(200);
-  URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-      url, testImageFilename, WebString::fromUTF8(""),
-      WrappedResourceResponse(response));
+  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
+  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
 
   FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
   fetchRequestOriginal.setLinkPreload(true);

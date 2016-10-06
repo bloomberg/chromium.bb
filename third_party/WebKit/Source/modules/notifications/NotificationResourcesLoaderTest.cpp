@@ -63,12 +63,8 @@ class NotificationResourcesLoaderTest : public ::testing::Test {
   WebURL registerMockedURL(const String& fileName) {
     WebURL url(KURL(ParsedURLString, kBaseUrl + fileName));
 
-    WebURLResponse response(url);
-    response.setMIMEType("image/png");
-    response.setHTTPStatusCode(200);
-
-    URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-        url, fileName, "notifications/", response);
+    URLTestHelpers::registerMockedURLLoad(url, fileName, "notifications/",
+                                          "image/png");
 
     return url;
   }
