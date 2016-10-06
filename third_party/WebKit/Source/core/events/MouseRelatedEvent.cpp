@@ -178,7 +178,8 @@ void MouseRelatedEvent::computeRelativePosition() {
         FloatPoint(absoluteLocation()), UseTransforms);
 
     // Adding this here to address crbug.com/570666. Basically we'd like to
-    // find the local coordinates relative to the padding box not the border box.
+    // find the local coordinates relative to the padding box not the border
+    // box.
     if (layoutObject->isBoxModelObject()) {
       const LayoutBoxModelObject* layoutBox =
           toLayoutBoxModelObject(layoutObject);
@@ -247,13 +248,15 @@ int MouseRelatedEvent::pageY() const {
 
 int MouseRelatedEvent::x() const {
   // FIXME: This is not correct.
-  // See Microsoft documentation and <http://www.quirksmode.org/dom/w3c_events.html>.
+  // See Microsoft documentation and
+  // <http://www.quirksmode.org/dom/w3c_events.html>.
   return m_clientLocation.x().toInt();
 }
 
 int MouseRelatedEvent::y() const {
   // FIXME: This is not correct.
-  // See Microsoft documentation and <http://www.quirksmode.org/dom/w3c_events.html>.
+  // See Microsoft documentation and
+  // <http://www.quirksmode.org/dom/w3c_events.html>.
   return m_clientLocation.y().toInt();
 }
 

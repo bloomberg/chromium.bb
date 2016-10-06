@@ -182,14 +182,15 @@ class CORE_EXPORT EventTarget : public GarbageCollectedFinalized<EventTarget>,
   virtual void addedEventListener(const AtomicString& eventType,
                                   RegisteredEventListener&);
 
-  // Called when an event listener is removed. The original registration parameters of this
-  // event listener are available to be queried.
+  // Called when an event listener is removed. The original registration
+  // parameters of this event listener are available to be queried.
   virtual void removedEventListener(const AtomicString& eventType,
                                     const RegisteredEventListener&);
 
   virtual DispatchEventResult dispatchEventInternal(Event*);
 
-  // Subclasses should likely not override these themselves; instead, they should subclass EventTargetWithInlineData.
+  // Subclasses should likely not override these themselves; instead, they
+  // should subclass EventTargetWithInlineData.
   virtual EventTargetData* eventTargetData() = 0;
   virtual EventTargetData& ensureEventTargetData() = 0;
 
@@ -198,7 +199,8 @@ class CORE_EXPORT EventTarget : public GarbageCollectedFinalized<EventTarget>,
   void setDefaultAddEventListenerOptions(const AtomicString& eventType,
                                          AddEventListenerOptionsResolved&);
 
-  // UseCounts the event if it has the specified type. Returns true iff the event type matches.
+  // UseCounts the event if it has the specified type. Returns true iff the
+  // event type matches.
   bool checkTypeThenUseCount(const Event*,
                              const AtomicString&,
                              const UseCounter::Feature);

@@ -36,7 +36,8 @@ void PromiseRejectionEvent::dispose() {
 }
 
 ScriptPromise PromiseRejectionEvent::promise(ScriptState* state) const {
-  // Return null when the promise is accessed by a different world than the world that created the promise.
+  // Return null when the promise is accessed by a different world than the
+  // world that created the promise.
   if (!m_scriptState || !m_scriptState->contextIsValid() ||
       m_scriptState->world().worldId() != state->world().worldId())
     return ScriptPromise();
@@ -45,7 +46,8 @@ ScriptPromise PromiseRejectionEvent::promise(ScriptState* state) const {
 }
 
 ScriptValue PromiseRejectionEvent::reason(ScriptState* state) const {
-  // Return null when the value is accessed by a different world than the world that created the value.
+  // Return null when the value is accessed by a different world than the world
+  // that created the value.
   if (m_reason.isEmpty() || !m_scriptState ||
       !m_scriptState->contextIsValid() ||
       m_scriptState->world().worldId() != state->world().worldId())

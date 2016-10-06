@@ -42,7 +42,8 @@ class CORE_EXPORT EventQueue : public GarbageCollectedFinalized<EventQueue> {
   DEFINE_INLINE_VIRTUAL_TRACE() {}
   virtual bool enqueueEvent(Event*) = 0;
   virtual bool cancelEvent(Event*) = 0;
-  // The accumulated and all the future events will be discarded, no events will be dispatched anymore.
+  // The accumulated and all the future events will be discarded, no events will
+  // be dispatched anymore.
   virtual void close() = 0;
 };
 

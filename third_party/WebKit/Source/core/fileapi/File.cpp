@@ -256,7 +256,8 @@ double File::lastModifiedMS() const {
 long long File::lastModified() const {
   double modifiedDate = lastModifiedMS();
 
-  // The getter should return the current time when the last modification time isn't known.
+  // The getter should return the current time when the last modification time
+  // isn't known.
   if (!isValidFileTime(modifiedDate))
     modifiedDate = currentTimeMS();
 
@@ -268,7 +269,8 @@ long long File::lastModified() const {
 double File::lastModifiedDate() const {
   double modifiedDate = lastModifiedMS();
 
-  // The getter should return the current time when the last modification time isn't known.
+  // The getter should return the current time when the last modification time
+  // isn't known.
   if (!isValidFileTime(modifiedDate))
     modifiedDate = currentTimeMS();
 
@@ -281,8 +283,9 @@ unsigned long long File::size() const {
   if (hasValidSnapshotMetadata())
     return m_snapshotSize;
 
-  // FIXME: JavaScript cannot represent sizes as large as unsigned long long, we need to
-  // come up with an exception to throw if file size is not representable.
+  // FIXME: JavaScript cannot represent sizes as large as unsigned long long, we
+  // need to come up with an exception to throw if file size is not
+  // representable.
   long long size;
   if (!hasBackingFile() || !getFileSize(m_path, size))
     return 0;
@@ -302,7 +305,8 @@ Blob* File::slice(long long start,
   if (!m_hasBackingFile)
     return Blob::slice(start, end, contentType, exceptionState);
 
-  // FIXME: This involves synchronous file operation. We need to figure out how to make it asynchronous.
+  // FIXME: This involves synchronous file operation. We need to figure out how
+  // to make it asynchronous.
   long long size;
   double modificationTimeMS;
   captureSnapshot(size, modificationTimeMS);
@@ -330,8 +334,10 @@ void File::captureSnapshot(long long& snapshotSize,
     return;
   }
 
-  // Obtains a snapshot of the file by capturing its current size and modification time. This is used when we slice a file for the first time.
-  // If we fail to retrieve the size or modification time, probably due to that the file has been deleted, 0 size is returned.
+  // Obtains a snapshot of the file by capturing its current size and
+  // modification time. This is used when we slice a file for the first time.
+  // If we fail to retrieve the size or modification time, probably due to that
+  // the file has been deleted, 0 size is returned.
   FileMetadata metadata;
   if (!hasBackingFile() || !getFileMetadata(m_path, metadata)) {
     snapshotSize = 0;
@@ -368,7 +374,8 @@ void File::appendTo(BlobData& blobData) const {
     return;
   }
 
-  // FIXME: This involves synchronous file operation. We need to figure out how to make it asynchronous.
+  // FIXME: This involves synchronous file operation. We need to figure out how
+  // to make it asynchronous.
   long long size;
   double modificationTimeMS;
   captureSnapshot(size, modificationTimeMS);

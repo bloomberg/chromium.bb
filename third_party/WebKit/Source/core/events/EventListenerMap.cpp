@@ -134,8 +134,9 @@ static bool removeListenerFromVector(
   const auto begin = listenerVector->data();
   const auto end = begin + listenerVector->size();
 
-  // Do a manual search for the matching RegisteredEventListener. It is not possible to create
-  // a RegisteredEventListener on the stack because of the const on |listener|.
+  // Do a manual search for the matching RegisteredEventListener. It is not
+  // possible to create a RegisteredEventListener on the stack because of the
+  // const on |listener|.
   const auto it = std::find_if(
       begin, end, [listener, options](
                       const RegisteredEventListener& eventListener) -> bool {

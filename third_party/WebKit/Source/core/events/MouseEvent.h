@@ -40,7 +40,8 @@ class CORE_EXPORT MouseEvent : public MouseRelatedEvent {
  public:
   static MouseEvent* create() { return new MouseEvent; }
 
-  // TODO(mustaq): Should replace most/all of these params with a MouseEventInit.
+  // TODO(mustaq): Should replace most/all of these params with a
+  // MouseEventInit.
   static MouseEvent* create(const AtomicString& type,
                             bool canBubble,
                             bool cancelable,
@@ -98,8 +99,8 @@ class CORE_EXPORT MouseEvent : public MouseRelatedEvent {
                       EventTarget* relatedTarget,
                       unsigned short buttons = 0);
 
-  // WinIE uses 1,4,2 for left/middle/right but not for click (just for mousedown/up, maybe others),
-  // but we will match the standard DOM.
+  // WinIE uses 1,4,2 for left/middle/right but not for click (just for
+  // mousedown/up, maybe others), but we will match the standard DOM.
   virtual short button() const { return m_button == -1 ? 0 : m_button; }
   unsigned short buttons() const { return m_buttons; }
   bool buttonDown() const { return m_button != -1; }

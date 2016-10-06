@@ -107,7 +107,8 @@ ExceptionCode errorCodeToExceptionCode(ErrorCode code) {
 }
 
 const char* errorCodeToMessage(ErrorCode code) {
-  // Note that some of these do not set message. If message is 0 then the default message is used.
+  // Note that some of these do not set message. If message is 0 then the
+  // default message is used.
   switch (code) {
     case kOK:
       return 0;
@@ -147,7 +148,8 @@ void throwDOMException(ExceptionState& exceptionState, ErrorCode code) {
   if (code == kOK)
     return;
 
-  // SecurityError is special-cased, as we want to route those exceptions through ExceptionState::throwSecurityError.
+  // SecurityError is special-cased, as we want to route those exceptions
+  // through ExceptionState::throwSecurityError.
   if (code == kSecurityErr) {
     exceptionState.throwSecurityError(securityErrorMessage);
     return;

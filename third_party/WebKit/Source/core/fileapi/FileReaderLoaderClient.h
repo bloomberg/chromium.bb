@@ -41,9 +41,11 @@ class CORE_EXPORT FileReaderLoaderClient {
   virtual ~FileReaderLoaderClient() {}
 
   virtual void didStartLoading() = 0;
-  // Clients must implement this method if they are using any ReadType except ReadByClient.
+  // Clients must implement this method if they are using any ReadType except
+  // ReadByClient.
   virtual void didReceiveData() { ASSERT_NOT_REACHED(); }
-  // Clients must implement this method if they are using the ReadByClient ReadType.
+  // Clients must implement this method if they are using the ReadByClient
+  // ReadType.
   virtual void didReceiveDataForClient(const char* data, unsigned dataLength) {
     ASSERT_NOT_REACHED();
   }

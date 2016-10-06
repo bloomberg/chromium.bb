@@ -82,7 +82,8 @@ FileReaderLoader::~FileReaderLoader() {
 void FileReaderLoader::startInternal(ExecutionContext& executionContext,
                                      const Stream* stream,
                                      PassRefPtr<BlobDataHandle> blobData) {
-  // The blob is read by routing through the request handling layer given a temporary public url.
+  // The blob is read by routing through the request handling layer given a
+  // temporary public url.
   m_urlForReading =
       BlobURL::createPublicURL(executionContext.getSecurityOrigin());
   if (m_urlForReading.isEmpty()) {
@@ -105,7 +106,8 @@ void FileReaderLoader::startInternal(ExecutionContext& executionContext,
   request.setExternalRequestStateFromRequestorAddressSpace(
       executionContext.securityContext().addressSpace());
 
-  // FIXME: Should this really be 'internal'? Do we know anything about the actual request that generated this fetch?
+  // FIXME: Should this really be 'internal'? Do we know anything about the
+  // actual request that generated this fetch?
   request.setRequestContext(WebURLRequest::RequestContextInternal);
 
   request.setHTTPMethod(HTTPNames::GET);
@@ -286,7 +288,8 @@ void FileReaderLoader::didFinishLoading(unsigned long, double) {
 void FileReaderLoader::didFail(const ResourceError& error) {
   if (error.isCancellation())
     return;
-  // If we're aborting, do not proceed with normal error handling since it is covered in aborting code.
+  // If we're aborting, do not proceed with normal error handling since it is
+  // covered in aborting code.
   if (m_errorCode == FileError::kAbortErr)
     return;
 
@@ -372,9 +375,10 @@ void FileReaderLoader::convertToText() {
   }
 
   // Decode the data.
-  // The File API spec says that we should use the supplied encoding if it is valid. However, we choose to ignore this
-  // requirement in order to be consistent with how WebKit decodes the web content: always has the BOM override the
-  // provided encoding.
+  // The File API spec says that we should use the supplied encoding if it is
+  // valid. However, we choose to ignore this requirement in order to be
+  // consistent with how WebKit decodes the web content: always has the BOM
+  // override the provided encoding.
   // FIXME: consider supporting incremental decoding to improve the perf.
   StringBuilder builder;
   if (!m_decoder)

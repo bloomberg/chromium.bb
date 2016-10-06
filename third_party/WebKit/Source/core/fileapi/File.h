@@ -45,8 +45,9 @@ class CORE_EXPORT File final : public Blob {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // AllContentTypes should only be used when the full path/name are trusted; otherwise, it could
-  // allow arbitrary pages to determine what applications an user has installed.
+  // AllContentTypes should only be used when the full path/name are trusted;
+  // otherwise, it could allow arbitrary pages to determine what applications an
+  // user has installed.
   enum ContentTypeLookupPolicy {
     WellKnownContentTypes,
     AllContentTypes,
@@ -101,9 +102,12 @@ class CORE_EXPORT File final : public Blob {
   static File* createWithRelativePath(const String& path,
                                       const String& relativePath);
 
-  // If filesystem files live in the remote filesystem, the port might pass the valid metadata (whose length field is non-negative) and cache in the File object.
+  // If filesystem files live in the remote filesystem, the port might pass the
+  // valid metadata (whose length field is non-negative) and cache in the File
+  // object.
   //
-  // Otherwise calling size(), lastModifiedTime() and slice() will synchronously query the file metadata.
+  // Otherwise calling size(), lastModifiedTime() and slice() will synchronously
+  // query the file metadata.
   static File* createForFileSystemFile(const String& name,
                                        const FileMetadata& metadata,
                                        UserVisibility userVisibility) {
@@ -121,7 +125,8 @@ class CORE_EXPORT File final : public Blob {
     return m_fileSystemURL;
   }
 
-  // Create a file with a name exposed to the author (via File.name and associated DOM properties) that differs from the one provided in the path.
+  // Create a file with a name exposed to the author (via File.name and
+  // associated DOM properties) that differs from the one provided in the path.
   static File* createForUserProvidedFile(const String& path,
                                          const String& displayName) {
     if (displayName.isEmpty())
@@ -169,17 +174,21 @@ class CORE_EXPORT File final : public Blob {
 
   UserVisibility getUserVisibility() const { return m_userVisibility; }
 
-  // Returns the relative path of this file in the context of a directory selection.
+  // Returns the relative path of this file in the context of a directory
+  // selection.
   const String& webkitRelativePath() const { return m_relativePath; }
 
-  // Note that this involves synchronous file operation. Think twice before calling this function.
+  // Note that this involves synchronous file operation. Think twice before
+  // calling this function.
   void captureSnapshot(long long& snapshotSize,
                        double& snapshotModificationTimeMS) const;
 
-  // Returns true if this has a valid snapshot metadata (i.e. m_snapshotSize >= 0).
+  // Returns true if this has a valid snapshot metadata
+  // (i.e. m_snapshotSize >= 0).
   bool hasValidSnapshotMetadata() const { return m_snapshotSize >= 0; }
 
-  // Returns true if the sources (file path, file system URL, or blob handler) of the file objects are same or not.
+  // Returns true if the sources (file path, file system URL, or blob handler)
+  // of the file objects are same or not.
   bool hasSameSource(const File& other) const;
 
  private:
@@ -223,7 +232,9 @@ class CORE_EXPORT File final : public Blob {
 
   KURL m_fileSystemURL;
 
-  // If m_snapshotSize is negative (initialized to -1 by default), the snapshot metadata is invalid and we retrieve the latest metadata synchronously in size(), lastModifiedTime() and slice().
+  // If m_snapshotSize is negative (initialized to -1 by default), the snapshot
+  // metadata is invalid and we retrieve the latest metadata synchronously in
+  // size(), lastModifiedTime() and slice().
   // Otherwise, the snapshot metadata are used directly in those methods.
   long long m_snapshotSize;
   const double m_snapshotModificationTimeMS;

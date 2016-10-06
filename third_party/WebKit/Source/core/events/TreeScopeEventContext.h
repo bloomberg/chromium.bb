@@ -91,8 +91,8 @@ class CORE_EXPORT TreeScopeEventContext final
   bool isUnclosedTreeOf(const TreeScopeEventContext& other);
 
   Member<TreeScope> m_treeScope;
-  Member<Node>
-      m_rootNode;  // Prevents TreeScope from being freed. TreeScope itself isn't RefCounted.
+  Member<Node> m_rootNode;  // Prevents TreeScope from being freed. TreeScope
+                            // itself isn't RefCounted.
   Member<EventTarget> m_target;
   Member<EventTarget> m_relatedTarget;
   Member<HeapVector<Member<EventTarget>>> m_eventPath;

@@ -272,14 +272,17 @@ bool MouseEvent::isMouseEvent() const {
 }
 
 int MouseEvent::which() const {
-  // For the DOM, the return values for left, middle and right mouse buttons are 0, 1, 2, respectively.
-  // For the Netscape "which" property, the return values for left, middle and right mouse buttons are 1, 2, 3, respectively.
+  // For the DOM, the return values for left, middle and right mouse buttons are
+  // 0, 1, 2, respectively.
+  // For the Netscape "which" property, the return values for left, middle and
+  // right mouse buttons are 1, 2, 3, respectively.
   // So we must add 1.
   return m_button + 1;
 }
 
 Node* MouseEvent::toElement() const {
-  // MSIE extension - "the object toward which the user is moving the mouse pointer"
+  // MSIE extension - "the object toward which the user is moving the mouse
+  // pointer"
   if (type() == EventTypeNames::mouseout ||
       type() == EventTypeNames::mouseleave)
     return relatedTarget() ? relatedTarget()->toNode() : nullptr;
@@ -288,7 +291,8 @@ Node* MouseEvent::toElement() const {
 }
 
 Node* MouseEvent::fromElement() const {
-  // MSIE extension - "object from which activation or the mouse pointer is exiting during the event" (huh?)
+  // MSIE extension - "object from which activation or the mouse pointer is
+  // exiting during the event" (huh?)
   if (type() != EventTypeNames::mouseout &&
       type() != EventTypeNames::mouseleave)
     return relatedTarget() ? relatedTarget()->toNode() : nullptr;
@@ -342,9 +346,10 @@ DispatchEventResult MouseEventDispatchMediator::dispatchEvent(
   if (mouseEvent.type() != EventTypeNames::click || mouseEvent.detail() != 2)
     return dispatchResult;
 
-  // Special case: If it's a double click event, we also send the dblclick event. This is not part
-  // of the DOM specs, but is used for compatibility with the ondblclick="" attribute. This is treated
-  // as a separate event in other DOM-compliant browsers like Firefox, and so we do the same.
+  // Special case: If it's a double click event, we also send the dblclick
+  // event. This is not part of the DOM specs, but is used for compatibility
+  // with the ondblclick="" attribute. This is treated as a separate event in
+  // other DOM-compliant browsers like Firefox, and so we do the same.
   MouseEvent* doubleClickEvent = MouseEvent::create();
   doubleClickEvent->initMouseEventInternal(
       EventTypeNames::dblclick, mouseEvent.bubbles(), mouseEvent.cancelable(),

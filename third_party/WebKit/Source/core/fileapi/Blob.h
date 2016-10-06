@@ -82,7 +82,8 @@ class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
                       const String& contentType,
                       ExceptionState&) const;
 
-  // To allow ExceptionState to be passed in last, manually enumerate the optional argument overloads.
+  // To allow ExceptionState to be passed in last, manually enumerate the
+  // optional argument overloads.
   Blob* slice(ExceptionState& exceptionState) const {
     return slice(0, std::numeric_limits<long long>::max(), String(),
                  exceptionState);

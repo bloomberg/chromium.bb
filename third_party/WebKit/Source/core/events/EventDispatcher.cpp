@@ -2,9 +2,11 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
- * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -66,7 +68,8 @@ EventDispatcher::EventDispatcher(Node& node, Event* event)
 
 void EventDispatcher::dispatchScopedEvent(Node& node,
                                           EventDispatchMediator* mediator) {
-  // We need to set the target here because it can go away by the time we actually fire the event.
+  // We need to set the target here because it can go away by the time we
+  // actually fire the event.
   mediator->event().setTarget(
       EventPath::eventTargetRespectingTargetRules(node));
   ScopedEventQueue::instance()->enqueueEventDispatchMediator(mediator);
@@ -78,8 +81,9 @@ void EventDispatcher::dispatchSimulatedClick(
     SimulatedClickMouseEventOptions mouseEventOptions,
     SimulatedClickCreationScope creationScope) {
   // This persistent vector doesn't cause leaks, because added Nodes are removed
-  // before dispatchSimulatedClick() returns. This vector is here just to prevent
-  // the code from running into an infinite recursion of dispatchSimulatedClick().
+  // before dispatchSimulatedClick() returns. This vector is here just to
+  // prevent the code from running into an infinite recursion of
+  // dispatchSimulatedClick().
   DEFINE_STATIC_LOCAL(HeapHashSet<Member<Node>>,
                       nodesDispatchingSimulatedClicks,
                       (new HeapHashSet<Member<Node>>));
@@ -131,7 +135,8 @@ DispatchEventResult EventDispatcher::dispatch() {
   m_eventDispatched = true;
 #endif
   if (event().eventPath().isEmpty()) {
-    // eventPath() can be empty if event path is shrinked by relataedTarget retargeting.
+    // eventPath() can be empty if event path is shrinked by relataedTarget
+    // retargeting.
     return DispatchEventResult::NotCanceled;
   }
   m_event->eventPath().ensureWindowEventContext();
@@ -166,7 +171,8 @@ DispatchEventResult EventDispatcher::dispatch() {
 
 inline EventDispatchContinuation EventDispatcher::dispatchEventPreProcess(
     EventDispatchHandlingState*& preDispatchEventHandlerResult) {
-  // Give the target node a chance to do some work before DOM event handlers get a crack.
+  // Give the target node a chance to do some work before DOM event handlers get
+  // a crack.
   preDispatchEventHandlerResult =
       m_node->preDispatchEventHandler(m_event.get());
   return (m_event->eventPath().isEmpty() || m_event->propagationStopped())
@@ -175,7 +181,8 @@ inline EventDispatchContinuation EventDispatcher::dispatchEventPreProcess(
 }
 
 inline EventDispatchContinuation EventDispatcher::dispatchEventAtCapturing() {
-  // Trigger capturing event handlers, starting at the top and working our way down.
+  // Trigger capturing event handlers, starting at the top and working our way
+  // down.
   m_event->setEventPhase(Event::kCapturingPhase);
 
   if (m_event->eventPath().windowEventContext().handleLocalEvents(*m_event) &&
@@ -201,7 +208,8 @@ inline EventDispatchContinuation EventDispatcher::dispatchEventAtTarget() {
 }
 
 inline void EventDispatcher::dispatchEventAtBubbling() {
-  // Trigger bubbling event handlers, starting at the bottom and working our way up.
+  // Trigger bubbling event handlers, starting at the bottom and working our way
+  // up.
   size_t size = m_event->eventPath().size();
   for (size_t i = 1; i < size; ++i) {
     const NodeEventContext& eventContext = m_event->eventPath()[i];
@@ -244,14 +252,16 @@ inline void EventDispatcher::dispatchEventPostProcess(
   m_event->setCurrentTarget(nullptr);
   m_event->setEventPhase(0);
 
-  // Pass the data from the preDispatchEventHandler to the postDispatchEventHandler.
+  // Pass the data from the preDispatchEventHandler to the
+  // postDispatchEventHandler.
   m_node->postDispatchEventHandler(m_event.get(),
                                    preDispatchEventHandlerResult);
 
   bool isClick = m_event->isMouseEvent() &&
                  toMouseEvent(*m_event).type() == EventTypeNames::click;
   if (isClick) {
-    // Fire an accessibility event indicating a node was clicked on.  This is safe if m_event->target()->toNode() returns null.
+    // Fire an accessibility event indicating a node was clicked on.  This is
+    // safe if m_event->target()->toNode() returns null.
     if (AXObjectCache* cache = m_node->document().existingAXObjectCache())
       cache->handleClicked(m_event->target()->toNode());
   }
@@ -274,17 +284,18 @@ inline void EventDispatcher::dispatchEventPostProcess(
     }
   }
 
-  // Call default event handlers. While the DOM does have a concept of preventing
-  // default handling, the detail of which handlers are called is an internal
-  // implementation detail and not part of the DOM.
+  // Call default event handlers. While the DOM does have a concept of
+  // preventing default handling, the detail of which handlers are called is an
+  // internal implementation detail and not part of the DOM.
   if (!m_event->defaultPrevented() && !m_event->defaultHandled() &&
       isTrustedOrClick) {
-    // Non-bubbling events call only one default event handler, the one for the target.
+    // Non-bubbling events call only one default event handler, the one for the
+    // target.
     m_node->willCallDefaultEventHandler(*m_event);
     m_node->defaultEventHandler(m_event.get());
     DCHECK(!m_event->defaultPrevented());
-    // For bubbling events, call default event handlers on the same targets in the
-    // same order as the bubbling phase.
+    // For bubbling events, call default event handlers on the same targets in
+    // the same order as the bubbling phase.
     if (!m_event->defaultHandled() && m_event->bubbles()) {
       size_t size = m_event->eventPath().size();
       for (size_t i = 1; i < size; ++i) {

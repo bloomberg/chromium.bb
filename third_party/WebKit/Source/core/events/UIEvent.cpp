@@ -26,7 +26,8 @@ namespace blink {
 
 UIEvent::UIEvent() : m_detail(0), m_sourceCapabilities(nullptr) {}
 
-// TODO(lanwei): Will add sourceCapabilities to all the subclass of UIEvent later, see https://crbug.com/476530.
+// TODO(lanwei): Will add sourceCapabilities to all the subclass of UIEvent
+// later, see https://crbug.com/476530.
 UIEvent::UIEvent(const AtomicString& eventType,
                  bool canBubbleArg,
                  bool cancelableArg,

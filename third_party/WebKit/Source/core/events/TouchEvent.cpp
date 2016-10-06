@@ -56,46 +56,86 @@ const size_t kBubblingOffset = 24;
 
 enum TouchTargetAndDispatchResultType {
   // The following enums represent state captured during the CAPTURING_PHASE.
-  CapturingNonRootScrollerNonScrollableAlreadyHandled,  // Non-root-scroller, non-scrollable document, already handled.
-  CapturingNonRootScrollerNonScrollableNotHandled,  // Non-root-scroller, non-scrollable document, not handled.
-  CapturingNonRootScrollerNonScrollableHandled,  // Non-root-scroller, non-scrollable document, handled application.
-  CapturingNonRootScrollerScrollableDocumentAlreadyHandled,  // Non-root-scroller, scrollable document, already handled.
-  CapturingNonRootScrollerScrollableDocumentNotHandled,  // Non-root-scroller, scrollable document, not handled.
-  CapturingNonRootScrollerScrollableDocumentHandled,  // Non-root-scroller, scrollable document, handled application.
-  CapturingRootScrollerNonScrollableAlreadyHandled,  // Root-scroller, non-scrollable document, already handled.
-  CapturingRootScrollerNonScrollableNotHandled,  // Root-scroller, non-scrollable document, not handled.
-  CapturingRootScrollerNonScrollableHandled,  // Root-scroller, non-scrollable document, handled.
-  CapturingRootScrollerScrollableDocumentAlreadyHandled,  // Root-scroller, scrollable document, already handled.
-  CapturingRootScrollerScrollableDocumentNotHandled,  // Root-scroller, scrollable document, not handled.
-  CapturingRootScrollerScrollableDocumentHandled,  // Root-scroller, scrollable document, handled.
+
+  // Non-root-scroller, non-scrollable document, already handled.
+  CapturingNonRootScrollerNonScrollableAlreadyHandled,
+  // Non-root-scroller, non-scrollable document, not handled.
+  CapturingNonRootScrollerNonScrollableNotHandled,
+  // Non-root-scroller, non-scrollable document, handled application.
+  CapturingNonRootScrollerNonScrollableHandled,
+  // Non-root-scroller, scrollable document, already handled.
+  CapturingNonRootScrollerScrollableDocumentAlreadyHandled,
+  // Non-root-scroller, scrollable document, not handled.
+  CapturingNonRootScrollerScrollableDocumentNotHandled,
+  // Non-root-scroller, scrollable document, handled application.
+  CapturingNonRootScrollerScrollableDocumentHandled,
+  // Root-scroller, non-scrollable document, already handled.
+  CapturingRootScrollerNonScrollableAlreadyHandled,
+  // Root-scroller, non-scrollable document, not handled.
+  CapturingRootScrollerNonScrollableNotHandled,
+  // Root-scroller, non-scrollable document, handled.
+  CapturingRootScrollerNonScrollableHandled,
+  // Root-scroller, scrollable document, already handled.
+  CapturingRootScrollerScrollableDocumentAlreadyHandled,
+  // Root-scroller, scrollable document, not handled.
+  CapturingRootScrollerScrollableDocumentNotHandled,
+  // Root-scroller, scrollable document, handled.
+  CapturingRootScrollerScrollableDocumentHandled,
 
   // The following enums represent state captured during the AT_TARGET phase.
-  NonRootScrollerNonScrollableAlreadyHandled,  // Non-root-scroller, non-scrollable document, already handled.
-  NonRootScrollerNonScrollableNotHandled,  // Non-root-scroller, non-scrollable document, not handled.
-  NonRootScrollerNonScrollableHandled,  // Non-root-scroller, non-scrollable document, handled application.
-  NonRootScrollerScrollableDocumentAlreadyHandled,  // Non-root-scroller, scrollable document, already handled.
-  NonRootScrollerScrollableDocumentNotHandled,  // Non-root-scroller, scrollable document, not handled.
-  NonRootScrollerScrollableDocumentHandled,  // Non-root-scroller, scrollable document, handled application.
-  RootScrollerNonScrollableAlreadyHandled,  // Root-scroller, non-scrollable document, already handled.
-  RootScrollerNonScrollableNotHandled,  // Root-scroller, non-scrollable document, not handled.
-  RootScrollerNonScrollableHandled,  // Root-scroller, non-scrollable document, handled.
-  RootScrollerScrollableDocumentAlreadyHandled,  // Root-scroller, scrollable document, already handled.
-  RootScrollerScrollableDocumentNotHandled,  // Root-scroller, scrollable document, not handled.
-  RootScrollerScrollableDocumentHandled,  // Root-scroller, scrollable document, handled.
+
+  // Non-root-scroller, non-scrollable document, already handled.
+  NonRootScrollerNonScrollableAlreadyHandled,
+  // Non-root-scroller, non-scrollable document, not handled.
+  NonRootScrollerNonScrollableNotHandled,
+  // Non-root-scroller, non-scrollable document, handled application.
+  NonRootScrollerNonScrollableHandled,
+  // Non-root-scroller, scrollable document, already handled.
+  NonRootScrollerScrollableDocumentAlreadyHandled,
+  // Non-root-scroller, scrollable document, not handled.
+  NonRootScrollerScrollableDocumentNotHandled,
+  // Non-root-scroller, scrollable document, handled application.
+  NonRootScrollerScrollableDocumentHandled,
+  // Root-scroller, non-scrollable document, already handled.
+  RootScrollerNonScrollableAlreadyHandled,
+  // Root-scroller, non-scrollable document, not handled.
+  RootScrollerNonScrollableNotHandled,
+  // Root-scroller, non-scrollable document, handled.
+  RootScrollerNonScrollableHandled,
+  // Root-scroller, scrollable document, already handled.
+  RootScrollerScrollableDocumentAlreadyHandled,
+  // Root-scroller, scrollable document, not handled.
+  RootScrollerScrollableDocumentNotHandled,
+  // Root-scroller, scrollable document, handled.
+  RootScrollerScrollableDocumentHandled,
 
   // The following enums represent state captured during the BUBBLING_PHASE.
-  BubblingNonRootScrollerNonScrollableAlreadyHandled,  // Non-root-scroller, non-scrollable document, already handled.
-  BubblingNonRootScrollerNonScrollableNotHandled,  // Non-root-scroller, non-scrollable document, not handled.
-  BubblingNonRootScrollerNonScrollableHandled,  // Non-root-scroller, non-scrollable document, handled application.
-  BubblingNonRootScrollerScrollableDocumentAlreadyHandled,  // Non-root-scroller, scrollable document, already handled.
-  BubblingNonRootScrollerScrollableDocumentNotHandled,  // Non-root-scroller, scrollable document, not handled.
-  BubblingNonRootScrollerScrollableDocumentHandled,  // Non-root-scroller, scrollable document, handled application.
-  BubblingRootScrollerNonScrollableAlreadyHandled,  // Root-scroller, non-scrollable document, already handled.
-  BubblingRootScrollerNonScrollableNotHandled,  // Root-scroller, non-scrollable document, not handled.
-  BubblingRootScrollerNonScrollableHandled,  // Root-scroller, non-scrollable document, handled.
-  BubblingRootScrollerScrollableDocumentAlreadyHandled,  // Root-scroller, scrollable document, already handled.
-  BubblingRootScrollerScrollableDocumentNotHandled,  // Root-scroller, scrollable document, not handled.
-  BubblingRootScrollerScrollableDocumentHandled,  // Root-scroller, scrollable document, handled.
+
+  // Non-root-scroller, non-scrollable document, already handled.
+  BubblingNonRootScrollerNonScrollableAlreadyHandled,
+  // Non-root-scroller, non-scrollable document, not handled.
+  BubblingNonRootScrollerNonScrollableNotHandled,
+  // Non-root-scroller, non-scrollable document, handled application.
+  BubblingNonRootScrollerNonScrollableHandled,
+  // Non-root-scroller, scrollable document, already handled.
+  BubblingNonRootScrollerScrollableDocumentAlreadyHandled,
+  // Non-root-scroller, scrollable document, not handled.
+  BubblingNonRootScrollerScrollableDocumentNotHandled,
+  // Non-root-scroller, scrollable document, handled application.
+  BubblingNonRootScrollerScrollableDocumentHandled,
+  // Root-scroller, non-scrollable document, already handled.
+  BubblingRootScrollerNonScrollableAlreadyHandled,
+  // Root-scroller, non-scrollable document, not handled.
+  BubblingRootScrollerNonScrollableNotHandled,
+  // Root-scroller, non-scrollable document, handled.
+  BubblingRootScrollerNonScrollableHandled,
+  // Root-scroller, scrollable document, already handled.
+  BubblingRootScrollerScrollableDocumentAlreadyHandled,
+  // Root-scroller, scrollable document, not handled.
+  BubblingRootScrollerScrollableDocumentNotHandled,
+  // Root-scroller, scrollable document, handled.
+  BubblingRootScrollerScrollableDocumentHandled,
+
   TouchTargetAndDispatchResultTypeMax,
 };
 
@@ -171,7 +211,9 @@ TouchEvent::TouchEvent(TouchList* touches,
                        bool causesScrollingIfUncanceled,
                        bool firstTouchMoveOrStart,
                        double platformTimeStamp)
-    // Pass a sourceCapabilities including the ability to fire touchevents when creating this touchevent, which is always created from input device capabilities from EventHandler.
+    // Pass a sourceCapabilities including the ability to fire touchevents when
+    // creating this touchevent, which is always created from input device
+    // capabilities from EventHandler.
     : UIEventWithKeyState(
           type,
           true,

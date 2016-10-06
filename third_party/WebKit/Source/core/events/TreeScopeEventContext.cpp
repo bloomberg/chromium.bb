@@ -36,8 +36,9 @@ namespace blink {
 bool TreeScopeEventContext::isUnclosedTreeOf(
     const TreeScopeEventContext& other) {
   // Exclude closed nodes if necessary.
-  // If a node is in a closed shadow root, or in a tree whose ancestor has a closed shadow root,
-  // it should not be visible to nodes above the closed shadow root.
+  // If a node is in a closed shadow root, or in a tree whose ancestor has a
+  // closed shadow root, it should not be visible to nodes above the closed
+  // shadow root.
 
   // (1) If |this| is an ancestor of |other| in tree-of-trees, include it.
   if (isInclusiveAncestorOf(other))
@@ -47,7 +48,8 @@ bool TreeScopeEventContext::isUnclosedTreeOf(
   if (!containingClosedShadowTree())
     return true;
 
-  // (3) If |this| is descendent of |other|, exclude if any closed shadow root in between.
+  // (3) If |this| is descendent of |other|, exclude if any closed shadow root
+  // in between.
   if (isDescendantOf(other))
     return !containingClosedShadowTree()->isDescendantOf(other);
 

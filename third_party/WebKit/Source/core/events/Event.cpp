@@ -35,8 +35,8 @@
 namespace blink {
 
 static bool isEventTypeScopedInV0(const AtomicString& eventType) {
-  // WebKit never allowed selectstart event to cross the the shadow DOM boundary.
-  // Changing this breaks existing sites.
+  // WebKit never allowed selectstart event to cross the the shadow DOM
+  // boundary.  Changing this breaks existing sites.
   // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
   return eventType == EventTypeNames::abort ||
          eventType == EventTypeNames::change ||

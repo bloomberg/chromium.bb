@@ -65,7 +65,8 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
     ReadByClient
   };
 
-  // If client is given, do the loading asynchronously. Otherwise, load synchronously.
+  // If client is given, do the loading asynchronously. Otherwise, load
+  // synchronously.
   static std::unique_ptr<FileReaderLoader> create(
       ReadType readType,
       FileReaderLoaderClient* client) {

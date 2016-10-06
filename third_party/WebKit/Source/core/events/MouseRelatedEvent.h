@@ -36,12 +36,13 @@ class CORE_EXPORT MouseRelatedEvent : public UIEventWithKeyState {
  public:
   enum class PositionType {
     Position,
-    // Positionless mouse events are used, for example, for 'click' events from keyboard input.
-    // It's kind of surprising for a mouse event not to have a position.
+    // Positionless mouse events are used, for example, for 'click' events from
+    // keyboard input.  It's kind of surprising for a mouse event not to have a
+    // position.
     Positionless
   };
-  // Note that these values are adjusted to counter the effects of zoom, so that values
-  // exposed via DOM APIs are invariant under zooming.
+  // Note that these values are adjusted to counter the effects of zoom, so that
+  // values exposed via DOM APIs are invariant under zooming.
   int screenX() const { return m_screenLocation.x(); }
   int screenY() const { return m_screenLocation.y(); }
   const IntPoint& screenLocation() const { return m_screenLocation; }
@@ -60,8 +61,9 @@ class CORE_EXPORT MouseRelatedEvent : public UIEventWithKeyState {
   int y() const;
   bool hasPosition() const { return m_positionType == PositionType::Position; }
 
-  // Page point in "absolute" coordinates (i.e. post-zoomed, page-relative coords,
-  // usable with LayoutObject::absoluteToLocal) relative to view(), i.e. the local frame.
+  // Page point in "absolute" coordinates (i.e. post-zoomed, page-relative
+  // coords, usable with LayoutObject::absoluteToLocal) relative to view(), i.e.
+  // the local frame.
   const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
   void setAbsoluteLocation(const LayoutPoint& p) { m_absoluteLocation = p; }
 
@@ -69,8 +71,9 @@ class CORE_EXPORT MouseRelatedEvent : public UIEventWithKeyState {
 
  protected:
   MouseRelatedEvent();
-  // TODO(lanwei): Will make this argument non-optional and all the callers need to provide
-  // sourceCapabilities even when it is null, see https://crbug.com/476530.
+  // TODO(lanwei): Will make this argument non-optional and all the callers need
+  // to provide sourceCapabilities even when it is null, see
+  // https://crbug.com/476530.
   MouseRelatedEvent(const AtomicString& type,
                     bool canBubble,
                     bool cancelable,

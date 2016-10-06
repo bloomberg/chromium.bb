@@ -69,7 +69,8 @@ class ErrorEvent final : public Event {
   unsigned colno() const { return m_location->columnNumber(); }
   ScriptValue error(ScriptState*) const;
 
-  // 'messageForConsole' is not exposed to JavaScript, and prefers 'm_unsanitizedMessage'.
+  // 'messageForConsole' is not exposed to JavaScript, and prefers
+  // 'm_unsanitizedMessage'.
   const String& messageForConsole() const {
     return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage
                                            : m_sanitizedMessage;

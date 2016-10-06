@@ -41,7 +41,8 @@ static inline const AtomicString& eventTypeForKeyboardEventType(
     case WebInputEvent::Char:
       return EventTypeNames::keypress;
     case WebInputEvent::KeyDown:
-      // The caller should disambiguate the combined event into RawKeyDown or Char events.
+      // The caller should disambiguate the combined event into RawKeyDown or
+      // Char events.
       break;
     default:
       break;
@@ -192,8 +193,9 @@ bool KeyboardEvent::isKeyboardEvent() const {
 }
 
 int KeyboardEvent::which() const {
-  // Netscape's "which" returns a virtual key code for keydown and keyup, and a character code for keypress.
-  // That's exactly what IE's "keyCode" returns. So they are the same for keyboard events.
+  // Netscape's "which" returns a virtual key code for keydown and keyup, and a
+  // character code for keypress.  That's exactly what IE's "keyCode" returns.
+  // So they are the same for keyboard events.
   return keyCode();
 }
 

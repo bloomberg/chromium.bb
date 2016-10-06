@@ -41,7 +41,8 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
  public:
   ~TouchEvent() override;
 
-  // We only initialize sourceCapabilities when we create TouchEvent from EventHandler, null if it is from JavaScript.
+  // We only initialize sourceCapabilities when we create TouchEvent from
+  // EventHandler, null if it is from JavaScript.
   static TouchEvent* create() { return new TouchEvent; }
   static TouchEvent* create(TouchList* touches,
                             TouchList* targetTouches,

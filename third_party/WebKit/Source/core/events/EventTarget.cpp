@@ -596,8 +596,8 @@ bool EventTarget::fireEventListeners(Event* event,
   // Fire all listeners registered for this event. Don't fire listeners removed
   // during event dispatch. Also, don't fire event listeners added during event
   // dispatch. Conveniently, all new event listeners will be added after or at
-  // index |size|, so iterating up to (but not including) |size| naturally excludes
-  // new event listeners.
+  // index |size|, so iterating up to (but not including) |size| naturally
+  // excludes new event listeners.
 
   if (checkTypeThenUseCount(event, EventTypeNames::beforeunload,
                             UseCounter::DocumentBeforeUnloadFired)) {
@@ -676,15 +676,15 @@ bool EventTarget::fireEventListeners(Event* event,
       continue;
 
     EventListener* listener = registeredListener.listener();
-    // The listener will be retained by Member<EventListener> in the registeredListener,
-    // i and size are updated with the firing event iterator
+    // The listener will be retained by Member<EventListener> in the
+    // registeredListener, i and size are updated with the firing event iterator
     // in case the listener is removed from the listener vector below.
     if (registeredListener.once())
       removeEventListener(event->type(), listener,
                           registeredListener.capture());
 
-    // If stopImmediatePropagation has been called, we just break out immediately, without
-    // handling any more events on this target.
+    // If stopImmediatePropagation has been called, we just break out
+    // immediately, without handling any more events on this target.
     if (event->immediatePropagationStopped())
       break;
 
@@ -699,8 +699,8 @@ bool EventTarget::fireEventListeners(Event* event,
     listener->handleEvent(context, event);
     firedListener = true;
 
-    // If we're about to report this event listener as blocking, make sure it wasn't
-    // removed while handling the event.
+    // If we're about to report this event listener as blocking, make sure it
+    // wasn't removed while handling the event.
     if (shouldReportBlockedEvent && i > 0 &&
         entry[i - 1].listener() == listener && !entry[i - 1].passive() &&
         !entry[i - 1].blockedEventWarningEmitted() &&

@@ -83,7 +83,9 @@ class CORE_EXPORT UIEvent : public Event {
 
  protected:
   UIEvent();
-  // TODO(crbug.com/563542): Remove of this ctor in favor of making platformTimeStamp (and perhaps sourceCapabilities) required in all constructions sites
+  // TODO(crbug.com/563542): Remove of this ctor in favor of making
+  // platformTimeStamp (and perhaps sourceCapabilities) required in all
+  // constructions sites
   UIEvent(const AtomicString& type,
           bool canBubble,
           bool cancelable,

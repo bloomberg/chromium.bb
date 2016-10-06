@@ -253,7 +253,8 @@ TEST_F(PointerEventFactoryTest, TouchAndDrag) {
   createAndCheckTouchEvent(WebPointerProperties::PointerType::Touch, 0,
                            m_mappedIdStart + 1, true);
 
-  // Remove an obsolete (i.e. already removed) pointer event which should have no effect
+  // Remove an obsolete (i.e. already removed) pointer event which should have
+  // no effect.
   m_pointerEventFactory.remove(pointerEvent1->pointerId());
 
   EXPECT_TRUE(m_pointerEventFactory.isActive(m_mappedIdStart + 1));

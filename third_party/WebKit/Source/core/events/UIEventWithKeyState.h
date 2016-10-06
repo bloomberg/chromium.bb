@@ -37,8 +37,11 @@ class CORE_EXPORT UIEventWithKeyState : public UIEvent {
   bool altKey() const { return m_modifiers & PlatformEvent::AltKey; }
   bool metaKey() const { return m_modifiers & PlatformEvent::MetaKey; }
 
-  // We ignore the new tab modifiers (ctrl or meta, depending on OS) set by JavaScript when processing events.
-  // However, scripts running in isolated worlds (aka content scripts) are not subject to this restriction. Since it is possible that an event created by a content script is caught and recreated by the web page's script, we resort to a global flag.
+  // We ignore the new tab modifiers (ctrl or meta, depending on OS) set by
+  // JavaScript when processing events.  However, scripts running in isolated
+  // worlds (aka content scripts) are not subject to this restriction. Since it
+  // is possible that an event created by a content script is caught and
+  // recreated by the web page's script, we resort to a global flag.
   static bool newTabModifierSetFromIsolatedWorld() {
     return s_newTabModifierSetFromIsolatedWorld;
   }

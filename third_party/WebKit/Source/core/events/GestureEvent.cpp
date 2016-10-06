@@ -112,9 +112,9 @@ GestureEvent* GestureEvent::create(AbstractView* view,
 }
 
 const AtomicString& GestureEvent::interfaceName() const {
-  // FIXME: when a GestureEvent.idl interface is defined, return the string "GestureEvent".
-  // Until that happens, do not advertise an interface that does not exist, since it will
-  // trip up the bindings integrity checks.
+  // FIXME: when a GestureEvent.idl interface is defined, return the string
+  // "GestureEvent".  Until that happens, do not advertise an interface that
+  // does not exist, since it will trip up the bindings integrity checks.
   return UIEvent::interfaceName();
 }
 

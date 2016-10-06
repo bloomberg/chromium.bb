@@ -168,7 +168,8 @@ void EventPath::calculatePath() {
 
 void EventPath::calculateTreeOrderAndSetNearestAncestorClosedTree() {
   // Precondition:
-  //   - TreeScopes in m_treeScopeEventContexts must be *connected* in the same composed tree.
+  //   - TreeScopes in m_treeScopeEventContexts must be *connected* in the same
+  //     composed tree.
   //   - The root tree must be included.
   HeapHashMap<Member<const TreeScope>, Member<TreeScopeEventContext>>
       treeScopeEventContextMap;
