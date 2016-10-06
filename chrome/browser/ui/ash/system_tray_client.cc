@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -22,6 +24,7 @@
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/mojo_shell_connection.h"
+#include "net/base/escape.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -64,28 +67,6 @@ SystemTrayClient::~SystemTrayClient() {
 // static
 SystemTrayClient* SystemTrayClient::Get() {
   return g_instance;
-}
-
-void SystemTrayClient::ConnectToSystemTray() {
-  if (system_tray_.is_bound())
-    return;
-
-  shell::Connector* connector =
-      content::MojoShellConnection::GetForProcess()->GetConnector();
-  // Under mash the SystemTray interface is in the ash process. In classic ash
-  // we provide it to ourself.
-  if (chrome::IsRunningInMash())
-    connector->ConnectToInterface("service:ash", &system_tray_);
-  else
-    connector->ConnectToInterface("service:content_browser", &system_tray_);
-
-  // Tolerate ash crashing and coming back up.
-  system_tray_.set_connection_error_handler(base::Bind(
-      &SystemTrayClient::OnClientConnectionError, base::Unretained(this)));
-}
-
-void SystemTrayClient::OnClientConnectionError() {
-  system_tray_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -163,6 +144,23 @@ void SystemTrayClient::ShowPublicAccountInfo() {
   chrome::ShowPolicy(displayer.browser());
 }
 
+void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {
+  if (!chrome::IsRunningInMash()) {
+    // TODO(mash): Need replacement for SessionStateDelegate. crbug.com/648964
+    if (!LoginState::Get()->IsUserLoggedIn() ||
+        ash::WmShell::Get()
+            ->GetSessionStateDelegate()
+            ->IsInSecondaryLoginScreen())
+      return;
+  }
+
+  std::string page = chrome::kInternetOptionsSubPage;
+  if (!network_id.empty())
+    page += "?guid=" + net::EscapeUrlEncodedData(network_id, true);
+  content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
+  ShowSettingsSubPageForActiveUser(page);
+}
+
 void SystemTrayClient::ShowProxySettings() {
   LoginState* login_state = LoginState::Get();
   // User is not logged in.
@@ -178,4 +176,26 @@ void SystemTrayClient::OnSystemClockChanged(
     chromeos::system::SystemClock* clock) {
   ConnectToSystemTray();
   system_tray_->SetUse24HourClock(clock->ShouldUse24HourClock());
+}
+
+void SystemTrayClient::ConnectToSystemTray() {
+  if (system_tray_.is_bound())
+    return;
+
+  shell::Connector* connector =
+      content::MojoShellConnection::GetForProcess()->GetConnector();
+  // Under mash the SystemTray interface is in the ash process. In classic ash
+  // we provide it to ourself.
+  if (chrome::IsRunningInMash())
+    connector->ConnectToInterface("service:ash", &system_tray_);
+  else
+    connector->ConnectToInterface("service:content_browser", &system_tray_);
+
+  // Tolerate ash crashing and coming back up.
+  system_tray_.set_connection_error_handler(base::Bind(
+      &SystemTrayClient::OnClientConnectionError, base::Unretained(this)));
+}
+
+void SystemTrayClient::OnClientConnectionError() {
+  system_tray_.reset();
 }

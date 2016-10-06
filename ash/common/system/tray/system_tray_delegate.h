@@ -147,10 +147,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Shows the dialog to set system time, date, and timezone.
   virtual void ShowSetTimeDialog();
 
-  // Shows the settings related to network. If |guid| is not empty,
-  // show the settings for the corresponding network.
-  virtual void ShowNetworkSettingsForGuid(const std::string& guid);
-
   // Returns true if the notification for the display configuration change
   // should appear.
   virtual bool ShouldShowDisplayNotification();

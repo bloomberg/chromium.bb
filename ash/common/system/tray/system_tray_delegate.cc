@@ -79,8 +79,6 @@ bool SystemTrayDelegate::ShouldShowSettings() {
 
 void SystemTrayDelegate::ShowSetTimeDialog() {}
 
-void SystemTrayDelegate::ShowNetworkSettingsForGuid(const std::string& guid) {}
-
 bool SystemTrayDelegate::ShouldShowDisplayNotification() {
   return false;
 }

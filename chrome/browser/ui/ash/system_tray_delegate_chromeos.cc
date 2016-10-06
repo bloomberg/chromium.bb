@@ -106,7 +106,6 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "net/base/escape.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -400,20 +399,6 @@ bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
 void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {
   // TODO(mash): Refactor out GetNativeWindow and move to SystemTrayClient.
   SetTimeDialog::ShowDialog(GetNativeWindow());
-}
-
-void SystemTrayDelegateChromeOS::ShowNetworkSettingsForGuid(
-    const std::string& guid) {
-  // TODO(mash): Refactor out SessionStateDelegate and move to SystemTrayClient.
-  ash::WmShell* wm_shell = ash::WmShell::Get();
-  if (LoginState::Get()->IsUserLoggedIn() &&
-      !wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
-    std::string page = chrome::kInternetOptionsSubPage;
-    if (!guid.empty())
-      page += "?guid=" + net::EscapeUrlEncodedData(guid, true);
-    content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
-    ShowSettingsSubPageForActiveUser(page);
-  }
 }
 
 bool SystemTrayDelegateChromeOS::ShouldShowDisplayNotification() {

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 
 namespace {
@@ -61,8 +62,7 @@ void NetworkConnectDelegateChromeOS::ShowNetworkSettingsForGuid(
     const std::string& network_id) {
   if (!IsUIAvailable())
     return;
-  ash::WmShell::Get()->system_tray_delegate()->ShowNetworkSettingsForGuid(
-      network_id);
+  SystemTrayClient::Get()->ShowNetworkSettings(network_id);
 }
 
 bool NetworkConnectDelegateChromeOS::ShowEnrollNetwork(

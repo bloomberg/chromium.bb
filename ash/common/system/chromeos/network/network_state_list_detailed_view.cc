@@ -441,8 +441,8 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
         list_type_ == LIST_TYPE_VPN
             ? UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS
             : UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS);
-    WmShell::Get()->system_tray_delegate()->ShowNetworkSettingsForGuid(
-        network ? network->guid() : "");
+    WmShell::Get()->system_tray_controller()->ShowNetworkSettings(
+        network ? network->guid() : std::string());
   } else {
     WmShell::Get()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
@@ -519,7 +519,7 @@ void NetworkStateListDetailedView::ShowSettings() {
   WmShell::Get()->RecordUserMetricsAction(
       list_type_ == LIST_TYPE_VPN ? UMA_STATUS_AREA_VPN_SETTINGS_OPENED
                                   : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
-  WmShell::Get()->system_tray_delegate()->ShowNetworkSettingsForGuid("");
+  WmShell::Get()->system_tray_controller()->ShowNetworkSettings(std::string());
 }
 
 void NetworkStateListDetailedView::CreateNetworkExtra() {

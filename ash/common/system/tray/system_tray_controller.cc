@@ -77,6 +77,11 @@ void SystemTrayController::ShowPublicAccountInfo() {
     system_tray_client_->ShowPublicAccountInfo();
 }
 
+void SystemTrayController::ShowNetworkSettings(const std::string& network_id) {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowNetworkSettings(network_id);
+}
+
 void SystemTrayController::ShowProxySettings() {
   if (ConnectToSystemTrayClient())
     system_tray_client_->ShowProxySettings();

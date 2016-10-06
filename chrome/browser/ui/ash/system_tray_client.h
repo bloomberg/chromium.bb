@@ -24,13 +24,6 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
 
   static SystemTrayClient* Get();
 
- private:
-  // Connects or reconnects the |system_tray_| interface.
-  void ConnectToSystemTray();
-
-  // Handles errors on the |system_tray_| interface connection.
-  void OnClientConnectionError();
-
   // ash::mojom::SystemTrayClient:
   void ShowSettings() override;
   void ShowDateSettings() override;
@@ -44,10 +37,18 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   void ShowPaletteHelp() override;
   void ShowPaletteSettings() override;
   void ShowPublicAccountInfo() override;
+  void ShowNetworkSettings(const std::string& network_id) override;
   void ShowProxySettings() override;
 
+ private:
   // chromeos::system::SystemClockObserver:
   void OnSystemClockChanged(chromeos::system::SystemClock* clock) override;
+
+  // Connects or reconnects the |system_tray_| interface.
+  void ConnectToSystemTray();
+
+  // Handles errors on the |system_tray_| interface connection.
+  void OnClientConnectionError();
 
   // System tray mojo service in ash.
   ash::mojom::SystemTrayPtr system_tray_;

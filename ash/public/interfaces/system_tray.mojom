@@ -22,8 +22,6 @@ interface SystemTrayClient {
 
   // TODO(crbug.com/647412): ShowSetTimeDialog();
 
-  // TODO(crbug.com/647412): ShowNetworkSettingsForGuid(string guid);
-
   // Shows settings related to multiple displays.
   ShowDisplaySettings();
 
@@ -55,6 +53,12 @@ interface SystemTrayClient {
   ShowPublicAccountInfo();
 
   // TODO(crbug.com/647412): ShowEnterpriseInfo();
+
+  // Shows settings related to networking. If |network_id| is empty, shows
+  // general settings. Otherwise shows settings for the individual network.
+  // On devices |network_id| is a GUID, but on Linux desktop and in tests it can
+  // be any string.
+  ShowNetworkSettings(string network_id);
 
   // Shows UI for changing proxy settings.
   ShowProxySettings();

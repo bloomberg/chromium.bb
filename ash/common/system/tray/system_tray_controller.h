@@ -49,6 +49,7 @@ class SystemTrayController : public mojom::SystemTray {
   void ShowPaletteHelp();
   void ShowPaletteSettings();
   void ShowPublicAccountInfo();
+  void ShowNetworkSettings(const std::string& network_id);
   void ShowProxySettings();
 
   // Binds the mojom::SystemTray interface to this object.
