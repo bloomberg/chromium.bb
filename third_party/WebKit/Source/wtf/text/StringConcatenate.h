@@ -223,53 +223,6 @@ class StringTypeAdapter<AtomicString> : public StringTypeAdapter<StringView> {
       : StringTypeAdapter<StringView>(string) {}
 };
 
-inline void sumWithOverflow(unsigned& total, unsigned addend, bool& overflow) {
-  unsigned oldTotal = total;
-  total = oldTotal + addend;
-  if (total < oldTotal)
-    overflow = true;
-}
-
-template <typename StringType1, typename StringType2>
-PassRefPtr<StringImpl> makeString(StringType1 string1, StringType2 string2) {
-  StringTypeAdapter<StringType1> adapter1(string1);
-  StringTypeAdapter<StringType2> adapter2(string2);
-
-  bool overflow = false;
-  unsigned length = adapter1.length();
-  sumWithOverflow(length, adapter2.length(), overflow);
-  if (overflow)
-    return nullptr;
-
-  if (adapter1.is8Bit() && adapter2.is8Bit()) {
-    LChar* buffer;
-    RefPtr<StringImpl> resultImpl =
-        StringImpl::createUninitialized(length, buffer);
-    if (!resultImpl)
-      return nullptr;
-
-    LChar* result = buffer;
-    adapter1.writeTo(result);
-    result += adapter1.length();
-    adapter2.writeTo(result);
-
-    return resultImpl.release();
-  }
-
-  UChar* buffer;
-  RefPtr<StringImpl> resultImpl =
-      StringImpl::createUninitialized(length, buffer);
-  if (!resultImpl)
-    return nullptr;
-
-  UChar* result = buffer;
-  adapter1.writeTo(result);
-  result += adapter1.length();
-  adapter2.writeTo(result);
-
-  return resultImpl.release();
-}
-
 }  // namespace WTF
 
 #include "wtf/text/StringOperators.h"

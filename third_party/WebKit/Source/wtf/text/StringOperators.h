@@ -56,12 +56,22 @@ StringAppend<StringType1, StringType2>::StringAppend(StringType1 string1,
 
 template <typename StringType1, typename StringType2>
 StringAppend<StringType1, StringType2>::operator String() const {
-  return String(makeString(m_string1, m_string2));
+  if (is8Bit()) {
+    LChar* buffer;
+    RefPtr<StringImpl> result =
+        StringImpl::createUninitialized(length(), buffer);
+    writeTo(buffer);
+    return result.release();
+  }
+  UChar* buffer;
+  RefPtr<StringImpl> result = StringImpl::createUninitialized(length(), buffer);
+  writeTo(buffer);
+  return result.release();
 }
 
 template <typename StringType1, typename StringType2>
 StringAppend<StringType1, StringType2>::operator AtomicString() const {
-  return AtomicString(makeString(m_string1, m_string2));
+  return AtomicString(static_cast<String>(*this));
 }
 
 template <typename StringType1, typename StringType2>
@@ -92,7 +102,10 @@ template <typename StringType1, typename StringType2>
 unsigned StringAppend<StringType1, StringType2>::length() const {
   StringTypeAdapter<StringType1> adapter1(m_string1);
   StringTypeAdapter<StringType2> adapter2(m_string2);
-  return adapter1.length() + adapter2.length();
+  unsigned total = adapter1.length() + adapter2.length();
+  // Guard against overflow.
+  RELEASE_ASSERT(total >= adapter1.length() && total >= adapter2.length());
+  return total;
 }
 
 template <typename StringType1, typename StringType2>
