@@ -4,6 +4,7 @@
 
 #include "platform/graphics/paint/GeometryMapper.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
@@ -107,9 +108,21 @@ FloatRect GeometryMapper::localToVisualRectInAncestorSpace(
 
   const auto clipRect =
       localToAncestorClipRect(localState, ancestorState, success);
-  DCHECK(success);
 
-  mappedRect.intersect(clipRect);
+  if (success) {
+    mappedRect.intersect(clipRect);
+  } else if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    // On SPv1 we may fail when the paint invalidation container creates an
+    // overflow clip (in ancestorState) which is not in localState of an
+    // out-of-flow positioned descendant. See crbug.com/513108 and layout test
+    // compositing/overflow/handle-non-ancestor-clip-parent.html (run with
+    // --enable-prefer-compositing-to-lcd-text) for details.
+    // Ignore it for SPv1 for now.
+    success = true;
+  } else {
+    DCHECK(success);
+  }
+
   return mappedRect;
 }
 
