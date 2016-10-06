@@ -242,7 +242,6 @@ crbug.com/522647 http/tests/notifications/close-dispatch-asynchronous.html [ Fai
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/521858 [ Win7 ] http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
 crbug.com/521853 [ Win ] http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]
-crbug.com/521096 imported/wpt/webstorage/event_case_sensitive.html [ Failure Pass ]
 crbug.com/520170 [ Win ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/520174 fast/events/message-port-start-and-close-different-microtask.html [ Failure Pass ]
 crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass ]
@@ -286,7 +285,6 @@ crbug.com/636053 [ Mac Win ] virtual/threaded/printing/thead-repeats-at-top-of-e
 
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
-crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure Pass ]
 
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 
@@ -297,7 +295,6 @@ crbug.com/548226 fast/events/pointerevents/mouse-pointer-event-properties.html [
 
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
-crbug.com/518929 [ Precise Debug ] http/tests/appcache/remove-cache.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Failure Pass ]
@@ -323,7 +320,6 @@ crbug.com/638693 virtual/threaded/animations/display-inline-style-adjust.html [ 
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 crbug.com/248938 [ Mac Win ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
-crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-end-event-prefixed-01.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-rendering.html [ Pass Timeout ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/unprefixed-perspective-origin.html [ Pass Timeout ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-not-interpolable.html [ Pass Timeout ]
@@ -698,10 +694,6 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 # Under osmesa, skia's filter quality doesn't work correctly. This test is expected to pass
 # when we swith to swiftshader.
 crbug.com/549742 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
-# Similarly, these tests draw incorrectly because of osmesa's poor support for shader derivatives and should work
-# with swiftshader.
-crbug.com/649063 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ Failure Pass ]
-crbug.com/649063 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ Failure Pass ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
@@ -887,8 +879,6 @@ crbug.com/467127 imported/csswg-test/css-flexbox-1/getcomputedstyle/flexbox_comp
 crbug.com/467127 imported/csswg-test/css-flexbox-1/getcomputedstyle/flexbox_computedstyle_flex-shorthand-number.html [ Failure ]
 crbug.com/467127 [ Mac Win ] imported/csswg-test/css-flexbox-1/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 crbug.com/467127 [ Mac Win ] imported/csswg-test/css-flexbox-1/ttwf-reftest-flex-wrap.html [ Failure ]
-
-crbug.com/570894 [ Win ] imported/csswg-test/css-flexbox-1/flexbox_flex-natural-mixed-basis-auto.html [ Failure Pass ]
 
 # We render the expectation incorrectly for these five tests
 crbug.com/310004 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-canvas-vert-001.xhtml [ Failure ]
