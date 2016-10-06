@@ -4,10 +4,9 @@
 
 #login-header-bar {
   -webkit-padding-start: 15px;
-  border-bottom: 3px solid black;
   bottom: 0;
   left: 0;
-  padding-bottom: 7px;
+  padding-bottom: 6px;
   position: absolute;
   right: 0;
 }
