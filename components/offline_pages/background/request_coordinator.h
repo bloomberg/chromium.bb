@@ -56,6 +56,11 @@ class RequestCoordinator : public KeyedService,
     virtual void OnChanged(const SavePageRequest& request) = 0;
   };
 
+  enum class RequestAvailability {
+    ENABLED_FOR_OFFLINER,
+    DISABLED_FOR_OFFLINER,
+  };
+
   // Callback to report when a request was available.
   typedef base::Callback<void(const SavePageRequest& request)>
       RequestPickedCallback;
@@ -81,9 +86,11 @@ class RequestCoordinator : public KeyedService,
   ~RequestCoordinator() override;
 
   // Queues |request| to later load and save when system conditions allow.
-  // Returns true if the page could be queued successfully.
-  bool SavePageLater(
-      const GURL& url, const ClientId& client_id, bool user_reqeusted);
+  // Returns an id if the page could be queued successfully, 0L otherwise.
+  int64_t SavePageLater(const GURL& url,
+                        const ClientId& client_id,
+                        bool user_requested,
+                        RequestAvailability availability);
 
   // Remove a list of requests by |request_id|.  This removes requests from the
   // request queue, and cancels an in-progress prerender.
@@ -111,6 +118,15 @@ class RequestCoordinator : public KeyedService,
   // its own. In either case, the callback will be called when processing
   // is stopped or complete.
   void StopProcessing(Offliner::RequestStatus stop_status);
+
+  // Used to denote that the foreground thread is ready for the offliner
+  // to start work on a previously entered, but unavailable request.
+  void EnableForOffliner(int64_t request_id);
+
+  // If a request that is unavailable to the offliner is finished elsewhere,
+  // (by the tab helper synchronous download), send a notificaiton that it
+  // succeeded through our notificaiton system.
+  void MarkRequestCompleted(int64_t request_id);
 
   const Scheduler::TriggerConditions GetTriggerConditions(
       const bool user_requested);

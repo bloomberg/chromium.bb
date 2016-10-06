@@ -427,8 +427,10 @@ void OfflinePageBridge::SavePageLater(JNIEnv* env,
       offline_pages::RequestCoordinatorFactory::GetInstance()->
           GetForBrowserContext(browser_context_);
 
-  coordinator->SavePageLater(GURL(ConvertJavaStringToUTF8(env, j_url)),
-                             client_id, static_cast<bool>(user_requested));
+  coordinator->SavePageLater(
+      GURL(ConvertJavaStringToUTF8(env, j_url)), client_id,
+      static_cast<bool>(user_requested),
+      RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER);
 }
 
 void OfflinePageBridge::DeletePages(

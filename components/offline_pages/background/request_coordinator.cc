@@ -107,13 +107,15 @@ RequestCoordinator::RequestCoordinator(
 
 RequestCoordinator::~RequestCoordinator() {}
 
-bool RequestCoordinator::SavePageLater(
-    const GURL& url, const ClientId& client_id, bool user_requested) {
+int64_t RequestCoordinator::SavePageLater(const GURL& url,
+                                          const ClientId& client_id,
+                                          bool user_requested,
+                                          RequestAvailability availability) {
   DVLOG(2) << "URL is " << url << " " << __func__;
 
   if (!OfflinePageModel::CanSaveURL(url)) {
     DVLOG(1) << "Not able to save page for requested url: " << url;
-    return false;
+    return 0L;
   }
 
   int64_t id = GenerateOfflineId();
@@ -126,7 +128,7 @@ bool RequestCoordinator::SavePageLater(
   queue_->AddRequest(request,
                      base::Bind(&RequestCoordinator::AddRequestResultCallback,
                                 weak_ptr_factory_.GetWeakPtr()));
-  return true;
+  return id;
 }
 void RequestCoordinator::GetAllRequests(const GetRequestsCallback& callback) {
   // Get all matching requests from the request queue, send them to our
@@ -560,6 +562,10 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
       NOTREACHED();
   }
 }
+
+void RequestCoordinator::EnableForOffliner(int64_t request_id) {}
+
+void RequestCoordinator::MarkRequestCompleted(int64_t request_id) {}
 
 const Scheduler::TriggerConditions RequestCoordinator::GetTriggerConditions(
     const bool user_requested) {

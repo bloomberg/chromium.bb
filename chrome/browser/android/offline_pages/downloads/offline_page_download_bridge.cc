@@ -237,7 +237,9 @@ void OfflinePageDownloadBridge::StartDownload(
     offline_pages::RequestCoordinator* request_coordinator =
         offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
             tab->GetProfile()->GetOriginalProfile());
-    request_coordinator->SavePageLater(url, client_id, true);
+    request_coordinator->SavePageLater(
+        url, client_id, true,
+        RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER);
     return;
   }
 

@@ -285,9 +285,10 @@ void OfflineInternalsUIMessageHandler::HandleAddToRequestQueue(
     ResolveJavascriptCallback(
         *callback_id,
         base::FundamentalValue(request_coordinator_->SavePageLater(
-            GURL(url), offline_pages::ClientId(offline_pages::kAsyncNamespace,
-                                               id_stream.str()),
-            true)));
+                GURL(url), offline_pages::ClientId(
+                               offline_pages::kAsyncNamespace, id_stream.str()),
+                true, offline_pages::RequestCoordinator::RequestAvailability::
+                          ENABLED_FOR_OFFLINER) > 0));
   } else {
     ResolveJavascriptCallback(*callback_id, base::FundamentalValue(false));
   }

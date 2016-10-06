@@ -399,7 +399,10 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
 
 TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
   // Put the request on the queue.
-  EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
+  EXPECT_TRUE(
+      coordinator()->SavePageLater(
+          kUrl1, kClientId1, kUserRequested,
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
 
   // Set up for the call to StartProcessing by building arguments.
   DeviceConditions device_conditions(
@@ -422,7 +425,10 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLater) {
-  EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
+  EXPECT_TRUE(
+      coordinator()->SavePageLater(
+          kUrl1, kClientId1, kUserRequested,
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
 
   // Expect that a request got placed on the queue.
   coordinator()->queue()->GetRequests(
@@ -1074,7 +1080,10 @@ TEST_F(RequestCoordinatorTest,
        SavePageStartsProcessingWhenConnectedAndNotLowEndDevice) {
   SetEffectiveConnectionTypeForTest(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
-  EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
+  EXPECT_TRUE(
+      coordinator()->SavePageLater(
+          kUrl1, kClientId1, kUserRequested,
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
   PumpLoop();
 
   // Now whether processing triggered immediately depends on whether test
@@ -1087,7 +1096,10 @@ TEST_F(RequestCoordinatorTest,
 }
 
 TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
-  EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
+  EXPECT_TRUE(
+      coordinator()->SavePageLater(
+          kUrl1, kClientId1, kUserRequested,
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
   PumpLoop();
   EXPECT_FALSE(is_busy());
 }
@@ -1096,7 +1108,10 @@ TEST_F(RequestCoordinatorTest,
        SavePageDoesntStartProcessingWhenPoorlyConnected) {
   SetEffectiveConnectionTypeForTest(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
+  EXPECT_TRUE(
+      coordinator()->SavePageLater(
+          kUrl1, kClientId1, kUserRequested,
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
   PumpLoop();
   EXPECT_FALSE(is_busy());
 }
