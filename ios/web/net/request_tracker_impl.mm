@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind_helpers.h"
 #include "base/containers/hash_tables.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -400,12 +401,13 @@ void RequestTrackerImpl::Close() {
   // scoped_refptr here retains |this|, we a are guaranteed that destruiction
   // won't begin until the block completes, and thus |is_closing_| will always
   // be set before destruction begins.
-  scoped_refptr<RequestTrackerImpl> tracker = this;
   web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
-                           base::BindBlock(^{
-                             tracker->is_closing_ = true;
-                             tracker->CancelRequests();
-                           }));
+                           base::Bind(
+                               [](RequestTrackerImpl* tracker) {
+                                 tracker->is_closing_ = true;
+                                 tracker->CancelRequests();
+                               },
+                               base::RetainedRef(this)));
 
   // Disable the delegate.
   delegate_ = nil;
