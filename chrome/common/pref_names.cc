@@ -1840,6 +1840,12 @@ const char kCustomizationDefaultWallpaperURL[] =
 // System uptime, when last logout started.
 // This is saved to file and cleared after chrome process starts.
 const char kLogoutStartedLast[] = "chromeos.logout-started";
+
+// The role of the device in the OOBE bootstrapping process. If it's a "slave"
+// device, then it's eligible to be enrolled by a "master" device (which could
+// be an Android app).
+const char kIsBootstrappingSlave[] = "is_oobe_bootstrapping_slave";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.

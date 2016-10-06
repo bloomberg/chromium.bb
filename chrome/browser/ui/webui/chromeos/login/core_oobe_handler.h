@@ -143,6 +143,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleToggleResetScreen();
   void HandleEnableDebuggingScreen();
   void HandleHeaderBarVisible();
+  void HandleSetOobeBootstrappingSlave();
 
   // When keyboard_utils.js arrow key down event is reached, raise it
   // to tab/shift-tab event.

@@ -166,6 +166,12 @@ void SetControllerDetectedPref(bool value) {
   prefs->CommitPendingWrite();
 }
 
+// Checks if the device is a "slave" device in the bootstrapping process.
+bool IsBootstrappingSlave() {
+  return g_browser_process->local_state()->GetBoolean(
+      prefs::kIsBootstrappingSlave);
+}
+
 // Checks if the device is a "Master" device in the bootstrapping process.
 bool IsBootstrappingMaster() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -430,7 +436,16 @@ void WizardController::ShowNetworkScreen() {
   SetStatusAreaVisible(HasScreen(kNetworkScreenName));
   SetCurrentScreen(GetScreen(kNetworkScreenName));
 
-  MaybeStartListeningForSharkConnection();
+  // There are two possible screens where we listen to the incoming Bluetooth
+  // connection request: the first one is the HID detection screen, which will
+  // show up when there is no sufficient input devices. In this case, we just
+  // keep the logic as it is today: always put the Bluetooth is discoverable
+  // mode. The other place is the Network screen (here), which will show up when
+  // there are input devices detected. In this case, we disable the Bluetooth by
+  // default until the user explicitly enable it by pressing a key combo (Ctrl+
+  // Alt+Shift+S).
+  if (IsBootstrappingSlave())
+    MaybeStartListeningForSharkConnection();
 }
 
 void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
@@ -559,6 +574,9 @@ void WizardController::ShowHIDDetectionScreen() {
   SetShowMdOobe(false);  // Disable the MD OOBE from there on.
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetScreen(kHIDDetectionScreenName));
+  // In HID detection screen, puts the Bluetooth in discoverable mode and waits
+  // for the incoming Bluetooth connection request. See the comments in
+  // WizardController::ShowNetworkScreen() for more details.
   MaybeStartListeningForSharkConnection();
 }
 

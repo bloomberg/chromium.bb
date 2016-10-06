@@ -45,33 +45,35 @@ class TestDelegate
 
 }  // namespace
 
-class BluetoothHostPairingTest : public OobeBaseTest {
+// This is the class to simulate the OOBE process for devices that don't have
+// sufficient input, i.e., the first screen of OOBE is the HID detection screen.
+// The device will put itself in Bluetooth discoverable mode.
+class BluetoothHostPairingNoInputTest : public OobeBaseTest {
  public:
   using InputDeviceInfo = device::InputServiceLinux::InputDeviceInfo;
 
-  BluetoothHostPairingTest() {
+  BluetoothHostPairingNoInputTest() {
     InputServiceProxy::SetThreadIdForTesting(content::BrowserThread::UI);
     input_service_linux_.reset(new device::FakeInputServiceLinux);
     device::InputServiceLinux::SetForTesting(input_service_linux_.get());
-
-    AddUsbMouse();
-    AddUsbKeyboard();
   }
-  ~BluetoothHostPairingTest() override {}
+  ~BluetoothHostPairingNoInputTest() override {}
 
   // OobeBaseTest override:
   void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
     delegate_.reset(new TestDelegate);
-    controller()->SetDelegateForTesting(delegate_.get());
-    bluetooth_adapter_ = controller()->GetAdapterForTesting();
+    if (controller()) {
+      controller()->SetDelegateForTesting(delegate_.get());
+      bluetooth_adapter_ = controller()->GetAdapterForTesting();
+    }
   }
 
   pairing_chromeos::BluetoothHostPairingController* controller() {
-    WizardController* wizard_controller =
-        WizardController::default_controller();
-    return wizard_controller->GetSharkConnectionListenerForTesting()
-        ->GetControllerForTesting();
+    pairing_chromeos::SharkConnectionListener* shark_listener =
+        WizardController::default_controller()
+            ->GetSharkConnectionListenerForTesting();
+    return shark_listener ? shark_listener->GetControllerForTesting() : nullptr;
   }
 
   device::BluetoothAdapter* bluetooth_adapter() {
@@ -112,14 +114,15 @@ class BluetoothHostPairingTest : public OobeBaseTest {
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<TestDelegate> delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothHostPairingTest);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothHostPairingNoInputTest);
 };
 
-// Test that in normal user OOBE login flow, if there is no Bluetooth device
-// connected, the Bluetooth adapter should be disabled when OOBE reaches login
-// screen (which means OOBE has been completed).
-IN_PROC_BROWSER_TEST_F(BluetoothHostPairingTest, NoBluetoothDeviceConnected) {
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+// Test that in normal user OOBE login flow for devices lacking input devices,
+// if there is no Bluetooth device connected, the Bluetooth adapter should be
+// disabled when OOBE reaches login screen (which means OOBE has been completed)
+IN_PROC_BROWSER_TEST_F(BluetoothHostPairingNoInputTest,
+                       NoBluetoothDeviceConnected) {
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_HID_DETECTION).Wait();
   EXPECT_EQ(bluetooth_adapter()->IsPowered(), true);
   WizardController::default_controller()->SkipToLoginForTesting(
       LoginScreenContext());
@@ -128,10 +131,12 @@ IN_PROC_BROWSER_TEST_F(BluetoothHostPairingTest, NoBluetoothDeviceConnected) {
   EXPECT_EQ(bluetooth_adapter()->IsPowered(), false);
 }
 
-// Test that in normal user OOBE login flow, if there is any Bluetooth device
-// connected, the Bluetooth adapter should not be disabled after OOBE completes.
-IN_PROC_BROWSER_TEST_F(BluetoothHostPairingTest, BluetoothDeviceConnected) {
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+// Test that in normal user OOBE login flow for devices lacking input devices,
+// if there is any Bluetooth device connected, the Bluetooth adapter should not
+// be disabled after OOBE completes.
+IN_PROC_BROWSER_TEST_F(BluetoothHostPairingNoInputTest,
+                       BluetoothDeviceConnected) {
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_HID_DETECTION).Wait();
   AddBluetoothMouse();
   EXPECT_EQ(bluetooth_adapter()->IsPowered(), true);
   WizardController::default_controller()->SkipToLoginForTesting(
@@ -139,6 +144,32 @@ IN_PROC_BROWSER_TEST_F(BluetoothHostPairingTest, BluetoothDeviceConnected) {
   OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   delegate()->WaitUntilAdapterReset();
   EXPECT_EQ(bluetooth_adapter()->IsPowered(), true);
+}
+
+// This is the class to simulate the OOBE process for devices that have
+// sufficient input, i.e., the first screen of OOBE is the network screen.
+// The device will not put itself in Bluetooth discoverable mode until the user
+// manually trigger it using the proper accelerator.
+class BluetoothHostPairingWithInputTest
+    : public BluetoothHostPairingNoInputTest {
+ public:
+  BluetoothHostPairingWithInputTest() {
+    AddUsbMouse();
+    AddUsbKeyboard();
+  }
+  ~BluetoothHostPairingWithInputTest() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BluetoothHostPairingWithInputTest);
+};
+
+// Test that in normal user OOBE login flow for devices that have input devices,
+// the Bluetooth is disabled by default.
+IN_PROC_BROWSER_TEST_F(BluetoothHostPairingWithInputTest,
+                       BluetoothDisableByDefault) {
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  EXPECT_FALSE(controller());
+  EXPECT_FALSE(bluetooth_adapter());
 }
 
 }  // namespace chromeos
