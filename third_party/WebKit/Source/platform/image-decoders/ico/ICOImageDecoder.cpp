@@ -131,11 +131,17 @@ size_t ICOImageDecoder::decodeFrameCount() {
   if (failed())
     return m_frameBufferCache.size();
 
-  // Length of sequence of completely received frames.
-  for (size_t i = 0; i < m_dirEntries.size(); ++i) {
-    const IconDirectoryEntry& dirEntry = m_dirEntries[i];
-    if ((dirEntry.m_imageOffset + dirEntry.m_byteSize) > m_data->size())
-      return i;
+  // If the file is incomplete, return the length of the sequence of completely
+  // received frames.  We don't do this when the file is fully received, since
+  // some ICOs have entries whose claimed offset + size extends past the end of
+  // the file, and we still want to display these if they don't trigger decoding
+  // failures elsewhere.
+  if (!isAllDataReceived()) {
+    for (size_t i = 0; i < m_dirEntries.size(); ++i) {
+      const IconDirectoryEntry& dirEntry = m_dirEntries[i];
+      if ((dirEntry.m_imageOffset + dirEntry.m_byteSize) > m_data->size())
+        return i;
+    }
   }
   return m_dirEntries.size();
 }

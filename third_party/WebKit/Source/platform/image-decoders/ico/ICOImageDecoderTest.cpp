@@ -35,6 +35,9 @@ TEST(ICOImageDecoderTests, parseAndDecodeByteByByte) {
   testByteByByteDecode(&createDecoder,
                        "/LayoutTests/fast/images/resources/1bit.ico", 1u,
                        cAnimationNone);
+  testByteByByteDecode(&createDecoder,
+                       "/LayoutTests/fast/images/resources/bug653075.ico", 2u,
+                       cAnimationNone);
 }
 
 }  // namespace blink
