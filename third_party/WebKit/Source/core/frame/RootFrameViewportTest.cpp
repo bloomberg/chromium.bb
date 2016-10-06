@@ -250,8 +250,8 @@ TEST_F(RootFrameViewportTest, UserInputScrollable) {
 }
 
 // Make sure scrolls using the scroll animator (scroll(), setScrollPosition())
-// work correctly when one of the subviewports is explicitly scrolled without using the
-// RootFrameViewport interface.
+// work correctly when one of the subviewports is explicitly scrolled without
+// using the RootFrameViewport interface.
 TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll) {
   IntSize viewportSize(100, 150);
   RootFrameViewStub* layoutViewport =
@@ -268,8 +268,8 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll) {
   EXPECT_POINT_EQ(DoublePoint(50, 75),
                   rootFrameViewport->scrollPositionDouble());
 
-  // If the scroll animator doesn't update, it will still think it's at (0, 0) and so it
-  // may early exit.
+  // If the scroll animator doesn't update, it will still think it's at (0, 0)
+  // and so it may early exit.
   rootFrameViewport->setScrollPosition(DoublePoint(0, 0), ProgrammaticScroll);
   EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
   EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
@@ -393,8 +393,8 @@ TEST_F(RootFrameViewportTest, SetScrollPosition) {
                   visualViewport->scrollPositionDouble());
   EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
 
-  // Scroll to the visual viewport's extent, the layout viewport should scroll the
-  // remainder.
+  // Scroll to the visual viewport's extent, the layout viewport should scroll
+  // the remainder.
   rootFrameViewport->setScrollPosition(DoublePoint(300, 400),
                                        ProgrammaticScroll);
   EXPECT_POINT_EQ(DoublePoint(250, 250),

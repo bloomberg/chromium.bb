@@ -44,8 +44,8 @@ class CORE_EXPORT TopControls final : public GarbageCollected<TopControls> {
 
   void scrollBegin();
 
-  // Scrolls top controls vertically if possible and returns the remaining scroll
-  // amount.
+  // Scrolls top controls vertically if possible and returns the remaining
+  // scroll amount.
   FloatSize scrollBy(FloatSize scrollDelta);
 
  private:

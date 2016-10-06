@@ -287,7 +287,8 @@ SubresourceIntegrity::AlgorithmParseResult SubresourceIntegrity::parseAlgorithm(
 //             ^     ^                        ^               ^
 //      position   end                 position             end
 //
-// After (if successful: if the method returns false, we make no promises and the caller should exit early):
+// After (if successful: if the method returns false, we make no promises and
+// the caller should exit early):
 //
 // [algorithm]-[hash]      OR     [algorithm]-[hash]?[options]
 //                   ^                              ^         ^

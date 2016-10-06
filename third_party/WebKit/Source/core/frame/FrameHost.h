@@ -61,8 +61,8 @@ class VisualViewport;
 // however the concept of a Page is moving up out of Blink.
 // In an out-of-process iframe world, a single Page may have
 // multiple frames in different process, thus Page becomes a
-// browser-level concept and Blink core/ only knows about its LocalFrame (and FrameHost).
-// Separating Page from the rest of core/ through this indirection
+// browser-level concept and Blink core/ only knows about its LocalFrame (and
+// FrameHost).  Separating Page from the rest of core/ through this indirection
 // allows us to slowly refactor Page without breaking the rest of core.
 class CORE_EXPORT FrameHost final
     : public GarbageCollectedFinalized<FrameHost> {
@@ -90,12 +90,14 @@ class CORE_EXPORT FrameHost final
 
   // Corresponds to pixel density of the device where this Page is
   // being displayed. In multi-monitor setups this can vary between pages.
-  // This value does not account for Page zoom, use LocalFrame::devicePixelRatio instead.
-  // This is to be deprecated. Use this with caution.
-  // 1) If you need to scale the content per device scale factor, this is still valid.
-  //    In use-zoom-for-dsf mode, this is always 1, and will be remove when transition is complete.
-  // 2) If you want to compute the device related measure (such as device pixel height, or the scale factor for drag image),
-  //    use ChromeClient::screenInfo() instead.
+  // This value does not account for Page zoom, use LocalFrame::devicePixelRatio
+  // instead.  This is to be deprecated. Use this with caution.
+  // 1) If you need to scale the content per device scale factor, this is still
+  //    valid.  In use-zoom-for-dsf mode, this is always 1, and will be remove
+  //    when transition is complete.
+  // 2) If you want to compute the device related measure (such as device pixel
+  //    height, or the scale factor for drag image), use
+  //    ChromeClient::screenInfo() instead.
   float deviceScaleFactorDeprecated() const;
 
   TopControls& topControls();

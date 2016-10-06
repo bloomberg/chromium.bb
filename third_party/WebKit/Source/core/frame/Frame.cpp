@@ -5,7 +5,8 @@
  *                     2000 Simon Hausmann <hausmann@kde.org>
  *                     2000 Stefan Schimanski <1Stein@gmx.de>
  *                     2001 George Staikos <staikos@kde.org>
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2005 Alexey Proskuryakov <ap@nypop.com>
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2008 Eric Seidel <eric@webkit.org>
@@ -147,9 +148,10 @@ static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin,
     if (activeSecurityOrigin.canAccess(ancestorSecurityOrigin))
       return true;
 
-    // Allow file URL descendant navigation even when allowFileAccessFromFileURLs is false.
-    // FIXME: It's a bit strange to special-case local origins here. Should we be doing
-    // something more general instead?
+    // Allow file URL descendant navigation even when
+    // allowFileAccessFromFileURLs is false.
+    // FIXME: It's a bit strange to special-case local origins here. Should we
+    // be doing something more general instead?
     if (isLocalActiveOrigin && ancestorSecurityOrigin->isLocal())
       return true;
   }
@@ -177,7 +179,8 @@ bool Frame::canNavigate(const Frame& targetFrame) {
     if (isAllowedNavigation)
       framebustParams |= allowedBit;
     framebustHistogram.count(framebustParams);
-    // Frame-busting used to be generally allowed in most situations, but may now blocked if there is no user gesture.
+    // Frame-busting used to be generally allowed in most situations, but may
+    // now blocked if there is no user gesture.
     if (!RuntimeEnabledFeatures::
             framebustingNeedsSameOriginOrUserGestureEnabled())
       return true;
@@ -206,7 +209,8 @@ bool Frame::canNavigateWithoutFramebusting(const Frame& targetFrame,
     if (targetFrame.tree().isDescendantOf(this))
       return true;
 
-    // They can also navigate popups, if the 'allow-sandbox-escape-via-popup' flag is specified.
+    // They can also navigate popups, if the 'allow-sandbox-escape-via-popup'
+    // flag is specified.
     if (targetFrame == targetFrame.tree().top() &&
         targetFrame.tree().top() != tree().top() &&
         !securityContext()->isSandboxed(

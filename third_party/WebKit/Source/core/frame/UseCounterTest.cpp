@@ -191,7 +191,8 @@ TEST(UseCounterTest, SVGImageContext) {
   UseCounter useCounter(UseCounter::SVGImageContext);
   HistogramTester histogramTester;
 
-  // Verify that SVGImage related feature counters get recorded in a separate histogram.
+  // Verify that SVGImage related feature counters get recorded in a separate
+  // histogram.
   EXPECT_FALSE(
       useCounter.hasRecordedMeasurement(UseCounter::SVGSMILAdditiveAnimation));
   useCounter.recordMeasurement(UseCounter::SVGSMILAdditiveAnimation);

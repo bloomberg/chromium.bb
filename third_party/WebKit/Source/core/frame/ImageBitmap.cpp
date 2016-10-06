@@ -31,8 +31,9 @@ struct ParsedOptions {
   unsigned resizeHeight = 0;
   IntRect cropRect;
   SkFilterQuality resizeQuality = kLow_SkFilterQuality;
-  // This value should be changed in the future when we support createImageBitmap with higher
-  // bit depth, in the parseOptions() function. For now, it is always 4.
+  // This value should be changed in the future when we support
+  // createImageBitmap with higher bit depth, in the parseOptions() function.
+  // For now, it is always 4.
   int bytesPerPixel = 4;
 };
 
@@ -128,9 +129,9 @@ bool dstBufferSizeHasOverflow(ParsedOptions options) {
 
 static PassRefPtr<Uint8Array> copySkImageData(SkImage* input,
                                               const SkImageInfo& info) {
-  // The function dstBufferSizeHasOverflow() is being called at the beginning of each
-  // ImageBitmap() constructor, which makes sure that doing width * height * bytesPerPixel
-  // will never overflow size_t.
+  // The function dstBufferSizeHasOverflow() is being called at the beginning of
+  // each ImageBitmap() constructor, which makes sure that doing
+  // width * height * bytesPerPixel will never overflow size_t.
   size_t width = static_cast<size_t>(input->width());
   RefPtr<ArrayBuffer> dstBuffer =
       ArrayBuffer::createOrNull(width * input->height(), info.bytesPerPixel());
@@ -266,10 +267,11 @@ bool ImageBitmap::isSourceSizeValid(int sourceWidth,
   return true;
 }
 
-// The parameter imageFormat indicates whether the first parameter "image" is unpremultiplied or not.
-// imageFormat = PremultiplyAlpha means the image is in premuliplied format
-// For example, if the image is already in unpremultiplied format and we want the created ImageBitmap
-// in the same format, then we don't need to use the ImageDecoder to decode the image.
+// The parameter imageFormat indicates whether the first parameter "image" is
+// unpremultiplied or not.  imageFormat = PremultiplyAlpha means the image is in
+// premuliplied format For example, if the image is already in unpremultiplied
+// format and we want the created ImageBitmap in the same format, then we don't
+// need to use the ImageDecoder to decode the image.
 static PassRefPtr<StaticBitmapImage> cropImage(
     Image* image,
     const ParsedOptions& parsedOptions,
@@ -280,8 +282,9 @@ static PassRefPtr<StaticBitmapImage> cropImage(
   IntRect imgRect(IntPoint(), IntSize(image->width(), image->height()));
   const IntRect srcRect = intersection(imgRect, parsedOptions.cropRect);
 
-  // In the case when cropRect doesn't intersect the source image and it requires a umpremul image
-  // We immediately return a transparent black image with cropRect.size()
+  // In the case when cropRect doesn't intersect the source image and it
+  // requires a umpremul image We immediately return a transparent black image
+  // with cropRect.size()
   if (srcRect.isEmpty() && !parsedOptions.premultiplyAlpha) {
     SkImageInfo info =
         SkImageInfo::Make(parsedOptions.resizeWidth, parsedOptions.resizeHeight,
@@ -299,7 +302,8 @@ static PassRefPtr<StaticBitmapImage> cropImage(
   }
 
   sk_sp<SkImage> skiaImage = image->imageForCurrentFrame();
-  // Attempt to get raw unpremultiplied image data, executed only when skiaImage is premultiplied.
+  // Attempt to get raw unpremultiplied image data, executed only when skiaImage
+  // is premultiplied.
   if ((((!parsedOptions.premultiplyAlpha && !skiaImage->isOpaque()) ||
         !skiaImage) &&
        image->data() && imageFormat == PremultiplyAlpha) ||
@@ -323,7 +327,8 @@ static PassRefPtr<StaticBitmapImage> cropImage(
           croppedSkImage.get(), parsedOptions.premultiplyAlpha
                                     ? PremultiplyAlpha
                                     : DontPremultiplyAlpha));
-    // Special case: The first parameter image is unpremul but we need to turn it into premul.
+    // Special case: The first parameter image is unpremul but we need to turn
+    // it into premul.
     if (parsedOptions.premultiplyAlpha && imageFormat == DontPremultiplyAlpha)
       return StaticBitmapImage::create(
           unPremulSkImageToPremul(croppedSkImage.get()));

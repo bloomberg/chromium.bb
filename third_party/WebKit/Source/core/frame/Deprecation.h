@@ -30,8 +30,8 @@ class CORE_EXPORT Deprecation {
   void muteForInspector();
   void unmuteForInspector();
 
-  // "countDeprecation" sets the bit for this feature to 1, and sends a deprecation
-  // warning to the console. Repeated calls are ignored.
+  // "countDeprecation" sets the bit for this feature to 1, and sends a
+  // deprecation warning to the console. Repeated calls are ignored.
   //
   // Be considerate to developers' consoles: features should only send
   // deprecation warnings when we're actively interested in removing them from

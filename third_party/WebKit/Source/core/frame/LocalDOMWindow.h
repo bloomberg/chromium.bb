@@ -227,7 +227,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void documentWasClosed();
   void statePopped(PassRefPtr<SerializedScriptValue>);
 
-  // FIXME: This shouldn't be public once LocalDOMWindow becomes ExecutionContext.
+  // FIXME: This shouldn't be public once LocalDOMWindow becomes
+  // ExecutionContext.
   void clearEventQueue();
 
   void acceptLanguagesChanged();

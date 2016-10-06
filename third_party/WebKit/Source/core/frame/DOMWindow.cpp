@@ -134,12 +134,14 @@ bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow,
   // If this DOMWindow isn't currently active in the Frame, then there's no
   // way we should allow the access.
   if (isCurrentlyDisplayedInFrame()) {
-    // FIXME: Is there some way to eliminate the need for a separate "callingWindow == this" check?
+    // FIXME: Is there some way to eliminate the need for a separate
+    // "callingWindow == this" check?
     if (&callingWindow == this)
       return false;
 
-    // FIXME: The name canAccess seems to be a roundabout way to ask "can execute script".
-    // Can we name the SecurityOrigin function better to make this more clear?
+    // FIXME: The name canAccess seems to be a roundabout way to ask "can
+    // execute script".  Can we name the SecurityOrigin function better to make
+    // this more clear?
     if (callingWindow.document()->getSecurityOrigin()->canAccessCheckSuborigins(
             frame()->securityContext()->getSecurityOrigin()))
       return false;
@@ -151,8 +153,9 @@ bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow,
 }
 
 void DOMWindow::resetLocation() {
-  // Location needs to be reset manually because it doesn't inherit from DOMWindowProperty.
-  // DOMWindowProperty is local-only, and Location needs to support remote windows, too.
+  // Location needs to be reset manually because it doesn't inherit from
+  // DOMWindowProperty.  DOMWindowProperty is local-only, and Location needs to
+  // support remote windows, too.
   if (m_location) {
     m_location->reset();
     m_location = nullptr;
@@ -240,9 +243,10 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message,
   schedulePostMessage(event, std::move(target), sourceDocument);
 }
 
-// FIXME: Once we're throwing exceptions for cross-origin access violations, we will always sanitize the target
-// frame details, so we can safely combine 'crossDomainAccessErrorMessage' with this method after considering
-// exactly which details may be exposed to JavaScript.
+// FIXME: Once we're throwing exceptions for cross-origin access violations, we
+// will always sanitize the target frame details, so we can safely combine
+// 'crossDomainAccessErrorMessage' with this method after considering exactly
+// which details may be exposed to JavaScript.
 //
 // http://crbug.com/17325
 String DOMWindow::sanitizedCrossDomainAccessErrorMessage(
@@ -259,7 +263,8 @@ String DOMWindow::sanitizedCrossDomainAccessErrorMessage(
   String message = "Blocked a frame with origin \"" + activeOrigin->toString() +
                    "\" from accessing a cross-origin frame.";
 
-  // FIXME: Evaluate which details from 'crossDomainAccessErrorMessage' may safely be reported to JavaScript.
+  // FIXME: Evaluate which details from 'crossDomainAccessErrorMessage' may
+  // safely be reported to JavaScript.
 
   return message;
 }
@@ -273,7 +278,8 @@ String DOMWindow::crossDomainAccessErrorMessage(
   if (callingWindowURL.isNull())
     return String();
 
-  // FIXME: This message, and other console messages, have extra newlines. Should remove them.
+  // FIXME: This message, and other console messages, have extra newlines.
+  // Should remove them.
   const SecurityOrigin* activeOrigin =
       callingWindow->document()->getSecurityOrigin();
   const SecurityOrigin* targetOrigin =
@@ -288,7 +294,8 @@ String DOMWindow::crossDomainAccessErrorMessage(
                    "\" from accessing a frame with origin \"" +
                    targetOrigin->toString() + "\". ";
 
-  // Sandbox errors: Use the origin of the frames' location, rather than their actual origin (since we know that at least one will be "null").
+  // Sandbox errors: Use the origin of the frames' location, rather than their
+  // actual origin (since we know that at least one will be "null").
   KURL activeURL = callingWindow->document()->url();
   // TODO(alexmos): RemoteFrames do not have a document, and their URLs
   // aren't replicated.  For now, construct the URL using the replicated
@@ -316,7 +323,8 @@ String DOMWindow::crossDomainAccessErrorMessage(
            "\"allow-same-origin\" flag.";
   }
 
-  // Protocol errors: Use the URL's protocol rather than the origin's protocol so that we get a useful message for non-heirarchal URLs like 'data:'.
+  // Protocol errors: Use the URL's protocol rather than the origin's protocol
+  // so that we get a useful message for non-heirarchal URLs like 'data:'.
   if (targetOrigin->protocol() != activeOrigin->protocol())
     return message + " The frame requesting access has a protocol of \"" +
            activeURL.protocol() +

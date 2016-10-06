@@ -634,7 +634,8 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
                              ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.allowed,
               policy->allowScriptFromSource(resource, String(test.nonce)));
-    // If this is expected to generate a violation, we should have sent a report.
+    // If this is expected to generate a violation, we should have sent a
+    // report.
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
     // Single report-mode policy should always be `true`:
@@ -643,8 +644,8 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
     policy->didReceiveHeader(test.policy, ContentSecurityPolicyHeaderTypeReport,
                              ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_TRUE(policy->allowScriptFromSource(resource, String(test.nonce)));
-    // If this is expected to generate a violation, we should have sent a report, even though
-    // we don't deny access in `allowScriptFromSource`:
+    // If this is expected to generate a violation, we should have sent a
+    // report, even though we don't deny access in `allowScriptFromSource`:
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
   }
 }

@@ -58,8 +58,9 @@ void FrameViewAutoSizeInfo::autoSizeIfNeeded() {
 
   IntSize size = m_frameView->frameRect().size();
 
-  // Do the resizing twice. The first time is basically a rough calculation using the preferred width
-  // which may result in a height change during the second iteration.
+  // Do the resizing twice. The first time is basically a rough calculation
+  // using the preferred width which may result in a height change during the
+  // second iteration.
   for (int i = 0; i < 2; i++) {
     // Update various sizes including contentsSize, scrollHeight, etc.
     document->updateStyleAndLayoutIgnorePendingStylesheets();
@@ -107,7 +108,8 @@ void FrameViewAutoSizeInfo::autoSizeIfNeeded() {
     // Ensure the size is at least the min bounds.
     newSize = newSize.expandedTo(m_minAutoSize);
 
-    // Bound the dimensions by the max bounds and determine what scrollbars to show.
+    // Bound the dimensions by the max bounds and determine what scrollbars to
+    // show.
     ScrollbarMode horizonalScrollbarMode = ScrollbarAlwaysOff;
     if (newSize.width() > m_maxAutoSize.width()) {
       newSize.setWidth(m_maxAutoSize.width());
@@ -122,8 +124,9 @@ void FrameViewAutoSizeInfo::autoSizeIfNeeded() {
     if (newSize == size)
       continue;
 
-    // While loading only allow the size to increase (to avoid twitching during intermediate smaller states)
-    // unless autoresize has just been turned on or the maximum size is smaller than the current size.
+    // While loading only allow the size to increase (to avoid twitching during
+    // intermediate smaller states) unless autoresize has just been turned on or
+    // the maximum size is smaller than the current size.
     if (m_didRunAutosize && size.height() <= m_maxAutoSize.height() &&
         size.width() <= m_maxAutoSize.width() &&
         !m_frameView->frame().document()->loadEventFinished() &&
@@ -131,8 +134,10 @@ void FrameViewAutoSizeInfo::autoSizeIfNeeded() {
       break;
 
     m_frameView->resize(newSize.width(), newSize.height());
-    // Force the scrollbar state to avoid the scrollbar code adding them and causing them to be needed. For example,
-    // a vertical scrollbar may cause text to wrap and thus increase the height (which is the only reason the scollbar is needed).
+    // Force the scrollbar state to avoid the scrollbar code adding them and
+    // causing them to be needed. For example, a vertical scrollbar may cause
+    // text to wrap and thus increase the height (which is the only reason the
+    // scollbar is needed).
     m_frameView->setVerticalScrollbarLock(false);
     m_frameView->setHorizontalScrollbarLock(false);
     m_frameView->setScrollbarModes(horizonalScrollbarMode,

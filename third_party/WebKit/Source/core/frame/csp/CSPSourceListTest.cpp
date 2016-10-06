@@ -129,7 +129,8 @@ TEST_F(CSPSourceListTest, BlobMatchingSelf) {
   EXPECT_TRUE(sourceList.matches(KURL(base, "https://example.test/")));
   EXPECT_FALSE(sourceList.matches(KURL(base, "blob:https://example.test/")));
 
-  // Register "https" as bypassing CSP, which should trigger the innerURL behavior.
+  // Register "https" as bypassing CSP, which should trigger the innerURL
+  // behavior.
   SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy("https");
 
   EXPECT_TRUE(sourceList.matches(KURL(base, "https://example.test/")));

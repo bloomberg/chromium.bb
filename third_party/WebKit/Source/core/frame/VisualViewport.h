@@ -56,11 +56,12 @@ class IntRect;
 class IntSize;
 class LocalFrame;
 
-// Represents the visual viewport the user is currently seeing the page through. This
-// class corresponds to the InnerViewport on the compositor. It is a ScrollableArea; it's
-// offset is set through the GraphicsLayer <-> CC sync mechanisms. Its contents is the page's
-// main FrameView, which corresponds to the outer viewport. The inner viewport is always contained
-// in the outer viewport and can pan within it.
+// Represents the visual viewport the user is currently seeing the page through.
+// This class corresponds to the InnerViewport on the compositor. It is a
+// ScrollableArea; it's offset is set through the GraphicsLayer <-> CC sync
+// mechanisms. Its contents is the page's main FrameView, which corresponds to
+// the outer viewport. The inner viewport is always contained in the outer
+// viewport and can pan within it.
 class CORE_EXPORT VisualViewport final
     : public GarbageCollectedFinalized<VisualViewport>,
       public GraphicsLayerClient,
@@ -89,8 +90,8 @@ class CORE_EXPORT VisualViewport final
 
   void initializeScrollbars();
 
-  // Sets the location of the visual viewport relative to the outer viewport. The
-  // coordinates are in partial CSS pixels.
+  // Sets the location of the visual viewport relative to the outer viewport.
+  // The coordinates are in partial CSS pixels.
   void setLocation(const FloatPoint&);
   // FIXME: This should be called moveBy
   void move(const FloatPoint&);
@@ -107,8 +108,8 @@ class CORE_EXPORT VisualViewport final
   // Resets the viewport to initial state.
   void reset();
 
-  // Let the viewport know that the main frame changed size (either through screen
-  // rotation on Android or window resize elsewhere).
+  // Let the viewport know that the main frame changed size (either through
+  // screen rotation on Android or window resize elsewhere).
   void mainFrameDidChangeSize();
 
   // Sets scale and location in one operation, preventing intermediate clamping.
@@ -116,9 +117,9 @@ class CORE_EXPORT VisualViewport final
   void setScale(float);
   float scale() const { return m_scale; }
 
-  // Update scale factor, magnifying or minifying by magnifyDelta, centered around
-  // the point specified by anchor in window coordinates. Returns false if page
-  // scale factor is left unchanged.
+  // Update scale factor, magnifying or minifying by magnifyDelta, centered
+  // around the point specified by anchor in window coordinates. Returns false
+  // if page scale factor is left unchanged.
   bool magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoint& anchor);
 
   void setScrollLayerOnScrollbars(WebLayer*) const;

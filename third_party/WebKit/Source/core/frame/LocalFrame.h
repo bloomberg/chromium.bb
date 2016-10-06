@@ -5,7 +5,8 @@
  *                     2000-2001 Simon Hausmann <hausmann@kde.org>
  *                     2000-2001 Dirk Mueller <mueller@kde.org>
  *                     2000 Stefan Schimanski <1Stein@gmx.de>
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2008 Eric Seidel <eric@webkit.org>
  *
@@ -128,8 +129,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void setPagePopupOwner(Element&);
   Element* pagePopupOwner() const { return m_pagePopupOwner.get(); }
 
-  LayoutView* contentLayoutObject()
-      const;  // Root of the layout tree for the document contained in this frame.
+  // Root of the layout tree for the document contained in this frame.
+  LayoutView* contentLayoutObject() const;
   LayoutViewItem contentLayoutItem() const;
 
   Editor& editor() const;
@@ -160,7 +161,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
     return m_instrumentingAgents.get();
   }
 
-  // ======== All public functions below this point are candidates to move out of LocalFrame into another class. ========
+  // =========================================================================
+  // All public functions below this point are candidates to move out of
+  // LocalFrame into another class.
 
   // See GraphicsLayerClient.h for accepted flags.
   String layerTreeAsText(unsigned flags = 0) const;
@@ -350,7 +353,8 @@ class FrameNavigationDisabler {
 // }
 //
 // In Trace Viewer, we can find the cost of slice |foo| attributed to |frame|.
-// Design doc: https://docs.google.com/document/d/15BB-suCb9j-nFt55yCFJBJCGzLg2qUm3WaSOPb8APtI/edit?usp=sharing
+// Design doc:
+// https://docs.google.com/document/d/15BB-suCb9j-nFt55yCFJBJCGzLg2qUm3WaSOPb8APtI/edit?usp=sharing
 class ScopedFrameBlamer {
   WTF_MAKE_NONCOPYABLE(ScopedFrameBlamer);
   STACK_ALLOCATED();

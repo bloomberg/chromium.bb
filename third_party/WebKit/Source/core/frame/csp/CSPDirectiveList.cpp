@@ -235,7 +235,8 @@ bool CSPDirectiveList::checkRequestWithoutIntegrity(
     WebURLRequest::RequestContext context) const {
   if (m_requireSRIFor == RequireSRIForToken::None)
     return true;
-  // SRI specification (https://w3c.github.io/webappsec-subresource-integrity/#apply-algorithm-to-request)
+  // SRI specification
+  // (https://w3c.github.io/webappsec-subresource-integrity/#apply-algorithm-to-request)
   // says to match token with request's destination with the token.
   // Keep this logic aligned with ContentSecurityPolicy::allowRequest
   if ((m_requireSRIFor & RequireSRIForToken::Script) &&
@@ -364,9 +365,9 @@ bool CSPDirectiveList::checkMediaTypeAndReportViolation(
               "on the containing element (e.g. '<object type=\"[TYPE GOES "
               "HERE]\" ...>').";
 
-  // 'RedirectStatus::NoRedirect' is safe here, as we do the media type check before actually
-  // loading data; this means that we shouldn't leak redirect targets, as we won't have had a
-  // chance to redirect yet.
+  // 'RedirectStatus::NoRedirect' is safe here, as we do the media type check
+  // before actually loading data; this means that we shouldn't leak redirect
+  // targets, as we won't have had a chance to redirect yet.
   reportViolation(directive->text(), ContentSecurityPolicy::PluginTypes,
                   message + "\n", KURL(),
                   ResourceRequest::RedirectStatus::NoRedirect);
@@ -385,7 +386,8 @@ bool CSPDirectiveList::checkInlineAndReportViolation(
 
   String suffix = String();
   if (directive->allowInline() && directive->isHashOrNoncePresent()) {
-    // If inline is allowed, but a hash or nonce is present, we ignore 'unsafe-inline'. Throw a reasonable error.
+    // If inline is allowed, but a hash or nonce is present, we ignore
+    // 'unsafe-inline'. Throw a reasonable error.
     suffix =
         " Note that 'unsafe-inline' is ignored if either a hash or nonce value "
         "is present in the source list.";
@@ -615,10 +617,11 @@ bool CSPDirectiveList::allowChildFrameFromSource(
   if (url.protocolIsAbout())
     return true;
 
-  // 'frame-src' is the only directive which overrides something other than the default sources.
-  // It overrides 'child-src', which overrides the default sources. So, we do this nested set
-  // of calls to 'operativeDirective()' to grab 'frame-src' if it exists, 'child-src' if it
-  // doesn't, and 'defaut-src' if neither are available.
+  // 'frame-src' is the only directive which overrides something other than the
+  // default sources.  It overrides 'child-src', which overrides the default
+  // sources. So, we do this nested set of calls to 'operativeDirective()' to
+  // grab 'frame-src' if it exists, 'child-src' if it doesn't, and 'defaut-src'
+  // if neither are available.
   SourceListDirective* whichDirective = operativeDirective(
       m_frameSrc.get(), operativeDirective(m_childSrc.get()));
 
@@ -929,7 +932,8 @@ void CSPDirectiveList::parseReportURI(const String& name, const String& value) {
     return;
   }
 
-  // Remove report-uri in meta policies, per https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
+  // Remove report-uri in meta policies, per
+  // https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
   if (m_headerSource == ContentSecurityPolicyHeaderSourceMeta) {
     m_policy->reportInvalidDirectiveInMeta(name);
     return;
@@ -963,7 +967,8 @@ void CSPDirectiveList::setCSPDirective(const String& name,
     return;
   }
 
-  // Remove frame-ancestors directives in meta policies, per https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
+  // Remove frame-ancestors directives in meta policies, per
+  // https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
   if (m_headerSource == ContentSecurityPolicyHeaderSourceMeta &&
       name == ContentSecurityPolicy::FrameAncestors) {
     m_policy->reportInvalidDirectiveInMeta(name);
@@ -975,7 +980,8 @@ void CSPDirectiveList::setCSPDirective(const String& name,
 
 void CSPDirectiveList::applySandboxPolicy(const String& name,
                                           const String& sandboxPolicy) {
-  // Remove sandbox directives in meta policies, per https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
+  // Remove sandbox directives in meta policies, per
+  // https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
   if (m_headerSource == ContentSecurityPolicyHeaderSourceMeta) {
     m_policy->reportInvalidDirectiveInMeta(name);
     return;

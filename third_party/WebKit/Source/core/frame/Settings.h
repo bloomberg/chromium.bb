@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2003, 2006, 2007, 2008, 2009, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2006, 2007, 2008, 2009, 2011, 2012 Apple Inc. All rights
+ * reserved.
  *           (C) 2006 Graham Dennis (graham.dennis@gmail.com)
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,7 +67,8 @@ class CORE_EXPORT Settings {
   void setTextAutosizingEnabled(bool);
   bool textAutosizingEnabled() const { return m_textAutosizingEnabled; }
 
-  // Only set by Layout Tests, and only used if textAutosizingEnabled() returns true.
+  // Only set by Layout Tests, and only used if textAutosizingEnabled() returns
+  // true.
   void setTextAutosizingWindowSizeOverride(const IntSize&);
   const IntSize& textAutosizingWindowSizeOverride() const {
     return m_textAutosizingWindowSizeOverride;

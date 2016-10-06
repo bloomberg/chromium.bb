@@ -203,7 +203,9 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data,
   KURL fullURL = urlForState(urlString);
   if (!canChangeToUrl(fullURL, frame()->document()->getSecurityOrigin(),
                       frame()->document()->url())) {
-    // We can safely expose the URL to JavaScript, as a) no redirection takes place: JavaScript already had this URL, b) JavaScript can only access a same-origin History object.
+    // We can safely expose the URL to JavaScript, as a) no redirection takes
+    // place: JavaScript already had this URL, b) JavaScript can only access a
+    // same-origin History object.
     exceptionState.throwSecurityError(
         "A history state object with URL '" + fullURL.elidedString() +
         "' cannot be created in a document with origin '" +

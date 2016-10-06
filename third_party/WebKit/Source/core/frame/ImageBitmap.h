@@ -65,8 +65,10 @@ class CORE_EXPORT ImageBitmap final
                              Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   // This function is called by structured-cloning an ImageBitmap.
-  // isImageBitmapPremultiplied indicates whether the original ImageBitmap is premultiplied or not.
-  // isImageBitmapOriginClean indicates whether the original ImageBitmap is origin clean or not.
+  // isImageBitmapPremultiplied indicates whether the original ImageBitmap is
+  // premultiplied or not.
+  // isImageBitmapOriginClean indicates whether the original ImageBitmap is
+  // origin clean or not.
   static ImageBitmap* create(const void* pixelData,
                              uint32_t width,
                              uint32_t height,

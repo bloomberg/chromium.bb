@@ -46,7 +46,8 @@ class CORE_EXPORT EventHandlerRegistry final
   // Returns true if the FrameHost has event handlers of the specified class.
   bool hasEventHandlers(EventHandlerClass) const;
 
-  // Returns a set of EventTargets which have registered handlers of the given class.
+  // Returns a set of EventTargets which have registered handlers of the given
+  // class.
   const EventTargetSet* eventHandlerTargets(EventHandlerClass) const;
 
   // Registration and management of event handlers attached to EventTargets.

@@ -114,7 +114,8 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
             imageElement->cachedImage()->getImage()->imageForCurrentFrame());
 }
 
-// Verifies that ImageBitmaps constructed from HTMLImageElements hold a reference to the original Image if the HTMLImageElement src is changed.
+// Verifies that ImageBitmaps constructed from HTMLImageElements hold a
+// reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
   HTMLImageElement* image = HTMLImageElement::create(*Document::create());
   ImageResource* originalImageResource =

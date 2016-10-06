@@ -31,7 +31,8 @@ class CORE_EXPORT PlatformEventController : public PageVisibilityObserver {
   virtual void registerWithDispatcher() = 0;
   virtual void unregisterWithDispatcher() = 0;
 
-  // When true initiates a one-shot didUpdateData() when startUpdating() is called.
+  // When true initiates a one-shot didUpdateData() when startUpdating() is
+  // called.
   virtual bool hasLastData() = 0;
 
   bool m_hasEventListener;

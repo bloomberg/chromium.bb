@@ -117,8 +117,8 @@ class CORE_EXPORT ContentSecurityPolicy
 
   // This covers the possible values of a violation's 'resource', as defined in
   // https://w3c.github.io/webappsec-csp/#violation-resource. By the time we
-  // generate a report, we're guaranteed that the value isn't 'null', so we don't
-  // need that state in this enum.
+  // generate a report, we're guaranteed that the value isn't 'null', so we
+  // don't need that state in this enum.
   enum ViolationType { InlineViolation, EvalViolation, URLViolation };
 
   enum class InlineType { Block, Attribute };
@@ -204,8 +204,8 @@ class CORE_EXPORT ContentSecurityPolicy
                                RedirectStatus = RedirectStatus::NoRedirect,
                                ReportingStatus = SendReport) const;
 
-  // Passing 'String()' into the |nonce| arguments in the following methods represents an
-  // unnonced resource load.
+  // Passing 'String()' into the |nonce| arguments in the following methods
+  // represents an unnonced resource load.
   bool allowScriptFromSource(const KURL&,
                              const String& nonce,
                              RedirectStatus = RedirectStatus::NoRedirect,
@@ -272,8 +272,9 @@ class CORE_EXPORT ContentSecurityPolicy
 
   bool isActive() const;
 
-  // If a frame is passed in, the message will be logged to its active document's console.
-  // Otherwise, the message will be logged to this object's |m_executionContext|.
+  // If a frame is passed in, the message will be logged to its active
+  // document's console.  Otherwise, the message will be logged to this object's
+  // |m_executionContext|.
   void logToConsole(ConsoleMessage*, LocalFrame* = nullptr);
 
   void reportDirectiveAsSourceExpression(const String& directiveName,
@@ -300,9 +301,10 @@ class CORE_EXPORT ContentSecurityPolicy
   void reportValueForEmptyDirective(const String& directiveName,
                                     const String& value);
 
-  // If a frame is passed in, the report will be sent using it as a context. If no frame is
-  // passed in, the report will be sent via this object's |m_executionContext| (or dropped
-  // on the floor if no such context is available).
+  // If a frame is passed in, the report will be sent using it as a context. If
+  // no frame is passed in, the report will be sent via this object's
+  // |m_executionContext| (or dropped on the floor if no such context is
+  // available).
   void reportViolation(const String& directiveText,
                        const String& effectiveDirective,
                        const String& consoleMessage,
@@ -314,8 +316,9 @@ class CORE_EXPORT ContentSecurityPolicy
                        RedirectStatus = RedirectStatus::FollowedRedirect,
                        int contextLine = 0);
 
-  // Called when mixed content is detected on a page; will trigger a violation report if
-  // the 'block-all-mixed-content' directive is specified for a policy.
+  // Called when mixed content is detected on a page; will trigger a violation
+  // report if the 'block-all-mixed-content' directive is specified for a
+  // policy.
   void reportMixedContent(const KURL& mixedURL, RedirectStatus);
 
   void reportBlockedScriptExecutionToInspector(
@@ -326,7 +329,8 @@ class CORE_EXPORT ContentSecurityPolicy
   void treatAsPublicAddress();
   String evalDisabledErrorMessage() const;
 
-  // Upgrade-Insecure-Requests and Block-All-Mixed-Content are represented in |m_insecureRequestPolicy|
+  // Upgrade-Insecure-Requests and Block-All-Mixed-Content are represented in
+  // |m_insecureRequestPolicy|
   void enforceStrictMixedContentChecking();
   void upgradeInsecureRequests();
   WebInsecureRequestPolicy getInsecureRequestPolicy() const {

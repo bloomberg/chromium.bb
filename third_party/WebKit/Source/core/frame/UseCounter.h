@@ -1343,8 +1343,8 @@ class CORE_EXPORT UseCounter {
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
-    // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/
-    // to update the UMA mapping.
+    // Also, run update_use_counter_feature_enum.py in
+    // chromium/src/tools/metrics/histograms/ to update the UMA mapping.
     NumberOfFeatures,  // This enum value must be last.
   };
 
@@ -1401,11 +1401,13 @@ class CORE_EXPORT UseCounter {
   unsigned m_muteCount;
   Context m_context;
 
-  // Track what features/properties have been reported to the (non-legacy) histograms.
+  // Track what features/properties have been reported to the (non-legacy)
+  // histograms.
   BitVector m_featuresRecorded;
   BitVector m_CSSRecorded;
 
-  // Encapsulates the work to preserve the old "FeatureObserver" histogram with original semantics
+  // Encapsulates the work to preserve the old "FeatureObserver" histogram with
+  // original semantics
   // TODO(rbyers): remove this - http://crbug.com/597963
   class CORE_EXPORT LegacyCounter {
    public:
@@ -1416,7 +1418,8 @@ class CORE_EXPORT UseCounter {
     void updateMeasurements();
 
    private:
-    // Tracks what features/properties need to be reported to the legacy histograms.
+    // Tracks what features/properties need to be reported to the legacy
+    // histograms.
     BitVector m_featureBits;
     BitVector m_CSSBits;
   } m_legacyCounter;

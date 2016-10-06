@@ -32,9 +32,9 @@
 namespace blink {
 
 DOMWindowProperty::DOMWindowProperty(LocalFrame* frame) : m_frame(frame) {
-  // FIXME: For now it *is* acceptable for a DOMWindowProperty to be created with a null frame.
-  // See fast/dom/navigator-detached-no-crash.html for the recipe.
-  // We should fix that.  <rdar://problem/11567132>
+  // FIXME: For now it *is* acceptable for a DOMWindowProperty to be created
+  // with a null frame.  See fast/dom/navigator-detached-no-crash.html for the
+  // recipe.  We should fix that.  <rdar://problem/11567132>
   if (m_frame) {
     // FIXME: Need to figure out what to do with DOMWindowProperties on
     // remote DOM windows.

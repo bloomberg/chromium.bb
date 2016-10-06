@@ -140,12 +140,13 @@ bool ContentSecurityPolicy::isNonceableElement(const Element* element) {
 
   bool nonceable = true;
 
-  // To prevent an attacker from hijacking an existing nonce via a dangling markup injection,
-  // we walk through the attributes of each nonced script element: if their names or values
-  // contain "<script" or "<style", we won't apply the nonce when loading script.
+  // To prevent an attacker from hijacking an existing nonce via a dangling
+  // markup injection, we walk through the attributes of each nonced script
+  // element: if their names or values contain "<script" or "<style", we won't
+  // apply the nonce when loading script.
   //
-  // See http://blog.innerht.ml/csp-2015/#danglingmarkupinjection for an example of the kind
-  // of attack this is aimed at mitigating.
+  // See http://blog.innerht.ml/csp-2015/#danglingmarkupinjection for an example
+  // of the kind of attack this is aimed at mitigating.
   DEFINE_STATIC_LOCAL(AtomicString, scriptString, ("<script"));
   DEFINE_STATIC_LOCAL(AtomicString, styleString, ("<style"));
   for (const Attribute& attr : element->attributes()) {
@@ -246,9 +247,9 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext() {
     }
   }
 
-  // We disable 'eval()' even in the case of report-only policies, and rely on the check in the
-  // V8Initializer::codeGenerationCheckCallbackInMainThread callback to determine whether the
-  // call should execute or not.
+  // We disable 'eval()' even in the case of report-only policies, and rely on
+  // the check in the V8Initializer::codeGenerationCheckCallbackInMainThread
+  // callback to determine whether the call should execute or not.
   if (!m_disableEvalErrorMessage.isNull())
     m_executionContext->disableEval(m_disableEvalErrorMessage);
 }
@@ -304,8 +305,8 @@ void ContentSecurityPolicy::didReceiveHeader(
     ContentSecurityPolicyHeaderSource source) {
   addAndReportPolicyFromHeaderValue(header, type, source);
 
-  // This might be called after we've been bound to an execution context. For example, a <meta>
-  // element might be injected after page load.
+  // This might be called after we've been bound to an execution context. For
+  // example, a <meta> element might be injected after page load.
   if (m_executionContext)
     applyPolicySideEffectsToExecutionContext();
 }
@@ -376,8 +377,10 @@ void ContentSecurityPolicy::addAndReportPolicyFromHeaderValue(
     ContentSecurityPolicyHeaderSource source) {
   // Notify about the new header, so that it can be reported back to the
   // browser process.  This is needed in order to:
-  // 1) replicate CSP directives (i.e. frame-src) to OOPIFs (only for now / short-term).
-  // 2) enforce CSP in the browser process (not yet / long-term - see https://crbug.com/376522).
+  // 1) replicate CSP directives (i.e. frame-src) to OOPIFs (only for now /
+  // short-term).
+  // 2) enforce CSP in the browser process (not yet / long-term - see
+  // https://crbug.com/376522).
   if (document() && document()->frame())
     document()->frame()->client()->didAddContentSecurityPolicy(header, type,
                                                                source);
@@ -390,9 +393,10 @@ void ContentSecurityPolicy::setOverrideAllowInlineStyle(bool value) {
 }
 
 void ContentSecurityPolicy::setOverrideURLForSelf(const KURL& url) {
-  // Create a temporary CSPSource so that 'self' expressions can be resolved before we bind to
-  // an execution context (for 'frame-ancestor' resolution, for example). This CSPSource will
-  // be overwritten when we bind this object to an execution context.
+  // Create a temporary CSPSource so that 'self' expressions can be resolved
+  // before we bind to an execution context (for 'frame-ancestor' resolution,
+  // for example). This CSPSource will be overwritten when we bind this object
+  // to an execution context.
   RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
   m_selfProtocol = origin->protocol();
   m_selfSource =
@@ -559,7 +563,8 @@ bool checkDigest(const String& source,
       {ContentSecurityPolicyHashAlgorithmSha384, HashAlgorithmSha384},
       {ContentSecurityPolicyHashAlgorithmSha512, HashAlgorithmSha512}};
 
-  // Only bother normalizing the source/computing digests if there are any checks to be done.
+  // Only bother normalizing the source/computing digests if there are any
+  // checks to be done.
   if (hashAlgorithmsUsed == ContentSecurityPolicyHashAlgorithmNone)
     return false;
 
@@ -595,8 +600,10 @@ bool ContentSecurityPolicy::allowInlineEventHandler(
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  // Inline event handlers may be whitelisted by hash, if 'unsafe-hash-attributes' is present in a policy. Check
-  // against the digest of the |source| first before proceeding on to checking whether inline script is allowed.
+  // Inline event handlers may be whitelisted by hash, if
+  // 'unsafe-hash-attributes' is present in a policy. Check against the digest
+  // of the |source| first before proceeding on to checking whether inline
+  // script is allowed.
   if (checkDigest<&CSPDirectiveList::allowScriptHash>(
           source, InlineType::Attribute, m_scriptHashAlgorithmsUsed,
           m_policies))
@@ -887,7 +894,8 @@ bool ContentSecurityPolicy::allowWorkerContextFromSource(
     const KURL& url,
     RedirectStatus redirectStatus,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  // CSP 1.1 moves workers from 'script-src' to the new 'child-src'. Measure the impact of this backwards-incompatible change.
+  // CSP 1.1 moves workers from 'script-src' to the new 'child-src'. Measure the
+  // impact of this backwards-incompatible change.
   if (Document* document = this->document()) {
     UseCounter::count(*document, UseCounter::WorkerSubjectToCSP);
     if (isAllowedByAllWithURL<&CSPDirectiveList::allowChildContextFromSource>(
@@ -984,9 +992,9 @@ static String stripURLForUseInReport(Document* document,
   if (!url.isHierarchical() || url.protocolIs("file"))
     return url.protocol();
 
-  // Until we're more careful about the way we deal with navigations in frames (and, by extension,
-  // in plugin documents), strip cross-origin 'frame-src' and 'object-src' violations down to an
-  // origin. https://crbug.com/633306
+  // Until we're more careful about the way we deal with navigations in frames
+  // (and, by extension, in plugin documents), strip cross-origin 'frame-src'
+  // and 'object-src' violations down to an origin. https://crbug.com/633306
   bool canSafelyExposeURL =
       document->getSecurityOrigin()->canRequest(url) ||
       (redirectStatus == RedirectStatus::NoRedirect &&
@@ -1017,9 +1025,9 @@ static void gatherSecurityPolicyViolationEventData(
     int contextLine) {
   if (equalIgnoringCase(effectiveDirective,
                         ContentSecurityPolicy::FrameAncestors)) {
-    // If this load was blocked via 'frame-ancestors', then the URL of |document| has not yet
-    // been initialized. In this case, we'll set both 'documentURI' and 'blockedURI' to the
-    // blocked document's URL.
+    // If this load was blocked via 'frame-ancestors', then the URL of
+    // |document| has not yet been initialized. In this case, we'll set both
+    // 'documentURI' and 'blockedURI' to the blocked document's URL.
     init.setDocumentURI(blockedURL.getString());
     init.setBlockedURI(blockedURL.getString());
   } else {
@@ -1072,9 +1080,9 @@ void ContentSecurityPolicy::reportViolation(
     int contextLine) {
   ASSERT(violationType == URLViolation || blockedURL.isEmpty());
 
-  // TODO(lukasza): Support sending reports from OOPIFs - https://crbug.com/611232
-  // (or move CSP child-src and frame-src checks to the browser process - see
-  // https://crbug.com/376522).
+  // TODO(lukasza): Support sending reports from OOPIFs -
+  // https://crbug.com/611232 (or move CSP child-src and frame-src checks to the
+  // browser process - see https://crbug.com/376522).
   if (!m_executionContext && !contextFrame) {
     DCHECK(equalIgnoringCase(effectiveDirective,
                              ContentSecurityPolicy::ChildSrc) ||
@@ -1155,9 +1163,10 @@ void ContentSecurityPolicy::reportViolation(
           EventTypeNames::securitypolicyviolation, violationData));
 
   for (const String& endpoint : reportEndpoints) {
-    // If we have a context frame we're dealing with 'frame-ancestors' and we don't have our
-    // own execution context. Use the frame's document to complete the endpoint URL, overriding
-    // its URL with the blocked document's URL.
+    // If we have a context frame we're dealing with 'frame-ancestors' and we
+    // don't have our own execution context. Use the frame's document to
+    // complete the endpoint URL, overriding its URL with the blocked document's
+    // URL.
     DCHECK(!contextFrame || !m_executionContext);
     DCHECK(!contextFrame ||
            equalIgnoringCase(effectiveDirective, FrameAncestors));
@@ -1410,10 +1419,12 @@ bool ContentSecurityPolicy::protocolMatchesSelf(const KURL& url) const {
 }
 
 bool ContentSecurityPolicy::selfMatchesInnerURL() const {
-  // Due to backwards-compatibility concerns, we allow 'self' to match blob and filesystem URLs
-  // if we're in a context that bypasses Content Security Policy in the main world.
+  // Due to backwards-compatibility concerns, we allow 'self' to match blob and
+  // filesystem URLs if we're in a context that bypasses Content Security Policy
+  // in the main world.
   //
-  // TODO(mkwst): Revisit this once embedders have an opportunity to update their extension models.
+  // TODO(mkwst): Revisit this once embedders have an opportunity to update
+  // their extension models.
   return m_executionContext &&
          SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
              m_executionContext->getSecurityOrigin()->protocol());
@@ -1431,7 +1442,8 @@ bool ContentSecurityPolicy::shouldBypassMainWorld(
 
 bool ContentSecurityPolicy::shouldSendViolationReport(
     const String& report) const {
-  // Collisions have no security impact, so we can save space by storing only the string's hash rather than the whole report.
+  // Collisions have no security impact, so we can save space by storing only
+  // the string's hash rather than the whole report.
   return !m_violationReportsSent.contains(report.impl()->hash());
 }
 

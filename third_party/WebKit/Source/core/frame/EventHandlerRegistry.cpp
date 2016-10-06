@@ -300,8 +300,8 @@ void EventHandlerRegistry::documentDetached(Document& document) {
           }
         }
       } else if (eventTarget.key->toLocalDOMWindow()) {
-        // DOMWindows may outlive their documents, so we shouldn't remove their handlers
-        // here.
+        // DOMWindows may outlive their documents, so we shouldn't remove their
+        // handlers here.
       } else {
         ASSERT_NOT_REACHED();
       }
@@ -318,12 +318,13 @@ void EventHandlerRegistry::checkConsistency() const {
     const EventTargetSet* targets = &m_targets[handlerClass];
     for (const auto& eventTarget : *targets) {
       if (Node* node = eventTarget.key->toNode()) {
-        // See the comment for |documentDetached| if either of these assertions fails.
+        // See the comment for |documentDetached| if either of these assertions
+        // fails.
         ASSERT(node->document().frameHost());
         ASSERT(node->document().frameHost() == m_frameHost);
       } else if (LocalDOMWindow* window = eventTarget.key->toLocalDOMWindow()) {
-        // If any of these assertions fail, LocalDOMWindow failed to unregister its handlers
-        // properly.
+        // If any of these assertions fail, LocalDOMWindow failed to unregister
+        // its handlers properly.
         ASSERT(window->frame());
         ASSERT(window->frame()->host());
         ASSERT(window->frame()->host() == m_frameHost);

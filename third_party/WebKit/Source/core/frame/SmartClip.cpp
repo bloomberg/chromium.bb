@@ -76,7 +76,8 @@ SmartClipData SmartClip::dataForRect(const IntRect& cropRectInViewport) {
     return SmartClipData();
 
   if (Node* nodeFromFrame = nodeInsideFrame(bestNode)) {
-    // FIXME: This code only hit-tests a single iframe. It seems like we ought support nested frames.
+    // FIXME: This code only hit-tests a single iframe. It seems like we ought
+    // support nested frames.
     if (Node* bestNodeInFrame =
             findBestOverlappingNode(nodeFromFrame, cropRectInViewport))
       bestNode = bestNodeInFrame;

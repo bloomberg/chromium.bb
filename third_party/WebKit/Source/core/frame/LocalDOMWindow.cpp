@@ -133,7 +133,8 @@ class PostMessageTimer final
     SuspendableTimer::trace(visitor);
   }
 
-  // TODO(alexclarke): Override timerTaskRunner() to pass in a document specific default task runner.
+  // TODO(alexclarke): Override timerTaskRunner() to pass in a document specific
+  // default task runner.
 
  private:
   void fired() override {
@@ -305,7 +306,8 @@ Document* LocalDOMWindow::createDocument(const String& mimeType,
                                          bool forceXHTML) {
   Document* document = nullptr;
   if (forceXHTML) {
-    // This is a hack for XSLTProcessor. See XSLTProcessor::createDocumentFromSource().
+    // This is a hack for XSLTProcessor. See
+    // XSLTProcessor::createDocumentFromSource().
     document = Document::create(init);
   } else {
     document = DOMImplementation::createDocument(
@@ -391,9 +393,10 @@ void LocalDOMWindow::documentWasClosed() {
 }
 
 void LocalDOMWindow::enqueuePageshowEvent(PageshowEventPersistence persisted) {
-  // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36334 Pageshow event needs to fire asynchronously.
-  // As per spec pageshow must be triggered asynchronously.
-  // However to be compatible with other browsers blink fires pageshow synchronously.
+  // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36334 Pageshow event needs
+  // to fire asynchronously.  As per spec pageshow must be triggered
+  // asynchronously.  However to be compatible with other browsers blink fires
+  // pageshow synchronously.
   dispatchEvent(
       PageTransitionEvent::create(EventTypeNames::pageshow, persisted),
       m_document.get());
@@ -406,7 +409,8 @@ void LocalDOMWindow::enqueueHashchangeEvent(const String& oldURL,
 
 void LocalDOMWindow::enqueuePopstateEvent(
     PassRefPtr<SerializedScriptValue> stateObject) {
-  // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36202 Popstate event needs to fire asynchronously
+  // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36202 Popstate event needs
+  // to fire asynchronously
   dispatchEvent(PopStateEvent::create(std::move(stateObject), history()));
 }
 
@@ -429,13 +433,14 @@ LocalDOMWindow::~LocalDOMWindow() {
 }
 
 void LocalDOMWindow::dispose() {
-  // Oilpan: should the LocalDOMWindow be GCed along with its LocalFrame without the
-  // frame having first notified its observers of imminent destruction, the
+  // Oilpan: should the LocalDOMWindow be GCed along with its LocalFrame without
+  // the frame having first notified its observers of imminent destruction, the
   // LocalDOMWindow will not have had an opportunity to remove event listeners.
   //
-  // Arrange for that removal to happen using a prefinalizer action. Making LocalDOMWindow
-  // eager finalizable is problematic as other eagerly finalized objects may well
-  // want to access their associated LocalDOMWindow from their destructors.
+  // Arrange for that removal to happen using a prefinalizer action. Making
+  // LocalDOMWindow eager finalizable is problematic as other eagerly finalized
+  // objects may well want to access their associated LocalDOMWindow from their
+  // destructors.
   if (!frame())
     return;
 
@@ -642,7 +647,8 @@ void LocalDOMWindow::dispatchMessageEventWithOriginCheck(
     Event* event,
     std::unique_ptr<SourceLocation> location) {
   if (intendedTargetOrigin) {
-    // Check target origin now since the target document may have changed since the timer was scheduled.
+    // Check target origin now since the target document may have changed since
+    // the timer was scheduled.
     SecurityOrigin* securityOrigin = document()->getSecurityOrigin();
     bool validTarget =
         intendedTargetOrigin->isSameSchemeHostPortAndSuborigin(securityOrigin);
@@ -828,8 +834,8 @@ bool LocalDOMWindow::find(const String& string,
   if (!isCurrentlyDisplayedInFrame())
     return false;
 
-  // Up-to-date, clean tree is required for finding text in page, since it relies
-  // on TextIterator to look over the text.
+  // Up-to-date, clean tree is required for finding text in page, since it
+  // relies on TextIterator to look over the text.
   document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   // FIXME (13016): Support searchInFrames and showDialog
@@ -894,7 +900,8 @@ FloatSize LocalDOMWindow::getViewportSize(
   if (host->settings().viewportEnabled() && frame()->isMainFrame())
     document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's layoutObject.
+  // FIXME: This is potentially too much work. We really only need to know the
+  // dimensions of the parent frame's layoutObject.
   if (Frame* parent = frame()->tree().parent()) {
     if (parent && parent->isLocalFrame())
       toLocalFrame(parent)
@@ -1149,8 +1156,8 @@ void LocalDOMWindow::scrollTo(double x, double y) const {
   x = ScrollableArea::normalizeNonFiniteScroll(x);
   y = ScrollableArea::normalizeNonFiniteScroll(y);
 
-  // It is only necessary to have an up-to-date layout if the position may be clamped,
-  // which is never the case for (0, 0).
+  // It is only necessary to have an up-to-date layout if the position may be
+  // clamped, which is never the case for (0, 0).
   if (x || y)
     document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -1175,8 +1182,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const {
   if (!host)
     return;
 
-  // It is only necessary to have an up-to-date layout if the position may be clamped,
-  // which is never the case for (0, 0).
+  // It is only necessary to have an up-to-date layout if the position may be
+  // clamped, which is never the case for (0, 0).
   if (!scrollToOptions.hasLeft() || !scrollToOptions.hasTop() ||
       scrollToOptions.left() || scrollToOptions.top()) {
     document()->updateStyleAndLayoutIgnorePendingStylesheets();
@@ -1219,7 +1226,8 @@ void LocalDOMWindow::moveBy(int x, int y) const {
 
   IntRect windowRect = host->chromeClient().rootWindowRect();
   windowRect.saturatedMove(x, y);
-  // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
+  // Security check (the spec talks about UniversalBrowserWrite to disable this
+  // check...)
   host->chromeClient().setWindowRectWithAdjustment(windowRect, *frame());
 }
 
@@ -1233,7 +1241,8 @@ void LocalDOMWindow::moveTo(int x, int y) const {
 
   IntRect windowRect = host->chromeClient().rootWindowRect();
   windowRect.setLocation(IntPoint(x, y));
-  // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
+  // Security check (the spec talks about UniversalBrowserWrite to disable this
+  // check...)
   host->chromeClient().setWindowRectWithAdjustment(windowRect, *frame());
 }
 
@@ -1335,9 +1344,10 @@ void LocalDOMWindow::addedEventListener(
   } else if (eventType == EventTypeNames::beforeunload) {
     UseCounter::count(document(), UseCounter::DocumentBeforeUnloadRegistered);
     if (allowsBeforeUnloadListeners(this)) {
-      // This is confusingly named. It doesn't actually add the listener. It just increments a count
-      // so that we know we have listeners registered for the purposes of determining if we can
-      // fast terminate the renderer process.
+      // This is confusingly named. It doesn't actually add the listener. It
+      // just increments a count so that we know we have listeners registered
+      // for the purposes of determining if we can fast terminate the renderer
+      // process.
       addBeforeUnloadEventListener(this);
     } else {
       // Subframes return false from allowsBeforeUnloadListeners.
@@ -1385,8 +1395,8 @@ void LocalDOMWindow::dispatchLoadEvent() {
     dispatchEvent(loadEvent, document());
     timing.markLoadEventEnd();
     DCHECK(documentLoader->fetcher());
-    // If fetcher->countPreloads() is not empty here, it's full of link preloads,
-    // as speculatove preloads were cleared at DCL.
+    // If fetcher->countPreloads() is not empty here, it's full of link
+    // preloads, as speculatove preloads were cleared at DCL.
     if (frame() && documentLoader == frame()->loader().documentLoader() &&
         documentLoader->fetcher()->countPreloads())
       m_unusedPreloadsTimer.startOneShot(unusedPreloadTimeoutInSeconds,
@@ -1475,8 +1485,9 @@ DOMWindow* LocalDOMWindow::open(const String& urlString,
     UseCounter::count(*activeDocument, UseCounter::DOMWindowOpenFeatures);
 
   if (!enteredWindow->allowPopUp()) {
-    // Because FrameTree::find() returns true for empty strings, we must check for empty frame names.
-    // Otherwise, illegitimate window.open() calls with no name will pass right through the popup blocker.
+    // Because FrameTree::find() returns true for empty strings, we must check
+    // for empty frame names.  Otherwise, illegitimate window.open() calls with
+    // no name will pass right through the popup blocker.
     if (frameName.isEmpty() || !frame()->tree().find(frameName))
       return nullptr;
   }

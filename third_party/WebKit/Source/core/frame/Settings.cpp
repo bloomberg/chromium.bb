@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2011, 2012 Apple Inc. All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,7 +36,8 @@ namespace blink {
 // NOTEs
 //  1) EditingMacBehavior comprises builds on Mac;
 //  2) EditingWindowsBehavior comprises builds on Windows;
-//  3) EditingUnixBehavior comprises all unix-based systems, but Darwin/MacOS/Android (and then abusing the terminology);
+//  3) EditingUnixBehavior comprises all unix-based systems, but
+//     Darwin/MacOS/Android (and then abusing the terminology);
 //  4) EditingAndroidBehavior comprises Android builds.
 // 99) MacEditingBehavior is used a fallback.
 static EditingBehaviorType editingBehaviorTypeForPlatform() {

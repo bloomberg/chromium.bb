@@ -115,9 +115,9 @@ class CORE_EXPORT RootFrameViewport final
                                         ScrollBehavior,
                                         ViewportToScrollFirst);
 
-  // If either of the layout or visual viewports are scrolled explicitly (i.e. not
-  // through this class), their updated offset will not be reflected in this class'
-  // animator so use this method to pull updated values when necessary.
+  // If either of the layout or visual viewports are scrolled explicitly (i.e.
+  // not through this class), their updated offset will not be reflected in this
+  // class' animator so use this method to pull updated values when necessary.
   void updateScrollAnimator();
 
   ScrollableArea& visualViewport() const {

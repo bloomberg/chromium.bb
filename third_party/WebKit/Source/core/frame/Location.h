@@ -43,10 +43,12 @@ class ExceptionState;
 class Frame;
 class KURL;
 
-// This class corresponds to the JS Location API, which is the only DOM API besides Window that is operable
-// in a RemoteFrame. Rather than making DOMWindowProperty support RemoteFrames and generating a lot
-// code churn, Location is implemented as a one-off with some custom lifetime management code. Namely,
-// it needs a manual call to reset() from DOMWindow::reset() to ensure it doesn't retain a stale Frame pointer.
+// This class corresponds to the JS Location API, which is the only DOM API
+// besides Window that is operable in a RemoteFrame. Rather than making
+// DOMWindowProperty support RemoteFrames and generating a lot code churn,
+// Location is implemented as a one-off with some custom lifetime management
+// code. Namely, it needs a manual call to reset() from DOMWindow::reset() to
+// ensure it doesn't retain a stale Frame pointer.
 class CORE_EXPORT Location final : public GarbageCollected<Location>,
                                    public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -112,9 +114,10 @@ class CORE_EXPORT Location final : public GarbageCollected<Location>,
 
   DOMStringList* ancestorOrigins() const;
 
-  // Just return the |this| object the way the normal valueOf function on the Object prototype would.
-  // The valueOf function is only added to make sure that it cannot be overwritten on location
-  // objects, since that would provide a hook to change the string conversion behavior of location objects.
+  // Just return the |this| object the way the normal valueOf function on the
+  // Object prototype would.  The valueOf function is only added to make sure
+  // that it cannot be overwritten on location objects, since that would provide
+  // a hook to change the string conversion behavior of location objects.
   ScriptValue valueOf(const ScriptValue& thisObject) { return thisObject; }
 
   DECLARE_VIRTUAL_TRACE();

@@ -128,7 +128,8 @@ void VisualViewport::setSize(const IntSize& size) {
       mainFrame()->settings()->textAutosizingEnabled();
 
   if (autosizerNeedsUpdating) {
-    // This needs to happen after setting the m_size member since it'll be read in the update call.
+    // This needs to happen after setting the m_size member since it'll be read
+    // in the update call.
     if (TextAutosizer* textAutosizer = mainFrame()->document()->textAutosizer())
       textAutosizer->updatePageInfoInAllFrames();
   }
@@ -274,7 +275,8 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
     m_offset = clampedOffset;
     scrollAnimator().setCurrentPosition(m_offset);
 
-    // SVG runs with accelerated compositing disabled so no ScrollingCoordinator.
+    // SVG runs with accelerated compositing disabled so no
+    // ScrollingCoordinator.
     if (ScrollingCoordinator* coordinator =
             frameHost().page().scrollingCoordinator())
       coordinator->scrollableAreaScrollLayerDidChange(this);
@@ -336,9 +338,12 @@ bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta,
 //     +- *overscrollElasticityLayer
 //     |   +- *pageScaleLayer
 //     |       +- *innerViewportScrollLayer
-//     |           +-- overflowControlsHostLayer (root layer) [ owned by PaintLayerCompositor ]
-//     |               +-- outerViewportContainerLayer (fixed pos container) [frame container layer in PaintLayerCompositor]
-//     |               |   +-- outerViewportScrollLayer [frame scroll layer in PaintLayerCompositor]
+//     |           +-- overflowControlsHostLayer (root layer)
+//     |               | [ owned by PaintLayerCompositor ]
+//     |               +-- outerViewportContainerLayer (fixed pos container)
+//     |               |     [frame container layer in PaintLayerCompositor]
+//     |               |   +-- outerViewportScrollLayer
+//     |               |       | [frame scroll layer in PaintLayerCompositor]
 //     |               |       +-- content layers ...
 //     +- *PageOverlay for InspectorOverlay
 //     +- *PageOverlay for ColorOverlay
@@ -453,8 +458,8 @@ void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation) {
     webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(
         webcoreOrientation, thumbThickness, scrollbarMargin, false);
 
-    // The compositor will control the scrollbar's visibility. Set to invisible by default
-    // so scrollbars don't show up in layout tests.
+    // The compositor will control the scrollbar's visibility. Set to invisible
+    // by default so scrollbars don't show up in layout tests.
     webScrollbarLayer->layer()->setOpacity(0);
     scrollbarGraphicsLayer->setContentsToPlatformLayer(
         webScrollbarLayer->layer());
@@ -555,7 +560,8 @@ DoublePoint VisualViewport::maximumScrollPositionDouble() const {
   if (!mainFrame())
     return IntPoint();
 
-  // TODO(bokan): We probably shouldn't be storing the bounds in a float. crbug.com/470718.
+  // TODO(bokan): We probably shouldn't be storing the bounds in a float.
+  // crbug.com/470718.
   FloatSize frameViewSize(contentsSize());
 
   if (m_topControlsAdjustment) {
@@ -604,8 +610,8 @@ void VisualViewport::setTopControlsAdjustment(float adjustment) {
 IntRect VisualViewport::scrollableAreaBoundingBox() const {
   // This method should return the bounding box in the parent view's coordinate
   // space; however, VisualViewport technically isn't a child of any Frames.
-  // Nonetheless, the VisualViewport always occupies the entire main frame so just
-  // return that.
+  // Nonetheless, the VisualViewport always occupies the entire main frame so
+  // just return that.
   LocalFrame* frame = mainFrame();
 
   if (!frame || !frame->view())
@@ -770,7 +776,8 @@ void VisualViewport::sendUMAMetrics() {
     if (didScale) {
       int zoomPercentage = floor(m_maxPageScale * 100);
 
-      // See the PageScaleFactor enumeration in histograms.xml for the bucket ranges.
+      // See the PageScaleFactor enumeration in histograms.xml for the bucket
+      // ranges.
       int bucket = floor(zoomPercentage / 25.f);
 
       DEFINE_STATIC_LOCAL(EnumerationHistogram, maxScaleHistogram,

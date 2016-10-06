@@ -5,7 +5,8 @@
  *                     2000-2001 Simon Hausmann <hausmann@kde.org>
  *                     2000-2001 Dirk Mueller <mueller@kde.org>
  *                     2000 Stefan Schimanski <1Stein@gmx.de>
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2008 Eric Seidel <eric@webkit.org>
  *
@@ -121,8 +122,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   virtual void printNavigationErrorMessage(const Frame&,
                                            const char* reason) = 0;
 
-  // TODO(pilgrim) replace all instances of ownerLayoutObject() with ownerLayoutItem()
-  // https://crbug.com/499321
+  // TODO(pilgrim): Replace all instances of ownerLayoutObject() with
+  // ownerLayoutItem(), https://crbug.com/499321
   LayoutPart* ownerLayoutObject()
       const;  // LayoutObject for the element that contains this frame.
   LayoutPartItem ownerLayoutItem() const;
@@ -130,9 +131,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   Settings* settings() const;  // can be null
 
   // isLoading() is true when the embedder should think a load is in progress.
-  // In the case of LocalFrames, it means that the frame has sent a didStartLoading()
-  // callback, but not the matching didStopLoading(). Inside blink, you probably
-  // want Document::loadEventFinished() instead.
+  // In the case of LocalFrames, it means that the frame has sent a
+  // didStartLoading() callback, but not the matching didStopLoading(). Inside
+  // blink, you probably want Document::loadEventFinished() instead.
   void setIsLoading(bool isLoading) { m_isLoading = isLoading; }
   bool isLoading() const { return m_isLoading; }
 
@@ -167,7 +168,8 @@ inline FrameTree& Frame::tree() const {
   return m_treeNode;
 }
 
-// Allow equality comparisons of Frames by reference or pointer, interchangeably.
+// Allow equality comparisons of Frames by reference or pointer,
+// interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Frame)
 
 }  // namespace blink

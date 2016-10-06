@@ -49,8 +49,11 @@ DEFINE_TRACE(Location) {
 
 inline const KURL& Location::url() const {
   const KURL& url = toLocalFrame(m_frame)->document()->url();
-  if (!url.isValid())
-    return blankURL();  // Use "about:blank" while the page is still loading (before we have a frame).
+  if (!url.isValid()) {
+    // Use "about:blank" while the page is still loading (before we have a
+    // frame).
+    return blankURL();
+  }
 
   return url;
 }

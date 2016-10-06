@@ -157,7 +157,8 @@ void SerializerMarkupAccumulator::appendElement(StringBuilder& result,
   if (!shouldIgnoreElement(element))
     MarkupAccumulator::appendElement(result, element, namespaces);
 
-  // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an element like this, without special cases for XHTML
+  // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
+  // element like this, without special cases for XHTML
   if (isHTMLHeadElement(element)) {
     result.append("<meta http-equiv=\"Content-Type\" content=\"");
     appendAttributeValue(result, m_document->suggestedMIMEType());
@@ -169,7 +170,8 @@ void SerializerMarkupAccumulator::appendElement(StringBuilder& result,
       result.append("\">");
   }
 
-  // FIXME: For object (plugins) tags and video tag we could replace them by an image of their current contents.
+  // FIXME: For object (plugins) tags and video tag we could replace them by an
+  // image of their current contents.
 }
 
 void SerializerMarkupAccumulator::appendAttribute(StringBuilder& out,
@@ -233,7 +235,8 @@ void SerializerMarkupAccumulator::appendRewrittenAttribute(
   m_elementsWithRewrittenLinks.add(&element);
 
   // Append the rewritten attribute.
-  // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an attribute like this.
+  // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
+  // attribute like this.
   out.append(' ');
   out.append(attributeName);
   out.append("=\"");
@@ -290,7 +293,8 @@ void FrameSerializer::serializeFrame(const LocalFrame& frame) {
       continue;
 
     Element& element = toElement(*node);
-    // We have to process in-line style as it might contain some resources (typically background images).
+    // We have to process in-line style as it might contain some resources
+    // (typically background images).
     if (element.isStyledElement()) {
       retrieveResourcesForProperties(element.inlineStyle(), document);
       retrieveResourcesForProperties(element.presentationAttributeStyle(),
@@ -487,9 +491,9 @@ void FrameSerializer::retrieveResourcesForProperties(
   if (!styleDeclaration)
     return;
 
-  // The background-image and list-style-image (for ul or ol) are the CSS properties
-  // that make use of images. We iterate to make sure we include any other
-  // image properties there might be.
+  // The background-image and list-style-image (for ul or ol) are the CSS
+  // properties that make use of images. We iterate to make sure we include any
+  // other image properties there might be.
   unsigned propertyCount = styleDeclaration->propertyCount();
   for (unsigned i = 0; i < propertyCount; ++i) {
     const CSSValue& cssValue = styleDeclaration->propertyAt(i).value();

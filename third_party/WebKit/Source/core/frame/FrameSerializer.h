@@ -58,8 +58,9 @@ class StylePropertySet;
 
 struct SerializedResource;
 
-// This class is used to serialize frame's contents back to text (typically HTML).
-// It serializes frame's document and resources such as images and CSS stylesheets.
+// This class is used to serialize frame's contents back to text (typically
+// HTML).  It serializes frame's document and resources such as images and CSS
+// stylesheets.
 class CORE_EXPORT FrameSerializer final {
   STACK_ALLOCATED();
 
@@ -105,11 +106,13 @@ class CORE_EXPORT FrameSerializer final {
   static String markOfTheWebDeclaration(const KURL&);
 
  private:
-  // Serializes the stylesheet back to text and adds it to the resources if URL is not-empty.
-  // It also adds any resources included in that stylesheet (including any imported stylesheets and their own resources).
+  // Serializes the stylesheet back to text and adds it to the resources if URL
+  // is not-empty.  It also adds any resources included in that stylesheet
+  // (including any imported stylesheets and their own resources).
   void serializeCSSStyleSheet(CSSStyleSheet&, const KURL&);
 
-  // Serializes the css rule (including any imported stylesheets), adding referenced resources.
+  // Serializes the css rule (including any imported stylesheets), adding
+  // referenced resources.
   void serializeCSSRule(CSSRule*);
 
   bool shouldAddURL(const KURL&);
