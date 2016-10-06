@@ -76,6 +76,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/623921")
+    @RetryOnFailure
     public void testGrantAccess() throws Throwable {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();
         TestAwContentsClient contentsClient =
@@ -99,6 +100,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
+    @RetryOnFailure
     public void testDenyAccess() throws Throwable {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();
         TestAwContentsClient contentsClient =
@@ -169,6 +171,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
+    @RetryOnFailure
     public void testCancelPermission() throws Throwable {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();
         TestAwContentsClient contentsClient =
