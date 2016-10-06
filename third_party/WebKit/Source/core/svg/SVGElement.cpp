@@ -230,7 +230,7 @@ void SVGElement::applyActiveWebAnimations() {
   ActiveInterpolationsMap activeInterpolationsMap =
       AnimationStack::activeInterpolations(
           &elementAnimations()->animationStack(), nullptr, nullptr,
-          KeyframeEffect::DefaultPriority, isSVGAttributeHandle);
+          KeyframeEffectReadOnly::DefaultPriority, isSVGAttributeHandle);
   for (auto& entry : activeInterpolationsMap) {
     const QualifiedName& attribute = entry.key.svgAttribute();
     InterpolationEnvironment environment(

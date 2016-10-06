@@ -104,7 +104,7 @@ ActiveInterpolationsMap AnimationStack::activeInterpolations(
     AnimationStack* animationStack,
     const HeapVector<Member<const InertEffect>>* newAnimations,
     const HeapHashSet<Member<const Animation>>* suppressedAnimations,
-    KeyframeEffect::Priority priority,
+    KeyframeEffectReadOnly::Priority priority,
     PropertyHandleFilter propertyHandleFilter) {
   ActiveInterpolationsMap result;
 

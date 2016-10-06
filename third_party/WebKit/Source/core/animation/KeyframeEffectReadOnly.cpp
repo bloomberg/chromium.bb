@@ -52,11 +52,13 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
 KeyframeEffectReadOnly::KeyframeEffectReadOnly(Element* target,
                                                EffectModel* model,
                                                const Timing& timing,
+                                               Priority priority,
                                                EventDelegate* eventDelegate)
     : AnimationEffectReadOnly(timing, eventDelegate),
       m_target(target),
       m_model(model),
-      m_sampledEffect(nullptr) {}
+      m_sampledEffect(nullptr),
+      m_priority(priority) {}
 
 DEFINE_TRACE(KeyframeEffectReadOnly) {
   visitor->trace(m_target);

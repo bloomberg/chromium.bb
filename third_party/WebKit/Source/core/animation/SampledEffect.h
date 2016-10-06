@@ -36,7 +36,7 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
 
   KeyframeEffect* effect() const { return m_effect; }
   unsigned sequenceNumber() const { return m_sequenceNumber; }
-  KeyframeEffect::Priority priority() const { return m_priority; }
+  KeyframeEffectReadOnly::Priority priority() const { return m_priority; }
   bool willNeverChange() const;
   void removeReplacedInterpolations(const HashSet<PropertyHandle>&);
   void updateReplacedProperties(HashSet<PropertyHandle>&);
@@ -49,7 +49,7 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
   WeakMember<KeyframeEffect> m_effect;
   Vector<RefPtr<Interpolation>> m_interpolations;
   const unsigned m_sequenceNumber;
-  KeyframeEffect::Priority m_priority;
+  KeyframeEffectReadOnly::Priority m_priority;
 };
 
 }  // namespace blink

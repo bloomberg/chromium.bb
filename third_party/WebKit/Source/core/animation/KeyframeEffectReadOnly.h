@@ -24,6 +24,8 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  enum Priority { DefaultPriority, TransitionPriority };
+
   static KeyframeEffectReadOnly* create(
       ExecutionContext*,
       Element*,
@@ -44,14 +46,23 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
 
   ~KeyframeEffectReadOnly() override {}
 
+  Priority getPriority() const { return m_priority; }
+  void downgradeToNormal() { m_priority = DefaultPriority; }
+
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  KeyframeEffectReadOnly(Element*, EffectModel*, const Timing&, EventDelegate*);
+  KeyframeEffectReadOnly(Element*,
+                         EffectModel*,
+                         const Timing&,
+                         Priority,
+                         EventDelegate*);
 
   Member<Element> m_target;
   Member<EffectModel> m_model;
   Member<SampledEffect> m_sampledEffect;
+
+  Priority m_priority;
 };
 
 }  // namespace blink

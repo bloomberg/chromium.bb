@@ -67,7 +67,7 @@ class CORE_EXPORT AnimationStack {
       AnimationStack*,
       const HeapVector<Member<const InertEffect>>* newAnimations,
       const HeapHashSet<Member<const Animation>>* suppressedAnimations,
-      KeyframeEffect::Priority,
+      KeyframeEffectReadOnly::Priority,
       PropertyHandleFilter = nullptr);
 
   bool getAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;

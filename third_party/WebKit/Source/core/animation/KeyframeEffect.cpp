@@ -50,11 +50,12 @@
 
 namespace blink {
 
-KeyframeEffect* KeyframeEffect::create(Element* target,
-                                       EffectModel* model,
-                                       const Timing& timing,
-                                       KeyframeEffect::Priority priority,
-                                       EventDelegate* eventDelegate) {
+KeyframeEffect* KeyframeEffect::create(
+    Element* target,
+    EffectModel* model,
+    const Timing& timing,
+    KeyframeEffectReadOnly::Priority priority,
+    EventDelegate* eventDelegate) {
   return new KeyframeEffect(target, model, timing, priority, eventDelegate);
 }
 
@@ -115,10 +116,9 @@ KeyframeEffect* KeyframeEffect::create(
 KeyframeEffect::KeyframeEffect(Element* target,
                                EffectModel* model,
                                const Timing& timing,
-                               KeyframeEffect::Priority priority,
+                               KeyframeEffectReadOnly::Priority priority,
                                EventDelegate* eventDelegate)
-    : KeyframeEffectReadOnly(target, model, timing, eventDelegate),
-      m_priority(priority) {}
+    : KeyframeEffectReadOnly(target, model, timing, priority, eventDelegate) {}
 
 KeyframeEffect::~KeyframeEffect() {}
 

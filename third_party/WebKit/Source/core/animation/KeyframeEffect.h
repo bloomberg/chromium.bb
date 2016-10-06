@@ -55,12 +55,11 @@ class CORE_EXPORT KeyframeEffect final : public KeyframeEffectReadOnly {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum Priority { DefaultPriority, TransitionPriority };
-
   static KeyframeEffect* create(Element*,
                                 EffectModel*,
                                 const Timing&,
-                                Priority = DefaultPriority,
+                                KeyframeEffectReadOnly::Priority =
+                                    KeyframeEffectReadOnly::DefaultPriority,
                                 EventDelegate* = nullptr);
   // Web Animations API Bindings constructors.
   static KeyframeEffect* create(
@@ -89,7 +88,6 @@ class CORE_EXPORT KeyframeEffect final : public KeyframeEffectReadOnly {
   const EffectModel* model() const { return m_model.get(); }
   EffectModel* model() { return m_model.get(); }
   void setModel(EffectModel* model) { m_model = model; }
-  Priority getPriority() const { return m_priority; }
   Element* target() const { return m_target; }
 
   void notifySampledEffectRemovedFromAnimationStack();
@@ -118,8 +116,6 @@ class CORE_EXPORT KeyframeEffect final : public KeyframeEffectReadOnly {
 
   DECLARE_VIRTUAL_TRACE();
 
-  void downgradeToNormal() { m_priority = DefaultPriority; }
-
  protected:
   void applyEffects();
   void clearEffects();
@@ -137,10 +133,9 @@ class CORE_EXPORT KeyframeEffect final : public KeyframeEffectReadOnly {
   KeyframeEffect(Element*,
                  EffectModel*,
                  const Timing&,
-                 Priority,
+                 KeyframeEffectReadOnly::Priority,
                  EventDelegate*);
 
-  Priority m_priority;
   Vector<int> m_compositorAnimationIds;
 
   friend class AnimationAnimationV8Test;
