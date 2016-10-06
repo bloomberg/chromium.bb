@@ -30,13 +30,6 @@ class DurableStoragePermissionContext : public PermissionContextBase {
   bool IsRestrictedToSecureOrigins() const override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BookmarksOriginTest, Exists);
-  FRIEND_TEST_ALL_PREFIXES(BookmarksOriginTest, DoesntExist);
-
-  static bool IsOriginBookmarked(
-      const std::vector<bookmarks::BookmarkModel::URLAndTitle>& bookmarks,
-      const GURL& origin);
-
   DISALLOW_COPY_AND_ASSIGN(DurableStoragePermissionContext);
 };
 

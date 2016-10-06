@@ -11,6 +11,7 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/origin_util.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
@@ -62,13 +64,20 @@ void DurableStoragePermissionContext::DecidePermission(
     return;
   }
 
-  // TODO(dmurph): Remove bookmarks check in favor of important sites.
-  BookmarkModel* model =
-      BookmarkModelFactory::GetForBrowserContextIfExists(profile());
-  if (model) {
-    std::vector<bookmarks::BookmarkModel::URLAndTitle> bookmarks;
-    model->GetBookmarks(&bookmarks);
-    if (IsOriginBookmarked(bookmarks, requesting_origin)) {
+  const size_t kMaxImportantResults = 10;
+  std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
+      ImportantSitesUtil::GetImportantRegisterableDomains(profile(),
+                                                          kMaxImportantResults);
+
+  std::string registerable_domain =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          requesting_origin,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  if (registerable_domain.empty() && requesting_origin.HostIsIPAddress())
+    registerable_domain = requesting_origin.host();
+
+  for (const auto& important_site : important_sites) {
+    if (important_site.registerable_domain == registerable_domain) {
       NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                           true /* persist */, CONTENT_SETTING_ALLOW);
       return;
@@ -96,16 +105,4 @@ void DurableStoragePermissionContext::UpdateContentSetting(
 
 bool DurableStoragePermissionContext::IsRestrictedToSecureOrigins() const {
   return true;
-}
-
-bool DurableStoragePermissionContext::IsOriginBookmarked(
-    const std::vector<bookmarks::BookmarkModel::URLAndTitle>& bookmarks,
-    const GURL& origin) {
-  BookmarkModel::URLAndTitle looking_for;
-  looking_for.url = origin;
-  return std::binary_search(bookmarks.begin(), bookmarks.end(), looking_for,
-                            [](const BookmarkModel::URLAndTitle& a,
-                               const BookmarkModel::URLAndTitle& b) {
-                              return a.url.GetOrigin() < b.url.GetOrigin();
-                            });
 }

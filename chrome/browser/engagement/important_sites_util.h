@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_PREFERENCES_IMPORTANT_SITES_UTIL_H_
-#define CHROME_BROWSER_ANDROID_PREFERENCES_IMPORTANT_SITES_UTIL_H_
+#ifndef CHROME_BROWSER_ENGAGEMENT_IMPORTANT_SITES_UTIL_H_
+#define CHROME_BROWSER_ENGAGEMENT_IMPORTANT_SITES_UTIL_H_
 
 #include <string>
 #include <vector>
@@ -45,7 +45,9 @@ class ImportantSitesUtil {
       const std::vector<std::string>& ignored_sites,
       const std::vector<int32_t>& ignored_sites_reason_bitfield);
 
-  // This marks the given origin as important for testing.
+  // This marks the given origin as important for testing. Note: This changes
+  // the score requirements for the Site Engagement Service, so ONLY call for
+  // testing.
   static void MarkOriginAsImportantForTesting(Profile* profile,
                                               const GURL& origin);
 
@@ -53,4 +55,4 @@ class ImportantSitesUtil {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ImportantSitesUtil);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_PREFERENCES_IMPORTANT_SITES_UTIL_H_
+#endif  // CHROME_BROWSER_ENGAGEMENT_IMPORTANT_SITES_UTIL_H_

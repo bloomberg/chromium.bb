@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -74,74 +75,19 @@ class TestDurablePermissionContext : public DurableStoragePermissionContext {
 
 }  // namespace
 
-class BookmarksOriginTest : public ::testing::Test {
- protected:
-  static std::vector<BookmarkModel::URLAndTitle> MakeBookmarks(
-      const std::string urls[],
-      const int array_size) {
-    std::vector<BookmarkModel::URLAndTitle> bookmarks;
-    for (int i = 0; i < array_size; ++i) {
-      BookmarkModel::URLAndTitle bookmark;
-      bookmark.url = GURL(urls[i]);
-      EXPECT_TRUE(bookmark.url.is_valid());
-      bookmarks.push_back(bookmark);
-    }
-    return bookmarks;
-  }
-};
-
-TEST_F(BookmarksOriginTest, Exists) {
-  std::string urls[] = {
-    "http://www.google.com/",
-    "https://dogs.com/somepage.html",
-    "https://mail.google.com/mail/u/0/#inbox",
-  };
-  std::vector<BookmarkModel::URLAndTitle> bookmarks =
-      MakeBookmarks(urls, arraysize(urls));
-  GURL looking_for("https://dogs.com");
-  EXPECT_TRUE(DurableStoragePermissionContext::IsOriginBookmarked(
-      bookmarks, looking_for));
-}
-
-TEST_F(BookmarksOriginTest, DoesntExist) {
-  std::string urls[] = {
-    "http://www.google.com/",
-    "https://www.google.com/",
-  };
-  std::vector<BookmarkModel::URLAndTitle> bookmarks =
-      MakeBookmarks(urls, arraysize(urls));
-  GURL looking_for("https://dogs.com");
-  EXPECT_FALSE(DurableStoragePermissionContext::IsOriginBookmarked(
-      bookmarks, looking_for));
-}
 
 class DurableStoragePermissionContextTest
     : public ChromeRenderViewHostTestHarness {
  protected:
-  void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-    HostContentSettingsMapFactory::GetForProfile(profile())
-        ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_DURABLE_STORAGE);
+  void MakeOriginImportant(const GURL& origin) {
+    ImportantSitesUtil::MarkOriginAsImportantForTesting(profile(), origin);
   }
-
-  void AddBookmark(const GURL& origin) {
-    if (!model_) {
-      profile()->CreateBookmarkModel(true);
-      model_ = BookmarkModelFactory::GetForBrowserContext(profile());
-      bookmarks::test::WaitForBookmarkModelToLoad(model_);
-    }
-
-    model_->AddURL(model_->bookmark_bar_node(), 0,
-                   base::ASCIIToUTF16(origin.spec()), origin);
-  }
-
-  BookmarkModel* model_ = nullptr;
 };
 
 TEST_F(DurableStoragePermissionContextTest, Bookmarked) {
   TestDurablePermissionContext permission_context(profile());
   GURL url("https://www.google.com");
-  AddBookmark(url);
+  MakeOriginImportant(url);
   NavigateAndCommit(url);
 
   const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
@@ -167,7 +113,7 @@ TEST_F(DurableStoragePermissionContextTest, BookmarkAndIncognitoMode) {
   TestDurablePermissionContext permission_context(
       profile()->GetOffTheRecordProfile());
   GURL url("https://www.google.com");
-  AddBookmark(url);
+  MakeOriginImportant(url);
   NavigateAndCommit(url);
 
   const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
@@ -217,7 +163,7 @@ TEST_F(DurableStoragePermissionContextTest, NoBookmark) {
 TEST_F(DurableStoragePermissionContextTest, CookiesNotAllowed) {
   TestDurablePermissionContext permission_context(profile());
   GURL url("https://www.google.com");
-  AddBookmark(url);
+  MakeOriginImportant(url);
   NavigateAndCommit(url);
 
   scoped_refptr<content_settings::CookieSettings> cookie_settings =
@@ -248,7 +194,7 @@ TEST_F(DurableStoragePermissionContextTest, EmbeddedFrame) {
   TestDurablePermissionContext permission_context(profile());
   GURL url("https://www.google.com");
   GURL requesting_url("https://www.youtube.com");
-  AddBookmark(url);
+  MakeOriginImportant(url);
   NavigateAndCommit(url);
 
   const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),

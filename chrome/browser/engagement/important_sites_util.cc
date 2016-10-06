@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/preferences/important_sites_util.h"
+#include "chrome/browser/engagement/important_sites_util.h"
 
 #include <algorithm>
 #include <map>
@@ -84,9 +84,10 @@ enum CrossedReason {
 };
 
 CrossedReason GetCrossedReasonFromBitfield(int32_t reason_bitfield) {
-  bool durable = reason_bitfield & (1 << ImportantReason::DURABLE);
-  bool notifications = reason_bitfield & (1 << ImportantReason::NOTIFICATIONS);
-  bool engagement = reason_bitfield & (1 << ImportantReason::ENGAGEMENT);
+  bool durable = (reason_bitfield & (1 << ImportantReason::DURABLE)) != 0;
+  bool notifications =
+      (reason_bitfield & (1 << ImportantReason::NOTIFICATIONS)) != 0;
+  bool engagement = (reason_bitfield & (1 << ImportantReason::ENGAGEMENT)) != 0;
   if (durable && notifications && engagement)
     return CROSSED_NOTIFICATIONS_AND_DURABLE_AND_ENGAGEMENT;
   else if (notifications && durable)
@@ -430,6 +431,7 @@ void ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
 
 void ImportantSitesUtil::MarkOriginAsImportantForTesting(Profile* profile,
                                                          const GURL& origin) {
+  SiteEngagementScore::SetParamValuesForTesting();
   // First get data from site engagement.
   SiteEngagementService* site_engagement_service =
       SiteEngagementService::Get(profile);

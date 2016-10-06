@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/preferences/important_sites_util.h"
+#include "chrome/browser/engagement/important_sites_util.h"
 
 #include <memory>
 #include <utility>
@@ -69,11 +69,11 @@ class ImportantSitesUtilTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    SiteEngagementScore::SetParamValuesForTesting();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     g_temp_history_dir = temp_dir_.GetPath();
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         profile(), &BuildTestHistoryService);
-    SiteEngagementScore::SetParamValuesForTesting();
   }
 
   void AddContentSetting(ContentSettingsType type,
@@ -111,6 +111,24 @@ class ImportantSitesUtilTest : public ChromeRenderViewHostTestHarness {
       EXPECT_EQ(domains[i], important_sites[i].registerable_domain);
       EXPECT_EQ(expected_sorted_origins[i], important_sites[i].example_origin);
     }
+  }
+
+  void ExpectImportantResultsEqualUnordered(
+      const std::vector<std::string>& domains,
+      const std::vector<GURL>& expected_sorted_origins,
+      const std::vector<ImportantDomainInfo>& important_sites) {
+    ASSERT_EQ(domains.size(), important_sites.size());
+    ASSERT_EQ(expected_sorted_origins.size(), important_sites.size());
+
+    std::vector<std::string> actual_domains;
+    std::vector<GURL> actual_origins;
+    for (size_t i = 0; i < important_sites.size(); i++) {
+      actual_domains.push_back(important_sites[i].registerable_domain);
+      actual_origins.push_back(important_sites[i].example_origin);
+    }
+    EXPECT_THAT(actual_domains, testing::UnorderedElementsAreArray(domains));
+    EXPECT_THAT(actual_origins,
+                testing::UnorderedElementsAreArray(expected_sorted_origins));
   }
 
  private:
@@ -219,8 +237,8 @@ TEST_F(ImportantSitesUtilTest, TooManyBookmarks) {
       profile(), kNumImportantSites);
   EXPECT_EQ(0u, important_sites.size());
 
-  // If we add some site engagement, these should show up in order (even though
-  // the engagement is too low for a signal by itself).
+  // If we add some site engagement, they should show up (even though the site
+  // engagement score is too low for a signal by itself).
   service->ResetScoreForURL(url1, 2);
   service->ResetScoreForURL(url4, 3);
   service->ResetScoreForURL(url7, 0);
@@ -231,8 +249,8 @@ TEST_F(ImportantSitesUtilTest, TooManyBookmarks) {
   std::vector<std::string> expected_sorted_domains = {"google.com",
                                                       "chrome.com"};
   std::vector<GURL> expected_sorted_origins = {url1, url4};
-  ExpectImportantResultsEq(expected_sorted_domains, expected_sorted_origins,
-                           important_sites);
+  ExpectImportantResultsEqualUnordered(
+      expected_sorted_domains, expected_sorted_origins, important_sites);
 }
 
 TEST_F(ImportantSitesUtilTest, Blacklisting) {
@@ -258,9 +276,11 @@ TEST_F(ImportantSitesUtilTest, Blacklisting) {
   ASSERT_EQ(1u, important_sites.size());
   // Record ignore twice.
   ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
-      profile(), {}, {}, {"google.com"}, {important_sites[0].reason_bitfield});
+      profile(), std::vector<std::string>(), std::vector<int32_t>(),
+      {"google.com"}, {important_sites[0].reason_bitfield});
   ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
-      profile(), {}, {}, {"google.com"}, {important_sites[0].reason_bitfield});
+      profile(), std::vector<std::string>(), std::vector<int32_t>(),
+      {"google.com"}, {important_sites[0].reason_bitfield});
 
   // Important fetch 2.
   important_sites = ImportantSitesUtil::GetImportantRegisterableDomains(
@@ -272,7 +292,8 @@ TEST_F(ImportantSitesUtilTest, Blacklisting) {
 
   // Record ignore 3rd time.
   ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
-      profile(), {}, {}, {"google.com"}, {important_sites[0].reason_bitfield});
+      profile(), std::vector<std::string>(), std::vector<int32_t>(),
+      {"google.com"}, {important_sites[0].reason_bitfield});
 
   // Important fetch 3. We should be blacklisted now.
   important_sites = ImportantSitesUtil::GetImportantRegisterableDomains(
@@ -299,9 +320,11 @@ TEST_F(ImportantSitesUtilTest, BlacklistingReset) {
   // Record ignored twice.
   ASSERT_EQ(1u, important_sites.size());
   ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
-      profile(), {}, {}, {"google.com"}, {important_sites[0].reason_bitfield});
+      profile(), std::vector<std::string>(), std::vector<int32_t>(),
+      {"google.com"}, {important_sites[0].reason_bitfield});
   ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
-      profile(), {}, {}, {"google.com"}, {important_sites[0].reason_bitfield});
+      profile(), std::vector<std::string>(), std::vector<int32_t>(),
+      {"google.com"}, {important_sites[0].reason_bitfield});
 
   // Important fetch, we should still be there.
   important_sites = ImportantSitesUtil::GetImportantRegisterableDomains(
@@ -314,13 +337,16 @@ TEST_F(ImportantSitesUtilTest, BlacklistingReset) {
 
   // Record NOT ignored.
   ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
-      profile(), {"google.com"}, {important_sites[0].reason_bitfield}, {}, {});
+      profile(), {"google.com"}, {important_sites[0].reason_bitfield},
+      std::vector<std::string>(), std::vector<int32_t>());
 
   // Record ignored twice again.
   ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
-      profile(), {}, {}, {"google.com"}, {important_sites[0].reason_bitfield});
+      profile(), std::vector<std::string>(), std::vector<int32_t>(),
+      {"google.com"}, {important_sites[0].reason_bitfield});
   ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
-      profile(), {}, {}, {"google.com"}, {important_sites[0].reason_bitfield});
+      profile(), std::vector<std::string>(), std::vector<int32_t>(),
+      {"google.com"}, {important_sites[0].reason_bitfield});
 
   // Important fetch, we should still be there.
   important_sites = ImportantSitesUtil::GetImportantRegisterableDomains(
@@ -330,7 +356,8 @@ TEST_F(ImportantSitesUtilTest, BlacklistingReset) {
 
   // Record ignored 3rd time in a row.
   ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
-      profile(), {}, {}, {"google.com"}, {important_sites[0].reason_bitfield});
+      profile(), std::vector<std::string>(), std::vector<int32_t>(),
+      {"google.com"}, {important_sites[0].reason_bitfield});
 
   // Blacklisted now.
   important_sites = ImportantSitesUtil::GetImportantRegisterableDomains(
@@ -363,12 +390,11 @@ TEST_F(ImportantSitesUtilTest, Metrics) {
       {important_sites[0].reason_bitfield, important_sites[1].reason_bitfield},
       {"bad.com"}, {important_sites[2].reason_bitfield});
 
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Storage.ImportantSites.CBDChosenReason"),
-              testing::ElementsAre(
-                  base::Bucket(ENGAGEMENT, 1),
-                  base::Bucket(BOOKMARKS, 1),
-                  base::Bucket(NOTIFICATIONS, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Storage.ImportantSites.CBDChosenReason"),
+      testing::ElementsAre(base::Bucket(ENGAGEMENT, 1),
+                           base::Bucket(BOOKMARKS, 1),
+                           base::Bucket(NOTIFICATIONS, 1)));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Storage.ImportantSites.CBDIgnoredReason"),
