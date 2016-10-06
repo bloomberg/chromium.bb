@@ -141,7 +141,7 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(
       const uint32_t validPropertiesMask = static_cast<uint32_t>(
           (1u << CompositorMutableProperty::kNumProperties) - 1);
       if (!RuntimeEnabledFeatures::compositorWorkerEnabled() ||
-          !readUint64(&element) || !readUint32(&properties) ||
+          !readUint64(&element) || !readUint32(&properties) || !properties ||
           (properties & ~validPropertiesMask))
         return nullptr;
       return CompositorProxy::create(m_scriptState->getExecutionContext(),
@@ -181,10 +181,17 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(
       if (!readUint32(&width) || !readUint32(&height) ||
           !readUint32(&pixelLength) || !readRawBytes(pixelLength, &pixels))
         return nullptr;
-      ImageData* imageData = ImageData::create(IntSize(width, height));
-      DOMUint8ClampedArray* pixelArray = imageData->data();
-      if (pixelArray->length() < pixelLength)
+      CheckedNumeric<uint32_t> computedPixelLength = width;
+      computedPixelLength *= height;
+      computedPixelLength *= 4;
+      if (!computedPixelLength.IsValid() ||
+          computedPixelLength.ValueOrDie() != pixelLength)
         return nullptr;
+      ImageData* imageData = ImageData::create(IntSize(width, height));
+      if (!imageData)
+        return nullptr;
+      DOMUint8ClampedArray* pixelArray = imageData->data();
+      DCHECK_EQ(pixelArray->length(), pixelLength);
       memcpy(pixelArray->data(), pixels, pixelLength);
       return imageData;
     }
