@@ -194,7 +194,8 @@ bool IsGattOffsetValid(int offset) {
   return 0 <= offset && offset < kMaxGattAttributeLength;
 }
 
-// This is needed because Android only support UUID 16 bits in advertising data.
+// This is needed because Android only support UUID 16 bits in service data
+// section in advertising data
 uint16_t GetUUID16(const BluetoothUUID& uuid) {
   // Convert xxxxyyyy-xxxx-xxxx-xxxx-xxxxxxxxxxxx to int16 yyyy
   return std::stoi(uuid.canonical_value().substr(4, 4), nullptr, 16);
@@ -1864,8 +1865,8 @@ ArcBluetoothBridge::GetAdapterProperties(
 // Android support 5 types of Advertising Data.
 // However Chrome didn't expose AdvertiseFlag and ManufacturerData.
 // So we will only expose local_name, service_uuids and service_data.
-// Note that we need to use UUID 16 bits because Android does not support
-// UUID 128 bits.
+// Note that we need to use UUID 16 bits in service_data section
+// because Android does not support UUID 128 bits there.
 // TODO(crbug.com/618442) Make Chrome expose missing data.
 mojo::Array<mojom::BluetoothAdvertisingDataPtr>
 ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
@@ -1879,18 +1880,13 @@ ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
   advertising_data.push_back(std::move(local_name));
 
   // ServiceUuid
-  BluetoothDevice::UUIDSet uuid_set = device->GetUUIDs();
+  const BluetoothDevice::UUIDSet& uuid_set = device->GetUUIDs();
   if (uuid_set.size() > 0) {
-    mojom::BluetoothAdvertisingDataPtr service_uuids_16 =
+    mojom::BluetoothAdvertisingDataPtr service_uuids =
         mojom::BluetoothAdvertisingData::New();
-    mojo::Array<uint16_t> uuid16s(uuid_set.size());
-    size_t i = 0;
-    for (const auto& uuid : uuid_set) {
-      uuid16s[i] = GetUUID16(uuid);
-      i++;
-    }
-    service_uuids_16->set_service_uuids_16(std::move(uuid16s));
-    advertising_data.push_back(std::move(service_uuids_16));
+    service_uuids->set_service_uuids(mojo::Array<BluetoothUUID>::From(
+        std::vector<BluetoothUUID>(uuid_set.begin(), uuid_set.end())));
+    advertising_data.push_back(std::move(service_uuids));
   }
 
   // Service data
@@ -1900,6 +1896,7 @@ ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
     mojom::BluetoothServiceDataPtr service_data =
         mojom::BluetoothServiceData::New();
 
+    // Android only supports UUID 16 bit here.
     service_data->uuid_16bit = GetUUID16(uuid);
 
     const std::vector<uint8_t>* data = device->GetServiceDataForUUID(uuid);
