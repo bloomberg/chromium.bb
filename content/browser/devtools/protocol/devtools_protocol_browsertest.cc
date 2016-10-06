@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -572,6 +573,10 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshot) {
+  // This test fails consistently on low-end Android devices.
+  // See crbug.com/653637.
+  if (base::SysInfo::IsLowEndDevice()) return;
+
   shell()->LoadURL(GURL("about:blank"));
   Attach();
   EXPECT_TRUE(
