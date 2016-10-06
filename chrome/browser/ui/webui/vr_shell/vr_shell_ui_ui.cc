@@ -178,8 +178,10 @@ void RemoteDataSource::OnURLFetchComplete(const net::URLFetcher* source) {
 content::WebUIDataSource* CreateVrShellUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIVrShellUIHost);
-  source->AddResourcePath("vr_shell_ui.js", IDR_VR_SHELL_UI_JS);
   source->AddResourcePath("vr_shell_ui.css", IDR_VR_SHELL_UI_CSS);
+  source->AddResourcePath("vr_shell_ui.js", IDR_VR_SHELL_UI_JS);
+  source->AddResourcePath("vr_shell_ui_api.js", IDR_VR_SHELL_UI_API_JS);
+  source->AddResourcePath("vr_shell_ui_scene.js", IDR_VR_SHELL_UI_SCENE_JS);
   source->SetDefaultResource(IDR_VR_SHELL_UI_HTML);
   // We're localizing strings, so we can't currently use gzip since it's
   // incompatible with i18n. TODO(klausw): re-enable gzip once an i18n
