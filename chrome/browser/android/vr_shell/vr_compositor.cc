@@ -6,7 +6,6 @@
 
 #include "cc/layers/layer.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/window_android.h"
@@ -33,9 +32,9 @@ void VrCompositor::UpdateLayerTreeHost() {}
 
 void VrCompositor::OnSwapBuffersCompleted(int pending_swap_buffers) {}
 
-void VrCompositor::SetLayer(content::ContentViewCore* core) {
+void VrCompositor::SetLayer(content::WebContents* web_contents) {
   assert(layer_ == nullptr);
-  ui::ViewAndroid* view_android = core->GetWebContents()->GetNativeView();
+  ui::ViewAndroid* view_android = web_contents->GetNativeView();
   // When we pass the layer for the ContentViewCore to the compositor it may be
   // removing it from its previous parent, so we remember that and restore it to
   // its previous parent on teardown.

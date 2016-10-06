@@ -13,7 +13,6 @@
 #include "chrome/browser/android/vr_shell/vr_math.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -131,16 +130,15 @@ gvr::Quatf GetRotationFromZAxis(gvr::Vec3f vec) {
 
 namespace vr_shell {
 
-VrShell::VrShell(JNIEnv* env,
-                 jobject obj,
-                 content::ContentViewCore* content_cvc,
+VrShell::VrShell(JNIEnv* env, jobject obj,
+                 content::WebContents* main_contents,
                  ui::WindowAndroid* content_window,
-                 content::ContentViewCore* ui_cvc,
+                 content::WebContents* ui_contents,
                  ui::WindowAndroid* ui_window)
     : desktop_screen_tilt_(kDesktopScreenTiltDefault),
       desktop_height_(kDesktopHeightDefault),
-      content_cvc_(content_cvc),
-      ui_cvc_(ui_cvc),
+      main_contents_(main_contents),
+      ui_contents_(ui_contents),
       weak_ptr_factory_(this) {
   DCHECK(g_instance == nullptr);
   g_instance = this;
@@ -165,8 +163,8 @@ VrShell::VrShell(JNIEnv* env,
 
 void VrShell::UpdateCompositorLayers(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj) {
-  content_compositor_->SetLayer(content_cvc_);
-  ui_compositor_->SetLayer(ui_cvc_);
+  content_compositor_->SetLayer(main_contents_);
+  ui_compositor_->SetLayer(ui_contents_);
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -175,7 +173,7 @@ void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
 void VrShell::LoadUIContent() {
   GURL url(kVrShellUIURL);
-  ui_cvc_->GetWebContents()->GetController().LoadURL(
+  ui_contents_->GetController().LoadURL(
       url, content::Referrer(),
       ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string(""));
 }
@@ -205,8 +203,8 @@ void VrShell::GvrInit(JNIEnv* env,
     delegate_->OnVrShellReady(this);
   controller_.reset(
       new VrController(reinterpret_cast<gvr_context*>(native_gvr_api)));
-  content_input_manager_ = new VrInputManager(content_cvc_->GetWebContents());
-  ui_input_manager_ = new VrInputManager(ui_cvc_->GetWebContents());
+  content_input_manager_ = new VrInputManager(main_contents_);
+  ui_input_manager_ = new VrInputManager(ui_contents_);
 }
 
 void VrShell::InitializeGl(JNIEnv* env,
@@ -691,8 +689,7 @@ base::WeakPtr<VrShell> VrShell::GetWeakPtr(
     const content::WebContents* web_contents) {
   // Ensure that the WebContents requesting the VrShell instance is the one
   // we created.
-  if (g_instance != nullptr &&
-      g_instance->ui_cvc_->GetWebContents() == web_contents)
+  if (g_instance != nullptr && g_instance->ui_contents_ == web_contents)
     return g_instance->weak_ptr_factory_.GetWeakPtr();
   return base::WeakPtr<VrShell>(nullptr);
 }
@@ -705,7 +702,7 @@ void VrShell::OnDomContentsLoaded() {
   // background of the renderer to transparent, then we update the page
   // background to be transparent. This is probably a bug in blink that we
   // should fix.
-  ui_cvc_->GetWebContents()->GetRenderWidgetHostView()->SetBackgroundColor(
+  ui_contents_->GetRenderWidgetHostView()->SetBackgroundColor(
       SK_ColorTRANSPARENT);
 }
 
@@ -746,8 +743,8 @@ void VrShell::ContentSurfaceChanged(JNIEnv* env,
                                     const JavaParamRef<jobject>& surface) {
   content_compositor_->SurfaceChanged((int)width, (int)height, surface);
   content::ScreenInfo result;
-  content_cvc_->GetWebContents()->GetRenderWidgetHostView()->
-      GetRenderWidgetHost()->GetScreenInfo(&result);
+  main_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost()->
+      GetScreenInfo(&result);
   float dpr = result.device_scale_factor;
   scene_.GetUiElementById(kBrowserUiElementId)->copy_rect =
       { 0, 0, width / dpr, height / dpr };
@@ -760,8 +757,8 @@ void VrShell::UiSurfaceChanged(JNIEnv* env,
                                const JavaParamRef<jobject>& surface) {
   ui_compositor_->SurfaceChanged((int)width, (int)height, surface);
   content::ScreenInfo result;
-  ui_cvc_->GetWebContents()->GetRenderWidgetHostView()->
-      GetRenderWidgetHost()->GetScreenInfo(&result);
+  ui_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost()->GetScreenInfo(
+      &result);
   ui_tex_width_ = width / result.device_scale_factor;
   ui_tex_height_ = height / result.device_scale_factor;
 }
@@ -793,8 +790,7 @@ void VrShell::HandleQueuedTasks() {
 }
 
 void VrShell::DoUiAction(const UiAction action) {
-  content::NavigationController& controller =
-      content_cvc_->GetWebContents()->GetController();
+  content::NavigationController& controller = main_contents_->GetController();
   switch (action) {
     case HISTORY_BACK:
       if (controller.CanGoBack())
@@ -825,13 +821,10 @@ jlong Init(JNIEnv* env,
            jlong content_window_android,
            const JavaParamRef<jobject>& ui_web_contents,
            jlong ui_window_android) {
-  content::ContentViewCore* c_core = content::ContentViewCore::FromWebContents(
-      content::WebContents::FromJavaWebContents(content_web_contents));
-  content::ContentViewCore* ui_core = content::ContentViewCore::FromWebContents(
-      content::WebContents::FromJavaWebContents(ui_web_contents));
   return reinterpret_cast<intptr_t>(new VrShell(
-      env, obj, c_core,
-      reinterpret_cast<ui::WindowAndroid*>(content_window_android), ui_core,
+      env, obj, content::WebContents::FromJavaWebContents(content_web_contents),
+      reinterpret_cast<ui::WindowAndroid*>(content_window_android),
+      content::WebContents::FromJavaWebContents(ui_web_contents),
       reinterpret_cast<ui::WindowAndroid*>(ui_window_android)));
 }
 

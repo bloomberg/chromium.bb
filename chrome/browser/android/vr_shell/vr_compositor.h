@@ -19,7 +19,7 @@ class Layer;
 
 namespace content {
 class Compositor;
-class ContentViewCore;
+class WebContents;
 }
 
 namespace ui {
@@ -37,7 +37,7 @@ class VrCompositor : public content::CompositorClient {
   void SurfaceChanged(int width,
                       int height,
                       const base::android::JavaParamRef<jobject>& surface);
-  void SetLayer(content::ContentViewCore* core);
+  void SetLayer(content::WebContents* web_contents);
 
   // CompositorClient implementation:
   void UpdateLayerTreeHost() override;

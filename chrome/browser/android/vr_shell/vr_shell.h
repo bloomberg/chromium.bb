@@ -21,7 +21,6 @@
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 
 namespace content {
-class ContentViewCore;
 class WebContents;
 }
 
@@ -49,9 +48,9 @@ enum UiAction {
 class VrShell : public device::GvrDelegate {
  public:
   VrShell(JNIEnv* env, jobject obj,
-          content::ContentViewCore* content_cvc,
+          content::WebContents* main_contents,
           ui::WindowAndroid* content_window,
-          content::ContentViewCore* ui_cvc,
+          content::WebContents* ui_contents,
           ui::WindowAndroid* ui_window);
 
   void UpdateCompositorLayers(JNIEnv* env,
@@ -154,9 +153,9 @@ class VrShell : public device::GvrDelegate {
   base::Lock task_queue_lock_;
 
   std::unique_ptr<VrCompositor> content_compositor_;
-  content::ContentViewCore* content_cvc_;
+  content::WebContents* main_contents_;
   std::unique_ptr<VrCompositor> ui_compositor_;
-  content::ContentViewCore* ui_cvc_;
+  content::WebContents* ui_contents_;
 
   VrShellDelegate* delegate_ = nullptr;
   std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
