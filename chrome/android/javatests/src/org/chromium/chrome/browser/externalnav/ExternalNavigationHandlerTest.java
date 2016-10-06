@@ -1138,6 +1138,11 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             return false;
         }
 
+        @Override
+        public boolean isSerpReferrer(String referrerUrl, Tab tab) {
+            return false;
+        }
+
         public void reset() {
             startActivityIntent = null;
             startIncognitoIntentCalled = false;

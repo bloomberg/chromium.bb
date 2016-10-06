@@ -141,4 +141,11 @@ interface ExternalNavigationDelegate {
      */
     boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl,
             boolean isIncomingRedirect);
+
+    /**
+     * @param referrerUrl The referrer URL.
+     * @param tab The current tab.
+     * @return whether this navigation is from the search results page.
+     */
+    boolean isSerpReferrer(String referrerUrl, Tab tab);
 }

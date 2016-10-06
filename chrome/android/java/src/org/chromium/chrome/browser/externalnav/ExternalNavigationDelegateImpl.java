@@ -43,6 +43,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -560,9 +562,23 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
+    public boolean isSerpReferrer(String referrerUrl, Tab tab) {
+        if (referrerUrl == null || !referrerUrl.contains("www.google")) return false;
+
+        NavigationController nController = tab.getWebContents().getNavigationController();
+        int index = nController.getLastCommittedEntryIndex();
+        if (index == -1) return false;
+
+        NavigationEntry entry = nController.getEntryAtIndex(index);
+        if (entry == null) return false;
+
+        return UrlUtilities.nativeIsGoogleSearchUrl(entry.getUrl());
+    }
+
+    @Override
     public boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl,
             boolean isIncomingRedirect) {
-        if (tab == null) return false;
+        if (tab == null || tab.getWebContents() == null) return false;
 
         InstantAppsHandler handler = InstantAppsHandler.getInstance();
         Intent intent = tab.getTabRedirectHandler() != null
@@ -576,6 +592,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             return handler.handleIncomingIntent(getAvailableContext(), resolvedIntent,
                     ChromeLauncherActivity.isCustomTabIntent(resolvedIntent));
         } else if (!isIncomingRedirect) {
+            // Check if the navigation is coming from SERP and skip instant app handling.
+            if (isSerpReferrer(referrerUrl, tab)) return false;
             return handler.handleNavigation(
                     getAvailableContext(), url,
                     TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl),
