@@ -217,14 +217,15 @@ void SpellCheckRequester::enqueueRequest(SpellCheckRequest* request) {
   bool continuation = false;
   if (!m_requestQueue.isEmpty()) {
     SpellCheckRequest* lastRequest = m_requestQueue.last();
-    // It's a continuation if the number of the last request got incremented in the new one and
-    // both apply to the same editable.
+    // It's a continuation if the number of the last request got incremented in
+    // the new one and both apply to the same editable.
     continuation =
         request->rootEditableElement() == lastRequest->rootEditableElement() &&
         request->requestNumber() == lastRequest->requestNumber() + 1;
   }
 
-  // Spellcheck requests for chunks of text in the same element should not overwrite each other.
+  // Spellcheck requests for chunks of text in the same element should not
+  // overwrite each other.
   if (!continuation) {
     for (auto& requestQueue : m_requestQueue) {
       if (request->rootEditableElement() != requestQueue->rootEditableElement())
