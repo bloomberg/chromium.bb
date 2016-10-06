@@ -317,8 +317,8 @@ bool ExecuteArcTask(Profile* profile,
   DCHECK_EQ(file_urls.size(), mime_types.size());
 
   arc::mojom::IntentHelperInstance* const arc_intent_helper =
-      GetArcIntentHelper(profile, "HandleUrlListDeprecated",
-                         kArcIntentHelperVersionWithUrlListSupport);
+      GetArcIntentHelper(profile, "HandleUrlList",
+                         kArcIntentHelperVersionWithFullActivityName);
   if (!arc_intent_helper)
     return false;
 
@@ -337,16 +337,9 @@ bool ExecuteArcTask(Profile* profile,
     urls.push_back(std::move(url_with_type));
   }
 
-  if (GetArcIntentHelper(profile, "HandleUrlList",
-                         kArcIntentHelperVersionWithFullActivityName)) {
-    arc_intent_helper->HandleUrlList(std::move(urls),
-                                     AppIdToActivityName(task.app_id),
-                                     StringToArcActionType(task.action_id));
-  } else {
-    arc_intent_helper->HandleUrlListDeprecated(
-        std::move(urls), AppIdToActivityName(task.app_id)->package_name,
-        StringToArcActionType(task.action_id));
-  }
+  arc_intent_helper->HandleUrlList(std::move(urls),
+                                   AppIdToActivityName(task.app_id),
+                                   StringToArcActionType(task.action_id));
   return true;
 }
 
