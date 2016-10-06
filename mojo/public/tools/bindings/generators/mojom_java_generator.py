@@ -10,8 +10,8 @@ import contextlib
 import os
 import re
 import shutil
+import sys
 import tempfile
-import zipfile
 
 from jinja2 import contextfilter
 
@@ -19,6 +19,11 @@ import mojom.fileutil as fileutil
 import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 from mojom.generate.template_expander import UseJinja
+
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir,
+                             os.pardir, os.pardir, os.pardir, os.pardir,
+                             'build', 'android', 'gyp'))
+from util import build_utils
 
 
 GENERATOR_PREFIX = 'java'
@@ -397,14 +402,6 @@ def TempDir():
   finally:
     shutil.rmtree(dirname)
 
-def ZipContentInto(root, zip_filename):
-  with zipfile.ZipFile(zip_filename, 'w') as zip_file:
-    for dirname, _, files in os.walk(root):
-      for filename in files:
-        path = os.path.join(dirname, filename)
-        path_in_archive = os.path.relpath(path, root)
-        zip_file.write(path, path_in_archive)
-
 class Generator(generator.Generator):
 
   java_filters = {
@@ -533,7 +530,7 @@ class Generator(generator.Generator):
     with TempDir() as temp_java_root:
       self.output_dir = os.path.join(temp_java_root, package_path)
       self.DoGenerateFiles();
-      ZipContentInto(temp_java_root, zip_filename)
+      build_utils.ZipDir(zip_filename, temp_java_root)
 
     if args.java_output_directory:
       # If requested, generate the java files directly into indicated directory.

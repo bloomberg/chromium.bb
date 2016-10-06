@@ -20,25 +20,30 @@ sys.path.append(os.path.join(os.path.dirname(__file__),
                              "build"))
 import gn_helpers
 
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             os.pardir, os.pardir, os.pardir, os.pardir,
+                             'build', 'android', 'gyp'))
+from util import build_utils
+
+
 def DoZip(inputs, link_inputs, zip_inputs, output, base_dir):
   files = []
   with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as outfile:
     for f in inputs:
       file_name = os.path.relpath(f, base_dir)
       files.append(file_name)
-      outfile.write(f, file_name)
+      build_utils.AddToZipHermetic(outfile, file_name, f)
     for f in link_inputs:
       realf = os.path.realpath(f)  # Resolve symlinks.
       file_name = os.path.relpath(realf, base_dir)
       files.append(file_name)
-      outfile.write(realf, file_name)
+      build_utils.AddToZipHermetic(outfile, file_name, realf)
     for zf_name in zip_inputs:
       with zipfile.ZipFile(zf_name, 'r') as zf:
         for f in zf.namelist():
           if f not in files:
             files.append(f)
-            with zf.open(f) as zff:
-              outfile.writestr(f, zff.read())
+            build_utils.AddToZipHermetic(outfile, f, data=zf.read(f))
 
 
 def main():
