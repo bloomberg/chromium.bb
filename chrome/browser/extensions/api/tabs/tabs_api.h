@@ -49,29 +49,29 @@ void ZoomModeToZoomSettings(zoom::ZoomController::ZoomMode zoom_mode,
                             api::tabs::ZoomSettings* zoom_settings);
 
 // Windows
-class WindowsGetFunction : public ChromeSyncExtensionFunction {
+class WindowsGetFunction : public UIThreadExtensionFunction {
   ~WindowsGetFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("windows.get", WINDOWS_GET)
 };
-class WindowsGetCurrentFunction : public ChromeSyncExtensionFunction {
+class WindowsGetCurrentFunction : public UIThreadExtensionFunction {
   ~WindowsGetCurrentFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("windows.getCurrent", WINDOWS_GETCURRENT)
 };
-class WindowsGetLastFocusedFunction : public ChromeSyncExtensionFunction {
+class WindowsGetLastFocusedFunction : public UIThreadExtensionFunction {
   ~WindowsGetLastFocusedFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("windows.getLastFocused", WINDOWS_GETLASTFOCUSED)
 };
-class WindowsGetAllFunction : public ChromeSyncExtensionFunction {
+class WindowsGetAllFunction : public UIThreadExtensionFunction {
   ~WindowsGetAllFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("windows.getAll", WINDOWS_GETALL)
 };
-class WindowsCreateFunction : public ChromeSyncExtensionFunction {
+class WindowsCreateFunction : public UIThreadExtensionFunction {
   ~WindowsCreateFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   // Returns whether the window should be created in incognito mode.
   // |create_data| are the options passed by the extension. It may be NULL.
   // |urls| is the list of urls to open. If we are creating an incognito window,
@@ -82,63 +82,64 @@ class WindowsCreateFunction : public ChromeSyncExtensionFunction {
   bool ShouldOpenIncognitoWindow(
       const api::windows::Create::Params::CreateData* create_data,
       std::vector<GURL>* urls,
-      bool* is_error);
+      std::string* error);
   DECLARE_EXTENSION_FUNCTION("windows.create", WINDOWS_CREATE)
 };
-class WindowsUpdateFunction : public ChromeSyncExtensionFunction {
+class WindowsUpdateFunction : public UIThreadExtensionFunction {
   ~WindowsUpdateFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("windows.update", WINDOWS_UPDATE)
 };
-class WindowsRemoveFunction : public ChromeSyncExtensionFunction {
+class WindowsRemoveFunction : public UIThreadExtensionFunction {
   ~WindowsRemoveFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("windows.remove", WINDOWS_REMOVE)
 };
 
 // Tabs
-class TabsGetFunction : public ChromeSyncExtensionFunction {
+class TabsGetFunction : public UIThreadExtensionFunction {
   ~TabsGetFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tabs.get", TABS_GET)
 };
-class TabsGetCurrentFunction : public ChromeSyncExtensionFunction {
+class TabsGetCurrentFunction : public UIThreadExtensionFunction {
   ~TabsGetCurrentFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tabs.getCurrent", TABS_GETCURRENT)
 };
-class TabsGetSelectedFunction : public ChromeSyncExtensionFunction {
+class TabsGetSelectedFunction : public UIThreadExtensionFunction {
   ~TabsGetSelectedFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tabs.getSelected", TABS_GETSELECTED)
 };
-class TabsGetAllInWindowFunction : public ChromeSyncExtensionFunction {
+class TabsGetAllInWindowFunction : public UIThreadExtensionFunction {
   ~TabsGetAllInWindowFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tabs.getAllInWindow", TABS_GETALLINWINDOW)
 };
-class TabsQueryFunction : public ChromeSyncExtensionFunction {
+class TabsQueryFunction : public UIThreadExtensionFunction {
   ~TabsQueryFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tabs.query", TABS_QUERY)
 };
-class TabsCreateFunction : public ChromeSyncExtensionFunction {
+class TabsCreateFunction : public UIThreadExtensionFunction {
   ~TabsCreateFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tabs.create", TABS_CREATE)
 };
-class TabsDuplicateFunction : public ChromeSyncExtensionFunction {
+class TabsDuplicateFunction : public UIThreadExtensionFunction {
   ~TabsDuplicateFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tabs.duplicate", TABS_DUPLICATE)
 };
-class TabsHighlightFunction : public ChromeSyncExtensionFunction {
+class TabsHighlightFunction : public UIThreadExtensionFunction {
   ~TabsHighlightFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   bool HighlightTab(TabStripModel* tabstrip,
                     ui::ListSelectionModel* selection,
                     int* active_index,
-                    int index);
+                    int index,
+                    std::string* error);
   DECLARE_EXTENSION_FUNCTION("tabs.highlight", TABS_HIGHLIGHT)
 };
 class TabsUpdateFunction : public ChromeAsyncExtensionFunction {
@@ -162,25 +163,26 @@ class TabsUpdateFunction : public ChromeAsyncExtensionFunction {
 
   DECLARE_EXTENSION_FUNCTION("tabs.update", TABS_UPDATE)
 };
-class TabsMoveFunction : public ChromeSyncExtensionFunction {
+class TabsMoveFunction : public UIThreadExtensionFunction {
   ~TabsMoveFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   bool MoveTab(int tab_id,
                int* new_index,
                int iteration,
                base::ListValue* tab_values,
-               int* window_id);
+               int* window_id,
+               std::string* error);
   DECLARE_EXTENSION_FUNCTION("tabs.move", TABS_MOVE)
 };
-class TabsReloadFunction : public ChromeSyncExtensionFunction {
+class TabsReloadFunction : public UIThreadExtensionFunction {
   ~TabsReloadFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tabs.reload", TABS_RELOAD)
 };
-class TabsRemoveFunction : public ChromeSyncExtensionFunction {
+class TabsRemoveFunction : public UIThreadExtensionFunction {
   ~TabsRemoveFunction() override {}
-  bool RunSync() override;
-  bool RemoveTab(int tab_id);
+  ResponseAction Run() override;
+  bool RemoveTab(int tab_id, std::string* error);
   DECLARE_EXTENSION_FUNCTION("tabs.remove", TABS_REMOVE)
 };
 class TabsDetectLanguageFunction : public ChromeAsyncExtensionFunction,

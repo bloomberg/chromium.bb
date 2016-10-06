@@ -1071,7 +1071,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
   int window_id = GetWindowId(result.get());
   std::string error;
   Browser* new_window = ExtensionTabUtil::GetBrowserFromWindowID(
-      function.get(), window_id, &error);
+      ChromeExtensionFunctionDetails(function.get()), window_id, &error);
   EXPECT_TRUE(error.empty());
 #if !defined(OS_LINUX) || defined(OS_CHROMEOS)
   // DesktopWindowTreeHostX11::IsMinimized() relies on an asynchronous update
@@ -1085,8 +1085,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
       function.get(), "[{\"state\": \"fullscreen\"}]", browser(),
       utils::INCLUDE_INCOGNITO)));
   window_id = GetWindowId(result.get());
-  new_window = ExtensionTabUtil::GetBrowserFromWindowID(function.get(),
-                                                        window_id, &error);
+  new_window = ExtensionTabUtil::GetBrowserFromWindowID(
+      ChromeExtensionFunctionDetails(function.get()), window_id, &error);
   EXPECT_TRUE(error.empty());
   EXPECT_TRUE(new_window->window()->IsFullscreen());
 
