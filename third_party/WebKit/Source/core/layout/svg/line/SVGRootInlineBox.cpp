@@ -67,7 +67,8 @@ void SVGRootInlineBox::computePerCharacterLayoutInformation() {
   characterLayout.finishLayout();
 
   // Perform SVG text layout phase four
-  // Position & resize all SVGInlineText/FlowBoxes in the inline box tree, resize the root box as well as the LayoutSVGText parent block.
+  // Position & resize all SVGInlineText/FlowBoxes in the inline box tree,
+  // resize the root box as well as the LayoutSVGText parent block.
   LayoutRect childRect;
   layoutChildBoxes(this, &childRect);
   layoutRootBox(childRect);
@@ -192,7 +193,8 @@ static inline void reverseInlineBoxRangeAndValueListsIfNeeded(
       SVGInlineTextBox* firstTextBox = toSVGInlineTextBox(*first);
       SVGInlineTextBox* lastTextBox = toSVGInlineTextBox(*last);
 
-      // Reordering is only necessary for BiDi text that is _absolutely_ positioned.
+      // Reordering is only necessary for BiDi text that is _absolutely_
+      // positioned.
       if (firstTextBox->len() == 1 && firstTextBox->len() == lastTextBox->len())
         swapPositioningValuesInTextBoxes(firstTextBox, lastTextBox);
     }

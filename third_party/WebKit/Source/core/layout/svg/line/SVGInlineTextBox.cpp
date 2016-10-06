@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2007 Rob Buis <buis@kde.org>
  * Copyright (C) 2007 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
@@ -47,19 +47,20 @@ SVGInlineTextBox::SVGInlineTextBox(LineLayoutItem item,
 void SVGInlineTextBox::dirtyLineBoxes() {
   InlineTextBox::dirtyLineBoxes();
 
-  // Clear the now stale text fragments
+  // Clear the now stale text fragments.
   clearTextFragments();
 
-  // And clear any following text fragments as the text on which they
-  // depend may now no longer exist, or glyph positions may be wrong
+  // And clear any following text fragments as the text on which they depend may
+  // now no longer exist, or glyph positions may be wrong.
   InlineTextBox* nextBox = nextTextBox();
   if (nextBox)
     nextBox->dirtyLineBoxes();
 }
 
 int SVGInlineTextBox::offsetForPosition(LayoutUnit, bool) const {
-  // SVG doesn't use the standard offset <-> position selection system, as it's not suitable for SVGs complex needs.
-  // vertical text selection, inline boxes spanning multiple lines (contrary to HTML, etc.)
+  // SVG doesn't use the standard offset <-> position selection system, as it's
+  // not suitable for SVGs complex needs. Vertical text selection, inline boxes
+  // spanning multiple lines (contrary to HTML, etc.)
   ASSERT_NOT_REACHED();
   return 0;
 }
@@ -198,7 +199,8 @@ TextRun SVGInlineTextBox::constructTextRun(
   // We handle letter & word spacing ourselves.
   run.disableSpacing();
 
-  // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
+  // Propagate the maximum length of the characters buffer to the TextRun, even
+  // when we're only processing a substring.
   run.setCharactersLength(text.textLength() - fragment.characterOffset);
   ASSERT(run.charactersLength() >= run.length());
   return run;
@@ -228,7 +230,8 @@ void SVGInlineTextBox::paintDocumentMarker(GraphicsContext&,
                                            const ComputedStyle&,
                                            const Font&,
                                            bool) const {
-  // SVG does not have support for generic document markers (e.g., spellchecking, etc).
+  // SVG does not have support for generic document markers (e.g.,
+  // spellchecking, etc).
 }
 
 void SVGInlineTextBox::paintTextMatchMarkerForeground(
