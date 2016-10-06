@@ -24,9 +24,7 @@ extern const int kBubblePaddingVerticalSide;
 
 extern const int kTrayBubbleAnchorTopInsetBottomAnchor;
 
-extern const int kTrayImageItemHorizontalPaddingBottomAlignment;
 extern const int kTrayImageItemHorizontalPaddingVerticalAlignment;
-extern const int kTrayImageItemVerticalPaddingVerticalAlignment;
 
 ASH_EXPORT extern const int kTrayItemSize;
 
@@ -119,6 +117,9 @@ enum TrayConstant {
 
   // The icon size of opt-in IME menu tray.
   TRAY_IME_MENU_ICON,
+
+  // Extra padding used beside a single icon in the tray area of the shelf.
+  TRAY_IMAGE_ITEM_PADDING,
 };
 
 int GetTrayConstant(TrayConstant constant);

@@ -4,6 +4,7 @@
 
 #include "ash/common/system/user/tray_user.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -175,7 +176,15 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
   if (avatar_) {
     avatar_->SetCornerRadii(0, kTrayRoundedBorderRadius,
                             kTrayRoundedBorderRadius, 0);
-    avatar_->SetBorder(views::Border::NullBorder());
+    const int distance_to_avatar =
+        MaterialDesignController::IsShelfMaterial()
+            ? GetTrayConstant(TRAY_IMAGE_ITEM_PADDING)
+            : 0;
+    const bool is_horizontal =
+        IsHorizontalAlignment(system_tray()->shelf_alignment());
+    avatar_->SetBorder(views::Border::CreateEmptyBorder(
+        is_horizontal ? 0 : distance_to_avatar,
+        is_horizontal ? distance_to_avatar : 0, 0, 0));
   }
   UpdateAvatarImage(status);
 
@@ -187,9 +196,13 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   // Inactive users won't have a layout.
   if (!layout_view_)
     return;
+  const int distance_to_avatar = MaterialDesignController::IsShelfMaterial()
+                                     ? GetTrayConstant(TRAY_IMAGE_ITEM_PADDING)
+                                     : 0;
   if (IsHorizontalAlignment(alignment)) {
     if (avatar_) {
-      avatar_->SetBorder(views::Border::NullBorder());
+      avatar_->SetBorder(
+          views::Border::CreateEmptyBorder(0, distance_to_avatar, 0, 0));
       avatar_->SetCornerRadii(0, kTrayRoundedBorderRadius,
                               kTrayRoundedBorderRadius, 0);
     }
@@ -209,7 +222,8 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
         views::BoxLayout::kHorizontal, 0, 0, kUserLabelToIconPadding));
   } else {
     if (avatar_) {
-      avatar_->SetBorder(views::Border::NullBorder());
+      avatar_->SetBorder(
+          views::Border::CreateEmptyBorder(distance_to_avatar, 0, 0, 0));
       avatar_->SetCornerRadii(0, 0, kTrayRoundedBorderRadius,
                               kTrayRoundedBorderRadius);
     }

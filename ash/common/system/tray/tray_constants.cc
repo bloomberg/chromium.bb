@@ -26,9 +26,7 @@ const int kBubblePaddingVerticalSide = 15;
 // Top inset of system tray bubble for bottom anchor alignment.
 const int kTrayBubbleAnchorTopInsetBottomAnchor = 3;
 
-const int kTrayImageItemHorizontalPaddingBottomAlignment = 1;
 const int kTrayImageItemHorizontalPaddingVerticalAlignment = 1;
-const int kTrayImageItemVerticalPaddingVerticalAlignment = 1;
 
 // Size of tray items on the primary axis.
 const int kTrayItemSize = 32;
@@ -98,6 +96,7 @@ int GetTrayConstant(TrayConstant constant) {
   const int kTrayPopupItemHeight[] = {46, 46, 48};
   const int kVirtualKeyboardButtonSize[] = {39, 39, kTrayItemSize};
   const int kTrayImeMenuIcon[] = {40, 40, kTrayItemSize};
+  const int kTrayImageItemPadding[] = {1, 1, 3};
 
   const int mode = MaterialDesignController::GetMode();
   DCHECK(mode >= MaterialDesignController::NON_MATERIAL &&
@@ -116,6 +115,8 @@ int GetTrayConstant(TrayConstant constant) {
       return kVirtualKeyboardButtonSize[mode];
     case TRAY_IME_MENU_ICON:
       return kTrayImeMenuIcon[mode];
+    case TRAY_IMAGE_ITEM_PADDING:
+      return kTrayImageItemPadding[mode];
   }
   NOTREACHED();
   return 0;

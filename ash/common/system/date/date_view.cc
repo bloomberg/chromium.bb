@@ -4,6 +4,7 @@
 
 #include "ash/common/system/date/date_view.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -43,6 +44,12 @@ const int kVerticalClockLeftPadding = 9;
 // Offset used to bring the minutes line closer to the hours line in the
 // vertical clock.
 const int kVerticalClockMinutesTopOffset = -4;
+const int kVerticalClockMinutesTopOffsetMD = -2;
+
+// Leading padding used to draw the tray background to the left of the clock
+// when the shelf is horizontally aligned, and on the top when the shelf is
+// vertically aligned.
+const int kClockLeadingPadding = 8;
 
 base::string16 FormatDate(const base::Time& time) {
   icu::UnicodeString date_string;
@@ -288,6 +295,7 @@ void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout) {
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
     AddChildView(horizontal_label_.get());
   } else {
+    const bool is_material_design = MaterialDesignController::IsShelfMaterial();
     RemoveChildView(horizontal_label_.get());
     views::GridLayout* layout = new views::GridLayout(this);
     SetLayoutManager(layout);
@@ -296,23 +304,36 @@ void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout) {
     columns->AddPaddingColumn(0, kVerticalClockLeftPadding);
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                        0, views::GridLayout::USE_PREF, 0, 0);
-    layout->AddPaddingRow(0, kTrayLabelItemVerticalPaddingVerticalAlignment);
+    layout->AddPaddingRow(
+        0, is_material_design ? kClockLeadingPadding
+                              : kTrayLabelItemVerticalPaddingVerticalAlignment);
     layout->StartRow(0, kColumnId);
     layout->AddView(vertical_label_hours_.get());
     layout->StartRow(0, kColumnId);
     layout->AddView(vertical_label_minutes_.get());
-    layout->AddPaddingRow(0, kTrayLabelItemVerticalPaddingVerticalAlignment);
+    layout->AddPaddingRow(0,
+                          is_material_design
+                              ? GetTrayConstant(TRAY_IMAGE_ITEM_PADDING) +
+                                    kVerticalClockMinutesTopOffsetMD
+                              : kTrayLabelItemVerticalPaddingVerticalAlignment);
   }
   Layout();
 }
 
 void TimeView::SetBorderFromLayout(TrayDate::ClockLayout clock_layout) {
-  if (clock_layout == TrayDate::HORIZONTAL_CLOCK)
-    SetBorder(views::Border::CreateEmptyBorder(
-        0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0,
-        kTrayLabelItemHorizontalPaddingBottomAlignment));
-  else
+  if (clock_layout == TrayDate::HORIZONTAL_CLOCK) {
+    bool is_material_design = MaterialDesignController::IsShelfMaterial();
+    const int time_view_left_padding =
+        is_material_design ? kClockLeadingPadding
+                           : kTrayLabelItemHorizontalPaddingBottomAlignment;
+    const int time_view_right_padding =
+        is_material_design ? GetTrayConstant(TRAY_IMAGE_ITEM_PADDING)
+                           : kTrayLabelItemHorizontalPaddingBottomAlignment;
+    SetBorder(views::Border::CreateEmptyBorder(0, time_view_left_padding, 0,
+                                               time_view_right_padding));
+  } else {
     SetBorder(views::Border::NullBorder());
+  }
 }
 
 void TimeView::SetupLabels() {
@@ -326,7 +347,10 @@ void TimeView::SetupLabels() {
   vertical_label_minutes_->SetEnabledColor(kVerticalClockMinuteColor);
   // Pull the minutes up closer to the hours by using a negative top border.
   vertical_label_minutes_->SetBorder(views::Border::CreateEmptyBorder(
-      kVerticalClockMinutesTopOffset, 0, 0, 0));
+      MaterialDesignController::IsShelfMaterial()
+          ? kVerticalClockMinutesTopOffsetMD
+          : kVerticalClockMinutesTopOffset,
+      0, 0, 0));
 }
 
 void TimeView::SetupLabel(views::Label* label) {
