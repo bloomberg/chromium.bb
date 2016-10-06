@@ -649,6 +649,13 @@ TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterBlocking) {
   EXPECT_EQ(PREVIOUSLY_BLOCKED,
             AppBannerSettingsHelper::ShouldShowBanner(
                 web_contents(), url, kTestPackageName, reference_time));
+
+  // Change the number of days enforced.
+  AppBannerSettingsHelper::SetDaysAfterDismissAndIgnoreToTrigger(59, 14);
+
+  EXPECT_EQ(NO_ERROR_DETECTED,
+            AppBannerSettingsHelper::ShouldShowBanner(
+                web_contents(), url, kTestPackageName, reference_time));
 }
 
 TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterShowing) {
@@ -689,6 +696,13 @@ TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterShowing) {
       web_contents(), url, kTestPackageName,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, one_week_ago);
   EXPECT_EQ(PREVIOUSLY_IGNORED,
+            AppBannerSettingsHelper::ShouldShowBanner(
+                web_contents(), url, kTestPackageName, reference_time));
+
+  // Change the number of days enforced.
+  AppBannerSettingsHelper::SetDaysAfterDismissAndIgnoreToTrigger(90, 6);
+
+  EXPECT_EQ(NO_ERROR_DETECTED,
             AppBannerSettingsHelper::ShouldShowBanner(
                 web_contents(), url, kTestPackageName, reference_time));
 }

@@ -145,6 +145,11 @@ class AppBannerSettingsHelper {
                                   const GURL& origin_url,
                                   base::Time now);
 
+  // Set the number of days which dismissing/ignoring the banner should prevent
+  // a banner from showing.
+  static void SetDaysAfterDismissAndIgnoreToTrigger(unsigned int dismiss_days,
+                                                    unsigned int ignore_days);
+
   // Set the engagement weights assigned to direct and indirect navigations.
   static void SetEngagementWeights(double direct_engagement,
                                    double indirect_engagement);
