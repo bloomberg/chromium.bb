@@ -569,9 +569,7 @@
       "350",
       "--known-devices-file",
       "[HOME]/.android/known_devices.json",
-      "--enable-platform-mode",
-      "--adb-path",
-      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb"
+      "--enable-platform-mode"
     ],
     "cwd": "[SLAVE_BUILD]/src",
     "env": {

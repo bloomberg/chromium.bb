@@ -188,7 +188,8 @@ def RunSteps(api):
         num_host_shards=builder.get('num_host_shards', 1),
         shard_index=builder.get('shard_index', 0),
         override_browser_name=builder.get('browser_name'),
-        enable_platform_mode=builder.get('enable_platform_mode'))
+        enable_platform_mode=builder.get('enable_platform_mode'),
+        pass_adb_path=False)
     dynamic_perf_tests.run(api, None)
 
     if failures:
