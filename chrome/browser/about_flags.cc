@@ -1212,6 +1212,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_STORAGE_MANAGER_DESCRIPTION, kOsCrOS,
      ENABLE_DISABLE_VALUE_TYPE(chromeos::switches::kEnableStorageManager,
                                chromeos::switches::kDisableStorageManager)},
+    {"enable-md-storage-manager", IDS_FLAGS_MD_STORAGE_MANAGER_NAME,
+     IDS_FLAGS_MD_STORAGE_MANAGER_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableMdStorageManager)},
 #endif  // OS_CHROMEOS
     {"enable-simple-cache-backend", IDS_FLAGS_SIMPLE_CACHE_BACKEND_NAME,
      IDS_FLAGS_SIMPLE_CACHE_BACKEND_DESCRIPTION,

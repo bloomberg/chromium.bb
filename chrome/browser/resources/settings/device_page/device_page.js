@@ -42,6 +42,15 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /** @private */
+    showStorageManager_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('showStorageManager');
+      },
+      readOnly: true,
+    },
   },
 
   observers: [
@@ -111,6 +120,14 @@ Polymer({
    */
   onDisplayTap_: function() {
     settings.navigateTo(settings.Route.DISPLAY);
+  },
+
+  /**
+   * Handler for tapping the Storage settings menu item.
+   * @private
+   */
+  onStorageTap_: function() {
+    settings.navigateTo(settings.Route.STORAGE);
   },
 
   /** @protected */

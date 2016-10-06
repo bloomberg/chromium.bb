@@ -129,6 +129,7 @@ cr.define('settings', function() {
   r.KEYBOARD = r.DEVICE.createChild('/keyboard-overlay');
   r.DISPLAY = r.DEVICE.createChild('/display');
   r.STYLUS = r.DEVICE.createChild('/stylus');
+  r.STORAGE = r.DEVICE.createChild('/storage');
 </if>
 
   r.PRIVACY = r.ADVANCED.createSection('/privacy', 'privacy');

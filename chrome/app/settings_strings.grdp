@@ -2372,6 +2372,65 @@
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_SAVE" desc="Label for saving overscan calibration.">
       Save
     </message>
+
+    <!-- Storage -->
+    <message name="IDS_SETTINGS_STORAGE_TITLE" desc="In Device Settings, the title for storage management.">
+      Storage management
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_ITEM_IN_USE" desc="In Device Settings > Storage, label for the used storage size of Chrome OS internal storage.">
+      In use
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_ITEM_AVAILABLE" desc="In Device Settings > Storage, label for the available storage size of Chrome OS internal storage.">
+      Available
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_ITEM_DOWNLOADS" desc="In Device Settings > Storage, label for the size of Downloads directory.">
+      Downloads
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_ITEM_DRIVE_CACHE" desc="In Device Settings > Storage, label for the size of Google Drive's offline files.">
+      Offline files
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_ITEM_BROWSING_DATA" desc="In Device Settings > Storage, label for the size of browsing data.">
+      Browsing data
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_ITEM_ANDROID" desc="In Device Settings > Storage, label for the total size of Android apps and cache.">
+      Android storage
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_ITEM_OTHER_USERS" desc="In Device Settings > Storage, label for the total size of other users' data directories.">
+      Other users
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_SIZE_CALCULATING" desc="In Device Settings > Storage, label for storage item's size indicating the size is being calculated.">
+      Calculating...
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_SIZE_UNKNOWN" desc="In Device Settings > Storage, label for storage item's size indicating the size is unknown">
+      Unknown
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_TITLE" desc="Title of a warning message indicating device's available disk space is low.">
+      Device is low on space
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_1" desc="The first paragraph of a warning message indicating device's available disk space is low.">
+      To free up space, delete files from device storage.
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_2" desc="The second paragraph of a warning message indicating device's available disk space is low.">
+      If space isn’t made available, users and data may be automatically removed.
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_TITLE" desc="Title of a warning message indicating device's available disk space is critically low.">
+      Device space critically low
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_1" desc="The first paragraph of a warning message indicating device's available disk space is critically low.">
+      Free up at least 512 MB of space or your device will become unresponsive. To free up space, delete files from device storage.
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_2" desc="The second paragraph of a warning message indicating device's available disk space is critically low.">
+      If you don’t free up space, users and data may be automatically removed.
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DIALOG_TITLE" desc="Title for the storage manager confirmation dialog tab to remove Google Drive offline files.">
+      Delete offline files?
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DESCRIPTION" desc="Description in the storage manager confirmation dialog to remove Google Drive offline files.">
+      Temporary Google Drive offline files will be deleted. Files that you’ve set as available offline won’t be deleted from this device.
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE" desc="In storage manager confirmation dialog, label for the button to delete offline files.">
+      Delete files
+    </message>
   </if>
 
   <!-- System Page -->

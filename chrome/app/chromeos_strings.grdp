@@ -1404,6 +1404,12 @@ Press any key to continue exploring.
   <message name="IDS_FLAGS_FULLSCREEN_APP_LIST_DESCRIPTION" desc="Description for the flag to enable experimental fullscreen app list.">
     The app-list will appear as fullscreen mode when it's in touch view mode. This flag does nothing outside of the mode.
   </message>
+  <message name="IDS_FLAGS_MD_STORAGE_MANAGER_NAME" desc="Description for the flag to enable experimental storage manager.">
+    Material Design storage manager
+  </message>
+  <message name="IDS_FLAGS_MD_STORAGE_MANAGER_DESCRIPTION" desc="Description for the flag to enable experimental storage manager.">
+    Enables storage manager in Material Design Settings.
+  </message>
   <message name="IDS_FLAGS_QUICK_UNLOCK_PIN" desc="Title of the flag used to enable quick unlock pin.">
     Quick Unlock (PIN)
   </message>

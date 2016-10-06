@@ -564,8 +564,44 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, display_strings,
                           arraysize(display_strings));
 
+  LocalizedString storage_strings[] = {
+      {"storageTitle", IDS_SETTINGS_STORAGE_TITLE},
+      {"storageItemInUse", IDS_SETTINGS_STORAGE_ITEM_IN_USE},
+      {"storageItemAvailable", IDS_SETTINGS_STORAGE_ITEM_AVAILABLE},
+      {"storageItemDownloads", IDS_SETTINGS_STORAGE_ITEM_DOWNLOADS},
+      {"storageItemDriveCache", IDS_SETTINGS_STORAGE_ITEM_DRIVE_CACHE},
+      {"storageItemBrowsingData", IDS_SETTINGS_STORAGE_ITEM_BROWSING_DATA},
+      {"storageItemAndroid", IDS_SETTINGS_STORAGE_ITEM_ANDROID},
+      {"storageItemOtherUsers", IDS_SETTINGS_STORAGE_ITEM_OTHER_USERS},
+      {"storageSizeComputing", IDS_SETTINGS_STORAGE_SIZE_CALCULATING},
+      {"storageSizeUnknown", IDS_SETTINGS_STORAGE_SIZE_UNKNOWN},
+      {"storageSpaceLowMessageTitle",
+       IDS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_TITLE},
+      {"storageSpaceLowMessageLine1",
+       IDS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_1},
+      {"storageSpaceLowMessageLine2",
+       IDS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_2},
+      {"storageSpaceCriticallyLowMessageTitle",
+       IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_TITLE},
+      {"storageSpaceCriticallyLowMessageLine1",
+       IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_1},
+      {"storageSpaceCriticallyLowMessageLine2",
+       IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_2},
+      {"storageClearDriveCacheDialogTitle",
+       IDS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DIALOG_TITLE},
+      {"storageClearDriveCacheDialogDescription",
+       IDS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DESCRIPTION},
+      {"storageDeleteAllButtonTitle",
+       IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE}};
+  AddLocalizedStringsBulk(html_source, storage_strings,
+                          arraysize(storage_strings));
+
   html_source->AddString("naturalScrollLearnMoreLink",
                          base::ASCIIToUTF16(chrome::kNaturalScrollHelpURL));
+
+  html_source->AddBoolean("showStorageManager",
+                          base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              chromeos::switches::kEnableMdStorageManager));
 }
 #endif
 

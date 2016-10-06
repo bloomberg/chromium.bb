@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #else  // !defined(OS_CHROMEOS)
@@ -96,6 +97,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   AddSettingsPageUIHandler(new chromeos::settings::CupsPrintersHandler(web_ui));
   AddSettingsPageUIHandler(new chromeos::settings::KeyboardHandler(web_ui));
   AddSettingsPageUIHandler(new chromeos::settings::PointerHandler());
+  AddSettingsPageUIHandler(new chromeos::settings::StorageHandler());
   AddSettingsPageUIHandler(new chromeos::settings::InternetHandler());
 #else
   AddSettingsPageUIHandler(new DefaultBrowserHandler(web_ui));
