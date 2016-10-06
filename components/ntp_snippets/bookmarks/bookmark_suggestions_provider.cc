@@ -258,6 +258,21 @@ void BookmarkSuggestionsProvider::BookmarkNodeRemoved(
   FetchBookmarks();
 }
 
+void BookmarkSuggestionsProvider::BookmarkNodeAdded(
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* parent,
+    int index) {
+  if (GetLastVisitDateForBookmarkIfNotDismissed(parent->GetChild(index),
+                                                creation_date_fallback_) <
+      end_of_list_last_visit_date_) {
+    return;
+  }
+
+  // Some node with last_visit info that is relevant for our list got created
+  // (e.g. by sync), we should update the suggestions.
+  FetchBookmarks();
+}
+
 ContentSuggestion BookmarkSuggestionsProvider::ConvertBookmark(
     const BookmarkNode* bookmark) {
   ContentSuggestion suggestion(provided_category_, bookmark->url().spec(),

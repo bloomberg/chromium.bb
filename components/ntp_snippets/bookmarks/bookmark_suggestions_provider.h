@@ -68,7 +68,7 @@ class BookmarkSuggestionsProvider : public ContentSuggestionsProvider,
                          int new_index) override {}
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* parent,
-                         int index) override {}
+                         int index) override;
   void BookmarkNodeRemoved(
       bookmarks::BookmarkModel* model,
       const bookmarks::BookmarkNode* parent,
