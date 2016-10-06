@@ -73,14 +73,17 @@ class RenderWidgetFeature : public BlimpMessageProcessor {
       std::unique_ptr<BlimpMessageProcessor> processor);
 
   // Sends a WebGestureEvent for |tab_id| to the engine.
-  void SendWebGestureEvent(const int tab_id,
-                           const int render_widget_id,
-                           const blink::WebGestureEvent& event);
+  // virtual for testing.
+  virtual void SendWebGestureEvent(const int tab_id,
+                                   const int render_widget_id,
+                                   const blink::WebGestureEvent& event);
 
   // Sends a CompositorMessage for |tab_id| to the engine.
-  void SendCompositorMessage(const int tab_id,
-                             const int render_widget_id,
-                             const cc::proto::CompositorMessage& message);
+  // virtual for testing.
+  virtual void SendCompositorMessage(
+      const int tab_id,
+      const int render_widget_id,
+      const cc::proto::CompositorMessage& message);
 
   // Sets a RenderWidgetMessageDelegate to be notified of all incoming
   // RenderWidget related messages for |tab_id| from the engine.  There can only

@@ -7,10 +7,10 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "blimp/client/core/compositor/blimp_compositor_manager.h"
 #include "blimp/client/core/contents/blimp_contents_view_impl.h"
 #include "blimp/client/core/contents/blimp_navigation_controller_delegate.h"
 #include "blimp/client/core/contents/blimp_navigation_controller_impl.h"
+#include "blimp/client/core/render_widget/blimp_document_manager.h"
 #include "blimp/client/public/contents/blimp_contents.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -80,16 +80,17 @@ class BlimpContentsImpl : public BlimpContents,
   int id() { return id_; }
 
   // TODO(nyquist): Remove this once the Android BlimpView uses a delegate.
-  BlimpCompositorManager* compositor_manager() { return &compositor_manager_; }
+  BlimpDocumentManager* document_manager() { return &document_manager_; }
 
  private:
   // Handles the back/forward list and loading URLs.
   BlimpNavigationControllerImpl navigation_controller_;
 
-  // Holds onto all active BlimpCompositor instances for this BlimpContents.
+  // Holds onto all active BlimpDocument and BlimpCompositor instances for
+  // this BlimpContents.
   // This properly exposes the right rendered page content for the correct
   // BlimpCompositor based on the engine state.
-  BlimpCompositorManager compositor_manager_;
+  BlimpDocumentManager document_manager_;
 
   // A list of all the observers of this BlimpContentsImpl.
   base::ObserverList<BlimpContentsObserver> observers_;

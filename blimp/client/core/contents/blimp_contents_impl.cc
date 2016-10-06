@@ -34,13 +34,13 @@ BlimpContentsImpl::BlimpContentsImpl(
     RenderWidgetFeature* render_widget_feature,
     TabControlFeature* tab_control_feature)
     : navigation_controller_(id, this, navigation_feature),
-      compositor_manager_(id, render_widget_feature, compositor_deps),
+      document_manager_(id, render_widget_feature, compositor_deps),
       id_(id),
       ime_feature_(ime_feature),
       window_(window),
       tab_control_feature_(tab_control_feature) {
   blimp_contents_view_ =
-      BlimpContentsViewImpl::Create(this, compositor_manager_.layer());
+      BlimpContentsViewImpl::Create(this, document_manager_.layer());
   ime_feature_->set_delegate(blimp_contents_view_->GetImeDelegate());
 }
 
@@ -89,12 +89,12 @@ BlimpContentsViewImpl* BlimpContentsImpl::GetView() {
 }
 
 void BlimpContentsImpl::Show() {
-  compositor_manager_.SetVisible(true);
+  document_manager_.SetVisible(true);
   UMA_HISTOGRAM_BOOLEAN("Blimp.Tab.Visible", true);
 }
 
 void BlimpContentsImpl::Hide() {
-  compositor_manager_.SetVisible(false);
+  document_manager_.SetVisible(false);
   UMA_HISTOGRAM_BOOLEAN("Blimp.Tab.Visible", false);
 }
 

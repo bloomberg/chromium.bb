@@ -58,11 +58,9 @@ void RequireCallback(cc::SurfaceManager* manager,
 }  // namespace
 
 BlimpCompositor::BlimpCompositor(
-    int render_widget_id,
     BlimpCompositorDependencies* compositor_dependencies,
     BlimpCompositorClient* client)
-    : render_widget_id_(render_widget_id),
-      client_(client),
+    : client_(client),
       compositor_dependencies_(compositor_dependencies),
       frame_sink_id_(compositor_dependencies_->GetEmbedderDependencies()
                          ->AllocateFrameSinkId()),
@@ -140,7 +138,7 @@ void BlimpCompositor::SetProtoReceiver(ProtoReceiver* receiver) {
 
 void BlimpCompositor::SendCompositorProto(
     const cc::proto::CompositorMessage& proto) {
-  client_->SendCompositorMessage(render_widget_id_, proto);
+  client_->SendCompositorMessage(proto);
 }
 
 void BlimpCompositor::OnCompositorMessageReceived(
@@ -200,7 +198,7 @@ void BlimpCompositor::OnContextProvidersCreated(
 
 void BlimpCompositor::SendWebGestureEvent(
     const blink::WebGestureEvent& gesture_event) {
-  client_->SendWebGestureEvent(render_widget_id_, gesture_event);
+  client_->SendWebGestureEvent(gesture_event);
 }
 
 void BlimpCompositor::BindToProxyClient(
@@ -285,7 +283,7 @@ void BlimpCompositor::DestroyDelegatedContent() {
 
 void BlimpCompositor::CreateLayerTreeHost() {
   DCHECK(!host_);
-  VLOG(1) << "Creating LayerTreeHost for render widget: " << render_widget_id_;
+  VLOG(1) << "Creating LayerTreeHost.";
 
   // Create the LayerTreeHost
   cc::LayerTreeHostInProcess::InitParams params;
@@ -320,8 +318,8 @@ void BlimpCompositor::CreateLayerTreeHost() {
 
 void BlimpCompositor::DestroyLayerTreeHost() {
   DCHECK(host_);
-  VLOG(1) << "Destroying LayerTreeHost for render widget: "
-          << render_widget_id_;
+  VLOG(1) << "Destroying LayerTreeHost.";
+
   // Tear down the output surface connection with the old LayerTreeHost
   // instance.
   DestroyDelegatedContent();

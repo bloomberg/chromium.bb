@@ -4,7 +4,6 @@
 
 #include "blimp/client/core/contents/android/blimp_view.h"
 
-#include "blimp/client/core/compositor/blimp_compositor_manager.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "jni/BlimpView_jni.h"
 #include "ui/android/window_android.h"

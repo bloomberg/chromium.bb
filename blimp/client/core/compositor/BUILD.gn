@@ -15,8 +15,6 @@ source_set("compositor") {
     "blimp_compositor_frame_sink.cc",
     "blimp_compositor_frame_sink.h",
     "blimp_compositor_frame_sink_proxy.h",
-    "blimp_compositor_manager.cc",
-    "blimp_compositor_manager.h",
     "blimp_image_decoder.cc",
     "blimp_image_decoder.h",
     "blob_channel_feature.cc",
@@ -41,7 +39,6 @@ source_set("compositor") {
   public_deps = [
     "//base",
     "//blimp/client/core/input",
-    "//blimp/client/core/render_widget",
     "//blimp/common",
     "//blimp/common/proto",
     "//cc",
@@ -57,7 +54,6 @@ source_set("unit_tests") {
   sources = [
     "blimp_client_picture_cache_unittest.cc",
     "blimp_compositor_frame_sink_unittest.cc",
-    "blimp_compositor_manager_unittest.cc",
     "blimp_compositor_unittest.cc",
     "blob_channel_feature_unittest.cc",
   ]
@@ -65,8 +61,6 @@ source_set("unit_tests") {
   deps = [
     ":compositor",
     "//base",
-    "//blimp/client/core/render_widget",
-    "//blimp/client/core/render_widget:test_support",
     "//blimp/client/support",
     "//blimp/client/test",
     "//blimp/test:support",

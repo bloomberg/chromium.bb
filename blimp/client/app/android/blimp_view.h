@@ -19,7 +19,7 @@ class Size;
 namespace blimp {
 namespace client {
 class BlimpCompositorDependencies;
-class BlimpCompositorManager;
+class BlimpDocumentManager;
 class BrowserCompositor;
 class RenderWidgetFeature;
 
@@ -105,7 +105,7 @@ class BlimpView {
   const float device_scale_factor_;
 
   std::unique_ptr<BlimpCompositorDependencies> compositor_dependencies_;
-  std::unique_ptr<BlimpCompositorManager> compositor_manager_;
+  std::unique_ptr<BlimpDocumentManager> document_manager_;
   std::unique_ptr<BrowserCompositor> compositor_;
 
   // The format of the current surface owned by |compositor_|.  See

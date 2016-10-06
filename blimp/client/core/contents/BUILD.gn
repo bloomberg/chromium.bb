@@ -31,6 +31,7 @@ source_set("contents") {
   public_deps = [
     "//base",
     "//blimp/client/core/compositor",
+    "//blimp/client/core/render_widget",
     "//blimp/client/public:public_headers",
     "//blimp/net",
     "//net:net",
@@ -41,7 +42,6 @@ source_set("contents") {
   ]
 
   deps = [
-    "//blimp/client/core/render_widget",
     "//blimp/common",
     "//components/url_formatter",
     "//skia",

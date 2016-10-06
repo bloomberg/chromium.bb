@@ -10,7 +10,7 @@
 #include "blimp/client/app/android/blimp_client_session_android.h"
 #include "blimp/client/app/compositor/browser_compositor.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
-#include "blimp/client/core/compositor/blimp_compositor_manager.h"
+#include "blimp/client/core/render_widget/blimp_document_manager.h"
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/support/compositor/compositor_dependencies_impl.h"
 #include "jni/BlimpView_jni.h"
@@ -69,10 +69,10 @@ BlimpView::BlimpView(JNIEnv* env,
   compositor_->set_did_complete_swap_buffers_callback(base::Bind(
       &BlimpView::OnSwapBuffersCompleted, weak_ptr_factory_.GetWeakPtr()));
 
-  compositor_manager_ = base::MakeUnique<BlimpCompositorManager>(
+  document_manager_ = base::MakeUnique<BlimpDocumentManager>(
       kDummyBlimpContentsId, render_widget_feature,
       compositor_dependencies_.get());
-  compositor_->SetContentLayer(compositor_manager_->layer());
+  compositor_->SetContentLayer(document_manager_->layer());
 
   java_obj_.Reset(env, jobj);
 }
@@ -83,7 +83,7 @@ BlimpView::~BlimpView() {
   // Destroy the BrowserCompositor and the BlimpCompositorManager before the
   // BlimpCompositorDependencies.
   compositor_.reset();
-  compositor_manager_.reset();
+  document_manager_.reset();
   compositor_dependencies_.reset();
 }
 
@@ -136,7 +136,7 @@ void BlimpView::SetSurface(jobject surface) {
   // Release all references to the old surface.
   if (window_ != gfx::kNullAcceleratedWidget) {
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
-    compositor_manager_->SetVisible(false);
+    document_manager_->SetVisible(false);
     ANativeWindow_release(window_);
     window_ = gfx::kNullAcceleratedWidget;
   }
@@ -145,7 +145,7 @@ void BlimpView::SetSurface(jobject surface) {
     base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
     window_ = ANativeWindow_fromSurface(env, surface);
     compositor_->SetAcceleratedWidget(window_);
-    compositor_manager_->SetVisible(true);
+    document_manager_->SetVisible(true);
   }
 }
 
@@ -209,7 +209,7 @@ jboolean BlimpView::OnTouchEvent(
                                pointer0,
                                pointer1);
 
-  return compositor_manager_->OnTouchEvent(event);
+  return document_manager_->OnTouchEvent(event);
 }
 
 void BlimpView::OnSwapBuffersCompleted() {

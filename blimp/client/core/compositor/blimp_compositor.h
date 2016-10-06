@@ -57,13 +57,11 @@ class BlimpCompositorClient {
   // Should send web gesture events which could not be handled locally by the
   // compositor to the engine.
   virtual void SendWebGestureEvent(
-      int render_widget_id,
       const blink::WebGestureEvent& gesture_event) = 0;
 
   // Should send the compositor messages from the remote client LayerTreeHost of
   // this compositor to the corresponding remote server LayerTreeHost.
   virtual void SendCompositorMessage(
-      int render_widget_id,
       const cc::proto::CompositorMessage& message) = 0;
 
  protected:
@@ -85,8 +83,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
                         public BlimpCompositorFrameSinkProxy,
                         public cc::SurfaceFactoryClient {
  public:
-  BlimpCompositor(const int render_widget_id,
-                  BlimpCompositorDependencies* compositor_dependencies,
+  BlimpCompositor(BlimpCompositorDependencies* compositor_dependencies,
                   BlimpCompositorClient* client);
 
   ~BlimpCompositor() override;
@@ -109,8 +106,6 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
       std::unique_ptr<cc::proto::CompositorMessage> message);
 
   scoped_refptr<cc::Layer> layer() const { return layer_; }
-
-  int render_widget_id() const { return render_widget_id_; }
 
  private:
   friend class BlimpCompositorForTesting;
@@ -181,9 +176,6 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // notifying the callback.  If |flush| is true, flushes all entries regardless
   // of the count.
   void CheckPendingCommitCounts(bool flush);
-
-  // The unique identifier for the render widget for this compositor.
-  const int render_widget_id_;
 
   BlimpCompositorClient* client_;
 

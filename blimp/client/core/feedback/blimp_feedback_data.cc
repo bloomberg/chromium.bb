@@ -17,7 +17,7 @@ std::string HasVisibleBlimpContents(
   std::vector<BlimpContentsImpl*> all_blimp_contents =
       blimp_contents_manager->GetAllActiveBlimpContents();
   for (const auto& item : all_blimp_contents) {
-    if (item->compositor_manager()->visible()) {
+    if (item->document_manager()->visible()) {
       return "true";
     }
   }

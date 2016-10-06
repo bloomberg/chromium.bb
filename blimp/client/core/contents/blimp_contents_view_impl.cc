@@ -37,12 +37,12 @@ void BlimpContentsViewImpl::SetSizeAndScale(const gfx::Size& size,
 }
 
 bool BlimpContentsViewImpl::OnTouchEvent(const ui::MotionEvent& motion_event) {
-  return blimp_contents_->compositor_manager()->OnTouchEvent(motion_event);
+  return blimp_contents_->document_manager()->OnTouchEvent(motion_event);
 }
 
 void BlimpContentsViewImpl::CopyFromCompositingSurface(
     const ReadbackRequestCallback& callback) {
-  blimp_contents_->compositor_manager()->NotifyWhenDonePendingCommits(
+  blimp_contents_->document_manager()->NotifyWhenDonePendingCommits(
       base::Bind(&BlimpContentsViewImpl::StartReadbackRequest,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
