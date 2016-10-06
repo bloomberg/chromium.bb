@@ -70,26 +70,6 @@ void WTF::StringTypeAdapter<const LChar*>::writeTo(UChar* destination) const {
   StringImpl::copyChars(destination, m_buffer, m_length);
 }
 
-void WTF::StringTypeAdapter<Vector<char>>::writeTo(LChar* destination) const {
-  for (size_t i = 0; i < m_buffer.size(); ++i)
-    destination[i] = static_cast<unsigned char>(m_buffer[i]);
-}
-
-void WTF::StringTypeAdapter<Vector<char>>::writeTo(UChar* destination) const {
-  for (size_t i = 0; i < m_buffer.size(); ++i)
-    destination[i] = static_cast<unsigned char>(m_buffer[i]);
-}
-
-void WTF::StringTypeAdapter<Vector<LChar>>::writeTo(LChar* destination) const {
-  for (size_t i = 0; i < m_buffer.size(); ++i)
-    destination[i] = m_buffer[i];
-}
-
-void WTF::StringTypeAdapter<Vector<LChar>>::writeTo(UChar* destination) const {
-  for (size_t i = 0; i < m_buffer.size(); ++i)
-    destination[i] = m_buffer[i];
-}
-
 void WTF::StringTypeAdapter<StringView>::writeTo(LChar* destination) const {
   DCHECK(is8Bit());
   StringImpl::copyChars(destination, m_view.characters8(), m_view.length());

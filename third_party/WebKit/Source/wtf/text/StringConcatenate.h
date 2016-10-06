@@ -193,42 +193,6 @@ class WTF_EXPORT StringTypeAdapter<const LChar*> {
 };
 
 template <>
-class WTF_EXPORT StringTypeAdapter<Vector<char>> {
-  DISALLOW_NEW();
-
- public:
-  explicit StringTypeAdapter<Vector<char>>(const Vector<char>& buffer)
-      : m_buffer(buffer) {}
-
-  size_t length() const { return m_buffer.size(); }
-  bool is8Bit() const { return true; }
-
-  void writeTo(LChar* destination) const;
-  void writeTo(UChar* destination) const;
-
- private:
-  const Vector<char>& m_buffer;
-};
-
-template <>
-class StringTypeAdapter<Vector<LChar>> {
-  DISALLOW_NEW();
-
- public:
-  explicit StringTypeAdapter<Vector<LChar>>(const Vector<LChar>& buffer)
-      : m_buffer(buffer) {}
-
-  size_t length() const { return m_buffer.size(); }
-  bool is8Bit() const { return true; }
-
-  void writeTo(LChar* destination) const;
-  void writeTo(UChar* destination) const;
-
- private:
-  const Vector<LChar>& m_buffer;
-};
-
-template <>
 class WTF_EXPORT StringTypeAdapter<StringView> {
   DISALLOW_NEW();
 
