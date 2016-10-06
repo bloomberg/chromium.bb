@@ -482,6 +482,7 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
 
     @MediumTest
     @Feature({"Download"})
+    @RetryOnFailure
     public void testInterruptedDownloadAreAutoResumed() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier(getTestContext());
         final DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
