@@ -291,6 +291,22 @@ class AvSettings {
 
   // Gets the current HDR output type.
   virtual HdrOutputType GetHdrOutputType() = 0;
+
+  // Sets the HDMI video mode according to the given parameters:
+  // |allow_4k|: if false, the resolution set will not be a 4K resolution.
+  // |optimize_for_fps|: *Attempts* to pick a refresh rate optimal for the
+  // given content frame rate. |optimize_for_fps| is expressed as framerate
+  // * 100. I.e. 24hz -> 2400, 23.98hz -> 2398, etc.  Values <= 0 are ignored.
+  //
+  // Returns:
+  // - true if HDMI video mode change is beginning.  Caller should wait for
+  //   SCREEN_INFO_CHANGED event for mode change to complete.
+  // - false if no HDMI video mode change has begun.  This could be because
+  // HDMI is disconnected, or the current resolution is already good for the
+  // given parameters.
+  //
+  // Non-HDMI devices should return false.
+  virtual bool SetHdmiVideoMode(bool allow_4k, int optimize_for_fps) = 0;
 };
 
 }  // namespace chromecast
