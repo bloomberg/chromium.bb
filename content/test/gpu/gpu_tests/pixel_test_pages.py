@@ -167,6 +167,20 @@ def ExperimentalCanvasFeaturesPages(base_name):
       browser_args=browser_args),
 
     PixelTestPage(
+      'pixel_offscreenCanvas_webgl_commit_main.html',
+      base_name + '_OffscreenCanvasWebGLSoftwareCompositing',
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      browser_args=browser_args + ['--disable-gpu-compositing']),
+
+    PixelTestPage(
+      'pixel_offscreenCanvas_webgl_commit_worker.html',
+      base_name + '_OffscreenCanvasWebGLSoftwareCompositingWorker',
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      browser_args=browser_args + ['--disable-gpu-compositing']),
+
+    PixelTestPage(
       'pixel_offscreenCanvas_2d_commit_main.html',
       base_name + '_OffscreenCanvasAccelerated2D',
       test_rect=[0, 0, 350, 350],

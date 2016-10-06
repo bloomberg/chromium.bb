@@ -30,7 +30,8 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
   // OffscreenCanvasFrameDispatcher implementation.
   ~OffscreenCanvasFrameDispatcherImpl() override {}
-  void dispatchFrame(RefPtr<StaticBitmapImage>) override;
+  void dispatchFrame(RefPtr<StaticBitmapImage>,
+                     bool isWebGLSoftwareRendering = false) override;
 
   // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
   void ReturnResources(

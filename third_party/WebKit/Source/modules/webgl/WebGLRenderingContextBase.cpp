@@ -704,7 +704,8 @@ void WebGLRenderingContextBase::commit(ExceptionState& exceptionState) {
   // TODO(crbug.com/646864): Make commit() work correctly with
   // { preserveDrawingBuffer : true }.
   getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame(
-      std::move(drawingBuffer()->transferToStaticBitmapImage()));
+      std::move(drawingBuffer()->transferToStaticBitmapImage()),
+      drawingBuffer()->contextProvider()->isSoftwareRendering());
 }
 
 PassRefPtr<Image> WebGLRenderingContextBase::getImage(

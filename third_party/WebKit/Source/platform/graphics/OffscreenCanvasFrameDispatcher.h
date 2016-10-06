@@ -16,7 +16,8 @@ class WebLayer;
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
  public:
   virtual ~OffscreenCanvasFrameDispatcher(){};
-  virtual void dispatchFrame(RefPtr<StaticBitmapImage>) = 0;
+  virtual void dispatchFrame(RefPtr<StaticBitmapImage>,
+                             bool isWebGLSoftwareRendering = false) = 0;
 };
 
 }  // namespace blink

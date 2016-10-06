@@ -16,6 +16,9 @@ class PixelExpectations(GpuTestExpectations):
     # that disables gpu compositing on Android platforms.
     self.Skip('Pixel_OffscreenCanvasUnaccelerated2D', ['android'])
     self.Skip('Pixel_OffscreenCanvasUnaccelerated2DWorker', ['android'])
+    self.Skip('Pixel_OffscreenCanvasWebGLSoftwareCompositing', ['android'])
+    self.Skip('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
+              ['android'])
 
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
@@ -38,6 +41,8 @@ class PixelExpectations(GpuTestExpectations):
 
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
               ['mac', ('nvidia', 0xfe9)], bug=652931)
+    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositing', bug=563852)
+    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker', bug=563858)
 
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)

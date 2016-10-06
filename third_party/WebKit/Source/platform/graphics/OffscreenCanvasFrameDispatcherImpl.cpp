@@ -53,7 +53,10 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
                                       mojo::GetProxy(&m_sink));
 }
 
-// Case 1: both canvas and compositor are not gpu accelerated.
+// Case 1: both canvas and compositor are not gpu accelerated, or canvas is
+// accelerated but --disable-gpu-compositing is specified, or
+// WebGL's commit called with swiftshader. The last case is indicated by
+// WebGraphicsContext3DProvider::isSoftwareRendering.
 void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceInMemory(
     cc::TransferableResource& resource,
     RefPtr<StaticBitmapImage> image) {
@@ -67,6 +70,8 @@ void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceInMemory(
       m_width, m_height, kN32_SkColorType,
       image->isPremultiplied() ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
   // TODO(xlai): Optimize to avoid copying pixels. See crbug.com/651456.
+  // However, in the case when |image| is texture backed, this function call
+  // does a GPU readback which is required.
   image->imageForCurrentFrame()->readPixels(imageInfo, pixels,
                                             imageInfo.minRowBytes(), 0, 0);
   resource.mailbox_holder.mailbox = bitmap->id();
@@ -150,13 +155,17 @@ void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceInTexture(
   m_cachedImages.add(m_nextResourceId, std::move(image));
 }
 
+// When WebGL's commit is called on SwiftShader, we have software rendered
+// WebGL.
 void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
-    RefPtr<StaticBitmapImage> image) {
+    RefPtr<StaticBitmapImage> image,
+    bool isWebGLSoftwareRendering) {
   if (!image)
     return;
   if (!verifyImageSize(image->imageForCurrentFrame()))
     return;
   cc::CompositorFrame frame;
+  // TODO(crbug.com/652931): update the device_scale_factor
   frame.metadata.device_scale_factor = 1.0f;
   frame.delegated_frame_data.reset(new cc::DelegatedFrameData);
 
@@ -185,6 +194,10 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   else if (!image->isTextureBacked() &&
            Platform::current()->isGPUCompositingEnabled())
     setTransferableResourceMemoryToTexture(resource, image);
+  else if (image->isTextureBacked() &&
+           (!Platform::current()->isGPUCompositingEnabled() ||
+            isWebGLSoftwareRendering))
+    setTransferableResourceInMemory(resource, image);
   else
     setTransferableResourceInTexture(resource, image);
 
