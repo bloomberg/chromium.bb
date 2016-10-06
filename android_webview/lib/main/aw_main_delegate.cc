@@ -8,6 +8,7 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/command_line_helper.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/common/aw_descriptors.h"
@@ -31,6 +32,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
 #include "components/crash/content/app/breakpad_linux.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "content/public/browser/android/browser_media_player_manager_register.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
@@ -136,6 +138,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
     cl->AppendSwitch(switches::kDisableRendererBackgrounding);
   }
+
+  CommandLineHelper::AddEnabledFeature(
+      *cl, spellcheck::kAndroidSpellCheckerNonLowEnd.name);
 
   return false;
 }
