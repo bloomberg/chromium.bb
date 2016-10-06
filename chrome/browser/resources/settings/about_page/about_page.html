@@ -25,6 +25,10 @@
 <dom-module id="settings-about-page">
   <template>
     <style include="settings-shared settings-page-styles">
+      :host {
+        --about-page-image-space: 10px;
+      }
+
       .copyable {
         -webkit-user-select: text;
       }
@@ -36,11 +40,12 @@
       }
 
       img {
-        -webkit-margin-end: 10px;
+        -webkit-margin-end: var(--about-page-image-space);
       }
 
       iron-icon {
-        -webkit-margin-end: var(--iron-icon-spacing);
+        -webkit-margin-end: var(--about-page-image-space);
+        width: 32px;  /* The width of the product-logo img. */
       }
 
       iron-icon[icon='settings:check-circle'] {
@@ -69,7 +74,7 @@
       <settings-section page-title="$i18n{aboutPageTitle}" section="about">
         <settings-animated-pages id="pages" section="about">
           <neon-animatable route-path="default">
-            <div class="settings-box">
+            <div class="settings-box two-line">
               <img id="product-logo" on-tap="onProductLogoTap_"
                   srcset="chrome://theme/current-channel-logo@1x 1x,
                           chrome://theme/current-channel-logo@2x 2x" alt="">
@@ -104,15 +109,16 @@
                 </span>
                 <div class="secondary copyable">$i18n{aboutBrowserVersion}</div>
               </div>
-              <span class="secondary-action">
-                <paper-button id="relaunch" class="secondary-button"
+              <span id="relaunchContainer"
 <if expr="not chromeos">
-                    hidden="[[!shouldShowRelaunch_(currentUpdateStatusEvent_)]]"
+                  hidden="[[!shouldShowRelaunch_(currentUpdateStatusEvent_)]]"
 </if>
 <if expr="chromeos">
-                    hidden="[[!shouldShowRelaunch_(
-                        currentUpdateStatusEvent_, targetChannel_)]]"
+                  hidden="[[!shouldShowRelaunch_(
+                      currentUpdateStatusEvent_, targetChannel_)]]"
 </if>
+                  class="secondary-action">
+                <paper-button id="relaunch" class="secondary-button"
                     on-tap="onRelaunchTap_">
                   $i18n{aboutRelaunch}
                 </paper-button>

@@ -17,10 +17,6 @@
         border-top: none;
       }
 
-      .settings-box iron-icon {
-        -webkit-margin-end: var(--iron-icon-spacing);
-      }
-
       .settings-box settings-checkbox {
         flex-grow: 1;
       }
@@ -68,7 +64,7 @@
       <div class="settings-box two-line indented" on-tap="onDisplayTap_"
           actionable>
         <iron-icon icon="settings:desktop-windows"></iron-icon>
-        <div class="start">
+        <div class="middle">
           <div>$i18n{displaySettingsTitle}</div>
           <div class="secondary">$i18n{displaySettingsDescription}</div>
         </div>
@@ -76,7 +72,7 @@
       <div class="settings-box two-line indented" on-tap="onAppearanceTap_"
           actionable>
         <iron-icon icon="settings:text-format"></iron-icon>
-        <div class="start">
+        <div class="middle">
           <div>$i18n{appearanceSettingsTitle}</div>
           <div class="secondary">$i18n{appearanceSettingsDescription}</div>
         </div>
@@ -106,7 +102,7 @@
       <div class="settings-box two-line indented" on-tap="onKeyboardTap_"
           actionable>
         <iron-icon icon="settings:keyboard"></iron-icon>
-        <div class="start">
+        <div class="middle">
           <div>$i18n{keyboardSettingsTitle}</div>
           <div class="secondary">$i18n{keyboardSettingsDescription}</div>
         </div>
@@ -137,7 +133,7 @@
       <div class="settings-box two-line indented" on-tap="onMouseTap_"
           actionable>
         <iron-icon icon="settings:mouse"></iron-icon>
-        <div class="start">
+        <div class="middle">
           <div>$i18n{mouseSettingsTitle}</div>
           <div class="secondary">$i18n{mouseSettingsDescription}</div>
           <button class="icon-arrow-right" is="paper-icon-button-light">

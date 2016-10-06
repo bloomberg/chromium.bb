@@ -8,10 +8,6 @@
   <template>
     <style include="settings-shared"></style>
     <style>
-      iron-icon {
-        -webkit-margin-end: var(--iron-icon-spacing);
-      }
-
       .warning {
         color: var(--paper-grey-500);
       }
@@ -40,7 +36,7 @@
         <div class$="[[problemClass_]] settings-box first"
              hidden$="[[!hasProblem_(problemMessage_)]]">
           <iron-icon icon="icons:warning"></iron-icon>
-          <span>[[problemMessage_]]</span>
+          <span class="middle">[[problemMessage_]]</span>
         </div>
 
         <!-- Pin keyboard -->
