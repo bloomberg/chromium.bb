@@ -13355,10 +13355,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
             PIN
           </message>
           <message name="IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD" desc="Text to display in the pin field for user pod when no pin has been entered, and passwords are allowed.">
-            Pin or password
+            PIN or password
           </message>
           <message name="IDS_PIN_KEYBOARD_ERROR_MESSAGE" desc="Text to display the error message on the pin keyboard if the user has entered a wrong password or pin.">
-            Pin or password incorrect.
+            PIN or password incorrect.
           </message>
         </if>
         <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
