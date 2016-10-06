@@ -67,8 +67,7 @@ TEST(BluetoothStructTraitsTest, DeserializeBluetoothUUID) {
   // array<uint8, 16>.
 }
 
-// Disabled due to memory leak, see http://crbug.com/653480.
-TEST(BluetoothStructTraitsTest, DISABLED_DeserializeBluetoothAdvertisement) {
+TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisement) {
   arc::mojom::BluetoothAdvertisementPtr advertisement_mojo =
       arc::mojom::BluetoothAdvertisement::New();
   mojo::Array<arc::mojom::BluetoothAdvertisingDataPtr> adv_data;
