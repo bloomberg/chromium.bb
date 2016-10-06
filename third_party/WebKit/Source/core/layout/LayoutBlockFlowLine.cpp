@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All right reserved.
+ * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ *               All right reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -145,8 +146,9 @@ static inline InlineTextBox* createInlineBoxForText(BidiRun& run,
   LineLayoutText text = LineLayoutText(run.m_lineLayoutItem);
   InlineTextBox* textBox =
       text.createInlineTextBox(run.m_start, run.m_stop - run.m_start);
-  // We only treat a box as text for a <br> if we are on a line by ourself or in strict mode
-  // (Note the use of strict mode.  In "almost strict" mode, we don't treat the box for <br> as text.)
+  // We only treat a box as text for a <br> if we are on a line by ourself or in
+  // strict mode (Note the use of strict mode.  In "almost strict" mode, we
+  // don't treat the box for <br> as text.)
   if (text.isBR())
     textBox->setIsText(isOnlyRun || text.document().inNoQuirksMode());
   textBox->setDirOverride(
@@ -193,11 +195,12 @@ InlineFlowBox* LayoutBlockFlow::createLineBoxes(LineLayoutItem lineLayoutItem,
     parentBox = inlineFlow ? inlineFlow.lastLineBox()
                            : LineLayoutBlockFlow(lineLayoutItem).lastLineBox();
 
-    // If this box or its ancestor is constructed then it is from a previous line, and we need
-    // to make a new box for our line.  If this box or its ancestor is unconstructed but it has
-    // something following it on the line, then we know we have to make a new box
-    // as well.  In this situation our inline has actually been split in two on
-    // the same line (this can happen with very fancy language mixtures).
+    // If this box or its ancestor is constructed then it is from a previous
+    // line, and we need to make a new box for our line.  If this box or its
+    // ancestor is unconstructed but it has something following it on the line,
+    // then we know we have to make a new box as well.  In this situation our
+    // inline has actually been split in two on the same line (this can happen
+    // with very fancy language mixtures).
     bool constructedNewBox = false;
     bool allowedToConstructNewBox =
         !inlineFlow || inlineFlow.alwaysCreateLineBoxes();
@@ -220,8 +223,8 @@ InlineFlowBox* LayoutBlockFlow::createLineBoxes(LineLayoutItem lineLayoutItem,
         result = parentBox;
 
       // If we have hit the block itself, then |box| represents the root
-      // inline box for the line, and it doesn't have to be appended to any parent
-      // inline.
+      // inline box for the line, and it doesn't have to be appended to any
+      // parent inline.
       if (childBox)
         parentBox->addToLine(childBox);
 
@@ -231,8 +234,8 @@ InlineFlowBox* LayoutBlockFlow::createLineBoxes(LineLayoutItem lineLayoutItem,
       childBox = parentBox;
     }
 
-    // If we've exceeded our line depth, then jump straight to the root and skip all the remaining
-    // intermediate inline flows.
+    // If we've exceeded our line depth, then jump straight to the root and skip
+    // all the remaining intermediate inline flows.
     lineLayoutItem = (++lineDepth >= cMaxLineDepth) ? LineLayoutItem(this)
                                                     : lineLayoutItem.parent();
 
@@ -306,12 +309,13 @@ RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns,
       rootHasSelectedChildren = true;
 
     // If we have no parent box yet, or if the run is not simply a sibling,
-    // then we need to construct inline boxes as necessary to properly enclose the
-    // run's inline box. Segments can only be siblings at the root level, as
+    // then we need to construct inline boxes as necessary to properly enclose
+    // the run's inline box. Segments can only be siblings at the root level, as
     // they are positioned separately.
     if (!parentBox ||
         (parentBox->getLineLayoutItem() != r->m_lineLayoutItem.parent())) {
-      // Create new inline boxes all the way back to the appropriate insertion point.
+      // Create new inline boxes all the way back to the appropriate insertion
+      // point.
       parentBox = createLineBoxes(r->m_lineLayoutItem.parent(), lineInfo, box);
     } else {
       // Append the inline box to this line.
@@ -330,8 +334,8 @@ RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns,
   // be the last continuation of our line list.
   ASSERT(lastLineBox() && !lastLineBox()->isConstructed());
 
-  // Set the m_selectedChildren flag on the root inline box if one of the leaf inline box
-  // from the bidi runs walk above has a selection state.
+  // Set the m_selectedChildren flag on the root inline box if one of the leaf
+  // inline box from the bidi runs walk above has a selection state.
   if (rootHasSelectedChildren)
     lastLineBox()->root().setHasSelectedChildren(true);
 
@@ -390,7 +394,8 @@ static void updateLogicalWidthForLeftAlignedBlock(
     LayoutUnit totalLogicalWidth,
     LayoutUnit availableLogicalWidth) {
   // The direction of the block should determine what happens with wide lines.
-  // In particular with RTL blocks, wide lines should still spill out to the left.
+  // In particular with RTL blocks, wide lines should still spill out to the
+  // left.
   if (isLeftToRightDirection) {
     if (totalLogicalWidth > availableLogicalWidth && trailingSpaceRun)
       trailingSpaceRun->m_box->setLogicalWidth(std::max(
@@ -412,8 +417,8 @@ static void updateLogicalWidthForRightAlignedBlock(
     LayoutUnit& totalLogicalWidth,
     LayoutUnit availableLogicalWidth) {
   // Wide lines spill out of the block based off direction.
-  // So even if text-align is right, if direction is LTR, wide lines should overflow out of the right
-  // side of the block.
+  // So even if text-align is right, if direction is LTR, wide lines should
+  // overflow out of the right side of the block.
   if (isLeftToRightDirection) {
     if (trailingSpaceRun) {
       totalLogicalWidth -= trailingSpaceRun->m_box->logicalWidth();
@@ -543,8 +548,8 @@ static inline void setLogicalWidthForTextRun(
       font.getFontDescription().getTypesettingFeatures() & Kerning;
 
 #if OS(MACOSX)
-  // FIXME: Having any font feature settings enabled can lead to selection gaps on
-  // Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
+  // FIXME: Having any font feature settings enabled can lead to selection gaps
+  // on Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
   bool canUseCachedWordMeasurements =
       font.canShapeWordByWord() && !font.getFontDescription().featureSettings();
 #else
@@ -597,14 +602,17 @@ static inline void setLogicalWidthForTextRun(
     }
   }
 
-  // Don't put this into 'else' part of the above 'if' because canUseCachedWordMeasurements may be modified in the 'if' block.
+  // Don't put this into 'else' part of the above 'if' because
+  // canUseCachedWordMeasurements may be modified in the 'if' block.
   if (!canUseCachedWordMeasurements)
     measuredWidth = layoutText.width(
         run->m_start, run->m_stop - run->m_start, xPos, run->direction(),
         lineInfo.isFirstLine(), &fallbackFonts, &glyphBounds);
 
-  // Negative word-spacing and/or letter-spacing may cause some glyphs to overflow the left boundary and result
-  // negative measured width. Reset measured width to 0 and adjust glyph bounds accordingly to cover the overflow.
+  // Negative word-spacing and/or letter-spacing may cause some glyphs to
+  // overflow the left boundary and result negative measured width. Reset
+  // measured width to 0 and adjust glyph bounds accordingly to cover the
+  // overflow.
   if (measuredWidth < 0) {
     if (measuredWidth < glyphBounds.x()) {
       glyphBounds.expand(glyphBounds.x() - measuredWidth, 0);
@@ -659,9 +667,9 @@ void LayoutBlockFlow::updateLogicalWidthForAlignment(
     direction = style()->direction();
 
   // Armed with the total width of the line (without justification),
-  // we now examine our text-align property in order to determine where to position the
-  // objects horizontally. The total width of the line can be increased if we end up
-  // justifying text.
+  // we now examine our text-align property in order to determine where to
+  // position the objects horizontally. The total width of the line can be
+  // increased if we end up justifying text.
   switch (textAlign) {
     case LEFT:
     case WEBKIT_LEFT:
@@ -745,10 +753,12 @@ void LayoutBlockFlow::computeInlineDirectionPositionsForLine(
   ETextAlign textAlign =
       textAlignmentForLine(!reachedEnd && !lineBox->endsWithBreak());
 
-  // CSS 2.1: "'Text-indent' only affects a line if it is the first formatted line of an element. For example, the first line of an anonymous block
+  // CSS 2.1: "'Text-indent' only affects a line if it is the first formatted
+  // line of an element. For example, the first line of an anonymous block
   // box is only affected if it is the first child of its parent element."
-  // CSS3 "text-indent", "each-line" affects the first line of the block container as well as each line after a forced line break,
-  // but does not affect lines after a soft wrap break.
+  // CSS3 "text-indent", "each-line" affects the first line of the block
+  // container as well as each line after a forced line break, but does not
+  // affect lines after a soft wrap break.
   bool isFirstLine =
       lineInfo.isFirstLine() &&
       !(isAnonymousBlock() && parent()->slowFirstChild() != this);
@@ -775,8 +785,8 @@ void LayoutBlockFlow::computeInlineDirectionPositionsForLine(
       lineBox, lineInfo, textAlign, lineLogicalLeft, availableLogicalWidth,
       firstRun, trailingSpaceRun, textBoxDataMap, verticalPositionCache,
       wordMeasurements);
-  // The widths of all runs are now known. We can now place every inline box (and
-  // compute accurate widths for the inline flow boxes).
+  // The widths of all runs are now known. We can now place every inline box
+  // (and compute accurate widths for the inline flow boxes).
   needsWordSpacing = lineBox->isLeftToRightDirection() ? false : true;
   lineBox->placeBoxesInInlineDirection(lineLogicalLeft, needsWordSpacing);
 }
@@ -804,9 +814,10 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(
   for (; r; r = r->next()) {
     if (!r->m_box || r->m_lineLayoutItem.isOutOfFlowPositioned() ||
         r->m_box->isLineBreak()) {
-      continue;  // Positioned objects are only participating to figure out their
-      // correct static x position.  They have no effect on the width.
-      // Similarly, line break boxes have no effect on the width.
+      continue;  // Positioned objects are only participating to figure out
+                 // their correct static x position. They have no effect on the
+                 // width. Similarly, line break boxes have no effect on the
+                 // width.
     }
     if (r->m_lineLayoutItem.isText()) {
       LineLayoutText rt(r->m_lineLayoutItem);
@@ -898,7 +909,8 @@ void LayoutBlockFlow::appendFloatingObjectToLastLine(
   lastRootBox()->appendFloat(floatingObject.layoutObject());
 }
 
-// This function constructs line boxes for all of the text runs in the resolver and computes their position.
+// This function constructs line boxes for all of the text runs in the resolver
+// and computes their position.
 RootInlineBox* LayoutBlockFlow::createLineBoxesFromBidiRuns(
     unsigned bidiLevel,
     BidiRunList<BidiRun>& bidiRuns,
@@ -956,8 +968,9 @@ static void deleteLineRange(LineLayoutState& layoutState,
                             RootInlineBox* stopLine = 0) {
   RootInlineBox* boxToDelete = startLine;
   while (boxToDelete && boxToDelete != stopLine) {
-    // Note: deleteLineRange(firstRootBox()) is not identical to deleteLineBoxTree().
-    // deleteLineBoxTree uses nextLineBox() instead of nextRootBox() when traversing.
+    // Note: deleteLineRange(firstRootBox()) is not identical to
+    // deleteLineBoxTree(). deleteLineBoxTree uses nextLineBox() instead of
+    // nextRootBox() when traversing.
     RootInlineBox* next = boxToDelete->nextRootBox();
     boxToDelete->deleteLine();
     boxToDelete = next;
@@ -972,8 +985,9 @@ void LayoutBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState) {
   if (containsFloats())
     layoutState.setLastFloat(m_floatingObjects->set().last().get());
 
-  // We also find the first clean line and extract these lines.  We will add them back
-  // if we determine that we're able to synchronize after handling all our dirty lines.
+  // We also find the first clean line and extract these lines.  We will add
+  // them back if we determine that we're able to synchronize after handling all
+  // our dirty lines.
   InlineIterator cleanLineStart;
   BidiStatus cleanLineBidiStatus;
   if (!layoutState.isFullLayout() && startLine)
@@ -989,7 +1003,8 @@ void LayoutBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState) {
   markDirtyFloatsForPaintInvalidation(layoutState.floats());
 }
 
-// Before restarting the layout loop with a new logicalHeight, remove all floats that were added and reset the resolver.
+// Before restarting the layout loop with a new logicalHeight, remove all floats
+// that were added and reset the resolver.
 inline const InlineIterator& LayoutBlockFlow::restartLayoutRunsAndFloatsInRange(
     LayoutUnit oldLogicalHeight,
     LayoutUnit newLogicalHeight,
@@ -1020,7 +1035,8 @@ void LayoutBlockFlow::appendFloatsToLastLine(
   }
   for (; it != end; ++it) {
     FloatingObject& floatingObject = *it->get();
-    // If we've reached the start of clean lines any remaining floating children belong to them.
+    // If we've reached the start of clean lines any remaining floating children
+    // belong to them.
     if (cleanLineStart.getLineLayoutItem().isEqual(
             floatingObject.layoutObject()) &&
         layoutState.endLine()) {
@@ -1062,7 +1078,8 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
   LayoutTextInfo layoutTextInfo;
   VerticalPositionCache verticalPositionCache;
 
-  // Pagination may require us to delete and re-create a line due to floats. When this happens,
+  // Pagination may require us to delete and re-create a line due to floats.
+  // When this happens,
   // we need to store the pagination strut in the meantime.
   LayoutUnit paginationStrutFromDeletedLine;
 
@@ -1072,7 +1089,8 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
     // The runs from the previous line should have been cleaned up.
     ASSERT(!resolver.runs().runCount());
 
-    // FIXME: Is this check necessary before the first iteration or can it be moved to the end?
+    // FIXME: Is this check necessary before the first iteration or can it be
+    // moved to the end?
     if (layoutState.endLine()) {
       layoutState.setEndLineMatched(layoutState.endLineMatched() ||
                                     matchedEndLine(layoutState, resolver,
@@ -1100,11 +1118,12 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
                                           layoutTextInfo, wordMeasurements);
     layoutTextInfo.m_lineBreakIterator.resetPriorContext();
     if (resolver.position().atEnd()) {
-      // FIXME: We shouldn't be creating any runs in nextLineBreak to begin with!
-      // Once BidiRunList is separated from BidiResolver this will not be needed.
+      // FIXME: We shouldn't be creating any runs in nextLineBreak to begin
+      // with! Once BidiRunList is separated from BidiResolver this will not be
+      // needed.
       resolver.runs().deleteRuns();
-      resolver
-          .markCurrentRunEmpty();  // FIXME: This can probably be replaced by an ASSERT (or just removed).
+      resolver.markCurrentRunEmpty();  // FIXME: This can probably be replaced
+                                       // by an ASSERT (or just removed).
       resolver.setPosition(InlineIterator(resolver.position().root(), 0, 0), 0);
       break;
     }
@@ -1133,7 +1152,8 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
         resolver.setStatus(
             BidiStatus(direction, isOverride(styleToUse.unicodeBidi())));
       }
-      // FIXME: This ownership is reversed. We should own the BidiRunList and pass it to createBidiRunsForLine.
+      // FIXME: This ownership is reversed. We should own the BidiRunList and
+      // pass it to createBidiRunsForLine.
       BidiRunList<BidiRun>& bidiRuns = resolver.runs();
       constructBidiRunsForLine(
           resolver, bidiRuns, endOfLine, override,
@@ -1146,7 +1166,8 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
         bidiRuns.logicallyLastRun()->m_hasHyphen = true;
 
       // Now that the runs have been ordered, we create the line boxes.
-      // At the same time we figure out where border/padding/margin should be applied for
+      // At the same time we figure out where border/padding/margin should be
+      // applied for
       // inline flow boxes.
 
       LayoutUnit oldLogicalHeight = logicalHeight();
@@ -1156,10 +1177,11 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
           wordMeasurements);
 
       bidiRuns.deleteRuns();
-      resolver
-          .markCurrentRunEmpty();  // FIXME: This can probably be replaced by an ASSERT (or just removed).
+      resolver.markCurrentRunEmpty();  // FIXME: This can probably be replaced
+                                       // by an ASSERT (or just removed).
 
-      // If we decided to re-create the line due to pagination, we better have a new line now.
+      // If we decided to re-create the line due to pagination, we better have a
+      // new line now.
       ASSERT(lineBox || !paginationStrutFromDeletedLine);
 
       if (lineBox) {
@@ -1167,9 +1189,10 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
                                   endOfLine.offset(), resolver.status());
         if (paginated) {
           if (paginationStrutFromDeletedLine) {
-            // This is a line that got re-created because it got pushed to the next fragmentainer, and there
-            // were floats in the vicinity that affected the available width. Restore the pagination info
-            // for this line.
+            // This is a line that got re-created because it got pushed to the
+            // next fragmentainer, and there were floats in the vicinity that
+            // affected the available width.
+            // Restore the pagination info for this line.
             lineBox->setIsFirstAfterPageBreak(true);
             lineBox->setPaginationStrut(paginationStrutFromDeletedLine);
             paginationStrutFromDeletedLine = LayoutUnit();
@@ -1187,13 +1210,15 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
                       layoutState.lineInfo().isFirstLine()
                           ? IndentText
                           : DoNotIndentText) != oldLineWidth) {
-                // We have to delete this line, remove all floats that got added, and let line layout
-                // re-run. We had just calculated the pagination strut for this line, and we need to
-                // stow it away, so that we can re-apply it when the new line has been created.
+                // We have to delete this line, remove all floats that got
+                // added, and let line layout re-run. We had just calculated the
+                // pagination strut for this line, and we need to stow it away,
+                // so that we can re-apply it when the new line has been
+                // created.
                 paginationStrutFromDeletedLine = lineBox->paginationStrut();
                 ASSERT(paginationStrutFromDeletedLine);
-                // We're also going to assume that we're right after a page break when re-creating this
-                // line, so it better be so.
+                // We're also going to assume that we're right after a page
+                // break when re-creating this line, so it better be so.
                 ASSERT(lineBox->isFirstAfterPageBreak());
                 lineBox->deleteLine();
                 endOfLine = restartLayoutRunsAndFloatsInRange(
@@ -1211,9 +1236,10 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
     if (!paginationStrutFromDeletedLine) {
       for (const auto& positionedObject : lineBreaker.positionedObjects()) {
         if (positionedObject.style()->isOriginalDisplayInlineType()) {
-          // Auto-positioend "inline" out-of-flow objects have already been positioned,
-          // but if we're paginated, we need to update their position now, since the line
-          // they "belong" to may have been pushed by a pagination strut.
+          // Auto-positioend "inline" out-of-flow objects have already been
+          // positioned, but if we're paginated, we need to update their
+          // position now, since the line they "belong" to may have been pushed
+          // by a pagination strut.
           if (paginated && lineBox)
             positionedObject.layer()->setStaticBlockPosition(
                 lineBox->lineTopWithLeading());
@@ -1244,9 +1270,10 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
   // The resolver runs should have been cleared, otherwise they're leaking.
   ASSERT(!resolver.runs().runCount());
 
-  // In case we already adjusted the line positions during this layout to avoid widows
-  // then we need to ignore the possibility of having a new widows situation.
-  // Otherwise, we risk leaving empty containers which is against the block fragmentation principles.
+  // In case we already adjusted the line positions during this layout to avoid
+  // widows then we need to ignore the possibility of having a new widows
+  // situation. Otherwise, we risk leaving empty containers which is against the
+  // block fragmentation principles.
   if (paginated && style()->widows() > 1 && !didBreakAtLineToAvoidWidow()) {
     // Check the line boxes to make sure we didn't create unacceptable widows.
     // However, we'll prioritize orphans - so nothing we do here should create
@@ -1285,11 +1312,12 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
         lineBox = lineBox->prevRootBox();
       }
 
-      // If there was an explicit value for orphans, respect that. If not, we still
-      // shouldn't create a situation where we make an orphan bigger than the initial value.
-      // This means that setting widows implies we also care about orphans, but given
-      // the specification says the initial orphan value is non-zero, this is ok. The
-      // author is always free to set orphans explicitly as well.
+      // If there was an explicit value for orphans, respect that. If not, we
+      // still shouldn't create a situation where we make an orphan bigger than
+      // the initial value. This means that setting widows implies we also care
+      // about orphans, but given the specification says the initial orphan
+      // value is non-zero, this is ok. The author is always free to set orphans
+      // explicitly as well.
       int orphans = style()->orphans();
       int numLinesAvailable = numLinesInPreviousPage - orphans;
       if (numLinesAvailable <= 0)
@@ -1301,7 +1329,8 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
       for (int i = 0; i < numLinesToTake; ++i)
         lineBox = lineBox->prevRootBox();
 
-      // We now want to break at this line. Remember for next layout and trigger relayout.
+      // We now want to break at this line. Remember for next layout and trigger
+      // relayout.
       setBreakAtLineToAvoidWidow(lineCount(lineBox));
       markLinesDirtyInBlockRange(lastRootBox()->lineBottomWithLeading(),
                                  lineBox->lineBottomWithLeading(), lineBox);
@@ -1316,7 +1345,8 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState) {
     if (layoutState.endLineMatched()) {
       bool paginated =
           view()->layoutState() && view()->layoutState()->isPaginated();
-      // Attach all the remaining lines, and then adjust their y-positions as needed.
+      // Attach all the remaining lines, and then adjust their y-positions as
+      // needed.
       LayoutUnit delta = logicalHeight() - layoutState.endLineLogicalTop();
       for (RootInlineBox* line = layoutState.endLine(); line;
            line = line->nextRootBox()) {
@@ -1345,8 +1375,9 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState) {
     }
   }
 
-  // In case we have a float on the last line, it might not be positioned up to now.
-  // This has to be done before adding in the bottom border/padding, or the float will
+  // In case we have a float on the last line, it might not be positioned up to
+  // now. This has to be done before adding in the bottom border/padding, or the
+  // float will
   // include the padding incorrectly. -dwh
   if (positionNewFloats() && lastRootBox())
     appendFloatsToLastLine(layoutState, InlineIterator(), InlineBidiResolver(),
@@ -1356,9 +1387,9 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState) {
 void LayoutBlockFlow::markDirtyFloatsForPaintInvalidation(
     Vector<FloatWithRect>& floats) {
   size_t floatCount = floats.size();
-  // Floats that did not have layout did not paint invalidations when we laid them out. They would have
-  // painted by now if they had moved, but if they stayed at (0, 0), they still need to be
-  // painted.
+  // Floats that did not have layout did not paint invalidations when we laid
+  // them out. They would have painted by now if they had moved, but if they
+  // stayed at (0, 0), they still need to be painted.
   for (size_t i = 0; i < floatCount; ++i) {
     LayoutBox* f = floats[i].object;
     if (!floats[i].everHadLayout) {
@@ -1370,15 +1401,17 @@ void LayoutBlockFlow::markDirtyFloatsForPaintInvalidation(
   positionNewFloats();
 }
 
+// InlineMinMaxIterator is a class that will iterate over all layout objects
+// that contribute to inline min/max width calculations. Note the following
+// about the way it walks:
+// (1) Positioned content is skipped (since it does not contribute to min/max
+//     width of a block)
+// (2) We do not drill into the children of floats or replaced elements, since
+//     you can't break in the middle of such an element.
+// (3) Inline flows (e.g., <a>, <span>, <i>) are walked twice, since each side
+//     can have distinct borders/margin/padding that contribute to the min/max
+//     width.
 struct InlineMinMaxIterator {
-  /* InlineMinMaxIterator is a class that will iterate over all layout objects that contribute to
-   inline min/max width calculations.  Note the following about the way it walks:
-   (1) Positioned content is skipped (since it does not contribute to min/max width of a block)
-   (2) We do not drill into the children of floats or replaced elements, since you can't break
-       in the middle of such an element.
-   (3) Inline flows (e.g., <a>, <span>, <i>) are walked twice, since each side can have
-       distinct borders/margin/padding that contribute to the min/max width.
-*/
   LayoutObject* parent;
   LayoutObject* current;
   bool endOfInline;
@@ -1488,10 +1521,10 @@ static inline void stripTrailingSpace(LayoutUnit& inlineMax,
   }
 }
 
-// When converting between floating point and LayoutUnits we risk losing precision
-// with each conversion. When this occurs while accumulating our preferred widths,
-// we can wind up with a line width that's larger than our maxPreferredWidth due to
-// pure float accumulation.
+// When converting between floating point and LayoutUnits we risk losing
+// precision with each conversion. When this occurs while accumulating our
+// preferred widths, we can wind up with a line width that's larger than our
+// maxPreferredWidth due to pure float accumulation.
 static inline LayoutUnit adjustFloatForSubPixelLayout(float value) {
   return LayoutUnit::fromFloatCeil(value);
 }
@@ -1524,7 +1557,8 @@ static inline void adjustMarginForInlineReplaced(LayoutObject* child,
 }
 
 // FIXME: This function should be broken into something less monolithic.
-// FIXME: The main loop here is very similar to LineBreaker::nextSegmentBreak. They can probably reuse code.
+// FIXME: The main loop here is very similar to LineBreaker::nextSegmentBreak.
+// They can probably reuse code.
 DISABLE_CFI_PERF
 void LayoutBlockFlow::computeInlinePreferredLogicalWidths(
     LayoutUnit& minLogicalWidth,
@@ -1542,9 +1576,10 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(
   bool stripFrontSpaces = true;
   LayoutObject* trailingSpaceChild = nullptr;
 
-  // Firefox and Opera will allow a table cell to grow to fit an image inside it under
-  // very specific cirucumstances (in order to match common WinIE layouts).
-  // Not supporting the quirk has caused us to mis-layout some real sites. (See Bugzilla 10517.)
+  // Firefox and Opera will allow a table cell to grow to fit an image inside it
+  // under very specific cirucumstances (in order to match common WinIE
+  // layouts). Not supporting the quirk has caused us to mis-layout some real
+  // sites. (See Bugzilla 10517.)
   bool allowImagesToBreak = !document().inQuirksMode() || !isTableCell() ||
                             !styleToUse.logicalWidth().isIntrinsicOrAuto();
 
@@ -1572,37 +1607,39 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(
       // terminate our current line. Each discrete chunk can become
       // the new min-width, if it is the widest chunk seen so far, and
       // it can also become the max-width.
-
+      //
       // Children fall into three categories:
       // (1) An inline flow object. These objects always have a min/max of 0,
-      // and are included in the iteration solely so that their margins can
-      // be added in.
+      //     and are included in the iteration solely so that their margins can
+      //     be added in.
       //
-      // (2) An inline non-text non-flow object, e.g., an inline replaced element.
-      // These objects can always be on a line by themselves, so in this situation
-      // we need to go ahead and break the current line, and then add in our own
-      // margins and min/max width on its own line, and then terminate the line.
+      // (2) An inline non-text non-flow object, e.g., an inline replaced
+      //     element. These objects can always be on a line by themselves, so in
+      //     this situation we need to go ahead and break the current line, and
+      //     then add in our own margins and min/max width on its own line, and
+      //     then terminate the line.
       //
-      // (3) A text object. Text runs can have breakable characters at the start,
-      // the middle or the end. They may also lose whitespace off the front if
-      // we're already ignoring whitespace. In order to compute accurate min-width
-      // information, we need three pieces of information.
-      // (a) the min-width of the first non-breakable run. Should be 0 if the text string
-      // starts with whitespace.
-      // (b) the min-width of the last non-breakable run. Should be 0 if the text string
-      // ends with whitespace.
-      // (c) the min/max width of the string (trimmed for whitespace).
+      // (3) A text object. Text runs can have breakable characters at the
+      //     start, the middle or the end. They may also lose whitespace off the
+      //     front if we're already ignoring whitespace. In order to compute
+      //     accurate min-width information, we need three pieces of
+      //     information.
+      //     (a) the min-width of the first non-breakable run. Should be 0 if
+      //         the text string starts with whitespace.
+      //     (b) the min-width of the last non-breakable run. Should be 0 if the
+      //         text string ends with whitespace.
+      //     (c) the min/max width of the string (trimmed for whitespace).
       //
       // If the text string starts with whitespace, then we need to go ahead and
-      // terminate our current line (unless we're already in a whitespace stripping
-      // mode.
+      // terminate our current line (unless we're already in a whitespace
+      // stripping mode.
       //
-      // If the text string has a breakable character in the middle, but didn't start
-      // with whitespace, then we add the width of the first non-breakable run and
-      // then end the current line. We then need to use the intermediate min/max width
-      // values (if any of them are larger than our current min/max). We then look at
-      // the width of the last non-breakable run and use that to start a new line
-      // (unless we end in whitespace).
+      // If the text string has a breakable character in the middle, but didn't
+      // start with whitespace, then we add the width of the first non-breakable
+      // run and then end the current line. We then need to use the intermediate
+      // min/max width values (if any of them are larger than our current
+      // min/max). We then look at the width of the last non-breakable run and
+      // use that to start a new line (unless we end in whitespace).
       LayoutUnit childMin;
       LayoutUnit childMax;
 
@@ -1652,7 +1689,8 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(
           inlineMin = LayoutUnit();
         }
 
-        // If we're supposed to clear the previous float, then terminate maxwidth as well.
+        // If we're supposed to clear the previous float, then terminate
+        // maxwidth as well.
         if (clearPreviousFloat) {
           maxLogicalWidth = std::max(maxLogicalWidth, inlineMax);
           inlineMax = LayoutUnit();
@@ -1722,7 +1760,8 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(
                              lastLineMaxWidth, childMin, childMax,
                              stripFrontSpaces, styleToUse.direction());
 
-        // This text object will not be laid out, but it may still provide a breaking opportunity.
+        // This text object will not be laid out, but it may still provide a
+        // breaking opportunity.
         if (!hasBreak && !childMax) {
           if (autoWrap && (hasBreakableStart || hasBreakableEnd)) {
             minLogicalWidth = std::max(minLogicalWidth, inlineMin);
@@ -1743,9 +1782,10 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(
           childMin += ti;
           firstLineMinWidth += ti;
 
-          // It the text indent negative and larger than the child minimum, we re-use the remainder
-          // in future minimum calculations, but using the negative value again on the maximum
-          // will lead to under-counting the max pref width.
+          // It the text indent negative and larger than the child minimum, we
+          // re-use the remainder in future minimum calculations, but using the
+          // negative value again on the maximum will lead to under-counting the
+          // max pref width.
           if (!addedTextIndent) {
             childMax += ti;
             firstLineMaxWidth += ti;
@@ -1855,11 +1895,12 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren,
     lineBoxes()->deleteLineBoxes();
   }
 
-  // Text truncation kicks in if overflow isn't visible and text-overflow isn't 'clip'. If this is
-  // an anonymous block, we have to examine the parent.
-  // FIXME: CSS3 says that descendants that are clipped must also know how to truncate.  This is insanely
-  // difficult to figure out in general (especially in the middle of doing layout), so we only handle the
-  // simple case of an anonymous block truncating when its parent is clipped.
+  // Text truncation kicks in if overflow isn't visible and text-overflow isn't
+  // 'clip'. If this is an anonymous block, we have to examine the parent.
+  // FIXME: CSS3 says that descendants that are clipped must also know how to
+  // truncate. This is insanely difficult to figure out in general (especially
+  // in the middle of doing layout), so we only handle the simple case of an
+  // anonymous block truncating when its parent is clipped.
   bool hasTextOverflow = shouldTruncateOverflowingText(this);
 
   // Walk all the lines and delete our ellipsis line boxes if they exist.
@@ -1887,8 +1928,9 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren,
           layoutState.floats().append(FloatWithRect(box));
           if (box->needsLayout()) {
             box->layout();
-            // Dirty any lineboxes potentially affected by the float, but don't search outside this
-            // object as we are only interested in dirtying lineboxes to which we may attach the float.
+            // Dirty any lineboxes potentially affected by the float, but don't
+            // search outside this object as we are only interested in dirtying
+            // lineboxes to which we may attach the float.
             dirtyLinesFromChangedChild(box, MarkOnlyThis);
           }
         } else if (isFullLayout || o->needsLayout()) {
@@ -1939,8 +1981,8 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren,
                                                                 : VerticalLine,
                                 PositionOfInteriorLineBoxes));
 
-  // See if we have any lines that spill out of our block.  If we do, then we will possibly need to
-  // truncate text.
+  // See if we have any lines that spill out of our block.  If we do, then we
+  // will possibly need to truncate text.
   if (hasTextOverflow)
     checkLinesForTextOverflow();
 
@@ -1956,7 +1998,8 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(
   RootInlineBox* last = nullptr;
   RootInlineBox* firstLineBoxWithBreakAndClearance = 0;
 
-  // FIXME: This entire float-checking block needs to be broken into a new function.
+  // FIXME: This entire float-checking block needs to be broken into a new
+  // function.
   if (!layoutState.isFullLayout()) {
     // Paginate all of the clean lines.
     bool paginated =
@@ -1969,7 +2012,8 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(
         adjustLinePositionForPagination(*curr, paginationDelta);
         if (paginationDelta) {
           if (containsFloats() || !layoutState.floats().isEmpty()) {
-            // FIXME: Do better eventually.  For now if we ever shift because of pagination and floats are present just go to a full layout.
+            // FIXME: Do better eventually.  For now if we ever shift because of
+            // pagination and floats are present just go to a full layout.
             layoutState.markForFullLayout();
             break;
           }
@@ -1977,7 +2021,9 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(
         }
       }
 
-      // If the linebox breaks cleanly and with clearance then dirty from at least this point onwards so that we can clear the correct floats without difficulty.
+      // If the linebox breaks cleanly and with clearance then dirty from at
+      // least this point onwards so that we can clear the correct floats
+      // without difficulty.
       if (!firstLineBoxWithBreakAndClearance && lineBoxHasBRWithClearance(curr))
         firstLineBoxWithBreakAndClearance = curr;
 
@@ -1987,7 +2033,8 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(
   }
 
   if (layoutState.isFullLayout()) {
-    // If we encountered a new float and have inline children, mark ourself to force us to issue paint invalidations.
+    // If we encountered a new float and have inline children, mark ourself to
+    // force us to issue paint invalidations.
     if (layoutState.hasInlineChild() && !selfNeedsLayout()) {
       setNeedsLayoutAndFullPaintInvalidation(
           LayoutInvalidationReason::FloatDescendantChanged, MarkOnlyThis);
@@ -2077,7 +2124,9 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(
 }
 
 bool LayoutBlockFlow::lineBoxHasBRWithClearance(RootInlineBox* curr) {
-  // If the linebox breaks cleanly and with clearance then dirty from at least this point onwards so that we can clear the correct floats without difficulty.
+  // If the linebox breaks cleanly and with clearance then dirty from at least
+  // this point onwards so that we can clear the correct floats without
+  // difficulty.
   if (!curr->endsWithBreak())
     return false;
   InlineBox* lastBox = style()->isLeftToRightDirection()
@@ -2107,8 +2156,8 @@ void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState,
   if (!last)
     return;
 
-  // At this point, |last| is the first line in a run of clean lines that ends with the last line
-  // in the block.
+  // At this point, |last| is the first line in a run of clean lines that ends
+  // with the last line in the block.
 
   RootInlineBox* prev = last->prevRootBox();
   cleanLineStart =
@@ -2118,8 +2167,8 @@ void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState,
   layoutState.setEndLineLogicalTop(prev->lineBottomWithLeading());
 
   for (RootInlineBox* line = last; line; line = line->nextRootBox())
-    line->extractLine();  // Disconnect all line boxes from their layout objects while preserving
-                          // their connections to one another.
+    line->extractLine();  // Disconnect all line boxes from their layout objects
+                          // while preserving their connections to one another.
 
   layoutState.setEndLine(last);
 }
@@ -2134,12 +2183,13 @@ bool LayoutBlockFlow::checkPaginationAndFloatsAtEndLine(
   bool paginated =
       view()->layoutState() && view()->layoutState()->isPaginated();
   if (paginated) {
-    // Check all lines from here to the end, and see if the hypothetical new position for the lines will result
+    // Check all lines from here to the end, and see if the hypothetical new
+    // position for the lines will result
     // in a different available line width.
     for (RootInlineBox* lineBox = layoutState.endLine(); lineBox;
          lineBox = lineBox->nextRootBox()) {
-      // This isn't the real move we're going to do, so don't update the line box's pagination
-      // strut yet.
+      // This isn't the real move we're going to do, so don't update the line
+      // box's pagination strut yet.
       LayoutUnit oldPaginationStrut = lineBox->paginationStrut();
       lineDelta -= oldPaginationStrut;
       adjustLinePositionForPagination(*lineBox, lineDelta);
@@ -2149,7 +2199,8 @@ bool LayoutBlockFlow::checkPaginationAndFloatsAtEndLine(
   if (!lineDelta)
     return true;
 
-  // See if any floats end in the range along which we want to shift the lines vertically.
+  // See if any floats end in the range along which we want to shift the lines
+  // vertically.
   LayoutUnit logicalTop =
       std::min(logicalHeight(), layoutState.endLineLogicalTop());
 
@@ -2184,8 +2235,8 @@ bool LayoutBlockFlow::matchedEndLine(LineLayoutState& layoutState,
     return checkPaginationAndFloatsAtEndLine(layoutState);
   }
 
-  // The first clean line doesn't match, but we can check a handful of following lines to try
-  // to match back up.
+  // The first clean line doesn't match, but we can check a handful of following
+  // lines to try to match back up.
   static int numLines = 8;  // The # of lines we're willing to match against.
   RootInlineBox* originalEndLine = layoutState.endLine();
   RootInlineBox* line = originalEndLine;
@@ -2228,7 +2279,8 @@ bool LayoutBlockFlow::generatesLineBoxesForInlineChild(LayoutObject* inlineObj)
 
 void LayoutBlockFlow::addOverflowFromInlineChildren() {
   LayoutUnit endPadding = hasOverflowClip() ? paddingEnd() : LayoutUnit();
-  // FIXME: Need to find another way to do this, since scrollbars could show when we don't want them to.
+  // FIXME: Need to find another way to do this, since scrollbars could show
+  // when we don't want them to.
   if (hasOverflowClip() && !endPadding && node() &&
       isRootEditableElement(*node()) && style()->isLeftToRightDirection())
     endPadding = LayoutUnit(1);
@@ -2242,7 +2294,8 @@ void LayoutBlockFlow::addOverflowFromInlineChildren() {
   if (!containsInlineWithOutlineAndContinuation())
     return;
 
-  // Add outline rects of continuations of descendant inlines into visual overflow of this block.
+  // Add outline rects of continuations of descendant inlines into visual
+  // overflow of this block.
   LayoutRect outlineBoundsOfAllContinuations;
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.atEnd();
        walker.advance()) {
@@ -2270,7 +2323,8 @@ void LayoutBlockFlow::deleteEllipsisLineBoxes() {
     if (curr->hasEllipsisBox()) {
       curr->clearTruncation();
 
-      // Shift the line back where it belongs if we cannot accommodate an ellipsis.
+      // Shift the line back where it belongs if we cannot accommodate an
+      // ellipsis.
       LayoutUnit logicalLeft =
           logicalLeftOffsetForLine(curr->lineTop(), indentText);
       LayoutUnit availableLogicalWidth =
@@ -2301,13 +2355,14 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
   AtomicString& selectedEllipsisStr = ellipsisStr;
 
   const Font& firstLineFont = firstLineStyle()->font();
-  // FIXME: We should probably not hard-code the direction here. https://crbug.com/333004
+  // FIXME: We should probably not hard-code the direction here.
+  // https://crbug.com/333004
   TextDirection ellipsisDirection = LTR;
   float firstLineEllipsisWidth = 0;
   float ellipsisWidth = 0;
 
-  // As per CSS3 http://www.w3.org/TR/2003/CR-css3-text-20030514/ sequence of three
-  // Full Stops (002E) can be used.
+  // As per CSS3 http://www.w3.org/TR/2003/CR-css3-text-20030514/ sequence of
+  // three Full Stops (002E) can be used.
   ASSERT(firstLineFont.primaryFont());
   if (firstLineFont.primaryFont()->glyphForCharacter(
           horizontalEllipsisCharacter)) {
@@ -2337,10 +2392,11 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
     }
   }
 
-  // For LTR text truncation, we want to get the right edge of our padding box, and then we want to see
-  // if the right edge of a line box exceeds that.  For RTL, we use the left edge of the padding box and
-  // check the left edge of the line box to see if it is less
-  // Include the scrollbar for overflow blocks, which means we want to use "contentWidth()"
+  // For LTR text truncation, we want to get the right edge of our padding box,
+  // and then we want to see if the right edge of a line box exceeds that.
+  // For RTL, we use the left edge of the padding box and check the left edge of
+  // the line box to see if it is less Include the scrollbar for overflow
+  // blocks, which means we want to use "contentWidth()".
   bool ltr = style()->isLeftToRightDirection();
   ETextAlign textAlign = style()->textAlign();
   IndentTextOrNot indentText = IndentText;
@@ -2354,10 +2410,11 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
         ltr ? currLogicalLeft + curr->logicalWidth() : currLogicalLeft;
     if ((ltr && lineBoxEdge > blockRightEdge) ||
         (!ltr && lineBoxEdge < blockLeftEdge)) {
-      // This line spills out of our box in the appropriate direction.  Now we need to see if the line
-      // can be truncated.  In order for truncation to be possible, the line must have sufficient space to
-      // accommodate our truncation string, and no replaced elements (images, tables) can overlap the ellipsis
-      // space.
+      // This line spills out of our box in the appropriate direction. Now we
+      // need to see if the line can be truncated.  In order for truncation to
+      // be possible, the line must have sufficient space to accommodate our
+      // truncation string, and no replaced elements (images, tables) can
+      // overlap the ellipsis space.
 
       LayoutUnit width(indentText == IndentText ? firstLineEllipsisWidth
                                                 : ellipsisWidth);
@@ -2366,8 +2423,8 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
               ltr, blockEdge.toInt(), lineBoxEdge.toInt(), width.toInt())) {
         LayoutUnit totalLogicalWidth = curr->placeEllipsis(
             selectedEllipsisStr, ltr, blockLeftEdge, blockRightEdge, width);
-        LayoutUnit
-            logicalLeft;  // We are only interested in the delta from the base position.
+        LayoutUnit logicalLeft;  // We are only interested in the delta from the
+                                 // base position.
         LayoutUnit availableLogicalWidth = blockRightEdge - blockLeftEdge;
         updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft,
                                        totalLogicalWidth, availableLogicalWidth,
@@ -2431,7 +2488,8 @@ LayoutUnit LayoutBlockFlow::startAlignedOffsetForLine(
   if (applyIndentText)
     return startOffsetForLine(position, indentText);
 
-  // updateLogicalWidthForAlignment() handles the direction of the block so no need to consider it here
+  // updateLogicalWidthForAlignment() handles the direction of the block so no
+  // need to consider it here
   LayoutUnit totalLogicalWidth;
   LayoutUnit logicalLeft =
       logicalLeftOffsetForLine(logicalHeight(), DoNotIndentText);

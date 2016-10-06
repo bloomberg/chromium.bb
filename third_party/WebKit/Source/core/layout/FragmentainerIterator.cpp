@@ -15,9 +15,9 @@ FragmentainerIterator::FragmentainerIterator(
     : m_flowThread(flowThread),
       m_clipRectInMulticolContainer(clipRectInMulticolContainer),
       m_currentFragmentainerGroupIndex(0) {
-  // Put the bounds into flow thread-local coordinates by flipping it first. This is how
-  // rectangles typically are represented in layout, i.e. with the block direction coordinate
-  // flipped, if writing mode is vertical-rl.
+  // Put the bounds into flow thread-local coordinates by flipping it first.
+  // This is how rectangles typically are represented in layout, i.e. with the
+  // block direction coordinate flipped, if writing mode is vertical-rl.
   LayoutRect boundsInFlowThread = physicalBoundingBoxInFlowThread;
   m_flowThread.flipForWritingMode(boundsInFlowThread);
 
@@ -43,10 +43,10 @@ FragmentainerIterator::FragmentainerIterator(
       m_currentColumnSet->fragmentainerGroupIndexAtFlowThreadOffset(
           m_logicalTopInFlowThread, LayoutBox::AssociateWithLatterPage);
 
-  // Now find the first and last fragmentainer we're interested in. We'll also clip against
-  // the clip rect here. In case the clip rect doesn't intersect with any of the
-  // fragmentainers, we have to move on to the next fragmentainer group, and see if we find
-  // something there.
+  // Now find the first and last fragmentainer we're interested in. We'll also
+  // clip against the clip rect here. In case the clip rect doesn't intersect
+  // with any of the fragmentainers, we have to move on to the next
+  // fragmentainer group, and see if we find something there.
   if (!setFragmentainersOfInterest()) {
     moveToNextFragmentainerGroup();
     if (atEnd())
@@ -60,8 +60,8 @@ void FragmentainerIterator::advance() {
   if (m_currentFragmentainerIndex < m_endFragmentainerIndex) {
     m_currentFragmentainerIndex++;
   } else {
-    // That was the last fragmentainer to visit in this fragmentainer group. Advance to the
-    // next group.
+    // That was the last fragmentainer to visit in this fragmentainer group.
+    // Advance to the next group.
     moveToNextFragmentainerGroup();
     if (atEnd())
       return;
@@ -107,7 +107,7 @@ void FragmentainerIterator::moveToNextFragmentainerGroup() {
     m_currentFragmentainerGroupIndex++;
     if (m_currentFragmentainerGroupIndex >=
         m_currentColumnSet->fragmentainerGroups().size()) {
-      // That was the last fragmentainer group in this set. Advance to the next set.
+      // That was the last fragmentainer group in this set. Advance to the next.
       m_currentColumnSet = m_currentColumnSet->nextSiblingMultiColumnSet();
       m_currentFragmentainerGroupIndex = 0;
       if (!m_currentColumnSet ||
@@ -119,7 +119,9 @@ void FragmentainerIterator::moveToNextFragmentainerGroup() {
     }
     if (currentGroup().logicalTopInFlowThread() >=
         m_logicalBottomInFlowThread) {
-      setAtEnd();  // This fragmentainer group doesn't intersect with the range we're interested in. We're done.
+      // This fragmentainer group doesn't intersect with the range we're
+      // interested in. We're done.
+      setAtEnd();
       return;
     }
   } while (!setFragmentainersOfInterest());
@@ -128,16 +130,16 @@ void FragmentainerIterator::moveToNextFragmentainerGroup() {
 bool FragmentainerIterator::setFragmentainersOfInterest() {
   const MultiColumnFragmentainerGroup& group = currentGroup();
 
-  // Figure out the start and end fragmentainers for the block range we're interested in. We
-  // might not have to walk the entire fragmentainer group.
+  // Figure out the start and end fragmentainers for the block range we're
+  // interested in. We might not have to walk the entire fragmentainer group.
   group.columnIntervalForBlockRangeInFlowThread(
       m_logicalTopInFlowThread, m_logicalBottomInFlowThread,
       m_currentFragmentainerIndex, m_endFragmentainerIndex);
 
   if (hasClipRect()) {
-    // Now intersect with the fragmentainers that actually intersect with the visual clip rect, to
-    // narrow it down even further. The clip rect needs to be relative to the current fragmentainer
-    // group.
+    // Now intersect with the fragmentainers that actually intersect with the
+    // visual clip rect, to narrow it down even further. The clip rect needs to
+    // be relative to the current fragmentainer group.
     LayoutRect clipRect = m_clipRectInMulticolContainer;
     LayoutSize offset = group.flowThreadTranslationAtOffset(
         group.logicalTopInFlowThread(), LayoutBox::AssociateWithFormerPage,
@@ -146,8 +148,8 @@ bool FragmentainerIterator::setFragmentainersOfInterest() {
     unsigned firstFragmentainerInClipRect, lastFragmentainerInClipRect;
     group.columnIntervalForVisualRect(clipRect, firstFragmentainerInClipRect,
                                       lastFragmentainerInClipRect);
-    // If the two fragmentainer intervals are disjoint, there's nothing of interest in this
-    // fragmentainer group.
+    // If the two fragmentainer intervals are disjoint, there's nothing of
+    // interest in this fragmentainer group.
     if (firstFragmentainerInClipRect > m_endFragmentainerIndex ||
         lastFragmentainerInClipRect < m_currentFragmentainerIndex)
       return false;

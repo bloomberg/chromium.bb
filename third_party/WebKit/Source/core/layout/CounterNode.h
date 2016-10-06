@@ -26,14 +26,17 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"
 
-// This implements a counter tree that is used for finding parents in counters() lookup,
-// and for propagating count changes when nodes are added or removed.
+// This implements a counter tree that is used for finding parents in counters()
+// lookup, and for propagating count changes when nodes are added or removed.
 
-// Parents represent unique counters and their scope, which are created either explicitly
-// by "counter-reset" style rules or implicitly by referring to a counter that is not in scope.
-// Such nodes are tagged as "reset" nodes, although they are not all due to "counter-reset".
+// Parents represent unique counters and their scope, which are created either
+// explicitly by "counter-reset" style rules or implicitly by referring to a
+// counter that is not in scope.
+// Such nodes are tagged as "reset" nodes, although they are not all due to
+// "counter-reset".
 
-// Not that layout tree children are often counter tree siblings due to counter scoping rules.
+// Not that layout tree children are often counter tree siblings due to counter
+// scoping rules.
 
 namespace blink {
 

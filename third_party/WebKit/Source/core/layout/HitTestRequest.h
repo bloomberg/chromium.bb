@@ -83,9 +83,9 @@ class HitTestRequest {
   HitTestRequestType type() const { return m_requestType; }
 
   // The Cacheability bits don't affect hit testing computation.
-  // TODO(dtapuska): These bits really shouldn't be fields on the HitTestRequest as
-  // they don't influence the result; but rather are hints on the output as to what to do.
-  // Perhaps move these fields to another enum ?
+  // TODO(dtapuska): These bits really shouldn't be fields on the HitTestRequest
+  // as they don't influence the result; but rather are hints on the output as
+  // to what to do. Perhaps move these fields to another enum?
   static const HitTestRequestType CacheabilityBits =
       ReadOnly | Active | Move | Release | TouchEvent;
   bool equalForCacheability(const HitTestRequest& value) const {

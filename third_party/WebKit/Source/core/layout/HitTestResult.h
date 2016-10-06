@@ -77,22 +77,24 @@ class CORE_EXPORT HitTestResult {
   bool equalForCacheability(const HitTestResult&) const;
   void cacheValues(const HitTestResult&);
 
-  // Populate this object based on another HitTestResult; similar to assignment operator
-  // but don't assign any of the request parameters. ie. Thie method avoids setting
-  // |m_hitTestLocation|, |m_hitTestRequest|.
+  // Populate this object based on another HitTestResult; similar to assignment
+  // operator but don't assign any of the request parameters. ie. This method
+  // avoids setting |m_hitTestLocation|, |m_hitTestRequest|.
   void populateFromCachedResult(const HitTestResult&);
 
-  // For point-based hit tests, these accessors provide information about the node
-  // under the point. For rect-based hit tests they are meaningless (reflect the
-  // last candidate node observed in the rect).
-  // FIXME: Make these less error-prone for rect-based hit tests (center point or fail).
+  // For point-based hit tests, these accessors provide information about the
+  // node under the point. For rect-based hit tests they are meaningless
+  // (reflect the last candidate node observed in the rect).
+  // FIXME: Make these less error-prone for rect-based hit tests (center point
+  // or fail).
   Node* innerNode() const { return m_innerNode.get(); }
   Node* innerPossiblyPseudoNode() const {
     return m_innerPossiblyPseudoNode.get();
   }
   Element* innerElement() const;
 
-  // If innerNode is an image map or image map area, return the associated image node.
+  // If innerNode is an image map or image map area, return the associated image
+  // node.
   Node* innerNodeOrImageMapImage() const;
 
   Element* URLElement() const { return m_innerURLElement.get(); }
@@ -110,7 +112,8 @@ class CORE_EXPORT HitTestResult {
     return roundedIntPoint(pointInMainFrame());
   }
 
-  // The hit-tested point in the coordinates of the innerNode frame, the frame containing innerNode.
+  // The hit-tested point in the coordinates of the innerNode frame, the frame
+  // containing innerNode.
   const LayoutPoint& pointInInnerNodeFrame() const {
     return m_pointInInnerNodeFrame;
   }
@@ -171,12 +174,15 @@ class CORE_EXPORT HitTestResult {
 
   void append(const HitTestResult&);
 
-  // If m_listBasedTestResult is 0 then set it to a new NodeSet. Return *m_listBasedTestResult. Lazy allocation makes
-  // sense because the NodeSet is seldom necessary, and it's somewhat expensive to allocate and initialize. This method does
-  // the same thing as mutableListBasedTestResult(), but here the return value is const.
+  // If m_listBasedTestResult is 0 then set it to a new NodeSet. Return
+  // *m_listBasedTestResult. Lazy allocation makes sense because the NodeSet is
+  // seldom necessary, and it's somewhat expensive to allocate and initialize.
+  // This method does the same thing as mutableListBasedTestResult(), but here
+  // the return value is const.
   const NodeSet& listBasedTestResult() const;
 
-  // Collapse the rect-based test result into a single target at the specified location.
+  // Collapse the rect-based test result into a single target at the specified
+  // location.
   void resolveRectBasedTest(Node* resolvedInnerNode,
                             const LayoutPoint& resolvedPointInMainFrame);
 
@@ -191,15 +197,16 @@ class CORE_EXPORT HitTestResult {
   Member<Node> m_innerNode;
   Member<Node> m_innerPossiblyPseudoNode;
   // FIXME: Nothing changes this to a value different from m_hitTestLocation!
-  LayoutPoint
-      m_pointInInnerNodeFrame;  // The hit-tested point in innerNode frame coordinates.
-  LayoutPoint
-      m_localPoint;  // A point in the local coordinate space of m_innerNode's layoutObject. Allows us to efficiently
-  // determine where inside the layoutObject we hit on subsequent operations.
+  LayoutPoint m_pointInInnerNodeFrame;  // The hit-tested point in innerNode
+                                        // frame coordinates.
+  LayoutPoint m_localPoint;  // A point in the local coordinate space of
+                             // m_innerNode's layoutObject.Allows us to
+                             // efficiently determine where inside the
+                             // layoutObject we hit on subsequent operations.
   Member<Element> m_innerURLElement;
   Member<Scrollbar> m_scrollbar;
-  bool
-      m_isOverWidget;  // Returns true if we are over a widget (and not in the border/padding area of a LayoutPart for example).
+  bool m_isOverWidget;  // Returns true if we are over a widget (and not in the
+                        // border/padding area of a LayoutPart for example).
 
   mutable Member<NodeSet> m_listBasedTestResult;
 };

@@ -183,7 +183,8 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage) {
   std::unique_ptr<PaintController> paintController = PaintController::create();
   GraphicsContext context(*paintController);
 
-  // Paint once. This will kick off a timer to see if we resize it during that timer's execution.
+  // Paint once. This will kick off a timer to see if we resize it during that
+  // timer's execution.
   EXPECT_EQ(InterpolationMedium,
             controller()->chooseInterpolationQuality(
                 *img, testImage.get(), testImage.get(), LayoutSize(2, 2)));
@@ -199,7 +200,8 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage) {
                 *img, testImage.get(), testImage.get(), LayoutSize(4, 4)));
 
   mockTimer->fire();
-  // The timer fired before painting at another size, so this doesn't count as animation. Therefore not painting at low quality.
+  // The timer fired before painting at another size, so this doesn't count as
+  // animation. Therefore not painting at low quality.
   EXPECT_EQ(InterpolationMedium,
             controller()->chooseInterpolationQuality(
                 *img, testImage.get(), testImage.get(), LayoutSize(4, 4)));
@@ -224,7 +226,8 @@ TEST_F(ImageQualityControllerTest,
   std::unique_ptr<PaintController> paintController = PaintController::create();
   GraphicsContext context(*paintController);
 
-  // Paint once. This will kick off a timer to see if we resize it during that timer's execution.
+  // Paint once. This will kick off a timer to see if we resize it during that
+  // timer's execution.
   EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(
                                      *animatingImage, testImage.get(),
                                      testImage.get(), LayoutSize(2, 2)));
@@ -234,18 +237,21 @@ TEST_F(ImageQualityControllerTest,
                                   *animatingImage, testImage.get(),
                                   testImage.get(), LayoutSize(3, 3)));
 
-  // The non-animating image receives a medium-quality filter, even though the other one is animating.
+  // The non-animating image receives a medium-quality filter, even though the
+  // other one is animating.
   EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(
                                      *nonAnimatingImage, testImage.get(),
                                      testImage.get(), LayoutSize(4, 4)));
 
-  // Now the second image has animated, so it also gets painted with a low-quality filter.
+  // Now the second image has animated, so it also gets painted with a
+  // low-quality filter.
   EXPECT_EQ(InterpolationLow, controller()->chooseInterpolationQuality(
                                   *nonAnimatingImage, testImage.get(),
                                   testImage.get(), LayoutSize(3, 3)));
 
   mockTimer->fire();
-  // The timer fired before painting at another size, so this doesn't count as animation. Therefore not painting at low quality for any image.
+  // The timer fired before painting at another size, so this doesn't count as
+  // animation. Therefore not painting at low quality for any image.
   EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(
                                      *animatingImage, testImage.get(),
                                      testImage.get(), LayoutSize(4, 4)));
@@ -267,7 +273,8 @@ TEST_F(ImageQualityControllerTest,
 
   RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
 
-  // Paint once. This will kick off a timer to see if we resize it during that timer's execution.
+  // Paint once. This will kick off a timer to see if we resize it during that
+  // timer's execution.
   EXPECT_EQ(InterpolationMedium,
             controller()->chooseInterpolationQuality(
                 *img, testImage.get(), testImage.get(), LayoutSize(2, 2)));
@@ -284,11 +291,13 @@ TEST_F(ImageQualityControllerTest,
 
   mockTimer->stop();
   EXPECT_FALSE(mockTimer->isActive());
-  // Painted at the same size, so even though timer is still executing, don't go to low quality.
+  // Painted at the same size, so even though timer is still executing, don't go
+  // to low quality.
   EXPECT_EQ(InterpolationLow,
             controller()->chooseInterpolationQuality(
                 *img, testImage.get(), testImage.get(), LayoutSize(4, 4)));
-  // Check that the timer was not kicked. It should not have been, since the image was painted at the same size as last time.
+  // Check that the timer was not kicked. It should not have been, since the
+  // image was painted at the same size as last time.
   EXPECT_FALSE(mockTimer->isActive());
 }
 
@@ -304,7 +313,8 @@ TEST_F(ImageQualityControllerTest, DontRestartTimerUnlessAdvanced) {
 
   RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
 
-  // Paint once. This will kick off a timer to see if we resize it during that timer's execution.
+  // Paint once. This will kick off a timer to see if we resize it during that
+  // timer's execution.
   mockTimer->setTime(0.1);
   EXPECT_FALSE(controller()->shouldPaintAtLowQuality(
       *img, testImage.get(), testImage.get(), LayoutSize(2, 2), 0.1));
@@ -322,7 +332,8 @@ TEST_F(ImageQualityControllerTest, DontRestartTimerUnlessAdvanced) {
                 ImageQualityController::cTimerRestartThreshold / 2.0,
             mockTimer->nextFireInterval());
 
-  // This animation is far enough in the future to make the timer restart, since it is half over.
+  // This animation is far enough in the future to make the timer restart, since
+  // it is half over.
   nextTime = 0.1 + ImageQualityController::cTimerRestartThreshold + 0.01;
   EXPECT_EQ(true, controller()->shouldPaintAtLowQuality(
                       *img, testImage.get(), testImage.get(), LayoutSize(4, 4),
