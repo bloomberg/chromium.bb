@@ -1648,11 +1648,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_TRY_SUPPORTED_CHANNEL_LAYOUTS_DESCRIPTION, kOsWin,
      SINGLE_VALUE_TYPE(switches::kTrySupportedChannelLayouts)},
 #endif  // OS_WIN
-#if defined(ENABLE_WEBRTC)
-    {"enable-webrtc-dtls12", IDS_FLAGS_WEBRTC_DTLS12_NAME,
-     IDS_FLAGS_WEBRTC_DTLS12_DESCRIPTION, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableWebRtcDtls12)},
-#endif  // ENABLE_WEBRTC
 #if defined(OS_MACOSX)
     {"app-info-dialog", IDS_FLAGS_APP_INFO_DIALOG_NAME,
      IDS_FLAGS_APP_INFO_DIALOG_DESCRIPTION, kOsMac,

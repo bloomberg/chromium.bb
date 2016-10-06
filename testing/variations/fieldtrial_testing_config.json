@@ -2220,22 +2220,6 @@
             ]
         }
     ],
-    "WebRTC-PeerConnectionDTLS1.2": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "use-new-media-cache": [
         {
             "platforms": [

@@ -5647,12 +5647,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_WEBRTC_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video encoding support.">
         Support in WebRTC for encoding video streams using platform hardware.
       </message>
-      <message name="IDS_FLAGS_WEBRTC_DTLS12_NAME" desc="Name of chrome:flags option to enable DTLS 1.2 for WebRTC">
-        Negotiation with DTLS 1.2 for WebRTC
-      </message>
-      <message name="IDS_FLAGS_WEBRTC_DTLS12_DESCRIPTION" desc="Description of chrome:flags option to enable DTLS 1.2 for WebRTC">
-        When enabled, WebRTC will try to negotiate DTLS 1.2.
-      </message>
       <message name="IDS_FLAGS_WEBRTC_STUN_ORIGIN_NAME" desc="Name of chrome:flags option to turn on Origin header for WebRTC STUN messages">
         WebRTC Stun origin header
       </message>
