@@ -24,7 +24,7 @@ struct ContextMenuParams;
 // RenderWidget. This includes resizing, placing view on the screen at desired
 // position, changing device scale factor, and scaling down the whole
 // widget if required to fit into the browser window.
-class RenderWidgetScreenMetricsEmulator {
+class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
  public:
   RenderWidgetScreenMetricsEmulator(
       RenderWidgetScreenMetricsEmulatorDelegate* delegate,

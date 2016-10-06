@@ -11,12 +11,15 @@
 #include "base/test/histogram_tester.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
+#include "content/common/resize_params.h"
 #include "content/public/test/mock_render_thread.h"
+#include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/mock_render_process.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/rect.h"
@@ -364,6 +367,131 @@ TEST_F(RenderWidgetUnittest, TouchDuringOrOutsideFlingUmaMetrics) {
   widget()->SendInputEvent(touch);
   histogram_tester().ExpectTotalCount("Event.Touch.TouchLatencyOutsideFling",
                                       2);
+}
+
+class PopupRenderWidget : public RenderWidget {
+ public:
+  explicit PopupRenderWidget(CompositorDependencies* compositor_deps)
+      : RenderWidget(compositor_deps,
+                     blink::WebPopupTypePage,
+                     ScreenInfo(),
+                     false,
+                     false,
+                     false) {
+    webwidget_internal_ = &mock_webwidget_;
+    // A RenderWidget is not fully initialized until it has a routing ID.
+    SetRoutingID(1);
+    did_show_ = true;
+  }
+
+  IPC::TestSink* sink() { return &sink_; }
+
+  MockWebWidget* mock_webwidget() { return &mock_webwidget_; }
+
+  void SetScreenMetricsEmulationParameters(
+      bool,
+      const blink::WebDeviceEmulationParams&) override {}
+
+ protected:
+  ~PopupRenderWidget() override { webwidget_internal_ = nullptr; }
+
+  bool Send(IPC::Message* msg) override {
+    sink_.OnMessageReceived(*msg);
+    delete msg;
+    return true;
+  }
+
+ private:
+  IPC::TestSink sink_;
+  MockWebWidget mock_webwidget_;
+
+  DISALLOW_COPY_AND_ASSIGN(PopupRenderWidget);
+};
+
+class RenderWidgetPopupUnittest : public testing::Test {
+ public:
+  RenderWidgetPopupUnittest()
+      : widget_(new PopupRenderWidget(&compositor_deps_)) {}
+  ~RenderWidgetPopupUnittest() override {}
+
+  PopupRenderWidget* widget() const { return widget_.get(); }
+  FakeCompositorDependencies compositor_deps_;
+
+ private:
+  MockRenderProcess render_process_;
+  MockRenderThread render_thread_;
+  scoped_refptr<PopupRenderWidget> widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetPopupUnittest);
+};
+
+TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
+  blink::WebRect popup_screen_rect(200, 250, 100, 400);
+  widget()->setWindowRect(popup_screen_rect);
+
+  // The view and window rect on a popup type RenderWidget should be
+  // immediately set, without requiring an ACK.
+  EXPECT_EQ(popup_screen_rect.x, widget()->windowRect().x);
+  EXPECT_EQ(popup_screen_rect.y, widget()->windowRect().y);
+
+  EXPECT_EQ(popup_screen_rect.x, widget()->viewRect().x);
+  EXPECT_EQ(popup_screen_rect.y, widget()->viewRect().y);
+
+  gfx::Rect emulated_window_rect(0, 0, 980, 1200);
+
+  blink::WebDeviceEmulationParams emulation_params;
+  emulation_params.screenPosition = blink::WebDeviceEmulationParams::Mobile;
+  emulation_params.viewSize = emulated_window_rect.size();
+  emulation_params.viewPosition = blink::WebPoint(150, 160);
+  emulation_params.fitToView = true;
+
+  gfx::Rect parent_window_rect = gfx::Rect(0, 0, 800, 600);
+
+  ResizeParams resize_params;
+  resize_params.new_size = parent_window_rect.size();
+
+  scoped_refptr<PopupRenderWidget> parent_widget(
+      new PopupRenderWidget(&compositor_deps_));
+  RenderWidgetScreenMetricsEmulator emulator(
+      parent_widget.get(), emulation_params, resize_params, parent_window_rect,
+      parent_window_rect);
+  emulator.Apply();
+
+  widget()->SetPopupOriginAdjustmentsForEmulation(&emulator);
+
+  // Emulation-applied scale factor to fit the emulated device in the window.
+  float scale =
+      (float)parent_window_rect.height() / emulated_window_rect.height();
+
+  // Used to center the emulated device in the window.
+  gfx::Point offset(
+      (parent_window_rect.width() - emulated_window_rect.width() * scale) / 2,
+      (parent_window_rect.height() - emulated_window_rect.height() * scale) /
+          2);
+
+  // Position of the popup as seen by the emulated widget.
+  gfx::Point emulated_position(emulation_params.viewPosition.x +
+                                   (popup_screen_rect.x - offset.x()) / scale,
+                               emulation_params.viewPosition.y +
+                                   (popup_screen_rect.y - offset.y()) / scale);
+
+  // Both the window and view rects as read from the accessors should have the
+  // emulation parameters applied.
+  EXPECT_EQ(emulated_position.x(), widget()->windowRect().x);
+  EXPECT_EQ(emulated_position.y(), widget()->windowRect().y);
+  EXPECT_EQ(emulated_position.x(), widget()->viewRect().x);
+  EXPECT_EQ(emulated_position.y(), widget()->viewRect().y);
+
+  // Setting a new window rect while emulated should remove the emulation
+  // transformation from the given rect so that getting the rect, which applies
+  // the transformation to the raw rect, should result in the same value.
+  blink::WebRect popup_emulated_rect(130, 170, 100, 400);
+  widget()->setWindowRect(popup_emulated_rect);
+
+  EXPECT_EQ(popup_emulated_rect.x, widget()->windowRect().x);
+  EXPECT_EQ(popup_emulated_rect.y, widget()->windowRect().y);
+  EXPECT_EQ(popup_emulated_rect.x, widget()->viewRect().x);
+  EXPECT_EQ(popup_emulated_rect.y, widget()->viewRect().y);
 }
 
 }  // namespace content

@@ -1336,21 +1336,53 @@ void RenderWidget::Close() {
   }
 }
 
+void RenderWidget::ScreenRectToEmulatedIfNeeded(WebRect* window_rect) const {
+  DCHECK(window_rect);
+  float scale = popup_origin_scale_for_emulation_;
+  if (!scale)
+    return;
+  window_rect->x =
+      popup_view_origin_for_emulation_.x() +
+      (window_rect->x - popup_screen_origin_for_emulation_.x()) / scale;
+  window_rect->y =
+      popup_view_origin_for_emulation_.y() +
+      (window_rect->y - popup_screen_origin_for_emulation_.y()) / scale;
+}
+
+void RenderWidget::EmulatedToScreenRectIfNeeded(WebRect* window_rect) const {
+  DCHECK(window_rect);
+  float scale = popup_origin_scale_for_emulation_;
+  if (!scale)
+    return;
+  window_rect->x =
+      popup_screen_origin_for_emulation_.x() +
+      (window_rect->x - popup_view_origin_for_emulation_.x()) * scale;
+  window_rect->y =
+      popup_screen_origin_for_emulation_.y() +
+      (window_rect->y - popup_view_origin_for_emulation_.y()) * scale;
+}
+
 WebRect RenderWidget::windowRect() {
+  WebRect rect;
   if (pending_window_rect_count_) {
     // NOTE(mbelshe): If there is a pending_window_rect_, then getting
     // the RootWindowRect is probably going to return wrong results since the
     // browser may not have processed the Move yet.  There isn't really anything
     // good to do in this case, and it shouldn't happen - since this size is
     // only really needed for windowToScreen, which is only used for Popups.
-    return pending_window_rect_;
+    rect = pending_window_rect_;
+  } else {
+    rect = window_screen_rect_;
   }
 
-  return window_screen_rect_;
+  ScreenRectToEmulatedIfNeeded(&rect);
+  return rect;
 }
 
 WebRect RenderWidget::viewRect() {
-    return view_screen_rect_;
+  WebRect rect = view_screen_rect_;
+  ScreenRectToEmulatedIfNeeded(&rect);
+  return rect;
 }
 
 void RenderWidget::setToolTipText(const blink::WebString& text,
@@ -1360,13 +1392,7 @@ void RenderWidget::setToolTipText(const blink::WebString& text,
 
 void RenderWidget::setWindowRect(const WebRect& rect_in_screen) {
   WebRect window_rect = rect_in_screen;
-  if (popup_origin_scale_for_emulation_) {
-    float scale = popup_origin_scale_for_emulation_;
-    window_rect.x = popup_screen_origin_for_emulation_.x() +
-        (window_rect.x - popup_view_origin_for_emulation_.x()) * scale;
-    window_rect.y = popup_screen_origin_for_emulation_.y() +
-        (window_rect.y - popup_view_origin_for_emulation_.y()) * scale;
-  }
+  EmulatedToScreenRectIfNeeded(&window_rect);
 
   if (!resizing_mode_selector_->is_synchronous_mode()) {
     if (did_show_) {
