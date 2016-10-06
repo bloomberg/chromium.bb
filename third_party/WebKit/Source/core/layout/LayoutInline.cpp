@@ -936,23 +936,20 @@ bool LayoutInline::hitTestCulledInline(
 
 PositionWithAffinity LayoutInline::positionForPoint(const LayoutPoint& point) {
   // FIXME: Does not deal with relative positioned inlines (should it?)
-  LayoutBlock* cb = containingBlock();
+
+  // If there are continuations, test them first because our containing block
+  // will not check them.
+  LayoutBoxModelObject* continuation = this->continuation();
+  while (continuation) {
+    if (continuation->isInline() || continuation->slowFirstChild())
+      return continuation->positionForPoint(point);
+    continuation = toLayoutBlockFlow(continuation)->inlineElementContinuation();
+  }
+
   if (firstLineBoxIncludingCulling()) {
     // This inline actually has a line box.  We must have clicked in the border/padding of one of these boxes.  We
     // should try to find a result by asking our containing block.
-    return cb->positionForPoint(point);
-  }
-
-  // Translate the coords from the pre-anonymous block to the post-anonymous block.
-  LayoutPoint parentBlockPoint = cb->location() + point;
-  LayoutBoxModelObject* c = continuation();
-  while (c) {
-    LayoutBox* contBlock =
-        c->isInline() ? c->containingBlock() : toLayoutBlock(c);
-    if (c->isInline() || c->slowFirstChild())
-      return c->positionForPoint(parentBlockPoint -
-                                 contBlock->locationOffset());
-    c = toLayoutBlockFlow(c)->inlineElementContinuation();
+    return containingBlock()->positionForPoint(point);
   }
 
   return LayoutBoxModelObject::positionForPoint(point);
