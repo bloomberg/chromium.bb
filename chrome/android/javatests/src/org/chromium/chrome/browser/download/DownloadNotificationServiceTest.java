@@ -17,6 +17,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -265,6 +266,7 @@ public class DownloadNotificationServiceTest extends
      */
     @SmallTest
     @Feature({"Download"})
+    @RetryOnFailure
     public void testDownloadSuccessNotification() {
         setupService();
         startNotificationService();
