@@ -74,8 +74,8 @@ void OnIntentPickerClosed(int render_process_host_id,
 
   switch (close_reason) {
     case ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED: {
-      // TODO(yusukes): Add NOTREACHED(); break; here once b/31665510 is fixed.
-      // fall through, for now.
+      instance->AddPreferredPackage(handlers[selected_app_index]->package_name);
+      // fall through.
     }
     case ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED: {
       // Launch the selected app.
@@ -85,7 +85,6 @@ void OnIntentPickerClosed(int render_process_host_id,
       break;
     }
     case ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND: {
-      // Our OnUrlHandlerList callback does not search for a preferred activity.
       NOTREACHED();
       break;
     }
@@ -146,6 +145,17 @@ void OnUrlHandlerList(int render_process_host_id,
   if (!instance || !icon_loader || !handlers.size()) {
     // No handler is available on ARC side. Show the Chrome OS dialog.
     ShowFallbackExternalProtocolDialog(render_process_host_id, routing_id, url);
+    return;
+  }
+
+  // If one of the apps is marked as preferred, use it right away without
+  // showing the UI. |is_preferred| will never be true unless the user
+  // explicitly makes it the default with the "always" button.
+  for (size_t i = 0; i < handlers.size(); ++i) {
+    if (!handlers[i]->is_preferred)
+      continue;
+    instance->HandleUrl(url.spec(), handlers[i]->package_name);
+    CloseTabIfNeeded(render_process_host_id, routing_id);
     return;
   }
 
