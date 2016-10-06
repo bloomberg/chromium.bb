@@ -42,6 +42,7 @@
 #include "content/public/common/content_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(ENABLE_EXTENSIONS)
@@ -89,7 +90,7 @@ static void SendPluginAvailabilityUMA(const std::string& mime_type,
 // RAPPOR service.
 void ReportMetrics(const std::string& mime_type,
                    const GURL& url,
-                   const GURL& origin_url) {
+                   const url::Origin& main_frame_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (chrome::IsIncognitoSessionActive())
@@ -97,13 +98,15 @@ void ReportMetrics(const std::string& mime_type,
   rappor::RapporService* rappor_service = g_browser_process->rappor_service();
   if (!rappor_service)
     return;
+  if (main_frame_origin.unique())
+    return;
 
   if (mime_type == content::kFlashPluginSwfMimeType ||
       mime_type == content::kFlashPluginSplMimeType) {
     rappor_service->RecordSample(
         "Plugins.FlashOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
         net::registry_controlled_domains::GetDomainAndRegistry(
-            origin_url,
+            main_frame_origin.GetURL(),
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
     rappor_service->RecordSample(
         "Plugins.FlashUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
@@ -207,22 +210,18 @@ PluginInfoMessageFilter::~PluginInfoMessageFilter() {}
 struct PluginInfoMessageFilter::GetPluginInfo_Params {
   int render_frame_id;
   GURL url;
-  GURL top_origin_url;
+  url::Origin main_frame_origin;
   std::string mime_type;
 };
 
 void PluginInfoMessageFilter::OnGetPluginInfo(
     int render_frame_id,
     const GURL& url,
-    const GURL& top_origin_url,
+    const url::Origin& main_frame_origin,
     const std::string& mime_type,
     IPC::Message* reply_msg) {
-  GetPluginInfo_Params params = {
-    render_frame_id,
-    url,
-    top_origin_url,
-    mime_type
-  };
+  GetPluginInfo_Params params = {render_frame_id, url, main_frame_origin,
+                                 mime_type};
   PluginService::GetInstance()->GetPlugins(
       base::Bind(&PluginInfoMessageFilter::PluginsLoaded,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -238,7 +237,7 @@ void PluginInfoMessageFilter::PluginsLoaded(
   // This also fills in |actual_mime_type|.
   std::unique_ptr<PluginMetadata> plugin_metadata;
   if (context_.FindEnabledPlugin(params.render_frame_id, params.url,
-                                 params.top_origin_url, params.mime_type,
+                                 params.main_frame_origin, params.mime_type,
                                  &output->status, &output->plugin,
                                  &output->actual_mime_type, &plugin_metadata)) {
     context_.DecidePluginStatus(params, output->plugin, plugin_metadata.get(),
@@ -319,7 +318,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   // Check plugin content settings. The primary URL is the top origin URL and
   // the secondary URL is the plugin URL.
   PluginUtils::GetPluginContentSetting(
-      host_content_settings_map_, plugin, params.top_origin_url, params.url,
+      host_content_settings_map_, plugin, params.main_frame_origin, params.url,
       plugin_metadata->identifier(), &plugin_setting,
       &uses_default_content_setting, &is_managed);
 
@@ -397,7 +396,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
 bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
     int render_frame_id,
     const GURL& url,
-    const GURL& top_origin_url,
+    const url::Origin& main_frame_origin,
     const std::string& mime_type,
     ChromeViewHostMsg_GetPluginInfo_Status* status,
     WebPluginInfo* plugin,
@@ -430,12 +429,10 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
       PluginService::GetInstance()->GetFilter();
   size_t i = 0;
   for (; i < matching_plugins.size(); ++i) {
-    if (!filter || filter->IsPluginAvailable(render_process_id_,
-                                             render_frame_id,
-                                             resource_context_,
-                                             url,
-                                             top_origin_url,
-                                             &matching_plugins[i])) {
+    if (!filter ||
+        filter->IsPluginAvailable(render_process_id_, render_frame_id,
+                                  resource_context_, url, main_frame_origin,
+                                  &matching_plugins[i])) {
       break;
     }
   }
@@ -499,7 +496,7 @@ void PluginInfoMessageFilter::GetPluginInfoReply(
   if (output->status != ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ReportMetrics, output->actual_mime_type,
-                              params.url, params.top_origin_url));
+                              params.url, params.main_frame_origin));
   }
 }
 

@@ -45,6 +45,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
+#include "url/origin.h"
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -574,6 +575,6 @@ void BrowserTabStripController::OnFindURLMimeTypeCompleted(
           content::PluginService::GetInstance()->GetPluginInfo(
               -1,                // process ID
               MSG_ROUTING_NONE,  // routing ID
-              model_->profile()->GetResourceContext(), url, GURL(), mime_type,
-              false, NULL, &plugin, NULL));
+              model_->profile()->GetResourceContext(), url, url::Origin(),
+              mime_type, false, NULL, &plugin, NULL));
 }

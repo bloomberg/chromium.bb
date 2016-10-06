@@ -29,6 +29,7 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
+#include "url/origin.h"
 
 // Singly-included section for enums and custom IPC traits.
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_
@@ -423,7 +424,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
 IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_GetPluginInfo,
                             int /* render_frame_id */,
                             GURL /* url */,
-                            GURL /* top origin url */,
+                            url::Origin /* main_frame_origin */,
                             std::string /* mime_type */,
                             ChromeViewHostMsg_GetPluginInfo_Output /* output */)
 

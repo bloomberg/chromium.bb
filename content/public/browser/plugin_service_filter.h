@@ -13,6 +13,10 @@ namespace base {
 class FilePath;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 struct WebPluginInfo;
 
@@ -29,7 +33,7 @@ class PluginServiceFilter {
                                  int render_frame_id,
                                  const void* context,
                                  const GURL& url,
-                                 const GURL& policy_url,
+                                 const url::Origin& main_frame_origin,
                                  WebPluginInfo* plugin) = 0;
 
   // Whether the renderer has permission to load available |plugin|.

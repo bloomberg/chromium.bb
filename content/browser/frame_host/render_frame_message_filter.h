@@ -29,6 +29,10 @@ class URLRequestContext;
 class URLRequestContextGetter;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 class BrowserContext;
 class PluginServiceImpl;
@@ -128,7 +132,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
                           const std::vector<WebPluginInfo>& plugins);
   void OnGetPluginInfo(int render_frame_id,
                        const GURL& url,
-                       const GURL& policy_url,
+                       const url::Origin& main_frame_origin,
                        const std::string& mime_type,
                        bool* found,
                        WebPluginInfo* info,

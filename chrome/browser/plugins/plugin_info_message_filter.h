@@ -44,6 +44,10 @@ namespace component_updater {
 struct ComponentInfo;
 }
 
+namespace url {
+class Origin;
+}
+
 // This class filters out incoming IPC messages requesting plugin information.
 class PluginInfoMessageFilter : public content::BrowserMessageFilter {
  public:
@@ -64,7 +68,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
     bool FindEnabledPlugin(
         int render_frame_id,
         const GURL& url,
-        const GURL& top_origin_url,
+        const url::Origin& main_frame_origin,
         const std::string& mime_type,
         ChromeViewHostMsg_GetPluginInfo_Status* status,
         content::WebPluginInfo* plugin,
@@ -102,7 +106,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
 
   void OnGetPluginInfo(int render_frame_id,
                        const GURL& url,
-                       const GURL& top_origin_url,
+                       const url::Origin& main_frame_origin,
                        const std::string& mime_type,
                        IPC::Message* reply_msg);
 

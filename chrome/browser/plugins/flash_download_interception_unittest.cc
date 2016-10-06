@@ -29,7 +29,7 @@ TEST_F(FlashDownloadInterceptionTest, PreferHtmlOverPluginsOff) {
   feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
 
   EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL(),
+      host_content_settings_map(), GURL("http://source-page.com"),
       GURL("https://get.adobe.com/flashplayer/"), true));
 }
 
@@ -38,26 +38,29 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
   feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
 
   EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL(),
+      host_content_settings_map(), GURL("http://source-page.com"),
       GURL("https://get.adobe.com/flashplayer/"), true));
 
   // HTTP and path variant.
   EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL(), GURL("http://get.adobe.com/flash"),
-      true));
+      host_content_settings_map(), GURL("http://source-page.com"),
+      GURL("http://get.adobe.com/flash"), true));
 
   EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL(), GURL("https://www.example.com"),
-      true));
+      host_content_settings_map(), GURL("http://source-page.com"),
+      GURL("https://www.example.com"), true));
 
   EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL(),
+      host_content_settings_map(), GURL("http://source-page.com"),
       GURL("http://example.com/get.adobe.com/flashplayer"), true));
 }
 
 TEST_F(FlashDownloadInterceptionTest, NavigationThrottleCancelsNavigation) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
+
+  // Set the source URL to an HTTP source.
+  NavigateAndCommit(GURL("http://example.com"));
 
   std::unique_ptr<NavigationHandle> handle =
       NavigationHandle::CreateNavigationHandleForTesting(
@@ -78,7 +81,7 @@ TEST_F(FlashDownloadInterceptionTest, OnlyInterceptOnDetectContentSetting) {
 
   // Default Setting (which is DETECT)
   EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL(),
+      host_content_settings_map(), GURL("http://source-page.com"),
       GURL("https://get.adobe.com/flashplayer/"), true));
 
   // No intercept on ALLOW.
@@ -87,18 +90,18 @@ TEST_F(FlashDownloadInterceptionTest, OnlyInterceptOnDetectContentSetting) {
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_ALLOW);
   EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL(),
+      host_content_settings_map(), GURL("http://source-page.com"),
       GURL("https://get.adobe.com/flashplayer/"), true));
 
   // Intercept on both explicit DETECT and BLOCK.
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_BLOCK);
   EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL(),
+      host_content_settings_map(), GURL("http://source-page.com"),
       GURL("https://get.adobe.com/flashplayer/"), true));
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
   EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
-      host_content_settings_map(), GURL(),
+      host_content_settings_map(), GURL("http://source-page.com"),
       GURL("https://get.adobe.com/flashplayer/"), true));
 }

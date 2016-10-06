@@ -28,7 +28,6 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
-#include "url/gurl.h"
 
 using content::BrowserThread;
 using content::PluginService;
@@ -175,7 +174,7 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
     int render_frame_id,
     const void* context,
     const GURL& plugin_content_url,
-    const GURL& main_url,
+    const url::Origin& main_frame_origin,
     content::WebPluginInfo* plugin) {
   base::AutoLock auto_lock(lock_);
   const ProcessDetails* details = GetProcess(render_process_id);
@@ -212,19 +211,18 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
       base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
     // Check the content setting first, and always respect the ALLOW or BLOCK
     // state. When IsPluginAvailable() is called to check whether a plugin
-    // should be advertised, |plugin_content_url| has the same value of
-    // |main_url| (i.e. the main frame origin). The intended behavior is that
-    // Flash is advertised only if a Flash embed hosted on the same origin as
-    // the main frame origin is allowed to run.
+    // should be advertised, |url| has the same origin as |main_frame_origin|.
+    // The intended behavior is that Flash is advertised only if a Flash embed
+    // hosted on the same origin as the main frame origin is allowed to run.
     bool is_managed = false;
     HostContentSettingsMap* settings_map =
         context_info_it->second->host_content_settings_map.get();
     ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-        settings_map, main_url, plugin_content_url, &is_managed);
+        settings_map, main_frame_origin, plugin_content_url, &is_managed);
     flash_setting = PluginsFieldTrial::EffectiveContentSetting(
         CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
-    double engagement =
-        SiteEngagementService::GetScoreFromSettings(settings_map, main_url);
+    double engagement = SiteEngagementService::GetScoreFromSettings(
+        settings_map, main_frame_origin.GetURL());
 
     if (flash_setting == CONTENT_SETTING_ALLOW) {
       UMA_HISTOGRAM_COUNTS_100(kEngagementSettingAllowedHistogram, engagement);

@@ -20,6 +20,7 @@
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/common/webplugininfo.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 class Profile;
 
@@ -64,13 +65,13 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
                            const std::string& identifier);
 
   // PluginServiceFilter implementation.
-  // If |plugin_content_url| is not available, the same GURL passed as
-  // |top_level_url| should be passed. These GURLs may be empty.
+  // If |plugin_content_url| is not available, pass the same URL used to
+  // generate |main_frame_origin|. These parameters may be empty.
   bool IsPluginAvailable(int render_process_id,
                          int render_frame_id,
                          const void* context,
                          const GURL& plugin_content_url,
-                         const GURL& top_level_url,
+                         const url::Origin& main_frame_origin,
                          content::WebPluginInfo* plugin) override;
 
   // CanLoadPlugin always grants permission to the browser

@@ -21,7 +21,7 @@ class ShellPluginServiceFilter : public PluginServiceFilter {
                          int render_frame_id,
                          const void* context,
                          const GURL& url,
-                         const GURL& policy_url,
+                         const url::Origin& main_frame_origin,
                          WebPluginInfo* plugin) override;
 
   bool CanLoadPlugin(int render_process_id,

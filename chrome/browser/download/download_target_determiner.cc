@@ -28,6 +28,7 @@
 #include "extensions/common/constants.h"
 #include "net/base/filename_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/origin.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/webstore_installer.h"
@@ -473,11 +474,9 @@ void IsHandledBySafePlugin(content::ResourceContext* resource_context,
 
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
-  bool plugin_found = plugin_service->GetPluginInfo(-1, -1, resource_context,
-                                                    url, GURL(), mime_type,
-                                                    false, &is_stale,
-                                                    &plugin_info,
-                                                    &actual_mime_type);
+  bool plugin_found = plugin_service->GetPluginInfo(
+      -1, -1, resource_context, url, url::Origin(), mime_type, false, &is_stale,
+      &plugin_info, &actual_mime_type);
   if (is_stale && stale_plugin_action == RETRY_IF_STALE_PLUGIN_LIST) {
     // The GetPlugins call causes the plugin list to be refreshed. Once that's
     // done we can retry the GetPluginInfo call. We break out of this cycle

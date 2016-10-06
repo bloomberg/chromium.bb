@@ -27,6 +27,7 @@
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -210,7 +211,7 @@ class TestFakePluginService : public FakePluginService {
                      int render_frame_id,
                      ResourceContext* context,
                      const GURL& url,
-                     const GURL& page_url,
+                     const url::Origin& main_frame_origin,
                      const std::string& mime_type,
                      bool allow_wildcard,
                      bool* is_stale,

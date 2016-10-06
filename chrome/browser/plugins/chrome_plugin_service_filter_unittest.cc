@@ -37,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/test/test_utils.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -53,7 +54,7 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
         flash_plugin_path_(FILE_PATH_LITERAL("/path/to/flash")) {}
 
   bool IsPluginAvailable(const GURL& plugin_content_url,
-                         const GURL& main_url,
+                         const url::Origin& main_frame_origin,
                          const void* resource_context,
                          const content::WebPluginInfo& plugin_info) {
     bool is_available = false;
@@ -64,8 +65,9 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&ChromePluginServiceFilterTest::IsPluginAvailableOnIOThread,
-                   base::Unretained(this), plugin_content_url, main_url,
-                   resource_context, plugin_info, &is_available),
+                   base::Unretained(this), plugin_content_url,
+                   main_frame_origin, resource_context, plugin_info,
+                   &is_available),
         run_loop.QuitClosure());
     run_loop.Run();
 
@@ -86,14 +88,14 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
   }
 
   void IsPluginAvailableOnIOThread(const GURL& plugin_content_url,
-                                   const GURL& main_url,
+                                   const url::Origin& main_frame_origin,
                                    const void* resource_context,
                                    content::WebPluginInfo plugin_info,
                                    bool* is_available) {
     *is_available = filter_->IsPluginAvailable(
         web_contents()->GetRenderProcessHost()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(), resource_context,
-        plugin_content_url, main_url, &plugin_info);
+        plugin_content_url, main_frame_origin, &plugin_info);
   }
 
   ChromePluginServiceFilter* filter_;
@@ -104,8 +106,8 @@ TEST_F(ChromePluginServiceFilterTest, FlashAvailableByDefault) {
   content::WebPluginInfo flash_plugin(
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
-  EXPECT_TRUE(IsPluginAvailable(GURL(), GURL(), profile()->GetResourceContext(),
-                                flash_plugin));
+  EXPECT_TRUE(IsPluginAvailable(GURL(), url::Origin(),
+                                profile()->GetResourceContext(), flash_plugin));
 }
 
 TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
@@ -121,8 +123,9 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   // The default content setting should block Flash, as there should be 0
   // engagement.
   GURL url("http://www.google.com");
-  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  url::Origin main_frame_origin(url);
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
 
   histograms.ExpectUniqueSample(
       ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 1);
@@ -133,8 +136,8 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_BLOCK);
 
-  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
 
   histograms.ExpectUniqueSample(
       ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 1);
@@ -145,8 +148,8 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_ALLOW);
 
-  EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
+                                profile()->GetResourceContext(), flash_plugin));
 
   histograms.ExpectUniqueSample(
       ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 1);
@@ -159,8 +162,8 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
-  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
 
   histograms.ExpectUniqueSample(
       ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 2);
@@ -189,8 +192,9 @@ TEST_F(ChromePluginServiceFilterTest,
 
   // This should respect the content setting and be allowed.
   GURL url("http://www.google.com");
-  EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                flash_plugin));
+  url::Origin main_frame_origin(url);
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
+                                profile()->GetResourceContext(), flash_plugin));
 
   histograms.ExpectBucketCount(
       ChromePluginServiceFilter::kEngagementSettingAllowedHistogram, 0, 1);
@@ -199,8 +203,8 @@ TEST_F(ChromePluginServiceFilterTest,
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   // This should be blocked due to 0 engagement and a detect content setting.
-  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
   histograms.ExpectBucketCount(
       ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 1);
 
@@ -208,15 +212,15 @@ TEST_F(ChromePluginServiceFilterTest,
   service->ResetScoreForURL(url, 10.0);
 
   // Should still be blocked.
-  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
   histograms.ExpectBucketCount(
       ChromePluginServiceFilter::kEngagementNoSettingHistogram, 10, 1);
 
   // Reaching 30.0 engagement should allow Flash.
   service->ResetScoreForURL(url, 30.0);
-  EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                flash_plugin));
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
+                                profile()->GetResourceContext(), flash_plugin));
 
   histograms.ExpectBucketCount(
       ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 1);
@@ -228,8 +232,8 @@ TEST_F(ChromePluginServiceFilterTest,
   // Blocked content setting should override engagement
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_BLOCK);
-  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
 
   histograms.ExpectBucketCount(
       ChromePluginServiceFilter::kEngagementSettingBlockedHistogram, 30, 1);
@@ -274,23 +278,24 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsCustomEngagement) {
 
   // This should be blocked due to 0 engagement.
   GURL url("http://www.google.com");
-  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  url::Origin main_frame_origin(url);
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
 
   // Should still be blocked until engagement reaches 50.
   SiteEngagementService* service = SiteEngagementService::Get(profile());
   service->ResetScoreForURL(url, 0.0);
-  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
   service->ResetScoreForURL(url, 10.0);
-  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
   service->ResetScoreForURL(url, 40.0);
-  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
   service->ResetScoreForURL(url, 60.0);
-  EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
+                                profile()->GetResourceContext(), flash_plugin));
 
   histograms.ExpectBucketCount(
       ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 2);
@@ -325,16 +330,17 @@ TEST_F(ChromePluginServiceFilterTest,
 
   // We should fail the availablity check in incognito.
   GURL url("http://www.google.com");
-  EXPECT_FALSE(IsPluginAvailable(url, url, incognito->GetResourceContext(),
-                                 flash_plugin));
+  url::Origin main_frame_origin(url);
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, incognito->GetResourceContext(), flash_plugin));
 
   // Add sufficient engagement to allow Flash in the original profile.
   SiteEngagementService* service = SiteEngagementService::Get(profile());
   service->ResetScoreForURL(url, 30.0);
 
   // We should still fail the engagement check due to the block.
-  EXPECT_FALSE(IsPluginAvailable(url, url, incognito->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, incognito->GetResourceContext(), flash_plugin));
 
   // Change to detect important content in the original profile.
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
@@ -343,8 +349,8 @@ TEST_F(ChromePluginServiceFilterTest,
   // Ensure we pass the engagement check in the incognito profile (i.e. it falls
   // back to checking engagement from the original profile when nothing is found
   // in the incognito profile).
-  EXPECT_TRUE(IsPluginAvailable(url, url, incognito->GetResourceContext(),
-                                flash_plugin));
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
+                                incognito->GetResourceContext(), flash_plugin));
 }
 
 TEST_F(ChromePluginServiceFilterTest,
@@ -369,24 +375,25 @@ TEST_F(ChromePluginServiceFilterTest,
   // We pass the availablity check in incognito based on the original content
   // setting.
   GURL url("http://www.google.com");
-  EXPECT_TRUE(IsPluginAvailable(url, url, incognito->GetResourceContext(),
-                                flash_plugin));
+  url::Origin main_frame_origin(url);
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
+                                incognito->GetResourceContext(), flash_plugin));
 
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   // Now we fail the availability check due to the content setting carrying
   // over.
-  EXPECT_FALSE(IsPluginAvailable(url, url, incognito->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, incognito->GetResourceContext(), flash_plugin));
 
   // Add sufficient engagement to allow Flash in the incognito profile.
   SiteEngagementService* service = SiteEngagementService::Get(incognito);
   service->ResetScoreForURL(url, 30.0);
 
   // Ensure we pass the engagement check in the incognito profile.
-  EXPECT_TRUE(IsPluginAvailable(url, url, incognito->GetResourceContext(),
-                                flash_plugin));
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
+                                incognito->GetResourceContext(), flash_plugin));
 }
 
 TEST_F(ChromePluginServiceFilterTest, BlockIfManagedSetting) {
@@ -407,9 +414,10 @@ TEST_F(ChromePluginServiceFilterTest, BlockIfManagedSetting) {
   SiteEngagementService* service = SiteEngagementService::Get(profile());
   // Reaching 30.0 engagement should allow Flash.
   GURL url("http://www.google.com");
+  url::Origin main_frame_origin(url);
   service->ResetScoreForURL(url, 30.0);
-  EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                flash_plugin));
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
+                                profile()->GetResourceContext(), flash_plugin));
   histograms.ExpectUniqueSample(
       ChromePluginServiceFilter::kEngagementNoSettingHistogram, 30, 1);
 
@@ -418,9 +426,8 @@ TEST_F(ChromePluginServiceFilterTest, BlockIfManagedSetting) {
       profile()->GetTestingPrefService();
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
                         new base::FundamentalValue(CONTENT_SETTING_ASK));
-
-  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
-                                 flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
   histograms.ExpectUniqueSample(
       ChromePluginServiceFilter::kEngagementNoSettingHistogram, 30, 2);
 }

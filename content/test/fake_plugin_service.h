@@ -9,6 +9,10 @@
 #include "build/build_config.h"
 #include "content/public/browser/plugin_service.h"
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class FakePluginService : public PluginService {
@@ -26,7 +30,7 @@ class FakePluginService : public PluginService {
                      int render_frame_id,
                      ResourceContext* context,
                      const GURL& url,
-                     const GURL& page_url,
+                     const url::Origin& main_frame_origin,
                      const std::string& mime_type,
                      bool allow_wildcard,
                      bool* is_stale,

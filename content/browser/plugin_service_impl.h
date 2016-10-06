@@ -70,7 +70,7 @@ class CONTENT_EXPORT PluginServiceImpl
                      int render_frame_id,
                      ResourceContext* context,
                      const GURL& url,
-                     const GURL& page_url,
+                     const url::Origin& main_frame_origin,
                      const std::string& mime_type,
                      bool allow_wildcard,
                      bool* is_stale,

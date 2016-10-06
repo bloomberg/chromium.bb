@@ -15,6 +15,10 @@ namespace content {
 struct WebPluginInfo;
 }
 
+namespace url {
+class Origin;
+}
+
 class PluginUtils {
  public:
   // |is_default| and |is_managed| may be nullptr. In that case, they aren't
@@ -22,7 +26,7 @@ class PluginUtils {
   static void GetPluginContentSetting(
       const HostContentSettingsMap* host_content_settings_map,
       const content::WebPluginInfo& plugin,
-      const GURL& policy_url,
+      const url::Origin& main_frame_origin,
       const GURL& plugin_url,
       const std::string& resource,
       ContentSetting* setting,
@@ -33,7 +37,7 @@ class PluginUtils {
   // |GetPluginContentSetting| but flash-specific.
   static ContentSetting GetFlashPluginContentSetting(
       const HostContentSettingsMap* host_content_settings_map,
-      const GURL& policy_url,
+      const url::Origin& main_frame_origin,
       const GURL& plugin_url,
       bool* is_managed);
 

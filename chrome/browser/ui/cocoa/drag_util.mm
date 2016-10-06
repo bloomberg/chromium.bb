@@ -22,6 +22,7 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 
 using content::PluginService;
@@ -51,9 +52,8 @@ BOOL IsSupportedFileURL(Profile* profile, const GURL& url) {
   return PluginService::GetInstance()->GetPluginInfo(
       -1,                // process ID
       MSG_ROUTING_NONE,  // routing ID
-      profile->GetResourceContext(),
-      url, GURL(), mime_type, allow_wildcard,
-      NULL, &plugin, NULL);
+      profile->GetResourceContext(), url, url::Origin(), mime_type,
+      allow_wildcard, NULL, &plugin, NULL);
 }
 
 // Draws string |title| within box |frame|, positioning it at the origin.

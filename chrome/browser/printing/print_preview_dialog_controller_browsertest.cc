@@ -38,6 +38,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using content::WebContents;
 using content::WebContentsObserver;
@@ -150,12 +151,8 @@ void CheckPdfPluginForRenderFrame(content::RenderFrameHost* frame) {
 
   ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
   EXPECT_TRUE(filter->IsPluginAvailable(
-      frame->GetProcess()->GetID(),
-      frame->GetRoutingID(),
-      nullptr,
-      GURL(kDummyPrintUrl),
-      GURL(),
-      &pdf_plugin_info));
+      frame->GetProcess()->GetID(), frame->GetRoutingID(), nullptr,
+      GURL(kDummyPrintUrl), url::Origin(), &pdf_plugin_info));
 }
 
 }  // namespace
@@ -309,10 +306,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   EXPECT_FALSE(filter->IsPluginAvailable(
       initiator()->GetRenderProcessHost()->GetID(),
       initiator()->GetMainFrame()->GetRoutingID(),
-      browser()->profile()->GetResourceContext(),
-      GURL("http://google.com"),
-      GURL(),
-      &dummy_pdf_plugin_info));
+      browser()->profile()->GetResourceContext(), GURL(),
+      url::Origin(GURL("http://google.com")), &dummy_pdf_plugin_info));
 
   PrintPreview();
 

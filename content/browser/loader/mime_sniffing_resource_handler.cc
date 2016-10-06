@@ -36,6 +36,7 @@
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -431,8 +432,8 @@ bool MimeSniffingResourceHandler::CheckForPluginHandler(
   WebPluginInfo plugin;
   bool has_plugin = plugin_service_->GetPluginInfo(
       info->GetChildID(), info->GetRenderFrameID(), info->GetContext(),
-      request()->url(), GURL(), response_->head.mime_type, allow_wildcard,
-      &stale, &plugin, NULL);
+      request()->url(), url::Origin(), response_->head.mime_type,
+      allow_wildcard, &stale, &plugin, NULL);
 
   if (stale) {
     // Refresh the plugins asynchronously.

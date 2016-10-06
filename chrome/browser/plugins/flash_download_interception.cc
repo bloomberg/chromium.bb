@@ -21,6 +21,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 using content::NavigationHandle;
@@ -54,7 +55,7 @@ void FlashDownloadInterception::InterceptFlashDownloadNavigation(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-      host_content_settings_map, source_url, source_url, nullptr);
+      host_content_settings_map, url::Origin(source_url), source_url, nullptr);
   flash_setting = PluginsFieldTrial::EffectiveContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
 
@@ -89,7 +90,7 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
   }
 
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-      host_content_settings_map, source_url, source_url, nullptr);
+      host_content_settings_map, url::Origin(source_url), source_url, nullptr);
   flash_setting = PluginsFieldTrial::EffectiveContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
 
