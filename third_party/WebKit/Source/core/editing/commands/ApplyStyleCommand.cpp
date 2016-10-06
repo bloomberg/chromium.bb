@@ -189,9 +189,10 @@ void ApplyStyleCommand::updateStartEnd(const Position& newStart,
   if (!m_useEndingSelection && (newStart != m_start || newEnd != m_end))
     m_useEndingSelection = true;
 
-  setEndingSelection(
-      createVisibleSelectionDeprecated(newStart, newEnd, VP_DEFAULT_AFFINITY,
-                                       endingSelection().isDirectional()));
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+  setEndingSelection(createVisibleSelection(newStart, newEnd,
+                                            VP_DEFAULT_AFFINITY,
+                                            endingSelection().isDirectional()));
   m_start = newStart;
   m_end = newEnd;
 }
@@ -259,8 +260,8 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle* style,
     end = swap;
   }
 
-  VisiblePosition visibleStart = createVisiblePositionDeprecated(start);
-  VisiblePosition visibleEnd = createVisiblePositionDeprecated(end);
+  VisiblePosition visibleStart = createVisiblePosition(start);
+  VisiblePosition visibleEnd = createVisiblePosition(end);
 
   if (visibleStart.isNull() || visibleStart.isOrphan() || visibleEnd.isNull() ||
       visibleEnd.isOrphan())
@@ -282,13 +283,16 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle* style,
   int endIndex = TextIterator::rangeLength(endRange->startPosition(),
                                            endRange->endPosition(), true);
 
-  VisiblePosition paragraphStart(startOfParagraphDeprecated(visibleStart));
+  VisiblePosition paragraphStart(startOfParagraph(visibleStart));
   VisiblePosition nextParagraphStart(
-      nextPositionOf(endOfParagraphDeprecated(paragraphStart)));
-  VisiblePosition beyondEnd(
-      nextPositionOf(endOfParagraphDeprecated(visibleEnd)));
+      nextPositionOf(endOfParagraph(paragraphStart)));
+  Position beyondEnd =
+      nextPositionOf(endOfParagraph(visibleEnd)).deepEquivalent();
+  // TODO(xiaochengh): Use a saner approach (e.g., temporary Ranges) to keep
+  // these positions in document instead of iteratively performing orphan checks
+  // and recalculating them when they become orphans.
   while (paragraphStart.isNotNull() &&
-         paragraphStart.deepEquivalent() != beyondEnd.deepEquivalent()) {
+         paragraphStart.deepEquivalent() != beyondEnd) {
     DCHECK(!paragraphStart.isOrphan()) << paragraphStart;
     StyleChange styleChange(style, paragraphStart.deepEquivalent());
     if (styleChange.cssStyle().length() || m_removeOnly) {
@@ -302,9 +306,11 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle* style,
           return;
         if (newBlock) {
           block = newBlock;
-          if (paragraphStart.isOrphan())
-            paragraphStart = createVisiblePositionDeprecated(
-                Position::firstPositionInNode(newBlock));
+          if (paragraphStart.isOrphan()) {
+            document().updateStyleAndLayoutIgnorePendingStylesheets();
+            paragraphStart =
+                createVisiblePosition(Position::firstPositionInNode(newBlock));
+          }
         }
         DCHECK(!paragraphStart.isOrphan()) << paragraphStart;
       }
@@ -319,16 +325,25 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle* style,
         }
       }
 
+      document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+      // Make the VisiblePositions valid again after style changes.
+      // TODO(xiaochengh): We shouldn't store VisiblePositions and inspect their
+      // properties after they have been invalidated by mutations.
       DCHECK(!paragraphStart.isOrphan()) << paragraphStart;
-      if (nextParagraphStart.isOrphan())
+      paragraphStart =
+          createVisiblePosition(paragraphStart.toPositionWithAffinity());
+      if (nextParagraphStart.isOrphan()) {
+        nextParagraphStart = nextPositionOf(endOfParagraph(paragraphStart));
+      } else {
         nextParagraphStart =
-            nextPositionOf(endOfParagraphDeprecated(paragraphStart));
+            createVisiblePosition(nextParagraphStart.toPositionWithAffinity());
+      }
     }
 
     DCHECK(!nextParagraphStart.isOrphan()) << nextParagraphStart;
     paragraphStart = nextParagraphStart;
-    nextParagraphStart =
-        nextPositionOf(endOfParagraphDeprecated(paragraphStart));
+    nextParagraphStart = nextPositionOf(endOfParagraph(paragraphStart));
   }
 
   // Update style and layout again, since added or removed styles could have
