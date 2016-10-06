@@ -194,15 +194,19 @@ const CSSValue* consumeSyntaxComponent(const CSSSyntaxComponent& syntax,
   return result;
 }
 
-const CSSValue* CSSSyntaxDescriptor::parse(CSSParserTokenRange range) const {
-  if (isTokenStream())
-    return CSSVariableParser::parseRegisteredPropertyValue(range, false);
+const CSSValue* CSSSyntaxDescriptor::parse(CSSParserTokenRange range,
+                                           bool isAnimationTainted) const {
+  if (isTokenStream()) {
+    return CSSVariableParser::parseRegisteredPropertyValue(range, false,
+                                                           isAnimationTainted);
+  }
   range.consumeWhitespace();
   for (const CSSSyntaxComponent& component : m_syntaxComponents) {
     if (const CSSValue* result = consumeSyntaxComponent(component, range))
       return result;
   }
-  return CSSVariableParser::parseRegisteredPropertyValue(range, true);
+  return CSSVariableParser::parseRegisteredPropertyValue(range, true,
+                                                         isAnimationTainted);
 }
 
 }  // namespace blink

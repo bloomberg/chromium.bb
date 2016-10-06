@@ -317,11 +317,13 @@ bool MutableStylePropertySet::setProperty(
     const AtomicString& customPropertyName,
     const String& value,
     bool important,
-    StyleSheetContents* contextStyleSheet) {
+    StyleSheetContents* contextStyleSheet,
+    bool isAnimationTainted) {
   if (value.isEmpty())
     return removeProperty(customPropertyName);
   return CSSParser::parseValueForCustomProperty(this, customPropertyName, value,
-                                                important, contextStyleSheet);
+                                                important, contextStyleSheet,
+                                                isAnimationTainted);
 }
 
 void MutableStylePropertySet::setProperty(CSSPropertyID propertyID,

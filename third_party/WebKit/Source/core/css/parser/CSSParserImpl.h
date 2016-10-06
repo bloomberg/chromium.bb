@@ -67,7 +67,8 @@ class CSSParserImpl {
                                  const AtomicString& propertyName,
                                  const String&,
                                  bool important,
-                                 const CSSParserContext&);
+                                 const CSSParserContext&,
+                                 bool isAnimationTainted);
   static ImmutableStylePropertySet* parseInlineStyleDeclaration(const String&,
                                                                 Element*);
   static bool parseDeclarationList(MutableStylePropertySet*,
@@ -140,7 +141,8 @@ class CSSParserImpl {
                                StyleRule::RuleType);
   void consumeVariableValue(CSSParserTokenRange,
                             const AtomicString& propertyName,
-                            bool important);
+                            bool important,
+                            bool isAnimationTainted);
 
   static std::unique_ptr<Vector<double>> consumeKeyframeKeyList(
       CSSParserTokenRange);

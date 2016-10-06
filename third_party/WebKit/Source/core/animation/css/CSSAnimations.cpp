@@ -113,7 +113,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(
           timingFunction = CSSTimingData::initialTimingFunction();
         }
         keyframe->setEasing(timingFunction.release());
-      } else if (CSSAnimations::isAnimatableProperty(property)) {
+      } else if (!CSSAnimations::isAnimationAffectingProperty(property)) {
         keyframe->setCSSPropertyValue(property,
                                       properties.propertyAt(j).value());
       }
@@ -1048,7 +1048,7 @@ const StylePropertyShorthand& CSSAnimations::propertiesForTransitionAll() {
 
 // Properties that affect animations are not allowed to be affected by
 // animations. http://w3c.github.io/web-animations/#not-animatable-section
-bool CSSAnimations::isAnimatableProperty(CSSPropertyID property) {
+bool CSSAnimations::isAnimationAffectingProperty(CSSPropertyID property) {
   switch (property) {
     case CSSPropertyAnimation:
     case CSSPropertyAnimationDelay:
@@ -1065,9 +1065,9 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property) {
     case CSSPropertyTransitionDuration:
     case CSSPropertyTransitionProperty:
     case CSSPropertyTransitionTimingFunction:
-      return false;
-    default:
       return true;
+    default:
+      return false;
   }
 }
 

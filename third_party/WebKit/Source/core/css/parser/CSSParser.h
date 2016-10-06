@@ -57,7 +57,8 @@ class CORE_EXPORT CSSParser {
                                           const AtomicString& propertyName,
                                           const String& value,
                                           bool important,
-                                          StyleSheetContents*);
+                                          StyleSheetContents*,
+                                          bool isAnimationTainted);
   static ImmutableStylePropertySet* parseCustomPropertySet(CSSParserTokenRange);
 
   // This is for non-shorthands only

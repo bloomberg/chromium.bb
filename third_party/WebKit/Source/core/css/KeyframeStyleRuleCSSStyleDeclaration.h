@@ -25,6 +25,7 @@ class KeyframeStyleRuleCSSStyleDeclaration final
                                        CSSKeyframeRule*);
 
   void didMutate(MutationType) override;
+  bool isKeyframeStyle() const final { return true; }
 };
 
 }  // namespace blink

@@ -45,8 +45,9 @@ bool DOMWindowCSS::supports(const String& property, const String& value) {
   if (unresolvedProperty == CSSPropertyVariable) {
     MutableStylePropertySet* dummyStyle =
         MutableStylePropertySet::create(HTMLStandardMode);
-    return CSSParser::parseValueForCustomProperty(dummyStyle, "--valid", value,
-                                                  false, 0);
+    bool isAnimationTainted = false;
+    return CSSParser::parseValueForCustomProperty(
+        dummyStyle, "--valid", value, false, nullptr, isAnimationTainted);
   }
 
   ASSERT(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));

@@ -79,6 +79,7 @@ class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
   virtual void willMutate() {}
   virtual void didMutate(MutationType) {}
   virtual MutableStylePropertySet& propertySet() const = 0;
+  virtual bool isKeyframeStyle() const { return false; }
 };
 
 class PropertySetCSSStyleDeclaration

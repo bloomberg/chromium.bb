@@ -22,17 +22,19 @@ class CSSVariableData : public RefCounted<CSSVariableData> {
   USING_FAST_MALLOC(CSSVariableData);
 
  public:
-  static PassRefPtr<CSSVariableData> create(
-      const CSSParserTokenRange& range,
-      bool needsVariableResolution = true) {
-    return adoptRef(new CSSVariableData(range, needsVariableResolution));
+  static PassRefPtr<CSSVariableData> create(const CSSParserTokenRange& range,
+                                            bool isAnimationTainted,
+                                            bool needsVariableResolution) {
+    return adoptRef(new CSSVariableData(range, isAnimationTainted,
+                                        needsVariableResolution));
   }
 
   static PassRefPtr<CSSVariableData> createResolved(
       const Vector<CSSParserToken>& resolvedTokens,
-      const CSSVariableData& unresolvedData) {
-    return adoptRef(
-        new CSSVariableData(resolvedTokens, unresolvedData.m_backingString));
+      const CSSVariableData& unresolvedData,
+      bool isAnimationTainted) {
+    return adoptRef(new CSSVariableData(
+        resolvedTokens, unresolvedData.m_backingString, isAnimationTainted));
   }
 
   CSSParserTokenRange tokenRange() const { return m_tokens; }
@@ -41,6 +43,8 @@ class CSSVariableData : public RefCounted<CSSVariableData> {
 
   bool operator==(const CSSVariableData& other) const;
 
+  bool isAnimationTainted() const { return m_isAnimationTainted; }
+
   bool needsVariableResolution() const { return m_needsVariableResolution; }
 
   const CSSValue* parseForSyntax(const CSSSyntaxDescriptor&) const;
@@ -48,16 +52,20 @@ class CSSVariableData : public RefCounted<CSSVariableData> {
   StylePropertySet* propertySet();
 
  private:
-  CSSVariableData(const CSSParserTokenRange&, bool needsVariableResolution);
+  CSSVariableData(const CSSParserTokenRange&,
+                  bool isAnimationTainted,
+                  bool needsVariableResolution);
 
   // We can safely copy the tokens (which have raw pointers to substrings) because
   // StylePropertySets contain references to CSSCustomPropertyDeclarations, which
   // point to the unresolved CSSVariableData values that own the backing strings
   // this will potentially reference.
   CSSVariableData(const Vector<CSSParserToken>& resolvedTokens,
-                  String backingString)
+                  String backingString,
+                  bool isAnimationTainted)
       : m_backingString(backingString),
         m_tokens(resolvedTokens),
+        m_isAnimationTainted(isAnimationTainted),
         m_needsVariableResolution(false),
         m_cachedPropertySet(false) {}
 
@@ -67,6 +75,7 @@ class CSSVariableData : public RefCounted<CSSVariableData> {
 
   String m_backingString;
   Vector<CSSParserToken> m_tokens;
+  const bool m_isAnimationTainted;
   const bool m_needsVariableResolution;
 
   // Parsed representation for @apply

@@ -37,9 +37,11 @@ class ResolvedVariableChecker : public InterpolationType::ConversionChecker {
                const InterpolationValue& underlying) const final {
     // TODO(alancutter): Just check the variables referenced instead of doing a
     // full CSSValue resolve.
+    bool omitAnimationTainted = false;
     const CSSValue* resolvedValue =
         CSSVariableResolver::resolveVariableReferences(
-            environment.state(), m_property, *m_variableReference);
+            environment.state(), m_property, *m_variableReference,
+            omitAnimationTainted);
     return m_resolvedValue->equals(*resolvedValue);
   }
 
@@ -58,7 +60,6 @@ InterpolationValue CSSInterpolationType::maybeConvertSingle(
     const InterpolationEnvironment& environment,
     const InterpolationValue& underlying,
     ConversionCheckers& conversionCheckers) const {
-  const CSSValue* resolvedCSSValueOwner;
   const CSSValue* value = toCSSPropertySpecificKeyframe(keyframe).value();
 
   if (!value)
@@ -66,11 +67,13 @@ InterpolationValue CSSInterpolationType::maybeConvertSingle(
 
   if (value->isVariableReferenceValue() ||
       value->isPendingSubstitutionValue()) {
-    resolvedCSSValueOwner = CSSVariableResolver::resolveVariableReferences(
-        environment.state(), cssProperty(), *value);
-    conversionCheckers.append(ResolvedVariableChecker::create(
-        cssProperty(), value, resolvedCSSValueOwner));
-    value = resolvedCSSValueOwner;
+    bool omitAnimationTainted = false;
+    const CSSValue* resolvedValue =
+        CSSVariableResolver::resolveVariableReferences(
+            environment.state(), cssProperty(), *value, omitAnimationTainted);
+    conversionCheckers.append(
+        ResolvedVariableChecker::create(cssProperty(), value, resolvedValue));
+    value = resolvedValue;
   }
 
   if (value->isInitialValue() ||

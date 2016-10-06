@@ -129,7 +129,8 @@ bool CSSVariableParser::containsValidVariableReferences(
 
 CSSCustomPropertyDeclaration* CSSVariableParser::parseDeclarationValue(
     const AtomicString& variableName,
-    CSSParserTokenRange range) {
+    CSSParserTokenRange range,
+    bool isAnimationTainted) {
   if (range.atEnd())
     return nullptr;
 
@@ -139,16 +140,18 @@ CSSCustomPropertyDeclaration* CSSVariableParser::parseDeclarationValue(
 
   if (type == CSSValueInvalid)
     return nullptr;
-  if (type == CSSValueInternalVariableValue)
+  if (type == CSSValueInternalVariableValue) {
     return CSSCustomPropertyDeclaration::create(
-        variableName,
-        CSSVariableData::create(range, hasReferences || hasAtApplyRule));
+        variableName, CSSVariableData::create(range, isAnimationTainted,
+                                              hasReferences || hasAtApplyRule));
+  }
   return CSSCustomPropertyDeclaration::create(variableName, type);
 }
 
 CSSVariableReferenceValue* CSSVariableParser::parseRegisteredPropertyValue(
     CSSParserTokenRange range,
-    bool requireVarReference) {
+    bool requireVarReference,
+    bool isAnimationTainted) {
   if (range.atEnd())
     return nullptr;
 
@@ -162,7 +165,7 @@ CSSVariableReferenceValue* CSSVariableParser::parseRegisteredPropertyValue(
     return nullptr;
   // TODO(timloh): Should this be hasReferences || hasAtApplyRule?
   return CSSVariableReferenceValue::create(
-      CSSVariableData::create(range, hasReferences));
+      CSSVariableData::create(range, isAnimationTainted, hasReferences));
 }
 
 }  // namespace blink

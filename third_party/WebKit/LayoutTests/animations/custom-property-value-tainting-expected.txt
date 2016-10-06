@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL Animation tainted values are omitted in CSS property animation-name assert_equals: Tainted value tainted set on --tainted by animation expected "tainted" but got ""
+FAIL Chained animation tainted values are omitted in CSS property animation-name assert_equals: Tainted value tainted set on --tainted-first by animation expected "tainted" but got ""
+FAIL Inherited animation tainted values are omitted in CSS property animation-name assert_equals: Tainted value tainted set on --tainted by animation expected "tainted" but got ""
+FAIL Animation tainted values trigger var fallbacks in CSS property animation-name assert_equals: Tainted value tainted set on --tainted by animation expected "tainted" but got ""
+FAIL Animation tainted fallback values are omitted in CSS property animation-name assert_equals: Tainted value tainted set on --tainted by animation expected "tainted" but got ""
+Harness: the test ran to completion.
+

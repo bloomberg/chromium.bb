@@ -26,7 +26,9 @@ void StringKeyframe::setCSSPropertyValue(
     const AtomicString& propertyName,
     const String& value,
     StyleSheetContents* styleSheetContents) {
-  m_cssPropertyMap->setProperty(propertyName, value, false, styleSheetContents);
+  bool isAnimationTainted = true;
+  m_cssPropertyMap->setProperty(propertyName, value, false, styleSheetContents,
+                                isAnimationTainted);
 }
 
 void StringKeyframe::setCSSPropertyValue(
@@ -34,14 +36,14 @@ void StringKeyframe::setCSSPropertyValue(
     const String& value,
     StyleSheetContents* styleSheetContents) {
   DCHECK_NE(property, CSSPropertyInvalid);
-  if (CSSAnimations::isAnimatableProperty(property))
+  if (!CSSAnimations::isAnimationAffectingProperty(property))
     m_cssPropertyMap->setProperty(property, value, false, styleSheetContents);
 }
 
 void StringKeyframe::setCSSPropertyValue(CSSPropertyID property,
                                          const CSSValue& value) {
   DCHECK_NE(property, CSSPropertyInvalid);
-  DCHECK(CSSAnimations::isAnimatableProperty(property));
+  DCHECK(!CSSAnimations::isAnimationAffectingProperty(property));
   m_cssPropertyMap->setProperty(property, value, false);
 }
 
@@ -50,7 +52,7 @@ void StringKeyframe::setPresentationAttributeValue(
     const String& value,
     StyleSheetContents* styleSheetContents) {
   DCHECK_NE(property, CSSPropertyInvalid);
-  if (CSSAnimations::isAnimatableProperty(property))
+  if (!CSSAnimations::isAnimationAffectingProperty(property))
     m_presentationAttributeMap->setProperty(property, value, false,
                                             styleSheetContents);
 }

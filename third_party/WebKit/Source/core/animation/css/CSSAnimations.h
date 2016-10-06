@@ -61,7 +61,7 @@ class CSSAnimations final {
   bool isTransitionAnimationForInspector(const Animation&) const;
 
   static const StylePropertyShorthand& propertiesForTransitionAll();
-  static bool isAnimatableProperty(CSSPropertyID);
+  static bool isAnimationAffectingProperty(CSSPropertyID);
   static bool isAffectedByKeyframesFromScope(const Element&, const TreeScope&);
   static void calculateUpdate(const Element* animatingElement,
                               Element&,

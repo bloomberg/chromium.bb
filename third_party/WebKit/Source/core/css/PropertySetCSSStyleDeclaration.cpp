@@ -300,12 +300,15 @@ void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(
   willMutate();
 
   bool changed = false;
-  if (unresolvedProperty == CSSPropertyVariable)
+  if (unresolvedProperty == CSSPropertyVariable) {
+    bool isAnimationTainted = isKeyframeStyle();
     changed = propertySet().setProperty(AtomicString(customPropertyName), value,
-                                        important, contextStyleSheet());
-  else
+                                        important, contextStyleSheet(),
+                                        isAnimationTainted);
+  } else {
     changed = propertySet().setProperty(unresolvedProperty, value, important,
                                         contextStyleSheet());
+  }
 
   didMutate(changed ? PropertyChanged : NoChanges);
 

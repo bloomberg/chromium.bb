@@ -42,6 +42,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/StyleBuilderFunctions.h"
 #include "core/StylePropertyShorthand.h"
+#include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
@@ -114,8 +115,10 @@ void StyleBuilder::applyProperty(CSSPropertyID id,
                                  const CSSValue& value) {
   if (id != CSSPropertyVariable && (value.isVariableReferenceValue() ||
                                     value.isPendingSubstitutionValue())) {
+    bool omitAnimationTainted = CSSAnimations::isAnimationAffectingProperty(id);
     const CSSValue* resolvedValue =
-        CSSVariableResolver::resolveVariableReferences(state, id, value);
+        CSSVariableResolver::resolveVariableReferences(state, id, value,
+                                                       omitAnimationTainted);
     applyProperty(id, state, *resolvedValue);
 
     if (!state.style()->hasVariableReferenceFromNonInheritedProperty() &&

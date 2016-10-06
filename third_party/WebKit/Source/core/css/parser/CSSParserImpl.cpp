@@ -63,10 +63,12 @@ bool CSSParserImpl::parseVariableValue(MutableStylePropertySet* declaration,
                                        const AtomicString& propertyName,
                                        const String& value,
                                        bool important,
-                                       const CSSParserContext& context) {
+                                       const CSSParserContext& context,
+                                       bool isAnimationTainted) {
   CSSParserImpl parser(context);
   CSSTokenizer::Scope scope(value);
-  parser.consumeVariableValue(scope.tokenRange(), propertyName, important);
+  parser.consumeVariableValue(scope.tokenRange(), propertyName, important,
+                              isAnimationTainted);
   if (parser.m_parsedProperties.isEmpty())
     return false;
   return declaration->addParsedProperties(parser.m_parsedProperties);
@@ -856,13 +858,17 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range,
   }
 
   size_t propertiesCount = m_parsedProperties.size();
-  // TODO(timloh): This only be for StyleRule::Style, crbug.com/641873.
+  // TODO(timloh): This should only be for StyleRule::Style/Keyframe,
+  // crbug.com/641873.
   if (unresolvedProperty == CSSPropertyVariable) {
     AtomicString variableName = token.value().toAtomicString();
+    bool isAnimationTainted = ruleType == StyleRule::Keyframe;
     consumeVariableValue(range.makeSubRange(&range.peek(), declarationValueEnd),
-                         variableName, important);
+                         variableName, important, isAnimationTainted);
   }
 
+  // TODO(timloh): Should this check occur before the call to
+  // consumeVariableValue()?
   if (important &&
       (ruleType == StyleRule::FontFace || ruleType == StyleRule::Keyframe))
     return;
@@ -888,9 +894,11 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range,
 
 void CSSParserImpl::consumeVariableValue(CSSParserTokenRange range,
                                          const AtomicString& variableName,
-                                         bool important) {
+                                         bool important,
+                                         bool isAnimationTainted) {
   if (CSSCustomPropertyDeclaration* value =
-          CSSVariableParser::parseDeclarationValue(variableName, range))
+          CSSVariableParser::parseDeclarationValue(variableName, range,
+                                                   isAnimationTainted))
     m_parsedProperties.append(
         CSSProperty(CSSPropertyVariable, *value, important));
 }

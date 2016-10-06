@@ -102,7 +102,8 @@ bool CSSParser::parseValueForCustomProperty(
     const AtomicString& propertyName,
     const String& value,
     bool important,
-    StyleSheetContents* styleSheet) {
+    StyleSheetContents* styleSheet,
+    bool isAnimationTainted) {
   DCHECK(CSSVariableParser::isValidVariableName(propertyName));
   if (value.isEmpty())
     return false;
@@ -112,8 +113,8 @@ bool CSSParser::parseValueForCustomProperty(
     context = styleSheet->parserContext();
     context.setMode(parserMode);
   }
-  return CSSParserImpl::parseVariableValue(declaration, propertyName, value,
-                                           important, context);
+  return CSSParserImpl::parseVariableValue(
+      declaration, propertyName, value, important, context, isAnimationTainted);
 }
 
 ImmutableStylePropertySet* CSSParser::parseCustomPropertySet(

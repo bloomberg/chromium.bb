@@ -61,8 +61,10 @@ void CSSVariableData::consumeAndUpdateTokens(const CSSParserTokenRange& range) {
 }
 
 CSSVariableData::CSSVariableData(const CSSParserTokenRange& range,
+                                 bool isAnimationTainted,
                                  bool needsVariableResolution)
-    : m_needsVariableResolution(needsVariableResolution),
+    : m_isAnimationTainted(isAnimationTainted),
+      m_needsVariableResolution(needsVariableResolution),
       m_cachedPropertySet(false) {
   ASSERT(!range.atEnd());
   consumeAndUpdateTokens(range);
@@ -71,7 +73,7 @@ CSSVariableData::CSSVariableData(const CSSParserTokenRange& range,
 const CSSValue* CSSVariableData::parseForSyntax(
     const CSSSyntaxDescriptor& syntax) const {
   DCHECK(!needsVariableResolution());
-  return syntax.parse(tokenRange());
+  return syntax.parse(tokenRange(), m_isAnimationTainted);
 }
 
 }  // namespace blink

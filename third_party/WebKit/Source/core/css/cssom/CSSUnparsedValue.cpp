@@ -115,8 +115,9 @@ CSSValue* CSSUnparsedValue::toCSSValue() const {
 
   CSSTokenizer::Scope scope(tokens.toString());
 
+  bool isAnimationTainted = false;
   return CSSVariableReferenceValue::create(
-      CSSVariableData::create(scope.tokenRange()));
+      CSSVariableData::create(scope.tokenRange(), isAnimationTainted, true));
 }
 
 }  // namespace blink

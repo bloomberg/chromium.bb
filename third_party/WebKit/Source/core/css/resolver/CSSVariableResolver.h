@@ -29,9 +29,11 @@ class CSSVariableResolver {
   static void resolveVariableDefinitions(const StyleResolverState&);
 
   // Shorthand properties are not supported.
-  static const CSSValue* resolveVariableReferences(const StyleResolverState&,
-                                                   CSSPropertyID,
-                                                   const CSSValue&);
+  static const CSSValue* resolveVariableReferences(
+      const StyleResolverState&,
+      CSSPropertyID,
+      const CSSValue&,
+      bool disallowAnimationTainted);
 
   DECLARE_TRACE();
 
@@ -41,23 +43,33 @@ class CSSVariableResolver {
   static const CSSValue* resolvePendingSubstitutions(
       const StyleResolverState&,
       CSSPropertyID,
-      const CSSPendingSubstitutionValue&);
+      const CSSPendingSubstitutionValue&,
+      bool disallowAnimationTainted);
   static const CSSValue* resolveVariableReferences(
       const StyleResolverState&,
       CSSPropertyID,
-      const CSSVariableReferenceValue&);
+      const CSSVariableReferenceValue&,
+      bool disallowAnimationTainted);
 
   // These return false if we encounter a reference to an invalid variable with
   // no fallback.
 
   // Resolves a range which may contain var() references or @apply rules.
-  bool resolveTokenRange(CSSParserTokenRange, Vector<CSSParserToken>& result);
+  bool resolveTokenRange(CSSParserTokenRange,
+                         bool disallowAnimationTainted,
+                         Vector<CSSParserToken>& result,
+                         bool& resultIsAnimationTainted);
   // Resolves the fallback (if present) of a var() reference, starting from the
   // comma.
-  bool resolveFallback(CSSParserTokenRange, Vector<CSSParserToken>& result);
+  bool resolveFallback(CSSParserTokenRange,
+                       bool disallowAnimationTainted,
+                       Vector<CSSParserToken>& result,
+                       bool& resultIsAnimationTainted);
   // Resolves the contents of a var() reference.
   bool resolveVariableReference(CSSParserTokenRange,
-                                Vector<CSSParserToken>& result);
+                                bool disallowAnimationTainted,
+                                Vector<CSSParserToken>& result,
+                                bool& resultIsAnimationTainted);
   // Consumes and resolves an @apply rule.
   void resolveApplyAtRule(CSSParserTokenRange&, Vector<CSSParserToken>& result);
 

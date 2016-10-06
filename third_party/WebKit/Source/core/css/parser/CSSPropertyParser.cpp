@@ -159,8 +159,9 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty,
   }
 
   if (CSSVariableParser::containsValidVariableReferences(originalRange)) {
+    bool isAnimationTainted = false;
     CSSVariableReferenceValue* variable = CSSVariableReferenceValue::create(
-        CSSVariableData::create(originalRange));
+        CSSVariableData::create(originalRange, isAnimationTainted, true));
 
     if (isShorthand) {
       const CSSPendingSubstitutionValue& pendingValue =

@@ -90,7 +90,9 @@ void PropertyRegistration::registerProperty(
 
   if (descriptor.hasInitialValue()) {
     CSSTokenizer::Scope scope(descriptor.initialValue());
-    const CSSValue* initial = syntaxDescriptor.parse(scope.tokenRange());
+    bool isAnimationTainted = false;
+    const CSSValue* initial =
+        syntaxDescriptor.parse(scope.tokenRange(), isAnimationTainted);
     if (!initial) {
       exceptionState.throwDOMException(
           SyntaxError,
@@ -104,7 +106,7 @@ void PropertyRegistration::registerProperty(
       return;
     }
     RefPtr<CSSVariableData> initialVariableData =
-        CSSVariableData::create(scope.tokenRange(), false);
+        CSSVariableData::create(scope.tokenRange(), isAnimationTainted, false);
     registry.registerProperty(atomicName, syntaxDescriptor,
                               descriptor.inherits(), initial,
                               initialVariableData.release());
