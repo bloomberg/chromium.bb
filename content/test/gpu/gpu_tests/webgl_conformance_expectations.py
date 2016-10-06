@@ -149,6 +149,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/*', ['win', ('amd', 0x6779)], bug=491419)
 
     # Win AMD failures
+    # This test is probably flaky on all AMD, but only visible on the
+    # new AMD (the whole test suite is flaky on the old config).
+    self.Flaky('conformance/extensions/oes-texture-half-float.html',
+              ['win', ('amd', 0x6613)], bug=653533)
 
     # Win / AMD D3D9 failures
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
