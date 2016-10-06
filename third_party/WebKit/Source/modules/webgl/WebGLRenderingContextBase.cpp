@@ -1139,7 +1139,11 @@ void WebGLRenderingContextBase::initializeNewContext() {
   m_vertexAttribType.resize(m_maxVertexAttribs);
 
   contextGL()->Viewport(0, 0, drawingBufferWidth(), drawingBufferHeight());
-  contextGL()->Scissor(0, 0, drawingBufferWidth(), drawingBufferHeight());
+  m_scissorBox[0] = m_scissorBox[1] = 0;
+  m_scissorBox[2] = drawingBufferWidth();
+  m_scissorBox[3] = drawingBufferHeight();
+  contextGL()->Scissor(m_scissorBox[0], m_scissorBox[1], m_scissorBox[2],
+                       m_scissorBox[3]);
 
   drawingBuffer()->contextProvider()->setLostContextCallback(
       convertToBaseCallback(WTF::bind(
@@ -1378,21 +1382,78 @@ WebGLRenderingContextBase::clearIfComposited(GLbitfield mask) {
   return combinedClear ? CombinedClear : JustClear;
 }
 
-void WebGLRenderingContextBase::restoreStateAfterClear() {
+void WebGLRenderingContextBase::restoreScissorEnabled() {
   if (isContextLost())
     return;
 
-  // Restore the state that the context set.
-  if (m_scissorEnabled)
+  if (m_scissorEnabled) {
     contextGL()->Enable(GL_SCISSOR_TEST);
+  } else {
+    contextGL()->Disable(GL_SCISSOR_TEST);
+  }
+}
+
+void WebGLRenderingContextBase::restoreScissorBox() {
+  if (isContextLost())
+    return;
+
+  contextGL()->Scissor(m_scissorBox[0], m_scissorBox[1], m_scissorBox[2],
+                       m_scissorBox[3]);
+}
+
+void WebGLRenderingContextBase::restoreClearColor() {
+  if (isContextLost())
+    return;
+
   contextGL()->ClearColor(m_clearColor[0], m_clearColor[1], m_clearColor[2],
                           m_clearColor[3]);
+}
+
+void WebGLRenderingContextBase::restoreClearDepthf() {
+  if (isContextLost())
+    return;
+
+  contextGL()->ClearDepthf(m_clearDepth);
+}
+
+void WebGLRenderingContextBase::restoreClearStencil() {
+  if (isContextLost())
+    return;
+
+  contextGL()->ClearStencil(m_clearStencil);
+}
+
+void WebGLRenderingContextBase::restoreStencilMaskSeparate() {
+  if (isContextLost())
+    return;
+
+  contextGL()->StencilMaskSeparate(GL_FRONT, m_stencilMask);
+}
+
+void WebGLRenderingContextBase::restoreColorMask() {
+  if (isContextLost())
+    return;
+
   contextGL()->ColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2],
                          m_colorMask[3]);
-  contextGL()->ClearDepthf(m_clearDepth);
-  contextGL()->ClearStencil(m_clearStencil);
-  contextGL()->StencilMaskSeparate(GL_FRONT, m_stencilMask);
+}
+
+void WebGLRenderingContextBase::restoreDepthMask() {
+  if (isContextLost())
+    return;
+
   contextGL()->DepthMask(m_depthMask);
+}
+
+void WebGLRenderingContextBase::restoreStateAfterClear() {
+  // Restore clear-related state items back to what the context had set.
+  restoreScissorEnabled();
+  restoreClearColor();
+  restoreColorMask();
+  restoreClearDepthf();
+  restoreClearStencil();
+  restoreStencilMaskSeparate();
+  restoreDepthMask();
 }
 
 void WebGLRenderingContextBase::markLayerComposited() {
@@ -4142,6 +4203,10 @@ void WebGLRenderingContextBase::scissor(GLint x,
                                         GLsizei height) {
   if (isContextLost())
     return;
+  m_scissorBox[0] = x;
+  m_scissorBox[1] = y;
+  m_scissorBox[2] = width;
+  m_scissorBox[3] = height;
   contextGL()->Scissor(x, y, width, height);
 }
 

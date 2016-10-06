@@ -297,9 +297,17 @@ void WebVrRenderer::Draw(int texture_handle) {
   glVertexAttribPointer(tex_coord_handle_, TEXCOORD_ELEMENTS, GL_FLOAT, false,
       VERTEX_STRIDE, VOID_OFFSET(TEXCOORD_OFFSET));
 
-  // Bind texture.
+  // Bind texture. Ideally this should be a 1:1 pixel copy. (Or even more
+  // ideally, a zero copy reuse of the texture.) For now, we're using an
+  // undersized render target for WebVR, so GL_LINEAR makes it look slightly
+  // less chunky. TODO(klausw): change this to GL_NEAREST once we're doing
+  // a 1:1 copy since that should be more efficient.
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_handle);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glUniform1i(tex_uniform_handle_, 0);
 
   // TODO(bajones): Should be able handle both eyes in a single draw call.

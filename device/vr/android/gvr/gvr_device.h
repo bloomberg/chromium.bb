@@ -42,6 +42,7 @@ class GvrDevice : public VRDevice {
   GvrDelegate* delegate_;
   GvrDeviceProvider* gvr_provider_;
   bool secure_origin_;
+  uint32_t pose_index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDevice);
 };

@@ -88,6 +88,7 @@ class VrShell : public device::GvrDelegate {
   void UpdateWebVRTextureBounds(
       int eye, float left, float top, float width, float height) override;
   gvr::GvrApi* gvr_api() override;
+  void SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) override;
 
   void ContentSurfaceChanged(
       JNIEnv* env,
@@ -175,6 +176,11 @@ class VrShell : public device::GvrDelegate {
   bool webvr_mode_ = false;
   bool webvr_secure_origin_ = false;
   int64_t webvr_warning_end_nanos_ = 0;
+  // The pose ring buffer size must be a power of two to avoid glitches when
+  // the pose index wraps around. It should be large enough to handle the
+  // current backlog of poses which is 2-3 frames.
+  static constexpr int kPoseRingBufferSize = 8;
+  std::vector<gvr::Mat4f> webvr_head_pose_;
 
   std::unique_ptr<VrController> controller_;
   scoped_refptr<VrInputManager> content_input_manager_;

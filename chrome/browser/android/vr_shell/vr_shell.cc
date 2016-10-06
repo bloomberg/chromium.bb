@@ -156,6 +156,10 @@ VrShell::VrShell(JNIEnv* env,
   desktop_plane_ = scene_.GetUiElementById(kBrowserUiElementId);
 
   LoadUIContent();
+
+  gvr::Mat4f identity;
+  SetIdentityM(identity);
+  webvr_head_pose_.resize(kPoseRingBufferSize, identity);
 }
 
 void VrShell::UpdateCompositorLayers(JNIEnv* env,
@@ -346,6 +350,23 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   }
 }
 
+void VrShell::SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) {
+  webvr_head_pose_[pose_num % kPoseRingBufferSize] = pose;
+}
+
+uint32_t GetPixelEncodedPoseIndex() {
+  // Read the pose index encoded in a bottom left pixel as color values.
+  // See also third_party/WebKit/Source/modules/vr/VRDisplay.cpp which
+  // encodes the pose index, and device/vr/android/gvr/gvr_device.cc
+  // which tracks poses.
+  uint8_t pixels[4];
+  // Assume we're reading from the frambebuffer we just wrote to.
+  // That's true currently, we may need to use glReadBuffer(GL_BACK)
+  // or equivalent if the rendering setup changes in the future.
+  glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  return pixels[0] | (pixels[1] << 8) | (pixels[2] << 16);
+}
+
 void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   buffer_viewport_list_->SetToRecommendedBufferViewports();
 
@@ -373,6 +394,18 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     DrawWebVr();
     if (!webvr_secure_origin_) {
       DrawWebVrOverlay(target_time.monotonic_system_time_nanos);
+    }
+
+    // When using async reprojection, we need to know which pose was used in
+    // the WebVR app for drawing this frame. Due to unknown amounts of
+    // buffering in the compositor and SurfaceTexture, we read the pose number
+    // from a corner pixel. There's no point in doing this for legacy
+    // distortion rendering since that doesn't need a pose, and reading back
+    // pixels is an expensive operation. TODO(klausw): stop doing this once we
+    // have working no-compositor rendering for WebVR.
+    if (gvr_api_->GetAsyncReprojectionEnabled()) {
+      uint32_t webvr_pose_frame = GetPixelEncodedPoseIndex();
+      head_pose = webvr_head_pose_[webvr_pose_frame % kPoseRingBufferSize];
     }
   } else {
     DrawVrShell(head_pose);

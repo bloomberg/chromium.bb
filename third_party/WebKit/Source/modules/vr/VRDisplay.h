@@ -113,6 +113,8 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
   double m_depthFar;
 
   Timer<VRDisplay> m_fullscreenCheckTimer;
+  gpu::gles2::GLES2Interface* m_contextGL;
+  Member<WebGLRenderingContextBase> m_renderingContext;
 };
 
 using VRDisplayVector = HeapVector<Member<VRDisplay>>;

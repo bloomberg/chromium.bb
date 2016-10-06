@@ -65,6 +65,8 @@ class GvrNonPresentingDelegate : public GvrDelegate {
                                 float top,
                                 float width,
                                 float height) override {}
+  void SetGvrPoseForWebVr(const gvr::Mat4f& pose,
+                          uint32_t pose_index) override {}
 
   gvr::GvrApi* gvr_api() override { return gvr_api_.get(); }
 

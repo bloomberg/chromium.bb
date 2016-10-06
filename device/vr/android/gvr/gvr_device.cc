@@ -134,6 +134,9 @@ VRPosePtr GvrDevice::GetPose() {
 
   pose->timestamp = base::Time::Now().ToJsTime();
 
+  // Increment pose frame counter always, even if it's a faked pose.
+  pose->poseIndex = ++pose_index_;
+
   pose->orientation = mojo::Array<float>::New(4);
 
   gvr::GvrApi* gvr_api = GetGvrApi();
@@ -175,6 +178,10 @@ VRPosePtr GvrDevice::GetPose() {
     pose->position[1] = decomposed_transform.translate[1];
     pose->position[2] = decomposed_transform.translate[2];
   }
+
+  // Save the underlying GVR pose for use by rendering. It can't use a
+  // VRPosePtr since that's a different data type.
+  delegate_->SetGvrPoseForWebVr(head_mat, pose_index_);
 
   return pose;
 }

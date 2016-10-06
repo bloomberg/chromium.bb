@@ -539,6 +539,18 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   void forceRestoreContext();
   void loseContextImpl(LostContextMode, AutoRecoveryMethod);
 
+  // Utilities to restore GL state to match the rendering context's
+  // saved state. Use these after contextGL()-based state changes that
+  // bypass the rendering context.
+  void restoreScissorEnabled();
+  void restoreScissorBox();
+  void restoreClearColor();
+  void restoreClearDepthf();
+  void restoreClearStencil();
+  void restoreStencilMaskSeparate();
+  void restoreColorMask();
+  void restoreDepthMask();
+
   gpu::gles2::GLES2Interface* contextGL() const {
     DrawingBuffer* d = drawingBuffer();
     if (!d)
@@ -762,6 +774,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
 
   GLfloat m_clearColor[4];
   bool m_scissorEnabled;
+  GLint m_scissorBox[4];
   GLfloat m_clearDepth;
   GLint m_clearStencil;
   GLboolean m_colorMask[4];
