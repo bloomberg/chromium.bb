@@ -66,9 +66,11 @@ class CORE_EXPORT CSSStyleDeclaration
   virtual String removeProperty(const String& propertyName,
                                 ExceptionState&) = 0;
 
-  // CSSPropertyID versions of the CSSOM functions to support bindings and editing.
+  // CSSPropertyID versions of the CSSOM functions to support bindings and
+  // editing.
   // Use the non-virtual methods in the concrete subclasses when possible.
-  // The CSSValue returned by this function should not be exposed to the web as it may be used by multiple documents at the same time.
+  // The CSSValue returned by this function should not be exposed to the web as
+  // it may be used by multiple documents at the same time.
   virtual const CSSValue* getPropertyCSSValueInternal(CSSPropertyID) = 0;
   virtual const CSSValue* getPropertyCSSValueInternal(
       AtomicString customPropertyName) = 0;

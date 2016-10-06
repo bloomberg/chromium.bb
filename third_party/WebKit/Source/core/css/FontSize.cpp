@@ -2,10 +2,12 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2006, 2007 Nicholas Shanks (webkit@nickshanks.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007, 2008 Eric Seidel <eric@webkit.org>
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  * Copyright (C) 2012 Google Inc. All rights reserved.
@@ -47,15 +49,17 @@ float FontSize::getComputedSizeFromSpecifiedSize(
   if (fabsf(specifiedSize) < std::numeric_limits<float>::epsilon())
     return 0.0f;
 
-  // We support two types of minimum font size. The first is a hard override that applies to
-  // all fonts. This is "minSize." The second type of minimum font size is a "smart minimum"
-  // that is applied only when the Web page can't know what size it really asked for, e.g.,
-  // when it uses logical sizes like "small" or expresses the font-size as a percentage of
-  // the user's default font setting.
+  // We support two types of minimum font size. The first is a hard override
+  // that applies to all fonts. This is "minSize." The second type of minimum
+  // font size is a "smart minimum" that is applied only when the Web page can't
+  // know what size it really asked for, e.g., when it uses logical sizes like
+  // "small" or expresses the font-size as a percentage of the user's default
+  // font setting.
 
-  // With the smart minimum, we never want to get smaller than the minimum font size to keep fonts readable.
-  // However we always allow the page to set an explicit pixel size that is smaller,
-  // since sites will mis-render otherwise (e.g., http://www.gamespot.com with a 9px minimum).
+  // With the smart minimum, we never want to get smaller than the minimum font
+  // size to keep fonts readable. However we always allow the page to set an
+  // explicit pixel size that is smaller, since sites will mis-render otherwise
+  // (e.g., http://www.gamespot.com with a 9px minimum).
 
   Settings* settings = document->settings();
   if (!settings)
@@ -65,20 +69,22 @@ float FontSize::getComputedSizeFromSpecifiedSize(
   int minLogicalSize = settings->minimumLogicalFontSize();
   float zoomedSize = specifiedSize * zoomFactor;
 
-  // Apply the hard minimum first. We only apply the hard minimum if after zooming we're still too small.
+  // Apply the hard minimum first. We only apply the hard minimum if after
+  // zooming we're still too small.
   if (zoomedSize < minSize)
     zoomedSize = minSize;
 
-  // Now apply the "smart minimum." This minimum is also only applied if we're still too small
-  // after zooming. The font size must either be relative to the user default or the original size
-  // must have been acceptable. In other words, we only apply the smart minimum whenever we're positive
-  // doing so won't disrupt the layout.
+  // Now apply the "smart minimum." This minimum is also only applied if we're
+  // still too small after zooming. The font size must either be relative to the
+  // user default or the original size must have been acceptable. In other
+  // words, we only apply the smart minimum whenever we're positive doing so
+  // won't disrupt the layout.
   if (useSmartMinimumForFontSize && zoomedSize < minLogicalSize &&
       (specifiedSize >= minLogicalSize || !isAbsoluteSize))
     zoomedSize = minLogicalSize;
 
-  // Also clamp to a reasonable maximum to prevent insane font sizes from causing crashes on various
-  // platforms (I'm looking at you, Windows.)
+  // Also clamp to a reasonable maximum to prevent insane font sizes from
+  // causing crashes on various platforms (I'm looking at you, Windows.)
   return std::min(maximumAllowedFontSize, zoomedSize);
 }
 
@@ -86,7 +92,8 @@ const int fontSizeTableMax = 16;
 const int fontSizeTableMin = 9;
 const int totalKeywords = 8;
 
-// WinIE/Nav4 table for font sizes. Designed to match the legacy font mapping system of HTML.
+// WinIE/Nav4 table for font sizes. Designed to match the legacy font mapping
+// system of HTML.
 static const int quirksFontSizeTable[fontSizeTableMax - fontSizeTableMin +
                                      1][totalKeywords] = {
     {9, 9, 9, 9, 11, 14, 18, 28},   {9, 9, 9, 10, 12, 15, 20, 31},
@@ -114,8 +121,8 @@ static const int strictFontSizeTable[fontSizeTableMax - fontSizeTableMin +
 //                          |
 //                      user pref
 
-// For values outside the range of the table, we use Todd Fahrner's suggested scale
-// factors for each keyword value.
+// For values outside the range of the table, we use Todd Fahrner's suggested
+// scale factors for each keyword value.
 static const float fontSizeFactors[totalKeywords] = {0.60f, 0.75f, 0.89f, 1.0f,
                                                      1.2f,  1.5f,  2.0f,  3.0f};
 
@@ -157,7 +164,8 @@ template <typename T>
 static int findNearestLegacyFontSize(int pixelFontSize,
                                      const T* table,
                                      int multiplier) {
-  // Ignore table[0] because xx-small does not correspond to any legacy font size.
+  // Ignore table[0] because xx-small does not correspond to any legacy font
+  // size.
   for (int i = 1; i < totalKeywords - 1; i++) {
     if (pixelFontSize * 2 < (table[i] + table[i + 1]) * multiplier)
       return i;

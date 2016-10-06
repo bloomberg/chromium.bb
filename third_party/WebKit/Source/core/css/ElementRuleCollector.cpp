@@ -2,10 +2,12 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2006, 2007 Nicholas Shanks (webkit@nickshanks.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007, 2008 Eric Seidel <eric@webkit.org>
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  * Copyright (C) 2012 Google Inc. All rights reserved.
@@ -142,13 +144,15 @@ void ElementRuleCollector::collectMatchingRulesForList(
       continue;
     }
 
-    // FIXME: Exposing the non-standard getMatchedCSSRules API to web is the only reason this is needed.
+    // FIXME: Exposing the non-standard getMatchedCSSRules API to web is the
+    // only reason this is needed.
     if (m_sameOriginOnly && !ruleData.hasDocumentSecurityOrigin())
       continue;
 
     StyleRule* rule = ruleData.rule();
 
-    // If the rule has no properties to apply, then ignore it in the non-debug mode.
+    // If the rule has no properties to apply, then ignore it in the non-debug
+    // mode.
     const StylePropertySet& properties = rule->properties();
     if (properties.isEmpty() && !m_includeEmptyRules)
       continue;
@@ -198,17 +202,19 @@ void ElementRuleCollector::collectMatchingRules(
   if (element.isVTTElement())
     collectMatchingRulesForList(matchRequest.ruleSet->cuePseudoRules(),
                                 cascadeOrder, matchRequest);
-  // Check whether other types of rules are applicable in the current tree scope. Criteria for this:
+  // Check whether other types of rules are applicable in the current tree
+  // scope. Criteria for this:
   // a) the rules are UA rules.
   // b) matching tree boundary crossing rules.
-  // c) the rules come from a shadow style sheet in the same tree scope as the given element.
+  // c) the rules come from a shadow style sheet in the same tree scope as the
+  //    given element.
   // c) is checked in rulesApplicableInCurrentTreeScope.
   if (!m_matchingUARules && !matchingTreeBoundaryRules &&
       !rulesApplicableInCurrentTreeScope(&element, matchRequest.scope))
     return;
 
-  // We need to collect the rules for id, class, tag, and everything else into a buffer and
-  // then sort the buffer.
+  // We need to collect the rules for id, class, tag, and everything else into a
+  // buffer and then sort the buffer.
   if (element.hasID())
     collectMatchingRulesForList(
         matchRequest.ruleSet->idRules(element.idForStyleResolution()),
@@ -266,9 +272,10 @@ CSSRule* ElementRuleCollector::findStyleRule(CSSRuleCollection* cssRules,
 void ElementRuleCollector::appendCSSOMWrapperForRule(
     CSSStyleSheet* parentStyleSheet,
     StyleRule* rule) {
-  // |parentStyleSheet| is 0 if and only if the |rule| is coming from User Agent. In this case,
-  // it is safe to create CSSOM wrappers without parentStyleSheets as they will be used only
-  // by inspector which will not try to edit them.
+  // |parentStyleSheet| is 0 if and only if the |rule| is coming from User
+  // Agent. In this case, it is safe to create CSSOM wrappers without
+  // parentStyleSheets as they will be used only by inspector which will not try
+  // to edit them.
   CSSRule* cssRule = nullptr;
   if (parentStyleSheet)
     cssRule = findStyleRule(parentStyleSheet, rule);
@@ -313,8 +320,8 @@ void ElementRuleCollector::didMatchRule(
     CascadeOrder cascadeOrder,
     const MatchRequest& matchRequest) {
   PseudoId dynamicPseudo = result.dynamicPseudo;
-  // If we're matching normal rules, set a pseudo bit if
-  // we really just matched a pseudo-element.
+  // If we're matching normal rules, set a pseudo bit if we really just matched
+  // a pseudo-element.
   if (dynamicPseudo != PseudoIdNone &&
       m_pseudoStyleRequest.pseudoId == PseudoIdNone) {
     if (m_mode == SelectorChecker::CollectingCSSRules ||
@@ -356,8 +363,8 @@ bool ElementRuleCollector::hasAnyMatchingRules(RuleSet* ruleSet) {
 
   m_mode = SelectorChecker::SharingRules;
   // To check whether a given RuleSet has any rule matching a given element,
-  // should not see the element's treescope. Because RuleSet has no
-  // information about "scope".
+  // should not see the element's treescope. Because RuleSet has no information
+  // about "scope".
   MatchRequest matchRequest(ruleSet);
   collectMatchingRules(matchRequest);
   collectMatchingShadowHostRules(matchRequest);

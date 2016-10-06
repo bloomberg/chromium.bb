@@ -81,8 +81,8 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
   // The styled node is either the node passed into getComputedStyle, or the
   // PseudoElement for :before and :after if they exist.
   // FIXME: This should be styledElement since in JS getComputedStyle only works
-  // on Elements, but right now editing creates these for text nodes. We should fix
-  // that.
+  // on Elements, but right now editing creates these for text nodes. We should
+  // fix that.
   Node* styledNode() const;
 
   // CSSOM functions. Don't make these public.

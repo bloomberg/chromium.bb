@@ -29,21 +29,22 @@
 
 namespace blink {
 
-/* MediaList is used to store 3 types of media related entities which mean the same:
+/* MediaList is used to store 3 types of media related entities which mean the
+ * same:
  *
  * Media Queries, Media Types and Media Descriptors.
  *
- * Media queries, as described in the Media Queries Level 3 specification, build on
- * the mechanism outlined in HTML4. The syntax of media queries fit into the media
- * type syntax reserved in HTML4. The media attribute of HTML4 also exists in XHTML
- * and generic XML. The same syntax can also be used inside the @media and @import
- * rules of CSS.
+ * Media queries, as described in the Media Queries Level 3 specification, build
+ * on the mechanism outlined in HTML4. The syntax of media queries fit into the
+ * media type syntax reserved in HTML4. The media attribute of HTML4 also exists
+ * in XHTML and generic XML. The same syntax can also be used inside the @media
+ * and @import rules of CSS.
  *
- * However, the parsing rules for media queries are incompatible with those of HTML4
- * and are consistent with those of media queries used in CSS.
+ * However, the parsing rules for media queries are incompatible with those of
+ * HTML4 and are consistent with those of media queries used in CSS.
  *
- * HTML5 (at the moment of writing still work in progress) references the Media Queries
- * specification directly and thus updates the rules for HTML.
+ * HTML5 (at the moment of writing still work in progress) references the Media
+ * Queries specification directly and thus updates the rules for HTML.
  *
  * CSS 2.1 Spec (http://www.w3.org/TR/CSS21/media.html)
  * CSS 3 Media Queries Spec (http://www.w3.org/TR/css3-mediaqueries/)
@@ -149,8 +150,10 @@ String MediaQuerySet::mediaText() const {
 }
 
 DEFINE_TRACE(MediaQuerySet) {
-  // We don't support tracing of vectors of OwnPtrs (ie. std::unique_ptr<Vector<std::unique_ptr<MediaQuery>>>).
-  // Since this is a transitional object we are just ifdef'ing it out when oilpan is not enabled.
+  // We don't support tracing of vectors of OwnPtrs (ie.
+  // std::unique_ptr<Vector<std::unique_ptr<MediaQuery>>>).
+  // Since this is a transitional object we are just ifdef'ing it out when
+  // oilpan is not enabled.
   visitor->trace(m_queries);
 }
 

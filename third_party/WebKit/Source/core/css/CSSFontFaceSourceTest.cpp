@@ -42,7 +42,8 @@ unsigned simulateHashCalculation(float size) {
 
 TEST(CSSFontFaceSourceTest, HashCollision) {
   DummyFontFaceSource fontFaceSource;
-  // Even if the hash value collide, fontface cache should return different value for different fonts.
+  // Even if the hash value collide, fontface cache should return different
+  // value for different fonts.
   EXPECT_EQ(simulateHashCalculation(2821), simulateHashCalculation(3346));
   EXPECT_NE(fontFaceSource.getFontDataForSize(2821),
             fontFaceSource.getFontDataForSize(3346));

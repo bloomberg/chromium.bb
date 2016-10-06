@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004 Zack Rusin <zack@kde.org>
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007 Nicholas Shanks <webkit@nickshanks.com>
  * Copyright (C) 2011 Sencha, Inc. All rights reserved.
@@ -139,7 +140,8 @@ static CSSValueList* createPositionListForLayer(CSSPropertyID propertyID,
 CSSValue* ComputedStyleCSSValueMapping::currentColorOrValidColor(
     const ComputedStyle& style,
     const StyleColor& color) {
-  // This function does NOT look at visited information, so that computed style doesn't expose that.
+  // This function does NOT look at visited information, so that computed style
+  // doesn't expose that.
   return CSSColorValue::create(color.resolve(style.color()).rgb());
 }
 
@@ -161,8 +163,9 @@ static CSSValue* valueForFillSize(const FillSize& fillSize,
 }
 
 static CSSValue* valueForFillRepeat(EFillRepeat xRepeat, EFillRepeat yRepeat) {
-  // For backwards compatibility, if both values are equal, just return one of them. And
-  // if the two values are equivalent to repeat-x or repeat-y, just return the shorthand.
+  // For backwards compatibility, if both values are equal, just return one of
+  // them. And if the two values are equivalent to repeat-x or repeat-y, just
+  // return the shorthand.
   if (xRepeat == yRepeat)
     return CSSIdentifierValue::create(xRepeat);
   if (xRepeat == RepeatFill && yRepeat == NoRepeatFill)
@@ -226,11 +229,12 @@ static CSSValue* valueForPositionOffset(const ComputedStyle& style,
   }
 
   if (offset.isAuto() && layoutObject) {
-    // If the property applies to a positioned element and the resolved value of the display
-    // property is not none, the resolved value is the used value.
+    // If the property applies to a positioned element and the resolved value of
+    // the display property is not none, the resolved value is the used value.
     if (layoutObject->isInFlowPositioned()) {
-      // If e.g. left is auto and right is not auto, then left's computed value is negative right.
-      // So we get the opposite length unit and see if it is auto.
+      // If e.g. left is auto and right is not auto, then left's computed value
+      // is negative right. So we get the opposite length unit and see if it is
+      // auto.
       if (opposite.isAuto())
         return CSSPrimitiveValue::create(0,
                                          CSSPrimitiveValue::UnitType::Pixels);
@@ -256,13 +260,15 @@ static CSSValue* valueForPositionOffset(const ComputedStyle& style,
     }
 
     if (layoutObject->isOutOfFlowPositioned() && layoutObject->isBox()) {
-      // For fixed and absolute positioned elements, the top, left, bottom, and right
-      // are defined relative to the corresponding sides of the containing block.
+      // For fixed and absolute positioned elements, the top, left, bottom, and
+      // right are defined relative to the corresponding sides of the containing
+      // block.
       LayoutBlock* container = layoutObject->containingBlock();
       const LayoutBox* layoutBox = toLayoutBox(layoutObject);
 
-      // clientOffset is the distance from this object's border edge to the container's
-      // padding edge. Thus it includes margins which we subtract below.
+      // clientOffset is the distance from this object's border edge to the
+      // container's padding edge. Thus it includes margins which we subtract
+      // below.
       const LayoutSize clientOffset =
           layoutBox->locationOffset() -
           LayoutSize(container->clientLeft(), container->clientTop());
@@ -497,7 +503,9 @@ static CSSValueList* valueForItemPositionWithOverflowAlignment(
   CSSValueList* result = CSSValueList::createSpaceSeparated();
   if (data.positionType() == LegacyPosition)
     result->append(*CSSIdentifierValue::create(CSSValueLegacy));
-  // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto' flag to not just mean 'auto' prior to running the StyleAdjuster but also mean 'normal' after running it.
+  // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto'
+  // flag to not just mean 'auto' prior to running the StyleAdjuster but also
+  // mean 'normal' after running it.
   result->append(*CSSIdentifierValue::create(
       data.position() == ItemPositionAuto
           ? ComputedStyle::initialDefaultAlignment().position()
@@ -1005,8 +1013,8 @@ static CSSValue* valueForGridTrackList(GridTrackSizingDirection direction,
   bool trackListIsEmpty =
       trackSizes.isEmpty() && autoRepeatTrackSizes.isEmpty();
   if (isLayoutGrid && trackListIsEmpty) {
-    // For grids we should consider every listed track, whether implicitly or explicitly
-    // created. Empty grids have a sole grid line per axis.
+    // For grids we should consider every listed track, whether implicitly or
+    // explicitly created. Empty grids have a sole grid line per axis.
     auto& positions = isRowAxis ? toLayoutGrid(layoutObject)->columnPositions()
                                 : toLayoutGrid(layoutObject)->rowPositions();
     trackListIsEmpty = positions.size() == 1;
@@ -1398,7 +1406,8 @@ static CSSValue* computedTransform(const LayoutObject* layoutObject,
                        ComputedStyle::ExcludeMotionPath,
                        ComputedStyle::ExcludeIndependentTransformProperties);
 
-  // FIXME: Need to print out individual functions (https://bugs.webkit.org/show_bug.cgi?id=23924)
+  // FIXME: Need to print out individual functions
+  // (https://bugs.webkit.org/show_bug.cgi?id=23924)
   CSSValueList* list = CSSValueList::createSpaceSeparated();
   list->append(*valueForMatrixTransform(transform, style));
 
@@ -1791,7 +1800,8 @@ CSSValue* ComputedStyleCSSValueMapping::valueForFilter(
         DropShadowFilterOperation* dropShadowOperation =
             toDropShadowFilterOperation(filterOperation);
         filterValue = CSSFunctionValue::create(CSSValueDropShadow);
-        // We want our computed style to look like that of a text shadow (has neither spread nor inset style).
+        // We want our computed style to look like that of a text shadow (has
+        // neither spread nor inset style).
         ShadowData shadow(dropShadowOperation->location(),
                           dropShadowOperation->stdDeviation(), 0, Normal,
                           StyleColor(dropShadowOperation->getColor()));
@@ -1818,7 +1828,8 @@ CSSValue* ComputedStyleCSSValueMapping::valueForFont(
   CSSValueList* list = CSSValueList::createSpaceSeparated();
   list->append(*valueForFontStyle(style));
 
-  // Check that non-initial font-variant subproperties are not conflicting with this serialization.
+  // Check that non-initial font-variant subproperties are not conflicting with
+  // this serialization.
   CSSValue* ligaturesValue = valueForFontVariantLigatures(style);
   CSSValue* numericValue = valueForFontVariantNumeric(style);
   if (!ligaturesValue->equals(*CSSIdentifierValue::create(CSSValueNormal)) ||
@@ -2354,10 +2365,12 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
 
       return list;
     }
-    // Specs mention that getComputedStyle() should return the used value of the property instead of the computed
-    // one for grid-template-{rows|columns} but not for the grid-auto-{rows|columns} as things like
-    // grid-auto-columns: 2fr; cannot be resolved to a value in pixels as the '2fr' means very different things
-    // depending on the size of the explicit grid or the number of implicit tracks added to the grid. See
+    // Specs mention that getComputedStyle() should return the used value of the
+    // property instead of the computed one for grid-template-{rows|columns} but
+    // not for the grid-auto-{rows|columns} as things like grid-auto-columns:
+    // 2fr; cannot be resolved to a value in pixels as the '2fr' means very
+    // different things depending on the size of the explicit grid or the number
+    // of implicit tracks added to the grid. See
     // http://lists.w3.org/Archives/Public/www-style/2013Nov/0014.html
     case CSSPropertyGridAutoColumns:
       return valueForGridTrackSizeList(ForColumns, style);
@@ -2412,8 +2425,9 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
 
     case CSSPropertyHeight:
       if (layoutObject) {
-        // According to http://www.w3.org/TR/CSS2/visudet.html#the-height-property,
-        // the "height" property does not apply for non-atomic inline elements.
+        // According to
+        // http://www.w3.org/TR/CSS2/visudet.html#the-height-property, the
+        // "height" property does not apply for non-atomic inline elements.
         if (!layoutObject->isAtomicInlineLevel() && layoutObject->isInline())
           return CSSIdentifierValue::create(CSSValueAuto);
         return zoomAdjustedPixelValue(sizingBox(layoutObject).height(), style);
@@ -2482,9 +2496,11 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
         return zoomAdjustedPixelValueForLength(marginRight, style);
       float value;
       if (marginRight.isPercentOrCalc()) {
-        // LayoutBox gives a marginRight() that is the distance between the right-edge of the child box
-        // and the right-edge of the containing box, when display == EDisplay::Block. Let's calculate the absolute
-        // value of the specified margin-right % instead of relying on LayoutBox's marginRight() value.
+        // LayoutBox gives a marginRight() that is the distance between the
+        // right-edge of the child box and the right-edge of the containing box,
+        // when display == EDisplay::Block. Let's calculate the absolute value
+        // of the specified margin-right % instead of relying on LayoutBox's
+        // marginRight() value.
         value = minimumValueForLength(
                     marginRight, toLayoutBox(layoutObject)
                                      ->containingBlockLogicalWidthForContent())
@@ -2623,7 +2639,8 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return CSSIdentifierValue::create(style.position());
     case CSSPropertyQuotes:
       if (!style.quotes()) {
-        // TODO(ramya.v): We should return the quote values that we're actually using.
+        // TODO(ramya.v): We should return the quote values that we're actually
+        // using.
         return nullptr;
       }
       if (style.quotes()->size()) {
@@ -2767,7 +2784,8 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
                                        CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyWidth:
       if (layoutObject) {
-        // According to http://www.w3.org/TR/CSS2/visudet.html#the-width-property,
+        // According to
+        // http://www.w3.org/TR/CSS2/visudet.html#the-width-property,
         // the "width" property does not apply for non-atomic inline elements.
         if (!layoutObject->isAtomicInlineLevel() && layoutObject->isInline())
           return CSSIdentifierValue::create(CSSValueAuto);
@@ -2972,7 +2990,8 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
         return style.maskBoxImageSource()->computedCSSValue();
       return CSSIdentifierValue::create(CSSValueNone);
     case CSSPropertyWebkitFontSizeDelta:
-      // Not a real style property -- used by the editing engine -- so has no computed value.
+      // Not a real style property -- used by the editing engine -- so has no
+      // computed value.
       return nullptr;
     case CSSPropertyWebkitMarginBottomCollapse:
     case CSSPropertyWebkitMarginAfterCollapse:
@@ -3276,7 +3295,8 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     case CSSPropertyWebkitTextEmphasis:
       return nullptr;
 
-    // Directional properties are resolved by resolveDirectionAwareProperty() before the switch.
+    // Directional properties are resolved by resolveDirectionAwareProperty()
+    // before the switch.
     case CSSPropertyWebkitBorderEnd:
     case CSSPropertyWebkitBorderEndColor:
     case CSSPropertyWebkitBorderEndStyle:

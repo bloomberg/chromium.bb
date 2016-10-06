@@ -2,10 +2,12 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2006, 2007 Nicholas Shanks (webkit@nickshanks.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007, 2008 Eric Seidel <eric@webkit.org>
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  * Copyright (C) 2012 Google Inc. All rights reserved.
@@ -73,7 +75,8 @@ static inline bool isCommonAttributeSelectorAttribute(
 static bool containsUncommonAttributeSelector(const CSSSelector& selector) {
   const CSSSelector* current = &selector;
   for (; current; current = current->tagHistory()) {
-    // Allow certain common attributes (used in the default style) in the selectors that match the current element.
+    // Allow certain common attributes (used in the default style) in the
+    // selectors that match the current element.
     if (current->isAttributeSelector() &&
         !isCommonAttributeSelectorAttribute(current->attribute()))
       return true;
@@ -195,9 +198,10 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component,
     return true;
   }
   if (!customPseudoElementName.isEmpty()) {
-    // Custom pseudos come before ids and classes in the order of tagHistory, and have a relation of
-    // ShadowPseudo between them. Therefore we should never be a situation where extractValuesforSelector
-    // finsd id and className in addition to custom pseudo.
+    // Custom pseudos come before ids and classes in the order of tagHistory,
+    // and have a relation of ShadowPseudo between them. Therefore we should
+    // never be a situation where extractValuesforSelector finsd id and
+    // className in addition to custom pseudo.
     ASSERT(id.isEmpty() && className.isEmpty());
     addToRuleSet(customPseudoElementName,
                  ensurePendingRules()->shadowPseudoElementRules, ruleData);
@@ -242,7 +246,8 @@ void RuleSet::addRule(StyleRule* rule,
     return;
 
   if (!findBestRuleSetAndAdd(ruleData.selector(), ruleData)) {
-    // If we didn't find a specialized map to stick it in, file under universal rules.
+    // If we didn't find a specialized map to stick it in, file under universal
+    // rules.
     m_universalRules.append(ruleData);
   }
 }

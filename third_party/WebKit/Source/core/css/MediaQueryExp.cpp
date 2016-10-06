@@ -225,11 +225,13 @@ MediaQueryExp* MediaQueryExp::createIfValid(
       expValue.isID = true;
     } else if (token.type() == NumberToken || token.type() == PercentageToken ||
                token.type() == DimensionToken) {
-      // Check for numeric token types since it is only safe for these types to call numericValue.
+      // Check for numeric token types since it is only safe for these types to
+      // call numericValue.
       if (featureWithValidDensity(lowerMediaFeature, token) ||
           featureWithValidPositiveLength(lowerMediaFeature, token)) {
-        // Media features that must have non-negative <density>, ie. dppx, dpi or dpcm,
-        // or Media features that must have non-negative <length> or number value.
+        // Media features that must have non-negative <density>, ie. dppx, dpi
+        // or dpcm, or Media features that must have non-negative <length> or
+        // number value.
         expValue.value = token.numericValue();
         expValue.unit = token.unitType();
         expValue.isValue = true;

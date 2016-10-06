@@ -50,8 +50,8 @@ using MediaQueryResultList = HeapVector<Member<MediaQueryResult>>;
 // right after parsing.
 //
 // the boolean parameter is used to approximate results of evaluation, if
-// the device characteristics are not known. This can be used to prune the loading
-// of stylesheets to only those which are probable to match.
+// the device characteristics are not known. This can be used to prune the
+// loading of stylesheets to only those which are probable to match.
 
 class CORE_EXPORT MediaQueryEvaluator final
     : public GarbageCollectedFinalized<MediaQueryEvaluator> {
@@ -67,8 +67,8 @@ class CORE_EXPORT MediaQueryEvaluator final
   explicit MediaQueryEvaluator(bool mediaFeatureResult = false);
 
   // Creates evaluator which evaluates only simple media queries
-  // Evaluator  returns true for acceptedMediaType and returns value of \mediafeatureResult
-  // for any media features.
+  // Evaluator returns true for acceptedMediaType and returns value of
+  // \mediafeatureResult for any media features.
 
   MediaQueryEvaluator(const char* acceptedMediaType,
                       bool mediaFeatureResult = false);
@@ -76,7 +76,8 @@ class CORE_EXPORT MediaQueryEvaluator final
   // Creates evaluator which evaluates full media queries.
   explicit MediaQueryEvaluator(LocalFrame*);
 
-  // Creates evaluator which evaluates in a thread-safe manner a subset of media values.
+  // Creates evaluator which evaluates in a thread-safe manner a subset of media
+  // values.
   explicit MediaQueryEvaluator(const MediaValues&);
 
   ~MediaQueryEvaluator();

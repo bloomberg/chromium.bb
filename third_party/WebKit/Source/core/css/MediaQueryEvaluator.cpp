@@ -116,7 +116,8 @@ bool MediaQueryEvaluator::eval(
     return applyRestrictor(query->restrictor(), false);
 
   const ExpressionHeapVector& expressions = query->expressions();
-  // Iterate through expressions, stop if any of them eval to false (AND semantics).
+  // Iterate through expressions, stop if any of them eval to false (AND
+  // semantics).
   size_t i = 0;
   for (; i < expressions.size(); ++i) {
     bool exprResult = eval(expressions.at(i).get());
@@ -216,12 +217,14 @@ static bool colorMediaFeatureEval(const MediaQueryExpValue& value,
 static bool colorIndexMediaFeatureEval(const MediaQueryExpValue& value,
                                        MediaFeaturePrefix op,
                                        const MediaValues&) {
-  // FIXME: We currently assume that we do not support indexed displays, as it is unknown
-  // how to retrieve the information if the display mode is indexed. This matches Firefox.
+  // FIXME: We currently assume that we do not support indexed displays, as it
+  // is unknown how to retrieve the information if the display mode is indexed.
+  // This matches Firefox.
   if (!value.isValid())
     return false;
 
-  // Acording to spec, if the device does not use a color lookup table, the value is zero.
+  // Acording to spec, if the device does not use a color lookup table, the
+  // value is zero.
   float number;
   return numberValue(value, number) &&
          compareValue(0, static_cast<int>(number), op);
@@ -245,8 +248,9 @@ static bool monochromeMediaFeatureEval(const MediaQueryExpValue& value,
 static bool displayModeMediaFeatureEval(const MediaQueryExpValue& value,
                                         MediaFeaturePrefix,
                                         const MediaValues& mediaValues) {
-  // isValid() is false if there is no parameter. Without parameter we should return true to indicate that
-  // displayModeMediaFeature is enabled in the browser.
+  // isValid() is false if there is no parameter. Without parameter we should
+  // return true to indicate that displayModeMediaFeature is enabled in the
+  // browser.
   if (!value.isValid())
     return true;
 
@@ -313,7 +317,8 @@ static bool evalResolution(const MediaQueryExpValue& value,
                            MediaFeaturePrefix op,
                            const MediaValues& mediaValues) {
   // According to MQ4, only 'screen', 'print' and 'speech' may match.
-  // FIXME: What should speech match? https://www.w3.org/Style/CSS/Tracker/issues/348
+  // FIXME: What should speech match?
+  // https://www.w3.org/Style/CSS/Tracker/issues/348
   float actualResolution = 0;
 
   // This checks the actual media type applied to the document, and we know
@@ -459,7 +464,8 @@ static bool widthMediaFeatureEval(const MediaQueryExpValue& value,
   return width;
 }
 
-// Rest of the functions are trampolines which set the prefix according to the media feature expression used.
+// Rest of the functions are trampolines which set the prefix according to the
+// media feature expression used.
 
 static bool minColorMediaFeatureEval(const MediaQueryExpValue& value,
                                      MediaFeaturePrefix,

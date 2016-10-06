@@ -69,7 +69,8 @@ void CSSImageSetValue::fillImageSet() {
     ++i;
   }
 
-  // Sort the images so that they are stored in order from lowest resolution to highest.
+  // Sort the images so that they are stored in order from lowest resolution to
+  // highest.
   std::sort(m_imagesInSet.begin(), m_imagesInSet.end(),
             CSSImageSetValue::compareByScaleFactor);
 }
@@ -103,9 +104,10 @@ StyleImage* CSSImageSetValue::cacheImage(
     fillImageSet();
 
   if (isCachePending(deviceScaleFactor)) {
-    // FIXME: In the future, we want to take much more than deviceScaleFactor into acount here.
-    // All forms of scale should be included: Page::pageScaleFactor(), LocalFrame::pageZoomFactor(),
-    // and any CSS transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
+    // FIXME: In the future, we want to take much more than deviceScaleFactor
+    // into acount here. All forms of scale should be included:
+    // Page::pageScaleFactor(), LocalFrame::pageZoomFactor(), and any CSS
+    // transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
     ImageWithScale image = bestImageForScaleFactor(deviceScaleFactor);
     FetchRequest request(ResourceRequest(document.completeURL(image.imageURL)),
                          FetchInitiatorTypeNames::css);
@@ -145,7 +147,8 @@ String CSSImageSetValue::customCSSText() const {
     ASSERT_WITH_SECURITY_IMPLICATION(i < length);
     const CSSValue& scaleFactorValue = item(i);
     result.append(scaleFactorValue.cssText());
-    // FIXME: Eventually the scale factor should contain it's own unit http://wkb.ug/100120.
+    // FIXME: Eventually the scale factor should contain it's own unit
+    // http://wkb.ug/100120.
     // For now 'x' is hard-coded in the parser, so we hard-code it here too.
     result.append('x');
 

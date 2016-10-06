@@ -42,14 +42,19 @@ static inline unsigned styleScore(FontTraits desired, FontTraits candidate) {
   static_assert(FontStyleNormal == 0 && FontStyleItalic == 2,
                 "Enumeration values need to match lookup table.");
   unsigned styleScoreLookupTable[][FontStyleItalic + 1] = {
-      // "If the value is normal, normal faces are checked first, then oblique faces, then italic faces."
+      // "If the value is normal, normal faces are checked first, then oblique
+      // faces, then italic faces."
       // i.e. normal has the highest score, then oblique, then italic.
       {2, 1, 0},
-      // "If the value is oblique, oblique faces are checked first, then italic faces and then normal faces."
-      // i.e. normal gets the lowest score, oblique gets the highest, italic second best.
+      // "If the value is oblique, oblique faces are checked first, then italic
+      // faces and then normal faces."
+      // i.e. normal gets the lowest score, oblique gets the highest, italic
+      // second best.
       {0, 2, 1},
-      // "If the value of font-style is italic, italic faces are checked first, then oblique, then normal faces"
-      // i.e. normal gets the lowest score, oblique is second best, italic highest.
+      // "If the value of font-style is italic, italic faces are checked first,
+      // then oblique, then normal faces"
+      // i.e. normal gets the lowest score, oblique is second best, italic
+      // highest.
       {0, 1, 2}};
 
   ASSERT_WITH_SECURITY_IMPLICATION(desired.style() < FontStyleItalic + 1);
@@ -102,7 +107,8 @@ bool FontStyleMatcher::isCandidateBetter(CSSSegmentedFontFace* candidate,
   const FontTraits& candidateTraits = candidate->traits();
   const FontTraits& currentTraits = current->traits();
 
-  // According to CSS3 Fonts Font Style matching, there is a precedence for matching:
+  // According to CSS3 Fonts Font Style matching, there is a precedence for
+  // matching:
   // A better stretch match wins over a better style match, a better style match
   // wins over a better weight match, where "better" means closer to the desired
   // traits.

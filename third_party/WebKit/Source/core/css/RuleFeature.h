@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ * All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -149,8 +150,10 @@ class CORE_EXPORT RuleFeatureSet {
                                                     InvalidationType);
 
  private:
-  // Each map entry is either a DescendantInvalidationSet or SiblingInvalidationSet.
-  // When both are needed, we store the SiblingInvalidationSet, and use it to hold the DescendantInvalidationSet.
+  // Each map entry is either a DescendantInvalidationSet or
+  // SiblingInvalidationSet.
+  // When both are needed, we store the SiblingInvalidationSet, and use it to
+  // hold the DescendantInvalidationSet.
   using InvalidationSetMap = HashMap<AtomicString, RefPtr<InvalidationSet>>;
   using PseudoTypeInvalidationSetMap =
       HashMap<CSSSelector::PseudoType,

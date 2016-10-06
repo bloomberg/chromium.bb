@@ -45,7 +45,8 @@ const StylePropertyShorthand& animationShorthandForParsing() {
   return webkitAnimationLonghandsForParsing;
 }
 
-// Similar to animations, we have property after timing-function and delay after duration
+// Similar to animations, we have property after timing-function and delay after
+// duration
 const StylePropertyShorthand& transitionShorthandForParsing() {
   static const CSSPropertyID transitionProperties[] = {
       CSSPropertyTransitionDuration, CSSPropertyTransitionTimingFunction,

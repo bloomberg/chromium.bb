@@ -75,7 +75,8 @@ static ImageResource* cachedImageForCSSValue(CSSValue* value,
 
   if (value->isImageGeneratorValue()) {
     toCSSImageGeneratorValue(value)->loadSubimages(document);
-    // FIXME: Handle CSSImageGeneratorValue (and thus cross-fades with gradients and canvas).
+    // FIXME: Handle CSSImageGeneratorValue (and thus cross-fades with gradients
+    // and canvas).
     return nullptr;
   }
 
@@ -171,8 +172,9 @@ IntSize CSSCrossfadeValue::fixedSize(const LayoutObject& layoutObject,
     toImageSize = roundedIntSize(
         toSVGImage(toImage)->concreteObjectSize(defaultObjectSize));
 
-  // Rounding issues can cause transitions between images of equal size to return
-  // a different fixed size; avoid performing the interpolation if the images are the same size.
+  // Rounding issues can cause transitions between images of equal size to
+  // return a different fixed size; avoid performing the interpolation if the
+  // images are the same size.
   if (fromImageSize == toImageSize)
     return fromImageSize;
 

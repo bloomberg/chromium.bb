@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 1999-2003 Lars Knoll (knoll@kde.org)
  *               1999 Waldo Bastian (bastian@kde.org)
- * Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010, 2013 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -33,15 +34,18 @@ class CSSSelectorList;
 
 // This class represents a selector for a StyleRule.
 
-// CSS selector representation is somewhat complicated and subtle. A representative list of selectors is
-// in CSSSelectorTest; run it in a debug build to see useful debugging output.
+// CSS selector representation is somewhat complicated and subtle. A
+// representative list of selectors is in CSSSelectorTest; run it in a debug
+// build to see useful debugging output.
 //
 // ** tagHistory() and relation():
 //
-// Selectors are represented as a linked list of simple selectors (defined more or less according to
-// http://www.w3.org/TR/css3-selectors/#simple-selectors-dfn). The tagHistory() method returns the next
-// simple selector in the list. The relation() method returns the relationship of the current simple selector to
-// the one in tagHistory(). For example, the CSS selector .a.b #c is represented as:
+// Selectors are represented as a linked list of simple selectors (defined more
+// or less according to
+// http://www.w3.org/TR/css3-selectors/#simple-selectors-dfn). The tagHistory()
+// method returns the next simple selector in the list. The relation() method
+// returns the relationship of the current simple selector to the one in
+// tagHistory(). For example, the CSS selector .a.b #c is represented as:
 //
 // selectorText(): .a.b #c
 // --> (relation == Descendant)
@@ -50,29 +54,37 @@ class CSSSelectorList;
 //     selectorText(): .b
 //
 // The order of tagHistory() varies depending on the situation.
-// * Relations using combinators (http://www.w3.org/TR/css3-selectors/#combinators), such as descendant, sibling, etc., are parsed
-//   right-to-left (in the example above, this is why #c is earlier in the tagHistory() chain than .a.b).
-// * SubSelector relations are parsed left-to-right in most cases (such as the .a.b example above); a counter-example is the
-//   ::content pseudo-element. Most (all?) other pseudo elements and pseudo classes are parsed left-to-right.
-// * ShadowPseudo relations are parsed right-to-left. Example: summary::-webkit-details-marker is parsed as:
-//   selectorText(): summary::-webkit-details-marker
-//    --> (relation == ShadowPseudo)
-//     selectorText(): summary
+// * Relations using combinators
+//   (http://www.w3.org/TR/css3-selectors/#combinators), such as descendant,
+//   sibling, etc., are parsed right-to-left (in the example above, this is why
+//   #c is earlier in the tagHistory() chain than .a.b).
+// * SubSelector relations are parsed left-to-right in most cases (such as the
+//   .a.b example above); a counter-example is the
+//   ::content pseudo-element. Most (all?) other pseudo elements and pseudo
+//   classes are parsed left-to-right.
+// * ShadowPseudo relations are parsed right-to-left. Example:
+//   summary::-webkit-details-marker is parsed as: selectorText():
+//   summary::-webkit-details-marker --> (relation == ShadowPseudo)
+//   selectorText(): summary
 //
 // ** match():
 //
-// The match of the current simple selector tells us the type of selector, such as class, id, tagname, or pseudo-class.
-// Inline comments in the Match enum give examples of when each type would occur.
+// The match of the current simple selector tells us the type of selector, such
+// as class, id, tagname, or pseudo-class. Inline comments in the Match enum
+// give examples of when each type would occur.
 //
 // ** value(), attribute():
 //
-// value() tells you the value of the simple selector. For example, for class selectors, value() will tell you the class string,
-// and for id selectors it will tell you the id(). See below for the special case of attribute selectors.
+// value() tells you the value of the simple selector. For example, for class
+// selectors, value() will tell you the class string, and for id selectors it
+// will tell you the id(). See below for the special case of attribute
+// selectors.
 //
 // ** Attribute selectors.
 //
-// Attribute selectors return the attribute name in the attribute() method. The value() method returns the value matched against
-// in case of selectors like [attr="value"].
+// Attribute selectors return the attribute name in the attribute() method. The
+// value() method returns the value matched against in case of selectors like
+// [attr="value"].
 //
 class CORE_EXPORT CSSSelector {
   USING_FAST_MALLOC_WITH_TYPE_NAME(blink::CSSSelector);
@@ -117,7 +129,8 @@ class CORE_EXPORT CSSSelector {
     Child,             // > combinator
     DirectAdjacent,    // + combinator
     IndirectAdjacent,  // ~ combinator
-    ShadowPseudo,  // Special case of shadow DOM pseudo elements / shadow pseudo element
+    // Special case of shadow DOM pseudo elements / shadow pseudo element
+    ShadowPseudo,
     ShadowDeep,  // /deep/ combinator
     ShadowSlot   // slotted to <slot> element
   };
@@ -226,8 +239,8 @@ class CORE_EXPORT CSSSelector {
   static PseudoId parsePseudoId(const String&);
   static PseudoId pseudoId(PseudoType);
 
-  // Selectors are kept in an array by CSSSelectorList. The next component of the selector is
-  // the next item in the array.
+  // Selectors are kept in an array by CSSSelectorList. The next component of
+  // the selector is the next item in the array.
   const CSSSelector* tagHistory() const {
     return m_isLastInTagHistory ? 0 : const_cast<CSSSelector*>(this + 1);
   }
@@ -243,8 +256,10 @@ class CORE_EXPORT CSSSelector {
   // http://www.w3.org/TR/css3-selectors/#attrnmsp
   const QualifiedName& attribute() const;
   AttributeMatchType attributeMatch() const;
-  // Returns the argument of a parameterized selector. For example, :lang(en-US) would have an argument of en-US.
-  // Note that :nth-* selectors don't store an argument and just store the numbers.
+  // Returns the argument of a parameterized selector. For example, :lang(en-US)
+  // would have an argument of en-US.
+  // Note that :nth-* selectors don't store an argument and just store the
+  // numbers.
   const AtomicString& argument() const {
     return m_hasRareData ? m_data.m_rareData->m_argument : nullAtom;
   }

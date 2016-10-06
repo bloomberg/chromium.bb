@@ -3,7 +3,8 @@
  *               1999 Waldo Bastian (bastian@kde.org)
  *               2001 Andreas Schlapbach (schlpbch@iam.unibe.ch)
  *               2001-2003 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2002, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2002, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2008 David Smith (catfish.man@gmail.com)
  * Copyright (C) 2010 Google Inc. All rights reserved.
  *
@@ -93,8 +94,8 @@ unsigned CSSSelector::specificity() const {
 }
 
 inline unsigned CSSSelector::specificityForOneSelector() const {
-  // FIXME: Pseudo-elements and pseudo-classes do not have the same specificity. This function
-  // isn't quite correct.
+  // FIXME: Pseudo-elements and pseudo-classes do not have the same specificity.
+  // This function isn't quite correct.
   // http://www.w3.org/TR/selectors/#specificity
   switch (m_match) {
     case Id:
@@ -398,7 +399,8 @@ class NameToPseudoCompare {
   bool operator()(const NameToPseudoStruct& entry, const NameToPseudoStruct&) {
     ASSERT(entry.string);
     const char* key = reinterpret_cast<const char*>(m_key.characters8());
-    // If strncmp returns 0, then either the keys are equal, or |m_key| sorts before |entry|.
+    // If strncmp returns 0, then either the keys are equal, or |m_key| sorts
+    // before |entry|.
     return strncmp(entry.string, key, m_key.length()) < 0;
   }
 
@@ -866,13 +868,15 @@ bool CSSSelector::isCompound() const {
 unsigned CSSSelector::computeLinkMatchType() const {
   unsigned linkMatchType = MatchAll;
 
-  // Determine if this selector will match a link in visited, unvisited or any state, or never.
+  // Determine if this selector will match a link in visited, unvisited or any
+  // state, or never.
   // :visited never matches other elements than the innermost link element.
   for (const CSSSelector* current = this; current;
        current = current->tagHistory()) {
     switch (current->getPseudoType()) {
       case PseudoNot: {
-        // :not(:visited) is equivalent to :link. Parser enforces that :not can't nest.
+        // :not(:visited) is equivalent to :link. Parser enforces that :not
+        // can't nest.
         ASSERT(current->selectorList());
         for (const CSSSelector* subSelector = current->selectorList()->first();
              subSelector; subSelector = subSelector->tagHistory()) {

@@ -33,9 +33,10 @@ class MediaQueryEvaluator;
 class MediaQuerySet;
 
 // MediaQueryMatcher class is responsible for keeping a vector of pairs
-// MediaQueryList x MediaQueryListListener. It is responsible for evaluating the queries
-// whenever it is needed and to call the listeners if the corresponding query has changed.
-// The listeners must be called in the very same order in which they have been added.
+// MediaQueryList x MediaQueryListListener. It is responsible for evaluating the
+// queries whenever it is needed and to call the listeners if the corresponding
+// query has changed. The listeners must be called in the very same order in
+// which they have been added.
 
 class CORE_EXPORT MediaQueryMatcher final
     : public GarbageCollectedFinalized<MediaQueryMatcher> {

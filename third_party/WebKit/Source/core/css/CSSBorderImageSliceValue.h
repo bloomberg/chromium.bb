@@ -52,8 +52,8 @@ class CSSBorderImageSliceValue : public CSSValue {
  private:
   CSSBorderImageSliceValue(CSSQuadValue* slices, bool fill);
 
-  // These four values are used to make "cuts" in the border image. They can be numbers
-  // or percentages.
+  // These four values are used to make "cuts" in the border image. They can be
+  // numbers or percentages.
   Member<CSSQuadValue> m_slices;
   bool m_fill;
 };

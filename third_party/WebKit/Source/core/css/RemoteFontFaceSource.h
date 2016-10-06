@@ -65,7 +65,8 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
     DISALLOW_NEW();
 
    public:
-    // Should not change following order in CacheHitMetrics to be used for metrics values.
+    // Should not change following order in CacheHitMetrics to be used for
+    // metrics values.
     enum CacheHitMetrics { Miss, DiskHit, DataUrl, MemoryHit, CacheHitEnumMax };
     enum DataSource {
       FromUnknown,

@@ -103,8 +103,11 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(
 
   RefPtr<SegmentedFontData>& fontData =
       m_fontDataTable.add(key, nullptr).storedValue->value;
-  if (fontData && fontData->numFaces())
-    return fontData;  // No release, we have a reference to an object in the cache which should retain the ref count it has.
+  if (fontData && fontData->numFaces()) {
+    // No release, we have a reference to an object in the cache which should
+    // retain the ref count it has.
+    return fontData;
+  }
 
   if (!fontData)
     fontData = SegmentedFontData::create();
@@ -133,8 +136,11 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(
             faceFontData.release(), (*it)->cssFontFace()->ranges())));
     }
   }
-  if (fontData->numFaces())
-    return fontData;  // No release, we have a reference to an object in the cache which should retain the ref count it has.
+  if (fontData->numFaces()) {
+    // No release, we have a reference to an object in the cache which should
+    // retain the ref count it has.
+    return fontData;
+  }
 
   return nullptr;
 }

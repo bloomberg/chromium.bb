@@ -58,9 +58,10 @@ class StyleRuleImport : public StyleRuleBase {
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  // FIXME: inherit from StyleSheetResourceClient directly to eliminate back pointer, as there are no space savings in this.
-  // NOTE: We put the StyleSheetResourceClient in a member instead of inheriting from it
-  // to avoid adding a vptr to StyleRuleImport.
+  // FIXME: inherit from StyleSheetResourceClient directly to eliminate back
+  // pointer, as there are no space savings in this.
+  // NOTE: We put the StyleSheetResourceClient in a member instead of inheriting
+  // from it to avoid adding a vptr to StyleRuleImport.
   class ImportedStyleSheetClient final
       : public GarbageCollectedFinalized<ImportedStyleSheetClient>,
         public StyleSheetResourceClient {

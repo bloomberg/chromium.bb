@@ -146,7 +146,8 @@ class CSSRuleSourceData : public RefCounted<CSSRuleSourceData> {
   // Range of the selector list in the enclosing source.
   SourceRange ruleHeaderRange;
 
-  // Range of the rule body (e.g. style text for style rules) in the enclosing source.
+  // Range of the rule body (e.g. style text for style rules) in the enclosing
+  // source.
   SourceRange ruleBodyRange;
 
   // Only for CSSStyleRules.

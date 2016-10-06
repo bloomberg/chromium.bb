@@ -49,8 +49,8 @@ enum CalcOperator {
   CalcDivide = '/'
 };
 
-// The order of this enum should not change since its elements are used as indices
-// in the addSubtractResult matrix.
+// The order of this enum should not change since its elements are used as
+// indices in the addSubtractResult matrix.
 enum CalculationCategory {
   CalcNumber = 0,
   CalcLength,

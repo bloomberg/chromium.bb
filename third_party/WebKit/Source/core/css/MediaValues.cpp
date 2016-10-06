@@ -146,11 +146,13 @@ bool MediaValues::computeLengthImpl(double value,
                                     double viewportWidth,
                                     double viewportHeight,
                                     double& result) {
-  // The logic in this function is duplicated from CSSToLengthConversionData::zoomedComputedPixels()
-  // because MediaValues::computeLength() needs nearly identical logic, but we haven't found a way to make
-  // CSSToLengthConversionData::zoomedComputedPixels() more generic (to solve both cases) without hurting performance.
-
-  // FIXME - Unite the logic here with CSSToLengthConversionData in a performant way.
+  // The logic in this function is duplicated from
+  // CSSToLengthConversionData::zoomedComputedPixels() because
+  // MediaValues::computeLength() needs nearly identical logic, but we haven't
+  // found a way to make CSSToLengthConversionData::zoomedComputedPixels() more
+  // generic (to solve both cases) without hurting performance.
+  // FIXME - Unite the logic here with CSSToLengthConversionData in a performant
+  // way.
   switch (type) {
     case CSSPrimitiveValue::UnitType::Ems:
     case CSSPrimitiveValue::UnitType::Rems:
@@ -161,10 +163,12 @@ bool MediaValues::computeLengthImpl(double value,
       result = value;
       return true;
     case CSSPrimitiveValue::UnitType::Exs:
-    // FIXME: We have a bug right now where the zoom will be applied twice to EX units.
+    // FIXME: We have a bug right now where the zoom will be applied twice to EX
+    // units.
     case CSSPrimitiveValue::UnitType::Chs:
       // FIXME: We don't seem to be able to cache fontMetrics related values.
-      // Trying to access them is triggering some sort of microtask. Serving the spec's default instead.
+      // Trying to access them is triggering some sort of microtask. Serving the
+      // spec's default instead.
       result = (value * defaultFontSize) / 2.0;
       return true;
     case CSSPrimitiveValue::UnitType::ViewportWidth:

@@ -46,10 +46,9 @@ CSSFontSelector::CSSFontSelector(Document* document)
     : m_document(document),
       m_genericFontFamilySettings(
           document->frame()->settings()->genericFontFamilySettings()) {
-  // FIXME: An old comment used to say there was no need to hold a reference to m_document
-  // because "we are guaranteed to be destroyed before the document". But there does not
-  // seem to be any such guarantee.
-
+  // FIXME: An old comment used to say there was no need to hold a reference to
+  // m_document because "we are guaranteed to be destroyed before the document".
+  // But there does not seem to be any such guarantee.
   ASSERT(m_document);
   DCHECK(m_document->frame());
   FontCache::fontCache()->addClient(this);
@@ -127,7 +126,8 @@ PassRefPtr<FontData> CSSFontSelector::getFontData(
           m_fontFaceCache.get(fontDescription, familyName))
     return face->getFontData(fontDescription);
 
-  // Try to return the correct font based off our settings, in case we were handed the generic font family name.
+  // Try to return the correct font based off our settings, in case we were
+  // handed the generic font family name.
   AtomicString settingsFamilyName = familyNameFromSettings(
       m_genericFontFamilySettings, fontDescription, familyName);
   if (settingsFamilyName.isEmpty())

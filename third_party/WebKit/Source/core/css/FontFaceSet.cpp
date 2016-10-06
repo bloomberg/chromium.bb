@@ -394,8 +394,8 @@ ScriptPromise FontFaceSet::load(ScriptState* scriptState,
   LoadFontPromiseResolver* resolver =
       LoadFontPromiseResolver::create(faces, scriptState);
   ScriptPromise promise = resolver->promise();
-  resolver->loadFonts(
-      getExecutionContext());  // After this, resolver->promise() may return null.
+  // After this, resolver->promise() may return null.
+  resolver->loadFonts(getExecutionContext());
   return promise;
 }
 
@@ -441,7 +441,8 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font) {
   if (fontString.isEmpty())
     return false;
 
-  // Interpret fontString in the same way as the 'font' attribute of CanvasRenderingContext2D.
+  // Interpret fontString in the same way as the 'font' attribute of
+  // CanvasRenderingContext2D.
   MutableStylePropertySet* parsedStyle =
       MutableStylePropertySet::create(HTMLStandardMode);
   CSSParser::parseValue(parsedStyle, CSSPropertyFont, fontString, true, 0);

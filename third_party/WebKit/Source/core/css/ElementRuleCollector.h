@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ * All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -40,8 +41,9 @@ class RuleSet;
 class SelectorFilter;
 class StaticCSSRuleList;
 
-// TODO(kochi): CascadeOrder is used only for Shadow DOM V0 bug-compatible cascading order.
-//              Once Shadow DOM V0 implementation is gone, remove this completely.
+// TODO(kochi): CascadeOrder is used only for Shadow DOM V0 bug-compatible
+// cascading order. Once Shadow DOM V0 implementation is gone, remove this
+// completely.
 using CascadeOrder = unsigned;
 const CascadeOrder ignoreCascadeOrder = 0;
 

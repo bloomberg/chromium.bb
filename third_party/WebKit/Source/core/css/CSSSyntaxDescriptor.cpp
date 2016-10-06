@@ -153,7 +153,8 @@ const CSSValue* consumeSingleType(const CSSSyntaxComponent& syntax,
     case CSSSyntaxType::Color:
       return consumeColor(range, HTMLStandardMode);
     case CSSSyntaxType::Image:
-      // TODO(timloh): This probably needs a proper parser context for relative URL resolution.
+      // TODO(timloh): This probably needs a proper parser context for relative
+      // URL resolution.
       return consumeImage(range, strictCSSParserContext());
     case CSSSyntaxType::Url:
       return consumeUrl(range);

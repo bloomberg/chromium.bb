@@ -11,9 +11,10 @@
 
 namespace blink {
 
-// CSSIdentifierValue stores CSS value keywords, e.g. 'none', 'auto', 'lower-roman'.
-// TODO(sashab): Rename this class to CSSKeywordValue once it no longer conflicts
-// with CSSOM's CSSKeywordValue class.
+// CSSIdentifierValue stores CSS value keywords, e.g. 'none', 'auto',
+// 'lower-roman'.
+// TODO(sashab): Rename this class to CSSKeywordValue once it no longer
+// conflicts with CSSOM's CSSKeywordValue class.
 class CORE_EXPORT CSSIdentifierValue : public CSSValue {
  public:
   static CSSIdentifierValue* create(CSSValueID);
@@ -47,8 +48,8 @@ class CORE_EXPORT CSSIdentifierValue : public CSSValue {
  private:
   explicit CSSIdentifierValue(CSSValueID);
 
-  // TODO(sashab): Remove this function, and update mapping methods to specialize
-  // the create() method instead.
+  // TODO(sashab): Remove this function, and update mapping methods to
+  // specialize the create() method instead.
   template <typename T>
   CSSIdentifierValue(T);  // Defined in CSSPrimitiveValueMappings.h
 

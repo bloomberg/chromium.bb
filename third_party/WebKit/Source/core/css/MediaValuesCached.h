@@ -14,7 +14,8 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
  public:
   struct MediaValuesCachedData final {
     DISALLOW_NEW();
-    // Members variables must be thread safe, since they're copied to the parser thread
+    // Members variables must be thread safe, since they're copied to the parser
+    // thread
     double viewportWidth;
     double viewportHeight;
     int deviceWidth;

@@ -2,10 +2,12 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2006, 2007 Nicholas Shanks (webkit@nickshanks.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007, 2008 Eric Seidel <eric@webkit.org>
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  * Copyright (C) 2012 Google Inc. All rights reserved.
@@ -66,7 +68,8 @@ bool supportsInvalidation(CSSSelector::MatchType match) {
       NOTREACHED();
       return false;
     default:
-      // New match type added. Figure out if it needs a subtree invalidation or not.
+      // New match type added. Figure out if it needs a subtree invalidation or
+      // not.
       NOTREACHED();
       return false;
   }
@@ -161,7 +164,8 @@ bool supportsInvalidation(CSSSelector::PseudoType type) {
       NOTREACHED();
       return false;
     default:
-      // New pseudo type added. Figure out if it needs a subtree invalidation or not.
+      // New pseudo type added. Figure out if it needs a subtree invalidation or
+      // not.
       NOTREACHED();
       return false;
   }
@@ -626,14 +630,16 @@ const CSSSelector* RuleFeatureSet::extractInvalidationSetFeaturesFromCompound(
   }
 }
 
-// Add features extracted from the rightmost compound selector to descendant invalidation
-// sets for features found in other compound selectors.
+// Add features extracted from the rightmost compound selector to descendant
+// invalidation sets for features found in other compound selectors.
 //
-// We use descendant invalidation for descendants, sibling invalidation for siblings and their subtrees.
+// We use descendant invalidation for descendants, sibling invalidation for
+// siblings and their subtrees.
 //
-// As we encounter a descendant type of combinator, the features only need to be checked
-// against descendants in the same subtree only. features.adjacent is set to false, and
-// we start adding features to the descendant invalidation set.
+// As we encounter a descendant type of combinator, the features only need to be
+// checked against descendants in the same subtree only. features.adjacent is
+// set to false, and we start adding features to the descendant invalidation
+// set.
 
 void RuleFeatureSet::addFeaturesToInvalidationSet(
     InvalidationSet& invalidationSet,
@@ -757,8 +763,9 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(
     const CSSSelector& selector,
     InvalidationSetFeatures* siblingFeatures,
     InvalidationSetFeatures& descendantFeatures) {
-  // selector is the selector immediately to the left of the rightmost combinator.
-  // descendantFeatures has the features of the rightmost compound selector.
+  // selector is the selector immediately to the left of the rightmost
+  // combinator. descendantFeatures has the features of the rightmost compound
+  // selector.
 
   InvalidationSetFeatures lastCompoundInSiblingChainFeatures;
   const CSSSelector* compound = &selector;

@@ -80,7 +80,8 @@ SVGCursorElement* CSSCursorImageValue::getSVGCursorElement(
 }
 
 bool CSSCursorImageValue::isCachePending(float deviceScaleFactor) const {
-  // Need to delegate completely so that changes in device scale factor can be handled appropriately.
+  // Need to delegate completely so that changes in device scale factor can be
+  // handled appropriately.
   if (m_imageValue->isImageSetValue())
     return toCSSImageSetValue(*m_imageValue).isCachePending(deviceScaleFactor);
   return m_isCachePending;
@@ -103,12 +104,14 @@ StyleImage* CSSCursorImageValue::cacheImage(const Document& document,
   if (m_isCachePending) {
     m_isCachePending = false;
 
-    // For SVG images we need to lazily substitute in the correct URL. Rather than attempt
-    // to change the URL of the CSSImageValue (which would then change behavior like cssText),
-    // we create an alternate CSSImageValue to use.
+    // For SVG images we need to lazily substitute in the correct URL. Rather
+    // than attempt to change the URL of the CSSImageValue (which would then
+    // change behavior like cssText), we create an alternate CSSImageValue to
+    // use.
     if (hasFragmentInURL()) {
       CSSImageValue* imageValue = toCSSImageValue(m_imageValue.get());
-      // FIXME: This will fail if the <cursor> element is in a shadow DOM (bug 59827)
+      // FIXME: This will fail if the <cursor> element is in a shadow DOM
+      // (http://crbug/59827)
       if (SVGCursorElement* cursorElement =
               resourceReferencedByCursorElement(imageValue->url(), document)) {
         CSSImageValue* svgImageValue =

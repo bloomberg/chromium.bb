@@ -193,7 +193,8 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
         value.percent += m_value->getDoubleValue() * multiplier;
         break;
       case CalcNumber:
-        // TODO(alancutter): Stop treating numbers like pixels unconditionally in calcs to be able to accomodate border-image-width
+        // TODO(alancutter): Stop treating numbers like pixels unconditionally
+        // in calcs to be able to accomodate border-image-width
         // https://drafts.csswg.org/css-backgrounds-3/#the-border-image-width
         value.pixels +=
             m_value->getDoubleValue() * conversionData.zoom() * multiplier;
@@ -267,7 +268,6 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
 };
 
 static const CalculationCategory addSubtractResult[CalcOther][CalcOther] = {
-    //                              CalcNumber               CalcLength               CalcPercent              CalcPercentNumber        CalcPercentLength        CalcAngle  CalcTime   CalcFrequency  CalcLengthNumber         CalcPercentLengthNumber
     /* CalcNumber */ {CalcNumber, CalcLengthNumber, CalcPercentNumber,
                       CalcPercentNumber, CalcOther, CalcOther, CalcOther,
                       CalcOther, CalcLengthNumber, CalcPercentLengthNumber},

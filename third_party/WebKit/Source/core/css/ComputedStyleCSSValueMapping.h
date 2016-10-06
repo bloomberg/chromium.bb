@@ -27,7 +27,8 @@ class ComputedStyleCSSValueMapping {
   STATIC_ONLY(ComputedStyleCSSValueMapping);
 
  public:
-  // FIXME: Resolve computed auto alignment in applyProperty/ComputedStyle and remove this non-const styledNode parameter.
+  // FIXME: Resolve computed auto alignment in applyProperty/ComputedStyle and
+  // remove this non-const styledNode parameter.
   static const CSSValue* get(CSSPropertyID,
                              const ComputedStyle&,
                              const LayoutObject* = nullptr,

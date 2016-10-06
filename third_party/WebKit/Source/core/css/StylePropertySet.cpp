@@ -1,6 +1,7 @@
 /*
  * (C) 1999-2003 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2011 Research In Motion Limited. All rights reserved.
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
  *
@@ -94,8 +95,8 @@ ImmutableStylePropertySet::ImmutableStylePropertySet(
 
 ImmutableStylePropertySet::~ImmutableStylePropertySet() {}
 
-// Convert property into an uint16_t for comparison with metadata's m_propertyID to avoid
-// the compiler converting it to an int multiple times in a loop.
+// Convert property into an uint16_t for comparison with metadata's m_propertyID
+// to avoid the compiler converting it to an int multiple times in a loop.
 static uint16_t getConvertedCSSPropertyID(CSSPropertyID propertyID) {
   return static_cast<uint16_t>(propertyID);
 }
@@ -302,13 +303,15 @@ bool MutableStylePropertySet::setProperty(
     StyleSheetContents* contextStyleSheet) {
   DCHECK_GE(unresolvedProperty, firstCSSProperty);
 
-  // Setting the value to an empty string just removes the property in both IE and Gecko.
-  // Setting it to null seems to produce less consistent results, but we treat it just the same.
+  // Setting the value to an empty string just removes the property in both IE
+  // and Gecko. Setting it to null seems to produce less consistent results, but
+  // we treat it just the same.
   if (value.isEmpty())
     return removeProperty(resolveCSSPropertyID(unresolvedProperty));
 
-  // When replacing an existing property value, this moves the property to the end of the list.
-  // Firefox preserves the position, and MSIE moves the property to the beginning.
+  // When replacing an existing property value, this moves the property to the
+  // end of the list. Firefox preserves the position, and MSIE moves the
+  // property to the beginning.
   return CSSParser::parseValue(this, unresolvedProperty, value, important,
                                contextStyleSheet);
 }
@@ -455,7 +458,8 @@ bool MutableStylePropertySet::removePropertiesInSet(const CSSPropertyID* set,
     const CSSProperty& property = properties[oldIndex];
     if (containsId(set, length, property.id()))
       continue;
-    // Modify m_propertyVector in-place since this method is performance-sensitive.
+    // Modify m_propertyVector in-place since this method is
+    // performance-sensitive.
     properties[newIndex++] = properties[oldIndex];
   }
   if (newIndex != oldSize) {
@@ -470,8 +474,8 @@ CSSProperty* MutableStylePropertySet::findCSSPropertyWithID(
     const AtomicString& customPropertyName) {
   int foundPropertyIndex = -1;
   if (propertyID == CSSPropertyVariable && !customPropertyName.isNull()) {
-    // TODO(shanestephens): fix call sites so we always have a customPropertyName
-    // here.
+    // TODO(shanestephens): fix call sites so we always have a
+    // customPropertyName here.
     foundPropertyIndex = findPropertyIndex(customPropertyName);
   } else {
     ASSERT(customPropertyName.isNull());
@@ -574,7 +578,8 @@ DEFINE_TRACE_AFTER_DISPATCH(MutableStylePropertySet) {
 }
 
 unsigned StylePropertySet::averageSizeInBytes() {
-  // Please update this if the storage scheme changes so that this longer reflects the actual size.
+  // Please update this if the storage scheme changes so that this longer
+  // reflects the actual size.
   return sizeForImmutableStylePropertySetWithPropertyCount(4);
 }
 

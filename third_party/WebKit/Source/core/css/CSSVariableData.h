@@ -56,10 +56,11 @@ class CSSVariableData : public RefCounted<CSSVariableData> {
                   bool isAnimationTainted,
                   bool needsVariableResolution);
 
-  // We can safely copy the tokens (which have raw pointers to substrings) because
-  // StylePropertySets contain references to CSSCustomPropertyDeclarations, which
-  // point to the unresolved CSSVariableData values that own the backing strings
-  // this will potentially reference.
+  // We can safely copy the tokens (which have raw pointers to substrings)
+  // because StylePropertySets contain references to
+  // CSSCustomPropertyDeclarations, which point to the unresolved
+  // CSSVariableData values that own the backing strings this will potentially
+  // reference.
   CSSVariableData(const Vector<CSSParserToken>& resolvedTokens,
                   String backingString,
                   bool isAnimationTainted)

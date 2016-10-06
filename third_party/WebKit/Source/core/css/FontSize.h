@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ * All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -45,7 +46,8 @@ class FontSize {
       float specifiedSize,
       ESmartMinimumForFontSize = UseSmartMinimumForFontSize);
 
-  // Given a CSS keyword in the range (xx-small to -webkit-xxx-large), this function returns
+  // Given a CSS keyword in the range (xx-small to -webkit-xxx-large), this
+  // function returns
   // values from '1' to '8'.
   static unsigned keywordSize(CSSValueID valueID) {
     ASSERT(isValidValueID(valueID));
@@ -65,7 +67,8 @@ class FontSize {
                                   unsigned keyword,
                                   bool isMonospace);
 
-  // Given a font size in pixel, this function will return legacy font size between 1 and 7.
+  // Given a font size in pixel, this function will return legacy font size
+  // between 1 and 7.
   static int legacyFontSize(const Document*,
                             int pixelFontSize,
                             bool isMonospace);

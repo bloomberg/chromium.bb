@@ -1,6 +1,7 @@
 /*
  * (C) 1999-2003 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -101,7 +102,8 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
   void setMediaQueries(MediaQuerySet*);
   void setTitle(const String& title) { m_title = title; }
-  // Set by LinkStyle iff CORS-enabled fetch of stylesheet succeeded from this origin.
+  // Set by LinkStyle iff CORS-enabled fetch of stylesheet succeeded from this
+  // origin.
   void setAllowRuleAccessFromOrigin(PassRefPtr<SecurityOrigin> allowedOrigin);
 
   class RuleMutationScope {

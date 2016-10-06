@@ -78,7 +78,8 @@ PassRefPtr<Image> CSSGradientValue::image(const LayoutObject& layoutObject,
     if (!clients().contains(&layoutObject))
       return nullptr;
 
-    // Need to look up our size.  Create a string of width*height to use as a hash key.
+    // Need to look up our size.  Create a string of width*height to use as a
+    // hash key.
     Image* result = getImage(&layoutObject, size);
     if (result)
       return result;
@@ -130,14 +131,16 @@ static void replaceColorHintsWithColorStops(
   // color stops. The color values for the new color stops will be calculated
   // using the color weighting formula defined in the spec. The new color
   // stops will be positioned in such a way that all the pixels between the two
-  // user defined color stops have color values close to the interpolation curve.
+  // user defined color stops have color values close to the interpolation
+  // curve.
   // If the hint is closer to the left color stop, add 2 stops to the left and
   // 6 to the right, else add 6 stops to the left and 2 to the right.
   // The color stops on the side with more space start midway because
   // the curve approximates a line in that region.
   // Using this aproximation, it is possible to discern the color steps when
   // the gradient is large. If this becomes an issue, we can consider improving
-  // the algorithm, or adding support for color interpolation hints to skia shaders.
+  // the algorithm, or adding support for color interpolation hints to skia
+  // shaders.
 
   int indexOffset = 0;
 
@@ -197,7 +200,8 @@ static void replaceColorHintsWithColorStops(
     }
 
     // calculate colors for the new color hints.
-    // The color weighting for the new color stops will be pointRelativeOffset^(ln(0.5)/ln(hintRelativeOffset)).
+    // The color weighting for the new color stops will be
+    // pointRelativeOffset^(ln(0.5)/ln(hintRelativeOffset)).
     float hintRelativeOffset = leftDist / totalDist;
     for (size_t y = 0; y < 9; ++y) {
       float pointRelativeOffset = (newStops[y].offset - offsetLeft) / totalDist;
@@ -259,7 +263,8 @@ static bool requiresStopsNormalization(const Vector<GradientStop>& stops,
   return false;
 }
 
-// Redistribute the stops such that they fully cover [0 , 1] and add them to the gradient.
+// Redistribute the stops such that they fully cover [0 , 1] and add them to the
+// gradient.
 static bool normalizeAndAddStops(const Vector<GradientStop>& stops,
                                  Gradient* gradient) {
   ASSERT(stops.size() > 1);
@@ -272,10 +277,10 @@ static bool normalizeAndAddStops(const Vector<GradientStop>& stops,
     // All stops are coincident -> use a single clamped offset value.
     const float clampedOffset = std::min(std::max(firstOffset, 0.f), 1.f);
 
-    // For repeating gradients, a coincident stop set defines a solid-color image with the color
-    // of the last color-stop in the rule.
-    // For non-repeating gradients, both the first color and the last color can be significant
-    // (padding on both sides of the offset).
+    // For repeating gradients, a coincident stop set defines a solid-color
+    // image with the color of the last color-stop in the rule.
+    // For non-repeating gradients, both the first color and the last color can
+    // be significant (padding on both sides of the offset).
     if (gradient->spreadMethod() != SpreadMethodRepeat)
       gradient->addColorStop(clampedOffset, stops.first().color);
     gradient->addColorStop(clampedOffset, stops.last().color);
@@ -299,7 +304,8 @@ static bool normalizeAndAddStops(const Vector<GradientStop>& stops,
   return true;
 }
 
-// Collapse all negative-offset stops to 0 and compute an interpolated color value for that point.
+// Collapse all negative-offset stops to 0 and compute an interpolated color
+// value for that point.
 static void clampNegativeOffsets(Vector<GradientStop>& stops) {
   float lastNegativeOffset = 0;
 
@@ -307,8 +313,8 @@ static void clampNegativeOffsets(Vector<GradientStop>& stops) {
     const float currentOffset = stops[i].offset;
     if (currentOffset >= 0) {
       if (i > 0) {
-        // We found the negative -> positive offset transition: compute an interpolated
-        // color value for 0 and use it with the last clamped stop.
+        // We found the negative -> positive offset transition: compute an
+        // interpolated color value for 0 and use it with the last clamped stop.
         ASSERT(lastNegativeOffset < 0);
         float lerpRatio =
             -lastNegativeOffset / (currentOffset - lastNegativeOffset);
@@ -356,13 +362,14 @@ static void adjustGradientRadiiForOffsetRange(Gradient* gradient,
   // Unlike linear gradients (where we can adjust the points arbitrarily),
   // we cannot let our radii turn negative here.
   if (adjustedR0 < 0) {
-    // For the non-repeat case, this can never happen: clampNegativeOffsets() ensures we don't
-    // have to deal with negative offsets at this point.
+    // For the non-repeat case, this can never happen: clampNegativeOffsets()
+    // ensures we don't have to deal with negative offsets at this point.
     ASSERT(gradient->spreadMethod() == SpreadMethodRepeat);
 
-    // When in repeat mode, we deal with it by repositioning both radii in the positive domain -
-    // shifting them by a multiple of the radius span (which is the period of our repeating
-    // gradient -> hence no visible side effects).
+    // When in repeat mode, we deal with it by repositioning both radii in the
+    // positive domain - shifting them by a multiple of the radius span (which
+    // is the period of our repeating gradient -> hence no visible side
+    // effects).
     const float radiusSpan = adjustedR1 - adjustedR0;
     const float shiftToPositive = radiusSpan * ceilf(-adjustedR0 / radiusSpan);
     adjustedR0 += shiftToPositive;
@@ -426,8 +433,9 @@ void CSSGradientValue::addStops(Gradient* gradient,
       }
       stops[i].specified = true;
     } else {
-      // If the first color-stop does not have a position, its position defaults to 0%.
-      // If the last color-stop does not have a position, its position defaults to 100%.
+      // If the first color-stop does not have a position, its position defaults
+      // to 0%. If the last color-stop does not have a position, its position
+      // defaults to 100%.
       if (!i) {
         stops[i].offset = 0;
         stops[i].specified = true;
@@ -437,9 +445,9 @@ void CSSGradientValue::addStops(Gradient* gradient,
       }
     }
 
-    // If a color-stop has a position that is less than the specified position of any
-    // color-stop before it in the list, its position is changed to be equal to the
-    // largest specified position of any color-stop before it.
+    // If a color-stop has a position that is less than the specified position
+    // of any color-stop before it in the list, its position is changed to be
+    // equal to the largest specified position of any color-stop before it.
     if (stops[i].specified && i > 0) {
       size_t prevSpecifiedIndex;
       for (prevSpecifiedIndex = i - 1; prevSpecifiedIndex;
@@ -455,9 +463,10 @@ void CSSGradientValue::addStops(Gradient* gradient,
 
   ASSERT(stops.first().specified && stops.last().specified);
 
-  // If any color-stop still does not have a position, then, for each run of adjacent
-  // color-stops without positions, set their positions so that they are evenly spaced
-  // between the preceding and following color-stops with positions.
+  // If any color-stop still does not have a position, then, for each run of
+  // adjacent color-stops without positions, set their positions so that they
+  // are evenly spaced between the preceding and following color-stops with
+  // positions.
   if (numStops > 2) {
     size_t unspecifiedRunStart = 0;
     bool inUnspecifiedRun = false;
@@ -490,12 +499,12 @@ void CSSGradientValue::addStops(Gradient* gradient,
     replaceColorHintsWithColorStops(stops, m_stops);
   }
 
-  // At this point we have a fully resolved set of stops. Time to perform adjustments for
-  // repeat gradients and degenerate values if needed.
+  // At this point we have a fully resolved set of stops. Time to perform
+  // adjustments for repeat gradients and degenerate values if needed.
   if (requiresStopsNormalization(stops, gradient)) {
-    // Negative offsets are only an issue for non-repeating radial gradients: linear gradient
-    // points can be repositioned arbitrarily, and for repeating radial gradients we shift
-    // the radii into equivalent positive values.
+    // Negative offsets are only an issue for non-repeating radial gradients:
+    // linear gradient points can be repositioned arbitrarily, and for repeating
+    // radial gradients we shift the radii into equivalent positive values.
     if (isRadialGradientValue() && !m_repeating)
       clampNegativeOffsets(stops);
 
@@ -525,8 +534,8 @@ static float positionFromValue(const CSSValue* value,
   int sign = 1;
   int edgeDistance = isHorizontal ? size.width() : size.height();
 
-  // In this case the center of the gradient is given relative to an edge in the form of:
-  // [ top | bottom | right | left ] [ <percentage> | <length> ].
+  // In this case the center of the gradient is given relative to an edge in the
+  // form of: [ top | bottom | right | left ] [ <percentage> | <length> ].
   if (value->isValuePair()) {
     const CSSValuePair& pair = toCSSValuePair(*value);
     CSSValueID originID = toCSSIdentifierValue(pair.first()).getValueID();
@@ -730,13 +739,15 @@ String CSSLinearGradientValue::customCSSText() const {
   return result.toString();
 }
 
-// Compute the endpoints so that a gradient of the given angle covers a box of the given size.
+// Compute the endpoints so that a gradient of the given angle covers a box of
+// the given size.
 static void endPointsFromAngle(float angleDeg,
                                const IntSize& size,
                                FloatPoint& firstPoint,
                                FloatPoint& secondPoint,
                                CSSGradientType type) {
-  // Prefixed gradients use "polar coordinate" angles, rather than "bearing" angles.
+  // Prefixed gradients use "polar coordinate" angles, rather than "bearing"
+  // angles.
   if (type == CSSPrefixedLinearGradient)
     angleDeg = 90 - angleDeg;
 
@@ -772,8 +783,8 @@ static void endPointsFromAngle(float angleDeg,
   // but tan expects 0deg = E, 90deg = N.
   float slope = tan(deg2rad(90 - angleDeg));
 
-  // We find the endpoint by computing the intersection of the line formed by the slope,
-  // and a line perpendicular to it that intersects the corner.
+  // We find the endpoint by computing the intersection of the line formed by
+  // the slope, and a line perpendicular to it that intersects the corner.
   float perpendicularSlope = -1 / slope;
 
   // Compute start corner relative to center, in Cartesian space (+y = up).
@@ -794,8 +805,8 @@ static void endPointsFromAngle(float angleDeg,
   float endX = c / (slope - perpendicularSlope);
   float endY = perpendicularSlope * endX + c;
 
-  // We computed the end point, so set the second point,
-  // taking into account the moved origin and the fact that we're in drawing space (+y = down).
+  // We computed the end point, so set the second point, taking into account the
+  // moved origin and the fact that we're in drawing space (+y = down).
   secondPoint.set(halfWidth + endX, halfHeight - endY);
   // Reflect around the center for the start point.
   firstPoint.set(halfWidth - endX, halfHeight + endY);
@@ -1092,7 +1103,8 @@ namespace {
 
 enum EndShapeType { CircleEndShape, EllipseEndShape };
 
-// Compute the radius to the closest/farthest side (depending on the compare functor).
+// Compute the radius to the closest/farthest side (depending on the compare
+// functor).
 FloatSize radiusToSide(const FloatPoint& point,
                        const FloatSize& size,
                        EndShapeType shape,
@@ -1112,8 +1124,8 @@ FloatSize radiusToSide(const FloatPoint& point,
   return FloatSize(dx, dy);
 }
 
-// Compute the radius of an ellipse with center at 0,0 which passes through p, and has
-// width/height given by aspectRatio.
+// Compute the radius of an ellipse with center at 0,0 which passes through p,
+// and has width/height given by aspectRatio.
 inline FloatSize ellipseRadius(const FloatPoint& p, float aspectRatio) {
   // If the aspectRatio is 0 or infinite, the ellipse is completely flat.
   // TODO(sashab): Implement Degenerate Radial Gradients, see crbug.com/635727.
@@ -1127,7 +1139,8 @@ inline FloatSize ellipseRadius(const FloatPoint& p, float aspectRatio) {
   return FloatSize(clampTo<float>(a), clampTo<float>(a / aspectRatio));
 }
 
-// Compute the radius to the closest/farthest corner (depending on the compare functor).
+// Compute the radius to the closest/farthest corner (depending on the compare
+// functor).
 FloatSize radiusToCorner(const FloatPoint& point,
                          const FloatSize& size,
                          EndShapeType shape,
@@ -1150,8 +1163,9 @@ FloatSize radiusToCorner(const FloatPoint& point,
     return FloatSize(distance, distance);
 
   ASSERT(shape == EllipseEndShape);
-  // If the end shape is an ellipse, the gradient-shape has the same ratio of width to height
-  // that it would if closest-side or farthest-side were specified, as appropriate.
+  // If the end shape is an ellipse, the gradient-shape has the same ratio of
+  // width to height that it would if closest-side or farthest-side were
+  // specified, as appropriate.
   const FloatSize sideRadius =
       radiusToSide(point, size, EllipseEndShape, compare);
 

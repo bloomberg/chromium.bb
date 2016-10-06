@@ -48,11 +48,11 @@ StyleSheet* StyleSheetList::item(unsigned index) {
 }
 
 HTMLStyleElement* StyleSheetList::getNamedItem(const AtomicString& name) const {
-  // IE also supports retrieving a stylesheet by name, using the name/id of the <style> tag
-  // (this is consistent with all the other collections)
-  // ### Bad implementation because returns a single element (are IDs always unique?)
-  // and doesn't look for name attribute.
-  // But unicity of stylesheet ids is good practice anyway ;)
+  // IE also supports retrieving a stylesheet by name, using the name/id of the
+  // <style> tag (this is consistent with all the other collections) ### Bad
+  // implementation because returns a single element (are IDs always unique?)
+  // and doesn't look for name attribute. But unicity of stylesheet ids is good
+  // practice anyway ;)
   // FIXME: We should figure out if we should change this or fix the spec.
   Element* element = m_treeScope->getElementById(name);
   return isHTMLStyleElement(element) ? toHTMLStyleElement(element) : nullptr;

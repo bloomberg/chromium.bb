@@ -17,7 +17,8 @@ class CSSCustomIdentValue : public CSSValue {
     return new CSSCustomIdentValue(str);
   }
 
-  // TODO(sashab, timloh): Remove this and lazily parse the CSSPropertyID in isKnownPropertyID().
+  // TODO(sashab, timloh): Remove this and lazily parse the CSSPropertyID in
+  // isKnownPropertyID().
   static CSSCustomIdentValue* create(CSSPropertyID id) {
     return new CSSCustomIdentValue(id);
   }

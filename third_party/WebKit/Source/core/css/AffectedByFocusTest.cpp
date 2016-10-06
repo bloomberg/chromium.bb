@@ -72,7 +72,8 @@ void AffectedByFocusTest::checkElements(ElementResult expected[],
 
 // A global :focus rule in html.css currently causes every single element to be
 // affectedByFocus. Check that all elements in a document with no :focus rules
-// gets the affectedByFocus set on ComputedStyle and not childrenOrSiblingsAffectedByFocus.
+// gets the affectedByFocus set on ComputedStyle and not
+// childrenOrSiblingsAffectedByFocus.
 TEST_F(AffectedByFocusTest, UAUniversalFocusRule) {
   ElementResult expected[] = {{bodyTag, true, false},
                               {divTag, true, false},
@@ -89,7 +90,8 @@ TEST_F(AffectedByFocusTest, UAUniversalFocusRule) {
   checkElements(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
-// ":focus div" will mark ascendants of all divs with childrenOrSiblingsAffectedByFocus.
+// ":focus div" will mark ascendants of all divs with
+// childrenOrSiblingsAffectedByFocus.
 TEST_F(AffectedByFocusTest, FocusedAscendant) {
   ElementResult expected[] = {{bodyTag, true, true},
                               {divTag, true, true},
@@ -109,7 +111,8 @@ TEST_F(AffectedByFocusTest, FocusedAscendant) {
   checkElements(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
-// "body:focus div" will mark the body element with childrenOrSiblingsAffectedByFocus.
+// "body:focus div" will mark the body element with
+// childrenOrSiblingsAffectedByFocus.
 TEST_F(AffectedByFocusTest, FocusedAscendantWithType) {
   ElementResult expected[] = {{bodyTag, true, true},
                               {divTag, true, false},
@@ -129,10 +132,11 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithType) {
   checkElements(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
-// ":not(body):focus div" should not mark the body element with childrenOrSiblingsAffectedByFocus.
-// Note that currently ":focus:not(body)" does not do the same. Then the :focus is
-// checked and the childrenOrSiblingsAffectedByFocus flag set before the negated type selector
-// is found.
+// ":not(body):focus div" should not mark the body element with
+// childrenOrSiblingsAffectedByFocus.
+// Note that currently ":focus:not(body)" does not do the same. Then the :focus
+// is checked and the childrenOrSiblingsAffectedByFocus flag set before the
+// negated type selector is found.
 TEST_F(AffectedByFocusTest, FocusedAscendantWithNegatedType) {
   ElementResult expected[] = {{bodyTag, true, false},
                               {divTag, true, true},
@@ -153,11 +157,11 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithNegatedType) {
 }
 
 // Checking current behavior for ":focus + div", but this is a BUG or at best
-// sub-optimal. The focused element will also in this case get childrenOrSiblingsAffectedByFocus
-// even if it's really a sibling. Effectively, the whole sub-tree of the focused
-// element will have styles recalculated even though none of the children are
-// affected. There are other mechanisms that makes sure the sibling also gets its
-// styles recalculated.
+// sub-optimal. The focused element will also in this case get
+// childrenOrSiblingsAffectedByFocus even if it's really a sibling. Effectively,
+// the whole sub-tree of the focused element will have styles recalculated even
+// though none of the children are affected. There are other mechanisms that
+// makes sure the sibling also gets its styles recalculated.
 TEST_F(AffectedByFocusTest, FocusedSibling) {
   ElementResult expected[] = {{bodyTag, true, false},
                               {divTag, true, true},
@@ -277,7 +281,8 @@ TEST_F(AffectedByFocusTest, InvalidationSetFocusUpdate) {
 TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate) {
   // Check that when focussing the outer div in the document below, you get a
   // style recalc for the outer div only. The invalidation set for :focus will
-  // include 'a', but the id=d div should be affectedByFocus, not childrenOrSiblingsAffectedByFocus.
+  // include 'a', but the id=d div should be affectedByFocus, not
+  // childrenOrSiblingsAffectedByFocus.
 
   setHtmlInnerHTML(
       "<style>#nomatch:focus .a { border: 1px solid lime; }</style>"

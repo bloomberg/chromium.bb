@@ -175,7 +175,8 @@ void CSSStyleSheet::didMutate(StyleSheetUpdateType updateType) {
     return;
 
   // Need FullStyleUpdate when insertRule or deleteRule,
-  // because StyleSheetCollection::analyzeStyleSheetChange cannot detect partial rule update.
+  // because StyleSheetCollection::analyzeStyleSheetChange cannot detect partial
+  // rule update.
   StyleResolverUpdateMode updateMode =
       updateType != PartialRuleUpdate ? AnalyzedStyleUpdate : FullStyleUpdate;
   owner->styleEngine().setNeedsActiveStyleUpdate(this, updateMode);

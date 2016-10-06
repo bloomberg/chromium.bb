@@ -40,8 +40,9 @@ namespace blink {
 
 // Rough size estimate for the memory cache.
 unsigned StyleSheetContents::estimatedSizeInBytes() const {
-  // Note that this does not take into account size of the strings hanging from various objects.
-  // The assumption is that nearly all of of them are atomic and would exist anyway.
+  // Note that this does not take into account size of the strings hanging from
+  // various objects. The assumption is that nearly all of of them are atomic
+  // and would exist anyway.
   unsigned size = sizeof(*this);
 
   // FIXME: This ignores the children of media rules.
@@ -121,7 +122,8 @@ bool StyleSheetContents::isCacheableForResource() const {
   // It is not the original sheet anymore.
   if (m_isMutable)
     return false;
-  // If the header is valid we are not going to need to check the SecurityOrigin.
+  // If the header is valid we are not going to need to check the
+  // SecurityOrigin.
   // FIXME: Valid mime type avoids the check too.
   if (!m_hasSyntacticallyValidCSSHeader)
     return false;
@@ -132,7 +134,8 @@ bool StyleSheetContents::isCacheableForStyleElement() const {
   // FIXME: Support copying import rules.
   if (!importRules().isEmpty())
     return false;
-  // Until import rules are supported in cached sheets it's not possible for loading to fail.
+  // Until import rules are supported in cached sheets it's not possible for
+  // loading to fail.
   DCHECK(!didLoadErrorOccur());
   // It is not the original sheet anymore.
   if (isMutable())
@@ -222,7 +225,8 @@ bool StyleSheetContents::wrapperInsertRule(StyleRuleBase* rule,
     m_importRules.insert(index, importRule);
     m_importRules[index]->setParentStyleSheet(this);
     m_importRules[index]->requestStyleSheet();
-    // FIXME: Stylesheet doesn't actually change meaningfully before the imported sheets are loaded.
+    // FIXME: Stylesheet doesn't actually change meaningfully before the
+    // imported sheets are loaded.
     return true;
   }
   // Inserting @import rule after a non-import rule is not allowed.
@@ -233,20 +237,24 @@ bool StyleSheetContents::wrapperInsertRule(StyleRuleBase* rule,
 
   if (index < m_namespaceRules.size() ||
       (index == m_namespaceRules.size() && rule->isNamespaceRule())) {
-    // Inserting non-namespace rules other than import rule before @namespace is not allowed.
+    // Inserting non-namespace rules other than import rule before @namespace is
+    // not allowed.
     if (!rule->isNamespaceRule())
       return false;
-    // Inserting @namespace rule when rules other than import/namespace/charset are present is not allowed.
+    // Inserting @namespace rule when rules other than import/namespace/charset
+    // are present is not allowed.
     if (!m_childRules.isEmpty())
       return false;
 
     StyleRuleNamespace* namespaceRule = toStyleRuleNamespace(rule);
     m_namespaceRules.insert(index, namespaceRule);
-    // For now to be compatible with IE and Firefox if namespace rule with same prefix is added
-    // irrespective of adding the rule at any index, last added rule's value is considered.
-    // TODO (ramya.v@samsung.com): As per spec last valid rule should be considered,
-    // which means if namespace rule is added in the middle of existing namespace rules,
-    // rule which comes later in rule list with same prefix needs to be considered.
+    // For now to be compatible with IE and Firefox if namespace rule with same
+    // prefix is added irrespective of adding the rule at any index, last added
+    // rule's value is considered.
+    // TODO (ramya.v@samsung.com): As per spec last valid rule should be
+    // considered, which means if namespace rule is added in the middle of
+    // existing namespace rules, rule which comes later in rule list with same
+    // prefix needs to be considered.
     parserAddNamespace(namespaceRule->prefix(), namespaceRule->uri());
     return true;
   }
@@ -315,8 +323,10 @@ void StyleSheetContents::parseAuthorStyleSheet(
   bool isSameOriginRequest =
       securityOrigin && securityOrigin->canRequest(baseURL());
 
-  // When the response was fetched via the Service Worker, the original URL may not be same as the base URL.
-  // TODO(horo): When we will use the original URL as the base URL, we can remove this check. crbug.com/553535
+  // When the response was fetched via the Service Worker, the original URL may
+  // not be same as the base URL.
+  // TODO(horo): When we will use the original URL as the base URL, we can
+  // remove this check. crbug.com/553535
   if (cachedStyleSheet->response().wasFetchedViaServiceWorker()) {
     const KURL originalURL(
         cachedStyleSheet->response().originalURLViaServiceWorker());
@@ -384,10 +394,10 @@ void StyleSheetContents::checkLoaded() {
   if (m_loadingClients.isEmpty())
     return;
 
-  // Avoid |CSSSStyleSheet| and |ownerNode| being deleted by scripts that run via
-  // ScriptableDocumentParser::executeScriptsWaitingForResources(). Also protect
-  // the |CSSStyleSheet| from being deleted during iteration via the |sheetLoaded|
-  // method.
+  // Avoid |CSSSStyleSheet| and |ownerNode| being deleted by scripts that run
+  // via ScriptableDocumentParser::executeScriptsWaitingForResources(). Also
+  // protect the |CSSStyleSheet| from being deleted during iteration via the
+  // |sheetLoaded| method.
   //
   // When a sheet is loaded it is moved from the set of loading clients
   // to the set of completed clients. We therefore need the copy in order to
@@ -399,7 +409,8 @@ void StyleSheetContents::checkLoaded() {
     if (loadingClients[i]->loadCompleted())
       continue;
 
-    // sheetLoaded might be invoked after its owner node is removed from document.
+    // sheetLoaded might be invoked after its owner node is removed from
+    // document.
     if (Node* ownerNode = loadingClients[i]->ownerNode()) {
       if (loadingClients[i]->sheetLoaded())
         ownerNode->notifyLoadedSheetAndAllCriticalSubresources(
@@ -412,9 +423,10 @@ void StyleSheetContents::checkLoaded() {
 void StyleSheetContents::notifyLoadedSheet(const CSSStyleSheetResource* sheet) {
   ASSERT(sheet);
   m_didLoadErrorOccur |= sheet->errorOccurred();
-  // updateLayoutIgnorePendingStyleSheets can cause us to create the RuleSet on this
-  // sheet before its imports have loaded. So clear the RuleSet when the imports
-  // load since the import's subrules are flattened into its parent sheet's RuleSet.
+  // updateLayoutIgnorePendingStyleSheets can cause us to create the RuleSet on
+  // this sheet before its imports have loaded. So clear the RuleSet when the
+  // imports load since the import's subrules are flattened into its parent
+  // sheet's RuleSet.
   clearRuleSet();
 }
 
@@ -423,10 +435,10 @@ void StyleSheetContents::startLoadingDynamicSheet() {
   for (const auto& client : root->m_loadingClients)
     client->startLoadingDynamicSheet();
   // Copy the completed clients to a vector for iteration.
-  // startLoadingDynamicSheet will move the style sheet from the
-  // completed state to the loading state which modifies the set of
-  // completed clients. We therefore need the copy in order to not
-  // modify the set of completed clients while iterating it.
+  // startLoadingDynamicSheet will move the style sheet from the completed state
+  // to the loading state which modifies the set of completed clients. We
+  // therefore need the copy in order to not modify the set of completed clients
+  // while iterating it.
   HeapVector<Member<CSSStyleSheet>> completedClients;
   copyToVector(root->m_completedClients, completedClients);
   for (unsigned i = 0; i < completedClients.size(); ++i)
@@ -515,7 +527,8 @@ void StyleSheetContents::registerClient(CSSStyleSheet* sheet) {
   ASSERT(!m_loadingClients.contains(sheet) &&
          !m_completedClients.contains(sheet));
 
-  // InspectorCSSAgent::buildObjectForRule creates CSSStyleSheet without any owner node.
+  // InspectorCSSAgent::buildObjectForRule creates CSSStyleSheet without any
+  // owner node.
   if (!sheet->ownerDocument())
     return;
 
@@ -594,8 +607,9 @@ void StyleSheetContents::clearRuleSet() {
   if (!m_ruleSet)
     return;
 
-  // Clearing the ruleSet means we need to recreate the styleResolver data structures.
-  // See the StyleResolver calls in ScopedStyleResolver::addRulesFromSheet.
+  // Clearing the ruleSet means we need to recreate the styleResolver data
+  // structures. See the StyleResolver calls in
+  // ScopedStyleResolver::addRulesFromSheet.
   clearResolvers(m_loadingClients);
   clearResolvers(m_completedClients);
   m_ruleSet.clear();

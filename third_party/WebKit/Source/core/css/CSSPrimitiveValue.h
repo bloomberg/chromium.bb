@@ -65,7 +65,8 @@ inline float roundForImpreciseConversion(double value) {
 // values (e.g. calc(3px + 2em)).
 class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
  public:
-  // These units are iterated through, so be careful when adding or changing the order.
+  // These units are iterated through, so be careful when adding or changing the
+  // order.
   enum class UnitType {
     Unknown,
     Number,
@@ -109,10 +110,11 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     CalcLengthWithNumber,
     CalcPercentageWithLengthAndNumber,
 
-    // This value is used to handle quirky margins in reflow roots (body, td, and th) like WinIE.
-    // The basic idea is that a stylesheet can use the value __qem (for quirky em) instead of em.
-    // When the quirky value is used, if you're in quirks mode, the margin will collapse away
-    // inside a table cell. This quirk is specified in the HTML spec but our impl is different.
+    // This value is used to handle quirky margins in reflow roots (body, td,
+    // and th) like WinIE. The basic idea is that a stylesheet can use the value
+    // __qem (for quirky em) instead of em. When the quirky value is used, if
+    // you're in quirks mode, the margin will collapse away inside a table cell.
+    // This quirk is specified in the HTML spec but our impl is different.
     // TODO: Remove this. crbug.com/443952
     QuirkyEms,
   };
@@ -129,7 +131,8 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     UnitTypeViewportMin,
     UnitTypeViewportMax,
 
-    // This value must come after the last length unit type to enable iteration over the length unit types.
+    // This value must come after the last length unit type to enable iteration
+    // over the length unit types.
     LengthUnitTypeCount,
   };
 
@@ -265,7 +268,8 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   static UnitType canonicalUnitTypeForCategory(UnitCategory);
   static double conversionToCanonicalUnitsScaleFactor(UnitType);
 
-  // Returns true and populates lengthUnitType, if unitType is a length unit. Otherwise, returns false.
+  // Returns true and populates lengthUnitType, if unitType is a length unit.
+  // Otherwise, returns false.
   static bool unitTypeToLengthUnitType(UnitType, LengthUnitType&);
   static UnitType lengthUnitTypeToUnitType(LengthUnitType);
 
@@ -302,7 +306,8 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
 
   union {
     double num;
-    // FIXME: oilpan: Should be a member, but no support for members in unions. Just trace the raw ptr for now.
+    // FIXME: oilpan: Should be a member, but no support for members in unions.
+    // Just trace the raw ptr for now.
     CSSCalcValue* calc;
   } m_value;
 };

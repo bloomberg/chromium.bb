@@ -1,6 +1,7 @@
 /*
  * (C) 1999-2003 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2004, 2006, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2006, 2008, 2009, 2010, 2012 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -105,7 +106,8 @@ class MediaList final : public GarbageCollected<MediaList>,
   Member<MediaQuerySet> m_mediaQueries;
   // Cleared in ~CSSStyleSheet destructor when oilpan is not enabled.
   Member<CSSStyleSheet> m_parentStyleSheet;
-  // Cleared in the ~CSSMediaRule and ~CSSImportRule destructors when oilpan is not enabled.
+  // Cleared in the ~CSSMediaRule and ~CSSImportRule destructors when oilpan is
+  // not enabled.
   Member<CSSRule> m_parentRule;
 };
 

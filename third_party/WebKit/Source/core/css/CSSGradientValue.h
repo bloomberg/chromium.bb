@@ -227,7 +227,8 @@ class CSSRadialGradientValue final : public CSSGradientValue {
   Member<CSSPrimitiveValue> m_firstRadius;
   Member<CSSPrimitiveValue> m_secondRadius;
 
-  // The below are only used for non-deprecated gradients. Any of them may be null.
+  // The below are only used for non-deprecated gradients. Any of them may be
+  // null.
   Member<CSSIdentifierValue> m_shape;
   Member<CSSIdentifierValue> m_sizingBehavior;
 

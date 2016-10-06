@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004 Zack Rusin <zack@kde.org>
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007 Nicholas Shanks <webkit@nickshanks.com>
  * Copyright (C) 2011 Sencha, Inc. All rights reserved.
@@ -55,26 +56,27 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyBackgroundAttachment, CSSPropertyBackgroundBlendMode,
     CSSPropertyBackgroundClip, CSSPropertyBackgroundColor,
     CSSPropertyBackgroundImage, CSSPropertyBackgroundOrigin,
-    CSSPropertyBackgroundPosition,  // more-specific background-position-x/y are non-standard
-    CSSPropertyBackgroundRepeat, CSSPropertyBackgroundSize,
-    CSSPropertyBorderBottomColor, CSSPropertyBorderBottomLeftRadius,
-    CSSPropertyBorderBottomRightRadius, CSSPropertyBorderBottomStyle,
-    CSSPropertyBorderBottomWidth, CSSPropertyBorderCollapse,
-    CSSPropertyBorderImageOutset, CSSPropertyBorderImageRepeat,
-    CSSPropertyBorderImageSlice, CSSPropertyBorderImageSource,
-    CSSPropertyBorderImageWidth, CSSPropertyBorderLeftColor,
-    CSSPropertyBorderLeftStyle, CSSPropertyBorderLeftWidth,
-    CSSPropertyBorderRightColor, CSSPropertyBorderRightStyle,
-    CSSPropertyBorderRightWidth, CSSPropertyBorderTopColor,
-    CSSPropertyBorderTopLeftRadius, CSSPropertyBorderTopRightRadius,
-    CSSPropertyBorderTopStyle, CSSPropertyBorderTopWidth, CSSPropertyBottom,
-    CSSPropertyBoxShadow, CSSPropertyBoxSizing, CSSPropertyBreakAfter,
-    CSSPropertyBreakBefore, CSSPropertyBreakInside, CSSPropertyCaptionSide,
-    CSSPropertyClear, CSSPropertyClip, CSSPropertyColor, CSSPropertyContent,
-    CSSPropertyCursor, CSSPropertyDirection, CSSPropertyDisplay,
-    CSSPropertyEmptyCells, CSSPropertyFloat, CSSPropertyFontFamily,
-    CSSPropertyFontKerning, CSSPropertyFontSize, CSSPropertyFontSizeAdjust,
-    CSSPropertyFontStretch, CSSPropertyFontStyle, CSSPropertyFontVariant,
+    // more-specific background-position-x/y are non-standard
+    CSSPropertyBackgroundPosition, CSSPropertyBackgroundRepeat,
+    CSSPropertyBackgroundSize, CSSPropertyBorderBottomColor,
+    CSSPropertyBorderBottomLeftRadius, CSSPropertyBorderBottomRightRadius,
+    CSSPropertyBorderBottomStyle, CSSPropertyBorderBottomWidth,
+    CSSPropertyBorderCollapse, CSSPropertyBorderImageOutset,
+    CSSPropertyBorderImageRepeat, CSSPropertyBorderImageSlice,
+    CSSPropertyBorderImageSource, CSSPropertyBorderImageWidth,
+    CSSPropertyBorderLeftColor, CSSPropertyBorderLeftStyle,
+    CSSPropertyBorderLeftWidth, CSSPropertyBorderRightColor,
+    CSSPropertyBorderRightStyle, CSSPropertyBorderRightWidth,
+    CSSPropertyBorderTopColor, CSSPropertyBorderTopLeftRadius,
+    CSSPropertyBorderTopRightRadius, CSSPropertyBorderTopStyle,
+    CSSPropertyBorderTopWidth, CSSPropertyBottom, CSSPropertyBoxShadow,
+    CSSPropertyBoxSizing, CSSPropertyBreakAfter, CSSPropertyBreakBefore,
+    CSSPropertyBreakInside, CSSPropertyCaptionSide, CSSPropertyClear,
+    CSSPropertyClip, CSSPropertyColor, CSSPropertyContent, CSSPropertyCursor,
+    CSSPropertyDirection, CSSPropertyDisplay, CSSPropertyEmptyCells,
+    CSSPropertyFloat, CSSPropertyFontFamily, CSSPropertyFontKerning,
+    CSSPropertyFontSize, CSSPropertyFontSizeAdjust, CSSPropertyFontStretch,
+    CSSPropertyFontStyle, CSSPropertyFontVariant,
     CSSPropertyFontVariantLigatures, CSSPropertyFontVariantCaps,
     CSSPropertyFontVariantNumeric, CSSPropertyFontWeight, CSSPropertyHeight,
     CSSPropertyImageOrientation, CSSPropertyImageRendering,
@@ -386,8 +388,8 @@ const CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(
   Document& document = styledNode->document();
   document.updateStyleAndLayoutTreeForNode(styledNode);
 
-  // The style recalc could have caused the styled node to be discarded or replaced
-  // if it was a PseudoElement so we need to update it.
+  // The style recalc could have caused the styled node to be discarded or
+  // replaced if it was a PseudoElement so we need to update it.
   styledNode = this->styledNode();
   LayoutObject* layoutObject = styledNode->layoutObject();
 

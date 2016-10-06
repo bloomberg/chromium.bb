@@ -22,8 +22,10 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
   if (frame && frame->view()) {
     ASSERT(frame->document() && !frame->document()->layoutViewItem().isNull());
 
-    // In case that frame is missing (e.g. for images that their document does not have a frame)
-    // We simply leave the MediaValues object with the default MediaValuesCachedData values.
+    // In case that frame is missing (e.g. for images that their document does
+    // not have a frame)
+    // We simply leave the MediaValues object with the default
+    // MediaValuesCachedData values.
     viewportWidth = MediaValues::calculateViewportWidth(frame);
     viewportHeight = MediaValues::calculateViewportHeight(frame);
     deviceWidth = MediaValues::calculateDeviceWidth(frame);

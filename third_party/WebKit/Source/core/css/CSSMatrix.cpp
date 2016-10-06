@@ -70,7 +70,8 @@ void CSSMatrix::setMatrixValue(const String& string,
 
   if (const CSSValue* value =
           CSSParser::parseSingleValue(CSSPropertyTransform, string)) {
-    // Check for a "none" transform. In these cases we can use the default identity matrix.
+    // Check for a "none" transform. In these cases we can use the default
+    // identity matrix.
     if (value->isIdentifierValue() &&
         (toCSSIdentifierValue(value))->getValueID() == CSSValueNone)
       return;
@@ -186,7 +187,8 @@ CSSMatrix* CSSMatrix::skewY(double angle) const {
 }
 
 String CSSMatrix::toString() const {
-  // FIXME - Need to ensure valid CSS floating point values (https://bugs.webkit.org/show_bug.cgi?id=20674)
+  // FIXME - Need to ensure valid CSS floating point values
+  // (https://bugs.webkit.org/show_bug.cgi?id=20674)
   if (m_matrix->isAffine())
     return String::format("matrix(%f, %f, %f, %f, %f, %f)", m_matrix->a(),
                           m_matrix->b(), m_matrix->c(), m_matrix->d(),

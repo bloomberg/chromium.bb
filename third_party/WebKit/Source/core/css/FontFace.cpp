@@ -309,8 +309,9 @@ bool FontFace::setFamilyValue(const CSSValue& familyValue) {
   if (familyValue.isFontFamilyValue()) {
     family = AtomicString(toCSSFontFamilyValue(familyValue).value());
   } else if (familyValue.isIdentifierValue()) {
-    // We need to use the raw text for all the generic family types, since @font-face is a way of actually
-    // defining what font to use for those types.
+    // We need to use the raw text for all the generic family types, since
+    // @font-face is a way of actually defining what font to use for those
+    // types.
     switch (toCSSIdentifierValue(familyValue).getValueID()) {
       case CSSValueSerif:
         family = FontFamilyNames::webkit_serif;
@@ -513,8 +514,9 @@ FontTraits FontFace::traits() const {
       case CSSValue100:
         weight = FontWeight100;
         break;
-      // Although 'lighter' and 'bolder' are valid keywords for font-weights, they are invalid
-      // inside font-face rules so they are ignored. Reference: http://www.w3.org/TR/css3-fonts/#descdef-font-weight.
+      // Although 'lighter' and 'bolder' are valid keywords for font-weights,
+      // they are invalid inside font-face rules so they are ignored. Reference:
+      // http://www.w3.org/TR/css3-fonts/#descdef-font-weight.
       case CSSValueLighter:
       case CSSValueBolder:
         break;
@@ -573,14 +575,16 @@ void FontFace::initCSSFontFace(Document* document, const CSSValue* src) {
   if (m_error)
     return;
 
-  // Each item in the src property's list is a single CSSFontFaceSource. Put them all into a CSSFontFace.
+  // Each item in the src property's list is a single CSSFontFaceSource. Put
+  // them all into a CSSFontFace.
   ASSERT(src);
   ASSERT(src->isValueList());
   const CSSValueList* srcList = toCSSValueList(src);
   int srcLength = srcList->length();
 
   for (int i = 0; i < srcLength; i++) {
-    // An item in the list either specifies a string (local font name) or a URL (remote font to download).
+    // An item in the list either specifies a string (local font name) or a URL
+    // (remote font to download).
     const CSSFontFaceSrcValue& item = toCSSFontFaceSrcValue(srcList->item(i));
     CSSFontFaceSource* source = nullptr;
 

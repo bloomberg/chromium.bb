@@ -1,6 +1,7 @@
 /*
  * (C) 1999-2003 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2011 Research In Motion Limited. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -353,7 +354,8 @@ void StyleRuleCSSStyleDeclaration::willMutate() {
 }
 
 void StyleRuleCSSStyleDeclaration::didMutate(MutationType type) {
-  // Style sheet mutation needs to be signaled even if the change failed. willMutateRules/didMutateRules must pair.
+  // Style sheet mutation needs to be signaled even if the change failed.
+  // willMutateRules/didMutateRules must pair.
   if (m_parentRule && m_parentRule->parentStyleSheet())
     m_parentRule->parentStyleSheet()->didMutateRules();
 }

@@ -10,17 +10,19 @@
 
 namespace blink {
 
-// CSSGridAutoRepeatValue stores the track sizes and line numbers when the auto-repeat
-// syntax is used
+// CSSGridAutoRepeatValue stores the track sizes and line numbers when the
+// auto-repeat syntax is used
 //
 // Right now the auto-repeat syntax is as follows:
-// <auto-repeat>  = repeat( [ auto-fill | auto-fit ], <line-names>? <fixed-size> <line-names>? )
+// <auto-repeat>  = repeat( [ auto-fill | auto-fit ], <line-names>? <fixed-size>
+// <line-names>? )
 //
-// meaning that only one fixed size track is allowed. It could be argued that a different
-// class storing two CSSGridLineNamesValue and one CSSValue (for the track size) fits
-// better but the CSSWG has left the door open to allow more than one track in the
-// future. That's why we're using a list, it's prepared for future changes and it also
-// allows us to keep the parsing algorithm almost intact.
+// meaning that only one fixed size track is allowed. It could be argued that a
+// different class storing two CSSGridLineNamesValue and one CSSValue (for the
+// track size) fits better but the CSSWG has left the door open to allow more
+// than one track in the future. That's why we're using a list, it's prepared
+// for future changes and it also allows us to keep the parsing algorithm almost
+// intact.
 class CSSGridAutoRepeatValue : public CSSValueList {
  public:
   static CSSGridAutoRepeatValue* create(CSSValueID id) {

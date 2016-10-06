@@ -2,10 +2,12 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2006, 2007 Nicholas Shanks (webkit@nickshanks.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007, 2008 Eric Seidel <eric@webkit.org>
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  * Copyright (C) 2012 Google Inc. All rights reserved.
@@ -34,7 +36,8 @@
 
 namespace blink {
 
-// Salt to separate otherwise identical string hashes so a class-selector like .article won't match <article> elements.
+// Salt to separate otherwise identical string hashes so a class-selector like
+// .article won't match <article> elements.
 enum { TagNameSalt = 13, IdAttributeSalt = 17, ClassAttributeSalt = 19 };
 
 static inline void collectElementIdentifierHashes(
@@ -100,8 +103,8 @@ void SelectorFilter::pushParent(Element& parent) {
     return;
   }
   ASSERT(m_ancestorIdentifierFilter);
-  // We may get invoked for some random elements in some wacky cases during style resolve.
-  // Pause maintaining the stack in this case.
+  // We may get invoked for some random elements in some wacky cases during
+  // style resolve. Pause maintaining the stack in this case.
   if (m_parentStack.last().element != parent.parentOrShadowHostElement())
     return;
   pushParentStackFrame(parent);
@@ -110,8 +113,8 @@ void SelectorFilter::pushParent(Element& parent) {
 void SelectorFilter::popParent(Element& parent) {
   ASSERT(parent.document().inStyleRecalc());
   ASSERT(parent.inActiveDocument());
-  // Note that we may get invoked for some random elements in some wacky cases during style resolve.
-  // Pause maintaining the stack in this case.
+  // Note that we may get invoked for some random elements in some wacky cases
+  // during style resolve. Pause maintaining the stack in this case.
   if (!parentStackIsConsistent(&parent))
     return;
   popParentStackFrame();

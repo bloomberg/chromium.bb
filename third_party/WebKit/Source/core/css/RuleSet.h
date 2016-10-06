@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ * All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -100,7 +101,8 @@ class CORE_EXPORT RuleData {
                ? PropertyWhitelistNone
                : static_cast<PropertyWhitelistType>(m_propertyWhitelist);
   }
-  // Try to balance between memory usage (there can be lots of RuleData objects) and good filtering performance.
+  // Try to balance between memory usage (there can be lots of RuleData objects)
+  // and good filtering performance.
   static const unsigned maximumIdentifierCount = 4;
   const unsigned* descendantSelectorIdentifierHashes() const {
     return m_descendantSelectorIdentifierHashes;
@@ -111,10 +113,10 @@ class CORE_EXPORT RuleData {
  private:
   Member<StyleRule> m_rule;
   unsigned m_selectorIndex : 13;
-  unsigned
-      m_isLastInArray : 1;  // We store an array of RuleData objects in a primitive array.
-  // This number was picked fairly arbitrarily. We can probably lower it if we need to.
-  // Some simple testing showed <100,000 RuleData's on large sites.
+  // We store an array of RuleData objects in a primitive array.
+  unsigned m_isLastInArray : 1;
+  // This number was picked fairly arbitrarily. We can probably lower it if we
+  // need to. Some simple testing showed <100,000 RuleData's on large sites.
   unsigned m_position : 18;
   unsigned m_specificity : 24;
   unsigned m_containsUncommonAttributeSelector : 1;
