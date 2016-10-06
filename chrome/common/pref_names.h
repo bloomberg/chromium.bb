@@ -309,7 +309,7 @@ extern const char kAllowDeletingBrowserHistory[];
 extern const char kMdHistoryMenuPromoShown[];
 #endif
 extern const char kForceGoogleSafeSearch[];
-extern const char kForceYouTubeSafetyMode[];
+extern const char kForceYouTubeRestrict[];
 extern const char kForceSessionSync[];
 extern const char kAllowedDomainsForApps[];
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

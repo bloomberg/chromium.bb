@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 347
+#   For your editing convenience: highest ID currently used: 348
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1092,13 +1092,13 @@
       'id': 162,
       'caption': '''Force SafeSearch''',
       'tags': ['filtering'],
-      'desc': '''This policy is deprecated, please use ForceGoogleSafeSearch and ForceYouTubeSafetyMode instead. This policy will be ignored if either the ForceGoogleSafeSearch or ForceYouTubeSafetyMode policies are set.
+      'desc': '''This policy is deprecated, please use <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME">ForceGoogleSafeSearch</ph> and <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME">ForceYouTubeRestrict</ph> instead. This policy is ignored if either the <ph name="FORCEGOOGLESAFESEARCH_POLICY_NAME">ForceGoogleSafeSearch</ph>, the <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME">ForceYouTubeRestrict</ph> or the (deprecated) <ph name="FORCEYOUTUBESAFETYMODE_POLICY_NAME">ForceYouTubeSafetyMode</ph> policies are set.
 
-      Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting. This setting also forces Safety Mode on YouTube.
+      Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting. This setting also forces Moderate Restricted Mode on YouTube.
 
-      If you enable this setting, SafeSearch in Google Search and YouTube is always active.
+      If you enable this setting, SafeSearch in Google Search and Moderate Restricted Mode YouTube is always active.
 
-      If you disable this setting or do not set a value, SafeSearch in Google Search and YouTube is not enforced.''',
+      If you disable this setting or do not set a value, SafeSearch in Google Search and Restricted Mode in YouTube is not enforced.''',
     },
     {
       'name': 'ForceGoogleSafeSearch',
@@ -1130,16 +1130,64 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 283,
       'caption': '''Force YouTube Safety Mode''',
       'tags': ['filtering'],
-      'desc': '''Forces YouTube Safety Mode to active and prevents users from changing this setting.
+      'desc': '''This policy is deprecated. Consider using <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME">ForceYouTubeRestrict</ph>, which overrides this policy and allows more fine-grained tuning.
 
-      If you enable this setting, Safety Mode on YouTube is always active.
+      Forces YouTube Moderate Restricted Mode and prevents users from changing this setting.
 
-      If you disable this setting or do not set a value, Safety Mode on YouTube is not enforced.''',
-      'arc_support': 'This policy has no effect on the Android YouTube app. If you want to enforce Safety Mode on YouTube, you should disallow installation of the Android YouTube app.',
+      If this setting is enabled, Restricted Mode on YouTube is always enforced to be at least Moderate.
+
+      If this setting is disabled or no value is set, Restricted Mode on YouTube is not enforced by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. External policies such as YouTube policies might still enforce Restricted Mode, though.''',
+      'arc_support': 'This policy has no effect on the Android YouTube app. If Safety Mode on YouTube should be enforced, installation of the Android YouTube app should be disallowed.',
+    },
+    {
+      'name': 'ForceYouTubeRestrict',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'Off',
+          'value': 0,
+          'caption': '''Do not enforce Restricted Mode on YouTube''',
+        },
+        {
+          'name': 'Moderate',
+          'value': 1,
+          'caption': '''Enforce at least Moderate Restricted Mode on YouTube''',
+        },
+        {
+          'name': 'Strict',
+          'value': 2,
+          'caption': '''Enforce Strict Restricted Mode for YouTube''',
+        },
+      ],
+      'supported_on': ['chrome.*:55-', 'chrome_os:55-', 'android:55-'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 0,
+      'id': 348,
+      'caption': '''Force minimum YouTube Restricted Mode''',
+      'tags': ['filtering'],
+      'desc': '''Enforces a minimum Restricted Mode on YouTube and prevents users from
+      picking a less restricted mode.
+
+      If this setting is set to Strict, Strict Restricted Mode on YouTube is always active.
+
+      If this setting is set to Moderate, the user may only pick Moderate Restricted Mode
+      and Strict Restricted Mode on YouTube, but cannot disable Restricted Mode.
+
+      If this setting is set to Off or no value is set, Restricted Mode on YouTube is not enforced by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. External policies such as YouTube policies might still enforce Restricted Mode, though.''',
+      'arc_support': 'This policy has no effect on the Android YouTube app. If Safety Mode on YouTube should be enforced, installation of the Android YouTube app should be disallowed.',
     },
     {
       'name': 'SafeBrowsingEnabled',

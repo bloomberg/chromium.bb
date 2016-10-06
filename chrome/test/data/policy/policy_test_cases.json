@@ -2,7 +2,7 @@
   "-- Template --": {
     "intro": "Top-level entries map a policy name to its test parameters, described below. The name of the top level entry should be of the form <policy name>[.suffix]. The optional suffix is used for defining multiple test cases for a single policy.",
 
-    "os": ["List of operating systems that support this policy. Valid values:", "win", "linux", "mac", "chromeos", "Defaults to empty if not specified."],
+    "os": ["List of operating systems that support this policy. Valid values:", "win", "linux", "mac", "chromeos", "android", "Defaults to empty if not specified."],
     "official_only": "Whether this policy exists in official builds only. Defaults to |false| if not specified.",
     "can_be_recommended": "Whether a recommended value may be set for the policy. Defaults to |false| if not specified.",
     "test_policy": "A policy dictionary that should make the preferences affected by this policy become policy-controlled. Usually just sets the current policy. Defaults to an empty dictionary if not specified.",
@@ -296,21 +296,28 @@
     "pref": "settings.force_safesearch",
     "test_policy": { "ForceSafeSearch": true },
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos", "android"]
   },
 
   "ForceGoogleSafeSearch": {
     "pref": "settings.force_google_safesearch",
     "test_policy": { "ForceGoogleSafeSearch": true },
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos", "android"]
   },
 
   "ForceYouTubeSafetyMode": {
     "pref": "settings.force_youtube_safety_mode",
     "test_policy": { "ForceYouTubeSafetyMode": true },
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos", "android"]
+  },
+
+  "ForceYouTubeRestrict": {
+    "pref": "settings.force_youtube_restrict",
+    "test_policy": { "ForceYouTubeRestrict": 1 },
+    "settings_pages": [],
+    "os": ["win", "linux", "mac", "chromeos", "android"]
   },
 
   "MetricsReportingEnabled": {

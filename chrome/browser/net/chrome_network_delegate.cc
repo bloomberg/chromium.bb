@@ -32,7 +32,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/net/chrome_extensions_network_delegate.h"
 #include "chrome/browser/net/request_source_bandwidth_histograms.h"
-#include "chrome/browser/net/safe_search_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/common/chrome_constants.h"
@@ -147,14 +146,14 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
     extensions::EventRouterForwarder* event_router,
     BooleanPrefMember* enable_referrers,
     const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder)
-    : profile_(NULL),
+    : profile_(nullptr),
       enable_referrers_(enable_referrers),
-      enable_do_not_track_(NULL),
-      force_google_safe_search_(NULL),
-      force_youtube_safety_mode_(NULL),
+      enable_do_not_track_(nullptr),
+      force_google_safe_search_(nullptr),
+      force_youtube_restrict_(nullptr),
       allowed_domains_for_apps_(nullptr),
-      url_blacklist_manager_(NULL),
-      domain_reliability_monitor_(NULL),
+      url_blacklist_manager_(nullptr),
+      domain_reliability_monitor_(nullptr),
       data_use_measurement_(metrics_data_use_forwarder),
       experimental_web_platform_features_enabled_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -195,7 +194,7 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     BooleanPrefMember* enable_referrers,
     BooleanPrefMember* enable_do_not_track,
     BooleanPrefMember* force_google_safe_search,
-    BooleanPrefMember* force_youtube_safety_mode,
+    IntegerPrefMember* force_youtube_restrict,
     StringPrefMember* allowed_domains_for_apps,
     PrefService* pref_service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -212,10 +211,9 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     force_google_safe_search->MoveToThread(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
-  if (force_youtube_safety_mode) {
-    force_youtube_safety_mode->Init(prefs::kForceYouTubeSafetyMode,
-                                    pref_service);
-    force_youtube_safety_mode->MoveToThread(
+  if (force_youtube_restrict) {
+    force_youtube_restrict->Init(prefs::kForceYouTubeRestrict, pref_service);
+    force_youtube_restrict->MoveToThread(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
   if (allowed_domains_for_apps) {
@@ -318,8 +316,16 @@ int ChromeNetworkDelegate::OnBeforeStartTransaction(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
-  if (force_youtube_safety_mode_ && force_youtube_safety_mode_->GetValue())
-    safe_search_util::ForceYouTubeSafetyMode(request, headers);
+  if (force_youtube_restrict_) {
+    int value = force_youtube_restrict_->GetValue();
+    static_assert(safe_search_util::YOUTUBE_RESTRICT_OFF == 0,
+                  "OFF must be first");
+    if (value > safe_search_util::YOUTUBE_RESTRICT_OFF &&
+        value < safe_search_util::YOUTUBE_RESTRICT_COUNT) {
+      safe_search_util::ForceYouTubeRestrict(request, headers,
+          static_cast<safe_search_util::YouTubeRestrictMode>(value));
+    }
+  }
 
   return extensions_delegate_->OnBeforeStartTransaction(request, callback,
                                                         headers);
@@ -421,7 +427,7 @@ ChromeNetworkDelegate::OnAuthRequired(
 bool ChromeNetworkDelegate::OnCanGetCookies(
     const net::URLRequest& request,
     const net::CookieList& cookie_list) {
-  // NULL during tests, or when we're running in the system context.
+  // nullptr during tests, or when we're running in the system context.
   if (!cookie_settings_.get())
     return true;
 
@@ -444,7 +450,7 @@ bool ChromeNetworkDelegate::OnCanGetCookies(
 bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                                            const std::string& cookie_line,
                                            net::CookieOptions* options) {
-  // NULL during tests, or when we're running in the system context.
+  // nullptr during tests, or when we're running in the system context.
   if (!cookie_settings_.get())
     return true;
 
@@ -548,7 +554,7 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
 bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
     const GURL& url,
     const GURL& first_party_for_cookies) const {
-  // NULL during tests, or when we're running in the system context.
+  // nullptr during tests, or when we're running in the system context.
   if (!cookie_settings_.get())
     return false;
 
