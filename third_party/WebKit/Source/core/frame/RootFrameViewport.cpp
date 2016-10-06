@@ -20,6 +20,9 @@ RootFrameViewport::RootFrameViewport(ScrollableArea& visualViewport,
 }
 
 void RootFrameViewport::setLayoutViewport(ScrollableArea& newLayoutViewport) {
+  if (m_layoutViewport.get() == &newLayoutViewport)
+    return;
+
   if (m_layoutViewport && m_layoutViewport->scrollAnchor())
     m_layoutViewport->scrollAnchor()->setScroller(m_layoutViewport.get());
 

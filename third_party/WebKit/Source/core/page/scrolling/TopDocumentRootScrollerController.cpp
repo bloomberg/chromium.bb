@@ -69,7 +69,7 @@ void TopDocumentRootScrollerController::recomputeGlobalRootScroller() {
     return;
 
   Element* target = findGlobalRootScrollerElement();
-  if (!target)
+  if (!target || target == m_globalRootScroller)
     return;
 
   ScrollableArea* targetScroller = RootScrollerUtil::scrollableAreaFor(*target);
