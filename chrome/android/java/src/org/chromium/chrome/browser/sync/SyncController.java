@@ -15,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -144,14 +145,21 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         if (isSyncEnabled) {
             mProfileSyncService.requestStart();
         } else {
-            if (AndroidSyncSettings.isMasterSyncEnabled(mContext)) {
-                RecordHistogram.recordEnumeratedHistogram("Sync.StopSource",
-                        StopSource.ANDROID_CHROME_SYNC, StopSource.STOP_SOURCE_LIMIT);
+            if (ChildAccountService.isChildAccount()) {
+                // For child accounts, Sync needs to stay enabled, so we reenable it in settings.
+                // TODO(bauerb): Remove the dependency on child account code and instead go through
+                // prefs (here and in the Sync customization UI).
+                AndroidSyncSettings.enableChromeSync(mContext);
             } else {
-                RecordHistogram.recordEnumeratedHistogram("Sync.StopSource",
-                        StopSource.ANDROID_MASTER_SYNC, StopSource.STOP_SOURCE_LIMIT);
+                if (AndroidSyncSettings.isMasterSyncEnabled(mContext)) {
+                    RecordHistogram.recordEnumeratedHistogram("Sync.StopSource",
+                            StopSource.ANDROID_CHROME_SYNC, StopSource.STOP_SOURCE_LIMIT);
+                } else {
+                    RecordHistogram.recordEnumeratedHistogram("Sync.StopSource",
+                            StopSource.ANDROID_MASTER_SYNC, StopSource.STOP_SOURCE_LIMIT);
+                }
+                mProfileSyncService.requestStop();
             }
-            mProfileSyncService.requestStop();
         }
     }
 
