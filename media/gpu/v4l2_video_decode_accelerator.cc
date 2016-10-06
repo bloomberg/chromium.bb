@@ -1366,10 +1366,8 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
       } else {
         output_record.state = kAtClient;
         decoder_frames_at_client_++;
-        // TODO(hubbe): Insert correct color space. http://crbug.com/647725
         const Picture picture(output_record.picture_id, bitstream_buffer_id,
-                              gfx::Rect(visible_size_), gfx::ColorSpace(),
-                              false);
+                              gfx::Rect(visible_size_), false);
         pending_picture_ready_.push(
             PictureRecord(output_record.cleared, picture));
         SendPictureReady();
@@ -2494,9 +2492,8 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(int32_t bitstream_buffer_id,
   output_record.state = kAtClient;
   decoder_frames_at_client_++;
   image_processor_bitstream_buffer_ids_.pop();
-  // TODO(hubbe): Insert correct color space. http://crbug.com/647725
   const Picture picture(output_record.picture_id, bitstream_buffer_id,
-                        gfx::Rect(visible_size_), gfx::ColorSpace(), false);
+                        gfx::Rect(visible_size_), false);
   pending_picture_ready_.push(PictureRecord(output_record.cleared, picture));
   SendPictureReady();
   output_record.cleared = true;

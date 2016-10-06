@@ -432,10 +432,9 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   // TODO(posciak): Use visible size from decoder here instead
   // (crbug.com/402760). Passing (0, 0) results in the client using the
   // visible size extracted from the container instead.
-  // TODO(hubbe): Use the correct color space.  http://crbug.com/647725
   if (client_)
-    client_->PictureReady(Picture(output_id, input_id, gfx::Rect(0, 0),
-                                  gfx::ColorSpace(), picture->AllowOverlay()));
+    client_->PictureReady(
+        Picture(output_id, input_id, gfx::Rect(0, 0), picture->AllowOverlay()));
 }
 
 void VaapiVideoDecodeAccelerator::TryOutputSurface() {

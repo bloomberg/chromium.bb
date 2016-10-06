@@ -16,7 +16,6 @@
 #include "media/video/jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
-#include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
 #define IPC_MESSAGE_START MediaMsgStart
@@ -44,15 +43,6 @@ IPC_STRUCT_BEGIN(AcceleratedVideoEncoderMsg_Encode_Params2)
                     gpu_memory_buffer_handles)
   IPC_STRUCT_MEMBER(gfx::Size, size)
   IPC_STRUCT_MEMBER(bool, force_keyframe)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(AcceleratedVideoDecoderHostMsg_PictureReady_Params)
-  IPC_STRUCT_MEMBER(int32_t, picture_buffer_id)
-  IPC_STRUCT_MEMBER(int32_t, bitstream_buffer_id)
-  IPC_STRUCT_MEMBER(gfx::Rect, visible_rect)
-  IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
-  IPC_STRUCT_MEMBER(bool, allow_overlay)
-  IPC_STRUCT_MEMBER(bool, size_changed)
 IPC_STRUCT_END()
 
 //------------------------------------------------------------------------------
@@ -130,8 +120,12 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_DismissPictureBuffer,
                     int32_t) /* Picture buffer ID */
 
 // Decoder reports that a picture is ready.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_PictureReady,
-                    AcceleratedVideoDecoderHostMsg_PictureReady_Params)
+IPC_MESSAGE_ROUTED5(AcceleratedVideoDecoderHostMsg_PictureReady,
+                    int32_t,   /* Picture buffer ID */
+                    int32_t,   /* Bitstream buffer ID */
+                    gfx::Rect, /* Visible rectangle */
+                    bool,      /* Buffer is HW overlay capable */
+                    bool)      /* VDA updated picture size */
 
 // Confirm decoder has been flushed.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_FlushDone)

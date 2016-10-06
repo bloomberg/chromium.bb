@@ -264,15 +264,10 @@ void GpuVideoDecodeAccelerator::PictureReady(const Picture& picture) {
     DCHECK_EQ(0u, uncleared_textures_.count(picture.picture_buffer_id()));
   }
 
-  AcceleratedVideoDecoderHostMsg_PictureReady_Params params;
-  params.picture_buffer_id = picture.picture_buffer_id();
-  params.bitstream_buffer_id = picture.bitstream_buffer_id();
-  params.visible_rect = picture.visible_rect();
-  params.color_space = picture.color_space();
-  params.allow_overlay = picture.allow_overlay();
-  params.size_changed = picture.size_changed();
-  if (!Send(new AcceleratedVideoDecoderHostMsg_PictureReady(host_route_id_,
-                                                            params))) {
+  if (!Send(new AcceleratedVideoDecoderHostMsg_PictureReady(
+          host_route_id_, picture.picture_buffer_id(),
+          picture.bitstream_buffer_id(), picture.visible_rect(),
+          picture.allow_overlay(), picture.size_changed()))) {
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_PictureReady) failed";
   }
 }

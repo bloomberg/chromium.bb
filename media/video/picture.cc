@@ -41,12 +41,10 @@ PictureBuffer::~PictureBuffer() {}
 Picture::Picture(int32_t picture_buffer_id,
                  int32_t bitstream_buffer_id,
                  const gfx::Rect& visible_rect,
-                 const gfx::ColorSpace& color_space,
                  bool allow_overlay)
     : picture_buffer_id_(picture_buffer_id),
       bitstream_buffer_id_(bitstream_buffer_id),
       visible_rect_(visible_rect),
-      color_space_(color_space),
       allow_overlay_(allow_overlay),
       size_changed_(false) {}
 

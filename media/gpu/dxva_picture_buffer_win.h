@@ -53,11 +53,6 @@ class DXVAPictureBuffer {
   gfx::Size size() const { return picture_buffer_.size(); }
   void set_bound();
 
-  const gfx::ColorSpace& color_space() const { return color_space_; }
-  void set_color_space(const gfx::ColorSpace& color_space) {
-    color_space_ = color_space;
-  }
-
   bool waiting_to_reuse() const { return state_ == WAITING_TO_REUSE; }
   virtual gl::GLFence* reuse_fence();
 
@@ -72,7 +67,6 @@ class DXVAPictureBuffer {
 
   State state_ = UNUSED;
   PictureBuffer picture_buffer_;
-  gfx::ColorSpace color_space_;
 
   DISALLOW_COPY_AND_ASSIGN(DXVAPictureBuffer);
 };

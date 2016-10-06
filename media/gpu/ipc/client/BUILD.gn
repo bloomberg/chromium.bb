@@ -28,6 +28,5 @@ source_set("client") {
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
-    "//ui/gfx/ipc/color",
   ]
 }

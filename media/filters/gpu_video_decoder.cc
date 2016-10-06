@@ -612,7 +612,6 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
-  frame->set_color_space(picture.color_space());
   if (picture.allow_overlay())
     frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
 #if defined(OS_MACOSX) || defined(OS_WIN)

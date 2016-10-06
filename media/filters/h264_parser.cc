@@ -121,24 +121,6 @@ base::Optional<gfx::Rect> H264SPS::GetVisibleRect() const {
                    coded_size->height() - crop_top - crop_bottom);
 }
 
-// Based on T-REC-H.264 E.2.1, "VUI parameters semantics",
-// available from http://www.itu.int/rec/T-REC-H.264.
-gfx::ColorSpace H264SPS::GetColorSpace() const {
-  if (colour_description_present_flag) {
-    return gfx::ColorSpace(
-        colour_primaries, transfer_characteristics, matrix_coefficients,
-        video_full_range_flag ? gfx::ColorSpace::RangeID::FULL
-                              : gfx::ColorSpace::RangeID::LIMITED);
-  } else {
-    return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::UNSPECIFIED,
-                           gfx::ColorSpace::TransferID::UNSPECIFIED,
-                           gfx::ColorSpace::MatrixID::UNSPECIFIED,
-                           video_full_range_flag
-                               ? gfx::ColorSpace::RangeID::FULL
-                               : gfx::ColorSpace::RangeID::LIMITED);
-  }
-}
-
 H264PPS::H264PPS() {
   memset(this, 0, sizeof(*this));
 }
@@ -831,17 +813,13 @@ H264Parser::Result H264Parser::ParseVUIParameters(H264SPS* sps) {
   if (data)
     READ_BOOL_OR_RETURN(&data);  // overscan_appropriate_flag
 
-  READ_BOOL_OR_RETURN(&sps->video_signal_type_present_flag);
-  if (sps->video_signal_type_present_flag) {
-    READ_BITS_OR_RETURN(3, &sps->video_format);
-    READ_BOOL_OR_RETURN(&sps->video_full_range_flag);
-    READ_BOOL_OR_RETURN(&sps->colour_description_present_flag);
-    if (sps->colour_description_present_flag) {
-      // color description syntax elements
-      READ_BITS_OR_RETURN(8, &sps->colour_primaries);
-      READ_BITS_OR_RETURN(8, &sps->transfer_characteristics);
-      READ_BITS_OR_RETURN(8, &sps->matrix_coefficients);
-    }
+  READ_BOOL_OR_RETURN(&data);  // video_signal_type_present_flag
+  if (data) {
+    READ_BITS_OR_RETURN(3, &data);  // video_format
+    READ_BOOL_OR_RETURN(&data);  // video_full_range_flag
+    READ_BOOL_OR_RETURN(&data);  // colour_description_present_flag
+    if (data)
+      READ_BITS_OR_RETURN(24, &data);  // color description syntax elements
   }
 
   READ_BOOL_OR_RETURN(&data);  // chroma_loc_info_present_flag

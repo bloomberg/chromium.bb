@@ -21,7 +21,6 @@
 #include "media/base/ranges.h"
 #include "media/base/video_codecs.h"
 #include "media/filters/h264_bit_reader.h"
-#include "ui/gfx/color_space.h"
 
 namespace gfx {
 class Rect;
@@ -158,14 +157,6 @@ struct MEDIA_EXPORT H264SPS {
   int time_scale;
   bool fixed_frame_rate_flag;
 
-  bool video_signal_type_present_flag;
-  int video_format;
-  bool video_full_range_flag;
-  bool colour_description_present_flag;
-  int colour_primaries;
-  int transfer_characteristics;
-  int matrix_coefficients;
-
   // TODO(posciak): actually parse these instead of ParseAndIgnoreHRDParameters.
   bool nal_hrd_parameters_present_flag;
   int cpb_cnt_minus1;
@@ -188,7 +179,6 @@ struct MEDIA_EXPORT H264SPS {
   // the results are in-spec for the given profile or level.
   base::Optional<gfx::Size> GetCodedSize() const;
   base::Optional<gfx::Rect> GetVisibleRect() const;
-  gfx::ColorSpace GetColorSpace() const;
 };
 
 struct MEDIA_EXPORT H264PPS {

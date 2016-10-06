@@ -36,7 +36,6 @@
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_decode_accelerator.h"
-#include "ui/gfx/color_space.h"
 
 interface IMFSample;
 interface IDirect3DSurface9;
@@ -73,8 +72,6 @@ class H264ConfigChangeDetector {
   bool DetectConfig(const uint8_t* stream, unsigned int size);
 
   bool config_changed() const { return config_changed_; }
-
-  gfx::ColorSpace current_color_space() const;
 
  private:
   // These fields are used to track the SPS/PPS in the H.264 bitstream and
@@ -199,13 +196,12 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   // The bulk of the decoding happens here. This function handles errors,
   // format changes and processes decoded output.
-  void DoDecode(const gfx::ColorSpace& color_space);
+  void DoDecode();
 
   // Invoked when we have a valid decoded output sample. Retrieves the D3D
   // surface and maintains a copy of it which is passed eventually to the
   // client when we have a picture buffer to copy the surface contents to.
-  bool ProcessOutputSample(IMFSample* sample,
-                           const gfx::ColorSpace& color_space);
+  bool ProcessOutputSample(IMFSample* sample);
 
   // Processes pending output samples by copying them to available picture
   // slots.
@@ -232,9 +228,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   void RequestPictureBuffers(int width, int height);
 
   // Notifies the client about the availability of a picture.
-  void NotifyPictureReady(int picture_buffer_id,
-                          int input_buffer_id,
-                          const gfx::ColorSpace& color_space);
+  void NotifyPictureReady(int picture_buffer_id, int input_buffer_id);
 
   // Sends pending input buffer processed acks to the client if we don't have
   // output samples waiting to be processed.
@@ -400,9 +394,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   // Contains information about a decoded sample.
   struct PendingSampleInfo {
-    PendingSampleInfo(int32_t buffer_id,
-                      IMFSample* sample,
-                      const gfx::ColorSpace& color_space);
+    PendingSampleInfo(int32_t buffer_id, IMFSample* sample);
     PendingSampleInfo(const PendingSampleInfo& other);
     ~PendingSampleInfo();
 
@@ -411,9 +403,6 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
     // The target picture buffer id where the frame would be copied to.
     // Defaults to -1.
     int picture_buffer_id;
-
-    // The color space of this picture.
-    gfx::ColorSpace color_space;
 
     base::win::ScopedComPtr<IMFSample> output_sample;
   };

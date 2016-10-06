@@ -11,7 +11,6 @@
 
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/media_export.h"
-#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -74,7 +73,6 @@ class MEDIA_EXPORT Picture {
   Picture(int32_t picture_buffer_id,
           int32_t bitstream_buffer_id,
           const gfx::Rect& visible_rect,
-          const gfx::ColorSpace& color_space,
           bool allow_overlay);
 
   // Returns the id of the picture buffer where this picture is contained.
@@ -86,9 +84,6 @@ class MEDIA_EXPORT Picture {
   void set_bitstream_buffer_id(int32_t bitstream_buffer_id) {
     bitstream_buffer_id_ = bitstream_buffer_id;
   }
-
-  // Returns the color space of the picture.
-  const gfx::ColorSpace& color_space() const { return color_space_; }
 
   // Returns the visible rectangle of the picture. Its size may be smaller
   // than the size of the PictureBuffer, as it is the only visible part of the
@@ -109,7 +104,6 @@ class MEDIA_EXPORT Picture {
   int32_t picture_buffer_id_;
   int32_t bitstream_buffer_id_;
   gfx::Rect visible_rect_;
-  gfx::ColorSpace color_space_;
   bool allow_overlay_;
   bool size_changed_;
 };

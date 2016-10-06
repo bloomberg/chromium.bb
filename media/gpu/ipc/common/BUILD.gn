@@ -24,7 +24,6 @@ source_set("common") {
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
-    "//ui/gfx/ipc/color",
     "//ui/gfx/ipc/geometry",
   ]
 }

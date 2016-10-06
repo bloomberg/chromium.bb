@@ -41,7 +41,6 @@ target(link_target_type, "service") {
     "//gpu/ipc/service",
     "//media/gpu/ipc/common",
     "//third_party/mesa:mesa_headers",
-    "//ui/gfx/ipc/color",
   ]
 
   configs += [ "//media/gpu:gpu_config" ]
