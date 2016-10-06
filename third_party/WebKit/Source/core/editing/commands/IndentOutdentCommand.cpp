@@ -91,17 +91,19 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start,
   if (editingState->isAborted())
     return false;
 
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   // We should clone all the children of the list item for indenting purposes. However, in case the current
   // selection does not encompass all its children, we need to explicitally handle the same. The original
   // list item too would require proper deletion in that case.
   if (end.anchorNode() == selectedListItem ||
       end.anchorNode()->isDescendantOf(selectedListItem->lastChild())) {
-    moveParagraphWithClones(createVisiblePositionDeprecated(start),
-                            createVisiblePositionDeprecated(end), newList,
+    moveParagraphWithClones(createVisiblePosition(start),
+                            createVisiblePosition(end), newList,
                             selectedListItem, editingState);
   } else {
     moveParagraphWithClones(
-        createVisiblePositionDeprecated(start),
+        createVisiblePosition(start),
         VisiblePosition::afterNode(selectedListItem->lastChild()), newList,
         selectedListItem, editingState);
     if (editingState->isAborted())
@@ -146,7 +148,8 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start,
           ? start.computeContainerNode()
           : splitTreeToNode(start.computeContainerNode(), elementToSplitTo);
 
-  VisiblePosition startOfContents = createVisiblePositionDeprecated(start);
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+  VisiblePosition startOfContents = createVisiblePosition(start);
   if (!targetBlockquote) {
     // Create a new blockquote and insert it as a child of the root editable element. We accomplish
     // this by splitting all parents of the current paragraph up to that point.
@@ -162,10 +165,11 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start,
       insertNodeBefore(targetBlockquote, outerBlock, editingState);
     if (editingState->isAborted())
       return;
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     startOfContents = VisiblePosition::inParentAfterNode(*targetBlockquote);
   }
 
-  VisiblePosition endOfContents = createVisiblePositionDeprecated(end);
+  VisiblePosition endOfContents = createVisiblePosition(end);
   if (startOfContents.isNull() || endOfContents.isNull())
     return;
   moveParagraphWithClones(startOfContents, endOfContents, targetBlockquote,
@@ -174,9 +178,9 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start,
 
 void IndentOutdentCommand::outdentParagraph(EditingState* editingState) {
   VisiblePosition visibleStartOfParagraph =
-      startOfParagraphDeprecated(endingSelection().visibleStartDeprecated());
+      startOfParagraph(endingSelection().visibleStart());
   VisiblePosition visibleEndOfParagraph =
-      endOfParagraphDeprecated(visibleStartOfParagraph);
+      endOfParagraph(visibleStartOfParagraph);
 
   HTMLElement* enclosingElement = toHTMLElement(
       enclosingNodeOfType(visibleStartOfParagraph.deepEquivalent(),
@@ -238,23 +242,26 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState) {
     }
 
     document().updateStyleAndLayoutIgnorePendingStylesheets();
-    visibleStartOfParagraph = createVisiblePositionDeprecated(
-        visibleStartOfParagraph.deepEquivalent());
-    visibleEndOfParagraph =
-        createVisiblePositionDeprecated(visibleEndOfParagraph.deepEquivalent());
+    visibleStartOfParagraph =
+        createVisiblePosition(visibleStartOfParagraph.deepEquivalent());
     if (visibleStartOfParagraph.isNotNull() &&
-        !isStartOfParagraphDeprecated(visibleStartOfParagraph)) {
+        !isStartOfParagraph(visibleStartOfParagraph)) {
       insertNodeAt(HTMLBRElement::create(document()),
                    visibleStartOfParagraph.deepEquivalent(), editingState);
       if (editingState->isAborted())
         return;
     }
+
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    visibleEndOfParagraph =
+        createVisiblePosition(visibleEndOfParagraph.deepEquivalent());
     if (visibleEndOfParagraph.isNotNull() &&
-        !isEndOfParagraphDeprecated(visibleEndOfParagraph))
+        !isEndOfParagraph(visibleEndOfParagraph))
       insertNodeAt(HTMLBRElement::create(document()),
                    visibleEndOfParagraph.deepEquivalent(), editingState);
     return;
   }
+
   Node* splitBlockquoteNode = enclosingElement;
   if (Element* enclosingBlockFlow = enclosingBlock(
           visibleStartOfParagraph.deepEquivalent().anchorNode())) {
@@ -271,17 +278,30 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState) {
                        ? highestInlineNode
                        : visibleStartOfParagraph.deepEquivalent().anchorNode());
     }
+
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+    // Re-canonicalize visible{Start,End}OfParagraph, make them valid again
+    // after DOM change.
+    // TODO(xiaochengh): We should not store a VisiblePosition and later inspect
+    // its properties when it is already invalidated.
+    visibleStartOfParagraph =
+        createVisiblePosition(visibleStartOfParagraph.toPositionWithAffinity());
+    visibleEndOfParagraph =
+        createVisiblePosition(visibleEndOfParagraph.toPositionWithAffinity());
   }
+
   VisiblePosition startOfParagraphToMove =
-      startOfParagraphDeprecated(visibleStartOfParagraph);
-  VisiblePosition endOfParagraphToMove =
-      endOfParagraphDeprecated(visibleEndOfParagraph);
+      startOfParagraph(visibleStartOfParagraph);
+  VisiblePosition endOfParagraphToMove = endOfParagraph(visibleEndOfParagraph);
   if (startOfParagraphToMove.isNull() || endOfParagraphToMove.isNull())
     return;
   HTMLBRElement* placeholder = HTMLBRElement::create(document());
   insertNodeBefore(placeholder, splitBlockquoteNode, editingState);
   if (editingState->isAborted())
     return;
+
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
   moveParagraph(startOfParagraphToMove, endOfParagraphToMove,
                 VisiblePosition::beforeNode(placeholder), editingState,
                 PreserveSelection);
@@ -292,9 +312,8 @@ void IndentOutdentCommand::outdentRegion(
     const VisiblePosition& startOfSelection,
     const VisiblePosition& endOfSelection,
     EditingState* editingState) {
-  VisiblePosition endOfCurrentParagraph =
-      endOfParagraphDeprecated(startOfSelection);
-  VisiblePosition endOfLastParagraph = endOfParagraphDeprecated(endOfSelection);
+  VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
+  VisiblePosition endOfLastParagraph = endOfParagraph(endOfSelection);
 
   if (endOfCurrentParagraph.deepEquivalent() ==
       endOfLastParagraph.deepEquivalent()) {
@@ -303,19 +322,20 @@ void IndentOutdentCommand::outdentRegion(
   }
 
   Position originalSelectionEnd = endingSelection().end();
-  VisiblePosition endAfterSelection =
-      endOfParagraphDeprecated(nextPositionOf(endOfLastParagraph));
+  Position endAfterSelection =
+      endOfParagraph(nextPositionOf(endOfLastParagraph)).deepEquivalent();
 
-  while (endOfCurrentParagraph.deepEquivalent() !=
-         endAfterSelection.deepEquivalent()) {
-    VisiblePosition endOfNextParagraph = endOfParagraphDeprecated(
-        nextPositionOfDeprecated(endOfCurrentParagraph));
+  while (endOfCurrentParagraph.deepEquivalent() != endAfterSelection) {
+    PositionWithAffinity endOfNextParagraph =
+        endOfParagraph(nextPositionOf(endOfCurrentParagraph))
+            .toPositionWithAffinity();
     if (endOfCurrentParagraph.deepEquivalent() ==
-        endOfLastParagraph.deepEquivalent())
-      setEndingSelection(createVisibleSelectionDeprecated(
-          originalSelectionEnd, TextAffinity::Downstream));
-    else
+        endOfLastParagraph.deepEquivalent()) {
+      setEndingSelection(createVisibleSelection(originalSelectionEnd,
+                                                TextAffinity::Downstream));
+    } else {
       setEndingSelection(endOfCurrentParagraph);
+    }
 
     outdentParagraph(editingState);
     if (editingState->isAborted())
@@ -324,18 +344,17 @@ void IndentOutdentCommand::outdentRegion(
     // outdentParagraph could move more than one paragraph if the paragraph
     // is in a list item. As a result, endAfterSelection and endOfNextParagraph
     // could refer to positions no longer in the document.
-    if (endAfterSelection.isNotNull() &&
-        !endAfterSelection.deepEquivalent().isConnected())
+    if (endAfterSelection.isNotNull() && !endAfterSelection.isConnected())
       break;
 
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     if (endOfNextParagraph.isNotNull() &&
-        !endOfNextParagraph.deepEquivalent().isConnected()) {
-      endOfCurrentParagraph =
-          createVisiblePositionDeprecated(endingSelection().end());
-      endOfNextParagraph =
-          endOfParagraphDeprecated(nextPositionOf(endOfCurrentParagraph));
+        !endOfNextParagraph.position().isConnected()) {
+      endOfCurrentParagraph = createVisiblePosition(endingSelection().end());
+      endOfNextParagraph = endOfParagraph(nextPositionOf(endOfCurrentParagraph))
+                               .toPositionWithAffinity();
     }
-    endOfCurrentParagraph = endOfNextParagraph;
+    endOfCurrentParagraph = createVisiblePosition(endOfNextParagraph);
   }
 }
 
