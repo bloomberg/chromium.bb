@@ -32,6 +32,7 @@ FakeSignalStrategy::FakeSignalStrategy(const std::string& jid)
       jid_(jid),
       last_id_(0),
       weak_factory_(this) {
+  DetachFromThread();
 }
 
 FakeSignalStrategy::~FakeSignalStrategy() {

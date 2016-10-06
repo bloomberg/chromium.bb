@@ -127,13 +127,15 @@ class MockIt2MeHost : public It2MeHost {
   MockIt2MeHost(std::unique_ptr<ChromotingHostContext> context,
                 std::unique_ptr<PolicyWatcher> policy_watcher,
                 base::WeakPtr<It2MeHost::Observer> observer,
-                const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
+                std::unique_ptr<SignalStrategy> signal_strategy,
+                const std::string& username,
                 const std::string& directory_bot_jid)
       : It2MeHost(std::move(context),
                   std::move(policy_watcher),
                   /*confirmation_dialog_factory=*/nullptr,
                   observer,
-                  xmpp_server_config,
+                  std::move(signal_strategy),
+                  username,
                   directory_bot_jid) {}
 
   // It2MeHost overrides
@@ -207,7 +209,8 @@ class MockIt2MeHostFactory : public It2MeHostFactory {
       std::unique_ptr<ChromotingHostContext> context,
       policy::PolicyService* policy_service,
       base::WeakPtr<It2MeHost::Observer> observer,
-      const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
+      std::unique_ptr<SignalStrategy> signal_strategy,
+      const std::string& username,
       const std::string& directory_bot_jid) override;
 
  private:
@@ -222,11 +225,13 @@ scoped_refptr<It2MeHost> MockIt2MeHostFactory::CreateIt2MeHost(
     std::unique_ptr<ChromotingHostContext> context,
     policy::PolicyService* policy_service,
     base::WeakPtr<It2MeHost::Observer> observer,
-    const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
+    std::unique_ptr<SignalStrategy> signal_strategy,
+    const std::string& username,
     const std::string& directory_bot_jid) {
   return new MockIt2MeHost(std::move(context),
                            /*policy_watcher=*/nullptr, observer,
-                           xmpp_server_config, directory_bot_jid);
+                           std::move(signal_strategy), username,
+                           directory_bot_jid);
 }
 
 }  // namespace

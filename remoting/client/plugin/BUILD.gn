@@ -11,8 +11,6 @@ executable("remoting_client_plugin_newlib") {
   sources = [
     "chromoting_instance.cc",
     "chromoting_instance.h",
-    "delegating_signal_strategy.cc",
-    "delegating_signal_strategy.h",
     "pepper_address_resolver.cc",
     "pepper_address_resolver.h",
     "pepper_audio_player.cc",
@@ -53,6 +51,7 @@ executable("remoting_client_plugin_newlib") {
     "//remoting/client",
     "//remoting/codec",
     "//remoting/protocol",
+    "//remoting/signaling",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture:primitives",
     "//ui/events:dom_keycode_converter",

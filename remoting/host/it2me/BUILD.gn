@@ -47,6 +47,7 @@ source_set("common") {
     "//remoting/host",
     "//remoting/protocol",
     "//remoting/resources",
+    "//remoting/signaling",
   ]
 
   if (is_desktop_linux) {

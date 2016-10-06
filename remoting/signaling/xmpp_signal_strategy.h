@@ -21,6 +21,8 @@ class URLRequestContextGetter;
 namespace remoting {
 
 // XmppSignalStrategy implements SignalStrategy using direct XMPP connection.
+// This class can be created on a different thread from the one it is used (when
+// Connect() is called).
 class XmppSignalStrategy : public SignalStrategy {
  public:
   // XMPP Server configuration for XmppSignalStrategy.
@@ -61,6 +63,8 @@ class XmppSignalStrategy : public SignalStrategy {
                    const std::string& auth_token);
 
  private:
+  // This ensures that even if a Listener deletes the current instance during
+  // OnSignalStrategyIncomingStanza(), we can delete |core_| asynchronously.
   class Core;
 
   std::unique_ptr<Core> core_;

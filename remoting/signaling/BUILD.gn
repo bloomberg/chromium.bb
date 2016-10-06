@@ -4,6 +4,8 @@
 
 static_library("signaling") {
   sources = [
+    "delegating_signal_strategy.cc",
+    "delegating_signal_strategy.h",
     "iq_sender.cc",
     "iq_sender.h",
     "jid_util.cc",

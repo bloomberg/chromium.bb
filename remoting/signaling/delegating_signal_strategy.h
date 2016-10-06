@@ -7,7 +7,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list_threadsafe.h"
 #include "remoting/signaling/signal_strategy.h"
 
 namespace base {
@@ -16,12 +17,26 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
+// A signaling strategy class that delegates IQ sending and receiving.
+//
+// Notes on thread safety:
+// 1. This object can be created on any thread.
+// 2. OnIncomingMessage() must be called on the same thread on which this object
+//    is created.
+// 3. |send_iq_callback| will always be called on the thread that it is created.
+//    Note that |send_iq_callback| may be called after this object is destroyed.
+// 4. The caller should invoke all methods on the SignalStrategy interface on
+//    the |client_task_runner|.
+// 5. All listeners will be called on |client_task_runner| as well.
+// 6. The destructor should always be called on the |client_task_runner|.
 class DelegatingSignalStrategy : public SignalStrategy {
  public:
   typedef base::Callback<void(const std::string&)> SendIqCallback;
 
-  DelegatingSignalStrategy(std::string local_jid,
-                       const SendIqCallback& send_iq_callback);
+  DelegatingSignalStrategy(
+      std::string local_jid,
+      scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
+      const SendIqCallback& send_iq_callback);
   ~DelegatingSignalStrategy() override;
 
   void OnIncomingMessage(const std::string& message);
@@ -39,9 +54,13 @@ class DelegatingSignalStrategy : public SignalStrategy {
 
  private:
   std::string local_jid_;
-  SendIqCallback send_iq_callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
 
+  SendIqCallback send_iq_callback_;
   base::ObserverList<Listener> listeners_;
+
+  base::WeakPtrFactory<DelegatingSignalStrategy> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingSignalStrategy);
 };

@@ -2,25 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/plugin/delegating_signal_strategy.h"
+#include "remoting/signaling/delegating_signal_strategy.h"
 
+#include "base/bind.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmpp/constants.h"
 
 namespace remoting {
 
 DelegatingSignalStrategy::DelegatingSignalStrategy(
     std::string local_jid,
+    scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
     const SendIqCallback& send_iq_callback)
     : local_jid_(local_jid),
-      send_iq_callback_(send_iq_callback) {
-}
+      delegate_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      client_task_runner_(client_task_runner),
+      send_iq_callback_(send_iq_callback),
+      weak_factory_(this) {}
 
-DelegatingSignalStrategy::~DelegatingSignalStrategy() {
-}
+DelegatingSignalStrategy::~DelegatingSignalStrategy() {}
 
 void DelegatingSignalStrategy::OnIncomingMessage(const std::string& message) {
+  if (!client_task_runner_->BelongsToCurrentThread()) {
+    client_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DelegatingSignalStrategy::OnIncomingMessage,
+                              weak_factory_.GetWeakPtr(), message));
+    return;
+  }
+
   std::unique_ptr<buzz::XmlElement> stanza(buzz::XmlElement::ForStr(message));
   if (!stanza.get()) {
     LOG(WARNING) << "Malformed XMPP stanza received: " << message;
@@ -36,34 +47,46 @@ void DelegatingSignalStrategy::OnIncomingMessage(const std::string& message) {
 }
 
 void DelegatingSignalStrategy::Connect() {
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
+  FOR_EACH_OBSERVER(Listener, listeners_,
+                    OnSignalStrategyStateChange(CONNECTED));
 }
 
 void DelegatingSignalStrategy::Disconnect() {
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
 }
 
 SignalStrategy::State DelegatingSignalStrategy::GetState() const {
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   return CONNECTED;
 }
 
 SignalStrategy::Error DelegatingSignalStrategy::GetError() const {
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   return OK;
 }
 
 std::string DelegatingSignalStrategy::GetLocalJid() const {
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   return local_jid_;
 }
 
 void DelegatingSignalStrategy::AddListener(Listener* listener) {
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   listeners_.AddObserver(listener);
 }
 
 void DelegatingSignalStrategy::RemoveListener(Listener* listener) {
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   listeners_.RemoveObserver(listener);
 }
 
 bool DelegatingSignalStrategy::SendStanza(
     std::unique_ptr<buzz::XmlElement> stanza) {
-  send_iq_callback_.Run(stanza->Str());
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
+  stanza->SetAttr(buzz::QN_FROM, GetLocalJid());
+  delegate_task_runner_->PostTask(FROM_HERE,
+                                  base::Bind(send_iq_callback_, stanza->Str()));
   return true;
 }
 

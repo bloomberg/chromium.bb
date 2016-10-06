@@ -22,6 +22,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/policy_watcher.h"
+#include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -110,9 +111,6 @@ class It2MeHostTest : public testing::Test {
 
   scoped_refptr<It2MeHost> it2me_host_;
 
-  std::string directory_bot_jid_;
-  XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
-
   DISALLOW_COPY_AND_ASSIGN(It2MeHostTest);
 };
 
@@ -127,11 +125,12 @@ void It2MeHostTest::SetUp() {
   ui_task_runner_ = host_context->ui_task_runner();
 
   dialog_ = new FakeIt2MeConfirmationDialog();
-
   it2me_host_ =
-      new It2MeHost(std::move(host_context), /*policy_watcher=*/nullptr,
-                    base::WrapUnique(dialog_), /*observer=*/nullptr,
-                    xmpp_server_config_, directory_bot_jid_);
+      new It2MeHost(std::move(host_context),
+                    /*policy_watcher=*/nullptr, base::WrapUnique(dialog_),
+                    /*observer=*/nullptr,
+                    base::WrapUnique(new FakeSignalStrategy("fake_local_jid")),
+                    "fake_user_name", "fake_bot_jid");
 }
 
 void It2MeHostTest::TearDown() {

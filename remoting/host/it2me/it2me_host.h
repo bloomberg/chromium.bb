@@ -67,7 +67,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
             std::unique_ptr<PolicyWatcher> policy_watcher,
             std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog,
             base::WeakPtr<It2MeHost::Observer> observer,
-            const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
+            std::unique_ptr<SignalStrategy> signal_strategy,
+            const std::string& username,
             const std::string& directory_bot_jid);
 
   // Methods called by the script object, from the plugin thread.
@@ -155,13 +156,13 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Caller supplied fields.
   std::unique_ptr<ChromotingHostContext> host_context_;
   base::WeakPtr<It2MeHost::Observer> observer_;
-  XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
+  std::unique_ptr<SignalStrategy> signal_strategy_;
+  std::string username_;
   std::string directory_bot_jid_;
 
   It2MeHostState state_ = kDisconnected;
 
   scoped_refptr<RsaKeyPair> host_key_pair_;
-  std::unique_ptr<SignalStrategy> signal_strategy_;
   std::unique_ptr<RegisterSupportHostRequest> register_request_;
   std::unique_ptr<HostStatusLogger> host_status_logger_;
   std::unique_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
@@ -215,7 +216,8 @@ class It2MeHostFactory {
       std::unique_ptr<ChromotingHostContext> context,
       policy::PolicyService* policy_service,
       base::WeakPtr<It2MeHost::Observer> observer,
-      const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
+      std::unique_ptr<SignalStrategy> signal_strategy,
+      const std::string& username,
       const std::string& directory_bot_jid);
 
  private:

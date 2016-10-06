@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "components/policy/policy_constants.h"
 #include "net/base/url_util.h"
+#include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -29,6 +30,7 @@
 #include "remoting/host/policy_watcher.h"
 #include "remoting/host/service_urls.h"
 #include "remoting/protocol/name_value_map.h"
+#include "remoting/signaling/delegating_signal_strategy.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -92,16 +94,6 @@ It2MeNativeMessagingHost::It2MeNativeMessagingHost(
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
-  const ServiceUrls* service_urls = ServiceUrls::GetInstance();
-  const bool xmpp_server_valid =
-      net::ParseHostAndPort(service_urls->xmpp_server_address(),
-                            &xmpp_server_config_.host,
-                            &xmpp_server_config_.port);
-  DCHECK(xmpp_server_valid);
-
-  xmpp_server_config_.use_tls = service_urls->xmpp_server_use_tls();
-  directory_bot_jid_ = service_urls->directory_bot_jid();
-
   // The policy watcher runs on the |file_task_runner| but we want to run the
   // update code on |task_runner| so we use a shim to post the callback to the
   // preferred task runner.
@@ -155,6 +147,8 @@ void It2MeNativeMessagingHost::OnMessage(const std::string& message) {
     ProcessConnect(std::move(message_dict), std::move(response));
   } else if (type == "disconnect") {
     ProcessDisconnect(std::move(message_dict), std::move(response));
+  } else if (type == "incomingIq") {
+    ProcessIncomingIq(std::move(message_dict), std::move(response));
   } else {
     SendErrorAndExit(std::move(response), "Unsupported request type: " + type);
   }
@@ -226,56 +220,92 @@ void It2MeNativeMessagingHost::ProcessConnect(
     return;
   }
 
-  XmppSignalStrategy::XmppServerConfig xmpp_config = xmpp_server_config_;
-
-  if (!message->GetString("userName", &xmpp_config.username)) {
+  std::string username;
+  if (!message->GetString("userName", &username)) {
     SendErrorAndExit(std::move(response), "'userName' not found in request.");
     return;
   }
 
-  std::string auth_service_with_token;
-  if (!message->GetString("authServiceWithToken", &auth_service_with_token)) {
-    SendErrorAndExit(std::move(response),
-                     "'authServiceWithToken' not found in request.");
-    return;
-  }
+  bool use_signaling_proxy = false;
+  message->GetBoolean("useSignalingProxy", &use_signaling_proxy);
 
-  // For backward compatibility the webapp still passes OAuth service as part of
-  // the authServiceWithToken field. But auth service part is always expected to
-  // be set to oauth2.
-  const char kOAuth2ServicePrefix[] = "oauth2:";
-  if (!base::StartsWith(auth_service_with_token, kOAuth2ServicePrefix,
-                        base::CompareCase::SENSITIVE)) {
-    SendErrorAndExit(std::move(response), "Invalid 'authServiceWithToken': " +
-                                              auth_service_with_token);
-    return;
-  }
+  const ServiceUrls* service_urls = ServiceUrls::GetInstance();
+  std::unique_ptr<SignalStrategy> signal_strategy;
 
-  xmpp_config.auth_token =
-      auth_service_with_token.substr(strlen(kOAuth2ServicePrefix));
+  if (!use_signaling_proxy) {
+    XmppSignalStrategy::XmppServerConfig xmpp_config;
+    xmpp_config.username = username;
+
+    const bool xmpp_server_valid =
+        net::ParseHostAndPort(service_urls->xmpp_server_address(),
+                              &xmpp_config.host, &xmpp_config.port);
+    DCHECK(xmpp_server_valid);
+    xmpp_config.use_tls = service_urls->xmpp_server_use_tls();
+
+    std::string auth_service_with_token;
+    if (!message->GetString("authServiceWithToken", &auth_service_with_token)) {
+      SendErrorAndExit(std::move(response),
+                       "'authServiceWithToken' not found in request.");
+      return;
+    }
+
+    // For backward compatibility the webapp still passes OAuth service as part
+    // of the authServiceWithToken field. But auth service part is always
+    // expected to be set to oauth2.
+    const char kOAuth2ServicePrefix[] = "oauth2:";
+    if (!base::StartsWith(auth_service_with_token, kOAuth2ServicePrefix,
+                          base::CompareCase::SENSITIVE)) {
+      SendErrorAndExit(std::move(response), "Invalid 'authServiceWithToken': " +
+                                                auth_service_with_token);
+      return;
+    }
+
+    xmpp_config.auth_token =
+        auth_service_with_token.substr(strlen(kOAuth2ServicePrefix));
 
 #if !defined(NDEBUG)
-  std::string address;
-  if (!message->GetString("xmppServerAddress", &address)) {
-    SendErrorAndExit(std::move(response),
-                     "'xmppServerAddress' not found in request.");
-    return;
+    std::string address;
+    if (!message->GetString("xmppServerAddress", &address)) {
+      SendErrorAndExit(std::move(response),
+                       "'xmppServerAddress' not found in request.");
+      return;
+    }
+
+    if (!net::ParseHostAndPort(address, &xmpp_config.host, &xmpp_config.port)) {
+      SendErrorAndExit(std::move(response),
+                       "Invalid 'xmppServerAddress': " + address);
+      return;
+    }
+
+    if (!message->GetBoolean("xmppServerUseTls", &xmpp_config.use_tls)) {
+      SendErrorAndExit(std::move(response),
+                       "'xmppServerUseTls' not found in request.");
+      return;
+    }
+#endif  // !defined(NDEBUG)
+
+    signal_strategy.reset(new XmppSignalStrategy(
+        net::ClientSocketFactory::GetDefaultFactory(),
+        host_context_->url_request_context_getter(), xmpp_config));
+  } else {
+    std::string local_jid;
+
+    if (!message->GetString("localJid", &local_jid)) {
+      SendErrorAndExit(std::move(response), "'localJid' not found in request.");
+      return;
+    }
+
+    delegating_signal_strategy_ = new DelegatingSignalStrategy(
+        local_jid, host_context_->network_task_runner(),
+        base::Bind(&It2MeNativeMessagingHost::SendOutgoingIq,
+                   weak_factory_.GetWeakPtr()));
+    signal_strategy.reset(delegating_signal_strategy_);
   }
 
-  if (!net::ParseHostAndPort(address, &xmpp_config.host,
-                             &xmpp_config.port)) {
-    SendErrorAndExit(std::move(response),
-                     "Invalid 'xmppServerAddress': " + address);
-    return;
-  }
+  std::string directory_bot_jid = service_urls->directory_bot_jid();
 
-  if (!message->GetBoolean("xmppServerUseTls", &xmpp_config.use_tls)) {
-    SendErrorAndExit(std::move(response),
-                     "'xmppServerUseTls' not found in request.");
-    return;
-  }
-
-  if (!message->GetString("directoryBotJid", &directory_bot_jid_)) {
+#if !defined(NDEBUG)
+  if (!message->GetString("directoryBotJid", &directory_bot_jid)) {
     SendErrorAndExit(std::move(response),
                      "'directoryBotJid' not found in request.");
     return;
@@ -283,9 +313,9 @@ void It2MeNativeMessagingHost::ProcessConnect(
 #endif  // !defined(NDEBUG)
 
   // Create the It2Me host and start connecting.
-  it2me_host_ =
-      factory_->CreateIt2MeHost(host_context_->Copy(), policy_service_,
-                                weak_ptr_, xmpp_config, directory_bot_jid_);
+  it2me_host_ = factory_->CreateIt2MeHost(
+      host_context_->Copy(), policy_service_, weak_ptr_,
+      std::move(signal_strategy), username, directory_bot_jid);
   it2me_host_->Connect();
 
   SendMessageToClient(std::move(response));
@@ -315,6 +345,27 @@ void It2MeNativeMessagingHost::ProcessDisconnect(
     it2me_host_ = nullptr;
   }
   SendMessageToClient(std::move(response));
+}
+
+void It2MeNativeMessagingHost::ProcessIncomingIq(
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
+  std::string iq;
+  if (!message->GetString("iq", &iq)) {
+    LOG(ERROR) << "Invalid incomingIq() data.";
+    return;
+  }
+
+  if (delegating_signal_strategy_)
+    delegating_signal_strategy_->OnIncomingMessage(iq);
+  SendMessageToClient(std::move(response));
+};
+
+void It2MeNativeMessagingHost::SendOutgoingIq(const std::string& iq) {
+  std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());
+  message->SetString("iq", iq);
+  message->SetString("type", "sendOutgoingIq");
+  SendMessageToClient(std::move(message));
 }
 
 void It2MeNativeMessagingHost::SendErrorAndExit(

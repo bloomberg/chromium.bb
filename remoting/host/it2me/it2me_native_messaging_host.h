@@ -28,6 +28,7 @@ class SingleThreadTaskRunner;
 namespace remoting {
 
 class ChromotingHostContext;
+class DelegatingSignalStrategy;
 class ElevatedNativeMessagingHost;
 class PolicyWatcher;
 
@@ -67,9 +68,14 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
                       std::unique_ptr<base::DictionaryValue> response);
   void ProcessDisconnect(std::unique_ptr<base::DictionaryValue> message,
                          std::unique_ptr<base::DictionaryValue> response);
+  void ProcessIncomingIq(std::unique_ptr<base::DictionaryValue> message,
+                         std::unique_ptr<base::DictionaryValue> response);
   void SendErrorAndExit(std::unique_ptr<base::DictionaryValue> response,
                         const std::string& description) const;
   void SendMessageToClient(std::unique_ptr<base::Value> message) const;
+
+  // Callback for DelegatingSignalStrategy.
+  void SendOutgoingIq(const std::string& iq);
 
   // Called when initial policies are read.
   void OnPolicyUpdate(std::unique_ptr<base::DictionaryValue> policies);
@@ -88,6 +94,7 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
 #endif  // defined(OS_WIN)
 
   Client* client_ = nullptr;
+  DelegatingSignalStrategy* delegating_signal_strategy_ = nullptr;
   std::unique_ptr<ChromotingHostContext> host_context_;
   std::unique_ptr<It2MeHostFactory> factory_;
   scoped_refptr<It2MeHost> it2me_host_;
@@ -103,12 +110,6 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   std::string access_code_;
   base::TimeDelta access_code_lifetime_;
   std::string client_username_;
-
-  // IT2Me Talk server configuration used by |it2me_host_| to connect.
-  XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
-
-  // Chromoting Bot JID used by |it2me_host_| to register the host.
-  std::string directory_bot_jid_;
 
   // Indicates whether or not a policy has ever been read. This is to ensure
   // that on startup, we do not accidentally start a connection before we have

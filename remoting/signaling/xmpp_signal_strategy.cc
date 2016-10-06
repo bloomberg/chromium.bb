@@ -141,7 +141,7 @@ class XmppSignalStrategy::Core : public XmppLoginHandler::Delegate {
 
   base::ObserverList<Listener, true> listeners_;
 
-  base::Timer keep_alive_timer_;
+  base::RepeatingTimer keep_alive_timer_;
 
   base::ThreadChecker thread_checker_;
 
@@ -154,16 +154,12 @@ XmppSignalStrategy::Core::Core(
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config)
     : socket_factory_(socket_factory),
       request_context_getter_(request_context_getter),
-      xmpp_server_config_(xmpp_server_config),
-      keep_alive_timer_(
-          FROM_HERE,
-          base::TimeDelta::FromSeconds(kKeepAliveIntervalSeconds),
-          base::Bind(&Core::SendKeepAlive, base::Unretained(this)),
-          true) {
+      xmpp_server_config_(xmpp_server_config) {
 #if defined(NDEBUG)
   // Non-secure connections are allowed only for debugging.
   CHECK(xmpp_server_config_.use_tls);
 #endif
+  thread_checker_.DetachFromThread();
 }
 
 XmppSignalStrategy::Core::~Core() {
@@ -187,6 +183,11 @@ void XmppSignalStrategy::Core::Connect() {
 
   int result = socket_->Connect(base::Bind(
       &Core::OnSocketConnected, base::Unretained(this)));
+
+  keep_alive_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kKeepAliveIntervalSeconds),
+      base::Bind(&Core::SendKeepAlive, base::Unretained(this)));
+
   if (result != net::ERR_IO_PENDING)
     OnSocketConnected(result);
 }
