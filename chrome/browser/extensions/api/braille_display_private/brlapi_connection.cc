@@ -6,14 +6,13 @@
 
 #include <errno.h>
 
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
 
 namespace extensions {
-using base::MessageLoopForIO;
 namespace api {
 namespace braille_display_private {
 
@@ -30,8 +29,7 @@ static const int kDefaultTtyChromeOS = 1;
 #endif
 }  // namespace
 
-class BrlapiConnectionImpl : public BrlapiConnection,
-                             MessageLoopForIO::Watcher {
+class BrlapiConnectionImpl : public BrlapiConnection {
  public:
   explicit BrlapiConnectionImpl(LibBrlapiLoader* loader) :
       libbrlapi_loader_(loader) {}
@@ -47,19 +45,13 @@ class BrlapiConnectionImpl : public BrlapiConnection,
   bool WriteDots(const unsigned char* cells) override;
   int ReadKey(brlapi_keyCode_t* keyCode) override;
 
-  // MessageLoopForIO::Watcher
-  void OnFileCanReadWithoutBlocking(int fd) override { on_data_ready_.Run(); }
-
-  void OnFileCanWriteWithoutBlocking(int fd) override {}
-
  private:
   bool CheckConnected();
   ConnectResult ConnectResultForError();
 
   LibBrlapiLoader* libbrlapi_loader_;
   std::unique_ptr<brlapi_handle_t, base::FreeDeleter> handle_;
-  MessageLoopForIO::FileDescriptorWatcher fd_controller_;
-  OnDataReadyCallback on_data_ready_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> fd_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BrlapiConnectionImpl);
 };
@@ -132,14 +124,8 @@ BrlapiConnection::ConnectResult BrlapiConnectionImpl::Connect(
     return CONNECT_ERROR_RETRY;
   }
 
-  if (!MessageLoopForIO::current()->WatchFileDescriptor(
-          fd, true, MessageLoopForIO::WATCH_READ, &fd_controller_, this)) {
-    LOG(ERROR) << "Couldn't watch file descriptor " << fd;
-    Disconnect();
-    return CONNECT_ERROR_RETRY;
-  }
-
-  on_data_ready_ = on_data_ready;
+  fd_controller_ =
+      base::FileDescriptorWatcher::WatchReadable(fd, on_data_ready);
 
   return CONNECT_SUCCESS;
 }
@@ -148,7 +134,7 @@ void BrlapiConnectionImpl::Disconnect() {
   if (!handle_) {
     return;
   }
-  fd_controller_.StopWatchingFileDescriptor();
+  fd_controller_.reset();
   libbrlapi_loader_->brlapi__closeConnection(
       handle_.get());
   handle_.reset();
