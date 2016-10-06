@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/android/content_settings/subresource_filter_infobar_delegate.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -16,15 +17,19 @@
 
 // static
 void SubresourceFilterInfobarDelegate::Create(InfoBarService* infobar_service) {
-  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate>(
-          new SubresourceFilterInfobarDelegate())));
+  infobar_service->AddInfoBar(CreateSubresourceFilterInfoBar(
+      base::WrapUnique(new SubresourceFilterInfobarDelegate())));
 }
 
 SubresourceFilterInfobarDelegate::SubresourceFilterInfobarDelegate()
     : ConfirmInfoBarDelegate() {}
 
 SubresourceFilterInfobarDelegate::~SubresourceFilterInfobarDelegate() {}
+
+base::string16 SubresourceFilterInfobarDelegate::GetExplanationText() const {
+  return l10n_util::GetStringUTF16(
+      IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION);
+}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 SubresourceFilterInfobarDelegate::GetIdentifier() const {
@@ -36,19 +41,18 @@ int SubresourceFilterInfobarDelegate::GetIconId() const {
 }
 
 base::string16 SubresourceFilterInfobarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(
-      IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION);
+  return l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE);
 }
 
 int SubresourceFilterInfobarDelegate::GetButtons() const {
-  return BUTTON_CANCEL;
+  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 base::string16 SubresourceFilterInfobarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  DCHECK(BUTTON_CANCEL);
   return l10n_util::GetStringUTF16(
-      IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD);
+      (button == BUTTON_OK) ? IDS_OK
+                            : IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD);
 }
 
 bool SubresourceFilterInfobarDelegate::Cancel() {

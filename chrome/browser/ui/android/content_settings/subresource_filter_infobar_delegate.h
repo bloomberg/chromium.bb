@@ -20,9 +20,9 @@ class SubresourceFilterInfobarDelegate : public ConfirmInfoBarDelegate {
   // |infobar_service|.
   static void Create(InfoBarService* infobar_service);
 
- private:
-  SubresourceFilterInfobarDelegate();
   ~SubresourceFilterInfobarDelegate() override;
+
+  base::string16 GetExplanationText() const;
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -32,7 +32,13 @@ class SubresourceFilterInfobarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Cancel() override;
 
+ private:
+  SubresourceFilterInfobarDelegate();
+
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterInfobarDelegate);
 };
+
+std::unique_ptr<infobars::InfoBar> CreateSubresourceFilterInfoBar(
+    std::unique_ptr<SubresourceFilterInfobarDelegate> delegate);
 
 #endif  // CHROME_BROWSER_UI_ANDROID_CONTENT_SETTINGS_SUBRESOURCE_FILTER_INFOBAR_DELEGATE_H_
