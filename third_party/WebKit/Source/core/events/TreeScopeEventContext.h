@@ -35,9 +35,9 @@
 
 namespace blink {
 
+class ContainerNode;
 class EventPath;
 class EventTarget;
-class Node;
 template <typename NodeType>
 class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
@@ -51,7 +51,7 @@ class CORE_EXPORT TreeScopeEventContext final
   DECLARE_TRACE();
 
   TreeScope& treeScope() const { return *m_treeScope; }
-  Node& rootNode() const { return *m_rootNode; }
+  ContainerNode& rootNode() const { return m_treeScope->rootNode(); }
 
   EventTarget* target() const { return m_target.get(); }
   void setTarget(EventTarget*);
@@ -91,8 +91,6 @@ class CORE_EXPORT TreeScopeEventContext final
   bool isUnclosedTreeOf(const TreeScopeEventContext& other);
 
   Member<TreeScope> m_treeScope;
-  Member<Node> m_rootNode;  // Prevents TreeScope from being freed. TreeScope
-                            // itself isn't RefCounted.
   Member<EventTarget> m_target;
   Member<EventTarget> m_relatedTarget;
   Member<HeapVector<Member<EventTarget>>> m_eventPath;

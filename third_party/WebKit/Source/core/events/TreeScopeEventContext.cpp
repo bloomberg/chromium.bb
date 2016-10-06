@@ -90,14 +90,12 @@ TreeScopeEventContext* TreeScopeEventContext::create(TreeScope& treeScope) {
 
 TreeScopeEventContext::TreeScopeEventContext(TreeScope& treeScope)
     : m_treeScope(treeScope),
-      m_rootNode(treeScope.rootNode()),
       m_containingClosedShadowTree(nullptr),
       m_preOrder(-1),
       m_postOrder(-1) {}
 
 DEFINE_TRACE(TreeScopeEventContext) {
   visitor->trace(m_treeScope);
-  visitor->trace(m_rootNode);
   visitor->trace(m_target);
   visitor->trace(m_relatedTarget);
   visitor->trace(m_eventPath);
