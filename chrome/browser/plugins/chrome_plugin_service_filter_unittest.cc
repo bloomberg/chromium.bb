@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
@@ -111,6 +112,7 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   content::WebPluginInfo flash_plugin(
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
+  base::HistogramTester histograms;
 
   // Activate PreferHtmlOverPlugins.
   base::test::ScopedFeatureList feature_list;
@@ -122,6 +124,9 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
 
+  histograms.ExpectUniqueSample(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 1);
+
   // Block plugins.
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());
@@ -131,6 +136,11 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
 
+  histograms.ExpectUniqueSample(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 1);
+  histograms.ExpectUniqueSample(
+      ChromePluginServiceFilter::kEngagementSettingBlockedHistogram, 0, 1);
+
   // Allow plugins.
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_ALLOW);
@@ -138,12 +148,26 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
 
+  histograms.ExpectUniqueSample(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 1);
+  histograms.ExpectUniqueSample(
+      ChromePluginServiceFilter::kEngagementSettingAllowedHistogram, 0, 1);
+  histograms.ExpectUniqueSample(
+      ChromePluginServiceFilter::kEngagementSettingBlockedHistogram, 0, 1);
+
   // Detect important content should block on 0 engagement.
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
+
+  histograms.ExpectUniqueSample(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 2);
+  histograms.ExpectUniqueSample(
+      ChromePluginServiceFilter::kEngagementSettingAllowedHistogram, 0, 1);
+  histograms.ExpectUniqueSample(
+      ChromePluginServiceFilter::kEngagementSettingBlockedHistogram, 0, 1);
 }
 
 TEST_F(ChromePluginServiceFilterTest,
@@ -151,6 +175,7 @@ TEST_F(ChromePluginServiceFilterTest,
   content::WebPluginInfo flash_plugin(
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
+  base::HistogramTester histograms;
 
   // Activate PreferHtmlOverPlugins.
   base::test::ScopedFeatureList feature_list;
@@ -167,12 +192,17 @@ TEST_F(ChromePluginServiceFilterTest,
   EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                 flash_plugin));
 
+  histograms.ExpectBucketCount(
+      ChromePluginServiceFilter::kEngagementSettingAllowedHistogram, 0, 1);
+
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   // This should be blocked due to 0 engagement and a detect content setting.
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
+  histograms.ExpectBucketCount(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 1);
 
   SiteEngagementService* service = SiteEngagementService::Get(profile());
   service->ResetScoreForURL(url, 10.0);
@@ -180,23 +210,36 @@ TEST_F(ChromePluginServiceFilterTest,
   // Should still be blocked.
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
+  histograms.ExpectBucketCount(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 10, 1);
 
   // Reaching 30.0 engagement should allow Flash.
   service->ResetScoreForURL(url, 30.0);
   EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                 flash_plugin));
 
+  histograms.ExpectBucketCount(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 1);
+  histograms.ExpectBucketCount(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 10, 1);
+  histograms.ExpectBucketCount(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 30, 1);
+
   // Blocked content setting should override engagement
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_BLOCK);
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
+
+  histograms.ExpectBucketCount(
+      ChromePluginServiceFilter::kEngagementSettingBlockedHistogram, 30, 1);
 }
 
 TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsCustomEngagement) {
   content::WebPluginInfo flash_plugin(
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
+  base::HistogramTester histograms;
 
   // Activate PreferHtmlOverPlugins and set a custom variation value in the
   // feature.
@@ -248,6 +291,15 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsCustomEngagement) {
   service->ResetScoreForURL(url, 60.0);
   EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
+
+  histograms.ExpectBucketCount(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 0, 2);
+  histograms.ExpectBucketCount(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 10, 1);
+  histograms.ExpectBucketCount(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 40, 1);
+  histograms.ExpectBucketCount(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 60, 1);
 
   variations::testing::ClearAllVariationParams();
 }
@@ -341,6 +393,7 @@ TEST_F(ChromePluginServiceFilterTest, BlockIfManagedSetting) {
   content::WebPluginInfo flash_plugin(
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
+  base::HistogramTester histograms;
 
   // Activate PreferHtmlOverPlugins.
   base::test::ScopedFeatureList feature_list;
@@ -357,12 +410,17 @@ TEST_F(ChromePluginServiceFilterTest, BlockIfManagedSetting) {
   service->ResetScoreForURL(url, 30.0);
   EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                 flash_plugin));
+  histograms.ExpectUniqueSample(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 30, 1);
 
-  // Enterprise ASK setting should block flash from being advertised.
+  // Enterprise ASK setting should block Flash from being advertised.
   syncable_prefs::TestingPrefServiceSyncable* prefs =
       profile()->GetTestingPrefService();
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
                         new base::FundamentalValue(CONTENT_SETTING_ASK));
+
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
+  histograms.ExpectUniqueSample(
+      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 30, 2);
 }

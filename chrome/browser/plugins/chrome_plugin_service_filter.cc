@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -107,6 +108,14 @@ ChromePluginServiceFilter::ProcessDetails::~ProcessDetails() {}
 // ChromePluginServiceFilter definitions.
 
 // static
+const char ChromePluginServiceFilter::kEngagementSettingAllowedHistogram[] =
+    "Plugin.Flash.Engagement.ContentSettingAllowed";
+const char ChromePluginServiceFilter::kEngagementSettingBlockedHistogram[] =
+    "Plugin.Flash.Engagement.ContentSettingBlocked";
+const char ChromePluginServiceFilter::kEngagementNoSettingHistogram[] =
+    "Plugin.Flash.Engagement.NoSetting";
+
+// static
 ChromePluginServiceFilter* ChromePluginServiceFilter::GetInstance() {
   return base::Singleton<ChromePluginServiceFilter>::get();
 }
@@ -203,10 +212,10 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
       base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
     // Check the content setting first, and always respect the ALLOW or BLOCK
     // state. When IsPluginAvailable() is called to check whether a plugin
-    // should be advertised, |url| has the same value of |policy_url| (i.e. the
-    //  main frame origin). The intended behavior is that Flash is advertised
-    // only if a Flash embed hosted on the same origin as the main frame origin
-    // is allowed to run.
+    // should be advertised, |plugin_content_url| has the same value of
+    // |main_url| (i.e. the main frame origin). The intended behavior is that
+    // Flash is advertised only if a Flash embed hosted on the same origin as
+    // the main frame origin is allowed to run.
     bool is_managed = false;
     HostContentSettingsMap* settings_map =
         context_info_it->second->host_content_settings_map.get();
@@ -214,18 +223,27 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
         settings_map, main_url, plugin_content_url, &is_managed);
     flash_setting = PluginsFieldTrial::EffectiveContentSetting(
         CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
-    if (flash_setting == CONTENT_SETTING_ALLOW)
+    double engagement =
+        SiteEngagementService::GetScoreFromSettings(settings_map, main_url);
+
+    if (flash_setting == CONTENT_SETTING_ALLOW) {
+      UMA_HISTOGRAM_COUNTS_100(kEngagementSettingAllowedHistogram, engagement);
       return true;
-    else if (flash_setting == CONTENT_SETTING_BLOCK)
+    }
+
+    if (flash_setting == CONTENT_SETTING_BLOCK) {
+      UMA_HISTOGRAM_COUNTS_100(kEngagementSettingBlockedHistogram, engagement);
       return false;
+    }
+
+    UMA_HISTOGRAM_COUNTS_100(kEngagementNoSettingHistogram, engagement);
 
     // The content setting is neither ALLOW or BLOCK. Check whether the site
     // meets the engagement cutoff for making Flash available without a prompt.
     // This should only happen if the setting isn't being enforced by an
     // enterprise policy.
     if (is_managed ||
-        SiteEngagementService::GetScoreFromSettings(settings_map, main_url) <
-            PluginsFieldTrial::GetSiteEngagementThresholdForFlash()) {
+        engagement < PluginsFieldTrial::GetSiteEngagementThresholdForFlash()) {
       return false;
     }
   }

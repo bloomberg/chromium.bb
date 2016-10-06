@@ -32,6 +32,11 @@ class WebContents;
 class ChromePluginServiceFilter : public content::PluginServiceFilter,
                                   public content::NotificationObserver {
  public:
+  // Public for testing purposes.
+  static const char kEngagementSettingAllowedHistogram[];
+  static const char kEngagementSettingBlockedHistogram[];
+  static const char kEngagementNoSettingHistogram[];
+
   static ChromePluginServiceFilter* GetInstance();
 
   // This method should be called on the UI thread.
