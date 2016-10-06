@@ -71,6 +71,12 @@ class PaintPropertyTreeBuilderTest
     return frameView->scroll();
   }
 
+  LayoutPoint paintOffset(const LayoutObject* object) {
+    return object->objectPaintProperties()
+        ->localBorderBoxProperties()
+        ->paintOffset;
+  }
+
  private:
   void SetUp() override {
     Settings::setMockScrollbarsEnabled(true);
@@ -2787,4 +2793,87 @@ TEST_P(PaintPropertyTreeBuilderTest,
               MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
+  setBodyInnerHTML(
+      "<style>"
+      "  body { margin: 0; }"
+      "  .space { height: 30px; }"
+      "  .abs { position: absolute; width: 20px; height: 20px; }"
+      "</style>"
+      "<div style='columns:2; width: 200px; column-gap: 0'>"
+      "  <div style='position: relative'>"
+      "    <div id=space1 class=space></div>"
+      "    <div id=space2 class=space></div>"
+      "    <div id=spanner style='column-span: all'>"
+      "      <div id=normal style='height: 50px'></div>"
+      "      <div id=top-left class=abs style='top: 0; left: 0'></div>"
+      "      <div id=bottom-right class=abs style='bottom: 0; right: 0'></div>"
+      "    </div>"
+      "    <div id=space3 class=space></div>"
+      "    <div id=space4 class=space></div>"
+      "  </div>"
+      "</div>");
+
+  // Above the spanner.
+  // Column 1.
+  EXPECT_EQ(LayoutPoint(), paintOffset(getLayoutObjectByElementId("space1")));
+  // Column 2. TODO(crbug.com/648274): This is incorrect. Should be (100, 0).
+  EXPECT_EQ(LayoutPoint(0, 30),
+            paintOffset(getLayoutObjectByElementId("space2")));
+
+  // The spanner's normal flow.
+  EXPECT_EQ(LayoutPoint(0, 30),
+            paintOffset(getLayoutObjectByElementId("spanner")));
+  EXPECT_EQ(LayoutPoint(0, 30),
+            paintOffset(getLayoutObjectByElementId("normal")));
+
+  // Below the spanner.
+  // Column 1. TODO(crbug.com/648274): This is incorrect. Should be (0, 80).
+  EXPECT_EQ(LayoutPoint(0, 60),
+            paintOffset(getLayoutObjectByElementId("space3")));
+  // Column 2. TODO(crbug.com/648274): This is incorrect. Should be (100, 80).
+  EXPECT_EQ(LayoutPoint(0, 90),
+            paintOffset(getLayoutObjectByElementId("space4")));
+
+  // Out-of-flow positioned descendants of the spanner. They are laid out in
+  // the relative-position container.
+
+  // "top-left" should be aligned to the top-left corner of space1.
+  EXPECT_EQ(LayoutPoint(0, 0),
+            paintOffset(getLayoutObjectByElementId("top-left")));
+
+  // "bottom-right" should be aligned to the bottom-right corner of space4.
+  // TODO(crbug.com/648274): This is incorrect. Should be (180, 90).
+  EXPECT_EQ(LayoutPoint(80, 100),
+            paintOffset(getLayoutObjectByElementId("bottom-right")));
+}
+
+// Ensures no crash with multi-column containing relative-position inline with
+// spanner with absolute-position children.
+TEST_P(PaintPropertyTreeBuilderTest,
+       MultiColumnInlineRelativeAndSpannerAndAbsPos) {
+  setBodyInnerHTML(
+      "<div style='columns:2; width: 200px; column-gap: 0'>"
+      "  <span style='position: relative'>"
+      "    <span id=spanner style='column-span: all'>"
+      "      <div id=absolute style='position: absolute'>absolute</div>"
+      "    </span>"
+      "  </span>"
+      "</div>");
+  // The "spanner" isn't a real spanner because it's an inline.
+  EXPECT_FALSE(getLayoutObjectByElementId("spanner")->isColumnSpanAll());
+
+  setBodyInnerHTML(
+      "<div style='columns:2; width: 200px; column-gap: 0'>"
+      "  <span style='position: relative'>"
+      "    <div id=spanner style='column-span: all'>"
+      "      <div id=absolute style='position: absolute'>absolute</div>"
+      "    </div>"
+      "  </span>"
+      "</div>");
+  // There should be anonymous block created containing the inline "relative",
+  // serving as the container of "absolute".
+  EXPECT_TRUE(
+      getLayoutObjectByElementId("absolute")->container()->isLayoutBlock());
+}
 }  // namespace blink

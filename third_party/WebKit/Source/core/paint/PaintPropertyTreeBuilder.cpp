@@ -666,6 +666,40 @@ void PaintPropertyTreeBuilder::updateOutOfFlowContext(
     properties->clearCssClipFixedPosition();
 }
 
+// Override ContainingBlockContext based on the properties of a containing block
+// that was previously walked in a subtree other than the current subtree being
+// walked. Used for out-of-flow positioned descendants of multi-column spanner
+// when the containing block is not in the normal tree walk order.
+// For example:
+// <div id="columns" style="columns: 2">
+//   <div id="relative" style="position: relative">
+//     <div id="spanner" style="column-span: all">
+//       <div id="absolute" style="position: absolute"></div>
+//     </div>
+//   </div>
+// <div>
+// The real containing block of "absolute" is "relative" which is not in the
+// tree-walk order of "columns" -> spanner placeholder -> spanner -> absolute.
+// Here we rebuild a ContainingBlockContext based on the properties of
+// "relative" for "absolute".
+static void overrideContaineringBlockContextFromRealContainingBlock(
+    const LayoutBlock& containingBlock,
+    PaintPropertyTreeBuilderContext::ContainingBlockContext& context) {
+  const auto* properties =
+      containingBlock.objectPaintProperties()->localBorderBoxProperties();
+  DCHECK(properties);
+
+  context.transform = properties->propertyTreeState.transform();
+  context.paintOffset = properties->paintOffset;
+  context.shouldFlattenInheritedTransform =
+      context.transform && context.transform->flattensInheritedTransform();
+  context.renderingContextID =
+      context.transform ? context.transform->renderingContextID() : 0;
+  context.clip = properties->propertyTreeState.clip();
+  context.scroll = const_cast<ScrollPaintPropertyNode*>(
+      properties->propertyTreeState.scroll());
+}
+
 static void deriveBorderBoxFromContainerContext(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
@@ -681,7 +715,25 @@ static void deriveBorderBoxFromContainerContext(
       context.current.paintOffset += boxModelObject.offsetForInFlowPosition();
       break;
     case AbsolutePosition: {
-      context.current = context.absolutePosition;
+      if (context.isUnderMultiColumnSpanner) {
+        const LayoutObject* container = boxModelObject.container();
+        if (container != context.containerForAbsolutePosition) {
+          // The container of the absolute-position is not in the normal tree-
+          // walk order.
+          context.containerForAbsolutePosition =
+              toLayoutBoxModelObject(container);
+          // The container is never a LayoutInline. In the example above
+          // overrideContaineringBlockContextFromRealContainingBlock(), if we
+          // change the container to an inline, there will be an anonymous
+          // blocks created because the spanner is always a block.
+          overrideContaineringBlockContextFromRealContainingBlock(
+              toLayoutBlock(*container), context.current);
+        }
+      } else {
+        DCHECK(context.containerForAbsolutePosition ==
+               boxModelObject.container());
+        context.current = context.absolutePosition;
+      }
 
       // Absolutely positioned content in an inline should be positioned
       // relative to the inline.
@@ -699,7 +751,14 @@ static void deriveBorderBoxFromContainerContext(
       context.current.paintOffset += boxModelObject.offsetForInFlowPosition();
       break;
     case FixedPosition:
-      context.current = context.fixedPosition;
+      if (context.isUnderMultiColumnSpanner) {
+        // The container of the fixed-position object may or may not be in the
+        // normal tree-walk order.
+        overrideContaineringBlockContextFromRealContainingBlock(
+            toLayoutBlock(*boxModelObject.container()), context.current);
+      } else {
+        context.current = context.fixedPosition;
+      }
       break;
     default:
       ASSERT_NOT_REACHED();

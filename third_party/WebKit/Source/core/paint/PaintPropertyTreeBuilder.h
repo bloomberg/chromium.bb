@@ -71,6 +71,8 @@ struct PaintPropertyTreeBuilderContext {
   // Therefore, we don't need extra bookkeeping for effect nodes and can
   // generate the effect tree from a DOM-order traversal.
   const EffectPaintPropertyNode* currentEffect = nullptr;
+
+  bool isUnderMultiColumnSpanner = false;
 };
 
 // Creates paint property tree nodes for special things in the layout tree.
