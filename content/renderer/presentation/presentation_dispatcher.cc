@@ -255,8 +255,11 @@ void PresentationDispatcher::getAvailability(
   DCHECK(status);
 
   if (status->listening_state == ListeningState::ACTIVE) {
-    callbacks->onSuccess(status->last_known_availability);
-    delete callbacks;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&blink::WebPresentationAvailabilityCallbacks::onSuccess,
+                   base::Owned(callbacks),
+                   status->last_known_availability));
     return;
   }
 
