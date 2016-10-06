@@ -4,7 +4,6 @@
 
 #include "ash/wm/overview/scoped_overview_animation_settings_aura.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -19,13 +18,11 @@ namespace {
 // The time duration for transformation animations.
 const int kTransitionMilliseconds = 300;
 
-// The time duration for fading out when closing an item. Only used with
-// Material Design.
-const int kCloseFadeOutMillisecondsMd = 50;
+// The time duration for fading out when closing an item.
+const int kCloseFadeOutMilliseconds = 50;
 
-// The time duration for scaling down when an item is closed. Only used with
-// Material Design.
-const int kCloseScaleMillisecondsMd = 100;
+// The time duration for scaling down when an item is closed.
+const int kCloseScaleMilliseconds = 100;
 
 // The time duration for widgets to fade in.
 const int kFadeInMilliseconds = 60;
@@ -35,22 +32,20 @@ const int kFadeOutDelayMilliseconds = kTransitionMilliseconds * 1 / 5;
 const int kFadeOutMilliseconds = kTransitionMilliseconds * 3 / 5;
 
 base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
-  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
       return base::TimeDelta();
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
-      return base::TimeDelta::FromMilliseconds(
-          material ? kFadeInMilliseconds : kTransitionMilliseconds);
+      return base::TimeDelta::FromMilliseconds(kFadeInMilliseconds);
     case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
       return base::TimeDelta::FromMilliseconds(kFadeOutMilliseconds);
     case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
       return base::TimeDelta::FromMilliseconds(kTransitionMilliseconds);
     case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
-      return base::TimeDelta::FromMilliseconds(kCloseScaleMillisecondsMd);
+      return base::TimeDelta::FromMilliseconds(kCloseScaleMilliseconds);
     case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
-      return base::TimeDelta::FromMilliseconds(kCloseFadeOutMillisecondsMd);
+      return base::TimeDelta::FromMilliseconds(kCloseFadeOutMilliseconds);
   }
   NOTREACHED();
   return base::TimeDelta();
@@ -63,21 +58,13 @@ ScopedOverviewAnimationSettingsAura::ScopedOverviewAnimationSettingsAura(
     aura::Window* window)
     : animation_settings_(new ui::ScopedLayerAnimationSettings(
           window->layer()->GetAnimator())) {
-  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
-      if (material) {
-        animation_settings_->SetTweenType(gfx::Tween::EASE_IN);
-      } else {
-        window->layer()->GetAnimator()->SchedulePauseForProperties(
-            GetAnimationDuration(OverviewAnimationType::
-                                     OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS),
-            ui::LayerAnimationElement::OPACITY);
-      }
+      animation_settings_->SetTweenType(gfx::Tween::EASE_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;
@@ -93,8 +80,7 @@ ScopedOverviewAnimationSettingsAura::ScopedOverviewAnimationSettingsAura(
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      animation_settings_->SetTweenType(
-          material ? gfx::Tween::EASE_OUT : gfx::Tween::FAST_OUT_SLOW_IN);
+      animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       break;
     case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
     case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:

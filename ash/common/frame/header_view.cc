@@ -6,7 +6,6 @@
 
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/default_header_painter.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
@@ -134,13 +133,11 @@ void HeaderView::ChildPreferredSizeChanged(views::View* child) {
 // HeaderView, ShellObserver overrides:
 
 void HeaderView::OnOverviewModeStarting() {
-  if (MaterialDesignController::IsOverviewMaterial())
-    caption_button_container_->SetVisible(false);
+  caption_button_container_->SetVisible(false);
 }
 
 void HeaderView::OnOverviewModeEnded() {
-  if (MaterialDesignController::IsOverviewMaterial())
-    caption_button_container_->SetVisible(true);
+  caption_button_container_->SetVisible(true);
 }
 
 void HeaderView::OnMaximizeModeStarted() {

@@ -56,13 +56,12 @@ namespace {
 // In the conceptual overview table, the window margin is the space reserved
 // around the window within the cell. This margin does not overlap so the
 // closest distance between adjacent windows will be twice this amount.
-static const int kWindowMargin = 30;
-static const int kWindowMarginMD = 5;
+static const int kWindowMargin = 5;
 
 // Cover the transformed window including the gaps between the windows with a
 // transparent shield to block the input events from reaching the transformed
 // window while in overview.
-static const int kWindowSelectorMargin = kWindowMarginMD * 2;
+static const int kWindowSelectorMargin = kWindowMargin * 2;
 
 // Foreground label color.
 static const SkColor kLabelColor = SK_ColorWHITE;
@@ -70,31 +69,22 @@ static const SkColor kLabelColor = SK_ColorWHITE;
 // TODO(tdanderson): Move this to a central location.
 static const SkColor kCloseButtonColor = SK_ColorWHITE;
 
-// Label background color used with Material Design once in overview mode.
+// Label background color once in overview mode.
 static const SkColor kLabelBackgroundColor = SkColorSetARGB(25, 255, 255, 255);
 
-// Label background color used with Material Design when exiting overview mode.
+// Label background color when exiting overview mode.
 static const SkColor kLabelExitColor = SkColorSetARGB(255, 90, 90, 90);
 
-// Corner radius for the selection tiles used with Material Design.
+// Corner radius for the selection tiles.
 static int kLabelBackgroundRadius = 2;
-
-// Label shadow color.
-static const SkColor kLabelShadow = SkColorSetARGB(176, 0, 0, 0);
 
 // Vertical padding for the label, on top of it.
 static const int kVerticalLabelPadding = 20;
 
-// Horizontal padding for the label, on both sides. Used with Material Design.
-static const int kHorizontalLabelPaddingMD = 8;
+// Horizontal padding for the label, on both sides.
+static const int kHorizontalLabelPadding = 8;
 
-// Solid shadow length from the label
-static const int kVerticalShadowOffset = 1;
-
-// Amount of blur applied to the label shadow
-static const int kShadowBlur = 10;
-
-// Height of an item header in Material Design.
+// Height of an item header.
 static const int kHeaderHeight = 32;
 
 // Opacity for dimmed items.
@@ -142,24 +132,12 @@ void SetupFadeInAfterLayout(views::Widget* widget) {
 WindowSelectorItem::OverviewCloseButton::OverviewCloseButton(
     views::ButtonListener* listener)
     : views::ImageButton(listener) {
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    icon_image_ = gfx::CreateVectorIcon(gfx::VectorIconId::WINDOW_CONTROL_CLOSE,
-                                        kCloseButtonColor);
-    SetImage(views::CustomButton::STATE_NORMAL, &icon_image_);
-    SetImage(views::CustomButton::STATE_HOVERED, &icon_image_);
-    SetImage(views::CustomButton::STATE_PRESSED, &icon_image_);
-    SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                      views::ImageButton::ALIGN_MIDDLE);
-    SetMinimumImageSize(gfx::Size(kHeaderHeight, kHeaderHeight));
-  } else {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    SetImage(views::CustomButton::STATE_NORMAL,
-             rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE));
-    SetImage(views::CustomButton::STATE_HOVERED,
-             rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE_H));
-    SetImage(views::CustomButton::STATE_PRESSED,
-             rb.GetImageSkiaNamed(IDR_AURA_WINDOW_OVERVIEW_CLOSE_P));
-  }
+  icon_image_ = gfx::CreateVectorIcon(gfx::VectorIconId::WINDOW_CONTROL_CLOSE,
+                                      kCloseButtonColor);
+  SetImage(views::CustomButton::STATE_NORMAL, &icon_image_);
+  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                    views::ImageButton::ALIGN_MIDDLE);
+  SetMinimumImageSize(gfx::Size(kHeaderHeight, kHeaderHeight));
 }
 
 WindowSelectorItem::OverviewCloseButton::~OverviewCloseButton() {}
@@ -338,9 +316,6 @@ class WindowSelectorItem::RoundedContainerView
   DISALLOW_COPY_AND_ASSIGN(RoundedContainerView);
 };
 
-bool WindowSelectorItem::use_mask_ = false;
-bool WindowSelectorItem::use_shape_ = false;
-
 WindowSelectorItem::OverviewLabelButton::OverviewLabelButton(
     views::ButtonListener* listener,
     const base::string16& text)
@@ -358,9 +333,7 @@ void WindowSelectorItem::OverviewLabelButton::SetBackgroundColorHint(
 
 gfx::Rect WindowSelectorItem::OverviewLabelButton::GetChildAreaBounds() {
   gfx::Rect bounds = GetLocalBounds();
-  bounds.Inset(padding_);
-  if (ash::MaterialDesignController::IsOverviewMaterial())
-    bounds.Inset(kHorizontalLabelPaddingMD, 0, kHorizontalLabelPaddingMD, 0);
+  bounds.Inset(padding_ + gfx::Insets(0, kHorizontalLabelPadding));
   return bounds;
 }
 
@@ -422,32 +395,6 @@ WindowSelectorItem::WindowSelectorItem(WmWindow* window,
       window_selector_(window_selector),
       background_view_(nullptr) {
   CreateWindowLabel(window->GetTitle());
-  if (!ash::MaterialDesignController::IsOverviewMaterial()) {
-    views::Widget::InitParams params;
-    params.type = views::Widget::InitParams::TYPE_POPUP;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-    params.name = "OverviewModeCloseButton";
-    close_button_widget_.reset(new views::Widget);
-    close_button_widget_->set_focus_on_creation(false);
-    window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-        close_button_widget_.get(), kShellWindowId_StatusContainer, &params);
-    close_button_widget_->Init(params);
-    close_button_->SetVisible(false);
-    close_button_widget_->SetContentsView(close_button_);
-    close_button_widget_->SetSize(close_button_->GetPreferredSize());
-    close_button_widget_->Show();
-
-    gfx::Rect close_button_rect(close_button_->GetPreferredSize());
-    // Align the center of the button with position (0, 0) so that the
-    // translate transform does not need to take the button dimensions into
-    // account.
-    close_button_rect.set_x(-close_button_rect.width() / 2);
-    close_button_rect.set_y(-close_button_rect.height() / 2);
-    WmLookup::Get()
-        ->GetWindowForWidget(close_button_widget_.get())
-        ->SetBounds(close_button_rect);
-  }
   GetWindow()->AddObserver(this);
 }
 
@@ -512,22 +459,15 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   target_bounds_ = target_bounds;
 
   gfx::Rect inset_bounds(target_bounds);
-  if (ash::MaterialDesignController::IsOverviewMaterial())
-    inset_bounds.Inset(kWindowMarginMD, kWindowMarginMD);
-  else
-    inset_bounds.Inset(kWindowMargin, kWindowMargin);
+  inset_bounds.Inset(kWindowMargin, kWindowMargin);
   SetItemBounds(inset_bounds, animation_type);
 
   // SetItemBounds is called before UpdateHeaderLayout so the header can
   // properly use the updated windows bounds.
   UpdateHeaderLayout(HeaderFadeInMode::UPDATE, animation_type);
-  if (!ash::MaterialDesignController::IsOverviewMaterial())
-    UpdateWindowLabel(target_bounds, animation_type);
 }
 
 void WindowSelectorItem::SetSelected(bool selected) {
-  if (!ash::MaterialDesignController::IsOverviewMaterial())
-    return;
   selected_ = selected;
   background_view_->AnimateBackgroundOpacity(selected ? 0.f : kHeaderOpacity);
 
@@ -545,47 +485,31 @@ void WindowSelectorItem::SetSelected(bool selected) {
   }
 }
 
-void WindowSelectorItem::RecomputeWindowTransforms() {
-  if (in_bounds_update_ || target_bounds_.IsEmpty())
-    return;
-  base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
-  gfx::Rect inset_bounds(target_bounds_);
-  if (ash::MaterialDesignController::IsOverviewMaterial())
-    inset_bounds.Inset(kWindowMarginMD, kWindowMarginMD);
-  else
-    inset_bounds.Inset(kWindowMargin, kWindowMargin);
-  SetItemBounds(inset_bounds, OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
-  UpdateHeaderLayout(HeaderFadeInMode::UPDATE,
-                     OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
-}
-
 void WindowSelectorItem::SendAccessibleSelectionEvent() {
   window_label_button_view_->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION,
                                                       true);
 }
 
 void WindowSelectorItem::CloseWindow() {
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    gfx::Rect inset_bounds(target_bounds_);
-    inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
-                       target_bounds_.height() * kPreCloseScale);
-    OverviewAnimationType animation_type =
-        OverviewAnimationType::OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM;
-    // Scale down both the window and label.
-    SetBounds(inset_bounds, animation_type);
-    // First animate opacity to an intermediate value concurrently with the
-    // scaling animation.
-    AnimateOpacity(kClosingItemOpacity, animation_type);
+  gfx::Rect inset_bounds(target_bounds_);
+  inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
+                     target_bounds_.height() * kPreCloseScale);
+  OverviewAnimationType animation_type =
+      OverviewAnimationType::OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM;
+  // Scale down both the window and label.
+  SetBounds(inset_bounds, animation_type);
+  // First animate opacity to an intermediate value concurrently with the
+  // scaling animation.
+  AnimateOpacity(kClosingItemOpacity, animation_type);
 
-    // Fade out the window and the label, effectively hiding them.
-    AnimateOpacity(
-        0.0, OverviewAnimationType::OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM);
-  }
+  // Fade out the window and the label, effectively hiding them.
+  AnimateOpacity(0.0,
+                 OverviewAnimationType::OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM);
   transform_window_.Close();
 }
 
 void WindowSelectorItem::HideHeaderAndSetShape(int radius) {
-  transform_window_.HideHeaderAndSetShape(use_mask_, use_shape_, radius);
+  transform_window_.HideHeaderAndSetShape(radius);
 }
 
 void WindowSelectorItem::SetDimmed(bool dimmed) {
@@ -617,10 +541,10 @@ void WindowSelectorItem::OnWindowTitleChanged(WmWindow* window) {
 }
 
 float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
-  gfx::Size inset_size(size.width(), size.height() - 2 * kWindowMarginMD);
+  gfx::Size inset_size(size.width(), size.height() - 2 * kWindowMargin);
   return ScopedTransformOverviewWindow::GetItemScale(
       transform_window_.GetTargetBoundsInScreen().size(), inset_size,
-      hide_header() ? transform_window_.GetTopInset() : 0,
+      transform_window_.GetTopInset(),
       close_button_->GetPreferredSize().height());
 }
 
@@ -638,13 +562,8 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
   screen_size.SetToMax(gfx::Size(1, 1));
   screen_rect.set_size(screen_size);
 
-  int top_view_inset = 0;
-  int title_height = 0;
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    if (hide_header())
-      top_view_inset = transform_window_.GetTopInset();
-    title_height = close_button_->GetPreferredSize().height();
-  }
+  const int top_view_inset = transform_window_.GetTopInset();
+  const int title_height = close_button_->GetPreferredSize().height();
   gfx::Rect selector_item_bounds =
       ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
           screen_rect, target_bounds, top_view_inset, title_height);
@@ -652,7 +571,7 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
       screen_rect, selector_item_bounds);
   ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
-  transform_window_.SetTransform(root_window_, transform, use_mask_);
+  transform_window_.SetTransform(root_window_, transform);
   transform_window_.set_overview_transform(transform);
 }
 
@@ -662,10 +581,6 @@ void WindowSelectorItem::SetOpacity(float opacity) {
     background_view_->AnimateBackgroundOpacity(
         selected_ ? 0.f : kHeaderOpacity * opacity);
   }
-
-  if (!ash::MaterialDesignController::IsOverviewMaterial())
-    close_button_widget_->SetOpacity(opacity);
-
   transform_window_.SetOpacity(opacity);
 }
 
@@ -692,13 +607,10 @@ void WindowSelectorItem::UpdateWindowLabel(
 }
 
 void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
-  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
-  if (material) {
-    background_view_ = new RoundedContainerView(
-        this, transform_window_.window(), kLabelBackgroundRadius,
-        transform_window_.GetTopColor());
-    // |background_view_| will get added as a child to CaptionContainerView.
-  }
+  background_view_ = new RoundedContainerView(this, transform_window_.window(),
+                                              kLabelBackgroundRadius,
+                                              transform_window_.GetTopColor());
+  // |background_view_| will get added as a child to CaptionContainerView.
   views::Widget::InitParams params_label;
   params_label.type = views::Widget::InitParams::TYPE_POPUP;
   params_label.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -720,138 +632,106 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   window_label_button_view_->SetBorder(views::Border::NullBorder());
   window_label_button_view_->SetEnabledTextColors(kLabelColor);
   window_label_button_view_->set_animate_on_state_change(false);
-  if (material) {
-    WmWindow* label_window =
-        WmLookup::Get()->GetWindowForWidget(window_label_.get());
-    if (transform_window_.GetTopInset()) {
-      // For windows with headers the overview header fades in above the
-      // original window header.
-      label_window->GetParent()->StackChildAbove(label_window,
-                                                 transform_window_.window());
-    } else {
-      // For tabbed windows the overview header slides from behind. The stacking
-      // is then corrected when the animation completes.
-      label_window->GetParent()->StackChildBelow(label_window,
-                                                 transform_window_.window());
-    }
-    window_label_button_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  WmWindow* label_window =
+      WmLookup::Get()->GetWindowForWidget(window_label_.get());
+  if (transform_window_.GetTopInset()) {
+    // For windows with headers the overview header fades in above the
+    // original window header.
+    label_window->GetParent()->StackChildAbove(label_window,
+                                               transform_window_.window());
   } else {
-    window_label_button_view_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    window_label_button_view_->SetTextShadows(gfx::ShadowValues(
-        1, gfx::ShadowValue(gfx::Vector2d(0, kVerticalShadowOffset),
-                            kShadowBlur, kLabelShadow)));
+    // For tabbed windows the overview header slides from behind. The stacking
+    // is then corrected when the animation completes.
+    label_window->GetParent()->StackChildBelow(label_window,
+                                               transform_window_.window());
   }
+  window_label_button_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  window_label_button_view_->SetFontList(bundle.GetFontList(
-      material ? ui::ResourceBundle::BaseFont : ui::ResourceBundle::BoldFont));
-  if (material) {
-    // Hint at the background color that the label will be drawn onto (for
-    // subpixel antialiasing). Does not actually set the background color.
-    window_label_button_view_->SetBackgroundColorHint(kLabelBackgroundColor);
-    caption_container_view_ = new CaptionContainerView(
-        window_label_button_view_, close_button_, background_view_);
-    window_label_->SetContentsView(caption_container_view_);
-    window_label_button_view_->SetVisible(false);
-    window_label_->SetOpacity(0);
-    window_label_->Show();
+  window_label_button_view_->SetFontList(
+      bundle.GetFontList(ui::ResourceBundle::BaseFont));
+  // Hint at the background color that the label will be drawn onto (for
+  // subpixel antialiasing). Does not actually set the background color.
+  window_label_button_view_->SetBackgroundColorHint(kLabelBackgroundColor);
+  caption_container_view_ = new CaptionContainerView(
+      window_label_button_view_, close_button_, background_view_);
+  window_label_->SetContentsView(caption_container_view_);
+  window_label_button_view_->SetVisible(false);
+  window_label_->SetOpacity(0);
+  window_label_->Show();
 
-    // TODO(varkha): Restore shadows when programmatic shadows exist.
-    // Note: current shadow implementation does not allow proper animation when
-    // the parent layer bounds change during the animation since
-    // Shadow::UpdateLayerBounds() only happens before the animation starts.
-    if (ash::MaterialDesignController::GetMode() ==
-        ash::MaterialDesignController::Mode::MATERIAL_EXPERIMENTAL) {
-      shadow_.reset(new ::wm::Shadow());
-      shadow_->Init(::wm::Shadow::STYLE_INACTIVE);
-      shadow_->layer()->SetVisible(true);
-      window_label_->GetLayer()->Add(shadow_->layer());
-    }
-    window_label_->GetLayer()->SetMasksToBounds(false);
-  } else {
-    // Indicate that the label will be drawn onto a transparent background
-    // (disables subpixel antialiasing).
-    window_label_button_view_->SetBackgroundColorHint(SK_ColorTRANSPARENT);
-    window_label_->SetContentsView(window_label_button_view_);
+  // TODO(varkha): Restore shadows when programmatic shadows exist.
+  // Note: current shadow implementation does not allow proper animation when
+  // the parent layer bounds change during the animation since
+  // Shadow::UpdateLayerBounds() only happens before the animation starts.
+  if (ash::MaterialDesignController::GetMode() ==
+      ash::MaterialDesignController::Mode::MATERIAL_EXPERIMENTAL) {
+    shadow_.reset(new ::wm::Shadow());
+    shadow_->Init(::wm::Shadow::STYLE_INACTIVE);
+    shadow_->layer()->SetVisible(true);
+    window_label_->GetLayer()->Add(shadow_->layer());
   }
+  window_label_->GetLayer()->SetMasksToBounds(false);
 }
 
 void WindowSelectorItem::UpdateHeaderLayout(
     HeaderFadeInMode mode,
     OverviewAnimationType animation_type) {
   gfx::Rect transformed_window_bounds = root_window_->ConvertRectFromScreen(
-      transform_window_.GetTransformedBounds(hide_header()));
+      transform_window_.GetTransformedBounds());
 
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    gfx::Rect label_rect(close_button_->GetPreferredSize());
-    label_rect.set_width(transformed_window_bounds.width());
-    // For tabbed windows the initial bounds of the caption are set such that it
-    // appears to be "growing" up from the window content area.
-    label_rect.set_y(
-        (mode != HeaderFadeInMode::ENTER || transform_window_.GetTopInset())
-            ? -label_rect.height()
-            : 0);
-    if (background_view_) {
-      if (mode == HeaderFadeInMode::ENTER) {
-        background_view_->ObserveLayerAnimations(window_label_->GetLayer());
-        background_view_->set_color(kLabelBackgroundColor);
-        // The color will be animated only once the label widget is faded in.
-      } else if (mode == HeaderFadeInMode::EXIT) {
-        // Normally the observer is disconnected when the fade-in animations
-        // complete but some tests invoke animations with |NON_ZERO_DURATION|
-        // without waiting for completion so do it here.
-        background_view_->StopObservingLayerAnimations();
-        // Make the header visible above the window. It will be faded out when
-        // the Shutdown() is called.
-        background_view_->AnimateColor(gfx::Tween::EASE_OUT,
-                                       kExitFadeInMilliseconds);
-        background_view_->set_color(kLabelExitColor);
-      }
+  gfx::Rect label_rect(close_button_->GetPreferredSize());
+  label_rect.set_width(transformed_window_bounds.width());
+  // For tabbed windows the initial bounds of the caption are set such that it
+  // appears to be "growing" up from the window content area.
+  label_rect.set_y(
+      (mode != HeaderFadeInMode::ENTER || transform_window_.GetTopInset())
+          ? -label_rect.height()
+          : 0);
+  if (background_view_) {
+    if (mode == HeaderFadeInMode::ENTER) {
+      background_view_->ObserveLayerAnimations(window_label_->GetLayer());
+      background_view_->set_color(kLabelBackgroundColor);
+      // The color will be animated only once the label widget is faded in.
+    } else if (mode == HeaderFadeInMode::EXIT) {
+      // Normally the observer is disconnected when the fade-in animations
+      // complete but some tests invoke animations with |NON_ZERO_DURATION|
+      // without waiting for completion so do it here.
+      background_view_->StopObservingLayerAnimations();
+      // Make the header visible above the window. It will be faded out when
+      // the Shutdown() is called.
+      background_view_->AnimateColor(gfx::Tween::EASE_OUT,
+                                     kExitFadeInMilliseconds);
+      background_view_->set_color(kLabelExitColor);
     }
-    if (!window_label_button_view_->visible()) {
-      window_label_button_view_->SetVisible(true);
-      SetupFadeInAfterLayout(window_label_.get());
-    }
-    WmWindow* window_label_window =
-        WmLookup::Get()->GetWindowForWidget(window_label_.get());
-    std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
-        ScopedOverviewAnimationSettingsFactory::Get()
-            ->CreateOverviewAnimationSettings(animation_type,
-                                              window_label_window);
-    // |window_label_window| covers both the transformed window and the header
-    // as well as the gap between the windows to prevent events from reaching
-    // the window including its sizing borders.
-    if (mode != HeaderFadeInMode::ENTER) {
-      label_rect.set_height(close_button_->GetPreferredSize().height() +
-                            transformed_window_bounds.height());
-    }
-    label_rect.Inset(-kWindowSelectorMargin, -kWindowSelectorMargin);
-    window_label_window->SetBounds(label_rect);
-    gfx::Transform label_transform;
-    label_transform.Translate(transformed_window_bounds.x(),
-                              transformed_window_bounds.y());
-    window_label_window->SetTransform(label_transform);
-
-    gfx::Rect shadow_bounds(label_rect.size());
-    shadow_bounds.Inset(kWindowSelectorMargin, kWindowSelectorMargin);
-    if (shadow_)
-      shadow_->SetContentBounds(shadow_bounds);
-  } else {
-    if (!close_button_->visible()) {
-      close_button_->SetVisible(true);
-      SetupFadeInAfterLayout(close_button_widget_.get());
-    }
-    WmWindow* close_button_widget_window =
-        WmLookup::Get()->GetWindowForWidget(close_button_widget_.get());
-    std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
-        ScopedOverviewAnimationSettingsFactory::Get()
-            ->CreateOverviewAnimationSettings(animation_type,
-                                              close_button_widget_window);
-
-    gfx::Transform close_button_transform;
-    close_button_transform.Translate(transformed_window_bounds.right(),
-                                     transformed_window_bounds.y());
-    close_button_widget_window->SetTransform(close_button_transform);
   }
+  if (!window_label_button_view_->visible()) {
+    window_label_button_view_->SetVisible(true);
+    SetupFadeInAfterLayout(window_label_.get());
+  }
+  WmWindow* window_label_window =
+      WmLookup::Get()->GetWindowForWidget(window_label_.get());
+  std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
+      ScopedOverviewAnimationSettingsFactory::Get()
+          ->CreateOverviewAnimationSettings(animation_type,
+                                            window_label_window);
+  // |window_label_window| covers both the transformed window and the header
+  // as well as the gap between the windows to prevent events from reaching
+  // the window including its sizing borders.
+  if (mode != HeaderFadeInMode::ENTER) {
+    label_rect.set_height(close_button_->GetPreferredSize().height() +
+                          transformed_window_bounds.height());
+  }
+  label_rect.Inset(-kWindowSelectorMargin, -kWindowSelectorMargin);
+  window_label_window->SetBounds(label_rect);
+  gfx::Transform label_transform;
+  label_transform.Translate(transformed_window_bounds.x(),
+                            transformed_window_bounds.y());
+  window_label_window->SetTransform(label_transform);
+
+  gfx::Rect shadow_bounds(label_rect.size());
+  shadow_bounds.Inset(kWindowSelectorMargin, kWindowSelectorMargin);
+  if (shadow_)
+    shadow_->SetContentBounds(shadow_bounds);
 }
 
 void WindowSelectorItem::AnimateOpacity(float opacity,

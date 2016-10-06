@@ -932,15 +932,11 @@ void DockedWindowLayoutManager::OnFullscreenStateChanged(
 
 void DockedWindowLayoutManager::OnOverviewModeStarting() {
   in_overview_ = true;
-  if (!ash::MaterialDesignController::IsOverviewMaterial())
-    return;
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
 void DockedWindowLayoutManager::OnOverviewModeEnded() {
   in_overview_ = false;
-  if (!ash::MaterialDesignController::IsOverviewMaterial())
-    return;
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 

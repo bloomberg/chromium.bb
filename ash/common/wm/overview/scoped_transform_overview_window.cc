@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/common/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/common/wm/overview/window_selector_item.h"
@@ -39,10 +38,7 @@ bool immediate_close_for_tests = false;
 // The opacity level that windows will be set to when they are restored.
 const float kRestoreWindowOpacity = 1.0f;
 
-// Alpha value used to paint mask layer that masks the original window header.
-const int kOverviewContentMaskAlpha = 255;
-
-// Delay closing window with Material Design to allow it to shrink and fade out.
+// Delay closing window to allow it to shrink and fade out.
 const int kCloseWindowDelayInMilliseconds = 150;
 
 WmWindow* GetTransientRoot(WmWindow* window) {
@@ -175,79 +171,6 @@ TransientDescendantIteratorRange GetTransientTreeIterator(WmWindow* window) {
 
 }  // namespace
 
-// Mask layer that clips the window's original header in overview mode.
-// Only used with Material Design.
-class ScopedTransformOverviewWindow::OverviewContentMask
-    : public ui::LayerDelegate {
- public:
-  explicit OverviewContentMask();
-  ~OverviewContentMask() override;
-
-  void set_radius(float radius) { radius_ = radius; }
-  void set_inset(int inset) { inset_ = inset; }
-  ui::Layer* layer() { return &layer_; }
-
-  // Overridden from LayerDelegate.
-  void OnPaintLayer(const ui::PaintContext& context) override;
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-  base::Closure PrepareForLayerBoundsChange() override;
-
- private:
-  ui::Layer layer_;
-  float radius_;
-  int inset_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewContentMask);
-};
-
-ScopedTransformOverviewWindow::OverviewContentMask::OverviewContentMask()
-    : layer_(ui::LAYER_TEXTURED), radius_(0), inset_(0) {
-  layer_.set_delegate(this);
-}
-
-ScopedTransformOverviewWindow::OverviewContentMask::~OverviewContentMask() {
-  layer_.set_delegate(nullptr);
-}
-
-void ScopedTransformOverviewWindow::OverviewContentMask::OnPaintLayer(
-    const ui::PaintContext& context) {
-  ui::PaintRecorder recorder(context, layer()->size());
-  gfx::Rect bounds(layer()->bounds().size());
-  bounds.Inset(0, inset_, 0, 0);
-
-  // Tile a window into an area, rounding the bottom corners.
-  const SkRect rect = gfx::RectToSkRect(bounds);
-  const SkScalar corner_radius_scalar = SkIntToScalar(radius_);
-  SkScalar radii[8] = {0,
-                       0,  // top-left
-                       0,
-                       0,  // top-right
-                       corner_radius_scalar,
-                       corner_radius_scalar,  // bottom-right
-                       corner_radius_scalar,
-                       corner_radius_scalar};  // bottom-left
-  SkPath path;
-  path.addRoundRect(rect, radii, SkPath::kCW_Direction);
-
-  // Set a mask.
-  SkPaint paint;
-  paint.setAlpha(kOverviewContentMaskAlpha);
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setAntiAlias(true);
-  recorder.canvas()->DrawPath(path, paint);
-}
-
-void ScopedTransformOverviewWindow::OverviewContentMask::
-    OnDeviceScaleFactorChanged(float device_scale_factor) {
-  // Redrawing will take care of scale factor change.
-}
-
-base::Closure ScopedTransformOverviewWindow::OverviewContentMask::
-    PrepareForLayerBoundsChange() {
-  return base::Closure();
-}
-
 ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(WmWindow* window)
     : window_(window),
       determined_original_window_shape_(false),
@@ -270,8 +193,7 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   ScopedAnimationSettings animation_settings_list;
   BeginScopedAnimation(OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
                        &animation_settings_list);
-  SetTransform(window()->GetRootWindow(), original_transform_,
-               false /* use_mask */);
+  SetTransform(window()->GetRootWindow(), original_transform_);
   set_overview_transform(original_transform_);
 
   std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
@@ -296,9 +218,7 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   }
   window_->GetWindowState()->set_ignored_by_shelf(ignored_by_shelf_);
   SetOpacity(original_opacity_);
-
-  if (ash::MaterialDesignController::IsOverviewMaterial())
-    ShowHeaderAndResetShape();
+  ShowHeaderAndResetShape();
 }
 
 void ScopedTransformOverviewWindow::BeginScopedAnimation(
@@ -333,20 +253,17 @@ gfx::Rect ScopedTransformOverviewWindow::GetTargetBoundsInScreen() const {
   return bounds;
 }
 
-gfx::Rect ScopedTransformOverviewWindow::GetTransformedBounds(
-    bool hide_header) const {
+gfx::Rect ScopedTransformOverviewWindow::GetTransformedBounds() const {
   if (window_->GetWindowState()->IsMinimized())
     return window_->GetMinimizeAnimationTargetBoundsInScreen();
 
-  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
-  const int top_inset = hide_header ? GetTopInset() : 0;
+  const int top_inset = GetTopInset();
   gfx::Rect bounds;
   for (auto* window : GetTransientTreeIterator(window_)) {
     // Ignore other window types when computing bounding box of window
     // selector target item.
-    if (window != window_ &&
-        (!material || (window->GetType() != ui::wm::WINDOW_TYPE_NORMAL &&
-                       window->GetType() != ui::wm::WINDOW_TYPE_PANEL))) {
+    if (window != window_ && (window->GetType() != ui::wm::WINDOW_TYPE_NORMAL &&
+                              window->GetType() != ui::wm::WINDOW_TYPE_PANEL)) {
       continue;
     }
     gfx::RectF window_bounds(window->GetTargetBounds());
@@ -355,10 +272,10 @@ gfx::Rect ScopedTransformOverviewWindow::GetTransformedBounds(
                             window->GetTargetTransform());
     new_transform.TransformRect(&window_bounds);
 
-    // With Material Design the preview title is shown above the preview window.
-    // Hide the window header for apps or browser windows with no tabs (web
-    // apps) to avoid showing both the window header and the preview title.
-    if (material && top_inset > 0) {
+    // The preview title is shown above the preview window. Hide the window
+    // header for apps or browser windows with no tabs (web apps) to avoid
+    // showing both the window header and the preview title.
+    if (top_inset > 0) {
       gfx::RectF header_bounds(window_bounds);
       header_bounds.set_height(top_inset);
       new_transform.TransformRect(&header_bounds);
@@ -420,13 +337,8 @@ float ScopedTransformOverviewWindow::GetItemScale(const gfx::Size& source,
                                                   const gfx::Size& target,
                                                   int top_view_inset,
                                                   int title_height) {
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    return std::min(2.0f, static_cast<float>((target.height() - title_height)) /
-                              (source.height() - top_view_inset));
-  }
-  return std::min(
-      1.0f, std::min(static_cast<float>(target.width()) / source.width(),
-                     static_cast<float>(target.height()) / source.height()));
+  return std::min(2.0f, static_cast<float>((target.height() - title_height)) /
+                            (source.height() - top_view_inset));
 }
 
 gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
@@ -438,14 +350,6 @@ gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
   DCHECK_LE(top_view_inset, rect.height());
   const float scale =
       GetItemScale(rect.size(), bounds.size(), top_view_inset, title_height);
-  if (!ash::MaterialDesignController::IsOverviewMaterial()) {
-    return gfx::Rect(
-        bounds.x() + 0.5 * (bounds.width() - scale * rect.width()),
-        bounds.y() + title_height - scale * top_view_inset +
-            0.5 * (bounds.height() -
-                   (title_height + scale * (rect.height() - top_view_inset))),
-        rect.width() * scale, rect.height() * scale);
-  }
   const int horizontal_offset = gfx::ToFlooredInt(
       0.5 * (bounds.width() - gfx::ToFlooredInt(scale * rect.width())));
   const int width = bounds.width() - 2 * horizontal_offset;
@@ -470,23 +374,15 @@ gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
 
 void ScopedTransformOverviewWindow::SetTransform(
     WmWindow* root_window,
-    const gfx::Transform& transform,
-    bool use_mask) {
+    const gfx::Transform& transform) {
   DCHECK(overview_started_);
 
-  if (ash::MaterialDesignController::IsOverviewMaterial() &&
-      &transform != &original_transform_) {
-    if (use_mask && !mask_) {
-      mask_.reset(new OverviewContentMask());
-      mask_->layer()->SetFillsBoundsOpaquely(false);
-      window()->GetLayer()->SetMaskLayer(mask_->layer());
-    }
-    if (!determined_original_window_shape_) {
-      determined_original_window_shape_ = true;
-      SkRegion* window_shape = window()->GetLayer()->alpha_shape();
-      if (!original_window_shape_ && window_shape)
-        original_window_shape_.reset(new SkRegion(*window_shape));
-    }
+  if (&transform != &original_transform_ &&
+      !determined_original_window_shape_) {
+    determined_original_window_shape_ = true;
+    SkRegion* window_shape = window()->GetLayer()->alpha_shape();
+    if (!original_window_shape_ && window_shape)
+      original_window_shape_.reset(new SkRegion(*window_shape));
   }
 
   gfx::Point target_origin(GetTargetBoundsInScreen().origin());
@@ -509,21 +405,11 @@ void ScopedTransformOverviewWindow::SetOpacity(float opacity) {
   }
 }
 
-void ScopedTransformOverviewWindow::HideHeaderAndSetShape(bool use_mask,
-                                                          bool use_shape,
-                                                          int radius) {
+void ScopedTransformOverviewWindow::HideHeaderAndSetShape(int radius) {
   gfx::Rect bounds(GetTargetBoundsInScreen().size());
-  const int inset = (use_mask || use_shape) ? GetTopInset() : 0;
-  if (mask_) {
-    // Mask layer is used both to hide the window header and to use rounded
-    // corners. Its layout needs to be updated when setting a transform.
-    mask_->layer()->SetBounds(bounds);
-    mask_->set_inset(inset);
-    mask_->set_radius(radius);
-    window()->GetLayer()->SchedulePaint(bounds);
-  } else if (inset > 0) {
-    // Alpha shape is only used to hide the window header and only when not
-    // using a mask layer.
+  const int inset = GetTopInset();
+  if (inset > 0) {
+    // Use alpha shape to hide the window header.
     bounds.Inset(0, inset, 0, 0);
     std::unique_ptr<SkRegion> region(new SkRegion);
     region->setRect(RectToSkIRect(bounds));
@@ -536,9 +422,6 @@ void ScopedTransformOverviewWindow::HideHeaderAndSetShape(bool use_mask,
 
 void ScopedTransformOverviewWindow::ShowHeaderAndResetShape() {
   ui::Layer* layer = window()->GetLayer();
-  layer->SetMaskLayer(nullptr);
-  mask_.reset();
-
   if (original_window_shape_) {
     layer->SetAlphaShape(
         base::MakeUnique<SkRegion>(*original_window_shape_.get()));
@@ -549,8 +432,7 @@ void ScopedTransformOverviewWindow::ShowHeaderAndResetShape() {
 }
 
 void ScopedTransformOverviewWindow::Close() {
-  if (immediate_close_for_tests ||
-      !ash::MaterialDesignController::IsOverviewMaterial()) {
+  if (immediate_close_for_tests) {
     CloseWidget();
     return;
   }

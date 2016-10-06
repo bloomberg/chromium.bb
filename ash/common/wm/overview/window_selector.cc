@@ -12,7 +12,6 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
@@ -50,49 +49,35 @@ namespace ash {
 
 namespace {
 
-// The proportion of screen width that the text filter takes.
-const float kTextFilterScreenProportion = 0.25;
-
 // The amount of padding surrounding the text in the text filtering textbox.
-const int kTextFilterHorizontalPadding = 8;
-const int kTextFilterHorizontalPaddingMD = 10;
-
-// The distance between the top of the screen and the top edge of the
-// text filtering textbox.
-const int kTextFilterDistanceFromTop = 32;
+const int kTextFilterHorizontalPadding = 10;
 
 // The height of the text filtering textbox.
-const int kTextFilterHeight = 32;
-const int kTextFilterHeightMD = 40;
+const int kTextFilterHeight = 40;
 
 // Distance from top of overview to the top of text filtering textbox as a
-// proportion of the total overview area with Material Design.
+// proportion of the total overview area.
 const float kTextFilterTopScreenProportion = 0.02f;
 
-// Width of the text filter area with Material Design.
-const int kTextFilterWidthMD = 280;
+// Width of the text filter area.
+const int kTextFilterWidth = 280;
 
 // The font style used for text filtering textbox.
 static const ui::ResourceBundle::FontStyle kTextFilterFontStyle =
-    ui::ResourceBundle::FontStyle::MediumFont;
-static const ui::ResourceBundle::FontStyle kTextFilterFontStyleMD =
     ui::ResourceBundle::FontStyle::BaseFont;
 
 // The color of the text and its background in the text filtering textbox.
-const SkColor kTextFilterTextColor = SK_ColorWHITE;
-const SkColor kTextFilterTextColorMD = SkColorSetARGB(222, 0, 0, 0);
-const SkColor kTextFilterBackgroundColor = SkColorSetARGB(180, 0, 0, 0);
-const SkColor kTextFilterBackgroundColorMD = SK_ColorWHITE;
+const SkColor kTextFilterTextColor = SkColorSetARGB(222, 0, 0, 0);
+const SkColor kTextFilterBackgroundColor = SK_ColorWHITE;
 
-// The color or search icon with Material Design.
-const SkColor kTextFilterIconColorMD = SkColorSetARGB(138, 0, 0, 0);
+// The color or search icon.
+const SkColor kTextFilterIconColor = SkColorSetARGB(138, 0, 0, 0);
 
-// The size of search icon with Material Design.
+// The size of search icon.
 const int kTextFilterIconSize = 20;
 
 // The radius used for the rounded corners on the text filtering textbox.
-const int kTextFilterCornerRadius = 1;
-const int kTextFilterCornerRadiusMD = 2;
+const int kTextFilterCornerRadius = 2;
 
 // A comparator for locating a grid with a given root window.
 struct RootWindowGridComparator {
@@ -171,29 +156,19 @@ void UpdateShelfVisibility() {
 }
 
 gfx::Rect GetTextFilterPosition(WmWindow* root_window) {
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    gfx::Rect total_bounds =
-        root_window->ConvertRectToScreen(wm::GetDisplayWorkAreaBoundsInParent(
-            root_window->GetChildByShellWindowId(
-                kShellWindowId_DefaultContainer)));
-    return gfx::Rect(0.5 * (total_bounds.width() -
-                            std::min(kTextFilterWidthMD, total_bounds.width())),
-                     total_bounds.y() +
-                         total_bounds.height() * kTextFilterTopScreenProportion,
-                     std::min(kTextFilterWidthMD, total_bounds.width()),
-                     kTextFilterHeightMD);
-  }
+  gfx::Rect total_bounds = root_window->ConvertRectToScreen(
+      wm::GetDisplayWorkAreaBoundsInParent(root_window->GetChildByShellWindowId(
+          kShellWindowId_DefaultContainer)));
   return gfx::Rect(
-      0.5 * root_window->GetBounds().width() *
-          (1 - kTextFilterScreenProportion),
-      kTextFilterDistanceFromTop,
-      root_window->GetBounds().width() * kTextFilterScreenProportion,
-      kTextFilterHeight);
+      0.5 * (total_bounds.width() -
+             std::min(kTextFilterWidth, total_bounds.width())),
+      total_bounds.y() + total_bounds.height() * kTextFilterTopScreenProportion,
+      std::min(kTextFilterWidth, total_bounds.width()), kTextFilterHeight);
 }
 
 // Initializes the text filter on the top of the main root window and requests
-// focus on its textfield. With Material Design uses |image| to place an icon
-// to the left of the text field.
+// focus on its textfield. Uses |image| to place an icon to the left of the text
+// field.
 views::Widget* CreateTextFilter(views::TextfieldController* controller,
                                 WmWindow* root_window,
                                 const gfx::ImageSkia& image,
@@ -213,38 +188,28 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
 
   // Use |container| to specify the padding surrounding the text and to give
   // the textfield rounded corners.
-  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
-  views::View* container = new RoundedContainerView(
-      material ? kTextFilterCornerRadiusMD : kTextFilterCornerRadius,
-      material ? kTextFilterBackgroundColorMD : kTextFilterBackgroundColor);
+  views::View* container = new RoundedContainerView(kTextFilterCornerRadius,
+                                                    kTextFilterBackgroundColor);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  const ui::ResourceBundle::FontStyle font_style =
-      material ? kTextFilterFontStyleMD : kTextFilterFontStyle;
   const int text_height =
-      std::max(kTextFilterIconSize, bundle.GetFontList(font_style).GetHeight());
+      std::max(kTextFilterIconSize,
+               bundle.GetFontList(kTextFilterFontStyle).GetHeight());
   DCHECK(text_height);
   const int vertical_padding = (params.bounds.height() - text_height) / 2;
-  const int horizontal_padding =
-      material ? kTextFilterHorizontalPaddingMD : kTextFilterHorizontalPadding;
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, horizontal_padding,
-                           vertical_padding, horizontal_padding);
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, kTextFilterHorizontalPadding,
+      vertical_padding, kTextFilterHorizontalPadding);
   container->SetLayoutManager(layout);
 
   views::Textfield* textfield = new views::Textfield;
   textfield->set_controller(controller);
   textfield->SetBorder(views::Border::NullBorder());
-  if (material) {
-    textfield->SetBackgroundColor(kTextFilterBackgroundColorMD);
-    textfield->SetTextColor(kTextFilterTextColorMD);
-    views::ImageView* image_view = new views::ImageView;
-    image_view->SetImage(image);
-    container->AddChildView(image_view);
-  } else {
-    textfield->SetBackgroundColor(SK_ColorTRANSPARENT);
-    textfield->SetTextColor(kTextFilterTextColor);
-  }
-  textfield->SetFontList(bundle.GetFontList(font_style));
+  textfield->SetBackgroundColor(kTextFilterBackgroundColor);
+  textfield->SetTextColor(kTextFilterTextColor);
+  views::ImageView* image_view = new views::ImageView;
+  image_view->SetImage(image);
+  container->AddChildView(image_view);
+  textfield->SetFontList(bundle.GetFontList(kTextFilterFontStyle));
   container->AddChildView(textfield);
   layout->SetFlexForView(textfield, 1);
   widget->SetContentsView(container);
@@ -265,11 +230,6 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
 // static
 bool WindowSelector::IsSelectable(WmWindow* window) {
   wm::WindowState* state = window->GetWindowState();
-  if (!ash::MaterialDesignController::IsOverviewMaterial() &&
-      (state->GetStateType() == wm::WINDOW_STATE_TYPE_DOCKED ||
-       state->GetStateType() == wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED)) {
-    return false;
-  }
   return state->IsUserPositionable();
 }
 
@@ -353,11 +313,9 @@ void WindowSelector::Init(const WindowList& windows) {
       window_grid->PositionWindows(true);
     }
 
-    if (ash::MaterialDesignController::IsOverviewMaterial()) {
-      search_image_ =
-          gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_SEARCH,
-                                kTextFilterIconSize, kTextFilterIconColorMD);
-    }
+    search_image_ =
+        gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_SEARCH,
+                              kTextFilterIconSize, kTextFilterIconColor);
     WmWindow* root_window = shell->GetPrimaryRootWindow();
     text_filter_widget_.reset(CreateTextFilter(this, root_window, search_image_,
                                                &text_filter_bottom_));

@@ -7,7 +7,6 @@
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/default_header_painter.h"
 #include "ash/common/frame/frame_border_hit_test.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -149,13 +148,11 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
 // PanelFrameView, ShellObserver overrides:
 
 void PanelFrameView::OnOverviewModeStarting() {
-  if (ash::MaterialDesignController::IsOverviewMaterial())
-    caption_button_container_->SetVisible(false);
+  caption_button_container_->SetVisible(false);
 }
 
 void PanelFrameView::OnOverviewModeEnded() {
-  if (ash::MaterialDesignController::IsOverviewMaterial())
-    caption_button_container_->SetVisible(true);
+  caption_button_container_->SetVisible(true);
 }
 
 }  // namespace ash

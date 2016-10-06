@@ -381,34 +381,6 @@ const FeatureEntry::Choice kAshMaterialDesignChoices[] = {
      ash::switches::kAshMaterialDesignExperimental},
 };
 
-const FeatureEntry::Choice kAshMaxWindowsToUseMaskInOverviewChoices[] = {
-    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_UNLIMITED,
-     ash::switches::kAshMaxWindowsToUseMaskInOverview, "-1"},
-    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_ZERO,
-     ash::switches::kAshMaxWindowsToUseMaskInOverview, "0"},
-    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_FIVE,
-     ash::switches::kAshMaxWindowsToUseMaskInOverview, "5"},
-    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_TEN,
-     ash::switches::kAshMaxWindowsToUseMaskInOverview, "10"},
-    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_FIFTEEN,
-     ash::switches::kAshMaxWindowsToUseMaskInOverview, "15"},
-};
-
-const FeatureEntry::Choice kAshMaxWindowsToUseShapeInOverviewChoices[] = {
-    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_UNLIMITED,
-     ash::switches::kAshMaxWindowsToUseShapeInOverview, "-1"},
-    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_ZERO,
-     ash::switches::kAshMaxWindowsToUseShapeInOverview, "0"},
-    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_FIVE,
-     ash::switches::kAshMaxWindowsToUseShapeInOverview, "5"},
-    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_TEN,
-     ash::switches::kAshMaxWindowsToUseShapeInOverview, "10"},
-    {IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_FIFTEEN,
-     ash::switches::kAshMaxWindowsToUseShapeInOverview, "15"},
-};
-
 const FeatureEntry::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
     {IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_FAST,
@@ -1004,25 +976,6 @@ const FeatureEntry kFeatureEntries[] = {
     },
     {"ash-md", IDS_FLAGS_ASH_MD, IDS_FLAGS_ASH_MD_DESCRIPTION, kOsCrOS,
      MULTI_VALUE_TYPE(kAshMaterialDesignChoices)},
-    {
-        "ash-stable-overview-order", IDS_FLAGS_ASH_STABLE_OVERVIEW_ORDER_NAME,
-        IDS_FLAGS_ASH_STABLE_OVERVIEW_ORDER_DESCRIPTION, kOsCrOS,
-        ENABLE_DISABLE_VALUE_TYPE(
-            ash::switches::kAshEnableStableOverviewOrder,
-            ash::switches::kAshDisableStableOverviewOrder),
-    },
-    {
-        "ash-max-previews-to-use-mask",
-        IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_NAME,
-        IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_DESCRIPTION, kOsCrOS,
-        MULTI_VALUE_TYPE(kAshMaxWindowsToUseMaskInOverviewChoices),
-    },
-    {
-        "ash-max-previews-to-use-shape",
-        IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_NAME,
-        IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_DESCRIPTION, kOsCrOS,
-        MULTI_VALUE_TYPE(kAshMaxWindowsToUseShapeInOverviewChoices),
-    },
 #endif  // USE_ASH
 #if defined(OS_CHROMEOS)
     {"material-design-ink-drop-animation-speed",

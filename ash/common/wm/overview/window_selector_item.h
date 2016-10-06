@@ -127,10 +127,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // with the selection widget.
   void SetSelected(bool selected);
 
-  // Recomputes the positions for the windows in this selection item. This is
-  // dispatched when the bounds of a window change.
-  void RecomputeWindowTransforms();
-
   // Sends an accessibility event indicating that this window became selected
   // so that it's highlighted and announced if accessibility features are
   // enabled.
@@ -150,8 +146,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   bool dimmed() const { return dimmed_; }
 
   const gfx::Rect& target_bounds() const { return target_bounds_; }
-  static void set_use_mask(bool use_mask) { use_mask_ = use_mask; }
-  static void set_use_shape(bool use_shape) { use_shape_ = use_shape; }
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -208,8 +202,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Allows a test to directly set animation state.
   gfx::SlideAnimation* GetBackgroundViewAnimation();
 
-  static bool hide_header() { return use_mask_ || use_shape_; }
-
   // True if the item is being shown in the overview, false if it's being
   // filtered.
   bool dimmed_;
@@ -248,9 +240,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // View for the label below the window or (with material design) above it.
   OverviewLabelButton* window_label_button_view_;
 
-  // The close buttons widget container. Not used with Material Design.
-  std::unique_ptr<views::Widget> close_button_widget_;
-
   // A close button for the window in this item. Owned by the
   // |caption_container_view_| with Material Design or by |close_button_widget_|
   // otherwise.
@@ -263,16 +252,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Pointer to a view that covers the original header and has rounded top
   // corners. This view can have its color and opacity animated.
   RoundedContainerView* background_view_;
-
-  // If true, mask the original window header while in overview and make corners
-  // rounded using a mask layer. This has performance implications so it can be
-  // disabled when there are many windows.
-  static bool use_mask_;
-
-  // If true, hide the original window header while in overview using alpha
-  // shape. This has performance implications so it can be disabled when there
-  // are many windows.
-  static bool use_shape_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };

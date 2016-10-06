@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/overview/cleanup_animation_observer.h"
@@ -64,21 +63,9 @@ struct WindowSelectorItemComparator {
   const WmWindow* target;
 };
 
-// Conceptually the window overview is a table or grid of cells having this
-// fixed aspect ratio. The number of columns is determined by maximizing the
-// area of them based on the number of window_list.
-const float kCardAspectRatio = 4.0f / 3.0f;
-
-// The minimum number of cards along the major axis (i.e. horizontally on a
-// landscape orientation).
-const int kMinCardsMajor = 3;
-
-// Hiding window headers can be resource intensive. Only hide the headers when
-// the number of windows in this grid is less or equal than this number.
-// The default is 0, meaning that mask layers are never used and the bottom
-// corners are not rounded in overview.
-const int kMaxWindowsCountToHideHeaderWithMasks = 0;
-
+// Time it takes for the selector widget to move to the next target. The same
+// time is used for fading out shield widget when the overview mode is opened
+// or closed.
 const int kOverviewSelectorTransitionMilliseconds = 250;
 
 // The color and opacity of the screen shield in overview.
@@ -86,27 +73,19 @@ const SkColor kShieldColor = SkColorSetARGB(255, 0, 0, 0);
 const float kShieldOpacity = 0.7f;
 
 // The color and opacity of the overview selector.
-const SkColor kWindowSelectionColor = SkColorSetARGB(128, 0, 0, 0);
-const SkColor kWindowSelectionColorMD = SkColorSetARGB(51, 255, 255, 255);
-const SkColor kWindowSelectionBorderColor = SkColorSetARGB(38, 255, 255, 255);
-const SkColor kWindowSelectionBorderColorMD = SkColorSetARGB(76, 255, 255, 255);
+const SkColor kWindowSelectionColor = SkColorSetARGB(51, 255, 255, 255);
+const SkColor kWindowSelectionBorderColor = SkColorSetARGB(76, 255, 255, 255);
 
 // Border thickness of overview selector.
-const int kWindowSelectionBorderThickness = 2;
-const int kWindowSelectionBorderThicknessMD = 1;
+const int kWindowSelectionBorderThickness = 1;
 
 // Corner radius of the overview selector border.
-const int kWindowSelectionRadius = 0;
-const int kWindowSelectionRadiusMD = 4;
-
-// The minimum amount of spacing between the bottom of the text filtering
-// text field and the top of the selection widget on the first row of items.
-const int kTextFilterBottomMargin = 5;
+const int kWindowSelectionRadius = 4;
 
 // In the conceptual overview table, the window margin is the space reserved
 // around the window within the cell. This margin does not overlap so the
 // closest distance between adjacent windows will be twice this amount.
-const int kWindowMarginMD = 5;
+const int kWindowMargin = 5;
 
 // Windows are not allowed to get taller than this.
 const int kMaxHeight = 512;
@@ -227,110 +206,17 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
 gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
                                       const gfx::Rect& bounds) {
   gfx::Vector2d vector;
-  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
   switch (direction) {
     case WindowSelector::UP:
-      if (!material) {
-        vector.set_y(-bounds.height());
-        break;
-      }
     case WindowSelector::LEFT:
       vector.set_x(-bounds.width());
       break;
     case WindowSelector::DOWN:
-      if (!material) {
-        vector.set_y(bounds.height());
-        break;
-      }
     case WindowSelector::RIGHT:
       vector.set_x(bounds.width());
       break;
   }
   return vector;
-}
-
-// Given |root_window|, calculates the item size necessary to fit |items|
-// items in the window selection. |bounding_rect| is set to the centered
-// rectangle containing the grid and |item_size| is set to the size of each
-// individual item.
-void CalculateOverviewSizes(WmWindow* root_window,
-                            size_t items,
-                            int text_filter_bottom,
-                            gfx::Rect* bounding_rect,
-                            gfx::Size* item_size) {
-  gfx::Rect total_bounds = root_window->ConvertRectToScreen(
-      wm::GetDisplayWorkAreaBoundsInParent(root_window->GetChildByShellWindowId(
-          kShellWindowId_DefaultContainer)));
-
-  // Reserve space at the top for the text filtering textbox to appear.
-  total_bounds.Inset(0, text_filter_bottom + kTextFilterBottomMargin, 0, 0);
-
-  // Find the minimum number of windows per row that will fit all of the
-  // windows on screen.
-  int num_columns = std::max(
-      total_bounds.width() > total_bounds.height() ? kMinCardsMajor : 1,
-      static_cast<int>(ceil(sqrt(total_bounds.width() * items /
-                                 (kCardAspectRatio * total_bounds.height())))));
-  int num_rows = ((items + num_columns - 1) / num_columns);
-  item_size->set_width(std::min(
-      static_cast<int>(total_bounds.width() / num_columns),
-      static_cast<int>(total_bounds.height() * kCardAspectRatio / num_rows)));
-  item_size->set_height(
-      static_cast<int>(item_size->width() / kCardAspectRatio));
-  item_size->SetToMax(gfx::Size(1, 1));
-
-  bounding_rect->set_width(std::min(static_cast<int>(items), num_columns) *
-                           item_size->width());
-  bounding_rect->set_height(num_rows * item_size->height());
-  // Calculate the X and Y offsets necessary to center the grid.
-  bounding_rect->set_x(total_bounds.x() +
-                       (total_bounds.width() - bounding_rect->width()) / 2);
-  bounding_rect->set_y(total_bounds.y() +
-                       (total_bounds.height() - bounding_rect->height()) / 2);
-}
-
-// Reorders the list of windows |items| in |root_window| in an attempt to
-// minimize the distance each window will travel to enter overview. For
-// equidistant windows preserves a stable order between overview sessions
-// by comparing window pointers.
-void ReorderItemsGreedyLeastMovement(std::vector<WmWindow*>* items,
-                                     WmWindow* root_window,
-                                     int text_filter_bottom) {
-  if (items->empty())
-    return;
-  gfx::Rect bounding_rect;
-  gfx::Size item_size;
-  CalculateOverviewSizes(root_window, items->size(), text_filter_bottom,
-                         &bounding_rect, &item_size);
-  int num_columns = std::min(static_cast<int>(items->size()),
-                             bounding_rect.width() / item_size.width());
-  for (size_t i = 0; i < items->size(); ++i) {
-    int column = i % num_columns;
-    int row = i / num_columns;
-    gfx::Point overview_item_center(
-        bounding_rect.x() + column * item_size.width() + item_size.width() / 2,
-        bounding_rect.y() + row * item_size.height() + item_size.height() / 2);
-    // Find the nearest window for this position.
-    size_t swap_index = i;
-    int64_t shortest_distance = std::numeric_limits<int64_t>::max();
-    for (size_t j = i; j < items->size(); ++j) {
-      WmWindow* window = (*items)[j];
-      const gfx::Rect screen_target_bounds =
-          window->ConvertRectToScreen(window->GetTargetBounds());
-      int64_t distance =
-          (screen_target_bounds.CenterPoint() - overview_item_center)
-              .LengthSquared();
-      // We compare raw pointers to create a stable ordering given two windows
-      // with the same center point.
-      if (distance < shortest_distance ||
-          (distance == shortest_distance && window < (*items)[swap_index])) {
-        shortest_distance = distance;
-        swap_index = j;
-      }
-    }
-    if (swap_index > i)
-      std::swap((*items)[i], (*items)[swap_index]);
-  }
 }
 
 // Creates and returns a background translucent widget parented in
@@ -367,17 +253,8 @@ views::Widget* CreateBackgroundWidget(WmWindow* root_window,
 
   views::View* content_view =
       new RoundedRectView(border_radius, SK_ColorTRANSPARENT);
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    content_view->set_background(new BackgroundWith1PxBorder(
-        background_color, border_color, border_thickness, border_radius));
-  } else {
-    content_view->set_background(
-        views::Background::CreateSolidBackground(background_color));
-    if (border_thickness) {
-      content_view->SetBorder(
-          views::Border::CreateSolidBorder(border_thickness, border_color));
-    }
-  }
+  content_view->set_background(new BackgroundWith1PxBorder(
+      background_color, border_color, border_thickness, border_radius));
   widget->SetContentsView(content_view);
   widget_window->GetParent()->StackChildAtTop(widget_window);
   widget->Show();
@@ -402,15 +279,6 @@ WindowGrid::WindowGrid(WmWindow* root_window,
       windows_in_root.push_back(window);
   }
 
-  if (!ash::MaterialDesignController::IsOverviewMaterial() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableStableOverviewOrder)) {
-    // Reorder windows to try to minimize movement to target overview positions.
-    // This also creates a stable window ordering.
-    ReorderItemsGreedyLeastMovement(&windows_in_root, root_window_,
-                                    window_selector_->text_filter_bottom());
-  }
-  PrepareForUsingMasksOrShapes(windows_in_root.size());
   for (auto* window : windows_in_root) {
     window_observer_.Add(window);
     window_list_.push_back(new WindowSelectorItem(window, window_selector_));
@@ -451,17 +319,21 @@ void WindowGrid::Shutdown() {
 }
 
 void WindowGrid::PrepareForOverview() {
-  if (ash::MaterialDesignController::IsOverviewMaterial())
-    InitShieldWidget();
+  InitShieldWidget();
   for (auto iter = window_list_.begin(); iter != window_list_.end(); ++iter)
     (*iter)->PrepareForOverview();
   prepared_for_overview_ = true;
 }
 
-void WindowGrid::PositionWindowsMD(bool animate) {
-  if (window_list_.empty())
+void WindowGrid::PositionWindows(bool animate) {
+  if (window_selector_->is_shut_down() || window_list_.empty())
     return;
-  PrepareForUsingMasksOrShapes(window_list_.size());
+  DCHECK(shield_widget_.get());
+  // Keep the background shield widget covering the whole screen.
+  WmWindow* widget_window =
+      WmLookup::Get()->GetWindowForWidget(shield_widget_.get());
+  const gfx::Rect bounds = widget_window->GetParent()->GetBounds();
+  widget_window->SetBounds(bounds);
   gfx::Rect total_bounds =
       root_window_->ConvertRectToScreen(wm::GetDisplayWorkAreaBoundsInParent(
           root_window_->GetChildByShellWindowId(
@@ -473,8 +345,8 @@ void WindowGrid::PositionWindowsMD(bool animate) {
   int vertical_inset =
       horizontal_inset +
       kOverviewVerticalInset * (total_bounds.height() - 2 * horizontal_inset);
-  total_bounds.Inset(std::max(0, horizontal_inset - kWindowMarginMD),
-                     std::max(0, vertical_inset - kWindowMarginMD));
+  total_bounds.Inset(std::max(0, horizontal_inset - kWindowMargin),
+                     std::max(0, vertical_inset - kWindowMargin));
   std::vector<gfx::Rect> rects;
 
   // Keep track of the lowest coordinate.
@@ -498,7 +370,7 @@ void WindowGrid::PositionWindowsMD(bool animate) {
   // |high_height|. Once this optimal height is known, |height_fixed| is set to
   // true and the rows are balanced by repeatedly squeezing the widest row to
   // cause windows to overflow to the subsequent rows.
-  int low_height = 2 * kWindowMarginMD;
+  int low_height = 2 * kWindowMargin;
   int high_height =
       std::max(low_height, static_cast<int>(total_bounds.height() + 1));
   int height = 0.5 * (low_height + high_height);
@@ -518,7 +390,7 @@ void WindowGrid::PositionWindowsMD(bool animate) {
     gfx::Rect overview_bounds(total_bounds);
     overview_bounds.set_width(right_bound - total_bounds.x());
     bool windows_fit = FitWindowRectsInBounds(
-        overview_bounds, std::min(kMaxHeight + 2 * kWindowMarginMD, height),
+        overview_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
         &rects, &max_bottom, &min_right, &max_right);
 
     if (height_fixed) {
@@ -565,7 +437,7 @@ void WindowGrid::PositionWindowsMD(bool animate) {
     gfx::Rect overview_bounds(total_bounds);
     overview_bounds.set_width(right_bound - total_bounds.x());
     FitWindowRectsInBounds(overview_bounds,
-                           std::min(kMaxHeight + 2 * kWindowMarginMD, height),
+                           std::min(kMaxHeight + 2 * kWindowMargin, height),
                            &rects, &max_bottom, &min_right, &max_right);
   }
   // Position the windows centering the left-aligned rows vertically.
@@ -583,52 +455,10 @@ void WindowGrid::PositionWindowsMD(bool animate) {
     MoveSelectionWidgetToTarget(animate);
 }
 
-void WindowGrid::PositionWindows(bool animate) {
-  if (window_selector_->is_shut_down())
-    return;
-
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    DCHECK(shield_widget_.get());
-    // Keep the background shield widget covering the whole screen.
-    WmWindow* widget_window =
-        WmLookup::Get()->GetWindowForWidget(shield_widget_.get());
-    const gfx::Rect bounds = widget_window->GetParent()->GetBounds();
-    widget_window->SetBounds(bounds);
-    PositionWindowsMD(animate);
-    return;
-  }
-  CHECK(!window_list_.empty());
-  gfx::Rect bounding_rect;
-  gfx::Size item_size;
-  CalculateOverviewSizes(root_window_, window_list_.size(),
-                         window_selector_->text_filter_bottom(), &bounding_rect,
-                         &item_size);
-  num_columns_ = std::min(static_cast<int>(window_list_.size()),
-                          bounding_rect.width() / item_size.width());
-  for (size_t i = 0; i < window_list_.size(); ++i) {
-    gfx::Transform transform;
-    int column = i % num_columns_;
-    int row = i / num_columns_;
-    gfx::Rect target_bounds(item_size.width() * column + bounding_rect.x(),
-                            item_size.height() * row + bounding_rect.y(),
-                            item_size.width(), item_size.height());
-    window_list_[i]->SetBounds(
-        target_bounds,
-        animate
-            ? OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
-            : OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
-  }
-
-  // If the selection widget is active, reposition it without any animation.
-  if (selection_widget_)
-    MoveSelectionWidgetToTarget(animate);
-}
-
 bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
   bool recreate_selection_widget = false;
   bool out_of_bounds = false;
   bool changed_selection_index = false;
-  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
   gfx::Rect old_bounds;
   if (SelectedWindow()) {
     old_bounds = SelectedWindow()->target_bounds();
@@ -636,16 +466,11 @@ bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
     SelectedWindow()->SetSelected(false);
   }
 
-  // With Material Design enabled [up] key is equivalent to [left] key and
-  // [down] key is equivalent to [right] key.
+  // [up] key is equivalent to [left] key and [down] key is equivalent to
+  // [right] key.
   if (!selection_widget_) {
     switch (direction) {
       case WindowSelector::UP:
-        if (!material) {
-          selected_index_ =
-              (window_list_.size() / num_columns_) * num_columns_ - 1;
-          break;
-        }
       case WindowSelector::LEFT:
         selected_index_ = window_list_.size() - 1;
         break;
@@ -660,55 +485,24 @@ bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
          (!out_of_bounds && window_list_[selected_index_]->dimmed())) {
     switch (direction) {
       case WindowSelector::UP:
-        if (!material) {
-          if (selected_index_ == 0)
-            out_of_bounds = true;
-          if (selected_index_ < num_columns_) {
-            selected_index_ +=
-                num_columns_ *
-                    ((window_list_.size() - selected_index_) / num_columns_) -
-                1;
-            recreate_selection_widget = true;
-          } else {
-            selected_index_ -= num_columns_;
-          }
-          break;
-        }
       case WindowSelector::LEFT:
         if (selected_index_ == 0)
           out_of_bounds = true;
         selected_index_--;
-        if (!material && (selected_index_ + 1) % num_columns_ == 0)
-          recreate_selection_widget = true;
         break;
       case WindowSelector::DOWN:
-        if (!material) {
-          selected_index_ += num_columns_;
-          if (selected_index_ >= window_list_.size()) {
-            selected_index_ = (selected_index_ + 1) % num_columns_;
-            if (selected_index_ == 0)
-              out_of_bounds = true;
-            recreate_selection_widget = true;
-          }
-          break;
-        }
       case WindowSelector::RIGHT:
         if (selected_index_ >= window_list_.size() - 1)
           out_of_bounds = true;
         selected_index_++;
-        if (!material && selected_index_ % num_columns_ == 0)
-          recreate_selection_widget = true;
         break;
     }
-    if (material) {
-      if (!out_of_bounds && SelectedWindow()) {
-        if (SelectedWindow()->target_bounds().y() != old_bounds.y())
-          recreate_selection_widget = true;
-      }
+    if (!out_of_bounds && SelectedWindow()) {
+      if (SelectedWindow()->target_bounds().y() != old_bounds.y())
+        recreate_selection_widget = true;
     }
     changed_selection_index = true;
   }
-
   MoveSelectionWidget(direction, recreate_selection_widget, out_of_bounds,
                       animate);
 
@@ -808,13 +602,7 @@ void WindowGrid::OnWindowBoundsChanged(WmWindow* window,
 
   // Immediately finish any active bounds animation.
   window->StopAnimatingProperty(ui::LayerAnimationElement::BOUNDS);
-
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    PositionWindows(false);
-    return;
-  }
-  // Recompute the transform for the window.
-  (*iter)->RecomputeWindowTransforms();
+  PositionWindows(false);
 }
 
 void WindowGrid::InitShieldWidget() {
@@ -846,18 +634,9 @@ void WindowGrid::InitShieldWidget() {
 }
 
 void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
-  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
-  const int border_thickness = material ? kWindowSelectionBorderThicknessMD
-                                        : kWindowSelectionBorderThickness;
-  const int border_color =
-      material ? kWindowSelectionBorderColorMD : kWindowSelectionBorderColor;
-  const int selection_color =
-      material ? kWindowSelectionColorMD : kWindowSelectionColor;
-  const int border_radius =
-      material ? kWindowSelectionRadiusMD : kWindowSelectionRadius;
-  selection_widget_.reset(
-      CreateBackgroundWidget(root_window_, selection_color, border_thickness,
-                             border_radius, border_color, 0.f));
+  selection_widget_.reset(CreateBackgroundWidget(
+      root_window_, kWindowSelectionColor, kWindowSelectionBorderThickness,
+      kWindowSelectionRadius, kWindowSelectionBorderColor, 0.f));
   WmWindow* widget_window =
       WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
   const gfx::Rect target_bounds =
@@ -867,14 +646,12 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   widget_window->SetBounds(target_bounds - fade_out_direction);
   widget_window->SetName("OverviewModeSelector");
 
-  if (material) {
-    selector_shadow_.reset(new ::wm::Shadow());
-    selector_shadow_->Init(::wm::Shadow::STYLE_ACTIVE);
-    selector_shadow_->layer()->SetVisible(true);
-    selection_widget_->GetLayer()->SetMasksToBounds(false);
-    selection_widget_->GetLayer()->Add(selector_shadow_->layer());
-    selector_shadow_->SetContentBounds(gfx::Rect(target_bounds.size()));
-  }
+  selector_shadow_.reset(new ::wm::Shadow());
+  selector_shadow_->Init(::wm::Shadow::STYLE_ACTIVE);
+  selector_shadow_->layer()->SetVisible(true);
+  selection_widget_->GetLayer()->SetMasksToBounds(false);
+  selection_widget_->GetLayer()->Add(selector_shadow_->layer());
+  selector_shadow_->SetContentBounds(gfx::Rect(target_bounds.size()));
 }
 
 void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
@@ -936,10 +713,7 @@ void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
         selection_widget_window->GetLayer()->GetAnimator());
     animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
         kOverviewSelectorTransitionMilliseconds));
-    animation_settings.SetTweenType(
-        ash::MaterialDesignController::IsOverviewMaterial()
-            ? gfx::Tween::EASE_IN_OUT
-            : gfx::Tween::LINEAR_OUT_SLOW_IN);
+    animation_settings.SetTweenType(gfx::Tween::EASE_IN_OUT);
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     selection_widget_->SetBounds(bounds);
@@ -951,10 +725,7 @@ void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
       animation_settings_shadow.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(
               kOverviewSelectorTransitionMilliseconds));
-      animation_settings_shadow.SetTweenType(
-          ash::MaterialDesignController::IsOverviewMaterial()
-              ? gfx::Tween::EASE_IN_OUT
-              : gfx::Tween::LINEAR_OUT_SLOW_IN);
+      animation_settings_shadow.SetTweenType(gfx::Tween::EASE_IN_OUT);
       animation_settings_shadow.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       bounds.Inset(1, 1);
@@ -993,8 +764,8 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
   // Right bound of the widest row.
   *max_right = bounds.x();
 
-  // With Material Design all elements are of same height and only the height is
-  // necessary to determine each item's scale.
+  // All elements are of same height and only the height is necessary to
+  // determine each item's scale.
   const gfx::Size item_size(0, height);
   size_t i = 0;
   for (auto* window : window_list_) {
@@ -1002,7 +773,7 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
     const int width =
         std::max(1, gfx::ToFlooredInt(target_bounds.width() *
                                       window->GetItemScale(item_size)) +
-                        2 * kWindowMarginMD);
+                        2 * kWindowMargin);
     if (left + width > bounds.right()) {
       // Move to the next row if possible.
       if (*min_right > left)
@@ -1037,34 +808,6 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
     *max_bottom = top + height;
   }
   return windows_fit;
-}
-
-void WindowGrid::PrepareForUsingMasksOrShapes(size_t windows_count) const {
-  const int kUnlimited = -1;
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  int windows_to_use_masks = kMaxWindowsCountToHideHeaderWithMasks;
-  if (command_line->HasSwitch(switches::kAshMaxWindowsToUseMaskInOverview) &&
-      (!base::StringToInt(command_line->GetSwitchValueASCII(
-                              switches::kAshMaxWindowsToUseMaskInOverview),
-                          &windows_to_use_masks) ||
-       windows_to_use_masks <= kUnlimited)) {
-    windows_to_use_masks = kMaxWindowsCountToHideHeaderWithMasks;
-  }
-  int windows_to_use_shapes = kUnlimited;
-  if (command_line->HasSwitch(switches::kAshMaxWindowsToUseShapeInOverview) &&
-      (!base::StringToInt(command_line->GetSwitchValueASCII(
-                              switches::kAshMaxWindowsToUseShapeInOverview),
-                          &windows_to_use_shapes) ||
-       windows_to_use_shapes <= kUnlimited)) {
-    windows_to_use_shapes = kUnlimited;
-  }
-  WindowSelectorItem::set_use_mask(windows_to_use_masks <= kUnlimited ||
-                                   static_cast<int>(windows_count) <=
-                                       windows_to_use_masks);
-  WindowSelectorItem::set_use_shape(windows_to_use_shapes <= kUnlimited ||
-                                    static_cast<int>(windows_count) <=
-                                        windows_to_use_shapes);
 }
 
 }  // namespace ash

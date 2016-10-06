@@ -5791,48 +5791,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_MD_EXPERIMENTAL" desc="The value of the Material Design in Chrome OS UI flag that controls experimental features.">
           Experimental
         </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_NAME" desc="Title of the flag which sets a limit for how many preview windows in overview can use masks.">
-          Maximum number of windows in overview that can use masks.
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_DESCRIPTION" desc="Description of the flag which sets a limit for how many preview windows in overview can use masks.">
-          Maximum number of preview windows in overview mode that can use masks to hide window headers and use rounded corners.
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_UNLIMITED" desc="The value that does not set a limit for how many preview windows in overview can use masks to hide headers and use rounded corners.">
-          Unlimited
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_ZERO" desc="The value that sets a limit for how many preview windows in overview can use masks to hide headers and use rounded corners to 0.">
-          0
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_FIVE" desc="The value that sets a limit for how many preview windows in overview can use masks to hide headers and use rounded corners to 5.">
-          5
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_TEN" desc="The value that sets a limit for how many preview windows in overview can use masks to hide headers and use rounded corners to 10.">
-          10
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_MASK_FIFTEEN" desc="The value that sets a limit for how many preview windows in overview can use masks to hide headers and use rounded corners to 15.">
-          15
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_NAME" desc="Title of the flag which sets a limit for how many preview windows in overview can use shapes.">
-          Maximum number of windows in overview that can use shapes.
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_DESCRIPTION" desc="Description of the flag which sets a limit for how many preview windows in overview can use shapes.">
-          Maximum number of preview windows in overview mode that can use shapes to hide window headers.
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_UNLIMITED" desc="The value that does not set a limit for how many preview windows in overview can use shapes to hide headers.">
-          Unlimited
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_ZERO" desc="The value that sets a limit for how many preview windows in overview can use shapes to hide headers to 0.">
-          0
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_FIVE" desc="The value that sets a limit for how many preview windows in overview can use shapes to hide headers to 5.">
-          5
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_TEN" desc="The value that sets a limit for how many preview windows in overview can use shapes to hide headers to 10.">
-          10
-        </message>
-        <message name="IDS_FLAGS_ASH_MAX_PREVIEWS_TO_USE_SHAPE_FIFTEEN" desc="The value that sets a limit for how many preview windows in overview can use shapes to hide headers to 15.">
-          15
-        </message>
         <message name="IDS_FLAGS_ASH_MAXIMIZE_MODE_WINDOW_BACKDROP_NAME" desc="Title for the flag which can be used for window backdrops in TouchView.">
           Window backdrops in TouchView
         </message>
@@ -5844,12 +5802,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_FLAGS_ASH_SCREEN_ORIENTATION_LOCK_DESCRIPTION" desc="Description for the flag which can be used for support for javascript locking rotation">
           Allows javascript to lock the screen orienation.
-        </message>
-        <message name="IDS_FLAGS_ASH_STABLE_OVERVIEW_ORDER_NAME" desc="Title for the flag which enables a stable window order in overview mode.">
-          Use a stable window order in overview
-        </message>
-        <message name="IDS_FLAGS_ASH_STABLE_OVERVIEW_ORDER_DESCRIPTION" desc="Description for the flag to enable a stable window order in overview mode.">
-          Uses a stable window ordering in overview mode which attempts to minimize movement of windows when entering / exiting overview and between overview sessions.
         </message>
         <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_NAME" desc="Title for the flag which can be used to test the TouchView maximizing mode.">
           Enable TouchView maximizing UI for testing

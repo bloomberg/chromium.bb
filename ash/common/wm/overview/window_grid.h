@@ -75,10 +75,6 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
   // row height which is equivalent assuming fixed height), balanced rows and
   // minimal wasted space.
   // Optionally animates the windows to their targets when |animate| is true.
-  void PositionWindowsMD(bool animate);
-
-  // Positions all the windows in the grid.
-  // Optionally animates the windows to their targets when |animate| is true.
   void PositionWindows(bool animate);
 
   // Updates |selected_index_| according to the specified |direction| and calls
@@ -160,10 +156,6 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
                               int* max_bottom,
                               int* min_right,
                               int* max_right);
-
-  // Sets up WindowSelectorItem to use masks or shapes based on command flags.
-  // TODO(varkha): remove this in the next patch and use shapes but not masks.
-  void PrepareForUsingMasksOrShapes(size_t windows_count) const;
 
   // Root window the grid is in.
   WmWindow* root_window_;
