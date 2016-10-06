@@ -764,7 +764,8 @@ TEST(BackspaceStateMachineTest, ZWJSequence) {
   EXPECT_EQ(-8, machine.finalizeAndGetBoundaryOffset());
   EXPECT_EQ(-8, machine.finalizeAndGetBoundaryOffset());
 
-  // others(surrogate pairs) + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI + VS + ZWJ + ZWJ_EMOJI
+  // others(surrogate pairs) + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI + VS + ZWJ +
+  // ZWJ_EMOJI
   // As an example, use MAN + ZWJ + heart + vs16 + ZWJ + MAN
   machine.reset();
   EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(manTrail));
@@ -812,7 +813,8 @@ TEST(BackspaceStateMachineTest, ZWJSequence) {
   EXPECT_EQ(-11, machine.finalizeAndGetBoundaryOffset());
   EXPECT_EQ(-11, machine.finalizeAndGetBoundaryOffset());
 
-  // others(surrogate pairs) + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI
+  // others(surrogate pairs) + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI +
+  // ZWJ + ZWJ_EMOJI
   // As an example, use MAN + ZWJ + MAN + ZWJ + boy + ZWJ + BOY
   machine.reset();
   EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(boyTrail));
@@ -848,7 +850,8 @@ TEST(BackspaceStateMachineTest, ZWJSequence) {
   EXPECT_EQ(-11, machine.finalizeAndGetBoundaryOffset());
   EXPECT_EQ(-11, machine.finalizeAndGetBoundaryOffset());
 
-  // others + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI + VS + ZWJ + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI
+  // others + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI + VS + ZWJ + ZWJ_EMOJI + ZWJ +
+  // ZWJ_EMOJI
   // As an example, use MAN + ZWJ + heart + VS + ZWJ + KISS + ZWJ + MAN
   machine.reset();
   EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(manTrail));
@@ -866,7 +869,8 @@ TEST(BackspaceStateMachineTest, ZWJSequence) {
   EXPECT_EQ(-11, machine.finalizeAndGetBoundaryOffset());
   EXPECT_EQ(-11, machine.finalizeAndGetBoundaryOffset());
 
-  // others(surrogate pairs) + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI + VS + ZWJ + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI
+  // others(surrogate pairs) + ZWJ_EMOJI + ZWJ + ZWJ_EMOJI + VS + ZWJ +
+  // ZWJ_EMOJI + ZWJ + ZWJ_EMOJI
   // As an example, use MAN + ZWJ + heart + VS + ZWJ + KISS + ZWJ + MAN
   machine.reset();
   EXPECT_EQ(kNeedMoreCodeUnit, machine.feedPrecedingCodeUnit(manTrail));

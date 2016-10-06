@@ -14,7 +14,8 @@ namespace blink {
 namespace {
 
 // Returns true if the code point has E_Basae_GAZ grapheme break property.
-// See http://www.unicode.org/Public/9.0.0/ucd/auxiliary/GraphemeBreakProperty-9.0.0d18.txt
+// See
+// http://www.unicode.org/Public/9.0.0/ucd/auxiliary/GraphemeBreakProperty-9.0.0d18.txt
 bool isEBaseGAZ(uint32_t codePoint) {
   return codePoint == WTF::Unicode::boyCharacter ||
          codePoint == WTF::Unicode::girlCharacter ||
