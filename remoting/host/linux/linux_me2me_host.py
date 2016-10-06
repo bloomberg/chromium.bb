@@ -462,19 +462,27 @@ class Desktop:
     self.ssh_auth_sockname = ("/tmp/chromoting.%s.ssh_auth_sock" %
                               os.environ["USER"])
 
+  def _wait_for_x(self):
+    # Wait for X to be active.
+    with open(os.devnull, "r+") as devnull:
+      for _test in range(20):
+        exit_code = subprocess.call("xdpyinfo", env=self.child_env,
+                                    stdout=devnull)
+        if exit_code == 0:
+          break
+        time.sleep(0.5)
+      if exit_code != 0:
+        raise Exception("Could not connect to X server.")
+      else:
+        logging.info("X server is active.")
+
   def _launch_xvfb(self, display, x_auth_file, extra_x_args):
     max_width = max([width for width, height in self.sizes])
     max_height = max([height for width, height in self.sizes])
 
     xvfb = locate_xvfb_randr()
-    if xvfb:
-      self.server_supports_exact_resize = True
-      self.server_supports_randr = True
-      self.randr_add_sizes = True
-    else:
+    if not xvfb:
       xvfb = "Xvfb"
-      self.server_supports_exact_resize = False
-      self.server_supports_randr = False
 
     logging.info("Starting %s on display :%d" % (xvfb, display))
     screen_option = "%dx%dx24" % (max_width, max_height)
@@ -484,9 +492,20 @@ class Desktop:
          "-nolisten", "tcp",
          "-noreset",
          "-screen", "0", screen_option
-        ] + extra_x_args)
+        ] + extra_x_args, env=self.child_env)
     if not self.x_proc.pid:
       raise Exception("Could not start Xvfb.")
+
+    self._wait_for_x()
+
+    with open(os.devnull, "r+") as devnull:
+      exit_code = subprocess.call("xrandr", env=self.child_env,
+                                  stdout=devnull, stderr=devnull)
+    if exit_code == 0:
+      # RandR is supported
+      self.server_supports_exact_resize = True
+      self.server_supports_randr = True
+      self.randr_add_sizes = True
 
   def _launch_xorg(self, display, x_auth_file, extra_x_args):
     with tempfile.NamedTemporaryFile(
@@ -519,19 +538,19 @@ class Desktop:
         ] + extra_x_args, env=self.child_env)
     if not self.x_proc.pid:
       raise Exception("Could not start Xorg.")
+    self._wait_for_x()
 
   def _launch_x_server(self, extra_x_args):
     x_auth_file = os.path.expanduser("~/.Xauthority")
     self.child_env["XAUTHORITY"] = x_auth_file
-    devnull = open(os.devnull, "r+")
     display = self.get_unused_display_number()
 
     # Run "xauth add" with |child_env| so that it modifies the same XAUTHORITY
     # file which will be used for the X session.
-    ret_code = subprocess.call("xauth add :%d . `mcookie`" % display,
-                               env=self.child_env, shell=True)
-    if ret_code != 0:
-      raise Exception("xauth failed with code %d" % ret_code)
+    exit_code = subprocess.call("xauth add :%d . `mcookie`" % display,
+                                env=self.child_env, shell=True)
+    if exit_code != 0:
+      raise Exception("xauth failed with code %d" % exit_code)
 
     # Disable the Composite extension iff the X session is the default
     # Unity-2D, since it uses Metacity which fails to generate DAMAGE
@@ -540,11 +559,6 @@ class Desktop:
     if (len(x_session) == 2 and
         x_session[1] == "/usr/bin/gnome-session --session=ubuntu-2d"):
       extra_x_args.extend(["-extension", "Composite"])
-
-    if USE_XORG_ENV_VAR in os.environ:
-      self._launch_xorg(display, x_auth_file, extra_x_args)
-    else:
-      self._launch_xvfb(display, x_auth_file, extra_x_args)
 
     self.child_env["DISPLAY"] = ":%d" % display
     self.child_env["CHROME_REMOTE_DESKTOP_SESSION"] = "1"
@@ -559,16 +573,10 @@ class Desktop:
     if self.ssh_auth_sockname:
       self.child_env["SSH_AUTH_SOCK"] = self.ssh_auth_sockname
 
-    # Wait for X to be active.
-    for _test in range(20):
-      retcode = subprocess.call("xdpyinfo", env=self.child_env, stdout=devnull)
-      if retcode == 0:
-        break
-      time.sleep(0.5)
-    if retcode != 0:
-      raise Exception("Could not connect to X server.")
+    if USE_XORG_ENV_VAR in os.environ:
+      self._launch_xorg(display, x_auth_file, extra_x_args)
     else:
-      logging.info("X server is active.")
+      self._launch_xvfb(display, x_auth_file, extra_x_args)
 
     # The remoting host expects the server to use "evdev" keycodes, but Xvfb
     # starts configured to use the "base" ruleset, resulting in XKB configuring
@@ -576,51 +584,51 @@ class Desktop:
     # Reconfigure the X server to use "evdev" keymap rules.  The X server must
     # be started with -noreset otherwise it'll reset as soon as the command
     # completes, since there are no other X clients running yet.
-    retcode = subprocess.call(["setxkbmap", "-rules", "evdev"],
-                              env=self.child_env)
-    if retcode != 0:
+    exit_code = subprocess.call(["setxkbmap", "-rules", "evdev"],
+                                env=self.child_env)
+    if exit_code != 0:
       logging.error("Failed to set XKB to 'evdev'")
 
     if not self.server_supports_randr:
       return
 
-    # Register the screen sizes with RandR, if needed.  Errors here are
-    # non-fatal; the X server will continue to run with the dimensions from the
-    # "-screen" option.
-    if self.randr_add_sizes:
-      for width, height in self.sizes:
-        label = "%dx%d" % (width, height)
-        args = ["xrandr", "--newmode", label, "0", str(width), "0", "0", "0",
-                str(height), "0", "0", "0"]
-        subprocess.call(args, env=self.child_env, stdout=devnull,
-                        stderr=devnull)
-        args = ["xrandr", "--addmode", "screen", label]
-        subprocess.call(args, env=self.child_env, stdout=devnull,
-                        stderr=devnull)
+    with open(os.devnull, "r+") as devnull:
+      # Register the screen sizes with RandR, if needed.  Errors here are
+      # non-fatal; the X server will continue to run with the dimensions from
+      # the "-screen" option.
+      if self.randr_add_sizes:
+        for width, height in self.sizes:
+          label = "%dx%d" % (width, height)
+          args = ["xrandr", "--newmode", label, "0", str(width), "0", "0", "0",
+                  str(height), "0", "0", "0"]
+          subprocess.call(args, env=self.child_env, stdout=devnull,
+                          stderr=devnull)
+          args = ["xrandr", "--addmode", "screen", label]
+          subprocess.call(args, env=self.child_env, stdout=devnull,
+                          stderr=devnull)
 
-    # Set the initial mode to the first size specified, otherwise the X server
-    # would default to (max_width, max_height), which might not even be in the
-    # list.
-    initial_size = self.sizes[0]
-    label = "%dx%d" % initial_size
-    args = ["xrandr", "-s", label]
-    subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
+      # Set the initial mode to the first size specified, otherwise the X server
+      # would default to (max_width, max_height), which might not even be in the
+      # list.
+      initial_size = self.sizes[0]
+      label = "%dx%d" % initial_size
+      args = ["xrandr", "-s", label]
+      subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
 
-    # Set the physical size of the display so that the initial mode is running
-    # at approximately 96 DPI, since some desktops require the DPI to be set to
-    # something realistic.
-    args = ["xrandr", "--dpi", "96"]
-    subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
+      # Set the physical size of the display so that the initial mode is running
+      # at approximately 96 DPI, since some desktops require the DPI to be set
+      # to something realistic.
+      args = ["xrandr", "--dpi", "96"]
+      subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
 
-    # Monitor for any automatic resolution changes from the desktop environment.
-    args = [SCRIPT_PATH, "--watch-resolution", str(initial_size[0]),
-            str(initial_size[1])]
+      # Monitor for any automatic resolution changes from the desktop
+      # environment.
+      args = [SCRIPT_PATH, "--watch-resolution", str(initial_size[0]),
+              str(initial_size[1])]
 
-    # It is not necessary to wait() on the process here, as this script's main
-    # loop will reap the exit-codes of all child processes.
-    subprocess.Popen(args, env=self.child_env, stdout=devnull, stderr=devnull)
-
-    devnull.close()
+      # It is not necessary to wait() on the process here, as this script's main
+      # loop will reap the exit-codes of all child processes.
+      subprocess.Popen(args, env=self.child_env, stdout=devnull, stderr=devnull)
 
   def _launch_x_session(self):
     # Start desktop session.
