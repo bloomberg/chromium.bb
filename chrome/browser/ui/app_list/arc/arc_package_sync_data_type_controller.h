@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_PACKAGE_SYNC_DATA_TYPE_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "components/arc/common/app.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/ui_data_type_controller.h"
@@ -20,9 +19,8 @@ class SyncClient;
 
 // A UIDataTypeController for arc package sync datatypes, which enables or
 // disables these types based on whether ArcAppInstance is ready.
-class ArcPackageSyncDataTypeController
-    : public syncer::UIDataTypeController,
-      public arc::InstanceHolder<arc::mojom::AppInstance>::Observer {
+class ArcPackageSyncDataTypeController : public syncer::UIDataTypeController,
+                                         public ArcAppListPrefs::Observer {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   ArcPackageSyncDataTypeController(syncer::ModelType type,
@@ -34,10 +32,11 @@ class ArcPackageSyncDataTypeController
   // UIDataTypeController override:
   bool ReadyForStart() const override;
   bool StartModels() override;
+  void StopModels() override;
 
  private:
-  // arc::InstanceHolder<arc::mojom::AppInstance>::Observer:
-  void OnInstanceReady() override;
+  // ArcAppListPrefs::Observer:
+  void OnPackageListInitialRefreshed() override;
 
   void OnArcEnabledPrefChanged();
 

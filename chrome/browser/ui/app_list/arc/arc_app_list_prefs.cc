@@ -682,6 +682,7 @@ void ArcAppListPrefs::OnInstanceClosed() {
   }
 
   is_initialized_ = false;
+  package_list_initial_refreshed_ = false;
 }
 
 void ArcAppListPrefs::MaybeAddNonLaunchableApp(const std::string& name,
@@ -1148,12 +1149,13 @@ void ArcAppListPrefs::OnPackageListRefreshed(
       RemovePackageFromPrefs(prefs_, package_name);
   }
 
-  // Start ArcPackageSyncService ASAP. This is the call_back of
-  // app_instance->RefreshAppList() in OnInstanceReady(). SyncStarted() should
-  // only be called after packagelist refresh is completed. SyncStarted() is
-  // no-op after first time setup or if sync is disabled.
-  DCHECK(sync_service_);
-  sync_service_->SyncStarted();
+  // TODO(lgcheng@) File http://b/31944261. Remove the flag after Android side
+  // cleanup.
+  if (package_list_initial_refreshed_)
+    return;
+
+  package_list_initial_refreshed_ = true;
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnPackageListInitialRefreshed());
 }
 
 std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs() const {

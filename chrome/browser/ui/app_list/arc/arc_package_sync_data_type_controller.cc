@@ -6,9 +6,7 @@
 
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/common/pref_names.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/pref_names.h"
 #include "components/sync/driver/sync_client.h"
@@ -40,16 +38,9 @@ ArcPackageSyncDataTypeController::ArcPackageSyncDataTypeController(
       prefs::kArcEnabled,
       base::Bind(&ArcPackageSyncDataTypeController::OnArcEnabledPrefChanged,
                  base::Unretained(this)));
-
-  arc::ArcBridgeService* arc_bridge_service = arc::ArcBridgeService::Get();
-  if (arc_bridge_service)
-    arc_bridge_service->app()->AddObserver(this);
 }
 
 ArcPackageSyncDataTypeController::~ArcPackageSyncDataTypeController() {
-  arc::ArcBridgeService* arc_bridge_service = arc::ArcBridgeService::Get();
-  if (arc_bridge_service)
-    arc_bridge_service->app()->RemoveObserver(this);
 }
 
 bool ArcPackageSyncDataTypeController::ReadyForStart() const {
@@ -57,13 +48,13 @@ bool ArcPackageSyncDataTypeController::ReadyForStart() const {
   return IsArcEnabled(profile_) && ShouldSyncArc();
 }
 
-void ArcPackageSyncDataTypeController::OnInstanceReady() {
+void ArcPackageSyncDataTypeController::OnPackageListInitialRefreshed() {
   // model_normal_start_ is true by default. Normally,
-  // ArcPackageSyncDataTypeController::StartModels() gets called before Arc is
-  // ready. But in integration test, the order can be either way. If
-  // OnInstanceReady comes before ArcPackageSyncDataTypeController
-  // ::StartModels(), this function is no-op and waits for StartModels() to be
-  // called.
+  // ArcPackageSyncDataTypeController::StartModels() gets called before Arc
+  // package list is refreshed. But in integration test, the order can be either
+  // way. If OnPackageListInitialRefreshed comes before
+  // ArcPackageSyncDataTypeController ::StartModels(), this function is no-op
+  // and waits for StartModels() to be called.
   if (model_normal_start_)
     return;
 
@@ -73,9 +64,17 @@ void ArcPackageSyncDataTypeController::OnInstanceReady() {
 
 bool ArcPackageSyncDataTypeController::StartModels() {
   DCHECK_EQ(state(), MODEL_STARTING);
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
-  model_normal_start_ = prefs && prefs->app_instance_holder()->has_instance();
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
+  DCHECK(arc_prefs);
+  model_normal_start_ = arc_prefs->package_list_initial_refreshed();
+  arc_prefs->AddObserver(this);
   return model_normal_start_;
+}
+
+void ArcPackageSyncDataTypeController::StopModels() {
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
+  if (arc_prefs)
+    arc_prefs->RemoveObserver(this);
 }
 
 void ArcPackageSyncDataTypeController::OnArcEnabledPrefChanged() {

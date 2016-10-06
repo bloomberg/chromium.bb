@@ -137,6 +137,8 @@ class ArcAppListPrefs
         const arc::mojom::ArcPackageInfo& package_info) {}
     // Notifies that package has been uninstalled.
     virtual void OnPackageRemoved(const std::string& package_name) {}
+    // Notifies sync date type controller the model is ready to start.
+    virtual void OnPackageListInitialRefreshed() {}
 
     virtual void OnTaskOrientationLockRequested(
         int32_t task_id,
@@ -230,6 +232,10 @@ class ArcAppListPrefs
 
   arc::InstanceHolder<arc::mojom::AppInstance>* app_instance_holder() {
     return app_instance_holder_;
+  }
+
+  bool package_list_initial_refreshed() const {
+    return package_list_initial_refreshed_;
   }
 
   std::unordered_set<std::string> GetAppsForPackage(
@@ -362,6 +368,8 @@ class ArcAppListPrefs
   bool is_initialized_ = false;
   // True if apps were restored.
   bool apps_restored_ = false;
+  // True is Arc package list has been refreshed once.
+  bool package_list_initial_refreshed_ = false;
 
   arc::ArcPackageSyncableService* sync_service_;
 

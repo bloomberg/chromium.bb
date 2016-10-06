@@ -170,6 +170,11 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile, size_t id) {
   DCHECK(instance_map_[profile].get());
   arc_app_list_prefs->app_instance_holder()->SetInstance(
       instance_map_[profile].get());
+  // OnPackageListRefreshed will be called when AppInstance is ready.
+  // For fakeAppInstance we use SendRefreshPackageList to make sure that
+  // OnPackageListRefreshed will be called.
+  instance_map_[profile]->SendRefreshPackageList(
+      std::vector<arc::mojom::ArcPackageInfo>());
 }
 
 void SyncArcPackageHelper::InstallPackage(
