@@ -2410,11 +2410,11 @@ void Document::shutdown() {
   // created by DOMImplementation::createDocument().
   ExecutionContext::notifyContextDestroyed();
 
-  // This is required, as our LocalFrame might delete itself as soon as it detaches
-  // us. However, this violates Node::detachLayoutTree() semantics, as it's never
-  // possible to re-attach. Eventually Document::detachLayoutTree() should be renamed,
-  // or this setting of the frame to 0 could be made explicit in each of the
-  // callers of Document::detachLayoutTree().
+  // This is required, as our LocalFrame might delete itself as soon as it
+  // detaches us. However, this violates Node::detachLayoutTree() semantics, as
+  // it's never possible to re-attach. Eventually Document::detachLayoutTree()
+  // should be renamed, or this setting of the frame to 0 could be made
+  // explicit in each of the callers of Document::detachLayoutTree().
   m_frame = nullptr;
 }
 

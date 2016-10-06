@@ -286,8 +286,9 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style,
   if (document().childNeedsDistributionRecalc())
     return true;
 
-  // Avoiding creation of a layoutObject for the text node is a non-essential memory optimization.
-  // So to avoid blowing up on very wide DOMs, we limit the number of siblings to visit.
+  // Avoiding creation of a layoutObject for the text node is a non-essential
+  // memory optimization.  So to avoid blowing up on very wide DOMs, we limit
+  // the number of siblings to visit.
   unsigned maxSiblingsToVisit = 50;
 
   const LayoutObject* prev =
@@ -304,11 +305,6 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style,
     if (parent.isLayoutBlock() && !parent.childrenInline() &&
         (!prev || !prev->isInline()))
       return false;
-
-    // Avoiding creation of a layoutObject for the text node is a non-essential
-    // memory optimization.  So to avoid blowing up on very wide DOMs, we limit
-    // the number of siblings to visit.
-    unsigned maxSiblingsToVisit = 50;
 
     LayoutObject* first = parent.slowFirstChild();
     for (; first && first->isFloatingOrOutOfFlowPositioned() &&

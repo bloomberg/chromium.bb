@@ -108,8 +108,8 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name,
       requestPluginCreationWithoutLayoutObjectIfPossible();
     }
   } else if (name == codeAttr) {
-    // TODO(schenney): Remove this branch? It's not in the spec and we're not in the
-    // HTMLAppletElement hierarchy.
+    // TODO(schenney): Remove this branch? It's not in the spec and we're not in
+    // the HTMLAppletElement hierarchy.
     m_url = stripLeadingAndTrailingHTMLSpaces(value);
   } else if (name == srcAttr) {
     m_url = stripLeadingAndTrailingHTMLSpaces(value);

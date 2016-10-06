@@ -127,9 +127,10 @@ std::pair<String, DOMWindow*> InspectorWebPerfAgent::sanitizedAttribution(
   // observer then indicate the *closest* cross-origin frame between
   // the observer and the culprit, in the corresponding direction.
   if (culpritLocation->frame()->tree().isDescendantOf(observerFrame)) {
-    // If culprit is a descendant of the observer, then walk up the tree from culprit
-    // to observer, and report the *last* cross-origin (from observer) frame.
-    // If no intermediate cross-origin frame is found, then report the culprit directly.
+    // If the culprit is a descendant of the observer, then walk up the tree
+    // from culprit to observer, and report the *last* cross-origin (from
+    // observer) frame.  If no intermediate cross-origin frame is found, then
+    // report the culprit directly.
     Frame* lastCrossOriginFrame = culpritLocation->frame();
     for (Frame* frame = culpritLocation->frame(); frame != observerFrame;
          frame = frame->tree().parent()) {

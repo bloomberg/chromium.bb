@@ -81,7 +81,8 @@ void CoreInitializer::initialize() {
   // added strings count, (2) if the added strings are quialified names
   // the 'qualifiedNamesCount' must be updated as well, (3) the strings
   // 'init()' function call must be added.
-  // TODO(mikhail.pozdnyakov@intel.com): We should generate static strings initialization code.
+  // TODO(mikhail.pozdnyakov@intel.com): We should generate static strings
+  // initialization code.
   const unsigned qualifiedNamesCount =
       HTMLNames::HTMLTagsCount + HTMLNames::HTMLAttrsCount +
       MathMLNames::MathMLTagsCount + MathMLNames::MathMLAttrsCount +
