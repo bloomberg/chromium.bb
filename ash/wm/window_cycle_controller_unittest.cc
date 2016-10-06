@@ -295,6 +295,35 @@ TEST_F(WindowCycleControllerTest, Minimized) {
   EXPECT_TRUE(window0_state->IsActive());
 }
 
+// Tests that when all windows are minimized, cycling starts with the first one
+// rather than the second.
+TEST_F(WindowCycleControllerTest, AllAreMinimized) {
+  // Create a couple of test windows.
+  std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> window1(CreateTestWindowInShellWithId(1));
+  wm::WindowState* window0_state = wm::GetWindowState(window0.get());
+  wm::WindowState* window1_state = wm::GetWindowState(window1.get());
+
+  window0_state->Minimize();
+  window1_state->Minimize();
+
+  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
+  controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  controller->StopCycling();
+  EXPECT_TRUE(window0_state->IsActive());
+  EXPECT_FALSE(window0_state->IsMinimized());
+  EXPECT_TRUE(window1_state->IsMinimized());
+
+  // But it's business as usual when cycling backwards.
+  window0_state->Minimize();
+  window1_state->Minimize();
+  controller->HandleCycleWindow(WindowCycleController::BACKWARD);
+  controller->StopCycling();
+  EXPECT_TRUE(window0_state->IsMinimized());
+  EXPECT_TRUE(window1_state->IsActive());
+  EXPECT_FALSE(window1_state->IsMinimized());
+}
+
 TEST_F(WindowCycleControllerTest, AlwaysOnTopWindow) {
   WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
 
