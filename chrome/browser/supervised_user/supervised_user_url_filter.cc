@@ -33,6 +33,10 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/common/extension_urls.h"
+#endif
+
 using content::BrowserThread;
 using net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
 using net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
@@ -75,6 +79,11 @@ const char* kFilteredSchemes[] = {
   "ws",
   "wss"
 };
+
+#if defined(ENABLE_EXTENSIONS)
+const char kCrxDownloadUrl[] =
+    "https://clients2.googleusercontent.com/crx/blobs/";
+#endif
 
 // This class encapsulates all the state that is required during construction of
 // a new SupervisedUserURLFilter::Contents.
@@ -326,6 +335,23 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   // URLs with a non-standard scheme (e.g. chrome://) are always allowed.
   if (!HasFilteredScheme(effective_url))
     return ALLOW;
+
+#if defined(ENABLE_EXTENSIONS)
+  // Allow webstore crx downloads. This applies to both extension installation
+  // and updates.
+  if (extension_urls::GetWebstoreUpdateUrl() == Normalize(effective_url))
+    return ALLOW;
+
+  // The actual CRX files are downloaded from another URL. Allow that too.
+  GURL crx_download_url(kCrxDownloadUrl);
+  if (effective_url.SchemeIs(url::kHttpsScheme) &&
+      crx_download_url.host_piece() == effective_url.host_piece() &&
+      base::StartsWith(effective_url.path_piece(),
+                       crx_download_url.path_piece(),
+                       base::CompareCase::SENSITIVE)) {
+    return ALLOW;
+  }
+#endif
 
   // Check manual overrides for the exact URL.
   auto url_it = url_map_.find(Normalize(effective_url));

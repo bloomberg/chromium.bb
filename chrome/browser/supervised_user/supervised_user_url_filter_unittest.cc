@@ -509,6 +509,44 @@ TEST_F(SupervisedUserURLFilterTest, WhitelistsHostnameHashes) {
   ASSERT_EQ(expected_whitelists, actual_whitelists);
 }
 
+#if defined(ENABLE_EXTENSIONS)
+TEST_F(SupervisedUserURLFilterTest, ChromeWebstoreDownloadsAreAlwaysAllowed) {
+  // When installing an extension from Chrome Webstore, it tries to download the
+  // crx file from "https://clients2.google.com/service/update2/", which
+  // redirects to "https://clients2.googleusercontent.com/crx/blobs/".
+  // Both URLs should be whitelisted regardless from the default filtering
+  // behavior.
+  GURL crx_download_url1(
+      "https://clients2.google.com/service/update2/"
+      "crx?response=redirect&os=linux&arch=x64&nacl_arch=x86-64&prod="
+      "chromiumcrx&prodchannel=&prodversion=55.0.2882.0&lang=en-US&x=id%"
+      "3Dciniambnphakdoflgeamacamhfllbkmo%26installsource%3Dondemand%26uc");
+  GURL crx_download_url2(
+      "https://clients2.googleusercontent.com/crx/blobs/"
+      "QgAAAC6zw0qH2DJtnXe8Z7rUJP1iCQF099oik9f2ErAYeFAX7_"
+      "CIyrNH5qBru1lUSBNvzmjILCGwUjcIBaJqxgegSNy2melYqfodngLxKtHsGBehAMZSmuWSg6"
+      "FupAcPS3Ih6NSVCOB9KNh6Mw/extension_2_0.crx");
+
+  filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+  EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
+            filter_->GetFilteringBehaviorForURL(crx_download_url1));
+  EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
+            filter_->GetFilteringBehaviorForURL(crx_download_url2));
+
+  // Set explicit host rules to block those website, and make sure the
+  // update URLs still work.
+  std::map<std::string, bool> hosts;
+  hosts["clients2.google.com"] = false;
+  hosts["clients2.googleusercontent.com"] = false;
+  filter_->SetManualHosts(&hosts);
+  filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
+  EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
+            filter_->GetFilteringBehaviorForURL(crx_download_url1));
+  EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
+            filter_->GetFilteringBehaviorForURL(crx_download_url2));
+}
+#endif
+
 TEST_F(SupervisedUserURLFilterTest, GetEmbeddedURLAmpCache) {
   // Base case.
   EXPECT_EQ(GURL("http://example.com"),
