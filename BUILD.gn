@@ -646,6 +646,11 @@ group("both_gn_and_gyp") {
     deps += [
       "//breakpad:crash_inspector",
       "//breakpad:dump_syms",
+
+      # XPC service is in developement and guarded against the
+      # enable_xpc_notifications, in the meantime however we still
+      # need compile coverage in the bots.
+      "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
       "//third_party/apple_sample_code",
       "//third_party/molokocacao",
     ]

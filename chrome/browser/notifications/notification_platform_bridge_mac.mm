@@ -46,7 +46,7 @@
 // notification#tag in NSUserNotification.identifier (10.9)
 // notification#icon in NSUserNotification.contentImage (10.9)
 // Site settings button is implemented as NSUserNotification's action button
-// Not possible to implement:
+// Not easy to implement:
 // -notification.requireInteraction
 // -The event associated to the close button
 
