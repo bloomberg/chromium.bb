@@ -28,6 +28,7 @@
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/decorated_text.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_names_testing.h"
 #include "ui/gfx/geometry/point.h"
@@ -153,6 +154,14 @@ const wchar_t kLtrRtlLtr[] = L"a" L"\x5d1" L"b";
 const wchar_t kRtlLtr[] =    L"\x5d0\x5d1" L"a";
 const wchar_t kRtlLtrRtl[] = L"\x5d0" L"a" L"\x5d1";
 
+// Bitmasks based on gfx::TextStyle.
+enum {
+  ITALIC_MASK = 1 << ITALIC,
+  STRIKE_MASK = 1 << STRIKE,
+  DIAGONAL_STRIKE_MASK = 1 << DIAGONAL_STRIKE,
+  UNDERLINE_MASK = 1 << UNDERLINE,
+};
+
 // Checks whether |range| contains |index|. This is not the same as calling
 // range.Contains(Range(index)), which returns true if |index| == |range.end()|.
 bool IndexInRange(const Range& range, size_t index) {
@@ -205,6 +214,73 @@ void RunMoveCursorLeftRightTest(RenderText* render_text,
   // Check that it is the line edge.
   render_text->MoveCursor(LINE_BREAK, direction, SELECTION_NONE);
   EXPECT_EQ(expected.back(), render_text->selection_model());
+}
+
+// Creates a RangedAttribute instance for a single character range at the
+// given |index| with the given |weight| and |style_mask|. |index| is the
+// index of the character in the DecoratedText instance and |font_index| is
+// used to retrieve the font used from |font_spans|.
+DecoratedText::RangedAttribute CreateRangedAttribute(
+    const std::vector<RenderText::FontSpan>& font_spans,
+    int index,
+    int font_index,
+    Font::Weight weight,
+    int style_mask) {
+  const auto iter =
+      std::find_if(font_spans.begin(), font_spans.end(),
+                   [font_index](const RenderText::FontSpan& span) {
+                     return IndexInRange(span.second, font_index);
+                   });
+  DCHECK(font_spans.end() != iter);
+  const Font& font = iter->first;
+
+  int font_style = Font::NORMAL;
+  if (style_mask & ITALIC_MASK)
+    font_style |= Font::ITALIC;
+  if (style_mask & UNDERLINE_MASK)
+    font_style |= Font::UNDERLINE;
+
+  const Font font_with_style = font.Derive(0, font_style, weight);
+  DecoratedText::RangedAttribute attributes(Range(index, index + 1),
+                                            font_with_style);
+  attributes.strike = style_mask & STRIKE_MASK;
+  attributes.diagonal_strike = style_mask & DIAGONAL_STRIKE_MASK;
+  return attributes;
+}
+
+// Verifies the given DecoratedText instances are equal by comparing the
+// respective strings and attributes for each index. Note, corresponding
+// ranged attributes from |expected| and |actual| can't be compared since the
+// partition of |actual| into RangedAttributes will depend on the text runs
+// generated.
+void VerifyDecoratedWordsAreEqual(const DecoratedText& expected,
+                                  const DecoratedText& actual) {
+  ASSERT_EQ(expected.text, actual.text);
+
+  // Compare attributes for each index.
+  for (size_t i = 0; i < expected.text.length(); i++) {
+    SCOPED_TRACE(base::StringPrintf("Comparing index[%" PRIuS "]", i));
+    auto find_attribute_func = [i](const DecoratedText::RangedAttribute& attr) {
+      return IndexInRange(attr.range, i);
+    };
+    const auto expected_attr =
+        std::find_if(expected.attributes.begin(), expected.attributes.end(),
+                     find_attribute_func);
+    const auto actual_attr =
+        std::find_if(actual.attributes.begin(), actual.attributes.end(),
+                     find_attribute_func);
+    ASSERT_NE(expected.attributes.end(), expected_attr);
+    ASSERT_NE(actual.attributes.end(), actual_attr);
+
+    EXPECT_EQ(expected_attr->strike, actual_attr->strike);
+    EXPECT_EQ(expected_attr->diagonal_strike, actual_attr->diagonal_strike);
+    EXPECT_EQ(expected_attr->font.GetFontName(),
+              actual_attr->font.GetFontName());
+    EXPECT_EQ(expected_attr->font.GetFontSize(),
+              actual_attr->font.GetFontSize());
+    EXPECT_EQ(expected_attr->font.GetWeight(), actual_attr->font.GetWeight());
+    EXPECT_EQ(expected_attr->font.GetStyle(), actual_attr->font.GetStyle());
+  }
 }
 
 // The class which records the drawing operations so that the test case can
@@ -3775,6 +3851,199 @@ TEST_P(RenderTextTest, SubpixelRenderingSuppressed) {
     DrawVisualText();
 #endif
     EXPECT_FALSE(GetRendererPaint().isLCDRenderText());
+}
+
+// Verify GetDecoratedWordAtPoint returns the correct baseline point and
+// decorated word for an LTR string.
+TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_LTR) {
+  const base::string16 ltr = ASCIIToUTF16("  ab  c ");
+  const int kWordOneStartIndex = 2;
+  const int kWordTwoStartIndex = 6;
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(Rect(100, 30));
+  render_text->SetText(ltr);
+  render_text->ApplyWeight(Font::Weight::SEMIBOLD, Range(0, 3));
+  render_text->ApplyStyle(UNDERLINE, true, Range(1, 5));
+  render_text->ApplyStyle(ITALIC, true, Range(3, 8));
+  render_text->ApplyStyle(DIAGONAL_STRIKE, true, Range(5, 7));
+  render_text->ApplyStyle(STRIKE, true, Range(1, 7));
+
+  const std::vector<RenderText::FontSpan> font_spans =
+      render_text->GetFontSpansForTesting();
+
+  // Create expected decorated text instances.
+  DecoratedText expected_word_1;
+  expected_word_1.text = ASCIIToUTF16("ab");
+  // Attributes for the characters 'a' and 'b' at logical indices 2 and 3
+  // respectively.
+  expected_word_1.attributes.push_back(CreateRangedAttribute(
+      font_spans, 0, kWordOneStartIndex, Font::Weight::SEMIBOLD,
+      UNDERLINE_MASK | STRIKE_MASK));
+  expected_word_1.attributes.push_back(CreateRangedAttribute(
+      font_spans, 1, kWordOneStartIndex + 1, Font::Weight::NORMAL,
+      UNDERLINE_MASK | ITALIC_MASK | STRIKE_MASK));
+  const Rect left_glyph_word_1 = render_text->GetCursorBounds(
+      SelectionModel(kWordOneStartIndex, CURSOR_FORWARD), false);
+
+  DecoratedText expected_word_2;
+  expected_word_2.text = ASCIIToUTF16("c");
+  // Attributes for character 'c' at logical index |kWordTwoStartIndex|.
+  expected_word_2.attributes.push_back(CreateRangedAttribute(
+      font_spans, 0, kWordTwoStartIndex, Font::Weight::NORMAL,
+      ITALIC_MASK | DIAGONAL_STRIKE_MASK | STRIKE_MASK));
+  const Rect left_glyph_word_2 = render_text->GetCursorBounds(
+      SelectionModel(kWordTwoStartIndex, CURSOR_FORWARD), false);
+
+  DecoratedText decorated_word;
+  Point baseline_point;
+
+  {
+    SCOPED_TRACE(base::StringPrintf("Query to the left of text bounds"));
+    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+        Point(-5, 5), &decorated_word, &baseline_point));
+    VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
+    EXPECT_TRUE(left_glyph_word_1.Contains(baseline_point));
+  }
+  {
+    SCOPED_TRACE(base::StringPrintf("Query to the right of text bounds"));
+    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+        Point(105, 5), &decorated_word, &baseline_point));
+    VerifyDecoratedWordsAreEqual(expected_word_2, decorated_word);
+    EXPECT_TRUE(left_glyph_word_2.Contains(baseline_point));
+  }
+
+  for (size_t i = 0; i < render_text->text().length(); i++) {
+    SCOPED_TRACE(base::StringPrintf("Case[%" PRIuS "]", i));
+    // Query the decorated word using the origin of the i'th glyph's bounds.
+    const Point query =
+        render_text->GetCursorBounds(SelectionModel(i, CURSOR_FORWARD), false)
+            .origin();
+
+    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(query, &decorated_word,
+                                                     &baseline_point));
+
+    if (i < kWordTwoStartIndex) {
+      VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
+      EXPECT_TRUE(left_glyph_word_1.Contains(baseline_point));
+    } else {
+      VerifyDecoratedWordsAreEqual(expected_word_2, decorated_word);
+      EXPECT_TRUE(left_glyph_word_2.Contains(baseline_point));
+    }
+  }
+}
+
+// Verify GetDecoratedWordAtPoint returns the correct baseline point and
+// decorated word for an RTL string.
+TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_RTL) {
+  const base::string16 rtl = WideToUTF16(
+      L" "
+      L"\x0634\x0632"
+      L"  "
+      L"\x0634");
+  const int kWordOneStartIndex = 1;
+  const int kWordTwoStartIndex = 5;
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(Rect(100, 30));
+  render_text->SetText(rtl);
+  render_text->ApplyWeight(Font::Weight::SEMIBOLD, Range(2, 3));
+  render_text->ApplyStyle(UNDERLINE, true, Range(3, 6));
+  render_text->ApplyStyle(ITALIC, true, Range(0, 3));
+  render_text->ApplyStyle(DIAGONAL_STRIKE, true, Range(0, 2));
+  render_text->ApplyStyle(STRIKE, true, Range(2, 5));
+
+  const std::vector<RenderText::FontSpan> font_spans =
+      render_text->GetFontSpansForTesting();
+
+  // Create expected decorated text instance.
+  DecoratedText expected_word_1;
+  expected_word_1.text = WideToUTF16(L"\x0634\x0632");
+  // Attributes for characters at logical indices 1 and 2.
+  expected_word_1.attributes.push_back(CreateRangedAttribute(
+      font_spans, 0, kWordOneStartIndex, Font::Weight::NORMAL,
+      ITALIC_MASK | DIAGONAL_STRIKE_MASK));
+  expected_word_1.attributes.push_back(
+      CreateRangedAttribute(font_spans, 1, kWordOneStartIndex + 1,
+                            Font::Weight::SEMIBOLD, ITALIC_MASK | STRIKE_MASK));
+  // The leftmost glyph is the one at logical index 2.
+  const Rect left_glyph_word_1 = render_text->GetCursorBounds(
+      SelectionModel(kWordOneStartIndex + 1, CURSOR_FORWARD), false);
+
+  DecoratedText expected_word_2;
+  expected_word_2.text = WideToUTF16(L"\x0634");
+  // Attributes for character at logical index |kWordTwoStartIndex|.
+  expected_word_2.attributes.push_back(CreateRangedAttribute(
+      font_spans, 0, kWordTwoStartIndex, Font::Weight::NORMAL, UNDERLINE_MASK));
+  const Rect left_glyph_word_2 = render_text->GetCursorBounds(
+      SelectionModel(kWordTwoStartIndex, CURSOR_FORWARD), false);
+
+  DecoratedText decorated_word;
+  Point baseline_point;
+
+  {
+    SCOPED_TRACE(base::StringPrintf("Query to the left of text bounds"));
+    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+        Point(-5, 5), &decorated_word, &baseline_point));
+    VerifyDecoratedWordsAreEqual(expected_word_2, decorated_word);
+    EXPECT_TRUE(left_glyph_word_2.Contains(baseline_point));
+  }
+  {
+    SCOPED_TRACE(base::StringPrintf("Query to the right of text bounds"));
+    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+        Point(105, 5), &decorated_word, &baseline_point));
+    VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
+    EXPECT_TRUE(left_glyph_word_1.Contains(baseline_point));
+  }
+
+  for (size_t i = 0; i < render_text->text().length(); i++) {
+    SCOPED_TRACE(base::StringPrintf("Case[%" PRIuS "]", i));
+
+    // Query the decorated word using the top right point of the i'th glyph's
+    // bounds.
+    const Point query =
+        render_text->GetCursorBounds(SelectionModel(i, CURSOR_FORWARD), false)
+            .top_right();
+
+    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(query, &decorated_word,
+                                                     &baseline_point));
+    if (i < kWordTwoStartIndex) {
+      VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
+      EXPECT_TRUE(left_glyph_word_1.Contains(baseline_point));
+    } else {
+      VerifyDecoratedWordsAreEqual(expected_word_2, decorated_word);
+      EXPECT_TRUE(left_glyph_word_2.Contains(baseline_point));
+    }
+  }
+}
+
+// Verify the boolean return value of GetDecoratedWordAtPoint.
+TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_Return) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(ASCIIToUTF16("..."));
+
+  DecoratedText decorated_word;
+  Point baseline_point;
+
+  // False should be returned, when the text does not contain any word.
+  Point query =
+      render_text->GetCursorBounds(SelectionModel(0, CURSOR_FORWARD), false)
+          .origin();
+  EXPECT_FALSE(render_text->GetDecoratedWordAtPoint(query, &decorated_word,
+                                                    &baseline_point));
+
+  render_text->SetText(ASCIIToUTF16("abc"));
+  query = render_text->GetCursorBounds(SelectionModel(0, CURSOR_FORWARD), false)
+              .origin();
+  EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(query, &decorated_word,
+                                                   &baseline_point));
+
+  // False should be returned for obscured text.
+  render_text->SetObscured(true);
+  query = render_text->GetCursorBounds(SelectionModel(0, CURSOR_FORWARD), false)
+              .origin();
+  EXPECT_FALSE(render_text->GetDecoratedWordAtPoint(query, &decorated_word,
+                                                    &baseline_point));
 }
 
 // Prefix for test instantiations intentionally left blank since each test

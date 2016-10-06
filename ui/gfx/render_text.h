@@ -46,6 +46,7 @@ class RenderTextTestApi;
 }
 
 class Canvas;
+struct DecoratedText;
 class Font;
 
 namespace internal {
@@ -496,6 +497,18 @@ class GFX_EXPORT RenderText {
   // and the display offset.
   Vector2d GetLineOffset(size_t line_number);
 
+  // Retrieves the word displayed at the given |point| along with its styling
+  // information. |point| is in the view's coordinates. If no word is displayed
+  // at the point, returns a nearby word. |baseline_point| should correspond to
+  // the baseline point of the leftmost glyph of the |word| in the view's
+  // coordinates. Returns false, if no word can be retrieved.
+  bool GetDecoratedWordAtPoint(const Point& point,
+                               DecoratedText* decorated_word,
+                               Point* baseline_point);
+
+  // Retrieves the text in the given |range|.
+  base::string16 GetTextFromRange(const Range& range) const;
+
  protected:
   RenderText();
 
@@ -677,6 +690,20 @@ class GFX_EXPORT RenderText {
 
   // Draw the selection.
   void DrawSelection(Canvas* canvas);
+
+  // Returns the nearest word start boundary for |index|. First searches in the
+  // CURSOR_BACKWARD direction, then in the CURSOR_FORWARD direction. Returns
+  // the text length if no valid boundary is found.
+  size_t GetNearestWordStartBoundary(size_t index) const;
+
+  // Expands |range| to its nearest word boundaries and returns the resulting
+  // range. Maintains directionality of |range|.
+  Range ExpandRangeToWordBoundary(const Range& range) const;
+
+  // Returns the decorated text corresponding to |range|. Returns false if the
+  // text cannot be retrieved, e.g. if the text is obscured.
+  virtual bool GetDecoratedTextForRange(const Range& range,
+                                        DecoratedText* decorated_text) = 0;
 
   // Logical UTF-16 string data to be drawn.
   base::string16 text_;

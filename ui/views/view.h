@@ -76,6 +76,7 @@ class LayoutManager;
 class NativeViewAccessibility;
 class ScrollView;
 class Widget;
+class WordLookupClient;
 
 namespace internal {
 class PreEventDispatchHandler;
@@ -716,6 +717,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   ViewTargeter* GetEffectiveViewTargeter() const;
 
   ViewTargeter* targeter() const { return targeter_.get(); }
+
+  // Returns the WordLookupClient associated with this view.
+  virtual WordLookupClient* GetWordLookupClient();
 
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;

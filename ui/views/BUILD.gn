@@ -379,6 +379,7 @@ component("views") {
     "window/window_resources.h",
     "window/window_shape.cc",
     "window/window_shape.h",
+    "word_lookup_client.h",
   ]
 
   configs += [

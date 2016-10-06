@@ -30,6 +30,7 @@
 #include "ui/views/controls/textfield/textfield_model.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
+#include "ui/views/word_lookup_client.h"
 
 namespace views {
 
@@ -42,6 +43,7 @@ class VIEWS_EXPORT Textfield : public View,
                                public TextfieldModel::Delegate,
                                public ContextMenuController,
                                public DragController,
+                               public WordLookupClient,
                                public ui::TouchEditable,
                                public ui::TextInputClient {
  public:
@@ -213,6 +215,7 @@ class VIEWS_EXPORT Textfield : public View,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
+  WordLookupClient* GetWordLookupClient() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool CanHandleAccelerators() const override;
@@ -253,6 +256,11 @@ class VIEWS_EXPORT Textfield : public View,
   bool CanStartDragForView(View* sender,
                            const gfx::Point& press_pt,
                            const gfx::Point& p) override;
+
+  // WordLookupClient overrides:
+  bool GetDecoratedWordAtPoint(const gfx::Point& point,
+                               gfx::DecoratedText* decorated_word,
+                               gfx::Point* baseline_point) override;
 
   // ui::TouchEditable overrides:
   void SelectRect(const gfx::Point& start, const gfx::Point& end) override;

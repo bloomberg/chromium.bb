@@ -23,6 +23,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/decorated_text.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/font_render_params.h"
@@ -850,13 +851,9 @@ std::vector<RenderText::FontSpan> RenderTextHarfBuzz::GetFontSpansForTesting() {
   internal::TextRunList* run_list = GetRunList();
   std::vector<RenderText::FontSpan> spans;
   for (auto* run : run_list->runs()) {
-    SkString family_name;
-    run->skia_face->getFamilyName(&family_name);
-    Font font(family_name.c_str(), run->font_size);
     spans.push_back(RenderText::FontSpan(
-        font,
-        Range(DisplayIndexToTextIndex(run->range.start()),
-              DisplayIndexToTextIndex(run->range.end()))));
+        run->font, Range(DisplayIndexToTextIndex(run->range.start()),
+                         DisplayIndexToTextIndex(run->range.end()))));
   }
 
   return spans;
@@ -1589,6 +1586,45 @@ internal::TextRunList* RenderTextHarfBuzz::GetRunList() {
 
 const internal::TextRunList* RenderTextHarfBuzz::GetRunList() const {
   return const_cast<RenderTextHarfBuzz*>(this)->GetRunList();
+}
+
+bool RenderTextHarfBuzz::GetDecoratedTextForRange(
+    const Range& range,
+    DecoratedText* decorated_text) {
+  if (obscured())
+    return false;
+
+  EnsureLayout();
+
+  decorated_text->attributes.clear();
+  decorated_text->text = GetTextFromRange(range);
+
+  const internal::TextRunList* run_list = GetRunList();
+  for (size_t i = 0; i < run_list->size(); i++) {
+    const internal::TextRunHarfBuzz& run = *run_list->runs()[i];
+
+    const Range intersection = range.Intersect(run.range);
+    DCHECK(!intersection.is_reversed());
+
+    if (!intersection.is_empty()) {
+      int style = Font::NORMAL;
+      if (run.italic)
+        style |= Font::ITALIC;
+      if (run.underline)
+        style |= Font::UNDERLINE;
+
+      // Get range relative to the decorated text.
+      DecoratedText::RangedAttribute attribute(
+          Range(intersection.start() - range.GetMin(),
+                intersection.end() - range.GetMin()),
+          run.font.Derive(0, style, run.weight));
+
+      attribute.strike = run.strike;
+      attribute.diagonal_strike = run.diagonal_strike;
+      decorated_text->attributes.push_back(attribute);
+    }
+  }
+  return true;
 }
 
 }  // namespace gfx

@@ -108,6 +108,10 @@ class GFX_EXPORT RenderTextMac : public RenderText {
   // Clears cached style. Doesn't update display text (e.g. eliding).
   void InvalidateStyle();
 
+  // RenderText:
+  bool GetDecoratedTextForRange(const Range& range,
+                                DecoratedText* decorated_text) override;
+
   // The Core Text line of text. Created by |EnsureLayout()|.
   base::ScopedCFTypeRef<CTLineRef> line_;
 

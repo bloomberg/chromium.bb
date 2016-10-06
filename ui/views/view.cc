@@ -1080,6 +1080,10 @@ ViewTargeter* View::GetEffectiveViewTargeter() const {
   return view_targeter;
 }
 
+WordLookupClient* View::GetWordLookupClient() {
+  return nullptr;
+}
+
 bool View::CanAcceptEvent(const ui::Event& event) {
   return IsDrawn();
 }

@@ -624,9 +624,7 @@ void TextfieldModel::DeleteSelectionAndInsertTextAt(
 }
 
 base::string16 TextfieldModel::GetTextFromRange(const gfx::Range& range) const {
-  if (range.IsValid() && range.GetMin() < text().length())
-    return text().substr(range.GetMin(), range.length());
-  return base::string16();
+  return render_text_->GetTextFromRange(range);
 }
 
 void TextfieldModel::GetTextRange(gfx::Range* range) const {

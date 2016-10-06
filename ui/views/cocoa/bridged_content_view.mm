@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
@@ -17,9 +18,11 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/canvas_painter.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
 #include "ui/gfx/canvas_paint_mac.h"
+#include "ui/gfx/decorated_text.h"
 #include "ui/gfx/geometry/rect.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/path.h"
@@ -32,6 +35,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/word_lookup_client.h"
 
 using views::MenuController;
 
@@ -205,6 +209,42 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   // E.g. For Alt+S, [NSEvent characters] is 'ß' and not 'S'.
   return ui::KeyEvent([[event characters] characterAtIndex:0],
                       ui::KeyboardCodeFromNSEvent(event), ui::EF_NONE);
+}
+
+NSAttributedString* GetAttributedString(
+    const gfx::DecoratedText& decorated_text) {
+  base::scoped_nsobject<NSMutableAttributedString> str(
+      [[NSMutableAttributedString alloc]
+          initWithString:base::SysUTF16ToNSString(decorated_text.text)]);
+  [str beginEditing];
+
+  NSValue* const line_style =
+      @(NSUnderlineStyleSingle | NSUnderlinePatternSolid);
+
+  for (const auto& attribute : decorated_text.attributes) {
+    DCHECK(!attribute.range.is_reversed());
+    DCHECK_LE(attribute.range.end(), [str length]);
+
+    NSMutableDictionary* attrs = [NSMutableDictionary dictionary];
+    NSRange range = attribute.range.ToNSRange();
+
+    if (attribute.font.GetNativeFont())
+      attrs[NSFontAttributeName] = attribute.font.GetNativeFont();
+
+    // NSFont does not have underline as an attribute. Hence handle it
+    // separately.
+    const bool underline = attribute.font.GetStyle() & gfx::Font::UNDERLINE;
+    if (underline)
+      attrs[NSUnderlineStyleAttributeName] = line_style;
+
+    if (attribute.strike)
+      attrs[NSStrikethroughStyleAttributeName] = line_style;
+
+    [str setAttributes:attrs range:range];
+  }
+
+  [str endEditing];
+  return str.autorelease();
 }
 
 }  // namespace
@@ -738,6 +778,36 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 
   ui::ScrollEvent event(theEvent);
   hostedView_->GetWidget()->OnScrollEvent(&event);
+}
+
+- (void)quickLookWithEvent:(NSEvent*)theEvent {
+  if (!hostedView_)
+    return;
+
+  const gfx::Point locationInContent = ui::EventLocationFromNative(theEvent);
+  views::View* target = hostedView_->GetEventHandlerForPoint(locationInContent);
+  if (!target)
+    return;
+
+  views::WordLookupClient* wordLookupClient = target->GetWordLookupClient();
+  if (!wordLookupClient)
+    return;
+
+  gfx::Point locationInTarget = locationInContent;
+  views::View::ConvertPointToTarget(hostedView_, target, &locationInTarget);
+  gfx::DecoratedText decoratedWord;
+  gfx::Point baselinePoint;
+  if (!wordLookupClient->GetDecoratedWordAtPoint(
+          locationInTarget, &decoratedWord, &baselinePoint)) {
+    return;
+  }
+
+  // Convert |baselinePoint| to the coordinate system of |hostedView_|.
+  views::View::ConvertPointToTarget(target, hostedView_, &baselinePoint);
+  NSPoint baselinePointAppKit = NSMakePoint(
+      baselinePoint.x(), NSHeight([self frame]) - baselinePoint.y());
+  [self showDefinitionForAttributedString:GetAttributedString(decoratedWord)
+                                  atPoint:baselinePointAppKit];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

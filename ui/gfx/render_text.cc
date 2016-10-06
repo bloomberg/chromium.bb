@@ -721,39 +721,7 @@ void RenderText::SelectAll(bool reversed) {
 }
 
 void RenderText::SelectWord() {
-  if (obscured_) {
-    SelectAll(false);
-    return;
-  }
-
-  size_t selection_max = selection().GetMax();
-
-  base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
-  bool success = iter.Init();
-  DCHECK(success);
-  if (!success)
-    return;
-
-  size_t selection_min = selection().GetMin();
-  if (selection_min == text().length() && selection_min != 0)
-    --selection_min;
-
-  for (; selection_min != 0; --selection_min) {
-    if (iter.IsStartOfWord(selection_min) ||
-        iter.IsEndOfWord(selection_min))
-      break;
-  }
-
-  if (selection_min == selection_max && selection_max != text().length())
-    ++selection_max;
-
-  for (; selection_max < text().length(); ++selection_max)
-    if (iter.IsEndOfWord(selection_max) || iter.IsStartOfWord(selection_max))
-      break;
-
-  const bool reversed = selection().is_reversed();
-  MoveCursorTo(reversed ? selection_max : selection_min, false);
-  MoveCursorTo(reversed ? selection_min : selection_max, true);
+  SelectRange(ExpandRangeToWordBoundary(selection()));
 }
 
 void RenderText::SetCompositionRange(const Range& composition_range) {
@@ -1040,6 +1008,45 @@ Vector2d RenderText::GetLineOffset(size_t line_number) {
     offset.Add(Vector2d(0, lines_[line_number].preceding_heights));
   offset.Add(GetAlignmentOffset(line_number));
   return offset;
+}
+
+bool RenderText::GetDecoratedWordAtPoint(const Point& point,
+                                         DecoratedText* decorated_word,
+                                         Point* baseline_point) {
+  // FindCursorPosition doesn't currently support multiline. See
+  // http://crbug.com/650120.
+  if (multiline() || obscured())
+    return false;
+
+  // Note: FindCursorPosition will trigger a layout via EnsureLayout.
+  const SelectionModel model_at_point = FindCursorPosition(point);
+  const size_t word_index =
+      GetNearestWordStartBoundary(model_at_point.caret_pos());
+  if (word_index >= text().length())
+    return false;
+
+  const Range word_range = ExpandRangeToWordBoundary(Range(word_index));
+  DCHECK(!word_range.is_reversed());
+  DCHECK(!word_range.is_empty());
+
+  const std::vector<Rect> word_bounds = GetSubstringBounds(word_range);
+  if (word_bounds.empty() ||
+      !GetDecoratedTextForRange(word_range, decorated_word)) {
+    return false;
+  }
+
+  // Retrieve the baseline origin of the left-most glyph.
+  const auto left_rect = std::min_element(
+      word_bounds.begin(), word_bounds.end(),
+      [](const Rect& lhs, const Rect& rhs) { return lhs.x() < rhs.x(); });
+  *baseline_point = left_rect->origin() + Vector2d(0, GetDisplayTextBaseline());
+  return true;
+}
+
+base::string16 RenderText::GetTextFromRange(const Range& range) const {
+  if (range.IsValid() && range.GetMin() < text().length())
+    return text().substr(range.GetMin(), range.length());
+  return base::string16();
 }
 
 RenderText::RenderText()
@@ -1625,6 +1632,62 @@ void RenderText::UpdateCachedBoundsAndOffset() {
 void RenderText::DrawSelection(Canvas* canvas) {
   for (const Rect& s : GetSubstringBounds(selection()))
     canvas->FillRect(s, selection_background_focused_color_);
+}
+
+size_t RenderText::GetNearestWordStartBoundary(size_t index) const {
+  const size_t length = text().length();
+  if (obscured() || length == 0)
+    return length;
+
+  base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
+  const bool success = iter.Init();
+  DCHECK(success);
+  if (!success)
+    return length;
+
+  // First search for the word start boundary in the CURSOR_BACKWARD direction,
+  // then in the CURSOR_FORWARD direction.
+  for (int i = std::min(index, length - 1); i >= 0; i--)
+    if (iter.IsStartOfWord(i))
+      return i;
+
+  for (size_t i = index + 1; i < length; i++)
+    if (iter.IsStartOfWord(i))
+      return i;
+
+  return length;
+}
+
+Range RenderText::ExpandRangeToWordBoundary(const Range& range) const {
+  const size_t length = text().length();
+  DCHECK_LE(range.GetMax(), length);
+  if (obscured())
+    return range.is_reversed() ? Range(length, 0) : Range(0, length);
+
+  base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
+  const bool success = iter.Init();
+  DCHECK(success);
+  if (!success)
+    return range;
+
+  size_t range_min = range.GetMin();
+  if (range_min == length && range_min != 0)
+    --range_min;
+
+  for (; range_min != 0; --range_min)
+    if (iter.IsStartOfWord(range_min) || iter.IsEndOfWord(range_min))
+      break;
+
+  size_t range_max = range.GetMax();
+  if (range_min == range_max && range_max != length)
+    ++range_max;
+
+  for (; range_max < length; ++range_max)
+    if (iter.IsEndOfWord(range_max) || iter.IsStartOfWord(range_max))
+      break;
+
+  return range.is_reversed() ? Range(range_max, range_min)
+                             : Range(range_min, range_max);
 }
 
 }  // namespace gfx

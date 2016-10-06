@@ -240,6 +240,10 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   internal::TextRunList* GetRunList();
   const internal::TextRunList* GetRunList() const;
 
+  // RenderText:
+  bool GetDecoratedTextForRange(const Range& range,
+                                DecoratedText* decorated_text) override;
+
   // Text run list for |layout_text_| and |display_text_|.
   // |display_run_list_| is created only when the text is elided.
   internal::TextRunList layout_run_list_;

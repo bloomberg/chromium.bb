@@ -650,6 +650,10 @@ void Textfield::OnMouseReleased(const ui::MouseEvent& event) {
   OnAfterUserAction();
 }
 
+WordLookupClient* Textfield::GetWordLookupClient() {
+  return this;
+}
+
 bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
   ui::TextEditCommand edit_command = scheduled_text_edit_command_;
   scheduled_text_edit_command_ = ui::TextEditCommand::INVALID_COMMAND;
@@ -1099,6 +1103,16 @@ bool Textfield::CanStartDragForView(View* sender,
                                     const gfx::Point& press_pt,
                                     const gfx::Point& p) {
   return initiating_drag_ && GetRenderText()->IsPointInSelection(press_pt);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Textfield, WordLookupClient overrides:
+
+bool Textfield::GetDecoratedWordAtPoint(const gfx::Point& point,
+                                        gfx::DecoratedText* decorated_word,
+                                        gfx::Point* baseline_point) {
+  return GetRenderText()->GetDecoratedWordAtPoint(point, decorated_word,
+                                                  baseline_point);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
