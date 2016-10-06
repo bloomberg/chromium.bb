@@ -50,11 +50,6 @@ class ASH_EXPORT ScreenUtil {
   // coordinates.
   static gfx::Rect ConvertRectFromScreen(aura::Window* window,
                                          const gfx::Rect& rect);
-
-  // Returns a display::Display object for secondary display. Returns
-  // invalid display if there is no secondary display connected.
-  static const display::Display& GetSecondaryDisplay();
-
  private:
   ScreenUtil() {}
   ~ScreenUtil() {}

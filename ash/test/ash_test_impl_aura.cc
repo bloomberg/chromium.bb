@@ -67,14 +67,15 @@ std::unique_ptr<WindowOwner> AshTestImplAura::CreateTestWindow(
 }
 
 display::Display AshTestImplAura::GetSecondaryDisplay() {
-  return ScreenUtil::GetSecondaryDisplay();
+  return Shell::GetInstance()->display_manager()->GetSecondaryDisplay();
 }
 
 bool AshTestImplAura::SetSecondaryDisplayPlacement(
     display::DisplayPlacement::Position position,
     int offset) {
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
-      test::CreateDisplayLayout(position, 0));
+      test::CreateDisplayLayout(Shell::GetInstance()->display_manager(),
+                                position, 0));
   return true;
 }
 

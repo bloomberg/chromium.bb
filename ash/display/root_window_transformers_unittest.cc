@@ -111,30 +111,35 @@ class TestEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
-float GetStoredUIScale(int64_t id) {
-  return Shell::GetInstance()
-      ->display_manager()
-      ->GetDisplayInfo(id)
-      .GetEffectiveUIScale();
-}
+class RootWindowTransformersTest : public test::AshTestBase {
+ public:
+  RootWindowTransformersTest(){};
+  ~RootWindowTransformersTest() override{};
 
-std::unique_ptr<RootWindowTransformer>
-CreateCurrentRootWindowTransformerForMirroring() {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DCHECK(display_manager->IsInMirrorMode());
-  const display::ManagedDisplayInfo& mirror_display_info =
-      display_manager->GetDisplayInfo(display_manager->mirroring_display_id());
-  const display::ManagedDisplayInfo& source_display_info =
-      display_manager->GetDisplayInfo(
-          display::Screen::GetScreen()->GetPrimaryDisplay().id());
-  return std::unique_ptr<RootWindowTransformer>(
-      CreateRootWindowTransformerForMirroredDisplay(source_display_info,
-                                                    mirror_display_info));
-}
+  float GetStoredUIScale(int64_t id) {
+    return display_manager()->GetDisplayInfo(id).GetEffectiveUIScale();
+  };
+
+  std::unique_ptr<RootWindowTransformer>
+  CreateCurrentRootWindowTransformerForMirroring() {
+    DCHECK(display_manager()->IsInMirrorMode());
+    const display::ManagedDisplayInfo& mirror_display_info =
+        display_manager()->GetDisplayInfo(
+            display_manager()->mirroring_display_id());
+    const display::ManagedDisplayInfo& source_display_info =
+        display_manager()->GetDisplayInfo(
+            display::Screen::GetScreen()->GetPrimaryDisplay().id());
+    return std::unique_ptr<RootWindowTransformer>(
+        CreateRootWindowTransformerForMirroredDisplay(source_display_info,
+                                                      mirror_display_info));
+  };
+
+  DISALLOW_COPY_AND_ASSIGN(RootWindowTransformersTest);
+};
 
 }  // namespace
 
-typedef test::AshTestBase RootWindowTransformersTest;
+// using RootWindowTransformersTest = test::AshTestBase;
 
 #if defined(OS_WIN)
 // TODO(scottmg): RootWindow doesn't get resized on Windows
@@ -151,14 +156,13 @@ typedef test::AshTestBase RootWindowTransformersTest;
 TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   MagnificationController* magnifier =
       Shell::GetInstance()->magnification_controller();
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
   UpdateDisplay("120x200,300x400*2");
   display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
-  int64_t display2_id = ScreenUtil::GetSecondaryDisplay().id();
+  int64_t display2_id = display_manager()->GetSecondaryDisplay().id();
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ui::test::EventGenerator generator1(root_windows[0]);
@@ -169,7 +173,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ("120x200", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("120,0 150x200",
-            ScreenUtil::GetSecondaryDisplay().bounds().ToString());
+            display_manager()->GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseToInHost(40, 80);
   EXPECT_EQ("50,90", event_handler.GetLocationAndReset());
   EXPECT_EQ("50,90",
@@ -179,9 +183,9 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ(display::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
   magnifier->SetEnabled(false);
 
-  display_manager->SetDisplayRotation(display1.id(),
-                                      display::Display::ROTATE_90,
-                                      display::Display::ROTATION_SOURCE_ACTIVE);
+  display_manager()->SetDisplayRotation(
+      display1.id(), display::Display::ROTATE_90,
+      display::Display::ROTATION_SOURCE_ACTIVE);
   // Move the cursor to the center of the first root window.
   generator1.MoveMouseToInHost(59, 100);
 
@@ -190,7 +194,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ("200x120", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("200,0 150x200",
-            ScreenUtil::GetSecondaryDisplay().bounds().ToString());
+            display_manager()->GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseToInHost(39, 120);
   EXPECT_EQ("110,70", event_handler.GetLocationAndReset());
   EXPECT_EQ("110,70",
@@ -200,13 +204,14 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ(display::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
   magnifier->SetEnabled(false);
 
-  display_manager->SetLayoutForCurrentDisplays(
-      test::CreateDisplayLayout(display::DisplayPlacement::BOTTOM, 50));
+  display_manager()->SetLayoutForCurrentDisplays(test::CreateDisplayLayout(
+      display_manager(), display::DisplayPlacement::BOTTOM, 50));
   EXPECT_EQ("50,120 150x200",
-            ScreenUtil::GetSecondaryDisplay().bounds().ToString());
+            display_manager()->GetSecondaryDisplay().bounds().ToString());
 
-  display_manager->SetDisplayRotation(display2_id, display::Display::ROTATE_270,
-                                      display::Display::ROTATION_SOURCE_ACTIVE);
+  display_manager()->SetDisplayRotation(
+      display2_id, display::Display::ROTATE_270,
+      display::Display::ROTATION_SOURCE_ACTIVE);
   // Move the cursor to the center of the second root window.
   generator2.MoveMouseToInHost(151, 199);
 
@@ -214,7 +219,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ("200x120", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("50,120 200x150",
-            ScreenUtil::GetSecondaryDisplay().bounds().ToString());
+            display_manager()->GetSecondaryDisplay().bounds().ToString());
   generator2.MoveMouseToInHost(172, 219);
   EXPECT_EQ("95,80", event_handler.GetLocationAndReset());
   EXPECT_EQ("145,200",
@@ -225,9 +230,9 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
             GetActiveDisplayRotation(display2_id));
   magnifier->SetEnabled(false);
 
-  display_manager->SetDisplayRotation(display1.id(),
-                                      display::Display::ROTATE_180,
-                                      display::Display::ROTATION_SOURCE_ACTIVE);
+  display_manager()->SetDisplayRotation(
+      display1.id(), display::Display::ROTATE_180,
+      display::Display::ROTATION_SOURCE_ACTIVE);
   // Move the cursor to the center of the first root window.
   generator1.MoveMouseToInHost(59, 99);
 
@@ -236,7 +241,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());
   // Dislay must share at least 100, so the x's offset becomes 20.
   EXPECT_EQ("20,200 200x150",
-            ScreenUtil::GetSecondaryDisplay().bounds().ToString());
+            display_manager()->GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseToInHost(39, 59);
   EXPECT_EQ("70,120", event_handler.GetLocationAndReset());
   EXPECT_EQ(display::Display::ROTATE_180,
@@ -258,8 +263,9 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   UpdateDisplay("600x400*2@1.5,500x300");
 
   display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
-  test::ScopedSetInternalDisplayId set_internal(display1.id());
-  display::Display display2 = ScreenUtil::GetSecondaryDisplay();
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                display1.id());
+  display::Display display2 = display_manager()->GetSecondaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   MagnificationController* magnifier =
       Shell::GetInstance()->magnification_controller();
@@ -277,10 +283,9 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   EXPECT_EQ("299,150", event_handler.GetLocationAndReset());
   magnifier->SetEnabled(false);
 
-  Shell::GetInstance()->display_manager()->SetDisplayUIScale(display1.id(),
-                                                             1.25f);
+  display_manager()->SetDisplayUIScale(display1.id(), 1.25f);
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
-  display2 = ScreenUtil::GetSecondaryDisplay();
+  display2 = display_manager()->GetSecondaryDisplay();
   magnifier->SetEnabled(true);
   EXPECT_EQ(2.0f, magnifier->GetScale());
   EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
@@ -419,8 +424,7 @@ TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {
   if (!SupportsMultipleDisplays())
     return;
   test::MirrorWindowTestApi test_api;
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetMultiDisplayMode(DisplayManager::MIRRORING);
+  display_manager()->SetMultiDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x200,500x500");
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateCurrentRootWindowTransformerForMirroring());

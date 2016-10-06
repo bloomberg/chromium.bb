@@ -7,6 +7,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/workspace_controller.h"
+#include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -166,9 +167,10 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
 
   // Verify the double clicking the resize edge works on 2nd display too.
   UpdateDisplay("200x200,400x300");
-  gfx::Rect work_area2 = ScreenUtil::GetSecondaryDisplay().work_area();
+  gfx::Rect work_area2 = display_manager()->GetSecondaryDisplay().work_area();
   restored_bounds.SetRect(220, 20, 50, 50);
-  window->SetBoundsInScreen(restored_bounds, ScreenUtil::GetSecondaryDisplay());
+  window->SetBoundsInScreen(restored_bounds,
+                            display_manager()->GetSecondaryDisplay());
   aura::Window* second_root = Shell::GetAllRootWindows()[1];
   EXPECT_EQ(second_root, window->GetRootWindow());
   ui::test::EventGenerator generator2(second_root, window.get());

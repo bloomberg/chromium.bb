@@ -516,7 +516,8 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDraggingSecondScreen) {
   // Layout the secondary display to the bottom of the primary.
   ASSERT_GT(display::Screen::GetScreen()->GetNumDisplays(), 1);
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
-      test::CreateDisplayLayout(display::DisplayPlacement::BOTTOM, 0));
+      test::CreateDisplayLayout(display_manager(),
+                                display::DisplayPlacement::BOTTOM, 0));
 
   std::unique_ptr<aura::Window> w1(
       CreateTestWindow(gfx::Rect(0, 1000, 201, 310)));

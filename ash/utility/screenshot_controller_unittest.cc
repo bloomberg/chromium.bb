@@ -33,8 +33,8 @@ class ScreenshotControllerTest : public test::AshTestBase {
   }
 
   bool TestIfMouseWarpsAt(const gfx::Point& point_in_screen) {
-    return test::DisplayManagerTestApi::TestIfMouseWarpsAt(GetEventGenerator(),
-                                                           point_in_screen);
+    return test::AshTestBase::TestIfMouseWarpsAt(GetEventGenerator(),
+                                                 point_in_screen);
   }
 
   void StartPartialScreenshotSession() {

@@ -62,11 +62,10 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
                              ->GetDisplayNearestWindow(root_windows[1])
                              .id();
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  std::unique_ptr<display::DisplayLayout> layout(
-      test::CreateDisplayLayout(display::DisplayPlacement::RIGHT, 0));
+  std::unique_ptr<display::DisplayLayout> layout(test::CreateDisplayLayout(
+      display_manager(), display::DisplayPlacement::RIGHT, 0));
 
-  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
+  display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
 
   ASSERT_EQ(1U, GetWarpRegionsCount());
@@ -79,7 +78,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
 
   // Move 2nd display downwards a bit.
   layout->placement_list[0].offset = 5;
-  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
+  display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   // This is same as before because the 2nd display's y is above
   // the indicator's x.
@@ -94,7 +93,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
   // Move it down further so that the shared edge is shorter than
   // minimum hole size (160).
   layout->placement_list[0].offset = 200;
-  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
+  display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
   EXPECT_EQ(gfx::Rect(359, 200, 1, 160), GetIndicatorBounds(display_0_id));
@@ -107,7 +106,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
 
   // Now move 2nd display upwards
   layout->placement_list[0].offset = -5;
-  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
+  display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
   EXPECT_EQ(gfx::Rect(359, 16, 1, 344), GetIndicatorBounds(display_0_id));
@@ -136,10 +135,9 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnLeft) {
                              ->GetDisplayNearestWindow(root_windows[1])
                              .id();
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  std::unique_ptr<display::DisplayLayout> layout(
-      test::CreateDisplayLayout(display::DisplayPlacement::LEFT, 0));
-  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
+  std::unique_ptr<display::DisplayLayout> layout(test::CreateDisplayLayout(
+      display_manager(), display::DisplayPlacement::LEFT, 0));
+  display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
 
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
@@ -152,7 +150,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnLeft) {
   EXPECT_EQ(gfx::Rect(-1, 16, 1, 344), GetIndicatorBounds(display_1_id));
 
   layout->placement_list[0].offset = 250;
-  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
+  display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
   EXPECT_EQ(gfx::Rect(0, 250, 1, 110), GetIndicatorBounds(display_0_id));
@@ -179,10 +177,9 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
                              ->GetDisplayNearestWindow(root_windows[1])
                              .id();
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  std::unique_ptr<display::DisplayLayout> layout(
-      test::CreateDisplayLayout(display::DisplayPlacement::TOP, 0));
-  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
+  std::unique_ptr<display::DisplayLayout> layout(test::CreateDisplayLayout(
+      display_manager(), display::DisplayPlacement::TOP, 0));
+  display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
   EXPECT_EQ(gfx::Rect(0, 0, 360, 1), GetIndicatorBounds(display_0_id));
@@ -194,7 +191,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
   EXPECT_EQ(gfx::Rect(0, -1, 360, 1), GetIndicatorBounds(display_1_id));
 
   layout->placement_list[0].offset = 250;
-  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
+  display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
   EXPECT_EQ(gfx::Rect(250, 0, 110, 1), GetIndicatorBounds(display_0_id));
@@ -207,7 +204,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
 
   layout->placement_list[0].position = display::DisplayPlacement::BOTTOM;
   layout->placement_list[0].offset = 0;
-  display_manager->SetLayoutForCurrentDisplays(layout->Copy());
+  display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
   EXPECT_EQ(gfx::Rect(0, 359, 360, 1), GetIndicatorBounds(display_0_id));
@@ -301,8 +298,7 @@ TEST_F(ExtendedMouseWarpControllerTest,
   builder.AddDisplayPlacement(display_2_id, display_0_id,
                               display::DisplayPlacement::BOTTOM, 100);
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetLayoutForCurrentDisplays(builder.Build());
+  display_manager()->SetLayoutForCurrentDisplays(builder.Build());
   ASSERT_EQ(3U, GetWarpRegionsCount());
 
   // Drag from 0.
@@ -352,8 +348,7 @@ TEST_F(ExtendedMouseWarpControllerTest,
   builder.AddDisplayPlacement(display_1_id, display_2_id,
                               display::DisplayPlacement::TOP, 800);
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetLayoutForCurrentDisplays(builder.Build());
+  display_manager()->SetLayoutForCurrentDisplays(builder.Build());
   ASSERT_EQ(2U, GetWarpRegionsCount());
 
   // Drag from 0.

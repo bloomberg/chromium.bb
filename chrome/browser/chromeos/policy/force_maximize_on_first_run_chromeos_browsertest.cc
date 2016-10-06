@@ -41,7 +41,9 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
         ash::WindowPositioner::GetForceMaximizedWidthLimit() + 100;
     // Set resolution to 1466x300.
     const std::string resolution = base::IntToString(width) + "x300";
-    ash::test::DisplayManagerTestApi().UpdateDisplay(resolution);
+    ash::test::DisplayManagerTestApi(
+        ash::Shell::GetInstance()->display_manager())
+        .UpdateDisplay(resolution);
   }
 
   const Browser* OpenNewBrowserWindow() {

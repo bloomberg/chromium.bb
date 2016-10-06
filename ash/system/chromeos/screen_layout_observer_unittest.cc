@@ -7,7 +7,6 @@
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/display/display_manager.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
@@ -26,24 +25,6 @@
 
 namespace ash {
 
-base::string16 GetFirstDisplayName() {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  return base::UTF8ToUTF16(display_manager->GetDisplayNameForId(
-      display_manager->first_display_id()));
-}
-
-base::string16 GetSecondDisplayName() {
-  return base::UTF8ToUTF16(
-      Shell::GetInstance()->display_manager()->GetDisplayNameForId(
-          ScreenUtil::GetSecondaryDisplay().id()));
-}
-
-base::string16 GetMirroringDisplayName() {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  return base::UTF8ToUTF16(display_manager->GetDisplayNameForId(
-      display_manager->mirroring_display_id()));
-}
-
 class ScreenLayoutObserverTest : public test::AshTestBase {
  public:
   ScreenLayoutObserverTest();
@@ -56,6 +37,12 @@ class ScreenLayoutObserverTest : public test::AshTestBase {
   void CloseNotification();
   base::string16 GetDisplayNotificationText() const;
   base::string16 GetDisplayNotificationAdditionalText() const;
+
+  base::string16 GetFirstDisplayName();
+
+  base::string16 GetSecondDisplayName();
+
+  base::string16 GetMirroringDisplayName();
 
  private:
   const message_center::Notification* GetDisplayNotification() const;
@@ -88,6 +75,21 @@ base::string16 ScreenLayoutObserverTest::GetDisplayNotificationAdditionalText()
   return notification ? notification->message() : base::string16();
 }
 
+base::string16 ScreenLayoutObserverTest::GetFirstDisplayName() {
+  return base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(
+      display_manager()->first_display_id()));
+}
+
+base::string16 ScreenLayoutObserverTest::GetSecondDisplayName() {
+  return base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(
+      display_manager()->GetSecondaryDisplay().id()));
+}
+
+base::string16 ScreenLayoutObserverTest::GetMirroringDisplayName() {
+  return base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(
+      display_manager()->mirroring_display_id()));
+}
+
 const message_center::Notification*
 ScreenLayoutObserverTest::GetDisplayNotification() const {
   const message_center::NotificationList::Notifications notifications =
@@ -107,8 +109,7 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
   tray_delegate->set_should_show_display_notification(true);
 
   UpdateDisplay("400x400");
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display::Display::SetInternalDisplayId(display_manager->first_display_id());
+  display::Display::SetInternalDisplayId(display_manager()->first_display_id());
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 
   // rotation.
@@ -163,7 +164,7 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
 
   // Mirroring.
   CloseNotification();
-  display_manager->SetSoftwareMirroring(true);
+  display_manager()->SetSoftwareMirroring(true);
   UpdateDisplay("400x400,200x200");
   EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING,
                                        GetMirroringDisplayName()),
@@ -172,7 +173,7 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
 
   // Back to extended.
   CloseNotification();
-  display_manager->SetSoftwareMirroring(false);
+  display_manager()->SetSoftwareMirroring(false);
   UpdateDisplay("400x400,200x200");
   EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED,
                                        GetSecondDisplayName()),
@@ -199,7 +200,7 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
   // Enters closed lid mode.
   UpdateDisplay("400x400@1.5,200x200");
   display::Display::SetInternalDisplayId(
-      ScreenUtil::GetSecondaryDisplay().id());
+      display_manager()->GetSecondaryDisplay().id());
   UpdateDisplay("400x400@1.5");
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED),
             GetDisplayNotificationText());
@@ -254,8 +255,7 @@ TEST_F(ScreenLayoutObserverTest, OverscanDisplay) {
   UpdateDisplay("400x400, 300x300");
   test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
   tray_delegate->set_should_show_display_notification(true);
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display::Display::SetInternalDisplayId(display_manager->first_display_id());
+  display::Display::SetInternalDisplayId(display_manager()->first_display_id());
 
   // /o creates the default overscan.
   UpdateDisplay("400x400, 300x300/o");
@@ -264,7 +264,7 @@ TEST_F(ScreenLayoutObserverTest, OverscanDisplay) {
 
   // Reset the overscan.
   Shell::GetInstance()->display_manager()->SetOverscanInsets(
-      ScreenUtil::GetSecondaryDisplay().id(), gfx::Insets());
+      display_manager()->GetSecondaryDisplay().id(), gfx::Insets());
   EXPECT_TRUE(GetDisplayNotificationText().empty());
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 }

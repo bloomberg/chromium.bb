@@ -8,19 +8,13 @@
 #include <vector>
 
 #include "ash/display/display_manager.h"
-#include "ash/display/extended_mouse_warp_controller.h"
-#include "ash/display/mouse_cursor_event_filter.h"
-#include "ash/display/unified_mouse_warp_controller.h"
-#include "ash/screen_util.h"
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout_builder.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -52,29 +46,8 @@ DisplayInfoList CreateDisplayInfoListFromString(
 
 }  // namespace
 
-// static
-bool DisplayManagerTestApi::TestIfMouseWarpsAt(
-    ui::test::EventGenerator& event_generator,
-    const gfx::Point& point_in_screen) {
-  DCHECK(!Shell::GetInstance()->display_manager()->IsInUnifiedMode());
-  static_cast<ExtendedMouseWarpController*>(
-      Shell::GetInstance()
-          ->mouse_cursor_filter()
-          ->mouse_warp_controller_for_test())
-      ->allow_non_native_event_for_test();
-  display::Screen* screen = display::Screen::GetScreen();
-  display::Display original_display =
-      screen->GetDisplayNearestPoint(point_in_screen);
-  event_generator.MoveMouseTo(point_in_screen);
-  return original_display.id() !=
-         screen
-             ->GetDisplayNearestPoint(
-                 aura::Env::GetInstance()->last_mouse_location())
-             .id();
-}
-
-DisplayManagerTestApi::DisplayManagerTestApi()
-    : display_manager_(Shell::GetInstance()->display_manager()) {}
+DisplayManagerTestApi::DisplayManagerTestApi(DisplayManager* display_manager)
+    : display_manager_(display_manager) {}
 
 DisplayManagerTestApi::~DisplayManagerTestApi() {}
 
@@ -135,6 +108,11 @@ void DisplayManagerTestApi::SetAvailableColorProfiles(
       profiles);
 }
 
+const display::ManagedDisplayInfo&
+DisplayManagerTestApi::GetInternalManagedDisplayInfo(int64_t display_id) {
+  return display_manager_->display_info_[display_id];
+}
+
 ScopedDisable125DSFForUIScaling::ScopedDisable125DSFForUIScaling() {
   display::ManagedDisplayInfo::SetUse125DSFForUIScalingForTest(false);
 }
@@ -143,16 +121,19 @@ ScopedDisable125DSFForUIScaling::~ScopedDisable125DSFForUIScaling() {
   display::ManagedDisplayInfo::SetUse125DSFForUIScalingForTest(true);
 }
 
-ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(int64_t id) {
-  DisplayManagerTestApi().SetInternalDisplayId(id);
+ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(
+    DisplayManager* display_manager,
+    int64_t id) {
+  DisplayManagerTestApi(display_manager).SetInternalDisplayId(id);
 }
 
 ScopedSetInternalDisplayId::~ScopedSetInternalDisplayId() {
   display::Display::SetInternalDisplayId(display::Display::kInvalidDisplayID);
 }
 
-bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution) {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+bool SetDisplayResolution(DisplayManager* display_manager,
+                          int64_t display_id,
+                          const gfx::Size& resolution) {
   const display::ManagedDisplayInfo& info =
       display_manager->GetDisplayInfo(display_id);
   scoped_refptr<display::ManagedDisplayMode> mode =
@@ -162,22 +143,13 @@ bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution) {
   return display_manager->SetDisplayMode(display_id, mode);
 }
 
-void SwapPrimaryDisplay() {
-  if (display::Screen::GetScreen()->GetNumDisplays() <= 1)
-    return;
-  Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
-      ScreenUtil::GetSecondaryDisplay().id());
-}
-
 std::unique_ptr<display::DisplayLayout> CreateDisplayLayout(
+    DisplayManager* display_manager,
     display::DisplayPlacement::Position position,
     int offset) {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
-
   display::DisplayLayoutBuilder builder(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
-  builder.SetSecondaryPlacement(ScreenUtil::GetSecondaryDisplay().id(),
+  builder.SetSecondaryPlacement(display_manager->GetSecondaryDisplay().id(),
                                 position, offset);
   return builder.Build();
 }

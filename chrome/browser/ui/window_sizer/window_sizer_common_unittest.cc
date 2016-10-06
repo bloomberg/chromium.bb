@@ -24,6 +24,7 @@
 
 namespace {
 
+// TODO(rjkroege): Use the common TestScreen.
 class TestScreen : public display::Screen {
  public:
   TestScreen() : previous_screen_(display::Screen::GetScreen()) {

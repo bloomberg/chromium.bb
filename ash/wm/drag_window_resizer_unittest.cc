@@ -152,8 +152,8 @@ class DragWindowResizerTest : public test::AshMDTestBase {
   }
 
   bool TestIfMouseWarpsAt(const gfx::Point& point_in_screen) {
-    return test::DisplayManagerTestApi::TestIfMouseWarpsAt(GetEventGenerator(),
-                                                           point_in_screen);
+    return test::AshTestBase::TestIfMouseWarpsAt(GetEventGenerator(),
+                                                 point_in_screen);
   }
 
   aura::test::TestWindowDelegate delegate_;

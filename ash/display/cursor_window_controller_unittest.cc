@@ -6,7 +6,6 @@
 
 #include "ash/display/display_util.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
@@ -74,7 +73,7 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
   WindowTreeHostManager* window_tree_host_manager =
       Shell::GetInstance()->window_tree_host_manager();
   int64_t primary_display_id = window_tree_host_manager->GetPrimaryDisplayId();
-  int64_t secondary_display_id = ScreenUtil::GetSecondaryDisplay().id();
+  int64_t secondary_display_id = display_manager()->GetSecondaryDisplay().id();
   aura::Window* primary_root =
       window_tree_host_manager->GetRootWindowForDisplayId(primary_display_id);
   aura::Window* secondary_root =
@@ -157,15 +156,14 @@ TEST_F(CursorWindowControllerTest, DSF) {
   UpdateDisplay("1000x500*2");
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
 
-  test::ScopedSetInternalDisplayId set_internal(primary_id);
+  test::ScopedSetInternalDisplayId set_internal(display_manager(), primary_id);
   SetCursorCompositionEnabled(true);
   ASSERT_EQ(
       2.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
 
-  ASSERT_TRUE(Shell::GetInstance()->display_manager()->SetDisplayUIScale(
-      primary_id, 2.0f));
+  ASSERT_TRUE(display_manager()->SetDisplayUIScale(primary_id, 2.0f));
   ASSERT_EQ(
       1.0f,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());

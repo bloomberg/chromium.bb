@@ -31,7 +31,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/rotator/window_rotation.h"
-#include "ash/screen_util.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_hud_debug.h"
@@ -236,8 +235,13 @@ bool CanHandleUnpin() {
 #if defined(OS_CHROMEOS)
 void HandleSwapPrimaryDisplay() {
   base::RecordAction(UserMetricsAction("Accel_Swap_Primary_Display"));
+
+  // TODO(rjkroege): This is not correct behaviour on devices with more than
+  // two screens. Behave the same as mirroring: fail and notify if there are
+  // three or more screens.
   Shell::GetInstance()->display_configuration_controller()->SetPrimaryDisplayId(
-      ScreenUtil::GetSecondaryDisplay().id(), true /* user_action */);
+      Shell::GetInstance()->display_manager()->GetSecondaryDisplay().id(),
+      true /* user_action */);
 }
 
 void HandleToggleMirrorMode() {

@@ -72,13 +72,5 @@ gfx::Rect ScreenUtil::ConvertRectFromScreen(aura::Window* window,
 }
 
 // static
-const display::Display& ScreenUtil::GetSecondaryDisplay() {
-  DisplayManager* display_manager = GetDisplayManager();
-  CHECK_LE(2U, display_manager->GetNumDisplays());
-  return display_manager->GetDisplayAt(0).id() ==
-                 display::Screen::GetScreen()->GetPrimaryDisplay().id()
-             ? display_manager->GetDisplayAt(1)
-             : display_manager->GetDisplayAt(0);
-}
 
 }  // namespace ash

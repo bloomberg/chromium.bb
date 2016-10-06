@@ -114,6 +114,14 @@ class AshTestBase : public testing::Test {
   // hasn't been created yet.
   ui::test::EventGenerator& GetEventGenerator();
 
+  // Convenience method to return the DisplayManager.
+  DisplayManager* display_manager();
+
+  // Test if moving a mouse to |point_in_screen| warps it to another
+  // display.
+  bool TestIfMouseWarpsAt(ui::test::EventGenerator& event_generator,
+                          const gfx::Point& point_in_screen);
+
  protected:
   enum UserSessionBlockReason {
     FIRST_BLOCK_REASON,
@@ -167,6 +175,9 @@ class AshTestBase : public testing::Test {
   void UnblockUserSession();
 
   void DisableIME();
+
+  // Swap the primary display with the secondary.
+  void SwapPrimaryDisplay();
 
  private:
   friend class ash::AshTestImplAura;

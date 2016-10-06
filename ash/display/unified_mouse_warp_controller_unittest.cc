@@ -29,7 +29,7 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
 
   void SetUp() override {
     test::AshTestBase::SetUp();
-    Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(true);
+    display_manager()->SetUnifiedDesktopEnabled(true);
   }
 
  protected:
@@ -38,10 +38,9 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
       int64_t* display_id,
       gfx::Point* point_in_mirroring_host,
       gfx::Point* point_in_unified_host) {
-    DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-    for (auto display : display_manager->software_mirroring_display_list()) {
+    for (auto display : display_manager()->software_mirroring_display_list()) {
       display::ManagedDisplayInfo info =
-          display_manager->GetDisplayInfo(display.id());
+          display_manager()->GetDisplayInfo(display.id());
       if (info.bounds_in_native().Contains(point_in_native)) {
         *display_id = info.id();
         *point_in_unified_host = point_in_native;
@@ -69,7 +68,6 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
             ->mouse_cursor_filter()
             ->mouse_warp_controller_for_test())
         ->update_location_for_test();
-    DisplayManager* display_manager = Shell::GetInstance()->display_manager();
     int64_t orig_mirroring_display_id;
     gfx::Point point_in_unified_host;
     gfx::Point point_in_mirroring_host;
@@ -93,12 +91,12 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
     root->GetHost()->ConvertPointToHost(&new_location_in_unified_host);
 
     int new_index = display::FindDisplayIndexContainingPoint(
-        display_manager->software_mirroring_display_list(),
+        display_manager()->software_mirroring_display_list(),
         new_location_in_unified_host);
     if (new_index < 0)
       return false;
     return orig_mirroring_display_id !=
-           display_manager->software_mirroring_display_list()[new_index].id();
+           display_manager()->software_mirroring_display_list()[new_index].id();
   }
 
   MouseCursorEventFilter* event_filter() {

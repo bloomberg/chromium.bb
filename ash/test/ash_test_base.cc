@@ -11,6 +11,9 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/display/extended_mouse_warp_controller.h"
+#include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/ime/input_method_event_handler.h"
 #include "ash/shell.h"
@@ -25,6 +28,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -209,7 +213,8 @@ bool AshTestBase::SupportsMultipleDisplays() {
 
 // static
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
-  DisplayManagerTestApi().UpdateDisplay(display_specs);
+  DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      .UpdateDisplay(display_specs);
 }
 
 aura::Window* AshTestBase::CurrentContext() {
@@ -370,6 +375,36 @@ void AshTestBase::DisableIME() {
       Shell::GetInstance()
           ->window_tree_host_manager()
           ->input_method_event_handler());
+}
+
+DisplayManager* AshTestBase::display_manager() {
+  return Shell::GetInstance()->display_manager();
+}
+
+bool AshTestBase::TestIfMouseWarpsAt(ui::test::EventGenerator& event_generator,
+                                     const gfx::Point& point_in_screen) {
+  DCHECK(!Shell::GetInstance()->display_manager()->IsInUnifiedMode());
+  static_cast<ExtendedMouseWarpController*>(
+      Shell::GetInstance()
+          ->mouse_cursor_filter()
+          ->mouse_warp_controller_for_test())
+      ->allow_non_native_event_for_test();
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display original_display =
+      screen->GetDisplayNearestPoint(point_in_screen);
+  event_generator.MoveMouseTo(point_in_screen);
+  return original_display.id() !=
+         screen
+             ->GetDisplayNearestPoint(
+                 aura::Env::GetInstance()->last_mouse_location())
+             .id();
+}
+
+void AshTestBase::SwapPrimaryDisplay() {
+  if (display::Screen::GetScreen()->GetNumDisplays() <= 1)
+    return;
+  Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
+      display_manager()->GetSecondaryDisplay().id());
 }
 
 }  // namespace test

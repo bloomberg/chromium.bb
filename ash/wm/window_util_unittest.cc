@@ -7,10 +7,11 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/screen_util.h"
+#include "ash/display/display_manager.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 
@@ -42,7 +43,7 @@ TEST_F(WindowUtilTest, CenterWindow) {
   EXPECT_EQ("200,126 100x100", window->bounds().ToString());
   EXPECT_EQ("200,126 100x100", window->GetBoundsInScreen().ToString());
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),
-                            ScreenUtil::GetSecondaryDisplay());
+                            display_manager()->GetSecondaryDisplay());
   wm::CenterWindow(WmWindowAura::Get(window.get()));
   EXPECT_EQ("250,126 100x100", window->bounds().ToString());
   EXPECT_EQ("750,126 100x100", window->GetBoundsInScreen().ToString());

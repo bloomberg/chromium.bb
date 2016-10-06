@@ -8,7 +8,6 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/rotator/screen_rotation_animator.h"
-#include "ash/screen_util.h"
 #include "base/time/time.h"
 #include "ui/display/manager/display_layout.h"
 

@@ -15,6 +15,10 @@
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/types/display_constants.h"
 
+namespace display {
+class ManagedDisplayInfo;
+}
+
 namespace gfx {
 class Point;
 class Size;
@@ -33,12 +37,7 @@ namespace test {
 
 class DisplayManagerTestApi {
  public:
-  // Test if moving a mouse to |point_in_screen| warps it to another
-  // display.
-  static bool TestIfMouseWarpsAt(ui::test::EventGenerator& event_generator,
-                                 const gfx::Point& point_in_screen);
-
-  DisplayManagerTestApi();
+  explicit DisplayManagerTestApi(DisplayManager* display_manager);
   virtual ~DisplayManagerTestApi();
 
   // Update the display configuration as given in |display_specs|. The format of
@@ -58,6 +57,10 @@ class DisplayManagerTestApi {
   void SetAvailableColorProfiles(
       int64_t display_id,
       const std::vector<ui::ColorCalibrationProfile>& profiles);
+
+  // Gets the internal display::ManagedDisplayInfo for a specific display id.
+  const display::ManagedDisplayInfo& GetInternalManagedDisplayInfo(
+      int64_t display_id);
 
  private:
   friend class ScopedSetInternalDisplayId;
@@ -81,7 +84,7 @@ class ScopedDisable125DSFForUIScaling {
 
 class ScopedSetInternalDisplayId {
  public:
-  ScopedSetInternalDisplayId(int64_t id);
+  ScopedSetInternalDisplayId(DisplayManager* test_api, int64_t id);
   ~ScopedSetInternalDisplayId();
 
  private:
@@ -89,10 +92,9 @@ class ScopedSetInternalDisplayId {
 };
 
 // Sets the display mode that matches the |resolution| for |display_id|.
-bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution);
-
-// Swap the primary display with the secondary.
-void SwapPrimaryDisplay();
+bool SetDisplayResolution(DisplayManager* display_manager,
+                          int64_t display_id,
+                          const gfx::Size& resolution);
 
 // Creates the dislpay layout from position and offset for the current
 // display list. If you simply want to create a new layout that is
@@ -100,6 +102,7 @@ void SwapPrimaryDisplay();
 // create a new DisplayLayout and set display id fields (primary, ids
 // in placement) manually.
 std::unique_ptr<display::DisplayLayout> CreateDisplayLayout(
+    DisplayManager* display_manager,
     display::DisplayPlacement::Position position,
     int offset);
 

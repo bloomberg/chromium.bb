@@ -1433,4 +1433,12 @@ void DisplayManager::RemoveObserver(display::DisplayObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+const display::Display& DisplayManager::GetSecondaryDisplay() const {
+  CHECK_LE(2U, GetNumDisplays());
+  return GetDisplayAt(0).id() ==
+                 display::Screen::GetScreen()->GetPrimaryDisplay().id()
+             ? GetDisplayAt(1)
+             : GetDisplayAt(0);
+}
+
 }  // namespace ash

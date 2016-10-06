@@ -128,7 +128,8 @@ TEST_F(WorkspaceLayoutManagerTest, KeepMinimumVisibilityInDisplays) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
-      test::CreateDisplayLayout(display::DisplayPlacement::TOP, 0));
+      test::CreateDisplayLayout(display_manager(),
+display::DisplayPlacement::TOP, 0));
   EXPECT_EQ("0,-500 400x500", root_windows[1]->GetBoundsInScreen().ToString());
 
   std::unique_ptr<aura::Window> window1(

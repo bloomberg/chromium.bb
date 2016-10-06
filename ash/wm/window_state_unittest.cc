@@ -9,7 +9,7 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/screen_util.h"
+#include "ash/display/display_manager.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
@@ -69,7 +69,7 @@ TEST_P(WindowStateTest, SnapWindowBasic) {
   const gfx::Rect kPrimaryDisplayWorkAreaBounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   const gfx::Rect kSecondaryDisplayWorkAreaBounds =
-      ScreenUtil::GetSecondaryDisplay().work_area();
+      display_manager()->GetSecondaryDisplay().work_area();
 
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
@@ -89,7 +89,7 @@ TEST_P(WindowStateTest, SnapWindowBasic) {
 
   // Move the window to the secondary display.
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),
-                            ScreenUtil::GetSecondaryDisplay());
+                            display_manager()->GetSecondaryDisplay());
 
   window_state->OnWMEvent(&snap_right);
   expected = gfx::Rect(kSecondaryDisplayWorkAreaBounds.x() +

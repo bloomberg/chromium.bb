@@ -26,8 +26,8 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
   }
 
   bool TestIfMouseWarpsAt(const gfx::Point& point_in_screen) {
-    return test::DisplayManagerTestApi::TestIfMouseWarpsAt(GetEventGenerator(),
-                                                           point_in_screen);
+    return test::AshTestBase::TestIfMouseWarpsAt(GetEventGenerator(),
+                                                 point_in_screen);
   }
 
  private:
@@ -157,9 +157,8 @@ TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
     return;
 
   UpdateDisplay("400x400,800x800*2");
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetLayoutForCurrentDisplays(
-      test::CreateDisplayLayout(display::DisplayPlacement::RIGHT, 0));
+  display_manager()->SetLayoutForCurrentDisplays(test::CreateDisplayLayout(
+      display_manager(), display::DisplayPlacement::RIGHT, 0));
   test::CursorManagerTestApi cursor_test_api(
       Shell::GetInstance()->cursor_manager());
 

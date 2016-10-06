@@ -8,7 +8,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/screen_util.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state_aura.h"
@@ -561,7 +561,8 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   UpdateDisplay("1600x1200,1600x1200");
   gfx::Rect primary_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  gfx::Rect secondary_bounds = ash::ScreenUtil::GetSecondaryDisplay().bounds();
+  gfx::Rect secondary_bounds =
+      display_manager()->GetSecondaryDisplay().bounds();
 
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
 
