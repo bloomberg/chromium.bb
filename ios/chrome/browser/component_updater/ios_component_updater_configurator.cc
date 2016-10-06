@@ -52,6 +52,7 @@ class IOSConfigurator : public update_client::Configurator {
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
   PrefService* GetPrefService() const override;
+  bool IsPerUserInstall() const override;
 
  private:
   friend class base::RefCountedThreadSafe<IOSConfigurator>;
@@ -167,6 +168,10 @@ IOSConfigurator::GetSequencedTaskRunner() const {
 
 PrefService* IOSConfigurator::GetPrefService() const {
   return GetApplicationContext()->GetLocalState();
+}
+
+bool IOSConfigurator::IsPerUserInstall() const {
+  return true;
 }
 
 }  // namespace

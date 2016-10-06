@@ -175,4 +175,8 @@ PrefService* TestConfigurator::GetPrefService() const {
   return nullptr;
 }
 
+bool TestConfigurator::IsPerUserInstall() const {
+  return true;
+}
+
 }  // namespace update_client

@@ -46,6 +46,7 @@ class ChromeUpdateClientConfig : public UpdateClientConfig {
   bool EnabledBackgroundDownloader() const override;
   bool EnabledCupSigning() const override;
   PrefService* GetPrefService() const override;
+  bool IsPerUserInstall() const override;
 
  protected:
   friend class base::RefCountedThreadSafe<ChromeUpdateClientConfig>;

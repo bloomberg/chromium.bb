@@ -131,6 +131,10 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // persistent storage.
   virtual PrefService* GetPrefService() const = 0;
 
+  // Returns true if the Chrome is installed for the current user only, or false
+  // if Chrome is installed for all users on the machine.
+  virtual bool IsPerUserInstall() const = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<Configurator>;
 

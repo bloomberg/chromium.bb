@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/version.h"
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
+#include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/extensions/updater/chrome_update_client_config.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
@@ -115,6 +116,10 @@ bool ChromeUpdateClientConfig::EnabledCupSigning() const {
 
 PrefService* ChromeUpdateClientConfig::GetPrefService() const {
   return nullptr;
+}
+
+bool ChromeUpdateClientConfig::IsPerUserInstall() const {
+  return component_updater::IsPerUserInstall();
 }
 
 ChromeUpdateClientConfig::~ChromeUpdateClientConfig() {}

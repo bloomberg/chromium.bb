@@ -86,6 +86,7 @@ class TestConfigurator : public Configurator {
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
   PrefService* GetPrefService() const override;
+  bool IsPerUserInstall() const override;
 
   void SetBrand(const std::string& brand);
   void SetOnDemandTime(int seconds);
