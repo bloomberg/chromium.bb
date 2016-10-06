@@ -167,14 +167,15 @@ drv_bo_create(struct driver *drv, uint32_t width, uint32_t height,
 void
 drv_bo_destroy(struct bo *bo);
 
-void *
-drv_bo_map(struct bo *bo);
-
-int
-drv_bo_unmap(struct bo *bo);
-
 struct bo *
 drv_bo_import(struct driver *drv, struct drv_import_fd_data *data);
+
+void *
+drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width,
+	   uint32_t height, uint32_t flags, void **map_data, size_t plane);
+
+int
+drv_bo_unmap(struct bo *bo, void *map_data);
 
 uint32_t
 drv_bo_get_width(struct bo *bo);

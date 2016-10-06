@@ -106,31 +106,37 @@ struct driver *drv_create(int fd)
 	drv->fd = fd;
 	drv->backend = drv_get_backend(fd);
 
-	if (!drv->backend) {
-		free(drv);
-		return NULL;
-	}
+	if (!drv->backend)
+		goto free_driver;
 
-	if (pthread_mutex_init(&drv->table_lock, NULL)) {
-		free(drv);
-		return NULL;
-	}
+	if (pthread_mutex_init(&drv->table_lock, NULL))
+		goto free_driver;
 
 	drv->buffer_table = drmHashCreate();
-	if (!drv->buffer_table) {
-		free(drv);
-		return NULL;
-	}
+	if (!drv->buffer_table)
+		goto free_lock;
+
+	drv->map_table = drmHashCreate();
+	if (!drv->map_table)
+		goto free_buffer_table;
 
 	if (drv->backend->init) {
 		ret = drv->backend->init(drv);
-		if (ret) {
-			free(drv);
-			return NULL;
-		}
+		if (ret)
+			goto free_map_table;
 	}
 
 	return drv;
+
+free_map_table:
+	drmHashDestroy(drv->map_table);
+free_buffer_table:
+	drmHashDestroy(drv->buffer_table);
+free_lock:
+	pthread_mutex_destroy(&drv->table_lock);
+free_driver:
+	free(drv);
+	return NULL;
 }
 
 void drv_destroy(struct driver *drv)
@@ -140,6 +146,7 @@ void drv_destroy(struct driver *drv)
 
 	pthread_mutex_destroy(&drv->table_lock);
 	drmHashDestroy(drv->buffer_table);
+	drmHashDestroy(drv->map_table);
 
 	free(drv);
 }
@@ -251,32 +258,6 @@ void drv_bo_destroy(struct bo *bo)
 	free(bo);
 }
 
-void *
-drv_bo_map(struct bo *bo)
-{
-	assert(drv_num_buffers_per_bo(bo) == 1);
-
-	if (!bo->map_data || bo->map_data == MAP_FAILED)
-		bo->map_data = bo->drv->backend->bo_map(bo);
-
-	return bo->map_data;
-}
-
-int
-drv_bo_unmap(struct bo *bo)
-{
-	int ret = -1;
-
-	assert(drv_num_buffers_per_bo(bo) == 1);
-
-	if (bo->map_data && bo->map_data != MAP_FAILED)
-		ret = munmap(bo->map_data, bo->total_size);
-
-	bo->map_data = NULL;
-
-	return ret;
-}
-
 struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 {
 	int ret;
@@ -322,6 +303,74 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 	}
 
 	return bo;
+}
+
+void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width,
+		 uint32_t height, uint32_t flags, void **map_data, size_t plane)
+{
+	void *ptr;
+	uint8_t *addr;
+	size_t offset;
+	struct map_info *data;
+
+	assert(width > 0);
+	assert(height > 0);
+	assert(x + width <= drv_bo_get_width(bo));
+	assert(y + height <= drv_bo_get_height(bo));
+
+	pthread_mutex_lock(&bo->drv->table_lock);
+
+	if (!drmHashLookup(bo->drv->map_table, bo->handles[plane].u32, &ptr)) {
+		data = (struct map_info *) ptr;
+		data->refcount++;
+		goto success;
+	}
+
+	data = calloc(1, sizeof(*data));
+	addr = bo->drv->backend->bo_map(bo, data, plane);
+	if (addr == MAP_FAILED) {
+		*map_data = NULL;
+		free(data);
+		pthread_mutex_unlock(&bo->drv->table_lock);
+		return MAP_FAILED;
+	}
+
+	data->refcount = 1;
+	data->addr = addr;
+	data->handle = bo->handles[plane].u32;
+	drmHashInsert(bo->drv->buffer_table, bo->handles[plane].u32,
+		      (void *) data);
+
+success:
+	*map_data = (void *) data;
+	offset = drv_bo_get_plane_stride(bo, plane) * y;
+	offset += drv_stride_from_format(bo->format, x, plane);
+	addr = (uint8_t *) data->addr;
+	addr += drv_bo_get_plane_offset(bo, plane) + offset;
+	pthread_mutex_unlock(&bo->drv->table_lock);
+
+	return (void *) addr;
+}
+
+int drv_bo_unmap(struct bo *bo, void *map_data)
+{
+	struct map_info *data = map_data;
+	int ret = 0;
+
+	assert(data);
+	assert(data->refcount >= 0);
+
+	pthread_mutex_lock(&bo->drv->table_lock);
+
+	if (!--data->refcount) {
+		ret = munmap(data->addr, data->length);
+		drmHashDelete(bo->drv->map_table, data->handle);
+		free(data);
+	}
+
+	pthread_mutex_unlock(&bo->drv->table_lock);
+
+	return ret;
 }
 
 uint32_t drv_bo_get_width(struct bo *bo)

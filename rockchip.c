@@ -50,7 +50,7 @@ static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	return 0;
 }
 
-static void *rockchip_bo_map(struct bo *bo)
+static void *rockchip_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 {
 	int ret;
 	struct drm_rockchip_gem_map_off gem_map;
@@ -65,6 +65,8 @@ static void *rockchip_bo_map(struct bo *bo)
 			"drv: DRM_IOCTL_ROCKCHIP_GEM_MAP_OFFSET failed\n");
 		return MAP_FAILED;
 	}
+
+	data->length = bo->total_size;
 
 	return mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED,
 		    bo->drv->fd, gem_map.offset);

@@ -40,7 +40,7 @@ static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	return 0;
 }
 
-static void *mediatek_bo_map(struct bo *bo)
+static void *mediatek_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 {
 	int ret;
 	struct drm_mtk_gem_map_off gem_map;
@@ -53,6 +53,8 @@ static void *mediatek_bo_map(struct bo *bo)
 		fprintf(stderr,"drv: DRM_IOCTL_MTK_GEM_MAP_OFFSET failed\n");
 		return MAP_FAILED;
 	}
+
+	data->length = bo->total_size;
 
 	return mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED,
 		    bo->drv->fd, gem_map.offset);

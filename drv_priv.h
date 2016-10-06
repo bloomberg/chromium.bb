@@ -28,7 +28,6 @@ struct bo
 	uint64_t format_modifiers[DRV_MAX_PLANES];
 	size_t total_size;
 	void *priv;
-	void *map_data;
 };
 
 struct driver {
@@ -36,7 +35,15 @@ struct driver {
 	struct backend *backend;
 	void *priv;
 	void *buffer_table;
+	void *map_table;
 	pthread_mutex_t table_lock;
+};
+
+struct map_info {
+	void *addr;
+	size_t length;
+	uint32_t handle;
+	int32_t refcount;
 };
 
 struct backend
@@ -46,7 +53,7 @@ struct backend
 	void (*close)(struct driver *drv);
 	int (*bo_create)(struct bo *bo, uint32_t width, uint32_t height,
 			 drv_format_t format, uint32_t flags);
-	void* (*bo_map)(struct bo *bo);
+	void* (*bo_map)(struct bo *bo, struct map_info *data, size_t plane);
 	int (*bo_destroy)(struct bo *bo);
 	drv_format_t (*resolve_format)(drv_format_t format);
 	struct format_supported {

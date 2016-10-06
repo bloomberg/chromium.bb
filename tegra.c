@@ -141,7 +141,7 @@ static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	return 0;
 }
 
-static void *tegra_bo_map(struct bo *bo)
+static void *tegra_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 {
 	int ret;
 	struct drm_tegra_gem_mmap gem_map;
@@ -155,6 +155,8 @@ static void *tegra_bo_map(struct bo *bo)
 		fprintf(stderr, "drv: DRM_TEGRA_GEM_MMAP failed\n");
 		return MAP_FAILED;
 	}
+
+	data->length = bo->total_size;
 
 	return mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED,
 		    bo->drv->fd, gem_map.offset);

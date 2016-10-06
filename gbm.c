@@ -203,22 +203,15 @@ gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t width,
 	if (!bo || width == 0 || height == 0 || !stride || !map_data)
 		return NULL;
 
-	assert(x == 0);
-	assert(y == 0);
-	assert(width == gbm_bo_get_width(bo));
-	assert(height == gbm_bo_get_height(bo));
-
-	*map_data = drv_bo_map(bo->bo);
 	*stride = gbm_bo_get_plane_stride(bo, plane);
-	return *map_data;
+	return drv_bo_map(bo->bo, x, y, width, height, 0, map_data, plane);
 }
 
 PUBLIC void
 gbm_bo_unmap(struct gbm_bo *bo, void *map_data)
 {
 	assert(bo);
-	assert(map_data);
-	drv_bo_unmap(bo->bo);
+	drv_bo_unmap(bo->bo, map_data);
 }
 
 PUBLIC uint32_t
