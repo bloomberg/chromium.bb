@@ -81,7 +81,8 @@ static inline void filterProperties(
     size_t& unusedEntries,
     std::bitset<numCSSProperties>& seenProperties,
     HashSet<AtomicString>& seenCustomProperties) {
-  // Add properties in reverse order so that highest priority definitions are reached first. Duplicate definitions can then be ignored when found.
+  // Add properties in reverse order so that highest priority definitions are
+  // reached first. Duplicate definitions can then be ignored when found.
   for (size_t i = input.size(); i--;) {
     const CSSProperty& property = input[i];
     if (property.isImportant() != important)
@@ -431,7 +432,8 @@ StyleRuleBase* CSSParserImpl::consumeAtRule(CSSParserTokenRange& range,
   if (allowedRules == KeyframeRules)
     return nullptr;  // Parse error, no at-rules supported inside @keyframes
   if (allowedRules == NoRules || allowedRules == ApplyRules)
-    return nullptr;  // Parse error, no at-rules with blocks supported inside declaration lists
+    return nullptr;  // Parse error, no at-rules with blocks supported inside
+                     // declaration lists
 
   ASSERT(allowedRules <= RegularRules);
 
@@ -647,7 +649,8 @@ StyleRuleKeyframes* CSSParserImpl::consumeKeyframesRule(
   CSSParserTokenRange rangeCopy = prelude;  // For inspector callbacks
   const CSSParserToken& nameToken = prelude.consumeIncludingWhitespace();
   if (!prelude.atEnd())
-    return nullptr;  // Parse error; expected single non-whitespace token in @keyframes header
+    return nullptr;  // Parse error; expected single non-whitespace token in
+                     // @keyframes header
 
   String name;
   if (nameToken.type() == IdentToken) {

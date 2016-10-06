@@ -280,7 +280,8 @@ TEST(CSSTokenizerTest, FunctionToken) {
   TEST_TOKENS("url(\"foo.gif\"", function("url"), string("foo.gif"));
   TEST_TOKENS("foo(  \'bar.gif\'", function("foo"), whitespace(),
               string("bar.gif"));
-  // To simplify implementation we drop the whitespace in function(url),whitespace,string()
+  // To simplify implementation we drop the whitespace in
+  // function(url),whitespace,string()
   TEST_TOKENS("url(  \'bar.gif\'", function("url"), string("bar.gif"));
 }
 

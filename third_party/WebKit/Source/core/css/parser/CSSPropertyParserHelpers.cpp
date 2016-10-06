@@ -46,7 +46,8 @@ CSSParserTokenRange consumeFunction(CSSParserTokenRange& range) {
   return contents;
 }
 
-// TODO(rwlbuis): consider pulling in the parsing logic from CSSCalculationValue.cpp.
+// TODO(rwlbuis): consider pulling in the parsing logic from
+// CSSCalculationValue.cpp.
 class CalcParser {
   STACK_ALLOCATED();
 
@@ -152,7 +153,8 @@ CSSPrimitiveValue* consumeNumber(CSSParserTokenRange& range,
 inline bool shouldAcceptUnitlessLength(double value,
                                        CSSParserMode cssParserMode,
                                        UnitlessQuirk unitless) {
-  // TODO(timloh): Presentational HTML attributes shouldn't use the CSS parser for lengths
+  // TODO(timloh): Presentational HTML attributes shouldn't use the CSS parser
+  // for lengths
   return value == 0 || isUnitLessLengthParsingEnabledForMode(cssParserMode) ||
          (cssParserMode == HTMLQuirksMode && unitless == UnitlessQuirk::Allow);
 }
@@ -404,8 +406,8 @@ static bool parseRGBParameters(CSSParserTokenRange& range,
     double alpha;
     if (!consumeNumberRaw(args, alpha))
       return false;
-    // Convert the floating pointer number of alpha to an integer in the range [0, 256),
-    // with an equal distribution across all 256 values.
+    // Convert the floating pointer number of alpha to an integer in the range
+    // [0, 256), with an equal distribution across all 256 values.
     int alphaComponent = static_cast<int>(clampTo<double>(alpha, 0.0, 1.0) *
                                           nextafter(256.0, 0.0));
     result =

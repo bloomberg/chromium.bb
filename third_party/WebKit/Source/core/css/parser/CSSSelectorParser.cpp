@@ -169,7 +169,8 @@ unsigned extractCompoundFlags(const CSSParserSelector& simpleSelector,
   if (simpleSelector.pseudoType() == CSSSelector::PseudoShadow)
     return 0;
   // TODO(rune@opera.com): crbug.com/578131
-  // The UASheetMode check is a work-around to allow this selector in mediaControls(New).css:
+  // The UASheetMode check is a work-around to allow this selector in
+  // mediaControls(New).css:
   // input[type="range" i]::-webkit-media-slider-container > div {
   if (parserMode == UASheetMode &&
       simpleSelector.pseudoType() == CSSSelector::PseudoWebKitCustomElement)
@@ -316,7 +317,8 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(
   while (std::unique_ptr<CSSParserSelector> simpleSelector =
              consumeSimpleSelector(range)) {
     // TODO(rune@opera.com): crbug.com/578131
-    // The UASheetMode check is a work-around to allow this selector in mediaControls(New).css:
+    // The UASheetMode check is a work-around to allow this selector in
+    // mediaControls(New).css:
     // video::-webkit-media-text-track-region-container.scrolling
     if (m_context.mode() != UASheetMode &&
         !isSimpleSelectorValidAfterPseudoElement(*simpleSelector.get(),
@@ -753,11 +755,13 @@ const AtomicString& CSSSelectorParser::determineNamespace(
   if (prefix.isNull())
     return defaultNamespace();
   if (prefix.isEmpty())
-    return emptyAtom;  // No namespace. If an element/attribute has a namespace, we won't match it.
+    return emptyAtom;  // No namespace. If an element/attribute has a namespace,
+                       // we won't match it.
   if (prefix == starAtom)
     return starAtom;  // We'll match any namespace.
   if (!m_styleSheet)
-    return nullAtom;  // Cannot resolve prefix to namespace without a stylesheet, syntax error.
+    return nullAtom;  // Cannot resolve prefix to namespace without a
+                      // stylesheet, syntax error.
   return m_styleSheet->namespaceURIFromPrefix(prefix);
 }
 
@@ -811,23 +815,28 @@ CSSSelectorParser::addSimpleSelectorToCompound(
 std::unique_ptr<CSSParserSelector>
 CSSSelectorParser::splitCompoundAtImplicitShadowCrossingCombinator(
     std::unique_ptr<CSSParserSelector> compoundSelector) {
-  // The tagHistory is a linked list that stores combinator separated compound selectors
-  // from right-to-left. Yet, within a single compound selector, stores the simple selectors
-  // from left-to-right.
+  // The tagHistory is a linked list that stores combinator separated compound
+  // selectors from right-to-left. Yet, within a single compound selector,
+  // stores the simple selectors from left-to-right.
   //
-  // ".a.b > div#id" is stored in a tagHistory as [div, #id, .a, .b], each element in the
-  // list stored with an associated relation (combinator or SubSelector).
+  // ".a.b > div#id" is stored in a tagHistory as [div, #id, .a, .b], each
+  // element in the list stored with an associated relation (combinator or
+  // SubSelector).
   //
-  // ::cue, ::shadow, and custom pseudo elements have an implicit ShadowPseudo combinator
-  // to their left, which really makes for a new compound selector, yet it's consumed by
-  // the selector parser as a single compound selector.
+  // ::cue, ::shadow, and custom pseudo elements have an implicit ShadowPseudo
+  // combinator to their left, which really makes for a new compound selector,
+  // yet it's consumed by the selector parser as a single compound selector.
   //
-  // Example: input#x::-webkit-clear-button -> [ ::-webkit-clear-button, input, #x ]
+  // Example:
   //
-  // Likewise, ::slotted() pseudo element has an implicit ShadowSlot combinator to its left
-  // for finding matching slot element in other TreeScope.
+  // input#x::-webkit-clear-button -> [ ::-webkit-clear-button, input, #x ]
   //
-  // Example: slot[name=foo]::slotted(div) -> [ ::slotted(div), slot, [name=foo] ]
+  // Likewise, ::slotted() pseudo element has an implicit ShadowSlot combinator
+  // to its left for finding matching slot element in other TreeScope.
+  //
+  // Example:
+  //
+  // slot[name=foo]::slotted(div) -> [ ::slotted(div), slot, [name=foo] ]
   CSSParserSelector* splitAfter = compoundSelector.get();
 
   while (splitAfter->tagHistory() &&

@@ -80,8 +80,8 @@ class CORE_EXPORT CSSParser {
 
   static bool parseSupportsCondition(const String&);
 
-  // The color will only be changed when string contains a valid CSS color, so callers
-  // can set it to a default color and ignore the boolean result.
+  // The color will only be changed when string contains a valid CSS color, so
+  // callers can set it to a default color and ignore the boolean result.
   static bool parseColor(Color&, const String&, bool strict = false);
   static bool parseSystemColor(Color&, const String&);
 

@@ -60,10 +60,12 @@ bool SizesAttributeParser::mediaConditionMatches(
 }
 
 bool SizesAttributeParser::parse(CSSParserTokenRange range) {
-  // Split on a comma token and parse the result tokens as (media-condition, length) pairs
+  // Split on a comma token and parse the result tokens as (media-condition,
+  // length) pairs
   while (!range.atEnd()) {
     const CSSParserToken* mediaConditionStart = &range.peek();
-    // The length is the last component value before the comma which isn't whitespace or a comment
+    // The length is the last component value before the comma which isn't
+    // whitespace or a comment
     const CSSParserToken* lengthTokenStart = &range.peek();
     const CSSParserToken* lengthTokenEnd = &range.peek();
     while (!range.atEnd() && range.peek().type() != CommaToken) {

@@ -11,8 +11,8 @@ namespace blink {
 CSSSupportsParser::SupportsResult CSSSupportsParser::supportsCondition(
     CSSParserTokenRange range,
     CSSParserImpl& parser) {
-  // FIXME: The spec allows leading whitespace in @supports but not CSS.supports,
-  // but major browser vendors allow it in CSS.supports also.
+  // TODO(timloh): The spec allows leading whitespace in @supports but not
+  // CSS.supports, but major browser vendors allow it in CSS.supports also.
   range.consumeWhitespace();
   return CSSSupportsParser(parser).consumeCondition(range);
 }

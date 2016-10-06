@@ -24,7 +24,8 @@ CSSTokenizer::Scope::Scope(const String& string) : m_string(string) {
   // However, we can skip this step since:
   // * We're using HTML spaces (which accept \r and \f as a valid white space)
   // * Do not count white spaces
-  // * CSSTokenizerInputStream::nextInputChar() replaces NULLs for replacement characters
+  // * CSSTokenizerInputStream::nextInputChar() replaces NULLs for replacement
+  //   characters
 
   if (string.isEmpty())
     return;

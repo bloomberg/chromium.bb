@@ -44,8 +44,9 @@ CSSParserTokenRange CSSParserTokenRange::consumeBlock() {
 }
 
 void CSSParserTokenRange::consumeComponentValue() {
-  // FIXME: This is going to do multiple passes over large sections of a stylesheet.
-  // We should consider optimising this by precomputing where each block ends.
+  // FIXME: This is going to do multiple passes over large sections of a
+  // stylesheet. We should consider optimising this by precomputing where each
+  // block ends.
   unsigned nestingLevel = 0;
   do {
     const CSSParserToken& token = consume();

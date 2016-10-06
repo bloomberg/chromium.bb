@@ -68,7 +68,8 @@ bool CSSParserSelector::isSimple() const {
     return true;
 
   if (m_selector->match() == CSSSelector::Tag) {
-    // We can't check against anyQName() here because namespace may not be nullAtom.
+    // We can't check against anyQName() here because namespace may not be
+    // nullAtom.
     // Example:
     //     @namespace "http://www.w3.org/2000/svg";
     //     svg:not(:root) { ...

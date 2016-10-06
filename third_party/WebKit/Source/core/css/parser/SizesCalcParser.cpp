@@ -80,7 +80,8 @@ void SizesCalcParser::appendOperator(const CSSParserToken& token) {
 }
 
 bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
-  // This method implements the shunting yard algorithm, to turn the calc syntax into a reverse polish notation.
+  // This method implements the shunting yard algorithm, to turn the calc syntax
+  // into a reverse polish notation.
   // http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 
   Vector<CSSParserToken> stack;
@@ -109,17 +110,20 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
         break;
       case RightParenthesisToken:
         // If the token is a right parenthesis:
-        // Until the token at the top of the stack is a left parenthesis, pop operators off the stack onto the output queue.
+        // Until the token at the top of the stack is a left parenthesis, pop
+        // operators off the stack onto the output queue.
         while (!stack.isEmpty() &&
                stack.last().type() != LeftParenthesisToken &&
                stack.last().type() != FunctionToken) {
           appendOperator(stack.last());
           stack.removeLast();
         }
-        // If the stack runs out without finding a left parenthesis, then there are mismatched parentheses.
+        // If the stack runs out without finding a left parenthesis, then there
+        // are mismatched parentheses.
         if (stack.isEmpty())
           return false;
-        // Pop the left parenthesis from the stack, but not onto the output queue.
+        // Pop the left parenthesis from the stack, but not onto the output
+        // queue.
         stack.removeLast();
         break;
       case WhitespaceToken:
@@ -158,7 +162,8 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
   // When there are no more tokens to read:
   // While there are still operator tokens in the stack:
   while (!stack.isEmpty()) {
-    // If the operator token on the top of the stack is a parenthesis, then there are mismatched parentheses.
+    // If the operator token on the top of the stack is a parenthesis, then
+    // there are mismatched parentheses.
     CSSParserTokenType type = stack.last().type();
     if (type == LeftParenthesisToken || type == FunctionToken)
       return false;

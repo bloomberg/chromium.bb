@@ -510,9 +510,9 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
       return valueID == CSSValueRepeat || valueID == CSSValueNoRepeat;
     case CSSPropertyBorderCollapse:  // collapse | separate
       return valueID == CSSValueCollapse || valueID == CSSValueSeparate;
-    case CSSPropertyBorderTopStyle:  // <border-style>
-    case CSSPropertyBorderRightStyle:  // Defined as: none | hidden | dotted | dashed |
-    case CSSPropertyBorderBottomStyle:  // solid | double | groove | ridge | inset | outset
+    case CSSPropertyBorderTopStyle:
+    case CSSPropertyBorderRightStyle:
+    case CSSPropertyBorderBottomStyle:
     case CSSPropertyBorderLeftStyle:
     case CSSPropertyWebkitBorderAfterStyle:
     case CSSPropertyWebkitBorderBeforeStyle:
@@ -544,19 +544,20 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
     case CSSPropertyDirection:  // ltr | rtl
       return valueID == CSSValueLtr || valueID == CSSValueRtl;
     case CSSPropertyDisplay:
-      // inline | block | list-item | inline-block | table |
-      // inline-table | table-row-group | table-header-group | table-footer-group | table-row |
-      // table-column-group | table-column | table-cell | table-caption | -webkit-box | -webkit-inline-box | none
-      // flex | inline-flex | -webkit-flex | -webkit-inline-flex | grid | inline-grid
+      // inline | block | list-item | inline-block | table | inline-table |
+      // table-row-group | table-header-group | table-footer-group | table-row |
+      // table-column-group | table-column | table-cell | table-caption |
+      // -webkit-box | -webkit-inline-box | none | flex | inline-flex |
+      // -webkit-flex | -webkit-inline-flex | grid | inline-grid
       return (valueID >= CSSValueInline && valueID <= CSSValueInlineFlex) ||
              valueID == CSSValueWebkitFlex ||
              valueID == CSSValueWebkitInlineFlex || valueID == CSSValueNone ||
              (RuntimeEnabledFeatures::cssGridLayoutEnabled() &&
               (valueID == CSSValueGrid || valueID == CSSValueInlineGrid));
     case CSSPropertyDominantBaseline:
-      // auto | use-script | no-change | reset-size | ideographic |
-      // alphabetic | hanging | mathematical | central | middle |
-      // text-after-edge | text-before-edge
+      // auto | use-script | no-change | reset-size | ideographic | alphabetic |
+      // hanging | mathematical | central | middle | text-after-edge |
+      // text-before-edge
       return valueID == CSSValueAuto || valueID == CSSValueAlphabetic ||
              valueID == CSSValueMiddle ||
              (valueID >= CSSValueUseScript && valueID <= CSSValueResetSize) ||
@@ -569,7 +570,10 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
     case CSSPropertyFontStyle:  // normal | italic | oblique
       return valueID == CSSValueNormal || valueID == CSSValueItalic ||
              valueID == CSSValueOblique;
-    case CSSPropertyFontStretch:  // normal | ultra-condensed | extra-condensed | condensed | semi-condensed | semi-expanded | expanded | extra-expanded | ultra-expanded
+    case CSSPropertyFontStretch:  // normal | ultra-condensed | extra-condensed
+                                  // | condensed | semi-condensed |
+                                  // semi-expanded | expanded | extra-expanded |
+                                  // ultra-expanded
       return valueID == CSSValueNormal || (valueID >= CSSValueUltraCondensed &&
                                            valueID <= CSSValueUltraExpanded);
     case CSSPropertyImageRendering:  // auto | optimizeContrast | pixelated
@@ -604,7 +608,8 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
       return valueID == CSSValueVisible || valueID == CSSValueHidden ||
              valueID == CSSValueScroll || valueID == CSSValueAuto ||
              valueID == CSSValueOverlay;
-    case CSSPropertyOverflowY:  // visible | hidden | scroll | auto | overlay | -webkit-paged-x | -webkit-paged-y
+    case CSSPropertyOverflowY:  // visible | hidden | scroll | auto | overlay |
+                                // -webkit-paged-x | -webkit-paged-y
       return valueID == CSSValueVisible || valueID == CSSValueHidden ||
              valueID == CSSValueScroll || valueID == CSSValueAuto ||
              valueID == CSSValueOverlay || valueID == CSSValueWebkitPagedX ||
@@ -642,7 +647,8 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
       return valueID == CSSValueAuto || valueID == CSSValueOptimizeSpeed ||
              valueID == CSSValueCrispEdges ||
              valueID == CSSValueGeometricPrecision;
-    case CSSPropertySpeak:  // none | normal | spell-out | digits | literal-punctuation | no-punctuation
+    case CSSPropertySpeak:  // none | normal | spell-out | digits |
+                            // literal-punctuation | no-punctuation
       return valueID == CSSValueNone || valueID == CSSValueNormal ||
              valueID == CSSValueSpellOut || valueID == CSSValueDigits ||
              valueID == CSSValueLiteralPunctuation ||
@@ -680,7 +686,8 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
       ASSERT(RuntimeEnabledFeatures::css3TextEnabled());
       return valueID == CSSValueInterWord || valueID == CSSValueDistribute ||
              valueID == CSSValueAuto || valueID == CSSValueNone;
-    case CSSPropertyTextOrientation:  // mixed | upright | sideways | sideways-right
+    case CSSPropertyTextOrientation:  // mixed | upright | sideways |
+                                      // sideways-right
       return valueID == CSSValueMixed || valueID == CSSValueUpright ||
              valueID == CSSValueSideways || valueID == CSSValueSidewaysRight;
     case CSSPropertyWebkitTextOrientation:
@@ -688,7 +695,8 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
              valueID == CSSValueVerticalRight || valueID == CSSValueUpright;
     case CSSPropertyTextOverflow:  // clip | ellipsis
       return valueID == CSSValueClip || valueID == CSSValueEllipsis;
-    case CSSPropertyTextRendering:  // auto | optimizeSpeed | optimizeLegibility | geometricPrecision
+    case CSSPropertyTextRendering:  // auto | optimizeSpeed | optimizeLegibility
+                                    // | geometricPrecision
       return valueID == CSSValueAuto || valueID == CSSValueOptimizeSpeed ||
              valueID == CSSValueOptimizeLegibility ||
              valueID == CSSValueGeometricPrecision;
@@ -742,17 +750,21 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
     case CSSPropertyColumnFill:
       return valueID == CSSValueAuto || valueID == CSSValueBalance;
     case CSSPropertyAlignContent:
-      // FIXME: Per CSS alignment, this property should accept an optional <overflow-position>. We should share this parsing code with 'justify-self'.
+      // FIXME: Per CSS alignment, this property should accept an optional
+      // <overflow-position>. We should share this parsing code with
+      // 'justify-self'.
       return valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd ||
              valueID == CSSValueCenter || valueID == CSSValueSpaceBetween ||
              valueID == CSSValueSpaceAround || valueID == CSSValueStretch;
     case CSSPropertyAlignItems:
-      // FIXME: Per CSS alignment, this property should accept the same arguments as 'justify-self' so we should share its parsing code.
+      // FIXME: Per CSS alignment, this property should accept the same
+      // arguments as 'justify-self' so we should share its parsing code.
       return valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd ||
              valueID == CSSValueCenter || valueID == CSSValueBaseline ||
              valueID == CSSValueStretch;
     case CSSPropertyAlignSelf:
-      // FIXME: Per CSS alignment, this property should accept the same arguments as 'justify-self' so we should share its parsing code.
+      // FIXME: Per CSS alignment, this property should accept the same
+      // arguments as 'justify-self' so we should share its parsing code.
       return valueID == CSSValueAuto || valueID == CSSValueFlexStart ||
              valueID == CSSValueFlexEnd || valueID == CSSValueCenter ||
              valueID == CSSValueBaseline || valueID == CSSValueStretch;
@@ -770,7 +782,9 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
       return valueID == CSSValueNone || valueID == CSSValueManual;
 #endif
     case CSSPropertyJustifyContent:
-      // FIXME: Per CSS alignment, this property should accept an optional <overflow-position>. We should share this parsing code with 'justify-self'.
+      // FIXME: Per CSS alignment, this property should accept an optional
+      // <overflow-position>. We should share this parsing code with
+      // 'justify-self'.
       return valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd ||
              valueID == CSSValueCenter || valueID == CSSValueSpaceBetween ||
              valueID == CSSValueSpaceAround;
@@ -781,7 +795,8 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
       return valueID == CSSValueAuto || valueID == CSSValueNone ||
              valueID == CSSValueAntialiased ||
              valueID == CSSValueSubpixelAntialiased;
-    case CSSPropertyWebkitLineBreak:  // auto | loose | normal | strict | after-white-space
+    case CSSPropertyWebkitLineBreak:  // auto | loose | normal | strict |
+                                      // after-white-space
       return valueID == CSSValueAuto || valueID == CSSValueLoose ||
              valueID == CSSValueNormal || valueID == CSSValueStrict ||
              valueID == CSSValueAfterWhiteSpace;
@@ -827,7 +842,8 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
       return valueID == CSSValueNormal || valueID == CSSValuePre ||
              valueID == CSSValuePreWrap || valueID == CSSValuePreLine ||
              valueID == CSSValueNowrap;
-    case CSSPropertyWordBreak:  // normal | break-all | keep-all | break-word (this is a custom extension)
+    case CSSPropertyWordBreak:  // normal | break-all | keep-all | break-word
+                                // (this is a custom extension)
       return valueID == CSSValueNormal || valueID == CSSValueBreakAll ||
              valueID == CSSValueKeepAll || valueID == CSSValueBreakWord;
     case CSSPropertyScrollSnapType:  // none | mandatory | proximity

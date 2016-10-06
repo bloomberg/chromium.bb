@@ -44,14 +44,17 @@ class Document;
 enum CSSParserMode {
   HTMLStandardMode,
   HTMLQuirksMode,
-  // HTML attributes are parsed in quirks mode but also allows internal properties and values.
+  // HTML attributes are parsed in quirks mode but also allows internal
+  // properties and values.
   HTMLAttributeMode,
   // SVG attributes are parsed in quirks mode but rules differ slightly.
   SVGAttributeMode,
-  // @viewport/@font-face rules are specially tagged in StylePropertySet so CSSOM modifications don't treat them as style rules.
+  // @viewport/@font-face rules are specially tagged in StylePropertySet so
+  // CSSOM modifications don't treat them as style rules.
   CSSViewportRuleMode,
   CSSFontFaceRuleMode,
-  // User agent stylesheets are parsed in standards mode but also allows internal properties and values.
+  // User agent stylesheets are parsed in standards mode but also allows
+  // internal properties and values.
   UASheetMode
 };
 
@@ -83,14 +86,16 @@ class CORE_EXPORT CSSParserContext {
 
  public:
   CSSParserContext(CSSParserMode, UseCounter*);
-  // FIXME: We shouldn't need the UseCounter argument as we could infer it from the Document
-  // but some callers want to disable use counting (e.g. the WebInspector).
+  // FIXME: We shouldn't need the UseCounter argument as we could infer it from
+  // the Document but some callers want to disable use counting (e.g. the
+  // WebInspector).
   CSSParserContext(const Document&,
                    UseCounter*,
                    const KURL& baseURL = KURL(),
                    const String& charset = emptyString());
-  // FIXME: This constructor shouldn't exist if we properly piped the UseCounter through the CSS
-  // subsystem. Currently the UseCounter life time is too crazy and we need a way to override it.
+  // FIXME: This constructor shouldn't exist if we properly piped the UseCounter
+  // through the CSS subsystem. Currently the UseCounter life time is too crazy
+  // and we need a way to override it.
   CSSParserContext(const CSSParserContext&, UseCounter*);
 
   bool operator==(const CSSParserContext&) const;
@@ -112,8 +117,9 @@ class CORE_EXPORT CSSParserContext {
     return m_useLegacyBackgroundSizeShorthandBehavior;
   }
 
-  // FIXME: These setters shouldn't exist, however the current lifetime of CSSParserContext
-  // is not well understood and thus we sometimes need to override these fields.
+  // FIXME: These setters shouldn't exist, however the current lifetime of
+  // CSSParserContext is not well understood and thus we sometimes need to
+  // override these fields.
   void setMode(CSSParserMode mode) { m_mode = mode; }
   void setBaseURL(const KURL& baseURL) { m_baseURL = baseURL; }
   void setCharset(const String& charset) { m_charset = charset; }
