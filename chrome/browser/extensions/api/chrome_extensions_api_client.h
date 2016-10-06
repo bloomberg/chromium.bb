@@ -11,6 +11,8 @@
 
 namespace extensions {
 
+class ChromeMetricsPrivateDelegate;
+
 // Extra support for extensions APIs in Chrome.
 class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
  public:
@@ -50,8 +52,11 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   std::unique_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate()
       const override;
   ManagementAPIDelegate* CreateManagementAPIDelegate() const override;
+  MetricsPrivateDelegate* GetMetricsPrivateDelegate() override;
 
  private:
+  std::unique_ptr<ChromeMetricsPrivateDelegate> metrics_private_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClient);
 };
 

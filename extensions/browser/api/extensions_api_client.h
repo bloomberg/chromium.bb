@@ -36,6 +36,7 @@ class DevicePermissionsPrompt;
 class ExtensionOptionsGuest;
 class ExtensionOptionsGuestDelegate;
 class ManagementAPIDelegate;
+class MetricsPrivateDelegate;
 class MimeHandlerViewGuest;
 class MimeHandlerViewGuestDelegate;
 class RulesCacheDelegate;
@@ -126,6 +127,10 @@ class ExtensionsAPIClient {
 
   // Creates a delegate for handling the management extension api.
   virtual ManagementAPIDelegate* CreateManagementAPIDelegate() const;
+
+  // If supported by the embedder, returns a delegate for embedder-dependent
+  // MetricsPrivateAPI behavior.
+  virtual MetricsPrivateDelegate* GetMetricsPrivateDelegate();
 
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.

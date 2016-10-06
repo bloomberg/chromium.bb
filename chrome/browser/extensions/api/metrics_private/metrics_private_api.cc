@@ -12,18 +12,16 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/extensions/api/metrics_private.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/metrics_private/metrics_private_delegate.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
 
-namespace GetIsCrashReportingEnabled =
-    api::metrics_private::GetIsCrashReportingEnabled;
 namespace GetVariationParams = api::metrics_private::GetVariationParams;
-namespace GetFieldTrial = api::metrics_private::GetFieldTrial;
 namespace RecordUserAction = api::metrics_private::RecordUserAction;
 namespace RecordValue = api::metrics_private::RecordValue;
 namespace RecordSparseValue = api::metrics_private::RecordSparseValue;
@@ -44,8 +42,10 @@ const size_t kMaxBuckets = 10000; // We don't ever want more than these many
 
 ExtensionFunction::ResponseAction
 MetricsPrivateGetIsCrashReportingEnabledFunction::Run() {
+  MetricsPrivateDelegate* delegate =
+      ExtensionsAPIClient::Get()->GetMetricsPrivateDelegate();
   return RespondNow(OneArgument(base::MakeUnique<base::FundamentalValue>(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())));
+      delegate && delegate->IsCrashReportingEnabled())));
 }
 
 ExtensionFunction::ResponseAction MetricsPrivateGetFieldTrialFunction::Run() {

@@ -99,4 +99,8 @@ ManagementAPIDelegate* ExtensionsAPIClient::CreateManagementAPIDelegate()
   return nullptr;
 }
 
+MetricsPrivateDelegate* ExtensionsAPIClient::GetMetricsPrivateDelegate() {
+  return nullptr;
+}
+
 }  // namespace extensions

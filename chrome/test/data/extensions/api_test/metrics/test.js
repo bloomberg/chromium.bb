@@ -9,6 +9,13 @@
 // with the checks done in IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics).
 // See metrics_apitest.cc.
 chrome.test.runTests([
+  function getIsCrashReportingEnabled() {
+    chrome.metricsPrivate.getIsCrashReportingEnabled(function(enabled) {
+      chrome.test.assertEq('boolean', typeof enabled);
+      chrome.test.succeed();
+    });
+  },
+
   function recordUserAction() {
     // Log a metric once.
     chrome.metricsPrivate.recordUserAction('test.ua.1');
