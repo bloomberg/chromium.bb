@@ -69,6 +69,7 @@ constexpr uint32_t kGattWritePermission =
     BluetoothGattCharacteristic::Permission::
         PERMISSION_WRITE_ENCRYPTED_AUTHENTICATED;
 constexpr int32_t kInvalidGattAttributeHandle = -1;
+constexpr int32_t kInvalidAdvertisementHandle = -1;
 // Bluetooth Specification Version 4.2 Vol 3 Part F Section 3.2.2
 // An attribute handle of value 0xFFFF is known as the maximum attribute handle.
 constexpr int32_t kMaxGattAttributeHandle = 0xFFFF;
@@ -78,7 +79,6 @@ constexpr int kMaxGattAttributeLength = 512;
 // Copied from Android at system/bt/stack/btm/btm_ble_int.h
 // https://goo.gl/k7PM6u
 constexpr uint16_t kAndroidMBluetoothVersionNumber = 95;
-constexpr uint16_t kMaxAdvertisement = 5;
 // Bluetooth SDP Service Class ID List Attribute identifier
 constexpr uint16_t kServiceClassIDListAttributeID = 0x0001;
 // Timeout for Bluetooth Discovery (scan)
@@ -1632,6 +1632,134 @@ void ArcBluetoothBridge::RemoveSdpRecord(
       base::Bind(&OnRemoveServiceRecordError, callback));
 }
 
+bool ArcBluetoothBridge::GetAdvertisementHandle(int32_t* adv_handle) {
+  for (int i = 0; i < kMaxAdvertisements; i++) {
+    if (advertisements_.find(i) == advertisements_.end()) {
+      *adv_handle = i;
+      return true;
+    }
+  }
+  return false;
+}
+
+void ArcBluetoothBridge::ReserveAdvertisementHandle(
+    const ReserveAdvertisementHandleCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  // Find an empty advertisement slot.
+  int32_t adv_handle;
+  if (!GetAdvertisementHandle(&adv_handle)) {
+    LOG(WARNING) << "Out of space for advertisement data";
+    callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE,
+                 kInvalidAdvertisementHandle);
+    return;
+  }
+
+  // We have a handle. Put an entry in the map to reserve it.
+  advertisements_[adv_handle] = nullptr;
+
+  // The advertisement will be registered when we get the call
+  // to SetAdvertisingData. For now, just return the adv_handle.
+  callback.Run(mojom::BluetoothGattStatus::GATT_SUCCESS, adv_handle);
+}
+
+void ArcBluetoothBridge::BroadcastAdvertisement(
+    int32_t adv_handle,
+    std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement,
+    const BroadcastAdvertisementCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  if (advertisements_.find(adv_handle) == advertisements_.end()) {
+    callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+    return;
+  }
+
+  if (!advertisements_[adv_handle]) {
+    OnReadyToRegisterAdvertisement(callback, adv_handle,
+                                   std::move(advertisement));
+    return;
+  }
+
+  advertisements_[adv_handle]->Unregister(
+      base::Bind(&ArcBluetoothBridge::OnReadyToRegisterAdvertisement,
+                 weak_factory_.GetWeakPtr(), callback, adv_handle,
+                 base::Passed(std::move(advertisement))),
+      base::Bind(&ArcBluetoothBridge::OnRegisterAdvertisementError,
+                 weak_factory_.GetWeakPtr(), callback, adv_handle));
+}
+
+void ArcBluetoothBridge::ReleaseAdvertisementHandle(
+    int32_t adv_handle,
+    const ReleaseAdvertisementHandleCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  if (advertisements_.find(adv_handle) == advertisements_.end()) {
+    callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+    return;
+  }
+
+  if (!advertisements_[adv_handle]) {
+    advertisements_.erase(adv_handle);
+    callback.Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
+    return;
+  }
+
+  advertisements_[adv_handle]->Unregister(
+      base::Bind(&ArcBluetoothBridge::OnUnregisterAdvertisementDone,
+                 weak_factory_.GetWeakPtr(), callback, adv_handle),
+      base::Bind(&ArcBluetoothBridge::OnUnregisterAdvertisementError,
+                 weak_factory_.GetWeakPtr(), callback, adv_handle));
+}
+
+void ArcBluetoothBridge::OnReadyToRegisterAdvertisement(
+    const BroadcastAdvertisementCallback& callback,
+    int32_t adv_handle,
+    std::unique_ptr<device::BluetoothAdvertisement::Data> data) {
+  DCHECK(CalledOnValidThread());
+  bluetooth_adapter_->RegisterAdvertisement(
+      std::move(data),
+      base::Bind(&ArcBluetoothBridge::OnRegisterAdvertisementDone,
+                 weak_factory_.GetWeakPtr(), callback, adv_handle),
+      base::Bind(&ArcBluetoothBridge::OnRegisterAdvertisementError,
+                 weak_factory_.GetWeakPtr(), callback, adv_handle));
+}
+
+void ArcBluetoothBridge::OnRegisterAdvertisementDone(
+    const BroadcastAdvertisementCallback& callback,
+    int32_t adv_handle,
+    scoped_refptr<BluetoothAdvertisement> advertisement) {
+  DCHECK(CalledOnValidThread());
+  advertisements_[adv_handle] = std::move(advertisement);
+  callback.Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
+}
+
+void ArcBluetoothBridge::OnRegisterAdvertisementError(
+    const BroadcastAdvertisementCallback& callback,
+    int32_t adv_handle,
+    BluetoothAdvertisement::ErrorCode error_code) {
+  DCHECK(CalledOnValidThread());
+  LOG(WARNING) << "Failed to register advertisement for handle " << adv_handle
+               << ", error code = " << error_code;
+  advertisements_[adv_handle] = nullptr;
+  callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+}
+
+void ArcBluetoothBridge::OnUnregisterAdvertisementDone(
+    const ReleaseAdvertisementHandleCallback& callback,
+    int32_t adv_handle) {
+  DCHECK(CalledOnValidThread());
+  advertisements_.erase(adv_handle);
+  callback.Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
+}
+
+void ArcBluetoothBridge::OnUnregisterAdvertisementError(
+    const ReleaseAdvertisementHandleCallback& callback,
+    int32_t adv_handle,
+    BluetoothAdvertisement::ErrorCode error_code) {
+  DCHECK(CalledOnValidThread());
+  LOG(WARNING) << "Failed to unregister advertisement for handle " << adv_handle
+               << ", error code = " << error_code;
+  advertisements_.erase(adv_handle);
+  callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+}
+
 void ArcBluetoothBridge::OnDiscoveryError() {
   LOG(WARNING) << "failed to change discovery state";
 }
@@ -1846,7 +1974,7 @@ ArcBluetoothBridge::GetAdapterProperties(
         mojom::BluetoothLocalLEFeatures::New();
     le_features->version_supported = kAndroidMBluetoothVersionNumber;
     le_features->local_privacy_enabled = 0;
-    le_features->max_adv_instance = kMaxAdvertisement;
+    le_features->max_adv_instance = kMaxAdvertisements;
     le_features->rpa_offload_supported = 0;
     le_features->max_irk_list_size = 0;
     le_features->max_adv_filter_supported = 0;
