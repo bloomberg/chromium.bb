@@ -553,10 +553,6 @@ void Widget::StackAtTop() {
   native_widget_->StackAtTop();
 }
 
-void Widget::StackBelow(gfx::NativeView native_view) {
-  native_widget_->StackBelow(native_view);
-}
-
 void Widget::SetShape(std::unique_ptr<SkRegion> shape) {
   native_widget_->SetShape(std::move(shape));
 }

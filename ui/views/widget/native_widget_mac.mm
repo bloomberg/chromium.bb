@@ -333,10 +333,6 @@ void NativeWidgetMac::StackAtTop() {
   NOTIMPLEMENTED();
 }
 
-void NativeWidgetMac::StackBelow(gfx::NativeView native_view) {
-  NOTIMPLEMENTED();
-}
-
 void NativeWidgetMac::SetShape(std::unique_ptr<SkRegion> shape) {
   NOTIMPLEMENTED();
 }

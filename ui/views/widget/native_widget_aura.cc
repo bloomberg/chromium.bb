@@ -465,12 +465,6 @@ void NativeWidgetAura::StackAtTop() {
     window_->parent()->StackChildAtTop(window_);
 }
 
-void NativeWidgetAura::StackBelow(gfx::NativeView native_view) {
-  if (window_ && window_->parent() &&
-      window_->parent() == native_view->parent())
-    window_->parent()->StackChildBelow(window_, native_view);
-}
-
 void NativeWidgetAura::SetShape(std::unique_ptr<SkRegion> region) {
   if (window_)
     window_->layer()->SetAlphaShape(std::move(region));

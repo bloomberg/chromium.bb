@@ -471,9 +471,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void StackAbove(gfx::NativeView native_view);
   void StackAtTop();
 
-  // Places the widget below the specified NativeView.
-  void StackBelow(gfx::NativeView native_view);
-
   // Sets a shape on the widget. Passing a NULL |shape| reverts the widget to
   // be rectangular.
   void SetShape(std::unique_ptr<SkRegion> shape);

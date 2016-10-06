@@ -1010,10 +1010,6 @@ void NativeWidgetMus::StackAtTop() {
   NOTIMPLEMENTED();
 }
 
-void NativeWidgetMus::StackBelow(gfx::NativeView native_view) {
-  NOTIMPLEMENTED();
-}
-
 void NativeWidgetMus::SetShape(std::unique_ptr<SkRegion> shape) {
   NOTIMPLEMENTED();
 }
