@@ -1330,7 +1330,7 @@
      ],
 
     'release_libfuzzer_asan': [
-      'release', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+      'release', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_libfuzzer_asan_clang_tot': [
@@ -1338,15 +1338,15 @@
     ],
 
     'release_libfuzzer_mac_asan': [
-      'release', 'libfuzzer', 'asan', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl',
+      'release', 'libfuzzer', 'asan', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_libfuzzer_msan': [
-      'release', 'libfuzzer', 'msan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+      'release', 'libfuzzer', 'msan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_libfuzzer_ubsan': [
-      'release', 'libfuzzer', 'ubsan_security', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+      'release', 'libfuzzer', 'ubsan_security', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_trybot': [
@@ -1675,6 +1675,10 @@
 
     'official_optimize': {
       'gn_args': 'is_official_build=true is_debug=false',
+    },
+
+    'optimize_for_fuzzing': {
+      'gn_args': 'optimize_for_fuzzing=true',
     },
 
     'ozone': {
