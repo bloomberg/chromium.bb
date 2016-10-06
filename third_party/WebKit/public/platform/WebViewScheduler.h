@@ -65,6 +65,8 @@ class BLINK_PLATFORM_EXPORT WebViewScheduler {
   // Sets the virtual time policy, which is applied imemdiatly to all child
   // WebFrameSchedulers.
   virtual void setVirtualTimePolicy(VirtualTimePolicy) = 0;
+
+  virtual void audioStateChanged(bool isAudioPlaying) = 0;
 };
 
 }  // namespace blink
