@@ -9,6 +9,7 @@
 #include "base/test/test_message_loop.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
+#include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_surface_manager.h"
@@ -35,7 +36,7 @@ void InitWindow(ServerWindow* window) {
 
 class FrameGeneratorTest : public testing::Test {
  public:
-  FrameGeneratorTest() {}
+  FrameGeneratorTest() : display_compositor_(new DisplayCompositor()) {}
   ~FrameGeneratorTest() override {}
 
   // Calls DrawWindowTree() on |frame_generator_|
@@ -52,6 +53,7 @@ class FrameGeneratorTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  scoped_refptr<DisplayCompositor> display_compositor_;
   std::unique_ptr<FrameGenerator> frame_generator_;
   std::unique_ptr<TestFrameGeneratorDelegate> frame_generator_delegate_;
   TestServerWindowDelegate window_delegate_;
@@ -74,7 +76,7 @@ void FrameGeneratorTest::SetUp() {
       base::MakeUnique<ServerWindow>(&window_delegate_, WindowId()));
   PlatformDisplayInitParams init_params;
   frame_generator_ = base::MakeUnique<FrameGenerator>(
-      frame_generator_delegate_.get(), init_params.display_compositor);
+      frame_generator_delegate_.get(), display_compositor_);
   InitWindow(root_window());
 }
 

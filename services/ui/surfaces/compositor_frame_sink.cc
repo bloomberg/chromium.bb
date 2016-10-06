@@ -26,11 +26,12 @@ namespace ui {
 namespace surfaces {
 
 CompositorFrameSink::CompositorFrameSink(
+    const cc::FrameSinkId& frame_sink_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     gfx::AcceleratedWidget widget,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel,
     const scoped_refptr<DisplayCompositor>& display_compositor)
-    : frame_sink_id_(display_compositor->GenerateNextClientId(), 0),
+    : frame_sink_id_(frame_sink_id),
       task_runner_(task_runner),
       display_compositor_(display_compositor),
       factory_(frame_sink_id_, display_compositor->manager(), this) {

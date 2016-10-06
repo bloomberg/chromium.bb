@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -86,6 +87,7 @@ class FrameGenerator {
 
   FrameGeneratorDelegate* delegate_;
   scoped_refptr<DisplayCompositor> display_compositor_;
+  cc::FrameSinkId frame_sink_id_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 
   std::unique_ptr<surfaces::CompositorFrameSink> compositor_frame_sink_;

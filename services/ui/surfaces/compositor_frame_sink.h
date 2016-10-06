@@ -33,6 +33,7 @@ class CompositorFrameSink : public cc::SurfaceFactoryClient,
                             public cc::DisplayClient {
  public:
   CompositorFrameSink(
+      const cc::FrameSinkId& frame_sink_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       gfx::AcceleratedWidget widget,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,

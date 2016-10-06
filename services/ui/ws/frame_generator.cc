@@ -26,6 +26,7 @@ FrameGenerator::FrameGenerator(
     scoped_refptr<DisplayCompositor> display_compositor)
     : delegate_(delegate),
       display_compositor_(display_compositor),
+      frame_sink_id_(0, display_compositor->GenerateNextClientId()),
       draw_timer_(false, false),
       weak_factory_(this) {
   DCHECK(delegate_);
@@ -42,8 +43,8 @@ void FrameGenerator::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> channel) {
   if (widget_ != gfx::kNullAcceleratedWidget) {
     compositor_frame_sink_ = base::MakeUnique<surfaces::CompositorFrameSink>(
-        base::ThreadTaskRunnerHandle::Get(), widget_, std::move(channel),
-        display_compositor_);
+        frame_sink_id_, base::ThreadTaskRunnerHandle::Get(), widget_,
+        std::move(channel), display_compositor_);
   } else {
     gpu_channel_ = std::move(channel);
   }
@@ -59,8 +60,8 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
   widget_ = widget;
   if (gpu_channel_ && widget != gfx::kNullAcceleratedWidget) {
     compositor_frame_sink_.reset(new surfaces::CompositorFrameSink(
-        base::ThreadTaskRunnerHandle::Get(), widget_, std::move(gpu_channel_),
-        display_compositor_));
+        frame_sink_id_, base::ThreadTaskRunnerHandle::Get(), widget_,
+        std::move(gpu_channel_), display_compositor_));
   }
 }
 
