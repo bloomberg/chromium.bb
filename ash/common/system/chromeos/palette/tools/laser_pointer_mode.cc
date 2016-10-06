@@ -31,6 +31,7 @@ void LaserPointerMode::OnEnable() {
   CommonPaletteTool::OnEnable();
 
   WmShell::Get()->SetLaserPointerEnabled(true);
+  delegate()->HidePalette();
 }
 
 void LaserPointerMode::OnDisable() {

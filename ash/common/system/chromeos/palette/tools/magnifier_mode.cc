@@ -33,6 +33,7 @@ const gfx::VectorIcon& MagnifierMode::GetActiveTrayIcon() const {
 void MagnifierMode::OnEnable() {
   CommonPaletteTool::OnEnable();
   WmShell::Get()->palette_delegate()->SetPartialMagnifierState(true);
+  delegate()->HidePalette();
 }
 
 void MagnifierMode::OnDisable() {
