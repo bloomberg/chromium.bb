@@ -12,9 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/fetch_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
@@ -74,14 +72,6 @@ ServiceWorkerMetrics::EventType FetchTypeToWaitUntilEventType(
   if (type == ServiceWorkerFetchType::FOREIGN_FETCH)
     return ServiceWorkerMetrics::EventType::FOREIGN_FETCH_WAITUNTIL;
   return ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL;
-}
-
-void OnFetchEventFinished(ServiceWorkerVersion* version,
-                          int event_finish_id,
-                          ServiceWorkerStatusCode status,
-                          base::Time dispatch_event_time) {
-  version->FinishRequest(event_finish_id, status != SERVICE_WORKER_ERROR_ABORT,
-                         dispatch_event_time);
 }
 
 }  // namespace
@@ -221,16 +211,11 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
       response_id,
       base::Bind(&ServiceWorkerFetchDispatcher::ResponseCallback::Run,
                  base::Owned(response_callback)));
-
-  base::WeakPtr<mojom::FetchEventDispatcher> dispatcher =
-      version_->GetMojoServiceForRequest<mojom::FetchEventDispatcher>(
-          event_finish_id);
-  // |dispatcher| is owned by |version_|. So it is safe to pass the unretained
-  // raw pointer of |version_| to OnFetchEventFinished callback.
-  dispatcher->DispatchFetchEvent(
-      response_id, *request_,
-      base::Bind(&OnFetchEventFinished, base::Unretained(version_.get()),
-                 event_finish_id));
+  version_->RegisterSimpleRequest<ServiceWorkerHostMsg_FetchEventFinished>(
+      event_finish_id);
+  version_->DispatchEvent({response_id, event_finish_id},
+                          ServiceWorkerMsg_FetchEvent(
+                              response_id, event_finish_id, *request_.get()));
 }
 
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(

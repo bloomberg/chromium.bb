@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/child/webmessageportchannel_impl.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
@@ -67,9 +66,6 @@ class ServiceWorkerContextClient
  public:
   using SyncCallback =
       base::Callback<void(blink::mojom::ServiceWorkerEventStatus,
-                          base::Time /* dispatch_event_time */)>;
-  using FetchCallback =
-      base::Callback<void(ServiceWorkerStatusCode,
                           base::Time /* dispatch_event_time */)>;
 
   // Returns a thread-specific client instance.  This does NOT create a
@@ -198,7 +194,6 @@ class ServiceWorkerContextClient
 
  private:
   struct WorkerContextData;
-  class FetchEventDispatcherImpl;
 
   // Get routing_id for sending message to the ServiceWorkerVersion
   // in the browser process.
@@ -215,9 +210,9 @@ class ServiceWorkerContextClient
       int request_id,
       const ServiceWorkerMsg_ExtendableMessageEvent_Params& params);
   void OnInstallEvent(int request_id);
-  void DispatchFetchEvent(int response_id,
-                          const ServiceWorkerFetchRequest& request,
-                          const FetchCallback& callback);
+  void OnFetchEvent(int response_id,
+                    int event_finish_id,
+                    const ServiceWorkerFetchRequest& request);
   void OnNotificationClickEvent(
       int request_id,
       const std::string& notification_id,

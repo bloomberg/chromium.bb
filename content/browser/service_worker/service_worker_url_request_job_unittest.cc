@@ -33,7 +33,6 @@
 #include "content/browser/streams/stream_registry.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
@@ -364,8 +363,8 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
  protected:
   void OnFetchEvent(int embedded_worker_id,
                     int response_id,
-                    const ServiceWorkerFetchRequest& request,
-                    const FetchCallback& callback) override {
+                    int event_finish_id,
+                    const ServiceWorkerFetchRequest& request) override {
     context()->RemoveProviderHost(mock_render_process_id(), kProviderID);
     SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
         embedded_worker_id, response_id,
@@ -378,7 +377,9 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
             std::string() /* response_cache_storage_cache_name */,
             ServiceWorkerHeaderList() /* cors_exposed_header_names */),
         base::Time::Now()));
-    callback.Run(SERVICE_WORKER_OK, base::Time::Now());
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+        embedded_worker_id, event_finish_id,
+        blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
   }
 
  private:
@@ -447,8 +448,8 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
  protected:
   void OnFetchEvent(int embedded_worker_id,
                     int response_id,
-                    const ServiceWorkerFetchRequest& request,
-                    const FetchCallback& callback) override {
+                    int event_finish_id,
+                    const ServiceWorkerFetchRequest& request) override {
     SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
         embedded_worker_id, response_id,
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
@@ -460,7 +461,9 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
             std::string() /* response_cache_storage_cache_name */,
             ServiceWorkerHeaderList() /* cors_exposed_header_names */),
         base::Time::Now()));
-    callback.Run(SERVICE_WORKER_OK, base::Time::Now());
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+        embedded_worker_id, event_finish_id,
+        blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
   }
 
   std::string blob_uuid_;
@@ -529,8 +532,8 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
  protected:
   void OnFetchEvent(int embedded_worker_id,
                     int response_id,
-                    const ServiceWorkerFetchRequest& request,
-                    const FetchCallback& callback) override {
+                    int event_finish_id,
+                    const ServiceWorkerFetchRequest& request) override {
     SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
         embedded_worker_id, response_id,
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
@@ -542,7 +545,9 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
             std::string() /* response_cache_storage_cache_name */,
             ServiceWorkerHeaderList() /* cors_exposed_header_names */),
         base::Time::Now()));
-    callback.Run(SERVICE_WORKER_OK, base::Time::Now());
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+        embedded_worker_id, event_finish_id,
+        blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
   }
 
   const GURL stream_url_;
@@ -842,10 +847,9 @@ class FailFetchHelper : public EmbeddedWorkerTestHelper {
  protected:
   void OnFetchEvent(int embedded_worker_id,
                     int response_id,
-                    const ServiceWorkerFetchRequest& request,
-                    const FetchCallback& callback) override {
+                    int event_finish_id,
+                    const ServiceWorkerFetchRequest& request) override {
     SimulateWorkerStopped(embedded_worker_id);
-    callback.Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
   }
 
  private:
@@ -920,15 +924,18 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
   ~EarlyResponseHelper() override {}
 
   void FinishWaitUntil() {
-    callback_.Run(SERVICE_WORKER_OK, base::Time::Now());
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+        embedded_worker_id_, event_finish_id_,
+        blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
   }
 
  protected:
   void OnFetchEvent(int embedded_worker_id,
                     int response_id,
-                    const ServiceWorkerFetchRequest& request,
-                    const FetchCallback& callback) override {
-    callback_ = callback;
+                    int event_finish_id,
+                    const ServiceWorkerFetchRequest& request) override {
+    embedded_worker_id_ = embedded_worker_id;
+    event_finish_id_ = event_finish_id;
     SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
         embedded_worker_id, response_id,
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
@@ -943,7 +950,8 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
   }
 
  private:
-  FetchCallback callback_;
+  int embedded_worker_id_ = 0;
+  int event_finish_id_ = 0;
   DISALLOW_COPY_AND_ASSIGN(EarlyResponseHelper);
 };
 
@@ -972,7 +980,6 @@ TEST_F(ServiceWorkerURLRequestJobTest, EarlyResponse) {
 
   EXPECT_TRUE(version_->HasWork());
   helper->FinishWaitUntil();
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(version_->HasWork());
 }
 
@@ -994,23 +1001,25 @@ class DelayedResponseHelper : public EmbeddedWorkerTestHelper {
             std::string() /* response_cache_storage_cache_name */,
             ServiceWorkerHeaderList() /* cors_exposed_header_names */),
         base::Time::Now()));
-    callback_.Run(SERVICE_WORKER_OK, base::Time::Now());
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+        embedded_worker_id_, event_finish_id_,
+        blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
   }
 
  protected:
   void OnFetchEvent(int embedded_worker_id,
                     int response_id,
-                    const ServiceWorkerFetchRequest& request,
-                    const FetchCallback& callback) override {
+                    int event_finish_id,
+                    const ServiceWorkerFetchRequest& request) override {
     embedded_worker_id_ = embedded_worker_id;
     response_id_ = response_id;
-    callback_ = callback;
+    event_finish_id_ = event_finish_id;
   }
 
  private:
   int embedded_worker_id_ = 0;
   int response_id_ = 0;
-  FetchCallback callback_;
+  int event_finish_id_ = 0;
   DISALLOW_COPY_AND_ASSIGN(DelayedResponseHelper);
 };
 
