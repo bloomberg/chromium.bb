@@ -254,10 +254,6 @@ const views::Widget* NativeAppWindowViews::GetWidget() const {
   return widget_;
 }
 
-views::View* NativeAppWindowViews::GetContentsView() {
-  return this;
-}
-
 bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {

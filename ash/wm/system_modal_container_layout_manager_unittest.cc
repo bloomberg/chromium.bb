@@ -84,7 +84,6 @@ class TestWindow : public views::WidgetDelegateView {
   gfx::Size GetPreferredSize() const override { return gfx::Size(50, 50); }
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override { return this; }
   ui::ModalType GetModalType() const override {
     return modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE;
   }

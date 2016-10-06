@@ -446,10 +446,6 @@ void ColorChooserView::WindowClosing() {
     listener_->OnColorChooserDialogClosed();
 }
 
-View* ColorChooserView::GetContentsView() {
-  return this;
-}
-
 void ColorChooserView::ContentsChanged(Textfield* sender,
                                        const base::string16& new_contents) {
   SkColor color = SK_ColorBLACK;

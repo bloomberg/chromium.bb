@@ -35,7 +35,6 @@ class WidgetsWindow : public views::WidgetDelegateView {
   gfx::Size GetPreferredSize() const override;
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override;
   base::string16 GetWindowTitle() const override;
   bool CanResize() const override;
 
@@ -117,10 +116,6 @@ void WidgetsWindow::Layout() {
 
 gfx::Size WidgetsWindow::GetPreferredSize() const {
   return gfx::Size(kWindowWidth, kWindowHeight);
-}
-
-views::View* WidgetsWindow::GetContentsView() {
-  return this;
 }
 
 base::string16 WidgetsWindow::GetWindowTitle() const {

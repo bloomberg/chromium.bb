@@ -238,10 +238,6 @@ void ToastContentsView::AnimationCanceled(
 }
 
 // views::WidgetDelegate
-views::View* ToastContentsView::GetContentsView() {
-  return this;
-}
-
 void ToastContentsView::WindowClosing() {
   if (!is_closing_ && collection_.get())
     collection_->ForgetToast(this);

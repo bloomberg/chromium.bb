@@ -52,12 +52,11 @@ const SkColor kWindowBackgroundColor = SK_ColorWHITE;
 const int kWindowCornerRadius = 4;
 
 // Creates and shows the message widget for |view| with |animation_time_ms|.
-void CreateAndShowWidgetWithContent(views::WidgetDelegate* delegate,
-                                    views::View* view,
-                                    int animation_time_ms) {
+void CreateAndShowWidget(views::WidgetDelegateView* delegate,
+                         int animation_time_ms) {
   aura::Window* root_window = ash::Shell::GetTargetRootWindow();
   gfx::Size rs = root_window->bounds().size();
-  gfx::Size ps = view->GetPreferredSize();
+  gfx::Size ps = delegate->GetPreferredSize();
   gfx::Rect bounds((rs.width() - ps.width()) / 2,
                    -ps.height(),
                    ps.width(),
@@ -75,7 +74,6 @@ void CreateAndShowWidgetWithContent(views::WidgetDelegate* delegate,
       root_window, ash::kShellWindowId_SettingBubbleContainer);
   views::Widget* widget = new views::Widget;
   widget->Init(params);
-  widget->SetContentsView(view);
   gfx::NativeView native_view = widget->GetNativeView();
   native_view->SetName("KioskIdleAppNameNotification");
 
@@ -93,7 +91,7 @@ void CreateAndShowWidgetWithContent(views::WidgetDelegate* delegate,
   widget->SetBounds(bounds);
 
   // Allow to use the message for spoken feedback.
-  view->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+  delegate->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
 }
 
 }  // namespace
@@ -267,7 +265,7 @@ void IdleAppNameNotificationView::ShowMessage(
       app_name,
       error,
       message_visibility_time_in_ms + animation_time_ms);
-  CreateAndShowWidgetWithContent(view_, view_, animation_time_ms);
+  CreateAndShowWidget(view_, animation_time_ms);
 }
 
 }  // namespace chromeos

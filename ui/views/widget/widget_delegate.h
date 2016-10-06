@@ -211,6 +211,7 @@ class VIEWS_EXPORT WidgetDelegateView : public WidgetDelegate, public View {
   void DeleteDelegate() override;
   Widget* GetWidget() override;
   const Widget* GetWidget() const override;
+  views::View* GetContentsView() override;
 
   // View:
   const char* GetClassName() const override;

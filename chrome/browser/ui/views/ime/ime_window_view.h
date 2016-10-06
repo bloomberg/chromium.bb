@@ -67,7 +67,6 @@ class ImeWindowView : public ImeNativeWindow,
   bool IsVisible() const override;
 
   // views::WidgetDelegateView:
-  views::View* GetContentsView() override;
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
   bool CanActivate() const override;

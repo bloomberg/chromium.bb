@@ -52,7 +52,6 @@ class VIEWS_EXPORT ColorChooserView : public WidgetDelegateView,
   View* GetInitiallyFocusedView() override;
   ui::ModalType GetModalType() const override;
   void WindowClosing() override;
-  View* GetContentsView() override;
 
   // TextfieldController overrides:
   void ContentsChanged(Textfield* sender,

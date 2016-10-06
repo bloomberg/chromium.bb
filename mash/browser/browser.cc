@@ -575,7 +575,6 @@ class UI : public views::WidgetDelegateView,
 
  private:
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override { return this; }
   base::string16 GetWindowTitle() const override {
     // TODO(beng): use resources.
     if (selected_view()->title().empty())

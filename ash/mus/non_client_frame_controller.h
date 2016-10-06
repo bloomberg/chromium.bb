@@ -56,7 +56,6 @@ class NonClientFrameController : public views::WidgetDelegateView,
 
   // views::WidgetDelegateView:
   base::string16 GetWindowTitle() const override;
-  views::View* GetContentsView() override;
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;

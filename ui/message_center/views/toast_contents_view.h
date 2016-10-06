@@ -104,7 +104,6 @@ class ToastContentsView : public views::WidgetDelegateView,
   void AnimationCanceled(const gfx::Animation* animation) override;
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override;
   void WindowClosing() override;
   void OnDisplayChanged() override;
   void OnWorkAreaChanged() override;

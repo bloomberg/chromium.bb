@@ -43,7 +43,6 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   bool OnMousePressed(const ui::MouseEvent& event) override;
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override;
   bool CanResize() const override;
   base::string16 GetWindowTitle() const override;
   bool CanMaximize() const override;

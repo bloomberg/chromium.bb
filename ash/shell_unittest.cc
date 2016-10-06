@@ -96,7 +96,6 @@ class ModalWindow : public views::WidgetDelegateView {
   ~ModalWindow() override {}
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override { return this; }
   bool CanResize() const override { return true; }
   base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Modal Window");

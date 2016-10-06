@@ -92,7 +92,6 @@ void CreateLockScreen() {
   params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                                       kShellWindowId_LockScreenContainer);
   widget->Init(params);
-  widget->SetContentsView(lock_view);
   widget->Show();
   widget->GetNativeView()->SetName("LockView");
   widget->GetNativeView()->Focus();

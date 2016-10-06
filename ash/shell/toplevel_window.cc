@@ -87,10 +87,6 @@ bool ToplevelWindow::GetSavedWindowPlacement(
   return true;
 }
 
-views::View* ToplevelWindow::GetContentsView() {
-  return this;
-}
-
 bool ToplevelWindow::CanResize() const {
   return params_.can_resize;
 }

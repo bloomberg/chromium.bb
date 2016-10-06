@@ -46,8 +46,6 @@ class TextInputView : public views::WidgetDelegateView {
   }
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override { return this; }
-
   void FocusOnTextInput() { GetFocusManager()->SetFocusedView(text_field_); }
 
  private:

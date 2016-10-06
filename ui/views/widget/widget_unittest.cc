@@ -1986,8 +1986,6 @@ class GetNativeThemeFromDestructorView : public WidgetDelegateView {
   GetNativeThemeFromDestructorView() {}
   ~GetNativeThemeFromDestructorView() override { VerifyNativeTheme(); }
 
-  View* GetContentsView() override { return this; }
-
  private:
   void VerifyNativeTheme() {
     ASSERT_TRUE(GetNativeTheme() != NULL);

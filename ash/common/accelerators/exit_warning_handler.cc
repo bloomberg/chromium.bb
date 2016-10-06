@@ -166,7 +166,6 @@ void ExitWarningHandler::Show() {
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       widget_.get(), kShellWindowId_SettingBubbleContainer, &params);
   widget_->Init(params);
-  widget_->SetContentsView(delegate);
   widget_->Show();
 
   delegate->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);

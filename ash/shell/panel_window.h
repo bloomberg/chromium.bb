@@ -38,7 +38,6 @@ class PanelWindow : public views::WidgetDelegateView {
 
   // Overridden from views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
-  View* GetContentsView() override;
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;

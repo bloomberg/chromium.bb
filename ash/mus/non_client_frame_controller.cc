@@ -392,10 +392,6 @@ base::string16 NonClientFrameController::GetWindowTitle() const {
   return title;
 }
 
-views::View* NonClientFrameController::GetContentsView() {
-  return this;
-}
-
 bool NonClientFrameController::CanResize() const {
   return window_ &&
          (GetResizeBehavior(window_) & ui::mojom::kResizeBehaviorCanResize) !=

@@ -89,7 +89,6 @@ class WindowDelegateView : public views::WidgetDelegateView {
     return base::ASCIIToUTF16("Window");
   }
   gfx::Size GetPreferredSize() const override { return gfx::Size(300, 300); }
-  View* GetContentsView() override { return this; }
 
  private:
   const uint32_t traits_;
@@ -130,7 +129,6 @@ class ModalWindow : public views::WidgetDelegateView,
   }
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override { return this; }
   bool CanResize() const override { return true; }
   base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Modal Window");
@@ -188,7 +186,6 @@ class NonModalTransient : public views::WidgetDelegateView {
   gfx::Size GetPreferredSize() const override { return gfx::Size(250, 250); }
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override { return this; }
   bool CanResize() const override { return true; }
   base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Non-Modal Transient");
@@ -346,7 +343,6 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
   }
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override { return this;  }
   bool CanResize() const override { return true;  }
   base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Examples: Window Builder");

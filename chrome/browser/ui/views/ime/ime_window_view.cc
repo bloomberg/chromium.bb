@@ -144,10 +144,6 @@ void ImeWindowView::OnTitlebarPointerCaptureLost() {
   }
 }
 
-views::View* ImeWindowView::GetContentsView() {
-  return this;
-}
-
 views::NonClientFrameView* ImeWindowView::CreateNonClientFrameView(
     views::Widget* widget) {
   ImeWindowFrameView* frame_view = new ImeWindowFrameView(

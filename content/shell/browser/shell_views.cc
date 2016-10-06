@@ -251,7 +251,6 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       shell_ = NULL;
     }
   }
-  View* GetContentsView() override { return this; }
 
   // Overridden from View
   gfx::Size GetMinimumSize() const override {

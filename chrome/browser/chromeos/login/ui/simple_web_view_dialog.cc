@@ -248,10 +248,6 @@ void SimpleWebViewDialog::Layout() {
   views::WidgetDelegateView::Layout();
 }
 
-views::View* SimpleWebViewDialog::GetContentsView() {
-  return this;
-}
-
 views::View* SimpleWebViewDialog::GetInitiallyFocusedView() {
   return web_view_;
 }

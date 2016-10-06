@@ -49,7 +49,6 @@ class ModalWidgetDelegate : public views::WidgetDelegateView {
   ~ModalWidgetDelegate() override {}
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override { return this; }
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
 
  private:

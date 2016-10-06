@@ -392,8 +392,6 @@ class WindowCycleView : public views::WidgetDelegateView {
     WmShell::Get()->window_cycle_controller()->StopCycling();
   }
 
-  View* GetContentsView() override { return this; }
-
   View* GetInitiallyFocusedView() override {
     return window_view_map_[target_window_];
   }

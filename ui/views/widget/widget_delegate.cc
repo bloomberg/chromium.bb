@@ -204,6 +204,10 @@ const Widget* WidgetDelegateView::GetWidget() const {
   return View::GetWidget();
 }
 
+views::View* WidgetDelegateView::GetContentsView() {
+  return this;
+}
+
 const char* WidgetDelegateView::GetClassName() const {
   return kViewClassName;
 }

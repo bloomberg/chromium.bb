@@ -141,7 +141,6 @@ void KioskExternalUpdateNotification::CreateAndShowNotificationView(
       root_window, ash::kShellWindowId_SettingBubbleContainer);
   views::Widget* widget = new views::Widget;
   widget->Init(params);
-  widget->SetContentsView(view_);
   gfx::NativeView native_view = widget->GetNativeView();
   native_view->SetName("KioskExternalUpdateNotification");
   widget->Show();

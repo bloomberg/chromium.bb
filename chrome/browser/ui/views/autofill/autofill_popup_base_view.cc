@@ -53,7 +53,6 @@ void AutofillPopupBaseView::DoShow() {
     params.delegate = this;
     params.parent = parent_widget_->GetNativeView();
     widget->Init(params);
-    widget->SetContentsView(this);
 
     // No animation for popup appearance (too distracting).
     widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_HIDE);

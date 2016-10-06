@@ -65,7 +65,6 @@ class ChildModalWindow : public views::WidgetDelegateView {
   gfx::Size GetPreferredSize() const override;
 
   // Overridden from WidgetDelegate:
-  View* GetContentsView() override;
   base::string16 GetWindowTitle() const override;
   bool CanResize() const override;
   ui::ModalType GetModalType() const override;
@@ -88,10 +87,6 @@ void ChildModalWindow::OnPaint(gfx::Canvas* canvas) {
 
 gfx::Size ChildModalWindow::GetPreferredSize() const {
   return gfx::Size(kChildWindowWidth, kChildWindowHeight);
-}
-
-views::View* ChildModalWindow::GetContentsView() {
-  return this;
 }
 
 base::string16 ChildModalWindow::GetWindowTitle() const {
@@ -152,10 +147,6 @@ Widget* ChildModalParent::CreateChild() {
   child->AddObserver(this);
   child->GetNativeView()->SetName("ChildModalWindow");
   return child;
-}
-
-views::View* ChildModalParent::GetContentsView() {
-  return this;
 }
 
 base::string16 ChildModalParent::GetWindowTitle() const {

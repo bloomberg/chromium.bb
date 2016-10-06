@@ -183,7 +183,6 @@ class ExamplesWindowContents : public WidgetDelegateView,
   base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Views Examples");
   }
-  View* GetContentsView() override { return this; }
   void WindowClosing() override {
     instance_ = NULL;
     if (operation_ == QUIT_ON_CLOSE)

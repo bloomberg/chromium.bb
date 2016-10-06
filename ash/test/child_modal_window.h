@@ -38,7 +38,6 @@ class ChildModalParent : public views::WidgetDelegateView,
   views::Widget* CreateChild();
 
   // Overridden from views::WidgetDelegate:
-  View* GetContentsView() override;
   base::string16 GetWindowTitle() const override;
   bool CanResize() const override;
   void DeleteDelegate() override;

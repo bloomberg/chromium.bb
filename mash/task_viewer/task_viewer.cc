@@ -83,7 +83,6 @@ class TaskViewerContents : public views::WidgetDelegateView,
 
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override { return this; }
   base::string16 GetWindowTitle() const override {
     // TODO(beng): use resources.
     return base::ASCIIToUTF16("Tasks");

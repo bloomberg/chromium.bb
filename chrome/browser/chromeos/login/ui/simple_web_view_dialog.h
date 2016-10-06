@@ -59,7 +59,6 @@ class SimpleWebViewDialog : public views::ButtonListener,
   void Layout() override;
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override;
   views::View* GetInitiallyFocusedView() override;
 
   // Implements views::ButtonListener:

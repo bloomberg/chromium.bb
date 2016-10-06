@@ -237,7 +237,6 @@ class TouchSelectionControllerImpl::EditingHandleView
         draw_invisible_(false),
         weak_ptr_factory_(this) {
     widget_.reset(CreateTouchSelectionPopupWidget(context, this));
-    widget_->SetContentsView(this);
 
     aura::Window* window = widget_->GetNativeWindow();
     window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
@@ -321,6 +320,10 @@ class TouchSelectionControllerImpl::EditingHandleView
   }
 
   gfx::Size GetPreferredSize() const override {
+    // This function will be called during widget initialization, i.e. before
+    // SetBoundInScreen has been called. No-op in that case.
+    if (selection_bound_.type() == gfx::SelectionBound::EMPTY)
+      return gfx::Size();
     return GetSelectionWidgetBounds(selection_bound_).size();
   }
 

@@ -33,7 +33,6 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   ~TestWidgetDelegate() override {}
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override { return this; }
   bool CanResize() const override { return true; }
   bool CanMaximize() const override { return true; }
   bool CanMinimize() const override { return true; }

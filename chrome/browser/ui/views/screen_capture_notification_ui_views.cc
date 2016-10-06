@@ -95,7 +95,6 @@ class ScreenCaptureNotificationUIViews
 
   // views::WidgetDelegateView overrides.
   void DeleteDelegate() override;
-  views::View* GetContentsView() override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
@@ -265,10 +264,6 @@ void ScreenCaptureNotificationUIViews::Layout() {
 
 void ScreenCaptureNotificationUIViews::DeleteDelegate() {
   NotifyStopped();
-}
-
-views::View* ScreenCaptureNotificationUIViews::GetContentsView() {
-  return this;
 }
 
 views::ClientView* ScreenCaptureNotificationUIViews::CreateClientView(

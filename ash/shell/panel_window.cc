@@ -66,10 +66,6 @@ base::string16 PanelWindow::GetWindowTitle() const {
   return base::ASCIIToUTF16(name_);
 }
 
-views::View* PanelWindow::GetContentsView() {
-  return this;
-}
-
 bool PanelWindow::CanResize() const {
   return true;
 }
