@@ -387,6 +387,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager
   // If true, cancel pending retransmissions if they're larger than
   // largest_newly_acked.
   bool undo_pending_retransmits_;
+  // If true, use a more conservative handshake retransmission policy.
+  bool conservative_handshake_retransmits_;
 
   // Vectors packets acked and lost as a result of the last congestion event.
   SendAlgorithmInterface::CongestionVector packets_acked_;

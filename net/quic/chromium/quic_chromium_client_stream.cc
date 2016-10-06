@@ -287,7 +287,7 @@ void QuicChromiumClientStream::NotifyDelegateOfHeadersComplete(
   // Only mark trailers consumed when we are about to notify delegate.
   if (headers_delivered_) {
     MarkTrailersConsumed(decompressed_trailers().length());
-    MarkTrailersDelivered();
+    MarkTrailersConsumed();
     net_log_.AddEvent(
         NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_TRAILERS,
         base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));

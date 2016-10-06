@@ -32,7 +32,7 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
       headers_decompressed_(false),
       priority_(kDefaultPriority),
       trailers_decompressed_(false),
-      trailers_delivered_(false) {
+      trailers_consumed_(false) {
   DCHECK_NE(kCryptoStreamId, id);
   // Don't receive any callbacks from the sequencer until headers
   // are complete.
@@ -162,8 +162,8 @@ void QuicSpdyStream::MarkTrailersConsumed(size_t bytes_consumed) {
   decompressed_trailers_.erase(0, bytes_consumed);
 }
 
-void QuicSpdyStream::MarkTrailersDelivered() {
-  trailers_delivered_ = true;
+void QuicSpdyStream::MarkTrailersConsumed() {
+  trailers_consumed_ = true;
 }
 
 void QuicSpdyStream::ConsumeHeaderList() {
@@ -397,7 +397,7 @@ bool QuicSpdyStream::FinishedReadingTrailers() const {
   } else if (!trailers_decompressed_) {
     return true;
   } else {
-    return trailers_delivered_ && decompressed_trailers_.empty();
+    return trailers_consumed_ && decompressed_trailers_.empty();
   }
 }
 

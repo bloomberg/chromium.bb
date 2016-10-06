@@ -63,7 +63,6 @@ class NET_EXPORT_PRIVATE TcpCubicSenderBase : public SendAlgorithmInterface {
                                 QuicByteCount bytes_in_flight) const override;
   QuicBandwidth PacingRate(QuicByteCount bytes_in_flight) const override;
   QuicBandwidth BandwidthEstimate() const override;
-  QuicTime::Delta RetransmissionDelay() const override;
   bool InSlowStart() const override;
   bool InRecovery() const override;
   std::string GetDebugState() const override;

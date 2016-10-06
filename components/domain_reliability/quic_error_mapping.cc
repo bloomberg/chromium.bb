@@ -246,6 +246,9 @@ const struct QuicErrorMapping {
   // will lead to crash.
   { net::QUIC_STREAM_SEQUENCER_INVALID_STATE,
     "quic.stream_sequencer_invalid_state" },
+  // Connection closed because of server hits max number of sessions allowed.
+  { net::QUIC_TOO_MANY_SESSIONS_ON_SERVER,
+    "quic.too_many_sessions_on_server" },
 
   // No error. Used as bound while iterating.
   { net::QUIC_LAST_ERROR, "quic.last_error"}
