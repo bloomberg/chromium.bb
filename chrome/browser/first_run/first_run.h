@@ -87,7 +87,8 @@ struct MasterPrefs {
   std::string suppress_default_browser_prompt_for_version;
 };
 
-// Returns true if this is the first time chrome is run for this user.
+// Returns true if Chrome should behave as if this is the first time Chrome is
+// run for this user.
 bool IsChromeFirstRun();
 
 #if defined(OS_MACOSX)
@@ -134,6 +135,10 @@ void SetShouldShowWelcomePage();
 // This will return true only once: The first time it is called after
 // SetShouldShowWelcomePage() is called.
 bool ShouldShowWelcomePage();
+
+// Iterates over the given tabs, replacing "magic words" designated for
+// use in Master Preferences files with corresponding URLs.
+std::vector<GURL> ProcessMasterPrefsTabs(const std::vector<GURL>& tabs);
 
 // Sets a flag that will cause ShouldDoPersonalDataManagerFirstRun()
 // to return true exactly once, so that the browser loads

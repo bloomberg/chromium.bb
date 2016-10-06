@@ -108,6 +108,8 @@ class StartupBrowserCreator {
   friend class CloudPrintProxyPolicyTest;
   friend class CloudPrintProxyPolicyStartupTest;
   friend class StartupBrowserCreatorImpl;
+  // TODO(crbug.com/642442): Remove this when first_run_tabs gets refactored.
+  friend class StartupTabProviderImpl;
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
                            ReadingWasRestartedAfterNormalStart);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,

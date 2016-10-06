@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_STARTUP_STARTUP_TAB_H_
 #define CHROME_BROWSER_UI_STARTUP_STARTUP_TAB_H_
 
-#include <string>
 #include <vector>
 
 #include "url/gurl.h"
@@ -13,6 +12,7 @@
 // Represents tab data at startup.
 struct StartupTab {
   StartupTab();
+  StartupTab(const GURL& url, bool is_pinned);
   ~StartupTab();
 
   // The url to load.

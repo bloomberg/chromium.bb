@@ -8,5 +8,8 @@ StartupTab::StartupTab()
     : is_pinned(true) {
 }
 
+StartupTab::StartupTab(const GURL& url, bool is_pinned)
+    : url(url), is_pinned(is_pinned) {}
+
 StartupTab::~StartupTab() {
 }

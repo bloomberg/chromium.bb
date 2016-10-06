@@ -4072,6 +4072,8 @@ test("unit_tests") {
       "//chrome/browser/profiles/profile_list_desktop_unittest.cc",
       "//chrome/browser/profiles/profile_statistics_unittest.cc",
       "//chrome/browser/ui/startup/default_browser_infobar_delegate_unittest.cc",
+      "//chrome/browser/ui/startup/startup_browser_creator_impl_unittest.cc",
+      "//chrome/browser/ui/startup/startup_tab_provider_unittest.cc",
     ]
   }
   if (use_gio) {

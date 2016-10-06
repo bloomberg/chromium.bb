@@ -86,4 +86,44 @@ TEST_F(FirstRunTest,
   EXPECT_FALSE(out_prefs.welcome_page_on_os_upgrade_enabled);
 }
 
+// No switches and no sentinel present. This is the standard case for first run.
+TEST_F(FirstRunTest, DetermineFirstRunState_FirstRun) {
+  internal::FirstRunState result =
+      internal::DetermineFirstRunState(false, false, false);
+  EXPECT_EQ(internal::FIRST_RUN_TRUE, result);
+}
+
+// Force switch is present, overriding both sentinel and suppress switch.
+TEST_F(FirstRunTest, DetermineFirstRunState_ForceSwitch) {
+  internal::FirstRunState result =
+      internal::DetermineFirstRunState(true, true, true);
+  EXPECT_EQ(internal::FIRST_RUN_TRUE, result);
+
+  result = internal::DetermineFirstRunState(true, true, false);
+  EXPECT_EQ(internal::FIRST_RUN_TRUE, result);
+
+  result = internal::DetermineFirstRunState(false, true, true);
+  EXPECT_EQ(internal::FIRST_RUN_TRUE, result);
+
+  result = internal::DetermineFirstRunState(false, true, false);
+  EXPECT_EQ(internal::FIRST_RUN_TRUE, result);
+}
+
+// No switches, but sentinel present. This is not a first run.
+TEST_F(FirstRunTest, DetermineFirstRunState_NotFirstRun) {
+  internal::FirstRunState result =
+      internal::DetermineFirstRunState(true, false, false);
+  EXPECT_EQ(internal::FIRST_RUN_FALSE, result);
+}
+
+// Suppress switch is present, overriding sentinel state.
+TEST_F(FirstRunTest, DetermineFirstRunState_SuppressSwitch) {
+  internal::FirstRunState result =
+      internal::DetermineFirstRunState(false, false, true);
+  EXPECT_EQ(internal::FIRST_RUN_FALSE, result);
+
+  result = internal::DetermineFirstRunState(true, false, true);
+  EXPECT_EQ(internal::FIRST_RUN_FALSE, result);
+}
+
 }  // namespace first_run
