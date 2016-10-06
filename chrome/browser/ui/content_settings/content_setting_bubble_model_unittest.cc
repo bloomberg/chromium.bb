@@ -115,7 +115,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
   EXPECT_TRUE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_text.empty());
 
-  content_settings->ClearCookieSpecificContentSettings();
+  content_settings->ClearNavigationRelatedContentSettings();
   content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   content_setting_bubble_model.reset(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -755,7 +755,8 @@ TEST_F(ContentSettingBubbleModelTest, PepperBroker) {
   EXPECT_FALSE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_text.empty());
 
-  content_settings->ClearBlockedContentSettingsExceptForCookies();
+  content_settings
+      ->ClearContentSettingsExceptForNavigationRelatedSettings();
   content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
   content_setting_bubble_model.reset(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(

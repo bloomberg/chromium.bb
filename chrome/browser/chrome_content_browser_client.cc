@@ -1824,18 +1824,30 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
 #endif
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  bool allow = io_data->GetCookieSettings()->IsSettingCookieAllowed(
-      scope, first_party_url);
 
+  // Check if JavaScript is allowed.
+  content_settings::SettingInfo info;
+  std::unique_ptr<base::Value> value =
+      io_data->GetHostContentSettingsMap()->GetWebsiteSetting(
+          first_party_url, first_party_url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+          std::string(), &info);
+  ContentSetting setting = content_settings::ValueToContentSetting(value.get());
+  bool allow_javascript = (setting == CONTENT_SETTING_ALLOW);
+
+  // Check if cookies are allowed.
+  bool allow_serviceworker =
+      io_data->GetCookieSettings()->IsSettingCookieAllowed(scope,
+                                                           first_party_url);
   // Record access to database for potential display in UI.
   // Only post the task if this is for a specific frame.
   if (render_process_id != -1 && render_frame_id != -1) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TabSpecificContentSettings::ServiceWorkerAccessed,
-                   render_process_id, render_frame_id, scope, !allow));
+                   render_process_id, render_frame_id, scope,
+                   !allow_javascript, !allow_serviceworker));
   }
-  return allow;
+  return allow_javascript && allow_serviceworker;
 }
 
 bool ChromeContentBrowserClient::AllowGetCookie(

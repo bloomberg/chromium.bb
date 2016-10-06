@@ -15,6 +15,8 @@
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -22,6 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
@@ -39,6 +42,9 @@ class ChromeServiceWorkerTest : public InProcessBrowserTest {
  protected:
   ChromeServiceWorkerTest() {
     EXPECT_TRUE(service_worker_dir_.CreateUniqueTempDir());
+    EXPECT_TRUE(base::CreateDirectoryAndGetError(
+        service_worker_dir_.GetPath().Append(
+            FILE_PATH_LITERAL("scope")), nullptr));
   }
   ~ChromeServiceWorkerTest() override {}
 
@@ -66,8 +72,6 @@ static void ExpectResultAndRun(bool expected,
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
                        CanShutDownWithRegisteredServiceWorker) {
   WriteFile(FILE_PATH_LITERAL("service_worker.js"), "");
-  WriteFile(FILE_PATH_LITERAL("service_worker.js.mock-http-headers"),
-            "HTTP/1.1 200 OK\nContent-Type: text/javascript");
 
   embedded_test_server()->ServeFilesFromDirectory(
       service_worker_dir_.GetPath());
@@ -123,6 +127,88 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   observer.Wait();
 
   // Test passes if we don't crash.
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
+                       FailRegisterServiceWorkerWhenJSDisabled) {
+  WriteFile(FILE_PATH_LITERAL("service_worker.js"), "");
+
+  embedded_test_server()->ServeFilesFromDirectory(
+      service_worker_dir_.GetPath());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                                 CONTENT_SETTING_BLOCK);
+
+  content::ServiceWorkerContext* sw_context =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetServiceWorkerContext();
+
+  base::RunLoop run_loop;
+  sw_context->RegisterServiceWorker(
+      embedded_test_server()->GetURL("/"),
+      embedded_test_server()->GetURL("/service_worker.js"),
+      base::Bind(&ExpectResultAndRun, false, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
+                       FallbackMainResourceRequestWhenJSDisabled) {
+  WriteFile(
+      FILE_PATH_LITERAL("sw.js"),
+      "self.onfetch = function(e) {"
+      "  e.respondWith(new Response('<title>Fail</title>',"
+      "                             {headers: {'Content-Type': 'text/html'}}));"
+      "};");
+  WriteFile(FILE_PATH_LITERAL("scope/done.html"), "<title>Done</title>");
+  WriteFile(
+      FILE_PATH_LITERAL("test.html"),
+      "<script>"
+      "navigator.serviceWorker.register('./sw.js', {scope: './scope/'})"
+      "  .then(function(reg) {"
+      "      reg.addEventListener('updatefound', function() {"
+      "          var worker = reg.installing;"
+      "          worker.addEventListener('statechange', function() {"
+      "              if (worker.state == 'activated')"
+      "                document.title = 'READY';"
+      "            });"
+      "        });"
+      "    });"
+      "</script>");
+  embedded_test_server()->ServeFilesFromDirectory(
+      service_worker_dir_.GetPath());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const base::string16 expected_title1 = base::ASCIIToUTF16("READY");
+  content::TitleWatcher title_watcher1(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title1);
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/test.html"));
+  EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
+
+  content::ServiceWorkerContext* sw_context =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetServiceWorkerContext();
+  sw_context->StopAllServiceWorkersForOrigin(
+      embedded_test_server()->base_url());
+
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                                 CONTENT_SETTING_BLOCK);
+
+  const base::string16 expected_title2 = base::ASCIIToUTF16("Done");
+  content::TitleWatcher title_watcher2(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title2);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/scope/done.html"));
+  EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
+              IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
 }
 
 class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {

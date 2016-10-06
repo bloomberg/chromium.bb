@@ -347,7 +347,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
           pattern, provider_host->topmost_frame_url(), resource_context_,
           render_process_id_, provider_host->frame_id())) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-        thread_id, request_id, WebServiceWorkerError::ErrorTypeUnknown,
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +
             base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
     return;
@@ -425,7 +425,7 @@ void ServiceWorkerDispatcherHost::OnUpdateServiceWorker(
           registration->pattern(), provider_host->topmost_frame_url(),
           resource_context_, render_process_id_, provider_host->frame_id())) {
     Send(new ServiceWorkerMsg_ServiceWorkerUpdateError(
-        thread_id, request_id, WebServiceWorkerError::ErrorTypeUnknown,
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kServiceWorkerUpdateErrorPrefix) +
             base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
     return;
@@ -512,7 +512,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
           registration->pattern(), provider_host->topmost_frame_url(),
           resource_context_, render_process_id_, provider_host->frame_id())) {
     Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-        thread_id, request_id, WebServiceWorkerError::ErrorTypeUnknown,
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
     return;
   }
@@ -588,7 +588,7 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
           provider_host->document_url(), provider_host->topmost_frame_url(),
           resource_context_, render_process_id_, provider_host->frame_id())) {
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
-        thread_id, request_id, WebServiceWorkerError::ErrorTypeUnknown,
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
             base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
     return;
@@ -655,7 +655,7 @@ void ServiceWorkerDispatcherHost::OnGetRegistrations(int thread_id,
           provider_host->document_url(), provider_host->topmost_frame_url(),
           resource_context_, render_process_id_, provider_host->frame_id())) {
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationsError(
-        thread_id, request_id, WebServiceWorkerError::ErrorTypeUnknown,
+        thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kServiceWorkerGetRegistrationsErrorPrefix) +
             base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
     return;

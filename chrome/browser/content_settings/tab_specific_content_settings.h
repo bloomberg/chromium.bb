@@ -162,21 +162,26 @@ class TabSpecificContentSettings
 
   // Called when a specific Service Worker scope was accessed.
   // If access was blocked due to the user's content settings,
-  // |blocked_by_policy| should be true, and this function should invoke
-  // OnContentBlocked.
+  // |blocked_by_policy_javascript| or/and |blocked_by_policy_cookie| should be
+  // true, and this function should invoke OnContentBlocked for JavaScript
+  // or/and cookies respectively.
   static void ServiceWorkerAccessed(int render_process_id,
                                     int render_frame_id,
                                     const GURL& scope,
-                                    bool blocked_by_policy);
+                                    bool blocked_by_policy_javascript,
+                                    bool blocked_by_policy_cookie);
 
-  // Resets the |content_blocked_| and |content_allowed_| arrays, except for
-  // CONTENT_SETTINGS_TYPE_COOKIES related information.
+  // Resets the |content_settings_status_|, except for
+  // information which are needed for navigation: CONTENT_SETTINGS_TYPE_COOKIES
+  // for cookies and service workers, and CONTENT_SETTINGS_TYPE_JAVASCRIPT for
+  // service workers.
   // TODO(vabr): Only public for tests. Move to a test client.
-  void ClearBlockedContentSettingsExceptForCookies();
+  void ClearContentSettingsExceptForNavigationRelatedSettings();
 
-  // Resets all cookies related information.
+  // Resets navigation related information (CONTENT_SETTINGS_TYPE_COOKIES and
+  // CONTENT_SETTINGS_TYPE_JAVASCRIPT).
   // TODO(vabr): Only public for tests. Move to a test client.
-  void ClearCookieSpecificContentSettings();
+  void ClearNavigationRelatedContentSettings();
 
   // Notifies that a Flash download has been blocked.
   void FlashDownloadBlocked();
@@ -343,7 +348,9 @@ class TabSpecificContentSettings
   void OnLocalStorageAccessed(const GURL& url,
                               bool local,
                               bool blocked_by_policy);
-  void OnServiceWorkerAccessed(const GURL& scope, bool blocked_by_policy);
+  void OnServiceWorkerAccessed(const GURL& scope,
+                               bool blocked_by_policy_javascript,
+                               bool blocked_by_policy_cookie);
   void OnWebDatabaseAccessed(const GURL& url,
                              const base::string16& name,
                              const base::string16& display_name,

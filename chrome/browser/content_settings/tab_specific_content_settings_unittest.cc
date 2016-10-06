@@ -126,15 +126,22 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   EXPECT_TRUE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 
+  // Block a javascript during a navigation.
+  content_settings->OnServiceWorkerAccessed(GURL("http://google.com"),
+                                            true, false);
+  EXPECT_TRUE(
+      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+
   // Reset blocked content settings.
-  content_settings->ClearBlockedContentSettingsExceptForCookies();
+  content_settings
+      ->ClearContentSettingsExceptForNavigationRelatedSettings();
 #if !defined(OS_ANDROID)
   EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
   EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
 #endif
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
   EXPECT_TRUE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
@@ -147,7 +154,7 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_KEYGEN));
 
-  content_settings->ClearCookieSpecificContentSettings();
+  content_settings->ClearNavigationRelatedContentSettings();
 #if !defined(OS_ANDROID)
   EXPECT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
