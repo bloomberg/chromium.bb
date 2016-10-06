@@ -50,11 +50,8 @@ static constexpr float kReticleHeight = 0.025f;
 
 static constexpr float kLaserWidth = 0.01f;
 
-// The neutral direction is fixed in world space, this is the
-// reference angle pointing forward towards the horizon when the
-// controller orientation is reset. This should match the yaw angle
-// where the main screen is placed.
-static constexpr gvr::Vec3f kNeutralPose = {0.0f, 0.0f, -1.0f};
+// Angle (radians) the beam down from the controller axis, for wrist comfort.
+static constexpr float kErgoAngleOffset = 0.26f;
 
 static constexpr gvr::Vec3f kOrigin = {0.0f, 0.0f, 0.0f};
 
@@ -242,16 +239,19 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   }
 
   WebInputEvent::Type original_type = gesture->type;
+  gvr::Vec3f ergo_neutral_pose;
   if (!controller_->IsConnected()) {
     // No controller detected, set up a gaze cursor that tracks the
     // forward direction.
+    ergo_neutral_pose = {0.0f, 0.0f, -1.0f};
     controller_quat_ = GetRotationFromZAxis(forward_vector);
   } else {
+    ergo_neutral_pose = {0.0f, -sin(kErgoAngleOffset), -cos(kErgoAngleOffset)};
     controller_quat_ = controller_->Orientation();
   }
 
   gvr::Mat4f mat = QuatToMatrix(controller_quat_);
-  gvr::Vec3f forward = MatrixVectorMul(mat, kNeutralPose);
+  gvr::Vec3f forward = MatrixVectorMul(mat, ergo_neutral_pose);
   gvr::Vec3f origin = kHandPosition;
 
   target_element_ = nullptr;
@@ -544,7 +544,7 @@ void VrShell::DrawCursor(const gvr::Mat4f& render_matrix) {
   // Draw the laser.
 
   // Find the length of the beam (from hand to target).
-  float laser_length = Distance(kHandPosition, target_point_);
+  const float laser_length = Distance(kHandPosition, target_point_);
 
   // Build a beam, originating from the origin.
   SetIdentityM(mat);
@@ -554,18 +554,36 @@ void VrShell::DrawCursor(const gvr::Mat4f& render_matrix) {
   ScaleM(mat, mat, kLaserWidth, laser_length, 1);
 
   // Tip back 90 degrees to flat, pointing at the scene.
-  auto q = QuatFromAxisAngle({1.0f, 0.0f, 0.0f}, -M_PI / 2);
-  auto m = QuatToMatrix(q);
-  mat = MatrixMul(m, mat);
+  const gvr::Quatf q = QuatFromAxisAngle({1.0f, 0.0f, 0.0f}, -M_PI / 2);
+  mat = MatrixMul(QuatToMatrix(q), mat);
 
-  // Orient according to controller position.
-  mat = MatrixMul(QuatToMatrix(controller_quat_), mat);
+  const gvr::Vec3f beam_direction = {
+    target_point_.x - kHandPosition.x,
+    target_point_.y - kHandPosition.y,
+    target_point_.z - kHandPosition.z
+  };
+  const gvr::Mat4f beam_direction_mat =
+      QuatToMatrix(GetRotationFromZAxis(beam_direction));
 
-  // Move the beam origin to the hand.
-  TranslateM(mat, mat, kHandPosition.x, kHandPosition.y, kHandPosition.z);
 
-  transform = MatrixMul(render_matrix, mat);
-  vr_shell_renderer_->GetLaserRenderer()->Draw(transform);
+  // Render multiple faces to make the laser appear cylindrical.
+  const int faces = 4;
+  for (int i = 0; i < faces; i++) {
+    // Rotate around Z.
+    const float angle = M_PI * 2 * i / faces;
+    const gvr::Quatf rot = QuatFromAxisAngle({0.0f, 0.0f, 1.0f}, angle);
+    gvr::Mat4f face_transform = MatrixMul(QuatToMatrix(rot), mat);
+
+    // Orient according to target direction.
+    face_transform = MatrixMul(beam_direction_mat, face_transform);
+
+    // Move the beam origin to the hand.
+    TranslateM(face_transform, face_transform, kHandPosition.x, kHandPosition.y,
+               kHandPosition.z);
+
+    transform = MatrixMul(render_matrix, face_transform);
+    vr_shell_renderer_->GetLaserRenderer()->Draw(transform);
+  }
 }
 
 void VrShell::DrawWebVr() {
