@@ -78,7 +78,7 @@ String SecurityContext::addressSpaceForBindings() const {
     case WebAddressSpaceLocal:
       return "local";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "public";
 }
 

@@ -38,8 +38,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
 
  public:
   ChildNodeList* childNodeList(ContainerNode& node) {
-    ASSERT_UNUSED(
-        node, !m_childNodeList || node == m_childNodeList->virtualOwnerNode());
+    DCHECK(!m_childNodeList || node == m_childNodeList->virtualOwnerNode());
     return toChildNodeList(m_childNodeList);
   }
 
@@ -208,7 +207,7 @@ inline Collection* ContainerNode::ensureCachedCollection(
     CollectionType type,
     const AtomicString& namespaceURI,
     const AtomicString& localName) {
-  ASSERT_UNUSED(type, type == TagCollectionType);
+  DCHECK_EQ(type, TagCollectionType);
   ThreadState::GCForbiddenScope gcForbidden;
   return ensureNodeLists().addCache(*this, namespaceURI, localName);
 }

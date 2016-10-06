@@ -227,7 +227,7 @@ IntersectionObserver::IntersectionObserver(
       m_leftMargin = rootMargin[3];
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
   root.document().ensureIntersectionObserverController().addTrackedObserver(

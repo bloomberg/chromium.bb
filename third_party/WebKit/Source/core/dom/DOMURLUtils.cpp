@@ -115,7 +115,7 @@ void DOMURLUtils::setSearch(const String& value) {
 }
 
 void DOMURLUtils::setSearchInternal(const String& value) {
-  ASSERT(!m_isInUpdate);
+  DCHECK(!m_isInUpdate);
   KURL kurl = url();
   if (!kurl.isValid())
     return;

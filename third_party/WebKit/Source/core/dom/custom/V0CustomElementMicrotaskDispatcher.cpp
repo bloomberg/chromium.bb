@@ -58,8 +58,7 @@ void V0CustomElementMicrotaskDispatcher::doDispatch() {
   // Finishing microtask work deletes all
   // V0CustomElementCallbackQueues. Being in a callback delivery scope
   // implies those queues could still be in use.
-  ASSERT_WITH_SECURITY_IMPLICATION(
-      !V0CustomElementProcessingStack::inCallbackDeliveryScope());
+  SECURITY_DCHECK(!V0CustomElementProcessingStack::inCallbackDeliveryScope());
 
   m_phase = Resolving;
 

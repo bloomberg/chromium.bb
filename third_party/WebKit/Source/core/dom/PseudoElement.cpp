@@ -61,7 +61,8 @@ const QualifiedName& pseudoElementTagName(PseudoId pseudoId) {
                           (nullAtom, "<pseudo:first-letter>", nullAtom));
       return firstLetter;
     }
-    default: { ASSERT_NOT_REACHED(); }
+    default:
+      NOTREACHED();
   }
   DEFINE_STATIC_LOCAL(QualifiedName, name, (nullAtom, "<pseudo>", nullAtom));
   return name;

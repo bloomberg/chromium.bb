@@ -975,7 +975,7 @@ Node* Document::importNode(Node* importedNode,
       return nullptr;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -1093,7 +1093,7 @@ String Document::readyState() const {
       return complete;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 
@@ -2011,7 +2011,7 @@ void Document::updateStyleAndLayout() {
   FrameView* frameView = view();
   if (frameView && frameView->isInPerformLayout()) {
     // View layout should not be re-entrant.
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
 
@@ -2170,7 +2170,7 @@ void Document::pageSizeAndMarginsInPixels(int pageIndex,
       break;
     }
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   pageSize = DoubleSize(width, height);
 
@@ -2967,7 +2967,7 @@ Document::PageDismissalType Document::pageDismissalEventBeingDispatched()
     case UnloadEventHandled:
       return NoDismissal;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return NoDismissal;
 }
 
@@ -5179,7 +5179,7 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask) {
         secondaryIcons.append(firstTouchPrecomposedIcon);
       firstTouchPrecomposedIcon = newURL;
     } else {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     }
   }
 
@@ -6087,7 +6087,7 @@ void Document::didAssociateFormControl(Element* element) {
 }
 
 void Document::didAssociateFormControlsTimerFired(TimerBase* timer) {
-  ASSERT_UNUSED(timer, timer == &m_didAssociateFormControlsTimer);
+  DCHECK_EQ(timer, &m_didAssociateFormControlsTimer);
   if (!frame() || !frame()->page())
     return;
 

@@ -104,7 +104,7 @@ void V0CustomElement::define(Element* element,
   switch (element->getV0CustomElementState()) {
     case Element::V0NotCustomElement:
     case Element::V0Upgraded:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
 
     case Element::V0WaitingForUpgrade:
@@ -147,7 +147,7 @@ void V0CustomElement::didDetach(Element* element, const Document& document) {
 void V0CustomElement::wasDestroyed(Element* element) {
   switch (element->getV0CustomElementState()) {
     case Element::V0NotCustomElement:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
 
     case Element::V0WaitingForUpgrade:

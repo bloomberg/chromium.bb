@@ -35,7 +35,7 @@ class CORE_EXPORT DOMArrayBufferBase
 
   v8::Local<v8::Object> wrap(v8::Isolate*,
                              v8::Local<v8::Object> creationContext) override {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return v8::Local<v8::Object>();
   }
 

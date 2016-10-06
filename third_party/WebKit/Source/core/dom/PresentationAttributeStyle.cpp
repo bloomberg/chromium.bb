@@ -104,7 +104,7 @@ class PresentationAttributeCacheCleaner {
       (100 * presentationAttributeCacheCleanTimeInSeconds) / 60;
 
   void cleanCache(TimerBase* timer) {
-    ASSERT_UNUSED(timer, timer == &m_cleanTimer);
+    DCHECK_EQ(timer, &m_cleanTimer);
     unsigned hitCount = m_hitCount;
     m_hitCount = 0;
     if (hitCount > minimumPresentationAttributeCacheHitCountPerMinute)

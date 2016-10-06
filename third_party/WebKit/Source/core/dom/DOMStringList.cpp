@@ -48,7 +48,7 @@ String DOMStringList::item(ExecutionContext* context, unsigned index) const {
           context, UseCounter::DOMStringList_Item_AttributeGetter_Location);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   return anonymousIndexedGetter(index);
@@ -66,7 +66,7 @@ bool DOMStringList::contains(ExecutionContext* context,
                         UseCounter::DOMStringList_Contains_Method_Location);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   // FIXME: Currently, all consumers of DOMStringList store fairly small lists

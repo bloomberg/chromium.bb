@@ -73,7 +73,7 @@ inline void PseudoElementData::setPseudoElement(PseudoId pseudoId,
       m_generatedFirstLetter = element;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 

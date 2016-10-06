@@ -107,7 +107,9 @@ void DOMURL::updateSearchParams(const String& queryString) {
     return;
 
   AutoReset<bool> scope(&m_isInUpdate, true);
-  ASSERT(m_searchParams->urlObject() == this);
+#if DCHECK_IS_ON()
+  DCHECK_EQ(m_searchParams->urlObject(), this);
+#endif
   m_searchParams->setInput(queryString);
 }
 

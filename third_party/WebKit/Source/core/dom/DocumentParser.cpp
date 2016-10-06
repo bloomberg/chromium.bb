@@ -48,7 +48,7 @@ DEFINE_TRACE(DocumentParser) {
 }
 
 void DocumentParser::setDecoder(std::unique_ptr<TextResourceDecoder>) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 TextResourceDecoder* DocumentParser::decoder() {

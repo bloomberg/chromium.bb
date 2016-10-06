@@ -44,7 +44,7 @@ class RawDataDocumentParser : public DocumentParser {
  private:
   void insert(const SegmentedString&) final {}
 
-  void append(const String&) final { ASSERT_NOT_REACHED(); }
+  void append(const String&) final { NOTREACHED(); }
 };
 
 }  // namespace blink

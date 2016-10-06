@@ -57,7 +57,6 @@ class SpaceSplitString {
   size_t size() const { return m_data ? m_data->size() : 0; }
   bool isNull() const { return !m_data; }
   const AtomicString& operator[](size_t i) const {
-    ASSERT_WITH_SECURITY_IMPLICATION(i < size());
     return (*m_data)[i];
   }
 
@@ -86,7 +85,6 @@ class SpaceSplitString {
     bool isUnique() const { return m_keyString.isNull(); }
     size_t size() const { return m_vector.size(); }
     const AtomicString& operator[](size_t i) {
-      ASSERT_WITH_SECURITY_IMPLICATION(i < size());
       return m_vector[i];
     }
 

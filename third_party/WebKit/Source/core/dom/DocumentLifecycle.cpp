@@ -346,7 +346,7 @@ const char* DocumentLifecycle::stateAsDebugString(const LifecycleState state) {
     DEBUG_STRING_CASE(Stopped);
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "Unknown";
 }
 #endif

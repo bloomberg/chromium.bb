@@ -70,7 +70,7 @@ DEFINE_TRACE(URLSearchParams) {
   visitor->trace(m_urlObject);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 DOMURL* URLSearchParams::urlObject() const {
   return m_urlObject;
 }

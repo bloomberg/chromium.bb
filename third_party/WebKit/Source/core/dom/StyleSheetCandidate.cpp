@@ -109,14 +109,14 @@ StyleSheetCandidate::Type StyleSheetCandidate::typeOf(Node& node) {
     if (isHTMLStyleElement(node))
       return HTMLStyle;
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return HTMLStyle;
   }
 
   if (isSVGStyleElement(node))
     return SVGStyle;
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return HTMLStyle;
 }
 
@@ -132,7 +132,7 @@ StyleSheet* StyleSheetCandidate::sheet() const {
       return toProcessingInstruction(node()).sheet();
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 

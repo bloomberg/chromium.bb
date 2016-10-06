@@ -112,8 +112,7 @@ static Document* oldDocumentDidMoveToNewDocumentWasCalledWith = 0;
 void TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(
     Document& oldDocument) {
   DCHECK(!didMoveToNewDocumentWasCalled);
-  ASSERT_UNUSED(oldDocument,
-                oldDocument == oldDocumentDidMoveToNewDocumentWasCalledWith);
+  DCHECK_EQ(oldDocument, oldDocumentDidMoveToNewDocumentWasCalledWith);
   didMoveToNewDocumentWasCalled = true;
 }
 #endif

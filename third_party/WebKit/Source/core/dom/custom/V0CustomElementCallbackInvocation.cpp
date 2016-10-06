@@ -66,7 +66,7 @@ void AttachedDetachedInvocation::dispatch(Element* element) {
       callbacks()->detached(element);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 
@@ -130,7 +130,7 @@ V0CustomElementCallbackInvocation::createInvocation(
     case V0CustomElementLifecycleCallbacks::DetachedCallback:
       return new AttachedDetachedInvocation(callbacks, which);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
   }
 }

@@ -35,7 +35,7 @@ class NameNodeList final : public LiveNodeList {
   static NameNodeList* create(ContainerNode& rootNode,
                               CollectionType type,
                               const AtomicString& name) {
-    ASSERT_UNUSED(type, type == NameNodeListType);
+    DCHECK_EQ(type, NameNodeListType);
     return new NameNodeList(rootNode, name);
   }
 

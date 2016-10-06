@@ -45,7 +45,7 @@ class ClassCollection final : public HTMLCollection {
   static ClassCollection* create(ContainerNode& rootNode,
                                  CollectionType type,
                                  const AtomicString& classNames) {
-    ASSERT_UNUSED(type, type == ClassCollectionType);
+    DCHECK_EQ(type, ClassCollectionType);
     return new ClassCollection(rootNode, classNames);
   }
 

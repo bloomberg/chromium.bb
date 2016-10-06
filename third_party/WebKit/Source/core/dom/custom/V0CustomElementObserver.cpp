@@ -53,12 +53,12 @@ void V0CustomElementObserver::notifyElementWasDestroyed(Element* element) {
 
 void V0CustomElementObserver::observe(Element* element) {
   ElementObserverMap::AddResult result = elementObservers().add(element, this);
-  ASSERT_UNUSED(result, result.isNewEntry);
+  DCHECK(result.isNewEntry);
 }
 
 void V0CustomElementObserver::unobserve(Element* element) {
   V0CustomElementObserver* observer = elementObservers().take(element);
-  ASSERT_UNUSED(observer, observer == this);
+  DCHECK_EQ(observer, this);
 }
 
 }  // namespace blink

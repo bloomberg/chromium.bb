@@ -366,7 +366,7 @@ class CORE_EXPORT Node : public EventTarget {
   };
   virtual void notifyLoadedSheetAndAllCriticalSubresources(
       LoadedSheetErrorStatus) {}
-  virtual void startLoadingDynamicSheet() { ASSERT_NOT_REACHED(); }
+  virtual void startLoadingDynamicSheet() { NOTREACHED(); }
 
   bool hasName() const {
     DCHECK(!isTextNode());

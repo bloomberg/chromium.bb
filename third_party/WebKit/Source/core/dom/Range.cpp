@@ -362,7 +362,7 @@ short Range::compareBoundaryPoints(unsigned how,
       return compareBoundaryPoints(m_start, sourceRange->m_end, exceptionState);
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -1107,7 +1107,7 @@ Node* Range::checkNodeWOffset(Node* n,
       return childBefore;
     }
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 

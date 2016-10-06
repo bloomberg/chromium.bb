@@ -938,22 +938,22 @@ inline bool isElementOfType<const Element>(const Element&) {
 // Type casting.
 template <typename T>
 inline T& toElement(Node& node) {
-  ASSERT_WITH_SECURITY_IMPLICATION(isElementOfType<const T>(node));
+  SECURITY_DCHECK(isElementOfType<const T>(node));
   return static_cast<T&>(node);
 }
 template <typename T>
 inline T* toElement(Node* node) {
-  ASSERT_WITH_SECURITY_IMPLICATION(!node || isElementOfType<const T>(*node));
+  SECURITY_DCHECK(!node || isElementOfType<const T>(*node));
   return static_cast<T*>(node);
 }
 template <typename T>
 inline const T& toElement(const Node& node) {
-  ASSERT_WITH_SECURITY_IMPLICATION(isElementOfType<const T>(node));
+  SECURITY_DCHECK(isElementOfType<const T>(node));
   return static_cast<const T&>(node);
 }
 template <typename T>
 inline const T* toElement(const Node* node) {
-  ASSERT_WITH_SECURITY_IMPLICATION(!node || isElementOfType<const T>(*node));
+  SECURITY_DCHECK(!node || isElementOfType<const T>(*node));
   return static_cast<const T*>(node);
 }
 

@@ -52,7 +52,7 @@ class CORE_EXPORT URLSearchParams final
   PassRefPtr<EncodedFormData> toEncodedFormData() const;
   const Vector<std::pair<String, String>>& params() const { return m_params; }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   DOMURL* urlObject() const;
 #endif
 

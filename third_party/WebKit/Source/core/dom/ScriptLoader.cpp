@@ -602,7 +602,7 @@ void ScriptLoader::notifyFinished(Resource* resource) {
     return;
   }
 
-  ASSERT_UNUSED(resource, resource == m_resource);
+  DCHECK_EQ(resource, m_resource);
 
   if (m_resource->errorOccurred()) {
     contextDocument->scriptRunner()->notifyScriptLoadError(this,
@@ -645,7 +645,7 @@ ScriptLoaderClient* ScriptLoader::client() const {
   if (isSVGScriptLoader(m_element))
     return toSVGScriptElement(m_element);
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 

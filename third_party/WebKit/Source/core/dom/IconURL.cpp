@@ -36,7 +36,7 @@ IconURL IconURL::defaultFavicon(const KURL& documentURL) {
   DCHECK(documentURL.protocolIsInHTTPFamily());
   KURL url;
   bool couldSetProtocol = url.setProtocol(documentURL.protocol());
-  ASSERT_UNUSED(couldSetProtocol, couldSetProtocol);
+  DCHECK(couldSetProtocol);
   url.setHost(documentURL.host());
   if (documentURL.hasPort())
     url.setPort(documentURL.port());

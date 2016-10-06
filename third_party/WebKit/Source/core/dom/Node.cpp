@@ -280,7 +280,7 @@ Node::~Node() {
 }
 
 NodeRareData* Node::rareData() const {
-  ASSERT_WITH_SECURITY_IMPLICATION(hasRareData());
+  SECURITY_DCHECK(hasRareData());
   return static_cast<NodeRareData*>(m_data.m_rareData);
 }
 
@@ -929,7 +929,7 @@ const ComputedStyle* Node::virtualEnsureComputedStyle(
 }
 
 int Node::maxCharacterOffset() const {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -1323,7 +1323,7 @@ void Node::setTextContent(const String& text) {
       // Do nothing.
       return;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 unsigned short Node::compareDocumentPosition(
@@ -1377,7 +1377,7 @@ unsigned short Node::compareDocumentPosition(
                kDocumentPositionPreceding;
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return kDocumentPositionDisconnected;
   }
 
@@ -2321,7 +2321,7 @@ void Node::setV0CustomElementState(V0CustomElementState newState) {
 
   switch (newState) {
     case V0NotCustomElement:
-      ASSERT_NOT_REACHED();  // Everything starts in this state
+      NOTREACHED();  // Everything starts in this state
       return;
 
     case V0WaitingForUpgrade:
@@ -2418,7 +2418,7 @@ unsigned Node::lengthOfContents() const {
     case Node::kDocumentTypeNode:
       return 0;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 

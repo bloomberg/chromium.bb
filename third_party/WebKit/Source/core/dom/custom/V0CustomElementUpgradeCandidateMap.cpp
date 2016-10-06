@@ -48,7 +48,7 @@ void V0CustomElementUpgradeCandidateMap::add(
 
   UpgradeCandidateMap::AddResult result =
       m_upgradeCandidates.add(element, descriptor);
-  ASSERT_UNUSED(result, result.isNewEntry);
+  DCHECK(result.isNewEntry);
 
   UnresolvedDefinitionMap::iterator it =
       m_unresolvedDefinitions.find(descriptor);
@@ -64,11 +64,11 @@ void V0CustomElementUpgradeCandidateMap::add(
 void V0CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element) {
   V0CustomElementObserver::elementWasDestroyed(element);
   UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
-  ASSERT_WITH_SECURITY_IMPLICATION(candidate != m_upgradeCandidates.end());
+  SECURITY_DCHECK(candidate != m_upgradeCandidates.end());
 
   UnresolvedDefinitionMap::iterator elements =
       m_unresolvedDefinitions.find(candidate->value);
-  ASSERT_WITH_SECURITY_IMPLICATION(elements != m_unresolvedDefinitions.end());
+  SECURITY_DCHECK(elements != m_unresolvedDefinitions.end());
   elements->value->remove(element);
   m_upgradeCandidates.remove(candidate);
 }

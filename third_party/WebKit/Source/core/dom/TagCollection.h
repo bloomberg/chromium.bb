@@ -43,7 +43,7 @@ class TagCollection : public HTMLCollection {
   static TagCollection* create(ContainerNode& rootNode,
                                CollectionType type,
                                const AtomicString& localName) {
-    ASSERT_UNUSED(type, type == TagCollectionType);
+    DCHECK_EQ(type, TagCollectionType);
     return new TagCollection(rootNode, TagCollectionType, starAtom, localName);
   }
 

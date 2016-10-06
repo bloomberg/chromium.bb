@@ -78,7 +78,7 @@ float ViewportDescription::resolveViewportLength(
   if (length.type() == DeviceHeight)
     return initialViewportSize.height();
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ViewportDescription::ValueAuto;
 }
 

@@ -102,7 +102,7 @@ inline void ShadowRootRareDataV0::didAddInsertionPoint(InsertionPoint* point) {
   else if (isHTMLContentElement(*point))
     ++m_descendantContentElementCount;
   else
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 inline void ShadowRootRareDataV0::didRemoveInsertionPoint(
@@ -115,7 +115,7 @@ inline void ShadowRootRareDataV0::didRemoveInsertionPoint(
     DCHECK_GT(m_descendantContentElementCount, 0u);
     --m_descendantContentElementCount;
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 }
 

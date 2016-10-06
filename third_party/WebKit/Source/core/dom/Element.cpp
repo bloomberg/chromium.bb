@@ -2484,7 +2484,7 @@ void Element::removeAttributeInternal(
     SynchronizationOfLazyAttribute inSynchronizationOfLazyAttribute) {
   MutableAttributeCollection attributes =
       ensureUniqueElementData().attributes();
-  ASSERT_WITH_SECURITY_IMPLICATION(index < attributes.size());
+  SECURITY_DCHECK(index < attributes.size());
 
   QualifiedName name = attributes[index].name();
   AtomicString valueBeingRemoved = attributes[index].value();

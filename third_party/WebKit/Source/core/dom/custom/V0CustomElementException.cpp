@@ -108,7 +108,7 @@ void V0CustomElementException::throwException(Reason reason,
       return;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 }  // namespace blink
