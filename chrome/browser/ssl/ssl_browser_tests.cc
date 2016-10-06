@@ -2070,7 +2070,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPSToHTTP) {
 class SSLUITestWaitForDOMNotification : public SSLUITestIgnoreCertErrors,
                                         public content::NotificationObserver {
  public:
-  SSLUITestWaitForDOMNotification() : SSLUITestIgnoreCertErrors() {}
+  SSLUITestWaitForDOMNotification()
+      : SSLUITestIgnoreCertErrors(), run_loop_(nullptr) {}
 
   ~SSLUITestWaitForDOMNotification() override { registrar_.RemoveAll(); };
 
@@ -2083,14 +2084,17 @@ class SSLUITestWaitForDOMNotification : public SSLUITestIgnoreCertErrors,
     expected_notification_ = expected_notification;
   }
 
+  void set_run_loop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
+
   // content::NotificationObserver
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
+    DCHECK(run_loop_);
     if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
       content::Details<std::string> dom_op_result(details);
       if (*dom_op_result.ptr() == expected_notification_) {
-        base::MessageLoopForUI::current()->QuitWhenIdle();
+        run_loop_->QuitClosure().Run();
       }
     }
   }
@@ -2098,6 +2102,7 @@ class SSLUITestWaitForDOMNotification : public SSLUITestIgnoreCertErrors,
  private:
   content::NotificationRegistrar registrar_;
   std::string expected_notification_;
+  base::RunLoop* run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLUITestWaitForDOMNotification);
 };
@@ -2135,12 +2140,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWaitForDOMNotification,
   https_url_replacements.SetQueryStr(https_url_query);
   https_url = https_url.ReplaceComponents(https_url_replacements);
 
+  base::RunLoop run_loop;
+
   // Load the image. It starts at |https_server_|, which redirects to an
   // embedded_test_server() HTTP URL, which redirects back to
   // |https_server_| for the final HTTPS image. Because the redirect
   // chain passes through HTTP, the page should be marked as mixed
   // content.
   set_expected_notification("\"mixed-image-loaded\"");
+  set_run_loop(&run_loop);
   ASSERT_TRUE(content::ExecuteScript(
       tab,
       "var loaded = function () {"
@@ -2153,7 +2161,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWaitForDOMNotification,
           https_url.spec() + "';"
                              "document.body.appendChild(img);"));
 
-  content::RunMessageLoop();
+  run_loop.Run();
   CheckAuthenticatedState(tab, AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
