@@ -415,15 +415,31 @@ void DrawingBuffer::gpuMailboxReleased(const gpu::Mailbox& mailbox,
     return;
   }
 
+  // Creation of image backed mailboxes is very expensive, so be less
+  // aggressive about pruning them. Pruning is done in FIFO order.
+  size_t cacheLimit = 1;
+  if (shouldUseChromiumImage())
+    cacheLimit = 4;
+  while (m_recycledMailboxQueue.size() >= cacheLimit) {
+    RefPtr<RecycledMailbox> recycled = m_recycledMailboxQueue.takeLast();
+    deleteMailbox(recycled->mailbox, recycled->syncToken);
+  }
+
+  RefPtr<MailboxInfo> mailboxInfo;
   for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
-    RefPtr<MailboxInfo> mailboxInfo = m_textureMailboxes[i];
-    if (mailboxInfo->mailbox == mailbox) {
-      m_recycledMailboxQueue.prepend(
-          adoptRef(new RecycledMailbox(mailbox, syncToken)));
-      return;
+    if (m_textureMailboxes[i]->mailbox == mailbox) {
+      mailboxInfo = m_textureMailboxes[i];
+      break;
     }
   }
-  ASSERT_NOT_REACHED();
+  DCHECK(mailboxInfo);
+  if (mailboxInfo->size != m_size) {
+    deleteMailbox(mailbox, syncToken);
+    return;
+  }
+
+  m_recycledMailboxQueue.prepend(
+      adoptRef(new RecycledMailbox(mailbox, syncToken)));
 }
 
 void DrawingBuffer::softwareMailboxReleased(
@@ -570,19 +586,7 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::takeRecycledMailbox() {
   if (m_recycledMailboxQueue.isEmpty())
     return nullptr;
 
-  // Creation of image backed mailboxes is very expensive, so be less
-  // aggressive about pruning them.
-  size_t cacheLimit = 1;
-  if (shouldUseChromiumImage())
-    cacheLimit = 4;
-
-  RefPtr<RecycledMailbox> recycled;
-  while (m_recycledMailboxQueue.size() > cacheLimit) {
-    recycled = m_recycledMailboxQueue.takeLast();
-    deleteMailbox(recycled->mailbox, recycled->syncToken);
-  }
-  recycled = m_recycledMailboxQueue.takeLast();
-
+  RefPtr<RecycledMailbox> recycled = m_recycledMailboxQueue.takeLast();
   if (recycled->syncToken.HasData())
     m_gl->WaitSyncTokenCHROMIUM(recycled->syncToken.GetData());
 
@@ -593,13 +597,8 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::takeRecycledMailbox() {
       break;
     }
   }
-  ASSERT(mailboxInfo);
-
-  if (mailboxInfo->size != m_size) {
-    resizeTextureMemory(&mailboxInfo->textureInfo, m_size);
-    mailboxInfo->size = m_size;
-  }
-
+  DCHECK(mailboxInfo);
+  DCHECK(mailboxInfo->size == m_size);
   return mailboxInfo.release();
 }
 
@@ -805,7 +804,7 @@ void DrawingBuffer::beginDestruction() {
     m_gl->DeleteTextures(1, &m_colorBuffer.textureId);
   }
 
-  setSize(IntSize());
+  m_size = IntSize();
 
   m_colorBuffer = TextureInfo();
   m_frontColorBuffer = FrontBufferInfo();
@@ -829,64 +828,55 @@ GLuint DrawingBuffer::createColorTexture(const TextureParameters& parameters) {
   return offscreenColorTexture;
 }
 
-bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size) {
-  DCHECK(wantExplicitResolve());
-  m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
-  m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_multisampleRenderbuffer);
-  m_gl->RenderbufferStorageMultisampleCHROMIUM(
-      GL_RENDERBUFFER, m_sampleCount, getMultisampledRenderbufferFormat(),
-      size.width(), size.height());
-
-  if (m_gl->GetError() == GL_OUT_OF_MEMORY)
-    return false;
-
-  m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                GL_RENDERBUFFER, m_multisampleRenderbuffer);
-
-  return true;
-}
-
-void DrawingBuffer::resizeDepthStencil(const IntSize& size) {
-  m_gl->BindFramebuffer(GL_FRAMEBUFFER,
-                        m_multisampleFBO ? m_multisampleFBO : m_fbo);
-  if (!m_depthStencilBuffer)
-    m_gl->GenRenderbuffers(1, &m_depthStencilBuffer);
-  m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
-  if (m_antiAliasingMode == MSAAImplicitResolve)
-    m_gl->RenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount,
-                                            GL_DEPTH24_STENCIL8_OES,
-                                            size.width(), size.height());
-  else if (m_antiAliasingMode == MSAAExplicitResolve)
-    m_gl->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount,
-                                                 GL_DEPTH24_STENCIL8_OES,
-                                                 size.width(), size.height());
-  else
-    m_gl->RenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES,
-                              size.width(), size.height());
-  // For ES 2.0 contexts DEPTH_STENCIL is not available natively, so we emulate
-  // it at the command buffer level for WebGL contexts.
-  m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-                                GL_RENDERBUFFER, m_depthStencilBuffer);
-  m_gl->BindRenderbuffer(GL_RENDERBUFFER, 0);
-}
-
 bool DrawingBuffer::resizeDefaultFramebuffer(const IntSize& size) {
   // Resize or create m_colorBuffer.
   if (m_colorBuffer.textureId) {
-    resizeTextureMemory(&m_colorBuffer, size);
-  } else {
-    m_colorBuffer = createTextureAndAllocateMemory(size);
+    deleteChromiumImageForTexture(&m_colorBuffer);
+    m_gl->DeleteTextures(1, &m_colorBuffer.textureId);
   }
+  m_colorBuffer = createTextureAndAllocateMemory(size);
 
   attachColorBufferToReadFramebuffer();
 
   if (wantExplicitResolve()) {
-    if (!resizeMultisampleFramebuffer(size))
+    m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
+    m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_multisampleRenderbuffer);
+    m_gl->RenderbufferStorageMultisampleCHROMIUM(
+        GL_RENDERBUFFER, m_sampleCount, getMultisampledRenderbufferFormat(),
+        size.width(), size.height());
+
+    if (m_gl->GetError() == GL_OUT_OF_MEMORY)
       return false;
+
+    m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                  GL_RENDERBUFFER, m_multisampleRenderbuffer);
   }
 
-  if (wantDepthOrStencil())
-    resizeDepthStencil(size);
+  if (wantDepthOrStencil()) {
+    m_gl->BindFramebuffer(GL_FRAMEBUFFER,
+                          m_multisampleFBO ? m_multisampleFBO : m_fbo);
+    if (!m_depthStencilBuffer)
+      m_gl->GenRenderbuffers(1, &m_depthStencilBuffer);
+    m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
+    if (m_antiAliasingMode == MSAAImplicitResolve) {
+      m_gl->RenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount,
+                                              GL_DEPTH24_STENCIL8_OES,
+                                              size.width(), size.height());
+    } else if (m_antiAliasingMode == MSAAExplicitResolve) {
+      m_gl->RenderbufferStorageMultisampleCHROMIUM(
+          GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(),
+          size.height());
+    } else {
+      m_gl->RenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES,
+                                size.width(), size.height());
+    }
+    // For ES 2.0 contexts DEPTH_STENCIL is not available natively, so we
+    // emulate
+    // it at the command buffer level for WebGL contexts.
+    m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                                  GL_RENDERBUFFER, m_depthStencilBuffer);
+    m_gl->BindRenderbuffer(GL_RENDERBUFFER, 0);
+  }
 
   if (wantExplicitResolve()) {
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
@@ -910,13 +900,6 @@ void DrawingBuffer::clearFramebuffers(GLbitfield clearMask) {
   m_gl->BindFramebuffer(GL_FRAMEBUFFER,
                         m_multisampleFBO ? m_multisampleFBO : m_fbo);
   m_gl->Clear(clearMask);
-}
-
-void DrawingBuffer::setSize(const IntSize& size) {
-  if (m_size == size)
-    return;
-
-  m_size = size;
 }
 
 IntSize DrawingBuffer::adjustSize(const IntSize& desiredSize,
@@ -950,7 +933,10 @@ bool DrawingBuffer::reset(const IntSize& newSize) {
       break;
     } while (!adjustedSize.isEmpty());
 
-    setSize(adjustedSize);
+    m_size = adjustedSize;
+    // Free all mailboxes, because they are now of the wrong size. Only the
+    // first call in this loop has any effect.
+    freeRecycledMailboxes();
 
     if (adjustedSize.isEmpty())
       return false;
@@ -1248,42 +1234,7 @@ DrawingBuffer::TextureInfo DrawingBuffer::createDefaultTextureAndAllocateMemory(
   allocateConditionallyImmutableTexture(
       parameters.target, parameters.creationInternalColorFormat, size.width(),
       size.height(), 0, parameters.colorFormat, GL_UNSIGNED_BYTE);
-  info.immutable = m_storageTextureSupported;
   return info;
-}
-
-void DrawingBuffer::resizeTextureMemory(TextureInfo* info,
-                                        const IntSize& size) {
-  ASSERT(info->textureId);
-  if (!shouldUseChromiumImage()) {
-    if (info->immutable) {
-      DCHECK(m_storageTextureSupported);
-      m_gl->DeleteTextures(1, &info->textureId);
-      info->textureId = createColorTexture(info->parameters);
-    }
-    m_gl->BindTexture(info->parameters.target, info->textureId);
-    allocateConditionallyImmutableTexture(
-        info->parameters.target, info->parameters.creationInternalColorFormat,
-        size.width(), size.height(), 0, info->parameters.colorFormat,
-        GL_UNSIGNED_BYTE);
-    info->immutable = m_storageTextureSupported;
-    return;
-  }
-
-  DCHECK(!info->immutable);
-  deleteChromiumImageForTexture(info);
-  info->imageId = m_gl->CreateGpuMemoryBufferImageCHROMIUM(
-      size.width(), size.height(), info->parameters.creationInternalColorFormat,
-      GC3D_SCANOUT_CHROMIUM);
-  if (info->imageId) {
-    m_gl->BindTexture(info->parameters.target, info->textureId);
-    m_gl->BindTexImage2DCHROMIUM(info->parameters.target, info->imageId);
-    clearChromiumImageAlpha(*info);
-  } else {
-    // At this point, the texture still exists, but has no allocated
-    // storage. This is intentional, and mimics the behavior of a texImage2D
-    // failure.
-  }
 }
 
 void DrawingBuffer::attachColorBufferToReadFramebuffer() {

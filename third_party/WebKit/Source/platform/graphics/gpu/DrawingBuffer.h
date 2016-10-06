@@ -323,7 +323,6 @@ class PLATFORM_EXPORT DrawingBuffer
     DISALLOW_NEW();
     GLuint textureId = 0;
     GLuint imageId = 0;
-    bool immutable = false;
     TextureParameters parameters;
   };
 
@@ -362,10 +361,6 @@ class PLATFORM_EXPORT DrawingBuffer
   // failure, or the newly created texture id on success. The caller takes
   // ownership of the newly created texture.
   GLuint createColorTexture(const TextureParameters&);
-
-  // Create the depth/stencil and multisample buffers, if needed.
-  bool resizeMultisampleFramebuffer(const IntSize&);
-  void resizeDepthStencil(const IntSize&);
 
   // Attempts to allocator storage for, or resize all buffers. Returns whether
   // the operation was successful.
@@ -423,8 +418,6 @@ class PLATFORM_EXPORT DrawingBuffer
 
   // Creates and allocates space for a default texture.
   TextureInfo createDefaultTextureAndAllocateMemory(const IntSize&);
-
-  void resizeTextureMemory(TextureInfo*, const IntSize&);
 
   // Attaches |m_colorBuffer| to |m_fbo|, which is always the source for read
   // operations.

@@ -326,6 +326,8 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId2)).Times(1);
   EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId0)).Times(1);
   EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId0)).Times(1);
+  EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId1)).Times(1);
+  EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId1)).Times(1);
   // Resize to 100x50.
   m_drawingBuffer->reset(alternateSize);
   releaseCallback->Run(gpu::SyncToken(), false /* lostResource */);
@@ -333,8 +335,6 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
 
   GLuint m_imageId3 = m_gl->nextImageIdToBeCreated();
   EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId3)).Times(1);
-  EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId1)).Times(1);
-  EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId1)).Times(1);
   // Produce a mailbox at this size.
   m_drawingBuffer->markContentsChanged();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox,
@@ -347,6 +347,8 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId4)).Times(1);
   EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId2)).Times(1);
   EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId2)).Times(1);
+  EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId3)).Times(1);
+  EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId3)).Times(1);
   // Reset to initial size.
   m_drawingBuffer->reset(initialSize);
   releaseCallback->Run(gpu::SyncToken(), false /* lostResource */);
@@ -354,8 +356,6 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
 
   GLuint m_imageId5 = m_gl->nextImageIdToBeCreated();
   EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId5)).Times(1);
-  EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId3)).Times(1);
-  EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId3)).Times(1);
   // Prepare another mailbox and verify that it's the correct size.
   m_drawingBuffer->markContentsChanged();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox,
