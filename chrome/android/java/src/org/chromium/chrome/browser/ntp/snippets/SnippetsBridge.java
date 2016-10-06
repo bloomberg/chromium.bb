@@ -114,8 +114,8 @@ public class SnippetsBridge implements SuggestionsSource {
     @Override
     public void dismissSuggestion(SnippetArticle suggestion) {
         assert mNativeSnippetsBridge != 0;
-        nativeDismissSuggestion(
-                mNativeSnippetsBridge, suggestion.mCategory, suggestion.mIdWithinCategory);
+        nativeDismissSuggestion(mNativeSnippetsBridge, suggestion.mUrl, suggestion.mGlobalPosition,
+                suggestion.mCategory, suggestion.mPosition, suggestion.mIdWithinCategory);
     }
 
     @Override
@@ -135,25 +135,25 @@ public class SnippetsBridge implements SuggestionsSource {
         nativeOnPageShown(mNativeSnippetsBridge, categories, suggestionsPerCategory);
     }
 
-    public void onSuggestionShown(int globalPosition, int category, int categoryPosition,
-            long publishTimestampMs, float score) {
+    public void onSuggestionShown(SnippetArticle suggestion) {
         assert mNativeSnippetsBridge != 0;
-        nativeOnSuggestionShown(mNativeSnippetsBridge, globalPosition, category, categoryPosition,
-                publishTimestampMs, score);
+        nativeOnSuggestionShown(mNativeSnippetsBridge, suggestion.mGlobalPosition,
+                suggestion.mCategory, suggestion.mPosition,
+                suggestion.mPublishTimestampMilliseconds, suggestion.mScore);
     }
 
-    public void onSuggestionOpened(int globalPosition, int category, int categoryPosition,
-            long publishTimestampMs, float score, int windowOpenDisposition) {
+    public void onSuggestionOpened(SnippetArticle suggestion, int windowOpenDisposition) {
         assert mNativeSnippetsBridge != 0;
-        nativeOnSuggestionOpened(mNativeSnippetsBridge, globalPosition, category, categoryPosition,
-                publishTimestampMs, score, windowOpenDisposition);
+        nativeOnSuggestionOpened(mNativeSnippetsBridge, suggestion.mGlobalPosition,
+                suggestion.mCategory, suggestion.mPosition,
+                suggestion.mPublishTimestampMilliseconds, suggestion.mScore, windowOpenDisposition);
     }
 
-    public void onSuggestionMenuOpened(int globalPosition, int category, int categoryPosition,
-            long publishTimestampMs, float score) {
+    public void onSuggestionMenuOpened(SnippetArticle suggestion) {
         assert mNativeSnippetsBridge != 0;
-        nativeOnSuggestionMenuOpened(mNativeSnippetsBridge, globalPosition, category,
-                categoryPosition, publishTimestampMs, score);
+        nativeOnSuggestionMenuOpened(mNativeSnippetsBridge, suggestion.mGlobalPosition,
+                suggestion.mCategory, suggestion.mPosition,
+                suggestion.mPublishTimestampMilliseconds, suggestion.mScore);
     }
 
     public void onMoreButtonShown(int category, int position) {
@@ -237,8 +237,8 @@ public class SnippetsBridge implements SuggestionsSource {
             long nativeNTPSnippetsBridge, int category);
     private native void nativeFetchSuggestionImage(long nativeNTPSnippetsBridge, int category,
             String idWithinCategory, Callback<Bitmap> callback);
-    private native void nativeDismissSuggestion(
-            long nativeNTPSnippetsBridge, int category, String idWithinCategory);
+    private native void nativeDismissSuggestion(long nativeNTPSnippetsBridge, String url,
+            int globalPosition, int category, int categoryPosition, String idWithinCategory);
     private native void nativeDismissCategory(long nativeNTPSnippetsBridge, int category);
     private native void nativeGetURLVisited(
             long nativeNTPSnippetsBridge, Callback<Boolean> callback, String url);

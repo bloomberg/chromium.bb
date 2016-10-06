@@ -61,7 +61,10 @@ class NTPSnippetsBridge
   void DismissSuggestion(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jurl,
+      jint global_position,
       jint category,
+      jint category_position,
       const base::android::JavaParamRef<jstring>& id_within_category);
 
   void DismissCategory(JNIEnv* env,

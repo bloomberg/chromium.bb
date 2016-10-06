@@ -36,6 +36,10 @@ const char kHistogramMenuOpenedAge[] =
     "NewTabPage.ContentSuggestions.MenuOpenedAge";
 const char kHistogramMenuOpenedScore[] =
     "NewTabPage.ContentSuggestions.MenuOpenedScore";
+const char kHistogramDismissedUnvisited[] =
+    "NewTabPage.ContentSuggestions.DismissedUnvisited";
+const char kHistogramDismissedVisited[] =
+    "NewTabPage.ContentSuggestions.DismissedVisited";
 const char kHistogramVisitDuration[] =
     "NewTabPage.ContentSuggestions.VisitDuration";
 const char kHistogramMoreButtonShown[] =
@@ -225,6 +229,25 @@ void OnSuggestionMenuOpened(int global_position,
   LogCategoryHistogramAge(kHistogramMenuOpenedAge, category, age);
 
   LogCategoryHistogramScore(kHistogramMenuOpenedScore, category, score);
+}
+
+void OnSuggestionDismissed(int global_position,
+                           Category category,
+                           int category_position,
+                           bool visited) {
+  if (visited) {
+    UMA_HISTOGRAM_ENUMERATION(kHistogramDismissedVisited, global_position,
+                              kMaxSuggestionsTotal);
+    LogCategoryHistogramEnumeration(kHistogramDismissedVisited, category,
+                                    category_position,
+                                    kMaxSuggestionsPerCategory);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kHistogramDismissedUnvisited, global_position,
+                              kMaxSuggestionsTotal);
+    LogCategoryHistogramEnumeration(kHistogramDismissedUnvisited, category,
+                                    category_position,
+                                    kMaxSuggestionsPerCategory);
+  }
 }
 
 void OnSuggestionTargetVisited(Category category, base::TimeDelta visit_time) {

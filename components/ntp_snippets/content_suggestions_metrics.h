@@ -38,6 +38,11 @@ void OnSuggestionMenuOpened(int global_position,
                             base::Time publish_date,
                             float score);
 
+void OnSuggestionDismissed(int global_position,
+                           Category category,
+                           int category_position,
+                           bool visited);
+
 void OnSuggestionTargetVisited(Category category, base::TimeDelta visit_time);
 
 // Should only be called once per NTP for each "more" button.

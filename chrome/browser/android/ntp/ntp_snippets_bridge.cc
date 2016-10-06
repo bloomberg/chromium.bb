@@ -47,7 +47,7 @@ void URLVisitedHistoryRequestCallback(
     base::android::ScopedJavaGlobalRef<jobject> callback,
     bool success,
     const history::URLRow& row,
-    const history::VisitVector& visitVector) {
+    const history::VisitVector& visit_vector) {
   bool visited = success && row.visit_count() != 0;
   base::android::RunCallbackAndroid(callback, visited);
 }
@@ -231,11 +231,27 @@ void NTPSnippetsBridge::FetchSuggestionImage(
 void NTPSnippetsBridge::DismissSuggestion(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jurl,
+    jint global_position,
     jint category,
+    jint category_position,
     const JavaParamRef<jstring>& id_within_category) {
   content_suggestions_service_->DismissSuggestion(
       ContentSuggestion::ID(CategoryFromIDValue(category),
                             ConvertJavaStringToUTF8(env, id_within_category)));
+
+  history_service_->QueryURL(
+      GURL(ConvertJavaStringToUTF8(env, jurl)), /*want_visits=*/false,
+      base::Bind(
+          [](int global_position, Category category, int category_position,
+             bool success, const history::URLRow& row,
+             const history::VisitVector& visit_vector) {
+            bool visited = success && row.visit_count() != 0;
+            ntp_snippets::metrics::OnSuggestionDismissed(
+                global_position, category, category_position, visited);
+          },
+          global_position, CategoryFromIDValue(category), category_position),
+      &tracker_);
 }
 
 void NTPSnippetsBridge::DismissCategory(JNIEnv* env,
@@ -251,7 +267,7 @@ void NTPSnippetsBridge::GetURLVisited(JNIEnv* env,
   base::android::ScopedJavaGlobalRef<jobject> callback(jcallback);
 
   history_service_->QueryURL(
-      GURL(ConvertJavaStringToUTF8(env, jurl)), false,
+      GURL(ConvertJavaStringToUTF8(env, jurl)), /*want_visits=*/false,
       base::Bind(&URLVisitedHistoryRequestCallback, callback), &tracker_);
 }
 

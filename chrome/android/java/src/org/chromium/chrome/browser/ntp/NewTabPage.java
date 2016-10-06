@@ -308,14 +308,12 @@ public class NewTabPage
 
         @Override
         public void trackSnippetImpression(SnippetArticle article) {
-            mSnippetsBridge.onSuggestionShown(article.mGlobalPosition, article.mCategory,
-                    article.mPosition, article.mPublishTimestampMilliseconds, article.mScore);
+            mSnippetsBridge.onSuggestionShown(article);
         }
 
         @Override
         public void trackSnippetMenuOpened(SnippetArticle article) {
-            mSnippetsBridge.onSuggestionMenuOpened(article.mGlobalPosition, article.mCategory,
-                    article.mPosition, article.mPublishTimestampMilliseconds, article.mScore);
+            mSnippetsBridge.onSuggestionMenuOpened(article);
         }
 
         @Override
@@ -330,9 +328,7 @@ public class NewTabPage
 
         @Override
         public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
-            mSnippetsBridge.onSuggestionOpened(article.mGlobalPosition, article.mCategory,
-                    article.mPosition, article.mPublishTimestampMilliseconds, article.mScore,
-                    windowOpenDisposition);
+            mSnippetsBridge.onSuggestionOpened(article, windowOpenDisposition);
             NewTabPageUma.monitorContentSuggestionVisit(mTab, article.mCategory);
             LoadUrlParams loadUrlParams =
                     new LoadUrlParams(article.mUrl, PageTransition.AUTO_BOOKMARK);
