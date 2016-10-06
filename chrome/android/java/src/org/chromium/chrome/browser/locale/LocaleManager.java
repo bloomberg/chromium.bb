@@ -89,8 +89,6 @@ public class LocaleManager {
         }
         boolean inSpecialLocale = ChromeFeatureList.isEnabled("SpecialLocale");
         inSpecialLocale = isReallyInSpecialLocale(inSpecialLocale);
-        ContextUtils.getAppSharedPreferences().edit()
-                .putBoolean(PREF_WAS_IN_SPECIAL_LOCALE, inSpecialLocale).apply();
         return inSpecialLocale;
     }
 
@@ -152,6 +150,7 @@ public class LocaleManager {
             addSpecialSearchEngines();
             overrideDefaultSearchEngine();
         }
+        preferences.edit().putBoolean(PREF_WAS_IN_SPECIAL_LOCALE, isInSpecialLocale).apply();
     }
 
     /**
@@ -168,8 +167,6 @@ public class LocaleManager {
         }
 
         new SearchEnginePromoDialog(context, this).show();
-
-        preferences.edit().putBoolean(PREF_PROMO_SHOWN, true).apply();
         return true;
     }
 

@@ -13547,6 +13547,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SearchEngine_ManualChange">
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    Recorded when the user has manually switched default search engine, which
+    disables search engine auto switch feature in special locale. This is
+    recorded on Android for every locale, but is currently only meaningful for
+    studying special locales.
+  </description>
+</action>
+
 <action name="SearchWithRLZ">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
