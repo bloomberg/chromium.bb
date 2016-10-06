@@ -5,7 +5,7 @@
 import("//build/config/chrome_build.gni")
 
 declare_args() {
-  enable_linux_installer = is_desktop_linux && is_chrome_branded
+  enable_linux_installer = is_linux && is_chrome_branded
 }
 
 # Meta-target that forwards to the installer of the correct type (if any).
