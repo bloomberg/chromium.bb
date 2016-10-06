@@ -83,6 +83,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         if options.dry_run:
             return
+        # NOTE(qyearsley): If this is changed to stage all new files with git,
+        # e.g. if update_scm is not False, then update_w3c_test_expectations.py
+        # should be changed to not call git add --all.
         self.rebaseline(options, test_prefix_list, update_scm=False)
 
     def _filter_existing(self, test_prefix_list):
