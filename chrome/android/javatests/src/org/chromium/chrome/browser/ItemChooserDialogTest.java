@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -314,6 +315,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @LargeTest
+    @DisabledTest(message = "crbug.com/653618")
     public void testAddOrUpdateItemAndRemoveItemFromList() throws InterruptedException {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
@@ -391,6 +393,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @LargeTest
+    @DisabledTest(message = "crbug.com/653618")
     public void testAddItemWithSameNameToListAndRemoveItemFromList() throws InterruptedException {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
