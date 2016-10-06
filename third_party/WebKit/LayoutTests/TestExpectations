@@ -217,10 +217,12 @@ crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.ht
 
 crbug.com/640031 fast/canvas/canvas-arc-circumference-fill.html [ NeedsManualRebaseline ]
 crbug.com/640031 virtual/display_list_2d_canvas/fast/canvas/canvas-arc-circumference-fill.html [ NeedsManualRebaseline ]
+crbug.com/640031 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ NeedsManualRebaseline ]
 crbug.com/640031 fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsManualRebaseline ]
-crbug.com/640031 virtual/display_list_2d_canvas/fast/canvas/canvas-arc-circumference.html [ NeedsManualRebaseline ]
 crbug.com/640031 virtual/display_list_2d_canvas/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsManualRebaseline ]
 crbug.com/640031 fast/canvas/canvas-arc-circumference.html [ NeedsManualRebaseline ]
+crbug.com/640031 virtual/display_list_2d_canvas/fast/canvas/canvas-arc-circumference.html [ NeedsManualRebaseline ]
+crbug.com/640031 virtual/gpu/fast/canvas/canvas-arc-circumference.html [ NeedsManualRebaseline ]
 
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/492664 [ Linux ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ Failure ]
