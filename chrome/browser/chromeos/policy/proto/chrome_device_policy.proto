@@ -287,6 +287,27 @@ message KioskAppInfoProto {
   optional string update_url = 2;
 }
 
+// Describes which Android application is to be launched.
+message AndroidKioskAppInfoProto {
+  // Package name (must be present).
+  // In the event this is the only field that is specified, runtime may use
+  // PackageManager.getLaunchIntentForPackage() to start the app. See
+  // https://developer.android.com/reference/android/content/pm/PackageManager.html
+  optional string package_name = 1;
+
+  // Class name (optional). If present, class name is to be combined with
+  // package name to form a ComponentName. See
+  // https://developer.android.com/reference/android/content/ComponentName.html
+  optional string class_name = 2;
+
+  // Action (optional). The third parameter required for creating an Intent.
+  // If omitted, runtime may choose a reasonable default action
+  // (e.g. android.intent.action.MAIN).
+  // If package and action are specified, but not the class name, runtime may
+  // use PackageManager.queryIntentActivity() to find out the class name.
+  optional string action = 3;
+}
+
 // Describes a single device-local account.
 message DeviceLocalAccountInfoProto {
   // Deprecated: Account identifier for a public session device-local account.
@@ -306,8 +327,12 @@ message DeviceLocalAccountInfoProto {
   enum AccountType {
     // A login-less, policy-configured browsing session.
     ACCOUNT_TYPE_PUBLIC_SESSION = 0;
-    // An account that serves as a container for a single full-screen app.
+    // An account that serves as a container for a single full-screen
+    // Chrome app.
     ACCOUNT_TYPE_KIOSK_APP = 1;
+    // An account that serves as a container for a single full-screen
+    // Android app.
+    ACCOUNT_TYPE_KIOSK_ANDROID_APP = 2;
   };
 
   // The account type.
@@ -315,6 +340,9 @@ message DeviceLocalAccountInfoProto {
 
   // Kiosk App parameters, relevant if |type| is ACCOUNT_TYPE_KIOSK_APP.
   optional KioskAppInfoProto kiosk_app = 4;
+
+  // Kiosk App parameters, relevant if |type| is ACCOUNT_TYPE_KIOSK_ANDROID_APP
+  optional AndroidKioskAppInfoProto android_kiosk_app = 5;
 }
 
 message DeviceLocalAccountsProto {
