@@ -1,8 +1,5 @@
 -ActivityLogApiTest.TriggerEvent
 -BrowserActionApiTest.BrowserActionPopupWithIframe
--BrowserTest.ClearPendingOnFailUnlessNTP
--ChromeRenderProcessHostTest.DevToolsOnSelfInOwnProcess
--ChromeRenderProcessHostTest.DevToolsOnSelfInOwnProcessPPT
 -ChromeServiceWorker*
 -ContinueWhereILeftOffTest.PostWithPassword
 -ContinueWhereILeftOffTest.PostWithPasswordBrowserClose
@@ -63,10 +60,6 @@
 -WebNavigationApiTest.UserAction
 -WebViewTests/WebViewPluginTest.TestLoadPluginInternalResource/0
 -WebViewTests/WebViewPluginTest.TestLoadPluginInternalResource/1
--WebViewTests/WebViewTest.AcceptTouchEvents/0
--WebViewTests/WebViewTest.NestedGuestContainerBounds/0
--WebViewTests/WebViewTest.Shim_TestChromeExtensionRelativePath/*
--WebViewTests/WebViewTest.Shim_TestChromeExtensionURL/*
 -WebViewTests/WebViewTest.Shim_TestDeclarativeWebRequestAPI/*
 -WebViewTests/WebViewTest.Shim_TestDeclarativeWebRequestAPISendMessage/*
 -WebViewTests/WebViewTest.Shim_TestInlineScriptFromAccessibleResources/*
@@ -89,10 +82,6 @@
 # https://crbug.com/647712: Nested URL blocking needs to work with PlzNavigate
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionBlocked
--WebViewGuestTouchFocusTest.TouchFocusesBrowserPluginInEmbedder
--WebViewScrollGuestContent/WebViewScrollGuestContentTest.ScrollGuestContent/0
--WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble*
--WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
 
 # Fail in Debug.
 -BookmarkBubbleSignInDelegateTest.*
