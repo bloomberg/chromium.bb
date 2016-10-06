@@ -1220,9 +1220,14 @@ public class BidirectionalStreamTest extends CronetTestBase {
         mTestFramework.mCronetEngine.removeRequestFinishedListener(requestFinishedListener);
     }
 
+    /*
+    Disabled temporarily due to http://crbug.com/653654
+
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
+    */
+    @DisabledTest
     public void testFailures() throws Exception {
         throwOrCancel(FailureType.CANCEL_SYNC, ResponseStep.ON_STREAM_READY, false);
         throwOrCancel(FailureType.CANCEL_ASYNC, ResponseStep.ON_STREAM_READY, false);
