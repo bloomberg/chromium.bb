@@ -61,6 +61,10 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
 
   bool IsAudioPlaying() const;
 
+  TaskQueueThrottler::TimeBudgetPool* background_time_budget_pool() const {
+    return background_time_budget_pool_;
+  }
+
  private:
   void setAllowVirtualTimeToAdvance(bool allow_virtual_time_to_advance);
   void ApplyVirtualTimePolicy();
@@ -77,6 +81,8 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool have_seen_loading_task_;
   bool virtual_time_;
   bool is_audio_playing_;
+  TaskQueueThrottler::TimeBudgetPool*
+      background_time_budget_pool_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
 };
