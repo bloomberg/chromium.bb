@@ -380,7 +380,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * @return Whether sync promo should be displayed.
      */
     public boolean shouldDisplaySyncPromo() {
-        if (SigninManager.get(mContext).isSigninDisabledByPolicy()) {
+        if (!SigninManager.get(mContext).isSignInAllowed()) {
             return false;
         }
 

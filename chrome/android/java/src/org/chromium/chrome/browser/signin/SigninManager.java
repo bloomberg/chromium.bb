@@ -237,7 +237,9 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     public boolean isSignInAllowed() {
         return mSigninAllowedByPolicy && !mFirstRunCheckIsPending && mSignInState == null
                 && ChromeSigninController.get(mContext).getSignedInUser() == null
-                && !ApiCompatibilityUtils.isDemoUser(mContext);
+                && !ApiCompatibilityUtils.isDemoUser(mContext)
+                && ExternalAuthUtils.getInstance().canUseGooglePlayServices(mContext,
+                        new UserRecoverableErrorHandler.Silent());
     }
 
     /**
