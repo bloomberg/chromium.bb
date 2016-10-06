@@ -62,6 +62,8 @@ source_set("browser") {
     "bookmarks/bookmarks_utils.h",
     "bookmarks/startup_task_runner_service_factory.cc",
     "bookmarks/startup_task_runner_service_factory.h",
+    "browser_about_rewriter.cc",
+    "browser_about_rewriter.h",
     "browser_state/bookmark_model_loaded_observer.cc",
     "browser_state/bookmark_model_loaded_observer.h",
     "browser_state/browser_state_info_cache.cc",
@@ -767,16 +769,7 @@ source_set("browser") {
 # without breaking downstream repository when rolling the CL. Will be
 # removed once downstream code no longer use it.
 source_set("browser_about_rewriter") {
-  sources = [
-    "browser_about_rewriter.cc",
-    "browser_about_rewriter.h",
-  ]
-  deps = [
-    ":browser",
-    "//base",
-    "//components/url_formatter",
-    "//url",
-  ]
+  sources = []
 }
 
 # This is a separate target so that the 'defines' does not leak to the
