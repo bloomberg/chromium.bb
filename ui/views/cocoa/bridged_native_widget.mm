@@ -312,19 +312,6 @@ NSComparisonResult SubviewSorter(NSViewComparatorValue lhs,
   return NSOrderedSame;
 }
 
-#if DCHECK_IS_ON()
-// Counts windows managed by a BridgedNativeWidget instance in the
-// |child_windows| array ignoring the windows added by AppKit.
-NSUInteger CountBridgedWindows(NSArray* child_windows) {
-  NSUInteger count = 0;
-  for (NSWindow* child in child_windows)
-    if ([[child delegate] isKindOfClass:[ViewsNSWindowDelegate class]])
-      ++count;
-
-  return count;
-}
-#endif
-
 }  // namespace
 
 namespace views {
@@ -1203,21 +1190,19 @@ void BridgedNativeWidget::NotifyVisibilityChangeDown() {
     // The orderOut calls above should result in a call to OnVisibilityChanged()
     // in each child. There, children will remove themselves from the NSWindow
     // childWindow list as well as propagate NotifyVisibilityChangeDown() calls
-    // to any children of their own. However this is only true for windows
-    // managed by the BridgedNativeWidget i.e. windows which have
-    // ViewsNSWindowDelegate as the delegate.
-    DCHECK_EQ(0u, CountBridgedWindows([window_ childWindows]));
+    // to any children of their own.
+    DCHECK_EQ(0u, [[window_ childWindows] count]);
     return;
   }
 
-  NSUInteger visible_bridged_children = 0;  // For a DCHECK below.
+  NSUInteger visible_children = 0;  // For a DCHECK below.
   NSInteger parent_window_number = [window_ windowNumber];
   for (BridgedNativeWidget* child: child_windows_) {
     // Note: order the child windows on top, regardless of whether or not they
     // are currently visible. They probably aren't, since the parent was hidden
     // prior to this, but they could have been made visible in other ways.
     if (child->wants_to_be_visible_) {
-      ++visible_bridged_children;
+      ++visible_children;
       // Here -[NSWindow orderWindow:relativeTo:] is used to put the window on
       // screen. However, that by itself is insufficient to guarantee a correct
       // z-order relationship. If this function is being called from a z-order
@@ -1232,8 +1217,7 @@ void BridgedNativeWidget::NotifyVisibilityChangeDown() {
     }
     CHECK_EQ(child_count, child_windows_.size());
   }
-  DCHECK_EQ(visible_bridged_children,
-            CountBridgedWindows([window_ childWindows]));
+  DCHECK_EQ(visible_children, [[window_ childWindows] count]);
 }
 
 gfx::Size BridgedNativeWidget::GetClientAreaSize() const {
