@@ -150,26 +150,46 @@ void BlobDispatcherHost::OnStartBuildingBlob(
   ChildProcessSecurityPolicyImpl* security_policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   for (const DataElement& item : descriptions) {
-    if (item.type() == storage::DataElement::TYPE_FILE_FILESYSTEM) {
-      FileSystemURL filesystem_url(
-          file_system_context_->CrackURL(item.filesystem_url()));
-      if (!FileSystemURLIsValid(file_system_context_.get(), filesystem_url) ||
-          !security_policy->CanReadFileSystemFile(process_id_,
-                                                  filesystem_url)) {
-        async_builder_.CancelBuildingBlob(
-            uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED, context);
-        Send(new BlobStorageMsg_CancelBuildingBlob(
-            uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED));
-        return;
+    // For each source object that provides the data for the blob, ensure that
+    // this process has permission to read it.
+    switch (item.type()) {
+      case storage::DataElement::TYPE_FILE_FILESYSTEM: {
+        FileSystemURL filesystem_url(
+            file_system_context_->CrackURL(item.filesystem_url()));
+        if (!FileSystemURLIsValid(file_system_context_.get(), filesystem_url) ||
+            !security_policy->CanReadFileSystemFile(process_id_,
+                                                    filesystem_url)) {
+          async_builder_.CancelBuildingBlob(
+              uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED, context);
+          Send(new BlobStorageMsg_CancelBuildingBlob(
+              uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED));
+          return;
+        }
+        break;
       }
-    }
-    if (item.type() == storage::DataElement::TYPE_FILE &&
-        !security_policy->CanReadFile(process_id_, item.path())) {
-      async_builder_.CancelBuildingBlob(
-          uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED, context);
-      Send(new BlobStorageMsg_CancelBuildingBlob(
-          uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED));
-      return;
+      case storage::DataElement::TYPE_FILE: {
+        if (!security_policy->CanReadFile(process_id_, item.path())) {
+          async_builder_.CancelBuildingBlob(
+              uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED, context);
+          Send(new BlobStorageMsg_CancelBuildingBlob(
+              uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED));
+          return;
+        }
+        break;
+      }
+      case storage::DataElement::TYPE_BLOB:
+      case storage::DataElement::TYPE_BYTES_DESCRIPTION:
+      case storage::DataElement::TYPE_BYTES: {
+        // Bytes are already in hand; no need to check read permission.
+        // TODO(nick): For TYPE_BLOB, can we actually get here for blobs
+        // originally created by other processes? If so, is that cool?
+        break;
+      }
+      case storage::DataElement::TYPE_UNKNOWN:
+      case storage::DataElement::TYPE_DISK_CACHE_ENTRY: {
+        NOTREACHED();  // Should have been caught by IPC deserialization.
+        break;
+      }
     }
   }
 

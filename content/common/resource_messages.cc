@@ -145,14 +145,14 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
       if (!iter->ReadData(&data, &len))
         return false;
       r->SetToBytes(data, len);
-      break;
+      return true;
     }
     case storage::DataElement::TYPE_BYTES_DESCRIPTION: {
       uint64_t length;
       if (!ReadParam(m, iter, &length))
         return false;
       r->SetToBytesDescription(length);
-      break;
+      return true;
     }
     case storage::DataElement::TYPE_FILE: {
       base::FilePath file_path;
@@ -168,7 +168,7 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
         return false;
       r->SetToFilePathRange(file_path, offset, length,
                             expected_modification_time);
-      break;
+      return true;
     }
     case storage::DataElement::TYPE_FILE_FILESYSTEM: {
       GURL file_system_url;
@@ -184,7 +184,7 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
         return false;
       r->SetToFileSystemUrlRange(file_system_url, offset, length,
                                  expected_modification_time);
-      break;
+      return true;
     }
     case storage::DataElement::TYPE_BLOB: {
       std::string blob_uuid;
@@ -196,18 +196,18 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
       if (!ReadParam(m, iter, &length))
         return false;
       r->SetToBlobRange(blob_uuid, offset, length);
-      break;
+      return true;
     }
     case storage::DataElement::TYPE_DISK_CACHE_ENTRY: {
       NOTREACHED() << "Can't be sent by IPC.";
-      break;
+      return false;
     }
     case storage::DataElement::TYPE_UNKNOWN: {
       NOTREACHED();
-      break;
+      return false;
     }
   }
-  return true;
+  return false;
 }
 
 void ParamTraits<storage::DataElement>::Log(const param_type& p,
