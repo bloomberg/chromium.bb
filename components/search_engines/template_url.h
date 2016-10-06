@@ -613,9 +613,6 @@ class TemplateURL {
   }
 
   Type type() const { return type_; }
-  // TODO(ianwen): remove set_type() once RestoreExtensionInfoIfNecessary() no
-  // longer needs it.
-  void set_type(Type type) { type_ = type; }
 
   // This setter shouldn't be used except by TemplateURLService and
   // TemplateURLServiceClient implementations.
@@ -757,7 +754,7 @@ class TemplateURL {
   TemplateURLRef contextual_search_url_ref_;
   std::unique_ptr<AssociatedExtensionInfo> extension_info_;
 
-  Type type_;
+  const Type type_;
 
   // Caches the computed engine type across successive calls to GetEngineType().
   mutable SearchEngineType engine_type_;

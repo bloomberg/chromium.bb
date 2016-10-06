@@ -1351,15 +1351,17 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   UpdateTemplateURLIfPrepopulated(turl.get(), prefs);
 
   // We used to sync keywords associated with omnibox extensions, but no longer
-  // want to.  However, if we delete these keywords from sync, we'll break any
-  // synced old versions of Chrome which were relying on them.  Instead, for now
-  // we simply ignore these.
-  // TODO(vasilii): After a few Chrome versions, change this to go ahead and
-  // delete these from sync.
+  // want to.  Delete them from the server.
+  // TODO(vasilii): After a few Chrome versions, delete this code together with
+  // IsOmniboxExtensionURL().
   DCHECK(client);
-  client->RestoreExtensionInfoIfNecessary(turl.get());
-  if (turl->type() == TemplateURL::OMNIBOX_API_EXTENSION)
+  if (client->IsOmniboxExtensionURL(turl->url())) {
+    change_list->push_back(
+        syncer::SyncChange(FROM_HERE,
+                           syncer::SyncChange::ACTION_DELETE,
+                           sync_data));
     return nullptr;
+  }
 
   DCHECK_EQ(TemplateURL::NORMAL, turl->type());
   if (reset_keyword || deduped) {

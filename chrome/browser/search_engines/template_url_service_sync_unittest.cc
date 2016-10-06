@@ -164,21 +164,8 @@ class TestTemplateURLServiceClient : public TemplateURLServiceClient {
        TemplateURLID id,
        const base::string16& term) override {}
    void AddKeywordGeneratedVisit(const GURL& url) override {}
-
-   void RestoreExtensionInfoIfNecessary(TemplateURL* template_url) override;
+   bool IsOmniboxExtensionURL(const std::string& url) override { return false; }
 };
-
-void TestTemplateURLServiceClient::RestoreExtensionInfoIfNecessary(
-    TemplateURL* template_url) {
-  const TemplateURLData& data = template_url->data();
-  GURL url(data.url());
-  if (url.SchemeIs(kOmniboxScheme)) {
-    const std::string& extension_id = url.host();
-    template_url->set_extension_info(
-        base::MakeUnique<TemplateURL::AssociatedExtensionInfo>(extension_id));
-    template_url->set_type(TemplateURL::OMNIBOX_API_EXTENSION);
-  }
-}
 
 }  // namespace
 

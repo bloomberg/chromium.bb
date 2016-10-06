@@ -68,9 +68,10 @@ void TemplateURLServiceClientImpl::AddKeywordGeneratedVisit(const GURL& url) {
   }
 }
 
-void TemplateURLServiceClientImpl::RestoreExtensionInfoIfNecessary(
-    TemplateURL* template_url) {
-  // iOS does not supports extension, nothing to do.
+bool TemplateURLServiceClientImpl::IsOmniboxExtensionURL(
+    const std::string& url) {
+  // iOS does not support extensions.
+  return false;
 }
 
 void TemplateURLServiceClientImpl::OnURLVisited(
