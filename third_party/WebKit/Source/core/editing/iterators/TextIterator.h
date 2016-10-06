@@ -49,16 +49,17 @@ plainText(const EphemeralRange&,
 String plainText(const EphemeralRangeInFlatTree&,
                  TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
-// Iterates through the DOM range, returning all the text, and 0-length boundaries
-// at points where replaced elements break up the text flow.  The text comes back in
-// chunks so as to optimize for performance of the iteration.
+// Iterates through the DOM range, returning all the text, and 0-length
+// boundaries at points where replaced elements break up the text flow.  The
+// text comes back in chunks so as to optimize for performance of the iteration.
 
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   STACK_ALLOCATED();
 
  public:
-  // [start, end] indicates the document range that the iteration should take place within (both ends inclusive).
+  // [start, end] indicates the document range that the iteration should take
+  // place within (both ends inclusive).
   TextIteratorAlgorithm(
       const PositionTemplate<Strategy>& start,
       const PositionTemplate<Strategy>& end,
@@ -150,10 +151,11 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
                                        size_t subrunEnd);
   unsigned restoreCollapsedLeadingSpace(unsigned runStart);
 
-  // Used by selection preservation code.  There should be one character emitted between every VisiblePosition
-  // in the Range used to create the TextIterator.
-  // FIXME <rdar://problem/6028818>: This functionality should eventually be phased out when we rewrite
-  // moveParagraphs to not clone/destroy moved content.
+  // Used by selection preservation code. There should be one character emitted
+  // between every VisiblePosition in the Range used to create the TextIterator.
+  // FIXME <rdar://problem/6028818>: This functionality should eventually be
+  // phased out when we rewrite moveParagraphs to not clone/destroy moved
+  // content.
   bool emitsCharactersBetweenAllVisiblePositions() const {
     return m_behavior & TextIteratorEmitsCharactersBetweenAllVisiblePositions;
   }
@@ -225,8 +227,8 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   Member<Node> m_endNode;
   Member<Node> m_pastEndNode;
 
-  // Used when there is still some pending text from the current node; when these
-  // are false and 0, we go back to normal iterating.
+  // Used when there is still some pending text from the current node; when
+  // these are false and 0, we go back to normal iterating.
   bool m_needsAnotherNewline;
   InlineTextBox* m_textBox;
   // Used when iteration over :first-letter text to save pointer to
@@ -245,9 +247,11 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
 
   const TextIteratorBehaviorFlags m_behavior;
 
-  // Used when deciding text fragment created by :first-letter should be looked into.
+  // Used when deciding text fragment created by :first-letter should be looked
+  // into.
   bool m_handledFirstLetter;
-  // Used when stopsOnFormControls() is true to determine if the iterator should keep advancing.
+  // Used when stopsOnFormControls() is true to determine if the iterator should
+  // keep advancing.
   bool m_shouldStop;
   // Used for use counter |InnerTextWithShadowTree| and
   // |SelectionToStringWithShadowTree|, we should not use other purpose.

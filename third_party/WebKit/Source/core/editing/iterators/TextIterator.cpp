@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2005 Alexey Proskuryakov.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -163,13 +164,15 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
       m_handledFirstLetter(false),
       m_shouldStop(false),
       m_handleShadowRoot(false),
-      // The call to emitsOriginalText() must occur after m_behavior is initialized.
+      // The call to emitsOriginalText() must occur after m_behavior is
+      // initialized.
       m_textState(emitsOriginalText()) {
   DCHECK(start.isNotNull());
   DCHECK(end.isNotNull());
 
-  // TODO(dglazkov): TextIterator should not be created for documents that don't have a frame,
-  // but it currently still happens in some cases. See http://crbug.com/591877 for details.
+  // TODO(dglazkov): TextIterator should not be created for documents that don't
+  // have a frame, but it currently still happens in some cases. See
+  // http://crbug.com/591877 for details.
   DCHECK(!start.document()->view() || !start.document()->view()->needsLayout());
   DCHECK(!start.document()->needsLayoutTreeUpdate());
 
@@ -265,9 +268,9 @@ void TextIteratorAlgorithm<Strategy>::advance() {
   // handle remembered node that needed a newline after the text node's newline
   if (m_needsAnotherNewline) {
     // Emit the extra newline, and position it *inside* m_node, after m_node's
-    // contents, in case it's a block, in the same way that we position the first
-    // newline. The range for the emitted newline should start where the line
-    // break begins.
+    // contents, in case it's a block, in the same way that we position the
+    // first newline. The range for the emitted newline should start where the
+    // line break begins.
     // FIXME: It would be cleaner if we emitted two newlines during the last
     // iteration, instead of using m_needsAnotherNewline.
     Node* lastChild = Strategy::lastChild(*m_node);
@@ -308,7 +311,8 @@ void TextIteratorAlgorithm<Strategy>::advance() {
     LayoutObject* layoutObject = m_node->layoutObject();
     if (!layoutObject) {
       if (m_node->isShadowRoot()) {
-        // A shadow root doesn't have a layoutObject, but we want to visit children anyway.
+        // A shadow root doesn't have a layoutObject, but we want to visit
+        // children anyway.
         m_iterationProgress = m_iterationProgress < HandledNode
                                   ? HandledNode
                                   : m_iterationProgress;
@@ -388,10 +392,12 @@ void TextIteratorAlgorithm<Strategy>::advance() {
             : nullptr;
     m_offset = 0;
     if (!next) {
-      // 2. If we've already iterated children or they are not available, go to the next sibling node.
+      // 2. If we've already iterated children or they are not available, go to
+      // the next sibling node.
       next = Strategy::nextSibling(*m_node);
       if (!next) {
-        // 3. If we are at the last child, go up the node tree until we find a next sibling.
+        // 3. If we are at the last child, go up the node tree until we find a
+        // next sibling.
         ContainerNode* parentNode = Strategy::parent(*m_node);
         while (!next && parentNode) {
           if (m_node == m_endNode ||
@@ -411,7 +417,8 @@ void TextIteratorAlgorithm<Strategy>::advance() {
         }
 
         if (!next && !parentNode && m_shadowDepth > 0) {
-          // 4. Reached the top of a shadow root. If it's created by author, then try to visit the next
+          // 4. Reached the top of a shadow root. If it's created by author,
+          // then try to visit the next
           // sibling shadow root, if any.
           if (!m_node->isShadowRoot()) {
             NOTREACHED();
@@ -427,18 +434,22 @@ void TextIteratorAlgorithm<Strategy>::advance() {
               m_fullyClippedStack.pop();
               m_node = nextShadowRoot;
               m_iterationProgress = HandledNone;
-              // m_shadowDepth is unchanged since we exit from a shadow root and enter another.
+              // m_shadowDepth is unchanged since we exit from a shadow root and
+              // enter another.
               m_fullyClippedStack.pushFullyClippedState(m_node);
             } else {
-              // We are the last shadow root; exit from here and go back to where we were.
+              // We are the last shadow root; exit from here and go back to
+              // where we were.
               m_node = &shadowRoot->host();
               m_iterationProgress = HandledOpenShadowRoots;
               --m_shadowDepth;
               m_fullyClippedStack.pop();
             }
           } else {
-            // If we are in a closed or user-agent shadow root, then go back to the host.
-            // TODO(kochi): Make sure we treat closed shadow as user agent shadow here.
+            // If we are in a closed or user-agent shadow root, then go back to
+            // the host.
+            // TODO(kochi): Make sure we treat closed shadow as user agent
+            // shadow here.
             DCHECK(shadowRoot->type() == ShadowRootType::Closed ||
                    shadowRoot->type() == ShadowRootType::UserAgent);
             m_node = &shadowRoot->host();
@@ -595,7 +606,8 @@ size_t TextIteratorAlgorithm<Strategy>::restoreCollapsedTrailingSpace(
       text[subrunEnd - 1] == ' ')
     return subrunEnd;
 
-  // If there is the leading space in the next line, we don't need to restore the trailing space.
+  // If there is the leading space in the next line, we don't need to restore
+  // the trailing space.
   // Example: <div style="width: 2em;"><b><i>foo </i></b> bar</div>
   InlineBox* firstBoxOfNextLine = m_textBox->root().nextRootBox()->firstChild();
   if (!firstBoxOfNextLine)
@@ -698,7 +710,8 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox() {
       if (runStart < runEnd) {
         // Handle either a single newline character (which becomes a space),
         // or a run of characters that does not include a newline.
-        // This effectively translates newlines to spaces without copying the text.
+        // This effectively translates newlines to spaces without copying the
+        // text.
         if (str[runStart] == '\n') {
           // We need to preserve new lines in case of PRE_LINE.
           // See bug crbug.com/317365.
@@ -720,7 +733,8 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox() {
         }
 
         // If we are doing a subrun that doesn't go to the end of the text box,
-        // come back again to finish handling this text box; don't advance to the next one.
+        // come back again to finish handling this text box; don't advance to
+        // the next one.
         if (static_cast<unsigned>(m_textState.positionEndOffset()) < textBoxEnd)
           return;
 
@@ -965,7 +979,8 @@ static bool shouldEmitExtraNewlineForNode(Node* node) {
   return false;
 }
 
-// Whether or not we should emit a character as we enter m_node (if it's a container) or as we hit it (if it's atomic).
+// Whether or not we should emit a character as we enter m_node (if it's a
+// container) or as we hit it (if it's atomic).
 template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero() {
   if (emitsCharactersBetweenAllVisiblePositions() &&
@@ -981,13 +996,15 @@ bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero() {
   if (m_textState.hasEmitted())
     return true;
 
-  // We've not emitted anything yet. Generally, there is no need for any positioning then.
-  // The only exception is when the element is visually not in the same line as
-  // the start of the range (e.g. the range starts at the end of the previous paragraph).
-  // NOTE: Creating VisiblePositions and comparing them is relatively expensive, so we
-  // make quicker checks to possibly avoid that. Another check that we could make is
-  // is whether the inline vs block flow changed since the previous visible element.
-  // I think we're already in a special enough case that that won't be needed, tho.
+  // We've not emitted anything yet. Generally, there is no need for any
+  // positioning then. The only exception is when the element is visually not in
+  // the same line as the start of the range (e.g. the range starts at the end
+  // of the previous paragraph).
+  // NOTE: Creating VisiblePositions and comparing them is relatively expensive,
+  // so we make quicker checks to possibly avoid that. Another check that we
+  // could make is is whether the inline vs block flow changed since the
+  // previous visible element. I think we're already in a special enough case
+  // that that won't be needed, tho.
 
   // No character needed if this is the first node in the range.
   if (m_node == m_startContainer)
@@ -998,18 +1015,21 @@ bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero() {
   if (!Strategy::isDescendantOf(*m_node, *m_startContainer))
     return true;
 
-  // If we started as m_startContainer offset 0 and the current node is a descendant of
-  // the start container, we already had enough context to correctly decide whether to
-  // emit after a preceding block. We chose not to emit (m_hasEmitted is false),
-  // so don't second guess that now.
-  // NOTE: Is this really correct when m_node is not a leftmost descendant? Probably
-  // immaterial since we likely would have already emitted something by now.
+  // If we started as m_startContainer offset 0 and the current node is a
+  // descendant of the start container, we already had enough context to
+  // correctly decide whether to emit after a preceding block. We chose not to
+  // emit (m_hasEmitted is false), so don't second guess that now.
+  // NOTE: Is this really correct when m_node is not a leftmost descendant?
+  // Probably immaterial since we likely would have already emitted something by
+  // now.
   if (!m_startOffset)
     return false;
 
-  // If this node is unrendered or invisible the VisiblePosition checks below won't have much meaning.
-  // Additionally, if the range we are iterating over contains huge sections of unrendered content,
-  // we would create VisiblePositions on every call to this function without this check.
+  // If this node is unrendered or invisible the VisiblePosition checks below
+  // won't have much meaning.
+  // Additionally, if the range we are iterating over contains huge sections of
+  // unrendered content, we would create VisiblePositions on every call to this
+  // function without this check.
   if (!m_node->layoutObject() ||
       m_node->layoutObject()->style()->visibility() != EVisibility::Visible ||
       (m_node->layoutObject()->isLayoutBlockFlow() &&
@@ -1017,10 +1037,12 @@ bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero() {
        !isHTMLBodyElement(*m_node)))
     return false;
 
-  // The startPos.isNotNull() check is needed because the start could be before the body,
-  // and in that case we'll get null. We don't want to put in newlines at the start in that case.
-  // The currPos.isNotNull() check is needed because positions in non-HTML content
-  // (like SVG) do not have visible positions, and we don't want to emit for them either.
+  // The startPos.isNotNull() check is needed because the start could be before
+  // the body, and in that case we'll get null. We don't want to put in newlines
+  // at the start in that case.
+  // The currPos.isNotNull() check is needed because positions in non-HTML
+  // content (like SVG) do not have visible positions, and we don't want to emit
+  // for them either.
   VisiblePosition startPos =
       createVisiblePosition(Position(m_startContainer, m_startOffset));
   VisiblePosition currPos = VisiblePosition::beforeNode(m_node);
@@ -1040,10 +1062,11 @@ template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::representNodeOffsetZero() {
   // Emit a character to show the positioning of m_node.
 
-  // When we haven't been emitting any characters, shouldRepresentNodeOffsetZero() can
-  // create VisiblePositions, which is expensive. So, we perform the inexpensive checks
-  // on m_node to see if it necessitates emitting a character first and will early return
-  // before encountering shouldRepresentNodeOffsetZero()s worse case behavior.
+  // When we haven't been emitting any characters,
+  // shouldRepresentNodeOffsetZero() can create VisiblePositions, which is
+  // expensive. So, we perform the inexpensive checks on m_node to see if it
+  // necessitates emitting a character first and will early return before
+  // encountering shouldRepresentNodeOffsetZero()s worse case behavior.
   if (shouldEmitTabBeforeNode(m_node)) {
     if (shouldRepresentNodeOffsetZero())
       spliceBuffer('\t', Strategy::parent(*m_node), m_node, 0, 0);
@@ -1071,10 +1094,11 @@ bool TextIteratorAlgorithm<Strategy>::handleNonTextNode() {
 
 template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::exitNode() {
-  // prevent emitting a newline when exiting a collapsed block at beginning of the range
-  // FIXME: !m_hasEmitted does not necessarily mean there was a collapsed block... it could
-  // have been an hr (e.g.). Also, a collapsed block could have height (e.g. a table) and
-  // therefore look like a blank line.
+  // prevent emitting a newline when exiting a collapsed block at beginning of
+  // the range
+  // FIXME: !m_hasEmitted does not necessarily mean there was a collapsed
+  // block... it could have been an hr (e.g.). Also, a collapsed block could
+  // have height (e.g. a table) and therefore look like a blank line.
   if (!m_textState.hasEmitted())
     return;
 
@@ -1083,10 +1107,11 @@ void TextIteratorAlgorithm<Strategy>::exitNode() {
   // emitted character is positioned visually.
   Node* lastChild = Strategy::lastChild(*m_node);
   Node* baseNode = lastChild ? lastChild : m_node.get();
-  // FIXME: This shouldn't require the m_lastTextNode to be true, but we can't change that without making
-  // the logic in _web_attributedStringFromRange match. We'll get that for free when we switch to use
-  // TextIterator in _web_attributedStringFromRange.
-  // See <rdar://problem/5428427> for an example of how this mismatch will cause problems.
+  // FIXME: This shouldn't require the m_lastTextNode to be true, but we can't
+  // change that without making the logic in _web_attributedStringFromRange
+  // match. We'll get that for free when we switch to use TextIterator in
+  // _web_attributedStringFromRange. See <rdar://problem/5428427> for an example
+  // of how this mismatch will cause problems.
   if (m_lastTextNode && shouldEmitNewlineAfterNode(*m_node)) {
     // use extra newline to represent margin bottom, as needed
     bool addNewline = shouldEmitExtraNewlineForNode(m_node);
@@ -1300,7 +1325,8 @@ static String createPlainText(const EphemeralRangeTemplate<Strategy>& range,
   if (it.atEnd())
     return emptyString();
 
-  // The initial buffer size can be critical for performance: https://bugs.webkit.org/show_bug.cgi?id=81192
+  // The initial buffer size can be critical for performance:
+  // https://bugs.webkit.org/show_bug.cgi?id=81192
   static const unsigned initialCapacity = 1 << 15;
 
   StringBuilder builder;

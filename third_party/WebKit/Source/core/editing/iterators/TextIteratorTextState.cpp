@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2005 Alexey Proskuryakov.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -122,13 +123,15 @@ void TextIteratorTextState::spliceBuffer(UChar c,
   m_hasEmitted = true;
 
   // Remember information with which to construct the TextIterator::range().
-  // NOTE: textNode is often not a text node, so the range will specify child nodes of positionNode
+  // NOTE: textNode is often not a text node, so the range will specify child
+  // nodes of positionNode
   m_positionNode = textNode;
   m_positionOffsetBaseNode = offsetBaseNode;
   m_positionStartOffset = textStartOffset;
   m_positionEndOffset = textEndOffset;
 
-  // remember information with which to construct the TextIterator::characters() and length()
+  // remember information with which to construct the TextIterator::characters()
+  // and length()
   m_singleCharacterBuffer = c;
   DCHECK(m_singleCharacterBuffer);
   m_textLength = 1;
@@ -187,7 +190,8 @@ void TextIteratorTextState::appendTextTo(ForwardsTextBuffer* output,
       output->pushRange(string().characters16() + offset, lengthToAppend);
     return;
   }
-  NOTREACHED();  // "We shouldn't be attempting to append text that doesn't exist.";
+  // We shouldn't be attempting to append text that doesn't exist.
+  NOTREACHED();
 }
 
 }  // namespace blink

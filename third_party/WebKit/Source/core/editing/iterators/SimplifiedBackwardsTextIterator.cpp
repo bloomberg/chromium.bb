@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2005 Alexey Proskuryakov.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -320,14 +321,16 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<
 
 template <typename Strategy>
 bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleNonTextNode() {
-  // We can use a linefeed in place of a tab because this simple iterator is only used to
-  // find boundaries, not actual content. A linefeed breaks words, sentences, and paragraphs.
+  // We can use a linefeed in place of a tab because this simple iterator is
+  // only used to find boundaries, not actual content. A linefeed breaks words,
+  // sentences, and paragraphs.
   if (TextIterator::shouldEmitNewlineForNode(m_node, m_emitsOriginalText) ||
       TextIterator::shouldEmitNewlineAfterNode(*m_node) ||
       TextIterator::shouldEmitTabBeforeNode(m_node)) {
     unsigned index = Strategy::index(*m_node);
-    // The start of this emitted range is wrong. Ensuring correctness would require
-    // VisiblePositions and so would be slow. previousBoundary expects this.
+    // The start of this emitted range is wrong. Ensuring correctness would
+    // require VisiblePositions and so would be slow. previousBoundary expects
+    // this.
     emitCharacter('\n', Strategy::parent(*m_node), index + 1, index + 1);
   }
   return true;
@@ -338,8 +341,9 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::exitNode() {
   if (TextIterator::shouldEmitNewlineForNode(m_node, m_emitsOriginalText) ||
       TextIterator::shouldEmitNewlineBeforeNode(*m_node) ||
       TextIterator::shouldEmitTabBeforeNode(m_node)) {
-    // The start of this emitted range is wrong. Ensuring correctness would require
-    // VisiblePositions and so would be slow. previousBoundary expects this.
+    // The start of this emitted range is wrong. Ensuring correctness would
+    // require VisiblePositions and so would be slow. previousBoundary expects
+    // this.
     emitCharacter('\n', m_node, 0, 0);
   }
 }

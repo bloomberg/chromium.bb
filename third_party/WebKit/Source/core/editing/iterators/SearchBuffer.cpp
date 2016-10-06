@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2005 Alexey Proskuryakov.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,9 +46,9 @@ static bool searcherInUse;
 #endif
 
 static UStringSearch* createSearcher() {
-  // Provide a non-empty pattern and non-empty text so usearch_open will not fail,
-  // but it doesn't matter exactly what it is, since we don't perform any searches
-  // without setting both the pattern and the text.
+  // Provide a non-empty pattern and non-empty text so usearch_open will not
+  // fail, but it doesn't matter exactly what it is, since we don't perform any
+  // searches without setting both the pattern and the text.
   UErrorCode status = U_ZERO_ERROR;
   String searchCollatorName =
       currentSearchLocaleID() + String("@collation=search");
@@ -90,8 +91,9 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
   target.appendTo(m_target);
 
   // FIXME: We'd like to tailor the searcher to fold quote marks for us instead
-  // of doing it in a separate replacement pass here, but ICU doesn't offer a way
-  // to add tailoring on top of the locale-specific tailoring as of this writing.
+  // of doing it in a separate replacement pass here, but ICU doesn't offer a
+  // way to add tailoring on top of the locale-specific tailoring as of this
+  // writing.
   foldQuoteMarksAndSoftHyphens(m_target.data(), m_target.size());
 
   size_t targetLength = m_target.size();
@@ -102,8 +104,9 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
   if ((m_options & AtWordStarts) && targetLength) {
     UChar32 targetFirstCharacter;
     U16_GET(m_target.data(), 0, 0, targetLength, targetFirstCharacter);
-    // Characters in the separator category never really occur at the beginning of a word,
-    // so if the target begins with such a character, we just ignore the AtWordStart option.
+    // Characters in the separator category never really occur at the beginning
+    // of a word, so if the target begins with such a character, we just ignore
+    // the AtWordStart option.
     if (isSeparator(targetFirstCharacter)) {
       m_options &= ~AtWordStarts;
       m_needsMoreContext = false;
@@ -111,8 +114,8 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
   }
 
   // Grab the single global searcher.
-  // If we ever have a reason to do more than once search buffer at once, we'll have
-  // to move to multiple searchers.
+  // If we ever have a reason to do more than once search buffer at once, we'll
+  // have to move to multiple searchers.
   lockSearcher();
 
   UStringSearch* searcher = blink::searcher();
@@ -249,8 +252,8 @@ inline bool SearchBuffer::isWordStartMatch(size_t start, size_t length) const {
       // The start of an uppercase run is a word start ("Kit" in "WebKit").
       if (!isASCIIUpper(previousCharacter))
         return true;
-      // The last character of an uppercase run followed by a non-separator, non-digit
-      // is a word start ("Request" in "XMLHTTPRequest").
+      // The last character of an uppercase run followed by a non-separator,
+      // non-digit is a word start ("Request" in "XMLHTTPRequest").
       offset = start;
       U16_FWD_1(m_buffer.data(), offset, size);
       UChar32 nextCharacter = 0;
@@ -265,14 +268,16 @@ inline bool SearchBuffer::isWordStartMatch(size_t start, size_t length) const {
         return true;
     } else if (isSeparator(previousCharacter) ||
                isASCIIDigit(previousCharacter)) {
-      // The start of a non-separator, non-uppercase, non-digit run is a word start,
-      // except after an uppercase. ("org" in "webkit.org", but not "ore" in "WebCore").
+      // The start of a non-separator, non-uppercase, non-digit run is a word
+      // start, except after an uppercase. ("org" in "webkit.org", but not "ore"
+      // in "WebCore").
       return true;
     }
   }
 
-  // Chinese and Japanese lack word boundary marks, and there is no clear agreement on what constitutes
-  // a word, so treat the position before any CJK character as a word start.
+  // Chinese and Japanese lack word boundary marks, and there is no clear
+  // agreement on what constitutes a word, so treat the position before any CJK
+  // character as a word start.
   if (Character::isCJKIdeographOrSymbol(firstCharacter))
     return true;
 
@@ -324,8 +329,8 @@ nextMatch:
   if (!m_atBreak && static_cast<size_t>(matchStart) >= size - m_overlap) {
     size_t overlap = m_overlap;
     if (m_options & AtWordStarts) {
-      // Ensure that there is sufficient context before matchStart the next time around for
-      // determining if it is at a word boundary.
+      // Ensure that there is sufficient context before matchStart the next time
+      // around for determining if it is at a word boundary.
       int wordBoundaryContextStart = matchStart;
       U16_BACK_1(m_buffer.data(), 0, wordBoundaryContextStart);
       wordBoundaryContextStart = startOfLastWordBoundaryContext(

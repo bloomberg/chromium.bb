@@ -37,9 +37,9 @@ namespace blink {
 class LayoutText;
 class LayoutTextFragment;
 
-// Iterates through the DOM range, returning all the text, and 0-length boundaries
-// at points where replaced elements break up the text flow. The text comes back in
-// chunks so as to optimize for performance of the iteration.
+// Iterates through the DOM range, returning all the text, and 0-length
+// boundaries at points where replaced elements break up the text flow. The text
+// comes back in chunks so as to optimize for performance of the iteration.
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
   STACK_ALLOCATED();
@@ -112,17 +112,20 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
   Member<Node> m_endNode;
   int m_endOffset;
 
-  // The current text and its position, in the form to be returned from the iterator.
+  // The current text and its position, in the form to be returned from the
+  // iterator.
   Member<Node> m_positionNode;
   int m_positionStartOffset;
   int m_positionEndOffset;
 
-  String
-      m_textContainer;  // We're interested in the range [m_textOffset, m_textOffset + m_textLength) of m_textContainer.
+  // We're interested in the range [m_textOffset, m_textOffset + m_textLength)
+  // of m_textContainer.
+  String m_textContainer;
   int m_textOffset;
   int m_textLength;
 
-  // Used for whitespace characters that aren't in the DOM, so we can point at them.
+  // Used for whitespace characters that aren't in the DOM, so we can point at
+  // them.
   UChar m_singleCharacterBuffer;
 
   // Whether m_node has advanced beyond the iteration range (i.e. m_startNode).
@@ -134,7 +137,8 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
   // Used when the iteration should stop if form controls are reached.
   bool m_stopsOnFormControls;
 
-  // Used when m_stopsOnFormControls is set to determine if the iterator should keep advancing.
+  // Used when m_stopsOnFormControls is set to determine if the iterator should
+  // keep advancing.
   bool m_shouldStop;
 
   // Used in pasting inside password field.

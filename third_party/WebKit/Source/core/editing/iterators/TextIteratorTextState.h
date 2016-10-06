@@ -81,17 +81,20 @@ class CORE_EXPORT TextIteratorTextState {
   int m_textLength;
   String m_text;
 
-  // Used for whitespace characters that aren't in the DOM, so we can point at them.
+  // Used for whitespace characters that aren't in the DOM, so we can point at
+  // them.
   // If non-zero, overrides m_text.
   UChar m_singleCharacterBuffer;
 
-  // The current text and its position, in the form to be returned from the iterator.
+  // The current text and its position, in the form to be returned from the
+  // iterator.
   Member<Node> m_positionNode;
   mutable Member<Node> m_positionOffsetBaseNode;
   mutable int m_positionStartOffset;
   mutable int m_positionEndOffset;
 
-  // Used when deciding whether to emit a "positioning" (e.g. newline) before any other content
+  // Used when deciding whether to emit a "positioning" (e.g. newline) before
+  // any other content
   bool m_hasEmitted;
   UChar m_lastCharacter;
   bool m_emitsOriginalText;

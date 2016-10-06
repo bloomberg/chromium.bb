@@ -173,7 +173,8 @@ TEST_F(TextIteratorTest, NotEnteringShadowTree) {
   setBodyContent(bodyContent);
   createShadowRootForElementWithIDAndSetInnerHTML(document(), "host",
                                                   shadowContent);
-  // TextIterator doesn't emit "text" since its layoutObject is not created. The shadow tree is ignored.
+  // TextIterator doesn't emit "text" since its layoutObject is not created. The
+  // shadow tree is ignored.
   EXPECT_EQ("[Hello, ][ iterator.]", iterate<DOMTree>());
   EXPECT_EQ("[Hello, ][shadow][ iterator.]", iterate<FlatTree>());
 }
@@ -228,7 +229,8 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithOption) {
   setBodyContent(bodyContent);
   createShadowRootForElementWithIDAndSetInnerHTML(document(), "host",
                                                   shadowContent);
-  // TextIterator emits "shadow" since TextIteratorEntersOpenShadowRoots is specified.
+  // TextIterator emits "shadow" since TextIteratorEntersOpenShadowRoots is
+  // specified.
   EXPECT_EQ("[Hello, ][shadow][ iterator.]",
             iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
   EXPECT_EQ("[Hello, ][shadow][ iterator.]",
@@ -245,7 +247,8 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithMultipleShadowTreesWithOption) {
                                                   shadowContent1);
   createShadowRootForElementWithIDAndSetInnerHTML(document(), "host",
                                                   shadowContent2);
-  // The first isn't emitted because a layoutObject for the first is not created.
+  // The first isn't emitted because a layoutObject for the first is not
+  // created.
   EXPECT_EQ("[Hello, ][second shadow][ iterator.]",
             iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
   EXPECT_EQ("[Hello, ][second shadow][ iterator.]",
@@ -275,9 +278,11 @@ TEST_F(TextIteratorTest,
       "<div>Hello, <span id='host'>text</span> iterator.</div>";
   static const char* shadowContent =
       "<span><content>content</content> shadow</span>";
-  // In this case a layoutObject for "text" is created, and emitted AFTER any nodes in the shadow tree.
-  // This order does not match the order of the rendered texts, but at this moment it's the expected behavior.
-  // FIXME: Fix this. We probably need pure-renderer-based implementation of TextIterator to achieve this.
+  // In this case a layoutObject for "text" is created, and emitted AFTER any
+  // nodes in the shadow tree. This order does not match the order of the
+  // rendered texts, but at this moment it's the expected behavior.
+  // FIXME: Fix this. We probably need pure-renderer-based implementation of
+  // TextIterator to achieve this.
   setBodyContent(bodyContent);
   createShadowRootForElementWithIDAndSetInnerHTML(document(), "host",
                                                   shadowContent);
@@ -372,7 +377,8 @@ TEST_F(TextIteratorTest, FullyClippedContentsDistributed) {
   setBodyContent(bodyContent);
   createShadowRootForElementWithIDAndSetInnerHTML(document(), "host",
                                                   shadowContent);
-  // FIXME: The text below is actually invisible but TextIterator currently thinks it's visible.
+  // FIXME: The text below is actually invisible but TextIterator currently
+  // thinks it's visible.
   EXPECT_EQ("[\n][Am I visible?]",
             iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
   EXPECT_EQ("", iterate<FlatTree>(TextIteratorEntersOpenShadowRoots));
@@ -391,7 +397,8 @@ TEST_F(TextIteratorTest, IgnoresContainersClipDistributed) {
   setBodyContent(bodyContent);
   createShadowRootForElementWithIDAndSetInnerHTML(document(), "host",
                                                   shadowContent);
-  // FIXME: The text below is actually visible but TextIterator currently thinks it's invisible.
+  // FIXME: The text below is actually visible but TextIterator currently thinks
+  // it's invisible.
   // [\n][Nobody can find me!]
   EXPECT_EQ("", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
   EXPECT_EQ("[Nobody can find me!]",
