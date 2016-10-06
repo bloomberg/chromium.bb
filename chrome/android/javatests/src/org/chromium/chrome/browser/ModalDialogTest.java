@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -15,6 +17,7 @@ import android.widget.EditText;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -137,6 +140,7 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
      */
     @MediumTest
     @Feature({"Browser", "Main"})
+    @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE}) // crbug.com/653685
     public void testPromptModalDialog()
             throws InterruptedException, TimeoutException, ExecutionException {
         final String promptText = "Hello Android!";
