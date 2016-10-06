@@ -147,6 +147,9 @@ class PRINTING_EXPORT PrintSettings {
 #if defined(OS_WIN)
   void set_print_text_with_gdi(bool use_gdi) { print_text_with_gdi_ = use_gdi; }
   bool print_text_with_gdi() const { return print_text_with_gdi_; }
+
+  void set_printer_is_xps(bool is_xps) { printer_is_xps_ = is_xps; }
+  bool printer_is_xps() const { return printer_is_xps_; }
 #endif
 
   // Cookie generator. It is used to initialize PrintedDocument with its
@@ -212,6 +215,9 @@ class PRINTING_EXPORT PrintSettings {
 #if defined(OS_WIN)
   // True to print text with GDI.
   bool print_text_with_gdi_;
+
+  // True if the printer is an XPS printer.
+  bool printer_is_xps_;
 #endif
 
   // If margin type is custom, this is what was requested.

@@ -194,6 +194,7 @@ void PrintViewManagerBase::OnDidPrintPage(
   if (metafile_must_be_valid) {
     bool print_text_with_gdi =
         document->settings().print_text_with_gdi() &&
+        !document->settings().printer_is_xps() &&
         !base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableGDITextPrinting);
     scoped_refptr<base::RefCountedBytes> bytes = new base::RefCountedBytes(
