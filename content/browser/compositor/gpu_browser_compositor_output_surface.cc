@@ -90,25 +90,22 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
 
   GetCommandBufferProxy()->SetLatencyInfo(frame.metadata.latency_info);
 
+  gfx::Rect swap_rect = frame.gl_frame_data->sub_buffer_rect;
+  gfx::Size surface_size = frame.gl_frame_data->size;
   if (reflector_) {
-    if (frame.gl_frame_data->sub_buffer_rect ==
-        gfx::Rect(frame.gl_frame_data->size)) {
-      reflector_texture_->CopyTextureFullImage(SurfaceSize());
-      reflector_->OnSourceSwapBuffers();
+    if (swap_rect == gfx::Rect(surface_size)) {
+      reflector_texture_->CopyTextureFullImage(surface_size);
+      reflector_->OnSourceSwapBuffers(surface_size);
     } else {
-      const gfx::Rect& rect = frame.gl_frame_data->sub_buffer_rect;
-      reflector_texture_->CopyTextureSubImage(rect);
-      reflector_->OnSourcePostSubBuffer(rect);
+      reflector_texture_->CopyTextureSubImage(swap_rect);
+      reflector_->OnSourcePostSubBuffer(swap_rect, surface_size);
     }
   }
 
-  if (frame.gl_frame_data->sub_buffer_rect ==
-      gfx::Rect(frame.gl_frame_data->size)) {
+  if (swap_rect == gfx::Rect(frame.gl_frame_data->size))
     context_provider_->ContextSupport()->Swap();
-  } else {
-    context_provider_->ContextSupport()->PartialSwapBuffers(
-        frame.gl_frame_data->sub_buffer_rect);
-  }
+  else
+    context_provider_->ContextSupport()->PartialSwapBuffers(swap_rect);
 }
 
 uint32_t GpuBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {

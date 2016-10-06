@@ -135,12 +135,15 @@ void OffscreenBrowserCompositorOutputSurface::BindFramebuffer() {
 
 void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame frame) {
+  gfx::Size surface_size = frame.gl_frame_data->size;
+  DCHECK(surface_size == surface_size_);
+  gfx::Rect swap_rect = frame.gl_frame_data->sub_buffer_rect;
+
   if (reflector_) {
-    if (frame.gl_frame_data->sub_buffer_rect ==
-        gfx::Rect(frame.gl_frame_data->size))
-      reflector_->OnSourceSwapBuffers();
+    if (swap_rect == gfx::Rect(surface_size))
+      reflector_->OnSourceSwapBuffers(surface_size);
     else
-      reflector_->OnSourcePostSubBuffer(frame.gl_frame_data->sub_buffer_rect);
+      reflector_->OnSourcePostSubBuffer(swap_rect, surface_size);
   }
 
   // TODO(oshima): sync with the reflector's SwapBuffersComplete

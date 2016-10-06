@@ -194,6 +194,9 @@ class CC_EXPORT DirectRenderer {
 
   bool visible_ = false;
 
+  // The size of the surface produced by DrawFrame() for SwapBuffers() to use.
+  gfx::Size surface_size_for_swap_buffers_;
+
   // For use in coordinate conversion, this stores the output rect, viewport
   // rect (= unflipped version of glViewport rect), the size of target
   // framebuffer, and the current window space viewport. During a draw, this

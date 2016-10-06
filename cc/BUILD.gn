@@ -726,8 +726,6 @@ static_library("test_support") {
     "test/pixel_test.h",
     "test/pixel_test_output_surface.cc",
     "test/pixel_test_output_surface.h",
-    "test/pixel_test_software_output_device.cc",
-    "test/pixel_test_software_output_device.h",
     "test/pixel_test_utils.cc",
     "test/pixel_test_utils.h",
     "test/remote_client_layer_factory.cc",

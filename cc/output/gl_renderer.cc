@@ -2890,17 +2890,15 @@ void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
   TRACE_EVENT0("cc,benchmark", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!
 
-  gfx::Size surface_size = output_surface_->SurfaceSize();
-
   CompositorFrame compositor_frame;
   compositor_frame.metadata = std::move(metadata);
   compositor_frame.gl_frame_data = base::WrapUnique(new GLFrameData);
-  compositor_frame.gl_frame_data->size = surface_size;
+  compositor_frame.gl_frame_data->size = surface_size_for_swap_buffers_;
   if (use_partial_swap_) {
     // If supported, we can save significant bandwidth by only swapping the
     // damaged/scissored region (clamped to the viewport).
-    swap_buffer_rect_.Intersect(gfx::Rect(surface_size));
-    int flipped_y_pos_of_rect_bottom = surface_size.height() -
+    swap_buffer_rect_.Intersect(gfx::Rect(surface_size_for_swap_buffers_));
+    int flipped_y_pos_of_rect_bottom = surface_size_for_swap_buffers_.height() -
                                        swap_buffer_rect_.y() -
                                        swap_buffer_rect_.height();
     compositor_frame.gl_frame_data->sub_buffer_rect =
@@ -2912,7 +2910,7 @@ void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
     // Expand the swap rect to the full surface unless it's empty, and empty
     // swap is allowed.
     if (!swap_buffer_rect_.IsEmpty() || !allow_empty_swap_) {
-      swap_buffer_rect_ = gfx::Rect(surface_size);
+      swap_buffer_rect_ = gfx::Rect(surface_size_for_swap_buffers_);
     }
     compositor_frame.gl_frame_data->sub_buffer_rect = swap_buffer_rect_;
   }

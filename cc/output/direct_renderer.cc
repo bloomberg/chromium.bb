@@ -218,6 +218,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                const gfx::ColorSpace& device_color_space,
                                const gfx::Rect& device_viewport_rect,
                                const gfx::Rect& device_clip_rect) {
+  DCHECK(device_viewport_rect.OffsetFromOrigin().IsZero());
+  DCHECK(device_clip_rect == device_viewport_rect);
   DCHECK(visible_);
   TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS(
@@ -242,6 +244,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   output_surface_->Reshape(device_viewport_rect.size(), device_scale_factor,
                            device_color_space,
                            frame.root_render_pass->has_transparent_background);
+  surface_size_for_swap_buffers_ = device_viewport_rect.size();
 
   BeginDrawingFrame(&frame);
 
@@ -340,7 +343,7 @@ gfx::Rect DirectRenderer::DeviceViewportRectInDrawSpace(
 gfx::Rect DirectRenderer::OutputSurfaceRectInDrawSpace(
     const DrawingFrame* frame) const {
   if (frame->current_render_pass == frame->root_render_pass) {
-    gfx::Rect output_surface_rect(output_surface_->SurfaceSize());
+    gfx::Rect output_surface_rect = frame->device_viewport_rect;
     output_surface_rect -= current_viewport_rect_.OffsetFromOrigin();
     output_surface_rect += current_draw_rect_.OffsetFromOrigin();
     return output_surface_rect;
@@ -550,10 +553,9 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   frame->current_texture = NULL;
   if (render_pass == frame->root_render_pass) {
     BindFramebufferToOutputSurface(frame);
-    InitializeViewport(frame,
-                       render_pass->output_rect,
+    InitializeViewport(frame, render_pass->output_rect,
                        frame->device_viewport_rect,
-                       output_surface_->SurfaceSize());
+                       frame->device_viewport_rect.size());
     return true;
   }
 

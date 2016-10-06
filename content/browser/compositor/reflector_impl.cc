@@ -107,38 +107,36 @@ void ReflectorImpl::OnSourceTextureMailboxUpdated(
   }
 }
 
-void ReflectorImpl::OnSourceSwapBuffers() {
+void ReflectorImpl::OnSourceSwapBuffers(const gfx::Size& surface_size) {
   if (mirroring_layers_.empty())
     return;
 
   // Should be attached to the source output surface already.
   DCHECK(mailbox_.get());
-
-  gfx::Size size = output_surface_->SurfaceSize();
 
   // Request full redraw on mirroring compositor.
   for (LayerData* layer_data : mirroring_layers_)
-    UpdateTexture(layer_data, size, layer_data->layer->bounds());
+    UpdateTexture(layer_data, surface_size, layer_data->layer->bounds());
 }
 
-void ReflectorImpl::OnSourcePostSubBuffer(const gfx::Rect& rect) {
+void ReflectorImpl::OnSourcePostSubBuffer(const gfx::Rect& swap_rect,
+                                          const gfx::Size& surface_size) {
   if (mirroring_layers_.empty())
     return;
 
   // Should be attached to the source output surface already.
   DCHECK(mailbox_.get());
 
-  gfx::Size size = output_surface_->SurfaceSize();
-
-  int y = rect.y();
-  // Flip the coordinates to compositor's one.
-  if (flip_texture_)
-    y = size.height() - rect.y() - rect.height();
-  gfx::Rect mirroring_rect(rect.x(), y, rect.width(), rect.height());
+  gfx::Rect mirroring_rect = swap_rect;
+  if (flip_texture_) {
+    // Flip the coordinates to compositor's one.
+    mirroring_rect.set_y(surface_size.height() - swap_rect.y() -
+                         swap_rect.height());
+  }
 
   // Request redraw of the dirty portion in mirroring compositor.
   for (LayerData* layer_data : mirroring_layers_)
-    UpdateTexture(layer_data, size, mirroring_rect);
+    UpdateTexture(layer_data, surface_size, mirroring_rect);
 }
 
 static void ReleaseMailbox(scoped_refptr<OwnedMailbox> mailbox,

@@ -14,11 +14,11 @@
 #include "cc/layers/texture_layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/output/software_output_device.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/test/paths.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_output_surface.h"
-#include "cc/test/pixel_test_software_output_device.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_compositor_frame_sink.h"
 #include "cc/test/test_in_process_context_provider.h"
@@ -67,9 +67,6 @@ std::unique_ptr<TestCompositorFrameSink>
 
 std::unique_ptr<OutputSurface> LayerTreePixelTest::CreateDisplayOutputSurface(
     scoped_refptr<ContextProvider> compositor_context_provider) {
-  // Always test Webview shenanigans.
-  gfx::Size surface_expansion_size(40, 60);
-
   std::unique_ptr<PixelTestOutputSurface> display_output_surface;
   if (test_type_ == PIXEL_TEST_GL) {
     bool flipped_output_surface = false;
@@ -80,13 +77,9 @@ std::unique_ptr<OutputSurface> LayerTreePixelTest::CreateDisplayOutputSurface(
         make_scoped_refptr(new TestInProcessContextProvider(nullptr)),
         flipped_output_surface);
   } else {
-    std::unique_ptr<PixelTestSoftwareOutputDevice> software_output_device(
-        new PixelTestSoftwareOutputDevice);
-    software_output_device->set_surface_expansion_size(surface_expansion_size);
     display_output_surface = base::MakeUnique<PixelTestOutputSurface>(
-        std::move(software_output_device));
+        base::MakeUnique<SoftwareOutputDevice>());
   }
-  display_output_surface->set_surface_expansion_size(surface_expansion_size);
   return std::move(display_output_surface);
 }
 

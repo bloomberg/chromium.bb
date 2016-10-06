@@ -47,11 +47,12 @@ class CONTENT_EXPORT ReflectorImpl : public ui::Reflector {
 
   // Called in |BrowserCompositorOutputSurface::SwapBuffers| to copy
   // the full screen image to the |mailbox_| texture.
-  void OnSourceSwapBuffers();
+  void OnSourceSwapBuffers(const gfx::Size& surface_size);
 
   // Called in |BrowserCompositorOutputSurface::PostSubBuffer| copy
   // the sub image given by |rect| to the |mailbox_| texture.
-  void OnSourcePostSubBuffer(const gfx::Rect& rect);
+  void OnSourcePostSubBuffer(const gfx::Rect& swap_rect,
+                             const gfx::Size& surface_size);
 
   // Called when the source surface is bound and available.
   void OnSourceSurfaceReady(BrowserCompositorOutputSurface* surface);

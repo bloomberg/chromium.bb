@@ -119,7 +119,6 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
                        float scale_factor,
                        const gfx::ColorSpace& color_space,
                        bool alpha);
-  gfx::Size SurfaceSize() const { return surface_size_; }
 
   virtual bool HasExternalStencilTest() const = 0;
   virtual void ApplyExternalStencil() = 0;

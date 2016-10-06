@@ -84,7 +84,6 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
                                        std::move(vsync_manager),
                                        begin_frame_source,
                                        CreateTestValidatorOzone()) {
-    surface_size_ = gfx::Size(256, 256);
     device_scale_factor_ = 1.f;
   }
 
@@ -124,6 +123,7 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
 };
 
 const gfx::Rect kSubRect(0, 0, 64, 64);
+const gfx::Size kSurfaceSize(256, 256);
 
 }  // namespace
 
@@ -154,8 +154,8 @@ class ReflectorImplTest : public testing::Test {
     compositor_->SetRootLayer(root_layer_.get());
     mirroring_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     compositor_->root_layer()->Add(mirroring_layer_.get());
-    gfx::Size size = output_surface_->SurfaceSize();
-    mirroring_layer_->SetBounds(gfx::Rect(size.width(), size.height()));
+    output_surface_->Reshape(kSurfaceSize, 1.f, gfx::ColorSpace(), false);
+    mirroring_layer_->SetBounds(gfx::Rect(kSurfaceSize));
   }
 
   void SetUpReflector() {
@@ -177,7 +177,9 @@ class ReflectorImplTest : public testing::Test {
     ImageTransportFactory::Terminate();
   }
 
-  void UpdateTexture() { reflector_->OnSourcePostSubBuffer(kSubRect); }
+  void UpdateTexture() {
+    reflector_->OnSourcePostSubBuffer(kSubRect, kSurfaceSize);
+  }
 
  protected:
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
@@ -198,9 +200,8 @@ TEST_F(ReflectorImplTest, CheckNormalOutputSurface) {
   SetUpReflector();
   UpdateTexture();
   EXPECT_TRUE(mirroring_layer_->TextureFlipped());
-  gfx::Rect expected_rect =
-      kSubRect + gfx::Vector2d(0, output_surface_->SurfaceSize().height()) -
-      gfx::Vector2d(0, kSubRect.height());
+  gfx::Rect expected_rect = kSubRect + gfx::Vector2d(0, kSurfaceSize.height()) -
+                            gfx::Vector2d(0, kSubRect.height());
   EXPECT_EQ(expected_rect, mirroring_layer_->damaged_region());
 }
 

@@ -1123,52 +1123,6 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
     gl->reset_discarded();
     output_surface->set_has_external_stencil_test(false);
   }
-  {
-    // Full frame, clipped, should not discard.
-    clip_rect = gfx::Rect(10, 10, 10, 10);
-    RenderPassId root_pass_id(1, 0);
-    RenderPass* root_pass =
-        AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
-                      viewport_rect, gfx::Transform());
-    AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
-    root_pass->damage_rect = root_pass->output_rect;
-
-    renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-    DrawFrame(&renderer, viewport_rect, clip_rect);
-    EXPECT_EQ(0, gl->discarded());
-    gl->reset_discarded();
-  }
-  {
-    // Full frame, doesn't cover the surface, should not discard.
-    viewport_rect = gfx::Rect(10, 10, 10, 10);
-    RenderPassId root_pass_id(1, 0);
-    RenderPass* root_pass =
-        AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
-                      viewport_rect, gfx::Transform());
-    AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
-    root_pass->damage_rect = root_pass->output_rect;
-
-    renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-    DrawFrame(&renderer, viewport_rect, clip_rect);
-    EXPECT_EQ(0, gl->discarded());
-    gl->reset_discarded();
-  }
-  {
-    // Full frame, doesn't cover the surface (no offset), should not discard.
-    clip_rect = gfx::Rect(100, 100);
-    viewport_rect = gfx::Rect(50, 50);
-    RenderPassId root_pass_id(1, 0);
-    RenderPass* root_pass =
-        AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
-                      viewport_rect, gfx::Transform());
-    AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
-    root_pass->damage_rect = root_pass->output_rect;
-
-    renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-    DrawFrame(&renderer, viewport_rect, clip_rect);
-    EXPECT_EQ(0, gl->discarded());
-    gl->reset_discarded();
-  }
 }
 
 class FlippedScissorAndViewportGLES2Interface : public TestGLES2Interface {
@@ -1176,51 +1130,6 @@ class FlippedScissorAndViewportGLES2Interface : public TestGLES2Interface {
   MOCK_METHOD4(Viewport, void(GLint x, GLint y, GLsizei width, GLsizei height));
   MOCK_METHOD4(Scissor, void(GLint x, GLint y, GLsizei width, GLsizei height));
 };
-
-TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
-  // In Android WebView, the OutputSurface is unable to respect reshape() calls
-  // and maintains a fixed size. This test verifies that glViewport and
-  // glScissor's Y coordinate is flipped correctly in this environment, and that
-  // the glViewport can be at a nonzero origin within the surface.
-  auto gl_owned = base::MakeUnique<FlippedScissorAndViewportGLES2Interface>();
-
-  // We expect exactly one call to viewport on this context and exactly two
-  // to scissor (one to scissor the clear, one to scissor the quad draw).
-  EXPECT_CALL(*gl_owned, Viewport(10, 390, 100, 100));
-  EXPECT_CALL(*gl_owned, Scissor(10, 390, 100, 100));
-  EXPECT_CALL(*gl_owned, Scissor(30, 450, 20, 20));
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      new NonReshapableOutputSurface(std::move(gl_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
-
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
-
-  RendererSettings settings;
-  FakeRendererGL renderer(&settings, output_surface.get(),
-                          resource_provider.get());
-  renderer.Initialize();
-  EXPECT_FALSE(renderer.use_partial_swap());
-  renderer.SetVisible(true);
-
-  gfx::Rect device_viewport_rect(10, 10, 100, 100);
-  gfx::Rect viewport_rect(device_viewport_rect.size());
-  gfx::Rect quad_rect = gfx::Rect(20, 20, 20, 20);
-
-  RenderPassId root_pass_id(1, 0);
-  RenderPass* root_pass =
-      AddRenderPass(&render_passes_in_draw_order_, root_pass_id, viewport_rect,
-                    gfx::Transform());
-  AddClippedQuad(root_pass, quad_rect, SK_ColorGREEN);
-
-  renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-  DrawFrame(&renderer, device_viewport_rect);
-}
 
 TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
   // When using render-to-FBO to display the surface, all rendering is done

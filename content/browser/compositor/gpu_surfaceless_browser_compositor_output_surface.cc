@@ -71,6 +71,10 @@ unsigned GpuSurfacelessBrowserCompositorOutputSurface::GetOverlayTextureId()
 void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame frame) {
   DCHECK(buffer_queue_);
+  DCHECK(reshape_size_ == frame.gl_frame_data->size);
+  // TODO(ccameron): What if a swap comes again before OnGpuSwapBuffersCompleted
+  // happens, we'd see the wrong swap size there?
+  swap_size_ = reshape_size_;
   buffer_queue_->SwapBuffers(frame.gl_frame_data->sub_buffer_rect);
   GpuBrowserCompositorOutputSurface::SwapBuffers(std::move(frame));
 }
@@ -90,10 +94,11 @@ void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
     float scale_factor,
     const gfx::ColorSpace& color_space,
     bool alpha) {
+  reshape_size_ = size;
   GpuBrowserCompositorOutputSurface::Reshape(size, scale_factor, color_space,
                                              alpha);
   DCHECK(buffer_queue_);
-  buffer_queue_->Reshape(SurfaceSize(), scale_factor, color_space);
+  buffer_queue_->Reshape(size, scale_factor, color_space);
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
@@ -112,7 +117,7 @@ void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
   GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
       latency_info, result, params_mac);
   if (force_swap)
-    client_->SetNeedsRedrawRect(gfx::Rect(SurfaceSize()));
+    client_->SetNeedsRedrawRect(gfx::Rect(swap_size_));
 }
 
 }  // namespace content

@@ -81,6 +81,9 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
   std::unique_ptr<display_compositor::BufferQueue> buffer_queue_;
   cc::SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
 
+  gfx::Size reshape_size_;
+  gfx::Size swap_size_;
+
   base::WeakPtrFactory<DirectOutputSurfaceOzone> weak_ptr_factory_;
 };
 

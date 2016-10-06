@@ -63,15 +63,10 @@ class PixelTest : public testing::Test {
   std::unique_ptr<DirectRenderer> renderer_;
   SoftwareRenderer* software_renderer_ = nullptr;
   std::unique_ptr<SkBitmap> result_bitmap_;
-  gfx::Vector2d external_device_viewport_offset_;
-  gfx::Rect external_device_clip_rect_;
 
   void SetUpGLRenderer(bool use_skia_gpu_backend, bool flipped_output_surface);
   void SetUpSoftwareRenderer();
 
-  void ForceExpandedViewport(const gfx::Size& surface_expansion);
-  void ForceViewportOffset(const gfx::Vector2d& viewport_offset);
-  void ForceDeviceClip(const gfx::Rect& clip);
   void EnableExternalStencilTest();
 
  private:
@@ -141,8 +136,6 @@ inline void RendererPixelTest<GLRenderer>::SetUp() {
 template<>
 inline void RendererPixelTest<GLRendererWithExpandedViewport>::SetUp() {
   SetUpGLRenderer(false, false);
-  ForceExpandedViewport(gfx::Size(50, 50));
-  ForceViewportOffset(gfx::Vector2d(10, 20));
 }
 
 template <>
@@ -158,8 +151,6 @@ inline void RendererPixelTest<SoftwareRenderer>::SetUp() {
 template<>
 inline void RendererPixelTest<SoftwareRendererWithExpandedViewport>::SetUp() {
   SetUpSoftwareRenderer();
-  ForceExpandedViewport(gfx::Size(50, 50));
-  ForceViewportOffset(gfx::Vector2d(10, 20));
 }
 
 typedef RendererPixelTest<GLRenderer> GLRendererPixelTest;

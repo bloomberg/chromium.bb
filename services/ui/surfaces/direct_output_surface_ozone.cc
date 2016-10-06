@@ -87,6 +87,11 @@ void DirectOutputSurfaceOzone::SwapBuffers(cc::CompositorFrame frame) {
   DCHECK(buffer_queue_);
   DCHECK(frame.gl_frame_data);
 
+  // TODO(rjkroege): What if swap happens again before OnGpuSwapBuffersCompleted
+  // then it would see the wrong size?
+  DCHECK(reshape_size_ == frame.gl_frame_data->size);
+  swap_size_ = reshape_size_;
+
   buffer_queue_->SwapBuffers(frame.gl_frame_data->sub_buffer_rect);
 
   // Code combining GpuBrowserCompositorOutputSurface + DirectOutputSurface
@@ -119,9 +124,9 @@ void DirectOutputSurfaceOzone::Reshape(const gfx::Size& size,
                                        float scale_factor,
                                        const gfx::ColorSpace& color_space,
                                        bool alpha) {
+  reshape_size_ = size;
   OutputSurface::Reshape(size, scale_factor, color_space, alpha);
-  DCHECK(buffer_queue_);
-  buffer_queue_->Reshape(SurfaceSize(), scale_factor, color_space);
+  buffer_queue_->Reshape(size, scale_factor, color_space);
 }
 
 cc::OverlayCandidateValidator*
@@ -135,7 +140,6 @@ bool DirectOutputSurfaceOzone::IsDisplayedAsOverlayPlane() const {
 }
 
 unsigned DirectOutputSurfaceOzone::GetOverlayTextureId() const {
-  DCHECK(buffer_queue_);
   return buffer_queue_->current_texture_id();
 }
 
@@ -158,7 +162,6 @@ void DirectOutputSurfaceOzone::OnUpdateVSyncParametersFromGpu(
 
 void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
     gfx::SwapResult result) {
-  DCHECK(buffer_queue_);
   bool force_swap = false;
   if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
@@ -172,7 +175,7 @@ void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
   client_->DidSwapBuffersComplete();
 
   if (force_swap)
-    client_->SetNeedsRedrawRect(gfx::Rect(SurfaceSize()));
+    client_->SetNeedsRedrawRect(gfx::Rect(swap_size_));
 }
 
 }  // namespace ui
