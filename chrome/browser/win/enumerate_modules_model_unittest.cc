@@ -32,29 +32,29 @@ static const struct NormalizationEntryList {
   {
     // Only path normalization needed.
     {kType, kStatus, L"c:\\foo\\bar.dll", L"",        L"Prod", L"Desc", L"1.0",
-         L"Sig", kAction},
+         kAction},
     {kType, kStatus, L"c:\\foo\\",        L"bar.dll", L"Prod", L"Desc", L"1.0",
-         L"Sig", kAction},
+         kAction},
   }, {
     // Lower case normalization.
     {kType, kStatus, L"C:\\Foo\\Bar.dll", L"",        L"", L"", L"1.0",
-         L"", kAction},
+         kAction},
     {kType, kStatus, L"c:\\foo\\",        L"bar.dll", L"", L"", L"1.0",
-         L"", kAction},
+         kAction},
   }, {
     // Version can include strings after the version number. Strip that away.
     {kType, kStatus, L"c:\\foo.dll", L"",        L"", L"", L"1.0 asdf",
-         L"", kAction},
+         kAction},
     {kType, kStatus, L"c:\\",        L"foo.dll", L"", L"", L"1.0",
-         L"", kAction},
+         kAction},
   }, {
     // Corner case: No path (not sure this will ever happen).
-    {kType, kStatus, L"bar.dll", L"",        L"", L"", L"", L"", kAction},
-    {kType, kStatus, L"",        L"bar.dll", L"", L"", L"", L"", kAction},
+    {kType, kStatus, L"bar.dll", L"",        L"", L"", L"", kAction},
+    {kType, kStatus, L"",        L"bar.dll", L"", L"", L"", kAction},
   }, {
     // Error case: Missing filename (not sure this will ever happen).
-    {kType, kStatus, L"", L"", L"", L"", L"1.0", L"", kAction},
-    {kType, kStatus, L"", L"", L"", L"", L"1.0", L"", kAction},
+    {kType, kStatus, L"", L"", L"", L"", L"1.0", kAction},
+    {kType, kStatus, L"", L"", L"", L"", L"1.0", kAction},
   },
 };
 
@@ -73,20 +73,19 @@ TEST_F(EnumerateModulesTest, NormalizeEntry) {
     EXPECT_STREQ(expected.product_name.c_str(), test.product_name.c_str());
     EXPECT_STREQ(expected.description.c_str(), test.description.c_str());
     EXPECT_STREQ(expected.version.c_str(), test.version.c_str());
-    EXPECT_STREQ(expected.digital_signer.c_str(), test.digital_signer.c_str());
     EXPECT_EQ(expected.recommended_action, test.recommended_action);
     EXPECT_TRUE(test.normalized);
   }
 }
 
 const ModuleEnumerator::Module kStandardModule =
-  { kType, kStatus, L"c:\\foo\\bar.dll", L"", L"Prod", L"Desc", L"1.0", L"Sig",
+  { kType, kStatus, L"c:\\foo\\bar.dll", L"", L"Prod", L"Desc", L"1.0",
     ModuleEnumerator::NONE };
 const ModuleEnumerator::Module kStandardModuleNoDescription =
-  { kType, kStatus, L"c:\\foo\\bar.dll", L"", L"Prod", L"", L"1.0", L"Sig",
+  { kType, kStatus, L"c:\\foo\\bar.dll", L"", L"Prod", L"", L"1.0",
     ModuleEnumerator::NONE };
 const ModuleEnumerator::Module kStandardModuleNoSignature =
-  { kType, kStatus, L"c:\\foo\\bar.dll", L"", L"Prod", L"Desc", L"1.0", L"",
+  { kType, kStatus, L"c:\\foo\\bar.dll", L"", L"Prod", L"Desc", L"1.0",
     ModuleEnumerator::NONE };
 
 const struct CollapsePathList {

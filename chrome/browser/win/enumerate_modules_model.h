@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -20,7 +21,6 @@
 class EnumerateModulesModel;
 
 namespace base {
-class FilePath;
 class ListValue;
 }
 
@@ -73,10 +73,30 @@ class ModuleEnumerator {
     XP           = 1 << 0,
   };
 
+  // The type of certificate found for the module.
+  enum CertificateType {
+    NO_CERTIFICATE,
+    CERTIFICATE_IN_FILE,
+    CERTIFICATE_IN_CATALOG,
+  };
+
+  // Information about the certificate of a file.
+  struct CertificateInfo {
+    CertificateInfo();
+
+    // The type of signature encountered.
+    CertificateType type;
+    // Path to the file containing the certificate. Empty if NO_CERTIFICATE.
+    base::FilePath path;
+    // The "Subject" name of the certificate.
+    base::string16 subject;
+  };
+
   // The structure we populate when enumerating modules.
   struct Module {
     Module();
     Module(const Module& rhs);
+    // Constructor exposed for unittesting.
     Module(ModuleType type,
            ModuleStatus status,
            const base::string16& location,
@@ -84,7 +104,6 @@ class ModuleEnumerator {
            const base::string16& product_name,
            const base::string16& description,
            const base::string16& version,
-           const base::string16& digital_signer,
            RecommendedAction recommended_action);
     ~Module();
 
@@ -102,8 +121,6 @@ class ModuleEnumerator {
     base::string16 description;
     // The module version.
     base::string16 version;
-    // The signer of the digital certificate for the module.
-    base::string16 digital_signer;
     // The help tips bitmask.
     RecommendedAction recommended_action;
     // The duplicate count within each category of modules.
@@ -111,6 +128,8 @@ class ModuleEnumerator {
     // Whether this module has been normalized (necessary before checking it
     // against blacklist).
     bool normalized;
+    // The certificate info for the module.
+    CertificateInfo cert_info;
   };
 
   // A vector typedef of all modules enumerated.
@@ -181,11 +200,6 @@ class ModuleEnumerator {
   // For a given |module|, collapse the path from c:\windows to %systemroot%,
   // based on the |path_mapping_| vector.
   void CollapsePath(Module* module);
-
-  // Given a filename, returns the Subject (who signed it) retrieved from
-  // the digital signature (Authenticode).
-  base::string16 GetSubjectNameFromDigitalSignature(
-      const base::FilePath& filename);
 
   // Reports (via UMA) a handful of high-level metrics regarding third party
   // modules in this process. Called by ScanImpl after modules have been

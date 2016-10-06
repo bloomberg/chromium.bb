@@ -13,13 +13,13 @@
 #include <mscat.h>  // NOLINT: This must be after wincrypt and wintrust.
 
 #include <algorithm>
+#include <set>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/environment.h"
 #include "base/file_version_info.h"
-#include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -243,16 +243,16 @@ struct CryptCATCatalogContextScopedTraits {
 using ScopedCryptCATCatalogContext = base::ScopedGeneric<
     CryptCATCatalogContext, CryptCATCatalogContextScopedTraits>;
 
-// Returns the "Subject" field associated with the certificate that signs
-// the catalog in which the given file is found, if any. Returns an empty string
-// on failure.
-base::string16 GetSubjectNameInCatalog(const base::FilePath& filename) {
+// Extracts the subject name and catalog path if the provided file is present in
+// a catalog file.
+void GetCatalogCertificateInfo(const base::FilePath& filename,
+                               ModuleEnumerator::CertificateInfo* cert_info) {
   // Get a crypt context for signature verification.
   ScopedCryptCATContext context;
   {
     PVOID raw_context = nullptr;
     if (!CryptCATAdminAcquireContext(&raw_context, nullptr, 0))
-      return base::string16();
+      return;
     context.reset(raw_context);
   }
 
@@ -262,20 +262,20 @@ base::string16 GetSubjectNameInCatalog(const base::FilePath& filename) {
     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
     nullptr, OPEN_EXISTING, 0, nullptr));
   if (!file_handle.IsValid())
-    return base::string16();
+    return;
 
   // Get the size we need for our hash.
   DWORD hash_size = 0;
   CryptCATAdminCalcHashFromFileHandle(
       file_handle.Get(), &hash_size, nullptr, 0);
   if (hash_size == 0)
-    return base::string16();
+    return;
 
   // Calculate the hash. If this fails then bail.
   std::vector<BYTE> buffer(hash_size);
   if (!CryptCATAdminCalcHashFromFileHandle(file_handle.Get(), &hash_size,
           buffer.data(), 0)) {
-    return base::string16();
+    return;
   }
 
   // Get catalog for our context.
@@ -284,7 +284,7 @@ base::string16 GetSubjectNameInCatalog(const base::FilePath& filename) {
       CryptCATAdminEnumCatalogFromHash(context.get(), buffer.data(), hash_size,
                                        0, nullptr)));
   if (!catalog_context.is_valid())
-    return base::string16();
+    return;
 
   // Get the catalog info. This includes the path to the catalog itself, which
   // contains the signature of interest.
@@ -292,16 +292,46 @@ base::string16 GetSubjectNameInCatalog(const base::FilePath& filename) {
   catalog_info.cbStruct = sizeof(catalog_info);
   if (!CryptCATCatalogInfoFromContext(
       catalog_context.get().catalog_context(), &catalog_info, 0)) {
-    return base::string16();
+    return;
   }
 
   // Attempt to get the "Subject" field from the signature of the catalog file
   // itself.
   base::FilePath catalog_path(catalog_info.wszCatalogFile);
-  return GetSubjectNameInFile(catalog_path);
+  base::string16 subject = GetSubjectNameInFile(catalog_path);
+
+  if (subject.empty())
+    return;
+
+  cert_info->type = ModuleEnumerator::CERTIFICATE_IN_CATALOG;
+  cert_info->path = catalog_path;
+  cert_info->subject = subject;
+}
+
+// Extracts information about the certificate of the given file, if any is
+// found.
+void GetCertificateInfo(const base::FilePath& filename,
+                        ModuleEnumerator::CertificateInfo* cert_info) {
+  DCHECK_EQ(ModuleEnumerator::NO_CERTIFICATE, cert_info->type);
+  DCHECK(cert_info->path.empty());
+  DCHECK(cert_info->subject.empty());
+
+  GetCatalogCertificateInfo(filename, cert_info);
+  if (cert_info->type == ModuleEnumerator::CERTIFICATE_IN_CATALOG)
+    return;
+
+  base::string16 subject = GetSubjectNameInFile(filename);
+  if (subject.empty())
+    return;
+
+  cert_info->type = ModuleEnumerator::CERTIFICATE_IN_FILE;
+  cert_info->path = filename;
+  cert_info->subject = subject;
 }
 
 }  // namespace
+
+ModuleEnumerator::CertificateInfo::CertificateInfo() : type(NO_CERTIFICATE) {}
 
 ModuleEnumerator::Module::Module() {
 }
@@ -315,7 +345,6 @@ ModuleEnumerator::Module::Module(ModuleType type,
                                  const base::string16& product_name,
                                  const base::string16& description,
                                  const base::string16& version,
-                                 const base::string16& digital_signer,
                                  RecommendedAction recommended_action)
     : type(type),
       status(status),
@@ -324,7 +353,6 @@ ModuleEnumerator::Module::Module(ModuleType type,
       product_name(product_name),
       description(description),
       version(version),
-      digital_signer(digital_signer),
       recommended_action(recommended_action),
       duplicate_count(0),
       normalized(false) {
@@ -515,8 +543,7 @@ void ModuleEnumerator::EnumerateWinsockModules() {
     DWORD size = ExpandEnvironmentStrings(
         entry.location.c_str(), expanded, MAX_PATH);
     if (size != 0 && size <= MAX_PATH) {
-      entry.digital_signer =
-          GetSubjectNameFromDigitalSignature(base::FilePath(expanded));
+      GetCertificateInfo(base::FilePath(expanded), &entry.cert_info);
     }
     entry.version = base::IntToString16(layered_providers[i].version);
 
@@ -530,8 +557,7 @@ void ModuleEnumerator::PopulateModuleInformation(Module* module) {
   module->status = NOT_MATCHED;
   module->duplicate_count = 0;
   module->normalized = false;
-  module->digital_signer =
-      GetSubjectNameFromDigitalSignature(base::FilePath(module->location));
+  GetCertificateInfo(base::FilePath(module->location), &module->cert_info);
   module->recommended_action = NONE;
   std::unique_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(base::FilePath(module->location)));
@@ -608,41 +634,52 @@ void ModuleEnumerator::CollapsePath(Module* entry) {
   }
 }
 
-base::string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
-    const base::FilePath& filename) {
-  // Try using the signature directly present in the file first.
-  base::string16 subject_name = GetSubjectNameInFile(filename);
-  if (!subject_name.empty())
-    return subject_name;
-
-  // If that fails then look in the signed catalogs.
-  return GetSubjectNameInCatalog(filename);
-}
-
 void ModuleEnumerator::ReportThirdPartyMetrics() {
   static const wchar_t kMicrosoft[] = L"Microsoft ";
 
+  // Used for counting unique certificates that need to be validated. A
+  // catalog counts as a single certificate, as does a file with a baked in
+  // certificate.
+  std::set<base::FilePath> unique_certificates;
+  size_t microsoft_certificates = 0;
   size_t signed_modules = 0;
   size_t microsoft_modules = 0;
+  size_t catalog_modules = 0;
   for (const auto& module : *enumerated_modules_) {
-    if (!module.digital_signer.empty()) {
+    if (module.cert_info.type != ModuleEnumerator::NO_CERTIFICATE) {
       ++signed_modules;
+
+      if (module.cert_info.type == ModuleEnumerator::CERTIFICATE_IN_CATALOG)
+        ++catalog_modules;
+
+      // The first time this certificate is encountered it will be inserted
+      // into the set.
+      bool new_certificate =
+          unique_certificates.insert(module.cert_info.path).second;
 
       // Check if the signer name begins with "Microsoft ". Signatures are
       // typically "Microsoft Corporation" or "Microsoft Windows", but others
       // may exist.
-      if (module.digital_signer.compare(0, arraysize(kMicrosoft) - 1,
-                                        kMicrosoft) == 0) {
+      if (module.cert_info.subject.compare(0, arraysize(kMicrosoft) - 1,
+                                           kMicrosoft) == 0) {
         ++microsoft_modules;
+        if (new_certificate)
+          ++microsoft_certificates;
       }
     }
   }
 
-  // Report back some metrics regarding third party modules.
+  // Report back some metrics regarding third party modules and certificates.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Certificates.Total",
+                              unique_certificates.size(), 1, 500, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Certificates.Microsoft",
+                              microsoft_certificates, 1, 500, 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Modules.Signed",
                               signed_modules, 1, 500, 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Modules.Signed.Microsoft",
                               microsoft_modules, 1, 500, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Modules.Signed.Catalog",
+                              catalog_modules, 1, 500, 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Modules.Total",
                               enumerated_modules_->size(), 1, 500, 50);
 }
@@ -787,7 +824,7 @@ base::ListValue* EnumerateModulesModel::GetModuleList() {
     data->SetString("product_name", module->product_name);
     data->SetString("description", module->description);
     data->SetString("version", module->version);
-    data->SetString("digital_signer", module->digital_signer);
+    data->SetString("digital_signer", module->cert_info.subject);
 
     // Figure out the possible resolution help string.
     base::string16 actions;
