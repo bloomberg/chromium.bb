@@ -323,8 +323,12 @@ void ArcAppWindowLauncherController::AdditionalUserAddedToSession(
 }
 
 void ArcAppWindowLauncherController::OnWindowInitialized(aura::Window* window) {
-  // Arc windows has type WINDOW_TYPE_NORMAL.
-  if (window->type() != ui::wm::WINDOW_TYPE_NORMAL)
+  // An arc window has type WINDOW_TYPE_NORMAL, a WindowDelegate and
+  // is a top level views widget.
+  if (window->type() != ui::wm::WINDOW_TYPE_NORMAL || !window->delegate())
+    return;
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  if (!widget || !widget->is_top_level())
     return;
   observed_windows_.push_back(window);
   window->AddObserver(this);
