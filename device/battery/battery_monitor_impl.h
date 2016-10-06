@@ -11,6 +11,7 @@
 #include "device/battery/battery_export.h"
 #include "device/battery/battery_monitor.mojom.h"
 #include "device/battery/battery_status_service.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
@@ -29,6 +30,7 @@ class BatteryMonitorImpl : public BatteryMonitor {
   void DidChange(const BatteryStatus& battery_status);
   void ReportStatus();
 
+  mojo::StrongBindingPtr<BatteryMonitor> binding_;
   std::unique_ptr<BatteryStatusService::BatteryUpdateSubscription>
       subscription_;
   QueryNextStatusCallback callback_;

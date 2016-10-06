@@ -8,14 +8,17 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
 // static
 void BatteryMonitorImpl::Create(BatteryMonitorRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<BatteryMonitorImpl>(),
-                          std::move(request));
+  auto* impl = new BatteryMonitorImpl;
+  auto binding =
+      mojo::MakeStrongBinding(base::WrapUnique(impl), std::move(request));
+  impl->binding_ = binding;
 }
 
 BatteryMonitorImpl::BatteryMonitorImpl() : status_to_report_(false) {
@@ -32,7 +35,7 @@ void BatteryMonitorImpl::QueryNextStatus(
     const QueryNextStatusCallback& callback) {
   if (!callback_.is_null()) {
     DVLOG(1) << "Overlapped call to QueryNextStatus!";
-    delete this;
+    binding_->Close();
     return;
   }
   callback_ = callback;
