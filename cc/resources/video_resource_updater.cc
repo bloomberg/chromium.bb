@@ -514,34 +514,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       // LUMINANCE_F16 uses half-floats, so we always need a conversion step.
       if (plane_resource.resource_format() == LUMINANCE_F16) {
         needs_conversion = true;
-
-        // If the input data was 9 or 10 bit, and we output to half-floats,
-        // then we used the OR path below, which means that we need to
-        // adjust the resource offset and multiplier accordingly. If the
-        // input data uses more than 10 bits, it will already be normalized
-        // to 0.0..1.0, so there is no need to do anything.
-        if (bits_per_channel <= 10) {
-          // By OR-ing with 0x3800, 10-bit numbers become half-floats in the
-          // range [0.5..1) and 9-bit numbers get the range [0.5..0.75).
-          //
-          // Half-floats are evaluated as:
-          // float value = pow(2.0, exponent - 25) * (0x400 + fraction);
-          //
-          // In our case the exponent is 14 (since we or with 0x3800) and
-          // pow(2.0, 14-25) * 0x400 evaluates to 0.5 (our offset) and
-          // pow(2.0, 14-25) * fraction is [0..0.49951171875] for 10-bit and
-          // [0..0.24951171875] for 9-bit.
-          //
-          // https://en.wikipedia.org/wiki/Half-precision_floating-point_format
-          //
-          // PLEASE NOTE:
-          // All planes are assumed to use the same multiplier/offset.
-          external_resources.offset = 0.5f;
-          // Max value from input data.
-          int max_input_value = (1 << bits_per_channel) - 1;
-          // 2 << 11 = 2048 would be 1.0 with our exponent.
-          external_resources.multiplier = 2048.0 / max_input_value;
-        }
       } else if (bits_per_channel > 8) {
         // If bits_per_channel > 8 and we can't use LUMINANCE_F16, we need to
         // shift the data down and create an 8-bit texture.
@@ -601,6 +573,35 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       plane_resource.SetUniqueId(video_frame->unique_id(), i);
     }
 
+    if (plane_resource.resource_format() == LUMINANCE_F16) {
+      // If the input data was 9 or 10 bit, and we output to half-floats,
+      // then we used the OR path above, which means that we need to
+      // adjust the resource offset and multiplier accordingly. If the
+      // input data uses more than 10 bits, it will already be normalized
+      // to 0.0..1.0, so there is no need to do anything.
+      if (bits_per_channel <= 10) {
+        // By OR-ing with 0x3800, 10-bit numbers become half-floats in the
+        // range [0.5..1) and 9-bit numbers get the range [0.5..0.75).
+        //
+        // Half-floats are evaluated as:
+        // float value = pow(2.0, exponent - 25) * (0x400 + fraction);
+        //
+        // In our case the exponent is 14 (since we or with 0x3800) and
+        // pow(2.0, 14-25) * 0x400 evaluates to 0.5 (our offset) and
+        // pow(2.0, 14-25) * fraction is [0..0.49951171875] for 10-bit and
+        // [0..0.24951171875] for 9-bit.
+        //
+        // https://en.wikipedia.org/wiki/Half-precision_floating-point_format
+        //
+        // PLEASE NOTE:
+        // All planes are assumed to use the same multiplier/offset.
+        external_resources.offset = 0.5f;
+        // Max value from input data.
+        int max_input_value = (1 << bits_per_channel) - 1;
+        // 2 << 11 = 2048 would be 1.0 with our exponent.
+        external_resources.multiplier = 2048.0 / max_input_value;
+      }
+    }
 
     // VideoResourceUpdater shares a context with the compositor so a
     // sync token is not required.

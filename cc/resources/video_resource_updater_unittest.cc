@@ -278,6 +278,16 @@ TEST_F(VideoResourceUpdaterTestWithF16, HighBitFrame) {
   VideoFrameExternalResources resources =
       updater.CreateExternalResourcesFromVideoFrame(video_frame);
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
+  EXPECT_NEAR(resources.multiplier, 2.0, 0.1);
+  EXPECT_NEAR(resources.offset, 0.5, 0.1);
+
+  // Create the resource again, to test the path where the
+  // resources are cached.
+  VideoFrameExternalResources resources2 =
+      updater.CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources2.type);
+  EXPECT_NEAR(resources2.multiplier, 2.0, 0.1);
+  EXPECT_NEAR(resources2.offset, 0.5, 0.1);
 }
 
 TEST_F(VideoResourceUpdaterTest, HighBitFrameSoftwareCompositor) {
