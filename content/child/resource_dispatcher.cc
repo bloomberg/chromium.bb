@@ -101,6 +101,11 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
   }
 
   void OnComplete(const ResourceRequestCompletionStatus& status) override {
+    if (!body_consumer_) {
+      resource_dispatcher_->OnMessageReceived(
+          ResourceMsg_RequestComplete(request_id_, status));
+      return;
+    }
     body_consumer_->OnComplete(status);
   }
 
