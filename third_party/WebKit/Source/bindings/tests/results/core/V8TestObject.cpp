@@ -4732,7 +4732,7 @@ static void limitedToOnlyOneAttributeAttributeGetter(const v8::FunctionCallbackI
 
     if (cppValue.isEmpty()) {
         ;
-    } else if (equalIgnoringCase(cppValue, "unique")) {
+    } else if (equalIgnoringASCIICase(cppValue, "unique")) {
         cppValue = "unique";
     } else {
         cppValue = "";
@@ -4781,11 +4781,11 @@ static void limitedToOnlyAttributeAttributeGetter(const v8::FunctionCallbackInfo
 
     if (cppValue.isEmpty()) {
         ;
-    } else if (equalIgnoringCase(cppValue, "Per")) {
+    } else if (equalIgnoringASCIICase(cppValue, "Per")) {
         cppValue = "Per";
-    } else if (equalIgnoringCase(cppValue, "Paal")) {
+    } else if (equalIgnoringASCIICase(cppValue, "Paal")) {
         cppValue = "Paal";
-    } else if (equalIgnoringCase(cppValue, "Espen")) {
+    } else if (equalIgnoringASCIICase(cppValue, "Espen")) {
         cppValue = "Espen";
     } else {
         cppValue = "";
@@ -4834,9 +4834,9 @@ static void limitedToOnlyOtherAttributeAttributeGetter(const v8::FunctionCallbac
 
     if (cppValue.isEmpty()) {
         ;
-    } else if (equalIgnoringCase(cppValue, "Value1")) {
+    } else if (equalIgnoringASCIICase(cppValue, "Value1")) {
         cppValue = "Value1";
-    } else if (equalIgnoringCase(cppValue, "Value2")) {
+    } else if (equalIgnoringASCIICase(cppValue, "Value2")) {
         cppValue = "Value2";
     } else {
         cppValue = "";
@@ -4885,9 +4885,9 @@ static void limitedWithMissingDefaultAttributeAttributeGetter(const v8::Function
 
     if (cppValue.isEmpty()) {
         cppValue = "rsa";
-    } else if (equalIgnoringCase(cppValue, "rsa")) {
+    } else if (equalIgnoringASCIICase(cppValue, "rsa")) {
         cppValue = "rsa";
-    } else if (equalIgnoringCase(cppValue, "dsa")) {
+    } else if (equalIgnoringASCIICase(cppValue, "dsa")) {
         cppValue = "dsa";
     } else {
         cppValue = "";
@@ -4936,11 +4936,11 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeGetter(const v8::F
 
     if (cppValue.isEmpty()) {
         cppValue = "auto";
-    } else if (equalIgnoringCase(cppValue, "ltr")) {
+    } else if (equalIgnoringASCIICase(cppValue, "ltr")) {
         cppValue = "ltr";
-    } else if (equalIgnoringCase(cppValue, "rtl")) {
+    } else if (equalIgnoringASCIICase(cppValue, "rtl")) {
         cppValue = "rtl";
-    } else if (equalIgnoringCase(cppValue, "auto")) {
+    } else if (equalIgnoringASCIICase(cppValue, "auto")) {
         cppValue = "auto";
     } else {
         cppValue = "ltr";
@@ -4991,9 +4991,9 @@ static void corsSettingAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
         ;
     } else if (cppValue.isEmpty()) {
         cppValue = "anonymous";
-    } else if (equalIgnoringCase(cppValue, "anonymous")) {
+    } else if (equalIgnoringASCIICase(cppValue, "anonymous")) {
         cppValue = "anonymous";
-    } else if (equalIgnoringCase(cppValue, "use-credentials")) {
+    } else if (equalIgnoringASCIICase(cppValue, "use-credentials")) {
         cppValue = "use-credentials";
     } else {
         cppValue = "anonymous";
@@ -5019,13 +5019,13 @@ static void limitedWithEmptyMissingInvalidAttributeAttributeGetter(const v8::Fun
         cppValue = "missing";
     } else if (cppValue.isEmpty()) {
         cppValue = "empty";
-    } else if (equalIgnoringCase(cppValue, "empty")) {
+    } else if (equalIgnoringASCIICase(cppValue, "empty")) {
         cppValue = "empty";
-    } else if (equalIgnoringCase(cppValue, "missing")) {
+    } else if (equalIgnoringASCIICase(cppValue, "missing")) {
         cppValue = "missing";
-    } else if (equalIgnoringCase(cppValue, "invalid")) {
+    } else if (equalIgnoringASCIICase(cppValue, "invalid")) {
         cppValue = "invalid";
-    } else if (equalIgnoringCase(cppValue, "a-normal")) {
+    } else if (equalIgnoringASCIICase(cppValue, "a-normal")) {
         cppValue = "a-normal";
     } else {
         cppValue = "invalid";

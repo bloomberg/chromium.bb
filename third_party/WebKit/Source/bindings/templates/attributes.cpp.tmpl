@@ -184,7 +184,7 @@ if ({{cpp_value}}.isEmpty()) {
 {% endif %}
 {% endif %}
 {% for value in reflect_only_values %}
-} else if (equalIgnoringCase({{cpp_value}}, "{{value}}")) {
+} else if (equalIgnoringASCIICase({{cpp_value}}, "{{value}}")) {
     {{cpp_value}} = "{{value}}";
 {% endfor %}
 } else {
