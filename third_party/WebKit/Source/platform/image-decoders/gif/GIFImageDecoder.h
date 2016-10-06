@@ -92,10 +92,7 @@ class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
   // Like clearCacheExceptFrame(), but preserves two frames instead of one.
   size_t clearCacheExceptTwoFrames(size_t, size_t);
 
-  void updateAggressivePurging(size_t index);
-
   bool m_currentBufferSawAlpha;
-  bool m_purgeAggressively;
   mutable int m_repetitionCount;
   std::unique_ptr<GIFImageReader> m_reader;
 };

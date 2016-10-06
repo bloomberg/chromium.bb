@@ -279,7 +279,8 @@ class PLATFORM_EXPORT ImageDecoder {
       : m_premultiplyAlpha(alphaOption == AlphaPremultiplied),
         m_ignoreGammaAndColorProfile(colorOptions ==
                                      GammaAndColorProfileIgnored),
-        m_maxDecodedBytes(maxDecodedBytes) {}
+        m_maxDecodedBytes(maxDecodedBytes),
+        m_purgeAggressively(false) {}
 
   // Calculates the most recent frame whose image data may be needed in
   // order to decode frame |frameIndex|, based on frame disposal methods
@@ -331,6 +332,13 @@ class PLATFORM_EXPORT ImageDecoder {
   // this limit can cause excessive memory use or even crashes on low-
   // memory devices.
   const size_t m_maxDecodedBytes;
+
+  // While decoding, we may learn that there are so many animation frames that
+  // we would go beyond our cache budget.
+  // If that happens, m_purgeAggressively is set to true. This signals
+  // future decodes to purge old frames as it goes.
+  void updateAggressivePurging(size_t index);
+  bool m_purgeAggressively;
 
  private:
   enum class SniffResult { JPEG, PNG, GIF, WEBP, ICO, BMP, Invalid };

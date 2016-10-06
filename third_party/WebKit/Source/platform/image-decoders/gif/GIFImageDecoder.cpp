@@ -36,7 +36,6 @@ GIFImageDecoder::GIFImageDecoder(AlphaOption alphaOption,
                                  GammaAndColorProfileOption colorOptions,
                                  size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes),
-      m_purgeAggressively(false),
       m_repetitionCount(cAnimationLoopOnce) {}
 
 GIFImageDecoder::~GIFImageDecoder() {}
@@ -402,48 +401,5 @@ bool GIFImageDecoder::initFrameBuffer(size_t frameIndex) {
   // Reset the alpha pixel tracker for this frame.
   m_currentBufferSawAlpha = false;
   return true;
-}
-
-void GIFImageDecoder::updateAggressivePurging(size_t index) {
-  if (m_purgeAggressively)
-    return;
-
-  // We don't want to cache so much that we cause a memory issue.
-  //
-  // If we used a LRU cache we would fill it and then on next animation loop
-  // we would need to decode all the frames again -- the LRU would give no
-  // benefit and would consume more memory.
-  // So instead, simply purge unused frames if caching all of the frames of
-  // the image would use more memory than the image decoder is allowed
-  // (m_maxDecodedBytes) or would overflow 32 bits..
-  //
-  // As we decode we will learn the total number of frames, and thus total
-  // possible image memory used.
-
-  const uint64_t frameArea = decodedSize().area();
-  // We are about to multiply by 4, which may require an extra bit of storage
-  bool wouldOverflow = frameArea > (UINT64_C(1) << 62);
-  if (wouldOverflow) {
-    m_purgeAggressively = true;
-    return;
-  }
-
-  const uint64_t frameMemoryUsage = frameArea * 4;  // 4 bytes per pixel
-  // We are about to multiply by a size_t, which does not have a fixed
-  // size.
-  // To simplify things, let's make sure our per-frame memory usage and
-  // index can be stored in 32 bits and store the multiplicand in a 64-bit
-  // number.
-  wouldOverflow =
-      (frameMemoryUsage > (UINT32_C(1) << 31)) || (index > (UINT32_C(1) << 31));
-  if (wouldOverflow) {
-    m_purgeAggressively = true;
-    return;
-  }
-
-  const uint64_t totalMemoryUsage = frameMemoryUsage * index;
-  if (totalMemoryUsage > m_maxDecodedBytes) {
-    m_purgeAggressively = true;
-  }
 }
 }  // namespace blink

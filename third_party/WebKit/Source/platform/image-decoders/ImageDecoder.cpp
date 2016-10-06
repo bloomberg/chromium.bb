@@ -234,6 +234,40 @@ void ImageDecoder::clearFrameBuffer(size_t frameIndex) {
   m_frameBufferCache[frameIndex].clearPixelData();
 }
 
+void ImageDecoder::updateAggressivePurging(size_t index) {
+  if (m_purgeAggressively)
+    return;
+
+  // We don't want to cache so much that we cause a memory issue.
+  //
+  // If we used a LRU cache we would fill it and then on next animation loop
+  // we would need to decode all the frames again -- the LRU would give no
+  // benefit and would consume more memory.
+  // So instead, simply purge unused frames if caching all of the frames of
+  // the image would use more memory than the image decoder is allowed
+  // (m_maxDecodedBytes) or would overflow 32 bits..
+  //
+  // As we decode we will learn the total number of frames, and thus total
+  // possible image memory used.
+
+  const uint64_t frameArea = decodedSize().area();
+  const uint64_t frameMemoryUsage = frameArea * 4;  // 4 bytes per pixel
+  if (frameMemoryUsage / 4 != frameArea) {          // overflow occurred
+    m_purgeAggressively = true;
+    return;
+  }
+
+  const uint64_t totalMemoryUsage = frameMemoryUsage * index;
+  if (totalMemoryUsage / frameMemoryUsage != index) {  // overflow occurred
+    m_purgeAggressively = true;
+    return;
+  }
+
+  if (totalMemoryUsage > m_maxDecodedBytes) {
+    m_purgeAggressively = true;
+  }
+}
+
 size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex,
                                                bool frameRectIsOpaque) {
   ASSERT(frameIndex <= m_frameBufferCache.size());
