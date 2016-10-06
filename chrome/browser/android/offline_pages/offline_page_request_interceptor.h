@@ -14,13 +14,19 @@ class URLRequest;
 class URLRequestJob;
 }
 
+namespace previews {
+class PreviewsDecider;
+}
+
 namespace offline_pages {
 
 // An interceptor to hijack requests and potentially service them based on
 // their offline information. Created one per profile.
 class OfflinePageRequestInterceptor : public net::URLRequestInterceptor {
  public:
-  OfflinePageRequestInterceptor();
+  // Embedder must guarantee that |previews_decider| outlives |this|.
+  explicit OfflinePageRequestInterceptor(
+      previews::PreviewsDecider* previews_decider);
   ~OfflinePageRequestInterceptor() override;
 
  private:
@@ -28,6 +34,9 @@ class OfflinePageRequestInterceptor : public net::URLRequestInterceptor {
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
+
+  // Used to determine if an URLRequest is eligible for offline previews.
+  previews::PreviewsDecider* previews_decider_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageRequestInterceptor);
 };

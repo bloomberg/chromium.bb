@@ -12,8 +12,12 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/default_clock.h"
 #include "components/previews/core/previews_black_list.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_ui_service.h"
+#include "net/nqe/network_quality_estimator.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
 namespace previews {
@@ -62,6 +66,27 @@ void PreviewsIOData::ClearBlackList(base::Time begin_time,
                                     base::Time end_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   previews_black_list_->ClearBlackList(begin_time, end_time);
+}
+
+bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
+                                        PreviewsType type) const {
+  if (!IsOfflinePreviewsEnabled())
+    return false;
+  // The blacklist will disallow certain hosts for periods of time based on
+  // user's opting out of the preview
+  if (!previews_black_list_ ||
+      !previews_black_list_->IsLoadedAndAllowed(request.url(), type)) {
+    return false;
+  }
+  net::NetworkQualityEstimator* network_quality_estimator =
+      request.context()->network_quality_estimator();
+  if (!network_quality_estimator)
+    return false;
+
+  net::EffectiveConnectionType effective_connection_type =
+      network_quality_estimator->GetEffectiveConnectionType();
+  return effective_connection_type >= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE &&
+         effective_connection_type <= net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
 }
 
 }  // namespace previews

@@ -14,6 +14,10 @@ namespace base {
 class FilePath;
 }
 
+namespace previews {
+class PreviewsDecider;
+}
+
 namespace offline_pages {
 
 // A request job that serves content from offline file.
@@ -63,9 +67,12 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
   static void ReportAggregatedRequestResult(AggregatedRequestResult result);
 
   // Creates and returns a job to serve the offline page. Nullptr is returned if
-  // offline page cannot or should not be served.
-  static OfflinePageRequestJob* Create(net::URLRequest* request,
-                                       net::NetworkDelegate* network_delegate);
+  // offline page cannot or should not be served. Embedder must gaurantee that
+  // |previews_decider| outlives the returned instance.
+  static OfflinePageRequestJob* Create(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      previews::PreviewsDecider* previews_decider);
 
   ~OfflinePageRequestJob() override;
 
@@ -79,7 +86,8 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
 
  private:
   OfflinePageRequestJob(net::URLRequest* request,
-                        net::NetworkDelegate* network_delegate);
+                        net::NetworkDelegate* network_delegate,
+                        previews::PreviewsDecider* previews_decider);
 
   void StartAsync();
 
@@ -87,6 +95,9 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
   void FallbackToDefault();
 
   std::unique_ptr<Delegate> delegate_;
+
+  // Used to determine if an URLRequest is eligible for offline previews.
+  previews::PreviewsDecider* previews_decider_;
 
   base::WeakPtrFactory<OfflinePageRequestJob> weak_ptr_factory_;
 

@@ -19,16 +19,15 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/request_header/offline_page_header.h"
-#include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_decider.h"
+#include "components/previews/core/previews_opt_out_store.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_request_headers.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 
 namespace offline_pages {
 
@@ -39,6 +38,8 @@ enum class NetworkState {
   DISCONNECTED_NETWORK,
   // Prohibitively slow means that the NetworkQualityEstimator reported a
   // connection slow enough to warrant showing an offline page if available.
+  // This requires offline previews to be enabled and the URL of the request to
+  // be allowed by previews.
   PROHIBITIVELY_SLOW_NETWORK,
   // Network error received due to bad network, i.e. connected to a hotspot or
   // proxy that does not have a working network.
@@ -108,27 +109,9 @@ class DefaultDelegate : public OfflinePageRequestJob::Delegate {
   DISALLOW_COPY_AND_ASSIGN(DefaultDelegate);
 };
 
-bool IsNetworkProhibitivelySlow(net::URLRequest* request) {
-  // NetworkQualityEstimator only works when it is enabled.
-  if (!previews::IsOfflinePreviewsEnabled())
-    return false;
-
-  if (!request->context())
-    return false;
-
-  net::NetworkQualityEstimator* network_quality_estimator =
-      request->context()->network_quality_estimator();
-  if (!network_quality_estimator)
-    return false;
-
-  net::EffectiveConnectionType effective_connection_type =
-      network_quality_estimator->GetEffectiveConnectionType();
-  return effective_connection_type >= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE &&
-         effective_connection_type <= net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
-}
-
 NetworkState GetNetworkState(net::URLRequest* request,
-                             const OfflinePageHeader& offline_header) {
+                             const OfflinePageHeader& offline_header,
+                             previews::PreviewsDecider* previews_decider) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (offline_header.reason == OfflinePageHeader::Reason::NET_ERROR)
@@ -136,9 +119,13 @@ NetworkState GetNetworkState(net::URLRequest* request,
 
   if (net::NetworkChangeNotifier::IsOffline())
     return NetworkState::DISCONNECTED_NETWORK;
-
-  if (IsNetworkProhibitivelySlow(request))
+  // Checks if previews are allowed, the network is slow, and the request is
+  // allowed to be shown for previews.
+  if (previews_decider &&
+      previews_decider->ShouldAllowPreview(*request,
+                                           previews::PreviewsType::OFFLINE)) {
     return NetworkState::PROHIBITIVELY_SLOW_NETWORK;
+  }
 
   // If offline header contains a reason other than RELOAD, the offline page
   // should be forced to load even when the network is connected.
@@ -455,7 +442,8 @@ void OfflinePageRequestJob::ReportAggregatedRequestResult(
 // static
 OfflinePageRequestJob* OfflinePageRequestJob::Create(
     net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) {
+    net::NetworkDelegate* network_delegate,
+    previews::PreviewsDecider* previews_decider) {
   const content::ResourceRequestInfo* resource_request_info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!resource_request_info)
@@ -486,22 +474,23 @@ OfflinePageRequestJob* OfflinePageRequestJob::Create(
     request->SetUserData(&kUserDataKey, new OfflinePageRequestInfo());
   }
 
-  return new OfflinePageRequestJob(request, network_delegate);
+  return new OfflinePageRequestJob(request, network_delegate, previews_decider);
 }
 
 OfflinePageRequestJob::OfflinePageRequestJob(
     net::URLRequest* request,
-    net::NetworkDelegate* network_delegate)
+    net::NetworkDelegate* network_delegate,
+    previews::PreviewsDecider* previews_decider)
     : net::URLRequestFileJob(
           request,
           network_delegate,
           base::FilePath(),
-          content::BrowserThread::GetBlockingPool()->
-              GetTaskRunnerWithShutdownBehavior(
+          content::BrowserThread::GetBlockingPool()
+              ->GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
       delegate_(new DefaultDelegate()),
-      weak_ptr_factory_(this) {
-}
+      previews_decider_(previews_decider),
+      weak_ptr_factory_(this) {}
 
 OfflinePageRequestJob::~OfflinePageRequestJob() {
 }
@@ -520,7 +509,8 @@ void OfflinePageRequestJob::StartAsync() {
   // fails.
   OfflinePageHeader offline_header(offline_header_value);
 
-  NetworkState network_state = GetNetworkState(request(), offline_header);
+  NetworkState network_state =
+      GetNetworkState(request(), offline_header, previews_decider_);
   if (network_state == NetworkState::CONNECTED_NETWORK) {
     FallbackToDefault();
     return;

@@ -207,12 +207,12 @@ void ProfileImplIOData::Handle::Init(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
           db_task_runner);
 
-  io_data_->set_previews_io_data(base::MakeUnique<previews::PreviewsIOData>(
+  io_data_->previews_io_data_ = base::MakeUnique<previews::PreviewsIOData>(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   PreviewsServiceFactory::GetForProfile(profile_)->set_previews_ui_service(
       base::MakeUnique<previews::PreviewsUIService>(
-          io_data_->previews_io_data(),
+          io_data_->previews_io_data_.get(),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO), nullptr));
 }
 
@@ -549,7 +549,8 @@ void ProfileImplIOData::InitializeInternal(
   // Install the Offline Page Interceptor.
 #if defined(OS_ANDROID)
   request_interceptors.push_back(std::unique_ptr<net::URLRequestInterceptor>(
-      new offline_pages::OfflinePageRequestInterceptor()));
+      new offline_pages::OfflinePageRequestInterceptor(
+          previews_io_data_.get())));
 #endif
 
   // The data reduction proxy interceptor should be as close to the network

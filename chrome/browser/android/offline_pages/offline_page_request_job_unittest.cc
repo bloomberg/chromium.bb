@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -26,14 +25,13 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/offline_page_model_impl.h"
-#include "components/previews/core/previews_experiments.h"
-#include "components/variations/variations_associated_data.h"
+#include "components/previews/core/previews_decider.h"
+#include "components/previews/core/previews_opt_out_store.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
@@ -173,58 +171,24 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeNotifier);
 };
 
-class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
+class TestPreviewsDecider : public previews::PreviewsDecider {
  public:
-  explicit TestNetworkQualityEstimator(
-      const std::map<std::string, std::string>& variation_params)
-      : NetworkQualityEstimator(
-            std::unique_ptr<net::ExternalEstimateProvider>(),
-            variation_params),
-        effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
-  ~TestNetworkQualityEstimator() override {}
+  TestPreviewsDecider() : should_allow_preview_(false) {}
+  ~TestPreviewsDecider() override {}
 
-  net::EffectiveConnectionType GetEffectiveConnectionType() const override {
-    return effective_connection_type_;
+  bool ShouldAllowPreview(const net::URLRequest& request,
+                          previews::PreviewsType type) const override {
+    return should_allow_preview_;
   }
 
-  void set_effective_connection_type(
-      net::EffectiveConnectionType effective_connection_type) {
-    effective_connection_type_ = effective_connection_type;
+  void set_should_allow_preview(bool should_allow_preview) {
+    should_allow_preview_ = should_allow_preview;
   }
 
  private:
-  net::EffectiveConnectionType effective_connection_type_;
+  bool should_allow_preview_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimator);
-};
-
-class ScopedEnableProbihibitivelySlowNetwork {
- public:
-  explicit ScopedEnableProbihibitivelySlowNetwork(
-      net::URLRequestContext* url_request_context)
-      : field_trial_list_(nullptr),
-        url_request_context_(url_request_context) {
-    previews::EnableOfflinePreviewsForTesting();
-
-    test_network_quality_estimator_ =
-        base::MakeUnique<TestNetworkQualityEstimator>
-            (network_quality_estimator_params_);
-    test_network_quality_estimator_->set_effective_connection_type(
-        net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-    url_request_context_->set_network_quality_estimator(
-        test_network_quality_estimator_.get());
-  }
-
-  ~ScopedEnableProbihibitivelySlowNetwork() {
-    url_request_context_->set_network_quality_estimator(nullptr);
-    variations::testing::ClearAllVariationParams();
-  }
-
- private:
-  base::FieldTrialList field_trial_list_;
-  std::map<std::string, std::string> network_quality_estimator_params_;
-  std::unique_ptr<TestNetworkQualityEstimator> test_network_quality_estimator_;
-  net::URLRequestContext* url_request_context_;
+  DISALLOW_COPY_AND_ASSIGN(TestPreviewsDecider);
 };
 
 class TestOfflinePageArchiver : public OfflinePageArchiver {
@@ -288,6 +252,10 @@ class OfflinePageRequestJobTest : public testing::Test {
   int64_t offline_id2() const { return offline_id2_; }
   int bytes_read() const { return bytes_read_; }
 
+  TestPreviewsDecider* test_previews_decider() {
+    return test_previews_decider_.get();
+  }
+
  private:
   void OnSavePageDone(SavePageResult result, int64_t offline_id);
   std::unique_ptr<net::URLRequest> CreateRequest(
@@ -312,6 +280,7 @@ class OfflinePageRequestJobTest : public testing::Test {
   std::unique_ptr<net::URLRequestInterceptingJobFactory>
       intercepting_job_factory_;
   std::unique_ptr<TestURLRequestDelegate> url_request_delegate_;
+  std::unique_ptr<TestPreviewsDecider> test_previews_decider_;
   net::TestNetworkDelegate network_delegate_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
@@ -398,9 +367,11 @@ void OfflinePageRequestJobTest::SetUp() {
   // Create a context with delayed initialization.
   test_url_request_context_.reset(new net::TestURLRequestContext(true));
 
+  test_previews_decider_.reset(new TestPreviewsDecider());
+
   // Install the interceptor.
   std::unique_ptr<net::URLRequestInterceptor> interceptor(
-      new OfflinePageRequestInterceptor());
+      new OfflinePageRequestInterceptor(test_previews_decider_.get()));
   std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
       new net::URLRequestJobFactoryImpl());
   intercepting_job_factory_.reset(new TestURLRequestInterceptingJobFactory(
@@ -593,7 +564,7 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnDisconnectedNetwork) {
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnProhibitivelySlowNetwork) {
   SimulateHasNetworkConnectivity(true);
 
-  ScopedEnableProbihibitivelySlowNetwork scoped(url_request_context());
+  test_previews_decider()->set_should_allow_preview(true);
 
   InterceptRequest(kTestUrl, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
@@ -605,12 +576,13 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnProhibitivelySlowNetwork) {
   ExpectAggregatedRequestResultHistogram(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_PROHIBITIVELY_SLOW_NETWORK);
+  test_previews_decider()->set_should_allow_preview(false);
 }
 
 TEST_F(OfflinePageRequestJobTest, PageNotFoundOnProhibitivelySlowNetwork) {
   SimulateHasNetworkConnectivity(true);
 
-  ScopedEnableProbihibitivelySlowNetwork scoped(url_request_context());
+  test_previews_decider()->set_should_allow_preview(true);
 
   InterceptRequest(kTestUrl2, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
@@ -620,6 +592,7 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnProhibitivelySlowNetwork) {
   ExpectAggregatedRequestResultHistogram(
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_PROHIBITIVELY_SLOW_NETWORK);
+  test_previews_decider()->set_should_allow_preview(false);
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnFlakyNetwork) {

@@ -13,9 +13,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_opt_out_store.h"
 
 class GURL;
+
+namespace net {
+class URLRequest;
+}
 
 namespace previews {
 class PreviewsBlackList;
@@ -24,12 +29,12 @@ class PreviewsUIService;
 // A class to manage the IO portion of inter-thread communication between
 // previews/ objects. Created on the UI thread, but used only on the IO thread
 // after initialization.
-class PreviewsIOData {
+class PreviewsIOData : public PreviewsDecider {
  public:
   PreviewsIOData(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
-  virtual ~PreviewsIOData();
+  ~PreviewsIOData() override;
 
   // Stores |previews_ui_service| as |previews_ui_service_| and posts a task to
   // InitializeOnIOThread on the IO thread.
@@ -45,6 +50,10 @@ class PreviewsIOData {
 
   // The previews black list that decides whether a navigation can use previews.
   PreviewsBlackList* black_list() const { return previews_black_list_.get(); }
+
+  // PreviewsDecider implementation:
+  bool ShouldAllowPreview(const net::URLRequest& request,
+                          PreviewsType type) const override;
 
  protected:
   // Posts a task to SetIOData for |previews_ui_service_| on the UI thread with
