@@ -46,6 +46,7 @@ const char kRegisterFunction[] = "Register";
 const char kConfigureServiceFunction[] = "ConfigureService";
 const char kConfigureWifiServiceFunction[] = "ConfigureWifiService";
 const char kFindMatchingServiceFunction[] = "FindMatchingService";
+const char kSetNetworkThrottlingFunction[] = "SetNetworkThrottlingStatus";
 
 // Flimflam Service property names.
 const char kSecurityProperty[] = "Security";
