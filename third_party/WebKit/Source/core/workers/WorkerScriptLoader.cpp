@@ -49,10 +49,6 @@ namespace blink {
 WorkerScriptLoader::WorkerScriptLoader()
     : m_responseCallback(nullptr),
       m_finishedCallback(nullptr),
-      m_failed(false),
-      m_needToCancel(false),
-      m_identifier(0),
-      m_appCacheID(0),
       m_requestContext(WebURLRequest::RequestContextWorker),
       m_responseAddressSpace(WebAddressSpacePublic) {}
 
@@ -197,8 +193,9 @@ void WorkerScriptLoader::didFinishLoading(unsigned long identifier, double) {
   notifyFinished();
 }
 
-void WorkerScriptLoader::didFail(const ResourceError&) {
+void WorkerScriptLoader::didFail(const ResourceError& error) {
   m_needToCancel = false;
+  m_canceled = error.isCancellation();
   notifyError();
 }
 

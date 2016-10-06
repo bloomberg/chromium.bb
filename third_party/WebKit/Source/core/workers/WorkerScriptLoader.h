@@ -83,6 +83,7 @@ class CORE_EXPORT WorkerScriptLoader final
   const KURL& url() const { return m_url; }
   const KURL& responseURL() const;
   bool failed() const { return m_failed; }
+  bool canceled() const { return m_canceled; }
   unsigned long identifier() const { return m_identifier; }
   long long appCacheID() const { return m_appCacheID; }
 
@@ -144,10 +145,14 @@ class CORE_EXPORT WorkerScriptLoader final
   StringBuilder m_script;
   KURL m_url;
   KURL m_responseURL;
-  bool m_failed;
-  bool m_needToCancel;
-  unsigned long m_identifier;
-  long long m_appCacheID;
+
+  // TODO(nhiroki): Consolidate these state flags for cleanup.
+  bool m_failed = false;
+  bool m_canceled = false;
+  bool m_needToCancel = false;
+
+  unsigned long m_identifier = 0;
+  long long m_appCacheID = 0;
   std::unique_ptr<Vector<char>> m_cachedMetadata;
   WebURLRequest::RequestContext m_requestContext;
   Persistent<ContentSecurityPolicy> m_contentSecurityPolicy;

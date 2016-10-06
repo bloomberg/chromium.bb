@@ -74,6 +74,8 @@ void InProcessWorkerBase::terminate() {
 }
 
 void InProcessWorkerBase::contextDestroyed() {
+  if (m_scriptLoader)
+    m_scriptLoader->cancel();
   terminate();
 }
 
@@ -102,6 +104,11 @@ void InProcessWorkerBase::onResponse() {
 }
 
 void InProcessWorkerBase::onFinished() {
+  if (m_scriptLoader->canceled()) {
+    m_scriptLoader = nullptr;
+    return;
+  }
+
   if (m_scriptLoader->failed()) {
     dispatchEvent(Event::createCancelable(EventTypeNames::error));
   } else {
