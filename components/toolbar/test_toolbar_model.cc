@@ -4,7 +4,6 @@
 
 #include "components/toolbar/test_toolbar_model.h"
 
-#include "components/grit/components_scaled_resources.h"
 #include "ui/gfx/vector_icons_public.h"
 
 TestToolbarModel::TestToolbarModel()
@@ -30,11 +29,6 @@ GURL TestToolbarModel::GetURL() const {
 security_state::SecurityStateModel::SecurityLevel
 TestToolbarModel::GetSecurityLevel(bool ignore_editing) const {
   return security_level_;
-}
-
-int TestToolbarModel::GetIcon() const {
-  // This placeholder implementation should be removed when MD is default.
-  return IDR_LOCATION_BAR_HTTP;
 }
 
 gfx::VectorIconId TestToolbarModel::GetVectorIcon() const {

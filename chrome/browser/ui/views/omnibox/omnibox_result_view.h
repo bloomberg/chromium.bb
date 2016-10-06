@@ -50,7 +50,6 @@ class OmniboxResultView : public views::View,
 
   OmniboxResultView(OmniboxPopupContentsView* model,
                     int model_index,
-                    LocationBarView* location_bar_view,
                     const gfx::FontList& font_list);
   ~OmniboxResultView() override;
 
@@ -133,8 +132,6 @@ class OmniboxResultView : public views::View,
 
   gfx::ImageSkia GetIcon() const;
 
-  gfx::ImageSkia GetKeywordIcon() const;
-
   // Utility function for creating vector icons.
   gfx::ImageSkia GetVectorIcon(gfx::VectorIconId icon_id) const;
 
@@ -184,13 +181,9 @@ class OmniboxResultView : public views::View,
                               int text_type,
                               bool is_bold) const;
 
-  static int default_icon_size_;
-
   // This row's model and model index.
   OmniboxPopupContentsView* model_;
   size_t model_index_;
-
-  LocationBarView* location_bar_view_;
 
   const gfx::FontList font_list_;
   int font_height_;

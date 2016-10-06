@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/grit/components_scaled_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/security_state_model.h"
 #include "components/strings/grit/components_strings.h"
@@ -70,27 +69,6 @@ SecurityStateModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
              : delegate_->GetSecurityLevel();
 }
 
-int ToolbarModelImpl::GetIcon() const {
-  switch (GetSecurityLevel(false)) {
-    case SecurityStateModel::NONE:
-    case SecurityStateModel::HTTP_SHOW_WARNING:
-      return IDR_LOCATION_BAR_HTTP;
-    case SecurityStateModel::EV_SECURE:
-    case SecurityStateModel::SECURE:
-      return IDR_OMNIBOX_HTTPS_VALID;
-    case SecurityStateModel::SECURITY_WARNING:
-      // Surface Dubious as Neutral.
-      return IDR_LOCATION_BAR_HTTP;
-    case SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT:
-      return IDR_OMNIBOX_HTTPS_POLICY_WARNING;
-    case SecurityStateModel::DANGEROUS:
-      return IDR_OMNIBOX_HTTPS_INVALID;
-  }
-
-  NOTREACHED();
-  return IDR_LOCATION_BAR_HTTP;
-}
-
 gfx::VectorIconId ToolbarModelImpl::GetVectorIcon() const {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   switch (GetSecurityLevel(false)) {
@@ -109,7 +87,6 @@ gfx::VectorIconId ToolbarModelImpl::GetVectorIcon() const {
       return gfx::VectorIconId::LOCATION_BAR_HTTPS_INVALID;
   }
 #endif
-
   NOTREACHED();
   return gfx::VectorIconId::VECTOR_ICON_NONE;
 }
