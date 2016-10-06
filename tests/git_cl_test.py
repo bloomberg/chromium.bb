@@ -97,6 +97,8 @@ class AuthenticatorMock(object):
     pass
   def has_cached_credentials(self):
     return True
+  def authorize(self, http):
+    return http
 
 
 def CookiesAuthenticatorMockFactory(hosts_with_creds=None, same_cookie=False):
@@ -1855,54 +1857,6 @@ class TestGitCl(TestCase):
         out.getvalue(),
         'scheduled CQ Dry Run on https://codereview.chromium.org/123\n')
 
-  def test_write_try_results_json(self):
-    builds = {
-        '9000': {
-            'id': '9000',
-            'status': 'STARTED',
-            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/2',
-            'result_details_json': '{"properties": {}}',
-            'bucket': 'master.x.y',
-            'created_by': 'user:someone@chromium.org',
-            'created_ts': '147200002222000',
-            'parameters_json': '{"builder_name": "my-builder", "category": ""}',
-        },
-        '8000': {
-            'id': '8000',
-            'status': 'COMPLETED',
-            'result': 'FAILURE',
-            'failure_reason': 'BUILD_FAILURE',
-            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/1',
-            'result_details_json': '{"properties": {}}',
-            'bucket': 'master.x.y',
-            'created_by': 'user:someone@chromium.org',
-            'created_ts': '147200001111000',
-            'parameters_json': '{"builder_name": "my-builder", "category": ""}',
-        },
-    }
-    expected_output = [
-        {
-            'buildbucket_id': '8000',
-            'bucket': 'master.x.y',
-            'builder_name': 'my-builder',
-            'status': 'COMPLETED',
-            'result': 'FAILURE',
-            'failure_reason': 'BUILD_FAILURE',
-            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/1',
-        },
-        {
-            'buildbucket_id': '9000',
-            'bucket': 'master.x.y',
-            'builder_name': 'my-builder',
-            'status': 'STARTED',
-            'result': None,
-            'failure_reason': None,
-            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/2',
-        }
-    ]
-    self.calls = [(('write_json', 'output.json', expected_output), '')]
-    git_cl.write_try_results_json('output.json', builds)
-
   def _common_GerritCommitMsgHookCheck(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl.os.path, 'abspath',
@@ -1966,6 +1920,89 @@ class TestGitCl(TestCase):
     self.mock(sys, 'stdout', out)
     self.assertEqual(0, cl.CMDLand(force=True, bypass_hooks=True, verbose=True))
     self.assertRegexpMatches(out.getvalue(), 'Issue.*123 has been submitted')
+
+  BUILDBUCKET_BUILDS_MAP = {
+        '9000': {
+            'id': '9000',
+            'status': 'STARTED',
+            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/2',
+            'result_details_json': '{"properties": {}}',
+            'bucket': 'master.x.y',
+            'created_by': 'user:someone@chromium.org',
+            'created_ts': '147200002222000',
+            'parameters_json': '{"builder_name": "my-builder", "category": ""}',
+        },
+        '8000': {
+            'id': '8000',
+            'status': 'COMPLETED',
+            'result': 'FAILURE',
+            'failure_reason': 'BUILD_FAILURE',
+            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/1',
+            'result_details_json': '{"properties": {}}',
+            'bucket': 'master.x.y',
+            'created_by': 'user:someone@chromium.org',
+            'created_ts': '147200001111000',
+            'parameters_json': '{"builder_name": "my-builder", "category": ""}',
+        },
+    }
+
+  def test_write_try_results_json(self):
+    expected_output = [
+        {
+            'buildbucket_id': '8000',
+            'bucket': 'master.x.y',
+            'builder_name': 'my-builder',
+            'status': 'COMPLETED',
+            'result': 'FAILURE',
+            'failure_reason': 'BUILD_FAILURE',
+            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/1',
+        },
+        {
+            'buildbucket_id': '9000',
+            'bucket': 'master.x.y',
+            'builder_name': 'my-builder',
+            'status': 'STARTED',
+            'result': None,
+            'failure_reason': None,
+            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/2',
+        }
+    ]
+    self.calls = [(('write_json', 'output.json', expected_output), '')]
+    git_cl.write_try_results_json('output.json', self.BUILDBUCKET_BUILDS_MAP)
+
+  def _setup_fetch_try_jobs_rietveld(self, *request_results):
+    out = StringIO.StringIO()
+    self.mock(sys, 'stdout', out)
+    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda *args: 20001)
+    self.mock(git_cl.auth, 'get_authenticator_for_host', lambda host, _cfg:
+              self._mocked_call(['get_authenticator_for_host', host]))
+    self.mock(git_cl, '_buildbucket_retry', lambda *_, **__:
+              self._mocked_call(['_buildbucket_retry']))
+    self.calls += [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+      ((['git', 'config', 'branch.feature.rietveldissue'],), '1'),
+      ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+      ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
+      ((['git', 'config', 'branch.feature.rietveldpatchset'],), '20001'),
+      ((['git', 'config', 'branch.feature.rietveldserver'],),
+       'codereview.example.com'),
+      ((['get_authenticator_for_host', 'codereview.example.com'],),
+       AuthenticatorMock()),
+    ] + [((['_buildbucket_retry'],), r) for r in request_results]
+
+  def test_fetch_try_jobs_none_rietveld(self):
+    self._setup_fetch_try_jobs_rietveld({})
+    self.assertEqual(0, git_cl.main(['try-results']))
+    self.assertRegexpMatches(sys.stdout.getvalue(), 'No try jobs')
+
+  def test_fetch_try_jobs_some_rietveld(self):
+    self._setup_fetch_try_jobs_rietveld({
+      'builds': self.BUILDBUCKET_BUILDS_MAP.values(),
+    })
+    self.assertEqual(0, git_cl.main(['try-results']))
+    self.assertRegexpMatches(sys.stdout.getvalue(), 'Failures:')
+    self.assertRegexpMatches(sys.stdout.getvalue(), 'Started:')
+    self.assertRegexpMatches(sys.stdout.getvalue(), '2 try jobs')
 
 
 if __name__ == '__main__':

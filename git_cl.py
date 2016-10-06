@@ -395,34 +395,42 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
   print('\n'.join(print_text))
 
 
-def fetch_try_jobs(auth_config, changelist, options):
+def fetch_try_jobs(auth_config, changelist, buildbucket_host,
+                   patchset=None):
   """Fetches try jobs from buildbucket.
 
   Returns a map from build id to build info as a dictionary.
   """
-  rietveld_url = settings.GetDefaultServerUrl()
-  rietveld_host = urlparse.urlparse(rietveld_url).hostname
-  authenticator = auth.get_authenticator_for_host(rietveld_host, auth_config)
+  assert buildbucket_host
+  assert changelist.GetIssue(), 'CL must be uploaded first'
+  assert changelist.GetCodereviewServer(), 'CL must be uploaded first'
+  patchset = patchset or changelist.GetMostRecentPatchset()
+  assert patchset, 'CL must be uploaded first'
+
+  codereview_url = changelist.GetCodereviewServer()
+  codereview_host = urlparse.urlparse(codereview_url).hostname
+  authenticator = auth.get_authenticator_for_host(codereview_host, auth_config)
   if authenticator.has_cached_credentials():
     http = authenticator.authorize(httplib2.Http())
   else:
     print('Warning: Some results might be missing because %s' %
           # Get the message on how to login.
-          (auth.LoginRequiredError(rietveld_host).message,))
+          (auth.LoginRequiredError(codereview_host).message,))
     http = httplib2.Http()
 
   http.force_exception_to_status_code = True
 
-  buildset = 'patch/rietveld/{hostname}/{issue}/{patch}'.format(
-      hostname=rietveld_host,
+  buildset = 'patch/{codereview}/{hostname}/{issue}/{patch}'.format(
+      codereview='gerrit' if changelist.IsGerrit() else 'rietveld',
+      hostname=codereview_host,
       issue=changelist.GetIssue(),
-      patch=options.patchset)
+      patch=patchset)
   params = {'tag': 'buildset:%s' % buildset}
 
   builds = {}
   while True:
     url = 'https://{hostname}/_ah/api/buildbucket/v1/search?{params}'.format(
-        hostname=options.buildbucket_host,
+        hostname=buildbucket_host,
         params=urllib.urlencode(params))
     content = _buildbucket_retry('fetching try jobs', http, url, 'GET')
     for build in content.get('builds', []):
@@ -4838,22 +4846,24 @@ def CMDtry_results(parser, args):
   if not cl.GetIssue():
     parser.error('Need to upload first')
 
-  if not options.patchset:
-    options.patchset = cl.GetMostRecentPatchset()
-    if options.patchset and options.patchset != cl.GetPatchset():
-      print(
-          '\nWARNING Mismatch between local config and server. Did a previous '
-          'upload fail?\ngit-cl try always uses latest patchset from rietveld. '
-          'Continuing using\npatchset %s.\n' % options.patchset)
+  patchset = options.patchset
+  if not patchset:
+    patchset = cl.GetMostRecentPatchset()
+    if not patchset:
+      parser.error('Codereview doesn\'t know about issue %s. '
+                   'No access to issue or wrong issue number?\n'
+                   'Either upload first, or pass --patchset explicitely' %
+                   cl.GetIssue())
+
+    if patchset != cl.GetPatchset():
+      print('WARNING: Mismatch between local config and server. Did a previous '
+            'upload fail?\n'
+            'By default, git cl try uses latest patchset from codereview.\n'
+            'Continuing using patchset %s.\n' % patchset)
   try:
-    jobs = fetch_try_jobs(auth_config, cl, options)
+    jobs = fetch_try_jobs(auth_config, cl, options.buildbucket_host, patchset)
   except BuildbucketResponseException as ex:
     print('Buildbucket error: %s' % ex)
-    return 1
-  except Exception as e:
-    stacktrace = (''.join(traceback.format_stack()) + traceback.format_exc())
-    print('ERROR: Exception when trying to fetch try jobs: %s\n%s' %
-          (e, stacktrace))
     return 1
   if options.json:
     write_try_results_json(options.json, jobs)
