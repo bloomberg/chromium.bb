@@ -111,10 +111,9 @@ namespace {
 FloatRect pathBounds(const SkPath& path, Path::BoundsType boundsType) {
   SkRect bounds;
   if (boundsType == Path::BoundsType::Conservative ||
-      !TightBounds(path, &bounds) ||
-      // Workaround for https://bugs.chromium.org/p/skia/issues/detail?id=5555 .
-      bounds.isEmpty())
+      !TightBounds(path, &bounds)) {
     return path.getBounds();
+  }
 
   DCHECK_EQ(boundsType, Path::BoundsType::Exact);
   return bounds;
