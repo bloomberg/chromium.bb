@@ -282,6 +282,8 @@ class BuilderStageTest(AbstractStageTestCase):
     self._Prepare(waterfall=constants.WATERFALL_EXTERNAL)
     self.mock_cidb = mock.MagicMock()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
+    # Many tests modify the global results_lib.Results instance.
+    results_lib.Results.Clear()
 
   def tearDown(self):
     cidb.CIDBConnectionFactory.ClearMock()
@@ -378,6 +380,7 @@ class BuilderStageTest(AbstractStageTestCase):
       stage.Run()
     finally:
       output.StopCapturing()
+    return output
 
   def testRunException(self):
     """Verify stage exceptions are handled."""
@@ -413,6 +416,28 @@ class BuilderStageTest(AbstractStageTestCase):
         DEFAULT_BUILD_STAGE_ID,
         constants.BUILDER_STATUS_SKIPPED)
     self.assertFalse(self.mock_cidb.StartBuildStage.called)
+
+  @osutils.TempFileDecorator
+  def testRunSkipsPreviouslyCompletedStage(self):
+    """Test that a stage that has run before is skipped, and marked as such."""
+    handle_skip_mock = self.PatchObject(generic_stages.BuilderStage,
+                                        'HandleSkip')
+    stage = self.ConstructStage()
+
+    # Record a result as if the stage succeeded in a _previous_ run.
+    results_lib.Results.Record(stage.name, results_lib.Results.SUCCESS,
+                               description="Injected success")
+    with open(self.tempfile, 'w') as out:
+      results_lib.Results.SaveCompletedStages(out)
+    results_lib.Results.Clear()
+    with open(self.tempfile, 'r') as out:
+      results_lib.Results.RestoreCompletedStages(out)
+
+    output = self._RunCapture(stage)
+    all_out = output.GetStdout()
+    all_out += output.GetStderr()
+    self.assertTrue('[PREVIOUSLY PROCESSED]' in all_out)
+    self.assertTrue(handle_skip_mock.called)
 
   def testHandleExceptionException(self):
     """Verify exceptions in HandleException handlers are themselves handled."""
