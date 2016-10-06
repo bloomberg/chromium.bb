@@ -2452,10 +2452,10 @@ SpdySerializedFrame SpdyFramer::SerializeData(const SpdyDataIR& data_ir) const {
   }
 
   if (protocol_version_ == SPDY3) {
-    const size_t size = GetDataFrameMinimumSize() + data_ir.data().length();
+    const size_t size = GetDataFrameMinimumSize() + data_ir.data_len();
     SpdyFrameBuilder builder(size, protocol_version_);
     builder.WriteDataFrameHeader(*this, data_ir.stream_id(), flags);
-    builder.WriteBytes(data_ir.data().data(), data_ir.data().length());
+    builder.WriteBytes(data_ir.data(), data_ir.data_len());
     DCHECK_EQ(size, builder.length());
     return builder.take();
   } else {
@@ -2465,15 +2465,15 @@ SpdySerializedFrame SpdyFramer::SerializeData(const SpdyDataIR& data_ir) const {
       ++num_padding_fields;
     }
 
-    const size_t size_with_padding = num_padding_fields +
-        data_ir.data().length() + data_ir.padding_payload_len() +
-        GetDataFrameMinimumSize();
+    const size_t size_with_padding = num_padding_fields + data_ir.data_len() +
+                                     data_ir.padding_payload_len() +
+                                     GetDataFrameMinimumSize();
     SpdyFrameBuilder builder(size_with_padding, protocol_version_);
     builder.WriteDataFrameHeader(*this, data_ir.stream_id(), flags);
     if (data_ir.padded()) {
       builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
     }
-    builder.WriteBytes(data_ir.data().data(), data_ir.data().length());
+    builder.WriteBytes(data_ir.data(), data_ir.data_len());
     if (data_ir.padding_payload_len() > 0) {
       string padding(data_ir.padding_payload_len(), 0);
       builder.WriteBytes(padding.data(), padding.length());
@@ -2506,10 +2506,10 @@ SpdySerializedFrame SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
     if (data_ir.padded()) {
       builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
     }
-    builder.OverwriteLength(*this,  num_padding_fields +
-        data_ir.data().length() + data_ir.padding_payload_len());
+    builder.OverwriteLength(*this, num_padding_fields + data_ir.data_len() +
+                                       data_ir.padding_payload_len());
   } else {
-    builder.OverwriteLength(*this, data_ir.data().length());
+    builder.OverwriteLength(*this, data_ir.data_len());
   }
   DCHECK_EQ(frame_size, builder.length());
   return builder.take();
