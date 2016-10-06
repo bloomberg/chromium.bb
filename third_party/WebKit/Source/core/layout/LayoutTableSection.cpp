@@ -1102,7 +1102,12 @@ void LayoutTableSection::layoutRows() {
         paginationStrutOnRow =
             paginationStrutForRow(rowLayoutObject, LayoutUnit(m_rowPos[r]));
         rowLayoutObject->setPaginationStrut(LayoutUnit(paginationStrutOnRow));
-        if (paginationStrutOnRow) {
+        bool rowIsAtTopOfColumn =
+            state.heightOffsetForTableHeaders() &&
+            pageRemainingLogicalHeightForOffset(LayoutUnit(m_rowPos[r]),
+                                                AssociateWithLatterPage) ==
+                pageLogicalHeightForOffset(LayoutUnit(m_rowPos[r]));
+        if (paginationStrutOnRow || rowIsAtTopOfColumn) {
           // If there isn't room for at least one content row on a page with a header group, then
           // we won't repeat the header on each page.
           if (!r && table()->header() &&
@@ -1213,8 +1218,17 @@ int LayoutTableSection::paginationStrutForRow(LayoutTableRow* row,
   LayoutUnit rowLogicalHeight = row->logicalHeight();
   if (rowLogicalHeight > pageLogicalHeight)
     return 0;
+
   LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(
       logicalOffset, LayoutBlock::AssociateWithLatterPage);
+  LayoutUnit offsetForBorderSpacing =
+      pageLogicalHeight - (remainingLogicalHeight + table()->vBorderSpacing());
+  // Border spacing from the previous row has pushed this row just past the top
+  // of the page, so we must reposition it to the top of the page and avoid any
+  // repeating header.
+  if (offsetForBorderSpacing < 0)
+    return offsetForBorderSpacing.toInt();
+
   if (remainingLogicalHeight >= rowLogicalHeight)
     return 0;  // It fits fine where it is. No need to break.
   LayoutUnit paginationStrut = calculatePaginationStrutToFitContent(
