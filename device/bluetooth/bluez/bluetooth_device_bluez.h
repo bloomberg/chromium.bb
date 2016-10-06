@@ -9,6 +9,8 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -102,6 +104,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   // an incomplete list and/or stale cached records.
   void GetServiceRecords(const GetServiceRecordsCallback& callback,
                          const GetServiceRecordsErrorCallback& error_callback);
+
+  // Called by BluetoothAdapterBlueZ to update BluetoothDevice->service_data_
+  // when receive DevicePropertyChanged event for the service data property.
+  // Note that
+  // 1) BlueZ persists all service data meaning that BlueZ won't remove service
+  //    data even when a device stops advertising service data.
+  // 2) BlueZ sends DevicePropertyChanged event separately for each UUID that
+  //    service data changed. Meaning that UpdateServiceData() might get called
+  //    multiple times when there are multiple UUIDs that service data changed.
+  // 3) When a device update service data for a UUID, BlueZ update data for that
+  //    UUID if it is already exist. If not BlueZ adds that data for UUID.
+  //    This means BlueZ won't remove service data even when a device stops
+  //    advertising service data for a UUID.
+  void UpdateServiceData();
 
   // Creates a pairing object with the given delegate |pairing_delegate| and
   // establishes it as the pairing context for this device. All pairing-related

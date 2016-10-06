@@ -4,6 +4,9 @@
 
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -199,6 +202,7 @@ BluetoothDeviceClient::Properties::Properties(
   RegisterProperty(bluetooth_device::kModaliasProperty, &modalias);
   RegisterProperty(bluetooth_device::kRSSIProperty, &rssi);
   RegisterProperty(bluetooth_device::kTxPowerProperty, &tx_power);
+  RegisterProperty(bluetooth_device::kServiceDataProperty, &service_data);
   RegisterProperty(bluetooth_device::kServicesResolvedProperty,
                    &services_resolved);
 }

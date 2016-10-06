@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -107,6 +108,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
     // Received signal strength indicator that is set when the device is
     // discovered during inquiry. Read-only.
     dbus::Property<int16_t> rssi;
+
+    // Service advertisement data. Keys are the UUIDs in string format followed
+    // by its byte array value. Read-only.
+    dbus::Property<std::unordered_map<std::string, std::vector<uint8_t>>>
+        service_data;
 
     // Indicate whether or not service discovery has been resolved. Read-only.
     dbus::Property<bool> services_resolved;

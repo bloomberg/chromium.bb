@@ -9,6 +9,7 @@
 
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -609,6 +610,17 @@ Property<std::vector<std::pair<std::vector<uint8_t>, uint16_t>>>::
     AppendSetValueToWriter(MessageWriter* writer);
 extern template class CHROME_DBUS_EXPORT
     Property<std::vector<std::pair<std::vector<uint8_t>, uint16_t>>>;
+
+template <>
+CHROME_DBUS_EXPORT bool
+Property<std::unordered_map<std::string, std::vector<uint8_t>>>::
+    PopValueFromReader(MessageReader* reader);
+template <>
+CHROME_DBUS_EXPORT void
+Property<std::unordered_map<std::string, std::vector<uint8_t>>>::
+    AppendSetValueToWriter(MessageWriter* writer);
+extern template class CHROME_DBUS_EXPORT
+    Property<std::unordered_map<std::string, std::vector<uint8_t>>>;
 
 #pragma GCC diagnostic pop
 

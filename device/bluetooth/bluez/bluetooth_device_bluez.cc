@@ -595,6 +595,18 @@ void BluetoothDeviceBlueZ::GetServiceRecords(
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
+void BluetoothDeviceBlueZ::UpdateServiceData() {
+  bluez::BluetoothDeviceClient::Properties* properties =
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+          object_path_);
+  DCHECK(properties);
+  DCHECK(properties->service_data.is_valid());
+
+  service_data_.clear();
+  for (const auto& pair : properties->service_data.value())
+    service_data_[BluetoothUUID(pair.first)] = pair.second;
+}
+
 BluetoothPairingBlueZ* BluetoothDeviceBlueZ::BeginPairing(
     BluetoothDevice::PairingDelegate* pairing_delegate) {
   pairing_.reset(new BluetoothPairingBlueZ(this, pairing_delegate));

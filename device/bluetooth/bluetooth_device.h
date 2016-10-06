@@ -297,13 +297,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   //    returns the UUIDs of the device's services.
   //  * For dual mode devices this may be collected from both.
   //
-  // Note: On ChromeOS and Linux, Bluez persists all services meaning if
+  // Note: On ChromeOS and Linux, BlueZ persists all services meaning if
   // a device stops advertising a service this function will still return
   // its UUID.
   virtual UUIDSet GetUUIDs() const;
 
   // Returns the last advertised Service Data. Returns an empty map if the
   // adapter is not discovering.
+  //
+  // Note: On ChromeOS and Linux, BlueZ persists all service data meaning if
+  // a device stops advertising service data for a UUID, this function will
+  // still return the cached value for that UUID.
   const ServiceDataMap& GetServiceData() const;
 
   // Returns the UUIDs of services for which the device advertises Service Data.
