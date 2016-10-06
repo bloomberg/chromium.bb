@@ -38,7 +38,7 @@ cr.define('offlineInternals', function() {
 
       var cell = document.createElement('td');
       var link = document.createElement('a');
-      link.setAttribute('href', pages[i].filePath);
+      link.setAttribute('href', pages[i].onlineUrl);
       link.textContent = pages[i].onlineUrl;
       cell.appendChild(link);
       row.appendChild(cell);
