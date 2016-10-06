@@ -6,16 +6,13 @@
 #define MEDIA_BASE_ANDROID_STREAM_TEXTURE_WRAPPER_H_
 
 #include "base/single_thread_task_runner.h"
+#include "base/unguessable_token.h"
 #include "media/base/video_frame.h"
 
 namespace media {
-class VideoFrame;
 
 // StreamTextureWrapper encapsulates a StreamTexture's creation, initialization
 // and registration for later retrieval (in the Browser process).
-//
-// TODO(tguilbert): Support registering the underlying SurfaceTexture so it can
-// be used by a MediaPlayer in the browser process. See crbug.com/627658.
 class MEDIA_EXPORT StreamTextureWrapper {
  public:
   StreamTextureWrapper() {}
@@ -35,6 +32,12 @@ class MEDIA_EXPORT StreamTextureWrapper {
   // Returns the latest frame.
   // See StreamTextureWrapperImpl.
   virtual scoped_refptr<VideoFrame> GetCurrentFrame() = 0;
+
+  // Sends the StreamTexture to the browser process, to fulfill the request
+  // identified by |request_token|.
+  // See StreamTextureWrapperImpl.
+  virtual void ForwardStreamTextureForSurfaceRequest(
+      const base::UnguessableToken& request_token) = 0;
 
   struct Deleter {
     inline void operator()(StreamTextureWrapper* ptr) const { ptr->Destroy(); }

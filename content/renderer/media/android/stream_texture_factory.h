@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/unguessable_token.h"
 #include "cc/layers/video_frame_provider.h"
 #include "content/common/content_export.h"
 #include "content/renderer/gpu/stream_texture_host_android.h"
@@ -85,6 +86,13 @@ class CONTENT_EXPORT StreamTextureFactory
   // it will be passed back to the WebMediaPlayerAndroid object identified by
   // the player_id.
   void EstablishPeer(int32_t stream_id, int player_id, int frame_id);
+
+  // Sends an IPC to the GPU process.
+  // Asks the StreamTexture to forward its SurfaceTexture to the
+  // ScopedSurfaceRequestManager, using the gpu::ScopedSurfaceRequestConduit.
+  void ForwardStreamTextureForSurfaceRequest(
+      int32_t stream_id,
+      const base::UnguessableToken& request_token);
 
   // Creates a gpu::StreamTexture and returns its id.  Sets |*texture_id| to the
   // client-side id of the gpu::StreamTexture. The texture is produced into

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/unguessable_token.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/ipc/service/gpu_command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
@@ -80,6 +81,7 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
   // IPC message handlers:
   void OnStartListening();
   void OnEstablishPeer(int32_t primary_id, int32_t secondary_id);
+  void OnForwardForSurfaceRequest(const base::UnguessableToken& request_token);
   void OnSetSize(const gfx::Size& size) { size_ = size; }
 
   scoped_refptr<gl::SurfaceTexture> surface_texture_;

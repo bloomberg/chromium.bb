@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/ipc/common/android/scoped_surface_request_conduit.h"
 #include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -199,6 +200,8 @@ bool StreamTexture::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(StreamTexture, message)
     IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_StartListening, OnStartListening)
+    IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_ForwardForSurfaceRequest,
+                        OnForwardForSurfaceRequest)
     IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_EstablishPeer, OnEstablishPeer)
     IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_SetSize, OnSetSize)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -221,6 +224,16 @@ void StreamTexture::OnEstablishPeer(int32_t primary_id, int32_t secondary_id) {
 
   SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
       process, surface_texture_, primary_id, secondary_id);
+}
+
+void StreamTexture::OnForwardForSurfaceRequest(
+    const base::UnguessableToken& request_token) {
+  if (!owner_stub_)
+    return;
+
+  ScopedSurfaceRequestConduit::GetInstance()
+      ->ForwardSurfaceTextureForSurfaceRequest(request_token,
+                                               surface_texture_.get());
 }
 
 bool StreamTexture::BindTexImage(unsigned target) {

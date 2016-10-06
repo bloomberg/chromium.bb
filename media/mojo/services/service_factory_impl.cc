@@ -105,11 +105,10 @@ void ServiceFactoryImpl::CreateRenderer(
     return;
   }
 
-  mojo::MakeStrongBinding(
-      base::MakeUnique<MojoRendererService>(
-          cdm_service_context_.GetWeakPtr(), std::move(audio_sink),
-          std::move(video_sink), std::move(renderer)),
-      std::move(request));
+  MojoRendererService::Create(
+      cdm_service_context_.GetWeakPtr(), std::move(audio_sink),
+      std::move(video_sink), std::move(renderer),
+      MojoRendererService::InitiateSurfaceRequestCB(), std::move(request));
 #endif  // defined(ENABLE_MOJO_RENDERER)
 }
 

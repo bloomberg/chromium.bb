@@ -35,6 +35,16 @@ interface Renderer {
   // Attaches the CDM associated with |cdm_id| to the renderer service,
   // executing the callback with whether the CDM was successfully attached.
   SetCdm(int32 cdm_id) => (bool success);
+
+  // Registers a new request in the ScopedSurfaceRequestManager, and returns
+  // its token.
+  //
+  // NOTE: Should only be called on Android. Only used for WMPI's fallback path
+  // (i.e. HLS playback), when the MojoRendererService wraps a
+  // content::MediaPlayerRenderer.
+  // Unexpected calls to this method will close the connection.
+  InitiateScopedSurfaceRequest()
+      => (mojo.common.mojom.UnguessableToken request_token);
 };
 
 interface RendererClient {

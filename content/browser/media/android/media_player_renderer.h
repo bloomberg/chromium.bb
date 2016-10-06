@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/unguessable_token.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host.h"
 #include "media/base/android/media_player_bridge.h"
@@ -84,9 +85,23 @@ class CONTENT_EXPORT MediaPlayerRenderer : public media::Renderer,
                    base::TimeDelta duration,
                    bool has_audio) override;
 
+  // Registers a request in the content::ScopedSurfaceRequestManager, and
+  // returns the token associated to the request. The token can then be used to
+  // complete the request via the gpu::ScopedSurfaceRequestConduit.
+  // A completed request will call back to OnScopedSurfaceRequestCompleted().
+  //
+  // NOTE: If a request is already pending, calling this method again will
+  // safely cancel the pending request before registering a new one.
+  base::UnguessableToken InitiateScopedSurfaceRequest();
+  void OnScopedSurfaceRequestCompleted(gl::ScopedJavaSurface surface);
+
  private:
   // Used when creating |media_player_|.
   void OnDecoderResourcesReleased(int player_id);
+
+  // Cancels the pending request started by InitiateScopedSurfaceRequest(), if
+  // it exists. No-ops otherwise.
+  void CancelScopedSurfaceRequest();
 
   RenderFrameHost* render_frame_host_;
   media::RendererClient* renderer_client_;
@@ -100,6 +115,8 @@ class CONTENT_EXPORT MediaPlayerRenderer : public media::Renderer,
   bool has_error_;
 
   gfx::Size video_size_;
+
+  base::UnguessableToken surface_request_token_;
 
   std::unique_ptr<media::MediaResourceGetter> media_resource_getter_;
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_keys.h"
 #include "media/base/media_url_demuxer.h"
@@ -20,17 +21,40 @@ namespace media {
 // Time interval to update media time.
 const int kTimeUpdateIntervalMs = 50;
 
+// static
+mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
+    base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
+    scoped_refptr<AudioRendererSink> audio_sink,
+    std::unique_ptr<VideoRendererSink> video_sink,
+    std::unique_ptr<media::Renderer> renderer,
+    InitiateSurfaceRequestCB initiate_surface_request_cb,
+    mojo::InterfaceRequest<mojom::Renderer> request) {
+  MojoRendererService* service = new MojoRendererService(
+      mojo_cdm_service_context, std::move(audio_sink), std::move(video_sink),
+      std::move(renderer), initiate_surface_request_cb);
+
+  mojo::StrongBindingPtr<mojom::Renderer> binding =
+      mojo::MakeStrongBinding<mojom::Renderer>(base::WrapUnique(service),
+                                               std::move(request));
+
+  service->binding_ = binding;
+
+  return binding;
+}
+
 MojoRendererService::MojoRendererService(
     base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
     scoped_refptr<AudioRendererSink> audio_sink,
     std::unique_ptr<VideoRendererSink> video_sink,
-    std::unique_ptr<media::Renderer> renderer)
+    std::unique_ptr<media::Renderer> renderer,
+    InitiateSurfaceRequestCB initiate_surface_request_cb)
     : mojo_cdm_service_context_(mojo_cdm_service_context),
       state_(STATE_UNINITIALIZED),
       playback_rate_(0),
       audio_sink_(std::move(audio_sink)),
       video_sink_(std::move(video_sink)),
       renderer_(std::move(renderer)),
+      initiate_surface_request_cb_(initiate_surface_request_cb),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(renderer_);
@@ -238,4 +262,16 @@ void MojoRendererService::OnCdmAttached(
   callback.Run(success);
 }
 
+void MojoRendererService::InitiateScopedSurfaceRequest(
+    const InitiateScopedSurfaceRequestCallback& callback) {
+  if (initiate_surface_request_cb_.is_null()) {
+    // |renderer_| is likely not of type MediaPlayerRenderer.
+    // This is an unexpected call, and the connection should be closed.
+    mojo::ReportBadMessage("Unexpected call to InitiateScopedSurfaceRequest.");
+    binding_->Close();
+    return;
+  }
+
+  callback.Run(initiate_surface_request_cb_.Run());
+}
 }  // namespace media

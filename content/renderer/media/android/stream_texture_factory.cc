@@ -95,6 +95,13 @@ void StreamTextureFactory::EstablishPeer(int32_t stream_id,
       new GpuStreamTextureMsg_EstablishPeer(stream_id, frame_id, player_id));
 }
 
+void StreamTextureFactory::ForwardStreamTextureForSurfaceRequest(
+    int32_t stream_id,
+    const base::UnguessableToken& request_token) {
+  channel_->Send(new GpuStreamTextureMsg_ForwardForSurfaceRequest(
+      stream_id, request_token));
+}
+
 unsigned StreamTextureFactory::CreateStreamTexture(
     unsigned texture_target,
     unsigned* texture_id,

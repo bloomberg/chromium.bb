@@ -77,6 +77,8 @@ class CONTENT_EXPORT MediaPlayerRendererClient : public media::Renderer,
       media::DemuxerStreamProvider* demuxer_stream_provider);
   void CompleteInitialization(media::PipelineStatus status);
 
+  void OnScopedSurfaceRequested(const base::UnguessableToken& request_token);
+
   // Used to forward calls to the MediaPlayerRenderer living in the Browser.
   std::unique_ptr<media::MojoRenderer> mojo_renderer_;
 

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
+#include "base/unguessable_token.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/renderer.h"
 #include "media/base/time_delta_interpolator.h"
@@ -57,6 +58,14 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   base::TimeDelta GetMediaTime() override;
   bool HasAudio() override;
   bool HasVideo() override;
+
+  using ReceiveSurfaceRequestTokenCB =
+      base::Callback<void(const base::UnguessableToken&)>;
+
+  // Asks |remote_renderer_| to register a request in the browser's
+  // ScopedSurfaceRequestManager, and returns the request's token.
+  void InitiateScopedSurfaceRequest(
+      const ReceiveSurfaceRequestTokenCB& receive_request_token_cb);
 
  private:
   // mojom::RendererClient implementation, dispatched on the

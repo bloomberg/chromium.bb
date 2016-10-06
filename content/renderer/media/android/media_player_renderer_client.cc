@@ -58,13 +58,22 @@ void MediaPlayerRendererClient::InitializeRemoteRenderer(
                  weak_factory_.GetWeakPtr()));
 }
 
+void MediaPlayerRendererClient::OnScopedSurfaceRequested(
+    const base::UnguessableToken& request_token) {
+  DCHECK(request_token);
+  stream_texture_wrapper_->ForwardStreamTextureForSurfaceRequest(request_token);
+}
+
 void MediaPlayerRendererClient::CompleteInitialization(
     media::PipelineStatus status) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_.is_null());
 
-  // TODO(tguilbert): Register |stream_texture_wrapper_|'s surface and send it
-  // to MediaPlayerRenderer via |mojo_renderer_|. See crbug.com/627658.
+  // TODO(tguilbert): Measure and smooth out the initialization's ordering to
+  // have the lowest total initialization time.
+  mojo_renderer_->InitiateScopedSurfaceRequest(
+      base::Bind(&MediaPlayerRendererClient::OnScopedSurfaceRequested,
+                 weak_factory_.GetWeakPtr()));
 
   base::ResetAndReturn(&init_cb_).Run(status);
 }

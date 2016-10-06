@@ -274,6 +274,13 @@ void MojoRenderer::OnEnded() {
   client_->OnEnded();
 }
 
+void MojoRenderer::InitiateScopedSurfaceRequest(
+    const ReceiveSurfaceRequestTokenCB& receive_request_token_cb) {
+  DVLOG(1) << __FUNCTION__;
+
+  remote_renderer_->InitiateScopedSurfaceRequest(receive_request_token_cb);
+}
+
 void MojoRenderer::OnError() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());

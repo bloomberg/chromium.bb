@@ -39,13 +39,6 @@ namespace content {
 // - When the SurfaceTexture's OnFrameAvailable() callback is fired (and routed
 // to the StreamTextureProxy living on the compositor thread), we notify
 // |client_| that a new frame is available, via the DidReceiveFrame() callback.
-//
-// TODO(tguilbert): Register the underlying SurfaceTexture for retrieval in the
-// browser process. See crbug.com/627658.
-//
-// TODO(tguilbert): Change StreamTextureProxy's interface to accept a
-// base::Closure instead of requiring a VideoFrameProvider::Client, to simplify
-// the MediaPlayerRendererHost interface. See crbug.com/631178.
 class CONTENT_EXPORT StreamTextureWrapperImpl
     : public media::StreamTextureWrapper {
  public:
@@ -77,6 +70,13 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   // in UpdateTextureSize()), and repeatedly return it here. The underlying
   // texture's changes are signalled via |client|'s DidReceiveFrame() callback.
   scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
+
+  // Sends the StreamTexture to the browser process, to fulfill the request
+  // identified by |request_token|.
+  // Uses the gpu::ScopedSurfaceRequestConduit to forward the underlying
+  // SurfaceTexture to the ScopedSurfaceRequestManager.
+  void ForwardStreamTextureForSurfaceRequest(
+      const base::UnguessableToken& request_token) override;
 
  private:
   StreamTextureWrapperImpl(

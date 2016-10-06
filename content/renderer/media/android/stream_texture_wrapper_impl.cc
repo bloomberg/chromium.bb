@@ -104,6 +104,12 @@ void StreamTextureWrapperImpl::ReallocateVideoFrame(
   SetCurrentFrameInternal(new_frame);
 }
 
+void StreamTextureWrapperImpl::ForwardStreamTextureForSurfaceRequest(
+    const base::UnguessableToken& request_token) {
+  return factory_->ForwardStreamTextureForSurfaceRequest(stream_id_,
+                                                         request_token);
+}
+
 void StreamTextureWrapperImpl::SetCurrentFrameInternal(
     const scoped_refptr<media::VideoFrame>& video_frame) {
   base::AutoLock auto_lock(current_frame_lock_);
