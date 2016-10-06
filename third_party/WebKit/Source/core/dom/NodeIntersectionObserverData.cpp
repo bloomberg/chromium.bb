@@ -4,6 +4,7 @@
 
 #include "core/dom/NodeIntersectionObserverData.h"
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/dom/Document.h"
 #include "core/dom/IntersectionObservation.h"
 #include "core/dom/IntersectionObserver.h"
@@ -24,6 +25,7 @@ IntersectionObservation* NodeIntersectionObserverData::getObservationFor(
 void NodeIntersectionObserverData::addObservation(
     IntersectionObservation& observation) {
   m_intersectionObservations.add(&observation.observer(), &observation);
+  ScriptWrappableVisitor::writeBarrier(this, &observation.observer());
 }
 
 void NodeIntersectionObserverData::removeObservation(

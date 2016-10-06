@@ -22,6 +22,7 @@
 #ifndef ElementRareData_h
 #define ElementRareData_h
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/css/cssom/InlineStylePropertyMap.h"
 #include "core/dom/Attr.h"
@@ -155,8 +156,10 @@ class ElementRareData : public NodeRareData {
     return m_intersectionObserverData.get();
   }
   NodeIntersectionObserverData& ensureIntersectionObserverData() {
-    if (!m_intersectionObserverData)
+    if (!m_intersectionObserverData) {
       m_intersectionObserverData = new NodeIntersectionObserverData();
+      ScriptWrappableVisitor::writeBarrier(this, m_intersectionObserverData);
+    }
     return *m_intersectionObserverData;
   }
 
