@@ -269,14 +269,14 @@ Node::Node(TreeScope* treeScope, ConstructionType type)
 #if !defined(NDEBUG) || (defined(DUMP_NODE_STATISTICS) && DUMP_NODE_STATISTICS)
   trackForDebugging();
 #endif
-  InstanceCounters::incrementCounter(InstanceCounters::NodeCounter);
+  InstanceCounters::incrementNodeCounter();
 }
 
 Node::~Node() {
   // With Oilpan, the rare data finalizer also asserts for
   // this condition (we cannot directly access it here.)
   RELEASE_ASSERT(hasRareData() || !layoutObject());
-  InstanceCounters::decrementCounter(InstanceCounters::NodeCounter);
+  InstanceCounters::decrementNodeCounter();
 }
 
 NodeRareData* Node::rareData() const {

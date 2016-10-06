@@ -62,17 +62,30 @@ class InstanceCounters {
   };
 
   static inline void incrementCounter(CounterType type) {
+    DCHECK_NE(type, NodeCounter);
     atomicIncrement(&s_counters[type]);
   }
 
   static inline void decrementCounter(CounterType type) {
+    DCHECK_NE(type, NodeCounter);
     atomicDecrement(&s_counters[type]);
+  }
+
+  static inline void incrementNodeCounter() {
+    DCHECK(isMainThread());
+    s_nodeCounter++;
+  }
+
+  static inline void decrementNodeCounter() {
+    DCHECK(isMainThread());
+    s_nodeCounter--;
   }
 
   CORE_EXPORT static int counterValue(CounterType);
 
  private:
   CORE_EXPORT static int s_counters[CounterTypeLength];
+  CORE_EXPORT static int s_nodeCounter;
 };
 
 }  // namespace blink
