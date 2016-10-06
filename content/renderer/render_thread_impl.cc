@@ -600,7 +600,6 @@ RenderThreadImpl::RenderThreadImpl(
     scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue)
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
-                          .UseMojoChannel(true)
                           .AutoStartMojoShellConnection(false)
                           .ConnectToBrowser(true)
                           .Build()),
@@ -617,7 +616,6 @@ RenderThreadImpl::RenderThreadImpl(
     std::unique_ptr<base::MessageLoop> main_message_loop,
     std::unique_ptr<blink::scheduler::RendererScheduler> scheduler)
     : ChildThreadImpl(Options::Builder()
-                          .UseMojoChannel(true)
                           .AutoStartMojoShellConnection(false)
                           .ConnectToBrowser(true)
                           .Build()),

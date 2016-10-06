@@ -81,10 +81,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // Does not check with the delegate's CanShutdown.
   virtual void ForceShutdown() = 0;
 
-  // Creates the IPC channel.  Returns the channel id if it succeeded, an
-  // empty string otherwise
-  virtual std::string CreateChannel() = 0;
-
   // Creates the IPC channel on top of Mojo. Returns the Mojo channel token if
   // succeeded, or an empty string on failure.
   //

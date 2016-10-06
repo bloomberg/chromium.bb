@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "content/public/common/content_switches.h"
-#include "ipc/ipc_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/chrome_switches.h"
@@ -275,14 +274,6 @@ static bool IsBoringSwitch(const std::string& flag) {
     switches::kFlagSwitchesBegin,
     switches::kFlagSwitchesEnd,
     switches::kLoggingLevel,
-#if defined(OS_WIN)
-    // This file is linked into both chrome.dll and chrome.exe. However //ipc
-    // is only in the .dll, so this needs to be a literal rather than the
-    // constant.
-    "channel",  // switches::kProcessChannelID
-#else
-    switches::kProcessChannelID,
-#endif
     switches::kProcessType,
     switches::kV,
     switches::kVModule,

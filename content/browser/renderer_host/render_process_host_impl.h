@@ -307,8 +307,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
     return service_worker_ref_count_ + shared_worker_ref_count_;
   }
 
-  std::unique_ptr<IPC::ChannelProxy> CreateChannelProxy(
-      const std::string& channel_id);
+  std::unique_ptr<IPC::ChannelProxy> CreateChannelProxy();
 
   // Creates and adds the IO thread message filters.
   void CreateMessageFilters();

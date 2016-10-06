@@ -210,7 +210,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     scoped_refptr<base::SingleThreadTaskRunner> test_task_counter(
         test_task_counter_.get());
     thread_ = new RenderThreadImplForTest(
-        InProcessChildThreadParams("", io_task_runner,
+        InProcessChildThreadParams(io_task_runner,
                                    child_connection_->service_token()),
         std::move(renderer_scheduler), test_task_counter);
     cmd->InitFromArgv(old_argv);

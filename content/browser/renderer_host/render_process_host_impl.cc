@@ -172,7 +172,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
-#include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
@@ -877,9 +876,7 @@ bool RenderProcessHostImpl::Init() {
   sent_render_process_ready_ = false;
 
   // Setup the IPC channel.
-  const std::string channel_id =
-      IPC::Channel::GenerateVerifiedChannelID(std::string());
-  channel_ = CreateChannelProxy(channel_id);
+  channel_ = CreateChannelProxy();
 
   // Note that Channel send is effectively paused and unpaused at various points
   // during startup, and existing code relies on a fragile relative message
@@ -933,7 +930,6 @@ bool RenderProcessHostImpl::Init() {
     // on separate threads.
     in_process_renderer_.reset(
         g_renderer_main_thread_factory(InProcessChildThreadParams(
-            channel_id,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
             mojo_child_connection_->service_token())));
 
@@ -964,7 +960,6 @@ bool RenderProcessHostImpl::Init() {
     if (!renderer_prefix.empty())
       cmd_line->PrependWrapper(renderer_prefix);
     AppendRendererCommandLine(cmd_line);
-    cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
     // Spawn the child process asynchronously to avoid blocking the UI thread.
     // As long as there's no renderer prefix, we can use the zygote process
@@ -998,8 +993,7 @@ bool RenderProcessHostImpl::Init() {
   return true;
 }
 
-std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
-    const std::string& channel_id) {
+std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy() {
   scoped_refptr<base::SingleThreadTaskRunner> runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   IPC::mojom::ChannelBootstrapPtr bootstrap;

@@ -38,7 +38,6 @@
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_names.h"
-#include "ipc/ipc_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/interface_provider.h"
@@ -263,8 +262,8 @@ bool UtilityProcessHostImpl::StartProcess() {
     // support single process mode this way.
     in_process_thread_.reset(
         g_utility_main_thread_factory(InProcessChildThreadParams(
-            std::string(), BrowserThread::UnsafeGetMessageLoopForThread(
-                            BrowserThread::IO)->task_runner(),
+            BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
+                ->task_runner(),
             process_->child_connection()->service_token())));
     in_process_thread_->Start();
   } else {

@@ -61,7 +61,6 @@
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_platform_file.h"
-#include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -293,14 +292,7 @@ ChildThread* ChildThread::Get() {
 }
 
 ChildThreadImpl::Options::Options()
-    : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessChannelID)),
-      use_mojo_channel(base::CommandLine::ForCurrentProcess()->HasSwitch(
-                           switches::kMojoApplicationChannelToken) ||
-                       base::CommandLine::ForCurrentProcess()->HasSwitch(
-                           switches::kMojoChannelToken)),
-      auto_start_mojo_shell_connection(true),
-      connect_to_browser(false) {}
+    : auto_start_mojo_shell_connection(true), connect_to_browser(false) {}
 
 ChildThreadImpl::Options::Options(const Options& other) = default;
 
@@ -314,14 +306,7 @@ ChildThreadImpl::Options::Builder&
 ChildThreadImpl::Options::Builder::InBrowserProcess(
     const InProcessChildThreadParams& params) {
   options_.browser_process_io_runner = params.io_runner();
-  options_.channel_name = params.channel_name();
   options_.in_process_application_token = params.application_token();
-  return *this;
-}
-
-ChildThreadImpl::Options::Builder&
-ChildThreadImpl::Options::Builder::UseMojoChannel(bool use_mojo_channel) {
-  options_.use_mojo_channel = use_mojo_channel;
   return *this;
 }
 
@@ -336,13 +321,6 @@ ChildThreadImpl::Options::Builder&
 ChildThreadImpl::Options::Builder::ConnectToBrowser(
   bool connect_to_browser) {
   options_.connect_to_browser = connect_to_browser;
-  return *this;
-}
-
-ChildThreadImpl::Options::Builder&
-ChildThreadImpl::Options::Builder::WithChannelName(
-    const std::string& channel_name) {
-  options_.channel_name = channel_name;
   return *this;
 }
 
@@ -407,46 +385,35 @@ scoped_refptr<base::SequencedTaskRunner> ChildThreadImpl::GetIOTaskRunner() {
   return ChildProcess::current()->io_task_runner();
 }
 
-void ChildThreadImpl::ConnectChannel(bool use_mojo_channel) {
-  bool create_pipe_now = true;
-  if (use_mojo_channel) {
-    VLOG(1) << "Mojo is enabled on child";
-    std::string channel_token;
-    mojo::ScopedMessagePipeHandle handle;
-    if (!IsInBrowserProcess()) {
-      channel_token =
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kMojoChannelToken);
-    }
-
-    if (!channel_token.empty()) {
-      // TODO(rockot): Remove all paths which lead to this branch. The Channel
-      // connection should always be established by a shell connection from the
-      // browser. http://crbug.com/623396.
-      handle = mojo::edk::CreateChildMessagePipe(channel_token);
-    } else {
-      DCHECK(mojo_shell_connection_);
-      IPC::mojom::ChannelBootstrapPtr bootstrap;
-      handle = mojo::GetProxy(&bootstrap).PassMessagePipe();
-      mojo_shell_connection_->AddConnectionFilter(
-          base::MakeUnique<ChannelBootstrapFilter>(bootstrap.PassInterface()));
-    }
-
-    DCHECK(handle.is_valid());
-    channel_->Init(
-        IPC::ChannelMojo::CreateClientFactory(
-            std::move(handle), ChildProcess::current()->io_task_runner()),
-        create_pipe_now);
-    return;
+void ChildThreadImpl::ConnectChannel() {
+  std::string channel_token;
+  mojo::ScopedMessagePipeHandle handle;
+  if (!IsInBrowserProcess()) {
+    channel_token = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kMojoChannelToken);
   }
 
-  VLOG(1) << "Mojo is disabled on child";
-  channel_->Init(channel_name_, IPC::Channel::MODE_CLIENT, create_pipe_now);
+  if (!channel_token.empty()) {
+    // TODO(rockot): Remove all paths which lead to this branch. The Channel
+    // connection should always be established by a shell connection from the
+    // browser. http://crbug.com/623396.
+    handle = mojo::edk::CreateChildMessagePipe(channel_token);
+  } else {
+    DCHECK(mojo_shell_connection_);
+    IPC::mojom::ChannelBootstrapPtr bootstrap;
+    handle = mojo::GetProxy(&bootstrap).PassMessagePipe();
+    mojo_shell_connection_->AddConnectionFilter(
+        base::MakeUnique<ChannelBootstrapFilter>(bootstrap.PassInterface()));
+  }
+
+  DCHECK(handle.is_valid());
+  channel_->Init(
+      IPC::ChannelMojo::CreateClientFactory(
+          std::move(handle), ChildProcess::current()->io_task_runner()),
+      true /* create_pipe_now */);
 }
 
 void ChildThreadImpl::Init(const Options& options) {
-  channel_name_ = options.channel_name;
-
   g_lazy_tls.Pointer()->Set(this);
   on_channel_error_called_ = false;
   message_loop_ = base::MessageLoop::current();
@@ -575,7 +542,7 @@ void ChildThreadImpl::Init(const Options& options) {
       base::Bind(&ChildThreadImpl::OnRouteProviderRequest,
                  base::Unretained(this)));
 
-  ConnectChannel(options.use_mojo_channel);
+  ConnectChannel();
 
   // This must always be done after ConnectChannel, because ConnectChannel() may
   // add a ConnectionFilter to the connection.

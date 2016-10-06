@@ -25,7 +25,6 @@
 #include "content/public/common/sandbox_init.h"
 #include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel.h"
-#include "ipc/ipc_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"

@@ -47,7 +47,6 @@ UtilityThreadImpl::UtilityThreadImpl()
 UtilityThreadImpl::UtilityThreadImpl(const InProcessChildThreadParams& params)
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
                           .InBrowserProcess(params)
-                          .UseMojoChannel(true)
                           .Build()) {
   Init();
 }

@@ -51,7 +51,6 @@
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file_attachment_posix.h"
-#include "ipc/ipc_switches.h"
 #include "ipc/unix_domain_socket_util.h"
 
 namespace IPC {

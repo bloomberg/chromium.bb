@@ -173,16 +173,6 @@ void ChildProcessHostImpl::CreateChannelMojo() {
   DCHECK(initialized);
 }
 
-std::string ChildProcessHostImpl::CreateChannel() {
-  DCHECK(channel_id_.empty());
-  channel_id_ = IPC::Channel::GenerateVerifiedChannelID(std::string());
-  channel_ = IPC::Channel::CreateServer(channel_id_, this);
-  if (!channel_ || !InitChannel())
-    return std::string();
-
-  return channel_id_;
-}
-
 bool ChildProcessHostImpl::InitChannel() {
 #if USE_ATTACHMENT_BROKER
   DCHECK(base::MessageLoopForIO::IsCurrent());

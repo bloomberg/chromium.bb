@@ -65,7 +65,6 @@
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "ipc/ipc_descriptors.h"
-#include "ipc/ipc_switches.h"
 #include "media/base/media.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"

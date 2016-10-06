@@ -52,7 +52,6 @@
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_multiprocess_test.h"
-#include "ipc/ipc_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
@@ -116,6 +115,8 @@ void ConnectOnBlockingPool(mojo::ScopedMessagePipeHandle handle,
       mojo::edk::ConnectToPeerProcess(std::move(os_pipe_handle)),
       std::move(handle));
 }
+
+const char kProcessChannelID[] = "process-channel-id";
 
 }  // namespace
 
@@ -288,10 +289,10 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   // continue.
   TestStartupClientChannelListener listener;
   EXPECT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kProcessChannelID));
+      kProcessChannelID));
   std::string startup_channel_name =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessChannelID);
+          kProcessChannelID);
   std::unique_ptr<IPC::ChannelProxy> startup_channel;
   startup_channel =
       IPC::ChannelProxy::Create(startup_channel_name,
@@ -523,7 +524,7 @@ void CloudPrintProxyPolicyStartupTest::OnChannelConnected(int32_t peer_pid) {
 base::CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
     const std::string& procname) {
   base::CommandLine cl = MultiProcessTest::MakeCmdLine(procname);
-  cl.AppendSwitchASCII(switches::kProcessChannelID, startup_channel_id_);
+  cl.AppendSwitchASCII(kProcessChannelID, startup_channel_id_);
 #if defined(OS_MACOSX)
   cl.AppendSwitchASCII(kTestExecutablePath, executable_path_.value());
 #endif

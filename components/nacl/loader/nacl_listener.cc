@@ -33,7 +33,6 @@
 #include "content/public/common/mojo_channel_switches.h"
 #include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel_handle.h"
-#include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "mojo/edk/embedder/embedder.h"

@@ -240,7 +240,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   // We create the channel first without connecting it so we can add filters
   // prior to any messages being received, then connect it afterwards.
-  void ConnectChannel(bool use_mojo_channel);
+  void ConnectChannel();
 
   // IPC message handlers.
   void OnShutdown();
@@ -276,7 +276,6 @@ class CONTENT_EXPORT ChildThreadImpl
       associated_interface_provider_bindings_;
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
 
-  std::string channel_name_;
   std::unique_ptr<IPC::SyncChannel> channel_;
 
   // Allows threads other than the main thread to send sync messages.
@@ -336,8 +335,6 @@ struct ChildThreadImpl::Options {
 
   class Builder;
 
-  std::string channel_name;
-  bool use_mojo_channel;
   bool auto_start_mojo_shell_connection;
   bool connect_to_browser;
   scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner;
@@ -353,10 +350,8 @@ class ChildThreadImpl::Options::Builder {
   Builder();
 
   Builder& InBrowserProcess(const InProcessChildThreadParams& params);
-  Builder& UseMojoChannel(bool use_mojo_channel);
   Builder& AutoStartMojoShellConnection(bool auto_start);
   Builder& ConnectToBrowser(bool connect_to_browser);
-  Builder& WithChannelName(const std::string& channel_name);
   Builder& AddStartupFilter(IPC::MessageFilter* filter);
 
   Options Build();

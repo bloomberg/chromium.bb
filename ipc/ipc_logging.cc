@@ -25,7 +25,6 @@
 #include "build/build_config.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sender.h"
-#include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_message.h"
 
 #if defined(OS_POSIX)
