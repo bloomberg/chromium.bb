@@ -185,5 +185,5 @@ public class SuggestionsSection implements ItemGroup {
     @VisibleForTesting
     StatusItem getStatusItem() {
         return mStatus;
-    };
+    }
 }
