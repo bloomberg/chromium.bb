@@ -3320,6 +3320,56 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_EdgeCase) {
   CheckExpectedRanges("{ [10,19) }");
 }
 
+TEST_F(SourceBufferStreamTest, SetExplicitDuration_EdgeCase2) {
+  // This test requires specific relative proportions for fudge room, append
+  // size, and duration truncation amounts. See details at:
+  // https://codereview.chromium.org/2385423002
+
+  // Append buffers with first buffer establishing max_inter_buffer_distance
+  // of 5 ms. This translates to a fudge room (2 x max_interbuffer_distance) of
+  // 10 ms.
+  NewCodedFrameGroupAppend("0K 5K 9D4K");
+  CheckExpectedRangesByTimestamp("{ [0,13) }");
+
+  // Trim off last 2 buffers, totaling 8 ms. Notably less than the current fudge
+  // room of 10 ms.
+  stream_->OnSetDuration(base::TimeDelta::FromMilliseconds(5));
+
+  // Verify truncation.
+  CheckExpectedRangesByTimestamp("{ [0,5) }");
+
+  // Append new buffers just beyond the fudge-room allowance of 10ms.
+  AppendBuffers("11K 15K");
+
+  // Verify new append creates a gap.
+  CheckExpectedRangesByTimestamp("{ [0,5) [11,19) }");
+}
+
+TEST_F(SourceBufferStreamTest, RemoveWithinFudgeRoom) {
+  // This test requires specific relative proportions for fudge room, append
+  // size, and removal amounts. See details at:
+  // https://codereview.chromium.org/2385423002
+
+  // Append buffers with first buffer establishing max_inter_buffer_distance
+  // of 5 ms. This translates to a fudge room (2 x max_interbuffer_distance) of
+  // 10 ms.
+  NewCodedFrameGroupAppend("0K 5K 9D4K");
+  CheckExpectedRangesByTimestamp("{ [0,13) }");
+
+  // Trim off last 2 buffers, totaling 8 ms. Notably less than the current fudge
+  // room of 10 ms.
+  RemoveInMs(5, 13, 13);
+
+  // Verify removal.
+  CheckExpectedRangesByTimestamp("{ [0,5) }");
+
+  // Append new buffers just beyond the fudge-room allowance of 10ms.
+  AppendBuffers("11K 15K");
+
+  // Verify new append creates a gap.
+  CheckExpectedRangesByTimestamp("{ [0,5) [11,19) }");
+}
+
 TEST_F(SourceBufferStreamTest, SetExplicitDuration_DeletePartialRange) {
   // Append 5 buffers at positions 0 through 4.
   NewCodedFrameGroupAppend(0, 5);

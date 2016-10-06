@@ -79,7 +79,6 @@ class MEDIA_EXPORT SourceBufferStream {
   // of order or overlapping. Assumes all buffers within |buffers| are in
   // presentation order and are non-overlapping.
   // Returns true if Append() was successful, false if |buffers| are not added.
-  // TODO(vrk): Implement garbage collection. (crbug.com/125070)
   bool Append(const BufferQueue& buffers);
 
   // Removes buffers between |start| and |end| according to the steps
@@ -240,6 +239,9 @@ class MEDIA_EXPORT SourceBufferStream {
   // Resets this stream back to an unseeked state.
   void ResetSeekState();
 
+  // Reset state tracking various metadata about the last appended buffer.
+  void ResetLastAppendedState();
+
   // Returns true if |seek_timestamp| refers to the beginning of the first range
   // in |ranges_|, false otherwise or if |ranges_| is empty.
   bool ShouldSeekToStartOfBuffered(base::TimeDelta seek_timestamp) const;
@@ -320,6 +322,14 @@ class MEDIA_EXPORT SourceBufferStream {
                       DecodeTimestamp end,
                       bool exclude_start,
                       BufferQueue* deleted_buffers);
+
+  // Helper function used by RemoveInternal() to evaluate whether remove will
+  // disrupt the last appended GOP. If disruption is expected, reset state
+  // tracking the last append. This will trigger frame filtering in Append()
+  // until a new key frame is provided.
+  void UpdateLastAppendStateForRemove(DecodeTimestamp remove_start,
+                                      DecodeTimestamp remove_end,
+                                      bool exclude_start);
 
   Type GetType() const;
 

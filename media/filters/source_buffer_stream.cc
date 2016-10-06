@@ -207,9 +207,7 @@ void SourceBufferStream::OnStartOfCodedFrameGroup(
   if (range_for_next_append_ == ranges_.end() ||
       !AreAdjacentInSequence(last_appended_buffer_timestamp_,
                              coded_frame_group_start_time)) {
-    last_appended_buffer_timestamp_ = kNoDecodeTimestamp();
-    last_appended_buffer_duration_ = kNoTimestamp;
-    last_appended_buffer_is_keyframe_ = false;
+    ResetLastAppendedState();
     DVLOG(3) << __func__ << " next appended buffers will "
              << (range_for_next_append_ == ranges_.end()
                      ? "be in a new range"
@@ -454,6 +452,50 @@ DecodeTimestamp SourceBufferStream::PotentialNextAppendTimestamp() const {
   return kNoDecodeTimestamp();
 }
 
+void SourceBufferStream::UpdateLastAppendStateForRemove(
+    DecodeTimestamp remove_start,
+    DecodeTimestamp remove_end,
+    bool exclude_start) {
+  // TODO(chcunningham): change exclude_start to include_start in this class and
+  // SourceBufferRange. Negatives are hard to reason about.
+  bool include_start = !exclude_start;
+
+  // No need to check previous append's GOP if starting a new CFG. New CFG is
+  // already required to begin with a key frame.
+  if (new_coded_frame_group_)
+    return;
+
+  if (range_for_next_append_ != ranges_.end()) {
+    if (last_appended_buffer_timestamp_ != kNoDecodeTimestamp()) {
+      DCHECK((*range_for_next_append_)
+                 ->BelongsToRange(last_appended_buffer_timestamp_));
+
+      // Note start and end of last appended GOP.
+      DecodeTimestamp gop_end = last_appended_buffer_timestamp_;
+      DecodeTimestamp gop_start =
+          (*range_for_next_append_)->KeyframeBeforeTimestamp(gop_end);
+
+      // If last append is about to be disrupted, reset associated state so we
+      // know to create a new range for future appends and require an initial
+      // key frame.
+      if (((include_start && remove_start == gop_end) ||
+           remove_start < gop_end) &&
+          remove_end > gop_start) {
+        DVLOG(2) << __func__ << " " << GetStreamTypeName()
+                 << " Resetting next append state for remove ("
+                 << remove_start.InSecondsF() << ", " << remove_end.InSecondsF()
+                 << ", " << exclude_start << ")";
+        range_for_next_append_ = ranges_.end();
+        ResetLastAppendedState();
+      }
+    } else {
+      NOTREACHED() << __func__ << " " << GetStreamTypeName()
+                   << " range_for_next_append_ set, but not tracking last"
+                   << " append nor new coded frame group.";
+    }
+  }
+}
+
 void SourceBufferStream::RemoveInternal(DecodeTimestamp start,
                                         DecodeTimestamp end,
                                         bool exclude_start,
@@ -469,8 +511,10 @@ void SourceBufferStream::RemoveInternal(DecodeTimestamp start,
                       << " end " << end.InSecondsF();
   DCHECK(deleted_buffers);
 
-  RangeList::iterator itr = ranges_.begin();
+  // Doing this upfront simplifies decisions about range_for_next_append_ below.
+  UpdateLastAppendStateForRemove(start, end, exclude_start);
 
+  RangeList::iterator itr = ranges_.begin();
   while (itr != ranges_.end()) {
     SourceBufferRange* range = *itr;
     if (range->GetStartTimestamp() >= end)
@@ -562,6 +606,12 @@ void SourceBufferStream::ResetSeekState() {
   splice_buffers_index_ = 0;
   pending_buffer_ = NULL;
   pending_buffers_complete_ = false;
+}
+
+void SourceBufferStream::ResetLastAppendedState() {
+  last_appended_buffer_timestamp_ = kNoDecodeTimestamp();
+  last_appended_buffer_duration_ = kNoTimestamp;
+  last_appended_buffer_is_keyframe_ = false;
 }
 
 bool SourceBufferStream::ShouldSeekToStartOfBuffered(
@@ -1113,39 +1163,25 @@ bool SourceBufferStream::IsSeekPending() const {
 }
 
 void SourceBufferStream::OnSetDuration(base::TimeDelta duration) {
-  DecodeTimestamp duration_dts =
-      DecodeTimestamp::FromPresentationTime(duration);
   DVLOG(1) << __func__ << " " << GetStreamTypeName() << " ("
            << duration.InSecondsF() << ")";
+  DCHECK(!end_of_stream_);
 
-  RangeList::iterator itr = ranges_.end();
-  for (itr = ranges_.begin(); itr != ranges_.end(); ++itr) {
-    if ((*itr)->GetEndTimestamp() > duration_dts)
-      break;
-  }
-  if (itr == ranges_.end())
+  if (ranges_.empty())
     return;
 
-  // Need to partially truncate this range.
-  if ((*itr)->GetStartTimestamp() < duration_dts) {
-    bool delete_range = (*itr)->TruncateAt(duration_dts, NULL, false);
-    if ((*itr == selected_range_) && !selected_range_->HasNextBufferPosition())
+  DecodeTimestamp start = DecodeTimestamp::FromPresentationTime(duration);
+  DecodeTimestamp end = ranges_.back()->GetBufferedEndTimestamp();
+
+  // Trim the end if it exceeds the new duration.
+  if (start < end) {
+    BufferQueue deleted_buffers;
+    RemoveInternal(start, end, false, &deleted_buffers);
+
+    if (!deleted_buffers.empty()) {
+      // Truncation removed current position. Clear selected range.
       SetSelectedRange(NULL);
-
-    if (delete_range) {
-      DeleteAndRemoveRange(&itr);
-    } else {
-      ++itr;
     }
-  }
-
-  // Delete all ranges that begin after |duration_dts|.
-  while (itr != ranges_.end()) {
-    // If we're about to delete the selected range, also reset the seek state.
-    DCHECK((*itr)->GetStartTimestamp() >= duration_dts);
-    if (*itr == selected_range_)
-      ResetSeekState();
-    DeleteAndRemoveRange(&itr);
   }
 }
 
@@ -1684,8 +1720,7 @@ void SourceBufferStream::DeleteAndRemoveRange(RangeList::iterator* itr) {
   if (*itr == range_for_next_append_) {
     DVLOG(1) << __func__ << " deleting range_for_next_append_.";
     range_for_next_append_ = ranges_.end();
-    last_appended_buffer_timestamp_ = kNoDecodeTimestamp();
-    last_appended_buffer_is_keyframe_ = false;
+    ResetLastAppendedState();
   }
 
   delete **itr;
