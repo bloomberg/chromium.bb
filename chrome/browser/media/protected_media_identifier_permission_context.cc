@@ -206,6 +206,7 @@ void ProtectedMediaIdentifierPermissionContext::
   bool persist = false; // Whether the ContentSetting should be saved.
   switch (response) {
     case PlatformVerificationDialog::CONSENT_RESPONSE_NONE:
+      VLOG(1) << "Platform verification dismissed by user.";
       content_setting = CONTENT_SETTING_ASK;
       persist = false;
       break;

@@ -63,7 +63,7 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   virtual View* CreateFootnoteView();
 
   // For Dialog boxes, if there is a "Cancel" button or no dialog button at all,
-  // this is called when the user presses the "Cancel" button or the Esc key.
+  // this is called when the user presses the "Cancel" button.
   // It can also be called on a close action if |Close| has not been
   // overridden. This function should return true if the window can be closed
   // after it returns, or false if it must remain open.
@@ -76,10 +76,11 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   virtual bool Accept();
 
   // Called when the user closes the window without selecting an option,
-  // e.g. by pressing the close button on the window or using a window manager
-  // gesture. By default, this calls Accept() if the only button in the dialog
-  // is Accept, Cancel() otherwise. This function should return true if the
-  // window can be closed after it returns, or false if it must remain open.
+  // e.g. by pressing the close button on the window, pressing the Esc key, or
+  // using a window manager gesture. By default, this calls Accept() if the only
+  // button in the dialog is Accept, Cancel() otherwise. This function should
+  // return true if the window can be closed after it returns, or false if it
+  // must remain open.
   virtual bool Close();
 
   // Updates the properties and appearance of |button| which has been created

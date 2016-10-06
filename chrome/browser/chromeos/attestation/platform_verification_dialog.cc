@@ -87,22 +87,21 @@ PlatformVerificationDialog::PlatformVerificationDialog(
 }
 
 bool PlatformVerificationDialog::Cancel() {
-  // This method is called when user clicked "Disable on <origin>" button or
-  // when user pressed the "Esc" key. See http://crbug.com/467155
+  // This method is called when user clicked "Block" button.
   callback_.Run(CONSENT_RESPONSE_DENY);
   return true;
 }
 
 bool PlatformVerificationDialog::Accept() {
-  // This method is called when user clicked "OK, I got it" button.
+  // This method is called when user clicked "Allow" button.
   callback_.Run(CONSENT_RESPONSE_ALLOW);
   return true;
 }
 
 bool PlatformVerificationDialog::Close() {
-  // This method is called when user clicked "x" to dismiss the dialog, the
-  // permission request is canceled, or when the tab containing this dialog is
-  // closed.
+  // This method is called when user clicked "x" or pressed "Esc" to dismiss the
+  // dialog, the permission request is canceled, or when the tab containing this
+  // dialog is closed.
   callback_.Run(CONSENT_RESPONSE_NONE);
   return true;
 }
