@@ -46,8 +46,6 @@ static_library("test_support") {
     "host_info.h",
     "host_list_fetcher.cc",
     "host_list_fetcher.h",
-    "leaky_bucket.cc",
-    "leaky_bucket.h",
     "mock_access_token_fetcher.cc",
     "mock_access_token_fetcher.h",
     "refresh_token_store.cc",

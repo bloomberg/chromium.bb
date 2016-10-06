@@ -31,12 +31,13 @@ const int kVp8MinimumTargetBitrateKbpsPerMegapixel = 2500;
 }  // namespace
 
 WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple()
-    : frame_processing_delay_us_(kStatsWindow) {}
+    : pacing_bucket_(LeakyBucket::kUnlimitedDepth, 0),
+      frame_processing_delay_us_(kStatsWindow) {}
 WebrtcFrameSchedulerSimple::~WebrtcFrameSchedulerSimple() {}
 
 void WebrtcFrameSchedulerSimple::Start(const base::Closure& capture_callback) {
   capture_callback_ = capture_callback;
-  ScheduleNextFrame();
+  ScheduleNextFrame(base::TimeTicks::Now());
 }
 
 void WebrtcFrameSchedulerSimple::Pause(bool pause) {
@@ -44,7 +45,7 @@ void WebrtcFrameSchedulerSimple::Pause(bool pause) {
   if (paused_) {
     capture_timer_.Stop();
   } else if (!capture_callback_.is_null()) {
-    ScheduleNextFrame();
+    ScheduleNextFrame(base::TimeTicks::Now());
   }
 }
 
@@ -53,15 +54,19 @@ void WebrtcFrameSchedulerSimple::SetKeyFrameRequest() {
 }
 
 void WebrtcFrameSchedulerSimple::SetTargetBitrate(int bitrate_kbps) {
-  target_bitrate_kbps_ = bitrate_kbps;
+  base::TimeTicks now = base::TimeTicks::Now();
+  pacing_bucket_.UpdateRate(bitrate_kbps * 1000 / 8, now);
+  ScheduleNextFrame(now);
 }
 
 bool WebrtcFrameSchedulerSimple::GetEncoderFrameParams(
     const webrtc::DesktopFrame& frame,
     WebrtcVideoEncoder::FrameParams* params_out) {
+  base::TimeTicks now = base::TimeTicks::Now();
+
   if (frame.updated_region().is_empty() && !top_off_is_active_ &&
       !key_frame_request_) {
-    ScheduleNextFrame();
+    ScheduleNextFrame(now);
     return false;
   }
 
@@ -69,7 +74,8 @@ bool WebrtcFrameSchedulerSimple::GetEncoderFrameParams(
   int minimum_bitrate =
       static_cast<uint64_t>(kVp8MinimumTargetBitrateKbpsPerMegapixel) *
       frame.size().width() * frame.size().height() / 1000000LL;
-  params_out->bitrate_kbps = std::max(minimum_bitrate, target_bitrate_kbps_);
+  params_out->bitrate_kbps =
+      std::max(minimum_bitrate, pacing_bucket_.rate() * 8 / 1000);
 
   // TODO(sergeyu): Currently duration is always set to 1/15 of a second.
   // Experiment with different values, and try changing it dynamically.
@@ -89,50 +95,44 @@ bool WebrtcFrameSchedulerSimple::GetEncoderFrameParams(
 void WebrtcFrameSchedulerSimple::OnFrameEncoded(
     const WebrtcVideoEncoder::EncodedFrame& encoded_frame,
     const webrtc::EncodedImageCallback::Result& send_result) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  pacing_bucket_.RefillOrSpill(encoded_frame.data.size(), now);
+
   if (encoded_frame.data.empty()) {
     top_off_is_active_ = false;
-    ScheduleNextFrame();
-    return;
+  } else {
+    frame_processing_delay_us_.Record(
+        (now - last_capture_started_time_).InMicroseconds());
+
+    // Top-off until the target quantizer value is reached.
+    top_off_is_active_ = encoded_frame.quantizer > kTargetQuantizerForVp8TopOff;
   }
 
-  frame_processing_delay_us_.Record(
-      (base::TimeTicks::Now() - last_capture_started_time_).InMicroseconds());
-
-  // Top-off until the target quantizer value is reached.
-  top_off_is_active_ = encoded_frame.quantizer > kTargetQuantizerForVp8TopOff;
-
-  // Capture next frame after we finish sending the current one.
-  const double kKiloBitsPerByte = 8.0 / 1000.0;
-  base::TimeDelta expected_send_delay = base::TimeDelta::FromSecondsD(
-      encoded_frame.data.size() * kKiloBitsPerByte / target_bitrate_kbps_);
-  last_frame_send_finish_time_ = base::TimeTicks::Now() + expected_send_delay;
-
-  ScheduleNextFrame();
+  ScheduleNextFrame(now);
 }
 
-void WebrtcFrameSchedulerSimple::ScheduleNextFrame() {
-  if (paused_)
+void WebrtcFrameSchedulerSimple::ScheduleNextFrame(base::TimeTicks now) {
+  // Don't capture frames when paused or target bitrate is 0.
+  if (paused_ || pacing_bucket_.rate() == 0)
     return;
-
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta delay;
 
   // If this is not the first frame then capture next frame after the previous
   // one has finished sending.
-  if (!last_frame_send_finish_time_.is_null()) {
-    base::TimeDelta expected_processing_time =
-        base::TimeDelta::FromMicroseconds(frame_processing_delay_us_.Max());
-    delay = std::max(base::TimeDelta(), last_frame_send_finish_time_ -
-                                            expected_processing_time - now);
-  }
+  base::TimeDelta expected_processing_time =
+      base::TimeDelta::FromMicroseconds(frame_processing_delay_us_.Max());
+  base::TimeTicks target_capture_time =
+      pacing_bucket_.GetEmptyTime() - expected_processing_time;
 
   // Cap interval between frames to kTargetFrameInterval.
   if (!last_capture_started_time_.is_null()) {
-    delay = std::max(delay,
-                     last_capture_started_time_ + kTargetFrameInterval - now);
+    target_capture_time = std::max(
+        target_capture_time, last_capture_started_time_ + kTargetFrameInterval);
   }
 
-  capture_timer_.Start(FROM_HERE, delay,
+  if (target_capture_time < now)
+    target_capture_time = now;
+
+  capture_timer_.Start(FROM_HERE, target_capture_time - now,
                        base::Bind(&WebrtcFrameSchedulerSimple::CaptureNextFrame,
                                   base::Unretained(this)));
 }

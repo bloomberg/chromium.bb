@@ -8,6 +8,7 @@
 #include "remoting/protocol/webrtc_frame_scheduler.h"
 
 #include "base/timer/timer.h"
+#include "remoting/base/leaky_bucket.h"
 #include "remoting/base/running_samples.h"
 
 namespace remoting {
@@ -34,16 +35,16 @@ class WebrtcFrameSchedulerSimple : public WebrtcFrameScheduler {
       const webrtc::EncodedImageCallback::Result& send_result) override;
 
  private:
-  void ScheduleNextFrame();
+  void ScheduleNextFrame(base::TimeTicks now);
   void CaptureNextFrame();
 
   base::Closure capture_callback_;
   bool paused_ = false;
   bool key_frame_request_ = false;
-  int target_bitrate_kbps_ = 1000;  // Initial bitrate.
 
   base::TimeTicks last_capture_started_time_;
-  base::TimeTicks last_frame_send_finish_time_;
+
+  LeakyBucket pacing_bucket_;
 
   // Set to true when encoding unchanged frames for top-off.
   bool top_off_is_active_ = false;

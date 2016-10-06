@@ -7,6 +7,7 @@
 
 #include "remoting/test/fake_socket_factory.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdlib>
@@ -20,7 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
-#include "remoting/test/leaky_bucket.h"
+#include "remoting/base/leaky_bucket.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
 #include "third_party/webrtc/base/socket.h"
 #include "third_party/webrtc/media/base/rtputils.h"
@@ -123,14 +124,14 @@ int FakeUdpSocket::SendTo(const void* data, size_t data_size,
                           const rtc::PacketOptions& options) {
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(data_size);
   memcpy(buffer->data(), data, data_size);
-  cricket::ApplyPacketOptions(
-      reinterpret_cast<uint8_t*>(buffer->data()), data_size,
-      options.packet_time_params,
-      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
+  base::TimeTicks now = base::TimeTicks::Now();
+  cricket::ApplyPacketOptions(reinterpret_cast<uint8_t*>(buffer->data()),
+                              data_size, options.packet_time_params,
+                              (now - base::TimeTicks()).InMicroseconds());
   SignalSentPacket(
-      this, rtc::SentPacket(options.packet_id, (base::TimeTicks::Now() -
-                                                base::TimeTicks::UnixEpoch())
-                                                   .InMilliseconds()));
+      this,
+      rtc::SentPacket(options.packet_id,
+                      (now - base::TimeTicks::UnixEpoch()).InMilliseconds()));
   dispatcher_->DeliverPacket(local_address_, address, buffer, data_size);
   return data_size;
 }
@@ -296,12 +297,13 @@ void FakePacketSocketFactory::ReceivePacket(
   base::TimeDelta delay;
 
   if (leaky_bucket_) {
-    delay = leaky_bucket_->AddPacket(data_size);
-    if (delay.is_max()) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    if (!leaky_bucket_->RefillOrSpill(data_size, now)) {
       ++total_packets_dropped_;
       // Drop the packet.
       return;
     }
+    delay = std::max(base::TimeDelta(), leaky_bucket_->GetEmptyTime() - now);
   }
 
   total_buffer_delay_ += delay;

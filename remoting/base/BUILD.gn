@@ -20,6 +20,8 @@ source_set("base") {
     "compound_buffer.h",
     "constants.cc",
     "constants.h",
+    "leaky_bucket.cc",
+    "leaky_bucket.h",
     "rate_counter.cc",
     "rate_counter.h",
     "rsa_key_pair.cc",
