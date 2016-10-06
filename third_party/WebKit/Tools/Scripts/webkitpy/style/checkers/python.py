@@ -80,6 +80,9 @@ class PythonChecker(object):
             wkf.path_from_webkit_base('Source', 'build', 'scripts'),
             wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty'),
             wkf.path_from_webkit_base('Source', 'bindings', 'scripts'),
+            wkf.path_from_chromium_base('build', 'android'),
+            wkf.path_from_chromium_base('third_party', 'catapult', 'devil'),
+            wkf.path_from_chromium_base('third_party', 'pymock'),
         ])
         return executive.run_command([
             sys.executable,
