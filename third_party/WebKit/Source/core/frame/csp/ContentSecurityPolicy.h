@@ -158,7 +158,6 @@ class CORE_EXPORT ContentSecurityPolicy
   bool allowEval(ScriptState* = nullptr,
                  ReportingStatus = SendReport,
                  ExceptionStatus = WillNotThrowException) const;
-  bool allowDynamic() const;
   bool allowPluginType(const String& type,
                        const String& typeAttribute,
                        const KURL&,
@@ -208,6 +207,7 @@ class CORE_EXPORT ContentSecurityPolicy
   // represents an unnonced resource load.
   bool allowScriptFromSource(const KURL&,
                              const String& nonce,
+                             ParserDisposition,
                              RedirectStatus = RedirectStatus::NoRedirect,
                              ReportingStatus = SendReport) const;
   bool allowStyleFromSource(const KURL&,
@@ -216,6 +216,7 @@ class CORE_EXPORT ContentSecurityPolicy
                             ReportingStatus = SendReport) const;
   bool allowInlineScript(const String& contextURL,
                          const String& nonce,
+                         ParserDisposition,
                          const WTF::OrdinalNumber& contextLine,
                          const String& scriptContent,
                          ReportingStatus = SendReport) const;
@@ -257,6 +258,7 @@ class CORE_EXPORT ContentSecurityPolicy
                     const KURL&,
                     const String& nonce,
                     const IntegrityMetadataSet&,
+                    ParserDisposition,
                     RedirectStatus = RedirectStatus::NoRedirect,
                     ReportingStatus = SendReport) const;
 

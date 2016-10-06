@@ -127,9 +127,10 @@ TEST_F(ContentSecurityPolicyTest, CopyStateFrom) {
 
   ContentSecurityPolicy* csp2 = ContentSecurityPolicy::create();
   csp2->copyStateFrom(csp.get());
-  EXPECT_FALSE(csp2->allowScriptFromSource(
-      exampleUrl, String(), ResourceRequest::RedirectStatus::NoRedirect,
-      ContentSecurityPolicy::SuppressReport));
+  EXPECT_FALSE(
+      csp2->allowScriptFromSource(exampleUrl, String(), ParserInserted,
+                                  ResourceRequest::RedirectStatus::NoRedirect,
+                                  ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(csp2->allowPluginType("application/x-type-1",
                                     "application/x-type-1", exampleUrl,
                                     ContentSecurityPolicy::SuppressReport));
@@ -157,9 +158,10 @@ TEST_F(ContentSecurityPolicyTest, CopyPluginTypesFrom) {
 
   ContentSecurityPolicy* csp2 = ContentSecurityPolicy::create();
   csp2->copyPluginTypesFrom(csp.get());
-  EXPECT_TRUE(csp2->allowScriptFromSource(
-      exampleUrl, String(), ResourceRequest::RedirectStatus::NoRedirect,
-      ContentSecurityPolicy::SuppressReport));
+  EXPECT_TRUE(
+      csp2->allowScriptFromSource(exampleUrl, String(), ParserInserted,
+                                  ResourceRequest::RedirectStatus::NoRedirect,
+                                  ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(csp2->allowPluginType("application/x-type-1",
                                     "application/x-type-1", exampleUrl,
                                     ContentSecurityPolicy::SuppressReport));
@@ -282,14 +284,16 @@ TEST_F(ContentSecurityPolicyTest, ObjectSrc) {
                         ContentSecurityPolicyHeaderSourceMeta);
   EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextObject, url,
                                  String(), IntegrityMetadataSet(),
+                                 ParserInserted,
                                  ResourceRequest::RedirectStatus::NoRedirect,
                                  ContentSecurityPolicy::SuppressReport));
-  EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextEmbed, url,
-                                 String(), IntegrityMetadataSet(),
-                                 ResourceRequest::RedirectStatus::NoRedirect,
-                                 ContentSecurityPolicy::SuppressReport));
+  EXPECT_FALSE(csp->allowRequest(
+      WebURLRequest::RequestContextEmbed, url, String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(csp->allowRequest(WebURLRequest::RequestContextPlugin, url,
                                 String(), IntegrityMetadataSet(),
+                                ParserInserted,
                                 ResourceRequest::RedirectStatus::NoRedirect,
                                 ContentSecurityPolicy::SuppressReport));
 }
@@ -306,32 +310,37 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderMissingIntegrity) {
                            ContentSecurityPolicyHeaderSourceHTTP);
   EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextScript, url,
                                     String(), IntegrityMetadataSet(),
+                                    ParserInserted,
                                     ResourceRequest::RedirectStatus::NoRedirect,
                                     ContentSecurityPolicy::SuppressReport));
   EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextImport, url,
                                     String(), IntegrityMetadataSet(),
+                                    ParserInserted,
                                     ResourceRequest::RedirectStatus::NoRedirect,
                                     ContentSecurityPolicy::SuppressReport));
-  EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextStyle, url,
-                                    String(), IntegrityMetadataSet(),
-                                    ResourceRequest::RedirectStatus::NoRedirect,
-                                    ContentSecurityPolicy::SuppressReport));
+  EXPECT_FALSE(policy->allowRequest(
+      WebURLRequest::RequestContextStyle, url, String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      ContentSecurityPolicy::SuppressReport));
   EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker,
                                     url, String(), IntegrityMetadataSet(),
+                                    ParserInserted,
                                     ResourceRequest::RedirectStatus::NoRedirect,
                                     ContentSecurityPolicy::SuppressReport));
   EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker,
                                     url, String(), IntegrityMetadataSet(),
+                                    ParserInserted,
                                     ResourceRequest::RedirectStatus::NoRedirect,
                                     ContentSecurityPolicy::SuppressReport));
   EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextWorker, url,
                                     String(), IntegrityMetadataSet(),
+                                    ParserInserted,
                                     ResourceRequest::RedirectStatus::NoRedirect,
                                     ContentSecurityPolicy::SuppressReport));
-  EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url,
-                                   String(), IntegrityMetadataSet(),
-                                   ResourceRequest::RedirectStatus::NoRedirect,
-                                   ContentSecurityPolicy::SuppressReport));
+  EXPECT_TRUE(policy->allowRequest(
+      WebURLRequest::RequestContextImage, url, String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      ContentSecurityPolicy::SuppressReport));
   // Report
   policy = ContentSecurityPolicy::create();
   policy->bindToExecutionContext(document.get());
@@ -340,32 +349,37 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderMissingIntegrity) {
                            ContentSecurityPolicyHeaderSourceHTTP);
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url,
                                    String(), IntegrityMetadataSet(),
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url,
                                    String(), IntegrityMetadataSet(),
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
-  EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url,
-                                   String(), IntegrityMetadataSet(),
-                                   ResourceRequest::RedirectStatus::NoRedirect,
-                                   ContentSecurityPolicy::SuppressReport));
+  EXPECT_TRUE(policy->allowRequest(
+      WebURLRequest::RequestContextStyle, url, String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker,
                                    url, String(), IntegrityMetadataSet(),
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker,
                                    url, String(), IntegrityMetadataSet(),
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url,
                                    String(), IntegrityMetadataSet(),
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
-  EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url,
-                                   String(), IntegrityMetadataSet(),
-                                   ResourceRequest::RedirectStatus::NoRedirect,
-                                   ContentSecurityPolicy::SuppressReport));
+  EXPECT_TRUE(policy->allowRequest(
+      WebURLRequest::RequestContextImage, url, String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      ContentSecurityPolicy::SuppressReport));
 }
 
 // Tests that requests for scripts and styles are allowed
@@ -383,31 +397,33 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderPresentIntegrity) {
                            ContentSecurityPolicyHeaderTypeEnforce,
                            ContentSecurityPolicyHeaderSourceHTTP);
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker,
                                    url, String(), integrityMetadata,
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker,
                                    url, String(), integrityMetadata,
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   // Content-Security-Policy-Report-Only is not supported in meta element,
@@ -418,31 +434,33 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderPresentIntegrity) {
                            ContentSecurityPolicyHeaderTypeReport,
                            ContentSecurityPolicyHeaderSourceHTTP);
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker,
                                    url, String(), integrityMetadata,
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker,
                                    url, String(), integrityMetadata,
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
 }
@@ -459,32 +477,37 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaMissingIntegrity) {
                            ContentSecurityPolicyHeaderSourceMeta);
   EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextScript, url,
                                     String(), IntegrityMetadataSet(),
+                                    ParserInserted,
                                     ResourceRequest::RedirectStatus::NoRedirect,
                                     ContentSecurityPolicy::SuppressReport));
   EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextImport, url,
                                     String(), IntegrityMetadataSet(),
+                                    ParserInserted,
                                     ResourceRequest::RedirectStatus::NoRedirect,
                                     ContentSecurityPolicy::SuppressReport));
-  EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextStyle, url,
-                                    String(), IntegrityMetadataSet(),
-                                    ResourceRequest::RedirectStatus::NoRedirect,
-                                    ContentSecurityPolicy::SuppressReport));
+  EXPECT_FALSE(policy->allowRequest(
+      WebURLRequest::RequestContextStyle, url, String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      ContentSecurityPolicy::SuppressReport));
   EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker,
                                     url, String(), IntegrityMetadataSet(),
+                                    ParserInserted,
                                     ResourceRequest::RedirectStatus::NoRedirect,
                                     ContentSecurityPolicy::SuppressReport));
   EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker,
                                     url, String(), IntegrityMetadataSet(),
+                                    ParserInserted,
                                     ResourceRequest::RedirectStatus::NoRedirect,
                                     ContentSecurityPolicy::SuppressReport));
   EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextWorker, url,
                                     String(), IntegrityMetadataSet(),
+                                    ParserInserted,
                                     ResourceRequest::RedirectStatus::NoRedirect,
                                     ContentSecurityPolicy::SuppressReport));
-  EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url,
-                                   String(), IntegrityMetadataSet(),
-                                   ResourceRequest::RedirectStatus::NoRedirect,
-                                   ContentSecurityPolicy::SuppressReport));
+  EXPECT_TRUE(policy->allowRequest(
+      WebURLRequest::RequestContextImage, url, String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      ContentSecurityPolicy::SuppressReport));
   // Content-Security-Policy-Report-Only is not supported in meta element,
   // so nothing should be blocked
   policy = ContentSecurityPolicy::create();
@@ -494,32 +517,37 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaMissingIntegrity) {
                            ContentSecurityPolicyHeaderSourceMeta);
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url,
                                    String(), IntegrityMetadataSet(),
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url,
                                    String(), IntegrityMetadataSet(),
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
-  EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url,
-                                   String(), IntegrityMetadataSet(),
-                                   ResourceRequest::RedirectStatus::NoRedirect,
-                                   ContentSecurityPolicy::SuppressReport));
+  EXPECT_TRUE(policy->allowRequest(
+      WebURLRequest::RequestContextStyle, url, String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker,
                                    url, String(), IntegrityMetadataSet(),
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker,
                                    url, String(), IntegrityMetadataSet(),
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url,
                                    String(), IntegrityMetadataSet(),
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
-  EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url,
-                                   String(), IntegrityMetadataSet(),
-                                   ResourceRequest::RedirectStatus::NoRedirect,
-                                   ContentSecurityPolicy::SuppressReport));
+  EXPECT_TRUE(policy->allowRequest(
+      WebURLRequest::RequestContextImage, url, String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      ContentSecurityPolicy::SuppressReport));
 }
 
 // Tests that requests for scripts and styles are allowed
@@ -537,31 +565,33 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaPresentIntegrity) {
                            ContentSecurityPolicyHeaderTypeEnforce,
                            ContentSecurityPolicyHeaderSourceMeta);
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker,
                                    url, String(), integrityMetadata,
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker,
                                    url, String(), integrityMetadata,
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   // Content-Security-Policy-Report-Only is not supported in meta element,
@@ -572,31 +602,33 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaPresentIntegrity) {
                            ContentSecurityPolicyHeaderTypeReport,
                            ContentSecurityPolicyHeaderSourceMeta);
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker,
                                    url, String(), integrityMetadata,
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker,
                                    url, String(), integrityMetadata,
+                                   ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
   EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url,
-                                   String(), integrityMetadata,
+                                   String(), integrityMetadata, ParserInserted,
                                    ResourceRequest::RedirectStatus::NoRedirect,
                                    ContentSecurityPolicy::SuppressReport));
 }
@@ -632,8 +664,8 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
     policy->didReceiveHeader(test.policy,
                              ContentSecurityPolicyHeaderTypeEnforce,
                              ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(test.allowed,
-              policy->allowScriptFromSource(resource, String(test.nonce)));
+    EXPECT_EQ(test.allowed, policy->allowScriptFromSource(
+                                resource, String(test.nonce), ParserInserted));
     // If this is expected to generate a violation, we should have sent a
     // report.
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
@@ -643,7 +675,8 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
     policy->bindToExecutionContext(document.get());
     policy->didReceiveHeader(test.policy, ContentSecurityPolicyHeaderTypeReport,
                              ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_TRUE(policy->allowScriptFromSource(resource, String(test.nonce)));
+    EXPECT_TRUE(policy->allowScriptFromSource(resource, String(test.nonce),
+                                              ParserInserted));
     // If this is expected to generate a violation, we should have sent a
     // report, even though we don't deny access in `allowScriptFromSource`:
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
@@ -681,7 +714,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
                              ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.allowed,
               policy->allowInlineScript(contextURL, String(test.nonce),
-                                        contextLine, content));
+                                        ParserInserted, contextLine, content));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
     // Enforce 'style-src'
@@ -701,8 +734,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
     policy->didReceiveHeader(String("script-src ") + test.policy,
                              ContentSecurityPolicyHeaderTypeReport,
                              ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_TRUE(policy->allowInlineScript(contextURL, String(test.nonce),
-                                          contextLine, content));
+    EXPECT_TRUE(policy->allowInlineScript(
+        contextURL, String(test.nonce), ParserInserted, contextLine, content));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
     // Report 'style-src'
@@ -783,8 +816,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     policy->didReceiveHeader(test.policy2,
                              ContentSecurityPolicyHeaderTypeReport,
                              ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(test.allowed1,
-              policy->allowScriptFromSource(resource, String(test.nonce)));
+    EXPECT_EQ(test.allowed1, policy->allowScriptFromSource(
+                                 resource, String(test.nonce), ParserInserted));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
     // Report / Enforce
@@ -796,8 +829,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     policy->didReceiveHeader(test.policy2,
                              ContentSecurityPolicyHeaderTypeEnforce,
                              ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(test.allowed2,
-              policy->allowScriptFromSource(resource, String(test.nonce)));
+    EXPECT_EQ(test.allowed2, policy->allowScriptFromSource(
+                                 resource, String(test.nonce), ParserInserted));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
     // Enforce / Enforce
@@ -810,7 +843,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
                              ContentSecurityPolicyHeaderTypeEnforce,
                              ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.allowed1 && test.allowed2,
-              policy->allowScriptFromSource(resource, String(test.nonce)));
+              policy->allowScriptFromSource(resource, String(test.nonce),
+                                            ParserInserted));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
     // Report / Report
@@ -822,7 +856,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     policy->didReceiveHeader(test.policy2,
                              ContentSecurityPolicyHeaderTypeReport,
                              ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_TRUE(policy->allowScriptFromSource(resource, String(test.nonce)));
+    EXPECT_TRUE(policy->allowScriptFromSource(resource, String(test.nonce),
+                                              ParserInserted));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
   }
 }

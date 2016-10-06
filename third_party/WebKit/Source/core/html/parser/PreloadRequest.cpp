@@ -50,6 +50,7 @@ FetchRequest PreloadRequest::resourceRequest(Document* document) {
   request.clientHintsPreferences().updateFrom(m_clientHintsPreferences);
   request.setIntegrityMetadata(m_integrityMetadata);
   request.setContentSecurityPolicyNonce(m_nonce);
+  request.setParserDisposition(ParserInserted);
 
   if (m_requestType == RequestTypeLinkRelPreload)
     request.setLinkPreload(true);

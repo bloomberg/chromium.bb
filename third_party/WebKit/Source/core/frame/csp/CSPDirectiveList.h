@@ -50,6 +50,7 @@ class CORE_EXPORT CSPDirectiveList
                                 ContentSecurityPolicy::ReportingStatus) const;
   bool allowInlineScript(const String& contextURL,
                          const String& nonce,
+                         ParserDisposition,
                          const WTF::OrdinalNumber& contextLine,
                          ContentSecurityPolicy::ReportingStatus,
                          const String& scriptContent) const;
@@ -69,6 +70,7 @@ class CORE_EXPORT CSPDirectiveList
 
   bool allowScriptFromSource(const KURL&,
                              const String& nonce,
+                             ParserDisposition,
                              ResourceRequest::RedirectStatus,
                              ContentSecurityPolicy::ReportingStatus) const;
   bool allowStyleFromSource(const KURL&,

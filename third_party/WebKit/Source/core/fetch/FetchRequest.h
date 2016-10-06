@@ -117,6 +117,10 @@ class CORE_EXPORT FetchRequest {
     m_options.contentSecurityPolicyNonce = nonce;
   }
 
+  void setParserDisposition(ParserDisposition parserDisposition) {
+    m_options.parserDisposition = parserDisposition;
+  }
+
   void makeSynchronous();
 
  private:

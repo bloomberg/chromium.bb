@@ -98,7 +98,7 @@ void HttpEquiv::processHttpEquivRefresh(Document& document,
                                         const AtomicString& content) {
   UseCounter::count(document, UseCounter::MetaRefresh);
   if (!document.contentSecurityPolicy()->allowInlineScript(
-          KURL(), "", OrdinalNumber(), "",
+          KURL(), "", ParserInserted, OrdinalNumber(), "",
           ContentSecurityPolicy::SuppressReport))
     UseCounter::count(document,
                       UseCounter::MetaRefreshWhenCSPBlocksInlineScript);
@@ -115,7 +115,7 @@ void HttpEquiv::processHttpEquivSetCookie(Document& document,
 
   UseCounter::count(document, UseCounter::MetaSetCookie);
   if (!document.contentSecurityPolicy()->allowInlineScript(
-          KURL(), "", OrdinalNumber(), "",
+          KURL(), "", ParserInserted, OrdinalNumber(), "",
           ContentSecurityPolicy::SuppressReport))
     UseCounter::count(document,
                       UseCounter::MetaSetCookieWhenCSPBlocksInlineScript);

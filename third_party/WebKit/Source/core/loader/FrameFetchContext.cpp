@@ -682,7 +682,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
         !m_document->contentSecurityPolicy()->allowRequest(
             resourceRequest.requestContext(), url,
             options.contentSecurityPolicyNonce, options.integrityMetadata,
-            redirectStatus, cspReporting))
+            options.parserDisposition, redirectStatus, cspReporting))
       return ResourceRequestBlockedReasonCSP;
   }
 

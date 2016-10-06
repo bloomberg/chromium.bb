@@ -520,10 +520,13 @@ bool CSPDirectiveList::allowInlineEventHandlers(
 bool CSPDirectiveList::allowInlineScript(
     const String& contextURL,
     const String& nonce,
+    ParserDisposition parserDisposition,
     const WTF::OrdinalNumber& contextLine,
     ContentSecurityPolicy::ReportingStatus reportingStatus,
     const String& content) const {
   if (isMatchingNoncePresent(operativeDirective(m_scriptSrc.get()), nonce))
+    return true;
+  if (parserDisposition == NotParserInserted && allowDynamic())
     return true;
   if (reportingStatus == ContentSecurityPolicy::SendReport)
     return checkInlineAndReportViolation(
@@ -584,9 +587,12 @@ bool CSPDirectiveList::allowPluginType(
 bool CSPDirectiveList::allowScriptFromSource(
     const KURL& url,
     const String& nonce,
+    ParserDisposition parserDisposition,
     ResourceRequest::RedirectStatus redirectStatus,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
   if (isMatchingNoncePresent(operativeDirective(m_scriptSrc.get()), nonce))
+    return true;
+  if (parserDisposition == NotParserInserted && allowDynamic())
     return true;
   return reportingStatus == ContentSecurityPolicy::SendReport
              ? checkSourceAndReportViolation(

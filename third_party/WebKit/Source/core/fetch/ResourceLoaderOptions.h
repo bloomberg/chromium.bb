@@ -67,6 +67,10 @@ enum SynchronousPolicy { RequestSynchronously, RequestAsynchronously };
 // an access check upon seeing the response.
 enum CORSEnabled { NotCORSEnabled, IsCORSEnabled };
 
+// Was the request generated from a "parser-inserted" element?
+// https://html.spec.whatwg.org/multipage/scripting.html#parser-inserted
+enum ParserDisposition { ParserInserted, NotParserInserted };
+
 struct ResourceLoaderOptions {
   USING_FAST_MALLOC(ResourceLoaderOptions);
 
@@ -78,7 +82,8 @@ struct ResourceLoaderOptions {
         contentSecurityPolicyOption(CheckContentSecurityPolicy),
         requestInitiatorContext(DocumentContext),
         synchronousPolicy(RequestAsynchronously),
-        corsEnabled(NotCORSEnabled) {}
+        corsEnabled(NotCORSEnabled),
+        parserDisposition(ParserInserted) {}
 
   ResourceLoaderOptions(
       DataBufferingPolicy dataBufferingPolicy,
@@ -92,7 +97,8 @@ struct ResourceLoaderOptions {
         contentSecurityPolicyOption(contentSecurityPolicyOption),
         requestInitiatorContext(requestInitiatorContext),
         synchronousPolicy(RequestAsynchronously),
-        corsEnabled(NotCORSEnabled) {}
+        corsEnabled(NotCORSEnabled),
+        parserDisposition(ParserInserted) {}
 
   // Answers the question "can a separate request with these different options
   // be re-used" (e.g. preload request) The safe (but possibly slow) answer is
@@ -132,6 +138,7 @@ struct ResourceLoaderOptions {
   RefPtr<SecurityOrigin> securityOrigin;
   String contentSecurityPolicyNonce;
   IntegrityMetadataSet integrityMetadata;
+  ParserDisposition parserDisposition;
 };
 
 // Encode AtomicString (in FetchInitiatorInfo) as String to cross threads.
@@ -151,7 +158,8 @@ struct CrossThreadResourceLoaderOptionsData {
                            ? options.securityOrigin->isolatedCopy()
                            : nullptr),
         contentSecurityPolicyNonce(options.contentSecurityPolicyNonce),
-        integrityMetadata(options.integrityMetadata) {}
+        integrityMetadata(options.integrityMetadata),
+        parserDisposition(options.parserDisposition) {}
 
   operator ResourceLoaderOptions() const {
     ResourceLoaderOptions options;
@@ -166,6 +174,7 @@ struct CrossThreadResourceLoaderOptionsData {
     options.securityOrigin = securityOrigin;
     options.contentSecurityPolicyNonce = contentSecurityPolicyNonce;
     options.integrityMetadata = integrityMetadata;
+    options.parserDisposition = parserDisposition;
     return options;
   }
 
@@ -180,6 +189,7 @@ struct CrossThreadResourceLoaderOptionsData {
   RefPtr<SecurityOrigin> securityOrigin;
   String contentSecurityPolicyNonce;
   IntegrityMetadataSet integrityMetadata;
+  ParserDisposition parserDisposition;
 };
 
 template <>

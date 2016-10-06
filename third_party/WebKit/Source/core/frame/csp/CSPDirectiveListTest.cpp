@@ -140,7 +140,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceNoNonce) {
     Member<CSPDirectiveList> directiveList =
         createList(test.list, ContentSecurityPolicyHeaderTypeReport);
     EXPECT_EQ(test.expected, directiveList->allowScriptFromSource(
-                                 scriptSrc, String(),
+                                 scriptSrc, String(), ParserInserted,
                                  ResourceRequest::RedirectStatus::NoRedirect,
                                  ContentSecurityPolicy::SuppressReport));
 
@@ -148,7 +148,7 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceNoNonce) {
     directiveList =
         createList(test.list, ContentSecurityPolicyHeaderTypeEnforce);
     EXPECT_EQ(test.expected, directiveList->allowScriptFromSource(
-                                 scriptSrc, String(),
+                                 scriptSrc, String(), ParserInserted,
                                  ResourceRequest::RedirectStatus::NoRedirect,
                                  ContentSecurityPolicy::SuppressReport));
   }
@@ -195,7 +195,7 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
         createList(String("script-src ") + test.list,
                    ContentSecurityPolicyHeaderTypeReport);
     EXPECT_EQ(test.expected, directiveList->allowScriptFromSource(
-                                 resource, String(test.nonce),
+                                 resource, String(test.nonce), ParserInserted,
                                  ResourceRequest::RedirectStatus::NoRedirect,
                                  ContentSecurityPolicy::SuppressReport));
 
@@ -203,7 +203,7 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
     directiveList = createList(String("script-src ") + test.list,
                                ContentSecurityPolicyHeaderTypeEnforce);
     EXPECT_EQ(test.expected, directiveList->allowScriptFromSource(
-                                 resource, String(test.nonce),
+                                 resource, String(test.nonce), ParserInserted,
                                  ResourceRequest::RedirectStatus::NoRedirect,
                                  ContentSecurityPolicy::SuppressReport));
 
@@ -227,7 +227,7 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
     directiveList = createList(String("default-src ") + test.list,
                                ContentSecurityPolicyHeaderTypeReport);
     EXPECT_EQ(test.expected, directiveList->allowScriptFromSource(
-                                 resource, String(test.nonce),
+                                 resource, String(test.nonce), ParserInserted,
                                  ResourceRequest::RedirectStatus::NoRedirect,
                                  ContentSecurityPolicy::SuppressReport));
     EXPECT_EQ(test.expected, directiveList->allowStyleFromSource(
@@ -239,7 +239,7 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce) {
     directiveList = createList(String("default-src ") + test.list,
                                ContentSecurityPolicyHeaderTypeEnforce);
     EXPECT_EQ(test.expected, directiveList->allowScriptFromSource(
-                                 resource, String(test.nonce),
+                                 resource, String(test.nonce), ParserInserted,
                                  ResourceRequest::RedirectStatus::NoRedirect,
                                  ContentSecurityPolicy::SuppressReport));
     EXPECT_EQ(test.expected, directiveList->allowStyleFromSource(

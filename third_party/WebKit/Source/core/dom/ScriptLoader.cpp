@@ -345,21 +345,14 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
                                           crossOrigin);
     request.setCharset(scriptCharset());
 
-    // Skip fetch-related CSP checks if dynamically injected script is
-    // whitelisted and this script is not parser-inserted.
-    bool scriptPassesCSPDynamic =
-        (!isParserInserted() &&
-         elementDocument->contentSecurityPolicy()->allowDynamic());
-
-    if (ContentSecurityPolicy::isNonceableElement(m_element.get()))
+    if (ContentSecurityPolicy::isNonceableElement(m_element.get())) {
       request.setContentSecurityPolicyNonce(
           m_element->fastGetAttribute(HTMLNames::nonceAttr));
-
-    if (scriptPassesCSPDynamic) {
-      UseCounter::count(elementDocument->frame(),
-                        UseCounter::ScriptPassesCSPDynamic);
-      request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
     }
+
+    request.setParserDisposition(isParserInserted() ? ParserInserted
+                                                    : NotParserInserted);
+
     request.setDefer(defer);
 
     String integrityAttr =
@@ -466,8 +459,10 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
   bool shouldBypassMainWorldCSP =
       (frame && frame->script().shouldBypassMainWorldCSP()) ||
       csp->allowScriptWithHash(sourceCode.source(),
-                               ContentSecurityPolicy::InlineType::Block) ||
-      (!isParserInserted() && csp->allowDynamic());
+                               ContentSecurityPolicy::InlineType::Block);
+
+  ParserDisposition parserDisposition =
+      isParserInserted() ? ParserInserted : NotParserInserted;
 
   AtomicString nonce =
       ContentSecurityPolicy::isNonceableElement(m_element.get())
@@ -475,8 +470,8 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
           : AtomicString();
   if (!m_isExternalScript &&
       (!shouldBypassMainWorldCSP &&
-       !csp->allowInlineScript(elementDocument->url(), nonce, m_startLineNumber,
-                               sourceCode.source()))) {
+       !csp->allowInlineScript(elementDocument->url(), nonce, parserDisposition,
+                               m_startLineNumber, sourceCode.source()))) {
     return false;
   }
 
