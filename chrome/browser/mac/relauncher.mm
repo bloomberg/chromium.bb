@@ -100,7 +100,7 @@ bool RelaunchAppWithHelper(const std::string& helper,
 
   // If this application isn't in the foreground, the relaunched one shouldn't
   // be either.
-  if (![[NSRunningApplication currentApplication] isActive]) {
+  if (![NSApp isActive]) {
     relaunch_args.push_back(kRelauncherBackgroundArg);
   }
 
