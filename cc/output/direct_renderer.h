@@ -12,11 +12,11 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/ca_layer_overlay.h"
-#include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/resource_provider.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -58,7 +58,7 @@ class CC_EXPORT DirectRenderer {
                  const gfx::Size& device_viewport_size);
 
   // Public interface implemented by subclasses.
-  virtual void SwapBuffers(CompositorFrameMetadata metadata) = 0;
+  virtual void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) = 0;
   virtual void SwapBuffersComplete() {}
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) {}

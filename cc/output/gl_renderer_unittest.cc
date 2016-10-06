@@ -7,12 +7,12 @@
 #include <stdint.h>
 
 #include <set>
+#include <vector>
 
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
-#include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/output/overlay_strategy_single_on_top.h"
@@ -38,6 +38,7 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/transform.h"
 
 using testing::_;
@@ -352,7 +353,7 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
     renderer_->SetVisible(true);
   }
 
-  void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }
+  void SwapBuffers() { renderer_->SwapBuffers(std::vector<ui::LatencyInfo>()); }
 
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
@@ -1483,8 +1484,8 @@ class MockOutputSurface : public OutputSurface {
                     bool has_alpha));
   MOCK_METHOD0(BindFramebuffer, void());
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
-  MOCK_METHOD1(SwapBuffers_, void(CompositorFrame& frame));  // NOLINT
-  void SwapBuffers(CompositorFrame frame) override { SwapBuffers_(frame); }
+  MOCK_METHOD1(SwapBuffers_, void(OutputSurfaceFrame& frame));  // NOLINT
+  void SwapBuffers(OutputSurfaceFrame frame) override { SwapBuffers_(frame); }
   MOCK_CONST_METHOD0(GetOverlayCandidateValidator,
                      OverlayCandidateValidator*());
   MOCK_CONST_METHOD0(IsDisplayedAsOverlayPlane, bool());
@@ -1514,7 +1515,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
     Mock::VerifyAndClearExpectations(&output_surface_);
   }
 
-  void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }
+  void SwapBuffers() { renderer_->SwapBuffers(std::vector<ui::LatencyInfo>()); }
 
   void DrawFrame(float device_scale_factor,
                  const gfx::Size& viewport_size,

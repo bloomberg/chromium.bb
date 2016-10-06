@@ -28,7 +28,7 @@ class PixelTestOutputSurface : public OutputSurface {
                bool alpha) override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
-  void SwapBuffers(CompositorFrame frame) override;
+  void SwapBuffers(OutputSurfaceFrame frame) override;
   OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;

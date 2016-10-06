@@ -5,16 +5,16 @@
 #include <stddef.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "cc/base/region.h"
 #include "cc/output/ca_layer_overlay.h"
-#include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/output/overlay_strategy_fullscreen.h"
@@ -35,6 +35,7 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 using testing::_;
@@ -166,8 +167,7 @@ class OverlayOutputSurface : public OutputSurface {
     // TestContextProvider has no real framebuffer, just use RGB.
     return GL_RGB;
   }
-  void SwapBuffers(CompositorFrame frame) override {
-  }
+  void SwapBuffers(OutputSurfaceFrame frame) override {}
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
   OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
@@ -1334,12 +1334,12 @@ class GLRendererWithOverlaysTest : public testing::Test {
     renderer_->DrawFrame(pass_list, 1.f, gfx::ColorSpace(), viewport_size);
   }
   void SwapBuffers() {
-    renderer_->SwapBuffers(CompositorFrameMetadata());
+    renderer_->SwapBuffers(std::vector<ui::LatencyInfo>());
     output_surface_->OnSwapBuffersComplete();
     renderer_->SwapBuffersComplete();
   }
   void SwapBuffersWithoutComplete() {
-    renderer_->SwapBuffers(CompositorFrameMetadata());
+    renderer_->SwapBuffers(std::vector<ui::LatencyInfo>());
   }
   void SwapBuffersComplete() {
     output_surface_->OnSwapBuffersComplete();

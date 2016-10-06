@@ -67,7 +67,6 @@ void HardwareRenderer::CommitFrame() {
   ReturnResourcesInChildFrame();
   child_frame_ = std::move(child_frame);
   DCHECK(child_frame_->frame.get());
-  DCHECK(!child_frame_->frame->gl_frame_data);
 }
 
 void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {

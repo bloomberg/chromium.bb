@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/output/compositor_frame.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -85,6 +85,7 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
   cc::DelayBasedBeginFrameSource begin_frame_source_;
   std::unique_ptr<ui::Compositor> compositor_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SoftwareBrowserCompositorOutputSurfaceTest);
 };
 
@@ -118,8 +119,7 @@ TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {
   output_surface_ = CreateSurface(std::move(software_device));
   CHECK(output_surface_->BindToClient(&output_surface_client));
 
-  cc::CompositorFrame frame;
-  output_surface_->SwapBuffers(std::move(frame));
+  output_surface_->SwapBuffers(cc::OutputSurfaceFrame());
   EXPECT_EQ(NULL, output_surface_->software_device()->GetVSyncProvider());
 }
 
@@ -134,7 +134,6 @@ TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, VSyncProviderUpdates) {
       output_surface_->software_device()->GetVSyncProvider());
   EXPECT_EQ(0, vsync_provider->call_count());
 
-  cc::CompositorFrame frame;
-  output_surface_->SwapBuffers(std::move(frame));
+  output_surface_->SwapBuffers(cc::OutputSurfaceFrame());
   EXPECT_EQ(1, vsync_provider->call_count());
 }

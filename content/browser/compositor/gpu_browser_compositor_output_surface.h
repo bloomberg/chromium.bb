@@ -59,7 +59,7 @@ class GpuBrowserCompositorOutputSurface
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
-  void SwapBuffers(cc::CompositorFrame frame) override;
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
@@ -78,6 +78,7 @@ class GpuBrowserCompositorOutputSurface
 
   std::unique_ptr<ReflectorTexture> reflector_texture_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(GpuBrowserCompositorOutputSurface);
 };
 

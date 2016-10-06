@@ -11,8 +11,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/output/software_output_device.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "ui/events/latency_info.h"
@@ -47,9 +47,9 @@ void SoftwareBrowserCompositorOutputSurface::BindFramebuffer() {
 }
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
-    cc::CompositorFrame frame) {
+    cc::OutputSurfaceFrame frame) {
   base::TimeTicks swap_time = base::TimeTicks::Now();
-  for (auto& latency : frame.metadata.latency_info) {
+  for (auto& latency : frame.latency_info) {
     latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0, swap_time, 1);
     latency.AddLatencyNumberWithTimestamp(
@@ -58,7 +58,7 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RenderWidgetHostImpl::CompositorFrameDrawn,
-                            frame.metadata.latency_info));
+                            frame.latency_info));
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
   if (vsync_provider) {

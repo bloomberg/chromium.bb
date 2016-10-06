@@ -31,11 +31,7 @@ void FakeCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
     auto* frame_data = last_sent_frame_->delegated_frame_data.get();
     last_swap_rect_ = frame_data->render_pass_list.back()->damage_rect;
     last_swap_rect_valid_ = true;
-  } else if (context_provider()) {
-    last_swap_rect_ = last_sent_frame_->gl_frame_data->sub_buffer_rect;
-    last_swap_rect_valid_ = true;
   } else {
-    // Unknown for direct software frames.
     last_swap_rect_ = gfx::Rect();
     last_swap_rect_valid_ = false;
   }

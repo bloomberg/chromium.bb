@@ -36,6 +36,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
@@ -230,13 +231,12 @@ class AndroidOutputSurface : public cc::OutputSurface {
 
   ~AndroidOutputSurface() override = default;
 
-  void SwapBuffers(cc::CompositorFrame frame) override {
-    GetCommandBufferProxy()->SetLatencyInfo(frame.metadata.latency_info);
-    if (frame.gl_frame_data->sub_buffer_rect.IsEmpty()) {
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override {
+    GetCommandBufferProxy()->SetLatencyInfo(frame.latency_info);
+    if (frame.sub_buffer_rect.IsEmpty()) {
       context_provider_->ContextSupport()->CommitOverlayPlanes();
     } else {
-      DCHECK(frame.gl_frame_data->sub_buffer_rect ==
-             gfx::Rect(frame.gl_frame_data->size));
+      DCHECK(frame.sub_buffer_rect == gfx::Rect(frame.size));
       context_provider_->ContextSupport()->Swap();
     }
   }

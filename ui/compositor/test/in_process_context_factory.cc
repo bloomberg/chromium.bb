@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -66,15 +66,13 @@ class DirectOutputSurface : public cc::OutputSurface {
       return false;
     return true;
   }
-  void SwapBuffers(cc::CompositorFrame frame) override {
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override {
     DCHECK(context_provider_.get());
-    DCHECK(frame.gl_frame_data);
-    if (frame.gl_frame_data->sub_buffer_rect ==
-        gfx::Rect(frame.gl_frame_data->size)) {
+    if (frame.sub_buffer_rect == gfx::Rect(frame.size)) {
       context_provider_->ContextSupport()->Swap();
     } else {
       context_provider_->ContextSupport()->PartialSwapBuffers(
-          frame.gl_frame_data->sub_buffer_rect);
+          frame.sub_buffer_rect);
     }
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
     const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();

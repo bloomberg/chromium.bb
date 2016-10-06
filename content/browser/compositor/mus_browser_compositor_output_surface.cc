@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "cc/output/compositor_frame.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
@@ -36,10 +37,13 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
 
 MusBrowserCompositorOutputSurface::~MusBrowserCompositorOutputSurface() {}
 
-void MusBrowserCompositorOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
+void MusBrowserCompositorOutputSurface::SwapBuffers(
+    cc::OutputSurfaceFrame frame) {
   const gfx::Rect bounds(ui_window_->bounds().size());
   cc::CompositorFrame ui_frame;
-  ui_frame.metadata = std::move(frame.metadata);
+  ui_frame.metadata.latency_info = std::move(frame.latency_info);
+  // Reset latency_info to known empty state after moving contents.
+  frame.latency_info.clear();
   ui_frame.delegated_frame_data = base::MakeUnique<cc::DelegatedFrameData>();
   const cc::RenderPassId render_pass_id(1, 1);
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
@@ -57,11 +61,11 @@ void MusBrowserCompositorOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
   resource.id = AllocateResourceId();
   resource.format = cc::ResourceFormat::RGBA_8888;
   resource.filter = GL_LINEAR;
-  resource.size = frame.gl_frame_data->size;
+  resource.size = frame.size;
 
   const gpu::Mailbox& mailbox = GetMailboxFromResourceId(resource.id);
   DCHECK(!mailbox.IsZero());
-  const gfx::Rect rect(frame.gl_frame_data->size);
+  const gfx::Rect rect(frame.size);
 
   // Call parent's SwapBuffers to generate the front buffer, and then send the
   // front buffer to mus.

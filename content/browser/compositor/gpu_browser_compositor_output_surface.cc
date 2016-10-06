@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/output/output_surface_frame.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
@@ -85,13 +85,12 @@ void GpuBrowserCompositorOutputSurface::BindFramebuffer() {
   context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GpuBrowserCompositorOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
-  DCHECK(frame.gl_frame_data);
+void GpuBrowserCompositorOutputSurface::SwapBuffers(
+    cc::OutputSurfaceFrame frame) {
+  GetCommandBufferProxy()->SetLatencyInfo(frame.latency_info);
 
-  GetCommandBufferProxy()->SetLatencyInfo(frame.metadata.latency_info);
-
-  gfx::Rect swap_rect = frame.gl_frame_data->sub_buffer_rect;
-  gfx::Size surface_size = frame.gl_frame_data->size;
+  gfx::Rect swap_rect = frame.sub_buffer_rect;
+  gfx::Size surface_size = frame.size;
   if (reflector_) {
     if (swap_rect == gfx::Rect(surface_size)) {
       reflector_texture_->CopyTextureFullImage(surface_size);
@@ -102,7 +101,7 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
     }
   }
 
-  if (swap_rect == gfx::Rect(frame.gl_frame_data->size))
+  if (swap_rect == gfx::Rect(frame.size))
     context_provider_->ContextSupport()->Swap();
   else
     context_provider_->ContextSupport()->PartialSwapBuffers(swap_rect);

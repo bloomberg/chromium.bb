@@ -11,7 +11,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/delegated_frame_data.h"
-#include "cc/output/gl_frame_data.h"
 
 namespace cc {
 
@@ -32,7 +31,6 @@ class CC_EXPORT CompositorFrame {
 
   CompositorFrameMetadata metadata;
   std::unique_ptr<DelegatedFrameData> delegated_frame_data;
-  std::unique_ptr<GLFrameData> gl_frame_data;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CompositorFrame);

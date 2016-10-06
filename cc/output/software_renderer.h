@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/output/direct_renderer.h"
+#include "ui/events/latency_info.h"
 
 namespace cc {
 class DebugBorderDrawQuad;
@@ -29,7 +29,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 
   ~SoftwareRenderer() override;
 
-  void SwapBuffers(CompositorFrameMetadata metadata) override;
+  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {
     disable_picture_quad_image_filtering_ = disable;

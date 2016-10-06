@@ -26,7 +26,7 @@ class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
                float scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha) override;
-  void SwapBuffers(cc::CompositorFrame frame) override;
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   uint32_t GetFramebufferCopyTextureFormat() override;

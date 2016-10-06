@@ -12,8 +12,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/output/software_output_device.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gles2_interface.h"
@@ -64,7 +64,7 @@ class FakeOutputSurface : public OutputSurface {
     capabilities_.max_frames_pending = max;
   }
 
-  CompositorFrame* last_sent_frame() { return last_sent_frame_.get(); }
+  OutputSurfaceFrame* last_sent_frame() { return last_sent_frame_.get(); }
   size_t num_sent_frames() { return num_sent_frames_; }
 
   OutputSurfaceClient* client() { return client_; }
@@ -73,7 +73,7 @@ class FakeOutputSurface : public OutputSurface {
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override;
-  void SwapBuffers(CompositorFrame frame) override;
+  void SwapBuffers(OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override {}
@@ -104,25 +104,18 @@ class FakeOutputSurface : public OutputSurface {
     return last_swap_rect_;
   }
 
-  void ReturnResourcesHeldByParent();
-
-  const TransferableResourceArray& resources_held_by_parent() {
-    return resources_held_by_parent_;
-  }
-
  protected:
   explicit FakeOutputSurface(scoped_refptr<ContextProvider> context_provider);
   explicit FakeOutputSurface(
       std::unique_ptr<SoftwareOutputDevice> software_device);
 
   OutputSurfaceClient* client_ = nullptr;
-  std::unique_ptr<CompositorFrame> last_sent_frame_;
+  std::unique_ptr<OutputSurfaceFrame> last_sent_frame_;
   size_t num_sent_frames_ = 0;
   bool has_external_stencil_test_ = false;
   bool suspended_for_recycle_ = false;
   GLint framebuffer_ = 0;
   GLenum framebuffer_format_ = 0;
-  TransferableResourceArray resources_held_by_parent_;
   OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
   bool last_swap_rect_valid_ = false;
   gfx::Rect last_swap_rect_;

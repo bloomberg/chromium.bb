@@ -12,6 +12,8 @@
 
 namespace cc {
 
+class CompositorFrame;
+
 namespace proto {
 class CompositorMessageToImpl;
 }

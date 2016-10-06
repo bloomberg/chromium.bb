@@ -7,8 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "cc/output/compositor_frame.h"
-#include "cc/output/output_surface.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/output/software_output_device.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/test_context_provider.h"
@@ -32,7 +31,7 @@ class TestOutputSurface : public OutputSurface {
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override {}
-  void SwapBuffers(CompositorFrame frame) override {
+  void SwapBuffers(OutputSurfaceFrame frame) override {
     client_->DidSwapBuffersComplete();
   }
   uint32_t GetFramebufferCopyTextureFormat() override {

@@ -7,10 +7,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
-#include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/output/render_surface_filters.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/output/software_output_device.h"
@@ -81,12 +80,12 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   output_device_->EndPaint();
 }
 
-void SoftwareRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
+void SoftwareRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   DCHECK(visible_);
   TRACE_EVENT0("cc,benchmark", "SoftwareRenderer::SwapBuffers");
-  CompositorFrame compositor_frame;
-  compositor_frame.metadata = std::move(metadata);
-  output_surface_->SwapBuffers(std::move(compositor_frame));
+  OutputSurfaceFrame output_frame;
+  output_frame.latency_info = std::move(latency_info);
+  output_surface_->SwapBuffers(std::move(output_frame));
 }
 
 bool SoftwareRenderer::FlippedFramebuffer(const DrawingFrame* frame) const {

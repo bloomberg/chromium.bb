@@ -11,8 +11,8 @@
 #include "blimp/client/support/compositor/blimp_context_provider.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/surfaces/direct_compositor_frame_sink.h"
@@ -54,7 +54,7 @@ class DisplayOutputSurface : public cc::OutputSurface {
   void BindFramebuffer() override {
     context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
   }
-  void SwapBuffers(cc::CompositorFrame frame) override {
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override {
     // See cc::OutputSurface::SwapBuffers() comment for details.
     context_provider_->ContextSupport()->Swap();
     cc::OutputSurface::PostSwapBuffersComplete();

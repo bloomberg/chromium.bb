@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "components/display_compositor/buffer_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -83,24 +83,22 @@ void DirectOutputSurfaceOzone::BindFramebuffer() {
   buffer_queue_->BindFramebuffer();
 }
 
-void DirectOutputSurfaceOzone::SwapBuffers(cc::CompositorFrame frame) {
+void DirectOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {
   DCHECK(buffer_queue_);
-  DCHECK(frame.gl_frame_data);
 
   // TODO(rjkroege): What if swap happens again before OnGpuSwapBuffersCompleted
   // then it would see the wrong size?
-  DCHECK(reshape_size_ == frame.gl_frame_data->size);
+  DCHECK(reshape_size_ == frame.size);
   swap_size_ = reshape_size_;
 
-  buffer_queue_->SwapBuffers(frame.gl_frame_data->sub_buffer_rect);
+  buffer_queue_->SwapBuffers(frame.sub_buffer_rect);
 
   // Code combining GpuBrowserCompositorOutputSurface + DirectOutputSurface
-  if (frame.gl_frame_data->sub_buffer_rect ==
-      gfx::Rect(frame.gl_frame_data->size)) {
+  if (frame.sub_buffer_rect == gfx::Rect(frame.size)) {
     context_provider_->ContextSupport()->Swap();
   } else {
     context_provider_->ContextSupport()->PartialSwapBuffers(
-        frame.gl_frame_data->sub_buffer_rect);
+        frame.sub_buffer_rect);
   }
 
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();

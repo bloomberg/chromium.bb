@@ -35,9 +35,9 @@ class Transform;
 
 namespace cc {
 
-class CompositorFrame;
 struct ManagedMemoryPolicy;
 class OutputSurfaceClient;
+class OutputSurfaceFrame;
 
 // Represents the output surface for a compositor. The compositor owns
 // and manages its destruction. Its lifetime is:
@@ -131,7 +131,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   // passed in (though it will not take ownership of the CompositorFrame
   // itself). For successful swaps, the implementation must call
   // OutputSurfaceClient::DidSwapBuffersComplete() eventually.
-  virtual void SwapBuffers(CompositorFrame frame) = 0;
+  virtual void SwapBuffers(OutputSurfaceFrame frame) = 0;
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,

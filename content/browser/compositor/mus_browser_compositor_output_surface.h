@@ -40,7 +40,7 @@ class MusBrowserCompositorOutputSurface
 
  protected:
   // cc::OutputSurface implementation.
-  void SwapBuffers(cc::CompositorFrame frame) override;
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   bool BindToClient(cc::OutputSurfaceClient* client) override;
 
   // ui::WindowSurfaceClient:

@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/output/output_surface_frame.h"
 #include "components/display_compositor/buffer_queue.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "components/display_compositor/gl_helper.h"
@@ -69,13 +69,13 @@ unsigned GpuSurfacelessBrowserCompositorOutputSurface::GetOverlayTextureId()
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
-    cc::CompositorFrame frame) {
+    cc::OutputSurfaceFrame frame) {
   DCHECK(buffer_queue_);
-  DCHECK(reshape_size_ == frame.gl_frame_data->size);
+  DCHECK(reshape_size_ == frame.size);
   // TODO(ccameron): What if a swap comes again before OnGpuSwapBuffersCompleted
   // happens, we'd see the wrong swap size there?
   swap_size_ = reshape_size_;
-  buffer_queue_->SwapBuffers(frame.gl_frame_data->sub_buffer_rect);
+  buffer_queue_->SwapBuffers(frame.sub_buffer_rect);
   GpuBrowserCompositorOutputSurface::SwapBuffers(std::move(frame));
 }
 

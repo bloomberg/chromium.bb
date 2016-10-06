@@ -35,7 +35,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
-  void SwapBuffers(cc::CompositorFrame frame) override;
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   bool SurfaceIsSuspendForRecycle() const override;

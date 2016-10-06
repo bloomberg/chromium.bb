@@ -31,9 +31,9 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/dynamic_geometry_binding.h"
-#include "cc/output/gl_frame_data.h"
 #include "cc/output/layer_quad.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/output/render_surface_filters.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/output/static_geometry_binding.h"
@@ -2884,16 +2884,15 @@ void GLRenderer::DrawQuadGeometry(const gfx::Transform& projection_matrix,
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
 
-void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
+void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   DCHECK(visible_);
 
   TRACE_EVENT0("cc,benchmark", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!
 
-  CompositorFrame compositor_frame;
-  compositor_frame.metadata = std::move(metadata);
-  compositor_frame.gl_frame_data = base::WrapUnique(new GLFrameData);
-  compositor_frame.gl_frame_data->size = surface_size_for_swap_buffers_;
+  OutputSurfaceFrame output_frame;
+  output_frame.latency_info = std::move(latency_info);
+  output_frame.size = surface_size_for_swap_buffers_;
   if (use_partial_swap_) {
     // If supported, we can save significant bandwidth by only swapping the
     // damaged/scissored region (clamped to the viewport).
@@ -2901,7 +2900,7 @@ void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
     int flipped_y_pos_of_rect_bottom = surface_size_for_swap_buffers_.height() -
                                        swap_buffer_rect_.y() -
                                        swap_buffer_rect_.height();
-    compositor_frame.gl_frame_data->sub_buffer_rect =
+    output_frame.sub_buffer_rect =
         gfx::Rect(swap_buffer_rect_.x(),
                   FlippedRootFramebuffer() ? flipped_y_pos_of_rect_bottom
                                            : swap_buffer_rect_.y(),
@@ -2912,13 +2911,13 @@ void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
     if (!swap_buffer_rect_.IsEmpty() || !allow_empty_swap_) {
       swap_buffer_rect_ = gfx::Rect(surface_size_for_swap_buffers_);
     }
-    compositor_frame.gl_frame_data->sub_buffer_rect = swap_buffer_rect_;
+    output_frame.sub_buffer_rect = swap_buffer_rect_;
   }
 
   swapping_overlay_resources_.push_back(std::move(pending_overlay_resources_));
   pending_overlay_resources_.clear();
 
-  output_surface_->SwapBuffers(std::move(compositor_frame));
+  output_surface_->SwapBuffers(std::move(output_frame));
 
   swap_buffer_rect_ = gfx::Rect();
 }

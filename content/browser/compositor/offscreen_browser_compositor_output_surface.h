@@ -44,7 +44,7 @@ class OffscreenBrowserCompositorOutputSurface
                const gfx::ColorSpace& color_space,
                bool alpha) override;
   void BindFramebuffer() override;
-  void SwapBuffers(cc::CompositorFrame frame) override;
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   bool SurfaceIsSuspendForRecycle() const override;

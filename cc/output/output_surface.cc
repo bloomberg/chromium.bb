@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/output/output_surface_frame.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"

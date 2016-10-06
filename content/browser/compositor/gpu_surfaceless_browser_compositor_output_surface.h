@@ -38,7 +38,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   ~GpuSurfacelessBrowserCompositorOutputSurface() override;
 
   // cc::OutputSurface implementation.
-  void SwapBuffers(cc::CompositorFrame frame) override;
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   void BindFramebuffer() override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   void Reshape(const gfx::Size& size,

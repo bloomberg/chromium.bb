@@ -393,8 +393,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_EQ(5u, output_surface_->num_sent_frames());
 
     // Latency info from previous frame should be sent now.
-    EXPECT_EQ(1u,
-              output_surface_->last_sent_frame()->metadata.latency_info.size());
+    EXPECT_EQ(1u, output_surface_->last_sent_frame()->latency_info.size());
   }
 
   {
@@ -419,8 +418,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
               software_output_device_->viewport_pixel_size());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
               software_output_device_->damage_rect());
-    EXPECT_EQ(0u,
-              output_surface_->last_sent_frame()->metadata.latency_info.size());
+    EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
   }
 
   factory_.Destroy(local_frame_id);

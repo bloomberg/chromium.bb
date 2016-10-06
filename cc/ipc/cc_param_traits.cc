@@ -675,7 +675,6 @@ namespace {
 enum CompositorFrameType {
   NO_FRAME,
   DELEGATED_FRAME,
-  GL_FRAME,
 };
 }
 
@@ -683,12 +682,8 @@ void ParamTraits<cc::CompositorFrame>::Write(base::Pickle* m,
                                              const param_type& p) {
   WriteParam(m, p.metadata);
   if (p.delegated_frame_data) {
-    DCHECK(!p.gl_frame_data);
     WriteParam(m, static_cast<int>(DELEGATED_FRAME));
     WriteParam(m, *p.delegated_frame_data);
-  } else if (p.gl_frame_data) {
-    WriteParam(m, static_cast<int>(GL_FRAME));
-    WriteParam(m, *p.gl_frame_data);
   } else {
     WriteParam(m, static_cast<int>(NO_FRAME));
   }
@@ -710,11 +705,6 @@ bool ParamTraits<cc::CompositorFrame>::Read(const base::Pickle* m,
       if (!ReadParam(m, iter, p->delegated_frame_data.get()))
         return false;
       break;
-    case GL_FRAME:
-      p->gl_frame_data.reset(new cc::GLFrameData());
-      if (!ReadParam(m, iter, p->gl_frame_data.get()))
-        return false;
-      break;
     case NO_FRAME:
       break;
     default:
@@ -730,8 +720,6 @@ void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
   l->append(", ");
   if (p.delegated_frame_data)
     LogParam(*p.delegated_frame_data, l);
-  else if (p.gl_frame_data)
-    LogParam(*p.gl_frame_data, l);
   l->append(")");
 }
 

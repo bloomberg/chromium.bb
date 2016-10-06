@@ -6949,7 +6949,6 @@ class LayerTreeHostTestSubmitFrameMetadata : public LayerTreeHostTest {
 
     DelegatedFrameData* last_frame_data = frame.delegated_frame_data.get();
     ASSERT_TRUE(frame.delegated_frame_data);
-    EXPECT_FALSE(frame.gl_frame_data);
     EXPECT_EQ(drawn_viewport_,
               last_frame_data->render_pass_list.back()->output_rect);
     EXPECT_EQ(0.5f, frame.metadata.min_page_scale_factor);

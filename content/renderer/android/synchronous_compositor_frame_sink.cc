@@ -17,6 +17,7 @@
 #include "cc/output/compositor_frame_sink_client.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/output_surface_frame.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/output/software_output_device.h"
 #include "cc/output/texture_mailbox_deleter.h"
@@ -83,7 +84,7 @@ class SynchronousCompositorFrameSink::SoftwareOutputSurface
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override {}
-  void SwapBuffers(cc::CompositorFrame frame) override {}
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override {}
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
