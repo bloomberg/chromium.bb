@@ -76,7 +76,7 @@ cr.define('extensions', function() {
     },
 
     listeners: {
-      'items-list.extension-item-show-details': 'showItemDetails_',
+      'items-list.extension-item-show-details': 'onShouldShowItemDetails_',
     },
 
     created: function() {
@@ -102,6 +102,16 @@ cr.define('extensions', function() {
 
     get optionsDialog() {
       return this.$['options-dialog'];
+    },
+
+    /**
+     * Shows the details view for a given item.
+     * @param {!chrome.developerPrivate.ExtensionInfo} data
+     */
+    showItemDetails: function(data) {
+      this.$['items-list'].willShowItemDetails(data.id);
+      this.$['details-view'].data = data;
+      this.changePage(Page.DETAIL_VIEW);
     },
 
     /**
@@ -248,13 +258,12 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Shows the detailed view for a given item.
-     * @param {CustomEvent} e
+     * Handles the event for the user clicking on a details button.
+     * @param {!CustomEvent} e
      * @private
      */
-    showItemDetails_: function(e) {
-      this.$['details-view'].set('data', assert(e.detail.element.data));
-      this.changePage(Page.DETAIL_VIEW);
+    onShouldShowItemDetails_: function(e) {
+      this.showItemDetails(e.detail.element.data);
     },
 
     /** @private */

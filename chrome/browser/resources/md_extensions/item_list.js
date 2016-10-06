@@ -28,7 +28,6 @@ cr.define('extensions', function() {
 
     listeners: {
       'list.extension-item-size-changed': 'itemSizeChanged_',
-      'list.extension-item-show-details': 'showItemDetails_',
     },
 
     ready: function() {
@@ -36,6 +35,14 @@ cr.define('extensions', function() {
       this.animationHelper = new extensions.AnimationHelper(this, this.$.list);
       this.animationHelper.setEntryAnimation(extensions.Animation.FADE_IN);
       this.animationHelper.setExitAnimation(extensions.Animation.HERO);
+    },
+
+    /**
+     * Called when the details for a given item are about to be shown.
+     * @param {string} id
+     */
+    willShowItemDetails: function(id) {
+      this.sharedElements = {hero: this.$$('#' + id)};
     },
 
     /**

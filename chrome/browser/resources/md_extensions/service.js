@@ -45,6 +45,15 @@ cr.define('extensions', function() {
         this.extensions_ = extensions;
         for (let extension of extensions)
           this.manager_.addItem(extension);
+
+        var id = new URLSearchParams(location.search).get('id');
+        if (id) {
+          var data = this.extensions_.find(function(e) {
+            return e.id == id;
+          });
+          if (data)
+            this.manager_.showItemDetails(data);
+        }
       }.bind(this));
       chrome.developerPrivate.getProfileConfiguration(
           this.onProfileStateChanged_.bind(this));

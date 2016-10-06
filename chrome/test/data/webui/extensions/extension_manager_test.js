@@ -10,6 +10,7 @@ cr.define('extension_manager_tests', function() {
     ItemListVisibility: 'item list visibility',
     ShowItems: 'show items',
     ChangePages: 'change pages',
+    UrlNavigationToDetails: 'url navigation to details',
   };
 
   function getDataByName(list, name) {
@@ -151,6 +152,12 @@ cr.define('extension_manager_tests', function() {
         MockInteractions.tap(manager.sidebar.$['keyboard-shortcuts']);
         Polymer.dom.flush();
         expectEquals(Page.KEYBOARD_SHORTCUTS, pages.selected);
+      });
+
+      test(assert(TestNames.UrlNavigationToDetails), function() {
+        expectEquals(Page.DETAIL_VIEW, manager.$.pages.selected);
+        var detailsView = manager.$['details-view'];
+        expectEquals('ldnnhddmnhbkjipkidpdiheffobcpfmf', detailsView.data.id);
       });
     });
   }

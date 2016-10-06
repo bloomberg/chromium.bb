@@ -74,6 +74,20 @@ CrExtensionsBrowserTestWithInstalledExtension.prototype = {
 };
 
 /**
+ * Test fixture that navigates to chrome://extensions/?id=<id>.
+ * @constructor
+ * @extends {CrExtensionsBrowserTestWithInstalledExtension}
+ */
+function CrExtensionsBrowserTestWithIdQueryParam() {}
+
+CrExtensionsBrowserTestWithIdQueryParam.prototype = {
+  __proto__: CrExtensionsBrowserTestWithInstalledExtension.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://extensions/?id=ldnnhddmnhbkjipkidpdiheffobcpfmf',
+};
+
+/**
  * Test fixture with multiple installed extensions of different types.
  * @constructor
  * @extends {CrExtensionsBrowserTest}
@@ -214,6 +228,13 @@ TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
        'ExtensionManagerChangePagesTest', function() {
   extension_manager_tests.registerTests();
   mocha.grep(assert(extension_manager_tests.TestNames.ChangePages)).run();
+});
+
+TEST_F('CrExtensionsBrowserTestWithIdQueryParam',
+       'ExtensionManagerNavigationToDetailsTest', function() {
+  extension_manager_tests.registerTests();
+  mocha.grep(
+      assert(extension_manager_tests.TestNames.UrlNavigationToDetails)).run();
 });
 
 ////////////////////////////////////////////////////////////////////////////////
