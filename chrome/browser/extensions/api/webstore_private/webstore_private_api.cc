@@ -619,8 +619,7 @@ WebstorePrivateIsPendingCustodianApprovalFunction::Run() {
 
   ExtensionPrefs* extensions_prefs = ExtensionPrefs::Get(browser_context());
 
-  if (extensions::util::NeedCustodianApprovalForPermissionIncrease(profile) &&
-      extensions_prefs->HasDisableReason(
+  if (extensions_prefs->HasDisableReason(
           params->id, Extension::DISABLE_PERMISSIONS_INCREASE)) {
     return RespondNow(BuildResponse(true));
   }

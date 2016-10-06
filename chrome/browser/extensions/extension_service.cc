@@ -1686,11 +1686,8 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
 
 #if defined(ENABLE_SUPERVISED_USERS)
     // If a custodian-installed extension is disabled for a supervised user due
-    // to a permissions increase, send a request to the custodian if the
-    // supervised user themselves can't re-enable the extension.
+    // to a permissions increase, send a request to the custodian.
     if (extensions::util::IsExtensionSupervised(extension, profile_) &&
-        extensions::util::NeedCustodianApprovalForPermissionIncrease(
-            profile_) &&
         !ExtensionSyncService::Get(profile_)->HasPendingReenable(
             extension->id(), *extension->version())) {
       SupervisedUserService* supervised_user_service =

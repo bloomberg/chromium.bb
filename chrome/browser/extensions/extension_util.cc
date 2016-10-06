@@ -44,10 +44,6 @@ namespace extensions {
 namespace util {
 
 namespace {
-
-const char kSupervisedUserExtensionPermissionIncreaseFieldTrialName[] =
-    "SupervisedUserExtensionPermissionIncrease";
-
 // The entry into the prefs used to flag an extension as installed by custodian.
 // It is relevant only for supervised users.
 const char kWasInstalledByCustodianPrefName[] = "was_installed_by_custodian";
@@ -354,18 +350,6 @@ bool CanHostedAppsOpenInWindows() {
 bool IsExtensionSupervised(const Extension* extension, Profile* profile) {
   return WasInstalledByCustodian(extension->id(), profile) &&
          profile->IsSupervised();
-}
-
-bool NeedCustodianApprovalForPermissionIncrease(const Profile* profile) {
-  if (!profile->IsSupervised())
-    return false;
-  // Query the trial group name first, to make sure it's properly initialized.
-  base::FieldTrialList::FindFullName(
-      kSupervisedUserExtensionPermissionIncreaseFieldTrialName);
-  std::string value = variations::GetVariationParamValue(
-      kSupervisedUserExtensionPermissionIncreaseFieldTrialName,
-      profile->IsChild() ? "child_account" : "legacy_supervised_user");
-  return value == "true";
 }
 
 }  // namespace util

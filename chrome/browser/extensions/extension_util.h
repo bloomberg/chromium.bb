@@ -122,10 +122,6 @@ bool CanHostedAppsOpenInWindows();
 // Returns true for custodian-installed extensions in a supervised profile.
 bool IsExtensionSupervised(const Extension* extension, Profile* profile);
 
-// Returns true if supervised users need approval from their custodian for
-// approving escalated permissions on updated extensions.
-bool NeedCustodianApprovalForPermissionIncrease(const Profile* profile);
-
 }  // namespace util
 }  // namespace extensions
 

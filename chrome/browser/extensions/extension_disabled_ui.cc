@@ -319,9 +319,7 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
 
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
   if (extensions::util::IsExtensionSupervised(extension_,
-                                              service_->profile()) &&
-      extensions::util::NeedCustodianApprovalForPermissionIncrease(
-          service_->profile())) {
+                                              service_->profile())) {
     // TODO(treib): Probably use a new string here once we get UX design.
     // For now, just use "OK". crbug.com/461261
     return l10n_util::GetStringUTF16(IDS_OK);
@@ -338,16 +336,10 @@ base::string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewCancelButtonLabel() {
   if (extensions::util::IsExtensionSupervised(extension_,
                                               service_->profile())) {
-    if (extensions::util::NeedCustodianApprovalForPermissionIncrease(
-        service_->profile())) {
-      // If the supervised user can't approve the update, then there is no
-      // "cancel" button.
-      return base::string16();
-    } else {
-      // Supervised users can not remove extensions, so use "cancel" here
-      // instead of "uninstall".
-      return l10n_util::GetStringUTF16(IDS_CANCEL);
-    }
+    // The supervised user can't approve the update, and hence there is no
+    // "cancel" button. Return an empty string such that the "cancel" button
+    // is not shown in the dialog.
+    return base::string16();
   }
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL);
 }
@@ -358,9 +350,7 @@ void ExtensionDisabledGlobalError::OnBubbleViewDidClose(Browser* browser) {
 void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
     Browser* browser) {
   if (extensions::util::IsExtensionSupervised(extension_,
-                                              service_->profile()) &&
-      extensions::util::NeedCustodianApprovalForPermissionIncrease(
-          service_->profile())) {
+                                              service_->profile())) {
     return;
   }
   // Delay extension reenabling so this bubble closes properly.
@@ -372,16 +362,11 @@ void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
 
 void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
     Browser* browser) {
-  if (extensions::util::IsExtensionSupervised(extension_,
-                                              service_->profile())) {
-    // For custodian-installed extensions, this button should only exist if the
-    // supervised user can approve the update. Otherwise there is only an "OK"
-    // button.
-    DCHECK(!extensions::util::NeedCustodianApprovalForPermissionIncrease(
-        service_->profile()));
-    // Supervised users may never remove custodian-installed extensions.
-    return;
-  }
+  // For custodian-installed extensions, this button should not exist because
+  // there is only an "OK" button.
+  // Supervised users may never remove custodian-installed extensions.
+  DCHECK(!extensions::util::IsExtensionSupervised(extension_,
+                                                  service_->profile()));
 
   uninstall_dialog_.reset(extensions::ExtensionUninstallDialog::Create(
       service_->profile(), browser->window()->GetNativeWindow(), this));
