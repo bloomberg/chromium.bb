@@ -39,18 +39,20 @@ namespace blimp {
 //     which is feasible but low-priority for the owners of the callback
 //     libraries.
 
+template <typename SignatureType>
+class MandatoryCallback;
+
+// Template specialization for extracting the function signature data types.
 template <typename ReturnType, typename... ArgTypes>
-class MandatoryCallback {
+class MandatoryCallback<ReturnType(ArgTypes...)> {
  public:
   using CallbackType = base::Callback<ReturnType(ArgTypes...)>;
 
   explicit MandatoryCallback(const CallbackType& callback) : cb_(callback) {
-    LOG(ERROR) << "Create " << this;
     DCHECK(!cb_.is_null());
   }
 
   MandatoryCallback(MandatoryCallback&& other) {
-    LOG(ERROR) << "Move " << this;
     cb_ = other.cb_;
     other.cb_.Reset();
 
@@ -60,16 +62,10 @@ class MandatoryCallback {
 #endif
   }
 
-  void DoStuff() { LOG(ERROR) << "DoStuff"; }
-
   ~MandatoryCallback() {
-    LOG(ERROR) << "Delete " << this;
 #if DCHECK_IS_ON()
-    LOG(ERROR) << cb_.is_null();
-    LOG(ERROR) << was_run_;
     DCHECK(cb_.is_null() || was_run_);
 #endif
-    LOG(ERROR) << "dtor ok";
   }
 
   template <typename... RunArgs>
@@ -96,10 +92,10 @@ class MandatoryCallback {
 };
 
 // Creates a leak-checking proxy callback around |callback|.
-template <typename ReturnType, typename... ArgTypes>
-MandatoryCallback<ReturnType, ArgTypes...> CreateMandatoryCallback(
-    const base::Callback<ReturnType(ArgTypes...)>& callback) {
-  return MandatoryCallback<ReturnType, ArgTypes...>(callback);
+template <typename SignatureType>
+MandatoryCallback<SignatureType> CreateMandatoryCallback(
+    const base::Callback<SignatureType>& callback) {
+  return MandatoryCallback<SignatureType>(callback);
 }
 
 }  // namespace blimp

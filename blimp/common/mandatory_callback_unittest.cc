@@ -47,7 +47,7 @@ TEST_F(MandatoryCallbackTest, PassesWhenDestroyedAfterRun) {
   base::Callback<void(int)> cb =
       base::Bind(&MandatoryCallbackTest::ResultCollector::MarkInvoked,
                  base::Unretained(&result_));
-  auto mandatory_cb = CreateMandatoryCallback(cb);
+  MandatoryCallback<void(int)> mandatory_cb = CreateMandatoryCallback(cb);
   mandatory_cb.Run(3);
 }
 
