@@ -65,7 +65,9 @@ SVGAnimateElement::SVGAnimateElement(const QualifiedName& tagName,
     : SVGAnimationElement(tagName, document),
       m_animator(this),
       m_fromPropertyValueType(RegularPropertyValue),
-      m_toPropertyValueType(RegularPropertyValue) {}
+      m_toPropertyValueType(RegularPropertyValue),
+      m_attributeType(AttributeTypeAuto),
+      m_hasInvalidCSSAttributeType(false) {}
 
 SVGAnimateElement* SVGAnimateElement::create(Document& document) {
   return new SVGAnimateElement(SVGNames::animateTag, document);
@@ -93,6 +95,24 @@ bool SVGAnimateElement::isSVGAnimationAttributeSettingJavaScriptURL(
   }
 
   return SVGSMILElement::isSVGAnimationAttributeSettingJavaScriptURL(attribute);
+}
+
+void SVGAnimateElement::parseAttribute(const QualifiedName& name,
+                                       const AtomicString& oldValue,
+                                       const AtomicString& value) {
+  if (name == SVGNames::attributeTypeAttr) {
+    setAttributeType(value);
+    return;
+  }
+  SVGAnimationElement::parseAttribute(name, oldValue, value);
+}
+
+void SVGAnimateElement::svgAttributeChanged(const QualifiedName& attrName) {
+  if (attrName == SVGNames::attributeTypeAttr) {
+    animationAttributeChanged();
+    return;
+  }
+  SVGAnimationElement::svgAttributeChanged(attrName);
 }
 
 AnimatedPropertyType SVGAnimateElement::animatedPropertyType() {
@@ -390,12 +410,45 @@ float SVGAnimateElement::calculateDistance(const String& fromString,
 
 void SVGAnimateElement::setTargetElement(SVGElement* target) {
   SVGAnimationElement::setTargetElement(target);
+  checkInvalidCSSAttributeType();
   resetAnimatedPropertyType();
 }
 
 void SVGAnimateElement::setAttributeName(const QualifiedName& attributeName) {
   SVGAnimationElement::setAttributeName(attributeName);
+  checkInvalidCSSAttributeType();
   resetAnimatedPropertyType();
+}
+
+void SVGAnimateElement::setAttributeType(const AtomicString& attributeType) {
+  if (attributeType == "CSS")
+    m_attributeType = AttributeTypeCSS;
+  else if (attributeType == "XML")
+    m_attributeType = AttributeTypeXML;
+  else
+    m_attributeType = AttributeTypeAuto;
+  checkInvalidCSSAttributeType();
+}
+
+void SVGAnimateElement::checkInvalidCSSAttributeType() {
+  bool hasInvalidCSSAttributeType =
+      targetElement() && hasValidAttributeName() &&
+      getAttributeType() == AttributeTypeCSS &&
+      !isTargetAttributeCSSProperty(targetElement(), attributeName());
+
+  if (hasInvalidCSSAttributeType != m_hasInvalidCSSAttributeType) {
+    if (hasInvalidCSSAttributeType)
+      unscheduleIfScheduled();
+
+    m_hasInvalidCSSAttributeType = hasInvalidCSSAttributeType;
+
+    if (!hasInvalidCSSAttributeType)
+      schedule();
+  }
+
+  // Clear values that may depend on the previous target.
+  if (targetElement())
+    clearAnimatedType();
 }
 
 void SVGAnimateElement::resetAnimatedPropertyType() {

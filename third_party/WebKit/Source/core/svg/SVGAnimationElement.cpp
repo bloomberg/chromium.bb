@@ -37,8 +37,6 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName,
                                          Document& document)
     : SVGSMILElement(tagName, document),
       m_animationValid(false),
-      m_attributeType(AttributeTypeAuto),
-      m_hasInvalidCSSAttributeType(false),
       m_calcMode(CalcModeLinear),
       m_animationMode(NoAnimation) {
   ASSERT(RuntimeEnabledFeatures::smilEnabled());
@@ -188,11 +186,6 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name,
     return;
   }
 
-  if (name == SVGNames::attributeTypeAttr) {
-    setAttributeType(value);
-    return;
-  }
-
   if (name == SVGNames::calcModeAttr) {
     setCalcMode(value);
     return;
@@ -211,7 +204,6 @@ void SVGAnimationElement::svgAttributeChanged(const QualifiedName& attrName) {
   if (attrName == SVGNames::valuesAttr || attrName == SVGNames::byAttr ||
       attrName == SVGNames::fromAttr || attrName == SVGNames::toAttr ||
       attrName == SVGNames::calcModeAttr ||
-      attrName == SVGNames::attributeTypeAttr ||
       attrName == SVGNames::keySplinesAttr ||
       attrName == SVGNames::keyPointsAttr ||
       attrName == SVGNames::keyTimesAttr) {
@@ -310,18 +302,6 @@ void SVGAnimationElement::setCalcMode(const AtomicString& calcMode) {
   } else
     setCalcMode(isSVGAnimateMotionElement(*this) ? CalcModePaced
                                                  : CalcModeLinear);
-}
-
-void SVGAnimationElement::setAttributeType(const AtomicString& attributeType) {
-  DEFINE_STATIC_LOCAL(const AtomicString, css, ("CSS"));
-  DEFINE_STATIC_LOCAL(const AtomicString, xml, ("XML"));
-  if (attributeType == css)
-    m_attributeType = AttributeTypeCSS;
-  else if (attributeType == xml)
-    m_attributeType = AttributeTypeXML;
-  else
-    m_attributeType = AttributeTypeAuto;
-  checkInvalidCSSAttributeType();
 }
 
 String SVGAnimationElement::toValue() const {
@@ -655,37 +635,6 @@ void SVGAnimationElement::updateAnimation(float percent,
     effectivePercent = percent;
 
   calculateAnimatedValue(effectivePercent, repeatCount, resultElement);
-}
-
-void SVGAnimationElement::setTargetElement(SVGElement* target) {
-  SVGSMILElement::setTargetElement(target);
-  checkInvalidCSSAttributeType();
-}
-
-void SVGAnimationElement::setAttributeName(const QualifiedName& attributeName) {
-  SVGSMILElement::setAttributeName(attributeName);
-  checkInvalidCSSAttributeType();
-}
-
-void SVGAnimationElement::checkInvalidCSSAttributeType() {
-  bool hasInvalidCSSAttributeType =
-      targetElement() && hasValidAttributeName() &&
-      getAttributeType() == AttributeTypeCSS &&
-      !isTargetAttributeCSSProperty(targetElement(), attributeName());
-
-  if (hasInvalidCSSAttributeType != m_hasInvalidCSSAttributeType) {
-    if (hasInvalidCSSAttributeType)
-      unscheduleIfScheduled();
-
-    m_hasInvalidCSSAttributeType = hasInvalidCSSAttributeType;
-
-    if (!hasInvalidCSSAttributeType)
-      schedule();
-  }
-
-  // Clear values that may depend on the previous target.
-  if (targetElement())
-    clearAnimatedType();
 }
 
 }  // namespace blink
