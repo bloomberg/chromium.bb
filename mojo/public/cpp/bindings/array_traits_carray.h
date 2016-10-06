@@ -20,6 +20,14 @@ struct CArray {
 };
 
 template <typename T>
+struct ConstCArray {
+  ConstCArray() : size(0), data(nullptr) {}
+  ConstCArray(size_t size, const T* data) : size(size), data(data) {}
+  size_t size;
+  const T* data;
+};
+
+template <typename T>
 struct ArrayTraits<CArray<T>> {
   using Element = T;
 
@@ -45,6 +53,21 @@ struct ArrayTraits<CArray<T>> {
 
     input.size = size;
     return true;
+  }
+};
+
+template <typename T>
+struct ArrayTraits<ConstCArray<T>> {
+  using Element = T;
+
+  static bool IsNull(const ConstCArray<T>& input) { return !input.data; }
+
+  static size_t GetSize(const ConstCArray<T>& input) { return input.size; }
+
+  static const T* GetData(const ConstCArray<T>& input) { return input.data; }
+
+  static const T& GetAt(const ConstCArray<T>& input, size_t index) {
+    return input.data[index];
   }
 };
 

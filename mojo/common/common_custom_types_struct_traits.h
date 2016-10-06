@@ -5,12 +5,20 @@
 #ifndef MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 #define MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "base/version.h"
 #include "mojo/common/common_custom_types.mojom-shared.h"
 #include "mojo/common/mojo_common_export.h"
 
 namespace mojo {
+
+template <>
+struct StructTraits<mojo::common::mojom::String16DataView, base::string16> {
+  static mojo::ConstCArray<uint16_t> data(const base::string16& str);
+  static bool Read(mojo::common::mojom::String16DataView data,
+                   base::string16* out);
+};
 
 template <>
 struct StructTraits<mojo::common::mojom::VersionDataView, base::Version> {

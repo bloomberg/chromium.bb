@@ -23,8 +23,12 @@ struct TimeDelta {
 [Native]
 struct TimeTicks;
 
-[Native]
-struct String16;
+// Corresponds to |base::string16| in base/strings/string16.h
+// Corresponds to |WTF::String| in
+// third_party/WebKit/Source/wtf/text/WTFString.h.
+struct String16 {
+  array<uint16> data;
+};
 
 // Corresponds to |base::UnguessableToken| in base/unguessable_token.h
 struct UnguessableToken {

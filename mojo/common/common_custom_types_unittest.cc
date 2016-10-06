@@ -298,6 +298,19 @@ TEST_F(CommonCustomTypesTest, String16) {
   run_loop.Run();
 }
 
+TEST_F(CommonCustomTypesTest, EmptyString16) {
+  base::RunLoop run_loop;
+
+  TestString16Ptr ptr;
+  TestString16Impl impl(GetProxy(&ptr));
+
+  base::string16 str16;
+
+  ptr->BounceString16(str16, ExpectResponse(&str16, run_loop.QuitClosure()));
+
+  run_loop.Run();
+}
+
 }  // namespace test
 }  // namespace common
 }  // namespace mojo

@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 typemaps = [
+  "//third_party/WebKit/Source/platform/mojo/CommonCustomTypes.typemap",
   "//third_party/WebKit/Source/platform/mojo/KURL.typemap",
   "//third_party/WebKit/Source/platform/mojo/SecurityOrigin.typemap",
+  "//third_party/WebKit/Source/platform/mojo/Geometry.typemap",
 ]

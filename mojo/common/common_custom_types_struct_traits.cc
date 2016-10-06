@@ -9,6 +9,26 @@
 namespace mojo {
 
 // static
+mojo::ConstCArray<uint16_t>
+StructTraits<mojo::common::mojom::String16DataView, base::string16>::data(
+    const base::string16& str) {
+  return mojo::ConstCArray<uint16_t>(
+      str.size(), reinterpret_cast<const uint16_t*>(str.data()));
+}
+
+// static
+bool StructTraits<mojo::common::mojom::String16DataView, base::string16>::Read(
+    mojo::common::mojom::String16DataView data,
+    base::string16* out) {
+  mojo::ArrayDataView<uint16_t> view;
+  data.GetDataDataView(&view);
+  if (view.is_null())
+    return false;
+  out->assign(reinterpret_cast<const base::char16*>(view.data()), view.size());
+  return true;
+}
+
+// static
 const std::vector<uint32_t>&
 StructTraits<mojo::common::mojom::VersionDataView, base::Version>::components(
     const base::Version& version) {
