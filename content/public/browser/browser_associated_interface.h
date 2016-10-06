@@ -14,7 +14,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace content {
@@ -76,7 +76,7 @@ class BrowserAssociatedInterface {
                                 base::Bind(&InternalState::Initialize, this));
         return;
       }
-      binding_.reset(new mojo::AssociatedBinding<Interface>(impl_));
+      bindings_.reset(new mojo::AssociatedBindingSet<Interface>);
     }
 
     void ShutDown() {
@@ -85,19 +85,16 @@ class BrowserAssociatedInterface {
                                 base::Bind(&InternalState::ShutDown, this));
         return;
       }
-      binding_.reset();
+      bindings_.reset();
     }
 
     void BindRequest(mojo::ScopedInterfaceEndpointHandle handle) {
       DCHECK_CURRENTLY_ON(BrowserThread::IO);
-      // If this interface has already been shut down or is already bound, we
-      // drop the request.
-      if (!binding_ || binding_->is_bound())
+      // If this interface has already been shut down we drop the request.
+      if (!bindings_)
         return;
-
-      binding_->Bind(mojo::MakeAssociatedRequest<Interface>(std::move(handle)));
-      binding_->set_connection_error_handler(
-          base::Bind(&InternalState::ShutDown, base::Unretained(this)));
+      bindings_->AddBinding(
+          impl_, mojo::MakeAssociatedRequest<Interface>(std::move(handle)));
     }
 
    private:
@@ -106,7 +103,7 @@ class BrowserAssociatedInterface {
     ~InternalState() {}
 
     Interface* impl_;
-    std::unique_ptr<mojo::AssociatedBinding<Interface>> binding_;
+    std::unique_ptr<mojo::AssociatedBindingSet<Interface>> bindings_;
 
     DISALLOW_COPY_AND_ASSIGN(InternalState);
   };
