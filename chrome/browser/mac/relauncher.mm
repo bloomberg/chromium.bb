@@ -23,7 +23,6 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
@@ -101,7 +100,7 @@ bool RelaunchAppWithHelper(const std::string& helper,
 
   // If this application isn't in the foreground, the relaunched one shouldn't
   // be either.
-  if (!base::mac::AmIForeground()) {
+  if (![[NSRunningApplication currentApplication] isActive]) {
     relaunch_args.push_back(kRelauncherBackgroundArg);
   }
 
