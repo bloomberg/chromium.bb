@@ -608,7 +608,7 @@ function test()
                       ? WebInspector.beautifyFunctionName(node.event.args["data"]["functionName"])
                       : WebInspector.TimelineUIUtils.eventTitle(node.event);
         }
-        InspectorTest.addResult("  ".repeat(padding) + name + ": " + [node.selfTime, node.totalTime].map(function (t) { return t.toFixed(3); }).join("  "));
+        InspectorTest.addResult("  ".repeat(padding) + `${name}: ${node.selfTime.toFixed(3)}  ${node.totalTime.toFixed(3)}`);
         (node.children || new Map()).forEach(printEventTree.bind(null, padding + 1));
     }
 }

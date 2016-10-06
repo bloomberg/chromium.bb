@@ -462,11 +462,10 @@ function test()
     }
     ];
 
-    Runtime.experiments.enableForTest("timelineTracingJSProfile");
     var tracingTimelineModel = InspectorTest.createTimelineModelWithEvents(rawTraceEvents);
     var events = tracingTimelineModel.mainThreadEvents();
-    events.filter(function(e) { return e.name === "JSFrame"; }).forEach(function(e) {
-        InspectorTest.addResult(e.name + ": " + e.startTime.toFixed(3) + " / " + (e.duration.toFixed(3) || 0) + " " + e.args.data.functionName);
+    events.filter(e => e.name === "JSFrame").forEach(e => {
+        InspectorTest.addResult(`${e.name}: ${e.startTime.toFixed(3)} / ${e.duration.toFixed(3) || 0} ${e.args.data.functionName}`);
     });
 
     InspectorTest.completeTest();
