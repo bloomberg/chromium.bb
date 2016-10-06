@@ -248,6 +248,10 @@ void NormalizeDisposition(chrome::NavigateParams* params) {
 
 // Obtain the profile used by the code that originated the Navigate() request.
 Profile* GetSourceProfile(chrome::NavigateParams* params) {
+  // |source_site_instance| needs to be checked before |source_contents|. This
+  // might matter when chrome.windows.create is used to open multiple URLs,
+  // which would reuse |params| and modify |params->source_contents| across
+  // navigations.
   if (params->source_site_instance) {
     return Profile::FromBrowserContext(
         params->source_site_instance->GetBrowserContext());
