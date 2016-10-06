@@ -18,7 +18,8 @@ bool DragAndDropCommand::isDragAndDropCommand() const {
 }
 
 void DragAndDropCommand::doApply(EditingState*) {
-  // Do nothing. Should only register undo entry after combined with other commands.
+  // Do nothing. Should only register undo entry after combined with other
+  // commands.
 }
 
 InputEvent::InputType DragAndDropCommand::inputType() const {

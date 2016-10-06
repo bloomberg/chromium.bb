@@ -15,7 +15,7 @@
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (IndentOutdentCommandINCLUDING, BUT NOT LIMITED TO,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
@@ -71,14 +71,16 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start,
   if (!listElement)
     return false;
 
-  // Find the block that we want to indent.  If it's not a list item (e.g., a div inside a list item), we bail out.
+  // Find the block that we want to indent.  If it's not a list item (e.g., a
+  // div inside a list item), we bail out.
   Element* selectedListItem = enclosingBlock(lastNodeInSelectedParagraph);
 
   // FIXME: we need to deal with the case where there is no li (malformed HTML)
   if (!isHTMLLIElement(selectedListItem))
     return false;
 
-  // FIXME: previousElementSibling does not ignore non-rendered content like <span></span>.  Should we?
+  // FIXME: previousElementSibling does not ignore non-rendered content like
+  // <span></span>.  Should we?
   Element* previousList = ElementTraversal::previousSibling(*selectedListItem);
   Element* nextList = ElementTraversal::nextSibling(*selectedListItem);
 
@@ -93,9 +95,10 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start,
 
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-  // We should clone all the children of the list item for indenting purposes. However, in case the current
-  // selection does not encompass all its children, we need to explicitally handle the same. The original
-  // list item too would require proper deletion in that case.
+  // We should clone all the children of the list item for indenting purposes.
+  // However, in case the current selection does not encompass all its children,
+  // we need to explicitally handle the same. The original list item too would
+  // require proper deletion in that case.
   if (end.anchorNode() == selectedListItem ||
       end.anchorNode()->isDescendantOf(selectedListItem->lastChild())) {
     moveParagraphWithClones(createVisiblePosition(start),
@@ -151,12 +154,13 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start,
   document().updateStyleAndLayoutIgnorePendingStylesheets();
   VisiblePosition startOfContents = createVisiblePosition(start);
   if (!targetBlockquote) {
-    // Create a new blockquote and insert it as a child of the root editable element. We accomplish
-    // this by splitting all parents of the current paragraph up to that point.
+    // Create a new blockquote and insert it as a child of the root editable
+    // element. We accomplish this by splitting all parents of the current
+    // paragraph up to that point.
     targetBlockquote = createBlockElement();
     if (outerBlock == start.computeContainerNode()) {
-      // When we apply indent to an empty <blockquote>, we should call insertNodeAfter().
-      // See http://crbug.com/625802 for more details.
+      // When we apply indent to an empty <blockquote>, we should call
+      // insertNodeAfter(). See http://crbug.com/625802 for more details.
       if (outerBlock->hasTagName(blockquoteTag))
         insertNodeAfter(targetBlockquote, outerBlock, editingState);
       else
@@ -185,10 +189,8 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState) {
   HTMLElement* enclosingElement = toHTMLElement(
       enclosingNodeOfType(visibleStartOfParagraph.deepEquivalent(),
                           &isHTMLListOrBlockquoteElement));
-  if (!enclosingElement ||
-      !hasEditableStyle(
-          *enclosingElement
-               ->parentNode()))  // We can't outdent if there is no place to go!
+  // We can't outdent if there is no place to go!
+  if (!enclosingElement || !hasEditableStyle(*enclosingElement->parentNode()))
     return;
 
   // Use InsertListCommand to remove the selection from the list
@@ -208,8 +210,8 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState) {
   // The selection is inside a blockquote i.e. enclosingNode is a blockquote
   VisiblePosition positionInEnclosingBlock =
       VisiblePosition::firstPositionInNode(enclosingElement);
-  // If the blockquote is inline, the start of the enclosing block coincides with
-  // positionInEnclosingBlock.
+  // If the blockquote is inline, the start of the enclosing block coincides
+  // with positionInEnclosingBlock.
   VisiblePosition startOfEnclosingBlock =
       (enclosingElement->layoutObject() &&
        enclosingElement->layoutObject()->isInline())
@@ -223,20 +225,22 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState) {
           startOfEnclosingBlock.deepEquivalent() &&
       visibleEndOfParagraph.deepEquivalent() ==
           endOfEnclosingBlock.deepEquivalent()) {
-    // The blockquote doesn't contain anything outside the paragraph, so it can be totally removed.
+    // The blockquote doesn't contain anything outside the paragraph, so it can
+    // be totally removed.
     Node* splitPoint = enclosingElement->nextSibling();
     removeNodePreservingChildren(enclosingElement, editingState);
     if (editingState->isAborted())
       return;
-    // outdentRegion() assumes it is operating on the first paragraph of an enclosing blockquote, but if there are multiply nested blockquotes and we've
-    // just removed one, then this assumption isn't true. By splitting the next containing blockquote after this node, we keep this assumption true
+    // outdentRegion() assumes it is operating on the first paragraph of an
+    // enclosing blockquote, but if there are multiply nested blockquotes and
+    // we've just removed one, then this assumption isn't true. By splitting the
+    // next containing blockquote after this node, we keep this assumption true
     if (splitPoint) {
       if (Element* splitPointParent = splitPoint->parentElement()) {
+        // We can't outdent if there is no place to go!
         if (splitPointParent->hasTagName(blockquoteTag) &&
             !splitPoint->hasTagName(blockquoteTag) &&
-            hasEditableStyle(
-                *splitPointParent
-                     ->parentNode()))  // We can't outdent if there is no place to go!
+            hasEditableStyle(*splitPointParent->parentNode()))
           splitElement(splitPointParent, splitPoint);
       }
     }
@@ -307,7 +311,8 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState) {
                 PreserveSelection);
 }
 
-// FIXME: We should merge this function with ApplyBlockElementCommand::formatSelection
+// FIXME: We should merge this function with
+// ApplyBlockElementCommand::formatSelection
 void IndentOutdentCommand::outdentRegion(
     const VisiblePosition& startOfSelection,
     const VisiblePosition& endOfSelection,

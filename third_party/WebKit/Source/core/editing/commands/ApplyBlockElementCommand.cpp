@@ -173,20 +173,21 @@ void ApplyBlockElementCommand::formatSelection(
     if (editingState->isAborted())
       return;
 
-    // Don't put the next paragraph in the blockquote we just created for this paragraph unless
-    // the next paragraph is in the same cell.
+    // Don't put the next paragraph in the blockquote we just created for this
+    // paragraph unless the next paragraph is in the same cell.
     if (enclosingCell &&
         enclosingCell !=
             enclosingNodeOfType(endOfNextParagraph.position(), &isTableCell))
       blockquoteForNextIndent = nullptr;
 
     // indentIntoBlockquote could move more than one paragraph if the paragraph
-    // is in a list item or a table. As a result, endAfterSelection could refer to a position
-    // no longer in the document.
+    // is in a list item or a table. As a result, endAfterSelection could refer
+    // to a position no longer in the document.
     if (endAfterSelection.isNotNull() && !endAfterSelection.isConnected())
       break;
-    // Sanity check: Make sure our moveParagraph calls didn't remove endOfNextParagraph.position().anchorNode()
-    // If somehow, e.g. mutation event handler, we did, return to prevent crashes.
+    // Sanity check: Make sure our moveParagraph calls didn't remove
+    // endOfNextParagraph.position().anchorNode() If somehow, e.g. mutation
+    // event handler, we did, return to prevent crashes.
     if (endOfNextParagraph.isNotNull() &&
         !endOfNextParagraph.position().isConnected())
       return;
@@ -335,9 +336,10 @@ ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfNeeded(
       !isNewLineAtPosition(Position::firstPositionInNode(text)))
     return endOfNextParagraph;
 
-  // \n at the beginning of the text node immediately following the current paragraph is trimmed by moveParagraphWithClones.
-  // If endOfNextParagraph was pointing at this same text node, endOfNextParagraph will be shifted by one paragraph.
-  // Avoid this by splitting "\n"
+  // \n at the beginning of the text node immediately following the current
+  // paragraph is trimmed by moveParagraphWithClones. If endOfNextParagraph was
+  // pointing at this same text node, endOfNextParagraph will be shifted by one
+  // paragraph. Avoid this by splitting "\n"
   splitTextNode(text, 1);
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -356,7 +358,8 @@ ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfNeeded(
   if (text == m_endOfLastParagraph.computeContainerNode()) {
     if (m_endOfLastParagraph.offsetInContainerNode() <
         position.offsetInContainerNode()) {
-      // We can only fix endOfLastParagraph if the previous node was still text and hasn't been modified by script.
+      // We can only fix endOfLastParagraph if the previous node was still text
+      // and hasn't been modified by script.
       if (text->previousSibling()->isTextNode() &&
           static_cast<unsigned>(m_endOfLastParagraph.offsetInContainerNode()) <=
               toText(text->previousSibling())->length())

@@ -111,7 +111,8 @@ class DeleteSelectionCommand final : public CompositeEditCommand {
   bool m_sanitizeMarkup;
   InputEvent::InputType m_inputType;
 
-  // This data is transient and should be cleared at the end of the doApply function.
+  // This data is transient and should be cleared at the end of the doApply
+  // function.
   VisibleSelection m_selectionToDelete;
   Position m_upstreamStart;
   Position m_downstreamStart;

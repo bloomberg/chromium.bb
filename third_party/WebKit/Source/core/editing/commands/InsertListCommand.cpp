@@ -137,11 +137,11 @@ void InsertListCommand::doApply(EditingState* editingState) {
   // When a selection ends at the start of a paragraph, we rarely paint
   // the selection gap before that paragraph, because there often is no gap.
   // In a case like this, it's not obvious to the user that the selection
-  // ends "inside" that paragraph, so it would be confusing if InsertUn{Ordered}List
-  // operated on that paragraph.
+  // ends "inside" that paragraph, so it would be confusing if
+  // InsertUn{Ordered}List operated on that paragraph.
   // FIXME: We paint the gap before some paragraphs that are indented with left
-  // margin/padding, but not others.  We should make the gap painting more consistent and
-  // then use a left margin/padding rule here.
+  // margin/padding, but not others.  We should make the gap painting more
+  // consistent and then use a left margin/padding rule here.
   if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() &&
       isStartOfParagraphDeprecated(visibleEnd, CanSkipOverEditingBoundary)) {
     setEndingSelection(createVisibleSelectionDeprecated(
@@ -168,8 +168,9 @@ void InsertListCommand::doApply(EditingState* editingState) {
     ContainerNode* scopeForEndOfSelection = nullptr;
     // FIXME: This is an inefficient way to keep selection alive because
     // indexForVisiblePosition walks from the beginning of the document to the
-    // endOfSelection everytime this code is executed. But not using index is hard
-    // because there are so many ways we can los eselection inside doApplyForSingleParagraph.
+    // endOfSelection everytime this code is executed. But not using index is
+    // hard because there are so many ways we can lose selection inside
+    // doApplyForSingleParagraph.
     int indexForStartOfSelection =
         indexForVisiblePosition(startOfSelection, scopeForStartOfSelection);
     int indexForEndOfSelection =
@@ -185,17 +186,20 @@ void InsertListCommand::doApply(EditingState* editingState) {
           !inSameParagraphDeprecated(startOfCurrentParagraph,
                                      startOfLastParagraph,
                                      CanCrossEditingBoundary)) {
-        // doApply() may operate on and remove the last paragraph of the selection from the document
-        // if it's in the same list item as startOfCurrentParagraph.  Return early to avoid an
-        // infinite loop and because there is no more work to be done.
-        // FIXME(<rdar://problem/5983974>): The endingSelection() may be incorrect here.  Compute
-        // the new location of endOfSelection and use it as the end of the new selection.
+        // doApply() may operate on and remove the last paragraph of the
+        // selection from the document if it's in the same list item as
+        // startOfCurrentParagraph. Return early to avoid an infinite loop and
+        // because there is no more work to be done.
+        // FIXME(<rdar://problem/5983974>): The endingSelection() may be
+        // incorrect here.  Compute the new location of endOfSelection and use
+        // it as the end of the new selection.
         if (!startOfLastParagraph.deepEquivalent().isConnected())
           return;
         setEndingSelection(startOfCurrentParagraph);
 
-        // Save and restore endOfSelection and startOfLastParagraph when necessary
-        // since moveParagraph and movePragraphWithClones can remove nodes.
+        // Save and restore endOfSelection and startOfLastParagraph when
+        // necessary since moveParagraph and movePragraphWithClones can remove
+        // nodes.
         bool singleParagraphResult = doApplyForSingleParagraph(
             forceListCreation, listTag, *currentSelection, editingState);
         if (editingState->isAborted())
@@ -204,14 +208,16 @@ void InsertListCommand::doApply(EditingState* editingState) {
           break;
         if (endOfSelection.isNull() || endOfSelection.isOrphan() ||
             startOfLastParagraph.isNull() || startOfLastParagraph.isOrphan()) {
-          // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+          // TODO(dglazkov): The use of
+          // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
           // see http://crbug.com/590369 for more details.
           document().updateStyleAndLayoutIgnorePendingStylesheets();
 
           endOfSelection = visiblePositionForIndex(indexForEndOfSelection,
                                                    scopeForEndOfSelection);
-          // If endOfSelection is null, then some contents have been deleted from the document.
-          // This should never happen and if it did, exit early immediately because we've lost the loop invariant.
+          // If endOfSelection is null, then some contents have been deleted
+          // from the document. This should never happen and if it did, exit
+          // early immediately because we've lost the loop invariant.
           DCHECK(endOfSelection.isNotNull());
           if (endOfSelection.isNull() || !rootEditableElementOf(endOfSelection))
             return;
@@ -264,9 +270,10 @@ bool InsertListCommand::doApplyForSingleParagraph(
     const HTMLQualifiedName& listTag,
     Range& currentSelection,
     EditingState* editingState) {
-  // FIXME: This will produce unexpected results for a selection that starts just before a
-  // table and ends inside the first cell, selectionForParagraphIteration should probably
-  // be renamed and deployed inside setEndingSelection().
+  // FIXME: This will produce unexpected results for a selection that starts
+  // just before a table and ends inside the first cell,
+  // selectionForParagraphIteration should probably be renamed and deployed
+  // inside setEndingSelection().
   Node* selectionNode = endingSelection().start().anchorNode();
   Node* listChildNode = enclosingListChild(selectionNode);
   bool switchListType = false;
@@ -341,9 +348,11 @@ bool InsertListCommand::doApplyForSingleParagraph(
       if (editingState->isAborted())
         return false;
 
-      // Manually remove listNode because moveParagraphWithClones sometimes leaves it behind in the document.
-      // See the bug 33668 and editing/execCommand/insert-list-orphaned-item-with-nested-lists.html.
-      // FIXME: This might be a bug in moveParagraphWithClones or deleteSelection.
+      // Manually remove listNode because moveParagraphWithClones sometimes
+      // leaves it behind in the document. See the bug 33668 and
+      // editing/execCommand/insert-list-orphaned-item-with-nested-lists.html.
+      // FIXME: This might be a bug in moveParagraphWithClones or
+      // deleteSelection.
       if (listElement && listElement->isConnected()) {
         removeNode(listElement, editingState);
         if (editingState->isAborted())
@@ -354,8 +363,9 @@ bool InsertListCommand::doApplyForSingleParagraph(
       if (editingState->isAborted())
         return false;
 
-      // Restore the start and the end of current selection if they started inside listNode
-      // because moveParagraphWithClones could have removed them.
+      // Restore the start and the end of current selection if they started
+      // inside listNode because moveParagraphWithClones could have removed
+      // them.
       if (rangeStartIsInList && newList)
         currentSelection.setStart(newList, 0, IGNORE_EXCEPTION);
       if (rangeEndIsInList && newList)
@@ -398,7 +408,8 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     nextListChild = listChildNode->nextSibling();
     previousListChild = listChildNode->previousSibling();
   } else {
-    // A paragraph is visually a list item minus a list marker.  The paragraph will be moved.
+    // A paragraph is visually a list item minus a list marker.  The paragraph
+    // will be moved.
     start =
         startOfParagraphDeprecated(originalStart, CanSkipOverEditingBoundary);
     end = endOfParagraphDeprecated(start, CanSkipOverEditingBoundary);
@@ -409,12 +420,12 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         previousPositionOf(start).deepEquivalent().anchorNode(), listElement);
     DCHECK_NE(previousListChild, listChildNode);
   }
-  // When removing a list, we must always create a placeholder to act as a point of insertion
-  // for the list content being removed.
+  // When removing a list, we must always create a placeholder to act as a point
+  // of insertion for the list content being removed.
   HTMLBRElement* placeholder = HTMLBRElement::create(document());
   HTMLElement* elementToInsert = placeholder;
-  // If the content of the list item will be moved into another list, put it in a list item
-  // so that we don't create an orphaned list child.
+  // If the content of the list item will be moved into another list, put it in
+  // a list item so that we don't create an orphaned list child.
   if (enclosingList(listElement)) {
     elementToInsert = HTMLLIElement::create(document());
     appendNode(placeholder, elementToInsert, editingState);
@@ -423,20 +434,23 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
   }
 
   if (nextListChild && previousListChild) {
-    // We want to pull listChildNode out of listNode, and place it before nextListChild
-    // and after previousListChild, so we split listNode and insert it between the two lists.
-    // But to split listNode, we must first split ancestors of listChildNode between it and listNode,
-    // if any exist.
-    // FIXME: We appear to split at nextListChild as opposed to listChildNode so that when we remove
-    // listChildNode below in moveParagraphs, previousListChild will be removed along with it if it is
-    // unrendered. But we ought to remove nextListChild too, if it is unrendered.
+    // We want to pull listChildNode out of listNode, and place it before
+    // nextListChild and after previousListChild, so we split listNode and
+    // insert it between the two lists.
+    // But to split listNode, we must first split ancestors of listChildNode
+    // between it and listNode, if any exist.
+    // FIXME: We appear to split at nextListChild as opposed to listChildNode so
+    // that when we remove listChildNode below in moveParagraphs,
+    // previousListChild will be removed along with it if it is unrendered. But
+    // we ought to remove nextListChild too, if it is unrendered.
     splitElement(listElement, splitTreeToNode(nextListChild, listElement));
     insertNodeBefore(elementToInsert, listElement, editingState);
   } else if (nextListChild || listChildNode->parentNode() != listElement) {
-    // Just because listChildNode has no previousListChild doesn't mean there isn't any content
-    // in listNode that comes before listChildNode, as listChildNode could have ancestors
-    // between it and listNode. So, we split up to listNode before inserting the placeholder
-    // where we're about to move listChildNode to.
+    // Just because listChildNode has no previousListChild doesn't mean there
+    // isn't any content in listNode that comes before listChildNode, as
+    // listChildNode could have ancestors between it and listNode. So, we split
+    // up to listNode before inserting the placeholder where we're about to move
+    // listChildNode to.
     if (listChildNode->parentNode() != listElement)
       splitElement(listElement, splitTreeToNode(listChildNode, listElement));
     insertNodeBefore(elementToInsert, listElement, editingState);
@@ -545,10 +559,12 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart,
   if (editingState->isAborted())
     return;
 
-  // We inserted the list at the start of the content we're about to move
-  // Update the start of content, so we don't try to move the list into itself.  bug 19066
-  // Layout is necessary since start's node's inline layoutObjects may have been destroyed by the insertion
-  // The end of the content may have changed after the insertion and layout so update it as well.
+  // We inserted the list at the start of the content we're about to move.
+  // https://bugs.webkit.org/show_bug.cgi?id=19066: Update the start of content,
+  // so we don't try to move the list into itself.
+  // Layout is necessary since start's node's inline layoutObjects may have been
+  // destroyed by the insertion The end of the content may have changed after
+  // the insertion and layout so update it as well.
   if (insertionPos == startPos)
     moveParagraphOverPositionIntoEmptyListItem(originalStart, listItemElement,
                                                editingState);

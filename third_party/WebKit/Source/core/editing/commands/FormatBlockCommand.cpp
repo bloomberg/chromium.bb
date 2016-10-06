@@ -101,8 +101,9 @@ void FormatBlockCommand::formatRange(const Position& start,
   }
 
   if (!blockElement) {
-    // Create a new blockquote and insert it as a child of the root editable element. We accomplish
-    // this by splitting all parents of the current paragraph up to that point.
+    // Create a new blockquote and insert it as a child of the root editable
+    // element. We accomplish this by splitting all parents of the current
+    // paragraph up to that point.
     blockElement = createBlockElement();
     insertNodeBefore(blockElement, nodeAfterInsertionPosition, editingState);
     if (editingState->isAborted())
@@ -122,7 +123,8 @@ void FormatBlockCommand::formatRange(const Position& start,
   if (editingState->isAborted())
     return;
 
-  // Copy the inline style of the original block element to the newly created block-style element.
+  // Copy the inline style of the original block element to the newly created
+  // block-style element.
   if (outerBlock != nodeAfterInsertionPosition &&
       toHTMLElement(nodeAfterInsertionPosition)->hasAttribute(styleAttr))
     blockElement->setAttribute(

@@ -53,8 +53,9 @@ void RemoveCSSPropertyCommand::doApply(EditingState*) {
   m_oldValue = style->getPropertyValue(m_property);
   m_important = style->propertyIsImportant(m_property);
 
-  // Mutate using the CSSOM wrapper so we get the same event behavior as a script.
-  // Setting to null string removes the property. We don't have internal version of removeProperty.
+  // Mutate using the CSSOM wrapper so we get the same event behavior as a
+  // script. Setting to null string removes the property. We don't have internal
+  // version of removeProperty.
   m_element->style()->setPropertyInternal(m_property, String(), String(), false,
                                           IGNORE_EXCEPTION);
 }

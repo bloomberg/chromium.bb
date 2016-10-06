@@ -95,7 +95,8 @@ class TypingCommand final : public CompositeEditCommand {
 
   ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
   TextCompositionType compositionType() const { return m_compositionType; }
-  // |TypingCommand| may contain multiple |InsertTextCommand|, should return |textDataForInputEvent()| of the last one.
+  // |TypingCommand| may contain multiple |InsertTextCommand|, should return
+  // |textDataForInputEvent()| of the last one.
   String textDataForInputEvent() const final;
 
  private:
@@ -164,9 +165,9 @@ class TypingCommand final : public CompositeEditCommand {
   bool m_killRing;
   bool m_preservesTypingStyle;
 
-  // Undoing a series of backward deletes will restore a selection around all of the
-  // characters that were deleted, but only if the typing command being undone
-  // was opened with a backward delete.
+  // Undoing a series of backward deletes will restore a selection around all of
+  // the characters that were deleted, but only if the typing command being
+  // undone was opened with a backward delete.
   bool m_openedByBackwardDelete;
 
   bool m_shouldRetainAutocorrectionIndicator;

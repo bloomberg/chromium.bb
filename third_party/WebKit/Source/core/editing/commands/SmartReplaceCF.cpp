@@ -51,16 +51,11 @@ static CFMutableCharacterSetRef getSmartSet(bool isPreviousCharacter) {
     CFCharacterSetAddCharactersInRange(
         smartSet,
         CFRangeMake(0x2E80, 352));  // CJK & Kangxi Radicals (0x2E80 - 0x2FDF)
-    CFCharacterSetAddCharactersInRange(
-        smartSet,
-        CFRangeMake(
-            0x2FF0,
-            464));  // Ideograph Descriptions, CJK Symbols, Hiragana, Katakana, Bopomofo, Hangul Compatibility Jamo, Kanbun, & Bopomofo Ext (0x2FF0 - 0x31BF)
-    CFCharacterSetAddCharactersInRange(
-        smartSet,
-        CFRangeMake(
-            0x3200,
-            29392));  // Enclosed CJK, CJK Ideographs (Uni Han & Ext A), & Yi (0x3200 - 0xA4CF)
+    // Ideograph Descriptions, CJK Symbols, Hiragana, Katakana, Bopomofo, Hangul
+    // Compatibility Jamo, Kanbun, & Bopomofo Ext (0x2FF0 - 0x31BF)
+    CFCharacterSetAddCharactersInRange(smartSet, CFRangeMake(0x2FF0, 464));
+    // Enclosed CJK, CJK Ideographs (Uni Han & Ext A), & Yi (0x3200 - 0xA4CF)
+    CFCharacterSetAddCharactersInRange(smartSet, CFRangeMake(0x3200, 29392));
     CFCharacterSetAddCharactersInRange(
         smartSet,
         CFRangeMake(0xAC00, 11183));  // Hangul Syllables (0xAC00 - 0xD7AF)

@@ -117,7 +117,8 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   explicit CompositeEditCommand(Document&);
 
   //
-  // sugary-sweet convenience functions to help create and apply edit commands in composite commands
+  // sugary-sweet convenience functions to help create and apply edit commands
+  // in composite commands
   //
   void appendNode(Node*, ContainerNode* parent, EditingState*);
   void applyCommandToComposite(EditCommand*, EditingState*);

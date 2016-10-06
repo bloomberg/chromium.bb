@@ -61,8 +61,8 @@ void RemoveFormatCommand::doApply(EditingState* editingState) {
   if (!frame->selection().selection().isNonOrphanedCaretOrRange())
     return;
 
-  // Get the default style for this editable root, it's the style that we'll give the
-  // content that we're operating on.
+  // Get the default style for this editable root, it's the style that we'll
+  // give the content that we're operating on.
   Element* root = frame->selection().rootEditableElement();
   EditingStyle* defaultStyle = EditingStyle::create(root);
 

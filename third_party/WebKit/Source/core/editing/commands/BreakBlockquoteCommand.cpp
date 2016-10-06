@@ -95,8 +95,9 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
 
   VisiblePosition visiblePos = endingSelection().visibleStartDeprecated();
 
-  // pos is a position equivalent to the caret.  We use downstream() so that pos will
-  // be in the first node that we need to move (there are a few exceptions to this, see below).
+  // pos is a position equivalent to the caret.  We use downstream() so that pos
+  // will be in the first node that we need to move (there are a few exceptions
+  // to this, see below).
   Position pos = mostForwardCaretPosition(endingSelection().start());
 
   // Find the top-most blockquote from the start.
@@ -110,8 +111,9 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
   bool isLastVisPosInNode =
       isLastVisiblePositionInNode(visiblePos, topBlockquote);
 
-  // If the position is at the beginning of the top quoted content, we don't need to break the quote.
-  // Instead, insert the break before the blockquote, unless the position is as the end of the the quoted content.
+  // If the position is at the beginning of the top quoted content, we don't
+  // need to break the quote. Instead, insert the break before the blockquote,
+  // unless the position is as the end of the the quoted content.
   if (isFirstVisiblePositionInNode(visiblePos, topBlockquote) &&
       !isLastVisPosInNode) {
     insertNodeBefore(breakElement, topBlockquote, editingState);
@@ -129,7 +131,8 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
   if (editingState->isAborted())
     return;
 
-  // If we're inserting the break at the end of the quoted content, we don't need to break the quote.
+  // If we're inserting the break at the end of the quoted content, we don't
+  // need to break the quote.
   if (isLastVisPosInNode) {
     setEndingSelection(createVisibleSelectionDeprecated(
         Position::beforeNode(breakElement), TextAffinity::Downstream,
@@ -138,8 +141,8 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
     return;
   }
 
-  // Don't move a line break just after the caret.  Doing so would create an extra, empty paragraph
-  // in the new blockquote.
+  // Don't move a line break just after the caret.  Doing so would create an
+  // extra, empty paragraph in the new blockquote.
   if (lineBreakExistsAtVisiblePosition(visiblePos)) {
     pos = nextPositionOf(pos, PositionMoveType::GraphemeCluster);
   }
@@ -180,7 +183,8 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
     return;
   }
 
-  // Build up list of ancestors in between the start node and the top blockquote.
+  // Build up list of ancestors in between the start node and the top
+  // blockquote.
   HeapVector<Member<Element>> ancestors;
   for (Element* node = startNode->parentElement();
        node && node != topBlockquote; node = node->parentElement())

@@ -101,7 +101,8 @@ void TypingCommand::deleteKeyPressed(Document& document,
     if (TypingCommand* lastTypingCommand =
             lastTypingCommandIfStillOpenForTyping(frame)) {
       // If the last typing command is not Delete, open a new typing command.
-      // We need to group continuous delete commands alone in a single typing command.
+      // We need to group continuous delete commands alone in a single typing
+      // command.
       if (lastTypingCommand->commandTypeOfOpenCommand() == DeleteKey) {
         updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand,
                                                        frame);
@@ -122,7 +123,8 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document,
                                             EditingState* editingState,
                                             Options options,
                                             TextGranularity granularity) {
-  // FIXME: Forward delete in TextEdit appears to open and close a new typing command.
+  // FIXME: Forward delete in TextEdit appears to open and close a new typing
+  // command.
   if (granularity == CharacterGranularity) {
     LocalFrame* frame = document.frame();
     if (TypingCommand* lastTypingCommand =
@@ -168,7 +170,8 @@ static String dispatchBeforeTextInsertedEvent(
   String newText = text;
   if (Node* startNode = selectionForInsertion.start().computeContainerNode()) {
     if (rootEditableElement(*startNode)) {
-      // Send BeforeTextInsertedEvent. The event handler will update text if necessary.
+      // Send BeforeTextInsertedEvent. The event handler will update text if
+      // necessary.
       BeforeTextInsertedEvent* evt = BeforeTextInsertedEvent::create(text);
       rootEditableElement(*startNode)->dispatchEvent(evt);
       newText = evt->text();
@@ -192,7 +195,8 @@ void TypingCommand::insertText(Document& document,
              composition);
 }
 
-// FIXME: We shouldn't need to take selectionForInsertion. It should be identical to FrameSelection's current selection.
+// FIXME: We shouldn't need to take selectionForInsertion. It should be
+// identical to FrameSelection's current selection.
 void TypingCommand::insertText(Document& document,
                                const String& text,
                                const VisibleSelection& selectionForInsertion,
@@ -206,9 +210,10 @@ void TypingCommand::insertText(Document& document,
   String newText = dispatchBeforeTextInsertedEvent(
       text, selectionForInsertion, compositionType == TextCompositionUpdate);
 
-  // Set the starting and ending selection appropriately if we are using a selection
-  // that is different from the current selection.  In the future, we should change EditCommand
-  // to deal with custom selections in a general way that can be used by all of the commands.
+  // Set the starting and ending selection appropriately if we are using a
+  // selection that is different from the current selection.  In the future, we
+  // should change EditCommand to deal with custom selections in a general way
+  // that can be used by all of the commands.
   if (TypingCommand* lastTypingCommand =
           lastTypingCommandIfStillOpenForTyping(frame)) {
     if (lastTypingCommand->endingSelection() != selectionForInsertion) {
@@ -339,7 +344,8 @@ InputEvent::InputType TypingCommand::inputType() const {
   using InputType = InputEvent::InputType;
 
   switch (m_commandType) {
-    // TODO(chongz): |DeleteSelection| is used by IME but we don't have direction info.
+    // TODO(chongz): |DeleteSelection| is used by IME but we don't have
+    // direction info.
     case DeleteSelection:
       return InputType::DeleteContentBackward;
     case DeleteKey:
@@ -383,11 +389,13 @@ void TypingCommand::insertText(const String& text,
     insertTextRunWithoutNewlines(text, selectInsertedText, editingState);
     return;
   }
-  // FIXME: Need to implement selectInsertedText for cases where more than one insert is involved.
-  // This requires support from insertTextRunWithoutNewlines and insertParagraphSeparator for extending
-  // an existing selection; at the moment they can either put the caret after what's inserted or
-  // select what's inserted, but there's no way to "extend selection" to include both an old selection
-  // that ends just before where we want to insert text and the newly inserted text.
+  // FIXME: Need to implement selectInsertedText for cases where more than one
+  // insert is involved. This requires support from insertTextRunWithoutNewlines
+  // and insertParagraphSeparator for extending an existing selection; at the
+  // moment they can either put the caret after what's inserted or select what's
+  // inserted, but there's no way to "extend selection" to include both an old
+  // selection that ends just before where we want to insert text and the newly
+  // inserted text.
   unsigned offset = 0;
   size_t newline;
   while ((newline = text.find('\n', offset)) != kNotFound) {
@@ -466,8 +474,9 @@ void TypingCommand::insertParagraphSeparator(EditingState* editingState) {
 
 void TypingCommand::insertParagraphSeparatorInQuotedContent(
     EditingState* editingState) {
-  // If the selection starts inside a table, just insert the paragraph separator normally
-  // Breaking the blockquote would also break apart the table, which is unecessary when inserting a newline
+  // If the selection starts inside a table, just insert the paragraph separator
+  // normally Breaking the blockquote would also break apart the table, which is
+  // unecessary when inserting a newline
   if (enclosingNodeOfType(endingSelection().start(), &isTableStructureNode)) {
     insertParagraphSeparator(editingState);
     return;
@@ -487,7 +496,8 @@ bool TypingCommand::makeEditableRootEmpty(EditingState* editingState) {
 
   if (root->firstChild() == root->lastChild()) {
     if (isHTMLBRElement(root->firstChild())) {
-      // If there is a single child and it could be a placeholder, leave it alone.
+      // If there is a single child and it could be a placeholder, leave it
+      // alone.
       if (root->layoutObject() && root->layoutObject()->isLayoutBlockFlow())
         return false;
     }
@@ -527,8 +537,9 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity,
       selectionAfterUndo = selectionToDelete;
       break;
     case CaretSelection: {
-      // After breaking out of an empty mail blockquote, we still want continue with the deletion
-      // so actual content will get deleted, and not just the quote style.
+      // After breaking out of an empty mail blockquote, we still want continue
+      // with the deletion so actual content will get deleted, and not just the
+      // quote style.
       bool breakOutResult =
           breakOutOfEmptyMailBlockquotedParagraph(editingState);
       if (editingState->isAborted())
@@ -549,7 +560,8 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity,
       VisiblePosition visibleStart(endingSelection().visibleStartDeprecated());
       if (previousPositionOf(visibleStart, CannotCrossEditingBoundary)
               .isNull()) {
-        // When the caret is at the start of the editable area in an empty list item, break out of the list item.
+        // When the caret is at the start of the editable area in an empty list
+        // item, break out of the list item.
         bool breakOutOfEmptyListItemResult =
             breakOutOfEmptyListItem(editingState);
         if (editingState->isAborted())
@@ -558,7 +570,8 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity,
           typingAddedToOpenCommand(DeleteKey);
           return;
         }
-        // When there are no visible positions in the editing root, delete its entire contents.
+        // When there are no visible positions in the editing root, delete its
+        // entire contents.
         if (nextPositionOf(visibleStart, CannotCrossEditingBoundary).isNull() &&
             makeEditableRootEmpty(editingState)) {
           typingAddedToOpenCommand(DeleteKey);
@@ -568,7 +581,8 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity,
           return;
       }
 
-      // If we have a caret selection at the beginning of a cell, we have nothing to do.
+      // If we have a caret selection at the beginning of a cell, we have
+      // nothing to do.
       Node* enclosingTableCell =
           enclosingNodeOfType(visibleStart.deepEquivalent(), &isTableCell);
       if (enclosingTableCell &&
@@ -577,17 +591,21 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity,
                   .deepEquivalent())
         return;
 
-      // If the caret is at the start of a paragraph after a table, move content into the last table cell.
+      // If the caret is at the start of a paragraph after a table, move content
+      // into the last table cell.
       if (isStartOfParagraphDeprecated(visibleStart) &&
           tableElementJustBefore(
               previousPositionOf(visibleStart, CannotCrossEditingBoundary))) {
-        // Unless the caret is just before a table.  We don't want to move a table into the last table cell.
+        // Unless the caret is just before a table.  We don't want to move a
+        // table into the last table cell.
         if (tableElementJustAfter(visibleStart))
           return;
-        // Extend the selection backward into the last cell, then deletion will handle the move.
+        // Extend the selection backward into the last cell, then deletion will
+        // handle the move.
         selectionModifier.modify(FrameSelection::AlterationExtend,
                                  DirectionBackward, granularity);
-        // If the caret is just after a table, select the table and don't delete anything.
+        // If the caret is just after a table, select the table and don't delete
+        // anything.
       } else if (Element* table = tableElementJustBefore(visibleStart)) {
         setEndingSelection(createVisibleSelectionDeprecated(
             Position::beforeNode(table), endingSelection().start(),
@@ -604,7 +622,8 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity,
           selectionToDelete.end().computeOffsetInContainerNode() -
                   selectionToDelete.start().computeOffsetInContainerNode() >
               1) {
-        // If there are multiple Unicode code points to be deleted, adjust the range to match platform conventions.
+        // If there are multiple Unicode code points to be deleted, adjust the
+        // range to match platform conventions.
         selectionToDelete.setWithoutValidation(
             selectionToDelete.end(),
             previousPositionOf(selectionToDelete.end(),
@@ -615,9 +634,10 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity,
           selectionToDelete.base() != startingSelection().start()) {
         selectionAfterUndo = selectionToDelete;
       } else {
-        // It's a little tricky to compute what the starting selection would have been in the original document.
-        // We can't let the VisibleSelection class's validation kick in or it'll adjust for us based on
-        // the current state of the document and we'll get the wrong result.
+        // It's a little tricky to compute what the starting selection would
+        // have been in the original document. We can't let the VisibleSelection
+        // class's validation kick in or it'll adjust for us based on the
+        // current state of the document and we'll get the wrong result.
         selectionAfterUndo.setWithoutValidation(startingSelection().end(),
                                                 selectionToDelete.extent());
       }
@@ -638,9 +658,11 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity,
   if (killRing)
     frame->editor().addToKillRing(
         selectionToDelete.toNormalizedEphemeralRange());
-  // On Mac, make undo select everything that has been deleted, unless an undo will undo more than just this deletion.
-  // FIXME: This behaves like TextEdit except for the case where you open with text insertion and then delete
-  // more text than you insert.  In that case all of the text that was around originally should be selected.
+  // On Mac, make undo select everything that has been deleted, unless an undo
+  // will undo more than just this deletion.
+  // FIXME: This behaves like TextEdit except for the case where you open with
+  // text insertion and then delete more text than you insert.  In that case all
+  // of the text that was around originally should be selected.
   if (frame->editor().behavior().shouldUndoOfDeleteSelectText() &&
       m_openedByBackwardDelete)
     setStartingSelection(selectionAfterUndo);
@@ -710,7 +732,8 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity,
         return;
       }
 
-      // deleting to end of paragraph when at end of paragraph needs to merge the next paragraph (if any)
+      // deleting to end of paragraph when at end of paragraph needs to merge
+      // the next paragraph (if any)
       if (granularity == ParagraphBoundary &&
           selectionModifier.selection().isCaret() &&
           isEndOfParagraphDeprecated(
@@ -723,9 +746,10 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity,
           selectionToDelete.base() != startingSelection().start()) {
         selectionAfterUndo = selectionToDelete;
       } else {
-        // It's a little tricky to compute what the starting selection would have been in the original document.
-        // We can't let the VisibleSelection class's validation kick in or it'll adjust for us based on
-        // the current state of the document and we'll get the wrong result.
+        // It's a little tricky to compute what the starting selection would
+        // have been in the original document. We can't let the VisibleSelection
+        // class's validation kick in or it'll adjust for us based on the
+        // current state of the document and we'll get the wrong result.
         Position extent = startingSelection().end();
         if (extent.computeContainerNode() !=
             selectionToDelete.end().computeContainerNode()) {

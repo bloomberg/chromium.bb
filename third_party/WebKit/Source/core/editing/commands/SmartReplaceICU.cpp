@@ -62,14 +62,11 @@ static USet* getSmartSet(bool isPreviousCharacter) {
                   0x1100 + 256);  // Hangul Jamo (0x1100 - 0x11FF)
     uset_addRange(smartSet, 0x2E80,
                   0x2E80 + 352);  // CJK & Kangxi Radicals (0x2E80 - 0x2FDF)
-    uset_addRange(
-        smartSet, 0x2FF0,
-        0x2FF0 +
-            464);  // Ideograph Descriptions, CJK Symbols, Hiragana, Katakana, Bopomofo, Hangul Compatibility Jamo, Kanbun, & Bopomofo Ext (0x2FF0 - 0x31BF)
-    uset_addRange(
-        smartSet, 0x3200,
-        0x3200 +
-            29392);  // Enclosed CJK, CJK Ideographs (Uni Han & Ext A), & Yi (0x3200 - 0xA4CF)
+    // Ideograph Descriptions, CJK Symbols, Hiragana, Katakana, Bopomofo, Hangul
+    // Compatibility Jamo, Kanbun, & Bopomofo Ext (0x2FF0 - 0x31BF)
+    uset_addRange(smartSet, 0x2FF0, 0x2FF0 + 464);
+    // Enclosed CJK, CJK Ideographs (Uni Han & Ext A), & Yi (0x3200 - 0xA4CF)
+    uset_addRange(smartSet, 0x3200, 0x3200 + 29392);
     uset_addRange(smartSet, 0xAC00,
                   0xAC00 + 11183);  // Hangul Syllables (0xAC00 - 0xD7AF)
     uset_addRange(

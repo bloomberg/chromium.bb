@@ -267,9 +267,10 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle* style,
       visibleEnd.isOrphan())
     return;
 
-  // Save and restore the selection endpoints using their indices in the document, since
-  // addBlockStyleIfNeeded may moveParagraphs, which can remove these endpoints.
-  // Calculate start and end indices from the start of the tree that they're in.
+  // Save and restore the selection endpoints using their indices in the
+  // document, since addBlockStyleIfNeeded may moveParagraphs, which can remove
+  // these endpoints. Calculate start and end indices from the start of the tree
+  // that they're in.
   Node& scope = NodeTraversal::highestAncestorOrSelf(
       *visibleStart.deepEquivalent().anchorNode());
   Range* startRange =
@@ -423,16 +424,17 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(
   DCHECK(start.anchorNode());
   DCHECK(end.anchorNode());
   // Calculate loop end point.
-  // If the end node is before the start node (can only happen if the end node is
-  // an ancestor of the start node), we gather nodes up to the next sibling of the end node
+  // If the end node is before the start node (can only happen if the end node
+  // is an ancestor of the start node), we gather nodes up to the next sibling
+  // of the end node
   const Node* const beyondEnd = end.nodeAsRangePastLastNode();
-  start = mostBackwardCaretPosition(
-      start);  // Move upstream to ensure we do not add redundant spans.
+  // Move upstream to ensure we do not add redundant spans.
+  start = mostBackwardCaretPosition(start);
   Node* startNode = start.anchorNode();
   DCHECK(startNode);
 
-  // Make sure we're not already at the end or the next NodeTraversal::next() will traverse
-  // past it.
+  // Make sure we're not already at the end or the next NodeTraversal::next()
+  // will traverse past it.
   if (startNode == beyondEnd)
     return;
 
@@ -453,7 +455,8 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(
     startingFontSizes.set(node, computedFontSize(node));
   }
 
-  // These spans were added by us. If empty after font size changes, they can be removed.
+  // These spans were added by us. If empty after font size changes, they can be
+  // removed.
   HeapVector<Member<HTMLElement>> unstyledSpans;
 
   Node* lastStyledNode = nullptr;
@@ -468,8 +471,9 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(
       element = toHTMLElement(node);
     } else if (node->isTextNode() && node->layoutObject() &&
                node->parentNode() != lastStyledNode) {
-      // Last styled node was not parent node of this text node, but we wish to style this
-      // text node. To make this possible, add a style span to surround this text node.
+      // Last styled node was not parent node of this text node, but we wish to
+      // style this text node. To make this possible, add a style span to
+      // surround this text node.
       HTMLSpanElement* span = HTMLSpanElement::create(document());
       surroundNodeRangeWithElement(node, node, span, editingState);
       if (editingState->isAborted())
@@ -547,8 +551,9 @@ HTMLElement* ApplyStyleCommand::splitAncestorsWithUnicodeBidi(
     Node* node,
     bool before,
     WritingDirection allowedDirection) {
-  // We are allowed to leave the highest ancestor with unicode-bidi unsplit if it is unicode-bidi: embed and direction: allowedDirection.
-  // In that case, we return the unsplit ancestor. Otherwise, we return 0.
+  // We are allowed to leave the highest ancestor with unicode-bidi unsplit if
+  // it is unicode-bidi: embed and direction: allowedDirection. In that case, we
+  // return the unsplit ancestor. Otherwise, we return 0.
   Element* block = enclosingBlock(node);
   if (!block)
     return 0;
@@ -621,13 +626,15 @@ void ApplyStyleCommand::removeEmbeddingUpToEnclosingBlock(
     if (!unicodeBidi || unicodeBidi == CSSValueNormal)
       continue;
 
-    // FIXME: This code should really consider the mapped attribute 'dir', the inline style declaration,
-    // and all matching style rules in order to determine how to best set the unicode-bidi property to 'normal'.
-    // For now, it assumes that if the 'dir' attribute is present, then removing it will suffice, and
-    // otherwise it sets the property in the inline style declaration.
+    // FIXME: This code should really consider the mapped attribute 'dir', the
+    // inline style declaration, and all matching style rules in order to
+    // determine how to best set the unicode-bidi property to 'normal'. For now,
+    // it assumes that if the 'dir' attribute is present, then removing it will
+    // suffice, and otherwise it sets the property in the inline style
+    // declaration.
     if (element->hasAttribute(dirAttr)) {
-      // FIXME: If this is a BDO element, we should probably just remove it if it has no
-      // other attributes, like we (should) do with B and I elements.
+      // FIXME: If this is a BDO element, we should probably just remove it if
+      // it has no other attributes, like we (should) do with B and I elements.
       removeElementAttribute(element, dirAttr);
     } else {
       MutableStylePropertySet* inlineStyle =
@@ -680,7 +687,8 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style,
     end = swap;
   }
 
-  // split the start node and containing element if the selection starts inside of it
+  // split the start node and containing element if the selection starts inside
+  // of it
   bool splitStart = isValidCaretPositionInTextNode(start);
   if (splitStart) {
     if (shouldSplitTextElement(start.anchorNode()->parentElement(), style))
@@ -694,7 +702,8 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style,
     startDummySpanAncestor = dummySpanAncestorForNode(start.anchorNode());
   }
 
-  // split the end node and containing element if the selection ends inside of it
+  // split the end node and containing element if the selection ends inside of
+  // it
   bool splitEnd = isValidCaretPositionInTextNode(end);
   if (splitEnd) {
     if (shouldSplitTextElement(end.anchorNode()->parentElement(), style))
@@ -710,8 +719,8 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style,
 
   // Remove style from the selection.
   // Use the upstream position of the start for removing style.
-  // This will ensure we remove all traces of the relevant styles from the selection
-  // and prevent us from adding redundant ones, as described in:
+  // This will ensure we remove all traces of the relevant styles from the
+  // selection and prevent us from adding redundant ones, as described in:
   // <rdar://problem/3724344> Bolding and unbolding creates extraneous tags
   Position removeStart = mostBackwardCaretPosition(start);
   WritingDirection textDirection = NaturalWritingDirection;
@@ -719,7 +728,8 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style,
   EditingStyle* styleWithoutEmbedding = nullptr;
   EditingStyle* embeddingStyle = nullptr;
   if (hasTextDirection) {
-    // Leave alone an ancestor that provides the desired single level embedding, if there is one.
+    // Leave alone an ancestor that provides the desired single level embedding,
+    // if there is one.
     HTMLElement* startUnsplitAncestor =
         splitAncestorsWithUnicodeBidi(start.anchorNode(), true, textDirection);
     HTMLElement* endUnsplitAncestor =
@@ -733,7 +743,8 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style,
     if (editingState->isAborted())
       return;
 
-    // Avoid removing the dir attribute and the unicode-bidi and direction properties from the unsplit ancestors.
+    // Avoid removing the dir attribute and the unicode-bidi and direction
+    // properties from the unsplit ancestors.
     Position embeddingRemoveStart = removeStart;
     if (startUnsplitAncestor &&
         elementFullySelected(*startUnsplitAncestor, removeStart, end))
@@ -793,7 +804,8 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style,
 
   EditingStyle* styleToApply = style;
   if (hasTextDirection) {
-    // Avoid applying the unicode-bidi and direction properties beneath ancestors that already have them.
+    // Avoid applying the unicode-bidi and direction properties beneath
+    // ancestors that already have them.
     HTMLElement* embeddingStartElement = highestEmbeddingAncestor(
         start.anchorNode(), enclosingBlock(start.anchorNode()));
     HTMLElement* embeddingEndElement = highestEmbeddingAncestor(
@@ -855,14 +867,16 @@ void ApplyStyleCommand::fixRangeAndApplyInlineStyle(
   if (end.computeEditingOffset() >= caretMaxOffset(end.anchorNode()))
     pastEndNode = NodeTraversal::nextSkippingChildren(*end.anchorNode());
 
-  // FIXME: Callers should perform this operation on a Range that includes the br
-  // if they want style applied to the empty line.
+  // FIXME: Callers should perform this operation on a Range that includes the
+  // br if they want style applied to the empty line.
   if (start == end && isHTMLBRElement(*start.anchorNode()))
     pastEndNode = NodeTraversal::next(*start.anchorNode());
 
-  // Start from the highest fully selected ancestor so that we can modify the fully selected node.
-  // e.g. When applying font-size: large on <font color="blue">hello</font>, we need to include the font element in our run
-  // to generate <font color="blue" size="4">hello</font> instead of <font color="blue"><font size="4">hello</font></font>
+  // Start from the highest fully selected ancestor so that we can modify the
+  // fully selected node. e.g. When applying font-size: large on <font
+  // color="blue">hello</font>, we need to include the font element in our run
+  // to generate <font color="blue" size="4">hello</font> instead of <font
+  // color="blue"><font size="4">hello</font></font>
   Range* range = Range::create(startNode->document(), start, end);
   Element* editableRoot = rootEditableElement(*startNode);
   if (startNode != editableRoot) {
@@ -945,8 +959,8 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(
     if (!hasRichlyEditableStyle(*node) && node->isHTMLElement()) {
       HTMLElement* element = toHTMLElement(node);
       // This is a plaintext-only region. Only proceed if it's fully selected.
-      // pastEndNode is the node after the last fully selected node, so if it's inside node then
-      // node isn't fully selected.
+      // pastEndNode is the node after the last fully selected node, so if it's
+      // inside node then node isn't fully selected.
       if (pastEndNode && pastEndNode->isDescendantOf(element))
         break;
       // Add to this element's inline style and skip over its contents.
@@ -1045,7 +1059,8 @@ bool ApplyStyleCommand::shouldApplyInlineStyleToRun(EditingStyle* style,
        node = NodeTraversal::next(*node)) {
     if (node->hasChildren())
       continue;
-    // We don't consider m_isInlineElementToRemoveFunction here because we never apply style when m_isInlineElementToRemoveFunction is specified
+    // We don't consider m_isInlineElementToRemoveFunction here because we never
+    // apply style when m_isInlineElementToRemoveFunction is specified
     if (!style->styleIsPresentInComputedStyleOfNode(node))
       return true;
     if (m_styledInlineElement &&
@@ -1084,7 +1099,8 @@ void ApplyStyleCommand::removeConflictingInlineStyleFromRun(
     if (editingState->isAborted())
       return;
     if (!element.isConnected()) {
-      // FIXME: We might need to update the start and the end of current selection here but need a test.
+      // FIXME: We might need to update the start and the end of current
+      // selection here but need a test.
       if (runStart == element)
         runStart = previousSibling ? previousSibling->nextSibling()
                                    : parent->firstChild();
@@ -1169,7 +1185,8 @@ bool ApplyStyleCommand::removeImplicitlyStyledElement(
     return true;
   }
 
-  // unicode-bidi and direction are pushed down separately so don't push down with other styles
+  // unicode-bidi and direction are pushed down separately so don't push down
+  // with other styles
   Vector<QualifiedName> attributes;
   if (!style->extractConflictingImplicitStyleOfAttributes(
           element, extractedStyle ? EditingStyle::PreserveWritingDirection
@@ -1208,7 +1225,8 @@ bool ApplyStyleCommand::removeCSSStyle(EditingStyle* style,
                                                 properties))
     return false;
 
-  // FIXME: We should use a mass-removal function here but we don't have an undoable one yet.
+  // FIXME: We should use a mass-removal function here but we don't have an
+  // undoable one yet.
   for (const auto& property : properties)
     removeCSSProperty(element, property);
 
@@ -1222,8 +1240,9 @@ bool ApplyStyleCommand::removeCSSStyle(EditingStyle* style,
 // When a user hits ENTER, they won't expect this element to be split into two.
 // You may pass it as the second argument of splitTreeToNode.
 static Element* unsplittableElementForPosition(const Position& p) {
-  // Since enclosingNodeOfType won't search beyond the highest root editable node,
-  // this code works even if the closest table cell was outside of the root editable node.
+  // Since enclosingNodeOfType won't search beyond the highest root editable
+  // node, this code works even if the closest table cell was outside of the
+  // root editable node.
   Element* enclosingCell = toElement(enclosingNodeOfType(p, &isTableCell));
   if (enclosingCell)
     return enclosingCell;
@@ -1272,7 +1291,8 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node,
                                               EditingStyle::OverrideValues);
   }
 
-  // Since addInlineStyleIfNeeded can't add styles to block-flow layout objects, add style attribute instead.
+  // Since addInlineStyleIfNeeded can't add styles to block-flow layout objects,
+  // add style attribute instead.
   // FIXME: applyInlineStyleToRange should be used here instead.
   if ((node->layoutObject()->isLayoutBlockFlow() || node->hasChildren()) &&
       node->isHTMLElement()) {
@@ -1285,9 +1305,11 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node,
       toLayoutText(node->layoutObject())->isAllCollapsibleWhitespace())
     return;
 
-  // We can't wrap node with the styled element here because new styled element will never be removed if we did.
-  // If we modified the child pointer in pushDownInlineStyleAroundNode to point to new style element
-  // then we fall into an infinite loop where we keep removing and adding styled element wrapping node.
+  // We can't wrap node with the styled element here because new styled element
+  // will never be removed if we did. If we modified the child pointer in
+  // pushDownInlineStyleAroundNode to point to new style element then we fall
+  // into an infinite loop where we keep removing and adding styled element
+  // wrapping node.
   addInlineStyleIfNeeded(newInlineStyle, node, node, editingState);
 }
 
@@ -1300,10 +1322,13 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(
   if (!highestAncestor)
     return;
 
-  // The outer loop is traversing the tree vertically from highestAncestor to targetNode
+  // The outer loop is traversing the tree vertically from highestAncestor to
+  // targetNode
   Node* current = highestAncestor;
-  // Along the way, styled elements that contain targetNode are removed and accumulated into elementsToPushDown.
-  // Each child of the removed element, exclusing ancestors of targetNode, is then wrapped by clones of elements in elementsToPushDown.
+  // Along the way, styled elements that contain targetNode are removed and
+  // accumulated into elementsToPushDown. Each child of the removed element,
+  // exclusing ancestors of targetNode, is then wrapped by clones of elements in
+  // elementsToPushDown.
   HeapVector<Member<Element>> elementsToPushDown;
   while (current && current != targetNode && current->contains(targetNode)) {
     NodeVector currentChildren;
@@ -1324,7 +1349,8 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(
     }
 
     // The inner loop will go through children on each level
-    // FIXME: we should aggregate inline child elements together so that we don't wrap each child separately.
+    // FIXME: we should aggregate inline child elements together so that we
+    // don't wrap each child separately.
     for (const auto& currentChild : currentChildren) {
       Node* child = currentChild;
       if (!child->parentNode())
@@ -1333,7 +1359,8 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(
         for (const auto& element : elementsToPushDown) {
           Element* wrapper = element->cloneElementWithoutChildren();
           wrapper->removeAttribute(styleAttr);
-          // Delete id attribute from the second element because the same id cannot be used for more than one element
+          // Delete id attribute from the second element because the same id
+          // cannot be used for more than one element
           element->removeAttribute(HTMLNames::idAttr);
           if (isHTMLAnchorElement(element))
             element->removeAttribute(HTMLNames::nameAttr);
@@ -1343,8 +1370,9 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(
         }
       }
 
-      // Apply style to all nodes containing targetNode and their siblings but NOT to targetNode
-      // But if we've removed styledElement then go ahead and always apply the style.
+      // Apply style to all nodes containing targetNode and their siblings but
+      // NOT to targetNode But if we've removed styledElement then go ahead and
+      // always apply the style.
       if (child != targetNode || styledElement) {
         applyInlineStyleToPushDown(child, styleToPushDown, editingState);
         if (editingState->isAborted())
@@ -1352,7 +1380,8 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(
       }
 
       // We found the next node for the outer loop (contains targetNode)
-      // When reached targetNode, stop the outer loop upon the completion of the current inner loop
+      // When reached targetNode, stop the outer loop upon the completion of the
+      // current inner loop
       if (child == targetNode || child->contains(targetNode))
         current = child;
     }
@@ -1369,20 +1398,24 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style,
   DCHECK(end.isConnected()) << end;
   DCHECK(Position::commonAncestorTreeScope(start, end)) << start << " " << end;
   DCHECK_LE(start, end);
-  // FIXME: We should assert that start/end are not in the middle of a text node.
+  // FIXME: We should assert that start/end are not in the middle of a text
+  // node.
 
   Position pushDownStart = mostForwardCaretPosition(start);
-  // If the pushDownStart is at the end of a text node, then this node is not fully selected.
-  // Move it to the next deep quivalent position to avoid removing the style from this node.
-  // e.g. if pushDownStart was at Position("hello", 5) in <b>hello<div>world</div></b>, we want Position("world", 0) instead.
+  // If the pushDownStart is at the end of a text node, then this node is not
+  // fully selected. Move it to the next deep quivalent position to avoid
+  // removing the style from this node. e.g. if pushDownStart was at
+  // Position("hello", 5) in <b>hello<div>world</div></b>, we want
+  // Position("world", 0) instead.
   Node* pushDownStartContainer = pushDownStart.computeContainerNode();
   if (pushDownStartContainer && pushDownStartContainer->isTextNode() &&
       pushDownStart.computeOffsetInContainerNode() ==
           pushDownStartContainer->maxCharacterOffset())
     pushDownStart = nextVisuallyDistinctCandidate(pushDownStart);
   Position pushDownEnd = mostBackwardCaretPosition(end);
-  // If pushDownEnd is at the start of a text node, then this node is not fully selected.
-  // Move it to the previous deep equivalent position to avoid removing the style from this node.
+  // If pushDownEnd is at the start of a text node, then this node is not fully
+  // selected. Move it to the previous deep equivalent position to avoid
+  // removing the style from this node.
   Node* pushDownEndContainer = pushDownEnd.computeContainerNode();
   if (pushDownEndContainer && pushDownEndContainer->isTextNode() &&
       !pushDownEnd.computeOffsetInContainerNode())
@@ -1396,11 +1429,13 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style,
   if (editingState->isAborted())
     return;
 
-  // The s and e variables store the positions used to set the ending selection after style removal
-  // takes place. This will help callers to recognize when either the start node or the end node
-  // are removed from the document during the work of this function.
-  // If pushDownInlineStyleAroundNode has pruned start.anchorNode() or end.anchorNode(),
-  // use pushDownStart or pushDownEnd instead, which pushDownInlineStyleAroundNode won't prune.
+  // The s and e variables store the positions used to set the ending selection
+  // after style removal takes place. This will help callers to recognize when
+  // either the start node or the end node are removed from the document during
+  // the work of this function.
+  // If pushDownInlineStyleAroundNode has pruned start.anchorNode() or
+  // end.anchorNode(), use pushDownStart or pushDownEnd instead, which
+  // pushDownInlineStyleAroundNode won't prune.
   Position s = start.isNull() || start.isOrphan() ? pushDownStart : start;
   Position e = end.isNull() || end.isOrphan() ? pushDownEnd : end;
 
@@ -1475,7 +1510,8 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style,
 bool ApplyStyleCommand::elementFullySelected(HTMLElement& element,
                                              const Position& start,
                                              const Position& end) const {
-  // The tree may have changed and Position::upstream() relies on an up-to-date layout.
+  // The tree may have changed and Position::upstream() relies on an up-to-date
+  // layout.
   element.document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   return comparePositions(firstPositionInOrBeforeNode(&element), start) >= 0 &&
@@ -1724,15 +1760,15 @@ void ApplyStyleCommand::surroundNodeRangeWithElement(
     }
   }
 
-  // FIXME: We should probably call updateStartEnd if the start or end was in the node
-  // range so that the endingSelection() is canonicalized.  See the comments at the end of
-  // VisibleSelection::validate().
+  // FIXME: We should probably call updateStartEnd if the start or end was in
+  // the node range so that the endingSelection() is canonicalized.  See the
+  // comments at the end of VisibleSelection::validate().
 }
 
 void ApplyStyleCommand::addBlockStyle(const StyleChange& styleChange,
                                       HTMLElement* block) {
-  // Do not check for legacy styles here. Those styles, like <B> and <I>, only apply for
-  // inline content.
+  // Do not check for legacy styles here. Those styles, like <B> and <I>, only
+  // apply for inline content.
   if (!block)
     return;
 
@@ -1776,7 +1812,8 @@ Position ApplyStyleCommand::positionToComputeInlineStyleChange(
     Node* startNode,
     Member<HTMLSpanElement>& dummyElement,
     EditingState* editingState) {
-  // It's okay to obtain the style at the startNode because we've removed all relevant styles from the current run.
+  // It's okay to obtain the style at the startNode because we've removed all
+  // relevant styles from the current run.
   if (!startNode->isElementNode()) {
     dummyElement = HTMLSpanElement::create(document());
     insertNodeAt(dummyElement, Position::beforeNode(startNode), editingState);
@@ -1819,7 +1856,8 @@ void ApplyStyleCommand::applyInlineStyleChange(
     endNode = container->lastChild();
   }
 
-  // Font tags need to go outside of CSS so that CSS font sizes override leagcy font sizes.
+  // Font tags need to go outside of CSS so that CSS font sizes override leagcy
+  // font sizes.
   if (styleChange.applyFontColor() || styleChange.applyFontFace() ||
       styleChange.applyFontSize()) {
     if (fontContainer) {

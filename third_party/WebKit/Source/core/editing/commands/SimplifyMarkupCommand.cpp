@@ -44,10 +44,11 @@ void SimplifyMarkupCommand::doApply(EditingState* editingState) {
   ContainerNode* rootNode = m_firstNode->parentNode();
   HeapVector<Member<ContainerNode>> nodesToRemove;
 
-  // Walk through the inserted nodes, to see if there are elements that could be removed
-  // without affecting the style. The goal is to produce leaner markup even when starting
-  // from a verbose fragment.
-  // We look at inline elements as well as non top level divs that don't have attributes.
+  // Walk through the inserted nodes, to see if there are elements that could be
+  // removed without affecting the style. The goal is to produce leaner markup
+  // even when starting from a verbose fragment.
+  // We look at inline elements as well as non top level divs that don't have
+  // attributes.
   for (Node* node = m_firstNode.get(); node && node != m_nodeAfterLast;
        node = NodeTraversal::next(*node)) {
     if (node->hasChildren() || (node->isTextNode() && node->nextSibling()))
@@ -96,7 +97,8 @@ void SimplifyMarkupCommand::doApply(EditingState* editingState) {
 
   // we perform all the DOM mutations at once.
   for (size_t i = 0; i < nodesToRemove.size(); ++i) {
-    // FIXME: We can do better by directly moving children from nodesToRemove[i].
+    // FIXME: We can do better by directly moving children from
+    // nodesToRemove[i].
     int numPrunedAncestors =
         pruneSubsequentAncestorsToRemove(nodesToRemove, i, editingState);
     if (editingState->isAborted())

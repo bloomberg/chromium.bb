@@ -61,7 +61,8 @@ void SplitElementCommand::executeApply() {
   if (exceptionState.hadException())
     return;
 
-  // Delete id attribute from the second element because the same id cannot be used for more than one element
+  // Delete id attribute from the second element because the same id cannot be
+  // used for more than one element
   m_element2->removeAttribute(HTMLNames::idAttr);
 
   for (const auto& child : children)

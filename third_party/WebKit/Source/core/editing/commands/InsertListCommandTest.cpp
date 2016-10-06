@@ -17,7 +17,8 @@ TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode) {
   // Needs to be editable to use InsertListCommand.
   document().setDesignMode("on");
   // Set up the condition:
-  // * Selection is a range, to go down into InsertListCommand::listifyParagraph.
+  // * Selection is a range, to go down into
+  //   InsertListCommand::listifyParagraph.
   // * The selection needs to have a sibling list to go down into
   //   InsertListCommand::mergeWithNeighboringLists.
   // * Should be the same type (ordered list) to go into
@@ -26,8 +27,8 @@ TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode) {
   //   in InsertListCommand::doApplyForSingleParagraph.
   // * There needs to be an extra text node to trigger its removal in
   //   CompositeEditCommand::mergeIdenticalElements.
-  // The removeNode is what updates document lifecycle to VisualUpdatePending and
-  // makes FrameView::needsLayout return true.
+  // The removeNode is what updates document lifecycle to VisualUpdatePending
+  // and makes FrameView::needsLayout return true.
   setBodyContent("\nd\n<ol>");
   Text* emptyText = document().createTextNode("");
   document().body()->insertBefore(emptyText, document().body()->firstChild());

@@ -49,7 +49,8 @@ void MoveSelectionCommand::doApply(EditingState* editingState) {
   if (pos.isNull())
     return;
 
-  // Update the position otherwise it may become invalid after the selection is deleted.
+  // Update the position otherwise it may become invalid after the selection is
+  // deleted.
   Position selectionEnd = endingSelection().end();
   if (pos.isOffsetInAnchor() && selectionEnd.isOffsetInAnchor() &&
       selectionEnd.computeContainerNode() == pos.computeContainerNode() &&
@@ -70,10 +71,10 @@ void MoveSelectionCommand::doApply(EditingState* editingState) {
   if (editingState->isAborted())
     return;
 
-  // If the node for the destination has been removed as a result of the deletion,
-  // set the destination to the ending point after the deletion.
-  // Fixes: <rdar://problem/3910425> REGRESSION (Mail): Crash in ReplaceSelectionCommand;
-  //        selection is empty, leading to null deref
+  // If the node for the destination has been removed as a result of the
+  // deletion, set the destination to the ending point after the deletion.
+  // Fixes: <rdar://problem/3910425> REGRESSION (Mail): Crash in
+  // ReplaceSelectionCommand; selection is empty, leading to null deref
   if (!pos.isConnected())
     pos = endingSelection().start();
 

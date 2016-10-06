@@ -58,7 +58,8 @@ static void swapInNodePreservingAttributesAndChildren(
   for (const auto& child : children)
     newElement->appendChild(child);
 
-  // FIXME: Fix this to send the proper MutationRecords when MutationObservers are present.
+  // FIXME: Fix this to send the proper MutationRecords when MutationObservers
+  // are present.
   newElement->cloneDataFromElement(elementToReplace);
 
   parentNode->removeChild(&elementToReplace, ASSERT_NO_EXCEPTION);

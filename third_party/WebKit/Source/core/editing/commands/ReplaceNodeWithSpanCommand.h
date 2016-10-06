@@ -38,7 +38,8 @@ namespace blink {
 class HTMLElement;
 class HTMLSpanElement;
 
-// More accurately, this is ReplaceElementWithSpanPreservingChildrenAndAttributesCommand
+// More accurately, this is
+// ReplaceElementWithSpanPreservingChildrenAndAttributesCommand
 class ReplaceNodeWithSpanCommand final : public SimpleEditCommand {
  public:
   static ReplaceNodeWithSpanCommand* create(HTMLElement* element) {
