@@ -90,14 +90,12 @@ void Deprecation::unmuteForInspector() {
 }
 
 void Deprecation::suppress(CSSPropertyID unresolvedProperty) {
-  ASSERT(unresolvedProperty >= firstCSSProperty);
-  ASSERT(unresolvedProperty <= lastUnresolvedCSSProperty);
+  DCHECK(isCSSPropertyIDWithName(unresolvedProperty));
   m_cssPropertyDeprecationBits.quickSet(unresolvedProperty);
 }
 
 bool Deprecation::isSuppressed(CSSPropertyID unresolvedProperty) {
-  ASSERT(unresolvedProperty >= firstCSSProperty);
-  ASSERT(unresolvedProperty <= lastUnresolvedCSSProperty);
+  DCHECK(isCSSPropertyIDWithName(unresolvedProperty));
   return m_cssPropertyDeprecationBits.quickGet(unresolvedProperty);
 }
 

@@ -1214,8 +1214,7 @@ void UseCounter::countCrossOriginIframe(const Document& document,
 }
 
 void UseCounter::count(CSSParserMode cssParserMode, CSSPropertyID property) {
-  DCHECK(property >= firstCSSProperty);
-  DCHECK(property <= lastUnresolvedCSSProperty);
+  DCHECK(isCSSPropertyIDWithName(property));
 
   if (!isUseCounterEnabledForMode(cssParserMode) || m_muteCount)
     return;

@@ -44,9 +44,19 @@ const WTF::AtomicString& getPropertyNameAtomicString(CSSPropertyID);
 WTF::String getPropertyNameString(CSSPropertyID);
 WTF::String getJSPropertyName(CSSPropertyID);
 
+inline bool isCSSPropertyIDWithName(int id)
+{
+    return id >= firstCSSProperty && id <= lastUnresolvedCSSProperty;
+}
+
+inline bool isValidCSSPropertyID(CSSPropertyID id)
+{
+    return id != CSSPropertyInvalid;
+}
+
 inline CSSPropertyID convertToCSSPropertyID(int value)
 {
-    ASSERT(value >= CSSPropertyInvalid && value <= lastCSSProperty);
+    DCHECK(value >= CSSPropertyInvalid && value <= lastCSSProperty);
     return static_cast<CSSPropertyID>(value);
 }
 
@@ -118,14 +128,14 @@ const Property* findProperty(register const char* str, register unsigned int len
 
 const char* getPropertyName(CSSPropertyID id)
 {
-    ASSERT(id >= firstCSSProperty && id <= lastUnresolvedCSSProperty);
+    DCHECK(isCSSPropertyIDWithName(id));
     int index = id - firstCSSProperty;
     return propertyNameStringsPool + propertyNameStringsOffsets[index];
 }
 
 const AtomicString& getPropertyNameAtomicString(CSSPropertyID id)
 {
-    ASSERT(id >= firstCSSProperty && id <= lastUnresolvedCSSProperty);
+    DCHECK(isCSSPropertyIDWithName(id));
     int index = id - firstCSSProperty;
     static AtomicString* propertyStrings = new AtomicString[lastUnresolvedCSSProperty]; // Intentionally never destroyed.
     AtomicString& propertyString = propertyStrings[index];

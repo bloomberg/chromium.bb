@@ -57,7 +57,7 @@ StylePropertySerializer::StylePropertySetForSerializer::
         continue;
       m_needToExpandAll = true;
     }
-    if (property.id() < firstCSSProperty || property.id() > lastCSSProperty)
+    if (!isCSSPropertyIDWithName(property.id()))
       continue;
     m_longhandPropertyUsed.set(property.id() - firstCSSProperty);
   }
@@ -83,10 +83,10 @@ StylePropertySerializer::StylePropertySetForSerializer::propertyAt(
 
   CSSPropertyID propertyID =
       static_cast<CSSPropertyID>(index + firstCSSProperty);
-  ASSERT(firstCSSProperty <= propertyID && propertyID <= lastCSSProperty);
+  DCHECK(isCSSPropertyIDWithName(propertyID));
   if (m_longhandPropertyUsed.test(index)) {
     int index = m_propertySet->findPropertyIndex(propertyID);
-    ASSERT(index != -1);
+    DCHECK_NE(index, -1);
     return StylePropertySerializer::PropertyValueForSerializer(
         m_propertySet->propertyAt(index));
   }
@@ -111,14 +111,14 @@ bool StylePropertySerializer::StylePropertySetForSerializer::
     if (property.id() == CSSPropertyAll ||
         !CSSProperty::isAffectedByAllProperty(property.id()))
       return true;
-    if (property.id() < firstCSSProperty || property.id() > lastCSSProperty)
+    if (!isCSSPropertyIDWithName(property.id()))
       return false;
     return m_longhandPropertyUsed.test(property.id() - firstCSSProperty);
   }
 
   CSSPropertyID propertyID =
       static_cast<CSSPropertyID>(index + firstCSSProperty);
-  ASSERT(firstCSSProperty <= propertyID && propertyID <= lastCSSProperty);
+  DCHECK(isCSSPropertyIDWithName(propertyID));
 
   // Since "all" is expanded, we don't need to process "all".
   // We should not process expanded shorthands (e.g. font, background,
@@ -168,7 +168,7 @@ StylePropertySerializer::StylePropertySerializer(
 String StylePropertySerializer::getCustomPropertyText(
     const PropertyValueForSerializer& property,
     bool isNotFirstDecl) const {
-  ASSERT(property.id() == CSSPropertyVariable);
+  DCHECK_EQ(property.id(), CSSPropertyVariable);
   StringBuilder result;
   if (isNotFirstDecl)
     result.append(' ');
@@ -227,10 +227,10 @@ String StylePropertySerializer::asText() const {
         m_propertySet.propertyAt(n);
     CSSPropertyID propertyID = property.id();
     // Only enabled properties should be part of the style.
-    ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
+    DCHECK(CSSPropertyMetadata::isEnabledProperty(propertyID));
     // Shorthands with variable references are not expanded at parse time
     // and hence may still be observed during serialization.
-    ASSERT(!isShorthandProperty(propertyID) ||
+    DCHECK(!isShorthandProperty(propertyID) ||
            property.value()->isVariableReferenceValue());
 
     switch (propertyID) {
@@ -302,7 +302,7 @@ String StylePropertySerializer::asText() const {
                                   property.isImportant(), numDecls++));
   }
 
-  ASSERT(!numDecls ^ !result.isEmpty());
+  DCHECK(!numDecls ^ !result.isEmpty());
   return result.toString();
 }
 
@@ -532,7 +532,7 @@ void StylePropertySerializer::appendFontLonghandValueIfNotNormal(
     CSSPropertyID propertyID,
     StringBuilder& result) const {
   int foundPropertyIndex = m_propertySet.findPropertyIndex(propertyID);
-  ASSERT(foundPropertyIndex != -1);
+  DCHECK_NE(foundPropertyIndex, -1);
 
   const CSSValue* val = m_propertySet.propertyAt(foundPropertyIndex).value();
   if (val->isIdentifierValue() &&
@@ -555,7 +555,7 @@ void StylePropertySerializer::appendFontLonghandValueIfNotNormal(
       prefix = '/';
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   if (prefix && !result.isEmpty())
@@ -752,7 +752,7 @@ String StylePropertySerializer::getLayeredShorthandValue(
            m_propertySet.isPropertyImplicit(property)) &&
           (property == CSSPropertyBackgroundRepeatX ||
            property == CSSPropertyWebkitMaskRepeatX)) {
-        ASSERT(shorthand.properties()[propertyIndex + 1] ==
+        DCHECK(shorthand.properties()[propertyIndex + 1] ==
                    CSSPropertyBackgroundRepeatY ||
                shorthand.properties()[propertyIndex + 1] ==
                    CSSPropertyWebkitMaskRepeatY);

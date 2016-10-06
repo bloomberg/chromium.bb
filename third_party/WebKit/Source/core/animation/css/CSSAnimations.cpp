@@ -129,7 +129,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(
   DEFINE_STATIC_LOCAL(SparseHistogram, propertyHistogram,
                       ("WebCore.Animation.CSSProperties"));
   for (CSSPropertyID property : specifiedPropertiesForUseCounter) {
-    DCHECK_NE(property, CSSPropertyInvalid);
+    DCHECK(isValidCSSPropertyID(property));
     propertyHistogram.sample(
         UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property));
   }
@@ -625,7 +625,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
     animation->update(TimingUpdateOnDemand);
     runningTransition.animation = animation;
     m_transitions.set(id, runningTransition);
-    DCHECK_NE(id, CSSPropertyInvalid);
+    DCHECK(isValidCSSPropertyID(id));
 
     DEFINE_STATIC_LOCAL(SparseHistogram, propertyHistogram,
                         ("WebCore.Animation.CSSProperties"));
