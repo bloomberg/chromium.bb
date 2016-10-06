@@ -7,7 +7,7 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -28,8 +28,7 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
       views::Border::CreateEmptyBorder(vertical_padding, horizontal_padding,
                                        vertical_padding, horizontal_padding));
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  SetTooltipText(bundle.GetLocalizedString(accessible_name_id));
+  SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 
   // TODO(tdanderson): Update the focus rect color, border thickness, and
   // location for material design.

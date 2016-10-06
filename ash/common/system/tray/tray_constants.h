@@ -81,6 +81,11 @@ extern const int kHitRegionPadding;
 extern const SkColor kSeparatorColor;
 extern const int kSeparatorWidth;
 
+// The color and height of the horizontal separator used in the material design
+// system menu (i.e., the vertical line used to separate elements horizontally).
+extern const SkColor kHorizontalSeparatorColor;
+extern const int kHorizontalSeparatorHeight;
+
 // The size and foreground color of the icons appearing in the material design
 // system tray.
 extern const int kTrayIconSize;

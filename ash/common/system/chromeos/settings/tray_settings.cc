@@ -32,6 +32,8 @@
 namespace ash {
 namespace tray {
 
+// TODO(tdanderson): Remove this class once material design is enabled by
+// default. See crbug.com/614453.
 class SettingsDefaultView : public ActionableView,
                             public PowerStatus::Observer {
  public:

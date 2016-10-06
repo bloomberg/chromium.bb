@@ -333,7 +333,10 @@ void SystemTrayBubble::CreateItemViews(LoginStatus login_status) {
     }
     if (item_view) {
       TrayPopupItemContainer* tray_popup_item_container =
-          new TrayPopupItemContainer(item_view, is_default_bubble);
+          new TrayPopupItemContainer(
+              item_view,
+              is_default_bubble &&
+                  !MaterialDesignController::IsSystemTrayMenuMaterial());
       bubble_view_->AddChildView(tray_popup_item_container);
       item_containers.push_back(tray_popup_item_container);
       tray_item_view_map_[items_[i]->uma_type()] = tray_popup_item_container;

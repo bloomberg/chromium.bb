@@ -15244,6 +15244,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Tray_Settings">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <description>
+    Records when the Settings button on the Ash system menu is clicked.
+  </description>
+</action>
+
 <action name="Tray_ShowPowerOptions">
   <owner>michaelpg@chromium.org</owner>
   <description>

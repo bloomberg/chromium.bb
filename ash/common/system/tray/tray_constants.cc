@@ -89,6 +89,9 @@ const int kHitRegionPadding = 4;
 const SkColor kSeparatorColor = SkColorSetA(SK_ColorWHITE, 0x4D);
 const int kSeparatorWidth = 1;
 
+const SkColor kHorizontalSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
+const int kHorizontalSeparatorHeight = 24;
+
 int GetTrayConstant(TrayConstant constant) {
   const int kTrayItemHeightLegacy[] = {38, 38, kTrayItemSize};
   const int kTraySpacing[] = {4, 4, 0};

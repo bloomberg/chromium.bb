@@ -543,6 +543,9 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_TRAY_OVERVIEW:
       RecordAction(UserMetricsAction("Tray_Overview"));
       break;
+    case UMA_TRAY_SETTINGS:
+      RecordAction(UserMetricsAction("Tray_Settings"));
+      break;
     case UMA_TRAY_SHUT_DOWN:
       RecordAction(UserMetricsAction("Tray_ShutDown"));
       break;

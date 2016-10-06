@@ -23,6 +23,8 @@ class TrayPopupHeaderButton;
 
 // The system tray bubble view with the date and buttons for help, lock and
 // shutdown.
+// TODO(tdanderson): Remove this class once material design is enabled by
+// default. See crbug.com/614453.
 class ASH_EXPORT DateDefaultView : public views::View,
                                    public views::ButtonListener,
                                    public ShutdownPolicyObserver {

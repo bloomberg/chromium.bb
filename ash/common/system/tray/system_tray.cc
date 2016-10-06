@@ -13,6 +13,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/cast/tray_cast.h"
 #include "ash/common/system/date/tray_date.h"
+#include "ash/common/system/tiles/tray_tiles.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
@@ -260,6 +261,9 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
     AddTrayItem(tray_rotation_lock.release());
   AddTrayItem(new TraySettings(this));
   AddTrayItem(tray_update_);
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    AddTrayItem(new TrayTiles(this));
+  // TODO(tdanderson): Do not add |tray_date_| in material design.
   AddTrayItem(tray_date_);
 #elif defined(OS_WIN)
   AddTrayItem(tray_accessibility_);
