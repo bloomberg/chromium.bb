@@ -69,7 +69,7 @@ struct PP_InputEvent_Character {
    * maximum UTF-8 character is 4 bytes, there will always be at least one null
    * at the end so you can treat this as a null-terminated UTF-8 string.
    */
-  char[5] text;
+  int8_t[5] text;
 };
 
 /**
@@ -111,8 +111,6 @@ struct PP_InputEvent_Mouse {
    * plugin will give non-integer values.
    */
   float_t y;
-
-  /* TODO(brettw) figure out exactly what this means.*/
   int32_t click_count;
 };
 

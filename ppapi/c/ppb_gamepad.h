@@ -64,7 +64,7 @@ struct PP_GamepadSampleData {
    */
   PP_Bool connected;
   /* Padding to make the struct the same size between 64 and 32. */
-  char unused_pad_[4];
+  int8_t unused_pad_[4];
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_GamepadSampleData, 472);
 
@@ -77,7 +77,7 @@ struct PP_GamepadsSampleData {
    */
   uint32_t length;
   /* Padding to make the struct the same size between 64 and 32. */
-  char unused_pad_[4];
+  int8_t unused_pad_[4];
   /**
    * Data for an individual gamepad device connected to the system.
    */
