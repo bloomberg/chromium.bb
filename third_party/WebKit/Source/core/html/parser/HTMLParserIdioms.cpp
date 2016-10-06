@@ -161,7 +161,9 @@ static bool parseHTMLIntegerInternal(const CharacterType* position,
                                      const CharacterType* end,
                                      int& value) {
   // Step 3
-  int sign = 1;
+  // We do not do this step and do not have a local sign
+  // variable since due to a bug in charactersToIntStrict
+  // we have to add the sign to the digits string.
 
   // Step 4
   while (position < end) {
@@ -176,8 +178,9 @@ static bool parseHTMLIntegerInternal(const CharacterType* position,
   ASSERT(position < end);
 
   // Step 6
+  StringBuilder digits;
   if (*position == '-') {
-    sign = -1;
+    digits.append('-');
     ++position;
   } else if (*position == '+')
     ++position;
@@ -190,7 +193,6 @@ static bool parseHTMLIntegerInternal(const CharacterType* position,
     return false;
 
   // Step 8
-  StringBuilder digits;
   while (position < end) {
     if (!isASCIIDigit(*position))
       break;
@@ -200,11 +202,9 @@ static bool parseHTMLIntegerInternal(const CharacterType* position,
   // Step 9
   bool ok;
   if (digits.is8Bit())
-    value = sign *
-            charactersToIntStrict(digits.characters8(), digits.length(), &ok);
+    value = charactersToIntStrict(digits.characters8(), digits.length(), &ok);
   else
-    value = sign *
-            charactersToIntStrict(digits.characters16(), digits.length(), &ok);
+    value = charactersToIntStrict(digits.characters16(), digits.length(), &ok);
   return ok;
 }
 
