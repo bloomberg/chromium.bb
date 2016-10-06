@@ -489,9 +489,9 @@ class TestRebaselineJson(BaseTestCase):
             self.tool.executive.calls,
             [
                 [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--results-directory', '/tmp', '--verbose']],
+                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose']],
                 [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--results-directory', '/tmp', '--verbose']]
+                  '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose', '--results-directory', '/tmp']]
             ])
 
 

@@ -387,17 +387,21 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                         continue
 
                     suffixes = ','.join(actual_failures_suffixes)
-                    cmd_line = ['--suffixes', suffixes, '--builder', builder, '--test', test]
-                    if build_number:
-                        cmd_line.extend(['--build-number', str(build_number)])
-                    if options.results_directory:
-                        cmd_line.extend(['--results-directory', options.results_directory])
+                    args = ['--suffixes', suffixes, '--builder', builder, '--test', test]
+
                     if options.verbose:
-                        cmd_line.append('--verbose')
+                        args.append('--verbose')
+
                     copy_baseline_commands.append(
-                        tuple([[self._tool.executable, path_to_webkit_patch, 'copy-existing-baselines-internal'] + cmd_line, cwd]))
+                        tuple([[self._tool.executable, path_to_webkit_patch, 'copy-existing-baselines-internal'] + args, cwd]))
+
+                    if build_number:
+                        args.extend(['--build-number', str(build_number)])
+                    if options.results_directory:
+                        args.extend(['--results-directory', options.results_directory])
+
                     rebaseline_commands.append(
-                        tuple([[self._tool.executable, path_to_webkit_patch, 'rebaseline-test-internal'] + cmd_line, cwd]))
+                        tuple([[self._tool.executable, path_to_webkit_patch, 'rebaseline-test-internal'] + args, cwd]))
         return copy_baseline_commands, rebaseline_commands, lines_to_remove
 
     @staticmethod

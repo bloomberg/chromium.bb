@@ -174,7 +174,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             self.tool.executive.calls,
             [
                 [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
-                  '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html', '--build-number', '5000']],
+                  '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html']],
                 [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
                   '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html', '--build-number', '5000']],
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']]
