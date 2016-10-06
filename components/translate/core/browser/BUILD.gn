@@ -6,6 +6,8 @@ import("//build/config/ui.gni")
 
 static_library("browser") {
   sources = [
+    "language_model.cc",
+    "language_model.h",
     "language_state.cc",
     "language_state.h",
     "page_translated_details.h",
@@ -47,6 +49,7 @@ static_library("browser") {
     "//base",
     "//base:i18n",
     "//components/data_use_measurement/core",
+    "//components/keyed_service/core",
     "//components/language_usage_metrics",
     "//components/metrics",
     "//components/pref_registry",
@@ -82,6 +85,7 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "language_model_unittest.cc",
     "language_state_unittest.cc",
     "mock_translate_driver.cc",
     "mock_translate_driver.h",
@@ -99,6 +103,7 @@ source_set("unit_tests") {
     "//components/infobars/core",
     "//components/pref_registry:test_support",
     "//components/prefs",
+    "//components/prefs:test_support",
     "//components/translate/core/browser/proto",
     "//components/translate/core/common",
     "//components/variations",

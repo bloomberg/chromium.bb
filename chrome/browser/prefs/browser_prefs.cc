@@ -99,6 +99,7 @@
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/sync/driver/sync_prefs.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/translate/core/browser/language_model.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/update_client/update_client.h"
 #include "components/variations/service/variations_service.h"
@@ -495,6 +496,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterBrowserUserPrefs(registry);
   SessionStartupPref::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
+  translate::LanguageModel::RegisterProfilePrefs(registry);
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);

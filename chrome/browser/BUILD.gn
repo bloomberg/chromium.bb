@@ -1197,6 +1197,8 @@ split_static_library("browser") {
     "tracing/navigation_tracing.h",
     "translate/chrome_translate_client.cc",
     "translate/chrome_translate_client.h",
+    "translate/language_model_factory.cc",
+    "translate/language_model_factory.h",
     "translate/translate_accept_languages_factory.cc",
     "translate/translate_accept_languages_factory.h",
     "translate/translate_service.cc",
