@@ -106,6 +106,11 @@ id<AppRatingPrompt> ChromeBrowserProvider::CreateAppRatingPrompt() const {
   return nil;
 }
 
+void ChromeBrowserProvider::InitializeCastService(id main_tab_model) const {}
+
+void ChromeBrowserProvider::AttachTabHelpers(web::WebState* web_state,
+                                             id tab) const {}
+
 bool ChromeBrowserProvider::IsSafeBrowsingEnabled(
     const base::Closure& on_update_callback) {
   return false;

@@ -32,6 +32,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace web {
+class WebState;
+}
+
 namespace sync_sessions {
 class SyncedWindowDelegatesGetter;
 }
@@ -118,6 +122,19 @@ class ChromeBrowserProvider {
   // Creates and returns an app ratings prompt object.  Can return nil if app
   // ratings prompts are not supported by the provider.
   virtual id<AppRatingPrompt> CreateAppRatingPrompt() const NS_RETURNS_RETAINED;
+
+  // Initializes the cast service.  Should be called soon after the given
+  // |main_tab_model| is created.
+  // TODO(rohitrao): Change from |id| to |TabModel*| once TabModel is moved into
+  // the Chromium tree.
+  virtual void InitializeCastService(id main_tab_model) const;
+
+  // Attaches any embedder-specific tab helpers to the given |web_state|.  The
+  // owning |tab| is included for helpers that need access to information that
+  // is not yet available through web::WebState.
+  // TODO(rohitrao): Change from |id| to |Tab*| once Tab is moved into the
+  // Chromium tree.
+  virtual void AttachTabHelpers(web::WebState* web_state, id tab) const;
 
   // Returns whether safe browsing is enabled. See the comment on
   // metrics_services_manager_client.h for details on |on_update_callback|.
