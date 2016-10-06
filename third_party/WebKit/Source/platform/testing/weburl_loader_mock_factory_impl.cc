@@ -91,13 +91,16 @@ void WebURLLoaderMockFactoryImpl::serveAsynchronousRequests() {
     while (response.httpStatusCode() >= 300 &&
            response.httpStatusCode() < 400) {
       WebURLRequest newRequest = loader->ServeRedirect(request, response);
+      base::RunLoop().RunUntilIdle();
       if (!loader || loader->is_cancelled() || loader->is_deferred())
         break;
       LoadRequest(newRequest, &response, &error, &data);
     }
     // Serve the request if the loader is still active.
-    if (loader && !loader->is_cancelled() && !loader->is_deferred())
+    if (loader && !loader->is_cancelled() && !loader->is_deferred()) {
       loader->ServeAsynchronousRequest(delegate_, response, data, error);
+      base::RunLoop().RunUntilIdle();
+    }
   }
   base::RunLoop().RunUntilIdle();
 }
