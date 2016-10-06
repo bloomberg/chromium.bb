@@ -349,8 +349,6 @@ source_set("blink_headers") {
     "platform/modules/indexeddb/WebIDBTypes.h",
     "platform/modules/indexeddb/WebIDBValue.h",
     "platform/modules/installedapp/WebInstalledAppClient.h",
-    "platform/modules/mediasession/WebMediaSession.h",
-    "platform/modules/mediasession/WebMediaSessionError.h",
     "platform/modules/notifications/WebNotificationAction.h",
     "platform/modules/notifications/WebNotificationData.h",
     "platform/modules/notifications/WebNotificationDelegate.h",
@@ -667,6 +665,7 @@ mojom("mojo_bindings") {
 
 mojom("new_wrapper_types_mojo_bindings") {
   sources = [
+    "platform/modules/mediasession/media_session.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/presentation/presentation.mojom",
@@ -676,7 +675,9 @@ mojom("new_wrapper_types_mojo_bindings") {
     "web/window_features.mojom",
   ]
   public_deps = [
+    "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojo:mojo",
     "//url/mojo:url_mojom_gurl",
     "//url/mojo:url_mojom_origin",
   ]

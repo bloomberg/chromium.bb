@@ -10,4 +10,5 @@ typemaps = [
   "//content/common/url_request.typemap",
   "//content/common/url_response_head.typemap",
   "//content/common/web_preferences.typemap",
+  "//content/common/media/media_session.typemap",
 ]

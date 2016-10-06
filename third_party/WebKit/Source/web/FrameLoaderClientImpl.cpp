@@ -58,7 +58,6 @@
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 #include "modules/gamepad/NavigatorGamepad.h"
-#include "modules/mediasession/MediaSession.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerLinkResource.h"
 #include "modules/storage/DOMWindowStorageController.h"
@@ -81,7 +80,6 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
-#include "public/platform/modules/mediasession/WebMediaSession.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "public/web/WebAutofillClient.h"
@@ -790,14 +788,6 @@ std::unique_ptr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
   return wrapUnique(webFrame->client()->createMediaPlayer(
       source, client, &encryptedMedia, encryptedMedia.contentDecryptionModule(),
       sinkId));
-}
-
-std::unique_ptr<WebMediaSession>
-FrameLoaderClientImpl::createWebMediaSession() {
-  if (!m_webFrame->client())
-    return nullptr;
-
-  return wrapUnique(m_webFrame->client()->createMediaSession());
 }
 
 ObjectContentType FrameLoaderClientImpl::getObjectContentType(

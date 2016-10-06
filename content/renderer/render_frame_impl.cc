@@ -220,11 +220,9 @@
 
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
-#include "content/renderer/media/android/renderer_media_session_manager.h"
 #include "content/renderer/media/android/renderer_surface_view_manager.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
-#include "content/renderer/media/android/webmediasession_android.h"
 #include "media/base/android/media_codec_util.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #endif
@@ -277,7 +275,6 @@ using blink::WebLocalFrame;
 using blink::WebMediaPlayer;
 using blink::WebMediaPlayerClient;
 using blink::WebMediaPlayerEncryptedMediaClient;
-using blink::WebMediaSession;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
@@ -2740,14 +2737,6 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #endif
 
   return media_player;
-}
-
-blink::WebMediaSession* RenderFrameImpl::createMediaSession() {
-#if defined(OS_ANDROID)
-  return new WebMediaSessionAndroid(GetMediaSessionManager());
-#else
-  return nullptr;
-#endif  // defined(OS_ANDROID)
 }
 
 blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
@@ -6268,12 +6257,6 @@ RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
   if (!media_player_manager_)
     media_player_manager_ = new RendererMediaPlayerManager(this);
   return media_player_manager_;
-}
-
-RendererMediaSessionManager* RenderFrameImpl::GetMediaSessionManager() {
-  if (!media_session_manager_)
-    media_session_manager_ = new RendererMediaSessionManager(this);
-  return media_session_manager_;
 }
 
 #endif  // defined(OS_ANDROID)

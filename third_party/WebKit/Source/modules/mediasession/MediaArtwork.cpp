@@ -18,21 +18,21 @@ MediaArtwork* MediaArtwork::create(ExecutionContext* context,
 
 MediaArtwork::MediaArtwork(ExecutionContext* context,
                            const MediaArtworkInit& artwork) {
-  m_data.src = context->completeURL(artwork.src());
-  m_data.sizes = artwork.sizes();
-  m_data.type = artwork.type();
+  m_src = context->completeURL(artwork.src());
+  m_sizes = artwork.sizes();
+  m_type = artwork.type();
 }
 
 String MediaArtwork::src() const {
-  return m_data.src;
+  return m_src;
 }
 
 String MediaArtwork::sizes() const {
-  return m_data.sizes;
+  return m_sizes;
 }
 
 String MediaArtwork::type() const {
-  return m_data.type;
+  return m_type;
 }
 
 }  // namespace blink

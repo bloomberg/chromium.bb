@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/mediasession/WebMediaArtwork.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -27,14 +27,14 @@ class MODULES_EXPORT MediaArtwork final
   String sizes() const;
   String type() const;
 
-  WebMediaArtwork* data() { return &m_data; }
-
   DEFINE_INLINE_TRACE() {}
 
  private:
   MediaArtwork(ExecutionContext*, const MediaArtworkInit&);
 
-  WebMediaArtwork m_data;
+  String m_src;
+  String m_sizes;
+  String m_type;
 };
 }
 

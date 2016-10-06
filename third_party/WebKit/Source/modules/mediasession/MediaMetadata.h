@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/mediasession/WebMediaMetadata.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -30,8 +29,6 @@ class MODULES_EXPORT MediaMetadata final
   String artist() const;
   String album() const;
   const HeapVector<Member<MediaArtwork>>& artwork() const;
-
-  explicit operator WebMediaMetadata() const;
 
   DECLARE_VIRTUAL_TRACE();
 

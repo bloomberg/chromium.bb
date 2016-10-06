@@ -41,19 +41,6 @@ const HeapVector<Member<MediaArtwork>>& MediaMetadata::artwork() const {
   return m_artwork;
 }
 
-MediaMetadata::operator WebMediaMetadata() const {
-  WebMediaMetadata webMetadata;
-  webMetadata.title = m_title;
-  webMetadata.artist = m_artist;
-  webMetadata.album = m_album;
-  WebVector<WebMediaArtwork> webArtwork(m_artwork.size());
-  for (size_t i = 0; i < m_artwork.size(); ++i) {
-    webArtwork[i] = *m_artwork[i]->data();
-  }
-  webMetadata.artwork.swap(webArtwork);
-  return webMetadata;
-}
-
 DEFINE_TRACE(MediaMetadata) {
   visitor->trace(m_artwork);
 }

@@ -22,15 +22,8 @@ class CONTENT_EXPORT BrowserMediaSessionManager {
  public:
   explicit BrowserMediaSessionManager(RenderFrameHost* render_frame_host);
 
-  // Message handlers.
-  virtual void OnActivate(int session_id, int request_id);
-  virtual void OnDeactivate(int session_id, int request_id);
-  virtual void OnSetMetadata(
-      int session_id, const base::Optional<MediaMetadata>& metadata);
-
-  int GetRoutingID() const;
-
-  bool Send(IPC::Message* msg);
+  virtual void OnSetMetadata(int session_id,
+                             const base::Optional<MediaMetadata>& metadata);
 
  private:
   RenderFrameHost* const render_frame_host_;

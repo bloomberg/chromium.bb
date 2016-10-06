@@ -81,9 +81,6 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
   bool OnMediaPlayerMessageReceived(const IPC::Message& message,
                                     RenderFrameHost* render_frame_host);
 
-  bool OnMediaSessionMessageReceived(const IPC::Message& message,
-                                     RenderFrameHost* render_frame_host);
-
   bool OnSurfaceViewManagerMessageReceived(const IPC::Message& message,
                                      RenderFrameHost* render_frame_host);
 

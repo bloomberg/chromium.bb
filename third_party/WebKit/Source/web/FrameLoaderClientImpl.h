@@ -157,7 +157,6 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) override;
-  std::unique_ptr<WebMediaSession> createWebMediaSession() override;
   ObjectContentType getObjectContentType(
       const KURL&,
       const WTF::String& mimeType,

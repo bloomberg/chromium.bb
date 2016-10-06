@@ -98,8 +98,6 @@ class MockBrowserMediaSessionManager : public BrowserMediaSessionManager {
   explicit MockBrowserMediaSessionManager(RenderFrameHost* render_frame_host)
       : BrowserMediaSessionManager(render_frame_host) {}
 
-  MOCK_METHOD2(OnActiveate, void(int session_id, int request_id));
-  MOCK_METHOD2(OnDeactiveate, void(int session_id, int request_id));
   MOCK_METHOD2(OnSetMetadata, void(
       int session_id, const base::Optional<MediaMetadata>& metadata));
 

@@ -1,0 +1,30 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+import "mojo/common/common_custom_types.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
+import "url/mojo/url.mojom";
+
+// Album art in MediaMetadata
+// Spec: https://wicg.github.io/mediasession/
+struct MediaImage {
+  url.mojom.Url src;
+  mojo.common.mojom.String16 type;
+  array<gfx.mojom.Size> sizes;
+};
+
+// MediaMetadata
+// Spec: https://wicg.github.io/mediasession/
+struct MediaMetadata {
+  mojo.common.mojom.String16 title;
+  mojo.common.mojom.String16 artist;
+  mojo.common.mojom.String16 album;
+  array<MediaImage> artwork;
+};
+
+interface MediaSessionService {
+  SetMetadata(MediaMetadata? metadata);
+};

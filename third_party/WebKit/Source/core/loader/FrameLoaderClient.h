@@ -78,7 +78,6 @@ class WebCookieJar;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
-class WebMediaSession;
 class WebMediaStream;
 class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
@@ -201,8 +200,6 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) = 0;
-
-  virtual std::unique_ptr<WebMediaSession> createWebMediaSession() = 0;
 
   virtual ObjectContentType getObjectContentType(
       const KURL&,

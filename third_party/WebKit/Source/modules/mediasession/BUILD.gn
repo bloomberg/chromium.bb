@@ -10,9 +10,9 @@ blink_modules_sources("mediasession") {
     "MediaArtwork.h",
     "MediaMetadata.cpp",
     "MediaMetadata.h",
+    "MediaMetadataSanitizer.cpp",
+    "MediaMetadataSanitizer.h",
     "MediaSession.cpp",
     "MediaSession.h",
-    "MediaSessionError.cpp",
-    "MediaSessionError.h",
   ]
 }

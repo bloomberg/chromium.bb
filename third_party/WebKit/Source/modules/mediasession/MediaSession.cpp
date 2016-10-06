@@ -4,70 +4,50 @@
 
 #include "modules/mediasession/MediaSession.h"
 
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/frame/LocalDOMWindow.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "modules/mediasession/MediaMetadata.h"
-#include "modules/mediasession/MediaSessionError.h"
+#include "modules/mediasession/MediaMetadataSanitizer.h"
+#include "public/platform/InterfaceProvider.h"
 #include <memory>
 
 namespace blink {
 
-MediaSession::MediaSession(std::unique_ptr<WebMediaSession> webMediaSession)
-    : m_webMediaSession(std::move(webMediaSession)) {
-  DCHECK(m_webMediaSession);
+MediaSession::MediaSession() = default;
+
+MediaSession* MediaSession::create() {
+  return new MediaSession();
 }
 
-MediaSession* MediaSession::create(ExecutionContext* context,
-                                   ExceptionState& exceptionState) {
-  Document* document = toDocument(context);
-  LocalFrame* frame = document->frame();
-  FrameLoaderClient* client = frame->loader().client();
-  std::unique_ptr<WebMediaSession> webMediaSession =
-      client->createWebMediaSession();
-  if (!webMediaSession) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "Missing platform implementation.");
-    return nullptr;
-  }
-  return new MediaSession(std::move(webMediaSession));
-}
-
-ScriptPromise MediaSession::activate(ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-
-  m_webMediaSession->activate(
-      new CallbackPromiseAdapter<void, MediaSessionError>(resolver));
-  return promise;
-}
-
-ScriptPromise MediaSession::deactivate(ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-
-  m_webMediaSession->deactivate(
-      new CallbackPromiseAdapter<void, void>(resolver));
-  return promise;
-}
-
-void MediaSession::setMetadata(MediaMetadata* metadata) {
-  m_metadata = metadata;
-  if (metadata) {
-    WebMediaMetadata webMetadata = (WebMediaMetadata)*metadata;
-    m_webMediaSession->setMetadata(&webMetadata);
-  } else {
-    m_webMediaSession->setMetadata(nullptr);
+void MediaSession::setMetadata(ScriptState* scriptState,
+                               MediaMetadata* metadata) {
+  if (getService(scriptState)) {
+    getService(scriptState)
+        ->SetMetadata(
+            MediaMetadataSanitizer::sanitizeAndConvertToMojo(metadata));
   }
 }
 
-MediaMetadata* MediaSession::metadata() const {
+MediaMetadata* MediaSession::metadata(ScriptState*) const {
   return m_metadata;
+}
+
+mojom::blink::MediaSessionService* MediaSession::getService(
+    ScriptState* scriptState) {
+  if (!m_service) {
+    InterfaceProvider* interfaceProvider = nullptr;
+    DCHECK(scriptState->getExecutionContext()->isDocument())
+        << "MediaSession::getService() is only available from a frame";
+    Document* document = toDocument(scriptState->getExecutionContext());
+    if (document->frame())
+      interfaceProvider = document->frame()->interfaceProvider();
+
+    if (interfaceProvider)
+      interfaceProvider->getInterface(mojo::GetProxy(&m_service));
+  }
+  return m_service.get();
 }
 
 DEFINE_TRACE(MediaSession) {

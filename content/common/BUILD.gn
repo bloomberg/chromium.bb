@@ -211,7 +211,6 @@ source_set("common") {
     "media/media_metadata_sanitizer.h",
     "media/media_player_delegate_messages.h",
     "media/media_player_messages_android.h",
-    "media/media_session_messages_android.h",
     "media/media_stream_messages.h",
     "media/media_stream_options.cc",
     "media/media_stream_options.h",

@@ -13,7 +13,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/common/media/media_player_messages_android.h"
-#include "content/common/media/media_session_messages_android.h"
 #include "content/common/media/surface_view_manager_messages_android.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -128,9 +127,6 @@ bool MediaWebContentsObserverAndroid::OnMessageReceived(
   if (OnMediaPlayerMessageReceived(msg, render_frame_host))
     return true;
 
-  if (OnMediaSessionMessageReceived(msg, render_frame_host))
-    return true;
-
   if (OnSurfaceViewManagerMessageReceived(msg, render_frame_host))
     return true;
 
@@ -178,27 +174,6 @@ bool MediaWebContentsObserverAndroid::OnMediaPlayerMessageReceived(
         BrowserMediaPlayerManager::OnRequestRemotePlaybackControl)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-bool MediaWebContentsObserverAndroid::OnMediaSessionMessageReceived(
-    const IPC::Message& msg,
-    RenderFrameHost* render_frame_host) {
-  bool handled = true;
-
-  IPC_BEGIN_MESSAGE_MAP(MediaWebContentsObserver, msg)
-    IPC_MESSAGE_FORWARD(MediaSessionHostMsg_Activate,
-                        GetMediaSessionManager(render_frame_host),
-                        BrowserMediaSessionManager::OnActivate)
-    IPC_MESSAGE_FORWARD(MediaSessionHostMsg_Deactivate,
-                        GetMediaSessionManager(render_frame_host),
-                        BrowserMediaSessionManager::OnDeactivate)
-    IPC_MESSAGE_FORWARD(MediaSessionHostMsg_SetMetadata,
-                        GetMediaSessionManager(render_frame_host),
-                        BrowserMediaSessionManager::OnSetMetadata)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
   return handled;
 }
 
