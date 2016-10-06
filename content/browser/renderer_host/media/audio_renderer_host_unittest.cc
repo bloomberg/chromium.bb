@@ -40,7 +40,10 @@ const int kRenderProcessId = 1;
 const int kRenderFrameId = 5;
 const int kStreamId = 50;
 const char kSecurityOrigin[] = "http://localhost";
+const char kBadSecurityOrigin[] = "about:about";
 const char kDefaultDeviceId[] = "";
+const char kNondefaultDeviceId[] =
+    "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
 const char kBadDeviceId[] =
     "badbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbad1";
 const char kInvalidDeviceId[] = "invalid-device-id";
@@ -92,6 +95,7 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   // A list of mock methods.
+  MOCK_METHOD0(ShutdownForBadMessage, void());
   MOCK_METHOD4(OnDeviceAuthorized,
                void(int stream_id,
                     media::OutputDeviceStatus device_status,
@@ -203,6 +207,8 @@ class AudioRendererHostTest : public testing::Test {
         MediaInternals::GetInstance(), media_stream_manager_.get(),
         std::string());
 
+    EXPECT_CALL(*host_, ShutdownForBadMessage()).Times(0);
+
     // Simulate IPC channel connected.
     host_->set_peer_process_for_testing(base::Process::Current());
   }
@@ -220,12 +226,13 @@ class AudioRendererHostTest : public testing::Test {
 
  protected:
   void Create() {
-    Create(false, kDefaultDeviceId, url::Origin(GURL(kSecurityOrigin)));
+    Create(false, kDefaultDeviceId, url::Origin(GURL(kSecurityOrigin)), true);
   }
 
   void Create(bool unified_stream,
               const std::string& device_id,
-              const url::Origin& security_origin) {
+              const url::Origin& security_origin,
+              bool wait_for_auth) {
     media::OutputDeviceStatus expected_device_status =
         device_id == kDefaultDeviceId
             ? media::OUTPUT_DEVICE_STATUS_OK
@@ -257,16 +264,31 @@ class AudioRendererHostTest : public testing::Test {
     }
     host_->OnRequestDeviceAuthorization(kStreamId, kRenderFrameId, session_id,
                                         device_id, security_origin);
-    auth_run_loop_.Run();
-    if (expected_device_status == media::OUTPUT_DEVICE_STATUS_OK) {
+    if (wait_for_auth)
+      auth_run_loop_.Run();
+
+    if (!wait_for_auth ||
+        expected_device_status == media::OUTPUT_DEVICE_STATUS_OK)
       host_->OnCreateStream(kStreamId, kRenderFrameId, params);
 
+    if (expected_device_status == media::OUTPUT_DEVICE_STATUS_OK)
       // At some point in the future, a corresponding RemoveDiverter() call must
       // be made.
       EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()))
           .RetiresOnSaturation();
-    }
     SyncWithAudioThread();
+  }
+
+  void RequestDeviceAuthorizationWithBadOrigin(const std::string& device_id) {
+    int session_id = 0;
+    host_->OnRequestDeviceAuthorization(kStreamId, kRenderFrameId, session_id,
+                                        device_id,
+                                        url::Origin(GURL(kBadSecurityOrigin)));
+    SyncWithAudioThread();
+  }
+
+  void CreateWithoutWaitingForAuth(const std::string& device_id) {
+    Create(false, device_id, url::Origin(GURL(kSecurityOrigin)), false);
   }
 
   void CreateWithInvalidRenderFrameId() {
@@ -343,6 +365,10 @@ class AudioRendererHostTest : public testing::Test {
     run_loop.Run();
   }
 
+  void ExpectShutdown() {
+    EXPECT_CALL(*host_, ShutdownForBadMessage()).Times(1);
+  }
+
  private:
   // MediaStreamManager uses a DestructionObserver, so it must outlive the
   // TestBrowserThreadBundle.
@@ -417,17 +443,29 @@ TEST_F(AudioRendererHostTest, SimulateErrorAndClose) {
 }
 
 TEST_F(AudioRendererHostTest, CreateUnifiedStreamAndClose) {
-  Create(true, kDefaultDeviceId, url::Origin(GURL(kSecurityOrigin)));
+  Create(true, kDefaultDeviceId, url::Origin(GURL(kSecurityOrigin)), true);
   Close();
 }
 
 TEST_F(AudioRendererHostTest, CreateUnauthorizedDevice) {
-  Create(false, kBadDeviceId, url::Origin(GURL(kSecurityOrigin)));
+  Create(false, kBadDeviceId, url::Origin(GURL(kSecurityOrigin)), true);
+  Close();
+}
+
+TEST_F(AudioRendererHostTest, CreateDeviceWithAuthorizationPendingIsError) {
+  ExpectShutdown();
+  CreateWithoutWaitingForAuth(kBadDeviceId);
+  Close();
+}
+
+TEST_F(AudioRendererHostTest, CreateDeviceWithBadSecurityOrigin) {
+  ExpectShutdown();
+  RequestDeviceAuthorizationWithBadOrigin(kNondefaultDeviceId);
   Close();
 }
 
 TEST_F(AudioRendererHostTest, CreateInvalidDevice) {
-  Create(false, kInvalidDeviceId, url::Origin(GURL(kSecurityOrigin)));
+  Create(false, kInvalidDeviceId, url::Origin(GURL(kSecurityOrigin)), true);
   Close();
 }
 

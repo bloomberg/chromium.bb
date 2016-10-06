@@ -495,7 +495,13 @@ void AudioRendererHost::OnCreateStream(int stream_id,
   std::string device_unique_id;
   const auto& auth_data = authorizations_.find(stream_id);
   if (auth_data != authorizations_.end()) {
-    CHECK(auth_data->second.first);
+    if (!auth_data->second.first) {
+      // The authorization for this stream is still pending, so it's an error
+      // to create it now.
+      content::bad_message::ReceivedBadMessage(
+          this, bad_message::ARH_CREATED_STREAM_WITHOUT_AUTHORIZATION);
+      return;
+    }
     device_unique_id.swap(auth_data->second.second);
     authorizations_.erase(auth_data);
   }

@@ -161,6 +161,7 @@ enum BadMessageReason {
   DSH_DELETED_SESSION_ID = 137,
   DSH_WRONG_STORAGE_PARTITION = 138,
   BDH_DISALLOWED_ORIGIN = 139,
+  ARH_CREATED_STREAM_WITHOUT_AUTHORIZATION = 140,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
