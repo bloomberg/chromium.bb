@@ -15,6 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
+#include "content/common/video_capture.mojom.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "media/base/video_capture_types.h"
@@ -82,6 +83,10 @@ class CONTENT_EXPORT VideoCaptureImpl
   void GetDeviceFormatsInUse(const VideoCaptureDeviceFormatsCB& callback);
 
   media::VideoCaptureSessionId session_id() const { return session_id_; }
+
+  void SetVideoCaptureHostForTesting(mojom::VideoCaptureHost* service) {
+    video_capture_host_for_testing_ = service;
+  }
 
  protected:
   // Note: Overridden only by unit test subclasses.
@@ -152,6 +157,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   // Helpers.
   bool RemoveClient(int client_id, ClientInfoMap* clients);
 
+  mojom::VideoCaptureHost* GetVideoCaptureHost();
+
   // Called (by an unknown thread) when all consumers are done with a VideoFrame
   // and its ref-count has gone to zero.  This helper function grabs the
   // RESOURCE_UTILIZATION value from the |metadata| and then runs the given
@@ -164,6 +171,9 @@ class CONTENT_EXPORT VideoCaptureImpl
   const scoped_refptr<VideoCaptureMessageFilter> message_filter_;
   int device_id_;
   const int session_id_;
+
+  mojom::VideoCaptureHostAssociatedPtr video_capture_host_;
+  mojom::VideoCaptureHost* video_capture_host_for_testing_;
 
   // Vector of callbacks to be notified of device format enumerations, used only
   // on IO Thread.

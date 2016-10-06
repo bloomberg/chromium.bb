@@ -87,6 +87,8 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
   // Send a message asynchronously.
   virtual bool Send(IPC::Message* message);
 
+  IPC::Channel* channel() const { return channel_; }
+
   // IPC::MessageFilter override. Called on IO thread.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnFilterAdded(IPC::Channel* channel) override;
@@ -140,7 +142,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
   Delegates pending_delegates_;
   int32_t last_device_id_;
 
-  IPC::Sender* sender_;
+  IPC::Channel* channel_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureMessageFilter);
 };

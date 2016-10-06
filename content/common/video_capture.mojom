@@ -1,0 +1,19 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+interface VideoCaptureHost {
+  // TODO(mcasas): Migrate the rest of the messages, https://crbug.com/651897.
+
+  // Closes the video capture specified by |device_id|.
+  Stop(int32 device_id);
+
+  // Pauses the video capture specified by |device_id|.
+  Pause(int32 device_id);
+
+  // Requests that the video capturer send a frame "soon" (e.g., to resolve
+  // picture loss or quality issues).
+  RequestRefreshFrame(int32 device_id);
+};

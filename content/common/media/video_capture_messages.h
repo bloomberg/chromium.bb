@@ -72,7 +72,7 @@ IPC_MESSAGE_CONTROL2(VideoCaptureMsg_FreeBuffer,
                      int /* buffer_id */)
 
 // Tell the renderer process that a Buffer is available from video capture, and
-// send the associated VideoFrame constituient parts as IPC parameters.
+// send the associated VideoFrame constituent parts as IPC parameters.
 IPC_MESSAGE_CONTROL1(VideoCaptureMsg_BufferReady,
                      VideoCaptureMsg_BufferReady_Params)
 
@@ -95,25 +95,12 @@ IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_Start,
                      media::VideoCaptureSessionId, /* session_id */
                      media::VideoCaptureParams /* params */)
 
-// Pause the video capture specified by |device_id|.
-IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Pause,
-                     int /* device_id */)
-
 // Resume the video capture specified by |device_id|, |session_id| and
 // |params|.
 IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_Resume,
                      int, /* device_id */
                      media::VideoCaptureSessionId, /* session_id */
                      media::VideoCaptureParams /* params */)
-
-// Requests that the video capturer send a frame "soon" (e.g., to resolve
-// picture loss or quality issues).
-IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_RequestRefreshFrame,
-                     int /* device_id */)
-
-// Close the video capture specified by |device_id|.
-IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Stop,
-                     int /* device_id */)
 
 // Tell the browser process that the renderer has finished reading from
 // a buffer previously delivered by VideoCaptureMsg_BufferReady.

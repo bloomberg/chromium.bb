@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "content/child/child_process.h"
 #include "content/common/media/video_capture_messages.h"
+#include "content/common/video_capture.mojom.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
@@ -33,9 +34,9 @@ ACTION_P(RunClosure, closure) {
 
 namespace {
 
-// Callback interface to be implemented by
-// VideoCaptureImplManagerTest. MockVideoCaptureImpl intercepts IPC messages and
-// calls these methods to simulate what the VideoCaptureHost would do.
+// Callback interface to be implemented by VideoCaptureImplManagerTest.
+// MockVideoCaptureImpl intercepts IPC messages and calls these methods to
+// simulate what the VideoCaptureHost would do.
 class PauseResumeCallback {
  public:
   PauseResumeCallback() {}
@@ -45,7 +46,8 @@ class PauseResumeCallback {
   virtual void OnResumed(media::VideoCaptureSessionId session_id) = 0;
 };
 
-class MockVideoCaptureImpl : public VideoCaptureImpl {
+class MockVideoCaptureImpl : public VideoCaptureImpl,
+                             public mojom::VideoCaptureHost {
  public:
   MockVideoCaptureImpl(media::VideoCaptureSessionId session_id,
                        VideoCaptureMessageFilter* filter,
@@ -61,8 +63,8 @@ class MockVideoCaptureImpl : public VideoCaptureImpl {
 
   void Send(IPC::Message* message) override {
     IPC_BEGIN_MESSAGE_MAP(MockVideoCaptureImpl, *message)
-      IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Pause, DevicePauseCapture)
-      IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Resume, DeviceResumeCapture)
+      IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Start, Start)
+      IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Resume, Resume)
       default:
         VideoCaptureImpl::Send(message);
         return;
@@ -71,13 +73,22 @@ class MockVideoCaptureImpl : public VideoCaptureImpl {
   }
 
  private:
-  void DevicePauseCapture(int device_id) {
+  MOCK_METHOD1(Stop, void(int32_t));
+  MOCK_METHOD1(RequestRefreshFrame, void(int32_t));
+
+  void Start(int device_id,
+             media::VideoCaptureSessionId session_id,
+             const media::VideoCaptureParams& params) {
+    EXPECT_CALL(*this, Stop(_));
+  }
+
+  void Pause(int device_id) {
     pause_callback_->OnPaused(session_id());
   }
 
-  void DeviceResumeCapture(int device_id,
-                           media::VideoCaptureSessionId session_id,
-                           const media::VideoCaptureParams& params) {
+  void Resume(int device_id,
+              media::VideoCaptureSessionId session_id,
+              const media::VideoCaptureParams& params) {
     pause_callback_->OnResumed(session_id);
   }
 
@@ -95,15 +106,17 @@ class MockVideoCaptureImplManager : public VideoCaptureImplManager {
         destruct_video_capture_callback_(destruct_video_capture_callback) {}
   ~MockVideoCaptureImplManager() override {}
 
- protected:
+ private:
   std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImplForTesting(
       media::VideoCaptureSessionId id,
       VideoCaptureMessageFilter* filter) const override {
-    return base::MakeUnique<MockVideoCaptureImpl>(
+    auto video_capture_impl = base::MakeUnique<MockVideoCaptureImpl>(
         id, filter, pause_callback_, destruct_video_capture_callback_);
+    video_capture_impl->SetVideoCaptureHostForTesting(
+        video_capture_impl.get());
+    return std::move(video_capture_impl);
   }
 
- private:
   PauseResumeCallback* const pause_callback_;
   const base::Closure destruct_video_capture_callback_;
 

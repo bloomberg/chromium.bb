@@ -42,7 +42,7 @@
 //      |             ...                        |
 //      |                                        |
 //      | < VideoCaptureMsg_BufferReady          |
-//      | VideoCaptureHostMsg_Stop >             |
+//      |  --------- StopCapture --------->      |
 //      | VideoCaptureHostMsg_BufferReady >      |
 //      | < VideoCaptureMsg_StateChanged         |
 //      |         (VIDEO_CAPTURE_STATE_STOPPED)  |
@@ -60,6 +60,8 @@
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/content_export.h"
+#include "content/common/video_capture.mojom.h"
+#include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ipc/ipc_message.h"
 
@@ -68,7 +70,9 @@ class MediaStreamManager;
 
 class CONTENT_EXPORT VideoCaptureHost
     : public BrowserMessageFilter,
-      public VideoCaptureControllerEventHandler {
+      public VideoCaptureControllerEventHandler,
+      public BrowserAssociatedInterface<mojom::VideoCaptureHost>,
+      public mojom::VideoCaptureHost {
  public:
   explicit VideoCaptureHost(MediaStreamManager* media_stream_manager);
 
@@ -105,49 +109,31 @@ class CONTENT_EXPORT VideoCaptureHost
 
   ~VideoCaptureHost() override;
 
-  // IPC message: Start capture on the VideoCaptureDevice referenced by
-  // |device_id|. |session_id| is an id created by VideoCaptureMessageFilter
-  // to identify a session between a VideoCaptureMessageFilter and a
-  // VideoCaptureHost.
+  // IPC message handlers.
   void OnStartCapture(int device_id,
                       media::VideoCaptureSessionId session_id,
                       const media::VideoCaptureParams& params);
-  void OnControllerAdded(
-      int device_id,
-      const base::WeakPtr<VideoCaptureController>& controller);
-
-  // IPC message: Stop capture on device referenced by |device_id|.
-  void OnStopCapture(int device_id);
-
-  // IPC message: Pause capture on device referenced by |device_id|.
-  void OnPauseCapture(int device_id);
-
   void OnResumeCapture(int device_id,
                        media::VideoCaptureSessionId session_id,
                        const media::VideoCaptureParams& params);
-
-  // IPC message: Requests that the video capture send a frame "soon" (e.g., to
-  // resolve picture loss or quality issues).
-  void OnRequestRefreshFrame(int device_id);
-
-  // IPC message: Called when a renderer is finished using a buffer. Notifies
-  // the controller.
   void OnRendererFinishedWithBuffer(int device_id,
                                     int buffer_id,
                                     const gpu::SyncToken& sync_token,
                                     double consumer_resource_utilization);
-
-  // IPC message: Get supported formats referenced by |capture_session_id|.
-  // |device_id| is needed for message back-routing purposes.
   void OnGetDeviceSupportedFormats(
       int device_id,
       media::VideoCaptureSessionId capture_session_id);
-
-  // IPC message: Get a device's currently in use format(s), referenced by
-  // |capture_session_id|. |device_id| is needed for message back-routing
-  // purposes.
   void OnGetDeviceFormatsInUse(int device_id,
                                media::VideoCaptureSessionId capture_session_id);
+
+  // mojom::VideoCaptureHost implementation
+  void Stop(int32_t device_id) override;
+  void Pause(int32_t device_id) override;
+  void RequestRefreshFrame(int32_t device_id) override;
+
+  void OnControllerAdded(
+      int device_id,
+      const base::WeakPtr<VideoCaptureController>& controller);
 
   // Deletes the controller and notifies the VideoCaptureManager. |on_error| is
   // true if this is triggered by VideoCaptureControllerEventHandler::OnError.
@@ -156,13 +142,11 @@ class CONTENT_EXPORT VideoCaptureHost
 
   MediaStreamManager* const media_stream_manager_;
 
-  typedef std::map<VideoCaptureControllerID,
-                   base::WeakPtr<VideoCaptureController>> EntryMap;
-
   // A map of VideoCaptureControllerID to the VideoCaptureController to which it
   // is connected. An entry in this map holds a null controller while it is in
   // the process of starting.
-  EntryMap entries_;
+  std::map<VideoCaptureControllerID, base::WeakPtr<VideoCaptureController>>
+      controllers_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHost);
 };

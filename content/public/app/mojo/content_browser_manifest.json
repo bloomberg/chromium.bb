@@ -23,6 +23,7 @@
         "content::mojom::MemoryCoordinatorHandle",
         "content::mojom::StoragePartitionService",
         "content::mojom::URLLoaderFactory",
+        "content::mojom::VideoCaptureHost",
         "device::BatteryMonitor",
         "device::mojom::LightSensor",
         "device::mojom::MotionSensor",
