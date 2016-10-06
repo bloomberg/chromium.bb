@@ -415,7 +415,6 @@ class COMPOSITOR_EXPORT Compositor
   bool widget_valid_;
   bool compositor_frame_sink_requested_;
   const cc::FrameSinkId frame_sink_id_;
-  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   scoped_refptr<cc::Layer> root_web_layer_;
   std::unique_ptr<cc::LayerTreeHost> host_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

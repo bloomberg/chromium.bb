@@ -180,7 +180,7 @@ void SurfaceFactoryOwner::ReturnResources(
   }
 }
 
-void SurfaceFactoryOwner::WillDrawSurface(const cc::SurfaceId& id,
+void SurfaceFactoryOwner::WillDrawSurface(const cc::LocalFrameId& id,
                                           const gfx::Rect& damage_rect) {
   if (surface_)
     surface_->WillDraw(id);
@@ -216,8 +216,7 @@ Surface::Surface()
   factory_owner_->surface_ = this;
   factory_owner_->frame_sink_id_ =
       aura::Env::GetInstance()->context_factory()->AllocateFrameSinkId();
-  factory_owner_->id_allocator_.reset(
-      new cc::SurfaceIdAllocator(factory_owner_->frame_sink_id_));
+  factory_owner_->id_allocator_.reset(new cc::SurfaceIdAllocator());
   surface_manager_->RegisterFrameSinkId(factory_owner_->frame_sink_id_);
   factory_owner_->surface_factory_.reset(new cc::SurfaceFactory(
       factory_owner_->frame_sink_id_, surface_manager_, factory_owner_.get()));
@@ -240,13 +239,17 @@ Surface::~Surface() {
   for (const auto& frame_callback : active_frame_callbacks_)
     frame_callback.Run(base::TimeTicks());
 
-  if (!surface_id_.is_null())
-    factory_owner_->surface_factory_->Destroy(surface_id_);
+  if (!local_frame_id_.is_null())
+    factory_owner_->surface_factory_->Destroy(local_frame_id_);
 }
 
 // static
 Surface* Surface::AsSurface(const aura::Window* window) {
   return window->GetProperty(kSurfaceKey);
+}
+
+cc::SurfaceId Surface::GetSurfaceId() const {
+  return cc::SurfaceId(factory_owner_->frame_sink_id_, local_frame_id_);
 }
 
 void Surface::Attach(Buffer* buffer) {
@@ -443,7 +446,7 @@ void Surface::Commit() {
 }
 
 void Surface::OnLostResources() {
-  if (surface_id_.is_null())
+  if (local_frame_id_.is_null())
     return;
 
   UpdateResource(false);
@@ -467,25 +470,25 @@ void Surface::CommitSurfaceHierarchy() {
     UpdateResource(true);
   }
 
-  cc::SurfaceId old_surface_id = surface_id_;
-  if (needs_commit_to_new_surface_ || surface_id_.is_null()) {
+  cc::LocalFrameId old_local_frame_id = local_frame_id_;
+  if (needs_commit_to_new_surface_ || local_frame_id_.is_null()) {
     needs_commit_to_new_surface_ = false;
-    surface_id_ = factory_owner_->id_allocator_->GenerateId();
-    factory_owner_->surface_factory_->Create(surface_id_);
+    local_frame_id_ = factory_owner_->id_allocator_->GenerateId();
+    factory_owner_->surface_factory_->Create(local_frame_id_);
   }
 
   UpdateSurface(true);
 
-  if (!old_surface_id.is_null() && old_surface_id != surface_id_) {
-    factory_owner_->surface_factory_->SetPreviousFrameSurface(surface_id_,
-                                                              old_surface_id);
-    factory_owner_->surface_factory_->Destroy(old_surface_id);
+  if (!old_local_frame_id.is_null() && old_local_frame_id != local_frame_id_) {
+    factory_owner_->surface_factory_->SetPreviousFrameSurface(
+        local_frame_id_, old_local_frame_id);
+    factory_owner_->surface_factory_->Destroy(old_local_frame_id);
   }
 
-  if (old_surface_id != surface_id_) {
+  if (old_local_frame_id != local_frame_id_) {
     float contents_surface_to_layer_scale = 1.0;
     window_->layer()->SetShowSurface(
-        surface_id_,
+        cc::SurfaceId(factory_owner_->frame_sink_id_, local_frame_id_),
         base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
         base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
         content_size_, contents_surface_to_layer_scale, content_size_);
@@ -617,7 +620,7 @@ void Surface::OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) {
   SetSurfaceLayerContents(new_layer);
 }
 
-void Surface::WillDraw(const cc::SurfaceId& id) {
+void Surface::WillDraw(const cc::LocalFrameId& id) {
   while (!active_frame_callbacks_.empty()) {
     active_frame_callbacks_.front().Run(base::TimeTicks::Now());
     active_frame_callbacks_.pop_front();
@@ -692,14 +695,14 @@ void Surface::SetSurfaceHierarchyNeedsCommitToNewSurfaces() {
 }
 
 void Surface::SetSurfaceLayerContents(ui::Layer* layer) {
-  if (surface_id_.is_null())
+  if (local_frame_id_.is_null())
     return;
 
   gfx::Size layer_size = layer->bounds().size();
   float contents_surface_to_layer_scale = 1.0f;
 
   layer->SetShowSurface(
-      surface_id_,
+      cc::SurfaceId(factory_owner_->frame_sink_id_, local_frame_id_),
       base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
       base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
       layer_size, contents_surface_to_layer_scale, layer_size);
@@ -823,7 +826,7 @@ void Surface::UpdateSurface(bool full_damage) {
   frame.delegated_frame_data = std::move(delegated_frame);
 
   factory_owner_->surface_factory_->SubmitCompositorFrame(
-      surface_id_, std::move(frame), cc::SurfaceFactory::DrawCallback());
+      local_frame_id_, std::move(frame), cc::SurfaceFactory::DrawCallback());
 }
 
 int64_t Surface::SetPropertyInternal(const void* key,

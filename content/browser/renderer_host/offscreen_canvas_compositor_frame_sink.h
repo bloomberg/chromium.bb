@@ -32,7 +32,7 @@ class OffscreenCanvasCompositorFrameSink
 
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface(const cc::SurfaceId& id,
+  void WillDrawSurface(const cc::LocalFrameId& id,
                        const gfx::Rect& damage_rect) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 

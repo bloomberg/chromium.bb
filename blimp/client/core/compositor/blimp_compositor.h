@@ -35,9 +35,9 @@ class ContextProvider;
 class Layer;
 class LayerTreeHost;
 class LayerTreeSettings;
+class LocalFrameid;
 class Surface;
 class SurfaceFactory;
-class SurfaceId;
 class SurfaceIdAllocator;
 }  // namespace cc
 
@@ -202,7 +202,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   bool compositor_frame_sink_request_pending_;
 
   // Data for the current frame.
-  cc::SurfaceId surface_id_;
+  cc::LocalFrameId local_frame_id_;
   gfx::Size current_surface_size_;
 
   base::ThreadChecker thread_checker_;

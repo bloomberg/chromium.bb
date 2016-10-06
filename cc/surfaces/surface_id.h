@@ -14,17 +14,17 @@
 #include "base/hash.h"
 #include "base/strings/stringprintf.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/local_frame_id.h"
 
 namespace cc {
 
 class SurfaceId {
  public:
-  SurfaceId() : local_id_(0), nonce_(0) {}
+  SurfaceId() = default;
 
   SurfaceId(const SurfaceId& other)
       : frame_sink_id_(other.frame_sink_id_),
-        local_id_(other.local_id_),
-        nonce_(other.nonce_) {}
+        local_frame_id_(other.local_frame_id_) {}
 
   // A SurfaceId consists of three components: FrameSinkId, local Id, and nonce.
   // A |frame_sink_id| consists of two components; one is allocated by the
@@ -37,48 +37,45 @@ class SurfaceId {
   // impossible for an unprivileged frame source to embed another frame source
   // without being explicitly given the surface ID of that frame source from a
   // privileged process.
-  SurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id, uint64_t nonce)
-      : frame_sink_id_(frame_sink_id), local_id_(local_id), nonce_(nonce) {}
+  SurfaceId(const FrameSinkId& frame_sink_id,
+            const LocalFrameId& local_frame_id)
+      : frame_sink_id_(frame_sink_id), local_frame_id_(local_frame_id) {}
 
   bool is_null() const {
-    return frame_sink_id_.is_null() && nonce_ == 0 && local_id_ == 0;
+    return frame_sink_id_.is_null() && local_frame_id_.is_null();
   }
 
   size_t hash() const {
-    size_t interim = base::HashInts(local_id_, nonce_);
     return base::HashInts(static_cast<uint64_t>(frame_sink_id_.hash()),
-                          static_cast<uint64_t>(interim));
+                          static_cast<uint64_t>(local_frame_id_.hash()));
   }
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
-  uint32_t local_id() const { return local_id_; }
-
-  uint64_t nonce() const { return nonce_; }
+  const LocalFrameId& local_frame_id() const { return local_frame_id_; }
 
   std::string ToString() const {
-    return base::StringPrintf("%s:LocalId(%d, %" PRIu64 ")",
-                              frame_sink_id_.ToString().c_str(), local_id_,
-                              nonce_);
+    return base::StringPrintf("SurfaceId(%s, %s)",
+                              frame_sink_id_.ToString().c_str(),
+                              local_frame_id_.ToString().c_str());
   }
 
   bool operator==(const SurfaceId& other) const {
     return frame_sink_id_ == other.frame_sink_id_ &&
-           local_id_ == other.local_id_ && nonce_ == other.nonce_;
+           local_frame_id_ == other.local_frame_id_;
   }
 
   bool operator!=(const SurfaceId& other) const { return !(*this == other); }
 
   bool operator<(const SurfaceId& other) const {
-    return std::tie(frame_sink_id_, local_id_, nonce_) <
-           std::tie(frame_sink_id_, other.local_id_, other.nonce_);
+    return std::tie(frame_sink_id_, local_frame_id_) <
+           std::tie(other.frame_sink_id_, other.local_frame_id_);
   }
 
  private:
   // See SurfaceIdAllocator::GenerateId.
   FrameSinkId frame_sink_id_;
-  uint32_t local_id_;
-  uint64_t nonce_;
+  LocalFrameId local_frame_id_;
 };
 
 struct SurfaceIdHash {

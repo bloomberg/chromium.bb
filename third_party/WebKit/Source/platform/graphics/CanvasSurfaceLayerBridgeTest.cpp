@@ -63,7 +63,7 @@ mojom::blink::OffscreenCanvasSurfacePtr MockOffscreenCanvasSurface::GetProxy() {
 
 void MockOffscreenCanvasSurface::GetSurfaceId(
     const GetSurfaceIdCallback& callback) {
-  callback.Run(cc::SurfaceId(cc::FrameSinkId(10, 11), 15, 0));
+  callback.Run(cc::SurfaceId(cc::FrameSinkId(10, 11), cc::LocalFrameId(15, 0)));
 }
 
 void CanvasSurfaceLayerBridgeTest::SetUp() {

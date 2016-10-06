@@ -91,7 +91,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     FrameData();
     ~FrameData();
 
-    cc::SurfaceId surface_id;
+    cc::LocalFrameId local_frame_id;
     gfx::Size surface_size;
     float top_controls_height;
     float top_controls_shown_ratio;

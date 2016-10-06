@@ -63,12 +63,12 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   // This class is only meant to be used on a single thread.
   base::ThreadChecker thread_checker_;
 
-  FrameSinkId frame_sink_id_;
+  const FrameSinkId frame_sink_id_;
+  LocalFrameId delegated_local_frame_id_;
   SurfaceManager* surface_manager_;
   SurfaceIdAllocator surface_id_allocator_;
   Display* display_;
   SurfaceFactory factory_;
-  SurfaceId delegated_surface_id_;
   gfx::Size last_swap_frame_size_;
   bool is_lost_ = false;
 

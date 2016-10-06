@@ -47,26 +47,26 @@ class CC_SURFACES_EXPORT SurfaceFactory
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
-  void Create(const SurfaceId& surface_id);
-  void Destroy(const SurfaceId& surface_id);
+  void Create(const LocalFrameId& local_frame_id);
+  void Destroy(const LocalFrameId& local_frame_id);
   void DestroyAll();
 
   // Set that the current frame on new_id is to be treated as the successor to
   // the current frame on old_id for the purposes of calculating damage.
-  void SetPreviousFrameSurface(const SurfaceId& new_id,
-                               const SurfaceId& old_id);
+  void SetPreviousFrameSurface(const LocalFrameId& new_id,
+                               const LocalFrameId& old_id);
 
   // A frame can only be submitted to a surface created by this factory,
   // although the frame may reference surfaces created by other factories.
   // The callback is called the first time this frame is used to draw, or if
   // the frame is discarded.
-  void SubmitCompositorFrame(const SurfaceId& surface_id,
+  void SubmitCompositorFrame(const LocalFrameId& local_frame_id,
                              CompositorFrame frame,
                              const DrawCallback& callback);
-  void RequestCopyOfSurface(const SurfaceId& surface_id,
+  void RequestCopyOfSurface(const LocalFrameId& local_frame_id,
                             std::unique_ptr<CopyOutputRequest> copy_request);
 
-  void WillDrawSurface(const SurfaceId& id, const gfx::Rect& damage_rect);
+  void WillDrawSurface(const LocalFrameId& id, const gfx::Rect& damage_rect);
 
   SurfaceFactoryClient* client() { return client_; }
 
@@ -94,8 +94,8 @@ class CC_SURFACES_EXPORT SurfaceFactory
 
   bool needs_sync_points_;
 
-  using OwningSurfaceMap =
-      std::unordered_map<SurfaceId, std::unique_ptr<Surface>, SurfaceIdHash>;
+  using OwningSurfaceMap = std::
+      unordered_map<LocalFrameId, std::unique_ptr<Surface>, LocalFrameIdHash>;
   OwningSurfaceMap surface_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceFactory);

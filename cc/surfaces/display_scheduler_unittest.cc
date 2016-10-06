@@ -106,9 +106,9 @@ class DisplaySchedulerTest : public testing::Test {
 };
 
 TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilNewRootSurface) {
-  SurfaceId root_surface_id1(kArbitraryFrameSinkId, 1, 0);
-  SurfaceId root_surface_id2(kArbitraryFrameSinkId, 2, 0);
-  SurfaceId sid1(kArbitraryFrameSinkId, 3, 0);
+  SurfaceId root_surface_id1(kArbitraryFrameSinkId, LocalFrameId(1, 0));
+  SurfaceId root_surface_id2(kArbitraryFrameSinkId, LocalFrameId(2, 0));
+  SurfaceId sid1(kArbitraryFrameSinkId, LocalFrameId(3, 0));
   base::TimeTicks late_deadline;
 
   scheduler_.SetVisible(true);
@@ -143,8 +143,8 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilNewRootSurface) {
 }
 
 TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilDamagedSurface) {
-  SurfaceId root_surface_id(kArbitraryFrameSinkId, 1, 0);
-  SurfaceId sid1(kArbitraryFrameSinkId, 2, 0);
+  SurfaceId root_surface_id(kArbitraryFrameSinkId, LocalFrameId(1, 0));
+  SurfaceId sid1(kArbitraryFrameSinkId, LocalFrameId(2, 0));
   base::TimeTicks late_deadline;
 
   scheduler_.SetVisible(true);
@@ -179,9 +179,9 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilDamagedSurface) {
 }
 
 TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
-  SurfaceId root_surface_id(kArbitraryFrameSinkId, 0, 0);
-  SurfaceId sid1(kArbitraryFrameSinkId, 1, 0);
-  SurfaceId sid2(kArbitraryFrameSinkId, 2, 0);
+  SurfaceId root_surface_id(kArbitraryFrameSinkId, LocalFrameId(0, 0));
+  SurfaceId sid1(kArbitraryFrameSinkId, LocalFrameId(1, 0));
+  SurfaceId sid2(kArbitraryFrameSinkId, LocalFrameId(2, 0));
 
   scheduler_.SetVisible(true);
 
@@ -245,8 +245,8 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
 }
 
 TEST_F(DisplaySchedulerTest, OutputSurfaceLost) {
-  SurfaceId root_surface_id(kArbitraryFrameSinkId, 0, 0);
-  SurfaceId sid1(kArbitraryFrameSinkId, 1, 0);
+  SurfaceId root_surface_id(kArbitraryFrameSinkId, LocalFrameId(0, 0));
+  SurfaceId sid1(kArbitraryFrameSinkId, LocalFrameId(1, 0));
 
   scheduler_.SetVisible(true);
 
@@ -278,8 +278,8 @@ TEST_F(DisplaySchedulerTest, OutputSurfaceLost) {
 }
 
 TEST_F(DisplaySchedulerTest, VisibleWithoutDamageNoTicks) {
-  SurfaceId root_surface_id(kArbitraryFrameSinkId, 0, 0);
-  SurfaceId sid1(kArbitraryFrameSinkId, 1, 0);
+  SurfaceId root_surface_id(kArbitraryFrameSinkId, LocalFrameId(0, 0));
+  SurfaceId sid1(kArbitraryFrameSinkId, LocalFrameId(1, 0));
 
   EXPECT_EQ(0u, fake_begin_frame_source_.num_observers());
   scheduler_.SetVisible(true);
@@ -293,8 +293,8 @@ TEST_F(DisplaySchedulerTest, VisibleWithoutDamageNoTicks) {
 }
 
 TEST_F(DisplaySchedulerTest, VisibleWithDamageTicks) {
-  SurfaceId root_surface_id(kArbitraryFrameSinkId, 0, 0);
-  SurfaceId sid1(kArbitraryFrameSinkId, 1, 0);
+  SurfaceId root_surface_id(kArbitraryFrameSinkId, LocalFrameId(0, 0));
+  SurfaceId sid1(kArbitraryFrameSinkId, LocalFrameId(1, 0));
 
   scheduler_.SetNewRootSurface(root_surface_id);
 
@@ -307,8 +307,8 @@ TEST_F(DisplaySchedulerTest, VisibleWithDamageTicks) {
 }
 
 TEST_F(DisplaySchedulerTest, Visibility) {
-  SurfaceId root_surface_id(kArbitraryFrameSinkId, 0, 0);
-  SurfaceId sid1(kArbitraryFrameSinkId, 1, 0);
+  SurfaceId root_surface_id(kArbitraryFrameSinkId, LocalFrameId(0, 0));
+  SurfaceId sid1(kArbitraryFrameSinkId, LocalFrameId(1, 0));
 
   scheduler_.SetNewRootSurface(root_surface_id);
   scheduler_.SetVisible(true);
@@ -356,8 +356,8 @@ TEST_F(DisplaySchedulerTest, Visibility) {
 }
 
 TEST_F(DisplaySchedulerTest, ResizeCausesSwap) {
-  SurfaceId root_surface_id(kArbitraryFrameSinkId, 0, 0);
-  SurfaceId sid1(kArbitraryFrameSinkId, 1, 0);
+  SurfaceId root_surface_id(kArbitraryFrameSinkId, LocalFrameId(0, 0));
+  SurfaceId sid1(kArbitraryFrameSinkId, LocalFrameId(1, 0));
 
   scheduler_.SetVisible(true);
 
@@ -381,8 +381,8 @@ TEST_F(DisplaySchedulerTest, ResizeCausesSwap) {
 }
 
 TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
-  SurfaceId root_surface_id(kArbitraryFrameSinkId, 0, 0);
-  SurfaceId sid1(kArbitraryFrameSinkId, 1, 0);
+  SurfaceId root_surface_id(kArbitraryFrameSinkId, LocalFrameId(0, 0));
+  SurfaceId sid1(kArbitraryFrameSinkId, LocalFrameId(1, 0));
   base::TimeTicks late_deadline;
 
   scheduler_.SetVisible(true);
@@ -429,9 +429,9 @@ TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
 }
 
 TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
-  SurfaceId root_surface_id(kArbitraryFrameSinkId, 0, 0);
-  SurfaceId sid1(kArbitraryFrameSinkId, 1, 0);
-  SurfaceId sid2(kArbitraryFrameSinkId, 2, 0);
+  SurfaceId root_surface_id(kArbitraryFrameSinkId, LocalFrameId(0, 0));
+  SurfaceId sid1(kArbitraryFrameSinkId, LocalFrameId(1, 0));
+  SurfaceId sid2(kArbitraryFrameSinkId, LocalFrameId(2, 0));
 
   scheduler_.SetVisible(true);
 
@@ -496,8 +496,8 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
 // This test verfies that we try to reschedule the deadline
 // after any event that may change what deadline we want.
 TEST_F(DisplaySchedulerTest, ScheduleBeginFrameDeadline) {
-  SurfaceId root_surface_id(kArbitraryFrameSinkId, 1, 0);
-  SurfaceId sid1(kArbitraryFrameSinkId, 2, 0);
+  SurfaceId root_surface_id(kArbitraryFrameSinkId, LocalFrameId(1, 0));
+  SurfaceId sid1(kArbitraryFrameSinkId, LocalFrameId(2, 0));
   int count = 1;
   EXPECT_EQ(count, scheduler_.scheduler_begin_frame_deadline_count());
 

@@ -118,7 +118,7 @@ SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
       memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue),
       surface_manager_(new cc::SurfaceManager),
-      surface_id_allocator_(new cc::SurfaceIdAllocator(kFrameSinkId)),
+      surface_id_allocator_(new cc::SurfaceIdAllocator()),
       surface_factory_(
           new cc::SurfaceFactory(kFrameSinkId, surface_manager_.get(), this)),
       begin_frame_source_(std::move(begin_frame_source)) {
@@ -197,9 +197,9 @@ void SynchronousCompositorFrameSink::DetachFromClient() {
   if (registered_)
     registry_->UnregisterCompositorFrameSink(routing_id_, this);
   client_->SetTreeActivationCallback(base::Closure());
-  if (!root_surface_id_.is_null()) {
-    surface_factory_->Destroy(root_surface_id_);
-    surface_factory_->Destroy(child_surface_id_);
+  if (!root_local_frame_id_.is_null()) {
+    surface_factory_->Destroy(root_local_frame_id_);
+    surface_factory_->Destroy(child_local_frame_id_);
   }
   surface_manager_->UnregisterSurfaceFactoryClient(kFrameSinkId);
   surface_manager_->InvalidateFrameSinkId(kFrameSinkId);
@@ -233,14 +233,14 @@ void SynchronousCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
     // the |frame| for the software path below.
     swap_frame.metadata = frame.metadata.Clone();
 
-    if (root_surface_id_.is_null()) {
-      root_surface_id_ = surface_id_allocator_->GenerateId();
-      surface_factory_->Create(root_surface_id_);
-      child_surface_id_ = surface_id_allocator_->GenerateId();
-      surface_factory_->Create(child_surface_id_);
+    if (root_local_frame_id_.is_null()) {
+      root_local_frame_id_ = surface_id_allocator_->GenerateId();
+      surface_factory_->Create(root_local_frame_id_);
+      child_local_frame_id_ = surface_id_allocator_->GenerateId();
+      surface_factory_->Create(child_local_frame_id_);
     }
 
-    display_->SetSurfaceId(root_surface_id_,
+    display_->SetSurfaceId(cc::SurfaceId(kFrameSinkId, root_local_frame_id_),
                            frame.metadata.device_scale_factor);
 
     // The layer compositor should be giving a frame that covers the
@@ -288,11 +288,12 @@ void SynchronousCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
         gfx::Rect() /* clip_rect */, false /* is_clipped */, 1.f /* opacity */,
         SkXfermode::kSrcOver_Mode, 0 /* sorting_context_id */);
     surface_quad->SetNew(shared_quad_state, gfx::Rect(child_size),
-                         gfx::Rect(child_size), child_surface_id_);
+                         gfx::Rect(child_size),
+                         cc::SurfaceId(kFrameSinkId, child_local_frame_id_));
 
-    surface_factory_->SubmitCompositorFrame(child_surface_id_, std::move(frame),
-                                            base::Bind(&NoOpDrawCallback));
-    surface_factory_->SubmitCompositorFrame(root_surface_id_,
+    surface_factory_->SubmitCompositorFrame(
+        child_local_frame_id_, std::move(frame), base::Bind(&NoOpDrawCallback));
+    surface_factory_->SubmitCompositorFrame(root_local_frame_id_,
                                             std::move(embed_frame),
                                             base::Bind(&NoOpDrawCallback));
     display_->DrawAndSwap();

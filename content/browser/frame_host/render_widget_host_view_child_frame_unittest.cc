@@ -121,7 +121,9 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
 #endif
   }
 
-  cc::SurfaceId surface_id() { return view_->surface_id_; }
+  cc::SurfaceId GetSurfaceId() const {
+    return cc::SurfaceId(view_->frame_sink_id_, view_->local_frame_id_);
+  }
 
  protected:
   base::MessageLoopForUI message_loop_;
@@ -177,7 +179,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
   view_->OnSwapCompositorFrame(
       0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
-  cc::SurfaceId id = surface_id();
+  cc::SurfaceId id = GetSurfaceId();
   if (!id.is_null()) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();

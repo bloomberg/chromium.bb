@@ -203,7 +203,7 @@ void FrameGenerator::DrawWindowTree(
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
-                 default_surface->id());
+                 default_surface->GetSurfaceId());
     if (default_surface->may_contain_video())
       *may_contain_video = true;
   }
@@ -227,7 +227,7 @@ void FrameGenerator::DrawWindowTree(
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
-                 underlay_surface->id());
+                 underlay_surface->GetSurfaceId());
     DCHECK(!underlay_surface->may_contain_video());
   }
 }

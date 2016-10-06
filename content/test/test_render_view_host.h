@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/common/web_preferences.h"
@@ -133,7 +132,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   cc::FrameSinkId frame_sink_id_;
 
  private:
-  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   bool is_showing_;
   bool is_occluded_;
   bool did_swap_compositor_frame_;

@@ -10,15 +10,14 @@
 
 namespace cc {
 
-SurfaceIdAllocator::SurfaceIdAllocator(const FrameSinkId& frame_sink_id)
-    : frame_sink_id_(frame_sink_id), next_id_(1u) {}
+SurfaceIdAllocator::SurfaceIdAllocator() : next_id_(1u) {}
 
 SurfaceIdAllocator::~SurfaceIdAllocator() {
 }
 
-SurfaceId SurfaceIdAllocator::GenerateId() {
+LocalFrameId SurfaceIdAllocator::GenerateId() {
   uint64_t nonce = base::RandUint64();
-  SurfaceId id(frame_sink_id_, next_id_, nonce);
+  LocalFrameId id(next_id_, nonce);
   next_id_++;
   return id;
 }

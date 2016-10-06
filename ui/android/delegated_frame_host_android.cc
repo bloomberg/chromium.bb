@@ -83,7 +83,7 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
 
   surface_manager_ =
       ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
-  surface_id_allocator_.reset(new cc::SurfaceIdAllocator(frame_sink_id_));
+  surface_id_allocator_.reset(new cc::SurfaceIdAllocator());
   surface_manager_->RegisterFrameSinkId(frame_sink_id_);
 
   background_layer_->SetBackgroundColor(background_color);
@@ -132,8 +132,8 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     DCHECK(!current_frame_);
 
     current_frame_ = base::MakeUnique<FrameData>();
-    current_frame_->surface_id = surface_id_allocator_->GenerateId();
-    surface_factory_->Create(current_frame_->surface_id);
+    current_frame_->local_frame_id = surface_id_allocator_->GenerateId();
+    surface_factory_->Create(current_frame_->local_frame_id);
 
     current_frame_->surface_size = surface_size;
     current_frame_->top_controls_height = frame.metadata.top_controls_height;
@@ -147,15 +147,16 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
         root_pass->has_transparent_background;
 
     current_frame_->viewport_selection = frame.metadata.selection;
-    content_layer_ =
-        CreateSurfaceLayer(surface_manager_, current_frame_->surface_id,
-                           current_frame_->surface_size,
-                           !current_frame_->has_transparent_background);
+    content_layer_ = CreateSurfaceLayer(
+        surface_manager_, cc::SurfaceId(surface_factory_->frame_sink_id(),
+                                        current_frame_->local_frame_id),
+        current_frame_->surface_size,
+        !current_frame_->has_transparent_background);
     view_->GetLayer()->AddChild(content_layer_);
     UpdateBackgroundLayer();
   }
 
-  surface_factory_->SubmitCompositorFrame(current_frame_->surface_id,
+  surface_factory_->SubmitCompositorFrame(current_frame_->local_frame_id,
                                           std::move(frame), draw_callback);
 }
 
@@ -170,10 +171,11 @@ void DelegatedFrameHostAndroid::RequestCopyOfSurface(
   DCHECK(current_frame_);
   DCHECK(!result_callback.is_null());
 
-  scoped_refptr<cc::Layer> readback_layer =
-      CreateSurfaceLayer(surface_manager_, current_frame_->surface_id,
-                         current_frame_->surface_size,
-                         !current_frame_->has_transparent_background);
+  scoped_refptr<cc::Layer> readback_layer = CreateSurfaceLayer(
+      surface_manager_, cc::SurfaceId(surface_factory_->frame_sink_id(),
+                                      current_frame_->local_frame_id),
+      current_frame_->surface_size,
+      !current_frame_->has_transparent_background);
   readback_layer->SetHideLayerAndSubtree(true);
   compositor->AttachLayerForReadback(readback_layer);
   std::unique_ptr<cc::CopyOutputRequest> copy_output_request =
@@ -195,7 +197,7 @@ void DelegatedFrameHostAndroid::DestroyDelegatedContent() {
 
   content_layer_->RemoveFromParent();
   content_layer_ = nullptr;
-  surface_factory_->Destroy(current_frame_->surface_id);
+  surface_factory_->Destroy(current_frame_->local_frame_id);
   current_frame_.reset();
 
   UpdateBackgroundLayer();

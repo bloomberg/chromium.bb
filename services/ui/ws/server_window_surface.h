@@ -50,7 +50,9 @@ class ServerWindowSurface : public mojom::Surface,
       cc::CompositorFrame frame,
       const SubmitCompositorFrameCallback& callback) override;
 
-  const cc::SurfaceId& id() const { return surface_id_; }
+  const cc::LocalFrameId& local_frame_id() const { return local_frame_id_; }
+
+  cc::SurfaceId GetSurfaceId() const;
 
   // Destroys old surfaces that have been outdated by a new surface.
   void DestroySurfacesScheduledForDestruction();
@@ -68,7 +70,7 @@ class ServerWindowSurface : public mojom::Surface,
 
   gfx::Size last_submitted_frame_size_;
 
-  cc::SurfaceId surface_id_;
+  cc::LocalFrameId local_frame_id_;
   cc::SurfaceIdAllocator surface_id_allocator_;
   cc::SurfaceFactory surface_factory_;
 
@@ -76,7 +78,7 @@ class ServerWindowSurface : public mojom::Surface,
   mojo::Binding<Surface> binding_;
 
   // Set of surface ids that need to be destroyed.
-  std::set<cc::SurfaceId> surfaces_scheduled_for_destruction_;
+  std::set<cc::LocalFrameId> surfaces_scheduled_for_destruction_;
 
   bool may_contain_video_ = false;
 

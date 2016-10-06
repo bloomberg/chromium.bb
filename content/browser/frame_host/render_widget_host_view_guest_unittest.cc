@@ -212,9 +212,13 @@ class RenderWidgetHostViewGuestSurfaceTest
 #endif
   }
 
-  cc::SurfaceId surface_id() {
+  cc::SurfaceId GetSurfaceId() const {
     DCHECK(view_);
-    return static_cast<RenderWidgetHostViewChildFrame*>(view_)->surface_id_;
+    RenderWidgetHostViewChildFrame* rwhvcf =
+        static_cast<RenderWidgetHostViewChildFrame*>(view_);
+    if (rwhvcf->local_frame_id_.is_null())
+      return cc::SurfaceId();
+    return cc::SurfaceId(rwhvcf->frame_sink_id_, rwhvcf->local_frame_id_);
   }
 
  protected:
@@ -268,7 +272,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   view_->OnSwapCompositorFrame(
       0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
-  cc::SurfaceId id = surface_id();
+  cc::SurfaceId id = GetSurfaceId();
   if (!id.is_null()) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -291,7 +295,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   view_->OnSwapCompositorFrame(
       0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
-  id = surface_id();
+  id = GetSurfaceId();
   if (!id.is_null()) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -314,7 +318,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 
   view_->OnSwapCompositorFrame(
       0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
-  EXPECT_TRUE(surface_id().is_null());
+  EXPECT_TRUE(GetSurfaceId().is_null());
 }
 
 }  // namespace content

@@ -38,28 +38,23 @@ TEST(SurfaceTest, SurfaceLifetime) {
   SurfaceFactory factory(kArbitraryFrameSinkId, &manager,
                          &surface_factory_client);
 
-  SurfaceId surface_id(kArbitraryFrameSinkId, 6, 0);
+  LocalFrameId local_frame_id(6, 0);
+  SurfaceId surface_id(kArbitraryFrameSinkId, local_frame_id);
   {
-    factory.Create(surface_id);
+    factory.Create(local_frame_id);
     EXPECT_TRUE(manager.GetSurfaceForId(surface_id));
-    factory.Destroy(surface_id);
+    factory.Destroy(local_frame_id);
   }
 
   EXPECT_EQ(NULL, manager.GetSurfaceForId(surface_id));
 }
 
 TEST(SurfaceTest, SurfaceIds) {
-  FrameSinkId frame_sink_ids[] = {FrameSinkId(0, 0), FrameSinkId(37, 37),
-                                  FrameSinkId(1337, 1234)};
   for (size_t i = 0; i < 3; ++i) {
-    const FrameSinkId& frame_sink_id = frame_sink_ids[i];
-    SurfaceIdAllocator allocator(frame_sink_id);
-    SurfaceId id1 = allocator.GenerateId();
-    EXPECT_EQ(id1.frame_sink_id(), frame_sink_id);
-    SurfaceId id2 = allocator.GenerateId();
-    EXPECT_EQ(id2.frame_sink_id(), frame_sink_id);
-    EXPECT_NE(id1.local_id(), id2.local_id());
-    EXPECT_NE(id1.nonce(), id2.nonce());
+    SurfaceIdAllocator allocator;
+    LocalFrameId id1 = allocator.GenerateId();
+    LocalFrameId id2 = allocator.GenerateId();
+    EXPECT_NE(id1, id2);
   }
 }
 

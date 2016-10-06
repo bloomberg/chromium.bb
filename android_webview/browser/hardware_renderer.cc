@@ -29,8 +29,7 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       last_egl_context_(eglGetCurrentContext()),
       surfaces_(SurfacesInstance::GetOrCreateInstance()),
       frame_sink_id_(surfaces_->AllocateFrameSinkId()),
-      surface_id_allocator_(
-          base::MakeUnique<cc::SurfaceIdAllocator>(frame_sink_id_)),
+      surface_id_allocator_(base::MakeUnique<cc::SurfaceIdAllocator>()),
       last_committed_compositor_frame_sink_id_(0u),
       last_submitted_compositor_frame_sink_id_(0u) {
   DCHECK(last_egl_context_);
@@ -143,7 +142,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   gfx::Rect clip(draw_info->clip_left, draw_info->clip_top,
                  draw_info->clip_right - draw_info->clip_left,
                  draw_info->clip_bottom - draw_info->clip_top);
-  surfaces_->DrawAndSwap(viewport, clip, transform, frame_size_, child_id_);
+  surfaces_->DrawAndSwap(viewport, clip, transform, frame_size_,
+                         cc::SurfaceId(frame_sink_id_, child_id_));
 }
 
 void HardwareRenderer::AllocateSurface() {
@@ -151,15 +151,15 @@ void HardwareRenderer::AllocateSurface() {
   DCHECK(surface_factory_);
   child_id_ = surface_id_allocator_->GenerateId();
   surface_factory_->Create(child_id_);
-  surfaces_->AddChildId(child_id_);
+  surfaces_->AddChildId(cc::SurfaceId(frame_sink_id_, child_id_));
 }
 
 void HardwareRenderer::DestroySurface() {
   DCHECK(!child_id_.is_null());
   DCHECK(surface_factory_);
-  surfaces_->RemoveChildId(child_id_);
+  surfaces_->RemoveChildId(cc::SurfaceId(frame_sink_id_, child_id_));
   surface_factory_->Destroy(child_id_);
-  child_id_ = cc::SurfaceId();
+  child_id_ = cc::LocalFrameId();
 }
 
 void HardwareRenderer::ReturnResources(

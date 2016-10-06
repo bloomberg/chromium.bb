@@ -48,7 +48,7 @@ class CompositorFrameSink : public cc::SurfaceFactoryClient,
 
   // TODO(fsamuel): This is used for surface hittesting and should not be
   // exposed outside of CompositorFrameSink.
-  const cc::SurfaceId& surface_id() const { return surface_id_; }
+  const cc::LocalFrameId& local_frame_id() const { return local_frame_id_; }
 
   // This requests the display CompositorFrame be rendered and given to the
   // callback within CopyOutputRequest.
@@ -75,7 +75,7 @@ class CompositorFrameSink : public cc::SurfaceFactoryClient,
   scoped_refptr<DisplayCompositor> display_compositor_;
   cc::SurfaceFactory factory_;
   cc::SurfaceIdAllocator allocator_;
-  cc::SurfaceId surface_id_;
+  cc::LocalFrameId local_frame_id_;
 
   gfx::Size display_size_;
   std::unique_ptr<cc::Display> display_;

@@ -67,7 +67,7 @@ class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
 
   // Overridden from cc::SurfaceFactoryClient:
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface(const cc::SurfaceId& id,
+  void WillDrawSurface(const cc::LocalFrameId& id,
                        const gfx::Rect& damage_rect) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
@@ -102,7 +102,8 @@ class Surface : public ui::LayerOwnerDelegate,
 
   aura::Window* window() { return window_.get(); }
 
-  const cc::SurfaceId& surface_id() const { return surface_id_; }
+  const cc::LocalFrameId& local_frame_id() const { return local_frame_id_; }
+  cc::SurfaceId GetSurfaceId() const;
 
   // Set a buffer as the content of this surface. A buffer can only be attached
   // to one surface at a time.
@@ -215,7 +216,7 @@ class Surface : public ui::LayerOwnerDelegate,
   // Overridden from ui::ContextFactoryObserver.
   void OnLostResources() override;
 
-  void WillDraw(const cc::SurfaceId& surface_id);
+  void WillDraw(const cc::LocalFrameId& local_frame_id);
 
   // Check whether this Surface and its children need to create new cc::Surface
   // IDs for their contents next time they get new buffer contents.
@@ -337,7 +338,7 @@ class Surface : public ui::LayerOwnerDelegate,
   scoped_refptr<SurfaceFactoryOwner> factory_owner_;
 
   // The Surface Id currently attached to the window.
-  cc::SurfaceId surface_id_;
+  cc::LocalFrameId local_frame_id_;
 
   // The next resource id the buffer will be attached to.
   int next_resource_id_ = 1;

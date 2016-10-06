@@ -70,16 +70,12 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
   // Not all tests initialize or need a context provider factory.
   if (ContextProviderFactoryImpl::GetInstance()) {
     frame_sink_id_ = AllocateFrameSinkId();
-    surface_id_allocator_ =
-        base::MakeUnique<cc::SurfaceIdAllocator>(frame_sink_id_);
     GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   }
 #else
   // Not all tests initialize or need an image transport factory.
   if (ImageTransportFactory::GetInstance()) {
     frame_sink_id_ = AllocateFrameSinkId();
-    surface_id_allocator_ =
-        base::MakeUnique<cc::SurfaceIdAllocator>(frame_sink_id_);
     GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   }
 #endif

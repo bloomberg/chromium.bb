@@ -123,15 +123,15 @@ void RenderWidgetHostViewGuest::Show() {
     // Since we were last shown, our renderer may have had a different surface
     // set (e.g. showing an interstitial), so we resend our current surface to
     // the renderer.
-    if (!surface_id_.is_null()) {
+    if (!local_frame_id_.is_null()) {
       cc::SurfaceSequence sequence =
           cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
+      cc::SurfaceId surface_id(frame_sink_id_, local_frame_id_);
       GetSurfaceManager()
-          ->GetSurfaceForId(surface_id_)
+          ->GetSurfaceForId(surface_id)
           ->AddDestructionDependency(sequence);
-      guest_->SetChildFrameSurface(surface_id_, current_surface_size_,
-                                   current_surface_scale_factor_,
-                                   sequence);
+      guest_->SetChildFrameSurface(surface_id, current_surface_size_,
+                                   current_surface_scale_factor_, sequence);
     }
   }
   host_->WasShown(ui::LatencyInfo());
@@ -289,7 +289,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   // frame renderer has changed its output surface, or size, or scale factor.
   if (compositor_frame_sink_id != last_compositor_frame_sink_id_ &&
       surface_factory_) {
-    surface_factory_->Destroy(surface_id_);
+    surface_factory_->Destroy(local_frame_id_);
     surface_factory_.reset();
   }
   if (compositor_frame_sink_id != last_compositor_frame_sink_id_ ||
@@ -308,22 +308,23 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
         base::MakeUnique<cc::SurfaceFactory>(frame_sink_id_, manager, this);
   }
 
-  if (surface_id_.is_null()) {
-    surface_id_ = id_allocator_->GenerateId();
-    surface_factory_->Create(surface_id_);
+  if (local_frame_id_.is_null()) {
+    local_frame_id_ = id_allocator_->GenerateId();
+    surface_factory_->Create(local_frame_id_);
 
     cc::SurfaceSequence sequence =
         cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
     // The renderer process will satisfy this dependency when it creates a
     // SurfaceLayer.
     cc::SurfaceManager* manager = GetSurfaceManager();
-    manager->GetSurfaceForId(surface_id_)->AddDestructionDependency(sequence);
+    cc::SurfaceId surface_id(frame_sink_id_, local_frame_id_);
+    manager->GetSurfaceForId(surface_id)->AddDestructionDependency(sequence);
     // TODO(wjmaclean): I'm not sure what it means to create a surface id
     // without setting it on the child, though since we will in this case be
     // guaranteed to call ClearCompositorSurfaceIfNecessary() below, I suspect
     // skipping SetChildFrameSurface() here is irrelevant.
     if (guest_ && !guest_->is_in_destruction()) {
-      guest_->SetChildFrameSurface(surface_id_, frame_size, scale_factor,
+      guest_->SetChildFrameSurface(surface_id, frame_size, scale_factor,
                                    sequence);
     }
   }
@@ -334,7 +335,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   ack_pending_count_++;
   // If this value grows very large, something is going wrong.
   DCHECK(ack_pending_count_ < 1000);
-  surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
+  surface_factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
                                           ack_callback);
 
   ProcessFrameSwappedCallbacks();

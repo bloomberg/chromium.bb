@@ -14,7 +14,7 @@
 namespace content {
 
 OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl()
-    : id_allocator_(new cc::SurfaceIdAllocator(AllocateFrameSinkId())) {}
+    : id_allocator_(new cc::SurfaceIdAllocator()) {}
 
 OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {}
 
@@ -29,7 +29,8 @@ void OffscreenCanvasSurfaceImpl::GetSurfaceId(
     const GetSurfaceIdCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  surface_id_ = id_allocator_->GenerateId();
+  cc::LocalFrameId local_frame_id = id_allocator_->GenerateId();
+  surface_id_ = cc::SurfaceId(AllocateFrameSinkId(), local_frame_id);
 
   callback.Run(surface_id_);
 }

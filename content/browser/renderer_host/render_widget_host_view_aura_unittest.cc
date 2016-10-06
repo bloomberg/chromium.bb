@@ -366,9 +366,11 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return GetDelegatedFrameHost()->SurfaceIdForTesting();
   }
 
-  bool HasFrameData() const {
-    return !surface_id().is_null();
+  const cc::LocalFrameId& GetLocalFrameId() const {
+    return GetDelegatedFrameHost()->LocalFrameIdForTesting();
   }
+
+  bool HasFrameData() const { return !GetLocalFrameId().is_null(); }
 
   bool released_front_lock_active() const {
     return GetDelegatedFrameHost()->ReleasedFrontLockActiveForTesting();
@@ -2570,7 +2572,8 @@ class RenderWidgetHostViewAuraCopyRequestTest
     cc::SurfaceId surface_id =
         view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
     if (!surface_id.is_null())
-      view_->GetDelegatedFrameHost()->WillDrawSurface(surface_id, view_rect_);
+      view_->GetDelegatedFrameHost()->WillDrawSurface(
+          surface_id.local_frame_id(), view_rect_);
     ASSERT_TRUE(view_->last_copy_request_);
   }
 

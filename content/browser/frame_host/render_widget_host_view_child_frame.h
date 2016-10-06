@@ -217,7 +217,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // Surface-related state.
   std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
-  cc::SurfaceId surface_id_;
+  cc::LocalFrameId local_frame_id_;
   uint32_t next_surface_sequence_;
   uint32_t last_compositor_frame_sink_id_;
   gfx::Size current_surface_size_;

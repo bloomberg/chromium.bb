@@ -82,8 +82,6 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       widget_valid_(false),
       compositor_frame_sink_requested_(false),
       frame_sink_id_(context_factory->AllocateFrameSinkId()),
-      surface_id_allocator_(
-          base::MakeUnique<cc::SurfaceIdAllocator>(frame_sink_id_)),
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
       device_scale_factor_(0.0f),

@@ -72,7 +72,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   scoped_refptr<SurfaceLayer> layer(SurfaceLayer::Create(
       base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
-  layer->SetSurfaceId(SurfaceId(kArbitraryFrameSinkId, 1, 0), 1.f,
+  layer->SetSurfaceId(SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, 0)), 1.f,
                       gfx::Size(1, 1));
   layer_tree_host_->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(1, 1));
@@ -83,8 +83,8 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   scoped_refptr<SurfaceLayer> layer2(SurfaceLayer::Create(
       base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
-  layer2->SetSurfaceId(SurfaceId(kArbitraryFrameSinkId, 1, 0), 1.f,
-                       gfx::Size(1, 1));
+  layer2->SetSurfaceId(SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, 0)),
+                       1.f, gfx::Size(1, 1));
   layer_tree_host2->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(2, 2));
   layer_tree_host2->SetRootLayer(layer2);
@@ -104,7 +104,8 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
 
   // Set of sequences that need to be satisfied should include sequences from
   // both trees.
-  EXPECT_TRUE(required_id == SurfaceId(kArbitraryFrameSinkId, 1, 0));
+  EXPECT_TRUE(required_id ==
+              SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, 0)));
   EXPECT_EQ(2u, required_seq.size());
   EXPECT_TRUE(required_seq.count(expected1));
   EXPECT_TRUE(required_seq.count(expected2));
@@ -133,8 +134,8 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     layer_ = SurfaceLayer::Create(
         base::Bind(&SatisfyCallback, &satisfied_sequence_),
         base::Bind(&RequireCallback, &required_id_, &required_set_));
-    layer_->SetSurfaceId(SurfaceId(kArbitraryFrameSinkId, 1, 0), 1.f,
-                         gfx::Size(1, 1));
+    layer_->SetSurfaceId(SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, 0)),
+                         1.f, gfx::Size(1, 1));
 
     // Layer hasn't been added to tree so no SurfaceSequence generated yet.
     EXPECT_EQ(0u, required_set_.size());
@@ -143,7 +144,8 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
 
     // Should have SurfaceSequence from first tree.
     SurfaceSequence expected(kArbitraryFrameSinkId, 1u);
-    EXPECT_TRUE(required_id_ == SurfaceId(kArbitraryFrameSinkId, 1, 0));
+    EXPECT_TRUE(required_id_ ==
+                SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, 0)));
     EXPECT_EQ(1u, required_set_.size());
     EXPECT_TRUE(required_set_.count(expected));
 
@@ -210,7 +212,8 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
   }
 
   void AfterTest() override {
-    EXPECT_TRUE(required_id_ == SurfaceId(kArbitraryFrameSinkId, 1, 0));
+    EXPECT_TRUE(required_id_ ==
+                SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, 0)));
     EXPECT_EQ(1u, required_set_.size());
     // Sequence should have been satisfied through Swap, not with the
     // callback.
@@ -249,7 +252,8 @@ class SurfaceLayerSwapPromiseWithoutDraw : public SurfaceLayerSwapPromise {
   }
 
   void AfterTest() override {
-    EXPECT_TRUE(required_id_ == SurfaceId(kArbitraryFrameSinkId, 1, 0));
+    EXPECT_TRUE(required_id_ ==
+                SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, 0)));
     EXPECT_EQ(1u, required_set_.size());
     // Sequence should have been satisfied with the callback.
     EXPECT_TRUE(satisfied_sequence_ ==

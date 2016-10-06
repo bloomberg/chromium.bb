@@ -14,9 +14,9 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/texture_mailbox_deleter.h"
 
-static constexpr cc::FrameSinkId kCompositorFrameSinkId(1, 1);
-
 namespace cc {
+
+static constexpr FrameSinkId kCompositorFrameSinkId(1, 1);
 
 TestCompositorFrameSink::TestCompositorFrameSink(
     scoped_refptr<ContextProvider> compositor_context_provider,
@@ -32,7 +32,7 @@ TestCompositorFrameSink::TestCompositorFrameSink(
                           std::move(worker_context_provider)),
       frame_sink_id_(kCompositorFrameSinkId),
       surface_manager_(new SurfaceManager),
-      surface_id_allocator_(new SurfaceIdAllocator(frame_sink_id_)),
+      surface_id_allocator_(new SurfaceIdAllocator()),
       surface_factory_(
           new SurfaceFactory(frame_sink_id_, surface_manager_.get(), this)),
       weak_ptrs_(this) {
@@ -103,8 +103,8 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
 void TestCompositorFrameSink::DetachFromClient() {
   // Some tests make BindToClient fail on purpose. ^__^
   if (bound_) {
-    if (!delegated_surface_id_.is_null())
-      surface_factory_->Destroy(delegated_surface_id_);
+    if (!delegated_local_frame_id_.is_null())
+      surface_factory_->Destroy(delegated_local_frame_id_);
     surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
     surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
     bound_ = false;
@@ -121,11 +121,11 @@ void TestCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
   if (test_client_)
     test_client_->DisplayReceivedCompositorFrame(frame);
 
-  if (delegated_surface_id_.is_null()) {
-    delegated_surface_id_ = surface_id_allocator_->GenerateId();
-    surface_factory_->Create(delegated_surface_id_);
+  if (delegated_local_frame_id_.is_null()) {
+    delegated_local_frame_id_ = surface_id_allocator_->GenerateId();
+    surface_factory_->Create(delegated_local_frame_id_);
   }
-  display_->SetSurfaceId(delegated_surface_id_,
+  display_->SetSurfaceId(SurfaceId(frame_sink_id_, delegated_local_frame_id_),
                          frame.metadata.device_scale_factor);
 
   gfx::Size frame_size =
@@ -135,13 +135,14 @@ void TestCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
   bool synchronous = !display_->has_scheduler();
 
   surface_factory_->SubmitCompositorFrame(
-      delegated_surface_id_, std::move(frame),
+      delegated_local_frame_id_, std::move(frame),
       base::Bind(&TestCompositorFrameSink::DidDrawCallback,
                  weak_ptrs_.GetWeakPtr(), synchronous));
 
-  for (std::unique_ptr<CopyOutputRequest>& copy_request : copy_requests_)
-    surface_factory_->RequestCopyOfSurface(delegated_surface_id_,
+  for (std::unique_ptr<CopyOutputRequest>& copy_request : copy_requests_) {
+    surface_factory_->RequestCopyOfSurface(delegated_local_frame_id_,
                                            std::move(copy_request));
+  }
   copy_requests_.clear();
 
   if (synchronous)
@@ -163,8 +164,8 @@ void TestCompositorFrameSink::DidDrawCallback(bool synchronous) {
 
 void TestCompositorFrameSink::ForceReclaimResources() {
   if (capabilities_.can_force_reclaim_resources &&
-      !delegated_surface_id_.is_null()) {
-    surface_factory_->SubmitCompositorFrame(delegated_surface_id_,
+      !delegated_local_frame_id_.is_null()) {
+    surface_factory_->SubmitCompositorFrame(delegated_local_frame_id_,
                                             CompositorFrame(),
                                             SurfaceFactory::DrawCallback());
   }

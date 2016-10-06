@@ -67,7 +67,8 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreenInternal(
     offscreenCanvas->setSurfaceId(
         bridge->getSurfaceId().frame_sink_id().client_id(),
         bridge->getSurfaceId().frame_sink_id().sink_id(),
-        bridge->getSurfaceId().local_id(), bridge->getSurfaceId().nonce());
+        bridge->getSurfaceId().local_frame_id().local_id(),
+        bridge->getSurfaceId().local_frame_id().nonce());
   }
   return offscreenCanvas;
 }
