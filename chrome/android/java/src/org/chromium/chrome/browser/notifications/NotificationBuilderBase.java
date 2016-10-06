@@ -350,6 +350,7 @@ public abstract class NotificationBuilderBase {
      * Creates a public version of the notification to be displayed in sensitive contexts, such as
      * on the lockscreen, displaying just the site origin and badge or generated icon.
      */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     protected Notification createPublicNotification(Context context) {
         // Use Android's Notification.Builder because we want the default small icon behaviour.
         Notification.Builder builder =
@@ -358,14 +359,14 @@ public abstract class NotificationBuilderBase {
                                 org.chromium.chrome.R.string.notification_hidden_text))
                         .setSmallIcon(org.chromium.chrome.R.drawable.ic_chrome);
 
-        // TODO Change the following version check to '== Build.VERSION_CODES.N' when we bump the
-        // targetSdkVersion to 24.
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             // On N, 'subtext' displays at the top of the notification and this looks better.
             builder.setSubText(mOrigin);
         } else {
             // Set origin as title on L & M, because they look odd without one.
             builder.setContentTitle(mOrigin);
+            // Hide the timestamp to match Android's default public notifications on L and M.
+            builder.setShowWhen(false);
         }
 
         // Use the badge if provided and SDK supports it, else use a generated icon.
