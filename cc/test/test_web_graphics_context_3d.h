@@ -335,7 +335,6 @@ class TestWebGraphicsContext3D {
   void set_support_sync_query(bool support) {
     test_capabilities_.sync_query = support;
   }
-  void set_support_image(bool support) { test_capabilities_.image = support; }
   void set_support_texture_rectangle(bool support) {
     test_capabilities_.texture_rectangle = support;
   }

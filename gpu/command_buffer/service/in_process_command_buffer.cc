@@ -292,10 +292,8 @@ bool InProcessCommandBuffer::Initialize(
 
   gpu_memory_buffer_manager_ = gpu_memory_buffer_manager;
 
-  if (result) {
+  if (result)
     capabilities_ = capabilities;
-    capabilities_.image = capabilities_.image && gpu_memory_buffer_manager_;
-  }
 
   return result;
 }

@@ -3605,7 +3605,6 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.post_sub_buffer = supports_post_sub_buffer_;
   caps.swap_buffers_with_damage = supports_swap_buffers_with_damage_;
   caps.commit_overlay_planes = supports_commit_overlay_planes_;
-  caps.image = true;
   caps.surfaceless = surfaceless_;
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   caps.flips_vertically = !is_offscreen && surface_->FlipsVertically();

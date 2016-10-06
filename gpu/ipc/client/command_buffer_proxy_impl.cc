@@ -233,7 +233,6 @@ bool CommandBufferProxyImpl::Initialize(
   }
 
   channel_ = std::move(channel);
-  capabilities_.image = true;
   callback_thread_ = std::move(task_runner);
 
   return true;

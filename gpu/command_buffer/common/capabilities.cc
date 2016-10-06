@@ -71,7 +71,6 @@ Capabilities::Capabilities()
       texture_storage(false),
       discard_framebuffer(false),
       sync_query(false),
-      image(false),
       future_sync_points(false),
       blend_equation_advanced(false),
       blend_equation_advanced_coherent(false),

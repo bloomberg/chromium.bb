@@ -87,7 +87,6 @@ class PerfContextProvider : public ContextProvider {
   bool BindToCurrentThread() override { return true; }
   gpu::Capabilities ContextCapabilities() override {
     gpu::Capabilities capabilities;
-    capabilities.image = true;
     capabilities.sync_query = true;
     return capabilities;
   }

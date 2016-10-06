@@ -3649,9 +3649,9 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
     if (name == GL_EXTENSIONS) {
       str += std::string(str.empty() ? "" : " ") +
              "GL_EXT_unpack_subimage "
-             "GL_CHROMIUM_map_sub";
-      if (capabilities_.image)
-        str += " GL_CHROMIUM_image GL_CHROMIUM_gpu_memory_buffer_image";
+             "GL_CHROMIUM_map_sub "
+             "GL_CHROMIUM_image "
+             "GL_CHROMIUM_gpu_memory_buffer_image";
       if (capabilities_.future_sync_points)
         str += " GL_CHROMIUM_future_sync_point";
     }

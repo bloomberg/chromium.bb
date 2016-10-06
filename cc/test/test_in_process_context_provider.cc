@@ -107,7 +107,6 @@ base::Lock* TestInProcessContextProvider::GetLock() {
 
 gpu::Capabilities TestInProcessContextProvider::ContextCapabilities() {
   gpu::Capabilities capabilities;
-  capabilities.image = true;
   capabilities.texture_rectangle = true;
   capabilities.sync_query = true;
   switch (PlatformColor::Format()) {

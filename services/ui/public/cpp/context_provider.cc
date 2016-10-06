@@ -48,11 +48,7 @@ cc::ContextCacheController* ContextProvider::CacheController() {
 void ContextProvider::InvalidateGrContext(uint32_t state) {}
 
 gpu::Capabilities ContextProvider::ContextCapabilities() {
-  gpu::Capabilities capabilities;
-  // Enabled the CHROMIUM_image extension to use GpuMemoryBuffers. The
-  // implementation of which is used in CommandBufferDriver.
-  capabilities.image = true;
-  return capabilities;
+  return gpu::Capabilities();
 }
 
 base::Lock* ContextProvider::GetLock() {

@@ -73,7 +73,6 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       bound_buffer_(0),
       weak_ptr_factory_(this) {
   CreateNamespace();
-  set_support_image(true);
   set_have_extension_egl_image(true);  // For stream textures.
 }
 
