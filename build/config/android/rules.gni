@@ -1732,10 +1732,10 @@ if (enable_java_templates) {
           defines += [ "_DCHECK_IS_ON" ]
         }
         defines += [
-          "COMPRESSED_ASSETS_LIST=" +
-              "@FileArg($_rebased_build_config:compressed_assets_java_list)",
-          "UNCOMPRESSED_ASSETS_LIST=" +
-              "@FileArg($_rebased_build_config:uncompressed_assets_java_list)",
+          "COMPRESSED_LOCALE_LIST=" +
+              "@FileArg($_rebased_build_config:compressed_locales_java_list)",
+          "UNCOMPRESSED_LOCALE_LIST=" +
+              "@FileArg($_rebased_build_config:uncompressed_locales_java_list)",
         ]
       }
       _srcjar_deps += [ ":${_template_name}__build_config_java" ]

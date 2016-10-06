@@ -217,9 +217,11 @@ def _CreateJavaLibrariesList(library_paths):
   return ('{%s}' % ','.join(['"%s"' % s[3:-3] for s in library_paths]))
 
 
-def _CreateJavaAssetList(assets):
+def _CreateLocalePaksAssetJavaList(assets):
   """Returns a java literal array from a list of assets in the form src:dst."""
-  return '{%s}' % ','.join(sorted(['"%s"' % a.split(':')[1] for a in assets]))
+  names_only = (a.split(':')[1][:-4] for a in assets if a.endswith('.pak'))
+  locales_only = (a for a in names_only if '-' in a or len(a) == 2)
+  return '{%s}' % ','.join(sorted('"%s"' % a for a in locales_only))
 
 
 def main(argv):
@@ -644,10 +646,10 @@ def main(argv):
     }
     config['assets'], config['uncompressed_assets'] = (
         _MergeAssets(deps.All('android_assets')))
-    config['compressed_assets_java_list'] = (
-        _CreateJavaAssetList(config['assets']))
-    config['uncompressed_assets_java_list'] = (
-        _CreateJavaAssetList(config['uncompressed_assets']))
+    config['compressed_locales_java_list'] = (
+        _CreateLocalePaksAssetJavaList(config['assets']))
+    config['uncompressed_locales_java_list'] = (
+        _CreateLocalePaksAssetJavaList(config['uncompressed_assets']))
 
   build_utils.WriteJson(config, options.build_config, only_if_changed=True)
 
