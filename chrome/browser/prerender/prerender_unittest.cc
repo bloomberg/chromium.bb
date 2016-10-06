@@ -995,6 +995,22 @@ TEST_F(PrerenderTest, NotSoRecentlyVisited) {
   ASSERT_EQ(prerender_contents, entry.get());
 }
 
+// Tests that the offline origin is not restricted by recently visited check.
+TEST_F(PrerenderTest, OfflinePrerenderStartsWhenRecentlyVisited) {
+  GURL url("http://www.google.com/");
+
+  prerender_manager()->RecordNavigation(url);
+
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
+  std::unique_ptr<PrerenderHandle> prerender_handle =
+      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize);
+  EXPECT_TRUE(prerender_handle);
+  EXPECT_TRUE(prerender_handle->IsPrerendering());
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+}
+
 // Tests that the prerender manager matches include the fragment.
 TEST_F(PrerenderTest, FragmentMatchesTest) {
   GURL fragment_url("http://www.google.com/#test");

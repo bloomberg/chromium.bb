@@ -502,7 +502,8 @@ bool PrerenderContents::CheckURL(const GURL& url) {
     Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
     return false;
   }
-  if (prerender_manager_->HasRecentlyBeenNavigatedTo(origin(), url)) {
+  if (origin() != ORIGIN_OFFLINE &&
+      prerender_manager_->HasRecentlyBeenNavigatedTo(origin(), url)) {
     Destroy(FINAL_STATUS_RECENTLY_VISITED);
     return false;
   }
