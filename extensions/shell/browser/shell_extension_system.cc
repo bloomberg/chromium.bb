@@ -56,6 +56,13 @@ const Extension* ShellExtensionSystem::LoadApp(const base::FilePath& app_dir) {
     return nullptr;
   }
 
+  // Log warnings.
+  if (extension->install_warnings().size()) {
+    LOG(WARNING) << "Warnings loading extension at " << app_dir.value() << ":";
+    for (const auto& warning : extension->install_warnings())
+      LOG(WARNING) << warning.message;
+  }
+
   // TODO(jamescook): We may want to do some of these things here:
   // * Create a PermissionsUpdater.
   // * Call PermissionsUpdater::GrantActivePermissions().
