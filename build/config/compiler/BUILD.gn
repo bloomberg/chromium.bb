@@ -1360,6 +1360,8 @@ config("optimize_no_wpo") {
   } else if (optimize_for_size) {
     # Favor size over speed.
     cflags = [ "-Os" ] + common_optimize_on_cflags
+  } else if (optimize_for_fuzzing) {
+    cflags = [ "-O1" ] + common_optimize_on_cflags
   } else {
     cflags = [ "-O2" ] + common_optimize_on_cflags
   }
@@ -1416,6 +1418,8 @@ config("optimize_max") {
           "/wd4702",
         ]
       }
+    } else if (optimize_for_fuzzing) {
+      cflags = [ "-O1" ] + common_optimize_on_cflags
     } else {
       cflags = [ "-O2" ] + common_optimize_on_cflags
     }
@@ -1459,6 +1463,8 @@ config("optimize_speed") {
           "/wd4702",
         ]
       }
+    } else if (optimize_for_fuzzing) {
+      cflags = [ "-O1" ] + common_optimize_on_cflags
     } else {
       cflags = [ "-O3" ] + common_optimize_on_cflags
     }
