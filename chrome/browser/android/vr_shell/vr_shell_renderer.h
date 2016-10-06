@@ -99,7 +99,6 @@ class ReticleRenderer : public BaseRenderer {
 
  private:
   GLuint combined_matrix_handle_;
-
   GLuint color_handle_;
   GLuint ring_diameter_handle_;
   GLuint inner_hole_handle_;
@@ -120,7 +119,6 @@ class LaserRenderer : public BaseRenderer {
 
  private:
   GLuint combined_matrix_handle_;
-
   GLuint texture_unit_handle_;
   GLuint texture_data_handle_;
   GLuint color_handle_;

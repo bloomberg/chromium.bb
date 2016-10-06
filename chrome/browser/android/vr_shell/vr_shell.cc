@@ -7,6 +7,7 @@
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
+#include "chrome/browser/android/vr_shell/vr_gesture.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
@@ -20,6 +21,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/screen_info.h"
 #include "jni/VrShell_jni.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/page_transition_types.h"
@@ -140,6 +142,7 @@ VrShell::VrShell(JNIEnv* env,
       content_cvc_(content_cvc),
       ui_cvc_(ui_cvc),
       weak_ptr_factory_(this) {
+  DCHECK(g_instance == nullptr);
   g_instance = this;
   j_vr_shell_.Reset(env, obj);
   content_compositor_.reset(new VrCompositor(content_window, false));
@@ -152,8 +155,6 @@ VrShell::VrShell(JNIEnv* env,
   rect->size = {screen_width, screen_height, 1.0f};
   rect->translation = kDesktopPositionDefault;
   scene_.AddUiElement(rect);
-
-  desktop_plane_ = scene_.GetUiElementById(kBrowserUiElementId);
 
   LoadUIContent();
 
@@ -256,8 +257,11 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   gvr::Vec3f origin = kHandPosition;
 
   target_element_ = nullptr;
-  float distance = scene_.GetUiElementById(kBrowserUiElementId)
-      ->GetRayDistance(origin, forward);
+
+  ContentRectangle* content_plane =
+      scene_.GetUiElementById(kBrowserUiElementId);
+
+  float distance = content_plane->GetRayDistance(origin, forward);
 
   // If we place the reticle based on elements intersecting the controller beam,
   // we can end up with the reticle hiding behind elements, or jumping laterally
@@ -277,7 +281,7 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   // rather than eye, for simplicity. This will make the sphere slightly
   // off-center.
   gvr::Vec3f corner = {0.5f, 0.5f, 0.0f};
-  corner = MatrixVectorMul(desktop_plane_->transform.to_world, corner);
+  corner = MatrixVectorMul(content_plane->transform.to_world, corner);
   float max_distance = Distance(origin, corner) * kReticleDistanceMultiplier;
   if (distance > max_distance || distance <= 0.0f) {
     distance = max_distance;

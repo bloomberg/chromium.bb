@@ -14,9 +14,9 @@
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "content/public/browser/web_ui.h"
 
-VrShellUIMessageHandler::VrShellUIMessageHandler() {}
+VrShellUIMessageHandler::VrShellUIMessageHandler() = default;
 
-VrShellUIMessageHandler::~VrShellUIMessageHandler() {}
+VrShellUIMessageHandler::~VrShellUIMessageHandler() = default;
 
 void VrShellUIMessageHandler::RegisterMessages() {
   vr_shell_ = vr_shell::VrShell::GetWeakPtr(web_ui()->GetWebContents());

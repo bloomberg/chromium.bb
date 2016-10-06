@@ -141,8 +141,6 @@ class VrShell : public device::GvrDelegate {
   float desktop_screen_tilt_;
   float desktop_height_;
 
-  ContentRectangle* desktop_plane_;
-
   UiScene scene_;
 
   std::unique_ptr<gvr::GvrApi> gvr_api_;
