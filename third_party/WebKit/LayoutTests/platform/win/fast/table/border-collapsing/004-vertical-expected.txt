@@ -54,7 +54,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutTableCell {TH} at (0,357) size 31x192 [border: (2px solid #800080)] [r=0 c=2 rs=1 cs=1]
                 LayoutText {#text} at (6,48) size 17x97
                   text run at (6,48) width 96: "Header Three"
-            LayoutTableRow {TR} at (0,31) size 102x549
+            LayoutTableRow {TR} at (31,0) size 102x549
               LayoutTableCell {TD} at (31,27) size 102x129 [border: (2px solid #008000)] [r=1 c=0 rs=1 cs=1]
                 LayoutText {#text} at (33,-20) size 35x161
                   text run at (33,-20) width 119: "This table uses the"
@@ -72,7 +72,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   text run at (42,89) width 76: "on all sides,"
                   text run at (60,6) width 154: "should be medium solid"
                   text run at (78,6) width 45: "purple."
-            LayoutTableRow {TR} at (0,133) size 102x549
+            LayoutTableRow {TR} at (133,0) size 102x549
               LayoutTableCell {TD} at (133,0) size 102x183 [border: (2px solid #008000)] [r=2 c=0 rs=1 cs=1]
                 LayoutText {#text} at (5,7) size 89x157
                   text run at (5,7) width 147: "The border of the table"
@@ -104,7 +104,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   text run at (77,6) width 82: "of its border."
         LayoutTable {TABLE} at (270,16) size 290x552 [border: (3px solid #0000FF)]
           LayoutTableSection {TBODY} at (3,3) size 284x546
-            LayoutTableRow {TR} at (0,16) size 34x546
+            LayoutTableRow {TR} at (16,0) size 34x546
               LayoutTableCell {TH} at (16,16) size 34x118 [border: (3px solid #800080)] [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (8,17) size 17x84
                   text run at (8,17) width 84: "Header One"
@@ -114,7 +114,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutTableCell {TH} at (16,305) size 34x225 [border: (3px solid #800080)] [r=0 c=2 rs=1 cs=1]
                 LayoutText {#text} at (8,64) size 17x97
                   text run at (8,64) width 96: "Header Three"
-            LayoutTableRow {TR} at (0,66) size 84x546
+            LayoutTableRow {TR} at (66,0) size 84x546
               LayoutTableCell {TD} at (66,25) size 84x100 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]
                 LayoutText {#text} at (15,-3) size 53x96
                   text run at (15,-3) width 96: "This table uses"
@@ -131,7 +131,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   text run at (15,-3) width 205: "The borders on the header cells,"
                   text run at (33,-3) width 199: "on all sides, should be medium"
                   text run at (51,-3) width 80: "solid purple."
-            LayoutTableRow {TR} at (0,166) size 102x546
+            LayoutTableRow {TR} at (166,0) size 102x546
               LayoutTableCell {TD} at (166,16) size 102x118 [border: (1px solid #008000)] [r=2 c=0 rs=1 cs=1]
                 LayoutText {#text} at (6,6) size 89x91
                   text run at (6,6) width 88: "The border of"
@@ -158,7 +158,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   text run at (69,64) width 86: " of its border."
         LayoutTable {TABLE} at (576,16) size 348x552 [border: (3px solid #0000FF)]
           LayoutTableSection {TBODY} at (3,3) size 342x546
-            LayoutTableRow {TR} at (0,8) size 34x546
+            LayoutTableRow {TR} at (8,0) size 34x546
               LayoutTableCell {TH} at (8,0) size 34x141 [border: (3px solid #800080)] [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (8,28) size 17x85
                   text run at (8,28) width 84: "Header One"
@@ -168,7 +168,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutTableCell {TH} at (8,340) size 34x206 [border: (3px solid #800080)] [r=0 c=2 rs=1 cs=1]
                 LayoutText {#text} at (8,55) size 17x96
                   text run at (8,55) width 96: "Header Three"
-            LayoutTableRow {TR} at (0,50) size 138x546
+            LayoutTableRow {TR} at (50,0) size 138x546
               LayoutTableCell {TD} at (50,36) size 138x69 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]
                 LayoutText {#text} at (42,-30) size 53x119
                   text run at (42,-30) width 119: "This table uses the"
@@ -190,7 +190,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   text run at (60,-30) width 38: "cells, "
                   text run at (60,7) width 142: "on all sides, should be"
                   text run at (78,-30) width 137: "medium solid purple."
-            LayoutTableRow {TR} at (0,196) size 138x546
+            LayoutTableRow {TR} at (196,0) size 138x546
               LayoutTableCell {TD} at (196,0) size 138x141 [border: (1px solid #008000)] [r=2 c=0 rs=1 cs=1]
                 LayoutText {#text} at (6,6) size 125x126
                   text run at (6,6) width 112: "The border of the"
@@ -238,7 +238,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutTableCell {TH} at (0,322) size 34x216 [border: (3px solid #800080)] [r=0 c=2 rs=1 cs=1]
                 LayoutText {#text} at (8,60) size 17x96
                   text run at (8,60) width 96: "Header Three"
-            LayoutTableRow {TR} at (0,34) size 102x546
+            LayoutTableRow {TR} at (34,0) size 102x546
               LayoutTableCell {TD} at (34,26) size 102x112 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]
                 LayoutText {#text} at (24,-12) size 53x119
                   text run at (24,-12) width 119: "This table uses the"
@@ -257,7 +257,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   text run at (42,-12) width 38: "cells, "
                   text run at (42,25) width 142: "on all sides, should be"
                   text run at (60,-12) width 137: "medium solid purple."
-            LayoutTableRow {TR} at (0,136) size 138x546
+            LayoutTableRow {TR} at (136,0) size 138x546
               LayoutTableCell {TD} at (136,17) size 138x130 [border: (1px solid #008000)] [r=2 c=0 rs=1 cs=1]
                 LayoutText {#text} at (15,-3) size 107x133
                   text run at (15,-3) width 112: "The border of the"
@@ -300,7 +300,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutTableCol {COL} at (0,0) size 0x0 [border: (3px solid #FF0000)]
             LayoutTableCol {COL} at (0,0) size 0x0 [border: (3px solid #FF0000)]
           LayoutTableSection {THEAD} at (18,0) size 50x552 [border: (3px solid #FF0000)]
-            LayoutTableRow {TR} at (0,2) size 46x552 [border: (3px solid #FF0000)]
+            LayoutTableRow {TR} at (2,0) size 46x552 [border: (3px solid #FF0000)]
               LayoutTableCell {TH} at (2,2) size 46x90 [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (5,19) size 35x52
                   text run at (5,19) width 51: "Header"
@@ -332,7 +332,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   text run at (32,-4) width 187: "elements that represent rows,"
                   text run at (50,-4) width 158: "row-groups, columns, or"
                   text run at (68,-4) width 101: "column-groups."
-            LayoutTableRow {TR} at (0,102) size 100x552 [border: (3px solid #FF0000)]
+            LayoutTableRow {TR} at (102,0) size 100x552 [border: (3px solid #FF0000)]
               LayoutTableCell {TD} at (102,2) size 100x90 [r=1 c=0 rs=1 cs=1]
                 LayoutText {#text} at (5,5) size 89x79
                   text run at (5,5) width 38: "There"

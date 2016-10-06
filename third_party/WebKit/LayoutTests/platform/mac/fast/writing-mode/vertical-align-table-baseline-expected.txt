@@ -5,7 +5,7 @@ layer at (0,0) size 316x600
     LayoutBlockFlow {BODY} at (8,8) size 300x584
       LayoutTable {TABLE} at (0,0) size 300x584 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 296x580
-          LayoutTableRow {TR} at (0,2) size 292x580
+          LayoutTableRow {TR} at (2,0) size 292x580
             LayoutTableCell {TD} at (2,38) size 292x48 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (50,-34) size 120x144
                 text run at (50,-34) width 144: "\x{7B2C}\x{4E00}\x{6BB5}"

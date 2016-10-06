@@ -37,16 +37,16 @@ layer at (0,0) size 785x809 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (4,604) width 8: "  "
                 text run at (4,612) width 92: "   My Links:   "
                 text run at (4,704) width 86: "  Lite \x{2022} Email"
-          LayoutTableRow {TR} at (0,26) size 312x793
+          LayoutTableRow {TR} at (26,0) size 312x793
             LayoutTableCell {TD} at (26,152) size 312x-82 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (26,222) size 312x349 [border: (1px solid #008000)] [r=1 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (4,4) size 304x341
                 LayoutTableSection {TBODY} at (0,0) size 304x341
-                  LayoutTableRow {TR} at (0,2) size 300x341
+                  LayoutTableRow {TR} at (2,0) size 300x341
                     LayoutTableCell {TD} at (2,2) size 300x337 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
                       LayoutTable {TABLE} at (2,2) size 296x333
                         LayoutTableSection {TBODY} at (0,0) size 296x333
-                          LayoutTableRow {TR} at (0,2) size 292x333
+                          LayoutTableRow {TR} at (2,0) size 292x333
                             LayoutTableCell {TD} at (2,146) size 292x-162 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
                             LayoutTableCell {TD} at (2,130) size 292x72 [border: (1px solid #008000)] [r=0 c=1 rs=1 cs=1]
                               LayoutText {#text} at (2,2) size 288x68

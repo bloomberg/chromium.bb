@@ -1093,7 +1093,7 @@ void LayoutTableSection::layoutRows() {
     LayoutTableRow* rowLayoutObject = m_grid[r].rowLayoutObject;
     int paginationStrutOnRow = 0;
     if (rowLayoutObject) {
-      rowLayoutObject->setLocation(LayoutPoint(0, m_rowPos[r]));
+      rowLayoutObject->setLogicalLocation(LayoutPoint(0, m_rowPos[r]));
       rowLayoutObject->setLogicalWidth(logicalWidth());
       rowLayoutObject->setLogicalHeight(
           LayoutUnit(m_rowPos[r + 1] - m_rowPos[r] - vspacing));

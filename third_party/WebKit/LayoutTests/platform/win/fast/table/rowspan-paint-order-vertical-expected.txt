@@ -26,7 +26,7 @@ layer at (0,0) size 800x600
                 text run at (21,-18) width 36: "Right"
                 text run at (39,4) width 14: "(3"
                 text run at (57,-19) width 37: "rows)"
-          LayoutTableRow {TR} at (0,38) size 29x576
+          LayoutTableRow {TR} at (38,0) size 29x576
             LayoutTableCell {TD} at (38,265) size 29x-3 [bgcolor=#EEEEEE] [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
               LayoutText {#text} at (5,-3) size 17x4
                 text run at (5,-3) width 4: " "
@@ -54,7 +54,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (38,313) size 29x-3 [bgcolor=#EEEEEE] [border: (1px inset #808080)] [r=1 c=10 rs=1 cs=1]
               LayoutText {#text} at (5,-3) size 17x4
                 text run at (5,-3) width 4: " "
-          LayoutTableRow {TR} at (0,67) size 29x576
+          LayoutTableRow {TR} at (67,0) size 29x576
             LayoutTableCell {TD} at (67,43) size 29x528 [bgcolor=#008000] [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=13]
               LayoutText {#text} at (5,256) size 17x276
                 text run at (5,256) width 276: "Bottom Row Overlaps with the Right Cell!"

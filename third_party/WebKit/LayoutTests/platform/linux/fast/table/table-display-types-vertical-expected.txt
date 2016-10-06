@@ -6,7 +6,7 @@ layer at (0,0) size 785x1210 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {TABLE} at (10,0) size 100x118 [border: (1px solid #000000)]
         LayoutTable (anonymous) at (1,1) size 98x116
           LayoutTableSection {THEAD} at (0,0) size 26x116
-            LayoutTableRow {TR} at (0,2) size 22x116
+            LayoutTableRow {TR} at (2,0) size 22x116
               LayoutTableCell {TD} at (2,2) size 22x55 [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 19x45
                   text run at (1,1) width 45: "Head 1"
@@ -29,7 +29,7 @@ layer at (0,0) size 785x1210 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutTableCell {TD} at (0,59) size 22x55 [r=0 c=1 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 19x36
                   text run at (1,1) width 36: "Cell 2"
-            LayoutTableRow {TR} at (0,24) size 22x116
+            LayoutTableRow {TR} at (24,0) size 22x116
               LayoutTableCell {TD} at (24,2) size 22x55 [r=1 c=0 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 19x36
                   text run at (1,1) width 36: "Cell 3"
@@ -42,11 +42,11 @@ layer at (0,0) size 785x1210 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {TABLE} at (10,170) size 52x220 [border: (1px solid #000000)]
         LayoutTable (anonymous) at (1,1) size 50x218
           LayoutTableSection (anonymous) at (0,0) size 28x218
-            LayoutTableRow (anonymous) at (0,2) size 24x218
+            LayoutTableRow (anonymous) at (2,0) size 24x218
               LayoutTableCell {THEAD} at (2,2) size 24x98 [r=0 c=0 rs=1 cs=1]
                 LayoutTable (anonymous) at (0,0) size 24x98
                   LayoutTableSection (anonymous) at (0,0) size 24x98
-                    LayoutTableRow (anonymous) at (0,2) size 20x98
+                    LayoutTableRow (anonymous) at (2,0) size 20x98
                       LayoutTableCell {TR} at (2,2) size 20x94 [r=0 c=0 rs=1 cs=1]
                         LayoutInline {TD} at (0,0) size 21x47
                           LayoutText {#text} at (0,1) size 19x45
@@ -57,7 +57,7 @@ layer at (0,0) size 785x1210 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutTableCell {TFOOT} at (2,102) size 24x114 [r=0 c=1 rs=1 cs=1]
                 LayoutTable (anonymous) at (0,0) size 24x114
                   LayoutTableSection (anonymous) at (0,0) size 24x114
-                    LayoutTableRow (anonymous) at (0,2) size 20x114
+                    LayoutTableRow (anonymous) at (2,0) size 20x114
                       LayoutTableCell {TR} at (2,2) size 20x110 [r=0 c=0 rs=1 cs=1]
                         LayoutInline {TD} at (0,0) size 21x55
                           LayoutText {#text} at (0,1) size 19x53
@@ -89,7 +89,7 @@ layer at (0,0) size 785x1210 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBlockFlow {TR} at (0,0) size 26x116
             LayoutTable (anonymous) at (0,0) size 26x100
               LayoutTableSection (anonymous) at (0,0) size 26x100
-                LayoutTableRow (anonymous) at (0,2) size 22x100
+                LayoutTableRow (anonymous) at (2,0) size 22x100
                   LayoutTableCell {TD} at (2,2) size 22x47 [r=0 c=0 rs=1 cs=1]
                     LayoutText {#text} at (1,1) size 19x45
                       text run at (1,1) width 45: "Head 1"
@@ -100,7 +100,7 @@ layer at (0,0) size 785x1210 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBlockFlow {TR} at (0,0) size 26x116
             LayoutTable (anonymous) at (0,0) size 26x116
               LayoutTableSection (anonymous) at (0,0) size 26x116
-                LayoutTableRow (anonymous) at (0,2) size 22x116
+                LayoutTableRow (anonymous) at (2,0) size 22x116
                   LayoutTableCell {TD} at (2,2) size 22x55 [r=0 c=0 rs=1 cs=1]
                     LayoutText {#text} at (1,1) size 19x53
                       text run at (1,1) width 53: "Footer 1"
@@ -109,12 +109,12 @@ layer at (0,0) size 785x1210 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       text run at (1,1) width 53: "Footer 2"
         LayoutTable (anonymous) at (53,1) size 56x86
           LayoutTableSection {TBODY} at (0,0) size 56x86
-            LayoutTableRow (anonymous) at (0,2) size 52x86
+            LayoutTableRow (anonymous) at (2,0) size 52x86
               LayoutTableCell (anonymous) at (2,2) size 52x82 [r=0 c=0 rs=1 cs=1]
                 LayoutBlockFlow {TR} at (0,0) size 26x82
                   LayoutTable (anonymous) at (0,0) size 26x82
                     LayoutTableSection (anonymous) at (0,0) size 26x82
-                      LayoutTableRow (anonymous) at (0,2) size 22x82
+                      LayoutTableRow (anonymous) at (2,0) size 22x82
                         LayoutTableCell {TD} at (2,2) size 22x38 [r=0 c=0 rs=1 cs=1]
                           LayoutText {#text} at (1,1) size 19x36
                             text run at (1,1) width 36: "Cell 1"
@@ -124,7 +124,7 @@ layer at (0,0) size 785x1210 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutBlockFlow {TR} at (26,0) size 26x82
                   LayoutTable (anonymous) at (0,0) size 26x82
                     LayoutTableSection (anonymous) at (0,0) size 26x82
-                      LayoutTableRow (anonymous) at (0,2) size 22x82
+                      LayoutTableRow (anonymous) at (2,0) size 22x82
                         LayoutTableCell {TD} at (2,2) size 22x38 [r=0 c=0 rs=1 cs=1]
                           LayoutText {#text} at (1,1) size 19x36
                             text run at (1,1) width 36: "Cell 3"

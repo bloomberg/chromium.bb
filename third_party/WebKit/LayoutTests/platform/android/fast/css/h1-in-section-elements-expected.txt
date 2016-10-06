@@ -93,7 +93,7 @@ layer at (0,0) size 800x417
               LayoutBlockFlow {HR} at (1,67.94) size 71x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (152,36) size 365x152
         LayoutTableSection {TBODY} at (0,0) size 365x152
-          LayoutTableRow {TR} at (2,0) size 75x152
+          LayoutTableRow {TR} at (0,2) size 75x152
             LayoutTableCell {TD} at (2,2) size 74.81x73 [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {SECTION} at (1,1) size 72.81x71
                 LayoutBlockFlow {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
@@ -107,7 +107,7 @@ layer at (0,0) size 800x417
                 LayoutText {#text} at (1,1) size 26x69
                   text run at (1,1) width 69: "MMM"
               LayoutBlockFlow {HR} at (71.81,1) size 2x71 [border: (1px inset #EEEEEE)]
-          LayoutTableRow {TR} at (79,0) size 68x152
+          LayoutTableRow {TR} at (0,79) size 68x152
             LayoutTableCell {TD} at (79,2) size 68.44x73 [r=1 c=0 rs=1 cs=1]
               LayoutBlockFlow {ARTICLE} at (1,1) size 66.44x71
                 LayoutBlockFlow {SECTION} at (0,0) size 66.44x71
@@ -122,7 +122,7 @@ layer at (0,0) size 800x417
                 LayoutText {#text} at (1,1) size 22x54
                   text run at (1,1) width 54: "MMM"
               LayoutBlockFlow {HR} at (65.44,1) size 2x71 [border: (1px inset #EEEEEE)]
-          LayoutTableRow {TR} at (149,0) size 71x152
+          LayoutTableRow {TR} at (0,149) size 71x152
             LayoutTableCell {TD} at (149,2) size 70.53x73 [r=2 c=0 rs=1 cs=1]
               LayoutBlockFlow {NAV} at (1,1) size 68.53x71
                 LayoutBlockFlow {ARTICLE} at (0,0) size 68.53x71
@@ -138,7 +138,7 @@ layer at (0,0) size 800x417
                 LayoutText {#text} at (1,1) size 19x48
                   text run at (1,1) width 48: "MMM"
               LayoutBlockFlow {HR} at (67.53,1) size 2x71 [border: (1px inset #EEEEEE)]
-          LayoutTableRow {TR} at (222,0) size 68x152
+          LayoutTableRow {TR} at (0,222) size 68x152
             LayoutTableCell {TD} at (222,2) size 68.34x73 [r=3 c=0 rs=1 cs=1]
               LayoutBlockFlow {NAV} at (1,1) size 66.34x71
                 LayoutBlockFlow {ASIDE} at (0,0) size 66.34x71
@@ -155,7 +155,7 @@ layer at (0,0) size 800x417
                 LayoutText {#text} at (1,1) size 15x33
                   text run at (1,1) width 33: "MMM"
               LayoutBlockFlow {HR} at (65.34,1) size 2x71 [border: (1px inset #EEEEEE)]
-          LayoutTableRow {TR} at (292,0) size 71x152
+          LayoutTableRow {TR} at (0,292) size 71x152
             LayoutTableCell {TD} at (292,2) size 70.94x73 [r=4 c=0 rs=1 cs=1]
               LayoutBlockFlow {SECTION} at (1,1) size 68.94x71
                 LayoutBlockFlow {DIV} at (0,0) size 68.94x71

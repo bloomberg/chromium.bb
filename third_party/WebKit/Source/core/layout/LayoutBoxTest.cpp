@@ -173,12 +173,8 @@ TEST_F(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
   EXPECT_EQ(LayoutPoint(300, 0), cell1->topLeftLocation());
 
   const LayoutBox* row2 = toLayoutBox(getLayoutObjectByElementId("row2"));
-  // TODO(crbug.com/652496): LayoutTableRow's location is in logical coordinates
-  // of the containing section, and topLeftLocation() is incorrect.
-  // This should be (100, 0).
-  EXPECT_EQ(LayoutPoint(0, 100), row2->location());
-  // This should be (0, 0).
-  EXPECT_EQ(LayoutPoint(100, 100), row2->topLeftLocation());
+  EXPECT_EQ(LayoutPoint(100, 0), row2->location());
+  EXPECT_EQ(LayoutPoint(0, 0), row2->topLeftLocation());
 
   const LayoutBox* cell2 = toLayoutBox(getLayoutObjectByElementId("cell2"));
   EXPECT_EQ(LayoutPoint(100, 0), cell2->location());
