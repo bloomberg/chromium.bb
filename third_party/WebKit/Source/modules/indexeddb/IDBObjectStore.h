@@ -39,7 +39,6 @@
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -54,14 +53,14 @@ class IDBObjectStore final : public GarbageCollectedFinalized<IDBObjectStore>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBObjectStore* create(const IDBObjectStoreMetadata& metadata,
+  static IDBObjectStore* create(RefPtr<IDBObjectStoreMetadata> metadata,
                                 IDBTransaction* transaction) {
-    return new IDBObjectStore(metadata, transaction);
+    return new IDBObjectStore(std::move(metadata), transaction);
   }
   ~IDBObjectStore() {}
   DECLARE_TRACE();
 
-  const IDBObjectStoreMetadata& metadata() const { return m_metadata; }
+  const IDBObjectStoreMetadata& metadata() const { return *m_metadata; }
   const IDBKeyPath& idbKeyPath() const { return metadata().keyPath; }
 
   // Implement the IDBObjectStore IDL
@@ -137,23 +136,55 @@ class IDBObjectStore final : public GarbageCollectedFinalized<IDBObjectStore>,
 
   void markDeleted();
   bool isDeleted() const { return m_deleted; }
-  void abort();
-  void transactionFinished();
 
-  void setMetadata(const IDBObjectStoreMetadata& metadata) {
-    m_metadata = metadata;
+  // True if this object store was created in its associated transaction.
+  // Only valid if the store's associated transaction is a versionchange.
+  bool isNewlyCreated() const {
+    DCHECK(m_transaction->isVersionChange());
+    // Object store IDs are allocated sequentially, so we can tell if an object
+    // store was created in this transaction by comparing its ID against the
+    // database's maximum object store ID at the time when the transaction was
+    // started.
+    return id() > m_transaction->oldMaxObjectStoreId();
   }
+
+  // Clears the cache used to implement the index() method.
+  //
+  // This should be called when the store's transaction clears its reference
+  // to this IDBObjectStore instance, so the store can clear its references to
+  // IDBIndex instances. This way, Oilpan can garbage-collect the instances
+  // that are not referenced in JavaScript.
+  //
+  // For most stores, the condition above is met when the transaction
+  // finishes. The exception is stores that are created and deleted in the
+  // same transaction. Those stores will remain marked for deletion even if
+  // the transaction aborts, so the transaction can forget about them (and
+  // clear their index caches) right when they are deleted.
+  void clearIndexCache();
+
+  // Sets the object store's metadata to a previous version.
+  //
+  // The reverting process includes reverting the metadata for the IDBIndex
+  // instances that are still tracked by the store. It does not revert the
+  // IDBIndex metadata for indexes that were deleted in this transaction.
+  //
+  // Used when a versionchange transaction is aborted.
+  void revertMetadata(RefPtr<IDBObjectStoreMetadata> previousMetadata);
+  // This relies on the changes made by revertMetadata().
+  void revertDeletedIndexMetadata(IDBIndex& deletedIndex);
 
   // Used by IDBIndex::setName:
   bool containsIndex(const String& name) const {
     return findIndexId(name) != IDBIndexMetadata::InvalidId;
   }
-  void indexRenamed(int64_t indexId, const String& newName);
+  void renameIndex(int64_t indexId, const String& newName);
 
   WebIDBDatabase* backendDB() const;
 
  private:
-  IDBObjectStore(const IDBObjectStoreMetadata&, IDBTransaction*);
+  using IDBIndexMap = HeapHashMap<String, Member<IDBIndex>>;
+
+  IDBObjectStore(RefPtr<IDBObjectStoreMetadata>, IDBTransaction*);
 
   IDBIndex* createIndex(ScriptState*,
                         const String& name,
@@ -169,23 +200,25 @@ class IDBObjectStore final : public GarbageCollectedFinalized<IDBObjectStore>,
 
   int64_t findIndexId(const String& name) const;
 
-  IDBObjectStoreMetadata m_metadata;
+  // The IDBObjectStoreMetadata is shared with the object store map in the
+  // database's metadata.
+  RefPtr<IDBObjectStoreMetadata> m_metadata;
   Member<IDBTransaction> m_transaction;
   bool m_deleted = false;
 
   // Caches the IDBIndex instances returned by the index() method.
+  //
   // The spec requires that an object store's index() returns the same
   // IDBIndex instance for a specific index, so this cache is necessary
   // for correctness.
   //
   // index() throws for completed/aborted transactions, so this is not used
   // after a transaction is finished, and can be cleared.
-  using IDBIndexMap = HeapHashMap<String, Member<IDBIndex>>;
   IDBIndexMap m_indexMap;
 
-  // Used to mark indexes created in an aborted upgrade transaction as
-  // deleted.
-  HeapHashSet<Member<IDBIndex>> m_createdIndexes;
+#if DCHECK_IS_ON()
+  bool m_clearIndexCacheCalled = false;
+#endif  // DCHECK_IS_ON()
 };
 
 }  // namespace blink

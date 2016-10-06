@@ -48,10 +48,10 @@ class IDBIndex final : public GarbageCollectedFinalized<IDBIndex>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBIndex* create(const IDBIndexMetadata& metadata,
+  static IDBIndex* create(RefPtr<IDBIndexMetadata> metadata,
                           IDBObjectStore* objectStore,
                           IDBTransaction* transaction) {
-    return new IDBIndex(metadata, objectStore, transaction);
+    return new IDBIndex(std::move(metadata), objectStore, transaction);
   }
   ~IDBIndex();
   DECLARE_TRACE();
@@ -88,9 +88,27 @@ class IDBIndex final : public GarbageCollectedFinalized<IDBIndex>,
                          uint32_t maxCount,
                          ExceptionState&);
 
-  void markDeleted() { m_deleted = true; }
-  bool isDeleted() const;
+  void markDeleted() {
+    DCHECK(m_transaction->isVersionChange())
+        << "Index deleted outside versionchange transaction.";
+    m_deleted = true;
+  }
+  bool isDeleted() const { return m_deleted; }
   int64_t id() const { return metadata().id; }
+
+  // True if this index was created in its associated transaction.
+  // Only valid if the index's associated transaction is a versionchange.
+  bool isNewlyCreated(
+      const IDBObjectStoreMetadata& oldObjectStoreMetadata) const {
+    DCHECK(m_transaction->isVersionChange());
+
+    // Index IDs are allocated sequentially, so we can tell if an index was
+    // created in this transaction by comparing its ID against the object
+    // store's maximum index ID at the time when the transaction was started.
+    return id() > oldObjectStoreMetadata.maxIndexId;
+  }
+
+  void revertMetadata(RefPtr<IDBIndexMetadata> oldMetadata);
 
   // Used internally and by InspectorIndexedDBAgent:
   IDBRequest* openCursor(ScriptState*, IDBKeyRange*, WebIDBCursorDirection);
@@ -98,9 +116,9 @@ class IDBIndex final : public GarbageCollectedFinalized<IDBIndex>,
   WebIDBDatabase* backendDB() const;
 
  private:
-  IDBIndex(const IDBIndexMetadata&, IDBObjectStore*, IDBTransaction*);
+  IDBIndex(RefPtr<IDBIndexMetadata>, IDBObjectStore*, IDBTransaction*);
 
-  const IDBIndexMetadata& metadata() const { return m_metadata; }
+  const IDBIndexMetadata& metadata() const { return *m_metadata; }
 
   IDBRequest* getInternal(ScriptState*,
                           const ScriptValue& key,
@@ -112,7 +130,7 @@ class IDBIndex final : public GarbageCollectedFinalized<IDBIndex>,
                              ExceptionState&,
                              bool keyOnly);
 
-  IDBIndexMetadata m_metadata;
+  RefPtr<IDBIndexMetadata> m_metadata;
   Member<IDBObjectStore> m_objectStore;
   Member<IDBTransaction> m_transaction;
   bool m_deleted = false;

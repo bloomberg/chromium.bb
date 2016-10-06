@@ -62,16 +62,16 @@ namespace {
 using IndexKeys = HeapVector<Member<IDBKey>>;
 }
 
-IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata,
+IDBObjectStore::IDBObjectStore(RefPtr<IDBObjectStoreMetadata> metadata,
                                IDBTransaction* transaction)
-    : m_metadata(metadata), m_transaction(transaction) {
+    : m_metadata(std::move(metadata)), m_transaction(transaction) {
   DCHECK(m_transaction);
+  DCHECK(m_metadata.get());
 }
 
 DEFINE_TRACE(IDBObjectStore) {
   visitor->trace(m_transaction);
   visitor->trace(m_indexMap);
-  visitor->trace(m_createdIndexes);
 }
 
 void IDBObjectStore::setName(const String& name,
@@ -115,15 +115,7 @@ void IDBObjectStore::setName(const String& name,
     return;
   }
 
-  backendDB()->renameObjectStore(m_transaction->id(), id(), name);
-  m_transaction->objectStoreRenamed(m_metadata.name, name);
-  m_metadata.name = name;
-
-  // The name inside the database's version of the object store metadata is used
-  // by IDBDatabase.objectStoreNames().  If the transaction is aborted, this
-  // name will be reverted when the metadata is overwritten with the
-  // previousMetadata in IDBTransaction.
-  m_transaction->db()->objectStoreRenamed(id(), name);
+  m_transaction->db()->renameObjectStore(id(), name);
 }
 
 ScriptValue IDBObjectStore::keyPath(ScriptState* scriptState) const {
@@ -134,7 +126,7 @@ DOMStringList* IDBObjectStore::indexNames() const {
   IDB_TRACE("IDBObjectStore::indexNames");
   DOMStringList* indexNames = DOMStringList::create(DOMStringList::IndexedDB);
   for (const auto& it : metadata().indexes)
-    indexNames->append(it.value.name);
+    indexNames->append(it.value->name);
   indexNames->sort();
   return indexNames;
 }
@@ -510,7 +502,7 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState,
       clone =
           deserializeScriptValue(scriptState, serializedValue.get(), &blobInfo);
     IndexKeys keys;
-    generateIndexKeysForValue(scriptState->isolate(), it.value, clone, &keys);
+    generateIndexKeysForValue(scriptState->isolate(), *it.value, clone, &keys);
     indexIds.append(it.key);
     indexKeys.append(keys);
   }
@@ -623,9 +615,9 @@ class IndexPopulator final : public EventListener {
                                 IDBDatabase* database,
                                 int64_t transactionId,
                                 int64_t objectStoreId,
-                                const IDBIndexMetadata& indexMetadata) {
+                                RefPtr<const IDBIndexMetadata> indexMetadata) {
     return new IndexPopulator(scriptState, database, transactionId,
-                              objectStoreId, indexMetadata);
+                              objectStoreId, std::move(indexMetadata));
   }
 
   bool operator==(const EventListener& other) const override {
@@ -642,15 +634,17 @@ class IndexPopulator final : public EventListener {
                  IDBDatabase* database,
                  int64_t transactionId,
                  int64_t objectStoreId,
-                 const IDBIndexMetadata& indexMetadata)
+                 RefPtr<const IDBIndexMetadata> indexMetadata)
       : EventListener(CPPEventListenerType),
         m_scriptState(scriptState),
         m_database(database),
         m_transactionId(transactionId),
         m_objectStoreId(objectStoreId),
-        m_indexMetadata(indexMetadata) {}
+        m_indexMetadata(std::move(indexMetadata)) {
+    DCHECK(m_indexMetadata.get());
+  }
 
-  const IDBIndexMetadata& indexMetadata() const { return m_indexMetadata; }
+  const IDBIndexMetadata& indexMetadata() const { return *m_indexMetadata; }
 
   void handleEvent(ExecutionContext* executionContext, Event* event) override {
     DCHECK_EQ(m_scriptState->getExecutionContext(), executionContext);
@@ -696,7 +690,7 @@ class IndexPopulator final : public EventListener {
   Member<IDBDatabase> m_database;
   const int64_t m_transactionId;
   const int64_t m_objectStoreId;
-  const IDBIndexMetadata m_indexMetadata;
+  RefPtr<const IDBIndexMetadata> m_indexMetadata;
 };
 }  // namespace
 
@@ -749,20 +743,18 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState,
     return nullptr;
   }
 
-  int64_t indexId = m_metadata.maxIndexId + 1;
+  int64_t indexId = m_metadata->maxIndexId + 1;
   DCHECK_NE(indexId, IDBIndexMetadata::InvalidId);
   backendDB()->createIndex(m_transaction->id(), id(), indexId, name, keyPath,
                            options.unique(), options.multiEntry());
 
-  ++m_metadata.maxIndexId;
+  ++m_metadata->maxIndexId;
 
-  IDBIndexMetadata indexMetadata(name, indexId, keyPath, options.unique(),
-                                 options.multiEntry());
+  RefPtr<IDBIndexMetadata> indexMetadata = adoptRef(new IDBIndexMetadata(
+      name, indexId, keyPath, options.unique(), options.multiEntry()));
   IDBIndex* index = IDBIndex::create(indexMetadata, this, m_transaction.get());
   m_indexMap.set(name, index);
-  m_createdIndexes.add(index);
-  m_metadata.indexes.set(indexId, indexMetadata);
-  m_transaction->db()->indexCreated(id(), indexMetadata);
+  m_metadata->indexes.set(indexId, indexMetadata);
 
   DCHECK(!exceptionState.hadException());
   if (exceptionState.hadException())
@@ -775,9 +767,9 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState,
 
   // This is kept alive by being the success handler of the request, which is in
   // turn kept alive by the owning transaction.
-  IndexPopulator* indexPopulator =
-      IndexPopulator::create(scriptState, transaction()->db(),
-                             m_transaction->id(), id(), indexMetadata);
+  IndexPopulator* indexPopulator = IndexPopulator::create(
+      scriptState, transaction()->db(), m_transaction->id(), id(),
+      std::move(indexMetadata));
   indexRequest->setOnsuccess(indexPopulator);
   return index;
 }
@@ -808,8 +800,10 @@ IDBIndex* IDBObjectStore::index(const String& name,
   }
 
   DCHECK(metadata().indexes.contains(indexId));
-  const IDBIndexMetadata& indexMetadata = metadata().indexes.get(indexId);
-  IDBIndex* index = IDBIndex::create(indexMetadata, this, m_transaction.get());
+  RefPtr<IDBIndexMetadata> indexMetadata = metadata().indexes.get(indexId);
+  DCHECK(indexMetadata.get());
+  IDBIndex* index =
+      IDBIndex::create(std::move(indexMetadata), this, m_transaction.get());
   m_indexMap.set(name, index);
   return index;
 }
@@ -852,10 +846,10 @@ void IDBObjectStore::deleteIndex(const String& name,
 
   backendDB()->deleteIndex(m_transaction->id(), id(), indexId);
 
-  m_metadata.indexes.remove(indexId);
-  m_transaction->db()->indexDeleted(id(), indexId);
+  m_metadata->indexes.remove(indexId);
   IDBIndexMap::iterator it = m_indexMap.find(name);
   if (it != m_indexMap.end()) {
+    m_transaction->indexDeleted(it->value);
     it->value->markDeleted();
     m_indexMap.remove(name);
   }
@@ -998,42 +992,97 @@ IDBRequest* IDBObjectStore::count(ScriptState* scriptState,
 void IDBObjectStore::markDeleted() {
   DCHECK(m_transaction->isVersionChange())
       << "An object store got deleted outside a versionchange transaction.";
+
   m_deleted = true;
-}
+  m_metadata->indexes.clear();
 
-void IDBObjectStore::abort() {
-  for (auto& index : m_createdIndexes)
+  for (auto& it : m_indexMap) {
+    IDBIndex* index = it.value;
     index->markDeleted();
+  }
 }
 
-void IDBObjectStore::transactionFinished() {
-  DCHECK(!m_transaction->isActive());
+void IDBObjectStore::clearIndexCache() {
+  DCHECK(!m_transaction->isActive() || (isDeleted() && isNewlyCreated()));
 
-  // Break reference cycles.
-  // TODO(jsbell): This can be removed c/o Oilpan.
+// There is no harm in having clearIndexCache() happen multiple times for
+// the same object. We assert that it is called once to uncover potential
+// object store accounting bugs.
+#if DCHECK_IS_ON()
+  DCHECK(!m_clearIndexCacheCalled);
+  m_clearIndexCacheCalled = true;
+#endif  // DCHECK_IS_ON()
+
   m_indexMap.clear();
-  m_createdIndexes.clear();
 }
 
-void IDBObjectStore::indexRenamed(int64_t indexId, const String& newName) {
+void IDBObjectStore::revertMetadata(
+    RefPtr<IDBObjectStoreMetadata> oldMetadata) {
+  DCHECK(m_transaction->isVersionChange());
+  DCHECK(!m_transaction->isActive());
+  DCHECK(oldMetadata.get());
+  DCHECK(id() == oldMetadata->id);
+
+  for (auto& index : m_indexMap.values()) {
+    const int64_t indexId = index->id();
+
+    if (index->isNewlyCreated(*oldMetadata)) {
+      // The index was created by this transaction. According to the spec,
+      // its metadata will remain as-is.
+      DCHECK(!oldMetadata->indexes.contains(indexId));
+      index->markDeleted();
+      continue;
+    }
+
+    // The index was created in a previous transaction. We need to revert
+    // its metadata. The index might have been deleted, so we
+    // unconditionally reset the deletion marker.
+    DCHECK(oldMetadata->indexes.contains(indexId));
+    RefPtr<IDBIndexMetadata> oldIndexMetadata =
+        oldMetadata->indexes.get(indexId);
+    index->revertMetadata(std::move(oldIndexMetadata));
+  }
+  m_metadata = std::move(oldMetadata);
+
+  // An object store's metadata will only get reverted if the index was in the
+  // database when the versionchange transaction started.
+  m_deleted = false;
+}
+
+void IDBObjectStore::revertDeletedIndexMetadata(IDBIndex& deletedIndex) {
+  DCHECK(m_transaction->isVersionChange());
+  DCHECK(!m_transaction->isActive());
+  DCHECK(deletedIndex.objectStore() == this);
+  DCHECK(deletedIndex.isDeleted());
+
+  const int64_t indexId = deletedIndex.id();
+  DCHECK(m_metadata->indexes.contains(indexId))
+      << "The object store's metadata was not correctly reverted";
+  RefPtr<IDBIndexMetadata> oldIndexMetadata = m_metadata->indexes.get(indexId);
+  deletedIndex.revertMetadata(std::move(oldIndexMetadata));
+}
+
+void IDBObjectStore::renameIndex(int64_t indexId, const String& newName) {
   DCHECK(m_transaction->isVersionChange());
   DCHECK(m_transaction->isActive());
 
-  auto metadataIterator = m_metadata.indexes.find(indexId);
-  DCHECK_NE(metadataIterator, m_metadata.indexes.end()) << "Invalid indexId";
-  const String& oldName = metadataIterator->value.name;
+  backendDB()->renameIndex(m_transaction->id(), id(), indexId, newName);
+
+  auto metadataIterator = m_metadata->indexes.find(indexId);
+  DCHECK_NE(metadataIterator, m_metadata->indexes.end()) << "Invalid indexId";
+  const String& oldName = metadataIterator->value->name;
 
   DCHECK(m_indexMap.contains(oldName))
       << "The index had to be accessed in order to be renamed.";
   DCHECK(!m_indexMap.contains(newName));
   m_indexMap.set(newName, m_indexMap.take(oldName));
 
-  metadataIterator->value.name = newName;
+  metadataIterator->value->name = newName;
 }
 
 int64_t IDBObjectStore::findIndexId(const String& name) const {
   for (const auto& it : metadata().indexes) {
-    if (it.value.name == name) {
+    if (it.value->name == name) {
       DCHECK_NE(it.key, IDBIndexMetadata::InvalidId);
       return it.key;
     }

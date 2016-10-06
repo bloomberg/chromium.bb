@@ -126,33 +126,12 @@ int64_t IDBDatabase::nextTransactionId() {
   return atomicIncrement(&currentTransactionId);
 }
 
-void IDBDatabase::indexCreated(int64_t objectStoreId,
-                               const IDBIndexMetadata& metadata) {
-  IDBDatabaseMetadata::ObjectStoreMap::iterator it =
-      m_metadata.objectStores.find(objectStoreId);
-  ASSERT_WITH_SECURITY_IMPLICATION(it != m_metadata.objectStores.end());
-  it->value.indexes.set(metadata.id, metadata);
+void IDBDatabase::setMetadata(const IDBDatabaseMetadata& metadata) {
+  m_metadata = metadata;
 }
 
-void IDBDatabase::indexDeleted(int64_t objectStoreId, int64_t indexId) {
-  IDBDatabaseMetadata::ObjectStoreMap::iterator it =
-      m_metadata.objectStores.find(objectStoreId);
-  ASSERT_WITH_SECURITY_IMPLICATION(it != m_metadata.objectStores.end());
-  it->value.indexes.remove(indexId);
-}
-
-void IDBDatabase::indexRenamed(int64_t objectStoreId,
-                               int64_t indexId,
-                               const String& newName) {
-  IDBDatabaseMetadata::ObjectStoreMap::iterator storeIterator =
-      m_metadata.objectStores.find(objectStoreId);
-  SECURITY_DCHECK(storeIterator != m_metadata.objectStores.end());
-
-  IDBObjectStoreMetadata& storeMetadata = storeIterator->value;
-  IDBObjectStoreMetadata::IndexMap::iterator indexIterator =
-      storeMetadata.indexes.find(indexId);
-  DCHECK_NE(indexIterator, storeMetadata.indexes.end());
-  indexIterator->value.name = newName;
+void IDBDatabase::setDatabaseMetadata(const IDBDatabaseMetadata& metadata) {
+  m_metadata.copyFrom(metadata);
 }
 
 void IDBDatabase::transactionCreated(IDBTransaction* transaction) {
@@ -195,7 +174,7 @@ DOMStringList* IDBDatabase::objectStoreNames() const {
   DOMStringList* objectStoreNames =
       DOMStringList::create(DOMStringList::IndexedDB);
   for (const auto& it : m_metadata.objectStores)
-    objectStoreNames->append(it.value.name);
+    objectStoreNames->append(it.value->name);
   objectStoreNames->sort();
   return objectStoreNames;
 }
@@ -203,7 +182,7 @@ DOMStringList* IDBDatabase::objectStoreNames() const {
 const String& IDBDatabase::getObjectStoreName(int64_t objectStoreId) const {
   const auto& it = m_metadata.objectStores.find(objectStoreId);
   DCHECK(it != m_metadata.objectStores.end());
-  return it->value.name;
+  return it->value->name;
 }
 
 IDBObjectStore* IDBDatabase::createObjectStore(const String& name,
@@ -259,17 +238,19 @@ IDBObjectStore* IDBDatabase::createObjectStore(const String& name,
   }
 
   int64_t objectStoreId = m_metadata.maxObjectStoreId + 1;
+  DCHECK_NE(objectStoreId, IDBObjectStoreMetadata::InvalidId);
   m_backend->createObjectStore(m_versionChangeTransaction->id(), objectStoreId,
                                name, keyPath, autoIncrement);
 
-  IDBObjectStoreMetadata metadata(name, objectStoreId, keyPath, autoIncrement,
-                                  WebIDBDatabase::minimumIndexId);
+  RefPtr<IDBObjectStoreMetadata> storeMetadata = adoptRef(
+      new IDBObjectStoreMetadata(name, objectStoreId, keyPath, autoIncrement,
+                                 WebIDBDatabase::minimumIndexId));
   IDBObjectStore* objectStore =
-      IDBObjectStore::create(metadata, m_versionChangeTransaction.get());
-  m_metadata.objectStores.set(metadata.id, metadata);
+      IDBObjectStore::create(storeMetadata, m_versionChangeTransaction.get());
+  m_versionChangeTransaction->objectStoreCreated(name, objectStore);
+  m_metadata.objectStores.set(objectStoreId, std::move(storeMetadata));
   ++m_metadata.maxObjectStoreId;
 
-  m_versionChangeTransaction->objectStoreCreated(name, objectStore);
   return objectStore;
 }
 
@@ -309,7 +290,7 @@ void IDBDatabase::deleteObjectStore(const String& name,
   }
 
   m_backend->deleteObjectStore(m_versionChangeTransaction->id(), objectStoreId);
-  m_versionChangeTransaction->objectStoreDeleted(name);
+  m_versionChangeTransaction->objectStoreDeleted(objectStoreId, name);
   m_metadata.objectStores.remove(objectStoreId);
 }
 
@@ -478,7 +459,7 @@ DispatchEventResult IDBDatabase::dispatchEventInternal(Event* event) {
 
 int64_t IDBDatabase::findObjectStoreId(const String& name) const {
   for (const auto& it : m_metadata.objectStores) {
-    if (it.value.name == name) {
+    if (it.value->name == name) {
       DCHECK_NE(it.key, IDBObjectStoreMetadata::InvalidId);
       return it.key;
     }
@@ -486,17 +467,46 @@ int64_t IDBDatabase::findObjectStoreId(const String& name) const {
   return IDBObjectStoreMetadata::InvalidId;
 }
 
-void IDBDatabase::objectStoreRenamed(int64_t objectStoreId,
-                                     const String& newName) {
+void IDBDatabase::renameObjectStore(int64_t objectStoreId,
+                                    const String& newName) {
   DCHECK(m_versionChangeTransaction)
       << "Object store renamed on database without a versionchange transaction";
   DCHECK(m_versionChangeTransaction->isActive())
       << "Object store renamed when versionchange transaction is not active";
   DCHECK(m_backend) << "Object store renamed after database connection closed";
   DCHECK(m_metadata.objectStores.contains(objectStoreId));
-  IDBDatabaseMetadata::ObjectStoreMap::iterator it =
-      m_metadata.objectStores.find(objectStoreId);
-  it->value.name = newName;
+
+  m_backend->renameObjectStore(m_versionChangeTransaction->id(), objectStoreId,
+                               newName);
+
+  IDBObjectStoreMetadata* objectStoreMetadata =
+      m_metadata.objectStores.get(objectStoreId);
+  m_versionChangeTransaction->objectStoreRenamed(objectStoreMetadata->name,
+                                                 newName);
+  objectStoreMetadata->name = newName;
+}
+
+void IDBDatabase::revertObjectStoreCreation(int64_t objectStoreId) {
+  DCHECK(m_versionChangeTransaction) << "Object store metadata reverted on "
+                                        "database without a versionchange "
+                                        "transaction";
+  DCHECK(!m_versionChangeTransaction->isActive())
+      << "Object store metadata reverted when versionchange transaction is "
+         "still active";
+  DCHECK(m_metadata.objectStores.contains(objectStoreId));
+  m_metadata.objectStores.remove(objectStoreId);
+}
+
+void IDBDatabase::revertObjectStoreMetadata(
+    RefPtr<IDBObjectStoreMetadata> oldMetadata) {
+  DCHECK(m_versionChangeTransaction) << "Object store metadata reverted on "
+                                        "database without a versionchange "
+                                        "transaction";
+  DCHECK(!m_versionChangeTransaction->isActive())
+      << "Object store metadata reverted when versionchange transaction is "
+         "still active";
+  DCHECK(oldMetadata.get());
+  m_metadata.objectStores.set(oldMetadata->id, std::move(oldMetadata));
 }
 
 bool IDBDatabase::hasPendingActivity() const {

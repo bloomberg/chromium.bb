@@ -40,12 +40,14 @@
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "wtf/HashSet.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
 class DOMException;
 class ExceptionState;
 class IDBDatabase;
+class IDBIndex;
 class IDBObjectStore;
 class IDBOpenDBRequest;
 
@@ -94,9 +96,18 @@ class MODULES_EXPORT IDBTransaction final : public EventTargetWithInlineData,
 
   void registerRequest(IDBRequest*);
   void unregisterRequest(IDBRequest*);
-  void objectStoreCreated(const String&, IDBObjectStore*);
-  void objectStoreDeleted(const String&);
+
+  // The methods below are called right before the changes are applied to the
+  // database's metadata. We use this unusual sequencing because some of the
+  // methods below need to access the metadata values before the change, and
+  // following the same lifecycle for all methods makes the code easier to
+  // reason about.
+  void objectStoreCreated(const String& name, IDBObjectStore*);
+  void objectStoreDeleted(const int64_t objectStoreId, const String& name);
   void objectStoreRenamed(const String& oldName, const String& newName);
+  // Called when deleting an index whose IDBIndex had been created.
+  void indexDeleted(IDBIndex*);
+
   void setActive(bool);
   void setError(DOMException*);
 
@@ -117,11 +128,20 @@ class MODULES_EXPORT IDBTransaction final : public EventTargetWithInlineData,
   // ActiveDOMObject
   void contextDestroyed() override;
 
+  // For use in IDBObjectStore.isNewlyCreated(). The rest of the code should use
+  // IDBObjectStore.isNewlyCreated() instead of calling this method directly.
+  int64_t oldMaxObjectStoreId() const {
+    DCHECK(isVersionChange());
+    return m_oldDatabaseMetadata.maxObjectStoreId;
+  }
+
  protected:
   // EventTarget
   DispatchEventResult dispatchEventInternal(Event*) override;
 
  private:
+  using IDBObjectStoreMap = HeapHashMap<String, Member<IDBObjectStore>>;
+
   IDBTransaction(ScriptState*,
                  int64_t,
                  const HashSet<String>&,
@@ -183,22 +203,39 @@ class MODULES_EXPORT IDBTransaction final : public EventTargetWithInlineData,
   //
   // objectStore() throws for completed/aborted transactions, so this is not
   // used after a transaction is finished, and can be cleared.
-  using IDBObjectStoreMap = HeapHashMap<String, Member<IDBObjectStore>>;
   IDBObjectStoreMap m_objectStoreMap;
 
-  // Used to mark stores created in an aborted upgrade transaction as
-  // deleted.
-  HeapHashSet<Member<IDBObjectStore>> m_createdObjectStores;
+  // The metadata of object stores when they are opened by this transaction.
+  //
+  // Only valid for versionchange transactions.
+  HeapHashMap<Member<IDBObjectStore>, RefPtr<IDBObjectStoreMetadata>>
+      m_oldStoreMetadata;
 
-  // Used to notify object stores (which are no longer in m_objectStoreMap)
-  // when the transaction is finished.
-  HeapHashSet<Member<IDBObjectStore>> m_deletedObjectStores;
+  // The metadata of deleted object stores without IDBObjectStore instances.
+  //
+  // Only valid for versionchange transactions.
+  Vector<RefPtr<IDBObjectStoreMetadata>> m_deletedObjectStores;
 
-  // Holds stores created, deleted, or used during upgrade transactions to
-  // reset metadata in case of abort.
-  HeapHashMap<Member<IDBObjectStore>, IDBObjectStoreMetadata>
-      m_objectStoreCleanupMap;
+  // Tracks the indexes deleted by this transaction.
+  //
+  // This set only includes indexes that were created before this transaction,
+  // and were deleted during this transaction. Once marked for deletion, these
+  // indexes are removed from their object stores' index maps, so we need to
+  // stash them somewhere else in case the transaction gets aborted.
+  //
+  // This set does not include indexes created and deleted during this
+  // transaction, because we don't need to change their metadata when the
+  // transaction aborts, as they will still be marked for deletion.
+  //
+  // Only valid for versionchange transactions.
+  HeapVector<Member<IDBIndex>> m_deletedIndexes;
 
+  // Shallow snapshot of the database metadata when the transaction starts.
+  //
+  // This does not include a snapshot of the database's object store / index
+  // metadata.
+  //
+  // Only valid for versionchange transactions.
   IDBDatabaseMetadata m_oldDatabaseMetadata;
 };
 

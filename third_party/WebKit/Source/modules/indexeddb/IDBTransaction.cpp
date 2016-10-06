@@ -145,9 +145,8 @@ DEFINE_TRACE(IDBTransaction) {
   visitor->trace(m_error);
   visitor->trace(m_requestList);
   visitor->trace(m_objectStoreMap);
-  visitor->trace(m_createdObjectStores);
-  visitor->trace(m_deletedObjectStores);
-  visitor->trace(m_objectStoreCleanupMap);
+  visitor->trace(m_oldStoreMetadata);
+  visitor->trace(m_deletedIndexes);
   EventTargetWithInlineData::trace(visitor);
   ActiveDOMObject::trace(visitor);
 }
@@ -158,9 +157,8 @@ void IDBTransaction::setError(DOMException* error) {
 
   // The first error to be set is the true cause of the
   // transaction abort.
-  if (!m_error) {
+  if (!m_error)
     m_error = error;
-  }
 }
 
 IDBObjectStore* IDBTransaction::objectStore(const String& name,
@@ -190,14 +188,22 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name,
   }
 
   DCHECK(m_database->metadata().objectStores.contains(objectStoreId));
-  const IDBObjectStoreMetadata& objectStoreMetadata =
+  RefPtr<IDBObjectStoreMetadata> objectStoreMetadata =
       m_database->metadata().objectStores.get(objectStoreId);
+  DCHECK(objectStoreMetadata.get());
 
   IDBObjectStore* objectStore =
-      IDBObjectStore::create(objectStoreMetadata, this);
+      IDBObjectStore::create(std::move(objectStoreMetadata), this);
   DCHECK(!m_objectStoreMap.contains(name));
   m_objectStoreMap.set(name, objectStore);
-  m_objectStoreCleanupMap.set(objectStore, objectStore->metadata());
+
+  if (isVersionChange()) {
+    DCHECK(!objectStore->isNewlyCreated())
+        << "Object store IDs are not assigned sequentially";
+    RefPtr<IDBObjectStoreMetadata> backupMetadata =
+        objectStore->metadata().createCopy();
+    m_oldStoreMetadata.set(objectStore, std::move(backupMetadata));
+  }
   return objectStore;
 }
 
@@ -209,23 +215,46 @@ void IDBTransaction::objectStoreCreated(const String& name,
       << "A non-versionchange transaction created an object store";
   DCHECK(!m_objectStoreMap.contains(name))
       << "An object store was created with the name of an existing store";
+  DCHECK(objectStore->isNewlyCreated())
+      << "Object store IDs are not assigned sequentially";
   m_objectStoreMap.set(name, objectStore);
-  m_objectStoreCleanupMap.set(objectStore, objectStore->metadata());
-  m_createdObjectStores.add(objectStore);
 }
 
-void IDBTransaction::objectStoreDeleted(const String& name) {
+void IDBTransaction::objectStoreDeleted(const int64_t objectStoreId,
+                                        const String& name) {
   DCHECK_NE(m_state, Finished)
       << "A finished transaction deleted an object store";
   DCHECK_EQ(m_mode, WebIDBTransactionModeVersionChange)
       << "A non-versionchange transaction deleted an object store";
   IDBObjectStoreMap::iterator it = m_objectStoreMap.find(name);
-  if (it != m_objectStoreMap.end()) {
+  if (it == m_objectStoreMap.end()) {
+    // No IDBObjectStore instance was created for the deleted store in this
+    // transaction. This happens if IDBDatabase.deleteObjectStore() is called
+    // with the name of a store that wasn't instantated. We need to be able to
+    // revert the metadata change if the transaction aborts, in order to return
+    // correct values from IDB{Database, Transaction}.objectStoreNames.
+    DCHECK(m_database->metadata().objectStores.contains(objectStoreId));
+    RefPtr<IDBObjectStoreMetadata> metadata =
+        m_database->metadata().objectStores.get(objectStoreId);
+    DCHECK(metadata.get());
+    DCHECK_EQ(metadata->name, name);
+    m_deletedObjectStores.append(std::move(metadata));
+  } else {
     IDBObjectStore* objectStore = it->value;
     m_objectStoreMap.remove(name);
     objectStore->markDeleted();
-    m_objectStoreCleanupMap.set(objectStore, objectStore->metadata());
-    m_deletedObjectStores.add(objectStore);
+    if (objectStore->id() > m_oldDatabaseMetadata.maxObjectStoreId) {
+      // The store was created and deleted in this transaction, so it will
+      // not be restored even if the transaction aborts. We have just
+      // removed our last reference to it.
+      DCHECK(!m_oldStoreMetadata.contains(objectStore));
+      objectStore->clearIndexCache();
+    } else {
+      // The store was created before this transaction, and we created an
+      // IDBObjectStore instance for it. When that happened, we must have
+      // snapshotted the store's metadata as well.
+      DCHECK(m_oldStoreMetadata.contains(objectStore));
+    }
   }
 }
 
@@ -240,6 +269,43 @@ void IDBTransaction::objectStoreRenamed(const String& oldName,
   DCHECK(m_objectStoreMap.contains(oldName))
       << "The object store had to be accessed in order to be renamed.";
   m_objectStoreMap.set(newName, m_objectStoreMap.take(oldName));
+}
+
+void IDBTransaction::indexDeleted(IDBIndex* index) {
+  DCHECK(index);
+  DCHECK(!index->isDeleted()) << "indexDeleted called twice for the same index";
+
+  IDBObjectStore* objectStore = index->objectStore();
+  DCHECK_EQ(objectStore->transaction(), this);
+  DCHECK(m_objectStoreMap.contains(objectStore->name()))
+      << "An index was deleted without accessing its object store";
+
+  const auto& objectStoreIterator = m_oldStoreMetadata.find(objectStore);
+  if (objectStoreIterator == m_oldStoreMetadata.end()) {
+    // The index's object store was created in this transaction, so this
+    // index was also created (and deleted) in this transaction, and will
+    // not be restored if the transaction aborts.
+    //
+    // Subtle proof for the first sentence above: Deleting an index requires
+    // calling deleteIndex() on the store's IDBObjectStore instance.
+    // Whenever we create an IDBObjectStore instance for a previously
+    // created store, we snapshot the store's metadata. So, deleting an
+    // index of an "old" store can only be done after the store's metadata
+    // is snapshotted.
+    return;
+  }
+
+  const IDBObjectStoreMetadata* oldStoreMetadata =
+      objectStoreIterator->value.get();
+  DCHECK(oldStoreMetadata);
+  if (!oldStoreMetadata->indexes.contains(index->id())) {
+    // The index's object store was created before this transaction, but the
+    // index was created (and deleted) in this transaction, so it will not
+    // be restored if the transaction aborts.
+    return;
+  }
+
+  m_deletedIndexes.append(index);
 }
 
 void IDBTransaction::setActive(bool active) {
@@ -348,6 +414,10 @@ WebIDBTransactionMode IDBTransaction::stringToMode(const String& modeString) {
   return WebIDBTransactionModeReadOnly;
 }
 
+WebIDBDatabase* IDBTransaction::backendDB() const {
+  return m_database->backend();
+}
+
 const String& IDBTransaction::mode() const {
   switch (m_mode) {
     case WebIDBTransactionModeReadOnly:
@@ -362,10 +432,6 @@ const String& IDBTransaction::mode() const {
 
   NOTREACHED();
   return IndexedDBNames::readonly;
-}
-
-WebIDBDatabase* IDBTransaction::backendDB() const {
-  return m_database->backend();
 }
 
 DOMStringList* IDBTransaction::objectStoreNames() const {
@@ -452,19 +518,34 @@ void IDBTransaction::revertDatabaseMetadata() {
   if (!isVersionChange())
     return;
 
-  // Newly created stores must be marked as deleted.
-  for (IDBObjectStore* store : m_createdObjectStores) {
-    store->abort();
-    store->markDeleted();
+  // Mark stores created by this transaction as deleted.
+  for (auto& objectStore : m_objectStoreMap.values()) {
+    const int64_t objectStoreId = objectStore->id();
+    if (!objectStore->isNewlyCreated()) {
+      DCHECK(m_oldStoreMetadata.contains(objectStore));
+      continue;
+    }
+
+    DCHECK(!m_oldStoreMetadata.contains(objectStore));
+    m_database->revertObjectStoreCreation(objectStoreId);
+    objectStore->markDeleted();
   }
 
-  // Used stores may need to mark indexes as deleted.
-  for (auto& it : m_objectStoreCleanupMap) {
-    it.key->abort();
-    it.key->setMetadata(it.value);
-  }
+  for (auto& it : m_oldStoreMetadata) {
+    IDBObjectStore* objectStore = it.key;
+    RefPtr<IDBObjectStoreMetadata> oldMetadata = it.value;
 
-  m_database->setMetadata(m_oldDatabaseMetadata);
+    m_database->revertObjectStoreMetadata(oldMetadata);
+    objectStore->revertMetadata(oldMetadata);
+  }
+  for (auto& index : m_deletedIndexes)
+    index->objectStore()->revertDeletedIndexMetadata(*index);
+  for (auto& oldMedata : m_deletedObjectStores)
+    m_database->revertObjectStoreMetadata(std::move(oldMedata));
+
+  // We only need to revert the database's own metadata because we have reverted
+  // the metadata for the database's object stores above.
+  m_database->setDatabaseMetadata(m_oldDatabaseMetadata);
 }
 
 void IDBTransaction::finished() {
@@ -475,17 +556,30 @@ void IDBTransaction::finished() {
 
   m_database->transactionFinished(this);
 
-  // Break reference cycles.
-  // TODO(jsbell): This can be removed c/o Oilpan.
-  for (auto& it : m_objectStoreMap)
-    it.value->transactionFinished();
-  m_objectStoreMap.clear();
-  for (auto& it : m_deletedObjectStores)
-    it->transactionFinished();
-  m_createdObjectStores.clear();
-  m_deletedObjectStores.clear();
+  // Remove references to the IDBObjectStore and IDBIndex instances held by
+  // this transaction, so Oilpan can garbage-collect the instances that aren't
+  // used by JavaScript.
 
-  m_objectStoreCleanupMap.clear();
+  for (auto& it : m_objectStoreMap) {
+    IDBObjectStore* objectStore = it.value;
+    if (!isVersionChange() || objectStore->isNewlyCreated()) {
+      DCHECK(!m_oldStoreMetadata.contains(objectStore));
+      objectStore->clearIndexCache();
+    } else {
+      // We'll call clearIndexCache() on this store in the loop below.
+      DCHECK(m_oldStoreMetadata.contains(objectStore));
+    }
+  }
+  m_objectStoreMap.clear();
+
+  for (auto& it : m_oldStoreMetadata) {
+    IDBObjectStore* objectStore = it.key;
+    objectStore->clearIndexCache();
+  }
+  m_oldStoreMetadata.clear();
+
+  m_deletedIndexes.clear();
+  m_deletedObjectStores.clear();
 }
 
 }  // namespace blink

@@ -66,14 +66,13 @@ class MODULES_EXPORT IDBDatabase final : public EventTargetWithInlineData,
   ~IDBDatabase() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void setMetadata(const IDBDatabaseMetadata& metadata) {
-    m_metadata = metadata;
-  }
-  void indexCreated(int64_t objectStoreId, const IDBIndexMetadata&);
-  void indexDeleted(int64_t objectStoreId, int64_t indexId);
-  void indexRenamed(int64_t objectStoreId,
-                    int64_t indexId,
-                    const String& newName);
+  // Overwrites the database metadata, including object store and index
+  // metadata. Used to pass metadata to the database when it is opened.
+  void setMetadata(const IDBDatabaseMetadata&);
+  // Overwrites the database's own metadata, but does not change object store
+  // and index metadata. Used to revert the database's metadata when a
+  // versionchage transaction is aborted.
+  void setDatabaseMetadata(const IDBDatabaseMetadata&);
   void transactionCreated(IDBTransaction*);
   void transactionFinished(const IDBTransaction*);
   const String& getObjectStoreName(int64_t objectStoreId) const;
@@ -126,7 +125,9 @@ class MODULES_EXPORT IDBDatabase final : public EventTargetWithInlineData,
   bool containsObjectStore(const String& name) const {
     return findObjectStoreId(name) != IDBObjectStoreMetadata::InvalidId;
   }
-  void objectStoreRenamed(int64_t storeId, const String& newName);
+  void renameObjectStore(int64_t storeId, const String& newName);
+  void revertObjectStoreCreation(int64_t objectStoreId);
+  void revertObjectStoreMetadata(RefPtr<IDBObjectStoreMetadata> oldMetadata);
 
   // Will return nullptr if this database is stopped.
   WebIDBDatabase* backend() const { return m_backend.get(); }

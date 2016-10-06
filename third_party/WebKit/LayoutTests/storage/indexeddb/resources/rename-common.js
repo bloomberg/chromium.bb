@@ -75,6 +75,19 @@ const createDatabase = (testCase, setupCallback) => {
         migrateDatabase(testCase, 1, setupCallback));
 };
 
+// Opens an IndexedDB database without performing schema changes.
+//
+// The given version number must match the database's current version.
+//
+// Returns a promise that resolves to an IndexedDB database. The caller must
+// close the database.
+const openDatabase = (testCase, version) => {
+    const request = indexedDB.open(databaseName(testCase), version);
+    const eventWatcher = requestWatcher(testCase, request);
+    return eventWatcher.wait_for('success').then(
+        event => event.target.result);
+}
+
 // The data in the 'books' object store records in the first example of the
 // IndexedDB specification.
 const BOOKS_RECORD_DATA = [

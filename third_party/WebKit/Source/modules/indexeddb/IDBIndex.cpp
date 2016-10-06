@@ -45,14 +45,15 @@ using blink::WebIDBDatabase;
 
 namespace blink {
 
-IDBIndex::IDBIndex(const IDBIndexMetadata& metadata,
+IDBIndex::IDBIndex(RefPtr<IDBIndexMetadata> metadata,
                    IDBObjectStore* objectStore,
                    IDBTransaction* transaction)
-    : m_metadata(metadata),
+    : m_metadata(std::move(metadata)),
       m_objectStore(objectStore),
       m_transaction(transaction) {
   DCHECK(m_objectStore);
   DCHECK(m_transaction);
+  DCHECK(m_metadata.get());
   DCHECK_NE(id(), IDBIndexMetadata::InvalidId);
 }
 
@@ -103,15 +104,19 @@ void IDBIndex::setName(const String& name, ExceptionState& exceptionState) {
     return;
   }
 
-  backendDB()->renameIndex(m_transaction->id(), m_objectStore->id(), id(),
-                           name);
-  m_metadata.name = name;
-  m_objectStore->indexRenamed(m_metadata.id, name);
-  m_transaction->db()->indexRenamed(m_objectStore->id(), id(), name);
+  m_objectStore->renameIndex(id(), name);
 }
 
 ScriptValue IDBIndex::keyPath(ScriptState* scriptState) const {
   return ScriptValue::from(scriptState, metadata().keyPath);
+}
+
+void IDBIndex::revertMetadata(RefPtr<IDBIndexMetadata> oldMetadata) {
+  m_metadata = std::move(oldMetadata);
+
+  // An index's metadata will only get reverted if the index was in the
+  // database when the versionchange transaction started.
+  m_deleted = false;
 }
 
 IDBRequest* IDBIndex::openCursor(ScriptState* scriptState,
@@ -372,10 +377,6 @@ IDBRequest* IDBIndex::getAllInternal(ScriptState* scriptState,
 
 WebIDBDatabase* IDBIndex::backendDB() const {
   return m_transaction->backendDB();
-}
-
-bool IDBIndex::isDeleted() const {
-  return m_deleted || m_objectStore->isDeleted();
 }
 
 }  // namespace blink
