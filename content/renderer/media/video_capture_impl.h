@@ -47,12 +47,11 @@ namespace content {
 class CONTENT_EXPORT VideoCaptureImpl
     : public VideoCaptureMessageFilter::Delegate {
  public:
-  ~VideoCaptureImpl() override;
-
   VideoCaptureImpl(
       media::VideoCaptureSessionId session_id,
       VideoCaptureMessageFilter* filter,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  ~VideoCaptureImpl() override;
 
   // Stop/resume delivering video frames to clients, based on flag |suspend|.
   void SuspendCapture(bool suspend);
@@ -154,7 +153,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   void RestartCapture();
   void StartCaptureInternal();
 
-  // Helpers.
+  // Tries to remove |client_id| from |clients|, returning false if not found.
   bool RemoveClient(int client_id, ClientInfoMap* clients);
 
   mojom::VideoCaptureHost* GetVideoCaptureHost();
@@ -196,11 +195,10 @@ class CONTENT_EXPORT VideoCaptureImpl
   // client to this class via StartCapture().
   media::VideoCaptureParams params_;
 
-  // The device's first captured frame referecne time sent from browser process
+  // The device's first captured frame reference time sent from browser process
   // side.
   base::TimeTicks first_frame_ref_time_;
 
-  bool suspended_;
   VideoCaptureState state_;
 
   // IO message loop reference for checking correct class operation.

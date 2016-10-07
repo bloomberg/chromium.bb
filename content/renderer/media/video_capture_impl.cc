@@ -112,7 +112,6 @@ VideoCaptureImpl::VideoCaptureImpl(
       device_id_(0),
       session_id_(session_id),
       video_capture_host_for_testing_(nullptr),
-      suspended_(false),
       state_(VIDEO_CAPTURE_STATE_STOPPED),
       io_task_runner_(std::move(io_task_runner)),
       weak_factory_(this) {
@@ -124,7 +123,7 @@ VideoCaptureImpl::VideoCaptureImpl(
 
 VideoCaptureImpl::~VideoCaptureImpl() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  if (state_ == VIDEO_CAPTURE_STATE_STARTED)
+  if (state_ == VIDEO_CAPTURE_STATE_STARTED && GetVideoCaptureHost())
     GetVideoCaptureHost()->Stop(device_id_);
   message_filter_->RemoveDelegate(this);
 }
@@ -304,7 +303,7 @@ void VideoCaptureImpl::OnBufferReceived(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_ ||
+  if (state_ != VIDEO_CAPTURE_STATE_STARTED ||
       pixel_format != media::PIXEL_FORMAT_I420 ||
       (storage_type != media::VideoFrame::STORAGE_SHMEM &&
        storage_type != media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS)) {
@@ -543,15 +542,14 @@ void VideoCaptureImpl::Send(IPC::Message* message) {
 
 bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  bool found = false;
 
   const ClientInfoMap::iterator it = clients->find(client_id);
-  if (it != clients->end()) {
-    it->second.state_update_cb.Run(VIDEO_CAPTURE_STATE_STOPPED);
-    clients->erase(it);
-    found = true;
-  }
-  return found;
+  if (it == clients->end())
+    return false;
+
+  it->second.state_update_cb.Run(VIDEO_CAPTURE_STATE_STOPPED);
+  clients->erase(it);
+  return true;
 }
 
 mojom::VideoCaptureHost* VideoCaptureImpl::GetVideoCaptureHost() {
@@ -561,9 +559,11 @@ mojom::VideoCaptureHost* VideoCaptureImpl::GetVideoCaptureHost() {
 
   if (!video_capture_host_.get()) {
     DCHECK(message_filter_->channel());
-    message_filter_->channel()
-        ->GetAssociatedInterfaceSupport()
-        ->GetRemoteAssociatedInterface(&video_capture_host_);
+    auto interface_support =
+        message_filter_->channel()->GetAssociatedInterfaceSupport();
+    if (!interface_support)
+      return nullptr;
+    interface_support->GetRemoteAssociatedInterface(&video_capture_host_);
   }
   return video_capture_host_.get();
 };
