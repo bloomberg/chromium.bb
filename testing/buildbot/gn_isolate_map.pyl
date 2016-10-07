@@ -174,7 +174,7 @@
     "type": "console_test_launcher",
   },
   "blimp_test_apk": {
-    "label": "//blimp/client:blimp_test_apk",
+    "label": "//blimp/client/app:blimp_test_apk",
     "type": "console_test_launcher",
   },
   "blimp_unittests": {

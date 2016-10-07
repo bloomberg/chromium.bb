@@ -9,9 +9,9 @@
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "blimp/client/app/session/blimp_client_session.h"
 #include "blimp/client/core/contents/android/ime_helper_dialog.h"
 #include "blimp/client/public/session/assignment.h"
-#include "blimp/client/session/blimp_client_session.h"
 
 namespace blimp {
 namespace client {

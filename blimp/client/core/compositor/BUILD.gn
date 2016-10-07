@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 source_set("compositor") {
-  visibility = [ "//blimp/client/*" ]
+  visibility = [
+    "//blimp/client/app:*",  # TODO(nyquist): Remove this. See crbug/651964.
+    "//blimp/client/core/*",
+  ]
 
   sources = [
     "blimp_client_picture_cache.cc",

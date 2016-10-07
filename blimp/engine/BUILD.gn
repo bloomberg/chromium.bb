@@ -701,8 +701,8 @@ source_set("browser_tests") {
 
   deps = [
     "//base",
-    "//blimp/client:session",
-    "//blimp/client:test_support",
+    "//blimp/client/app:session",
+    "//blimp/client/app:test_support",
     "//blimp/client/core/contents:test_support",
     "//blimp/client/core/context",
     "//blimp/client/core/render_widget:test_support",

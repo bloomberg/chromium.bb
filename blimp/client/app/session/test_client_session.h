@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_SESSION_TEST_CLIENT_SESSION_H_
-#define BLIMP_CLIENT_SESSION_TEST_CLIENT_SESSION_H_
+#ifndef BLIMP_CLIENT_APP_SESSION_TEST_CLIENT_SESSION_H_
+#define BLIMP_CLIENT_APP_SESSION_TEST_CLIENT_SESSION_H_
 
-#include "blimp/client/session/blimp_client_session.h"
+#include "blimp/client/app/session/blimp_client_session.h"
 
 namespace blimp {
 namespace client {
@@ -22,4 +22,4 @@ class TestClientSession : public client::BlimpClientSession {
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_SESSION_TEST_CLIENT_SESSION_H_
+#endif  // BLIMP_CLIENT_APP_SESSION_TEST_CLIENT_SESSION_H_

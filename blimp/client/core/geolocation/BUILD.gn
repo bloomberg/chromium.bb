@@ -9,9 +9,9 @@ if (is_android) {
 
 source_set("geolocation") {
   visibility = [
+    "//blimp/client/app:session",  # TODO(nyquist): Remove this. See crbug/651964.
     "//blimp/client/core/*",
-    "//blimp/client:session",
-    "//blimp/engine:browser_tests",
+    "//blimp/engine:browser_tests",  # # TODO(nyquist): Remove this. See crbug/653789.
   ]
 
   sources = [

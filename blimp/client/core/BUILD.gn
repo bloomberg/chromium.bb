@@ -28,7 +28,9 @@ group("core_shim") {
 
 group("core") {
   visibility = [
-    "//blimp/client/*",
+    ":core_shim",
+    "//blimp/client/app:*",  # TODO(nyquist): Remove this. See crbug/651964.
+    "//blimp/client/test",
     "//blimp/test/*",
   ]
 
@@ -88,8 +90,9 @@ if (is_android) {
 
   java_group("core_java") {
     visibility = [
-      "//blimp/client/*",
-      "//blimp:blimp_unittests_java_deps",
+      ":core_shim_java",
+      "//blimp/client:blimp_unittests_java_deps",
+      "//blimp/client/app:*",  # TODO(nyquist): Remove this. See crbug/651964.
     ]
 
     deps = [

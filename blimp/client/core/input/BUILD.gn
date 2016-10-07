@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 source_set("input") {
-  visibility = [ "//blimp/client/*" ]
+  visibility = [ "//blimp/client/core/*" ]
 
   sources = [
     "blimp_input_handler_wrapper.cc",

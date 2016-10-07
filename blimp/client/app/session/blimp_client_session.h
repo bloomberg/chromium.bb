@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_SESSION_BLIMP_CLIENT_SESSION_H_
-#define BLIMP_CLIENT_SESSION_BLIMP_CLIENT_SESSION_H_
+#ifndef BLIMP_CLIENT_APP_SESSION_BLIMP_CLIENT_SESSION_H_
+#define BLIMP_CLIENT_APP_SESSION_BLIMP_CLIENT_SESSION_H_
 
 #include <memory>
 #include <string>
@@ -133,4 +133,4 @@ class BlimpClientSession
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_SESSION_BLIMP_CLIENT_SESSION_H_
+#endif  // BLIMP_CLIENT_APP_SESSION_BLIMP_CLIENT_SESSION_H_

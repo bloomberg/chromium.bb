@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "blimp/client/app/linux/blimp_display_manager.h"
+#include "blimp/client/app/session/blimp_client_session.h"
 #include "blimp/client/core/contents/ime_feature.h"
 #include "blimp/client/core/contents/navigation_feature.h"
-#include "blimp/client/session/blimp_client_session.h"
 
 namespace ui {
 class PlatformEventSource;
