@@ -162,6 +162,9 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_RequireSequence,
 IPC_MESSAGE_CONTROL1(BrowserPluginMsg_GuestGone,
                      int /* browser_plugin_instance_id */)
 
+IPC_MESSAGE_CONTROL1(BrowserPluginMsg_GuestReady,
+                     int /* browser_plugin_instance_id */)
+
 // When the user tabs to the end of the tab stops of a guest, the browser
 // process informs the embedder to tab out of the browser plugin.
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_AdvanceFocus,

@@ -639,6 +639,14 @@ void BrowserPluginGuest::RenderViewReady() {
   Send(new InputMsg_SetFocus(routing_id(), focused_));
   UpdateVisibility();
 
+  // In case we've created a new guest render process after a crash, let the
+  // associated BrowserPlugin know. We only need to send this if we're attached,
+  // as guest_crashed_ is cleared automatically on attach anyways.
+  if (attached()) {
+    SendMessageToEmbedder(
+        new BrowserPluginMsg_GuestReady(browser_plugin_instance_id()));
+  }
+
   RenderWidgetHostImpl::From(rvh->GetWidget())
       ->set_hung_renderer_delay(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs));

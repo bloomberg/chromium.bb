@@ -104,6 +104,7 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(BrowserPlugin, message)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestReady, OnGuestReady)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetTooltipText, OnSetTooltipText)
@@ -211,6 +212,10 @@ void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {
 
   EnableCompositing(true);
   compositing_helper_->ChildFrameGone();
+}
+
+void BrowserPlugin::OnGuestReady(int browser_plugin_instance_id) {
+  guest_crashed_ = false;
 }
 
 void BrowserPlugin::OnSetCursor(int browser_plugin_instance_id,

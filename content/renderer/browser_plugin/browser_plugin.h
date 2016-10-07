@@ -154,6 +154,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Please keep in alphabetical order.
   void OnAdvanceFocus(int instance_id, bool reverse);
   void OnGuestGone(int instance_id);
+  void OnGuestReady(int instance_id);
   void OnSetChildFrameSurface(int instance_id,
                               const cc::SurfaceId& surface_id,
                               const gfx::Size& frame_size,
