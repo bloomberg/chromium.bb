@@ -53,11 +53,7 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
                                       mojo::GetProxy(&m_sink));
 }
 
-// Case 1: both canvas and compositor are not gpu accelerated, or canvas is
-// accelerated but --disable-gpu-compositing is specified, or
-// WebGL's commit called with swiftshader. The last case is indicated by
-// WebGraphicsContext3DProvider::isSoftwareRendering.
-void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceInMemory(
+void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceToSharedBitmap(
     cc::TransferableResource& resource,
     RefPtr<StaticBitmapImage> image) {
   std::unique_ptr<cc::SharedBitmap> bitmap =
@@ -83,10 +79,10 @@ void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceInMemory(
   m_sharedBitmaps.add(m_nextResourceId, std::move(bitmap));
 }
 
-// Case 2: canvas is not gpu-accelerated, but compositor is
-void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceMemoryToTexture(
-    cc::TransferableResource& resource,
-    RefPtr<StaticBitmapImage> image) {
+void OffscreenCanvasFrameDispatcherImpl::
+    setTransferableResourceToSharedGPUContext(
+        cc::TransferableResource& resource,
+        RefPtr<StaticBitmapImage> image) {
   // TODO(crbug.com/652707): When committing the first frame, there is no
   // instance of SharedGpuContext yet, calling SharedGpuContext::gl() will
   // trigger a creation of an instace, which requires to create a
@@ -118,10 +114,6 @@ void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceMemoryToTexture(
   gl->TexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format,
                  GL_UNSIGNED_BYTE, 0);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  // The pixel data will be uploaded to GPU memory, we have to keep the GPU
-  // memory alive until browser ReturnResources, so here we put textureId for
-  // that piece of GPU memory into a hashmap.
-  m_cachedTextureIds.add(m_nextResourceId, textureId);
   gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, format,
                     GL_UNSIGNED_BYTE, dstPixels->data());
 
@@ -138,12 +130,16 @@ void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceMemoryToTexture(
       gpu::MailboxHolder(mailbox, syncToken, GL_TEXTURE_2D);
   resource.read_lock_fences_enabled = false;
   resource.is_software = false;
+
+  // Hold ref to |textureId| for the piece of GPU memory where the pixel data
+  // is uploaded to, to keep it alive until the browser ReturnResources.
+  m_cachedTextureIds.add(m_nextResourceId, textureId);
 }
 
-// Case 3: both canvas and compositor are gpu accelerated.
-void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceInTexture(
-    cc::TransferableResource& resource,
-    RefPtr<StaticBitmapImage> image) {
+void OffscreenCanvasFrameDispatcherImpl::
+    setTransferableResourceToStaticBitmapImage(
+        cc::TransferableResource& resource,
+        RefPtr<StaticBitmapImage> image) {
   image->ensureMailbox();
   resource.mailbox_holder = gpu::MailboxHolder(
       image->getMailbox(), image->getSyncToken(), GL_TEXTURE_2D);
@@ -155,11 +151,10 @@ void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceInTexture(
   m_cachedImages.add(m_nextResourceId, std::move(image));
 }
 
-// When WebGL's commit is called on SwiftShader, we have software rendered
-// WebGL.
 void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
     RefPtr<StaticBitmapImage> image,
-    bool isWebGLSoftwareRendering) {
+    bool isWebGLSoftwareRendering /* This flag is true when WebGL's commit is
+    called on SwiftShader. */) {
   if (!image)
     return;
   if (!verifyImageSize(image->imageForCurrentFrame()))
@@ -188,18 +183,22 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   // TODO(crbug.com/646022): making this overlay-able.
   resource.is_overlay_candidate = false;
 
-  if (!image->isTextureBacked() &&
-      !Platform::current()->isGPUCompositingEnabled())
-    setTransferableResourceInMemory(resource, image);
-  else if (!image->isTextureBacked() &&
-           Platform::current()->isGPUCompositingEnabled())
-    setTransferableResourceMemoryToTexture(resource, image);
-  else if (image->isTextureBacked() &&
-           (!Platform::current()->isGPUCompositingEnabled() ||
-            isWebGLSoftwareRendering))
-    setTransferableResourceInMemory(resource, image);
-  else
-    setTransferableResourceInTexture(resource, image);
+  if (image->isTextureBacked() &&
+      Platform::current()->isGPUCompositingEnabled() &&
+      !isWebGLSoftwareRendering) {
+    // Case 1: both canvas and compositor are gpu accelerated.
+    setTransferableResourceToStaticBitmapImage(resource, image);
+  } else if (!Platform::current()->isGPUCompositingEnabled() ||
+             isWebGLSoftwareRendering) {
+    // Case 2: both canvas and compositor are not gpu accelerated, or canvas is
+    // accelerated but --disable-gpu-compositing is specified, or
+    // WebGL's commit called with swiftshader. The last case is indicated by
+    // WebGraphicsContext3DProvider::isSoftwareRendering.
+    setTransferableResourceToSharedBitmap(resource, image);
+  } else {
+    // Case 3: canvas is not gpu-accelerated, but compositor is.
+    setTransferableResourceToSharedGPUContext(resource, image);
+  }
 
   m_nextResourceId++;
   frame.delegated_frame_data->resource_list.push_back(std::move(resource));

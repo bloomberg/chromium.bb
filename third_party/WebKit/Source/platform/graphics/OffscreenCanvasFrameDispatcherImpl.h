@@ -52,12 +52,12 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   cc::mojom::blink::MojoCompositorFrameSinkPtr m_sink;
   mojo::Binding<cc::mojom::blink::MojoCompositorFrameSinkClient> m_binding;
 
-  void setTransferableResourceInMemory(cc::TransferableResource&,
-                                       RefPtr<StaticBitmapImage>);
-  void setTransferableResourceMemoryToTexture(cc::TransferableResource&,
-                                              RefPtr<StaticBitmapImage>);
-  void setTransferableResourceInTexture(cc::TransferableResource&,
-                                        RefPtr<StaticBitmapImage>);
+  void setTransferableResourceToSharedBitmap(cc::TransferableResource&,
+                                             RefPtr<StaticBitmapImage>);
+  void setTransferableResourceToSharedGPUContext(cc::TransferableResource&,
+                                                 RefPtr<StaticBitmapImage>);
+  void setTransferableResourceToStaticBitmapImage(cc::TransferableResource&,
+                                                  RefPtr<StaticBitmapImage>);
 };
 
 }  // namespace blink
