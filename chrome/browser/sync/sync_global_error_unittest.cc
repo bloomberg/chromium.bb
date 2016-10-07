@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -123,6 +124,11 @@ void VerifySyncGlobalErrorResult(browser_sync::ProfileSyncServiceMock* service,
 
 // Test that SyncGlobalError shows an error if a passphrase is required.
 TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
+  // The MD User Menu displays Sync errors in a different way and should be the
+  // only one to do so. Under that paradigm, this test is obsolete.
+  if (switches::IsMaterialDesignUserMenu())
+    return;
+
   browser_sync::ProfileSyncServiceMock service(
       CreateProfileSyncServiceParamsForTest(profile()));
 
