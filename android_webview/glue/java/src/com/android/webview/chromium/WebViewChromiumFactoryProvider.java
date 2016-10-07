@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
@@ -51,6 +50,7 @@ import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.MemoryPressureListener;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.PathService;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
@@ -529,30 +529,35 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         return new WebViewChromium(this, webView, privateAccess, mShouldDisableThreadChecking);
     }
 
-    // Check this as a workaround for https://crbug.com/622151.
+    // Check this as a workaround for crash issues.
     private boolean shouldDisableThreadChecking(Context context) {
+        // crbug.com/651706
+        final String lgeMailPackageId = "com.lge.email";
+        if (lgeMailPackageId.equals(context.getPackageName())) {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M + 1) return false;
+            int versionCode = PackageUtils.getPackageVersion(context, lgeMailPackageId);
+            // The version code is provided by LGE.
+            if (versionCode == -1 || versionCode >= 67700000) return false;
+            Log.w(TAG, "Disabling thread check in WebView (http://crbug.com/651706). "
+                    + "APK name: " + lgeMailPackageId + ", versionCode: " + versionCode);
+            return true;
+        }
+
+        // crbug.com/622151
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) return false;
         final String htcMailPackageId = "com.htc.android.mail";
         if (!htcMailPackageId.equals(context.getPackageName())) return false;
-        try {
-            PackageInfo packageInfo =
-                    context.getPackageManager().getPackageInfo(htcMailPackageId, 0);
-            if (packageInfo == null) return false;
-
-            // These values are provided by HTC.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-                    && packageInfo.versionCode >= 864021756) return false;
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M
-                    && packageInfo.versionCode >= 866001861) return false;
-
-            Log.w(TAG, "Disabling thread check in WebView (http://crbug.com/622151). "
-                    + "APK name: " + htcMailPackageId + ", versionCode: "
-                    + packageInfo.versionCode);
-            return true;
-        } catch (NameNotFoundException e) {
-            // Ignore this exception and return false.
+        int versionCode = PackageUtils.getPackageVersion(context, htcMailPackageId);
+        if (versionCode == -1) return false;
+        // These values are provided by HTC.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M && versionCode >= 864021756) return false;
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M && versionCode >= 866001861) {
+            return false;
         }
-        return false;
+
+        Log.w(TAG, "Disabling thread check in WebView (http://crbug.com/622151). "
+                + "APK name: " + htcMailPackageId + ", versionCode: " + versionCode);
+        return true;
     }
 
     @Override
