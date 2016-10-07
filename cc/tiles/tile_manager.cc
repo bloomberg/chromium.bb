@@ -1131,7 +1131,7 @@ void TileManager::CheckAndIssueSignals() {
   if (signals_.ready_to_activate && !signals_.did_notify_ready_to_activate) {
     signals_.ready_to_activate = false;
     if (IsReadyToActivate()) {
-      TRACE_EVENT0("disabled-by-default-cc.debug",
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                    "TileManager::CheckAndIssueSignals - ready to activate");
       signals_.did_notify_ready_to_activate = true;
       client_->NotifyReadyToActivate();
@@ -1142,7 +1142,7 @@ void TileManager::CheckAndIssueSignals() {
   if (signals_.ready_to_draw && !signals_.did_notify_ready_to_draw) {
     signals_.ready_to_draw = false;
     if (IsReadyToDraw()) {
-      TRACE_EVENT0("disabled-by-default-cc.debug",
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                    "TileManager::CheckAndIssueSignals - ready to draw");
       signals_.did_notify_ready_to_draw = true;
       client_->NotifyReadyToDraw();
@@ -1155,7 +1155,7 @@ void TileManager::CheckAndIssueSignals() {
     signals_.all_tile_tasks_completed = false;
     if (!has_scheduled_tile_tasks_) {
       TRACE_EVENT0(
-          "disabled-by-default-cc.debug",
+          TRACE_DISABLED_BY_DEFAULT("cc.debug"),
           "TileManager::CheckAndIssueSignals - all tile tasks completed");
       signals_.did_notify_all_tile_tasks_completed = true;
       client_->NotifyAllTileTasksCompleted();

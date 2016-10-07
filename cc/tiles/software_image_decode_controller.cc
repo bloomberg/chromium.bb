@@ -213,7 +213,7 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
   // will be decoded at raster time which is when it will be temporarily put in
   // the cache.
   ImageKey key = ImageKey::FromDrawImage(image);
-  TRACE_EVENT1("disabled-by-default-cc.debug",
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeController::GetTaskForImageAndRef", "key",
                key.ToString());
 
@@ -287,7 +287,7 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
 }
 
 void SoftwareImageDecodeController::RefImage(const ImageKey& key) {
-  TRACE_EVENT1("disabled-by-default-cc.debug",
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeController::RefImage", "key",
                key.ToString());
   lock_.AssertAcquired();
@@ -306,7 +306,7 @@ void SoftwareImageDecodeController::UnrefImage(const DrawImage& image) {
   //       it yet (or failed to decode it).
   //   2b. Unlock the image but keep it in list.
   const ImageKey& key = ImageKey::FromDrawImage(image);
-  TRACE_EVENT1("disabled-by-default-cc.debug",
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeController::UnrefImage", "key",
                key.ToString());
 
@@ -395,7 +395,7 @@ std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
 SoftwareImageDecodeController::DecodeImageInternal(
     const ImageKey& key,
     const DrawImage& draw_image) {
-  TRACE_EVENT1("disabled-by-default-cc.debug",
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeController::DecodeImageInternal", "key",
                key.ToString());
   sk_sp<const SkImage> image = draw_image.image();
@@ -420,7 +420,7 @@ SoftwareImageDecodeController::DecodeImageInternal(
 DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDraw(
     const DrawImage& draw_image) {
   ImageKey key = ImageKey::FromDrawImage(draw_image);
-  TRACE_EVENT1("disabled-by-default-cc.debug",
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeController::GetDecodedImageForDraw", "key",
                key.ToString());
   // If the target size is empty, we can skip this image draw.
@@ -433,7 +433,7 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDraw(
 DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
     const ImageKey& key,
     const DrawImage& draw_image) {
-  TRACE_EVENT1("disabled-by-default-cc.debug",
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeController::GetDecodedImageForDrawInternal",
                "key", key.ToString());
   base::AutoLock lock(lock_);
@@ -533,7 +533,7 @@ SoftwareImageDecodeController::GetOriginalImageDecode(
       CreateImageInfo(image->width(), image->height(), format_);
   std::unique_ptr<base::DiscardableMemory> decoded_pixels;
   {
-    TRACE_EVENT0("disabled-by-default-cc.debug",
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                  "SoftwareImageDecodeController::GetOriginalImageDecode - "
                  "allocate decoded pixels");
     decoded_pixels =
@@ -542,7 +542,7 @@ SoftwareImageDecodeController::GetOriginalImageDecode(
                                               decoded_info.height());
   }
   {
-    TRACE_EVENT0("disabled-by-default-cc.debug",
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                  "SoftwareImageDecodeController::GetOriginalImageDecode - "
                  "read pixels");
     bool result = image->readPixels(decoded_info, decoded_pixels->data(),
@@ -587,7 +587,7 @@ SoftwareImageDecodeController::GetSubrectImageDecode(
       key.target_size().width(), key.target_size().height(), format_);
   std::unique_ptr<base::DiscardableMemory> subrect_pixels;
   {
-    TRACE_EVENT0("disabled-by-default-cc.debug",
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                  "SoftwareImageDecodeController::GetSubrectImageDecode - "
                  "allocate subrect pixels");
     subrect_pixels =
@@ -596,7 +596,7 @@ SoftwareImageDecodeController::GetSubrectImageDecode(
                                               subrect_info.height());
   }
   {
-    TRACE_EVENT0("disabled-by-default-cc.debug",
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                  "SoftwareImageDecodeController::GetOriginalImageDecode - "
                  "read pixels");
     bool result = decoded_draw_image.image()->readPixels(
@@ -651,7 +651,7 @@ SoftwareImageDecodeController::GetScaledImageDecode(
   std::unique_ptr<base::DiscardableMemory> scaled_pixels;
   {
     TRACE_EVENT0(
-        "disabled-by-default-cc.debug",
+        TRACE_DISABLED_BY_DEFAULT("cc.debug"),
         "SoftwareImageDecodeController::ScaleImage - allocate scaled pixels");
     scaled_pixels = base::DiscardableMemoryAllocator::GetInstance()
                         ->AllocateLockedDiscardableMemory(
@@ -662,7 +662,7 @@ SoftwareImageDecodeController::GetScaledImageDecode(
   DCHECK(key.filter_quality() == kHigh_SkFilterQuality ||
          key.filter_quality() == kMedium_SkFilterQuality);
   {
-    TRACE_EVENT0("disabled-by-default-cc.debug",
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                  "SoftwareImageDecodeController::ScaleImage - scale pixels");
     bool result =
         decoded_pixmap.scalePixels(scaled_pixmap, key.filter_quality());
@@ -678,7 +678,7 @@ SoftwareImageDecodeController::GetScaledImageDecode(
 void SoftwareImageDecodeController::DrawWithImageFinished(
     const DrawImage& image,
     const DecodedDrawImage& decoded_image) {
-  TRACE_EVENT1("disabled-by-default-cc.debug",
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeController::DrawWithImageFinished", "key",
                ImageKey::FromDrawImage(image).ToString());
   ImageKey key = ImageKey::FromDrawImage(image);
@@ -693,7 +693,7 @@ void SoftwareImageDecodeController::DrawWithImageFinished(
 }
 
 void SoftwareImageDecodeController::RefAtRasterImage(const ImageKey& key) {
-  TRACE_EVENT1("disabled-by-default-cc.debug",
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeController::RefAtRasterImage", "key",
                key.ToString());
   DCHECK(at_raster_decoded_images_.Peek(key) !=
@@ -702,7 +702,7 @@ void SoftwareImageDecodeController::RefAtRasterImage(const ImageKey& key) {
 }
 
 void SoftwareImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
-  TRACE_EVENT1("disabled-by-default-cc.debug",
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeController::UnrefAtRasterImage", "key",
                key.ToString());
   base::AutoLock lock(lock_);

@@ -54,7 +54,7 @@ void RasterBufferProvider::PlaybackToMemory(
     float scale,
     sk_sp<SkColorSpace> dst_color_space,
     const RasterSource::PlaybackSettings& playback_settings) {
-  TRACE_EVENT0("disabled-by-default-cc.debug",
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "RasterBufferProvider::PlaybackToMemory");
 
   DCHECK(IsSupportedPlaybackToMemoryFormat(format)) << format;
