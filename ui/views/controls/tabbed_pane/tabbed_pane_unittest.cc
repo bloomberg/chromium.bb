@@ -10,13 +10,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/views/test/views_test_base.h"
 
 using base::ASCIIToUTF16;
 
 namespace views {
-
-namespace {
 
 // A view for testing that takes a fixed preferred size upon construction.
 class FixedSizeView : public View {
@@ -87,10 +86,45 @@ TEST_F(TabbedPaneTest, AddAndSelect) {
   // Add a tab at index 0, it should not be selected automatically.
   View* tab0 = new View();
   tabbed_pane->AddTabAtIndex(0, ASCIIToUTF16("tab0"), tab0);
-  EXPECT_NE(tab0, tabbed_pane->GetSelectedTab());
+  EXPECT_NE(tab0, tabbed_pane->GetSelectedTabContentView());
   EXPECT_NE(0, tabbed_pane->selected_tab_index());
 }
 
-}  // namespace
+ui::KeyEvent MakeKeyPressedEvent(ui::KeyboardCode keyboard_code, int flags) {
+  return ui::KeyEvent(ui::ET_KEY_PRESSED, keyboard_code,
+                      ui::UsLayoutKeyboardCodeToDomCode(keyboard_code), flags);
+}
+
+TEST_F(TabbedPaneTest, ArrowKeyBindings) {
+  std::unique_ptr<TabbedPane> tabbed_pane(new TabbedPane());
+  // Add several tabs; only the first should be a selected automatically.
+  for (int i = 0; i < 3; ++i) {
+    View* tab = new View();
+    tabbed_pane->AddTab(ASCIIToUTF16("tab"), tab);
+    EXPECT_EQ(i + 1, tabbed_pane->GetTabCount());
+  }
+
+  EXPECT_EQ(0, tabbed_pane->selected_tab_index());
+
+  // Right arrow should select tab 1:
+  tabbed_pane->GetSelectedTab()->OnKeyPressed(
+      MakeKeyPressedEvent(ui::VKEY_RIGHT, 0));
+  EXPECT_EQ(1, tabbed_pane->selected_tab_index());
+
+  // Left arrow should select tab 0:
+  tabbed_pane->GetSelectedTab()->OnKeyPressed(
+      MakeKeyPressedEvent(ui::VKEY_LEFT, 0));
+  EXPECT_EQ(0, tabbed_pane->selected_tab_index());
+
+  // Left arrow again should wrap to tab 2:
+  tabbed_pane->GetSelectedTab()->OnKeyPressed(
+      MakeKeyPressedEvent(ui::VKEY_LEFT, 0));
+  EXPECT_EQ(2, tabbed_pane->selected_tab_index());
+
+  // Right arrow again should wrap to tab 0:
+  tabbed_pane->GetSelectedTab()->OnKeyPressed(
+      MakeKeyPressedEvent(ui::VKEY_RIGHT, 0));
+  EXPECT_EQ(0, tabbed_pane->selected_tab_index());
+}
 
 }  // namespace views

@@ -46,54 +46,6 @@ namespace views {
 // static
 const char TabbedPane::kViewClassName[] = "TabbedPane";
 
-// The tab view shown in the tab strip.
-class Tab : public View {
- public:
-  // Internal class name.
-  static const char kViewClassName[];
-
-  Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents);
-  ~Tab() override;
-
-  View* contents() const { return contents_; }
-
-  bool selected() const { return contents_->visible(); }
-  void SetSelected(bool selected);
-
-  // Overridden from View:
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-  gfx::Size GetPreferredSize() const override;
-  void Layout() override;
-  const char* GetClassName() const override;
-
- protected:
-  Label* title() { return title_; }
-
-  // Called whenever |tab_state_| changes.
-  virtual void OnStateChanged();
-
- private:
-  enum TabState {
-    TAB_INACTIVE,
-    TAB_ACTIVE,
-    TAB_HOVERED,
-  };
-
-  void SetState(TabState tab_state);
-
-  TabbedPane* tabbed_pane_;
-  Label* title_;
-  gfx::Size preferred_title_size_;
-  TabState tab_state_;
-  // The content view associated with this tab.
-  View* contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(Tab);
-};
-
 // A subclass of Tab that implements the Harmony visual styling.
 class MdTab : public Tab {
  public:
@@ -102,6 +54,9 @@ class MdTab : public Tab {
 
   // Overridden from Tab:
   void OnStateChanged() override;
+
+  // Overridden from View:
+  void OnPaintBorder(gfx::Canvas* canvas) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MdTab);
@@ -169,6 +124,12 @@ Tab::~Tab() {}
 void Tab::SetSelected(bool selected) {
   contents_->SetVisible(selected);
   SetState(selected ? TAB_ACTIVE : TAB_INACTIVE);
+#if defined(OS_MACOSX)
+  SetFocusBehavior(selected ? FocusBehavior::ACCESSIBLE_ONLY
+                            : FocusBehavior::NEVER);
+#else
+  SetFocusBehavior(selected ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
+#endif
 }
 
 void Tab::OnStateChanged() {
@@ -252,6 +213,33 @@ void Tab::SetState(TabState tab_state) {
   SchedulePaint();
 }
 
+bool Tab::ContainerHasFocus() {
+  return tabbed_pane_->HasFocus();
+}
+
+void Tab::OnFocus() {
+  OnStateChanged();
+  // When the tab gains focus, send an accessibility event indicating that the
+  // contents are focused. When the tab loses focus, whichever new View ends up
+  // with focus will send an AX_EVENT_FOCUS of its own, so there's no need to
+  // send one in OnBlur().
+  if (contents())
+    contents()->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+  SchedulePaint();
+}
+
+void Tab::OnBlur() {
+  OnStateChanged();
+  SchedulePaint();
+}
+
+bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
+  ui::KeyboardCode key = event.key_code();
+  if (key != ui::VKEY_LEFT && key != ui::VKEY_RIGHT)
+    return false;
+  return tabbed_pane_->MoveSelectionBy(key == ui::VKEY_RIGHT ? 1 : -1);
+}
+
 MdTab::MdTab(TabbedPane* tabbed_pane,
              const base::string16& title,
              View* contents)
@@ -263,12 +251,6 @@ MdTab::~MdTab() {}
 
 void MdTab::OnStateChanged() {
   ui::NativeTheme* theme = GetNativeTheme();
-  SkColor border_color = theme->GetSystemColor(
-      selected() ? ui::NativeTheme::kColorId_FocusedBorderColor
-                 : ui::NativeTheme::kColorId_UnfocusedBorderColor);
-  int border_thickness = selected() ? 2 : 1;
-  SetBorder(
-      Border::CreateSolidSidedBorder(0, 0, border_thickness, 0, border_color));
 
   SkColor font_color = selected()
       ? theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor)
@@ -284,6 +266,40 @@ void MdTab::OnStateChanged() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title()->SetFontList(rb.GetFontListWithDelta(ui::kLabelFontSizeDelta,
                                                gfx::Font::NORMAL, font_weight));
+}
+
+void MdTab::OnPaintBorder(gfx::Canvas* canvas) {
+  const int kBorderStrokeWidth = 2;
+  if (!HasFocus()) {
+    SkColor color = GetNativeTheme()->GetSystemColor(
+        selected() ? ui::NativeTheme::kColorId_FocusedBorderColor
+                   : ui::NativeTheme::kColorId_UnfocusedBorderColor);
+    int thickness = selected() ? kBorderStrokeWidth : kBorderStrokeWidth / 2;
+    canvas->FillRect(gfx::Rect(0, height() - thickness, width(), thickness),
+                     color);
+    return;
+  }
+
+  // TODO(ellyjones): should this 0x66 be part of NativeTheme somehow?
+  SkColor base_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_FocusedBorderColor);
+  SkColor light_color = SkColorSetA(base_color, 0x66);
+
+  SkPaint paint;
+  paint.setColor(light_color);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(kBorderStrokeWidth);
+
+  gfx::RectF bounds = gfx::RectF(GetLocalBounds());
+  bounds.Inset(gfx::Insets(kBorderStrokeWidth / 2.f));
+
+  // Draw the lighter-colored stroke first, then draw the heavier stroke over
+  // the bottom of it. This is fine because the heavier stroke has 1.0 alpha, so
+  // the lighter stroke won't show through.
+  canvas->DrawRect(bounds, paint);
+  canvas->FillRect(
+      gfx::Rect(0, height() - kBorderStrokeWidth, width(), kBorderStrokeWidth),
+      base_color);
 }
 
 // static
@@ -386,12 +402,6 @@ TabbedPane::TabbedPane()
                      : new TabStrip(this)),
       contents_(new View()),
       selected_tab_index_(-1) {
-#if defined(OS_MACOSX)
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-#else
-  SetFocusBehavior(FocusBehavior::ALWAYS);
-#endif
-
   AddChildView(tab_strip_);
   AddChildView(contents_);
 }
@@ -401,11 +411,6 @@ TabbedPane::~TabbedPane() {}
 int TabbedPane::GetTabCount() {
   DCHECK_EQ(tab_strip_->child_count(), contents_->child_count());
   return contents_->child_count();
-}
-
-View* TabbedPane::GetSelectedTab() {
-  return selected_tab_index() < 0 ?
-      NULL : GetTabAt(selected_tab_index())->contents();
 }
 
 void TabbedPane::AddTab(const base::string16& title, View* contents) {
@@ -424,6 +429,9 @@ void TabbedPane::AddTabAtIndex(int index,
           : new Tab(this, title, contents),
       index);
   contents_->AddChildViewAt(contents, index);
+  // TODO(ellyjones): if index < selected_tab_index(), selected_tab_index() gets
+  // out of sync with which tab believes it is selected. This class should
+  // directly ask Tabs whether they are selected.
   if (selected_tab_index() < 0)
     SelectTabAt(index);
 
@@ -435,20 +443,23 @@ void TabbedPane::SelectTabAt(int index) {
   if (index == selected_tab_index())
     return;
 
-  if (selected_tab_index() >= 0)
-    GetTabAt(selected_tab_index())->SetSelected(false);
-
+  Tab* old_selected_tab = GetSelectedTab();
+  Tab* new_selected_tab = GetTabAt(index);
+  new_selected_tab->SetSelected(true);
   selected_tab_index_ = index;
-  Tab* tab = GetTabAt(index);
-  tab->SetSelected(true);
+  if (old_selected_tab) {
+    if (old_selected_tab->HasFocus())
+      new_selected_tab->RequestFocus();
+    old_selected_tab->SetSelected(false);
+  }
   tab_strip_->SchedulePaint();
 
-  FocusManager* focus_manager = tab->contents()->GetFocusManager();
+  FocusManager* focus_manager = new_selected_tab->contents()->GetFocusManager();
   if (focus_manager) {
     const View* focused_view = focus_manager->GetFocusedView();
     if (focused_view && contents_->Contains(focused_view) &&
-        !tab->contents()->Contains(focused_view))
-      focus_manager->SetFocusedView(tab->contents());
+        !new_selected_tab->contents()->Contains(focused_view))
+      focus_manager->SetFocusedView(new_selected_tab->contents());
   }
 
   if (listener())
@@ -473,6 +484,21 @@ Tab* TabbedPane::GetTabAt(int index) {
   return static_cast<Tab*>(tab_strip_->child_at(index));
 }
 
+Tab* TabbedPane::GetSelectedTab() {
+  return selected_tab_index() >= 0 ? GetTabAt(selected_tab_index()) : nullptr;
+}
+
+bool TabbedPane::MoveSelectionBy(int delta) {
+  const int tab_count = GetTabCount();
+  if (tab_count <= 1)
+    return false;
+  int next_selected_index = (selected_tab_index() + delta) % tab_count;
+  if (next_selected_index < 0)
+    next_selected_index += tab_count;
+  SelectTabAt(next_selected_index);
+  return true;
+}
+
 void TabbedPane::Layout() {
   const gfx::Size size = tab_strip_->GetPreferredSize();
   tab_strip_->SetBounds(0, 0, width(), size.height());
@@ -495,30 +521,15 @@ void TabbedPane::ViewHierarchyChanged(
 bool TabbedPane::AcceleratorPressed(const ui::Accelerator& accelerator) {
   // Handle Ctrl+Tab and Ctrl+Shift+Tab navigation of pages.
   DCHECK(accelerator.key_code() == ui::VKEY_TAB && accelerator.IsCtrlDown());
-  const int tab_count = GetTabCount();
-  if (tab_count <= 1)
-    return false;
-  const int increment = accelerator.IsShiftDown() ? -1 : 1;
-  int next_tab_index = (selected_tab_index() + increment) % tab_count;
-  // Wrap around.
-  if (next_tab_index < 0)
-    next_tab_index += tab_count;
-  SelectTabAt(next_tab_index);
-  return true;
+  return MoveSelectionBy(accelerator.IsShiftDown() ? -1 : 1);
 }
 
 const char* TabbedPane::GetClassName() const {
   return kViewClassName;
 }
 
-void TabbedPane::OnFocus() {
-  View::OnFocus();
-
-  View* selected_tab = GetSelectedTab();
-  if (selected_tab) {
-    selected_tab->NotifyAccessibilityEvent(
-        ui::AX_EVENT_FOCUS, true);
-  }
+View* TabbedPane::GetSelectedTabContentView() {
+  return GetSelectedTab() ? GetSelectedTab()->contents() : nullptr;
 }
 
 void TabbedPane::GetAccessibleState(ui::AXViewState* state) {

@@ -33,61 +33,61 @@ namespace views {
 
 namespace {
 
-int count = 1;
+enum {
+  TOP_CHECKBOX_ID = 1,  // 1
+  LEFT_CONTAINER_ID,
+  APPLE_LABEL_ID,
+  APPLE_TEXTFIELD_ID,
+  ORANGE_LABEL_ID,  // 5
+  ORANGE_TEXTFIELD_ID,
+  BANANA_LABEL_ID,
+  BANANA_TEXTFIELD_ID,
+  KIWI_LABEL_ID,
+  KIWI_TEXTFIELD_ID,  // 10
+  FRUIT_BUTTON_ID,
+  FRUIT_CHECKBOX_ID,
+  COMBOBOX_ID,
 
-const int kTopCheckBoxID = count++;  // 1
-const int kLeftContainerID = count++;
-const int kAppleLabelID = count++;
-const int kAppleTextfieldID = count++;
-const int kOrangeLabelID = count++;  // 5
-const int kOrangeTextfieldID = count++;
-const int kBananaLabelID = count++;
-const int kBananaTextfieldID = count++;
-const int kKiwiLabelID = count++;
-const int kKiwiTextfieldID = count++;  // 10
-const int kFruitButtonID = count++;
-const int kFruitCheckBoxID = count++;
-const int kComboboxID = count++;
+  RIGHT_CONTAINER_ID,
+  ASPARAGUS_BUTTON_ID,  // 15
+  BROCCOLI_BUTTON_ID,
+  CAULIFLOWER_BUTTON_ID,
 
-const int kRightContainerID = count++;
-const int kAsparagusButtonID = count++;  // 15
-const int kBroccoliButtonID = count++;
-const int kCauliflowerButtonID = count++;
+  INNER_CONTAINER_ID,
+  SCROLL_VIEW_ID,
+  ROSETTA_LINK_ID,  // 20
+  STUPEUR_ET_TREMBLEMENT_LINK_ID,
+  DINER_GAME_LINK_ID,
+  RIDICULE_LINK_ID,
+  CLOSET_LINK_ID,
+  VISITING_LINK_ID,  // 25
+  AMELIE_LINK_ID,
+  JOYEUX_NOEL_LINK_ID,
+  CAMPING_LINK_ID,
+  BRICE_DE_NICE_LINK_ID,
+  TAXI_LINK_ID,  // 30
+  ASTERIX_LINK_ID,
 
-const int kInnerContainerID = count++;
-const int kScrollViewID = count++;
-const int kRosettaLinkID = count++;  // 20
-const int kStupeurEtTremblementLinkID = count++;
-const int kDinerGameLinkID = count++;
-const int kRidiculeLinkID = count++;
-const int kClosetLinkID = count++;
-const int kVisitingLinkID = count++;  // 25
-const int kAmelieLinkID = count++;
-const int kJoyeuxNoelLinkID = count++;
-const int kCampingLinkID = count++;
-const int kBriceDeNiceLinkID = count++;
-const int kTaxiLinkID = count++;  // 30
-const int kAsterixLinkID = count++;
+  OK_BUTTON_ID,
+  CANCEL_BUTTON_ID,
+  HELP_BUTTON_ID,
 
-const int kOKButtonID = count++;
-const int kCancelButtonID = count++;
-const int kHelpButtonID = count++;
+  STYLE_CONTAINER_ID,  // 35
+  BOLD_CHECKBOX_ID,
+  ITALIC_CHECKBOX_ID,
+  UNDERLINED_CHECKBOX_ID,
+  STYLE_HELP_LINK_ID,
+  STYLE_TEXT_EDIT_ID,  // 40
 
-const int kStyleContainerID = count++;  // 35
-const int kBoldCheckBoxID = count++;
-const int kItalicCheckBoxID = count++;
-const int kUnderlinedCheckBoxID = count++;
-const int kStyleHelpLinkID = count++;
-const int kStyleTextEditID = count++;  // 40
+  SEARCH_CONTAINER_ID,
+  SEARCH_TEXTFIELD_ID,
+  SEARCH_BUTTON_ID,
+  HELP_LINK_ID,
 
-const int kSearchContainerID = count++;
-const int kSearchTextfieldID = count++;
-const int kSearchButtonID = count++;
-const int kHelpLinkID = count++;
-
-const int kThumbnailContainerID = count++;  // 45
-const int kThumbnailStarID = count++;
-const int kThumbnailSuperStarID = count++;
+  THUMBNAIL_CONTAINER_ID,  // 45
+  THUMBNAIL_STAR_ID,
+  THUMBNAIL_SUPER_STAR_ID,
+};
 
 class DummyComboboxModel : public ui::ComboboxModel {
  public:
@@ -192,7 +192,7 @@ class FocusTraversalTest : public FocusManagerTest {
     if (view)
       return view;
     if (style_tab_)
-      view = style_tab_->GetSelectedTab()->GetViewByID(id);
+      view = style_tab_->GetSelectedTabContentView()->GetViewByID(id);
     if (view)
       return view;
     view = search_border_view_->GetContentsRootView()->GetViewByID(id);
@@ -244,61 +244,61 @@ void FocusTraversalTest::InitContentView() {
   // Class name, ID, and asterisk next to focusable views:
   //
   // View
-  //   Checkbox            * kTopCheckBoxID
-  //   PaneView              kLeftContainerID
-  //     Label               kAppleLabelID
-  //     Textfield         * kAppleTextfieldID
-  //     Label               kOrangeLabelID
-  //     Textfield         * kOrangeTextfieldID
-  //     Label               kBananaLabelID
-  //     Textfield         * kBananaTextfieldID
-  //     Label               kKiwiLabelID
-  //     Textfield         * kKiwiTextfieldID
-  //     NativeButton      * kFruitButtonID
-  //     Checkbox          * kFruitCheckBoxID
-  //     Combobox          * kComboboxID
-  //   PaneView              kRightContainerID
-  //     RadioButton       * kAsparagusButtonID
-  //     RadioButton       * kBroccoliButtonID
-  //     RadioButton       * kCauliflowerButtonID
-  //     View                kInnerContainerID
-  //       ScrollView        kScrollViewID
+  //   Checkbox            * TOP_CHECKBOX_ID
+  //   PaneView              LEFT_CONTAINER_ID
+  //     Label               APPLE_LABEL_ID
+  //     Textfield         * APPLE_TEXTFIELD_ID
+  //     Label               ORANGE_LABEL_ID
+  //     Textfield         * ORANGE_TEXTFIELD_ID
+  //     Label               BANANA_LABEL_ID
+  //     Textfield         * BANANA_TEXTFIELD_ID
+  //     Label               KIWI_LABEL_ID
+  //     Textfield         * KIWI_TEXTFIELD_ID
+  //     NativeButton      * FRUIT_BUTTON_ID
+  //     Checkbox          * FRUIT_CHECKBOX_ID
+  //     Combobox          * COMBOBOX_ID
+  //   PaneView              RIGHT_CONTAINER_ID
+  //     RadioButton       * ASPARAGUS_BUTTON_ID
+  //     RadioButton       * BROCCOLI_BUTTON_ID
+  //     RadioButton       * CAULIFLOWER_BUTTON_ID
+  //     View                INNER_CONTAINER_ID
+  //       ScrollView        SCROLL_VIEW_ID
   //         View
-  //           Link        * kRosettaLinkID
-  //           Link        * kStupeurEtTremblementLinkID
-  //           Link        * kDinerGameLinkID
-  //           Link        * kRidiculeLinkID
-  //           Link        * kClosetLinkID
-  //           Link        * kVisitingLinkID
-  //           Link        * kAmelieLinkID
-  //           Link        * kJoyeuxNoelLinkID
-  //           Link        * kCampingLinkID
-  //           Link        * kBriceDeNiceLinkID
-  //           Link        * kTaxiLinkID
-  //           Link        * kAsterixLinkID
-  //   NativeButton        * kOKButtonID
-  //   NativeButton        * kCancelButtonID
-  //   NativeButton        * kHelpButtonID
-  //   TabbedPane          * kStyleContainerID
+  //           Link        * ROSETTA_LINK_ID
+  //           Link        * STUPEUR_ET_TREMBLEMENT_LINK_ID
+  //           Link        * DINER_GAME_LINK_ID
+  //           Link        * RIDICULE_LINK_ID
+  //           Link        * CLOSET_LINK_ID
+  //           Link        * VISITING_LINK_ID
+  //           Link        * AMELIE_LINK_ID
+  //           Link        * JOYEUX_NOEL_LINK_ID
+  //           Link        * CAMPING_LINK_ID
+  //           Link        * BRICE_DE_NICE_LINK_ID
+  //           Link        * TAXI_LINK_ID
+  //           Link        * ASTERIX_LINK_ID
+  //   NativeButton        * OK_BUTTON_ID
+  //   NativeButton        * CANCEL_BUTTON_ID
+  //   NativeButton        * HELP_BUTTON_ID
+  //   TabbedPane          * STYLE_CONTAINER_ID
   //     TabStrip
   //       Tab ("Style")
   //       Tab ("Other")
   //     View
   //       View
-  //         Checkbox      * kBoldCheckBoxID
-  //         Checkbox      * kItalicCheckBoxID
-  //         Checkbox      * kUnderlinedCheckBoxID
-  //         Link          * kStyleHelpLinkID
-  //         Textfield     * kStyleTextEditID
+  //         Checkbox      * BOLD_CHECKBOX_ID
+  //         Checkbox      * ITALIC_CHECKBOX_ID
+  //         Checkbox      * UNDERLINED_CHECKBOX_ID
+  //         Link          * STYLE_HELP_LINK_ID
+  //         Textfield     * STYLE_TEXT_EDIT_ID
   //       View
-  //   BorderView            kSearchContainerID
+  //   BorderView            SEARCH_CONTAINER_ID
   //     View
-  //       Textfield       * kSearchTextfieldID
-  //       NativeButton    * kSearchButtonID
-  //       Link            * kHelpLinkID
-  //   View                * kThumbnailContainerID
-  //     NativeButton      * kThumbnailStarID
-  //     NativeButton      * kThumbnailSuperStarID
+  //       Textfield       * SEARCH_TEXTFIELD_ID
+  //       NativeButton    * SEARCH_BUTTON_ID
+  //       Link            * HELP_LINK_ID
+  //   View                * THUMBNAIL_CONTAINER_ID
+  //     NativeButton      * THUMBNAIL_STAR_ID
+  //     NativeButton      * THUMBNAIL_SUPER_STAR_ID
 
   GetContentsView()->set_background(
       Background::CreateSolidBackground(SK_ColorWHITE));
@@ -307,13 +307,13 @@ void FocusTraversalTest::InitContentView() {
   GetContentsView()->AddChildView(cb);
   // In this fast paced world, who really has time for non hard-coded layout?
   cb->SetBounds(10, 10, 200, 20);
-  cb->set_id(kTopCheckBoxID);
+  cb->set_id(TOP_CHECKBOX_ID);
 
   left_container_ = new PaneView();
   left_container_->SetBorder(Border::CreateSolidBorder(1, SK_ColorBLACK));
   left_container_->set_background(
       Background::CreateSolidBackground(240, 240, 240));
-  left_container_->set_id(kLeftContainerID);
+  left_container_->set_id(LEFT_CONTAINER_ID);
   GetContentsView()->AddChildView(left_container_);
   left_container_->SetBounds(10, 35, 250, 200);
 
@@ -325,12 +325,12 @@ void FocusTraversalTest::InitContentView() {
   int gap_between_labels = 10;
 
   Label* label = new Label(ASCIIToUTF16("Apple:"));
-  label->set_id(kAppleLabelID);
+  label->set_id(APPLE_LABEL_ID);
   left_container_->AddChildView(label);
   label->SetBounds(label_x, y, label_width, label_height);
 
   Textfield* text_field = new Textfield();
-  text_field->set_id(kAppleTextfieldID);
+  text_field->set_id(APPLE_TEXTFIELD_ID);
   left_container_->AddChildView(text_field);
   text_field->SetBounds(label_x + label_width + 5, y,
                         text_field_width, label_height);
@@ -338,12 +338,12 @@ void FocusTraversalTest::InitContentView() {
   y += label_height + gap_between_labels;
 
   label = new Label(ASCIIToUTF16("Orange:"));
-  label->set_id(kOrangeLabelID);
+  label->set_id(ORANGE_LABEL_ID);
   left_container_->AddChildView(label);
   label->SetBounds(label_x, y, label_width, label_height);
 
   text_field = new Textfield();
-  text_field->set_id(kOrangeTextfieldID);
+  text_field->set_id(ORANGE_TEXTFIELD_ID);
   left_container_->AddChildView(text_field);
   text_field->SetBounds(label_x + label_width + 5, y,
                         text_field_width, label_height);
@@ -351,12 +351,12 @@ void FocusTraversalTest::InitContentView() {
   y += label_height + gap_between_labels;
 
   label = new Label(ASCIIToUTF16("Banana:"));
-  label->set_id(kBananaLabelID);
+  label->set_id(BANANA_LABEL_ID);
   left_container_->AddChildView(label);
   label->SetBounds(label_x, y, label_width, label_height);
 
   text_field = new Textfield();
-  text_field->set_id(kBananaTextfieldID);
+  text_field->set_id(BANANA_TEXTFIELD_ID);
   left_container_->AddChildView(text_field);
   text_field->SetBounds(label_x + label_width + 5, y,
                         text_field_width, label_height);
@@ -364,12 +364,12 @@ void FocusTraversalTest::InitContentView() {
   y += label_height + gap_between_labels;
 
   label = new Label(ASCIIToUTF16("Kiwi:"));
-  label->set_id(kKiwiLabelID);
+  label->set_id(KIWI_LABEL_ID);
   left_container_->AddChildView(label);
   label->SetBounds(label_x, y, label_width, label_height);
 
   text_field = new Textfield();
-  text_field->set_id(kKiwiTextfieldID);
+  text_field->set_id(KIWI_TEXTFIELD_ID);
   left_container_->AddChildView(text_field);
   text_field->SetBounds(label_x + label_width + 5, y,
                         text_field_width, label_height);
@@ -378,26 +378,26 @@ void FocusTraversalTest::InitContentView() {
 
   LabelButton* button = MdTextButton::Create(NULL, ASCIIToUTF16("Click me"));
   button->SetBounds(label_x, y + 10, 80, 30);
-  button->set_id(kFruitButtonID);
+  button->set_id(FRUIT_BUTTON_ID);
   left_container_->AddChildView(button);
   y += 40;
 
   cb =  new Checkbox(ASCIIToUTF16("This is another check box"));
   cb->SetBounds(label_x + label_width + 5, y, 180, 20);
-  cb->set_id(kFruitCheckBoxID);
+  cb->set_id(FRUIT_CHECKBOX_ID);
   left_container_->AddChildView(cb);
   y += 20;
 
   Combobox* combobox =  new Combobox(&combobox_model_);
   combobox->SetBounds(label_x + label_width + 5, y, 150, 30);
-  combobox->set_id(kComboboxID);
+  combobox->set_id(COMBOBOX_ID);
   left_container_->AddChildView(combobox);
 
   right_container_ = new PaneView();
   right_container_->SetBorder(Border::CreateSolidBorder(1, SK_ColorBLACK));
   right_container_->set_background(
       Background::CreateSolidBackground(240, 240, 240));
-  right_container_->set_id(kRightContainerID);
+  right_container_->set_id(RIGHT_CONTAINER_ID);
   GetContentsView()->AddChildView(right_container_);
   right_container_->SetBounds(270, 35, 300, 200);
 
@@ -405,20 +405,20 @@ void FocusTraversalTest::InitContentView() {
   int radio_button_height = 18;
   int gap_between_radio_buttons = 10;
   RadioButton* radio_button = new RadioButton(ASCIIToUTF16("Asparagus"), 1);
-  radio_button->set_id(kAsparagusButtonID);
+  radio_button->set_id(ASPARAGUS_BUTTON_ID);
   right_container_->AddChildView(radio_button);
   radio_button->SetBounds(5, y, 70, radio_button_height);
   radio_button->SetGroup(1);
   y += radio_button_height + gap_between_radio_buttons;
   radio_button = new RadioButton(ASCIIToUTF16("Broccoli"), 1);
-  radio_button->set_id(kBroccoliButtonID);
+  radio_button->set_id(BROCCOLI_BUTTON_ID);
   right_container_->AddChildView(radio_button);
   radio_button->SetBounds(5, y, 70, radio_button_height);
   radio_button->SetGroup(1);
   RadioButton* radio_button_to_check = radio_button;
   y += radio_button_height + gap_between_radio_buttons;
   radio_button = new RadioButton(ASCIIToUTF16("Cauliflower"), 1);
-  radio_button->set_id(kCauliflowerButtonID);
+  radio_button->set_id(CAULIFLOWER_BUTTON_ID);
   right_container_->AddChildView(radio_button);
   radio_button->SetBounds(5, y, 70, radio_button_height);
   radio_button->SetGroup(1);
@@ -428,12 +428,12 @@ void FocusTraversalTest::InitContentView() {
   inner_container->SetBorder(Border::CreateSolidBorder(1, SK_ColorBLACK));
   inner_container->set_background(
       Background::CreateSolidBackground(230, 230, 230));
-  inner_container->set_id(kInnerContainerID);
+  inner_container->set_id(INNER_CONTAINER_ID);
   right_container_->AddChildView(inner_container);
   inner_container->SetBounds(100, 10, 150, 180);
 
   ScrollView* scroll_view = new ScrollView();
-  scroll_view->set_id(kScrollViewID);
+  scroll_view->set_id(SCROLL_VIEW_ID);
   inner_container->AddChildView(scroll_view);
   scroll_view->SetBounds(1, 1, 148, 178);
 
@@ -450,12 +450,12 @@ void FocusTraversalTest::InitContentView() {
       "Taxi", "Asterix"
   };
 
-  static const int kIDs[] = {
-      kRosettaLinkID, kStupeurEtTremblementLinkID, kDinerGameLinkID,
-      kRidiculeLinkID, kClosetLinkID, kVisitingLinkID, kAmelieLinkID,
-      kJoyeuxNoelLinkID, kCampingLinkID, kBriceDeNiceLinkID,
-      kTaxiLinkID, kAsterixLinkID
-  };
+  static const int kIDs[] = {ROSETTA_LINK_ID,    STUPEUR_ET_TREMBLEMENT_LINK_ID,
+                             DINER_GAME_LINK_ID, RIDICULE_LINK_ID,
+                             CLOSET_LINK_ID,     VISITING_LINK_ID,
+                             AMELIE_LINK_ID,     JOYEUX_NOEL_LINK_ID,
+                             CAMPING_LINK_ID,    BRICE_DE_NICE_LINK_ID,
+                             TAXI_LINK_ID,       ASTERIX_LINK_ID};
 
   DCHECK(arraysize(kTitles) == arraysize(kIDs));
 
@@ -472,19 +472,19 @@ void FocusTraversalTest::InitContentView() {
   y = 250;
   int width = 60;
   button = MdTextButton::Create(NULL, ASCIIToUTF16("OK"));
-  button->set_id(kOKButtonID);
+  button->set_id(OK_BUTTON_ID);
   button->SetIsDefault(true);
 
   GetContentsView()->AddChildView(button);
   button->SetBounds(150, y, width, 30);
 
   button = MdTextButton::Create(NULL, ASCIIToUTF16("Cancel"));
-  button->set_id(kCancelButtonID);
+  button->set_id(CANCEL_BUTTON_ID);
   GetContentsView()->AddChildView(button);
   button->SetBounds(220, y, width, 30);
 
   button = MdTextButton::Create(NULL, ASCIIToUTF16("Help"));
-  button->set_id(kHelpButtonID);
+  button->set_id(HELP_BUTTON_ID);
   GetContentsView()->AddChildView(button);
   button->SetBounds(290, y, width, 30);
 
@@ -499,33 +499,33 @@ void FocusTraversalTest::InitContentView() {
   cb = new Checkbox(ASCIIToUTF16("Bold"));
   contents->AddChildView(cb);
   cb->SetBounds(10, 10, 50, 20);
-  cb->set_id(kBoldCheckBoxID);
+  cb->set_id(BOLD_CHECKBOX_ID);
 
   cb = new Checkbox(ASCIIToUTF16("Italic"));
   contents->AddChildView(cb);
   cb->SetBounds(70, 10, 50, 20);
-  cb->set_id(kItalicCheckBoxID);
+  cb->set_id(ITALIC_CHECKBOX_ID);
 
   cb = new Checkbox(ASCIIToUTF16("Underlined"));
   contents->AddChildView(cb);
   cb->SetBounds(130, 10, 70, 20);
-  cb->set_id(kUnderlinedCheckBoxID);
+  cb->set_id(UNDERLINED_CHECKBOX_ID);
 
   link = new Link(ASCIIToUTF16("Help"));
   contents->AddChildView(link);
   link->SetBounds(10, 35, 70, 10);
-  link->set_id(kStyleHelpLinkID);
+  link->set_id(STYLE_HELP_LINK_ID);
 
   text_field = new Textfield();
   contents->AddChildView(text_field);
   text_field->SetBounds(10, 50, 100, 20);
-  text_field->set_id(kStyleTextEditID);
+  text_field->set_id(STYLE_TEXT_EDIT_ID);
 
   style_tab_ = new TabbedPane();
-  style_tab_->set_id(kStyleContainerID);
   GetContentsView()->AddChildView(style_tab_);
   style_tab_->SetBounds(10, y, 210, 100);
   style_tab_->AddTab(ASCIIToUTF16("Style"), contents);
+  style_tab_->GetSelectedTab()->set_id(STYLE_CONTAINER_ID);
   style_tab_->AddTab(ASCIIToUTF16("Other"), new View());
 
   // Right bottom box with search.
@@ -534,21 +534,21 @@ void FocusTraversalTest::InitContentView() {
   text_field = new Textfield();
   contents->AddChildView(text_field);
   text_field->SetBounds(10, 10, 100, 20);
-  text_field->set_id(kSearchTextfieldID);
+  text_field->set_id(SEARCH_TEXTFIELD_ID);
 
   button = MdTextButton::Create(NULL, ASCIIToUTF16("Search"));
   contents->AddChildView(button);
   button->SetBounds(112, 5, 60, 30);
-  button->set_id(kSearchButtonID);
+  button->set_id(SEARCH_BUTTON_ID);
 
   link = new Link(ASCIIToUTF16("Help"));
   link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  link->set_id(kHelpLinkID);
+  link->set_id(HELP_LINK_ID);
   contents->AddChildView(link);
   link->SetBounds(175, 10, 30, 20);
 
   search_border_view_ = new BorderView(contents);
-  search_border_view_->set_id(kSearchContainerID);
+  search_border_view_->set_id(SEARCH_CONTAINER_ID);
 
   GetContentsView()->AddChildView(search_border_view_);
   search_border_view_->SetBounds(300, y, 240, 50);
@@ -558,15 +558,15 @@ void FocusTraversalTest::InitContentView() {
   contents = new View();
   contents->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   contents->set_background(Background::CreateSolidBackground(SK_ColorBLUE));
-  contents->set_id(kThumbnailContainerID);
+  contents->set_id(THUMBNAIL_CONTAINER_ID);
   button = MdTextButton::Create(NULL, ASCIIToUTF16("Star"));
   contents->AddChildView(button);
   button->SetBounds(5, 5, 50, 30);
-  button->set_id(kThumbnailStarID);
+  button->set_id(THUMBNAIL_STAR_ID);
   button = MdTextButton::Create(NULL, ASCIIToUTF16("SuperStar"));
   contents->AddChildView(button);
   button->SetBounds(60, 5, 100, 30);
-  button->set_id(kThumbnailSuperStarID);
+  button->set_id(THUMBNAIL_SUPER_STAR_ID);
 
   GetContentsView()->AddChildView(contents);
   contents->SetBounds(250, y, 200, 50);
@@ -576,17 +576,42 @@ void FocusTraversalTest::InitContentView() {
 }
 
 TEST_F(FocusTraversalTest, NormalTraversal) {
-  const int kTraversalIDs[] = { kTopCheckBoxID,  kAppleTextfieldID,
-      kOrangeTextfieldID, kBananaTextfieldID, kKiwiTextfieldID,
-      kFruitButtonID, kFruitCheckBoxID, kComboboxID, kBroccoliButtonID,
-      kRosettaLinkID, kStupeurEtTremblementLinkID,
-      kDinerGameLinkID, kRidiculeLinkID, kClosetLinkID, kVisitingLinkID,
-      kAmelieLinkID, kJoyeuxNoelLinkID, kCampingLinkID, kBriceDeNiceLinkID,
-      kTaxiLinkID, kAsterixLinkID, kOKButtonID, kCancelButtonID, kHelpButtonID,
-      kStyleContainerID, kBoldCheckBoxID, kItalicCheckBoxID,
-      kUnderlinedCheckBoxID, kStyleHelpLinkID, kStyleTextEditID,
-      kSearchTextfieldID, kSearchButtonID, kHelpLinkID,
-      kThumbnailContainerID, kThumbnailStarID, kThumbnailSuperStarID };
+  const int kTraversalIDs[] = {TOP_CHECKBOX_ID,
+                               APPLE_TEXTFIELD_ID,
+                               ORANGE_TEXTFIELD_ID,
+                               BANANA_TEXTFIELD_ID,
+                               KIWI_TEXTFIELD_ID,
+                               FRUIT_BUTTON_ID,
+                               FRUIT_CHECKBOX_ID,
+                               COMBOBOX_ID,
+                               BROCCOLI_BUTTON_ID,
+                               ROSETTA_LINK_ID,
+                               STUPEUR_ET_TREMBLEMENT_LINK_ID,
+                               DINER_GAME_LINK_ID,
+                               RIDICULE_LINK_ID,
+                               CLOSET_LINK_ID,
+                               VISITING_LINK_ID,
+                               AMELIE_LINK_ID,
+                               JOYEUX_NOEL_LINK_ID,
+                               CAMPING_LINK_ID,
+                               BRICE_DE_NICE_LINK_ID,
+                               TAXI_LINK_ID,
+                               ASTERIX_LINK_ID,
+                               OK_BUTTON_ID,
+                               CANCEL_BUTTON_ID,
+                               HELP_BUTTON_ID,
+                               STYLE_CONTAINER_ID,
+                               BOLD_CHECKBOX_ID,
+                               ITALIC_CHECKBOX_ID,
+                               UNDERLINED_CHECKBOX_ID,
+                               STYLE_HELP_LINK_ID,
+                               STYLE_TEXT_EDIT_ID,
+                               SEARCH_TEXTFIELD_ID,
+                               SEARCH_BUTTON_ID,
+                               HELP_LINK_ID,
+                               THUMBNAIL_CONTAINER_ID,
+                               THUMBNAIL_STAR_ID,
+                               THUMBNAIL_SUPER_STAR_ID};
 
   SCOPED_TRACE("NormalTraversal");
 
@@ -606,10 +631,10 @@ TEST_F(FocusTraversalTest, NormalTraversalMac) {
   GetFocusManager()->SetKeyboardAccessible(false);
 
   // Now only views with FocusBehavior of ALWAYS will be focusable.
-  const int kTraversalIDs[] = {kAppleTextfieldID,    kOrangeTextfieldID,
-                               kBananaTextfieldID,   kKiwiTextfieldID,
-                               kStyleTextEditID,     kSearchTextfieldID,
-                               kThumbnailContainerID};
+  const int kTraversalIDs[] = {APPLE_TEXTFIELD_ID,    ORANGE_TEXTFIELD_ID,
+                               BANANA_TEXTFIELD_ID,   KIWI_TEXTFIELD_ID,
+                               STYLE_TEXT_EDIT_ID,    SEARCH_TEXTFIELD_ID,
+                               THUMBNAIL_CONTAINER_ID};
 
   SCOPED_TRACE("NormalTraversalMac");
 
@@ -625,52 +650,58 @@ TEST_F(FocusTraversalTest, NormalTraversalMac) {
 
 // Test toggling full keyboard access correctly changes the focused view on Mac.
 TEST_F(FocusTraversalTest, FullKeyboardToggle) {
-  // Give focus to kTopCheckBoxID .
-  FindViewByID(kTopCheckBoxID)->RequestFocus();
-  EXPECT_EQ(kTopCheckBoxID, GetFocusManager()->GetFocusedView()->id());
+  // Give focus to TOP_CHECKBOX_ID .
+  FindViewByID(TOP_CHECKBOX_ID)->RequestFocus();
+  EXPECT_EQ(TOP_CHECKBOX_ID, GetFocusManager()->GetFocusedView()->id());
 
   // Turn off full keyboard access. Focus should move to next view with ALWAYS
   // focus behavior.
   GetFocusManager()->SetKeyboardAccessible(false);
-  EXPECT_EQ(kAppleTextfieldID, GetFocusManager()->GetFocusedView()->id());
+  EXPECT_EQ(APPLE_TEXTFIELD_ID, GetFocusManager()->GetFocusedView()->id());
 
   // Turning on full keyboard access should not change the focused view.
   GetFocusManager()->SetKeyboardAccessible(true);
-  EXPECT_EQ(kAppleTextfieldID, GetFocusManager()->GetFocusedView()->id());
+  EXPECT_EQ(APPLE_TEXTFIELD_ID, GetFocusManager()->GetFocusedView()->id());
 
-  // Give focus to kSearchButtonID.
-  FindViewByID(kSearchButtonID)->RequestFocus();
-  EXPECT_EQ(kSearchButtonID, GetFocusManager()->GetFocusedView()->id());
+  // Give focus to SEARCH_BUTTON_ID.
+  FindViewByID(SEARCH_BUTTON_ID)->RequestFocus();
+  EXPECT_EQ(SEARCH_BUTTON_ID, GetFocusManager()->GetFocusedView()->id());
 
   // Turn off full keyboard access. Focus should move to next view with ALWAYS
   // focus behavior.
   GetFocusManager()->SetKeyboardAccessible(false);
-  EXPECT_EQ(kThumbnailContainerID, GetFocusManager()->GetFocusedView()->id());
+  EXPECT_EQ(THUMBNAIL_CONTAINER_ID, GetFocusManager()->GetFocusedView()->id());
 
   // See focus advances correctly in both directions.
   GetFocusManager()->AdvanceFocus(false);
-  EXPECT_EQ(kAppleTextfieldID, GetFocusManager()->GetFocusedView()->id());
+  EXPECT_EQ(APPLE_TEXTFIELD_ID, GetFocusManager()->GetFocusedView()->id());
 
   GetFocusManager()->AdvanceFocus(true);
-  EXPECT_EQ(kThumbnailContainerID, GetFocusManager()->GetFocusedView()->id());
+  EXPECT_EQ(THUMBNAIL_CONTAINER_ID, GetFocusManager()->GetFocusedView()->id());
 }
 #endif  // OS_MACOSX
 
 TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   const int kDisabledIDs[] = {
-      kBananaTextfieldID, kFruitCheckBoxID, kComboboxID, kAsparagusButtonID,
-      kCauliflowerButtonID, kClosetLinkID, kVisitingLinkID, kBriceDeNiceLinkID,
-      kTaxiLinkID, kAsterixLinkID, kHelpButtonID, kBoldCheckBoxID,
-      kSearchTextfieldID, kHelpLinkID };
+      BANANA_TEXTFIELD_ID, FRUIT_CHECKBOX_ID,    COMBOBOX_ID,
+      ASPARAGUS_BUTTON_ID, CAULIFLOWER_BUTTON_ID, CLOSET_LINK_ID,
+      VISITING_LINK_ID,    BRICE_DE_NICE_LINK_ID, TAXI_LINK_ID,
+      ASTERIX_LINK_ID,     HELP_BUTTON_ID,        BOLD_CHECKBOX_ID,
+      SEARCH_TEXTFIELD_ID, HELP_LINK_ID};
 
-  const int kTraversalIDs[] = { kTopCheckBoxID,  kAppleTextfieldID,
-      kOrangeTextfieldID, kKiwiTextfieldID, kFruitButtonID, kBroccoliButtonID,
-      kRosettaLinkID, kStupeurEtTremblementLinkID, kDinerGameLinkID,
-      kRidiculeLinkID, kAmelieLinkID, kJoyeuxNoelLinkID, kCampingLinkID,
-      kOKButtonID, kCancelButtonID, kStyleContainerID, kItalicCheckBoxID,
-      kUnderlinedCheckBoxID, kStyleHelpLinkID, kStyleTextEditID,
-      kSearchButtonID, kThumbnailContainerID, kThumbnailStarID,
-      kThumbnailSuperStarID };
+  const int kTraversalIDs[] = {
+      TOP_CHECKBOX_ID,    APPLE_TEXTFIELD_ID,
+      ORANGE_TEXTFIELD_ID, KIWI_TEXTFIELD_ID,
+      FRUIT_BUTTON_ID,     BROCCOLI_BUTTON_ID,
+      ROSETTA_LINK_ID,     STUPEUR_ET_TREMBLEMENT_LINK_ID,
+      DINER_GAME_LINK_ID,  RIDICULE_LINK_ID,
+      AMELIE_LINK_ID,      JOYEUX_NOEL_LINK_ID,
+      CAMPING_LINK_ID,     OK_BUTTON_ID,
+      CANCEL_BUTTON_ID,    STYLE_CONTAINER_ID,
+      ITALIC_CHECKBOX_ID, UNDERLINED_CHECKBOX_ID,
+      STYLE_HELP_LINK_ID,  STYLE_TEXT_EDIT_ID,
+      SEARCH_BUTTON_ID,    THUMBNAIL_CONTAINER_ID,
+      THUMBNAIL_STAR_ID,   THUMBNAIL_SUPER_STAR_ID};
 
   SCOPED_TRACE("TraversalWithNonEnabledViews");
 
@@ -691,18 +722,26 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
 }
 
 TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
-  const int kInvisibleIDs[] = { kTopCheckBoxID, kOKButtonID,
-      kThumbnailContainerID };
+  const int kInvisibleIDs[] = {TOP_CHECKBOX_ID, OK_BUTTON_ID,
+                               THUMBNAIL_CONTAINER_ID};
 
-  const int kTraversalIDs[] = { kAppleTextfieldID, kOrangeTextfieldID,
-      kBananaTextfieldID, kKiwiTextfieldID, kFruitButtonID, kFruitCheckBoxID,
-      kComboboxID, kBroccoliButtonID, kRosettaLinkID,
-      kStupeurEtTremblementLinkID, kDinerGameLinkID, kRidiculeLinkID,
-      kClosetLinkID, kVisitingLinkID, kAmelieLinkID, kJoyeuxNoelLinkID,
-      kCampingLinkID, kBriceDeNiceLinkID, kTaxiLinkID, kAsterixLinkID,
-      kCancelButtonID, kHelpButtonID, kStyleContainerID, kBoldCheckBoxID,
-      kItalicCheckBoxID, kUnderlinedCheckBoxID, kStyleHelpLinkID,
-      kStyleTextEditID, kSearchTextfieldID, kSearchButtonID, kHelpLinkID };
+  const int kTraversalIDs[] = {
+      APPLE_TEXTFIELD_ID,  ORANGE_TEXTFIELD_ID,
+      BANANA_TEXTFIELD_ID, KIWI_TEXTFIELD_ID,
+      FRUIT_BUTTON_ID,     FRUIT_CHECKBOX_ID,
+      COMBOBOX_ID,         BROCCOLI_BUTTON_ID,
+      ROSETTA_LINK_ID,     STUPEUR_ET_TREMBLEMENT_LINK_ID,
+      DINER_GAME_LINK_ID,  RIDICULE_LINK_ID,
+      CLOSET_LINK_ID,      VISITING_LINK_ID,
+      AMELIE_LINK_ID,      JOYEUX_NOEL_LINK_ID,
+      CAMPING_LINK_ID,     BRICE_DE_NICE_LINK_ID,
+      TAXI_LINK_ID,        ASTERIX_LINK_ID,
+      CANCEL_BUTTON_ID,    HELP_BUTTON_ID,
+      STYLE_CONTAINER_ID,  BOLD_CHECKBOX_ID,
+      ITALIC_CHECKBOX_ID, UNDERLINED_CHECKBOX_ID,
+      STYLE_HELP_LINK_ID,  STYLE_TEXT_EDIT_ID,
+      SEARCH_TEXTFIELD_ID, SEARCH_BUTTON_ID,
+      HELP_LINK_ID};
 
   SCOPED_TRACE("TraversalWithInvisibleViews");
 
@@ -727,46 +766,47 @@ TEST_F(FocusTraversalTest, PaneTraversal) {
   // keyboard accessibility for toolbars.
 
   // First test the left container.
-  const int kLeftTraversalIDs[] = {
-    kAppleTextfieldID,
-    kOrangeTextfieldID, kBananaTextfieldID, kKiwiTextfieldID,
-    kFruitButtonID, kFruitCheckBoxID, kComboboxID };
+  const int kLeftTraversalIDs[] = {APPLE_TEXTFIELD_ID,  ORANGE_TEXTFIELD_ID,
+                                   BANANA_TEXTFIELD_ID, KIWI_TEXTFIELD_ID,
+                                   FRUIT_BUTTON_ID,     FRUIT_CHECKBOX_ID,
+                                   COMBOBOX_ID};
 
   SCOPED_TRACE("PaneTraversal");
 
   FocusSearch focus_search_left(left_container_, true, false);
   left_container_->EnablePaneFocus(&focus_search_left);
-  FindViewByID(kComboboxID)->RequestFocus();
+  FindViewByID(COMBOBOX_ID)->RequestFocus();
 
   // Traverse the focus hierarchy within the pane several times.
   AdvanceEntireFocusLoop(kLeftTraversalIDs, false);
 
   // Traverse in reverse order.
-  FindViewByID(kAppleTextfieldID)->RequestFocus();
+  FindViewByID(APPLE_TEXTFIELD_ID)->RequestFocus();
   AdvanceEntireFocusLoop(kLeftTraversalIDs, true);
 
   // Now test the right container, but this time with accessibility mode.
   // Make some links not focusable, but mark one of them as
   // "accessibility focusable", so it should show up in the traversal.
   const int kRightTraversalIDs[] = {
-    kBroccoliButtonID, kDinerGameLinkID, kRidiculeLinkID,
-    kClosetLinkID, kVisitingLinkID, kAmelieLinkID, kJoyeuxNoelLinkID,
-    kCampingLinkID, kBriceDeNiceLinkID, kTaxiLinkID, kAsterixLinkID };
+      BROCCOLI_BUTTON_ID,  DINER_GAME_LINK_ID, RIDICULE_LINK_ID,
+      CLOSET_LINK_ID,      VISITING_LINK_ID,   AMELIE_LINK_ID,
+      JOYEUX_NOEL_LINK_ID, CAMPING_LINK_ID,    BRICE_DE_NICE_LINK_ID,
+      TAXI_LINK_ID,        ASTERIX_LINK_ID};
 
   FocusSearch focus_search_right(right_container_, true, true);
   right_container_->EnablePaneFocus(&focus_search_right);
-  FindViewByID(kRosettaLinkID)->SetFocusBehavior(View::FocusBehavior::NEVER);
-  FindViewByID(kStupeurEtTremblementLinkID)
+  FindViewByID(ROSETTA_LINK_ID)->SetFocusBehavior(View::FocusBehavior::NEVER);
+  FindViewByID(STUPEUR_ET_TREMBLEMENT_LINK_ID)
       ->SetFocusBehavior(View::FocusBehavior::NEVER);
-  FindViewByID(kDinerGameLinkID)
+  FindViewByID(DINER_GAME_LINK_ID)
       ->SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
-  FindViewByID(kAsterixLinkID)->RequestFocus();
+  FindViewByID(ASTERIX_LINK_ID)->RequestFocus();
 
   // Traverse the focus hierarchy within the pane several times.
   AdvanceEntireFocusLoop(kRightTraversalIDs, false);
 
   // Traverse in reverse order.
-  FindViewByID(kBroccoliButtonID)->RequestFocus();
+  FindViewByID(BROCCOLI_BUTTON_ID)->RequestFocus();
   AdvanceEntireFocusLoop(kRightTraversalIDs, true);
 }
 
