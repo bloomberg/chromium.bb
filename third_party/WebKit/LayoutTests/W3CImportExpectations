@@ -353,16 +353,6 @@ imported/wpt/html/dom/interfaces.html [ Skip ]
 imported/wpt/html/browsers/browsing-the-web/read-text/load-text-plain.html [ Skip ]
 
 # crbug.com/498120: Using absolute URL links.
-imported/wpt/dom/events/EventTarget-dispatchEvent.html [ Skip ]
-imported/wpt/html/browsers/history/the-location-interface/location-stringifier.html [ Skip ]
-imported/wpt/html/dom/documents/dom-tree-accessors/document.title-07.html [ Skip ]
-imported/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.sub.html [ Skip ]
-imported/wpt/html/editing/dnd/the-draggable-attribute/draggable_attribute.html [ Skip ]
-imported/wpt/html/infrastructure/urls/terminology-0/document-base-url.html [ Skip ]
-imported/wpt/html/rendering/non-replaced-elements/the-page/body_text_00ffff-expected.html [ Skip ]
-imported/wpt/html/rendering/non-replaced-elements/the-page/body_text_00ffff.xhtml [ Skip ]
-imported/wpt/html/semantics/document-metadata/the-base-element/base_href_empty.html [ Skip ]
-imported/wpt/html/semantics/document-metadata/the-base-element/base_href_unspecified.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/media-elements/audio_loop_base.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/media-elements/error-codes/error.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/media-elements/event_canplay.html [ Skip ]
@@ -413,8 +403,6 @@ imported/wpt/html/semantics/embedded-content/media-elements/seeking/seek-to-nega
 imported/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-api-texttracks.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/media-elements/user-interface/muted.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/media-elements/video_loop_base.html [ Skip ]
-// There are local copies in fast/html of area-{coords,shape,processing}.html from the following directory.
-imported/wpt/html/semantics/embedded-content/the-area-element [ Skip ]
 imported/wpt/html/semantics/embedded-content/the-canvas-element [ Skip ]
 imported/wpt/html/semantics/embedded-content/the-embed-element/embed-dimension.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-02.html [ Skip ]
@@ -428,15 +416,6 @@ imported/wpt/html/semantics/embedded-content/the-object-element/object-fallback.
 imported/wpt/html/semantics/embedded-content/the-video-element/video_dynamic_poster_absolute.htm [ Skip ]
 imported/wpt/html/semantics/embedded-content/the-video-element/video_dynamic_poster_relative.htm [ Skip ]
 imported/wpt/html/semantics/embedded-content/the-video-element/video_initially_paused.html [ Skip ]
-imported/wpt/html/semantics/forms/the-input-element/image01.html [ Skip ]
-imported/wpt/html/semantics/scripting-1/the-template-element [ Skip ]
-imported/wpt/html/semantics/tabular-data/the-table-element/tFoot.html [ Skip ]
-imported/wpt/html/semantics/tabular-data/the-table-element/tHead.html [ Skip ]
-imported/wpt/html/semantics/tabular-data/the-tbody-element/rows.html [ Skip ]
-imported/wpt/html/semantics/tabular-data/the-tfoot-element/rows.html [ Skip ]
-imported/wpt/html/semantics/tabular-data/the-thead-element/rows.html [ Skip ]
-imported/wpt/html/semantics/text-level-semantics/the-a-element/a-stringifier.html [ Skip ]
-imported/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/NavigatorID.html [ Skip ]
 
 # crbug.com/490940: Needs to load extra HTML resources.
 imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Skip ]
@@ -536,6 +515,8 @@ imported/wpt/html/semantics/embedded-content/the-iframe-element/change_parentage
 imported/wpt/html/semantics/embedded-content/the-iframe-element/same_origin_parentage.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/the-object-element/object-handler.html [ Skip ]
 imported/wpt/html/semantics/forms/attributes-common-to-form-controls/dirname-ltr.html [ Skip ]
+imported/wpt/html/semantics/forms/form-submission-0/url-encoded.html [ Skip ]
+imported/wpt/html/semantics/forms/form-submission-0/getactionurl.html [ Skip ]
 imported/wpt/html/semantics/forms/the-button-element/button-activate.html [ Skip ]
 imported/wpt/html/semantics/selectors/pseudo-classes/focus.html [ Skip ]
 imported/wpt/html/webappapis/scripting/events/onerroreventhandler.html [ Skip ]
@@ -574,6 +555,7 @@ imported/wpt/html/browsers/the-window-object/security-window/window-security.sub
 imported/wpt/dom/events/EventListener-incumbent-global.sub.html [ Skip ]
 imported/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Skip ]
 imported/wpt/html/browsers/windows/nested-browsing-contexts/frameElement.sub.html [ Skip ]
+imported/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.sub.html [ Skip ]
 imported/wpt/html/infrastructure/urls/dynamic-changes-to-base-urls/dynamic-urls.sub.xhtml [ Skip ]
 imported/wpt/html/infrastructure/urls/resolving-urls [ Skip ]
 imported/wpt/html/infrastructure/urls/terminology-0/multiple-base.sub.html [ Skip ]
@@ -613,7 +595,8 @@ imported/wpt/html-imports/loading-import.html [ Skip ]
 # user media.
 imported/wpt/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/deny.html [ Skip ]
 
-# Requires http server.
+# Requires http server. Needs http: scheme, using XHR, etc.
+imported/wpt/FileAPI/url/url_xmlhttprequest_img.html [ Skip ]
 imported/wpt/dom/nodes/Document-URL.sub.html [ Skip ]
 imported/wpt/dom/nodes/Document-characterSet-normalization.html [ Skip ]
 imported/wpt/dom/nodes/Document-contentType/contentType/contenttype_mimeheader_01.html [ Skip ]
@@ -623,7 +606,8 @@ imported/wpt/dom/nodes/Document-contentType/contentType/xhr_responseType_documen
 imported/wpt/dom/nodes/Element-matches.html [ Skip ]
 imported/wpt/html/browsers/history/the-history-interface/008.html [ Skip ]
 imported/wpt/html/browsers/origin/relaxing-the-same-origin-restriction/document_domain.html [ Skip ]
-imported/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/creating_browsing_context_test_01.html [ Skip ]
+imported/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/creating_browsing_context_test_01.htmln [ Skip ]
+imported/wpt/html/infrastructure/urls/terminology-0/document-base-url.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/the-iframe-element/cross_origin_parentage.html [ Skip ]
 imported/wpt/html/semantics/scripting-1/the-script-element/external-script-utf8.js [ Skip ]
 imported/wpt/html/semantics/scripting-1/the-script-element/external-script-windows1250.js [ Skip ]
@@ -633,6 +617,7 @@ imported/wpt/html/semantics/scripting-1/the-script-element/script-not-found-not-
 imported/wpt/html/semantics/scripting-1/the-script-element/script-not-found-not-executed.html [ Skip ]
 imported/wpt/html/semantics/scripting-1/the-script-element/script-not-found-not-executed.py [ Skip ]
 imported/wpt/html/semantics/scripting-1/the-script-element/serve-with-content-type.py [ Skip ]
+imported/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/NavigatorID.html [ Skip ]
 
 # Requires http server. Moved the following test to http/tests/custom-elements/.
 imported/wpt/custom-elements/v0/creating-and-passing-registries/no-registry-test.html [ Skip ]
@@ -649,6 +634,7 @@ imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-re
 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-addEventListener.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-no-listener.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-onerror.html [ Skip ]
+imported/wpt/html/semantics/forms/form-submission-0/submit-entity-body.html [ Skip ]
 imported/wpt/html/semantics/scripting-1/the-script-element/async_003.htm [ Skip ]
 imported/wpt/html/semantics/scripting-1/the-script-element/async_004.htm [ Skip ]
 imported/wpt/html/semantics/scripting-1/the-script-element/async_005.htm [ Skip ]
@@ -759,14 +745,6 @@ imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits3-003.h
 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits4-001.html [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits4-002.html [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits4-003.html [ Skip ]
-
-# References /common/ or /images/ directory. crbug.com/360762
-imported/wpt/FileAPI/url/url_xmlhttprequest_img.html [ Skip ]
-imported/wpt/html/semantics/embedded-content/media-elements/video_008.htm [ Skip ]
-imported/wpt/html/semantics/embedded-content/the-img-element/update-media.html [ Skip ]
-imported/wpt/html/semantics/forms/form-submission-0/url-encoded.html [ Skip ]
-imported/wpt/html/semantics/forms/form-submission-0/getactionurl.html [ Skip ]
-imported/wpt/html/semantics/forms/form-submission-0/submit-entity-body.html [ Skip ]
 
 # crbug.com/561421: Update meta refresh parsing to match the new spec
 imported/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/parsing.html [ Skip ]
