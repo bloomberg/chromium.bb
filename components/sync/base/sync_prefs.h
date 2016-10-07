@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_SYNC_PREFS_H_
-#define COMPONENTS_SYNC_DRIVER_SYNC_PREFS_H_
+#ifndef COMPONENTS_SYNC_BASE_SYNC_PREFS_H_
+#define COMPONENTS_SYNC_BASE_SYNC_PREFS_H_
 
 #include <stdint.h>
 
@@ -20,7 +20,7 @@
 #include "build/build_config.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/sync_encryption_handler.h"
+#include "components/sync/protocol/sync.pb.h"
 
 class PrefService;
 class ProfileIOData;
@@ -174,12 +174,12 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void SetPassphraseEncryptionTransitionInProgress(bool value);
   bool GetPassphraseEncryptionTransitionInProgress() const;
 
-  // Get/set for saved Nigori state that needs to be passed to backend
+  // Get/set for saved Nigori specifics that must be passed to backend
   // initialization after transition.
-  void SetSavedNigoriStateForPassphraseEncryptionTransition(
-      const SyncEncryptionHandler::NigoriState& nigori_state);
-  std::unique_ptr<SyncEncryptionHandler::NigoriState>
-  GetSavedNigoriStateForPassphraseEncryptionTransition() const;
+  void SetNigoriSpecificsForPassphraseTransition(
+      const sync_pb::NigoriSpecifics& nigori_specifics);
+  void GetNigoriSpecificsForPassphraseTransition(
+      sync_pb::NigoriSpecifics* nigori_specifics) const;
 
  private:
   void RegisterPrefGroups();
@@ -222,4 +222,4 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_DRIVER_SYNC_PREFS_H_
+#endif  // COMPONENTS_SYNC_BASE_SYNC_PREFS_H_

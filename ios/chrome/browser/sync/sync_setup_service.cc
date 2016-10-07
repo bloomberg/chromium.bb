@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/stop_source.h"
-#include "components/sync/driver/sync_prefs.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "google_apis/gaia/google_service_auth_error.h"

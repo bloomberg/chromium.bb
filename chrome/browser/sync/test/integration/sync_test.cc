@@ -68,7 +68,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/sync/driver/invalidation_helper.h"
+#include "components/sync/base/invalidation_helper.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
 #include "components/sync/protocol/sync.pb.h"

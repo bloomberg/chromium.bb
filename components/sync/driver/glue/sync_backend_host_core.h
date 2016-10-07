@@ -17,10 +17,10 @@
 #include "base/timer/timer.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/sync/base/cancelation_signal.h"
+#include "components/sync/base/system_encryptor.h"
 #include "components/sync/core/shutdown_reason.h"
 #include "components/sync/core/sync_encryption_handler.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
-#include "components/sync/driver/system_encryptor.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "url/gurl.h"
 

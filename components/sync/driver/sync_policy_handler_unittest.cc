@@ -10,7 +10,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
-#include "components/sync/driver/pref_names.h"
+#include "components/sync/base/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

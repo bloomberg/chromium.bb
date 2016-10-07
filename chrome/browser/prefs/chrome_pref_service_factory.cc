@@ -50,7 +50,7 @@
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/pref_names.h"
+#include "components/sync/base/pref_names.h"
 #include "components/syncable_prefs/pref_model_associator.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/syncable_prefs/pref_service_syncable_factory.h"

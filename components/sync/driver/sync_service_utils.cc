@@ -4,7 +4,7 @@
 
 #include "components/sync/driver/sync_service_utils.h"
 
-#include "components/sync/driver/sync_prefs.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 
 namespace syncer {

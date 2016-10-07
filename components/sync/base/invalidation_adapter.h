@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_INVALIDATION_ADAPTER_H_
-#define COMPONENTS_SYNC_DRIVER_INVALIDATION_ADAPTER_H_
+#ifndef COMPONENTS_SYNC_BASE_INVALIDATION_ADAPTER_H_
+#define COMPONENTS_SYNC_BASE_INVALIDATION_ADAPTER_H_
 
 #include <stdint.h>
 
@@ -33,4 +33,4 @@ class InvalidationAdapter : public InvalidationInterface {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_DRIVER_INVALIDATION_ADAPTER_H_
+#endif  // COMPONENTS_SYNC_BASE_INVALIDATION_ADAPTER_H_

@@ -16,7 +16,7 @@ include_rules = [
   "+components/sync/test",
   "+components/syncable_prefs",
   "+components/version_info",
-  "+google",
+  "+google/cacheinvalidation",
   "+google_apis",
   "+net",
   "+policy",

@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/invalidation/public/invalidation_util.h"
-#include "components/sync/driver/sync_prefs.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/google_service_auth_error.h"

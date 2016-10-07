@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/glue/chrome_report_unrecoverable_error.h"
+#include "components/sync/base/report_unrecoverable_error.h"
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/rand_util.h"
 
 namespace syncer {
 
-void ChromeReportUnrecoverableError(version_info::Channel channel) {
+void ReportUnrecoverableError(version_info::Channel channel) {
   // Only upload on canary/dev builds to avoid overwhelming crash server.
   if (channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::DEV) {

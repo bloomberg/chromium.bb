@@ -33,7 +33,7 @@
 #include "components/sync/api/fake_sync_change_processor.h"
 #include "components/sync/api/sync_change_processor.h"
 #include "components/sync/api/sync_error_factory_mock.h"
-#include "components/sync/driver/pref_names.h"
+#include "components/sync/base/pref_names.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/notification_service.h"

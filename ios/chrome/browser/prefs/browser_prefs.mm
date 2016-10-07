@@ -24,7 +24,7 @@
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/strings/grit/components_locale_settings.h"
-#include "components/sync/driver/sync_prefs.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/update_client/update_client.h"

@@ -8,9 +8,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/driver/pref_names.h"
+#include "components/sync/base/pref_names.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_client.h"
-#include "components/sync/driver/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 
 // ArcPackage sync service is controlled by apps checkbox in sync settings. Arc

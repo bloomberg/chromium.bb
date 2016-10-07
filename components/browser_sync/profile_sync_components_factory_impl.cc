@@ -26,6 +26,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_data_type_controller.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/core/attachments/attachment_downloader.h"
 #include "components/sync/core/attachments/attachment_service.h"
 #include "components/sync/core/attachments/attachment_service_impl.h"
@@ -33,7 +34,6 @@
 #include "components/sync/device_info/device_info_data_type_controller.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/data_type_manager_impl.h"
-#include "components/sync/driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync/driver/glue/sync_backend_host.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
 #include "components/sync/driver/model_type_controller.h"
@@ -143,7 +143,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     syncer::ModelTypeSet disabled_types,
     syncer::ModelTypeSet enabled_types) {
   base::Closure error_callback =
-      base::Bind(&syncer::ChromeReportUnrecoverableError, channel_);
+      base::Bind(&syncer::ReportUnrecoverableError, channel_);
 
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
   if (base::FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {

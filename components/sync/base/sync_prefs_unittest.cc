@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/sync_prefs.h"
+#include "components/sync/base/sync_prefs.h"
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -10,7 +10,7 @@
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/sync/driver/pref_names.h"
+#include "components/sync/base/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

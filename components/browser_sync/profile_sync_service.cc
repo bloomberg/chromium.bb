@@ -41,8 +41,11 @@
 #include "components/sync/api/sync_error.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/passphrase_type.h"
+#include "components/sync/base/pref_names.h"
+#include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_db_util.h"
+#include "components/sync/base/system_encryptor.h"
 #include "components/sync/core/configure_reason.h"
 #include "components/sync/core/http_bridge_network_resources.h"
 #include "components/sync/core/network_resources.h"
@@ -55,16 +58,13 @@
 #include "components/sync/driver/backend_migrator.h"
 #include "components/sync/driver/change_processor.h"
 #include "components/sync/driver/directory_data_type_controller.h"
-#include "components/sync/driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
-#include "components/sync/driver/pref_names.h"
 #include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_error_controller.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
 #include "components/sync/driver/sync_util.h"
-#include "components/sync/driver/system_encryptor.h"
 #include "components/sync/driver/user_selectable_sync_type.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
@@ -514,7 +514,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       std::unique_ptr<syncer::SyncManagerFactory>(
           new syncer::SyncManagerFactory()),
       MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr()),
-      base::Bind(syncer::ChromeReportUnrecoverableError, channel_),
+      base::Bind(syncer::ReportUnrecoverableError, channel_),
       http_post_provider_factory_getter, std::move(saved_nigori_state_));
 }
 
@@ -1265,8 +1265,8 @@ void ProfileSyncService::OnLocalSetPassphraseEncryption(
   // At this point the user has set a custom passphrase and we have received the
   // updated nigori state. Time to cache the nigori state, and catch up the
   // active data types.
-  sync_prefs_.SetSavedNigoriStateForPassphraseEncryptionTransition(
-      nigori_state);
+  sync_prefs_.SetNigoriSpecificsForPassphraseTransition(
+      nigori_state.nigori_specifics);
   sync_prefs_.SetPassphraseEncryptionTransitionInProgress(true);
   BeginConfigureCatchUpBeforeClear();
 }
@@ -1275,7 +1275,9 @@ void ProfileSyncService::BeginConfigureCatchUpBeforeClear() {
   DCHECK(data_type_manager_);
   DCHECK(!saved_nigori_state_);
   saved_nigori_state_ =
-      sync_prefs_.GetSavedNigoriStateForPassphraseEncryptionTransition();
+      base::MakeUnique<syncer::SyncEncryptionHandler::NigoriState>();
+  sync_prefs_.GetNigoriSpecificsForPassphraseTransition(
+      &saved_nigori_state_->nigori_specifics);
   const syncer::ModelTypeSet types = GetActiveDataTypes();
   catch_up_configure_in_progress_ = true;
   data_type_manager_->Configure(types, syncer::CONFIGURE_REASON_CATCH_UP);

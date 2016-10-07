@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/system_encryptor.h"
+#include "components/sync/base/system_encryptor.h"
 
 #include "build/build_config.h"
 #include "components/os_crypt/os_crypt_mocker.h"

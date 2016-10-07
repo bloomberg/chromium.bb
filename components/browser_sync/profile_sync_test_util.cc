@@ -11,10 +11,10 @@
 #include "components/history/core/browser/history_model_worker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/glue/browser_thread_model_worker.h"
 #include "components/sync/driver/glue/ui_model_worker.h"
 #include "components/sync/driver/signin_manager_wrapper.h"
-#include "components/sync/driver/sync_prefs.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "net/url_request/url_request_test_util.h"
 

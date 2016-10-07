@@ -10,8 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/driver/sync_prefs.h"
 
 namespace syncer {
 

@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/base/extensions_activity.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/fake_sync_service.h"
-#include "components/sync/driver/sync_prefs.h"
 
 namespace syncer {
 

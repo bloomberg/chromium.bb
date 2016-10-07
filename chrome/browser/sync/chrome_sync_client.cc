@@ -54,8 +54,8 @@
 #include "components/password_manager/sync/browser/password_model_worker.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/glue/browser_thread_model_worker.h"
-#include "components/sync/driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync/driver/glue/ui_model_worker.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
@@ -513,7 +513,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
     syncer::ModelTypeSet disabled_types,
     syncer::ModelTypeSet enabled_types) {
   base::Closure error_callback =
-      base::Bind(&syncer::ChromeReportUnrecoverableError, chrome::GetChannel());
+      base::Bind(&syncer::ReportUnrecoverableError, chrome::GetChannel());
 
 #if defined(ENABLE_EXTENSIONS)
   // App sync is enabled by default.  Register unless explicitly
@@ -622,7 +622,7 @@ void ChromeSyncClient::RegisterAndroidDataTypes(
     syncer::ModelTypeSet disabled_types,
     syncer::ModelTypeSet enabled_types) {
   base::Closure error_callback =
-      base::Bind(&syncer::ChromeReportUnrecoverableError, chrome::GetChannel());
+      base::Bind(&syncer::ReportUnrecoverableError, chrome::GetChannel());
 #if defined(ENABLE_SUPERVISED_USERS)
   sync_service->RegisterDataTypeController(
       base::MakeUnique<SupervisedUserSyncDataTypeController>(

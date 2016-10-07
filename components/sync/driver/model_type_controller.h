@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/data_type_controller.h"
-#include "components/sync/driver/sync_prefs.h"
 
 namespace syncer {
 

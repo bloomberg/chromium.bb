@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/sync_prefs.h"
+#include "components/sync/base/sync_prefs.h"
 
 #include "base/base64.h"
 #include "base/logging.h"
@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/driver/pref_names.h"
+#include "components/sync/base/pref_names.h"
 
 namespace syncer {
 
@@ -528,28 +528,22 @@ bool SyncPrefs::GetPassphraseEncryptionTransitionInProgress() const {
       prefs::kSyncPassphraseEncryptionTransitionInProgress);
 }
 
-void SyncPrefs::SetSavedNigoriStateForPassphraseEncryptionTransition(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {
+void SyncPrefs::SetNigoriSpecificsForPassphraseTransition(
+    const sync_pb::NigoriSpecifics& nigori_specifics) {
   std::string encoded;
-  base::Base64Encode(nigori_state.nigori_specifics.SerializeAsString(),
-                     &encoded);
+  base::Base64Encode(nigori_specifics.SerializeAsString(), &encoded);
   pref_service_->SetString(prefs::kSyncNigoriStateForPassphraseTransition,
                            encoded);
 }
 
-std::unique_ptr<SyncEncryptionHandler::NigoriState>
-SyncPrefs::GetSavedNigoriStateForPassphraseEncryptionTransition() const {
+void SyncPrefs::GetNigoriSpecificsForPassphraseTransition(
+    sync_pb::NigoriSpecifics* nigori_specifics) const {
   const std::string encoded =
       pref_service_->GetString(prefs::kSyncNigoriStateForPassphraseTransition);
   std::string decoded;
-  if (!base::Base64Decode(encoded, &decoded))
-    return std::unique_ptr<SyncEncryptionHandler::NigoriState>();
-
-  std::unique_ptr<SyncEncryptionHandler::NigoriState> result(
-      new SyncEncryptionHandler::NigoriState());
-  if (!result->nigori_specifics.ParseFromString(decoded))
-    return std::unique_ptr<SyncEncryptionHandler::NigoriState>();
-  return result;
+  if (base::Base64Decode(encoded, &decoded)) {
+    nigori_specifics->ParseFromString(decoded);
+  }
 }
 
 }  // namespace syncer
