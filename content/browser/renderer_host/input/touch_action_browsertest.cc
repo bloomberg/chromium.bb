@@ -165,7 +165,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     // main thread was in a busy loop.
     while (wait_until_scrolled &&
            frame_watcher->LastMetadata().root_scroll_offset.y() <
-               distance.y()) {
+               (distance.y() / 2)) {
       frame_watcher->WaitFrames(1);
     }
 
@@ -175,7 +175,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
       return false;
 
     // Allow for 1px rounding inaccuracies for some screen sizes.
-    EXPECT_NEAR(distance.y(), scrollTop, 1);
+    EXPECT_LT(distance.y() / 2, scrollTop);
     return true;
   }
 
