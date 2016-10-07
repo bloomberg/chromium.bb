@@ -311,14 +311,6 @@ const aura::Window* RootWindowController::GetContainer(int container_id) const {
   return ash_host_->AsWindowTreeHost()->window()->GetChildById(container_id);
 }
 
-void RootWindowController::ShowShelf() {
-  if (!wm_shelf_aura_->IsShelfInitialized())
-    return;
-  // TODO(jamescook): Move this into WmShelf.
-  wm_shelf_aura_->shelf_widget()->SetShelfVisibility(true);
-  wm_shelf_aura_->shelf_widget()->status_area_widget()->Show();
-}
-
 void RootWindowController::CreateShelf() {
   if (wm_shelf_aura_->IsShelfInitialized())
     return;

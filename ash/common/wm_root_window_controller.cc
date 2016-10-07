@@ -5,9 +5,11 @@
 #include "ash/common/wm_root_window_controller.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/status_area_widget.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
 #include "ash/common/wm/always_on_top_controller.h"
@@ -188,6 +190,15 @@ WmRootWindowController::GetSystemModalLayoutManager(WmWindow* window) {
   return modal_container ? static_cast<SystemModalContainerLayoutManager*>(
                                modal_container->GetLayoutManager())
                          : nullptr;
+}
+
+void WmRootWindowController::ShowShelf() {
+  WmShelf* shelf = GetShelf();
+  if (!shelf->IsShelfInitialized())
+    return;
+  // TODO(jamescook): Move this into WmShelf.
+  shelf->shelf_widget()->SetShelfVisibility(true);
+  shelf->shelf_widget()->status_area_widget()->Show();
 }
 
 WmWindow* WmRootWindowController::GetContainer(int container_id) {

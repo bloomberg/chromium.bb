@@ -351,13 +351,6 @@ void Shell::DeactivateKeyboard() {
   keyboard::KeyboardController::ResetInstance(nullptr);
 }
 
-void Shell::ShowShelf() {
-  RootWindowControllerList controllers = GetAllRootWindowControllers();
-  for (RootWindowControllerList::iterator iter = controllers.begin();
-       iter != controllers.end(); ++iter)
-    (*iter)->ShowShelf();
-}
-
 #if defined(OS_CHROMEOS)
 bool Shell::ShouldSaveDisplaySettings() {
   return !(

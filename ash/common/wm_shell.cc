@@ -117,6 +117,11 @@ void WmShell::ShowContextMenu(const gfx::Point& location_in_screen,
                                                    source_type);
 }
 
+void WmShell::ShowShelf() {
+  for (WmWindow* root_window : GetAllRootWindows())
+    root_window->GetRootWindowController()->ShowShelf();
+}
+
 void WmShell::CreateShelfDelegate() {
   // May be called multiple times as shelves are created and destroyed.
   if (shelf_delegate_)

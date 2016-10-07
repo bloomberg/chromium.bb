@@ -550,7 +550,7 @@ void ChromeShellDelegate::Observe(int type,
       // start.
       if (user_manager::UserManager::Get()->GetLoggedInUsers().size() < 2)
         InitAfterFirstSessionStart();
-      ash::Shell::GetInstance()->ShowShelf();
+      ash::WmShell::Get()->ShowShelf();
       break;
     default:
       NOTREACHED() << "Unexpected notification " << type;

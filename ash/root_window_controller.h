@@ -143,10 +143,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
 
-  // Show shelf view if it was created hidden (before session has started).
-  // TODO(jamescook): Eliminate this and handle show via Shelf.
-  void ShowShelf();
-
   // Creates the shelf for this root window and notifies observers.
   void CreateShelf();
 

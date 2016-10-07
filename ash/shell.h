@@ -232,9 +232,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Deactivates the virtual keyboard.
   void DeactivateKeyboard();
 
-  // Show shelf view if it was created hidden (before session has started).
-  void ShowShelf();
-
 #if defined(OS_CHROMEOS)
   // Test if MaximizeModeWindowManager is not enabled, and if
   // MaximizeModeController is not currently setting a display rotation. Or if
