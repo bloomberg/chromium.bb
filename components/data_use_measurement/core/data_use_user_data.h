@@ -70,14 +70,16 @@ class DataUseUserData : public base::SupportsUserData::Data {
 
   AppState app_state() const { return app_state_; }
 
+  void set_app_state(AppState app_state) { app_state_ = app_state; }
+
   // The key for retrieving back this type of user data.
   static const void* const kUserDataKey;
 
  private:
   const ServiceName service_name_;
 
-  // App state when the request started.
-  const AppState app_state_;
+  // App state when network access was performed for the request previously.
+  AppState app_state_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseUserData);
 };

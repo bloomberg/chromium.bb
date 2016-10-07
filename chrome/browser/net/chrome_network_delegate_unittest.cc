@@ -222,12 +222,16 @@ TEST_F(ChromeNetworkDelegateTest, DataUseMeasurementServiceTest) {
 
   // A query from a service without redirection.
   RequestURL(context(), socket_factory(), false, false);
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.System.Downstream.Foreground.NotCellular", 1);
+  EXPECT_FALSE(
+      histogram_tester
+          .GetTotalCountsForPrefix(
+              "DataUse.TrafficSize.System.Downstream.Foreground.NotCellular")
+          .empty());
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.System.Upstream.Foreground.NotCellular", 1);
-  // One upload and one download message, so totalCount should be 2.
-  histogram_tester.ExpectTotalCount("DataUse.MessageSize.Suggestions", 2);
+  EXPECT_FALSE(histogram_tester
+                   .GetTotalCountsForPrefix("DataUse.MessageSize.Suggestions")
+                   .empty());
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular", 0);
   histogram_tester.ExpectTotalCount(
@@ -244,8 +248,11 @@ TEST_F(ChromeNetworkDelegateTest, DataUseMeasurementUserTest) {
 
   // A query from user without redirection.
   RequestURL(context(), socket_factory(), true, false);
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular", 1);
+  EXPECT_FALSE(
+      histogram_tester
+          .GetTotalCountsForPrefix(
+              "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular")
+          .empty());
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.User.Upstream.Foreground.NotCellular", 1);
   histogram_tester.ExpectTotalCount(
@@ -266,12 +273,17 @@ TEST_F(ChromeNetworkDelegateTest, DataUseMeasurementServiceTestWithRedirect) {
 
   // A query from user with one redirection.
   RequestURL(context(), socket_factory(), false, true);
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.System.Downstream.Foreground.NotCellular", 2);
+  EXPECT_FALSE(
+      histogram_tester
+          .GetTotalCountsForPrefix(
+              "DataUse.TrafficSize.System.Downstream.Foreground.NotCellular")
+          .empty());
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.System.Upstream.Foreground.NotCellular", 2);
   // Two uploads and two downloads message, so totalCount should be 4.
-  histogram_tester.ExpectTotalCount("DataUse.MessageSize.Suggestions", 4);
+  EXPECT_FALSE(histogram_tester
+                   .GetTotalCountsForPrefix("DataUse.MessageSize.Suggestions")
+                   .empty());
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular", 0);
   histogram_tester.ExpectTotalCount(
@@ -289,8 +301,11 @@ TEST_F(ChromeNetworkDelegateTest, DataUseMeasurementUserTestWithRedirect) {
   // A query from user with one redirection.
   RequestURL(context(), socket_factory(), true, true);
 
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular", 2);
+  EXPECT_FALSE(
+      histogram_tester
+          .GetTotalCountsForPrefix(
+              "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular")
+          .empty());
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.User.Upstream.Foreground.NotCellular", 2);
   histogram_tester.ExpectTotalCount(

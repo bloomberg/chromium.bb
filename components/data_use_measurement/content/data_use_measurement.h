@@ -81,11 +81,11 @@ class DataUseMeasurement {
   // ("Downstream") path, whether the app was in the "Foreground" or
   // "Background", and whether a "Cellular" or "WiFi" network was use. For
   // example, "Prefix.Upstream.Foreground.Cellular" is a possible output.
-  // |started_in_foreground| indicates if the request started when the app was
-  // in foreground.
+  // |app_state| indicates the app state which can be foreground, background, or
+  // unknown.
   std::string GetHistogramName(const char* prefix,
                                TrafficDirection dir,
-                               bool started_in_foreground,
+                               DataUseUserData::AppState app_state,
                                bool is_connection_cellular) const;
 
 #if defined(OS_ANDROID)
@@ -100,18 +100,25 @@ class DataUseMeasurement {
 #endif
 
   // Records the data use of the |request|, thus |request| must be non-null.
-  void ReportDataUseUMA(const net::URLRequest& request) const;
+  // |dir| is the direction (which is upstream or downstream) and |bytes| is the
+  // number of bytes in the direction.
+  void ReportDataUseUMA(const net::URLRequest& request,
+                                       TrafficDirection dir,
+                                       int64_t bytes) const;
+
+  // Updates the data use of the |request|, thus |request| must be non-null.
+  void UpdateDataUsePrefs(const net::URLRequest& request) const;
 
   // A helper function used to record data use of services. It gets the size of
   // exchanged message, its direction (which is upstream or downstream) and
   // reports to two histogram groups. DataUse.MessageSize.ServiceName and
   // DataUse.Services.{Dimensions}. In the second one, services are buckets.
-  // |started_in_foreground| indicates if the request started when the app was
-  // in foreground.
+  // |app_state| indicates the app state which can be foreground, background, or
+  // unknown.
   void ReportDataUsageServices(
       data_use_measurement::DataUseUserData::ServiceName service,
       TrafficDirection dir,
-      bool started_in_foreground,
+      DataUseUserData::AppState app_state,
       bool is_connection_cellular,
       int64_t message_size) const;
 
