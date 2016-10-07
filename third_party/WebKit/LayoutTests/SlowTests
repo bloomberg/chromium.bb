@@ -325,3 +325,4 @@ crbug.com/647192 virtual/mojo-loading/webexposed/global-interface-listing.html [
 crbug.com/646528 compositing/lots-of-img-layers.html [ Slow ]
 crbug.com/646528 compositing/lots-of-img-layers-with-opacity.html [ Slow ]
 
+crbug.com/652343 fast/events/pointerevents/pointerevent_touch-action-pinch_zoom_touch.html [ Slow ]
