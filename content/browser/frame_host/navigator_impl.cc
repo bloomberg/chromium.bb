@@ -407,10 +407,6 @@ bool NavigatorImpl::NavigateToEntry(
               controller_->GetIndexOfEntry(&entry),
               controller_->GetLastCommittedEntryIndex(),
               controller_->GetEntryCount()));
-    } else {
-      // No need to navigate again.  Just resume the deferred request.
-      dest_render_frame_host->GetProcess()->ResumeDeferredNavigation(
-          entry.transferred_global_request_id());
     }
   }
 

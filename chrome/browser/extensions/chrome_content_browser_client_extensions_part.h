@@ -44,7 +44,7 @@ class ChromeContentBrowserClientExtensionsPart
       const GURL& current_url,
       const GURL& new_url);
   static bool ShouldSwapProcessesForRedirect(
-      content::ResourceContext* resource_context,
+      content::BrowserContext* browser_context,
       const GURL& current_url,
       const GURL& new_url);
   static bool AllowServiceWorker(const GURL& scope,

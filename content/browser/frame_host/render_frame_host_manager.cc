@@ -18,7 +18,6 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
-#include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -280,26 +279,18 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
 
   // If entry includes the request ID of a request that is being transferred,
   // the destination render frame will take ownership, so release ownership of
-  // the request.
-  if (cross_site_transferring_request_.get() &&
-      cross_site_transferring_request_->request_id() ==
+  // the transferring NavigationHandle.
+  if (transfer_navigation_handle_.get() &&
+      transfer_navigation_handle_->request_id() ==
           entry.transferred_global_request_id()) {
-    cross_site_transferring_request_->ReleaseRequest();
-
-    DCHECK(transfer_navigation_handle_);
-
-    // Update the pending NavigationEntry ID on the transferring handle.
-    // TODO(creis): Make this line unnecessary by avoiding having a pending
-    // entry for transfer navigations.  See https://crbug.com/495161.
-    transfer_navigation_handle_->update_entry_id_for_transfer(
-        entry.GetUniqueID());
-
     // The navigating RenderFrameHost should take ownership of the
     // NavigationHandle that came from the transferring RenderFrameHost.
     dest_render_frame_host->SetNavigationHandle(
         std::move(transfer_navigation_handle_));
+
+    dest_render_frame_host->navigation_handle()->set_render_frame_host(
+        dest_render_frame_host);
   }
-  DCHECK(!transfer_navigation_handle_);
 
   return dest_render_frame_host;
 }
@@ -421,17 +412,10 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
 void RenderFrameHostManager::OnCrossSiteResponse(
     RenderFrameHostImpl* transferring_render_frame_host,
     const GlobalRequestID& global_request_id,
-    std::unique_ptr<CrossSiteTransferringRequest>
-        cross_site_transferring_request,
     const std::vector<GURL>& transfer_url_chain,
     const Referrer& referrer,
     ui::PageTransition page_transition,
     bool should_replace_current_entry) {
-  // We should only get here for transfer navigations.  Most cross-process
-  // navigations can just continue and wait to run the unload handler (by
-  // swapping out) when the new navigation commits.
-  CHECK(cross_site_transferring_request);
-
   // A transfer should only have come from our pending or current RFH.  If it
   // started as a cross-process navigation via OpenURL, this is the pending
   // one.  If it wasn't cross-process until the transfer, this is the current
@@ -458,16 +442,7 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // after it started navigating.
   transfer_navigation_handle_ =
       transferring_render_frame_host->PassNavigationHandleOwnership();
-
-  // If something caused the cancellation of this navigation on the UI thread
-  // (possibly for security reasons) the navigation should not be allowed to
-  // proceed.
-  if (!transfer_navigation_handle_)
-    return;
-
-  // Store the transferring request so that we can release it if the transfer
-  // navigation matches.
-  cross_site_transferring_request_ = std::move(cross_site_transferring_request);
+  CHECK(transfer_navigation_handle_);
 
   // Set the transferring RenderFrameHost as not loading, so that it does not
   // emit a DidStopLoading notification if it is destroyed when creating the
@@ -490,12 +465,10 @@ void RenderFrameHostManager::OnCrossSiteResponse(
           transfer_navigation_handle_->IsPost() ? "POST" : "GET",
           transfer_navigation_handle_->resource_request_body());
 
-  // The transferring request was only needed during the RequestTransferURL
-  // call, so it is safe to clear at this point.
-  cross_site_transferring_request_.reset();
-
   // If the navigation continued, the NavigationHandle should have been
   // transfered to a RenderFrameHost. In the other cases, it should be cleared.
+  // If the NavigationHandle wasn't claimed, this will lead to the cancelation
+  // of the request in the network stack.
   transfer_navigation_handle_.reset();
 
   // If the navigation in the new renderer did not start, inform the
@@ -658,6 +631,10 @@ void RenderFrameHostManager::SwapOutOldFrame(
   RenderFrameProxyHost* proxy =
       CreateRenderFrameProxyHost(old_render_frame_host->GetSiteInstance(),
                                  old_render_frame_host->render_view_host());
+
+  // Reset any NavigationHandle in the RenderFrameHost. This will prevent any
+  // ongoing navigation from attempting to transfer.
+  old_render_frame_host->SetNavigationHandle(nullptr);
 
   // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
   old_render_frame_host->SwapOut(proxy, true);
@@ -2262,6 +2239,19 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       dest_url, source_instance, dest_instance, nullptr, transition,
       dest_is_restore, dest_is_view_source_mode);
 
+  // Inform the transferring NavigationHandle of a transfer to a different
+  // SiteInstance.  It is important do so now, in order to mark the request as
+  // transferring on the IO thread before attempting to destroy the pending RFH.
+  // This ensures the network request will not be destroyed along the pending
+  // RFH but will persist until it is picked up by the new RFH.
+  if (transfer_navigation_handle_.get() &&
+      transfer_navigation_handle_->request_id() == transferred_request_id &&
+      new_instance.get() !=
+          transfer_navigation_handle_->GetRenderFrameHost()
+              ->GetSiteInstance()) {
+    transfer_navigation_handle_->Transfer();
+  }
+
   // If we are currently navigating cross-process to a pending RFH for a
   // different SiteInstance, we want to get back to normal and then navigate as
   // usual.  We will reuse the pending RFH below if it matches the destination
@@ -2321,8 +2311,9 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     if (is_transfer) {
       // We don't need to stop the old renderer or run beforeunload/unload
       // handlers, because those have already been done.
-      DCHECK(cross_site_transferring_request_->request_id() ==
-             transferred_request_id);
+      DCHECK(transfer_navigation_handle_ &&
+             transfer_navigation_handle_->request_id() ==
+                 transferred_request_id);
     } else if (!pending_render_frame_host_->are_navigations_suspended()) {
       // If the pending RFH hasn't already been suspended from a previous
       // attempt to navigate it, then we need to wait for the beforeunload

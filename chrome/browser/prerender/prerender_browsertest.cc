@@ -576,7 +576,7 @@ class SwapProcessesContentBrowserClient : public ChromeContentBrowserClient {
 
   // ChromeContentBrowserClient:
   bool ShouldSwapProcessesForRedirect(
-      content::ResourceContext* resource_context,
+      content::BrowserContext* browser_context,
       const GURL& current_url,
       const GURL& new_url) override {
     return true;

@@ -22,7 +22,6 @@
 #include "net/base/load_states.h"
 
 namespace content {
-class CrossSiteResourceHandler;
 class DetachableResourceHandler;
 class ResourceContext;
 class ResourceMessageFilter;
@@ -126,14 +125,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
                          int request_id,
                          base::WeakPtr<ResourceMessageFilter> filter);
 
-  // CrossSiteResourceHandler for this request.  May be null.
-  CrossSiteResourceHandler* cross_site_handler() {
-    return cross_site_handler_;
-  }
-  void set_cross_site_handler(CrossSiteResourceHandler* h) {
-    cross_site_handler_ = h;
-  }
-
   // Whether this request is part of a navigation that should replace the
   // current session history entry. This state is shuffled up and down the stack
   // for request transfers.
@@ -223,7 +214,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetachedRedirect);
   // Non-owning, may be NULL.
-  CrossSiteResourceHandler* cross_site_handler_;
   DetachableResourceHandler* detachable_handler_;
 
   int process_type_;

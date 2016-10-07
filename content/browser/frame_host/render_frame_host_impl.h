@@ -72,7 +72,6 @@ namespace content {
 
 class AssociatedInterfaceProviderImpl;
 class CrossProcessFrameConnector;
-class CrossSiteTransferringRequest;
 class FrameTree;
 class FrameTreeNode;
 class NavigationHandleImpl;
@@ -340,18 +339,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // from the RenderFrameHost that issued the initial request to the new
   // RenderFrameHost that will issue the transferring request.
   std::unique_ptr<NavigationHandleImpl> PassNavigationHandleOwnership();
-
-  // Called on the pending RenderFrameHost when the network response is ready to
-  // commit.  We should ensure that the old RenderFrameHost runs its unload
-  // handler and determine whether a transfer to a different RenderFrameHost is
-  // needed.
-  void OnCrossSiteResponse(const GlobalRequestID& global_request_id,
-                           std::unique_ptr<CrossSiteTransferringRequest>
-                               cross_site_transferring_request,
-                           const std::vector<GURL>& transfer_url_chain,
-                           const Referrer& referrer,
-                           ui::PageTransition page_transition,
-                           bool should_replace_current_entry);
 
   // Tells the renderer that this RenderFrame is being swapped out for one in a
   // different renderer process.  It should run its unload handler and move to

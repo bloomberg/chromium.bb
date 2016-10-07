@@ -44,7 +44,6 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/loader/async_resource_handler.h"
 #include "content/browser/loader/async_revalidation_manager.h"
-#include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/intercepting_resource_handler.h"
 #include "content/browser/loader/loader_delegate.h"
@@ -1195,9 +1194,6 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
           child_id, request_data.service_worker_provider_id);
     }
   }
-
-  // We should have a CrossSiteResourceHandler to finish the transfer.
-  DCHECK(info->cross_site_handler());
 }
 
 void ResourceDispatcherHostImpl::BeginRequest(
@@ -1604,28 +1600,6 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
     handler = std::move(detachable_handler);
   }
 
-  // PlzNavigate: If using --enable-browser-side-navigation, the
-  // CrossSiteResourceHandler is not needed. This codepath is not used for the
-  // actual navigation request, but only the subsequent blob URL load. This does
-  // not require request transfers.
-  if (!IsBrowserSideNavigationEnabled()) {
-    // Install a CrossSiteResourceHandler for all main frame requests. This will
-    // check whether a transfer is required and, if so, pause for the UI thread
-    // to drive the transfer.
-    bool is_swappable_navigation =
-        request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME;
-    // If out-of-process iframes are possible, then all subframe requests need
-    // to go through the CrossSiteResourceHandler to enforce the site isolation
-    // policy.
-    if (!is_swappable_navigation &&
-        SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
-      is_swappable_navigation =
-          request_data.resource_type == RESOURCE_TYPE_SUB_FRAME;
-    }
-    if (is_swappable_navigation && process_type == PROCESS_TYPE_RENDERER)
-      handler.reset(new CrossSiteResourceHandler(std::move(handler), request));
-  }
-
   return AddStandardHandlers(
       request, request_data.resource_type, resource_context,
       request_data.fetch_request_context_type, filter_->appcache_service(),
@@ -1871,8 +1845,8 @@ void ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading(int child_id,
 
 void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
     const GlobalRequestID& id,
-    const scoped_refptr<ResourceResponse>& response) {
-  GetLoader(id)->MarkAsTransferring(response);
+    const base::Closure& on_transfer_complete_callback) {
+  GetLoader(id)->MarkAsTransferring(on_transfer_complete_callback);
 }
 
 void ResourceDispatcherHostImpl::CancelTransferringNavigation(

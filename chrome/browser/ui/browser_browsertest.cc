@@ -206,7 +206,7 @@ class TransferHttpsRedirectsContentBrowserClient
     : public ChromeContentBrowserClient {
  public:
   bool ShouldSwapProcessesForRedirect(
-      content::ResourceContext* resource_context,
+      content::BrowserContext* browser_context,
       const GURL& current_url,
       const GURL& new_url) override {
     return new_url.SchemeIs(url::kHttpsScheme);

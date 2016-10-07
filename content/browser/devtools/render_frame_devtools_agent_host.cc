@@ -569,8 +569,11 @@ RenderFrameDevToolsAgentHost::~RenderFrameDevToolsAgentHost() {
 
 void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
-  // ReadyToCommitNavigation should only be called in PlzNavigate.
-  DCHECK(IsBrowserSideNavigationEnabled());
+  // TODO(clamy): Switch RenderFrameDevToolsAgentHost to always buffer messages
+  // until ReadyToCommitNavigation is called, now that it is also called in
+  // non-PlzNavigate mode.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
 
   // If the navigation is not tracked, return;
   if (navigating_handles_.count(navigation_handle) == 0)

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -16,7 +17,6 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -197,10 +197,11 @@ void ResourceLoader::CancelWithError(int error_code) {
 }
 
 void ResourceLoader::MarkAsTransferring(
-    const scoped_refptr<ResourceResponse>& response) {
+    const base::Closure& on_transfer_complete_callback) {
   CHECK(IsResourceTypeFrame(GetRequestInfo()->GetResourceType()))
       << "Can only transfer for navigations";
   is_transferring_ = true;
+  on_transfer_complete_callback_ = on_transfer_complete_callback;
 
   int child_id = GetRequestInfo()->GetChildID();
   AppCacheInterceptor::PrepareForCrossSiteTransfer(request(), child_id);
@@ -211,13 +212,14 @@ void ResourceLoader::MarkAsTransferring(
 }
 
 void ResourceLoader::CompleteTransfer() {
-  // Although CrossSiteResourceHandler defers at OnResponseStarted
+  // Although NavigationResourceThrottle defers at WillProcessResponse
   // (DEFERRED_READ), it may be seeing a replay of events via
-  // MimeTypeResourceHandler, and so the request itself is actually deferred
-  // at a later read stage.
+  // MimeTypeResourceHandler, and so the request itself is actually deferred at
+  // a later read stage.
   DCHECK(DEFERRED_READ == deferred_stage_ ||
          DEFERRED_RESPONSE_COMPLETE == deferred_stage_);
   DCHECK(is_transferring_);
+  DCHECK(!on_transfer_complete_callback_.is_null());
 
   // In some cases, a process transfer doesn't really happen and the
   // request is resumed in the original process. Real transfers to a new process
@@ -231,7 +233,7 @@ void ResourceLoader::CompleteTransfer() {
     handler->MaybeCompleteCrossSiteTransferInOldProcess(child_id);
 
   is_transferring_ = false;
-  GetRequestInfo()->cross_site_handler()->ResumeResponse();
+  base::ResetAndReturn(&on_transfer_complete_callback_).Run();
 }
 
 ResourceRequestInfoImpl* ResourceLoader::GetRequestInfo() {

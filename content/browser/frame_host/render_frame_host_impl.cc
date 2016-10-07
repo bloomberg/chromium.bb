@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -24,7 +25,6 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
-#include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -1299,8 +1299,12 @@ int RenderFrameHostImpl::GetEnabledBindings() {
 void RenderFrameHostImpl::SetNavigationHandle(
     std::unique_ptr<NavigationHandleImpl> navigation_handle) {
   navigation_handle_ = std::move(navigation_handle);
-  if (navigation_handle_)
-    navigation_handle_->set_render_frame_host(this);
+
+  // TODO(clamy): Remove this debug code once we understand better how we get to
+  // the point of attempting to transfer a navigation from a RFH that is no
+  // longer active.
+  if (navigation_handle_ && !is_active())
+    base::debug::DumpWithoutCrashing();
 }
 
 std::unique_ptr<NavigationHandleImpl>
@@ -1309,20 +1313,6 @@ RenderFrameHostImpl::PassNavigationHandleOwnership() {
   if (navigation_handle_)
     navigation_handle_->set_is_transferring(true);
   return std::move(navigation_handle_);
-}
-
-void RenderFrameHostImpl::OnCrossSiteResponse(
-    const GlobalRequestID& global_request_id,
-    std::unique_ptr<CrossSiteTransferringRequest>
-        cross_site_transferring_request,
-    const std::vector<GURL>& transfer_url_chain,
-    const Referrer& referrer,
-    ui::PageTransition page_transition,
-    bool should_replace_current_entry) {
-  frame_tree_node_->render_manager()->OnCrossSiteResponse(
-      this, global_request_id, std::move(cross_site_transferring_request),
-      transfer_url_chain, referrer, page_transition,
-      should_replace_current_entry);
 }
 
 void RenderFrameHostImpl::SwapOut(

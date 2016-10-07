@@ -463,12 +463,11 @@ bool ChromeContentBrowserClientExtensionsPart::
 
 // static
 bool ChromeContentBrowserClientExtensionsPart::ShouldSwapProcessesForRedirect(
-    content::ResourceContext* resource_context,
+    content::BrowserContext* browser_context,
     const GURL& current_url,
     const GURL& new_url) {
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   return CrossesExtensionProcessBoundary(
-      io_data->GetExtensionInfoMap()->extensions(),
+      ExtensionRegistry::Get(browser_context)->enabled_extensions(),
       current_url, new_url, false);
 }
 
