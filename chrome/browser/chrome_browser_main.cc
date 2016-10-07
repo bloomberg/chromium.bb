@@ -1647,6 +1647,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // 20 seconds to respond. Note that this needs to be done before we attempt
   // to read the profile.
   notify_result_ = process_singleton_->NotifyOtherProcessOrCreate();
+  UMA_HISTOGRAM_ENUMERATION("Chrome.ProcessSingleton.NotifyResult",
+                            notify_result_,
+                            ProcessSingleton::kNumNotifyResults);
   switch (notify_result_) {
     case ProcessSingleton::PROCESS_NONE:
       // No process already running, fall through to starting a new one.
@@ -1679,9 +1682,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                     "opening a new window in the existing process. Aborting "
                     "now to avoid profile corruption.";
       return chrome::RESULT_CODE_PROFILE_IN_USE;
-
-    default:
-      NOTREACHED();
   }
 #endif  // !defined(OS_ANDROID)
 

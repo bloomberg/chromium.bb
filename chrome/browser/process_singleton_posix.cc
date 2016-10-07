@@ -64,6 +64,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/safe_strerror.h"
@@ -895,12 +896,26 @@ ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate(
     const base::CommandLine& command_line,
     int retry_attempts,
     const base::TimeDelta& timeout) {
+  const base::TimeTicks begin_ticks = base::TimeTicks::Now();
   NotifyResult result = NotifyOtherProcessWithTimeout(
       command_line, retry_attempts, timeout, true);
-  if (result != PROCESS_NONE)
+  if (result != PROCESS_NONE) {
+    if (result == PROCESS_NOTIFIED) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("Chrome.ProcessSingleton.TimeToNotify",
+                                 base::TimeTicks::Now() - begin_ticks);
+    } else {
+      UMA_HISTOGRAM_MEDIUM_TIMES("Chrome.ProcessSingleton.TimeToFailure",
+                                 base::TimeTicks::Now() - begin_ticks);
+    }
     return result;
-  if (Create())
+  }
+
+  if (Create()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("Chrome.ProcessSingleton.TimeToCreate",
+                               base::TimeTicks::Now() - begin_ticks);
     return PROCESS_NONE;
+  }
+
   // If the Create() failed, try again to notify. (It could be that another
   // instance was starting at the same time and managed to grab the lock before
   // we did.)
@@ -908,6 +923,15 @@ ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate(
   // aren't going to try to take over the lock ourselves.
   result = NotifyOtherProcessWithTimeout(
       command_line, retry_attempts, timeout, false);
+
+  if (result == PROCESS_NOTIFIED) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("Chrome.ProcessSingleton.TimeToNotify",
+                               base::TimeTicks::Now() - begin_ticks);
+  } else {
+    UMA_HISTOGRAM_MEDIUM_TIMES("Chrome.ProcessSingleton.TimeToFailure",
+                               base::TimeTicks::Now() - begin_ticks);
+  }
+
   if (result != PROCESS_NONE)
     return result;
 
