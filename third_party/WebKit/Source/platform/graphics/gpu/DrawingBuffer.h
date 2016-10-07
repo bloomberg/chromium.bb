@@ -317,23 +317,33 @@ class PLATFORM_EXPORT DrawingBuffer
     GLenum colorFormat = 0;
   };
 
-  // If we used CHROMIUM_image as the backing storage for our buffers,
-  // we need to know the mapping from texture id to image.
-  struct TextureInfo {
-    DISALLOW_NEW();
+  struct ColorBuffer : public RefCounted<ColorBuffer> {
+    ColorBuffer(DrawingBuffer*, const TextureParameters&, const IntSize&);
+    ~ColorBuffer();
+
+    // The owning DrawingBuffer. Note that DrawingBuffer is explicitly destroyed
+    // by the beginDestruction method, which will eventually drain all of its
+    // ColorBuffers.
+    RefPtr<DrawingBuffer> drawingBuffer;
+
+    const TextureParameters parameters;
+    const IntSize size;
+
     GLuint textureId = 0;
     GLuint imageId = 0;
-    TextureParameters parameters;
-  };
 
-  struct MailboxInfo : public RefCounted<MailboxInfo> {
-    MailboxInfo() = default;
+    // The mailbox used to send this buffer to the compositor.
     gpu::Mailbox mailbox;
-    TextureInfo textureInfo;
-    IntSize size;
+
+    // The sync token for when this buffer was sent to the compositor.
+    gpu::SyncToken produceSyncToken;
+
+    // The sync token for when this buffer was received back from the
+    // compositor.
+    gpu::SyncToken receiveSyncToken;
 
    private:
-    WTF_MAKE_NONCOPYABLE(MailboxInfo);
+    WTF_MAKE_NONCOPYABLE(ColorBuffer);
   };
 
   bool prepareTextureMailboxInternal(
@@ -342,7 +352,7 @@ class PLATFORM_EXPORT DrawingBuffer
       bool forceGpuResult);
 
   // Callbacks for mailboxes given to the compositor from PrepareTextureMailbox.
-  void gpuMailboxReleased(const gpu::Mailbox&,
+  void gpuMailboxReleased(RefPtr<ColorBuffer>,
                           const gpu::SyncToken&,
                           bool lostResource);
   void softwareMailboxReleased(std::unique_ptr<cc::SharedBitmap>,
@@ -368,10 +378,7 @@ class PLATFORM_EXPORT DrawingBuffer
 
   void clearPlatformLayer();
 
-  PassRefPtr<MailboxInfo> takeRecycledMailbox();
-  PassRefPtr<MailboxInfo> createNewMailbox(const TextureInfo&);
-  void deleteMailbox(const gpu::Mailbox&, const gpu::SyncToken&);
-  void freeRecycledMailboxes();
+  PassRefPtr<ColorBuffer> takeRecycledMailbox();
 
   std::unique_ptr<cc::SharedBitmap> createOrRecycleBitmap();
 
@@ -402,25 +409,22 @@ class PLATFORM_EXPORT DrawingBuffer
                                              GLint border,
                                              GLenum format,
                                              GLenum type);
-  // Allocate buffer storage to be sent to compositor using either texImage2D or
-  // CHROMIUM_image based on available support.
-  void deleteChromiumImageForTexture(TextureInfo*);
 
   // If RGB emulation is required, then the CHROMIUM image's alpha channel
   // must be immediately cleared after it is bound to a texture. Nothing
   // should be allowed to change the alpha channel after this.
-  void clearChromiumImageAlpha(const TextureInfo&);
+  void clearChromiumImageAlpha(const ColorBuffer&);
 
   // Tries to create a CHROMIUM_image backed texture if
   // RuntimeEnabledFeatures::webGLImageChromiumEnabled() is true. On failure,
   // or if the flag is false, creates a default texture.
-  TextureInfo createTextureAndAllocateMemory(const IntSize&);
+  RefPtr<ColorBuffer> createTextureAndAllocateMemory(const IntSize&);
 
   // Creates and allocates space for a default texture.
-  TextureInfo createDefaultTextureAndAllocateMemory(const IntSize&);
+  RefPtr<ColorBuffer> createDefaultTextureAndAllocateMemory(const IntSize&);
 
-  // Attaches |m_colorBuffer| to |m_fbo|, which is always the source for read
-  // operations.
+  // Attaches |m_backColorBuffer| to |m_fbo|, which is always the source for
+  // read operations.
   void attachColorBufferToReadFramebuffer();
 
   // Whether the WebGL client desires an explicit resolve. This is
@@ -457,12 +461,10 @@ class PLATFORM_EXPORT DrawingBuffer
   const bool m_softwareRendering;
   bool m_hasImplicitStencilBuffer = false;
   bool m_storageTextureSupported = false;
-  struct FrontBufferInfo {
-    gpu::Mailbox mailbox;
-    gpu::SyncToken produceSyncToken;
-    TextureInfo texInfo;
-  };
-  FrontBufferInfo m_frontColorBuffer;
+
+  // This is the ColorBuffer that was most recently presented to the compositor
+  // by prepareTextureMailboxInternal.
+  RefPtr<ColorBuffer> m_frontColorBuffer;
 
   std::unique_ptr<WTF::Closure> m_newMailboxCallback;
 
@@ -478,12 +480,12 @@ class PLATFORM_EXPORT DrawingBuffer
 
   // When wantExplicitResolve() returns false, the target of all draw and
   // read operations. When wantExplicitResolve() returns true, the target of
-  // all read operations. A swap is performed by exchanging |m_colorBuffer|
+  // all read operations. A swap is performed by exchanging |m_backColorBuffer|
   // with |m_frontColorBuffer|.
   GLuint m_fbo = 0;
 
   // All information about the texture storage for |m_fbo|.
-  TextureInfo m_colorBuffer;
+  RefPtr<ColorBuffer> m_backColorBuffer;
 
   // True if our contents have been modified since the last presentation of this
   // buffer.
@@ -516,22 +518,9 @@ class PLATFORM_EXPORT DrawingBuffer
 
   std::unique_ptr<WebExternalTextureLayer> m_layer;
 
-  // All of the mailboxes that this DrawingBuffer has ever created.
-  Vector<RefPtr<MailboxInfo>> m_textureMailboxes;
-  struct RecycledMailbox : RefCounted<RecycledMailbox> {
-    RecycledMailbox(const gpu::Mailbox& mailbox,
-                    const gpu::SyncToken& syncToken)
-        : mailbox(mailbox), syncToken(syncToken) {}
-
-    gpu::Mailbox mailbox;
-    gpu::SyncToken syncToken;
-
-   private:
-    WTF_MAKE_NONCOPYABLE(RecycledMailbox);
-  };
   // Mailboxes that were released by the compositor can be used again by this
   // DrawingBuffer.
-  Deque<RefPtr<RecycledMailbox>> m_recycledMailboxQueue;
+  Deque<RefPtr<ColorBuffer>> m_recycledMailboxQueue;
 
   // If the width and height of the Canvas's backing store don't
   // match those that we were given in the most recent call to

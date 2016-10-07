@@ -182,8 +182,7 @@ DrawingBuffer::DrawingBuffer(
 }
 
 DrawingBuffer::~DrawingBuffer() {
-  ASSERT(m_destructionInProgress);
-  ASSERT(m_textureMailboxes.isEmpty());
+  DCHECK(m_destructionInProgress);
   m_layer.reset();
   m_contextProvider.reset();
 }
@@ -218,7 +217,7 @@ void DrawingBuffer::setIsHidden(bool hidden) {
     return;
   m_isHidden = hidden;
   if (m_isHidden)
-    freeRecycledMailboxes();
+    m_recycledMailboxQueue.clear();
 }
 
 void DrawingBuffer::setFilterQuality(SkFilterQuality filterQuality) {
@@ -245,13 +244,6 @@ bool DrawingBuffer::defaultBufferRequiresAlphaChannelToBePreserved() {
       (shouldUseChromiumImage() &&
        contextProvider()->getCapabilities().chromium_image_rgb_emulation);
   return !m_wantAlphaChannel && rgbEmulation;
-}
-
-void DrawingBuffer::freeRecycledMailboxes() {
-  while (!m_recycledMailboxQueue.isEmpty()) {
-    RefPtr<RecycledMailbox> recycled = m_recycledMailboxQueue.takeLast();
-    deleteMailbox(recycled->mailbox, recycled->syncToken);
-  }
 }
 
 std::unique_ptr<cc::SharedBitmap> DrawingBuffer::createOrRecycleBitmap() {
@@ -305,7 +297,7 @@ bool DrawingBuffer::prepareTextureMailboxInternal(
   if (m_newMailboxCallback)
     (*m_newMailboxCallback)();
 
-  // Resolve the multisampled buffer into m_colorBuffer texture.
+  // Resolve the multisampled buffer into m_backColorBuffer texture.
   if (m_antiAliasingMode != None)
     commit();
 
@@ -346,14 +338,14 @@ bool DrawingBuffer::prepareTextureMailboxInternal(
                                              m_texture2DBinding);
 
   // First try to recycle an old buffer.
-  RefPtr<MailboxInfo> mailboxInfo = takeRecycledMailbox();
+  RefPtr<ColorBuffer> colorBufferForMailbox = takeRecycledMailbox();
 
   // No buffer available to recycle, create a new one.
-  if (!mailboxInfo)
-    mailboxInfo = createNewMailbox(createTextureAndAllocateMemory(m_size));
+  if (!colorBufferForMailbox)
+    colorBufferForMailbox = createTextureAndAllocateMemory(m_size);
 
   if (m_preserveDrawingBuffer == Discard) {
-    std::swap(mailboxInfo->textureInfo, m_colorBuffer);
+    std::swap(colorBufferForMailbox, m_backColorBuffer);
     attachColorBufferToReadFramebuffer();
 
     if (m_discardFramebufferSupported) {
@@ -366,17 +358,17 @@ bool DrawingBuffer::prepareTextureMailboxInternal(
     }
   } else {
     m_gl->CopySubTextureCHROMIUM(
-        m_colorBuffer.textureId, mailboxInfo->textureInfo.textureId, 0, 0, 0, 0,
-        m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
+        m_backColorBuffer->textureId, colorBufferForMailbox->textureId, 0, 0, 0,
+        0, m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
   }
 
   restoreFramebufferBindings();
   restorePixelUnpackBufferBindings();
   m_contentsChanged = false;
 
-  m_gl->ProduceTextureDirectCHROMIUM(mailboxInfo->textureInfo.textureId,
-                                     mailboxInfo->textureInfo.parameters.target,
-                                     mailboxInfo->mailbox.name);
+  m_gl->ProduceTextureDirectCHROMIUM(colorBufferForMailbox->textureId,
+                                     colorBufferForMailbox->parameters.target,
+                                     colorBufferForMailbox->mailbox.name);
   const GLuint64 fenceSync = m_gl->InsertFenceSyncCHROMIUM();
 #if OS(MACOSX)
   m_gl->DescheduleUntilFinishedCHROMIUM();
@@ -385,33 +377,43 @@ bool DrawingBuffer::prepareTextureMailboxInternal(
   gpu::SyncToken syncToken;
   m_gl->GenSyncTokenCHROMIUM(fenceSync, syncToken.GetData());
 
-  bool isOverlayCandidate = mailboxInfo->textureInfo.imageId != 0;
+  bool isOverlayCandidate = colorBufferForMailbox->imageId != 0;
   bool secureOutputOnly = false;
-  *outMailbox = cc::TextureMailbox(mailboxInfo->mailbox, syncToken,
-                                   mailboxInfo->textureInfo.parameters.target,
+  *outMailbox = cc::TextureMailbox(colorBufferForMailbox->mailbox, syncToken,
+                                   colorBufferForMailbox->parameters.target,
                                    gfx::Size(m_size.width(), m_size.height()),
                                    isOverlayCandidate, secureOutputOnly);
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
   // mailbox is released (and while the release callback is running).
   auto func = WTF::bind(&DrawingBuffer::gpuMailboxReleased,
-                        RefPtr<DrawingBuffer>(this), mailboxInfo->mailbox);
+                        RefPtr<DrawingBuffer>(this), colorBufferForMailbox);
   *outReleaseCallback =
       cc::SingleReleaseCallback::Create(convertToBaseCallback(std::move(func)));
 
-  m_frontColorBuffer = {mailboxInfo->mailbox, syncToken,
-                        mailboxInfo->textureInfo};
+  // Point |m_frontColorBuffer| to the buffer that we are presenting, and
+  // update its sync token.
+  colorBufferForMailbox->produceSyncToken = syncToken;
+  m_frontColorBuffer = colorBufferForMailbox;
   setBufferClearNeeded(true);
   return true;
 }
 
-void DrawingBuffer::gpuMailboxReleased(const gpu::Mailbox& mailbox,
+void DrawingBuffer::gpuMailboxReleased(RefPtr<ColorBuffer> colorBuffer,
                                        const gpu::SyncToken& syncToken,
                                        bool lostResource) {
-  if (m_destructionInProgress ||
+  // If the mailbox has been returned by the compositor then it is no
+  // longer being presented, and so is no longer the front buffer.
+  if (colorBuffer == m_frontColorBuffer)
+    m_frontColorBuffer = nullptr;
+
+  // Update the SyncToken to ensure that we will wait for it even if we
+  // immediately destroy this buffer.
+  colorBuffer->receiveSyncToken = syncToken;
+
+  if (m_destructionInProgress || colorBuffer->size != m_size ||
       m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR || lostResource ||
       m_isHidden) {
-    deleteMailbox(mailbox, syncToken);
     return;
   }
 
@@ -420,26 +422,10 @@ void DrawingBuffer::gpuMailboxReleased(const gpu::Mailbox& mailbox,
   size_t cacheLimit = 1;
   if (shouldUseChromiumImage())
     cacheLimit = 4;
-  while (m_recycledMailboxQueue.size() >= cacheLimit) {
-    RefPtr<RecycledMailbox> recycled = m_recycledMailboxQueue.takeLast();
-    deleteMailbox(recycled->mailbox, recycled->syncToken);
-  }
+  while (m_recycledMailboxQueue.size() >= cacheLimit)
+    m_recycledMailboxQueue.takeLast();
 
-  RefPtr<MailboxInfo> mailboxInfo;
-  for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
-    if (m_textureMailboxes[i]->mailbox == mailbox) {
-      mailboxInfo = m_textureMailboxes[i];
-      break;
-    }
-  }
-  DCHECK(mailboxInfo);
-  if (mailboxInfo->size != m_size) {
-    deleteMailbox(mailbox, syncToken);
-    return;
-  }
-
-  m_recycledMailboxQueue.prepend(
-      adoptRef(new RecycledMailbox(mailbox, syncToken)));
+  m_recycledMailboxQueue.prepend(colorBuffer);
 }
 
 void DrawingBuffer::softwareMailboxReleased(
@@ -582,49 +568,34 @@ DrawingBuffer::TextureParameters DrawingBuffer::defaultTextureParameters() {
   return parameters;
 }
 
-PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::takeRecycledMailbox() {
+PassRefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::takeRecycledMailbox() {
   if (m_recycledMailboxQueue.isEmpty())
     return nullptr;
 
-  RefPtr<RecycledMailbox> recycled = m_recycledMailboxQueue.takeLast();
-  if (recycled->syncToken.HasData())
-    m_gl->WaitSyncTokenCHROMIUM(recycled->syncToken.GetData());
-
-  RefPtr<MailboxInfo> mailboxInfo;
-  for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
-    if (m_textureMailboxes[i]->mailbox == recycled->mailbox) {
-      mailboxInfo = m_textureMailboxes[i];
-      break;
-    }
-  }
-  DCHECK(mailboxInfo);
-  DCHECK(mailboxInfo->size == m_size);
-  return mailboxInfo.release();
+  RefPtr<ColorBuffer> recycled = m_recycledMailboxQueue.takeLast();
+  DCHECK(recycled->size == m_size);
+  if (recycled->receiveSyncToken.HasData())
+    m_gl->WaitSyncTokenCHROMIUM(recycled->receiveSyncToken.GetData());
+  return recycled;
 }
 
-PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::createNewMailbox(
-    const TextureInfo& info) {
-  RefPtr<MailboxInfo> returnMailbox = adoptRef(new MailboxInfo);
-  m_gl->GenMailboxCHROMIUM(returnMailbox->mailbox.name);
-  returnMailbox->textureInfo = info;
-  returnMailbox->size = m_size;
-  m_textureMailboxes.append(returnMailbox);
-  return returnMailbox.release();
+DrawingBuffer::ColorBuffer::ColorBuffer(DrawingBuffer* drawingBuffer,
+                                        const TextureParameters& parameters,
+                                        const IntSize& size)
+    : drawingBuffer(drawingBuffer), parameters(parameters), size(size) {
+  drawingBuffer->contextGL()->GenMailboxCHROMIUM(mailbox.name);
 }
 
-void DrawingBuffer::deleteMailbox(const gpu::Mailbox& mailbox,
-                                  const gpu::SyncToken& syncToken) {
-  if (syncToken.HasData())
-    m_gl->WaitSyncTokenCHROMIUM(syncToken.GetConstData());
-  for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
-    if (m_textureMailboxes[i]->mailbox == mailbox) {
-      deleteChromiumImageForTexture(&m_textureMailboxes[i]->textureInfo);
-      m_gl->DeleteTextures(1, &m_textureMailboxes[i]->textureInfo.textureId);
-      m_textureMailboxes.remove(i);
-      return;
-    }
+DrawingBuffer::ColorBuffer::~ColorBuffer() {
+  gpu::gles2::GLES2Interface* gl = drawingBuffer->contextGL();
+  if (receiveSyncToken.HasData())
+    gl->WaitSyncTokenCHROMIUM(receiveSyncToken.GetConstData());
+  if (imageId) {
+    gl->BindTexture(parameters.target, textureId);
+    gl->ReleaseTexImage2DCHROMIUM(parameters.target, imageId);
+    gl->DestroyImageCHROMIUM(imageId);
   }
-  ASSERT_NOT_REACHED();
+  gl->DeleteTextures(1, &textureId);
 }
 
 bool DrawingBuffer::initialize(const IntSize& size, bool useMultisampling) {
@@ -706,20 +677,18 @@ bool DrawingBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
 
   // Contexts may be in a different share group. We must transfer the texture
   // through a mailbox first.
-  GLint textureId = 0;
   GLenum target = 0;
   gpu::Mailbox mailbox;
   gpu::SyncToken produceSyncToken;
-  if (sourceBuffer == FrontBuffer && m_frontColorBuffer.texInfo.textureId) {
-    textureId = m_frontColorBuffer.texInfo.textureId;
-    target = m_frontColorBuffer.texInfo.parameters.target;
-    mailbox = m_frontColorBuffer.mailbox;
-    produceSyncToken = m_frontColorBuffer.produceSyncToken;
+  if (sourceBuffer == FrontBuffer && m_frontColorBuffer) {
+    target = m_frontColorBuffer->parameters.target;
+    mailbox = m_frontColorBuffer->mailbox;
+    produceSyncToken = m_frontColorBuffer->produceSyncToken;
   } else {
-    textureId = m_colorBuffer.textureId;
-    target = m_colorBuffer.parameters.target;
+    target = m_backColorBuffer->parameters.target;
     m_gl->GenMailboxCHROMIUM(mailbox.name);
-    m_gl->ProduceTextureDirectCHROMIUM(textureId, target, mailbox.name);
+    m_gl->ProduceTextureDirectCHROMIUM(m_backColorBuffer->textureId, target,
+                                       mailbox.name);
     const GLuint64 fenceSync = m_gl->InsertFenceSyncCHROMIUM();
     m_gl->Flush();
     m_gl->GenSyncTokenCHROMIUM(fenceSync, produceSyncToken.GetData());
@@ -785,7 +754,7 @@ void DrawingBuffer::beginDestruction() {
   m_destructionInProgress = true;
 
   clearPlatformLayer();
-  freeRecycledMailboxes();
+  m_recycledMailboxQueue.clear();
 
   if (m_multisampleFBO)
     m_gl->DeleteFramebuffers(1, &m_multisampleFBO);
@@ -799,15 +768,10 @@ void DrawingBuffer::beginDestruction() {
   if (m_depthStencilBuffer)
     m_gl->DeleteRenderbuffers(1, &m_depthStencilBuffer);
 
-  if (m_colorBuffer.textureId) {
-    deleteChromiumImageForTexture(&m_colorBuffer);
-    m_gl->DeleteTextures(1, &m_colorBuffer.textureId);
-  }
-
   m_size = IntSize();
 
-  m_colorBuffer = TextureInfo();
-  m_frontColorBuffer = FrontBufferInfo();
+  m_backColorBuffer = nullptr;
+  m_frontColorBuffer = nullptr;
   m_multisampleRenderbuffer = 0;
   m_depthStencilBuffer = 0;
   m_multisampleFBO = 0;
@@ -829,12 +793,8 @@ GLuint DrawingBuffer::createColorTexture(const TextureParameters& parameters) {
 }
 
 bool DrawingBuffer::resizeDefaultFramebuffer(const IntSize& size) {
-  // Resize or create m_colorBuffer.
-  if (m_colorBuffer.textureId) {
-    deleteChromiumImageForTexture(&m_colorBuffer);
-    m_gl->DeleteTextures(1, &m_colorBuffer.textureId);
-  }
-  m_colorBuffer = createTextureAndAllocateMemory(size);
+  // Recreate m_backColorBuffer.
+  m_backColorBuffer = createTextureAndAllocateMemory(size);
 
   attachColorBufferToReadFramebuffer();
 
@@ -936,7 +896,8 @@ bool DrawingBuffer::reset(const IntSize& newSize) {
     m_size = adjustedSize;
     // Free all mailboxes, because they are now of the wrong size. Only the
     // first call in this loop has any effect.
-    freeRecycledMailboxes();
+    m_recycledMailboxQueue.clear();
+    m_recycledBitmaps.clear();
 
     if (adjustedSize.isEmpty())
       return false;
@@ -1069,12 +1030,12 @@ bool DrawingBuffer::paintRenderingResultsToImageData(
                                   WTF::ArrayBufferContents::DontInitialize);
 
   GLuint fbo = 0;
-  if (sourceBuffer == FrontBuffer && m_frontColorBuffer.texInfo.textureId) {
+  if (sourceBuffer == FrontBuffer && m_frontColorBuffer) {
     m_gl->GenFramebuffers(1, &fbo);
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, fbo);
     m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               m_frontColorBuffer.texInfo.parameters.target,
-                               m_frontColorBuffer.texInfo.textureId, 0);
+                               m_frontColorBuffer->parameters.target,
+                               m_frontColorBuffer->textureId, 0);
   } else {
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer());
   }
@@ -1085,8 +1046,7 @@ bool DrawingBuffer::paintRenderingResultsToImageData(
 
   if (fbo) {
     m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               m_frontColorBuffer.texInfo.parameters.target, 0,
-                               0);
+                               m_frontColorBuffer->parameters.target, 0, 0);
     m_gl->DeleteFramebuffers(1, &fbo);
   }
 
@@ -1170,16 +1130,7 @@ void DrawingBuffer::allocateConditionallyImmutableTexture(GLenum target,
                    type, 0);
 }
 
-void DrawingBuffer::deleteChromiumImageForTexture(TextureInfo* info) {
-  if (info->imageId) {
-    m_gl->BindTexture(info->parameters.target, info->textureId);
-    m_gl->ReleaseTexImage2DCHROMIUM(info->parameters.target, info->imageId);
-    m_gl->DestroyImageCHROMIUM(info->imageId);
-    info->imageId = 0;
-  }
-}
-
-void DrawingBuffer::clearChromiumImageAlpha(const TextureInfo& info) {
+void DrawingBuffer::clearChromiumImageAlpha(const ColorBuffer& info) {
   if (m_wantAlphaChannel)
     return;
   if (!contextProvider()->getCapabilities().chromium_image_rgb_emulation)
@@ -1203,8 +1154,8 @@ void DrawingBuffer::clearChromiumImageAlpha(const TextureInfo& info) {
                   m_colorMask[3]);
 }
 
-DrawingBuffer::TextureInfo DrawingBuffer::createTextureAndAllocateMemory(
-    const IntSize& size) {
+RefPtr<DrawingBuffer::ColorBuffer>
+DrawingBuffer::createTextureAndAllocateMemory(const IntSize& size) {
   if (!shouldUseChromiumImage())
     return createDefaultTextureAndAllocateMemory(size);
 
@@ -1217,20 +1168,18 @@ DrawingBuffer::TextureInfo DrawingBuffer::createTextureAndAllocateMemory(
     m_gl->BindTexImage2DCHROMIUM(parameters.target, imageId);
   }
 
-  TextureInfo info;
-  info.textureId = textureId;
-  info.imageId = imageId;
-  info.parameters = parameters;
-  clearChromiumImageAlpha(info);
+  RefPtr<ColorBuffer> info(adoptRef(new ColorBuffer(this, parameters, size)));
+  info->textureId = textureId;
+  info->imageId = imageId;
+  clearChromiumImageAlpha(*info);
   return info;
 }
 
-DrawingBuffer::TextureInfo DrawingBuffer::createDefaultTextureAndAllocateMemory(
-    const IntSize& size) {
-  DrawingBuffer::TextureInfo info;
+RefPtr<DrawingBuffer::ColorBuffer>
+DrawingBuffer::createDefaultTextureAndAllocateMemory(const IntSize& size) {
   TextureParameters parameters = defaultTextureParameters();
-  info.parameters = parameters;
-  info.textureId = createColorTexture(parameters);
+  RefPtr<ColorBuffer> info(adoptRef(new ColorBuffer(this, parameters, size)));
+  info->textureId = createColorTexture(parameters);
   allocateConditionallyImmutableTexture(
       parameters.target, parameters.creationInternalColorFormat, size.width(),
       size.height(), 0, parameters.colorFormat, GL_UNSIGNED_BYTE);
@@ -1240,8 +1189,8 @@ DrawingBuffer::TextureInfo DrawingBuffer::createDefaultTextureAndAllocateMemory(
 void DrawingBuffer::attachColorBufferToReadFramebuffer() {
   m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
-  GLenum target = m_colorBuffer.parameters.target;
-  GLenum id = m_colorBuffer.textureId;
+  GLenum target = m_backColorBuffer->parameters.target;
+  GLenum id = m_backColorBuffer->textureId;
 
   m_gl->BindTexture(target, id);
 
