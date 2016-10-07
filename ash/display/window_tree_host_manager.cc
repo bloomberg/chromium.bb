@@ -30,6 +30,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "grit/ash_strings.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -39,6 +40,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method_factory.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
@@ -801,6 +803,14 @@ ui::DisplayConfigurator* WindowTreeHostManager::display_configurator() {
   return Shell::GetInstance()->display_configurator();
 }
 #endif
+
+std::string WindowTreeHostManager::GetInternalDisplayNameString() {
+  return l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME);
+}
+
+std::string WindowTreeHostManager::GetUnknownDisplayNameString() {
+  return l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
+}
 
 ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
     ui::KeyEvent* event) {

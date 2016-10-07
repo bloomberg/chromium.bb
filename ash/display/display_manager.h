@@ -77,6 +77,9 @@ class ASH_EXPORT DisplayManager
     // Get the ui::DisplayConfigurator.
     virtual ui::DisplayConfigurator* display_configurator() = 0;
 #endif
+
+    virtual std::string GetInternalDisplayNameString() = 0;
+    virtual std::string GetUnknownDisplayNameString() = 0;
   };
 
   // How the second display will be used.

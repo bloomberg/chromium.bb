@@ -25,8 +25,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "grit/ash_strings.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/display_switches.h"
@@ -611,7 +609,7 @@ void DisplayManager::OnNativeDisplaysChanged(
       // in docked mode.
       display::ManagedDisplayInfo internal_display_info(
           display::Display::InternalDisplayId(),
-          l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME),
+          delegate_->GetInternalDisplayNameString(),
           false /*Internal display must not have overscan */);
       internal_display_info.SetBounds(gfx::Rect(0, 0, 800, 600));
       display_info_[display::Display::InternalDisplayId()] =
@@ -930,7 +928,7 @@ const display::Display DisplayManager::GetMirroringDisplayById(
 
 std::string DisplayManager::GetDisplayNameForId(int64_t id) {
   if (id == display::Display::kInvalidDisplayID)
-    return l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
+    return delegate_->GetInternalDisplayNameString();
 
   std::map<int64_t, display::ManagedDisplayInfo>::const_iterator iter =
       display_info_.find(id);

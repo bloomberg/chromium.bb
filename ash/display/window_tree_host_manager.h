@@ -158,7 +158,7 @@ class ASH_EXPORT WindowTreeHostManager
   // aura::WindowTreeHostObserver overrides:
   void OnHostResized(const aura::WindowTreeHost* host) override;
 
-  // aura::DisplayManager::Delegate overrides:
+  // ash::DisplayManager::Delegate overrides:
   void CreateOrUpdateMirroringDisplay(
       const DisplayInfoList& info_list) override;
   void CloseMirroringDisplayIfNotNecessary() override;
@@ -167,6 +167,8 @@ class ASH_EXPORT WindowTreeHostManager
 #if defined(OS_CHROMEOS)
   ui::DisplayConfigurator* display_configurator() override;
 #endif
+  std::string GetInternalDisplayNameString() override;
+  std::string GetUnknownDisplayNameString() override;
 
   // ui::internal::InputMethodDelegate overrides:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
