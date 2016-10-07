@@ -4,9 +4,12 @@
   <template>
     <style>
       .md-select {
+        --md-arrow-width: 0.9em;
         -webkit-appearance: none;
-        background: url(images/arrow_down.svg) 97% 70% no-repeat;
-        background-size: 0.9em;
+        /* Ensure that the text does not overlap with the down arrow. */
+        -webkit-padding-end: calc(var(--md-arrow-width) * 1.8);
+        background: url(images/arrow_down.svg) 97% center no-repeat;
+        background-size: var(--md-arrow-width);
         border-bottom: 1px solid var(--paper-grey-300);
         border-left: none;
         /* Override Mac's default border-radius */
@@ -18,7 +21,8 @@
         font-family: inherit;
         font-size: inherit;
         outline: none;
-        padding: 3px 0;
+        padding-bottom: 3px;
+        padding-top: 3px;
         width: 200px;
       }
 
