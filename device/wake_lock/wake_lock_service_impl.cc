@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/wake_lock/wake_lock_service_impl.h"
+#include "device/wake_lock/wake_lock_service_impl.h"
 
 #include <utility>
 
-#include "content/browser/wake_lock/wake_lock_service_context.h"
+#include "device/wake_lock/wake_lock_service_context.h"
 
-namespace content {
+namespace device {
 
 WakeLockServiceImpl::WakeLockServiceImpl(
     base::WeakPtr<WakeLockServiceContext> context)
@@ -34,4 +34,4 @@ void WakeLockServiceImpl::CancelWakeLock() {
   context_->CancelWakeLock();
 }
 
-}  // namespace content
+}  // namespace device

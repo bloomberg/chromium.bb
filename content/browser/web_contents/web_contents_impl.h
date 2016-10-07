@@ -491,7 +491,7 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;
   device::GeolocationServiceContext* GetGeolocationServiceContext() override;
-  WakeLockServiceContext* GetWakeLockServiceContext() override;
+  device::WakeLockServiceContext* GetWakeLockServiceContext() override;
   void EnterFullscreenMode(const GURL& origin) override;
   void ExitFullscreenMode(bool will_cause_resize) override;
   bool ShouldRouteMessageEvent(
@@ -1413,7 +1413,7 @@ class CONTENT_EXPORT WebContentsImpl
   std::unique_ptr<device::GeolocationServiceContext>
       geolocation_service_context_;
 
-  std::unique_ptr<WakeLockServiceContext> wake_lock_service_context_;
+  std::unique_ptr<device::WakeLockServiceContext> wake_lock_service_context_;
 
   std::unique_ptr<ScreenOrientationDispatcherHost>
       screen_orientation_dispatcher_host_;

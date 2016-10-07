@@ -63,6 +63,7 @@ test("device_unittests") {
     "gamepad/gamepad_provider_unittest.cc",
     "generic_sensor/platform_sensor_provider_unittest.cc",
     "test/run_all_unittests.cc",
+    "wake_lock/wake_lock_service_context_unittest.cc",
   ]
 
   deps = [
@@ -79,6 +80,7 @@ test("device_unittests") {
     "//device/generic_sensor:testing",
     "//device/geolocation:unittests",
     "//device/power_save_blocker",
+    "//device/wake_lock",
     "//mojo/common",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",

@@ -51,7 +51,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
-#include "content/browser/wake_lock/wake_lock_service_context.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/accessibility_messages.h"
@@ -90,6 +89,7 @@
 #include "device/generic_sensor/sensor_provider_impl.h"
 #include "device/geolocation/geolocation_service_context.h"
 #include "device/vibration/vibration_manager_impl.h"
+#include "device/wake_lock/wake_lock_service_context.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
@@ -2146,14 +2146,14 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                               weak_ptr_factory_.GetWeakPtr())));
   }
 
-  WakeLockServiceContext* wake_lock_service_context =
+  device::WakeLockServiceContext* wake_lock_service_context =
       delegate_ ? delegate_->GetWakeLockServiceContext() : nullptr;
   if (wake_lock_service_context) {
     // WakeLockServiceContext is owned by WebContentsImpl so it will outlive
     // this RenderFrameHostImpl, hence a raw pointer can be bound to service
     // factory callback.
-    GetInterfaceRegistry()->AddInterface<blink::mojom::WakeLockService>(
-        base::Bind(&WakeLockServiceContext::CreateService,
+    GetInterfaceRegistry()->AddInterface<device::mojom::WakeLockService>(
+        base::Bind(&device::WakeLockServiceContext::CreateService,
                    base::Unretained(wake_lock_service_context)));
   }
 

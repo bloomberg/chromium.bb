@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WAKE_LOCK_WAKE_LOCK_SERVICE_CONTEXT_H_
-#define CONTENT_BROWSER_WAKE_LOCK_WAKE_LOCK_SERVICE_CONTEXT_H_
+#ifndef DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_CONTEXT_H_
+#define DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_CONTEXT_H_
 
 #include <memory>
 #include <set>
@@ -14,18 +14,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "content/browser/wake_lock/wake_lock_service_impl.h"
-#include "content/common/content_export.h"
+#include "device/wake_lock/wake_lock_service_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace device {
+
 class PowerSaveBlocker;
-}  // namespace device
 
-namespace content {
-
-class CONTENT_EXPORT WakeLockServiceContext {
+class WakeLockServiceContext {
  public:
   WakeLockServiceContext(
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
@@ -33,8 +30,7 @@ class CONTENT_EXPORT WakeLockServiceContext {
   ~WakeLockServiceContext();
 
   // Creates a WakeLockServiceImpl that is strongly bound to |request|.
-  void CreateService(
-      mojo::InterfaceRequest<blink::mojom::WakeLockService> request);
+  void CreateService(mojo::InterfaceRequest<mojom::WakeLockService> request);
 
   // Requests wake lock.
   void RequestWakeLock();
@@ -56,7 +52,7 @@ class CONTENT_EXPORT WakeLockServiceContext {
   int num_lock_requests_;
 
   // The actual power save blocker for screen.
-  std::unique_ptr<device::PowerSaveBlocker> wake_lock_;
+  std::unique_ptr<PowerSaveBlocker> wake_lock_;
   base::Callback<gfx::NativeView()> native_view_getter_;
 
   base::WeakPtrFactory<WakeLockServiceContext> weak_factory_;
@@ -64,6 +60,6 @@ class CONTENT_EXPORT WakeLockServiceContext {
   DISALLOW_COPY_AND_ASSIGN(WakeLockServiceContext);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_WAKE_LOCK_WAKE_LOCK_SERVICE_CONTEXT_H_
+#endif  // DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_CONTEXT_H_

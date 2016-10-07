@@ -637,7 +637,6 @@ mojom("mojo_bindings") {
     "platform/modules/notifications/notification.mojom",
     "platform/modules/notifications/notification_service.mojom",
     "platform/modules/serviceworker/service_worker_event_status.mojom",
-    "platform/modules/wake_lock/wake_lock_service.mojom",
   ]
   public_deps = [
     ":android_mojo_bindings",

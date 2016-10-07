@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/wake_lock/wake_lock_service_context.h"
+#include "device/wake_lock/wake_lock_service_context.h"
 
 #include <utility>
 
@@ -12,7 +12,7 @@
 #include "device/power_save_blocker/power_save_blocker.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-namespace content {
+namespace device {
 
 WakeLockServiceContext::WakeLockServiceContext(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
@@ -26,7 +26,7 @@ WakeLockServiceContext::WakeLockServiceContext(
 WakeLockServiceContext::~WakeLockServiceContext() {}
 
 void WakeLockServiceContext::CreateService(
-    mojo::InterfaceRequest<blink::mojom::WakeLockService> request) {
+    mojo::InterfaceRequest<mojom::WakeLockService> request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<WakeLockServiceImpl>(weak_factory_.GetWeakPtr()),
       std::move(request));
@@ -79,4 +79,4 @@ void WakeLockServiceContext::UpdateWakeLock() {
   }
 }
 
-}  // namespace content
+}  // namespace device

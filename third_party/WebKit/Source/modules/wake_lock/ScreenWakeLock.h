@@ -7,8 +7,8 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/PageVisibilityObserver.h"
+#include "device/wake_lock/public/interfaces/wake_lock_service.mojom-blink.h"
 #include "modules/ModulesExport.h"
-#include "public/platform/modules/wake_lock/wake_lock_service.mojom-blink.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -48,7 +48,7 @@ class MODULES_EXPORT ScreenWakeLock final
   static ScreenWakeLock* fromScreen(Screen&);
   void notifyService();
 
-  mojom::blink::WakeLockServicePtr m_service;
+  device::mojom::blink::WakeLockServicePtr m_service;
   bool m_keepAwake;
 };
 

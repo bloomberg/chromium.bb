@@ -33,6 +33,7 @@ class Message;
 
 namespace device {
 class GeolocationServiceContext;
+class WakeLockServiceContext;
 }
 
 namespace content {
@@ -40,7 +41,6 @@ class FrameTreeNode;
 class InterstitialPage;
 class PageState;
 class RenderFrameHost;
-class WakeLockServiceContext;
 class WebContents;
 struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
@@ -168,7 +168,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual device::GeolocationServiceContext* GetGeolocationServiceContext();
 
   // Gets the WakeLockServiceContext associated with this delegate.
-  virtual WakeLockServiceContext* GetWakeLockServiceContext();
+  virtual device::WakeLockServiceContext* GetWakeLockServiceContext();
 
   // Notification that the frame wants to go into fullscreen mode.
   // |origin| represents the origin of the frame that requests fullscreen.

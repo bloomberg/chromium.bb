@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WAKE_LOCK_WAKE_LOCK_SERVICE_IMPL_H_
-#define CONTENT_BROWSER_WAKE_LOCK_WAKE_LOCK_SERVICE_IMPL_H_
+#ifndef DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_IMPL_H_
+#define DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/WebKit/public/platform/modules/wake_lock/wake_lock_service.mojom.h"
 
-namespace content {
+namespace device {
 
 class WakeLockServiceContext;
 
-class WakeLockServiceImpl : public blink::mojom::WakeLockService {
+class WakeLockServiceImpl : public mojom::WakeLockService {
  public:
   explicit WakeLockServiceImpl(base::WeakPtr<WakeLockServiceContext> context);
   ~WakeLockServiceImpl() override;
@@ -30,6 +30,6 @@ class WakeLockServiceImpl : public blink::mojom::WakeLockService {
   DISALLOW_COPY_AND_ASSIGN(WakeLockServiceImpl);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_WAKE_LOCK_WAKE_LOCK_SERVICE_IMPL_H_
+#endif  // DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_IMPL_H_

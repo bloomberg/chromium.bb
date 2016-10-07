@@ -72,7 +72,8 @@ RenderFrameHostDelegate::GetGeolocationServiceContext() {
   return nullptr;
 }
 
-WakeLockServiceContext* RenderFrameHostDelegate::GetWakeLockServiceContext() {
+device::WakeLockServiceContext*
+RenderFrameHostDelegate::GetWakeLockServiceContext() {
   return nullptr;
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/wake_lock/wake_lock_service_context.h"
+#include "device/wake_lock/wake_lock_service_context.h"
 
 #include <memory>
 
@@ -10,7 +10,7 @@
 #include "base/process/kill.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace device {
 
 class WakeLockServiceContextTest : public testing::Test {
  public:
@@ -60,4 +60,4 @@ TEST_F(WakeLockServiceContextTest, LockUnlock) {
   EXPECT_FALSE(HasWakeLock());
 }
 
-}  // namespace content
+}  // namespace device

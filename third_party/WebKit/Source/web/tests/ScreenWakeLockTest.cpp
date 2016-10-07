@@ -25,8 +25,8 @@
 namespace {
 
 using blink::ScreenWakeLock;
-using blink::mojom::blink::WakeLockService;
-using blink::mojom::blink::WakeLockServiceRequest;
+using device::mojom::blink::WakeLockService;
+using device::mojom::blink::WakeLockServiceRequest;
 
 // This class allows binding interface requests to a MockWakeLockService.
 class MockInterfaceProvider : public blink::InterfaceProvider {

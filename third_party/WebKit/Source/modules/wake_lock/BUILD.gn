@@ -9,4 +9,8 @@ blink_modules_sources("wake_lock") {
     "ScreenWakeLock.cpp",
     "ScreenWakeLock.h",
   ]
+
+  deps = [
+    "//device/wake_lock/public/interfaces:interfaces_blink",
+  ]
 }

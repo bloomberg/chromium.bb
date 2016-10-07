@@ -22,6 +22,7 @@ include_rules = [
   "+device/time_zone_monitor",  # For TimeZoneMonitor creation.
   "+device/vibration",  # For Vibration API
   "+device/vr",  # For WebVR API
+  "+device/wake_lock",
   "+gin/v8_initializer.h",
   "+mojo",
   "+services",
@@ -88,7 +89,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerState.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h",
   "+third_party/WebKit/public/platform/modules/vr/WebVR.h",
-  "+third_party/WebKit/public/platform/modules/wake_lock/wake_lock_service.mojom.h",
   "+third_party/WebKit/public/platform/modules/websockets/websocket.mojom.h",
   "+third_party/WebKit/public/web/WebAXEnums.h",
   "+third_party/WebKit/public/web/WebCompositionUnderline.h",

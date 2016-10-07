@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/test/test_timeouts.h"
-#include "content/browser/wake_lock/wake_lock_service_context.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -13,6 +12,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "device/wake_lock/wake_lock_service_context.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -62,7 +62,7 @@ class WakeLockTest : public ContentBrowserTest {
     return GetNestedFrameNode()->current_frame_host();
   }
 
-  WakeLockServiceContext* GetWakeLockServiceContext() {
+  device::WakeLockServiceContext* GetWakeLockServiceContext() {
     return GetWebContentsImpl()->GetWakeLockServiceContext();
   }
 
