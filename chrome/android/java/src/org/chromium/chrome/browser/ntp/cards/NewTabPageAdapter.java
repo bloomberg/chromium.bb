@@ -211,7 +211,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
         SuggestionsSection section = mSections.get(category);
         if (section == null) {
-            section = new SuggestionsSection(category, info, this);
+            section = new SuggestionsSection(info, this);
             mSections.put(category, section);
         }
 

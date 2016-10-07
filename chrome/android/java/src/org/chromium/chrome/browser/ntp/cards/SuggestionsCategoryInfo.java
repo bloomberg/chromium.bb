@@ -4,13 +4,29 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.support.annotation.StringRes;
+
+import org.chromium.base.Log;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
+
 /**
- * Contains static meta information about a Category. Equivalent of the CategoryInfo class in
+ * Contains meta information about a Category. Equivalent of the CategoryInfo class in
  * components/ntp_snippets/category_info.h.
  */
 public class SuggestionsCategoryInfo {
+    private static final String TAG = "NtpCards";
+
+    /**
+     * Id of the category.
+     */
+    @CategoryInt
+    private final int mCategory;
+
     /**
      * Localized title of the category.
      */
@@ -32,8 +48,10 @@ public class SuggestionsCategoryInfo {
     /** Whether this category should be shown if it offers no suggestions. */
     private final boolean mShowIfEmpty;
 
-    public SuggestionsCategoryInfo(String title, @ContentSuggestionsCardLayoutEnum int cardLayout,
-            boolean hasMoreButton, boolean showIfEmpty) {
+    public SuggestionsCategoryInfo(@CategoryInt int category, String title,
+            @ContentSuggestionsCardLayoutEnum int cardLayout, boolean hasMoreButton,
+            boolean showIfEmpty) {
+        mCategory = category;
         mTitle = title;
         mCardLayout = cardLayout;
         mHasMoreButton = hasMoreButton;
@@ -42,6 +60,11 @@ public class SuggestionsCategoryInfo {
 
     public String getTitle() {
         return mTitle;
+    }
+
+    @CategoryInt
+    public int getCategory() {
+        return mCategory;
     }
 
     @ContentSuggestionsCardLayoutEnum
@@ -55,5 +78,47 @@ public class SuggestionsCategoryInfo {
 
     public boolean showIfEmpty() {
         return mShowIfEmpty;
+    }
+
+    /**
+     * Performs the appropriate action for the provided category, for the case where there are no
+     * suggestions available. In general, this consists in navigating to the view showing all the
+     * content, or fetching new content.
+     */
+    public void performEmptyStateAction(NewTabPageManager manager, NewTabPageAdapter adapter) {
+        switch (mCategory) {
+            case KnownCategories.ARTICLES:
+                adapter.reloadSnippets();
+                break;
+            case KnownCategories.BOOKMARKS:
+                manager.navigateToBookmarks();
+                break;
+            case KnownCategories.DOWNLOADS:
+                manager.navigateToDownloadManager();
+                break;
+            case KnownCategories.FOREIGN_TABS:
+                manager.navigateToRecentTabs();
+                break;
+            default:
+                Log.wtf(TAG, "'Empty State' action called for unsupported category: %d", mCategory);
+                break;
+        }
+    }
+
+    /**
+     * Returns the string to use as description for the status card that is displayed when there
+     * are no suggestions available for the provided category.
+     */
+    @StringRes
+    public int getNoSuggestionDescription() {
+        switch (mCategory) {
+            case KnownCategories.ARTICLES:
+                return R.string.ntp_status_card_no_articles;
+            case KnownCategories.BOOKMARKS:
+                return R.string.ntp_status_card_no_bookmarks;
+            default:
+                Log.wtf(TAG, "Requested description for unsupported category: %d", mCategory);
+                return 0;
+        }
     }
 }
