@@ -520,10 +520,14 @@ void NTPSnippetsService::OnFetchFinished(
          *fetched_categories) {
       Category category = fetched_category.category;
 
+      // The ChromeReader backend doesn't provide category titles, so don't
+      // overwrite the existing title for ARTICLES if the new one is empty.
+      // TODO(treib): Remove this check after we fully switch to the content
+      // suggestions backend.
       // TODO(sfiera): Avoid hard-coding articles category checks in so many
       // places.
-      if (category != articles_category_) {
-        // Only update titles from server-side provided categories.
+      if (category != articles_category_ ||
+          !fetched_category.localized_title.empty()) {
         categories_[category].localized_title =
             fetched_category.localized_title;
       }

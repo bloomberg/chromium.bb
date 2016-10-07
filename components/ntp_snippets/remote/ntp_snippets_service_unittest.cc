@@ -90,6 +90,8 @@ const char kSnippetAmpUrl[] = "http://localhost/amp";
 
 const char kSnippetUrl2[] = "http://foo.com/bar";
 
+const char kTestJsonDefaultCategoryTitle[] = "Some title";
+
 base::Time GetDefaultCreationTime() {
   base::Time out_time;
   EXPECT_TRUE(base::Time::FromUTCExploded(kDefaultCreationTime, &out_time));
@@ -100,16 +102,26 @@ base::Time GetDefaultExpirationTime() {
   return base::Time::Now() + base::TimeDelta::FromHours(1);
 }
 
-std::string GetTestJson(const std::vector<std::string>& snippets) {
+std::string GetTestJson(const std::vector<std::string>& snippets,
+                        const std::string& category_title) {
   return base::StringPrintf(
       "{\n"
       "  \"categories\": [{\n"
       "    \"id\": 1,\n"
-      "    \"localizedTitle\": \"Articles for You\",\n"
+      "    \"localizedTitle\": \"%s\",\n"
       "    \"suggestions\": [%s]\n"
       "  }]\n"
       "}\n",
+      category_title.c_str(),
       base::JoinString(snippets, ", ").c_str());
+}
+
+std::string GetTestJson(const std::vector<std::string>& snippets) {
+  return GetTestJson(snippets, kTestJsonDefaultCategoryTitle);
+}
+
+std::string GetTestJsonWithoutTitle(const std::vector<std::string>& snippets) {
+  return GetTestJson(snippets, std::string());
 }
 
 std::string GetMultiCategoryJson(const std::vector<std::string>& articles,
@@ -437,7 +449,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
     // Add an initial fetch response, as the service tries to fetch when there
     // is nothing in the DB.
     if (set_empty_response)
-      SetUpFetchResponse(GetTestJson(std::vector<std::string>()));
+      SetUpFetchResponse(GetTestJsonWithoutTitle(std::vector<std::string>()));
 
     base::RunLoop().RunUntilIdle();
     observer_->WaitForLoad();
@@ -640,6 +652,43 @@ TEST_F(NTPSnippetsServiceTest, Full) {
   EXPECT_EQ(kSnippetPublisherName,
             base::UTF16ToUTF8(suggestion.publisher_name()));
   EXPECT_EQ(GURL(kSnippetAmpUrl), suggestion.amp_url());
+}
+
+TEST_F(NTPSnippetsServiceTest, CategoryTitle) {
+  const base::string16 response_title =
+      base::UTF8ToUTF16(kTestJsonDefaultCategoryTitle);
+
+  auto service = MakeSnippetsService();
+
+  // The articles category should be there by default, and have a title.
+  CategoryInfo info_before = service->GetCategoryInfo(articles_category());
+  ASSERT_FALSE(info_before.title().empty());
+  ASSERT_NE(info_before.title(), response_title);
+
+  std::string json_str_no_title(GetTestJsonWithoutTitle({GetSnippet()}));
+  LoadFromJSONString(service.get(), json_str_no_title);
+
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+
+  // The response didn't contain a category title. Make sure we didn't touch
+  // the existing one.
+  CategoryInfo info_no_title = service->GetCategoryInfo(articles_category());
+  EXPECT_EQ(info_before.title(), info_no_title.title());
+
+  std::string json_str_with_title(GetTestJson({GetSnippet()}));
+  LoadFromJSONString(service.get(), json_str_with_title);
+
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+
+  // This time, the response contained a title, |kTestJsonDefaultCategoryTitle|.
+  // Make sure we updated the title in the CategoryInfo.
+  CategoryInfo info_with_title = service->GetCategoryInfo(articles_category());
+  EXPECT_NE(info_before.title(), info_with_title.title());
+  EXPECT_EQ(response_title, info_with_title.title());
 }
 
 TEST_F(NTPSnippetsServiceTest, MultipleCategories) {
