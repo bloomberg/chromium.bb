@@ -254,7 +254,9 @@ static INLINE int has_subpel_mv_component(const MODE_INFO *const mi,
   return 0;
 }
 
+#define CHECK_SUBPEL 0
 static INLINE int is_interp_needed(const MACROBLOCKD *const xd) {
+#if CHECK_SUBPEL
   MODE_INFO *const mi = xd->mi[0];
   const int is_compound = has_second_ref(&mi->mbmi);
   int ref;
@@ -268,6 +270,10 @@ static INLINE int is_interp_needed(const MACROBLOCKD *const xd) {
     }
   }
   return 0;
+#else
+  (void)xd;
+  return 1;
+#endif
 }
 
 #ifdef __cplusplus
