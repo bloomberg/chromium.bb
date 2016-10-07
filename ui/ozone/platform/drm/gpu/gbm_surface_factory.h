@@ -26,7 +26,7 @@ class GbmSurfaceless;
 
 class GbmSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  explicit GbmSurfaceFactory(DrmThreadProxy* drm_thread);
+  explicit GbmSurfaceFactory(DrmThreadProxy* drm_thread_proxy);
   ~GbmSurfaceFactory() override;
 
   void RegisterSurface(gfx::AcceleratedWidget widget, GbmSurfaceless* surface);
@@ -57,7 +57,7 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
 
   base::ThreadChecker thread_checker_;
 
-  DrmThreadProxy* drm_thread_;
+  DrmThreadProxy* drm_thread_proxy_;
 
   std::map<gfx::AcceleratedWidget, GbmSurfaceless*> widget_to_surface_map_;
 
