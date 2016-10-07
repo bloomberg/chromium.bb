@@ -10,37 +10,28 @@
     <meta name="twitter:description" content="Sample WebVR pages for testing and reference">
     <meta name="twitter:image" content="https://webvr.info/images/webvr-logo-square.png">
 
-    <link href="https://fonts.googleapis.com/css?family=Chivo:900" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" type="text/css" href="../stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="../stylesheets/pygment_trac.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="../stylesheets/print.css" media="print">
+    <link rel="stylesheet" href="../stylesheets/stylesheet.css">
+    <link rel="stylesheet" href="../stylesheets/pygment_trac.css">
     <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     <title>WebVR - Samples</title>
   </head>
-
   <body>
-    <div id="container">
-      <div class="inner">
+    <div class="container" id="container">
+      <header class="header">
+        <h1><a href="../" class="wordmark"><span>WebVR</span></a></h1>
+        <h2 class="tagline">Sample Pages</h2>
+      </header>
 
-        <header>
-          <h1>WebVR</h1>
-          <h2>Sample Pages</h2>
-        </header>
+      <main class="main" id="main">
+        <div class="iframe-wrap iframe-wrap--chrome">
+          <iframe class="iframe iframe--samples" src="https://toji.github.io/webvr-samples/" width="100%" height="600" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </main>
 
-        <hr>
-
-        <section id="main_content">
-<iframe src="https://toji.github.io/webvr-samples/" style="width:100%; height:600px; border:0;"></iframe>
-        </section>
-
-        <footer>
-          Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
-
-
-      </div>
+      <footer class="footer">
+      </footer>
     </div>
   </body>
 </html>

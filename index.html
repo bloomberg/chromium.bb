@@ -17,106 +17,109 @@
     <![endif]-->
     <title>WebVR - Bringing Virtual Reality to the Web</title>
   </head>
-
   <body>
-    <main class="container" id="container">
-      <div class="inner">
+    <div class="container" id="container">
+      <header class="header">
+        <h1><a href="" class="wordmark"><span>WebVR</span></a></h1>
+        <h2 class="tagline">Bringing Virtual Reality to the Web</h2>
+      </header>
 
-        <header class="header">
-          <h1><a href="" class="wordmark"><span>WebVR</span></a></h1>
-          <h2 class="tagline">Bringing Virtual Reality to the Web</h2>
-        </header>
+      <main class="main" id="main">
+        <h3>
+          <a id="what-is-webvr" class="anchor" href="#what-is-webvr" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is WebVR?
+        </h3>
 
-        <section id="main_content">
-          <h3>
-<a id="what-is-webvr" class="anchor" href="#what-is-webvr" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is WebVR?</h3>
+        <p>WebVR is an experimental JavaScript API that provides access to Virtual Reality devices, such as the <a href="https://www3.oculus.com/rift/">Oculus Rift</a>, <a href="https://www.vive.com/">HTC Vive</a>, <a href="http://www.samsung.com/global/galaxy/gear-vr/">Samsung Gear VR</a>, or <a href="https://vr.google.com/cardboard/">Google Cardboard</a>, in your browser.</p>
 
-<p>WebVR is an experimental JavaScript API that provides access to Virtual Reality devices, such as the <a href="https://www3.oculus.com/rift/">Oculus Rift</a>, <a href="https://www.vive.com/">HTC Vive</a>, <a href="http://www.samsung.com/global/galaxy/gear-vr/">Samsung Gear VR</a>, or <a href="https://vr.google.com/cardboard/">Google Cardboard</a>, in your browser.</p>
+        <h3>
+          <a id="spec" class="anchor" href="#spec" aria-hidden="true"><span class="octicon octicon-link"></span></a>Specification
+        </h3>
 
-<h3>
-<a id="spec" class="anchor" href="#spec" aria-hidden="true"><span class="octicon octicon-link"></span></a>Specification</h3>
+        <p>The <a href="https://w3c.github.io/webvr/" class="link-important">Spec Editor's Draft</a> is hosted on <a href="https://github.com/w3c/webvr">GitHub</a>.</p>
 
-<p>The <a href="https://w3c.github.io/webvr/" class="link-important">Spec Editor's Draft</a> is hosted on <a href="https://github.com/w3c/webvr">GitHub</a>.</p>
+        <h3>
+          <a id="how-can-i-try-it" class="anchor" href="#how-can-i-try-it" aria-hidden="true"><span class="octicon octicon-link"></span></a>How can I try it?
+        </h3>
 
-<h3>
-<a id="how-can-i-try-it" class="anchor" href="#how-can-i-try-it" aria-hidden="true"><span class="octicon octicon-link"></span></a>How can I try it?</h3>
+        <p>The WebVR API is currently available in <a href="https://nightly.mozilla.org/">Firefox Nightly builds</a>, in <a href="get-chrome/">experimental builds of Chromium</a>, and in the <a href="http://developer.samsung.com/technical-doc/view.do?v=T000000202">Samsung Internet Browser for Gear VR</a>. You can get the latest WebVR-enabled builds here:</p>
 
-<p>The WebVR API is currently available in <a href="https://nightly.mozilla.org/">Firefox Nightly builds</a>, in <a href="get-chrome/">experimental builds of Chromium</a>, and in the <a href="http://developer.samsung.com/technical-doc/view.do?v=T000000202">Samsung Internet Browser for Gear VR</a>. You can get the latest WebVR-enabled builds here:</p>
+        <ul class="browsers">
+          <li>
+            <a href="get-chrome/" class="link-important">Download Chrome</a> (<a href="https://github.com/Web-VR/iswebvrready/wiki/Instructions%3A-Chromium">read instructions</a>)
+          </li>
+          <li>
+            <a href="https://nightly.mozilla.org/" class="link-important">Download Firefox</a> (<a href="https://github.com/Web-VR/iswebvrready/wiki/Instructions%3A-Firefox-Nightly">read instructions</a>)
+          </li>
+          <li>
+            <a href="http://developer.samsung.com/internet#gearvr-overview" class="link-important">Samsung Internet Browser for Gear VR</a> (<a href="https://github.com/Web-VR/iswebvrready/wiki/Instructions%3A-Samsung-Internet-Browser-for-Gear-VR-on-Android">read instructions</a>)
+          </li>
+        </ul>
 
-<ul class="browsers">
-  <li>
-    <a href="get-chrome/" class="link-important">Download Chrome</a> (<a href="https://github.com/Web-VR/iswebvrready/wiki/Instructions%3A-Chromium">read instructions</a>)
-  </li>
-  <li>
-    <a href="https://nightly.mozilla.org/" class="link-important">Download Firefox</a> (<a href="https://github.com/Web-VR/iswebvrready/wiki/Instructions%3A-Firefox-Nightly">read instructions</a>)
-  </li>
-  <li>
-    <a href="http://developer.samsung.com/internet#gearvr-overview" class="link-important">Samsung Internet Browser for Gear VR</a> (<a href="https://github.com/Web-VR/iswebvrready/wiki/Instructions%3A-Samsung-Internet-Browser-for-Gear-VR-on-Android">read instructions</a>)
-  </li>
-</ul>
+        <p>Or, if you want to add WebVR to your mobile site today, you can use the <a href="https://github.com/borismus/webvr-polyfill">WebVR Polyfill</a> to provide support for <a href="https://vr.google.com/cardboard/">Cardboard</a> mobile devices (such as for iOS and Android).</p>
 
-<p>Or, if you want to add WebVR to your mobile site today, you can use the <a href="https://github.com/borismus/webvr-polyfill">WebVR Polyfill</a> to provide support for <a href="https://vr.google.com/cardboard/">Cardboard</a> mobile devices (such as for iOS and Android).</p>
+        <ul>
+        <li><a href="https://github.com/borismus/webvr-polyfill" class="link-important">WebVR Polyfill</a></li>
+        </ul>
 
-<ul>
-<li><a href="https://github.com/borismus/webvr-polyfill" class="link-important">WebVR Polyfill</a></li>
-</ul>
+        <p>You can test your browser's support for the WebVR API with these samples:</p>
 
-<p>You can test your browser's support for the WebVR API with these samples:</p>
+        <ul>
+        <li><a href="samples/" class="link-important">WebVR Samples</a></li>
+        </ul>
 
-<ul>
-<li><a href="samples/" class="link-important">WebVR Samples</a></li>
-</ul>
+        <h3>
+          <a id="how-can-i-contribute" class="anchor" href="#how-can-i-contribute" aria-hidden="true"><span class="octicon octicon-link"></span></a>How can I contribute?
+        </h3>
 
-<h3>
-<a id="how-can-i-contribute" class="anchor" href="#how-can-i-contribute" aria-hidden="true"><span class="octicon octicon-link"></span></a>How can I contribute?</h3>
+        <p>The best place to contribute is the <a href="https://mail.mozilla.org/listinfo/web-vr-discuss">WebVR mailing list</a>. Developers of the Chrome, Firefox, and Samsung Internet Browser builds are on that list, as well as other community members who are enthusiastic about VR on the Web.</p>
 
-<p>The best place to contribute is the <a href="https://mail.mozilla.org/listinfo/web-vr-discuss">WebVR mailing list</a>. Developers of the Chrome, Firefox, and Samsung Internet Browser builds are on that list, as well as other community members who are enthusiastic about VR on the Web.</p>
+        <h3>
+          <a id="how-can-i-get-code" class="anchor" href="#how-can-i-get-code" aria-hidden="true"><span class="octicon octicon-link"></span></a>How can I get the code?
+        </h3>
 
-<h3>
-<a id="how-can-i-get-code" class="anchor" href="#how-can-i-get-code" aria-hidden="true"><span class="octicon octicon-link"></span></a>How can I get the code?</h3>
+        <p>The code that powers WebVR is available online, if you want to take a peek under the hood:</p>
 
-<p>The code that powers WebVR is available online, if you want to take a peek under the hood:</p>
+        <ul>
+          <li><a href="https://chromium.googlesource.com/experimental/chromium/src/+/refs/wip/bajones/webvr_1">Chromium</a></li>
+          <li><a href="https://developer.mozilla.org/docs/Simple_Firefox_build">Firefox</a></li>
+        </ul>
 
-<ul>
-<li><a href="https://chromium.googlesource.com/experimental/chromium/src/+/refs/wip/bajones/webvr_1">Chromium</a></li>
-<li><a href="https://developer.mozilla.org/docs/Simple_Firefox_build">Firefox</a></li>
-</ul>
+        <h3>
+          <a id="reporting-issues" class="anchor" href="#reporting-issues" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reporting issues
+        </h3>
 
-<h3>
-<a id="reporting-issues" class="anchor" href="#reporting-issues" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reporting issues</h3>
+        <p>For the time being, use the following links to view and report issues with WebVR implementations:</p>
 
-<p>For the time being, use the following links to view and report issues with WebVR implementations:</p>
+        <ul>
+          <li><a href="https://github.com/toji/chrome-webvr-issues/issues">Chrome issues</a> (<a href="https://github.com/toji/chrome-webvr-issues/issues/new">file issue</a>)</li>
+          <li><a href="https://bugzilla.mozilla.org/buglist.cgi?quicksearch=%5Bwebvr%5D">Firefox issues</a> (<a href="https://bugzilla.mozilla.org/enter_bug.cgi?product=Core&amp;component=General&amp;status_whiteboard=[webvr]&amp;cc=kgilbert@mozilla.com">file issue</a>)</li>
+          <li><a href="http://developer.samsung.com/internet#gearvr-overview">Samsung Internet Browser for Gear VR issues</a> (<a href="https://twitter.com/mkeblx" title="Tweet at Michael Blix, WebVR dev at Samsung">file issue</a>)</li>
+        </ul>
 
-<ul>
-  <li><a href="https://github.com/toji/chrome-webvr-issues/issues">Chrome issues</a> (<a href="https://github.com/toji/chrome-webvr-issues/issues/new">file issue</a>)</li>
-  <li><a href="https://bugzilla.mozilla.org/buglist.cgi?quicksearch=%5Bwebvr%5D">Firefox issues</a> (<a href="https://bugzilla.mozilla.org/enter_bug.cgi?product=Core&amp;component=General&amp;status_whiteboard=[webvr]&amp;cc=kgilbert@mozilla.com">file issue</a>)</li>
-  <li><a href="http://developer.samsung.com/internet#gearvr-overview">Samsung Internet Browser for Gear VR issues</a> (<a href="https://twitter.com/mkeblx" title="Tweet at Michael Blix, WebVR dev at Samsung">file issue</a>)</li>
-</ul>
+        <h3>
+          <a id="webvr-emulator" class="anchor" href="#webvr-emulator" aria-hidden="true"><span class="octicon octicon-link"></span></a>WebVR Emulator
+        </h3>
 
-<h3>
-<a id="misc-links" class="anchor" href="#webvr-emulator" aria-hidden="true"><span class="octicon octicon-link"></span></a>WebVR Emulator</h3>
+        <p>Jaume Sánchez Elias (<a href="https://twitter.com/thespite">@thespite</a>) has created a <a href="https://chrome.google.com/webstore/detail/webvr-api-emulation/gbdnpaebafagioggnhkacnaaahpiefil">Chrome extension</a> that allows developers to emulate a VR headset for testing the API without needing any VR hardware. Check it out!</p>
+        <ul>
+        <li><a href="https://chrome.google.com/webstore/detail/webvr-api-emulation/gbdnpaebafagioggnhkacnaaahpiefil">Chrome Extension</a></li>
+        <li><a href="https://github.com/spite/WebVR-Extension">GitHub Repository</a></li>
+        </ul>
 
-<p>Jaume Sánchez Elias (<a href="https://twitter.com/thespite">@thespite</a>) has created a <a href="https://chrome.google.com/webstore/detail/webvr-api-emulation/gbdnpaebafagioggnhkacnaaahpiefil">Chrome extension</a> that allows developers to emulate a VR headset for testing the API without needing any VR hardware. Check it out!</p>
-<ul>
-<li><a href="https://chrome.google.com/webstore/detail/webvr-api-emulation/gbdnpaebafagioggnhkacnaaahpiefil">Chrome Extension</a></li>
-<li><a href="https://github.com/spite/WebVR-Extension">GitHub Repository</a></li>
-</ul>
+        <h3>
+          <a id="misc-links" class="anchor" href="#misc-links" aria-hidden="true"><span class="octicon octicon-link"></span></a>Misc. Links
+        </h3>
 
-<h3>
-<a id="misc-links" class="anchor" href="#misc-links" aria-hidden="true"><span class="octicon octicon-link"></span></a>Misc. Links</h3>
+        <ul>
+          <li><a href="https://mozvr.com/">Mozilla VR team</a></li>
+          <li><a href="https://blog.mozvr.com/">Mozilla VR blog</a></li>
+          <li><a href="http://blog.tojicode.com/">Brandon's blog</a></li>
+          <li><a href="https://webvr.slack.com/">WebVR Slack</a> (<a href="https://webvr-slack.herokuapp.com/">sign up</a>)</li>
+        </ul>
+      </main>
 
-<ul>
-  <li><a href="https://mozvr.com/">Mozilla VR team</a></li>
-  <li><a href="https://blog.mozvr.com/">Mozilla VR blog</a></li>
-  <li><a href="http://blog.tojicode.com/">Brandon's blog</a></li>
-  <li><a href="https://webvr.slack.com/">WebVR Slack</a> (<a href="https://webvr-slack.herokuapp.com/">sign up</a>)</li>
-</ul>
-        </section>
-
-        <footer class="footer">
-        </footer>
-
-      </div>
-    </main>
+      <footer class="footer">
+      </footer>
+    </div>
   </body>
 </html>
