@@ -77,9 +77,6 @@ class CORE_EXPORT OriginTrialContext final
   // initialized, then this method will return without doing anything.
   void initializePendingFeatures();
 
-  void setFeatureBindingsInstalled(const String& featureName);
-  bool featureBindingsInstalled(const String& featureName);
-
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -89,10 +86,6 @@ class CORE_EXPORT OriginTrialContext final
   Vector<String> m_tokens;
   HashSet<String> m_enabledFeatures;
   WebTrialTokenValidator* m_trialTokenValidator;
-
-  // Records whether a feature has been installed into the host's V8 context,
-  // for each feature name.
-  HashSet<String> m_bindingsInstalled;
 };
 
 }  // namespace blink
