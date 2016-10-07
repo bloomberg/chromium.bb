@@ -1630,6 +1630,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public VrShellDelegate getVrShellDelegate() {
+        return mVrShellDelegate;
     }
 }

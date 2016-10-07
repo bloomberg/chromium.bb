@@ -73,6 +73,16 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
                     && (!ChromeVersionInfo.isOfficialBuild())) {
                 return true;
             }
+            // TODO(bsheedy): Implement restriction logic when VR NDK is updated to
+            //                allow Daydream-readiness checking
+            if (TextUtils.equals(restriction,
+                    ChromeRestriction.RESTRICTION_TYPE_DAYDREAM)) {
+                return true;
+            }
+            if (TextUtils.equals(restriction,
+                    ChromeRestriction.RESTRICTION_TYPE_NON_DAYDREAM)) {
+                return true;
+            }
             return false;
         }
     }

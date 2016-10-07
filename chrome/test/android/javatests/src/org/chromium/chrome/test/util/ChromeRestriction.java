@@ -17,4 +17,8 @@ public final class ChromeRestriction {
     public static final String RESTRICTION_TYPE_TABLET = "Tablet";
     /** Specifies the test is only valid on official build. */
     public static final String RESTRICTION_TYPE_OFFICIAL_BUILD = "Official_Build";
+    /** Specifies the test is only valid on a Daydream-ready device */
+    public static final String RESTRICTION_TYPE_DAYDREAM = "Daydream";
+    /** Specifies the test is only valid on a non-Daydream-ready device */
+    public static final String RESTRICTION_TYPE_NON_DAYDREAM = "Non-Daydream";
 }

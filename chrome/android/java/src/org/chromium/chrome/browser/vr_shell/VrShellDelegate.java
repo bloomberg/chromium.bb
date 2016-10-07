@@ -126,7 +126,14 @@ public class VrShellDelegate {
      */
     public void resumeVR() {
         setupVrModeWindowFlags();
-        mVrShell.resume();
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+        try {
+            mVrShell.resume();
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Unable to resume VrShell", e);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     /**
@@ -170,6 +177,7 @@ public class VrShellDelegate {
 
     private boolean createVrShell() {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
         try {
             Constructor<?> vrShellConstructor = mVrShellClass.getConstructor(Activity.class);
             mVrShell = (VrShellInterface) vrShellConstructor.newInstance(mActivity);

@@ -436,6 +436,14 @@ android_library("chrome_test_java") {
     "//content/test/data/media/session/",
     "//content/test/data/media/webrtc_test_utilities.js",
   ]
+
+  if (enable_vr_shell) {
+    java_files += [ "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTest.java" ]
+    deps += [
+      "//third_party/gvr-android-sdk:gvr_base_java",
+      "//third_party/gvr-android-sdk:gvr_common_java",
+    ]
+  }
 }
 
 # Overrides icon / name defined in chrome_java_resources.
