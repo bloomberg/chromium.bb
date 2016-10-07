@@ -316,6 +316,7 @@ Resource::Resource(const ResourceRequest& request,
       m_isRevalidating(false),
       m_isAlive(false),
       m_integrityDisposition(ResourceIntegrityDisposition::NotChecked),
+      m_isAddRemoveClientProhibited(false),
       m_options(options),
       m_responseTimestamp(currentTime()),
       m_cancelTimer(this, &Resource::cancelTimerFired),
@@ -707,6 +708,8 @@ void Resource::willAddClientOrObserver(PreloadReferencePolicy policy) {
 
 void Resource::addClient(ResourceClient* client,
                          PreloadReferencePolicy policy) {
+  CHECK(!m_isAddRemoveClientProhibited);
+
   willAddClientOrObserver(policy);
 
   if (m_isRevalidating) {
@@ -730,6 +733,8 @@ void Resource::addClient(ResourceClient* client,
 }
 
 void Resource::removeClient(ResourceClient* client) {
+  CHECK(!m_isAddRemoveClientProhibited);
+
   // This code may be called in a pre-finalizer, where weak members in the
   // HashCountedSet are already swept out.
 

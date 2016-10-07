@@ -39,6 +39,7 @@
 #include "platform/tracing/web_process_memory_dump.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/Allocator.h"
+#include "wtf/AutoReset.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
@@ -367,6 +368,12 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   SharedBuffer* data() const { return m_data.get(); }
   void clearData() { m_data.clear(); }
 
+  class ProhibitAddRemoveClientInScope : public AutoReset<bool> {
+   public:
+    ProhibitAddRemoveClientInScope(Resource* resource)
+        : AutoReset(&resource->m_isAddRemoveClientProhibited, true) {}
+  };
+
  private:
   class ResourceCallback;
   class CachedMetadataHandlerImpl;
@@ -419,6 +426,8 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   ResourceIntegrityDisposition m_integrityDisposition;
   IntegrityMetadataSet m_integrityMetadata;
+
+  bool m_isAddRemoveClientProhibited;
 
   // Ordered list of all redirects followed while fetching this resource.
   Vector<RedirectPair> m_redirectChain;
