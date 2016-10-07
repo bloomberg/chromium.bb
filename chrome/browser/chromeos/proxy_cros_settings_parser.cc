@@ -356,9 +356,9 @@ bool GetProxyPrefValue(const UIProxyConfigService& config_service,
     data = CreateServerPortValue(config.socks_proxy);
   } else if (path == kProxyIgnoreList) {
     base::ListValue* list =  new base::ListValue();
-    net::ProxyBypassRules::RuleList bypass_rules = config.bypass_rules.rules();
-    for (size_t x = 0; x < bypass_rules.size(); x++)
-      list->AppendString(bypass_rules[x]->ToString());
+    const auto& bypass_rules = config.bypass_rules.rules();
+    for (const auto& rule : bypass_rules)
+      list->AppendString(rule->ToString());
     data = list;
   } else {
     *out_value = NULL;

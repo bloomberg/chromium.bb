@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/mojo_proxy_resolver_v8_tracing_bindings.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
@@ -50,23 +49,23 @@ MojoProxyResolverImpl::MojoProxyResolverImpl(
     : resolver_(std::move(resolver)) {}
 
 MojoProxyResolverImpl::~MojoProxyResolverImpl() {
-  base::STLDeleteElements(&resolve_jobs_);
 }
 
 void MojoProxyResolverImpl::GetProxyForUrl(
     const GURL& url,
     interfaces::ProxyResolverRequestClientPtr client) {
   DVLOG(1) << "GetProxyForUrl(" << url << ")";
-  Job* job = new Job(std::move(client), this, url);
-  bool inserted = resolve_jobs_.insert(job).second;
-  DCHECK(inserted);
-  job->Start();
+  std::unique_ptr<Job> job =
+      base::MakeUnique<Job>(std::move(client), this, url);
+  Job* job_ptr = job.get();
+  resolve_jobs_[job_ptr] = std::move(job);
+  job_ptr->Start();
 }
 
 void MojoProxyResolverImpl::DeleteJob(Job* job) {
-  size_t num_erased = resolve_jobs_.erase(job);
-  DCHECK(num_erased);
-  delete job;
+  auto it = resolve_jobs_.find(job);
+  DCHECK(it != resolve_jobs_.end());
+  resolve_jobs_.erase(it);
 }
 
 MojoProxyResolverImpl::Job::Job(

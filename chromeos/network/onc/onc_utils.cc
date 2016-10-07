@@ -975,7 +975,7 @@ std::unique_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
         net::ProxyBypassRules bypass_rules;
         bypass_rules.ParseFromString(bypass_rules_string);
         std::unique_ptr<base::ListValue> exclude_domains(new base::ListValue);
-        for (const net::ProxyBypassRules::Rule* rule : bypass_rules.rules())
+        for (const auto& rule : bypass_rules.rules())
           exclude_domains->AppendString(rule->ToString());
         if (!exclude_domains->empty()) {
           proxy_settings->SetWithoutPathExpansion(::onc::proxy::kExcludeDomains,
