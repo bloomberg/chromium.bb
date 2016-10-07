@@ -1,0 +1,34 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+
+function test()
+{
+    WebInspector.panels.network._networkRecordFilmStripSetting.set(true);
+    
+    WebInspector.NetworkPanel._displayScreenshotDelay = 0;
+
+    InspectorTest.resourceTreeModel.reloadPage();
+    InspectorTest.runWhenPageLoads(() => setTimeout(checkRecording, 50));
+
+    function checkRecording() 
+    {
+        InspectorTest.addResult(WebInspector.panels.network._networkLogView._recording ? "Still recording" : "Not recording");
+
+        InspectorTest.completeTest();
+    }
+
+}
+
+</script>
+</head>
+<body onload="runTest()">
+ <p id="test"></p>
+ <p>
+ Tests if page keeps recording after refresh with Screenshot enabled.
+<a>Bug 569557</a>
+</p>
+</body>
+</html>
