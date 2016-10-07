@@ -222,9 +222,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Called when a root window is created.
   void OnRootWindowAdded(WmWindow* root_window);
 
-  // Initializes |shelf_|.  Does nothing if it's already initialized.
-  void CreateShelf();
-
   // Creates a virtual keyboard. Deletes the old virtual keyboard if it already
   // exists.
   void CreateKeyboard();

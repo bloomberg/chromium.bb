@@ -323,6 +323,9 @@ class ASH_EXPORT WmShell {
 
   virtual std::unique_ptr<KeyEventWatcher> CreateKeyEventWatcher() = 0;
 
+  // Initializes the appropriate shelves. Does nothing for any existing shelves.
+  void CreateShelf();
+
   // Show shelf view if it was created hidden (before session has started).
   void ShowShelf();
 

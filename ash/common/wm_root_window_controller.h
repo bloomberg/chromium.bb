@@ -94,6 +94,9 @@ class ASH_EXPORT WmRootWindowController {
 
   virtual WmShelf* GetShelf() = 0;
 
+  // Creates the shelf for this root window and notifies observers.
+  void CreateShelf();
+
   // Show shelf view if it was created hidden (before session has started).
   // TODO(jamescook): Eliminate this and handle show via Shelf.
   void ShowShelf();

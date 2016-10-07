@@ -5,6 +5,7 @@
 #include "ash/common/wm_root_window_controller.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
@@ -190,6 +191,28 @@ WmRootWindowController::GetSystemModalLayoutManager(WmWindow* window) {
   return modal_container ? static_cast<SystemModalContainerLayoutManager*>(
                                modal_container->GetLayoutManager())
                          : nullptr;
+}
+
+void WmRootWindowController::CreateShelf() {
+  WmShelf* shelf = GetShelf();
+  if (shelf->IsShelfInitialized())
+    return;
+  shelf->InitializeShelf();
+
+  if (panel_layout_manager_)
+    panel_layout_manager_->SetShelf(shelf);
+  if (docked_window_layout_manager_) {
+    docked_window_layout_manager_->SetShelf(shelf);
+    if (shelf->shelf_layout_manager())
+      docked_window_layout_manager_->AddObserver(shelf->shelf_layout_manager());
+  }
+
+  // Notify shell observers that the shelf has been created.
+  // TODO(jamescook): Move this into WmShelf::InitializeShelf(). This will
+  // require changing AttachedPanelWidgetTargeter's access to WmShelf.
+  WmShell::Get()->NotifyShelfCreatedForRootWindow(GetWindow());
+
+  shelf->shelf_widget()->PostCreateShelf();
 }
 
 void WmRootWindowController::ShowShelf() {

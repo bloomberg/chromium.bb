@@ -6,6 +6,7 @@
 
 #include "ash/common/login_status.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/shell.h"
 #include "ash/shell/content/shell_content_state_impl.h"
@@ -136,7 +137,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.context_factory = content::GetContextFactory();
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   ash::Shell::CreateInstance(init_params);
-  ash::Shell::GetInstance()->CreateShelf();
+  ash::WmShell::Get()->CreateShelf();
   ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(LoginStatus::USER);
 
   window_watcher_.reset(new ash::shell::WindowWatcher);

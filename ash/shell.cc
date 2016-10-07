@@ -275,7 +275,7 @@ void Shell::OnLoginStateChanged(LoginStatus status) {
 }
 
 void Shell::OnLoginUserProfilePrepared() {
-  CreateShelf();
+  wm_shell_->CreateShelf();
   CreateKeyboard();
 }
 
@@ -316,18 +316,6 @@ void Shell::OnCastingSessionStartedOrStopped(bool started) {
 void Shell::OnRootWindowAdded(WmWindow* root_window) {
   FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
                     OnRootWindowAdded(root_window));
-}
-
-void Shell::CreateShelf() {
-  // Must occur after SessionStateDelegate creation and user login.
-  DCHECK(session_state_delegate_);
-  DCHECK_GT(session_state_delegate_->NumberOfLoggedInUsers(), 0);
-  wm_shell_->CreateShelfDelegate();
-
-  RootWindowControllerList controllers = GetAllRootWindowControllers();
-  for (RootWindowControllerList::iterator iter = controllers.begin();
-       iter != controllers.end(); ++iter)
-    (*iter)->CreateShelf();
 }
 
 void Shell::CreateKeyboard() {

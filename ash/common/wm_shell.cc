@@ -117,6 +117,16 @@ void WmShell::ShowContextMenu(const gfx::Point& location_in_screen,
                                                    source_type);
 }
 
+void WmShell::CreateShelf() {
+  // Must occur after SessionStateDelegate creation and user login.
+  DCHECK(GetSessionStateDelegate());
+  DCHECK_GT(GetSessionStateDelegate()->NumberOfLoggedInUsers(), 0);
+  CreateShelfDelegate();
+
+  for (WmWindow* root_window : GetAllRootWindows())
+    root_window->GetRootWindowController()->CreateShelf();
+}
+
 void WmShell::ShowShelf() {
   for (WmWindow* root_window : GetAllRootWindows())
     root_window->GetRootWindowController()->ShowShelf();

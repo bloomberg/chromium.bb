@@ -311,30 +311,6 @@ const aura::Window* RootWindowController::GetContainer(int container_id) const {
   return ash_host_->AsWindowTreeHost()->window()->GetChildById(container_id);
 }
 
-void RootWindowController::CreateShelf() {
-  if (wm_shelf_aura_->IsShelfInitialized())
-    return;
-  wm_shelf_aura_->InitializeShelf();
-
-  if (panel_layout_manager())
-    panel_layout_manager()->SetShelf(wm_shelf_aura_.get());
-  if (docked_window_layout_manager()) {
-    docked_window_layout_manager()->SetShelf(wm_shelf_aura_.get());
-    if (wm_shelf_aura_->shelf_layout_manager()) {
-      docked_window_layout_manager()->AddObserver(
-          wm_shelf_aura_->shelf_layout_manager());
-    }
-  }
-
-  // Notify shell observers that the shelf has been created.
-  // TODO(jamescook): Move this into WmShelf::InitializeShelf(). This will
-  // require changing AttachedPanelWidgetTargeter's access to WmShelf.
-  WmShell::Get()->NotifyShelfCreatedForRootWindow(
-      WmWindowAura::Get(GetRootWindow()));
-
-  wm_shelf_aura_->shelf_widget()->PostCreateShelf();
-}
-
 void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
   if (status != LoginStatus::NOT_LOGGED_IN)
     mouse_event_target_.reset();
@@ -527,7 +503,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
 
     // Create a shelf if a user is already logged in.
     if (WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers())
-      CreateShelf();
+      wm_root_window_controller_->CreateShelf();
 
     // Notify shell observers about new root window.
     shell->OnRootWindowAdded(WmWindowAura::Get(root_window));

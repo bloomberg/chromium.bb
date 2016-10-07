@@ -175,7 +175,7 @@ void TestSessionStateDelegate::SetActiveUserSessionStarted(
   if (active_user_session_started) {
     user_manager_->SessionStarted();
     session_state_ = SESSION_STATE_ACTIVE;
-    Shell::GetInstance()->CreateShelf();
+    WmShell::Get()->CreateShelf();
     Shell::GetInstance()->UpdateAfterLoginStatusChange(LoginStatus::USER);
   } else {
     session_state_ = SESSION_STATE_LOGIN_PRIMARY;
