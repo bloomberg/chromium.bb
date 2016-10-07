@@ -66,7 +66,12 @@ Atomic32 CPUThrottlingThread::suspended_;
 Atomic32 CPUThrottlingThread::thread_exists_;
 
 CPUThrottlingThread::CPUThrottlingThread(double rate)
+#ifdef OS_WIN
+    : throttled_thread_handle_(
+          ::OpenThread(THREAD_SUSPEND_RESUME, false, ::GetCurrentThreadId())),
+#else
     : throttled_thread_handle_(base::PlatformThread::CurrentHandle()),
+#endif
       throttling_rate_percent_(static_cast<Atomic32>(rate * 100)) {
   CHECK(base::subtle::NoBarrier_AtomicExchange(&thread_exists_, 1) == 0);
   Start();
