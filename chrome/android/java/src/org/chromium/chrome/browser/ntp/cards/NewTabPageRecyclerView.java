@@ -80,6 +80,8 @@ public class NewTabPageRecyclerView extends RecyclerView {
         mToolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
         mMaxHeaderHeight = res.getDimensionPixelSize(R.dimen.snippets_article_header_height);
+
+        setHasFixedSize(true);
     }
 
     public boolean isFirstItemVisible() {
