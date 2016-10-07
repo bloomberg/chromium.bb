@@ -16,11 +16,13 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.MockAccountManager;
@@ -103,6 +105,7 @@ public class ChromeBackupIntegrationTest extends ChromeTabbedActivityTestBase {
 
     @SmallTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
     public void testSimpleRestore() throws InterruptedException, IOException {
 
         // Fake having previously gone through FRE and signed in.
@@ -146,6 +149,7 @@ public class ChromeBackupIntegrationTest extends ChromeTabbedActivityTestBase {
 
     @SmallTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
     public void testRestoreAccountMissing() throws InterruptedException, IOException {
         // Fake having previously gone through FRE and signed in.
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
