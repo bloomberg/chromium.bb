@@ -12,7 +12,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
-import org.chromium.ui.gfx.DeviceDisplayInfo;
+import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -41,14 +41,13 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
         settings.setJavaScriptEnabled(true);
 
-        DeviceDisplayInfo deviceInfo =
-                DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
+        DisplayAndroid displayAndroid = DisplayAndroid.get(getInstrumentation().getTargetContext());
         loadDataSync(awContents, onPageFinishedHelper, pageDeviceDpi, "text/html", false);
         int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
-        assertEquals(deviceInfo.getDisplayWidth(), actualWidth, 10f);
+        assertEquals(displayAndroid.getDisplayWidth(), actualWidth, 10f);
 
-        float displayWidth = (deviceInfo.getDisplayWidth());
-        float deviceDpi = (float) (160f * deviceInfo.getDIPScale());
+        float displayWidth = (displayAndroid.getDisplayWidth());
+        float deviceDpi = (float) (160f * displayAndroid.getDIPScale());
 
         loadDataSync(awContents, onPageFinishedHelper, pageHighDpi, "text/html", false);
         actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
@@ -76,10 +75,10 @@ public class AwLegacyQuirksTest extends AwTestBase {
         settings.setJavaScriptEnabled(true);
         settings.setUseWideViewPort(true);
 
-        DeviceDisplayInfo deviceInfo =
-                DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
+        DisplayAndroid displayAndroid = DisplayAndroid.get(getInstrumentation().getTargetContext());
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
-        float displayWidth = (float) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
+        float displayWidth =
+                (float) (displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale());
         int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
         assertEquals(displayWidth, actualWidth, 10f);
         assertEquals(1.0f, getScaleOnUiThread(awContents));
@@ -102,10 +101,10 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
         settings.setJavaScriptEnabled(true);
 
-        DeviceDisplayInfo deviceInfo =
-                DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
+        DisplayAndroid displayAndroid = DisplayAndroid.get(getInstrumentation().getTargetContext());
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
-        float displayWidth = (float) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
+        float displayWidth =
+                (float) (displayAndroid.getDisplayWidth() / displayAndroid.getDIPScale());
         int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
         assertEquals(displayWidth, actualWidth, 10f);
         assertEquals(1.0f, getScaleOnUiThread(awContents));
@@ -132,16 +131,15 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
         loadUrlSync(awContents, onPageFinishedHelper, "about:blank");
 
-        DeviceDisplayInfo deviceInfo =
-                DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
-        float dipScale = (float) deviceInfo.getDIPScale();
-        float physicalDisplayWidth = deviceInfo.getPhysicalDisplayWidth() != 0
-                                     ? deviceInfo.getPhysicalDisplayWidth()
-                                     : deviceInfo.getDisplayWidth();
+        DisplayAndroid displayAndroid = DisplayAndroid.get(getInstrumentation().getTargetContext());
+        float dipScale = (float) displayAndroid.getDIPScale();
+        float physicalDisplayWidth = displayAndroid.getPhysicalDisplayWidth() != 0
+                                     ? displayAndroid.getPhysicalDisplayWidth()
+                                     : displayAndroid.getDisplayWidth();
         float cssDisplayWidth = physicalDisplayWidth / dipScale;
-        float physicalDisplayHeight = deviceInfo.getPhysicalDisplayHeight() != 0
-                                      ? deviceInfo.getPhysicalDisplayHeight()
-                                      : deviceInfo.getDisplayHeight();
+        float physicalDisplayHeight = displayAndroid.getPhysicalDisplayHeight() != 0
+                                      ? displayAndroid.getPhysicalDisplayHeight()
+                                      : displayAndroid.getDisplayHeight();
         float cssDisplayHeight = physicalDisplayHeight / dipScale;
 
         float screenWidth = Integer.parseInt(

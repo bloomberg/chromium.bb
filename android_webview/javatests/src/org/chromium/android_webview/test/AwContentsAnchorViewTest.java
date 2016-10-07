@@ -13,7 +13,7 @@ import android.widget.FrameLayout;
 import org.chromium.android_webview.AwViewAndroidDelegate;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.RenderCoordinates;
-import org.chromium.ui.gfx.DeviceDisplayInfo;
+import org.chromium.ui.display.DisplayAndroid;
 
 /**
  * Tests anchor views are correctly added/removed when their container view is updated.
@@ -181,7 +181,7 @@ public class AwContentsAnchorViewTest extends AwTestBase {
     }
 
     private LayoutParams setLayoutParams(View anchorView, int coords, int dimension) {
-        float scale = (float) DeviceDisplayInfo.create(mContainerView.getContext()).getDIPScale();
+        float scale = (float) DisplayAndroid.get(mContainerView.getContext()).getDIPScale();
         mViewDelegate.setViewPosition(
                 anchorView, coords, coords, dimension, dimension, scale, 10, 10);
         return anchorView.getLayoutParams();

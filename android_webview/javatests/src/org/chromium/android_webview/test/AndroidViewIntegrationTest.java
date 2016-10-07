@@ -16,7 +16,7 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
-import org.chromium.ui.gfx.DeviceDisplayInfo;
+import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -308,7 +308,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final double deviceDIPScale =
-                DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
+                DisplayAndroid.get(testContainerView.getContext()).getDIPScale();
 
         final int contentWidthCss = 142;
         final int contentHeightCss = 180;
@@ -335,7 +335,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final double deviceDIPScale =
-                DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
+                DisplayAndroid.get(testContainerView.getContext()).getDIPScale();
 
         final int contentWidthCss = 142;
         final int contentHeightCss = 180;
@@ -363,7 +363,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final double deviceDIPScale =
-                DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
+                DisplayAndroid.get(testContainerView.getContext()).getDIPScale();
 
         final int contentWidthCss = 142;
         final int contentHeightCss = 180;
@@ -389,7 +389,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final AwContents awContents = testContainerView.getAwContents();
 
         final double deviceDIPScale =
-                DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
+                DisplayAndroid.get(testContainerView.getContext()).getDIPScale();
         final int physicalWidth = 600;
         final int spanWidth = 42;
         final int expectedWidthCss =

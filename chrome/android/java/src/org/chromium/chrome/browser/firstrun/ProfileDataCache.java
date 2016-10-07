@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.profiles.ProfileDownloader.Observer;
 import org.chromium.components.signin.AccountManagerHelper;
-import org.chromium.ui.gfx.DeviceDisplayInfo;
+import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.HashMap;
 
@@ -62,9 +62,9 @@ public class ProfileDataCache implements Observer {
         mContext = context;
         mProfile = profile;
 
-        final DeviceDisplayInfo info = DeviceDisplayInfo.create(context);
-        mImageSizePx = (int) Math.ceil(PROFILE_IMAGE_SIZE_DP * info.getDIPScale());
-        mImageStrokePx = (int) Math.ceil(PROFILE_IMAGE_STROKE_DP * info.getDIPScale());
+        final DisplayAndroid displayAndroid = DisplayAndroid.get(context);
+        mImageSizePx = (int) Math.ceil(PROFILE_IMAGE_SIZE_DP * displayAndroid.getDIPScale());
+        mImageStrokePx = (int) Math.ceil(PROFILE_IMAGE_STROKE_DP * displayAndroid.getDIPScale());
         mImageStrokeColor = Color.WHITE;
 
         Bitmap placeHolder = BitmapFactory.decodeResource(mContext.getResources(),

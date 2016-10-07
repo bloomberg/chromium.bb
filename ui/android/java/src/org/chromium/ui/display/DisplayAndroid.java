@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import android.view.Display;
 
 import java.util.WeakHashMap;
@@ -42,13 +43,18 @@ public class DisplayAndroid {
     // Updated by updateFromDisplay.
     private final Point mSize;
     private final Point mPhysicalSize;
+    private final DisplayMetrics mDisplayMetrics;
     private int mRotation;
 
     private static DisplayAndroidManager getManager() {
         return DisplayAndroidManager.getInstance();
     }
 
-    // Internal implementation. Should not be called outside of UI.
+    /**
+     * Get the DisplayAndroid for this context. It's safe to call this with any type of context
+     * including the Application. However to support multi-display, prefer to use the Activity
+     * context if available, or obtain DisplayAndroid from WindowAndroid instead.
+     */
     public static DisplayAndroid get(Context context) {
         Display display = DisplayAndroidManager.getDisplayFromContext(context);
         int id = display.getDisplayId();
@@ -91,6 +97,13 @@ public class DisplayAndroid {
     }
 
     /**
+     * @return A scaling factor for the Density Independent Pixel unit.
+     */
+    public double getDIPScale() {
+        return mDisplayMetrics.density;
+    }
+
+    /**
      * Add observer. Note repeat observers will be called only one.
      * Observers are held only weakly by Display.
      */
@@ -126,12 +139,14 @@ public class DisplayAndroid {
         mObservers = new WeakHashMap<>();
         mSize = new Point();
         mPhysicalSize = new Point();
+        mDisplayMetrics = new DisplayMetrics();
         updateFromDisplay(display);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     /* package */ void updateFromDisplay(Display display) {
         display.getSize(mSize);
+        display.getMetrics(mDisplayMetrics);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             display.getRealSize(mPhysicalSize);

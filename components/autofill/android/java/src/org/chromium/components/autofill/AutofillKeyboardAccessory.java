@@ -20,7 +20,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.gfx.DeviceDisplayInfo;
+import org.chromium.ui.display.DisplayAndroid;
 
 /**
  * The Autofill suggestion view that lists relevant suggestions. It sits above the keyboard and
@@ -48,7 +48,7 @@ public class AutofillKeyboardAccessory extends LinearLayout
         mWindowAndroid = windowAndroid;
         mAutofillDelegate = autofillDelegate;
 
-        int deviceWidthPx = DeviceDisplayInfo.create(getContext()).getDisplayWidth();
+        int deviceWidthPx = DisplayAndroid.get(getContext()).getDisplayWidth();
         mMaximumLabelWidthPx = deviceWidthPx / 2;
         mMaximumSublabelWidthPx = deviceWidthPx / 4;
 
