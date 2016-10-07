@@ -154,5 +154,4 @@
   http/tests/inspector/service-workers/service-workers-redundant.html [ Timeout ]
   http/tests/inspector/service-workers/user-agent-override.html [ Failure ]
   http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
-  http/tests/serviceworker/chromium/register-link-header.html [ Timeout Failure ]
   http/tests/serviceworker/chromium/sandboxed-iframe-navigator-serviceworker.html [ Failure ]

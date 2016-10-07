@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/resource_request_info.h"
@@ -205,6 +206,17 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     navigation_ui_data_ = std::move(navigation_ui_data);
   }
 
+  // PlzNavigate: used in navigations to store the ServiceWorkerContext, since
+  // the ResourceMessageFilter will be null in this case. All other requests
+  // should access the ServiceWorkerContext through the ResourceMessageFilter.
+  void set_service_worker_context(
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
+    service_worker_context_ = service_worker_context;
+  }
+  ServiceWorkerContextWrapper* service_worker_context() const {
+    return service_worker_context_.get();
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetached);
@@ -249,6 +261,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   scoped_refptr<ResourceRequestBodyImpl> body_;
   bool initiated_in_secure_context_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestInfoImpl);
 };

@@ -16,6 +16,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
@@ -55,6 +56,12 @@ void HandleServiceWorkerLink(
   ServiceWorkerContext* service_worker_context =
       filter ? filter->service_worker_context()
              : service_worker_context_for_testing;
+  if (IsBrowserSideNavigationEnabled() &&
+      ServiceWorkerUtils::IsMainResourceType(request_info->GetResourceType()) &&
+      !service_worker_context) {
+    service_worker_context = request_info->service_worker_context();
+  }
+
   if (!service_worker_context)
     return;
 

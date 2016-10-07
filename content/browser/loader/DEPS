@@ -177,6 +177,7 @@ specific_include_rules = {
     "+content/browser/resource_context_impl.h",
     "+content/browser/service_worker/foreign_fetch_request_handler.h",
     "+content/browser/service_worker/link_header_support.h",
+    "+content/browser/service_worker/service_worker_navigation_handle_core.h",
     "+content/browser/service_worker/service_worker_request_handler.h",
     "+content/browser/streams/stream.h",
     "+content/browser/streams/stream_context.h",
@@ -255,6 +256,7 @@ specific_include_rules = {
 
     # TODO: these all have to be removed.
     "+content/browser/frame_host/frame_tree_node.h",
+    "+content/browser/service_worker/service_worker_context_wrapper.h",
     "+content/browser/web_contents/web_contents_impl.h",
     "+content/common/net/url_request_service_worker_data.h",
     "+content/common/net/url_request_user_data.h",

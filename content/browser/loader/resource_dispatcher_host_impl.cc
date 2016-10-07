@@ -64,6 +64,7 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/foreign_fetch_request_handler.h"
 #include "content/browser/service_worker/link_header_support.h"
+#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
@@ -2196,6 +2197,11 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // meaningful value.
       false);  // initiated_in_secure_context
   extra_info->set_navigation_ui_data(std::move(navigation_ui_data));
+
+  if (service_worker_handle_core) {
+    extra_info->set_service_worker_context(
+        service_worker_handle_core->context_wrapper());
+  }
 
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
