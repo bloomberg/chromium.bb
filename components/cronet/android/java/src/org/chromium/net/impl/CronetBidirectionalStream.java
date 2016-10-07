@@ -629,7 +629,7 @@ public class CronetBidirectionalStream extends BidirectionalStream {
     private void onMetricsCollected(long requestStartMs, long dnsStartMs, long dnsEndMs,
             long connectStartMs, long connectEndMs, long sslStartMs, long sslEndMs,
             long sendingStartMs, long sendingEndMs, long pushStartMs, long pushEndMs,
-            long responseStartMs, long responseEndMs, boolean socketReused, long sentBytesCount,
+            long responseStartMs, long requestEndMs, boolean socketReused, long sentBytesCount,
             long receivedBytesCount) {
         synchronized (mNativeStreamLock) {
             if (mMetrics != null) {
@@ -637,7 +637,7 @@ public class CronetBidirectionalStream extends BidirectionalStream {
             }
             mMetrics = new CronetMetrics(requestStartMs, dnsStartMs, dnsEndMs, connectStartMs,
                     connectEndMs, sslStartMs, sslEndMs, sendingStartMs, sendingEndMs, pushStartMs,
-                    pushEndMs, responseStartMs, responseEndMs, socketReused, sentBytesCount,
+                    pushEndMs, responseStartMs, requestEndMs, socketReused, sentBytesCount,
                     receivedBytesCount);
             // TODO(xunjieli): Fill this with real values.
             final RequestFinishedInfo requestFinishedInfo =

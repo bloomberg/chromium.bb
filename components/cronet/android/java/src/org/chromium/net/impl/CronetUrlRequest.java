@@ -697,7 +697,7 @@ public final class CronetUrlRequest implements UrlRequest {
     private void onMetricsCollected(long requestStartMs, long dnsStartMs, long dnsEndMs,
             long connectStartMs, long connectEndMs, long sslStartMs, long sslEndMs,
             long sendingStartMs, long sendingEndMs, long pushStartMs, long pushEndMs,
-            long responseStartMs, long responseEndMs, boolean socketReused, long sentBytesCount,
+            long responseStartMs, long requestEndMs, boolean socketReused, long sentBytesCount,
             long receivedBytesCount) {
         synchronized (mUrlRequestAdapterLock) {
             if (mMetrics != null) {
@@ -705,7 +705,7 @@ public final class CronetUrlRequest implements UrlRequest {
             }
             mMetrics = new CronetMetrics(requestStartMs, dnsStartMs, dnsEndMs, connectStartMs,
                     connectEndMs, sslStartMs, sslEndMs, sendingStartMs, sendingEndMs, pushStartMs,
-                    pushEndMs, responseStartMs, responseEndMs, socketReused, sentBytesCount,
+                    pushEndMs, responseStartMs, requestEndMs, socketReused, sentBytesCount,
                     receivedBytesCount);
         }
         mRequestContext.reportFinished(getRequestFinishedInfo());

@@ -67,7 +67,7 @@ public final class RequestFinishedInfo {
      * <li>{@link #getSendingStart sending start}</li>
      * <li>{@link #getSendingEnd sending end}</li>
      * <li>{@link #getResponseStart response start}</li>
-     * <li>{@link #getResponseEnd response end}</li>
+     * <li>{@link #getRequestEnd request end}</li>
      * </ol>
      *
      * Start times are reported as the time when a request started blocking on event, not when the
@@ -196,12 +196,11 @@ public final class RequestFinishedInfo {
         public abstract Date getResponseStart();
 
         /**
-         * Returns time when last byte of response was received.
-         * @return {@link java.util.Date} representing when the last byte of the response was
-         * received.
+         * Returns time when the request finished.
+         * @return {@link java.util.Date} representing when the request finished.
          */
         @Nullable
-        public abstract Date getResponseEnd();
+        public abstract Date getRequestEnd();
 
         /**
          * Returns whether the socket was reused from a previous request. In HTTP/2 or QUIC, if

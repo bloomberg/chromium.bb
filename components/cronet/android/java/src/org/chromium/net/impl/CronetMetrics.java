@@ -28,7 +28,7 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
     private final long mPushStartMs;
     private final long mPushEndMs;
     private final long mResponseStartMs;
-    private final long mResponseEndMs;
+    private final long mRequestEndMs;
     private final boolean mSocketReused;
 
     // TODO(mgersh): Delete after the switch to the new API http://crbug.com/629194
@@ -80,7 +80,7 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
         mPushStartMs = -1;
         mPushEndMs = -1;
         mResponseStartMs = -1;
-        mResponseEndMs = -1;
+        mRequestEndMs = -1;
         mSocketReused = false;
     }
 
@@ -90,8 +90,7 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
     public CronetMetrics(long requestStartMs, long dnsStartMs, long dnsEndMs, long connectStartMs,
             long connectEndMs, long sslStartMs, long sslEndMs, long sendingStartMs,
             long sendingEndMs, long pushStartMs, long pushEndMs, long responseStartMs,
-            long responseEndMs, boolean socketReused, long sentBytesCount,
-            long receivedBytesCount) {
+            long requestEndMs, boolean socketReused, long sentBytesCount, long receivedBytesCount) {
         // Check that no end times are before corresponding start times,
         // or exist when start time doesn't.
         assert checkOrder(dnsStartMs, dnsEndMs);
@@ -99,8 +98,8 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
         assert checkOrder(sslStartMs, sslEndMs);
         assert checkOrder(sendingStartMs, sendingEndMs);
         assert checkOrder(pushStartMs, pushEndMs);
-        // responseEnd always exists, so just check that it's after start
-        assert responseEndMs >= responseStartMs;
+        // requestEnd always exists, so just check that it's after start
+        assert requestEndMs >= responseStartMs;
         // Spot-check some of the other orderings
         assert dnsStartMs >= requestStartMs || dnsStartMs == -1;
         assert sendingStartMs >= requestStartMs || sendingStartMs == -1;
@@ -118,7 +117,7 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
         mPushStartMs = pushStartMs;
         mPushEndMs = pushEndMs;
         mResponseStartMs = responseStartMs;
-        mResponseEndMs = responseEndMs;
+        mRequestEndMs = requestEndMs;
         mSocketReused = socketReused;
         mSentBytesCount = sentBytesCount;
         mReceivedBytesCount = receivedBytesCount;
@@ -129,8 +128,8 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
         } else {
             mTtfbMs = null;
         }
-        if (requestStartMs != -1 && responseEndMs != -1) {
-            mTotalTimeMs = responseEndMs - requestStartMs;
+        if (requestStartMs != -1 && requestEndMs != -1) {
+            mTotalTimeMs = requestEndMs - requestStartMs;
         } else {
             mTotalTimeMs = null;
         }
@@ -197,8 +196,8 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
     }
 
     @Nullable
-    public Date getResponseEnd() {
-        return toDate(mResponseEndMs);
+    public Date getRequestEnd() {
+        return toDate(mRequestEndMs);
     }
 
     @Nullable

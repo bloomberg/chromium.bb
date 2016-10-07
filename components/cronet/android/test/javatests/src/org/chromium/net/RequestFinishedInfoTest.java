@@ -259,11 +259,11 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertNull(metrics.getSendingStart());
         assertNull(metrics.getSendingEnd());
         assertNull(metrics.getResponseStart());
-        assertNotNull(metrics.getResponseEnd());
-        assertTrue(metrics.getResponseEnd().before(endTime)
-                || metrics.getResponseEnd().equals(endTime));
+        assertNotNull(metrics.getRequestEnd());
+        assertTrue(
+                metrics.getRequestEnd().before(endTime) || metrics.getRequestEnd().equals(endTime));
         // Entire request should take more than 0 ms
-        assertTrue(metrics.getResponseEnd().getTime() - metrics.getRequestStart().getTime() > 0);
+        assertTrue(metrics.getRequestEnd().getTime() - metrics.getRequestStart().getTime() > 0);
         assertTrue(metrics.getSentBytesCount() == 0);
         assertTrue(metrics.getReceivedBytesCount() == 0);
         mTestFramework.mCronetEngine.shutdown();
@@ -355,14 +355,14 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         long pushStart = 10;
         long pushEnd = 11;
         long responseStart = 12;
-        long responseEnd = 13;
+        long requestEnd = 13;
         boolean socketReused = true;
         long sentBytesCount = 14;
         long receivedBytesCount = 15;
         // Make sure nothing gets reordered inside the Metrics class
         RequestFinishedInfo.Metrics metrics = new CronetMetrics(requestStart, dnsStart, dnsEnd,
                 connectStart, connectEnd, sslStart, sslEnd, sendingStart, sendingEnd, pushStart,
-                pushEnd, responseStart, responseEnd, socketReused, sentBytesCount,
+                pushEnd, responseStart, requestEnd, socketReused, sentBytesCount,
                 receivedBytesCount);
         assertEquals(new Date(requestStart), metrics.getRequestStart());
         // -1 timestamp should translate to null
@@ -375,7 +375,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertEquals(new Date(pushStart), metrics.getPushStart());
         assertEquals(new Date(pushEnd), metrics.getPushEnd());
         assertEquals(new Date(responseStart), metrics.getResponseStart());
-        assertEquals(new Date(responseEnd), metrics.getResponseEnd());
+        assertEquals(new Date(requestEnd), metrics.getRequestEnd());
         assertEquals(socketReused, metrics.getSocketReused());
         assertEquals(sentBytesCount, (long) metrics.getSentBytesCount());
         assertEquals(receivedBytesCount, (long) metrics.getReceivedBytesCount());
