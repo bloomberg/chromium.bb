@@ -842,6 +842,18 @@
       ]
     },
     {
+      "name": "pyro",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "reef",
+          "arch": "UNKNOWN"
+        }
+      ]
+    },
+    {
       "name": "quawks",
       "configs": [
         {

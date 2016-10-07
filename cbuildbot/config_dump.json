@@ -17998,9 +17998,12 @@
     },
     "pyro-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "pyro"
         ],
+        "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
