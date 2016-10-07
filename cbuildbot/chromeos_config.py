@@ -696,7 +696,6 @@ _waterfall_config_map = {
         # Experimental Paladins.
         'reef-paladin',
         'gale-paladin',
-        'gru-paladin',
         'guado_moblab-paladin',
         'lakitu_next-paladin',
 
@@ -2244,6 +2243,7 @@ def _GetConfig(site_config, board_configs, hw_test_list):
       'nyan_freon',
       'falco',
       'glados',
+      'gru',
       'lakitu',
       'leon',
       'link',
