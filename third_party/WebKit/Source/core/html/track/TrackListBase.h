@@ -5,8 +5,8 @@
 #ifndef TrackListBase_h
 #define TrackListBase_h
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/events/EventTarget.h"
-
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TrackEvent.h"
 #include "core/html/track/TrackEventInit.h"
@@ -51,6 +51,7 @@ class TrackListBase : public EventTargetWithInlineData {
   void add(T* track) {
     track->setMediaElement(m_mediaElement);
     m_tracks.append(track);
+    ScriptWrappableVisitor::writeBarrier(this, track);
     scheduleEvent(TrackEvent::create(EventTypeNames::addtrack, track));
   }
 

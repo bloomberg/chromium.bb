@@ -178,6 +178,7 @@ void TextTrackList::append(TextTrack* track) {
   } else {
     NOTREACHED();
   }
+  ScriptWrappableVisitor::writeBarrier(this, track);
 
   invalidateTrackIndexesAfterTrack(track);
 
