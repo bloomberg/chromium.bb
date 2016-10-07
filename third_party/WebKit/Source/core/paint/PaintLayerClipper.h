@@ -210,6 +210,7 @@ class CORE_EXPORT PaintLayerClipper {
 
   void getOrCalculateClipRects(const ClipRectsContext&, ClipRects&) const;
 
+  bool shouldClipOverflow(const ClipRectsContext&) const;
   bool shouldRespectOverflowClip(const ClipRectsContext&) const;
 
   ClipRect clipRectWithGeometryMapper(const ClipRectsContext&,
