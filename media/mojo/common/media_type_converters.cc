@@ -466,7 +466,7 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
   scoped_refptr<media::DecoderBuffer> buffer(
       new media::DecoderBuffer(input->data_size));
 
-  if (!input->side_data.empty()) {
+  if (!input->side_data.is_null() && !input->side_data.empty()) {
     buffer->CopySideDataFrom(&input->side_data.front(),
                              input->side_data.size());
   }
