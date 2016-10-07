@@ -993,8 +993,6 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(
                      : LayoutUnit();
   LayoutUnit logicalTopWithContentStrut = logicalTop + strutFromContent;
 
-  // For replaced elements and scrolled elements, we want to shift them to the
-  // next page if they don't fit on the current one.
   LayoutUnit logicalTopAfterUnsplittable =
       adjustForUnsplittableChild(child, logicalTop);
 
@@ -1017,23 +1015,34 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(
     // clearance, there's a class C break point before the child. Otherwise we
     // should propagate the strut to our parent block, and attempt to break
     // there instead. See https://drafts.csswg.org/css-break/#possible-breaks
-    if (layoutInfo.isAtFirstInFlowChild() && atBeforeSideOfBlock &&
-        allowsPaginationStrut()) {
-      // FIXME: Should really check if we're exceeding the page height before
-      // propagating the strut, but we don't have all the information to do so
-      // (the strut only has the remaining amount to push). Gecko gets this
-      // wrong too and pushes to the next page anyway, so not too concerned
-      // about it.
-      paginationStrut += logicalTop + marginBeforeIfFloating();
-      setPaginationStrutPropagatedFromChild(paginationStrut);
-      child.resetPaginationStrut();
-      if (childBlockFlow)
-        childBlockFlow->setPaginationStrutPropagatedFromChild(LayoutUnit());
-    } else {
+    bool canBreak = !layoutInfo.isAtFirstInFlowChild() || !atBeforeSideOfBlock;
+    if (!canBreak && child.getPaginationBreakability() == ForbidBreaks &&
+        !allowsPaginationStrut()) {
+      // The child is monolithic content, e.g. an image. It is truly
+      // unsplittable. Breaking inside it would be bad. Since this block doesn't
+      // allow pagination struts to be propagated to it, we're left to handle it
+      // on our own right here. Break before the child, even if we're currently
+      // at the block start (i.e. there's no class A or C break point here).
+      canBreak = true;
+    }
+    if (canBreak) {
       child.setPaginationStrut(paginationStrut);
-      // |previousStrut| was already baked into the logical top, so don't add it
-      // again.
+      // |previousStrut| was already baked into the logical top, so don't add
+      // it again.
       newLogicalTop += paginationStrut - previousStrut;
+    } else {
+      // No valid break point here. Propagate the strut from the child to this
+      // block, but only if the block allows it. If the block doesn't allow it,
+      // we'll just ignore the strut and carry on, without breaking. This
+      // happens e.g. when a tall break-inside:avoid object with a top margin is
+      // the first in-flow child in the fragmentation context.
+      if (allowsPaginationStrut()) {
+        paginationStrut += logicalTop + marginBeforeIfFloating();
+        setPaginationStrutPropagatedFromChild(paginationStrut);
+        if (childBlockFlow)
+          childBlockFlow->setPaginationStrutPropagatedFromChild(LayoutUnit());
+      }
+      child.resetPaginationStrut();
     }
   }
 
@@ -2088,11 +2097,10 @@ LayoutUnit LayoutBlockFlow::estimateLogicalTopPosition(
         // fragmentainer.
         return std::max(estimateWithoutPagination, logicalTopEstimate);
       }
-    }
 
-    // For replaced elements and scrolled elements, we want to shift them to the
-    // next page if they don't fit on the current one.
-    logicalTopEstimate = adjustForUnsplittableChild(child, logicalTopEstimate);
+      logicalTopEstimate =
+          adjustForUnsplittableChild(child, logicalTopEstimate);
+    }
   }
 
   return logicalTopEstimate;
@@ -4034,8 +4042,21 @@ bool LayoutBlockFlow::allowsPaginationStrut() const {
     // But currently we have no mechanism in place to handle this.
     return false;
   }
-  LayoutBlock* containingBlock = this->containingBlock();
-  return containingBlock && containingBlock->isLayoutBlockFlow();
+  const LayoutBlock* containingBlock = this->containingBlock();
+  if (!containingBlock || !containingBlock->isLayoutBlockFlow())
+    return false;
+  const LayoutBlockFlow* containingBlockFlow =
+      toLayoutBlockFlow(containingBlock);
+  // If children are inline, allow the strut. We are probably a float.
+  if (containingBlockFlow->childrenInline())
+    return true;
+  // If this isn't the first in-flow object, there's a break opportunity before
+  // us, which means that we can allow the strut.
+  if (previousInFlowSiblingBox())
+    return true;
+  // This is a first in-flow child. We'll still allow the strut if it can be
+  // re-propagated to our containing block.
+  return containingBlockFlow->allowsPaginationStrut();
 }
 
 void LayoutBlockFlow::setPaginationStrutPropagatedFromChild(LayoutUnit strut) {
