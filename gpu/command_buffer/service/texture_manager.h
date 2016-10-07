@@ -38,6 +38,7 @@ class ErrorState;
 class FeatureInfo;
 class FramebufferManager;
 class MailboxManager;
+class ProgressReporter;
 class Texture;
 class TextureManager;
 class TextureRef;
@@ -765,7 +766,8 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
                  GLsizei max_rectangle_texture_size,
                  GLsizei max_3d_texture_size,
                  GLsizei max_array_texture_layers,
-                 bool use_default_textures);
+                 bool use_default_textures,
+                 ProgressReporter* progress_reporter);
   ~TextureManager() override;
 
   void set_framebuffer_manager(FramebufferManager* manager) {
@@ -1234,6 +1236,11 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   std::vector<DestructionObserver*> destruction_observers_;
 
   uint32_t current_service_id_generation_;
+
+  // Used to notify the watchdog thread of progress during destruction,
+  // preventing time-outs when destruction takes a long time. May be null when
+  // using in-process command buffer.
+  ProgressReporter* progress_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureManager);
 };

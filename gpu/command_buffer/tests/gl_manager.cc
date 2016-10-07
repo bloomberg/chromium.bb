@@ -301,10 +301,10 @@ void GLManager::InitializeWithCommandLine(
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo(command_line, gpu_driver_bug_workaround);
     context_group = new gles2::ContextGroup(
-        gpu_preferences_, mailbox_manager_.get(), NULL,
+        gpu_preferences_, mailbox_manager_.get(), nullptr,
         new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
         new gpu::gles2::FramebufferCompletenessCache, feature_info,
-        options.bind_generates_resource, options.image_factory);
+        options.bind_generates_resource, options.image_factory, nullptr);
   }
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group));

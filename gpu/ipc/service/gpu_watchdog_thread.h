@@ -14,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/service/progress_reporter.h"
 #include "gpu/gpu_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -34,6 +35,7 @@ namespace gpu {
 class GPU_EXPORT GpuWatchdogThread
     : public base::Thread,
       public base::PowerObserver,
+      public gles2::ProgressReporter,
       public base::RefCountedThreadSafe<GpuWatchdogThread> {
  public:
   static scoped_refptr<GpuWatchdogThread> Create();
@@ -44,6 +46,9 @@ class GPU_EXPORT GpuWatchdogThread
   // Must be called after a PowerMonitor has been created. Can be called from
   // any thread.
   void AddPowerObserver();
+
+  // gles2::ProgressReporter implementation:
+  void ReportProgress() override;
 
  protected:
   void Init() override;

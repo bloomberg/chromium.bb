@@ -18,8 +18,7 @@ namespace gles2 {
 
 class ShaderManagerTest : public GpuServiceTest {
  public:
-  ShaderManagerTest() {
-  }
+  ShaderManagerTest() : manager_(nullptr) {}
 
   ~ShaderManagerTest() override { manager_.Destroy(false); }
 

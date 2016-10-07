@@ -41,14 +41,10 @@ class FramebufferManagerTest : public GpuServiceTest {
   FramebufferManagerTest()
       : manager_(1, 1, nullptr),
         feature_info_(new FeatureInfo()) {
-    texture_manager_.reset(new TextureManager(nullptr,
-                                              feature_info_.get(),
-                                              kMaxTextureSize,
-                                              kMaxCubemapSize,
-                                              kMaxRectangleTextureSize,
-                                              kMax3DTextureSize,
-                                              kMaxArrayTextureLayers,
-                                              kUseDefaultTextures));
+    texture_manager_.reset(new TextureManager(
+        nullptr, feature_info_.get(), kMaxTextureSize, kMaxCubemapSize,
+        kMaxRectangleTextureSize, kMax3DTextureSize, kMaxArrayTextureLayers,
+        kUseDefaultTextures, nullptr));
     renderbuffer_manager_.reset(new RenderbufferManager(nullptr,
                                                         kMaxRenderbufferSize,
                                                         kMaxSamples,
@@ -122,14 +118,10 @@ class FramebufferInfoTestBase : public GpuServiceTest {
                  kMaxColorAttachments,
                  new FramebufferCompletenessCache),
         feature_info_(new FeatureInfo()) {
-    texture_manager_.reset(new TextureManager(nullptr,
-                                              feature_info_.get(),
-                                              kMaxTextureSize,
-                                              kMaxCubemapSize,
-                                              kMaxRectangleTextureSize,
-                                              kMax3DTextureSize,
-                                              kMaxArrayTextureLayers,
-                                              kUseDefaultTextures));
+    texture_manager_.reset(new TextureManager(
+        nullptr, feature_info_.get(), kMaxTextureSize, kMaxCubemapSize,
+        kMaxRectangleTextureSize, kMax3DTextureSize, kMaxArrayTextureLayers,
+        kUseDefaultTextures, nullptr));
     renderbuffer_manager_.reset(new RenderbufferManager(nullptr,
                                                         kMaxRenderbufferSize,
                                                         kMaxSamples,

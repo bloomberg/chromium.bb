@@ -110,6 +110,10 @@ void GpuWatchdogThread::CheckArmed() {
     PostAcknowledge();
 }
 
+void GpuWatchdogThread::ReportProgress() {
+  CheckArmed();
+}
+
 void GpuWatchdogThread::Init() {
   // Schedule the first check.
   OnCheck(false);

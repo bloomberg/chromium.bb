@@ -31,6 +31,7 @@ namespace gles2 {
 class FeatureInfo;
 class ProgramCache;
 class ProgramManager;
+class ProgressReporter;
 class Shader;
 class ShaderManager;
 
@@ -598,7 +599,8 @@ class GPU_EXPORT ProgramManager {
                  uint32_t max_dual_source_draw_buffers,
                  uint32_t max_vertex_attribs,
                  const GpuPreferences& gpu_preferences,
-                 FeatureInfo* feature_info);
+                 FeatureInfo* feature_info,
+                 ProgressReporter* progress_reporter);
   ~ProgramManager();
 
   // Must call before destruction.
@@ -679,6 +681,11 @@ class GPU_EXPORT ProgramManager {
 
   const GpuPreferences& gpu_preferences_;
   scoped_refptr<FeatureInfo> feature_info_;
+
+  // Used to notify the watchdog thread of progress during destruction,
+  // preventing time-outs when destruction takes a long time. May be null when
+  // using in-process command buffer.
+  ProgressReporter* progress_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramManager);
 };

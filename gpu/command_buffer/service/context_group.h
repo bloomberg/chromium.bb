@@ -39,6 +39,7 @@ class MailboxManager;
 class RenderbufferManager;
 class PathManager;
 class ProgramManager;
+class ProgressReporter;
 class SamplerManager;
 class ShaderManager;
 class TextureManager;
@@ -59,7 +60,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
           framebuffer_completeness_cache,
       const scoped_refptr<FeatureInfo>& feature_info,
       bool bind_generates_resource,
-      gpu::ImageFactory* image_factory);
+      gpu::ImageFactory* image_factory,
+      ProgressReporter* progress_reporter);
 
   // This should only be called by GLES2Decoder. This must be paired with a
   // call to destroy if it succeeds.
@@ -234,6 +236,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   bool QueryGLFeature(GLenum pname, GLint min_required, GLint* v);
   bool QueryGLFeatureU(GLenum pname, GLint min_required, uint32_t* v);
   bool HaveContexts();
+  void ReportProgress();
 
   const GpuPreferences& gpu_preferences_;
   scoped_refptr<MailboxManager> mailbox_manager_;
@@ -293,6 +296,11 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   base::hash_map<GLuint, GLsync> syncs_id_map_;
 
   std::unique_ptr<PassthroughResources> passthrough_resources_;
+
+  // Used to notify the watchdog thread of progress during destruction,
+  // preventing time-outs when destruction takes a long time. May be null when
+  // using in-process command buffer.
+  ProgressReporter* progress_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

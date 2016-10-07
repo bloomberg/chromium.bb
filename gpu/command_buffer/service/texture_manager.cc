@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/progress_reporter.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_state_restorer.h"
@@ -361,9 +362,16 @@ TextureManager::~TextureManager() {
 
 void TextureManager::Destroy(bool have_context) {
   have_context_ = have_context;
-  textures_.clear();
+
+  while (!textures_.empty()) {
+    textures_.erase(textures_.begin());
+    if (progress_reporter_)
+      progress_reporter_->ReportProgress();
+  }
   for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
     default_textures_[ii] = NULL;
+    if (progress_reporter_)
+      progress_reporter_->ReportProgress();
   }
 
   if (have_context) {
@@ -1786,7 +1794,8 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
                                GLint max_rectangle_texture_size,
                                GLint max_3d_texture_size,
                                GLint max_array_texture_layers,
-                               bool use_default_textures)
+                               bool use_default_textures,
+                               ProgressReporter* progress_reporter)
     : memory_type_tracker_(new MemoryTypeTracker(memory_tracker)),
       memory_tracker_(memory_tracker),
       feature_info_(feature_info),
@@ -1814,7 +1823,8 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
       num_images_(0),
       texture_count_(0),
       have_context_(true),
-      current_service_id_generation_(0) {
+      current_service_id_generation_(0),
+      progress_reporter_(progress_reporter) {
   for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
     black_texture_ids_[ii] = 0;
   }

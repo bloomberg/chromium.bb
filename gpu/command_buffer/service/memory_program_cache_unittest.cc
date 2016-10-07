@@ -77,10 +77,10 @@ class MemoryProgramCacheTest : public GpuServiceTest {
 
   MemoryProgramCacheTest()
       : cache_(new MemoryProgramCache(kCacheSizeBytes, kDisableGpuDiskCache)),
-        vertex_shader_(NULL),
-        fragment_shader_(NULL),
-        shader_cache_count_(0) {
-  }
+        shader_manager_(nullptr),
+        vertex_shader_(nullptr),
+        fragment_shader_(nullptr),
+        shader_cache_count_(0) {}
   ~MemoryProgramCacheTest() override { shader_manager_.Destroy(false); }
 
   void ShaderCacheCb(const std::string& key, const std::string& shader) {
