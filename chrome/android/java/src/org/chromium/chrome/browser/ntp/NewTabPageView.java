@@ -389,7 +389,7 @@ public class NewTabPageView extends FrameLayout
 
         // Set up snippets
         if (mUseCardsUi) {
-            mNewTabPageAdapter = NewTabPageAdapter.create(mManager, mNewTabPageLayout, mUiConfig);
+            mNewTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout, mUiConfig);
             mRecyclerView.setAdapter(mNewTabPageAdapter);
             mRecyclerView.scrollToPosition(scrollPosition);
 

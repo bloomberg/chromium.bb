@@ -131,31 +131,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      *                         (logo, search box, most visited tiles)
      * @param uiConfig the NTP UI configuration, to be passed to created views.
      */
-    public static NewTabPageAdapter create(
-            NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig) {
-        NewTabPageAdapter adapter = new NewTabPageAdapter(manager, aboveTheFoldView, uiConfig);
-        adapter.finishInitialization();
-        return adapter;
-    }
-
-    /**
-     * Constructor for {@link NewTabPageAdapter}. The object is not completely ready to be used
-     * until {@link #finishInitialization()} is called. Usage reserved for testing, prefer calling
-     * {@link NewTabPageAdapter#create(NewTabPageManager, View, UiConfig)} in production code.
-     */
-    @VisibleForTesting
-    NewTabPageAdapter(NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig) {
+    public NewTabPageAdapter(NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig) {
         mNewTabPageManager = manager;
         mAboveTheFoldView = aboveTheFoldView;
         mUiConfig = uiConfig;
-    }
-
-    /**
-     * Initialises the sections to be handled by this adapter. Events about categories for which
-     * a section has not been registered at this point will be ignored.
-     */
-    @VisibleForTesting
-    void finishInitialization() {
         mSigninPromo.setObserver(this);
         resetSections();
         mNewTabPageManager.getSuggestionsSource().setObserver(this);
@@ -439,39 +418,22 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     @Override
-    public void notifyGroupChanged(ItemGroup group, int itemCountBefore, int itemCountAfter) {
+    public void onItemRangeChanged(ItemGroup group, int itemPosition, int itemCount) {
         if (mGroups.isEmpty()) return; // The sections have not been initialised yet.
-        int startPos = getGroupPositionOffset(group);
+        notifyItemRangeChanged(getGroupPositionOffset(group) + itemPosition, itemCount);
+    }
 
-        if (group instanceof SuggestionsSection) {
-            // The header is stable in sections. Don't notify about it.
-            ++startPos;
-            --itemCountBefore;
-            --itemCountAfter;
-        }
-
-        if (itemCountBefore < itemCountAfter) {
-            notifyItemRangeChanged(startPos, itemCountBefore);
-            notifyItemRangeInserted(startPos + itemCountBefore, itemCountAfter - itemCountBefore);
-        } else {
-            notifyItemRangeChanged(startPos, itemCountAfter);
-            notifyItemRangeRemoved(startPos + itemCountAfter, itemCountBefore - itemCountAfter);
-        }
-
+    @Override
+    public void onItemRangeInserted(ItemGroup group, int itemPosition, int itemCount) {
+        if (mGroups.isEmpty()) return; // The sections have not been initialised yet.
+        notifyItemRangeInserted(getGroupPositionOffset(group) + itemPosition, itemCount);
         notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
     }
 
     @Override
-    public void notifyItemInserted(ItemGroup group, int itemPosition) {
+    public void onItemRangeRemoved(ItemGroup group, int itemPosition, int itemCount) {
         if (mGroups.isEmpty()) return; // The sections have not been initialised yet.
-        notifyItemInserted(getGroupPositionOffset(group) + itemPosition);
-        notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
-    }
-
-    @Override
-    public void notifyItemRemoved(ItemGroup group, int itemPosition) {
-        if (mGroups.isEmpty()) return; // The sections have not been initialised yet.
-        notifyItemRemoved(getGroupPositionOffset(group) + itemPosition);
+        notifyItemRangeRemoved(getGroupPositionOffset(group) + itemPosition, itemCount);
         notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
     }
 
@@ -627,8 +589,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         return (SnippetArticle) getItems().get(position);
     }
 
-    @VisibleForTesting
-    void announceItemRemoved(String suggestionTitle) {
+    private void announceItemRemoved(String suggestionTitle) {
+        // In tests the RecyclerView can be null.
+        if (mRecyclerView == null) return;
+
         mRecyclerView.announceForAccessibility(mRecyclerView.getResources().getString(
                 R.string.ntp_accessibility_item_removed, suggestionTitle));
     }

@@ -20,13 +20,13 @@ public interface ItemGroup {
      * an {@link ItemGroup}.
      */
     interface Observer {
-        /** Non specific notification about changes inside of the group. */
-        void notifyGroupChanged(ItemGroup group, int itemCountBefore, int itemCountAfter);
+        /** Notification about items having been changed in the group. */
+        void onItemRangeChanged(ItemGroup group, int itemPosition, int itemCount);
 
-        /** Notification about an item having been added to the group. */
-        void notifyItemInserted(ItemGroup group, int itemPosition);
+        /** Notification about items having been added to the group. */
+        void onItemRangeInserted(ItemGroup group, int itemPosition, int itemCount);
 
-        /** Notification about an item having been removed from the group. */
-        void notifyItemRemoved(ItemGroup group, int itemPosition);
+        /** Notification about items having been removed from the group. */
+        void onItemRangeRemoved(ItemGroup group, int itemPosition, int itemCount);
     }
 }

@@ -58,16 +58,16 @@ public class SuggestionsSection implements ItemGroup {
 
         // Note: Keep this coherent with getItems()
         int globalRemovedIndex = removedIndex + 1; // Header has index 0 in the section.
-        mObserver.notifyItemRemoved(this, globalRemovedIndex);
+        mObserver.onItemRangeRemoved(this, globalRemovedIndex, 1);
 
         // If we still have some suggestions, we are done. Otherwise, we'll have to notify about the
         // status-related items that are now present.
         if (hasSuggestions()) return;
-        mObserver.notifyItemInserted(this, globalRemovedIndex); // Status card.
+        mObserver.onItemRangeInserted(this, globalRemovedIndex, 1); // Status card.
         if (!mCategoryInfo.hasMoreButton()) {
-            mObserver.notifyItemInserted(this, globalRemovedIndex + 1); // Action card.
+            mObserver.onItemRangeInserted(this, globalRemovedIndex + 1, 1); // Action card.
         }
-        mObserver.notifyItemInserted(this, globalRemovedIndex + 2); // Progress indicator.
+        mObserver.onItemRangeInserted(this, globalRemovedIndex + 2, 1); // Progress indicator.
     }
 
     public void removeSuggestionById(String idWithinCategory) {
@@ -100,14 +100,14 @@ public class SuggestionsSection implements ItemGroup {
             mMoreButton.setPosition(mSuggestions.size());
             mMoreButton.setDismissable(mSuggestions.isEmpty());
         }
-        mObserver.notifyGroupChanged(this, itemCountBefore, getItems().size());
+        notifySectionChanged(itemCountBefore);
     }
 
     /** Sets the status for the section. Some statuses can cause the suggestions to be cleared. */
     public void setStatus(@CategoryStatusEnum int status) {
         int itemCountBefore = getItems().size();
         setStatusInternal(status);
-        mObserver.notifyGroupChanged(this, itemCountBefore, getItems().size());
+        notifySectionChanged(itemCountBefore);
     }
 
     private void setStatusInternal(@CategoryStatusEnum int status) {
@@ -155,6 +155,24 @@ public class SuggestionsSection implements ItemGroup {
         if (item == mStatus) return 1;
 
         return 0;
+    }
+
+    private void notifySectionChanged(int itemCountBefore) {
+        int itemCountAfter = getItems().size();
+
+        // The header is stable in sections. Don't notify about it.
+        final int startPos = 1;
+        itemCountBefore--;
+        itemCountAfter--;
+
+        mObserver.onItemRangeChanged(this, startPos, Math.min(itemCountBefore, itemCountAfter));
+        if (itemCountBefore < itemCountAfter) {
+            mObserver.onItemRangeInserted(
+                    this, startPos + itemCountBefore, itemCountAfter - itemCountBefore);
+        } else if (itemCountBefore > itemCountAfter) {
+            mObserver.onItemRangeRemoved(
+                    this, startPos + itemCountAfter, itemCountBefore - itemCountAfter);
+        }
     }
 
     @VisibleForTesting

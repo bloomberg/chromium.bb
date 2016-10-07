@@ -85,7 +85,7 @@ public class SigninPromoItem extends StatusItem implements ItemGroup {
         if (mDismissed) return;
 
         RecordUserAction.record("Signin_Impression_FromNTPContentSuggestions");
-        mChangeObserver.notifyItemInserted(this, 0);
+        mChangeObserver.onItemRangeInserted(this, 0, 1);
     }
 
     /** Hides the sign in promo. */
@@ -95,7 +95,7 @@ public class SigninPromoItem extends StatusItem implements ItemGroup {
 
         if (mDismissed) return;
 
-        mChangeObserver.notifyItemRemoved(this, 0);
+        mChangeObserver.onItemRangeRemoved(this, 0, 1);
     }
 
     /** Hides the sign in promo and sets a preference to make sure it is not shown again. */
