@@ -432,15 +432,6 @@ Resource* ResourceFetcher::resourceForStaticData(
   return resource;
 }
 
-Resource* ResourceFetcher::resourceForBlockedRequest(
-    const FetchRequest& request,
-    const ResourceFactory& factory) {
-  Resource* resource = factory.create(request.resourceRequest(),
-                                      request.options(), request.charset());
-  resource->error(ResourceError::cancelledDueToAccessCheckError(request.url()));
-  return resource;
-}
-
 void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(
     Resource* resource,
     const FetchRequest& request) {
@@ -504,10 +495,8 @@ Resource* ResourceFetcher::requestResource(
           factory.type(), request.resourceRequest(),
           MemoryCache::removeFragmentIdentifierIfNeeded(request.url()),
           request.options(), request.forPreload(),
-          request.getOriginRestriction())) {
-    DCHECK(!substituteData.forceSynchronousLoad());
-    return resourceForBlockedRequest(request, factory);
-  }
+          request.getOriginRestriction()))
+    return nullptr;
 
   unsigned long identifier = createUniqueIdentifier();
   request.mutableResourceRequest().setPriority(computeLoadPriority(
