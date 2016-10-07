@@ -324,7 +324,7 @@ class W3CExpectationsLineAdder(object):
     def get_modified_existing_tests(self):
         """Returns a list of layout test names for layout tests that have been modified."""
         diff_output = self.host.executive.run_command(
-            ['git', 'diff', 'origin/master', '--name-only', '-diff-filter=AMR'])  # Added, modified, and renamed files.
+            ['git', 'diff', 'origin/master', '--name-only', '--diff-filter=AMR'])  # Added, modified, and renamed files.
         paths_from_chromium_root = diff_output.splitlines()
         modified_tests = []
         for path in paths_from_chromium_root:

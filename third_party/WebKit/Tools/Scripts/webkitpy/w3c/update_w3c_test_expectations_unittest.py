@@ -328,3 +328,4 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
         self.host.executive = MockExecutive2(output='\n'.join(modified_files))
         tests = line_adder.get_modified_existing_tests()
         self.assertEqual(tests, ['a/b.html'])
+        self.assertEqual(self.host.executive.calls, [['git', 'diff', 'origin/master', '--name-only', '--diff-filter=AMR']])
