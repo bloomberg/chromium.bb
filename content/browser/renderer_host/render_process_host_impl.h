@@ -28,7 +28,7 @@
 #include "content/common/content_export.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -56,9 +56,9 @@ class ChannelMojoHost;
 namespace content {
 class AudioInputRendererHost;
 class AudioRendererHost;
+class ChildConnection;
 class InProcessChildThreadParams;
 class MessagePortMessageFilter;
-class MojoChildConnection;
 class NotificationMessageFilter;
 #if defined(ENABLE_WEBRTC)
 class P2PSocketDispatcherHost;
@@ -412,8 +412,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   std::string child_token_;
 
-  std::unique_ptr<MojoChildConnection> mojo_child_connection_;
-  int connection_filter_id_ = MojoShellConnection::kInvalidConnectionFilterId;
+  std::unique_ptr<ChildConnection> child_connection_;
+  int connection_filter_id_ =
+      ServiceManagerConnection::kInvalidConnectionFilterId;
   scoped_refptr<ConnectionFilterController> connection_filter_controller_;
   shell::mojom::ServicePtr test_service_;
 

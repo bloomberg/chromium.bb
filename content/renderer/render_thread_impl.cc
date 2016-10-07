@@ -201,7 +201,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "content/renderer/mus/render_widget_window_tree_client_factory.h"
 #include "services/ui/public/cpp/gpu_service.h"
@@ -600,7 +600,7 @@ RenderThreadImpl::RenderThreadImpl(
     scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue)
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
-                          .AutoStartMojoShellConnection(false)
+                          .AutoStartServiceManagerConnection(false)
                           .ConnectToBrowser(true)
                           .Build()),
       renderer_scheduler_(std::move(scheduler)),
@@ -616,7 +616,7 @@ RenderThreadImpl::RenderThreadImpl(
     std::unique_ptr<base::MessageLoop> main_message_loop,
     std::unique_ptr<blink::scheduler::RendererScheduler> scheduler)
     : ChildThreadImpl(Options::Builder()
-                          .AutoStartMojoShellConnection(false)
+                          .AutoStartServiceManagerConnection(false)
                           .ConnectToBrowser(true)
                           .Build()),
       renderer_scheduler_(std::move(scheduler)),
@@ -649,7 +649,7 @@ void RenderThreadImpl::Init(
 #if defined(USE_AURA)
   if (IsRunningInMash()) {
     gpu_service_ =
-        ui::GpuService::Create(GetMojoShellConnection()->GetConnector(),
+        ui::GpuService::Create(GetServiceManagerConnection()->GetConnector(),
                                ChildProcess::current()->io_task_runner());
   }
 #endif
@@ -730,12 +730,12 @@ void RenderThreadImpl::Init(
 #if defined(USE_AURA)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMusInRenderer)) {
-    CreateRenderWidgetWindowTreeClientFactory(GetMojoShellConnection());
+    CreateRenderWidgetWindowTreeClientFactory(GetServiceManagerConnection());
   }
 #endif
 
   // Must be called before RenderThreadStarted() below.
-  StartMojoShellConnection();
+  StartServiceManagerConnection();
 
   GetContentClient()->renderer()->RenderThreadStarted();
 
@@ -1831,7 +1831,7 @@ RenderThreadImpl::CreateCompositorFrameSink(
     use_software = true;
 
 #if defined(USE_AURA)
-  if (GetMojoShellConnection() && !use_software &&
+  if (GetServiceManagerConnection() && !use_software &&
       command_line.HasSwitch(switches::kUseMusInRenderer)) {
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id);

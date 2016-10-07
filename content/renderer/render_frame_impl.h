@@ -1225,7 +1225,7 @@ class CONTENT_EXPORT RenderFrameImpl
   shell::mojom::InterfaceProviderRequest
       pending_remote_interface_provider_request_;
 
-  // The shell proxy used to connect to Mojo applications.
+  // The shell proxy used to connect to services.
   shell::mojom::ConnectorPtr connector_;
 
   // The screen orientation dispatcher attached to the frame, lazily

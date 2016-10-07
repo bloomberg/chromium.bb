@@ -23,10 +23,9 @@ class ContentBrowserClient : public content::ContentBrowserClient {
   // Overridden from content::ContentBrowserClient:
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
-  std::string GetShellUserIdForBrowserContext(
+  std::string GetServiceUserIdForBrowserContext(
       content::BrowserContext* browser_context) override;
-  void RegisterInProcessMojoApplications(
-      StaticMojoApplicationMap* apps) override;
+  void RegisterInProcessServices(StaticServiceMap* services) override;
 
  private:
   BrowserMainParts* browser_main_parts_ = nullptr;

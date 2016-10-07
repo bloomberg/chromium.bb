@@ -270,7 +270,7 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "services/shell/runner/common/client_util.h"
 #endif
 
@@ -1365,17 +1365,18 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
-void ChromeBrowserMainParts::MojoShellConnectionStarted(
-    content::MojoShellConnection* connection) {
+void ChromeBrowserMainParts::ServiceManagerConnectionStarted(
+    content::ServiceManagerConnection* connection) {
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
-    chrome_extra_parts_[i]->MojoShellConnectionStarted(connection);
+    chrome_extra_parts_[i]->ServiceManagerConnectionStarted(connection);
 }
 
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(USE_AURA)
-  if (content::MojoShellConnection::GetForProcess() && shell::ShellIsRemote()) {
-    content::MojoShellConnection::GetForProcess()->SetConnectionLostClosure(
-        base::Bind(&chrome::SessionEnding));
+  if (content::ServiceManagerConnection::GetForProcess() &&
+      shell::ShellIsRemote()) {
+    content::ServiceManagerConnection::GetForProcess()->
+        SetConnectionLostClosure(base::Bind(&chrome::SessionEnding));
   }
 #endif
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRun");

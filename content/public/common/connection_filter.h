@@ -16,9 +16,9 @@ class InterfaceRegistry;
 namespace content {
 
 // A ConnectionFilter may be used to conditionally expose interfaces on inbound
-// connections accepted by MojoShellConnection. ConnectionFilters are used
-// exclusively on the IO thread. See MojoShellConnection::AddConnectionFilter
-// for details.
+// connections accepted by ServiceManagerConnection. ConnectionFilters are used
+// exclusively on the IO thread. See
+// ServiceManagerConnection::AddConnectionFilter for details.
 class CONTENT_EXPORT ConnectionFilter {
  public:
   virtual ~ConnectionFilter() {}

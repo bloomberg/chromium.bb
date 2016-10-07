@@ -21,13 +21,12 @@ UtilityServiceFactory::UtilityServiceFactory() {}
 UtilityServiceFactory::~UtilityServiceFactory() {}
 
 void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
-  GetContentClient()->utility()->RegisterMojoApplications(services);
+  GetContentClient()->utility()->RegisterServices(services);
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  MojoApplicationInfo service_info;
-  service_info.application_factory =
-      base::Bind(&media::CreateMojoMediaApplication);
-  services->insert(std::make_pair("service:media", service_info));
+  ServiceInfo info;
+  info.factory = base::Bind(&media::CreateMojoMediaApplication);
+  services->insert(std::make_pair("service:media", info));
 #endif
 }
 

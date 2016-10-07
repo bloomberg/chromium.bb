@@ -57,7 +57,7 @@ BlimpContentBrowserClient::GetServiceManifestOverlay(
     const std::string& name) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int id = -1;
-  if (name == content::kBrowserMojoApplicationName) {
+  if (name == content::kBrowserServiceName) {
     id = IDR_BLIMP_CONTENT_BROWSER_MANIFEST_OVERLAY;
   }
   if (id == -1) {

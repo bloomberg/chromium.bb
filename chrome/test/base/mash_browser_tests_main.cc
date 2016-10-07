@@ -17,7 +17,7 @@
 #include "chrome/test/base/chrome_test_launcher.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/mojo_test_connector.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_launcher.h"
 #include "mash/package/mash_packaged_service.h"
 #include "services/shell/public/cpp/connector.h"
@@ -113,10 +113,10 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
   DISALLOW_COPY_AND_ASSIGN(MashTestLauncherDelegate);
 };
 
-std::unique_ptr<content::MojoShellConnection> CreateMojoShellConnection(
-    MashTestLauncherDelegate* delegate) {
-  std::unique_ptr<content::MojoShellConnection> connection(
-      content::MojoShellConnection::Create(
+std::unique_ptr<content::ServiceManagerConnection>
+    CreateServiceManagerConnection(MashTestLauncherDelegate* delegate) {
+  std::unique_ptr<content::ServiceManagerConnection> connection(
+      content::ServiceManagerConnection::Create(
           delegate->GetMojoTestConnectorForSingleProcess()->Init(),
           base::ThreadTaskRunnerHandle::Get()));
   connection->Start();
@@ -170,14 +170,16 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
   int default_jobs = std::max(1, base::SysInfo::NumberOfProcessors() / 2);
   MashTestLauncherDelegate delegate;
   // --single_process and no primoridal pipe token indicate we were run directly
-  // from the command line. In this case we have to start up MojoShellConnection
+  // from the command line. In this case we have to start up
+  // ServiceManagerConnection
   // as though we were embedded.
-  content::MojoShellConnection::Factory shell_connection_factory;
+  content::ServiceManagerConnection::Factory shell_connection_factory;
   if (command_line.HasSwitch(content::kSingleProcessTestsFlag) &&
       !command_line.HasSwitch(switches::kPrimordialPipeToken)) {
     shell_connection_factory =
-        base::Bind(&CreateMojoShellConnection, &delegate);
-    content::MojoShellConnection::SetFactoryForTest(&shell_connection_factory);
+        base::Bind(&CreateServiceManagerConnection, &delegate);
+    content::ServiceManagerConnection::SetFactoryForTest(
+        &shell_connection_factory);
   }
   *exit_code = LaunchChromeTests(default_jobs, &delegate, argc, argv);
   return true;

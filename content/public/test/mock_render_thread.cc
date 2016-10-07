@@ -227,7 +227,7 @@ void MockRenderThread::ReleaseCachedFonts() {
 
 #endif  // OS_WIN
 
-MojoShellConnection* MockRenderThread::GetMojoShellConnection() {
+ServiceManagerConnection* MockRenderThread::GetServiceManagerConnection() {
   return nullptr;
 }
 

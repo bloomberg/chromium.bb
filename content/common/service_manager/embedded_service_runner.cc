@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/mojo/embedded_application_runner.h"
+#include "content/common/service_manager/embedded_service_runner.h"
 
 #include <vector>
 
@@ -17,20 +17,20 @@
 
 namespace content {
 
-class EmbeddedApplicationRunner::Instance
+class EmbeddedServiceRunner::Instance
     : public base::RefCountedThreadSafe<Instance> {
  public:
   Instance(const base::StringPiece& name,
-           const MojoApplicationInfo& info,
+           const ServiceInfo& info,
            const base::Closure& quit_closure)
       : name_(name.as_string()),
-        factory_callback_(info.application_factory),
-        use_own_thread_(!info.application_task_runner && info.use_own_thread),
+        factory_callback_(info.factory),
+        use_own_thread_(!info.task_runner && info.use_own_thread),
         quit_closure_(quit_closure),
         quit_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        application_task_runner_(info.application_task_runner) {
-    if (!use_own_thread_ && !application_task_runner_)
-      application_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+        task_runner_(info.task_runner) {
+    if (!use_own_thread_ && !task_runner_)
+      task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
   void BindServiceRequest(shell::mojom::ServiceRequest request) {
@@ -40,11 +40,11 @@ class EmbeddedApplicationRunner::Instance
       // Start a new thread if necessary.
       thread_.reset(new base::Thread(name_));
       thread_->Start();
-      application_task_runner_ = thread_->task_runner();
+      task_runner_ = thread_->task_runner();
     }
 
-    DCHECK(application_task_runner_);
-    application_task_runner_->PostTask(
+    DCHECK(task_runner_);
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&Instance::BindServiceRequestOnApplicationThread, this,
                    base::Passed(&request)));
@@ -52,13 +52,13 @@ class EmbeddedApplicationRunner::Instance
 
   void ShutDown() {
     DCHECK(runner_thread_checker_.CalledOnValidThread());
-    if (!application_task_runner_)
+    if (!task_runner_)
       return;
     // Any extant ServiceContexts must be destroyed on the application thread.
-    if (application_task_runner_->BelongsToCurrentThread()) {
+    if (task_runner_->BelongsToCurrentThread()) {
       Quit();
     } else {
-      application_task_runner_->PostTask(FROM_HERE,
+      task_runner_->PostTask(FROM_HERE,
                                          base::Bind(&Instance::Quit, this));
     }
   }
@@ -74,7 +74,7 @@ class EmbeddedApplicationRunner::Instance
 
   void BindServiceRequestOnApplicationThread(
       shell::mojom::ServiceRequest request) {
-    DCHECK(application_task_runner_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
 
     if (!service_) {
       service_ = factory_callback_.Run(
@@ -90,7 +90,7 @@ class EmbeddedApplicationRunner::Instance
   }
 
   void OnStop(shell::ServiceContext* connection) {
-    DCHECK(application_task_runner_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
 
     for (auto it = shell_connections_.begin(); it != shell_connections_.end();
          ++it) {
@@ -102,7 +102,7 @@ class EmbeddedApplicationRunner::Instance
   }
 
   void Quit() {
-    DCHECK(application_task_runner_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
 
     shell_connections_.clear();
     service_.reset();
@@ -118,13 +118,13 @@ class EmbeddedApplicationRunner::Instance
     DCHECK(runner_thread_checker_.CalledOnValidThread());
     if (thread_) {
       thread_.reset();
-      application_task_runner_ = nullptr;
+      task_runner_ = nullptr;
     }
     quit_closure_.Run();
   }
 
   const std::string name_;
-  const MojoApplicationInfo::ApplicationFactory factory_callback_;
+  const ServiceInfo::ServiceFactory factory_callback_;
   const bool use_own_thread_;
   const base::Closure quit_closure_;
   const scoped_refptr<base::SingleThreadTaskRunner> quit_task_runner_;
@@ -135,7 +135,7 @@ class EmbeddedApplicationRunner::Instance
 
   // These fields must only be accessed from the runner's thread.
   std::unique_ptr<base::Thread> thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> application_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // These fields must only be accessed from the application thread, except in
   // the destructor which may run on either the runner thread or the application
@@ -146,30 +146,29 @@ class EmbeddedApplicationRunner::Instance
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };
 
-EmbeddedApplicationRunner::EmbeddedApplicationRunner(
-    const base::StringPiece& name,
-    const MojoApplicationInfo& info)
+EmbeddedServiceRunner::EmbeddedServiceRunner(const base::StringPiece& name,
+                                             const ServiceInfo& info)
     : weak_factory_(this) {
   instance_ = new Instance(name, info,
-                           base::Bind(&EmbeddedApplicationRunner::OnQuit,
+                           base::Bind(&EmbeddedServiceRunner::OnQuit,
                                       weak_factory_.GetWeakPtr()));
 }
 
-EmbeddedApplicationRunner::~EmbeddedApplicationRunner() {
+EmbeddedServiceRunner::~EmbeddedServiceRunner() {
   instance_->ShutDown();
 }
 
-void EmbeddedApplicationRunner::BindServiceRequest(
+void EmbeddedServiceRunner::BindServiceRequest(
     shell::mojom::ServiceRequest request) {
   instance_->BindServiceRequest(std::move(request));
 }
 
-void EmbeddedApplicationRunner::SetQuitClosure(
+void EmbeddedServiceRunner::SetQuitClosure(
     const base::Closure& quit_closure) {
   quit_closure_ = quit_closure;
 }
 
-void EmbeddedApplicationRunner::OnQuit() {
+void EmbeddedServiceRunner::OnQuit() {
   if (!quit_closure_.is_null())
     quit_closure_.Run();
 }

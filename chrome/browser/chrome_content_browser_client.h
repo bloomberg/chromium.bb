@@ -295,10 +295,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void ExposeInterfacesToGpuProcess(
       shell::InterfaceRegistry* registry,
       content::GpuProcessHost* render_process_host) override;
-  void RegisterInProcessMojoApplications(
-      StaticMojoApplicationMap* apps) override;
-  void RegisterOutOfProcessMojoApplications(
-      OutOfProcessMojoApplicationMap* apps) override;
+  void RegisterInProcessServices(StaticServiceMap* services) override;
+  void RegisterOutOfProcessServices(
+      OutOfProcessServiceMap* services) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
       const std::string& name) override;
   void OpenURL(content::BrowserContext* browser_context,

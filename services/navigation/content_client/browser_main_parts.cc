@@ -5,7 +5,7 @@
 #include "services/navigation/content_client/browser_main_parts.h"
 
 #include "base/run_loop.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_net_log.h"
 #include "services/navigation/navigation.h"
@@ -24,12 +24,12 @@ void BrowserMainParts::ToolkitInitialized() {
 }
 
 void BrowserMainParts::PreMainMessageLoopRun() {
-  content::MojoShellConnection* mojo_shell_connection =
-      content::MojoShellConnection::GetForProcess();
-  if (mojo_shell_connection) {
+  content::ServiceManagerConnection* service_manager_connection =
+      content::ServiceManagerConnection::GetForProcess();
+  if (service_manager_connection) {
     window_manager_connection_ = views::WindowManagerConnection::Create(
-        mojo_shell_connection->GetConnector(),
-        mojo_shell_connection->GetIdentity());
+        service_manager_connection->GetConnector(),
+        service_manager_connection->GetIdentity());
   }
   net_log_.reset(new content::ShellNetLog("ash_shell"));
   browser_context_.reset(

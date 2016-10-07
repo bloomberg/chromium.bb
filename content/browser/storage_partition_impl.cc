@@ -459,7 +459,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context =
       new DOMStorageContextWrapper(
-          BrowserContext::GetShellConnectorFor(context),
+          BrowserContext::GetConnectorFor(context),
           in_memory ? base::FilePath() : context->GetPath(),
           relative_partition_path, context->GetSpecialStoragePolicy());
 

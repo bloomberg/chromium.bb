@@ -84,7 +84,7 @@
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "device/generic_sensor/sensor_provider_impl.h"
@@ -830,7 +830,7 @@ void RenderFrameHostImpl::Create(
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
   media::mojom::MediaServicePtr media_service;
   shell::Connector* connector =
-      MojoShellConnection::GetForProcess()->GetConnector();
+      ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->ConnectToInterface("service:media", &media_service);
   media_service->CreateServiceFactory(std::move(request),
                                       std::move(interfaces));

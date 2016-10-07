@@ -369,7 +369,7 @@ bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
   return false;
 }
 
-std::string ContentBrowserClient::GetShellUserIdForBrowserContext(
+std::string ContentBrowserClient::GetServiceUserIdForBrowserContext(
     BrowserContext* browser_context) {
   return base::GenerateGUID();
 }

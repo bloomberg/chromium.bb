@@ -53,7 +53,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "mash/public/interfaces/launchable.mojom.h"
@@ -631,7 +631,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_TOUCH_HUD_PROJECTION_TOGGLE:
       if (chrome::IsRunningInMash()) {
         shell::Connector* connector =
-            content::MojoShellConnection::GetForProcess()->GetConnector();
+            content::ServiceManagerConnection::GetForProcess()->GetConnector();
         mash::mojom::LaunchablePtr launchable;
         connector->ConnectToInterface("service:touch_hud", &launchable);
         launchable->Launch(mash::mojom::kWindow,

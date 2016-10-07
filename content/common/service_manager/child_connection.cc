@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/mojo/mojo_child_connection.h"
+#include "content/common/service_manager/child_connection.h"
 
 #include <stdint.h>
 #include <utility>
 
 #include "base/macros.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/shell/public/cpp/connector.h"
@@ -32,7 +32,7 @@ void CallBinderOnTaskRunner(
 
 }  // namespace
 
-class MojoChildConnection::IOThreadContext
+class ChildConnection::IOThreadContext
     : public base::RefCountedThreadSafe<IOThreadContext> {
  public:
   IOThreadContext() {}
@@ -121,7 +121,7 @@ class MojoChildConnection::IOThreadContext
   DISALLOW_COPY_AND_ASSIGN(IOThreadContext);
 };
 
-MojoChildConnection::MojoChildConnection(
+ChildConnection::ChildConnection(
     const std::string& service_name,
     const std::string& instance_id,
     const std::string& child_token,
@@ -142,11 +142,11 @@ MojoChildConnection::MojoChildConnection(
                             context_), io_task_runner));
 }
 
-MojoChildConnection::~MojoChildConnection() {
+ChildConnection::~ChildConnection() {
   context_->ShutDown();
 }
 
-void MojoChildConnection::SetProcessHandle(base::ProcessHandle handle) {
+void ChildConnection::SetProcessHandle(base::ProcessHandle handle) {
   context_->SetProcessHandle(handle);
 }
 

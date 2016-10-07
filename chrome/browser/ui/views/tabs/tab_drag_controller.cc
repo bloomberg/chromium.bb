@@ -50,7 +50,7 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/tabs/window_finder_mus.h"  // nogncheck
-#include "content/public/common/mojo_shell_connection.h"  // nogncheck
+#include "content/public/common/service_manager_connection.h"  // nogncheck
 #include "services/shell/runner/common/client_util.h"  // nogncheck
 #include "ui/aura/env.h"  // nogncheck
 #include "ui/aura/window.h"  // nogncheck
@@ -229,9 +229,9 @@ TabDragController::TabDragController()
   instance_ = this;
 
 #if defined(USE_AURA)
-  content::MojoShellConnection* mojo_shell_connection =
-      content::MojoShellConnection::GetForProcess();
-  if (mojo_shell_connection && shell::ShellIsRemote())
+  content::ServiceManagerConnection* service_manager_connection =
+      content::ServiceManagerConnection::GetForProcess();
+  if (service_manager_connection && shell::ShellIsRemote())
     window_finder_.reset(new WindowFinderMus);
   else
 #endif

@@ -9,7 +9,8 @@ namespace switches {
 // The token to use to construct the message pipe on which to layer ChannelMojo.
 const char kMojoChannelToken[] = "mojo-channel-token";
 
-// The token to use to construct the message pipe for MojoApplication.
-const char kMojoApplicationChannelToken[] = "mojo-application-channel-token";
+// The token to use to construct the message pipe for a service in a child
+// process.
+const char kServiceRequestChannelToken[] = "service-request-channel-token";
 
 }  // namespace switches

@@ -60,7 +60,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -211,7 +211,7 @@ void SetWallpaper(const gfx::ImageSkia& image,
                   wallpaper::WallpaperLayout layout) {
   if (chrome::IsRunningInMash()) {
     shell::Connector* connector =
-        content::MojoShellConnection::GetForProcess()->GetConnector();
+        content::ServiceManagerConnection::GetForProcess()->GetConnector();
     ash::mojom::WallpaperControllerPtr wallpaper_controller;
     connector->ConnectToInterface("service:ash", &wallpaper_controller);
     wallpaper_controller->SetWallpaper(*image.bitmap(),

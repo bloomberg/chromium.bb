@@ -129,10 +129,10 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_host_messages.h"
 #include "content/common/in_process_child_thread_params.h"
-#include "content/common/mojo/mojo_child_connection.h"
-#include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
+#include "content/common/service_manager/child_connection.h"
+#include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -513,8 +513,8 @@ class RenderProcessHostImpl::ConnectionFilterController
   ConnectionFilterImpl* filter_;
 };
 
-// Held by the RPH's BrowserContext's MojoShellConnection, ownership transferred
-// back to RPH upon RPH destruction.
+// Held by the RPH's BrowserContext's ServiceManagerConnection, ownership
+// transferred back to RPH upon RPH destruction.
 class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
  public:
   ConnectionFilterImpl(
@@ -756,23 +756,23 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   scoped_refptr<base::SequencedTaskRunner> io_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   shell::Connector* connector =
-      BrowserContext::GetShellConnectorFor(browser_context_);
+      BrowserContext::GetConnectorFor(browser_context_);
   // Some embedders may not initialize Mojo or the shell connector for a browser
   // context (e.g. Android WebView)... so just fall back to the per-process
   // connector.
   if (!connector) {
     // Additionally, some test code may not initialize the process-wide
-    // MojoShellConnection prior to this point. This class of test code doesn't
-    // care about render processes so we can initialize a dummy one.
-    if (!MojoShellConnection::GetForProcess()) {
+    // ServiceManagerConnection prior to this point. This class of test code
+    // doesn't care about render processes so we can initialize a dummy one.
+    if (!ServiceManagerConnection::GetForProcess()) {
       shell::mojom::ServiceRequest request = mojo::GetProxy(&test_service_);
-      MojoShellConnection::SetForProcess(MojoShellConnection::Create(
+      ServiceManagerConnection::SetForProcess(ServiceManagerConnection::Create(
           std::move(request), io_task_runner));
     }
-    connector = MojoShellConnection::GetForProcess()->GetConnector();
+    connector = ServiceManagerConnection::GetForProcess()->GetConnector();
   }
-  mojo_child_connection_.reset(new MojoChildConnection(
-      kRendererMojoApplicationName,
+  child_connection_.reset(new ChildConnection(
+      kRendererServiceName,
       base::StringPrintf("%d_%d", id_, instance_id_++), child_token_, connector,
       io_task_runner));
 }
@@ -931,7 +931,7 @@ bool RenderProcessHostImpl::Init() {
     in_process_renderer_.reset(
         g_renderer_main_thread_factory(InProcessChildThreadParams(
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-            mojo_child_connection_->service_token())));
+            child_connection_->service_token())));
 
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)
@@ -1292,14 +1292,14 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   GetContentClient()->browser()->ExposeInterfacesToRenderer(registry.get(),
                                                             this);
 
-  MojoShellConnection* mojo_shell_connection =
-      BrowserContext::GetMojoShellConnectionFor(browser_context_);
+  ServiceManagerConnection* service_manager_connection =
+      BrowserContext::GetServiceManagerConnectionFor(browser_context_);
   std::unique_ptr<ConnectionFilterImpl> connection_filter(
-      new ConnectionFilterImpl(mojo_child_connection_->child_identity(),
+      new ConnectionFilterImpl(child_connection_->child_identity(),
                                std::move(registry)));
   connection_filter_controller_ = connection_filter->controller();
-  connection_filter_id_ =
-      mojo_shell_connection->AddConnectionFilter(std::move(connection_filter));
+  connection_filter_id_ = service_manager_connection->AddConnectionFilter(
+      std::move(connection_filter));
 }
 
 void RenderProcessHostImpl::GetRoute(
@@ -1340,7 +1340,7 @@ void RenderProcessHostImpl::ResumeDeferredNavigation(
 }
 
 shell::InterfaceProvider* RenderProcessHostImpl::GetRemoteInterfaces() {
-  return mojo_child_connection_->GetRemoteInterfaces();
+  return child_connection_->GetRemoteInterfaces();
 }
 
 std::unique_ptr<base::SharedPersistentMemoryAllocator>
@@ -1612,8 +1612,8 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 
   AppendCompositorCommandLineFlags(command_line);
 
-  command_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
-                                  mojo_child_connection_->service_token());
+  command_line->AppendSwitchASCII(switches::kServiceRequestChannelToken,
+                                  child_connection_->service_token());
 }
 
 void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
@@ -1869,9 +1869,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     }
   }
 
-  DCHECK(mojo_child_connection_);
+  DCHECK(child_connection_);
   renderer_cmd->AppendSwitchASCII(switches::kPrimordialPipeToken,
-                                  mojo_child_connection_->service_token());
+                                  child_connection_->service_token());
 
 #if defined(OS_WIN) && !defined(OFFICIAL_BUILD)
   // Needed because we can't show the dialog from the sandbox. Don't pass
@@ -2163,12 +2163,13 @@ void RenderProcessHostImpl::Cleanup() {
       Source<RenderProcessHost>(this), NotificationService::NoDetails());
 
   if (connection_filter_id_ !=
-        MojoShellConnection::kInvalidConnectionFilterId) {
-    MojoShellConnection* mojo_shell_connection =
-        BrowserContext::GetMojoShellConnectionFor(browser_context_);
+        ServiceManagerConnection::kInvalidConnectionFilterId) {
+    ServiceManagerConnection* service_manager_connection =
+        BrowserContext::GetServiceManagerConnectionFor(browser_context_);
     connection_filter_controller_->DisableFilter();
-    mojo_shell_connection->RemoveConnectionFilter(connection_filter_id_);
-    connection_filter_id_ = MojoShellConnection::kInvalidConnectionFilterId;
+    service_manager_connection->RemoveConnectionFilter(connection_filter_id_);
+    connection_filter_id_ =
+        ServiceManagerConnection::kInvalidConnectionFilterId;
   }
 
 #ifndef NDEBUG
@@ -2699,11 +2700,11 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   // there is one before calling them.
   child_token_ = mojo::edk::GenerateRandomToken();
   shell::Connector* connector =
-      BrowserContext::GetShellConnectorFor(browser_context_);
+      BrowserContext::GetConnectorFor(browser_context_);
   if (!connector)
-    connector = MojoShellConnection::GetForProcess()->GetConnector();
-  mojo_child_connection_.reset(new MojoChildConnection(
-      kRendererMojoApplicationName,
+    connector = ServiceManagerConnection::GetForProcess()->GetConnector();
+  child_connection_.reset(new ChildConnection(
+      kRendererServiceName,
       base::StringPrintf("%d_%d", id_, instance_id_++), child_token_, connector,
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
@@ -2847,8 +2848,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     // preempt already queued messages.
     channel_->Unpause(false /* flush */);
 
-    if (mojo_child_connection_) {
-      mojo_child_connection_->SetProcessHandle(
+    if (child_connection_) {
+      child_connection_->SetProcessHandle(
           child_process_launcher_->GetProcess().Handle());
     }
 

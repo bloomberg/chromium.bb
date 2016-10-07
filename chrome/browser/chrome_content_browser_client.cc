@@ -165,8 +165,8 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mojo_shell_connection.h"
 #include "content/public/common/sandbox_type.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
@@ -3041,24 +3041,24 @@ void ChromeContentBrowserClient::ExposeInterfacesToGpuProcess(
                  metrics::CallStackProfileParams::GPU_PROCESS));
 }
 
-void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
-    StaticMojoApplicationMap* apps) {
+void ChromeContentBrowserClient::RegisterInProcessServices(
+    StaticServiceMap* services) {
 #if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  content::MojoApplicationInfo app_info;
-  app_info.application_factory = base::Bind(&media::CreateMojoMediaApplication);
-  apps->insert(std::make_pair("service:media", app_info));
+  content::ServiceInfo info;
+  info.factory = base::Bind(&media::CreateMojoMediaApplication);
+  services->insert(std::make_pair("service:media", app_info));
 #endif
 #if defined(OS_CHROMEOS)
-  content::MojoShellConnection::GetForProcess()->AddConnectionFilter(
+  content::ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
       base::MakeUnique<chromeos::ChromeInterfaceFactory>());
 #endif  // OS_CHROMEOS
 }
 
-void ChromeContentBrowserClient::RegisterOutOfProcessMojoApplications(
-      OutOfProcessMojoApplicationMap* apps) {
+void ChromeContentBrowserClient::RegisterOutOfProcessServices(
+      OutOfProcessServiceMap* services) {
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  apps->insert(std::make_pair("service:media",
-                              base::ASCIIToUTF16("Media App")));
+  services->insert(std::make_pair("service:media",
+                                  base::ASCIIToUTF16("Media Service")));
 #endif
 }
 
@@ -3067,11 +3067,11 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(
     const std::string& name) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int id = -1;
-  if (name == content::kBrowserMojoApplicationName)
+  if (name == content::kBrowserServiceName)
     id = IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY;
-  else if (name == content::kGpuMojoApplicationName)
+  else if (name == content::kGpuServiceName)
     id = IDR_CHROME_CONTENT_GPU_MANIFEST_OVERLAY;
-  else if (name == content::kUtilityMojoApplicationName)
+  else if (name == content::kUtilityServiceName)
     id = IDR_CHROME_CONTENT_UTILITY_MANIFEST_OVERLAY;
   if (id == -1)
     return nullptr;

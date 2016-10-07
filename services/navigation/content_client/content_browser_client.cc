@@ -8,8 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "content/public/common/mojo_application_info.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_info.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "services/navigation/content_client/browser_main_parts.h"
 #include "services/navigation/navigation.h"
@@ -25,18 +25,19 @@ content::BrowserMainParts* ContentBrowserClient::CreateBrowserMainParts(
   return browser_main_parts_;
 }
 
-std::string ContentBrowserClient::GetShellUserIdForBrowserContext(
+std::string ContentBrowserClient::GetServiceUserIdForBrowserContext(
     content::BrowserContext* browser_context) {
   // Unlike Chrome, where there are different browser contexts for each process,
   // each with their own userid, here there is only one and we should reuse the
   // same userid as our own process to avoid having to create multiple shell
   // connections.
-  return content::MojoShellConnection::GetForProcess()->GetIdentity().user_id();
+  return content::ServiceManagerConnection::GetForProcess()->GetIdentity()
+      .user_id();
 }
 
-void ContentBrowserClient::RegisterInProcessMojoApplications(
-    StaticMojoApplicationMap* apps) {
-  content::MojoShellConnection::GetForProcess()->AddConnectionFilter(
+void ContentBrowserClient::RegisterInProcessServices(
+    StaticServiceMap* services) {
+  content::ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
       base::MakeUnique<Navigation>());
 }
 

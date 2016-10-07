@@ -177,7 +177,7 @@ class ASH_EXPORT WmShell {
     return window_selector_controller_.get();
   }
 
-  // Returns true when ash is running in its own mojo application/service.
+  // Returns true when ash is running as a shell::Service.
   virtual bool IsRunningInMash() const = 0;
 
   virtual WmWindow* NewWindow(ui::wm::WindowType window_type,

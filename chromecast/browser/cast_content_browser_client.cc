@@ -424,14 +424,14 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
       base::ThreadTaskRunnerHandle::Get());
 }
 
-void CastContentBrowserClient::RegisterInProcessMojoApplications(
-    StaticMojoApplicationMap* apps) {
+void CastContentBrowserClient::RegisterInProcessServices(
+    StaticServiceMap* services) {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  content::MojoApplicationInfo app_info;
-  app_info.application_factory =
+  content::ServiceInfo info;
+  info.factory =
       base::Bind(&CreateMojoMediaApplication, base::Unretained(this));
-  app_info.application_task_runner = GetMediaTaskRunner();
-  apps->insert(std::make_pair("service:media", app_info));
+  info.task_runner = GetMediaTaskRunner();
+  services->insert(std::make_pair("service:media", info));
 #endif
 }
 
@@ -439,7 +439,7 @@ std::unique_ptr<base::Value>
 CastContentBrowserClient::GetServiceManifestOverlay(
     const std::string& service_name) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  if (service_name != content::kBrowserMojoApplicationName)
+  if (service_name != content::kBrowserServiceName)
     return nullptr;
   base::StringPiece manifest_contents =
       rb.GetRawDataResourceForScale(IDR_CAST_CONTENT_BROWSER_MANIFEST_OVERLAY,

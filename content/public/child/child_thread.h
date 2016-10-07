@@ -27,7 +27,7 @@ class InterfaceRegistry;
 
 namespace content {
 
-class MojoShellConnection;
+class ServiceManagerConnection;
 
 // An abstract base class that contains logic shared between most child
 // processes of the embedder.
@@ -67,9 +67,9 @@ class CONTENT_EXPORT ChildThread : public IPC::Sender {
   // actions in chrome/tools/extract_actions.py.
   virtual void RecordComputedAction(const std::string& action) = 0;
 
-  // Returns the MojoShellConnection for the thread (from which a
+  // Returns the ServiceManagerConnection for the thread (from which a
   // shell::Connector can be obtained).
-  virtual MojoShellConnection* GetMojoShellConnection() = 0;
+  virtual ServiceManagerConnection* GetServiceManagerConnection() = 0;
 
   // Returns the InterfaceRegistry that this process uses to expose interfaces
   // to the browser.

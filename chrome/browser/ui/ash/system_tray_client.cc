@@ -23,7 +23,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "net/base/escape.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -183,7 +183,7 @@ void SystemTrayClient::ConnectToSystemTray() {
     return;
 
   shell::Connector* connector =
-      content::MojoShellConnection::GetForProcess()->GetConnector();
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
   // Under mash the SystemTray interface is in the ash process. In classic ash
   // we provide it to ourself.
   if (chrome::IsRunningInMash())

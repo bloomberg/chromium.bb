@@ -32,7 +32,7 @@
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/mojo/mojo_child_connection.h"
+#include "content/common/service_manager/child_connection.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
@@ -175,7 +175,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
   if (!service_name.empty()) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    child_connection_.reset(new MojoChildConnection(
+    child_connection_.reset(new ChildConnection(
         service_name, base::StringPrintf("%d", data_.id), child_token_,
         ServiceManagerContext::GetConnectorForIOThread(),
         base::ThreadTaskRunnerHandle::Get()));
@@ -252,7 +252,7 @@ void BrowserChildProcessHostImpl::Launch(
                              arraysize(kForwardSwitches));
 
   if (child_connection_) {
-    cmd_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
+    cmd_line->AppendSwitchASCII(switches::kServiceRequestChannelToken,
                                 child_connection_->service_token());
   }
 

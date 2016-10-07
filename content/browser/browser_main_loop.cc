@@ -68,7 +68,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
-#include "content/common/mojo/mojo_shell_connection_impl.h"
+#include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -1475,8 +1475,10 @@ void BrowserMainLoop::InitializeMojo() {
 #if defined(OS_MACOSX)
   mojo::edk::SetMachPortProvider(MachBroker::GetInstance());
 #endif  // defined(OS_MACOSX)
-  if (parts_)
-    parts_->MojoShellConnectionStarted(MojoShellConnection::GetForProcess());
+  if (parts_) {
+    parts_->ServiceManagerConnectionStarted(
+        ServiceManagerConnection::GetForProcess());
+  }
 }
 
 base::FilePath BrowserMainLoop::GetStartupTraceFileName(

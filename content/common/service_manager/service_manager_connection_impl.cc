@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/mojo/mojo_shell_connection_impl.h"
+#include "content/common/service_manager/service_manager_connection_impl.h"
 
 #include <queue>
 #include <utility>
@@ -15,7 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/mojo/embedded_application_runner.h"
+#include "content/common/service_manager/embedded_service_runner.h"
 #include "content/public/common/connection_filter.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -27,17 +27,17 @@
 namespace content {
 namespace {
 
-base::LazyInstance<std::unique_ptr<MojoShellConnection>>::Leaky
+base::LazyInstance<std::unique_ptr<ServiceManagerConnection>>::Leaky
     g_connection_for_process = LAZY_INSTANCE_INITIALIZER;
 
-MojoShellConnection::Factory* mojo_shell_connection_factory = nullptr;
+ServiceManagerConnection::Factory* service_manager_connection_factory = nullptr;
 
 }  // namespace
 
 // A ref-counted object which owns the IO thread state of a
-// MojoShellConnectionImpl. This includes Service and ServiceFactory
+// ServiceManagerConnectionImpl. This includes Service and ServiceFactory
 // bindings.
-class MojoShellConnectionImpl::IOThreadContext
+class ServiceManagerConnectionImpl::IOThreadContext
     : public base::RefCountedThreadSafe<IOThreadContext>,
       public shell::Service,
       public shell::InterfaceFactory<shell::mojom::ServiceFactory>,
@@ -226,8 +226,8 @@ class MojoShellConnectionImpl::IOThreadContext
   bool OnConnect(const shell::Identity& remote_identity,
                  shell::InterfaceRegistry* registry) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    std::string remote_app = remote_identity.name();
-    if (remote_app == "service:shell") {
+    std::string remote_service = remote_identity.name();
+    if (remote_service == "service:shell") {
       // Only expose the SCF interface to the shell.
       registry->AddInterface<shell::mojom::ServiceFactory>(this);
       return true;
@@ -343,48 +343,48 @@ class MojoShellConnectionImpl::IOThreadContext
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// MojoShellConnection, public:
+// ServiceManagerConnection, public:
 
 // static
-void MojoShellConnection::SetForProcess(
-    std::unique_ptr<MojoShellConnection> connection) {
+void ServiceManagerConnection::SetForProcess(
+    std::unique_ptr<ServiceManagerConnection> connection) {
   DCHECK(!g_connection_for_process.Get());
   g_connection_for_process.Get() = std::move(connection);
 }
 
 // static
-MojoShellConnection* MojoShellConnection::GetForProcess() {
+ServiceManagerConnection* ServiceManagerConnection::GetForProcess() {
   return g_connection_for_process.Get().get();
 }
 
 // static
-void MojoShellConnection::DestroyForProcess() {
-  // This joins the shell controller thread.
+void ServiceManagerConnection::DestroyForProcess() {
+  // This joins the service manager controller thread.
   g_connection_for_process.Get().reset();
 }
 
 // static
-void MojoShellConnection::SetFactoryForTest(Factory* factory) {
+void ServiceManagerConnection::SetFactoryForTest(Factory* factory) {
   DCHECK(!g_connection_for_process.Get());
-  mojo_shell_connection_factory = factory;
+  service_manager_connection_factory = factory;
 }
 
 // static
-std::unique_ptr<MojoShellConnection> MojoShellConnection::Create(
+std::unique_ptr<ServiceManagerConnection> ServiceManagerConnection::Create(
     shell::mojom::ServiceRequest request,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
-  if (mojo_shell_connection_factory)
-    return mojo_shell_connection_factory->Run();
-  return base::MakeUnique<MojoShellConnectionImpl>(
+  if (service_manager_connection_factory)
+    return service_manager_connection_factory->Run();
+  return base::MakeUnique<ServiceManagerConnectionImpl>(
       std::move(request), io_task_runner);
 }
 
-MojoShellConnection::~MojoShellConnection() {}
+ServiceManagerConnection::~ServiceManagerConnection() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// MojoShellConnectionImpl, public:
+// ServiceManagerConnectionImpl, public:
 
-MojoShellConnectionImpl::MojoShellConnectionImpl(
+ServiceManagerConnectionImpl::ServiceManagerConnectionImpl(
     shell::mojom::ServiceRequest request,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : weak_factory_(this) {
@@ -397,83 +397,83 @@ MojoShellConnectionImpl::MojoShellConnectionImpl(
       std::move(connector_request));
 }
 
-MojoShellConnectionImpl::~MojoShellConnectionImpl() {
+ServiceManagerConnectionImpl::~ServiceManagerConnectionImpl() {
   context_->ShutDown();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// MojoShellConnectionImpl, MojoShellConnection implementation:
+// ServiceManagerConnectionImpl, ServiceManagerConnection implementation:
 
-void MojoShellConnectionImpl::Start() {
+void ServiceManagerConnectionImpl::Start() {
   context_->Start(
-      base::Bind(&MojoShellConnectionImpl::OnContextInitialized,
+      base::Bind(&ServiceManagerConnectionImpl::OnContextInitialized,
                  weak_factory_.GetWeakPtr()),
-      base::Bind(&MojoShellConnectionImpl::CreateService,
+      base::Bind(&ServiceManagerConnectionImpl::CreateService,
                  weak_factory_.GetWeakPtr()),
-      base::Bind(&MojoShellConnectionImpl::OnConnectionLost,
+      base::Bind(&ServiceManagerConnectionImpl::OnConnectionLost,
                  weak_factory_.GetWeakPtr()));
 }
 
-void MojoShellConnectionImpl::SetInitializeHandler(
+void ServiceManagerConnectionImpl::SetInitializeHandler(
     const base::Closure& handler) {
   DCHECK(initialize_handler_.is_null());
   initialize_handler_ = handler;
 }
 
-shell::Connector* MojoShellConnectionImpl::GetConnector() {
+shell::Connector* ServiceManagerConnectionImpl::GetConnector() {
   return connector_.get();
 }
 
-const shell::Identity& MojoShellConnectionImpl::GetIdentity() const {
+const shell::Identity& ServiceManagerConnectionImpl::GetIdentity() const {
   return identity_;
 }
 
-void MojoShellConnectionImpl::SetConnectionLostClosure(
+void ServiceManagerConnectionImpl::SetConnectionLostClosure(
     const base::Closure& closure) {
   connection_lost_handler_ = closure;
 }
 
-void MojoShellConnectionImpl::SetupInterfaceRequestProxies(
+void ServiceManagerConnectionImpl::SetupInterfaceRequestProxies(
     shell::InterfaceRegistry* registry,
     shell::InterfaceProvider* provider) {
   // It's safe to bind |registry| as a raw pointer because the caller must
   // guarantee that it outlives |this|, and |this| is bound as a weak ptr here.
   context_->SetDefaultBinderForBrowserConnection(
-      base::Bind(&MojoShellConnectionImpl::GetInterface,
+      base::Bind(&ServiceManagerConnectionImpl::GetInterface,
                  weak_factory_.GetWeakPtr(), registry));
 
   // TODO(beng): remove provider parameter.
 }
 
-int MojoShellConnectionImpl::AddConnectionFilter(
+int ServiceManagerConnectionImpl::AddConnectionFilter(
     std::unique_ptr<ConnectionFilter> filter) {
   return context_->AddConnectionFilter(std::move(filter));
 }
 
-void MojoShellConnectionImpl::RemoveConnectionFilter(int filter_id) {
+void ServiceManagerConnectionImpl::RemoveConnectionFilter(int filter_id) {
   context_->RemoveConnectionFilter(filter_id);
 }
 
-void MojoShellConnectionImpl::AddEmbeddedService(
-    const std::string& name,
-    const MojoApplicationInfo& info) {
-  std::unique_ptr<EmbeddedApplicationRunner> app(
-      new EmbeddedApplicationRunner(name, info));
+void ServiceManagerConnectionImpl::AddEmbeddedService(const std::string& name,
+                                                      const ServiceInfo& info) {
+  std::unique_ptr<EmbeddedServiceRunner> service(
+      new EmbeddedServiceRunner(name, info));
   AddServiceRequestHandler(
-      name, base::Bind(&EmbeddedApplicationRunner::BindServiceRequest,
-                       base::Unretained(app.get())));
-  auto result = embedded_apps_.insert(std::make_pair(name, std::move(app)));
+      name, base::Bind(&EmbeddedServiceRunner::BindServiceRequest,
+                       base::Unretained(service.get())));
+  auto result =
+      embedded_services_.insert(std::make_pair(name, std::move(service)));
   DCHECK(result.second);
 }
 
-void MojoShellConnectionImpl::AddServiceRequestHandler(
+void ServiceManagerConnectionImpl::AddServiceRequestHandler(
     const std::string& name,
     const ServiceRequestHandler& handler) {
   auto result = request_handlers_.insert(std::make_pair(name, handler));
   DCHECK(result.second);
 }
 
-void MojoShellConnectionImpl::CreateService(
+void ServiceManagerConnectionImpl::CreateService(
     shell::mojom::ServiceRequest request,
     const std::string& name) {
   auto it = request_handlers_.find(name);
@@ -481,19 +481,19 @@ void MojoShellConnectionImpl::CreateService(
     it->second.Run(std::move(request));
 }
 
-void MojoShellConnectionImpl::OnContextInitialized(
+void ServiceManagerConnectionImpl::OnContextInitialized(
     const shell::Identity& identity) {
   identity_ = identity;
   if (!initialize_handler_.is_null())
     base::ResetAndReturn(&initialize_handler_).Run();
 }
 
-void MojoShellConnectionImpl::OnConnectionLost() {
+void ServiceManagerConnectionImpl::OnConnectionLost() {
   if (!connection_lost_handler_.is_null())
     connection_lost_handler_.Run();
 }
 
-void MojoShellConnectionImpl::GetInterface(
+void ServiceManagerConnectionImpl::GetInterface(
     shell::mojom::InterfaceProvider* provider,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle request_handle) {

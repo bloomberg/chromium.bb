@@ -54,7 +54,7 @@
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_unprivileged.h"
@@ -266,7 +266,7 @@ class ChannelBootstrapFilter : public ConnectionFilter {
   bool OnConnect(const shell::Identity& remote_identity,
                  shell::InterfaceRegistry* registry,
                  shell::Connector* connector) override {
-    if (remote_identity.name() != kBrowserMojoApplicationName)
+    if (remote_identity.name() != kBrowserServiceName)
       return false;
 
     registry->AddInterface(base::Bind(&ChannelBootstrapFilter::CreateBootstrap,
@@ -292,7 +292,7 @@ ChildThread* ChildThread::Get() {
 }
 
 ChildThreadImpl::Options::Options()
-    : auto_start_mojo_shell_connection(true), connect_to_browser(false) {}
+    : auto_start_service_manager_connection(true), connect_to_browser(false) {}
 
 ChildThreadImpl::Options::Options(const Options& other) = default;
 
@@ -306,14 +306,14 @@ ChildThreadImpl::Options::Builder&
 ChildThreadImpl::Options::Builder::InBrowserProcess(
     const InProcessChildThreadParams& params) {
   options_.browser_process_io_runner = params.io_runner();
-  options_.in_process_application_token = params.application_token();
+  options_.in_process_service_request_token = params.service_request_token();
   return *this;
 }
 
 ChildThreadImpl::Options::Builder&
-ChildThreadImpl::Options::Builder::AutoStartMojoShellConnection(
+ChildThreadImpl::Options::Builder::AutoStartServiceManagerConnection(
     bool auto_start) {
-  options_.auto_start_mojo_shell_connection = auto_start;
+  options_.auto_start_service_manager_connection = auto_start;
   return *this;
 }
 
@@ -399,10 +399,10 @@ void ChildThreadImpl::ConnectChannel() {
     // browser. http://crbug.com/623396.
     handle = mojo::edk::CreateChildMessagePipe(channel_token);
   } else {
-    DCHECK(mojo_shell_connection_);
+    DCHECK(service_manager_connection_);
     IPC::mojom::ChannelBootstrapPtr bootstrap;
     handle = mojo::GetProxy(&bootstrap).PassMessagePipe();
-    mojo_shell_connection_->AddConnectionFilter(
+    service_manager_connection_->AddConnectionFilter(
         base::MakeUnique<ChannelBootstrapFilter>(bootstrap.PassInterface()));
   }
 
@@ -439,19 +439,19 @@ void ChildThreadImpl::Init(const Options& options) {
     mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(GetIOTaskRunner()));
     InitializeMojoIPCChannel();
   }
-  std::string mojo_application_token;
+  std::string service_request_token;
   if (!IsInBrowserProcess()) {
-    mojo_application_token =
+    service_request_token =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kMojoApplicationChannelToken);
+        switches::kServiceRequestChannelToken);
   } else {
-    mojo_application_token = options.in_process_application_token;
+    service_request_token = options.in_process_service_request_token;
   }
-  if (!mojo_application_token.empty()) {
+  if (!service_request_token.empty()) {
     mojo::ScopedMessagePipeHandle handle =
-        mojo::edk::CreateChildMessagePipe(mojo_application_token);
+        mojo::edk::CreateChildMessagePipe(service_request_token);
     DCHECK(handle.is_valid());
-    mojo_shell_connection_ = MojoShellConnection::Create(
+    service_manager_connection_ = ServiceManagerConnection::Create(
         mojo::MakeRequest<shell::mojom::Service>(std::move(handle)),
         GetIOTaskRunner());
 
@@ -460,8 +460,9 @@ void ChildThreadImpl::Init(const Options& options) {
     // provider. Exposed interfaces are subject to manifest capability spec.
     shell::InterfaceProvider* remote_interfaces = nullptr;
     if (options.connect_to_browser) {
-      browser_connection_ = mojo_shell_connection_->GetConnector()->Connect(
-          kBrowserMojoApplicationName);
+      browser_connection_ =
+          service_manager_connection_->GetConnector()->Connect(
+              kBrowserServiceName);
     } else {
       remote_interfaces = GetRemoteInterfaces();
     }
@@ -470,7 +471,7 @@ void ChildThreadImpl::Init(const Options& options) {
     // are made via a Connector rather than directly through an
     // InterfaceProvider, and all exposed interfaces are exposed via a
     // ConnectionFilter.
-    mojo_shell_connection_->SetupInterfaceRequestProxies(
+    service_manager_connection_->SetupInterfaceRequestProxies(
         GetInterfaceRegistry(), remote_interfaces);
   }
 
@@ -546,8 +547,10 @@ void ChildThreadImpl::Init(const Options& options) {
 
   // This must always be done after ConnectChannel, because ConnectChannel() may
   // add a ConnectionFilter to the connection.
-  if (options.auto_start_mojo_shell_connection && mojo_shell_connection_)
-    StartMojoShellConnection();
+  if (options.auto_start_service_manager_connection &&
+      service_manager_connection_) {
+    StartServiceManagerConnection();
+  }
 
   int connection_timeout = kConnectionTimeoutS;
   std::string connection_override =
@@ -648,8 +651,8 @@ void ChildThreadImpl::RecordComputedAction(const std::string& action) {
     NOTREACHED();
 }
 
-MojoShellConnection* ChildThreadImpl::GetMojoShellConnection() {
-  return mojo_shell_connection_.get();
+ServiceManagerConnection* ChildThreadImpl::GetServiceManagerConnection() {
+  return service_manager_connection_.get();
 }
 
 shell::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
@@ -757,9 +760,9 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
   return router_.OnMessageReceived(msg);
 }
 
-void ChildThreadImpl::StartMojoShellConnection() {
-  DCHECK(mojo_shell_connection_);
-  mojo_shell_connection_->Start();
+void ChildThreadImpl::StartServiceManagerConnection() {
+  DCHECK(service_manager_connection_);
+  service_manager_connection_->Start();
 }
 
 bool ChildThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {

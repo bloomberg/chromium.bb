@@ -15,12 +15,12 @@ base::LazyInstance<std::map<std::string, base::FilePath>>
     g_user_id_to_data_dir = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
-void AssociateShellUserIdWithUserDir(const std::string& user_id,
-                                     const base::FilePath& user_dir) {
+void AssociateServiceUserIdWithUserDir(const std::string& user_id,
+                                       const base::FilePath& user_dir) {
   g_user_id_to_data_dir.Get()[user_id] = user_dir;
 }
 
-void ForgetShellUserIdUserDirAssociation(const std::string& user_id) {
+void ForgetServiceUserIdUserDirAssociation(const std::string& user_id) {
   auto it = g_user_id_to_data_dir.Get().find(user_id);
   if (it != g_user_id_to_data_dir.Get().end())
     g_user_id_to_data_dir.Get().erase(it);

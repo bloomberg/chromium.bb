@@ -16,14 +16,14 @@
 #include "base/single_thread_task_runner.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/merge_dictionary.h"
-#include "content/common/mojo/mojo_shell_connection_impl.h"
+#include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/catalog/catalog.h"
@@ -177,7 +177,7 @@ class ServiceManagerContext::InProcessServiceManagerContext
         std::move(native_runner_factory), catalog_->TakeService()));
 
     shell::mojom::ServiceRequest request =
-        service_manager_->StartEmbedderService(kBrowserMojoApplicationName);
+        service_manager_->StartEmbedderService(kBrowserServiceName);
     mojo::FuseInterface(
         std::move(request), std::move(embedder_service_proxy_info));
   }
@@ -208,11 +208,11 @@ ServiceManagerContext::ServiceManagerContext() {
       const char* name;
       int resource_id;
     } kManifests[] = {
-      { kBrowserMojoApplicationName, IDR_MOJO_CONTENT_BROWSER_MANIFEST },
-      { kGpuMojoApplicationName, IDR_MOJO_CONTENT_GPU_MANIFEST },
-      { kPluginMojoApplicationName, IDR_MOJO_CONTENT_PLUGIN_MANIFEST },
-      { kRendererMojoApplicationName, IDR_MOJO_CONTENT_RENDERER_MANIFEST },
-      { kUtilityMojoApplicationName, IDR_MOJO_CONTENT_UTILITY_MANIFEST },
+      { kBrowserServiceName, IDR_MOJO_CONTENT_BROWSER_MANIFEST },
+      { kGpuServiceName, IDR_MOJO_CONTENT_GPU_MANIFEST },
+      { kPluginServiceName, IDR_MOJO_CONTENT_PLUGIN_MANIFEST },
+      { kRendererServiceName, IDR_MOJO_CONTENT_RENDERER_MANIFEST },
+      { kUtilityServiceName, IDR_MOJO_CONTENT_UTILITY_MANIFEST },
       { "service:catalog", IDR_MOJO_CATALOG_MANIFEST },
       { file::kFileServiceName, IDR_MOJO_FILE_MANIFEST }
     };
@@ -240,62 +240,62 @@ ServiceManagerContext::ServiceManagerContext() {
     in_process_context_ = new InProcessServiceManagerContext;
     request = in_process_context_->Start(std::move(manifest_provider));
   }
-  MojoShellConnection::SetForProcess(MojoShellConnection::Create(
+  ServiceManagerConnection::SetForProcess(ServiceManagerConnection::Create(
       std::move(request),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
-  ContentBrowserClient::StaticMojoApplicationMap apps;
-  GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
-  for (const auto& entry : apps) {
-    MojoShellConnection::GetForProcess()->AddEmbeddedService(entry.first,
-                                                             entry.second);
+  ContentBrowserClient::StaticServiceMap services;
+  GetContentClient()->browser()->RegisterInProcessServices(&services);
+  for (const auto& entry : services) {
+    ServiceManagerConnection::GetForProcess()->AddEmbeddedService(entry.first,
+                                                                  entry.second);
   }
 
   // This is safe to assign directly from any thread, because
   // ServiceManagerContext must be constructed before anyone can call
   // GetConnectorForIOThread().
   g_io_thread_connector.Get() =
-      MojoShellConnection::GetForProcess()->GetConnector()->Clone();
+      ServiceManagerConnection::GetForProcess()->GetConnector()->Clone();
 
-  MojoShellConnection::GetForProcess()->Start();
+  ServiceManagerConnection::GetForProcess()->Start();
 
-  ContentBrowserClient::OutOfProcessMojoApplicationMap sandboxed_apps;
+  ContentBrowserClient::OutOfProcessServiceMap sandboxed_services;
   GetContentClient()
       ->browser()
-      ->RegisterOutOfProcessMojoApplications(&sandboxed_apps);
-  for (const auto& app : sandboxed_apps) {
-    MojoShellConnection::GetForProcess()->AddServiceRequestHandler(
-        app.first,
-        base::Bind(&StartServiceInUtilityProcess, app.first, app.second,
+      ->RegisterOutOfProcessServices(&sandboxed_services);
+  for (const auto& service : sandboxed_services) {
+    ServiceManagerConnection::GetForProcess()->AddServiceRequestHandler(
+      service.first,
+        base::Bind(&StartServiceInUtilityProcess, service.first, service.second,
                    true /* use_sandbox */));
   }
 
-  ContentBrowserClient::OutOfProcessMojoApplicationMap unsandboxed_apps;
+  ContentBrowserClient::OutOfProcessServiceMap unsandboxed_services;
   GetContentClient()
       ->browser()
-      ->RegisterUnsandboxedOutOfProcessMojoApplications(&unsandboxed_apps);
-  for (const auto& app : unsandboxed_apps) {
-    MojoShellConnection::GetForProcess()->AddServiceRequestHandler(
-        app.first,
-        base::Bind(&StartServiceInUtilityProcess, app.first, app.second,
+      ->RegisterUnsandboxedOutOfProcessServices(&unsandboxed_services);
+  for (const auto& service : unsandboxed_services) {
+    ServiceManagerConnection::GetForProcess()->AddServiceRequestHandler(
+        service.first,
+        base::Bind(&StartServiceInUtilityProcess, service.first, service.second,
                    false /* use_sandbox */));
   }
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  MojoShellConnection::GetForProcess()->AddServiceRequestHandler(
+  ServiceManagerConnection::GetForProcess()->AddServiceRequestHandler(
       "service:media", base::Bind(&StartServiceInGpuProcess, "service:media"));
 #endif
 }
 
 ServiceManagerContext::~ServiceManagerContext() {
   // NOTE: The in-process ServiceManager MUST be destroyed before the browser
-  // process-wide MojoShellConnection. Otherwise it's possible for the
+  // process-wide ServiceManagerConnection. Otherwise it's possible for the
   // ServiceManager to receive connection requests for service:content_browser
   // which it may attempt to service by launching a new instance of the browser.
   if (in_process_context_)
     in_process_context_->ShutDown();
-  if (MojoShellConnection::GetForProcess())
-    MojoShellConnection::DestroyForProcess();
+  if (ServiceManagerConnection::GetForProcess())
+    ServiceManagerConnection::DestroyForProcess();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&DestroyConnectorOnIOThread));
 }

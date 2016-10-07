@@ -11,10 +11,10 @@
 namespace file {
 
 // These methods are called from BrowserContext::Initialize() to associate
-// the BrowserContext's shell user-id with its user directory.
-void AssociateShellUserIdWithUserDir(const std::string& user_id,
+// the BrowserContext's Service user-id with its user directory.
+void AssociateServiceUserIdWithUserDir(const std::string& user_id,
                                      const base::FilePath& user_dir);
-void ForgetShellUserIdUserDirAssociation(const std::string& user_id);
+void ForgetServiceUserIdUserDirAssociation(const std::string& user_id);
 
 base::FilePath GetUserDirForUserId(const std::string& user_id);
 

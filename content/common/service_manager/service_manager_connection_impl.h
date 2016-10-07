@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MOJO_SHELL_CONNECTION_IMPL_H_
-#define CONTENT_COMMON_MOJO_SHELL_CONNECTION_IMPL_H_
+#ifndef CONTENT_COMMON_SERVICE_MANAGER_SERVICE_MANAGER_CONNECTION_IMPL_H_
+#define CONTENT_COMMON_SERVICE_MANAGER_SERVICE_MANAGER_CONNECTION_IMPL_H_
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/shell/public/cpp/identity.h"
@@ -23,19 +23,19 @@ class Connector;
 
 namespace content {
 
-class EmbeddedApplicationRunner;
+class EmbeddedServiceRunner;
 
-class MojoShellConnectionImpl : public MojoShellConnection {
+class ServiceManagerConnectionImpl : public ServiceManagerConnection {
  public:
-  explicit MojoShellConnectionImpl(
+  explicit ServiceManagerConnectionImpl(
       shell::mojom::ServiceRequest request,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
-  ~MojoShellConnectionImpl() override;
+  ~ServiceManagerConnectionImpl() override;
 
  private:
   class IOThreadContext;
 
-  // MojoShellConnection:
+  // ServiceManagerConnection:
   void Start() override;
   void SetInitializeHandler(const base::Closure& handler) override;
   shell::Connector* GetConnector() override;
@@ -47,7 +47,7 @@ class MojoShellConnectionImpl : public MojoShellConnection {
   int AddConnectionFilter(std::unique_ptr<ConnectionFilter> filter) override;
   void RemoveConnectionFilter(int filter_id) override;
   void AddEmbeddedService(const std::string& name,
-                          const MojoApplicationInfo& info) override;
+                          const ServiceInfo& info) override;
   void AddServiceRequestHandler(
       const std::string& name,
       const ServiceRequestHandler& handler) override;
@@ -68,15 +68,15 @@ class MojoShellConnectionImpl : public MojoShellConnection {
   base::Closure initialize_handler_;
   base::Closure connection_lost_handler_;
 
-  std::unordered_map<std::string, std::unique_ptr<EmbeddedApplicationRunner>>
-      embedded_apps_;
+  std::unordered_map<std::string, std::unique_ptr<EmbeddedServiceRunner>>
+      embedded_services_;
   std::unordered_map<std::string, ServiceRequestHandler> request_handlers_;
 
-  base::WeakPtrFactory<MojoShellConnectionImpl> weak_factory_;
+  base::WeakPtrFactory<ServiceManagerConnectionImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoShellConnectionImpl);
+  DISALLOW_COPY_AND_ASSIGN(ServiceManagerConnectionImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_MOJO_SHELL_CONNECTION_IMPL_H_
+#endif  // CONTENT_COMMON_SERVICE_MANAGER_SERVICE_MANAGER_CONNECTION_IMPL_H_

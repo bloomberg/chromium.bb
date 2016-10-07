@@ -20,13 +20,13 @@
 #include "content/app/mojo/mojo_init.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/common/in_process_child_thread_params.h"
-#include "content/common/mojo/mojo_child_connection.h"
 #include "content/common/resource_messages.h"
+#include "content/common/service_manager/child_connection.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/content_browser_test.h"
@@ -178,9 +178,10 @@ class RenderThreadImplBrowserTest : public testing::Test {
     InitializeMojo();
     ipc_support_.reset(new mojo::edk::test::ScopedIPCSupport(io_task_runner));
     shell_context_.reset(new TestServiceManagerContext);
-    child_connection_.reset(new MojoChildConnection(
-        kRendererMojoApplicationName, "test", mojo::edk::GenerateRandomToken(),
-        MojoShellConnection::GetForProcess()->GetConnector(), io_task_runner));
+    child_connection_.reset(new ChildConnection(
+        kRendererServiceName, "test", mojo::edk::GenerateRandomToken(),
+        ServiceManagerConnection::GetForProcess()->GetConnector(),
+        io_task_runner));
 
     mojo::MessagePipe pipe;
     IPC::mojom::ChannelBootstrapPtr channel_bootstrap;
@@ -229,7 +230,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
   std::unique_ptr<TestBrowserThreadBundle> browser_threads_;
   std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
   std::unique_ptr<TestServiceManagerContext> shell_context_;
-  std::unique_ptr<MojoChildConnection> child_connection_;
+  std::unique_ptr<ChildConnection> child_connection_;
   std::unique_ptr<DummyListener> dummy_listener_;
   std::unique_ptr<IPC::ChannelProxy> channel_;
 

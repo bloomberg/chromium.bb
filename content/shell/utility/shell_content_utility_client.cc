@@ -76,11 +76,10 @@ std::unique_ptr<shell::Service> CreateTestService(
 ShellContentUtilityClient::~ShellContentUtilityClient() {
 }
 
-void ShellContentUtilityClient::RegisterMojoApplications(
-    StaticMojoApplicationMap* apps) {
-  MojoApplicationInfo app_info;
-  app_info.application_factory = base::Bind(&CreateTestService);
-  apps->insert(std::make_pair(kTestServiceUrl, app_info));
+void ShellContentUtilityClient::RegisterServices(StaticServiceMap* services) {
+  ServiceInfo info;
+  info.factory = base::Bind(&CreateTestService);
+  services->insert(std::make_pair(kTestServiceUrl, info));
 }
 
 void ShellContentUtilityClient::ExposeInterfacesToBrowser(

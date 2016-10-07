@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MOJO_MOJO_CHILD_CONNECTION_H_
-#define CONTENT_COMMON_MOJO_MOJO_CHILD_CONNECTION_H_
+#ifndef CONTENT_COMMON_SERVICE_MANAGER_CHILD_CONNECTION_H_
+#define CONTENT_COMMON_SERVICE_MANAGER_CHILD_CONNECTION_H_
 
 #include <memory>
 #include <string>
@@ -27,19 +27,19 @@ namespace content {
 
 // Helper class to establish a connection between the shell and a single child
 // process. Process hosts can use this when launching new processes which
-// should be registered with the shell.
-class CONTENT_EXPORT MojoChildConnection {
+// should be registered with the service manager.
+class CONTENT_EXPORT ChildConnection {
  public:
   // Prepares a new child connection for a child process which will be
-  // identified to the shell as |application_name|. |instance_id| must be
-  // unique among all child connections using the same |application_name|.
-  // |connector| is the connector to use to establish the connection.
-  MojoChildConnection(const std::string& application_name,
-                      const std::string& instance_id,
-                      const std::string& child_token,
-                      shell::Connector* connector,
-                      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
-  ~MojoChildConnection();
+  // identified to the service manager as |name|. |instance_id| must be unique
+  // among all child connections using the same |name|. |connector| is the
+  // connector to use to establish the connection.
+  ChildConnection(const std::string& name,
+                  const std::string& instance_id,
+                  const std::string& child_token,
+                  shell::Connector* connector,
+                  scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+  ~ChildConnection();
 
   shell::InterfaceProvider* GetRemoteInterfaces() {
     return &remote_interfaces_;
@@ -68,11 +68,11 @@ class CONTENT_EXPORT MojoChildConnection {
 
   shell::InterfaceProvider remote_interfaces_;
 
-  base::WeakPtrFactory<MojoChildConnection> weak_factory_;
+  base::WeakPtrFactory<ChildConnection> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoChildConnection);
+  DISALLOW_COPY_AND_ASSIGN(ChildConnection);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_MOJO_MOJO_CHILD_CONNECTION_H_
+#endif  // CONTENT_COMMON_SERVICE_MANAGER_CHILD_CONNECTION_H_

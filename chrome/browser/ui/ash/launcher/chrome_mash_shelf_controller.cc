@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/grit/theme_resources.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/common/constants.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/common/common_type_converters.h"
@@ -70,7 +70,7 @@ void ChromeMashShelfController::LaunchItem(const std::string& app_id) {
 
 void ChromeMashShelfController::Init() {
   shell::Connector* connector =
-      content::MojoShellConnection::GetForProcess()->GetConnector();
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->ConnectToInterface("service:ash", &shelf_controller_);
 
   // Initialize shelf alignment and auto-hide behavior from preferences.

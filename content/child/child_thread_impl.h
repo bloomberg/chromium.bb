@@ -102,7 +102,7 @@ class CONTENT_EXPORT ChildThreadImpl
 #endif
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
-  MojoShellConnection* GetMojoShellConnection() override;
+  ServiceManagerConnection* GetServiceManagerConnection() override;
   shell::InterfaceRegistry* GetInterfaceRegistry() override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
 
@@ -205,10 +205,11 @@ class CONTENT_EXPORT ChildThreadImpl
   // Called when the process refcount is 0.
   void OnProcessFinalRelease();
 
-  // Called by subclasses to manually start the MojoShellConnection. Must only
-  // be called if ChildThreadImpl::Options::auto_start_mojo_shell_connection
-  // was set to |false| on ChildThreadImpl construction.
-  void StartMojoShellConnection();
+  // Called by subclasses to manually start the ServiceManagerConnection. Must
+  // only be called if
+  // ChildThreadImpl::Options::auto_start_service_manager_connection was set to
+  // |false| on ChildThreadImpl construction.
+  void StartServiceManagerConnection();
 
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
   virtual void OnProcessBackgrounded(bool backgrounded);
@@ -268,7 +269,7 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
-  std::unique_ptr<MojoShellConnection> mojo_shell_connection_;
+  std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
   std::unique_ptr<shell::Connection> browser_connection_;
 
   mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
@@ -335,11 +336,11 @@ struct ChildThreadImpl::Options {
 
   class Builder;
 
-  bool auto_start_mojo_shell_connection;
+  bool auto_start_service_manager_connection;
   bool connect_to_browser;
   scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner;
   std::vector<IPC::MessageFilter*> startup_filters;
-  std::string in_process_application_token;
+  std::string in_process_service_request_token;
 
  private:
   Options();
@@ -350,7 +351,7 @@ class ChildThreadImpl::Options::Builder {
   Builder();
 
   Builder& InBrowserProcess(const InProcessChildThreadParams& params);
-  Builder& AutoStartMojoShellConnection(bool auto_start);
+  Builder& AutoStartServiceManagerConnection(bool auto_start);
   Builder& ConnectToBrowser(bool connect_to_browser);
   Builder& AddStartupFilter(IPC::MessageFilter* filter);
 

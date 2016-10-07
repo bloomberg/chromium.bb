@@ -92,7 +92,7 @@
 #endif  // defined(OS_POSIX)
 
 #if defined(USE_AURA)
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #endif
 
@@ -195,15 +195,15 @@ content::RenderWidgetInputHandlerDelegate* GetRenderWidgetInputHandlerDelegate(
     content::RenderWidget* widget) {
 #if defined(USE_AURA)
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
-  if (content::MojoShellConnection::GetForProcess() &&
+  if (content::ServiceManagerConnection::GetForProcess() &&
       cmdline.HasSwitch(switches::kUseMusInRenderer)) {
     return content::RenderWidgetMusConnection::GetOrCreate(
         widget->routing_id());
   }
 #endif
-  // If we don't have a connection to the Mojo shell, then we want to route IPCs
-  // back to the browser process rather than Mus so we use the |widget| as the
-  // RenderWidgetInputHandlerDelegate.
+  // If we don't have a connection to the Service Manager, then we want to route
+  // IPCs back to the browser process rather than Mus so we use the |widget| as
+  // the RenderWidgetInputHandlerDelegate.
   return widget;
 }
 

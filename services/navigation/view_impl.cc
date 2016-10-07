@@ -66,7 +66,7 @@ ViewImpl::ViewImpl(std::unique_ptr<shell::Connector> connector,
       client_(std::move(client)),
       ref_(std::move(ref)),
       web_view_(new views::WebView(
-          content::BrowserContext::GetBrowserContextForShellUserId(
+          content::BrowserContext::GetBrowserContextForServiceUserId(
               client_user_id))) {
   web_view_->GetWebContents()->SetDelegate(this);
   const content::NavigationController* controller =
@@ -148,7 +148,7 @@ void ViewImpl::AddNewContents(content::WebContents* source,
                        initial_rect, user_gesture);
 
   const std::string new_user_id =
-      content::BrowserContext::GetShellUserIdFor(
+      content::BrowserContext::GetServiceUserIdFor(
           new_contents->GetBrowserContext());
   auto impl = base::MakeUnique<ViewImpl>(connector_->Clone(), new_user_id,
                                          std::move(client), ref_->Clone());

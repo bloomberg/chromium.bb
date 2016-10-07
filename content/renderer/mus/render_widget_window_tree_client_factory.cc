@@ -15,7 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/public/common/connection_filter.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
@@ -35,7 +35,7 @@ void BindMusConnectionOnMainThread(
   connection->Bind(std::move(request));
 }
 
-// This object's lifetime is managed by MojoShellConnection because it's a
+// This object's lifetime is managed by ServiceManagerConnection because it's a
 // registered with it.
 class RenderWidgetWindowTreeClientFactoryImpl
     : public ConnectionFilter,
@@ -82,7 +82,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
 }  // namespace
 
 void CreateRenderWidgetWindowTreeClientFactory(
-    MojoShellConnection* connection) {
+    ServiceManagerConnection* connection) {
   connection->AddConnectionFilter(
       base::MakeUnique<RenderWidgetWindowTreeClientFactoryImpl>());
 }

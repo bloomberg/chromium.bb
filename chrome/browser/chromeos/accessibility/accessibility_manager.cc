@@ -65,7 +65,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -601,7 +601,7 @@ void AccessibilityManager::UpdateAutoclickFromPref() {
 
   if (chrome::IsRunningInMash()) {
     shell::Connector* connector =
-        content::MojoShellConnection::GetForProcess()->GetConnector();
+        content::ServiceManagerConnection::GetForProcess()->GetConnector();
     mash::mojom::LaunchablePtr launchable;
     connector->ConnectToInterface("service:accessibility_autoclick",
                                   &launchable);
@@ -639,7 +639,7 @@ void AccessibilityManager::UpdateAutoclickDelayFromPref() {
 
   if (chrome::IsRunningInMash()) {
     shell::Connector* connector =
-        content::MojoShellConnection::GetForProcess()->GetConnector();
+        content::ServiceManagerConnection::GetForProcess()->GetConnector();
     ash::autoclick::mojom::AutoclickControllerPtr autoclick_controller;
     connector->ConnectToInterface("service:accessibility_autoclick",
                                   &autoclick_controller);

@@ -151,8 +151,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   void ExposeInterfacesToRenderer(
       ::shell::InterfaceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
-  void RegisterInProcessMojoApplications(
-      StaticMojoApplicationMap* apps) override;
+  void RegisterInProcessServices(StaticServiceMap* services) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
       const std::string& service_name) override;
 #if defined(OS_ANDROID)

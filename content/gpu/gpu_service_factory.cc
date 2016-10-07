@@ -18,11 +18,10 @@ GpuServiceFactory::~GpuServiceFactory() {}
 
 void GpuServiceFactory::RegisterServices(ServiceMap* services) {
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  MojoApplicationInfo service_info;
-  service_info.application_factory =
-      base::Bind(&media::CreateMojoMediaApplication);
-  service_info.use_own_thread = true;
-  services->insert(std::make_pair("service:media", service_info));
+  ServiceInfo info;
+  info.factory = base::Bind(&media::CreateMojoMediaApplication);
+  info.use_own_thread = true;
+  services->insert(std::make_pair("service:media", info));
 #endif
 }
 

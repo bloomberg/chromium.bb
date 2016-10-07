@@ -148,7 +148,7 @@
 
 #if defined(USE_AURA)
 #include "content/browser/web_contents/web_contents_view_mus.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "ui/aura/mus/mus_util.h"
 #endif
 
@@ -1581,7 +1581,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
 
 #if defined(USE_AURA)
-  if (MojoShellConnection::GetForProcess() &&
+  if (ServiceManagerConnection::GetForProcess() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMusInRenderer)) {
     ui::Window* mus_window = aura::GetMusWindow(params.context);

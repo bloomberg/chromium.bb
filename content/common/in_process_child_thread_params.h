@@ -19,20 +19,20 @@ namespace content {
 class CONTENT_EXPORT InProcessChildThreadParams {
  public:
   InProcessChildThreadParams(scoped_refptr<base::SequencedTaskRunner> io_runner,
-                             const std::string& application_token);
+                             const std::string& service_request_token);
   InProcessChildThreadParams(const InProcessChildThreadParams& other);
   ~InProcessChildThreadParams();
 
   scoped_refptr<base::SequencedTaskRunner> io_runner() const {
     return io_runner_;
   }
-  const std::string& application_token() const {
-    return application_token_;
+  const std::string& service_request_token() const {
+    return service_request_token_;
   }
 
  private:
   scoped_refptr<base::SequencedTaskRunner> io_runner_;
-  std::string application_token_;
+  std::string service_request_token_;
 };
 
 }  // namespace content

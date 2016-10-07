@@ -9,11 +9,11 @@
 
 namespace content {
 
-extern const char CONTENT_EXPORT kBrowserMojoApplicationName[];
-extern const char CONTENT_EXPORT kGpuMojoApplicationName[];
-extern const char CONTENT_EXPORT kPluginMojoApplicationName[];
-extern const char CONTENT_EXPORT kRendererMojoApplicationName[];
-extern const char CONTENT_EXPORT kUtilityMojoApplicationName[];
+extern const char CONTENT_EXPORT kBrowserServiceName[];
+extern const char CONTENT_EXPORT kGpuServiceName[];
+extern const char CONTENT_EXPORT kPluginServiceName[];
+extern const char CONTENT_EXPORT kRendererServiceName[];
+extern const char CONTENT_EXPORT kUtilityServiceName[];
 
 }  // namespace content
 

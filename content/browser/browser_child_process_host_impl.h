@@ -40,7 +40,7 @@ namespace content {
 class BrowserChildProcessHostIterator;
 class BrowserChildProcessObserver;
 class BrowserMessageFilter;
-class MojoChildConnection;
+class ChildConnection;
 
 // Plugins/workers and other child processes that live on the IO thread use this
 // class. RenderProcessHostImpl is the main exception that doesn't use this
@@ -108,7 +108,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 
   BrowserChildProcessHostDelegate* delegate() const { return delegate_; }
 
-  MojoChildConnection* child_connection() const {
+  ChildConnection* child_connection() const {
     return child_connection_.get();
   }
 
@@ -153,7 +153,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   std::unique_ptr<ChildProcessHost> child_process_host_;
 
   const std::string child_token_;
-  std::unique_ptr<MojoChildConnection> child_connection_;
+  std::unique_ptr<ChildConnection> child_connection_;
 
   std::unique_ptr<ChildProcessLauncher> child_process_;
 

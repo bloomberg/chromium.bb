@@ -38,7 +38,7 @@
 #include "content/common/establish_channel_params.h"
 #include "content/common/gpu_host_messages.h"
 #include "content/common/in_process_child_thread_params.h"
-#include "content/common/mojo/mojo_child_connection.h"
+#include "content/common/service_manager/child_connection.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -50,10 +50,10 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
-#include "content/public/common/mojo_shell_connection.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -302,7 +302,7 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
   bool OnConnect(const shell::Identity& remote_identity,
                  shell::InterfaceRegistry* registry,
                  shell::Connector* connector) override {
-    if (remote_identity.name() != kGpuMojoApplicationName)
+    if (remote_identity.name() != kGpuServiceName)
       return false;
 
     GetContentClient()->browser()->ExposeInterfacesToGpuProcess(registry,
@@ -464,7 +464,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       base::Bind(base::IgnoreResult(&GpuProcessHostUIShim::Create), host_id));
 
   process_.reset(new BrowserChildProcessHostImpl(
-      PROCESS_TYPE_GPU, this, kGpuMojoApplicationName));
+      PROCESS_TYPE_GPU, this, kGpuServiceName));
 }
 
 GpuProcessHost::~GpuProcessHost() {
@@ -560,8 +560,8 @@ bool GpuProcessHost::Init() {
   TRACE_EVENT_INSTANT0("gpu", "LaunchGpuProcess", TRACE_EVENT_SCOPE_THREAD);
 
   // May be null during test execution.
-  if (MojoShellConnection::GetForProcess()) {
-    MojoShellConnection::GetForProcess()->AddConnectionFilter(
+  if (ServiceManagerConnection::GetForProcess()) {
+    ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
         base::MakeUnique<ConnectionFilterImpl>(this));
   }
 

@@ -11,7 +11,7 @@
 #if defined(USE_AURA)
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_manager_connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/ui/public/cpp/gpu_service.h"
@@ -51,8 +51,8 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 #endif
 }
 
-void ChromeBrowserMainExtraPartsViews::MojoShellConnectionStarted(
-    content::MojoShellConnection* connection) {
+void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
+    content::ServiceManagerConnection* connection) {
   DCHECK(connection);
 #if defined(USE_AURA)
   if (shell::ShellIsRemote()) {

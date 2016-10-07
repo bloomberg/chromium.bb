@@ -9,7 +9,7 @@
 
 namespace content {
 
-class MojoShellConnection;
+class ServiceManagerConnection;
 
 // This class contains different "stages" to be executed by |BrowserMain()|,
 // Each stage is represented by a single BrowserMainParts method, called from
@@ -72,7 +72,8 @@ class CONTENT_EXPORT BrowserMainParts {
   // (or 0 if no error).
   virtual int PreCreateThreads();
 
-  virtual void MojoShellConnectionStarted(MojoShellConnection* connection) {}
+  virtual void ServiceManagerConnectionStarted(
+      ServiceManagerConnection* connection) {}
 
   // This is called just before the main message loop is run.  The
   // various browser threads have all been created at this point

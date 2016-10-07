@@ -7,9 +7,10 @@
 
 namespace content {
 
-class MojoShellConnection;
+class ServiceManagerConnection;
 
-void CreateRenderWidgetWindowTreeClientFactory(MojoShellConnection* connection);
+void CreateRenderWidgetWindowTreeClientFactory(
+    ServiceManagerConnection* connection);
 
 }  // namespace content
 
