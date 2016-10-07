@@ -57,8 +57,7 @@ ScriptResource::ScriptResource(const ResourceRequest& resourceRequest,
                    Script,
                    options,
                    "application/javascript",
-                   charset),
-      m_integrityDisposition(ScriptIntegrityDisposition::NotChecked) {}
+                   charset) {}
 
 ScriptResource::~ScriptResource() {}
 
@@ -110,20 +109,6 @@ bool ScriptResource::mimeTypeAllowedByNosniff() const {
   return parseContentTypeOptionsHeader(response().httpHeaderField(
              HTTPNames::X_Content_Type_Options)) != ContentTypeOptionsNosniff ||
          MIMETypeRegistry::isSupportedJavaScriptMIMEType(httpContentType());
-}
-
-void ScriptResource::setIntegrityDisposition(
-    ScriptIntegrityDisposition disposition) {
-  DCHECK_NE(disposition, ScriptIntegrityDisposition::NotChecked);
-  m_integrityDisposition = disposition;
-}
-bool ScriptResource::mustRefetchDueToIntegrityMetadata(
-    const FetchRequest& request) const {
-  if (request.integrityMetadata().isEmpty())
-    return false;
-
-  return !IntegrityMetadata::setsEqual(m_integrityMetadata,
-                                       request.integrityMetadata());
 }
 
 }  // namespace blink

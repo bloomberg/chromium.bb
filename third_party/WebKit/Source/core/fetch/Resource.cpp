@@ -27,6 +27,8 @@
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
+#include "core/fetch/FetchRequest.h"
+#include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceClientWalker.h"
@@ -313,6 +315,7 @@ Resource::Resource(const ResourceRequest& request,
       m_linkPreload(false),
       m_isRevalidating(false),
       m_isAlive(false),
+      m_integrityDisposition(ResourceIntegrityDisposition::NotChecked),
       m_options(options),
       m_responseTimestamp(currentTime()),
       m_cancelTimer(this, &Resource::cancelTimerFired),
@@ -446,6 +449,22 @@ bool Resource::isEligibleForIntegrityCheck(
   String ignoredErrorDescription;
   return securityOrigin->canRequest(resourceRequest().url()) ||
          passesAccessControlCheck(securityOrigin, ignoredErrorDescription);
+}
+
+void Resource::setIntegrityDisposition(
+    ResourceIntegrityDisposition disposition) {
+  DCHECK_NE(disposition, ResourceIntegrityDisposition::NotChecked);
+  DCHECK(m_type == Resource::Script);
+  m_integrityDisposition = disposition;
+}
+
+bool Resource::mustRefetchDueToIntegrityMetadata(
+    const FetchRequest& request) const {
+  if (request.integrityMetadata().isEmpty())
+    return false;
+
+  return !IntegrityMetadata::setsEqual(m_integrityMetadata,
+                                       request.integrityMetadata());
 }
 
 static double currentAge(const ResourceResponse& response,

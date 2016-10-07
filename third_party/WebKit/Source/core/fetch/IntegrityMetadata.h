@@ -40,6 +40,8 @@ class CORE_EXPORT IntegrityMetadata {
   HashAlgorithm m_algorithm;
 };
 
+enum class ResourceIntegrityDisposition { NotChecked = 0, Failed, Passed };
+
 }  // namespace blink
 
 #endif

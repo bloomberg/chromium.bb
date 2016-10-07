@@ -765,15 +765,14 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
     return Load;
 
   // Checks if the resource has an explicit policy about integrity metadata.
-  // Currently only applies to ScriptResources.
   //
-  // This is necessary because ScriptResource objects do not keep the raw data
-  // around after the source is accessed once, so if the resource is accessed
-  // from the MemoryCache for a second time, there is no way to redo an
-  // integrity check.
+  // This is necessary because ScriptResource and CSSStyleSheetResource objects
+  // do not keep the raw data around after the source is accessed once, so if
+  // the resource is accessed from the MemoryCache for a second time, there is
+  // no way to redo an integrity check.
   //
   // Thus, Blink implements a scheme where it caches the integrity information
-  // for a ScriptResource after the first time it is checked, and if there is
+  // for those resources after the first time it is checked, and if there is
   // another request for that resource, with the same integrity metadata, Blink
   // skips the integrity calculation. However, if the integrity metadata is a
   // mismatch, the MemoryCache must be skipped here, and a new request for the
