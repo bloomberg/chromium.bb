@@ -103,17 +103,23 @@ TEST_F(WebUIDataSourceTest, EmptyStrings) {
   StartDataRequest("strings.js", base::Bind(&EmptyStringsCallback));
 }
 
-void SomeStringsCallback(scoped_refptr<base::RefCountedMemory> data) {
+void SomeValuesCallback(scoped_refptr<base::RefCountedMemory> data) {
   std::string result(data->front_as<char>(), data->size());
+  EXPECT_NE(result.find("\"flag\":true"), std::string::npos);
+  EXPECT_NE(result.find("\"counter\":10"), std::string::npos);
+  EXPECT_NE(result.find("\"debt\":-456"), std::string::npos);
   EXPECT_NE(result.find("\"planet\":\"pluto\""), std::string::npos);
   EXPECT_NE(result.find("\"button\":\"foo\""), std::string::npos);
 }
 
-TEST_F(WebUIDataSourceTest, SomeStrings) {
+TEST_F(WebUIDataSourceTest, SomeValues) {
   source()->SetJsonPath("strings.js");
+  source()->AddBoolean("flag", true);
+  source()->AddInteger("counter", 10);
+  source()->AddInteger("debt", -456);
   source()->AddString("planet", base::ASCIIToUTF16("pluto"));
   source()->AddLocalizedString("button", kDummyStringId);
-  StartDataRequest("strings.js", base::Bind(&SomeStringsCallback));
+  StartDataRequest("strings.js", base::Bind(&SomeValuesCallback));
 }
 
 void DefaultResourceFoobarCallback(scoped_refptr<base::RefCountedMemory> data) {

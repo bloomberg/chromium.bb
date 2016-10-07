@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_WEBUI_WEB_UI_DATA_SOURCE_IMPL_H_
 #define CONTENT_BROWSER_WEBUI_WEB_UI_DATA_SOURCE_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
@@ -34,6 +36,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   void AddLocalizedStrings(
       const base::DictionaryValue& localized_strings) override;
   void AddBoolean(const std::string& name, bool value) override;
+  void AddInteger(const std::string& name, int32_t value) override;
   void SetJsonPath(const std::string& path) override;
   void AddResourcePath(const std::string& path, int resource_id) override;
   void SetDefaultResource(int resource_id) override;

@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_UI_DATA_SOURCE_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_UI_DATA_SOURCE_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
@@ -46,6 +48,11 @@ class WebUIDataSource {
 
   // Adds a boolean keyed to its name to our dictionary.
   virtual void AddBoolean(const std::string& name, bool value) = 0;
+
+  // Adds a signed 32-bit integer keyed to its name to our dictionary. Larger
+  // integers may not be exactly representable in JavaScript. See
+  // MAX_SAFE_INTEGER in /v8/src/globals.h.
+  virtual void AddInteger(const std::string& name, int32_t value) = 0;
 
   // Sets the path which will return the JSON strings.
   virtual void SetJsonPath(const std::string& path) = 0;

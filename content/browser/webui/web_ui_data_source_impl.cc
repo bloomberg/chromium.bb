@@ -5,6 +5,7 @@
 #include "content/browser/webui/web_ui_data_source_impl.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 
@@ -139,6 +140,10 @@ void WebUIDataSourceImpl::AddBoolean(const std::string& name, bool value) {
   // localization. The boolean values are not added to |replacements_|
   // for the same reason, that they are used as flags, rather than string
   // replacements.
+}
+
+void WebUIDataSourceImpl::AddInteger(const std::string& name, int32_t value) {
+  localized_strings_.SetInteger(name, value);
 }
 
 void WebUIDataSourceImpl::SetJsonPath(const std::string& path) {
