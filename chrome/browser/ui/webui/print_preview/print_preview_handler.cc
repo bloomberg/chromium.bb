@@ -90,7 +90,7 @@
 #include "chrome/common/url_constants.h"
 #endif
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/printing/cloud_print/privet_constants.h"
 #endif
 
@@ -501,6 +501,14 @@ base::FilePath GetUniquePath(const base::FilePath& path) {
   return unique_path;
 }
 
+bool PrivetPrintingEnabled() {
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
+  return true;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 class PrintPreviewHandler::AccessTokenService
@@ -669,14 +677,6 @@ void PrintPreviewHandler::RegisterMessages() {
   RegisterForGaiaCookieChanges();
 }
 
-bool PrintPreviewHandler::PrivetPrintingEnabled() {
-#if defined(ENABLE_SERVICE_DISCOVERY)
-  return true;
-#else
-  return false;
-#endif
-}
-
 WebContents* PrintPreviewHandler::preview_web_contents() const {
   return web_ui()->GetWebContents();
 }
@@ -697,17 +697,17 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* /*args*/) {
 void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
   if (!PrivetPrintingEnabled())
     return web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrinterSearchDone");
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   using local_discovery::ServiceDiscoverySharedClient;
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery =
       ServiceDiscoverySharedClient::GetInstance();
   StartPrivetLister(service_discovery);
-#endif  // ENABLE_SERVICE_DISCOVERY
+#endif
 }
 
 void PrintPreviewHandler::HandleStopGetPrivetPrinters(
     const base::ListValue* args) {
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   if (PrivetPrintingEnabled() && printer_lister_) {
     printer_lister_->Stop();
   }
@@ -716,7 +716,7 @@ void PrintPreviewHandler::HandleStopGetPrivetPrinters(
 
 void PrintPreviewHandler::HandleGetPrivetPrinterCapabilities(
     const base::ListValue* args) {
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   std::string name;
   bool success = args->GetString(0, &name);
   DCHECK(success);
@@ -890,7 +890,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     return;
   }
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   if (print_with_privet && PrivetPrintingEnabled()) {
     std::string printer_name;
     std::string print_ticket;
@@ -1485,8 +1485,7 @@ bool PrintPreviewHandler::GetPreviewDataAndTitle(
   return true;
 }
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
-
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 void PrintPreviewHandler::StartPrivetLister(const scoped_refptr<
     local_discovery::ServiceDiscoverySharedClient>& client) {
   if (!PrivetPrintingEnabled())
@@ -1694,8 +1693,7 @@ void PrintPreviewHandler::FillPrinterDescription(
       command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos));
   printer_value->SetString("cloudID", description.id);
 }
-
-#endif  // defined(ENABLE_SERVICE_DISCOVERY)
+#endif  // BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 
 void PrintPreviewHandler::EnsureExtensionPrinterHandlerSet() {
   if (extension_printer_handler_)

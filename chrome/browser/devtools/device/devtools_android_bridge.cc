@@ -37,6 +37,7 @@
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
@@ -50,7 +51,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/devtools/device/cast_device_provider.h"
 #endif
 
@@ -948,7 +949,7 @@ void DevToolsAndroidBridge::CreateDeviceProviders() {
   if (provider)
     device_providers.push_back(provider);
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   device_providers.push_back(new CastDeviceProvider());
 #endif
 

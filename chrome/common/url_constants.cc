@@ -707,7 +707,7 @@ const char* const kChromeHostURLs[] = {
 #if defined(ENABLE_PRINT_PREVIEW)
   kChromeUIPrintHost,
 #endif
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   kChromeUIDevicesHost,
 #endif
 #if defined(ENABLE_WEBRTC)

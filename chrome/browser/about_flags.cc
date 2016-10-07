@@ -1175,7 +1175,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-tcp-fast-open", IDS_FLAGS_TCP_FAST_OPEN_NAME,
      IDS_FLAGS_TCP_FAST_OPEN_DESCRIPTION, kOsLinux | kOsCrOS | kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableTcpFastOpen)},
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     {"device-discovery-notifications",
      IDS_FLAGS_DEVICE_DISCOVERY_NOTIFICATIONS_NAME,
      IDS_FLAGS_DEVICE_DISCOVERY_NOTIFICATIONS_DESCRIPTION, kOsDesktop,
@@ -1185,7 +1185,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_PRINT_PREVIEW_REGISTER_PROMOS_NAME,
      IDS_FLAGS_PRINT_PREVIEW_REGISTER_PROMOS_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnablePrintPreviewRegisterPromos)},
-#endif  // ENABLE_SERVICE_DISCOVERY
+#endif  // BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 #if defined(OS_WIN)
     {"enable-cloud-print-xps", IDS_FLAGS_CLOUD_PRINT_XPS_NAME,
      IDS_FLAGS_CLOUD_PRINT_XPS_DESCRIPTION, kOsWin,

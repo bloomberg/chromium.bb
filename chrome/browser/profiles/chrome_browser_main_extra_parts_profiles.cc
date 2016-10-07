@@ -135,7 +135,7 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #endif
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/printing/cloud_print/privet_notifications_factory.h"
 #endif
 
@@ -244,7 +244,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   InMemoryURLIndexFactory::GetInstance();
   invalidation::ProfileInvalidationProviderFactory::GetInstance();
   InstantServiceFactory::GetInstance();
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   cloud_print::PrivetNotificationServiceFactory::GetInstance();
 #endif
 #if defined(ENABLE_SUPERVISED_USERS)

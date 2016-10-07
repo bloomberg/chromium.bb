@@ -143,7 +143,7 @@
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #endif
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
 #endif
 
@@ -539,7 +539,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   printing::StickySettings::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   LocalDiscoveryUI::RegisterProfilePrefs(registry);
 #endif
 

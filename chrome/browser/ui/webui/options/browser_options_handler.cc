@@ -66,6 +66,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -143,7 +144,7 @@
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/printing/cloud_print/privet_notifications.h"
 #endif
 
@@ -199,9 +200,9 @@ BrowserOptionsHandler::BrowserOptionsHandler()
                  weak_ptr_factory_.GetWeakPtr()));
 #endif  // !defined(OS_CHROMEOS)
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   cloud_print_mdns_ui_enabled_ = true;
-#endif  // defined(ENABLE_SERVICE_DISCOVERY)
+#endif
 }
 
 BrowserOptionsHandler::~BrowserOptionsHandler() {
@@ -557,11 +558,11 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "backgroundModeCheckbox", IDS_OPTIONS_SYSTEM_ENABLE_BACKGROUND_MODE },
 #endif  // defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     { "cloudPrintDevicesPageButton", IDS_LOCAL_DISCOVERY_DEVICES_PAGE_BUTTON },
     { "cloudPrintEnableNotificationsLabel",
       IDS_LOCAL_DISCOVERY_NOTIFICATIONS_ENABLE_CHECKBOX_LABEL },
-#endif  // defined(ENABLE_SERVICE_DISCOVERY)
+#endif
   };
 
   RegisterStrings(values, resources, arraysize(resources));
@@ -680,7 +681,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       g_browser_process->gpu_mode_manager()->initial_gpu_mode_pref());
 #endif
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   values->SetBoolean("cloudPrintHideNotificationsCheckbox",
                      !cloud_print::PrivetNotificationService::IsEnabled());
 #endif
@@ -858,7 +859,7 @@ void BrowserOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   if (cloud_print_mdns_ui_enabled_) {
     web_ui()->RegisterMessageCallback(
         "showCloudPrintDevicesPage",
@@ -1708,8 +1709,7 @@ void BrowserOptionsHandler::ShowManageSSLCertificates(
 }
 #endif
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
-
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 void BrowserOptionsHandler::ShowCloudPrintDevicesPage(
     const base::ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_CloudPrintDevicesPage"));
@@ -1719,7 +1719,6 @@ void BrowserOptionsHandler::ShowCloudPrintDevicesPage(
                        ui::PAGE_TRANSITION_LINK, false);
   web_ui()->GetWebContents()->OpenURL(params);
 }
-
 #endif
 
 void BrowserOptionsHandler::SetHotwordAudioHistorySectionVisible(

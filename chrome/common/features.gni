@@ -18,8 +18,9 @@ declare_args() {
   # Enables support for background apps.
   enable_background = !is_ios && !is_android && !is_chromecast
 
-  enable_one_click_signin =
-      is_win || is_mac || (is_linux && !is_chromeos && !is_chromecast)
+  # Enable the printing system dialog for platforms that support printing
+  # and have a system dialog.
+  enable_basic_print_dialog = enable_basic_printing && !is_chromeos
 
   # Google Now is disabled to prepare for its removal.
   # http://crbug.com/539674
@@ -30,13 +31,14 @@ declare_args() {
   # ChromeOS builds have this enabled by default.
   enable_hotwording = is_chrome_branded && is_chromeos
 
-  # Enable the printing system dialog for platforms that support printing
-  # and have a system dialog.
-  enable_basic_print_dialog = enable_basic_printing && !is_chromeos
+  enable_one_click_signin =
+      is_win || is_mac || (is_linux && !is_chromeos && !is_chromecast)
 
   # Set to true to bundle all the mash related mojo services into chrome.
   # Specify --mash to chrome to have chrome start the mash environment.
   enable_package_mash_services = is_chromeos
+
+  enable_service_discovery = enable_mdns || is_mac
 
   # Enables vr shell.
   enable_vr_shell = false
@@ -47,18 +49,19 @@ declare_args() {
   # Enable native notifications via XPC services (mac only).
   enable_xpc_notifications = false
 
+  # Indicates if the build is using PGO.
+  pgo_build = chrome_pgo_phase > 0
+
   # Use vulcanized HTML/CSS/JS resources to speed up WebUI (chrome://)
   # pages. https://github.com/polymer/vulcanize
   use_vulcanize = true
-
-  # Indicates if the build is using PGO.
-  pgo_build = chrome_pgo_phase > 0
 }
 
 chrome_grit_defines = [
   "enable_background=$enable_background",
   "enable_google_now=$enable_google_now",
   "enable_hotwording=$enable_hotwording",
+  "enable_service_discovery=$enable_service_discovery",
   "enable_vr_shell=$enable_vr_shell",
   "safe_browsing_mode=$safe_browsing_mode",
   "use_vulcanize=$use_vulcanize",

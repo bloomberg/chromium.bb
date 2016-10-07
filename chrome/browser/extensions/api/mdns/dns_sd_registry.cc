@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_device_lister.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
+#include "chrome/common/features.h"
 
 using local_discovery::ServiceDiscoveryClient;
 using local_discovery::ServiceDiscoverySharedClient;
@@ -107,7 +108,7 @@ DnsSdRegistry::ServiceTypeData::GetServiceList() {
 }
 
 DnsSdRegistry::DnsSdRegistry() {
-#if defined(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
 #endif
 }
