@@ -97,6 +97,8 @@ class IconLabelBubbleView : public views::InkDropHostView {
   // Padding after the separator.
   int GetPostSeparatorPadding() const;
 
+  float GetScaleFactor() const;
+
   // views::View:
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
