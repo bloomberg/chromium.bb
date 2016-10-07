@@ -306,6 +306,13 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   }
   void setPaginationStrutPropagatedFromChild(LayoutUnit);
 
+  LayoutUnit firstForcedBreakOffset() const {
+    if (!m_rareData)
+      return LayoutUnit();
+    return m_rareData->m_firstForcedBreakOffset;
+  }
+  void setFirstForcedBreakOffset(LayoutUnit);
+
   void positionSpannerDescendant(LayoutMultiColumnSpannerPlaceholder& child);
 
   bool avoidsFloats() const override;
@@ -678,6 +685,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
     MarginValues m_margins;
     LayoutUnit m_paginationStrutPropagatedFromChild;
+
+    LayoutUnit m_firstForcedBreakOffset;
 
     LayoutMultiColumnFlowThread* m_multiColumnFlowThread;
 

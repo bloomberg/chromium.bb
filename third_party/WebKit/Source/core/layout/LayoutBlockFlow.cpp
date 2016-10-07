@@ -511,6 +511,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
 
   if (state.isPaginated()) {
     setPaginationStrutPropagatedFromChild(LayoutUnit());
+    setFirstForcedBreakOffset(LayoutUnit());
 
     // Start with any applicable computed break-after and break-before values
     // for this object. During child layout, breakBefore will be joined with the
@@ -950,6 +951,13 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child,
     layoutInfo.setPreviousBreakAfterValue(child.breakAfter());
 
     paginatedContentWasLaidOut(child.logicalBottom());
+
+    if (childLayoutBlockFlow) {
+      // If a forced break was inserted inside the child, translate and
+      // propagate the offset to this object.
+      if (LayoutUnit offset = childLayoutBlockFlow->firstForcedBreakOffset())
+        setFirstForcedBreakOffset(offset + newLogicalTop);
+    }
   }
 
   if (child.isLayoutMultiColumnSpannerPlaceholder()) {
@@ -1219,6 +1227,18 @@ LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(
     // content completely. No point in leaving a page completely blank.
     return logicalOffset;
   }
+
+  if (child.isLayoutBlockFlow()) {
+    // If there's a forced break inside this object, figure out if we can fit
+    // everything before that forced break in the current fragmentainer. If it
+    // fits, we don't need to insert a break before the child.
+    const LayoutBlockFlow& blockChild = toLayoutBlockFlow(child);
+    if (LayoutUnit firstBreakOffset = blockChild.firstForcedBreakOffset()) {
+      if (remainingLogicalHeight >= firstBreakOffset)
+        return logicalOffset;
+    }
+  }
+
   return logicalOffset + paginationStrut;
 }
 
@@ -2295,6 +2315,15 @@ LayoutUnit LayoutBlockFlow::applyForcedBreak(LayoutUnit logicalOffset,
   if (remainingLogicalHeight == pageLogicalHeight)
     return logicalOffset;  // Don't break if we're already at the block start of
                            // a fragmentainer.
+
+  // If this is the first forced break inside this object, store the
+  // location. We need this information later if there's a break-inside:avoid
+  // object further up. We need to know if there are any forced breaks inside
+  // such objects, in order to determine whether we need to push it to the next
+  // fragmentainer or not.
+  if (!firstForcedBreakOffset())
+    setFirstForcedBreakOffset(logicalOffset);
+
   return logicalOffset + remainingLogicalHeight;
 }
 
@@ -4017,6 +4046,15 @@ void LayoutBlockFlow::setPaginationStrutPropagatedFromChild(LayoutUnit strut) {
     m_rareData = wrapUnique(new LayoutBlockFlowRareData(this));
   }
   m_rareData->m_paginationStrutPropagatedFromChild = strut;
+}
+
+void LayoutBlockFlow::setFirstForcedBreakOffset(LayoutUnit blockOffset) {
+  if (!m_rareData) {
+    if (!blockOffset)
+      return;
+    m_rareData = wrapUnique(new LayoutBlockFlowRareData(this));
+  }
+  m_rareData->m_firstForcedBreakOffset = blockOffset;
 }
 
 void LayoutBlockFlow::positionSpannerDescendant(
