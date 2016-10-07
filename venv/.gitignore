@@ -1,2 +1,3 @@
 /pip_packages/
 /venv/
+.venv_lock

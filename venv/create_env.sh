@@ -17,13 +17,17 @@ activate() {
 
 venv_dir="venv"
 
-cd "$(dirname "$(readlink -f -- "$0")")"
-if [[ requirements.txt -nt venv/timestamp ]]; then
-  echo "Creating or updating virtualenv in $(pwd)/$venv_dir/"
-  virtualenv "$venv_dir" --extra-search-dir=pip_packages
-  activate "$venv_dir"
-  pip install --no-index -f pip_packages -r requirements.txt
-  touch "$venv_dir"/timestamp
-else
-  echo "Existing virtualenv $(pwd)/$venv_dir/ is already up to date."
-fi
+(
+  # Try for 30 seconds to acquire an exclusive lock on virtualenv.
+  flock -w 30 9 || ( echo "Failed to acquire lock on virtualenv."; exit 1 )
+  cd "$(dirname "$(readlink -f -- "$0")")"
+  if [[ requirements.txt -nt venv/timestamp ]]; then
+    echo "Creating or updating virtualenv in $(pwd)/$venv_dir/"
+    virtualenv "$venv_dir" --extra-search-dir=pip_packages
+    activate "$venv_dir"
+    pip install --no-index -f pip_packages -r requirements.txt
+    touch "$venv_dir"/timestamp
+  else
+    echo "Existing virtualenv $(pwd)/$venv_dir/ is already up to date."
+  fi
+) 9>.venv_lock
