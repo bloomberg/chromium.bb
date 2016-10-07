@@ -382,6 +382,12 @@ shell_integration::DefaultWebClientState
 TestingBrowserProcess::CachedDefaultWebClientState() {
   return shell_integration::UNKNOWN_DEFAULT;
 }
+
+PhysicalWebDataSource*
+TestingBrowserProcess::GetPhysicalWebDataSource() {
+  return nullptr;
+}
+
 void TestingBrowserProcess::SetSystemRequestContext(
     net::URLRequestContextGetter* context_getter) {
   system_request_context_ = context_getter;

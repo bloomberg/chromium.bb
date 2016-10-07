@@ -32,6 +32,7 @@ class IOThread;
 class MediaFileSystemRegistry;
 class NotificationPlatformBridge;
 class NotificationUIManager;
+class PhysicalWebDataSource;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
@@ -277,6 +278,9 @@ class BrowserProcess {
   // process startup and now.
   virtual shell_integration::DefaultWebClientState
   CachedDefaultWebClientState() = 0;
+
+  // Returns the Physical Web data source.
+  virtual PhysicalWebDataSource* GetPhysicalWebDataSource() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

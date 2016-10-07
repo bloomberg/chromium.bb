@@ -92,6 +92,7 @@
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/physical_web/data_source/physical_web_data_source.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/prefs/json_pref_store.h"
@@ -168,6 +169,10 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/physical_web/physical_web_data_source_android.h"
 #endif
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -793,6 +798,19 @@ BrowserProcessImpl::CachedDefaultWebClientState() {
   return cached_default_web_client_state_;
 }
 
+PhysicalWebDataSource* BrowserProcessImpl::GetPhysicalWebDataSource() {
+  DCHECK(CalledOnValidThread());
+#if defined(OS_ANDROID)
+  if (!physical_web_data_source_) {
+    CreatePhysicalWebDataSource();
+    DCHECK(physical_web_data_source_);
+  }
+  return physical_web_data_source_.get();
+#else
+  return nullptr;
+#endif
+}
+
 // static
 void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
@@ -1221,6 +1239,16 @@ void BrowserProcessImpl::CreateGCMDriver() {
           content::BrowserThread::IO),
       blocking_task_runner);
 #endif  // defined(OS_ANDROID)
+}
+
+void BrowserProcessImpl::CreatePhysicalWebDataSource() {
+  DCHECK(!physical_web_data_source_);
+
+#if defined(OS_ANDROID)
+  physical_web_data_source_ = base::MakeUnique<PhysicalWebDataSourceAndroid>();
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {

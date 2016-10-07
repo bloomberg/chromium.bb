@@ -129,6 +129,7 @@ class TestingBrowserProcess : public BrowserProcess {
   memory::TabManager* GetTabManager() override;
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
+  PhysicalWebDataSource* GetPhysicalWebDataSource() override;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).

@@ -153,6 +153,7 @@ class BrowserProcessImpl : public BrowserProcess,
   memory::TabManager* GetTabManager() override;
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
+  PhysicalWebDataSource* GetPhysicalWebDataSource() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -178,6 +179,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateStatusTray();
   void CreateBackgroundModeManager();
   void CreateGCMDriver();
+  void CreatePhysicalWebDataSource();
 
   void ApplyAllowCrossOriginAuthPromptPolicy();
   void ApplyDefaultBrowserPolicy();
@@ -343,6 +345,8 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
   shell_integration::DefaultWebClientState cached_default_web_client_state_;
+
+  std::unique_ptr<PhysicalWebDataSource> physical_web_data_source_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

@@ -3132,6 +3132,8 @@ split_static_library("browser") {
       "android/omnibox/omnibox_prerender.h",
       "android/password_ui_view_android.cc",
       "android/password_ui_view_android.h",
+      "android/physical_web/physical_web_data_source_android.cc",
+      "android/physical_web/physical_web_data_source_android.h",
       "android/policy/policy_auditor.cc",
       "android/policy/policy_auditor.h",
       "android/precache/precache_launcher.cc",
