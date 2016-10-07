@@ -458,6 +458,10 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
 
   ReleaseResourcesInMessageQueue(&request_info->deferred_message_queue);
 
+  // Clear URLLoaderClient to stop receiving further Mojo IPC from the browser
+  // process.
+  it->second->url_loader_client = nullptr;
+
   // Always delete the pending_request asyncly so that cancelling the request
   // doesn't delete the request context info while its response is still being
   // handled.
