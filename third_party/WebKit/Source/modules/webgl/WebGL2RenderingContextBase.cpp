@@ -373,6 +373,9 @@ void WebGL2RenderingContextBase::getBufferSubData(GLenum target,
     synthesizeGLError(GL_INVALID_VALUE, funcName, "buffer overflow");
     return;
   }
+  if (subByteLength == 0) {
+    return;
+  }
 
   void* mappedData =
       contextGL()->MapBufferRange(target, static_cast<GLintptr>(srcByteOffset),
