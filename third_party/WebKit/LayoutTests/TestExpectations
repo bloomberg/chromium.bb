@@ -861,6 +861,11 @@ crbug.com/613672 [ Mac ] virtual/scalefactor150/fast/events/synthetic-events/tap
 # We should send PointerLeave events for stylus devices.
 crbug.com/583413 imported/wpt/pointerevents/pointerevent_pointerleave_pen-manual.html  [ Failure ]
 
+# JVV skia change to circles
+crbug.com/653991 virtual/gpu-rasterization/fast/images/color-profile-mask-image-svg.html    [ NeedsManualRebaseline ]
+crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation-css.html            [ NeedsManualRebaseline ]
+crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation-image-document.html [ NeedsManualRebaseline ]
+crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation.html                [ NeedsManualRebaseline ]
 
 
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
