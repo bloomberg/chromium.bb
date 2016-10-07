@@ -66,6 +66,7 @@ public class CastPositionTransferTest extends CastTestBase {
     /** Test for crbug.com/428409 */
     @Feature({"VideoFling"})
     @LargeTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/652872
     public void testLocalToRemotePositionTransfer() throws InterruptedException, TimeoutException {
         final Tab tab = getActivity().getActivityTab();
         final Rect videoRect = prepareDefaultVideofromPage(DEFAULT_VIDEO_PAGE, tab);
@@ -93,6 +94,7 @@ public class CastPositionTransferTest extends CastTestBase {
     /** Test for crbug.com/428409 */
     @Feature({"VideoFling"})
     @LargeTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/652872
     public void testRemoteToLocalPositionTransfer() throws InterruptedException, TimeoutException {
         final Tab tab = getActivity().getActivityTab();
         final Rect videoRect = prepareDefaultVideofromPage(DEFAULT_VIDEO_PAGE, tab);
@@ -138,7 +140,7 @@ public class CastPositionTransferTest extends CastTestBase {
     /** Test for crbug.com/425105 */
     @Feature({"VideoFling"})
     @LargeTest
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // Flaky - crbug.com/593840
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/593840, crbug.com/652872
     public void testPositionUpdate() throws InterruptedException, TimeoutException {
         final Tab tab = getActivity().getActivityTab();
         final Rect videoRect = prepareDefaultVideofromPage(DEFAULT_VIDEO_PAGE, tab);

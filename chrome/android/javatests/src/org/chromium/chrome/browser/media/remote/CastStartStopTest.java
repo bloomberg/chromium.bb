@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.media.remote;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.graphics.Rect;
 import android.test.suitebuilder.annotation.LargeTest;
 
@@ -11,6 +13,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.tab.Tab;
@@ -30,6 +33,7 @@ public class CastStartStopTest extends CastTestBase {
     @LargeTest
     @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
     @RetryOnFailure
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/652872
     public void testCastingGenericVideo() throws InterruptedException, TimeoutException {
         castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
         checkVideoStarted(DEFAULT_VIDEO);
@@ -42,6 +46,7 @@ public class CastStartStopTest extends CastTestBase {
     @LargeTest
     @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
     @RetryOnFailure
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/652872
     public void testStopFromVideoControls() throws InterruptedException, TimeoutException {
         Rect videoRect = castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
 
@@ -59,6 +64,7 @@ public class CastStartStopTest extends CastTestBase {
     @LargeTest
     @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
     @RetryOnFailure
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/652872
     public void testStopFromNotification() throws InterruptedException, TimeoutException {
         castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
 
