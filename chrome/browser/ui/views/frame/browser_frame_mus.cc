@@ -34,7 +34,7 @@ ui::Window* CreateMusWindow(BrowserView* browser_view) {
       mojo::ConvertTo<std::vector<uint8_t>>(true);
   properties[ui::mojom::WindowManager::kAppID_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(chrome_app_id);
-  return views::WindowManagerConnection::Get()->NewWindow(properties);
+  return views::WindowManagerConnection::Get()->NewTopLevelWindow(properties);
 }
 
 }  // namespace

@@ -110,7 +110,7 @@ void AutoclickApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
         mojo::ConvertTo<std::vector<uint8_t>>(
             static_cast<int32_t>(ui::mojom::ShowState::FULLSCREEN));
     ui::Window* window =
-        window_manager_connection_.get()->NewWindow(properties);
+        window_manager_connection_.get()->NewTopLevelWindow(properties);
     params.native_widget = new views::NativeWidgetMus(
         widget_.get(), window, ui::mojom::SurfaceType::DEFAULT);
     widget_->Init(params);

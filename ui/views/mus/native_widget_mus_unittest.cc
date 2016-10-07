@@ -587,7 +587,7 @@ class IsMaximizedObserver : public ui::WindowObserver {
 // OnWindowSharedPropertyChanged() returns the right thing.
 TEST_F(NativeWidgetMusTest, IsMaximized) {
   ASSERT_TRUE(WindowManagerConnection::Exists());
-  ui::Window* window = WindowManagerConnection::Get()->NewWindow(
+  ui::Window* window = WindowManagerConnection::Get()->NewTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>());
   IsMaximizedObserver observer;
   // NOTE: the order here is important, we purposefully add the

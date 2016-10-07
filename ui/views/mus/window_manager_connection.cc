@@ -112,7 +112,7 @@ bool WindowManagerConnection::Exists() {
   return !!lazy_tls_ptr.Pointer()->Get();
 }
 
-ui::Window* WindowManagerConnection::NewWindow(
+ui::Window* WindowManagerConnection::NewTopLevelWindow(
     const std::map<std::string, std::vector<uint8_t>>& properties) {
   return client_->NewTopLevelWindow(&properties);
 }
@@ -130,7 +130,7 @@ NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
   NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &properties);
   properties[ui::mojom::WindowManager::kAppID_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(identity_.name());
-  return new NativeWidgetMus(delegate, NewWindow(properties),
+  return new NativeWidgetMus(delegate, NewTopLevelWindow(properties),
                              ui::mojom::SurfaceType::DEFAULT);
 }
 

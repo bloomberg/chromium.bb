@@ -96,7 +96,7 @@ void Screenlock::OnStart(const shell::Identity& identity) {
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ash::mojom::Container::LOGIN_WINDOWS));
   ui::Window* window =
-      views::WindowManagerConnection::Get()->NewWindow(properties);
+      views::WindowManagerConnection::Get()->NewTopLevelWindow(properties);
   params.native_widget = new views::NativeWidgetMus(
       widget, window, ui::mojom::SurfaceType::DEFAULT);
   widget->Init(params);

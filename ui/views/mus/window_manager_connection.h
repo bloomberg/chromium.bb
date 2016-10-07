@@ -76,7 +76,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   ui::GpuService* gpu_service() { return gpu_service_.get(); }
   ui::WindowTreeClient* client() { return client_.get(); }
 
-  ui::Window* NewWindow(
+  ui::Window* NewTopLevelWindow(
       const std::map<std::string, std::vector<uint8_t>>& properties);
 
   NativeWidget* CreateNativeWidgetMus(
