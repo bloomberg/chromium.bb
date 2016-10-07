@@ -9,8 +9,10 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.WebappRegistry.FetchWebappDataStorageCallback;
@@ -144,6 +146,11 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      * changed.
      */
     private boolean forceUpgrade(WebappDataStorage storage) {
+        if (CommandLine.getInstance().hasSwitch(
+                    ChromeSwitches.CHECK_FOR_WEB_MANIFEST_UPDATE_ON_STARTUP)) {
+            return true;
+        }
+
         long sinceLastUpdateRequestDuration =
                 System.currentTimeMillis() - storage.getLastWebApkUpdateRequestCompletionTime();
         if (sinceLastUpdateRequestDuration <= RETRY_UPDATE_DURATION) {

@@ -206,6 +206,13 @@ public abstract class ChromeSwitches {
     public static final String ALWAYS_EXTRACT_WEBAPK_RUNTIME_DEX_ON_STARTUP =
             "always-extract-webapk-dex-on-startup";
 
+    /**
+     * Forces a check for whether the WebAPK's Web Manifest has changed each time that a WebAPK is
+     * launched.
+     */
+    public static final String CHECK_FOR_WEB_MANIFEST_UPDATE_ON_STARTUP =
+            "check-for-web-manifest-update-on-startup";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }
