@@ -91,11 +91,14 @@ static bool IsDecoderSupportedByDevice(const std::string& android_mime_type) {
 bool MediaCodecUtil::IsMediaCodecAvailable() {
   // Blacklist some devices on Jellybean as MediaCodec is buggy.
   // http://crbug.com/365494, http://crbug.com/615872
+  // Blacklist Lenovo A6600 / A6800 on KitKat, which tends to crash a lot.
+  // See crbug.com/628059 .  We include < K since they don't exist.
   if (base::android::BuildInfo::GetInstance()->sdk_int() <= 19) {
     std::string model(base::android::BuildInfo::GetInstance()->model());
     return model != "GT-I9100" && model != "GT-I9300" && model != "GT-N7000" &&
-           model != "GT-N7100";
+           model != "GT-N7100" && model != "A6600" && model != "A6800";
   }
+
   return true;
 }
 
