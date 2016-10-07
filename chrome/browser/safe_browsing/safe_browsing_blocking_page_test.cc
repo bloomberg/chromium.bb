@@ -68,10 +68,9 @@ namespace {
 
 const char kEmptyPage[] = "empty.html";
 const char kHTTPSPage[] = "/ssl/google.html";
-const char kMalwarePage[] = "safe_browsing/malware.html";
-const char kCrossSiteMalwarePage[] = "safe_browsing/malware2.html";
-const char kMalwareIframe[] = "safe_browsing/malware_iframe.html";
-const char kCrossSiteIframeUrl[] = "http://example.com/cross_site_iframe.html";
+const char kMaliciousPage[] = "safe_browsing/malware.html";
+const char kCrossSiteMaliciousPage[] = "safe_browsing/malware2.html";
+const char kMaliciousIframe[] = "safe_browsing/malware_iframe.html";
 const char kUnrelatedUrl[] = "https://www.google.com";
 
 // A SafeBrowsingDatabaseManager class that allows us to inject the malicious
@@ -369,16 +368,13 @@ class SafeBrowsingBlockingPageBrowserTest
     return SetupWarningAndNavigateToURL(url);
   }
 
-  // Adds two safebrowsing threat results to the fake safebrowsing service,
-  // navigates to a page with an iframe containing the threat site, and another
-  // cross site iframe containing another threat site, and returns the url of
-  // the parent page.
+  // Adds a safebrowsing threat results to the fake safebrowsing service,
+  // navigates to a page with an iframe containing the threat site, and returns
+  // the url of the parent page.
   GURL SetupThreatIframeWarningAndNavigate() {
-    GURL url = net::URLRequestMockHTTPJob::GetMockUrl(kCrossSiteMalwarePage);
-    GURL iframe_url = net::URLRequestMockHTTPJob::GetMockUrl(kMalwareIframe);
-    GURL cross_site_url(kCrossSiteIframeUrl);
+    GURL url = net::URLRequestMockHTTPJob::GetMockUrl(kCrossSiteMaliciousPage);
+    GURL iframe_url = net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousIframe);
     SetURLThreatType(iframe_url, testing::get<0>(GetParam()));
-    SetURLThreatType(cross_site_url, testing::get<0>(GetParam()));
 
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_TRUE(WaitForReady());
@@ -446,7 +442,7 @@ class SafeBrowsingBlockingPageBrowserTest
   void MalwareRedirectCancelAndProceed(const std::string& open_function) {
     GURL load_url = net::URLRequestMockHTTPJob::GetMockUrl(
         "safe_browsing/interstitial_cancel.html");
-    GURL malware_url = net::URLRequestMockHTTPJob::GetMockUrl(kMalwarePage);
+    GURL malware_url = net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousPage);
     SetURLThreatType(malware_url, testing::get<0>(GetParam()));
 
     // Load the test page.
@@ -688,8 +684,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, IframeProceed) {
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        IframeOptInAndReportThreatDetails) {
   // The extended reporting opt-in is presented in the interstitial for malware,
-  // phishing, and UwS threats. This test uses malware as an example to verify
-  // this reporting functionality.
+  // phishing, and UwS threats.
   const bool expect_threat_details =
       SafeBrowsingBlockingPage::ShouldReportThreatDetails(
           testing::get<0>(GetParam()));
@@ -723,7 +718,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
     EXPECT_TRUE(report.complete());
     // Do some basic verification of report contents.
     EXPECT_EQ(url.spec(), report.page_url());
-    EXPECT_EQ(net::URLRequestMockHTTPJob::GetMockUrl(kMalwareIframe).spec(),
+    EXPECT_EQ(net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousIframe).spec(),
               report.url());
     std::vector<ClientSafeBrowsingReportRequest::Resource> resources;
     for (auto resource: report.resources()) {
@@ -735,20 +730,16 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                  const ClientSafeBrowsingReportRequest::Resource& b) -> bool {
                 return a.url() < b.url();
               });
-    ASSERT_EQ(3U, resources.size());
+    ASSERT_EQ(2U, resources.size());
     VerifyResource(
-        report, resources[0], kCrossSiteIframeUrl,
-        net::URLRequestMockHTTPJob::GetMockUrl(kCrossSiteMalwarePage).spec(), 0,
-        "IFRAME");
+        report, resources[0],
+        net::URLRequestMockHTTPJob::GetMockUrl(kCrossSiteMaliciousPage).spec(),
+        net::URLRequestMockHTTPJob::GetMockUrl(kCrossSiteMaliciousPage).spec(),
+        1, "");
     VerifyResource(
         report, resources[1],
-        net::URLRequestMockHTTPJob::GetMockUrl(kCrossSiteMalwarePage).spec(),
-        net::URLRequestMockHTTPJob::GetMockUrl(kCrossSiteMalwarePage).spec(), 2,
-        "");
-    VerifyResource(
-        report, resources[2],
-        net::URLRequestMockHTTPJob::GetMockUrl(kMalwareIframe).spec(),
-        url.spec(),  // kCrossSiteMalwarePage
+        net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousIframe).spec(),
+        url.spec(),  // kCrossSiteMaliciousPage
         0, "IFRAME");
   }
 }
@@ -765,9 +756,9 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
     SetReportSentCallback(threat_report_sent_runner->QuitClosure());
 
   // Navigate to a safe page which contains multiple potential DOM details.
-  // (Despite the name, kMalwarePage is not the page flagged as malware in this
+  // (Despite the name, kMaliciousPage is not the page flagged as bad in this
   // test.)
-  GURL safe_url(net::URLRequestMockHTTPJob::GetMockUrl(kMalwarePage));
+  GURL safe_url(net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousPage));
   ui_test_utils::NavigateToURL(browser(), safe_url);
 
   EXPECT_EQ(nullptr, details_factory_.get_details());
@@ -817,10 +808,10 @@ IN_PROC_BROWSER_TEST_P(
     SetReportSentCallback(threat_report_sent_runner->QuitClosure());
 
   // Navigate to a safe page which contains multiple potential DOM details.
-  // (Despite the name, kMalwarePage is not the page flagged as malware in this
+  // (Despite the name, kMaliciousPage is not the page flagged as bad in this
   // test.)
   ui_test_utils::NavigateToURL(
-      browser(), net::URLRequestMockHTTPJob::GetMockUrl(kMalwarePage));
+      browser(), net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousPage));
 
   EXPECT_EQ(nullptr, details_factory_.get_details());
 
