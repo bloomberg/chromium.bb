@@ -4615,7 +4615,8 @@ def CMDtree(parser, args):
 
 
 def CMDtry(parser, args):
-  '''Triggers try jobs through BuildBucket.'''
+  """Triggers try jobs using CQ dry run or BuildBucket for individual builders.
+  """
   group = optparse.OptionGroup(parser, 'Try job options')
   group.add_option(
       '-b', '--bot', action='append',
@@ -4627,26 +4628,32 @@ def CMDtry(parser, args):
   group.add_option(
       '-m', '--master', default='',
       help=('Specify a try master where to run the tries.'))
+  # TODO(tandrii,nodir): add -B --bucket flag.
   group.add_option(
       '-r', '--revision',
-      help='Revision to use for the try job; default: the '
-           'revision will be determined by the try server; see '
-           'its waterfall for more info')
+      help='Revision to use for the try job; default: the revision will '
+           'be determined by the try recipe that builder runs, which usually '
+           'defaults to HEAD of origin/master')
   group.add_option(
       '-c', '--clobber', action='store_true', default=False,
-      help='Force a clobber before building; e.g. don\'t do an '
+      help='Force a clobber before building; that is don\'t do an '
            'incremental build')
   group.add_option(
       '--project',
       help='Override which project to use. Projects are defined '
-           'server-side to define what default bot set to use')
+           'in recipe to determine to which repository or directory to '
+           'apply the patch')
   group.add_option(
       '-p', '--property', dest='properties', action='append', default=[],
       help='Specify generic properties in the form -p key1=value1 -p '
-           'key2=value2 etc (buildbucket only). The value will be treated as '
-           'json if decodable, or as string otherwise.')
+           'key2=value2 etc. The value will be treated as '
+           'json if decodable, or as string otherwise. '
+           'NOTE: using this may make your try job not usable for CQ, '
+           'which will then schedule another try job with default properties')
+  # TODO(tandrii): if this even used?
   group.add_option(
       '-n', '--name', help='Try job name; default to current branch name')
+  # TODO(tandrii): get rid of this.
   group.add_option(
       '--use-rietveld', action='store_true', default=False,
       help='Use Rietveld to trigger try jobs.')
