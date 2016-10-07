@@ -21,6 +21,9 @@
 #include "components/metrics/proto/sampled_profile.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
+#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "third_party/protobuf/src/google/protobuf/wire_format_lite_inl.h"
 
 namespace metrics {
 
@@ -99,6 +102,21 @@ PerfStatProto GetExamplePerfStatProto() {
   line3->set_event("branches");
 
   return proto;
+}
+
+// Creates a serialized data stream containing a string with a field tag number.
+std::string SerializeStringFieldWithTag(int field, const std::string& value) {
+  std::string result;
+  google::protobuf::io::StringOutputStream string_stream(&result);
+  google::protobuf::io::CodedOutputStream output(&string_stream);
+
+  using google::protobuf::internal::WireFormatLite;
+  WireFormatLite::WriteTag(field, WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                           &output);
+  output.WriteVarint32(value.size());
+  output.WriteString(value);
+
+  return result;
 }
 
 // Allows testing of PerfProvider behavior when an incognito window is opened.
@@ -236,6 +254,111 @@ TEST_F(PerfProviderTest, PerfDataProto) {
   EXPECT_FALSE(profile.has_perf_stat());
   EXPECT_EQ(SerializeMessageToVector(perf_data_proto_),
             SerializeMessageToVector(profile.perf_data()));
+}
+
+TEST_F(PerfProviderTest, PerfDataProto_UnknownFieldsDiscarded) {
+  // First add some unknown fields to MMapEvent, CommEvent, PerfBuildID, and
+  // StringAndMd5sumPrefix. The known field values don't have to make sense for
+  // perf data. They are just padding to avoid having an otherwise empty proto.
+  // The unknown field string contents don't have to make sense as serialized
+  // data as the test is to discard them.
+
+  // MMapEvent
+  PerfDataProto_PerfEvent* event1 = perf_data_proto_.add_events();
+  event1->mutable_header()->set_type(1);
+  event1->mutable_mmap_event()->set_pid(1234);
+  event1->mutable_mmap_event()->set_filename_md5_prefix(0xdeadbeef);
+  // Missing field |MMapEvent::filename| has tag=6.
+  *event1->mutable_mmap_event()->mutable_unknown_fields() =
+      SerializeStringFieldWithTag(6, "/opt/google/chrome/chrome");
+
+  // CommEvent
+  PerfDataProto_PerfEvent* event2 = perf_data_proto_.add_events();
+  event2->mutable_header()->set_type(2);
+  event2->mutable_comm_event()->set_pid(5678);
+  event2->mutable_comm_event()->set_comm_md5_prefix(0x900df00d);
+  // Missing field |CommEvent::comm| has tag=3.
+  *event2->mutable_comm_event()->mutable_unknown_fields() =
+      SerializeStringFieldWithTag(3, "chrome");
+
+  // PerfBuildID
+  PerfDataProto_PerfBuildID* build_id = perf_data_proto_.add_build_ids();
+  build_id->set_misc(3);
+  build_id->set_pid(1337);
+  build_id->set_filename_md5_prefix(0x9876543210);
+  // Missing field |PerfBuildID::filename| has tag=4.
+  *build_id->mutable_unknown_fields() =
+      SerializeStringFieldWithTag(4, "/opt/google/chrome/chrome");
+
+  // StringAndMd5sumPrefix
+  PerfDataProto_StringMetadata* metadata =
+      perf_data_proto_.mutable_string_metadata();
+  metadata->mutable_perf_command_line_whole()->set_value_md5_prefix(
+      0x123456789);
+  // Missing field |StringAndMd5sumPrefix::value| has tag=1.
+  *metadata->mutable_perf_command_line_whole()->mutable_unknown_fields() =
+      SerializeStringFieldWithTag(1, "perf record -a -- sleep 1");
+
+  // Serialize to string and make sure it can be deserialized.
+  std::string perf_data_string = perf_data_proto_.SerializeAsString();
+  PerfDataProto temp_proto;
+  EXPECT_TRUE(temp_proto.ParseFromString(perf_data_string));
+
+  // Now pass it to |perf_provider_|.
+  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
+
+  perf_provider_->ParseOutputProtoIfValid(
+      TestIncognitoObserver::CreateWithIncognitoLaunched(false),
+      std::move(sampled_profile),
+      TestPerfProvider::PerfSubcommand::PERF_COMMAND_RECORD,
+      perf_data_string);
+
+  std::vector<SampledProfile> stored_profiles;
+  EXPECT_TRUE(perf_provider_->GetSampledProfiles(&stored_profiles));
+  ASSERT_EQ(1U, stored_profiles.size());
+
+  const SampledProfile& profile = stored_profiles[0];
+  EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION, profile.trigger_event());
+  EXPECT_TRUE(profile.has_perf_data());
+
+  // The serialized form should be different because the unknown fields have
+  // have been removed.
+  EXPECT_NE(perf_data_string, profile.perf_data().SerializeAsString());
+
+  // Check contents of stored protobuf.
+  const PerfDataProto& stored_proto = profile.perf_data();
+  ASSERT_EQ(2, stored_proto.events_size());
+
+  // MMapEvent
+  const PerfDataProto_PerfEvent& stored_event1 = stored_proto.events(0);
+  EXPECT_EQ(1U, stored_event1.header().type());
+  EXPECT_EQ(1234U, stored_event1.mmap_event().pid());
+  EXPECT_EQ(0xdeadbeef, stored_event1.mmap_event().filename_md5_prefix());
+  EXPECT_EQ(0U, stored_event1.mmap_event().unknown_fields().size());
+
+  // CommEvent
+  const PerfDataProto_PerfEvent& stored_event2 = stored_proto.events(1);
+  EXPECT_EQ(2U, stored_event2.header().type());
+  EXPECT_EQ(5678U, stored_event2.comm_event().pid());
+  EXPECT_EQ(0x900df00d, stored_event2.comm_event().comm_md5_prefix());
+  EXPECT_EQ(0U, stored_event2.comm_event().unknown_fields().size());
+
+  // PerfBuildID
+  ASSERT_EQ(1, stored_proto.build_ids_size());
+  const PerfDataProto_PerfBuildID& stored_build_id = stored_proto.build_ids(0);
+  EXPECT_EQ(3U, stored_build_id.misc());
+  EXPECT_EQ(1337U, stored_build_id.pid());
+  EXPECT_EQ(0x9876543210U, stored_build_id.filename_md5_prefix());
+  EXPECT_EQ(0U, stored_build_id.unknown_fields().size());
+
+  // StringAndMd5sumPrefix
+  const PerfDataProto_StringMetadata& stored_metadata =
+      stored_proto.string_metadata();
+  EXPECT_EQ(0x123456789U,
+            stored_metadata.perf_command_line_whole().value_md5_prefix());
+  EXPECT_EQ(0U,
+            stored_metadata.perf_command_line_whole().unknown_fields().size());
 }
 
 TEST_F(PerfProviderTest, PerfStatProto) {

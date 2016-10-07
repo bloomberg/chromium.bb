@@ -166,6 +166,38 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   return cmds;
 }
 
+// PerfDataProto is defined elsewhere with more fields than the definition in
+// Chromium's copy of perf_data.proto. During deserialization, the protobuf
+// data could contain fields that are defined elsewhere but not in
+// perf_data.proto, resulting in some data in |unknown_fields| for the message
+// types within PerfDataProto.
+//
+// This function deletes those dangling unknown fields if they are in messages
+// containing strings. See comments in perf_data.proto describing the fields
+// that have been intentionally left out. Note that all unknown fields will be
+// removed from those messages, not just unknown string fields.
+void RemoveUnknownFieldsFromMessagesWithStrings(PerfDataProto* proto) {
+  // Clean up PerfEvent::MMapEvent and PerfEvent::CommEvent.
+  for (PerfDataProto::PerfEvent& event : *proto->mutable_events()) {
+    if (event.has_comm_event())
+      event.mutable_comm_event()->mutable_unknown_fields()->clear();
+    if (event.has_mmap_event())
+      event.mutable_mmap_event()->mutable_unknown_fields()->clear();
+  }
+  // Clean up PerfBuildID.
+  for (PerfDataProto::PerfBuildID& build_id : *proto->mutable_build_ids()) {
+    build_id.mutable_unknown_fields()->clear();
+  }
+  // Clean up StringMetadata and StringMetadata::StringAndMd5sumPrefix.
+  if (proto->has_string_metadata()) {
+    proto->mutable_string_metadata()->mutable_unknown_fields()->clear();
+    if (proto->string_metadata().has_perf_command_line_whole()) {
+      proto->mutable_string_metadata()->mutable_perf_command_line_whole()->
+          mutable_unknown_fields()->clear();
+    }
+  }
+}
+
 }  // namespace
 
 namespace internal {
@@ -430,6 +462,7 @@ void PerfProvider::ParseOutputProtoIfValid(
         AddToPerfHistogram(PROTOBUF_NOT_PARSED);
         return;
       }
+      RemoveUnknownFieldsFromMessagesWithStrings(&perf_data_proto);
       sampled_profile->set_ms_after_boot(
           base::SysInfo::Uptime().InMilliseconds());
       sampled_profile->mutable_perf_data()->Swap(&perf_data_proto);
