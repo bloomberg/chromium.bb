@@ -43,16 +43,19 @@ class CORE_EXPORT PaintInvalidationState {
   PaintInvalidationState(const PaintInvalidationState& parentState,
                          const LayoutObject&);
 
-  // For root LayoutView, or when sub-frame LayoutView's invalidateTreeIfNeeded() is called directly from
-  // FrameView::invalidateTreeIfNeededRecursive() instead of the owner LayoutPart.
+  // For root LayoutView, or when sub-frame LayoutView's
+  // invalidateTreeIfNeeded() is called directly from
+  // FrameView::invalidateTreeIfNeededRecursive() instead of the owner
+  // LayoutPart.
   // TODO(wangxianzhu): Eliminate the latter case.
   PaintInvalidationState(
       const LayoutView&,
       Vector<const LayoutObject*>& pendingDelayedPaintInvalidations);
 
-  // When a PaintInvalidationState is constructed, it can be used to map points/rects in the object's
-  // local space (border box space for LayoutBoxes). After invalidation of the current object,
-  // before invalidation of the subtrees, this method must be called to apply clip and scroll offset
+  // When a PaintInvalidationState is constructed, it can be used to map
+  // points/rects in the object's local space (border box space for
+  // LayoutBoxes). After invalidation of the current object, before invalidation
+  // of the subtrees, this method must be called to apply clip and scroll offset
   // etc. for creating child PaintInvalidationStates.
   void updateForChildren(PaintInvalidationReason);
 
@@ -87,8 +90,8 @@ class CORE_EXPORT PaintInvalidationState {
     return *m_paintInvalidationContainer;
   }
 
-  // Computes the position of the current object ((0,0) in the space of the object)
-  // in the space of paint invalidation backing.
+  // Computes the position of the current object ((0,0) in the space of the
+  // object) in the space of paint invalidation backing.
   LayoutPoint computePositionFromPaintInvalidationBacking() const;
 
   // Returns the rect bounds needed to invalidate paint of this object,
@@ -121,31 +124,35 @@ class CORE_EXPORT PaintInvalidationState {
   bool m_clipped;
   bool m_clippedForAbsolutePosition;
 
-  // Clip rect from paintInvalidationContainer if m_cachedOffsetsEnabled is true.
+  // Clip rect from paintInvalidationContainer if m_cachedOffsetsEnabled is
+  // true.
   LayoutRect m_clipRect;
   LayoutRect m_clipRectForAbsolutePosition;
 
-  // x/y offset from the paintInvalidationContainer if m_cachedOffsetsEnabled is true.
+  // x/y offset from the paintInvalidationContainer if m_cachedOffsetsEnabled is
+  // true.
   // It includes relative positioning and scroll offsets.
   LayoutSize m_paintOffset;
   LayoutSize m_paintOffsetForAbsolutePosition;
 
   // Whether m_paintOffset[XXX] and m_clipRect[XXX] are valid and can be used
-  // to map a rect from space of the current object to space of paintInvalidationContainer.
+  // to map a rect from space of the current object to space of
+  // paintInvalidationContainer.
   bool m_cachedOffsetsEnabled;
   bool m_cachedOffsetsForAbsolutePositionEnabled;
 
-  // The following two fields are never null. Declare them as pointers because we need some
-  // logic to initialize them in the body of the constructor.
+  // The following two fields are never null. Declare them as pointers because
+  // we need some logic to initialize them in the body of the constructor.
 
   // The current paint invalidation container for normal flow objects.
   // It is the enclosing composited object.
   const LayoutBoxModelObject* m_paintInvalidationContainer;
 
-  // The current paint invalidation container for stacked contents (stacking contexts or positioned objects).
-  // It is the nearest ancestor composited object which establishes a stacking context.
-  // See Source/core/paint/README.md ### PaintInvalidationState for details on how stacked contents'
-  // paint invalidation containers differ.
+  // The current paint invalidation container for stacked contents (stacking
+  // contexts or positioned objects).  It is the nearest ancestor composited
+  // object which establishes a stacking context.  See
+  // Source/core/paint/README.md ### PaintInvalidationState for details on how
+  // stacked contents' paint invalidation containers differ.
   const LayoutBoxModelObject* m_paintInvalidationContainerForStackedContents;
 
   const LayoutObject& m_containerForAbsolutePosition;
@@ -155,7 +162,8 @@ class CORE_EXPORT PaintInvalidationState {
   // with |m_paintOffset| yields the "final" offset.
   AffineTransform m_svgTransform;
 
-  // Records objects needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
+  // Records objects needing paint invalidation on the next frame. See the
+  // definition of PaintInvalidationDelayedFull for more details.
   Vector<const LayoutObject*>& m_pendingDelayedPaintInvalidations;
 
   PaintLayer& m_paintingLayer;
@@ -176,7 +184,8 @@ class CORE_EXPORT PaintInvalidationState {
 #endif
 };
 
-// This is temporary to adapt legacy PaintInvalidationState to PaintInvalidatorContext
+// This is temporary to adapt legacy PaintInvalidationState to
+// PaintInvalidatorContext
 class PaintInvalidatorContextAdapter : public PaintInvalidatorContext {
  public:
   PaintInvalidatorContextAdapter(const PaintInvalidationState&);

@@ -37,8 +37,8 @@ void ScrollAnchor::setScroller(ScrollableArea* scroller) {
   clear();
 }
 
-// TODO(pilgrim) replace all instances of scrollerLayoutBox with scrollerLayoutBoxItem
-// https://crbug.com/499321
+// TODO(pilgrim): Replace all instances of scrollerLayoutBox with
+// scrollerLayoutBoxItem, https://crbug.com/499321
 static LayoutBox* scrollerLayoutBox(const ScrollableArea* scroller) {
   LayoutBox* box = scroller->layoutBox();
   DCHECK(box);

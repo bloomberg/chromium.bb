@@ -129,7 +129,8 @@ class CORE_EXPORT TextAutosizer final
     POTENTIAL_ROOT = 1 << 0,
     // A cluster root that establishes an independent multiplier.
     INDEPENDENT = 1 << 1,
-    // A cluster root with an explicit width. These are likely to be independent.
+    // A cluster root with an explicit width. These are likely to be
+    // independent.
     EXPLICIT_WIDTH = 1 << 2,
     // A cluster that is wider or narrower than its parent. These also create an
     // independent multiplier, but this state cannot be determined until layout.
@@ -170,13 +171,15 @@ class CORE_EXPORT TextAutosizer final
     const LayoutBlock* const m_root;
     BlockFlags m_flags;
     // The deepest block containing all text is computed lazily (see:
-    // deepestBlockContainingAllText). A value of 0 indicates the value has not been computed yet.
+    // deepestBlockContainingAllText). A value of 0 indicates the value has not
+    // been computed yet.
     const LayoutBlock* m_deepestBlockContainingAllText;
     Cluster* m_parent;
-    // The multiplier is computed lazily (see: clusterMultiplier) because it must be calculated
-    // after the lowest block containing all text has entered layout (the
-    // m_blocksThatHaveBegunLayout assertions cover this). Note: the multiplier is still
-    // calculated when m_autosize is false because child clusters may depend on this multiplier.
+    // The multiplier is computed lazily (see: clusterMultiplier) because it
+    // must be calculated after the lowest block containing all text has entered
+    // layout (the m_blocksThatHaveBegunLayout assertions cover this). Note: the
+    // multiplier is still calculated when m_autosize is false because child
+    // clusters may depend on this multiplier.
     float m_multiplier;
     HasEnoughTextToAutosize m_hasEnoughTextToAutosize;
     // A set of blocks that are similar to this block.
@@ -286,15 +289,16 @@ class CORE_EXPORT TextAutosizer final
   Supercluster* getSupercluster(const LayoutBlock*);
   float clusterMultiplier(Cluster*);
   float superclusterMultiplier(Cluster*);
-  // A cluster's width provider is typically the deepest block containing all text.
-  // There are exceptions, such as tables and table cells which use the table itself for width.
+  // A cluster's width provider is typically the deepest block containing all
+  // text. There are exceptions, such as tables and table cells which use the
+  // table itself for width.
   const LayoutBlock* clusterWidthProvider(const LayoutBlock*) const;
   const LayoutBlock* maxClusterWidthProvider(
       const Supercluster*,
       const LayoutBlock* currentRoot) const;
-  // Typically this returns a block's computed width. In the case of tables layout, this
-  // width is not yet known so the fixed width is used if it's available, or the containing
-  // block's width otherwise.
+  // Typically this returns a block's computed width. In the case of tables
+  // layout, this width is not yet known so the fixed width is used if it's
+  // available, or the containing block's width otherwise.
   float widthFromBlock(const LayoutBlock*) const;
   float multiplierFromBlock(const LayoutBlock*);
   void applyMultiplier(LayoutObject*,
@@ -305,9 +309,10 @@ class CORE_EXPORT TextAutosizer final
   Cluster* currentCluster() const;
   const LayoutBlock* deepestBlockContainingAllText(Cluster*);
   const LayoutBlock* deepestBlockContainingAllText(const LayoutBlock*) const;
-  // Returns the first text leaf that is in the current cluster. We attempt to not include text
-  // from descendant clusters but because descendant clusters may not exist, this is only an approximation.
-  // The TraversalDirection controls whether we return the first or the last text leaf.
+  // Returns the first text leaf that is in the current cluster. We attempt to
+  // not include text from descendant clusters but because descendant clusters
+  // may not exist, this is only an approximation.  The TraversalDirection
+  // controls whether we return the first or the last text leaf.
   const LayoutObject* findTextLeaf(const LayoutObject*,
                                    size_t&,
                                    TextLeafSearch) const;
@@ -320,8 +325,9 @@ class CORE_EXPORT TextAutosizer final
   Member<const Document> m_document;
   const LayoutBlock* m_firstBlockToBeginLayout;
 #if ENABLE(ASSERT)
-  BlockSet
-      m_blocksThatHaveBegunLayout;  // Used to ensure we don't compute properties of a block before beginLayout() is called on it.
+  // Used to ensure we don't compute properties of a block before beginLayout()
+  // is called on it.
+  BlockSet m_blocksThatHaveBegunLayout;
 #endif
 
   // Clusters are created and destroyed during layout. The map key is the

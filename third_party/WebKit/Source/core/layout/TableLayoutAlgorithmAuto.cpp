@@ -46,9 +46,10 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol) {
   for (LayoutObject* child = m_table->children()->firstChild(); child;
        child = child->nextSibling()) {
     if (child->isLayoutTableCol()) {
-      // LayoutTableCols don't have the concept of preferred logical width, but we need to clear their dirty bits
-      // so that if we call setPreferredWidthsDirty(true) on a col or one of its descendants, we'll mark it's
-      // ancestors as dirty.
+      // LayoutTableCols don't have the concept of preferred logical width, but
+      // we need to clear their dirty bits so that if we call
+      // setPreferredWidthsDirty(true) on a col or one of its descendants, we'll
+      // mark it's ancestors as dirty.
       toLayoutTableCol(child)->clearPreferredLogicalWidthsDirtyBits();
     } else if (child->isTableSection()) {
       LayoutTableSection* section = toLayoutTableSection(child);
@@ -75,11 +76,13 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol) {
           }
 
           // All browsers implement a size limit on the cell's max width.
-          // Our limit is based on KHTML's representation that used 16 bits widths.
+          // Our limit is based on KHTML's representation that used 16 bits
+          // widths.
           // FIXME: Other browsers have a lower limit for the cell's max width.
           const int cCellMaxWidth = 32760;
           Length cellLogicalWidth = cell->styleOrColLogicalWidth();
-          // FIXME: calc() on tables should be handled consistently with other lengths. See bug: https://crbug.com/382725
+          // FIXME: calc() on tables should be handled consistently with other
+          // lengths. See bug: https://crbug.com/382725
           if (cellLogicalWidth.isCalculated())
             cellLogicalWidth = Length();  // Make it Auto
           if (cellLogicalWidth.value() > cCellMaxWidth)
@@ -122,12 +125,14 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol) {
               break;
           }
         } else if (!effCol || section->primaryCellAt(i, effCol - 1) != cell) {
-          // If a cell originates in this spanning column ensure we have a min/max width of at least 1px for it.
+          // If a cell originates in this spanning column ensure we have a
+          // min/max width of at least 1px for it.
           columnLayout.minLogicalWidth =
               std::max<int>(columnLayout.minLogicalWidth,
                             cell->maxPreferredLogicalWidth() ? 1 : 0);
 
-          // This spanning cell originates in this column. Insert the cell into spanning cells list.
+          // This spanning cell originates in this column. Insert the cell into
+          // spanning cells list.
           insertSpanCell(cell);
         }
       }
@@ -165,7 +170,8 @@ void TableLayoutAlgorithmAuto::fullRecalc() {
       groupLogicalWidth = column->style()->logicalWidth();
     } else {
       Length colLogicalWidth = column->style()->logicalWidth();
-      // FIXME: calc() on tables should be handled consistently with other lengths. See bug: https://crbug.com/382725
+      // FIXME: calc() on tables should be handled consistently with other
+      // lengths. See bug: https://crbug.com/382725
       if (colLogicalWidth.isCalculated() || colLogicalWidth.isAuto())
         colLogicalWidth = groupLogicalWidth;
       // TODO(alancutter): Make this work correctly for calc lengths.
@@ -184,7 +190,8 @@ void TableLayoutAlgorithmAuto::fullRecalc() {
       currentColumn += span;
     }
 
-    // For the last column in a column-group, we invalidate our group logical width.
+    // For the last column in a column-group, we invalidate our group logical
+    // width.
     if (column->isTableColumn() && !column->nextSibling())
       groupLogicalWidth = Length();
   }
@@ -210,7 +217,8 @@ static bool shouldScaleColumnsForParent(LayoutTable* table) {
 static bool shouldScaleColumnsForSelf(LayoutTable* table) {
   // Normally, scale all columns to satisfy this from CSS2.2:
   // "A percentage value for a column width is relative to the table width.
-  // If the table has 'width: auto', a percentage represents a constraint on the column's width"
+  // If the table has 'width: auto', a percentage represents a constraint on the
+  // column's width"
 
   // A special case.  If this table is not fixed width and contained inside
   // a cell, then don't bloat the maxwidth by examining percentage growth.
@@ -253,7 +261,8 @@ void TableLayoutAlgorithmAuto::computeIntrinsicLogicalWidths(
   float maxNonPercent = 0;
   bool scaleColumnsForSelf = shouldScaleColumnsForSelf(m_table);
 
-  // We substitute 0 percent by (epsilon / percentScaleFactor) percent in two places below to avoid division by zero.
+  // We substitute 0 percent by (epsilon / percentScaleFactor) percent in two
+  // places below to avoid division by zero.
   // FIXME: Handle the 0% cases properly.
   const float epsilon = 1 / 128.0f;
 
@@ -298,8 +307,8 @@ void TableLayoutAlgorithmAuto::applyPreferredLogicalWidthQuirks(
     LayoutUnit& maxWidth) const {
   Length tableLogicalWidth = m_table->style()->logicalWidth();
   if (tableLogicalWidth.isFixed() && tableLogicalWidth.isPositive()) {
-    // |minWidth| is the result of measuring the intrinsic content's size. Keep it to
-    // make sure we are *never* smaller than the actual content.
+    // |minWidth| is the result of measuring the intrinsic content's size. Keep
+    // it to make sure we are *never* smaller than the actual content.
     LayoutUnit minContentWidth = minWidth;
     // FIXME: This line looks REALLY suspicious as it could allow the minimum
     // preferred logical width to be smaller than the table content. This has
@@ -319,7 +328,8 @@ void TableLayoutAlgorithmAuto::applyPreferredLogicalWidthQuirks(
 
 /*
   This method takes care of colspans.
-  effWidth is the same as width for cells without colspans. If we have colspans, they get modified.
+  effWidth is the same as width for cells without colspans. If we have colspans,
+  they get modified.
  */
 int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth() {
   int maxLogicalWidth = 0;
@@ -343,7 +353,8 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth() {
     unsigned span = cell->colSpan();
 
     Length cellLogicalWidth = cell->styleOrColLogicalWidth();
-    // FIXME: calc() on tables should be handled consistently with other lengths. See bug: https://crbug.com/382725
+    // FIXME: calc() on tables should be handled consistently with other
+    // lengths. See bug: https://crbug.com/382725
     if (cellLogicalWidth.isZero() || cellLogicalWidth.isCalculated())
       cellLogicalWidth = Length();  // Make it Auto
 
@@ -373,8 +384,9 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth() {
           if (columnLayout.logicalWidth.value() > 0) {
             fixedWidth += columnLayout.logicalWidth.value();
             allColsArePercent = false;
-            // IE resets effWidth to Auto here, but this breaks the konqueror about page and seems to be some bad
-            // legacy behaviour anyway. mozilla doesn't do this so I decided we don't neither.
+            // IE resets effWidth to Auto here, but this breaks the konqueror
+            // about page and seems to be some bad legacy behaviour anyway.
+            // mozilla doesn't do this so I decided we don't neither.
             break;
           }
         // fall through
@@ -382,8 +394,8 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth() {
           haveAuto = true;
         // fall through
         default:
-          // If the column is a percentage width, do not let the spanning cell overwrite the
-          // width value.  This caused a mis-layout on amazon.com.
+          // If the column is a percentage width, do not let the spanning cell
+          // overwrite the width value.  This caused a mis-layout on amazon.com.
           // Sample snippet:
           // <table border=2 width=100%><
           //   <tr><td>1</td><td colspan=2>2-3</tr>
@@ -420,7 +432,8 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth() {
                          std::max(spanMaxLogicalWidth, cellMaxLogicalWidth) *
                          100 / cellLogicalWidth.percent()));
 
-        // all non percent columns in the span get percent values to sum up correctly.
+        // all non percent columns in the span get percent values to sum up
+        // correctly.
         float percentMissing = cellLogicalWidth.percent() - totalPercent;
         int totalWidth = 0;
         for (unsigned pos = effCol; pos < lastCol; ++pos) {
@@ -460,14 +473,16 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth() {
           m_layoutStruct[pos].effectiveMinLogicalWidth = cellLogicalWidth;
         }
       } else if (allColsArePercent) {
-        // In this case, we just split the colspan's min amd max widths following the percentage.
+        // In this case, we just split the colspan's min amd max widths
+        // following the percentage.
         int allocatedMinLogicalWidth = 0;
         int allocatedMaxLogicalWidth = 0;
         for (unsigned pos = effCol; pos < lastCol; ++pos) {
           // TODO(alancutter): Make this work correctly for calc lengths.
           DCHECK(m_layoutStruct[pos].logicalWidth.isPercentOrCalc() ||
                  m_layoutStruct[pos].effectiveLogicalWidth.isPercentOrCalc());
-          // |allColsArePercent| means that either the logicalWidth *or* the effectiveLogicalWidth are percents, handle both of them here.
+          // |allColsArePercent| means that either the logicalWidth *or* the
+          // effectiveLogicalWidth are percents, handle both of them here.
           float percent =
               m_layoutStruct[pos].logicalWidth.isPercentOrCalc()
                   ? m_layoutStruct[pos].logicalWidth.percent()
@@ -590,7 +605,8 @@ void TableLayoutAlgorithmAuto::insertSpanCell(LayoutTableCell* cell) {
     size += 10;
   }
 
-  // add them in sort. This is a slow algorithm, and a binary search or a fast sorting after collection would be better
+  // Add them in sort. This is a slow algorithm, and a binary search or a fast
+  // sorting after collection would be better.
   unsigned pos = 0;
   unsigned span = cell->colSpan();
   while (pos < m_spanCells.size() && m_spanCells[pos] &&
@@ -609,11 +625,13 @@ void TableLayoutAlgorithmAuto::layout() {
   int available = tableLogicalWidth;
   size_t nEffCols = m_table->numEffectiveColumns();
 
-  // FIXME: It is possible to be called without having properly updated our internal representation.
-  // This means that our preferred logical widths were not recomputed as expected.
+  // FIXME: It is possible to be called without having properly updated our
+  // internal representation.  This means that our preferred logical widths were
+  // not recomputed as expected.
   if (nEffCols != m_layoutStruct.size()) {
     fullRecalc();
-    // FIXME: Table layout shouldn't modify our table structure (but does due to columns and column-groups).
+    // FIXME: Table layout shouldn't modify our table structure (but does due to
+    // columns and column-groups).
     nEffCols = m_table->numEffectiveColumns();
   }
 
@@ -681,7 +699,8 @@ void TableLayoutAlgorithmAuto::layout() {
         if (m_layoutStruct[i].effectiveLogicalWidth.isPercentOrCalc()) {
           int cellLogicalWidth = m_layoutStruct[i].computedLogicalWidth;
           int reduction = std::min(cellLogicalWidth, excess);
-          // the lines below might look inconsistent, but that's the way it's handled in mozilla
+          // The lines below might look inconsistent, but that's the way it's
+          // handled in mozilla.
           excess -= reduction;
           int newLogicalWidth =
               std::max<int>(m_layoutStruct[i].effectiveMinLogicalWidth,
@@ -706,7 +725,8 @@ void TableLayoutAlgorithmAuto::layout() {
     }
   }
 
-  // Give each auto width column its share of the available width, non-empty columns then empty columns.
+  // Give each auto width column its share of the available width, non-empty
+  // columns then empty columns.
   if (available > 0 && (numAuto || numAutoEmptyCellsOnly)) {
     available += allocAuto;
     if (numAuto)
@@ -717,7 +737,8 @@ void TableLayoutAlgorithmAuto::layout() {
                                StartToEnd>(available, numAutoEmptyCellsOnly);
   }
 
-  // Any remaining available width expands fixed width, percent width, and non-empty auto width columns, in that order.
+  // Any remaining available width expands fixed width, percent width, and
+  // non-empty auto width columns, in that order.
   if (available > 0 && numFixed)
     distributeWidthToColumns<float, Fixed, AllCells, ExtraWidth, StartToEnd>(
         available, totalFixed);
@@ -728,14 +749,16 @@ void TableLayoutAlgorithmAuto::layout() {
 
   if (available > 0 && nEffCols > numAutoEmptyCellsOnly) {
     unsigned total = nEffCols - numAutoEmptyCellsOnly;
-    // Starting from the last cell is for compatibility with FF/IE - it isn't specified anywhere.
+    // Starting from the last cell is for compatibility with FF/IE - it isn't
+    // specified anywhere.
     distributeWidthToColumns<unsigned, Auto, NonEmptyCells, LeftoverWidth,
                              EndToStart>(available, total);
   }
 
-  // If we have overallocated, reduce every cell according to the difference between desired width and minwidth
-  // this seems to produce to the pixel exact results with IE. Wonder is some of this also holds for width distributing.
-  // This is basically the reverse of how we grew the cells.
+  // If we have overallocated, reduce every cell according to the difference
+  // between desired width and minwidth. This seems to produce to the pixel
+  // exact results with IE. Wonder is some of this also holds for width
+  // distributing. This is basically the reverse of how we grew the cells.
   if (available < 0)
     shrinkColumnWidth(Auto, available);
   if (available < 0)

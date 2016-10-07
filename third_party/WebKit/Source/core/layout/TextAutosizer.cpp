@@ -154,8 +154,9 @@ static bool isPotentialClusterRoot(const LayoutObject* layoutObject) {
   //   maintain consistency with documents that have no child nodes but may
   //   still have LayoutObject children.
   // - Must not be inline, as different multipliers on one line looks terrible.
-  //   Exceptions are inline-block and alike elements (inline-table, -webkit-inline-*),
-  //   as they often contain entire multi-line columns of text.
+  //   Exceptions are inline-block and alike elements (inline-table,
+  //   -webkit-inline-*), as they often contain entire multi-line columns of
+  //   text.
   // - Must not be normal list items, as items in the same list should look
   //   consistent, unless they are floating or position:absolute/fixed.
   Node* node = layoutObject->generatingNode();
@@ -227,17 +228,20 @@ static bool blockIsRowOfLinks(const LayoutBlock* block) {
 }
 
 static bool blockHeightConstrained(const LayoutBlock* block) {
-  // FIXME: Propagate constrainedness down the tree, to avoid inefficiently walking back up from each box.
+  // FIXME: Propagate constrainedness down the tree, to avoid inefficiently
+  // walking back up from each box.
   // FIXME: This code needs to take into account vertical writing modes.
-  // FIXME: Consider additional heuristics, such as ignoring fixed heights if the content is already overflowing before autosizing kicks in.
+  // FIXME: Consider additional heuristics, such as ignoring fixed heights if
+  // the content is already overflowing before autosizing kicks in.
   for (; block; block = block->containingBlock()) {
     const ComputedStyle& style = block->styleRef();
     if (style.overflowY() >= OverflowScroll)
       return false;
     if (style.height().isSpecified() || style.maxHeight().isSpecified() ||
         block->isOutOfFlowPositioned()) {
-      // Some sites (e.g. wikipedia) set their html and/or body elements to height:100%,
-      // without intending to constrain the height of the content within them.
+      // Some sites (e.g. wikipedia) set their html and/or body elements to
+      // height:100%, without intending to constrain the height of the content
+      // within them.
       return !block->isDocumentElement() && !block->isBody() &&
              !block->isLayoutView();
     }
@@ -280,8 +284,8 @@ static bool blockSuppressesAutosizing(const LayoutBlock* block) {
 }
 
 static bool hasExplicitWidth(const LayoutBlock* block) {
-  // FIXME: This heuristic may need to be expanded to other ways a block can be wider or narrower
-  //        than its parent containing block.
+  // FIXME: This heuristic may need to be expanded to other ways a block can be
+  // wider or narrower than its parent containing block.
   return block->style() && block->style()->width().isSpecified();
 }
 
@@ -393,8 +397,8 @@ void TextAutosizer::inflateAutoTable(LayoutTable* table) {
   if (cluster->m_root != table)
     return;
 
-  // Pre-inflate cells that have enough text so that their inflated preferred widths will be used
-  // for column sizing.
+  // Pre-inflate cells that have enough text so that their inflated preferred
+  // widths will be used for column sizing.
   for (LayoutObject* section = table->firstChild(); section;
        section = section->nextSibling()) {
     if (!section->isTableSection())
@@ -449,8 +453,8 @@ float TextAutosizer::inflate(LayoutObject* parent,
   while (child) {
     if (child->isText()) {
       hasTextChild = true;
-      // We only calculate this multiplier on-demand to ensure the parent block of this text
-      // has entered layout.
+      // We only calculate this multiplier on-demand to ensure the parent block
+      // of this text has entered layout.
       if (!multiplier)
         multiplier =
             cluster->m_flags & SUPPRESSING ? 1.0f : clusterMultiplier(cluster);
@@ -473,8 +477,8 @@ float TextAutosizer::inflate(LayoutObject* parent,
     applyMultiplier(parent, multiplier,
                     layouter);  // Parent handles line spacing.
   } else if (!parent->isListItem()) {
-    // For consistency, a block with no immediate text child should always have a
-    // multiplier of 1.
+    // For consistency, a block with no immediate text child should always have
+    // a multiplier of 1.
     applyMultiplier(parent, 1, layouter);
   }
 
@@ -482,10 +486,10 @@ float TextAutosizer::inflate(LayoutObject* parent,
     float multiplier = clusterMultiplier(cluster);
     applyMultiplier(parent, multiplier, layouter);
 
-    // The list item has to be treated special because we can have a tree such that you have
-    // a list item for a form inside it. The list marker then ends up inside the form and when
-    // we try to get the clusterMultiplier we have the wrong cluster root to work from and get
-    // the wrong value.
+    // The list item has to be treated special because we can have a tree such
+    // that you have a list item for a form inside it. The list marker then ends
+    // up inside the form and when we try to get the clusterMultiplier we have
+    // the wrong cluster root to work from and get the wrong value.
     LayoutListItem* item = toLayoutListItem(parent);
     if (LayoutListMarker* marker = item->marker()) {
       applyMultiplier(marker, multiplier, layouter);
@@ -559,19 +563,22 @@ void TextAutosizer::updatePageInfo() {
     m_pageInfo.m_layoutWidth =
         horizontalWritingMode ? layoutSize.width() : layoutSize.height();
 
-    // TODO(pdr): Accessibility should be moved out of the text autosizer. See: crbug.com/645717.
+    // TODO(pdr): Accessibility should be moved out of the text autosizer. See:
+    // crbug.com/645717.
     m_pageInfo.m_accessibilityFontScaleFactor =
         m_document->settings()->accessibilityFontScaleFactor();
 
-    // If the page has a meta viewport or @viewport, don't apply the device scale adjustment.
+    // If the page has a meta viewport or @viewport, don't apply the device
+    // scale adjustment.
     if (!mainFrame->document()->viewportDescription().isSpecifiedByAuthor())
       m_pageInfo.m_deviceScaleAdjustment =
           m_document->settings()->deviceScaleAdjustment();
     else
       m_pageInfo.m_deviceScaleAdjustment = 1.0f;
 
-    // TODO(pdr): pageNeedsAutosizing should take into account whether text-size-adjust is used
-    // anywhere on the page because that also needs to trigger autosizing. See: crbug.com/646237.
+    // TODO(pdr): pageNeedsAutosizing should take into account whether
+    // text-size-adjust is used anywhere on the page because that also needs to
+    // trigger autosizing. See: crbug.com/646237.
     m_pageInfo.m_pageNeedsAutosizing =
         !!m_pageInfo.m_frameWidth &&
         (m_pageInfo.m_accessibilityFontScaleFactor *
@@ -582,7 +589,8 @@ void TextAutosizer::updatePageInfo() {
   }
 
   if (m_pageInfo.m_pageNeedsAutosizing) {
-    // If page info has changed, multipliers may have changed. Force a layout to recompute them.
+    // If page info has changed, multipliers may have changed. Force a layout to
+    // recompute them.
     if (m_pageInfo.m_frameWidth != previousPageInfo.m_frameWidth ||
         m_pageInfo.m_layoutWidth != previousPageInfo.m_layoutWidth ||
         m_pageInfo.m_accessibilityFontScaleFactor !=
@@ -592,8 +600,8 @@ void TextAutosizer::updatePageInfo() {
         m_pageInfo.m_settingEnabled != previousPageInfo.m_settingEnabled)
       setAllTextNeedsLayout();
   } else if (previousPageInfo.m_hasAutosized) {
-    // If we are no longer autosizing the page, we won't do anything during the next layout.
-    // Set all the multipliers back to 1 now.
+    // If we are no longer autosizing the page, we won't do anything during the
+    // next layout. Set all the multipliers back to 1 now.
     resetMultipliers();
     m_pageInfo.m_hasAutosized = false;
   }
@@ -670,7 +678,8 @@ bool TextAutosizer::clusterHasEnoughTextToAutosize(
   if (!widthProvider)
     widthProvider = clusterWidthProvider(root);
 
-  // TextAreas and user-modifiable areas get a free pass to autosize regardless of text content.
+  // TextAreas and user-modifiable areas get a free pass to autosize regardless
+  // of text content.
   if (root->isTextArea() ||
       (root->style() && root->style()->userModify() != READ_ONLY)) {
     cluster->m_hasEnoughTextToAutosize = HasEnoughText;
@@ -694,8 +703,9 @@ bool TextAutosizer::clusterHasEnoughTextToAutosize(
         continue;
       }
     } else if (descendant->isText()) {
-      // Note: Using text().stripWhiteSpace().length() instead of resolvedTextLength() because
-      // the lineboxes will not be built until layout. These values can be different.
+      // Note: Using text().stripWhiteSpace().length() instead of
+      // resolvedTextLength() because the lineboxes will not be built until
+      // layout. These values can be different.
       // Note: This is an approximation assuming each character is 1em wide.
       length += toLayoutText(descendant)->text().stripWhiteSpace().length() *
                 descendant->style()->specifiedFontSize();
@@ -771,7 +781,8 @@ TextAutosizer::Cluster* TextAutosizer::maybeCreateCluster(
       m_clusterStack.isEmpty() ? nullptr : currentCluster();
   ASSERT(parentCluster || block->isLayoutView());
 
-  // If a non-independent block would not alter the SUPPRESSING flag, it doesn't need to be a cluster.
+  // If a non-independent block would not alter the SUPPRESSING flag, it doesn't
+  // need to be a cluster.
   bool parentSuppresses =
       parentCluster && (parentCluster->m_flags & SUPPRESSING);
   if (!(flags & INDEPENDENT) && !(flags & EXPLICIT_WIDTH) &&
@@ -906,8 +917,8 @@ float TextAutosizer::widthFromBlock(const LayoutBlock* block) const {
   if (!block->containingBlock())
     return 0;
 
-  // Tables may be inflated before computing their preferred widths. Try several methods to
-  // obtain a width, and fall back on a containing block's width.
+  // Tables may be inflated before computing their preferred widths. Try several
+  // methods to obtain a width, and fall back on a containing block's width.
   for (; block; block = block->containingBlock()) {
     float width;
     Length specifiedWidth =
@@ -932,9 +943,10 @@ float TextAutosizer::widthFromBlock(const LayoutBlock* block) const {
 }
 
 float TextAutosizer::multiplierFromBlock(const LayoutBlock* block) {
-  // If block->needsLayout() is false, it does not need to be in m_blocksThatHaveBegunLayout.
-  // This can happen during layout of a positioned object if the cluster's DBCAT is deeper
-  // than the positioned object's containing block, and wasn't marked as needing layout.
+  // If block->needsLayout() is false, it does not need to be in
+  // m_blocksThatHaveBegunLayout. This can happen during layout of a positioned
+  // object if the cluster's DBCAT is deeper than the positioned object's
+  // containing block, and wasn't marked as needing layout.
   ASSERT(m_blocksThatHaveBegunLayout.contains(block) || !block->needsLayout());
 
   // Block width, in CSS pixels.
@@ -969,7 +981,8 @@ const LayoutBlock* TextAutosizer::deepestBlockContainingAllText(
   const LayoutObject* lastTextLeaf = findTextLeaf(root, lastDepth, Last);
   ASSERT(lastTextLeaf);
 
-  // Equalize the depths if necessary. Only one of the while loops below will get executed.
+  // Equalize the depths if necessary. Only one of the while loops below will
+  // get executed.
   const LayoutObject* firstNode = firstTextLeaf;
   const LayoutObject* lastNode = lastTextLeaf;
   while (firstDepth > lastDepth) {
@@ -981,7 +994,8 @@ const LayoutBlock* TextAutosizer::deepestBlockContainingAllText(
     --lastDepth;
   }
 
-  // Go up from both nodes until the parent is the same. Both pointers will point to the LCA then.
+  // Go up from both nodes until the parent is the same. Both pointers will
+  // point to the LCA then.
   while (firstNode != lastNode) {
     firstNode = firstNode->parent();
     lastNode = lastNode->parent();
@@ -990,10 +1004,11 @@ const LayoutBlock* TextAutosizer::deepestBlockContainingAllText(
   if (firstNode->isLayoutBlock())
     return toLayoutBlock(firstNode);
 
-  // containingBlock() should never leave the cluster, since it only skips ancestors when finding
-  // the container of position:absolute/fixed blocks, and those cannot exist between a cluster and
-  // its text node's lowest common ancestor as isAutosizingCluster would have made them into their
-  // own independent cluster.
+  // containingBlock() should never leave the cluster, since it only skips
+  // ancestors when finding the container of position:absolute/fixed blocks, and
+  // those cannot exist between a cluster and its text node's lowest common
+  // ancestor as isAutosizingCluster would have made them into their own
+  // independent cluster.
   const LayoutBlock* containingBlock = firstNode->containingBlock();
   if (!containingBlock)
     return root;
@@ -1017,8 +1032,9 @@ const LayoutObject* TextAutosizer::findTextLeaf(
   const LayoutObject* child = (firstOrLast == First) ? parent->slowFirstChild()
                                                      : parent->slowLastChild();
   while (child) {
-    // Note: At this point clusters may not have been created for these blocks so we cannot rely
-    //       on m_clusters. Instead, we use a best-guess about whether the block will become a cluster.
+    // Note: At this point clusters may not have been created for these blocks
+    // so we cannot rely on m_clusters. Instead, we use a best-guess about
+    // whether the block will become a cluster.
     if (!classifyBlock(child, INDEPENDENT)) {
       if (const LayoutObject* leaf = findTextLeaf(child, depth, firstOrLast))
         return leaf;
@@ -1038,8 +1054,9 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject,
   ASSERT(layoutObject);
   ComputedStyle& currentStyle = layoutObject->mutableStyleRef();
   if (!currentStyle.getTextSizeAdjust().isAuto()) {
-    // The accessibility font scale factor is applied by the autosizer so we need to apply that
-    // scale factor on top of the text-size-adjust multiplier.
+    // The accessibility font scale factor is applied by the autosizer so we
+    // need to apply that scale factor on top of the text-size-adjust
+    // multiplier.
     multiplier = currentStyle.getTextSizeAdjust().multiplier() *
                  m_pageInfo.m_accessibilityFontScaleFactor;
   } else if (multiplier < 1) {
@@ -1057,8 +1074,9 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject,
 
   switch (relayoutBehavior) {
     case AlreadyInLayout:
-      // Don't free currentStyle until the end of the layout pass. This allows other parts of the system
-      // to safely hold raw ComputedStyle* pointers during layout, e.g. BreakingContext::m_currentStyle.
+      // Don't free currentStyle until the end of the layout pass. This allows
+      // other parts of the system to safely hold raw ComputedStyle* pointers
+      // during layout, e.g. BreakingContext::m_currentStyle.
       m_stylesRetainedDuringLayout.append(&currentStyle);
 
       layoutObject->setStyleInternal(style.release());
@@ -1095,13 +1113,14 @@ bool TextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster) {
   float clusterTextWidth =
       parentDeepestBlockContainingAllText->contentLogicalWidth().toFloat();
 
-  // Clusters with a root that is wider than the deepestBlockContainingAllText of their parent
-  // autosize independently of their parent.
+  // Clusters with a root that is wider than the deepestBlockContainingAllText
+  // of their parent autosize independently of their parent.
   if (contentWidth > clusterTextWidth)
     return true;
 
-  // Clusters with a root that is significantly narrower than the deepestBlockContainingAllText of
-  // their parent autosize independently of their parent.
+  // Clusters with a root that is significantly narrower than the
+  // deepestBlockContainingAllText of their parent autosize independently of
+  // their parent.
   static float narrowWidthDifference = 200;
   if (clusterTextWidth - contentWidth > narrowWidthDifference)
     return true;
@@ -1130,8 +1149,8 @@ TextAutosizer::Cluster::Cluster(const LayoutBlock* root,
 
 #if ENABLE(ASSERT)
 void TextAutosizer::FingerprintMapper::assertMapsAreConsistent() {
-  // For each fingerprint -> block mapping in m_blocksForFingerprint we should have an associated
-  // map from block -> fingerprint in m_fingerprints.
+  // For each fingerprint -> block mapping in m_blocksForFingerprint we should
+  // have an associated map from block -> fingerprint in m_fingerprints.
   ReverseFingerprintMap::iterator end = m_blocksForFingerprint.end();
   for (ReverseFingerprintMap::iterator fingerprintIt =
            m_blocksForFingerprint.begin();
@@ -1265,7 +1284,8 @@ float TextAutosizer::computeAutosizedFontSize(float specifiedSize,
   const float gradientAfterPleasantSize = 0.5;
 
   float computedSize;
-  // Skip linear backoff for multipliers that shrink the size or when the font sizes are small.
+  // Skip linear backoff for multipliers that shrink the size or when the font
+  // sizes are small.
   if (multiplier <= 1 || specifiedSize <= pleasantSize) {
     computedSize = multiplier * specifiedSize;
   } else {

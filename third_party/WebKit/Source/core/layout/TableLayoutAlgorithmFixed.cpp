@@ -74,7 +74,8 @@ TableLayoutAlgorithmFixed::TableLayoutAlgorithmFixed(LayoutTable* table)
     : TableLayoutAlgorithm(table) {}
 
 int TableLayoutAlgorithmFixed::calcWidthArray() {
-  // FIXME: We might want to wait until we have all of the first row before computing for the first time.
+  // FIXME: We might want to wait until we have all of the first row before
+  // computing for the first time.
   int usedWidth = 0;
 
   // iterate over all <col> elements
@@ -85,12 +86,14 @@ int TableLayoutAlgorithmFixed::calcWidthArray() {
   unsigned currentEffectiveColumn = 0;
   for (LayoutTableCol* col = m_table->firstColumn(); col;
        col = col->nextColumn()) {
-    // LayoutTableCols don't have the concept of preferred logical width, but we need to clear their dirty bits
-    // so that if we call setPreferredWidthsDirty(true) on a col or one of its descendants, we'll mark it's
-    // ancestors as dirty.
+    // LayoutTableCols don't have the concept of preferred logical width, but we
+    // need to clear their dirty bits so that if we call
+    // setPreferredWidthsDirty(true) on a col or one of its descendants, we'll
+    // mark it's ancestors as dirty.
     col->clearPreferredLogicalWidthsDirtyBits();
 
-    // Width specified by column-groups that have column child does not affect column width in fixed layout tables
+    // Width specified by column-groups that have column child does not affect
+    // column width in fixed layout tables
     if (col->isTableColumnGroupWithColumnChildren())
       continue;
 
@@ -141,14 +144,16 @@ int TableLayoutAlgorithmFixed::calcWidthArray() {
        cell = cell->nextCell()) {
     Length logicalWidth = cell->styleOrColLogicalWidth();
 
-    // FIXME: calc() on tables should be handled consistently with other lengths. See bug: https://crbug.com/382725
+    // FIXME: calc() on tables should be handled consistently with other
+    // lengths. See bug: https://crbug.com/382725
     if (logicalWidth.isCalculated())
       logicalWidth = Length();  // Make it Auto
 
     unsigned span = cell->colSpan();
     int fixedBorderBoxLogicalWidth = 0;
-    // FIXME: Support other length types. If the width is non-auto, it should probably just use
-    // LayoutBox::computeLogicalWidthUsing to compute the width.
+    // FIXME: Support other length types. If the width is non-auto, it should
+    // probably just use LayoutBox::computeLogicalWidthUsing to compute the
+    // width.
     if (logicalWidth.isFixed() && logicalWidth.isPositive()) {
       fixedBorderBoxLogicalWidth =
           cell->adjustBorderBoxLogicalWidthForBoxSizing(logicalWidth.value())
@@ -169,9 +174,10 @@ int TableLayoutAlgorithmFixed::calcWidthArray() {
       ++currentColumn;
     }
 
-    // TableLayoutAlgorithmFixed doesn't use min/maxPreferredLogicalWidths, but we need to clear the
-    // dirty bit on the cell so that we'll correctly mark its ancestors dirty
-    // in case we later call setPreferredLogicalWidthsDirty() on it later.
+    // TableLayoutAlgorithmFixed doesn't use min/maxPreferredLogicalWidths, but
+    // we need to clear the dirty bit on the cell so that we'll correctly mark
+    // its ancestors dirty in case we later call
+    // setPreferredLogicalWidthsDirty() on it later.
     if (cell->preferredLogicalWidthsDirty())
       cell->clearPreferredLogicalWidthsDirty();
   }
@@ -200,15 +206,16 @@ void TableLayoutAlgorithmFixed::applyPreferredLogicalWidthQuirks(
   /*
         <table style="width:100%; background-color:red"><tr><td>
             <table style="background-color:blue"><tr><td>
-                <table style="width:100%; background-color:green; table-layout:fixed"><tr><td>
+                <table style="width:100%; background-color:green;
+                              table-layout:fixed"><tr><td>
                     Content
                 </td></tr></table>
             </td></tr></table>
         </td></tr></table>
     */
-  // In this example, the two inner tables should be as large as the outer table.
-  // We can achieve this effect by making the maxwidth of fixed tables with percentage
-  // widths be infinite.
+  // In this example, the two inner tables should be as large as the outer
+  // table. We can achieve this effect by making the maxwidth of fixed tables
+  // with percentage widths be infinite.
   if (m_table->style()->logicalWidth().isPercentOrCalc() &&
       maxWidth < tableMaxWidth)
     maxWidth = LayoutUnit(tableMaxWidth);
@@ -220,11 +227,13 @@ void TableLayoutAlgorithmFixed::layout() {
                               .toInt();
   unsigned nEffCols = m_table->numEffectiveColumns();
 
-  // FIXME: It is possible to be called without having properly updated our internal representation.
-  // This means that our preferred logical widths were not recomputed as expected.
+  // FIXME: It is possible to be called without having properly updated our
+  // internal representation. This means that our preferred logical widths were
+  // not recomputed as expected.
   if (nEffCols != m_width.size()) {
     calcWidthArray();
-    // FIXME: Table layout shouldn't modify our table structure (but does due to columns and column-groups).
+    // FIXME: Table layout shouldn't modify our table structure (but does due to
+    // columns and column-groups).
     nEffCols = m_table->numEffectiveColumns();
   }
 

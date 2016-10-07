@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -31,7 +32,8 @@ inline void uniteLayoutOverflowRect(LayoutRect& layoutOverflow,
   LayoutUnit maxY = std::max(rect.maxY(), layoutOverflow.maxY());
   LayoutUnit minX = std::min(rect.x(), layoutOverflow.x());
   LayoutUnit minY = std::min(rect.y(), layoutOverflow.y());
-  // In case the width/height is larger than LayoutUnit can represent, fix the right/bottom edge and shift the top/left ones.
+  // In case the width/height is larger than LayoutUnit can represent, fix the
+  // right/bottom edge and shift the top/left ones.
   layoutOverflow.setWidth(maxX - minX);
   layoutOverflow.setHeight(maxY - minY);
   layoutOverflow.setX(maxX - layoutOverflow.width());
@@ -76,7 +78,8 @@ inline void uniteLayoutOverflowRect(LayoutRect& layoutOverflow,
 //
 // An overflow model object is allocated only when some of these fields have
 // non-default values in the owning object. Care should be taken to use adder
-// functions (addLayoutOverflow, addVisualOverflow, etc.) to keep this invariant.
+// functions (addLayoutOverflow, addVisualOverflow, etc.) to keep this
+// invariant.
 
 class SimpleOverflowModel {
   WTF_MAKE_NONCOPYABLE(SimpleOverflowModel);
@@ -109,11 +112,11 @@ class SimpleOverflowModel {
   LayoutRect m_visualOverflow;
 };
 
-// BoxModelOverflow tracks overflows of a LayoutBox. It separates visual overflow
-// into self visual overflow and contents visual overflow.
+// BoxModelOverflow tracks overflows of a LayoutBox. It separates visual
+// overflow into self visual overflow and contents visual overflow.
 //
-// Self visual overflow covers all the effects of the object itself that visually
-// bleed out of the box.
+// Self visual overflow covers all the effects of the object itself that
+// visually bleed out of the box.
 //
 // Content visual overflow includes anything that would bleed out of the box and
 // would be clipped by the overflow clip ('overflow' != visible). This

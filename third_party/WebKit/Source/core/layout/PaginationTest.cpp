@@ -140,8 +140,8 @@ TEST_F(PaginationStrutTest, InnerBlockWithBreakBefore) {
       "</div>");
   EXPECT_EQ(0, strutForBox("block1"));
   EXPECT_EQ(0, strutForLine("block1", 0));
-  // There's no class A break point before #innerBlock (they only exist *between* siblings), so
-  // the break is propagated and applied before #block2.
+  // There's no class A break point before #innerBlock (they only exist
+  // *between* siblings), so the break is propagated and applied before #block2.
   EXPECT_EQ(50, strutForBox("block2"));
   EXPECT_EQ(0, strutForBox("innerBlock"));
   EXPECT_EQ(0, strutForLine("innerBlock", 0));

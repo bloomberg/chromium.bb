@@ -10,22 +10,25 @@
 
 namespace blink {
 
-// A group of columns, that are laid out in the inline progression direction, all with the same
-// column height.
+// A group of columns, that are laid out in the inline progression direction,
+// all with the same column height.
 //
-// When a multicol container is inside another fragmentation context, and said multicol container
-// lives in multiple outer fragmentainers (pages / columns), we need to put these inner columns into
-// separate groups, with one group per outer fragmentainer. Such a group of columns is what
-// comprises a "row of column boxes" in spec lingo.
+// When a multicol container is inside another fragmentation context, and said
+// multicol container lives in multiple outer fragmentainers (pages / columns),
+// we need to put these inner columns into separate groups, with one group per
+// outer fragmentainer. Such a group of columns is what comprises a "row of
+// column boxes" in spec lingo.
 //
-// Column balancing, when enabled, takes place within a column fragmentainer group.
+// Column balancing, when enabled, takes place within a column fragmentainer
+// group.
 //
-// Each fragmentainer group may have its own actual column count (if there are unused columns
-// because of forced breaks, for example). If there are multiple fragmentainer groups, the actual
-// column count must not exceed the used column count (the one calculated based on column-count and
-// column-width from CSS), or they'd overflow the outer fragmentainer in the inline direction. If we
-// need more columns than what a group has room for, we'll create another group and put them there
-// (and make them appear in the next outer fragmentainer).
+// Each fragmentainer group may have its own actual column count (if there are
+// unused columns because of forced breaks, for example). If there are multiple
+// fragmentainer groups, the actual column count must not exceed the used column
+// count (the one calculated based on column-count and column-width from CSS),
+// or they'd overflow the outer fragmentainer in the inline direction. If we
+// need more columns than what a group has room for, we'll create another group
+// and put them there (and make them appear in the next outer fragmentainer).
 class MultiColumnFragmentainerGroup {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -45,8 +48,8 @@ class MultiColumnFragmentainerGroup {
 
   LayoutSize offsetFromColumnSet() const;
 
-  // Return the block offset from the enclosing fragmentation context, if nested. In the
-  // coordinate space of the enclosing fragmentation context.
+  // Return the block offset from the enclosing fragmentation context, if
+  // nested. In the coordinate space of the enclosing fragmentation context.
   LayoutUnit blockOffsetInEnclosingFragmentationContext() const;
 
   // The top of our flow thread portion
@@ -92,7 +95,8 @@ class MultiColumnFragmentainerGroup {
       unsigned& firstColumn,
       unsigned& lastColumn) const;
 
-  // Get the first and the last column intersecting the specified visual rectangle.
+  // Get the first and the last column intersecting the specified visual
+  // rectangle.
   void columnIntervalForVisualRect(const LayoutRect&,
                                    unsigned& firstColumn,
                                    unsigned& lastColumn) const;
@@ -102,7 +106,8 @@ class MultiColumnFragmentainerGroup {
   unsigned columnIndexAtOffset(LayoutUnit offsetInFlowThread,
                                LayoutBox::PageBoundaryRule) const;
 
-  // The "CSS actual" value of column-count. This includes overflowing columns, if any.
+  // The "CSS actual" value of column-count. This includes overflowing columns,
+  // if any.
   // Returns 1 or greater, never 0.
   unsigned actualColumnCount() const;
 
@@ -118,9 +123,9 @@ class MultiColumnFragmentainerGroup {
     return m_logicalTopInFlowThread + columnIndex * m_columnHeight;
   }
 
-  // Return the column that the specified visual point belongs to. Only the coordinate on the
-  // column progression axis is relevant. Every point belongs to a column, even if said point is
-  // not inside any of the columns.
+  // Return the column that the specified visual point belongs to. Only the
+  // coordinate on the column progression axis is relevant. Every point belongs
+  // to a column, even if said point is not inside any of the columns.
   unsigned columnIndexAtVisualPoint(const LayoutPoint& visualPoint) const;
 
   const LayoutMultiColumnSet& m_columnSet;
@@ -134,9 +139,10 @@ class MultiColumnFragmentainerGroup {
   LayoutUnit m_maxColumnHeight;  // Maximum column height allowed.
 };
 
-// List of all fragmentainer groups within a column set. There will always be at least one
-// group. Deleting the one group is not allowed (or possible). There will be more than one group if
-// the owning column set lives in multiple outer fragmentainers (e.g. multicol inside paged media).
+// List of all fragmentainer groups within a column set. There will always be at
+// least one group. Deleting the one group is not allowed (or possible). There
+// will be more than one group if the owning column set lives in multiple outer
+// fragmentainers (e.g. multicol inside paged media).
 class CORE_EXPORT MultiColumnFragmentainerGroupList {
   DISALLOW_NEW();
 
@@ -144,7 +150,8 @@ class CORE_EXPORT MultiColumnFragmentainerGroupList {
   MultiColumnFragmentainerGroupList(LayoutMultiColumnSet&);
   ~MultiColumnFragmentainerGroupList();
 
-  // Add an additional fragmentainer group to the end of the list, and return it.
+  // Add an additional fragmentainer group to the end of the list, and return
+  // it.
   MultiColumnFragmentainerGroup& addExtraGroup();
 
   // Remove all fragmentainer groups but the first one.

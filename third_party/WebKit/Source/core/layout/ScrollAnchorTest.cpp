@@ -26,7 +26,8 @@ class ScrollAnchorTest : public RenderingTest {
 
  protected:
   void update() {
-    // TODO(skobes): Use SimTest instead of RenderingTest and move into Source/web?
+    // TODO(skobes): Use SimTest instead of RenderingTest and move into
+    // Source/web?
     document().view()->updateAllLifecyclePhases();
   }
 
@@ -281,7 +282,8 @@ TEST_F(ScrollAnchorTest, AnchorWithLayerInScrollingDiv) {
   EXPECT_EQ(250, scroller->scrollOffsetInt().height());
   EXPECT_EQ(block2->layoutObject(), scrollAnchor(scroller).anchorObject());
 
-  // Test that the anchor object can be destroyed without affecting the scroll position.
+  // Test that the anchor object can be destroyed without affecting the scroll
+  // position.
   block2->remove();
   update();
   EXPECT_EQ(250, scroller->scrollOffsetInt().height());
@@ -414,7 +416,8 @@ TEST_F(ScrollAnchorTest, ExcludeAbsolutePositionThatSticksToViewport) {
   scroller->scrollBy(ScrollOffset(0, 25), UserScroll);
   setHeight(document().getElementById("a"), 100);
 
-  // When the scroller is position:static, the anchor cannot be position:absolute.
+  // When the scroller is position:static, the anchor cannot be
+  // position:absolute.
   EXPECT_EQ(relPos->layoutObject(), scrollAnchor(scroller).anchorObject());
 
   scrollerElement->setAttribute(HTMLNames::styleAttr, "position: relative");
@@ -422,11 +425,13 @@ TEST_F(ScrollAnchorTest, ExcludeAbsolutePositionThatSticksToViewport) {
   scroller->scrollBy(ScrollOffset(0, 25), UserScroll);
   setHeight(document().getElementById("a"), 125);
 
-  // When the scroller is position:relative, the anchor may be position:absolute.
+  // When the scroller is position:relative, the anchor may be
+  // position:absolute.
   EXPECT_EQ(absPos->layoutObject(), scrollAnchor(scroller).anchorObject());
 }
 
-// Test that we descend into zero-height containers that have overflowing content.
+// Test that we descend into zero-height containers that have overflowing
+// content.
 TEST_F(ScrollAnchorTest, DescendsIntoContainerWithOverflow) {
   setBodyInnerHTML(
       "<style>"

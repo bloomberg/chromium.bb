@@ -24,8 +24,8 @@ static void checkIsClippingStackingContextAndContainer(
   EXPECT_TRUE(obj.hasClipRelatedProperty());
   EXPECT_TRUE(obj.style()->containsPaint());
 
-  // TODO(leviw): Ideally, we wouldn't require a paint layer to handle the clipping
-  // and stacking performed by paint containment.
+  // TODO(leviw): Ideally, we wouldn't require a paint layer to handle the
+  // clipping and stacking performed by paint containment.
   ASSERT(obj.layer());
   PaintLayer* layer = obj.layer();
   EXPECT_TRUE(layer->stackingNode() &&
@@ -57,7 +57,8 @@ TEST_F(PaintContainmentTest, InlinePaintContainment) {
 }
 
 TEST_F(PaintContainmentTest, SvgWithContainmentShouldNotCrash) {
-  // SVG doesn't currently support PaintLayers and should not crash with layer-related properties.
+  // SVG doesn't currently support PaintLayers and should not crash with
+  // layer-related properties.
   setBodyInnerHTML("<svg><text y='20' style='contain: paint'>Foo</text></svg>");
   setBodyInnerHTML(
       "<svg><foreignObject style='contain: paint'>Foo</foreignObject></svg>");
