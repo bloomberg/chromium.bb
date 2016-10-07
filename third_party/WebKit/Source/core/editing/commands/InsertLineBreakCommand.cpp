@@ -66,11 +66,15 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
   deleteSelection(editingState);
   if (editingState->isAborted())
     return;
+
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   VisibleSelection selection = endingSelection();
   if (!selection.isNonOrphanedCaretOrRange())
     return;
 
-  VisiblePosition caret(selection.visibleStartDeprecated());
+  // TODO(xiaochengh): Stop storing VisiblePositions through mutations.
+  VisiblePosition caret(selection.visibleStart());
   // FIXME: If the node is hidden, we should still be able to insert text. For
   // now, we return to avoid a crash.
   // https://bugs.webkit.org/show_bug.cgi?id=40342
@@ -91,9 +95,11 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
   else
     nodeToInsert = document().createTextNode("\n");
 
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   // FIXME: Need to merge text nodes when inserting just after or before text.
 
-  if (isEndOfParagraphDeprecated(caret) &&
+  if (isEndOfParagraph(createVisiblePosition(caret.toPositionWithAffinity())) &&
       !lineBreakExistsAtVisiblePosition(caret)) {
     bool needExtraLineBreak = !isHTMLHRElement(*pos.anchorNode()) &&
                               !isHTMLTableElement(*pos.anchorNode());
@@ -120,24 +126,26 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
       nodeToInsert = extraNode;
     }
 
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     VisiblePosition endingPosition = VisiblePosition::beforeNode(nodeToInsert);
-    setEndingSelection(createVisibleSelectionDeprecated(
+    setEndingSelection(createVisibleSelection(
         endingPosition, endingSelection().isDirectional()));
   } else if (pos.computeEditingOffset() <= caretMinOffset(pos.anchorNode())) {
     insertNodeAt(nodeToInsert, pos, editingState);
     if (editingState->isAborted())
       return;
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // Insert an extra br or '\n' if the just inserted one collapsed.
-    if (!isStartOfParagraphDeprecated(
-            VisiblePosition::beforeNode(nodeToInsert))) {
+    if (!isStartOfParagraph(VisiblePosition::beforeNode(nodeToInsert))) {
       insertNodeBefore(nodeToInsert->cloneNode(false), nodeToInsert,
                        editingState);
       if (editingState->isAborted())
         return;
+      document().updateStyleAndLayoutIgnorePendingStylesheets();
     }
 
-    setEndingSelection(createVisibleSelectionDeprecated(
+    setEndingSelection(createVisibleSelection(
         Position::inParentAfterNode(*nodeToInsert), TextAffinity::Downstream,
         endingSelection().isDirectional()));
     // If we're inserting after all of the rendered text in a text node, or into
@@ -148,7 +156,8 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
     insertNodeAt(nodeToInsert, pos, editingState);
     if (editingState->isAborted())
       return;
-    setEndingSelection(createVisibleSelectionDeprecated(
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    setEndingSelection(createVisibleSelection(
         Position::inParentAfterNode(*nodeToInsert), TextAffinity::Downstream,
         endingSelection().isDirectional()));
   } else if (pos.anchorNode()->isTextNode()) {
@@ -183,9 +192,10 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
       }
     }
 
-    setEndingSelection(createVisibleSelectionDeprecated(
-        endingPosition, TextAffinity::Downstream,
-        endingSelection().isDirectional()));
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    setEndingSelection(
+        createVisibleSelection(endingPosition, TextAffinity::Downstream,
+                               endingSelection().isDirectional()));
   }
 
   // Handle the case where there is a typing style.
@@ -211,7 +221,8 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
     // So, this next call sets the endingSelection() to a caret just after the
     // line break that we inserted, or just before it if it's at the end of a
     // block.
-    setEndingSelection(endingSelection().visibleEndDeprecated());
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    setEndingSelection(endingSelection().visibleEnd());
   }
 
   rebalanceWhitespace();
