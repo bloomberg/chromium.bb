@@ -403,9 +403,8 @@ class VIEWS_EXPORT Textfield : public View,
   // Pastes the selection clipboard for the specified mouse event.
   void PasteSelectionClipboard(const ui::MouseEvent& event);
 
-  // Called whenever a keypress is unhandled for any reason, including failing
-  // to insert text into a readonly text field.
-  void OnKeypressUnhandled();
+  // Called when editing a textfield fails because the textfield is readonly.
+  void OnEditFailed();
 
   // Returns true if an insertion cursor should be visible (a vertical bar,
   // placed at the point new text will be inserted).

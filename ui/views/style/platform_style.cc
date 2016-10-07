@@ -76,7 +76,7 @@ SkColor PlatformStyle::TextColorForButton(
 }
 
 // static
-void PlatformStyle::OnTextfieldKeypressUnhandled() {}
+void PlatformStyle::OnTextfieldEditFailed() {}
 
 #endif  // OS_MACOSX
 

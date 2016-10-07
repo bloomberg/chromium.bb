@@ -689,9 +689,6 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
     ExecuteTextEditCommand(edit_command);
     handled = true;
   }
-
-  if (!handled)
-    OnKeypressUnhandled();
   return handled;
 }
 
@@ -1297,7 +1294,7 @@ void Textfield::InsertText(const base::string16& new_text) {
 
 void Textfield::InsertChar(const ui::KeyEvent& event) {
   if (read_only()) {
-    OnKeypressUnhandled();
+    OnEditFailed();
     return;
   }
 
@@ -2053,8 +2050,8 @@ void Textfield::PasteSelectionClipboard(const ui::MouseEvent& event) {
   OnAfterUserAction();
 }
 
-void Textfield::OnKeypressUnhandled() {
-  PlatformStyle::OnTextfieldKeypressUnhandled();
+void Textfield::OnEditFailed() {
+  PlatformStyle::OnTextfieldEditFailed();
 }
 
 bool Textfield::ShouldShowCursor() const {

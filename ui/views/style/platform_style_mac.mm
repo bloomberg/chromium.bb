@@ -85,7 +85,7 @@ void PlatformStyle::ApplyLabelButtonTextStyle(
 }
 
 // static
-void PlatformStyle::OnTextfieldKeypressUnhandled() {
+void PlatformStyle::OnTextfieldEditFailed() {
   NSBeep();
 }
 
