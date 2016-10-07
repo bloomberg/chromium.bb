@@ -33,6 +33,7 @@ class VIEWS_MUS_EXPORT ScreenMus
   // display::Screen:
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
 
   // ui::mojom::DisplayManager:
   void OnDisplays(mojo::Array<ui::mojom::WsDisplayPtr> ws_displays) override;

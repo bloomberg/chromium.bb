@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -37,6 +38,10 @@ class ScreenMus;
 class SurfaceContextFactory;
 namespace internal {
 class NativeWidgetDelegate;
+}
+
+namespace test {
+class WindowManagerConnectionTestApi;
 }
 
 // Provides configuration to mus in views. This consists of the following:
@@ -82,6 +87,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   const std::set<ui::Window*>& GetRoots() const;
 
  private:
+  friend class test::WindowManagerConnectionTestApi;
+
   WindowManagerConnection(
       shell::Connector* connector,
       const shell::Identity& identity,
@@ -97,6 +104,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   // ScreenMusDelegate:
   void OnWindowManagerFrameValuesChanged() override;
   gfx::Point GetCursorScreenPoint() override;
+  ui::Window* GetWindowAtScreenPoint(const gfx::Point& point) override;
 
   // ui:OSExchangeDataProviderFactory::Factory:
   std::unique_ptr<OSExchangeData::Provider> BuildProvider() override;

@@ -122,6 +122,7 @@ static_library("test_support") {
 
   sources = [
     "../test/native_widget_factory_mus.cc",
+    "test_utils.h",
     "views_mus_test_suite.cc",
     "views_mus_test_suite.h",
   ]
@@ -158,6 +159,7 @@ test("views_mus_unittests") {
     "pointer_watcher_event_router_unittest.cc",
     "run_all_unittests_mus.cc",
     "screen_mus_unittest.cc",
+    "window_manager_connection_unittest.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -172,6 +174,7 @@ test("views_mus_unittests") {
     "//net",
     "//services/shell/background:main",  # Provides main().
     "//services/ui/public/cpp",
+    "//services/ui/public/cpp:internal_or_test",
     "//services/ui/public/cpp/tests:unittest_support",
     "//services/ui/public/interfaces",
     "//skia",

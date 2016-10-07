@@ -23,7 +23,9 @@
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
+#include "ui/views/test/native_widget_factory.h"
 #include "ui/views/test/test_views_delegate.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
@@ -58,7 +60,8 @@ views::Widget* CreateWidget(aura::Window* root) {
 #if defined(OS_CHROMEOS)
   params.parent = root;
 #else
-  params.native_widget = new DesktopNativeWidgetAura(widget);
+  params.native_widget = ::views::test::CreatePlatformDesktopNativeWidgetImpl(
+      params, widget, nullptr);
 #endif
   params.bounds = gfx::Rect(0, 0, 200, 100);
   widget->Init(params);
@@ -74,28 +77,25 @@ TooltipController* GetController(Widget* widget) {
 
 }  // namespace
 
-class TooltipControllerTest : public aura::test::AuraTestBase {
+class TooltipControllerTest : public ViewsTestBase {
  public:
   TooltipControllerTest() : view_(NULL) {}
   ~TooltipControllerTest() override {}
 
   void SetUp() override {
-#if defined(OS_CHROMEOS)
-    views_delegate_.reset(new TestViewsDelegate);
-#else
-    views_delegate_.reset(new DesktopTestViewsDelegate);
-#endif
+    ViewsTestBase::SetUp();
 
-    aura::test::AuraTestBase::SetUp();
-    new wm::DefaultActivationClient(root_window());
+    aura::Window* root_window = GetContext();
+
+    new wm::DefaultActivationClient(root_window);
 #if defined(OS_CHROMEOS)
     controller_.reset(
         new TooltipController(std::unique_ptr<views::corewm::Tooltip>(
             new views::corewm::TooltipAura)));
-    root_window()->AddPreTargetHandler(controller_.get());
-    SetTooltipClient(root_window(), controller_.get());
+    root_window->AddPreTargetHandler(controller_.get());
+    SetTooltipClient(root_window, controller_.get());
 #endif
-    widget_.reset(CreateWidget(root_window()));
+    widget_.reset(CreateWidget(root_window));
     widget_->SetContentsView(new View);
     view_ = new TooltipTestView;
     widget_->GetContentsView()->AddChildView(view_);
@@ -107,15 +107,15 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
 
   void TearDown() override {
 #if defined(OS_CHROMEOS)
-    root_window()->RemovePreTargetHandler(controller_.get());
-    aura::client::SetTooltipClient(root_window(), NULL);
+    aura::Window* root_window = GetContext();
+    root_window->RemovePreTargetHandler(controller_.get());
+    aura::client::SetTooltipClient(root_window, NULL);
     controller_.reset();
 #endif
     generator_.reset();
     helper_.reset();
     widget_.reset();
-    aura::test::AuraTestBase::TearDown();
-    views_delegate_.reset();
+    ViewsTestBase::TearDown();
   }
 
  protected:
@@ -125,6 +125,21 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
 
   aura::Window* GetRootWindow() {
     return GetWindow()->GetRootWindow();
+  }
+
+  aura::Window* CreateNormalWindow(int id,
+                                   aura::Window* parent,
+                                   aura::WindowDelegate* delegate) {
+    aura::Window* window = new aura::Window(
+        delegate
+            ? delegate
+            : aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate());
+    window->set_id(id);
+    window->Init(ui::LAYER_TEXTURED);
+    parent->AddChild(window);
+    window->SetBounds(gfx::Rect(0, 0, 100, 100));
+    window->Show();
+    return window;
   }
 
   TooltipTestView* PrepareSecondView() {
@@ -142,8 +157,6 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
 
  private:
   std::unique_ptr<TooltipController> controller_;
-
-  std::unique_ptr<views::TestViewsDelegate> views_delegate_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
@@ -424,17 +437,9 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
     TooltipControllerTest::SetUp();
     aura::client::SetScreenPositionClient(GetRootWindow(),
                                           &screen_position_client_);
-#if !defined(OS_CHROMEOS)
-    desktop_screen_.reset(CreateDesktopScreen());
-    display::Screen::SetScreenInstance(desktop_screen_.get());
-#endif
   }
 
   void TearDown() override {
-#if !defined(OS_CHROMEOS)
-    display::Screen::SetScreenInstance(test_screen());
-    desktop_screen_.reset();
-#endif
     aura::client::SetScreenPositionClient(GetRootWindow(), NULL);
     TooltipControllerTest::TearDown();
   }
@@ -450,7 +455,7 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
 // Flaky on all builders.  http://crbug.com/388268
 TEST_F(TooltipControllerCaptureTest, DISABLED_CloseOnCaptureLost) {
   view_->GetWidget()->SetCapture(view_);
-  RunAllPendingInMessageLoop();
+  RunPendingMessages();
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   generator_->MoveMouseToCenterOf(GetWindow());
   base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
@@ -477,13 +482,17 @@ TEST_F(TooltipControllerCaptureTest, DISABLED_CloseOnCaptureLost) {
 #endif
 // Verifies the correct window is found for tooltips when there is a capture.
 TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
+  // Currently, capture in one test affects capture in other tests.
+  if (IsMus())
+    return;
+
   const base::string16 tooltip_text(ASCIIToUTF16("1"));
   const base::string16 tooltip_text2(ASCIIToUTF16("2"));
 
   widget_->SetBounds(gfx::Rect(0, 0, 200, 200));
   view_->set_tooltip_text(tooltip_text);
 
-  std::unique_ptr<views::Widget> widget2(CreateWidget(root_window()));
+  std::unique_ptr<views::Widget> widget2(CreateWidget(GetContext()));
   widget2->SetContentsView(new View);
   TooltipTestView* view2 = new TooltipTestView;
   widget2->GetContentsView()->AddChildView(view2);
@@ -633,17 +642,19 @@ TEST_F(TooltipControllerTest2, CloseOnCancelMode) {
 }
 
 // Use for tests that need both views and a TestTooltip.
-class TooltipControllerTest3 : public aura::test::AuraTestBase {
+class TooltipControllerTest3 : public ViewsTestBase {
  public:
   TooltipControllerTest3() : test_tooltip_(new TestTooltip) {}
   ~TooltipControllerTest3() override {}
 
   void SetUp() override {
     wm_state_.reset(new wm::WMState);
-    aura::test::AuraTestBase::SetUp();
-    new wm::DefaultActivationClient(root_window());
+    ViewsTestBase::SetUp();
 
-    widget_.reset(CreateWidget(root_window()));
+    aura::Window* root_window = GetContext();
+    new wm::DefaultActivationClient(root_window);
+
+    widget_.reset(CreateWidget(root_window));
     widget_->SetContentsView(new View);
     view_ = new TooltipTestView;
     widget_->GetContentsView()->AddChildView(view_);
@@ -668,7 +679,7 @@ class TooltipControllerTest3 : public aura::test::AuraTestBase {
     generator_.reset();
     helper_.reset();
     widget_.reset();
-    aura::test::AuraTestBase::TearDown();
+    ViewsTestBase::TearDown();
     wm_state_.reset();
   }
 

@@ -11,6 +11,10 @@ namespace gfx {
 class Point;
 }
 
+namespace ui {
+class Window;
+}
+
 namespace views {
 
 // Screen implementation backed by ui::mojom::DisplayManager.
@@ -20,7 +24,9 @@ class VIEWS_MUS_EXPORT ScreenMusDelegate {
 
   virtual gfx::Point GetCursorScreenPoint() = 0;
 
-protected:
+  virtual ui::Window* GetWindowAtScreenPoint(const gfx::Point& point) = 0;
+
+ protected:
   virtual ~ScreenMusDelegate() {}
 };
 

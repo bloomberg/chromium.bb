@@ -4,6 +4,7 @@
 
 #include "ui/views/mus/window_manager_connection.h"
 
+#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -38,6 +39,37 @@ using WindowManagerConnectionPtr =
 // Env is thread local so that aura may be used on multiple threads.
 base::LazyInstance<WindowManagerConnectionPtr>::Leaky lazy_tls_ptr =
     LAZY_INSTANCE_INITIALIZER;
+
+// Recursively finds the deepest visible window from |windows| that contains
+// |screen_point|, when offsetting by the display origins from
+// |display_origins|.
+ui::Window* GetWindowFrom(const std::map<int64_t, gfx::Point>& display_origins,
+                          const std::vector<ui::Window*>& windows,
+                          const gfx::Point& screen_point) {
+  for (ui::Window* window : windows) {
+    if (!window->visible())
+      continue;
+
+    auto it = display_origins.find(window->display_id());
+    if (it == display_origins.end())
+      continue;
+
+    gfx::Rect bounds_in_screen = window->GetBoundsInRoot();
+    bounds_in_screen.Offset(it->second.x(), it->second.y());
+
+    if (bounds_in_screen.Contains(screen_point)) {
+      if (!window->children().empty()) {
+        ui::Window* child =
+            GetWindowFrom(display_origins, window->children(), screen_point);
+        if (child)
+          return child;
+      }
+
+      return window;
+    }
+  }
+  return nullptr;
+}
 
 }  // namespace
 
@@ -165,6 +197,18 @@ void WindowManagerConnection::OnWindowManagerFrameValuesChanged() {
 
 gfx::Point WindowManagerConnection::GetCursorScreenPoint() {
   return client_->GetCursorScreenPoint();
+}
+
+ui::Window* WindowManagerConnection::GetWindowAtScreenPoint(
+    const gfx::Point& point) {
+  std::map<int64_t, gfx::Point> display_origins;
+  for (display::Display& d : display::Screen::GetScreen()->GetAllDisplays())
+    display_origins[d.id()] = d.bounds().origin();
+
+  const std::set<ui::Window*>& roots = GetRoots();
+  std::vector<ui::Window*> windows;
+  std::copy(roots.begin(), roots.end(), std::back_inserter(windows));
+  return GetWindowFrom(display_origins, windows, point);
 }
 
 std::unique_ptr<OSExchangeData::Provider>

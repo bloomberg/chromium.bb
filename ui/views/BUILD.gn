@@ -930,6 +930,7 @@ source_set("views_unittests_sources") {
     sources += [
       "accessibility/ax_aura_obj_cache_unittest.cc",
       "controls/native/native_view_host_aura_unittest.cc",
+      "corewm/tooltip_controller_unittest.cc",
       "touchui/touch_selection_menu_runner_views_unittest.cc",
       "view_unittest_aura.cc",
       "widget/native_widget_aura_unittest.cc",
@@ -965,9 +966,6 @@ test("views_unittests") {
 
   if (use_aura) {
     sources += [
-      # Tooltips. Can not be shared with mus: crbug.com/599558
-      "corewm/tooltip_controller_unittest.cc",
-
       # Some of the tests need drag-drop support. crbug.com/614037
       "touchui/touch_selection_controller_impl_unittest.cc",
     ]

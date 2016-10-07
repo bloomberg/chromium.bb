@@ -73,6 +73,7 @@ source_set("internal_or_test") {
   visibility = [
     "./*",
     "//services/ui/ws:mus_ws_unittests",
+    "//ui/views/mus:views_mus_unittests",
   ]
 
   sources = [
