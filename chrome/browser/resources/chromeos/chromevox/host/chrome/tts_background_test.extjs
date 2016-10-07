@@ -72,22 +72,23 @@ SYNC_TEST_F('CvoxTtsBackgroundTest', 'UpdateVoice', function() {
   assertEquals('French', tts.currentVoice);
 });
 
-SYNC_TEST_F('CvoxTtsBackgroundTest', 'EmptyStringCallsCallbacks', function() {
+// This test only works if Google tts is installed. Run it locally.
+TEST_F(
+    'CvoxTtsBackgroundTest', 'DISABLED_EmptyStringCallsCallbacks', function() {
   var tts = new cvox.TtsBackground(false);
-  chrome.tts.speak = assertNotReached.bind(
-      null, 'chrome.tts.speak shouldn\t be called.');
-
-  assertCallsCallbacks = function(text) {
-    var startCalls = 0;
-    var endCalls = 0;
+  var startCalls = 0, endCalls = 0;
+  assertCallsCallbacks = function(text, speakCalls) {
     tts.speak(text, cvox.QueueMode.QUEUE,
               {startCallback: function() { ++startCalls; },
-               endCallback: function() { ++endCalls; }});
-    assertEquals(1, startCalls, text);
-    assertEquals(1, endCalls, text);
+               endCallback: this.newCallback(function() {
+                 ++endCalls;
+                 assertEquals(speakCalls, endCalls);
+                 assertEquals(endCalls, startCalls);
+               })}
+             );
   }.bind(this);
 
-  assertCallsCallbacks('');
-  assertCallsCallbacks('  ');
-  assertCallsCallbacks(' \u00a0 ');
+  assertCallsCallbacks('', 1);
+  assertCallsCallbacks('  ', 2);
+  assertCallsCallbacks(' \u00a0 ', 3);
 });

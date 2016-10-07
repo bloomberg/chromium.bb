@@ -28,6 +28,7 @@ BackgroundTest.prototype = {
 
     // Reset notifications so only explicit mode changes can cause them to trigger.
     Notifications.reset();
+    this.forceContextualLastOutput();
   },
 
   /**

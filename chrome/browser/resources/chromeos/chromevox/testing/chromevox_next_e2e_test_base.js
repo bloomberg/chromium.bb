@@ -80,5 +80,14 @@ ChromeVoxNextE2ETest.prototype = {
       callback.apply(this, arguments);
     });
     node.addEventListener(eventType, innerCallback, capture);
+  },
+
+  /**
+   * Forces output to place context utterances at the end of output. This eases
+   * rebaselining when changing context ordering for a specific role.
+   */
+  forceContextualLastOutput: function() {
+    for (var role in Output.ROLE_INFO_)
+      Output.ROLE_INFO_[role]['outputContextFirst'] = undefined;
   }
 };

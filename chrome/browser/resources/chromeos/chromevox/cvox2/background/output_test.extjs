@@ -100,6 +100,7 @@ OutputE2ETest.prototype = {
   /** @override */
   setUp: function() {
     window.Dir = AutomationUtil.Dir;
+    this.forceContextualLastOutput();   
   }
 };
 
@@ -491,9 +492,11 @@ TEST_F('OutputE2ETest', 'ListBox', function() {
 SYNC_TEST_F('OutputE2ETest', 'MessageIdAndEarconValidity', function() {
   for (var key in Output.ROLE_INFO_) {
     var value = Output.ROLE_INFO_[key];
-    Msgs.getMsg(value.msgId);
-    Msgs.getMsg(value.msgId + '_brl');
-    assertFalse(/[A-Z]+/.test(value.msgId));
+    if (value.msgId) {
+      Msgs.getMsg(value.msgId);
+      Msgs.getMsg(value.msgId + '_brl');
+      assertFalse(/[A-Z]+/.test(value.msgId));
+    }
     if (value.earconId)
       assertNotNullNorUndefined(cvox.Earcon[value.earconId]);
   }

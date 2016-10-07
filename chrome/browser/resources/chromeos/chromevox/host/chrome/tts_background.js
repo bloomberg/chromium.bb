@@ -253,29 +253,6 @@ cvox.TtsBackground.prototype.speak = function(
   // pattern causes ChromeVox to read numbers as digits rather than words.
   textString = this.getNumberAsDigits_(textString);
 
-  // TODO(plundblad): Google TTS doesn't handle strings that don't produce
-  // any speech very well. Handle empty and whitespace only strings (including
-  // non-breaking space) here to mitigate the issue somewhat.
-  if (/^[\s\u00a0]*$/.test(textString)) {
-    // We still want to callback for listeners in our content script.
-    if (properties['startCallback']) {
-      try {
-        properties['startCallback']();
-      } catch (e) {
-      }
-    }
-    if (properties['endCallback']) {
-      try {
-        properties['endCallback']();
-      } catch (e) {
-      }
-    }
-    if (queueMode === cvox.QueueMode.FLUSH) {
-      this.stop();
-    }
-    return this;
-  }
-
   var mergedProperties = this.mergeProperties(properties);
 
   if (this.currentVoice) {

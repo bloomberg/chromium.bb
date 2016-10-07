@@ -69,7 +69,6 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'earcons': true,
   'focusFollowsMouse': false,
   'granularity': undefined,
-  'outputContextFirst': false,
   'position': '{}',
   'siteSpecificScriptBase':
       'https://ssl.gstatic.com/accessibility/javascript/ext/',

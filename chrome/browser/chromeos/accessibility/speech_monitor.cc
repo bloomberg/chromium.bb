@@ -84,6 +84,11 @@ std::string SpeechMonitor::error() {
 
 void SpeechMonitor::WillSpeakUtteranceWithVoice(const Utterance* utterance,
                                                 const VoiceData& voice_data) {
+  // Filter out empty utterances which can be used to trigger a start event from
+  // tts as an earcon sync.
+  if (utterance->text() == "")
+    return;
+
   VLOG(0) << "Speaking " << utterance->text();
   utterance_queue_.push_back(utterance->text());
   if (loop_runner_.get())
