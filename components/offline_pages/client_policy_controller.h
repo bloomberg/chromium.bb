@@ -8,7 +8,9 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/time/time.h"
 #include "components/offline_pages/offline_page_client_policy.h"
@@ -38,11 +40,28 @@ class ClientPolicyController {
 
   // Returns whether pages for |name_space| are shown in Download UI.
   bool IsSupportedByDownload(const std::string& name_space) const;
+  const std::vector<std::string>& GetNamespacesSupportedByDownload() const;
+
+  // Returns whether pages for |name_space| are shown in recent tabs UI,
+  // currently only available on NTP.
+  bool IsShownAsRecentlyVisitedSite(const std::string& name_space) const;
+  const std::vector<std::string>& GetNamespacesShownAsRecentlyVisitedSite()
+      const;
+
+  // Returns whether pages for |name_space| should never be shown outside the
+  // tab they were generated in.
+  bool IsRestrictedToOriginalTab(const std::string& name_space) const;
+  const std::vector<std::string>& GetNamespacesRestrictedToOriginalTab() const;
 
  private:
   // The map from name_space to a client policy. Will be generated
   // as pre-defined values for now.
   std::map<std::string, OfflinePageClientPolicy> policies_;
+
+  // Memoizing results.
+  mutable std::unique_ptr<std::vector<std::string>> download_namespace_cache_;
+  mutable std::unique_ptr<std::vector<std::string>> recent_tab_namespace_cache_;
+  mutable std::unique_ptr<std::vector<std::string>> show_in_original_tab_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientPolicyController);
 };

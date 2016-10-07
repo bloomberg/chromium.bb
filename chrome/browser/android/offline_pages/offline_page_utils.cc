@@ -18,6 +18,7 @@
 #include "components/offline_pages/background/request_coordinator.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/client_namespace_constants.h"
+#include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
@@ -31,17 +32,24 @@ namespace {
 
 void OnGetPagesByOnlineURLDone(
     int tab_id,
+    const std::vector<std::string>& namespaces_to_show_in_original_tab,
     const base::Callback<void(const OfflinePageItem*)>& callback,
     const MultipleOfflinePageItemResult& pages) {
   const OfflinePageItem* selected_page = nullptr;
   std::string tab_id_str = base::IntToString(tab_id);
+
   for (const auto& offline_page : pages) {
-    if (offline_page.client_id.name_space != kLastNNamespace ||
-        offline_page.client_id.id == tab_id_str) {
-      if (!selected_page ||
-          offline_page.creation_time > selected_page->creation_time) {
-        selected_page = &offline_page;
-      }
+    auto result = std::find(namespaces_to_show_in_original_tab.begin(),
+                            namespaces_to_show_in_original_tab.end(),
+                            offline_page.client_id.name_space);
+    if (result != namespaces_to_show_in_original_tab.end() &&
+        offline_page.client_id.id != tab_id_str) {
+      continue;
+    }
+
+    if (!selected_page ||
+        offline_page.creation_time > selected_page->creation_time) {
+      selected_page = &offline_page;
     }
   }
   callback.Run(selected_page);
@@ -64,7 +72,10 @@ void OfflinePageUtils::SelectPageForOnlineURL(
   }
 
   offline_page_model->GetPagesByOnlineURL(
-      online_url, base::Bind(&OnGetPagesByOnlineURLDone, tab_id, callback));
+      online_url, base::Bind(&OnGetPagesByOnlineURLDone, tab_id,
+                             offline_page_model->GetPolicyController()
+                                 ->GetNamespacesRestrictedToOriginalTab(),
+                             callback));
 }
 
 const OfflinePageItem* OfflinePageUtils::GetOfflinePageFromWebContents(

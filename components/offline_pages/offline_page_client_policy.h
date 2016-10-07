@@ -49,11 +49,18 @@ struct LifetimePolicy {
 struct FeaturePolicy {
   // Whether pages are shown in download ui.
   bool is_supported_by_download;
+  // Whether pages are shown in recent tabs ui.
+  bool is_supported_by_recent_tabs;
+  // Whether pages should only be viewed in the tab they were generated in.
+  bool only_shown_in_original_tab;
   // Whether pages are removed on user-initiated cache reset. Defaults to true.
   bool is_removed_on_cache_reset;
 
   FeaturePolicy()
-      : is_supported_by_download(false), is_removed_on_cache_reset(true){};
+      : is_supported_by_download(false),
+        is_supported_by_recent_tabs(false),
+        only_shown_in_original_tab(false),
+        is_removed_on_cache_reset(true){};
 };
 
 // The struct describing policies for various namespaces (Bookmark, Last-N etc.)
@@ -118,9 +125,22 @@ class OfflinePageClientPolicyBuilder {
     return *this;
   }
 
+  OfflinePageClientPolicyBuilder& SetIsSupportedByRecentTabs(
+      const bool is_recent_tabs) {
+    policy_.feature_policy.is_supported_by_recent_tabs = is_recent_tabs;
+    return *this;
+  }
+
   OfflinePageClientPolicyBuilder& SetIsRemovedOnCacheReset(
       const bool removed_on_cache_reset) {
     policy_.feature_policy.is_removed_on_cache_reset = removed_on_cache_reset;
+    return *this;
+  }
+
+  OfflinePageClientPolicyBuilder& SetIsOnlyShownInOriginalTab(
+      const bool only_shown_in_original_tab) {
+    policy_.feature_policy.only_shown_in_original_tab =
+        only_shown_in_original_tab;
     return *this;
   }
 
