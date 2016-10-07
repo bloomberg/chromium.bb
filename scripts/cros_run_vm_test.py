@@ -19,7 +19,7 @@ class VMTest(object):
 
   CATAPULT_RUN_TESTS = \
       '/usr/local/telemetry/src/third_party/catapult/telemetry/bin/run_tests'
-  TEST_PATTERNS = ['browser_unittest.BrowserTest', 'CrOS']
+  TEST_PATTERNS = ['testBrowserCreation']
   GUEST_TEST_PATTERNS = ['testBrowserCreation']
 
   def __init__(self, image_path, catapult_tests, guest, start_vm, ssh_port):
