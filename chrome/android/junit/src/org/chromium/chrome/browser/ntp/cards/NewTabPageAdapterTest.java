@@ -9,18 +9,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import static org.chromium.base.test.util.Matchers.greaterThanOrEqualTo;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils
-        .createDummySuggestions;
 
 import android.support.annotation.Nullable;
 import android.view.ContextMenu;
@@ -33,6 +29,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+
+import static org.chromium.base.test.util.Matchers.greaterThanOrEqualTo;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils
+        .createDummySuggestions;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
@@ -1048,6 +1048,11 @@ public class NewTabPageAdapterTest {
         @Override
         public void registerSignInStateObserver(SignInStateObserver signInStateObserver) {
             mSignInStateObserver = signInStateObserver;
+        }
+
+        @Override
+        public boolean isCurrentPage() {
+            return true;
         }
     }
 }

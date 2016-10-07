@@ -358,5 +358,10 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         public void closeContextMenu() {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public boolean isCurrentPage() {
+            return true;
+        }
     }
 }

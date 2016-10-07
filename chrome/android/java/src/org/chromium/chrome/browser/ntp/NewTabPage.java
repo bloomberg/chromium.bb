@@ -199,6 +199,11 @@ public class NewTabPage
          *                   just tapped the fakebox.
          */
         void requestUrlFocusFromFakebox(String pastedText);
+
+        /**
+         * @return whether the provided native page is the one currently displayed to the user.
+         */
+        boolean isCurrentPage(NativePage nativePage);
     }
 
     /**
@@ -660,6 +665,13 @@ public class NewTabPage
             assert mSignInStateObserver == null;
             mSignInStateObserver = signInStateObserver;
             SigninManager.get(mActivity).addSignInStateObserver(mSignInStateObserver);
+        }
+
+        @Override
+        public boolean isCurrentPage() {
+            if (mIsDestroyed) return false;
+            if (mFakeboxDelegate == null) return false;
+            return mFakeboxDelegate.isCurrentPage(NewTabPage.this);
         }
     };
 

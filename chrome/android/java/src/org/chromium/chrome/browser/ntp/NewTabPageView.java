@@ -300,6 +300,12 @@ public class NewTabPageView extends FrameLayout
          * Page goes away.
          */
         void registerSignInStateObserver(SignInStateObserver signInStateObserver);
+
+        /**
+         * @return whether the {@link NewTabPage} associated with this manager is the current page
+         * displayed to the user.
+         */
+        boolean isCurrentPage();
     }
 
     /**
@@ -490,6 +496,12 @@ public class NewTabPageView extends FrameLayout
 
     private void updateSearchBoxOnScroll() {
         if (mDisableUrlFocusChangeAnimations) return;
+
+        // When the page changes (tab switching or new page loading), it is possible that events
+        // (e.g. delayed RecyclerView change notifications) trigger calls to these methods after
+        // the current page changes. We check it again to make sure we don't attempt to update the
+        // wrong page.
+        if (!mManager.isCurrentPage()) return;
 
         if (mSearchBoxScrollListener != null) {
             mSearchBoxScrollListener.onNtpScrollChanged(getToolbarTransitionPercentage());
