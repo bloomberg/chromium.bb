@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.Context;
 import android.support.annotation.DrawableRes;
+import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
@@ -53,9 +54,7 @@ public class SigninPromoItem extends StatusItem implements ItemGroup {
 
     @Override
     public List<NewTabPageItem> getItems() {
-        if (mDismissed) return Collections.emptyList();
-        if (!mVisible) return Collections.emptyList();
-        return mItems;
+        return isShown() ? mItems : Collections.<NewTabPageItem>emptyList();
     }
 
     @Override
@@ -72,6 +71,10 @@ public class SigninPromoItem extends StatusItem implements ItemGroup {
     public void setObserver(Observer changeObserver) {
         assert mChangeObserver == null;
         this.mChangeObserver = changeObserver;
+    }
+
+    public boolean isShown() {
+        return !mDismissed && mVisible;
     }
 
     /** Attempts to show the sign in promo. If the user dismissed it before, it will not be shown.*/
@@ -107,8 +110,12 @@ public class SigninPromoItem extends StatusItem implements ItemGroup {
      * View Holder for {@link SigninPromoItem}.
      */
     public static class ViewHolder extends StatusCardViewHolder {
+        private final int mSeparationSpaceSize;
+
         public ViewHolder(NewTabPageRecyclerView parent, UiConfig config) {
             super(parent, config);
+            mSeparationSpaceSize = parent.getResources().getDimensionPixelSize(
+                    R.dimen.ntp_sign_in_promo_margin_top);
         }
 
         @DrawableRes
@@ -117,6 +124,25 @@ public class SigninPromoItem extends StatusItem implements ItemGroup {
             assert !hasCardBelow;
             if (hasCardAbove) return R.drawable.ntp_signin_promo_card_bottom;
             return R.drawable.ntp_signin_promo_card_single;
+        }
+
+        @Override
+        public void updateLayoutParams() {
+            super.updateLayoutParams();
+
+            if (getAdapterPosition() == RecyclerView.NO_POSITION) return;
+
+            @NewTabPageItem.ViewType
+            int precedingCardType =
+                    getRecyclerView().getAdapter().getItemViewType(getAdapterPosition() - 1);
+
+            // The sign in promo should stick to the articles of the preceding section, but have
+            // some space otherwise.
+            if (precedingCardType != NewTabPageItem.VIEW_TYPE_SNIPPET) {
+                getParams().topMargin = mSeparationSpaceSize;
+            } else {
+                getParams().topMargin = 0;
+            }
         }
     }
 }
