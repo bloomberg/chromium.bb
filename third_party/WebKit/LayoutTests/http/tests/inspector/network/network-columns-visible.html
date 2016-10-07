@@ -12,16 +12,39 @@ function sendXHRRequest() {
 function test() {
     var columnsToTest = ["name", "method", "status", "protocol", "scheme", "domain", "remoteaddress", "type", "initiator", "cookies", "setcookies", "priority", "cache-control", "connection", "content-encoding", "content-length", "vary"];
 
+    var xhrRequestFinished = false;
+    var xhrNode = null;
+
     function onNodeInserted(node)
     {
         if (node.request().name() !== "empty.html?xhr")
             return;
+        xhrNode = node;
+        checkComplete();
+    }
+
+    function onRequestFinished(data)
+    {
+        var request = data.data;
+        if (request.name() !== "empty.html?xhr")
+            return;
+        xhrRequestFinished = true;
+        WebInspector.panels.network._networkLogView.refresh();
+        checkComplete();
+    }
+
+    // Nodes may be inserted or updated in different orders. We must have both to continue to prevent flakeyness.
+    function checkComplete()
+    {
+        if (!xhrNode || !xhrRequestFinished)
+            return;
         for (var columnName of columnsToTest)
-            InspectorTest.addResult(columnName + ": " + node.createCell(columnName).textContent);
+            InspectorTest.addResult(columnName + ": " + xhrNode.createCell(columnName).textContent);
         InspectorTest.completeTest();
     }
 
     InspectorTest.recordNetwork();
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, onRequestFinished);
     InspectorTest.addSniffer(WebInspector.panels.network._networkLogView._dataGrid, "insertChild", onNodeInserted, true);
     InspectorTest.NetworkAgent.setCacheDisabled(true, InspectorTest.evaluateInPage.bind(null, "sendXHRRequest()"));
 }
