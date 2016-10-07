@@ -269,10 +269,10 @@ static bool typefacesHasWeightSuffix(const AtomicString& family,
   const static FamilyWeightSuffix variantForSuffix[] = {
       {L" thin", 5, FontWeight100},        {L" extralight", 11, FontWeight200},
       {L" ultralight", 11, FontWeight200}, {L" light", 6, FontWeight300},
-      {L" medium", 7, FontWeight500},      {L" demibold", 9, FontWeight600},
-      {L" semibold", 9, FontWeight600},    {L" extrabold", 10, FontWeight800},
-      {L" ultrabold", 10, FontWeight800},  {L" black", 6, FontWeight900},
-      {L" heavy", 6, FontWeight900}};
+      {L" regular", 8, FontWeight400},     {L" medium", 7, FontWeight500},
+      {L" demibold", 9, FontWeight600},    {L" semibold", 9, FontWeight600},
+      {L" extrabold", 10, FontWeight800},  {L" ultrabold", 10, FontWeight800},
+      {L" black", 6, FontWeight900},       {L" heavy", 6, FontWeight900}};
   size_t numVariants = WTF_ARRAY_LENGTH(variantForSuffix);
   for (size_t i = 0; i < numVariants; i++) {
     const FamilyWeightSuffix& entry = variantForSuffix[i];
