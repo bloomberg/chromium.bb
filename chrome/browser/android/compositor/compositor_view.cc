@@ -235,7 +235,9 @@ void CompositorView::SetSceneLayer(JNIEnv* env,
 
 void CompositorView::FinalizeLayers(JNIEnv* env,
                                     const JavaParamRef<jobject>& jobj) {
-  UNSHIPPED_TRACE_EVENT0("compositor", "CompositorView::FinalizeLayers");
+#if !defined(OFFICIAL_BUILD)
+  TRACE_EVENT0("compositor", "CompositorView::FinalizeLayers");
+#endif
 }
 
 void CompositorView::SetNeedsComposite(JNIEnv* env,

@@ -223,49 +223,6 @@
                                             flow_flags, arg1_name, arg1_val, \
                                             arg2_name, arg2_val)
 
-// UNSHIPPED_TRACE_EVENT* are like TRACE_EVENT* except that they are not
-// included in official builds.
-
-#if OFFICIAL_BUILD
-#undef TRACING_IS_OFFICIAL_BUILD
-#define TRACING_IS_OFFICIAL_BUILD 1
-#elif !defined(TRACING_IS_OFFICIAL_BUILD)
-#define TRACING_IS_OFFICIAL_BUILD 0
-#endif
-
-#if TRACING_IS_OFFICIAL_BUILD
-#define UNSHIPPED_TRACE_EVENT0(category_group, name) (void)0
-#define UNSHIPPED_TRACE_EVENT1(category_group, name, arg1_name, arg1_val) \
-  (void)0
-#define UNSHIPPED_TRACE_EVENT2(category_group, name, arg1_name, arg1_val, \
-                               arg2_name, arg2_val)                       \
-  (void)0
-#define UNSHIPPED_TRACE_EVENT_INSTANT0(category_group, name, scope) (void)0
-#define UNSHIPPED_TRACE_EVENT_INSTANT1(category_group, name, scope, arg1_name, \
-                                       arg1_val)                               \
-  (void)0
-#define UNSHIPPED_TRACE_EVENT_INSTANT2(category_group, name, scope, arg1_name, \
-                                       arg1_val, arg2_name, arg2_val)          \
-  (void)0
-#else
-#define UNSHIPPED_TRACE_EVENT0(category_group, name) \
-  TRACE_EVENT0(category_group, name)
-#define UNSHIPPED_TRACE_EVENT1(category_group, name, arg1_name, arg1_val) \
-  TRACE_EVENT1(category_group, name, arg1_name, arg1_val)
-#define UNSHIPPED_TRACE_EVENT2(category_group, name, arg1_name, arg1_val, \
-                               arg2_name, arg2_val)                       \
-  TRACE_EVENT2(category_group, name, arg1_name, arg1_val, arg2_name, arg2_val)
-#define UNSHIPPED_TRACE_EVENT_INSTANT0(category_group, name, scope) \
-  TRACE_EVENT_INSTANT0(category_group, name, scope)
-#define UNSHIPPED_TRACE_EVENT_INSTANT1(category_group, name, scope, arg1_name, \
-                                       arg1_val)                               \
-  TRACE_EVENT_INSTANT1(category_group, name, scope, arg1_name, arg1_val)
-#define UNSHIPPED_TRACE_EVENT_INSTANT2(category_group, name, scope, arg1_name, \
-                                       arg1_val, arg2_name, arg2_val)          \
-  TRACE_EVENT_INSTANT2(category_group, name, scope, arg1_name, arg1_val,       \
-                       arg2_name, arg2_val)
-#endif
-
 // Records a single event called "name" immediately, with 0, 1 or 2
 // associated arguments. If the category is not enabled, then this
 // does nothing.
