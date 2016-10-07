@@ -450,8 +450,8 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(
   WebLayer* containerLayer = toWebLayer(scrollableArea->layerForContainer());
   if (webLayer) {
     webLayer->setScrollClipLayer(containerLayer);
-    DoublePoint scrollPosition(scrollableArea->scrollPositionDouble() +
-                               toDoubleSize(scrollableArea->scrollOrigin()));
+    DoublePoint scrollPosition(FloatPoint(scrollableArea->scrollOrigin()) +
+                               scrollableArea->scrollOffset());
     webLayer->setScrollPositionDouble(scrollPosition);
 
     webLayer->setBounds(scrollableArea->contentsSize());

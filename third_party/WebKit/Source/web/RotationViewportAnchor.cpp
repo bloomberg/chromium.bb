@@ -107,8 +107,7 @@ void RotationViewportAnchor::setAnchor() {
 
   IntRect outerViewRect =
       layoutViewport().visibleContentRect(IncludeScrollbars);
-  IntRect innerViewRect =
-      enclosedIntRect(rootFrameViewport->visibleContentRectDouble());
+  IntRect innerViewRect = rootFrameViewport->visibleContentRect();
 
   m_oldPageScaleFactor = m_visualViewport->scale();
   m_oldMinimumPageScaleFactor =
@@ -117,7 +116,7 @@ void RotationViewportAnchor::setAnchor() {
   // Save the absolute location in case we won't find the anchor node, we'll
   // fall back to that.
   m_visualViewportInDocument =
-      FloatPoint(rootFrameViewport->visibleContentRectDouble().location());
+      FloatPoint(rootFrameViewport->visibleContentRect().location());
 
   m_anchorNode.clear();
   m_anchorNodeBounds = LayoutRect();
@@ -181,7 +180,8 @@ void RotationViewportAnchor::restoreToAnchor() {
 
   computeOrigins(visualViewportSize, mainFrameOrigin, visualViewportOrigin);
 
-  layoutViewport().setScrollPosition(mainFrameOrigin, ProgrammaticScroll);
+  layoutViewport().setScrollOffset(toScrollOffset(mainFrameOrigin),
+                                   ProgrammaticScroll);
 
   // Set scale before location, since location can be clamped on setting scale.
   m_visualViewport->setScale(newPageScaleFactor);
@@ -213,8 +213,8 @@ void RotationViewportAnchor::computeOrigins(
 
   moveToEncloseRect(outerRect, innerRect);
 
-  outerRect.setLocation(
-      layoutViewport().clampScrollPosition(outerRect.location()));
+  outerRect.setLocation(IntPoint(
+      layoutViewport().clampScrollOffset(toIntSize(outerRect.location()))));
 
   moveIntoRect(innerRect, outerRect);
 

@@ -275,9 +275,9 @@ void FrameLoader::saveScrollState() {
 
   if (ScrollableArea* layoutScrollableArea =
           m_frame->view()->layoutViewportScrollableArea())
-    m_currentItem->setScrollPoint(layoutScrollableArea->scrollPosition());
-  m_currentItem->setVisualViewportScrollPoint(
-      m_frame->host()->visualViewport().visibleRect().location());
+    m_currentItem->setScrollOffset(layoutScrollableArea->scrollOffset());
+  m_currentItem->setVisualViewportScrollOffset(toScrollOffset(
+      m_frame->host()->visualViewport().visibleRect().location()));
 
   if (m_frame->isMainFrame())
     m_currentItem->setPageScaleFactor(m_frame->page()->pageScaleFactor());
@@ -425,9 +425,9 @@ void FrameLoader::setHistoryItemStateForCommit(
        !equalIgnoringFragmentIdentifier(oldItem->url(), m_currentItem->url())))
     return;
   m_currentItem->setDocumentSequenceNumber(oldItem->documentSequenceNumber());
-  m_currentItem->setScrollPoint(oldItem->scrollPoint());
-  m_currentItem->setVisualViewportScrollPoint(
-      oldItem->visualViewportScrollPoint());
+  m_currentItem->setScrollOffset(oldItem->scrollOffset());
+  m_currentItem->setVisualViewportScrollOffset(
+      oldItem->visualViewportScrollOffset());
   m_currentItem->setPageScaleFactor(oldItem->pageScaleFactor());
   m_currentItem->setScrollRestorationType(oldItem->scrollRestorationType());
 
@@ -1339,8 +1339,8 @@ void FrameLoader::restoreScrollPositionAndViewState() {
   //    completes because that may be because the page will never reach its
   //    previous height
   bool canRestoreWithoutClamping =
-      view->layoutViewportScrollableArea()->clampScrollPosition(
-          m_currentItem->scrollPoint()) == m_currentItem->scrollPoint();
+      view->layoutViewportScrollableArea()->clampScrollOffset(
+          m_currentItem->scrollOffset()) == m_currentItem->scrollOffset();
   bool canRestoreWithoutAnnoyingUser =
       !documentLoader()->initialScrollState().wasScrolledByUser &&
       (canRestoreWithoutClamping || !m_frame->isLoading() ||
@@ -1348,29 +1348,34 @@ void FrameLoader::restoreScrollPositionAndViewState() {
   if (!canRestoreWithoutAnnoyingUser)
     return;
 
-  if (shouldRestoreScroll)
-    view->layoutViewportScrollableArea()->setScrollPosition(
-        m_currentItem->scrollPoint(), ProgrammaticScroll);
+  if (shouldRestoreScroll) {
+    view->layoutViewportScrollableArea()->setScrollOffset(
+        m_currentItem->scrollOffset(), ProgrammaticScroll);
+  }
 
   // For main frame restore scale and visual viewport position
   if (m_frame->isMainFrame()) {
-    FloatPoint visualViewportOffset(m_currentItem->visualViewportScrollPoint());
+    ScrollOffset visualViewportOffset(
+        m_currentItem->visualViewportScrollOffset());
 
-    // If the visual viewport's offset is (-1, -1) it means the history item is
-    // an old version of HistoryItem so distribute the scroll between the main
-    // frame and the visual viewport as best as we can.
-    if (visualViewportOffset.x() == -1 && visualViewportOffset.y() == -1)
+    // If the visual viewport's offset is (-1, -1) it means the history item
+    // is an old version of HistoryItem so distribute the scroll between
+    // the main frame and the visual viewport as best as we can.
+    if (visualViewportOffset.width() == -1 &&
+        visualViewportOffset.height() == -1) {
       visualViewportOffset =
-          FloatPoint(m_currentItem->scrollPoint() - view->scrollPosition());
+          m_currentItem->scrollOffset() - view->scrollOffset();
+    }
 
     VisualViewport& visualViewport = m_frame->host()->visualViewport();
-    if (shouldRestoreScale && shouldRestoreScroll)
+    if (shouldRestoreScale && shouldRestoreScroll) {
       visualViewport.setScaleAndLocation(m_currentItem->pageScaleFactor(),
-                                         visualViewportOffset);
-    else if (shouldRestoreScale)
+                                         FloatPoint(visualViewportOffset));
+    } else if (shouldRestoreScale) {
       visualViewport.setScale(m_currentItem->pageScaleFactor());
-    else if (shouldRestoreScroll)
-      visualViewport.setLocation(visualViewportOffset);
+    } else if (shouldRestoreScroll) {
+      visualViewport.setLocation(FloatPoint(visualViewportOffset));
+    }
 
     if (ScrollingCoordinator* scrollingCoordinator =
             m_frame->page()->scrollingCoordinator())

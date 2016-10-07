@@ -637,11 +637,11 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor,
     if (FrameView* view = this->view()) {
       // Update the scroll position when doing a full page zoom, so the content
       // stays in relatively the same position.
-      LayoutPoint scrollPosition = view->scrollPosition();
+      ScrollOffset scrollOffset = view->scrollOffset();
       float percentDifference = (pageZoomFactor / m_pageZoomFactor);
-      view->setScrollPosition(
-          DoublePoint(scrollPosition.x() * percentDifference,
-                      scrollPosition.y() * percentDifference),
+      view->setScrollOffset(
+          ScrollOffset(scrollOffset.width() * percentDifference,
+                       scrollOffset.height() * percentDifference),
           ProgrammaticScroll);
     }
   }

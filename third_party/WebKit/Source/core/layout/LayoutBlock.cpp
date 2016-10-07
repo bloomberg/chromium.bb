@@ -417,8 +417,8 @@ void LayoutBlock::layout() {
   // PaintLayerScrollableArea::clampScrollPositionsAfterLayout.
   // Restoring during the intermediate layout may clamp the scroller to the
   // wrong bounds.
-  bool clampingDelayed = PaintLayerScrollableArea::
-      DelayScrollPositionClampScope::clampingIsDelayed();
+  bool clampingDelayed = PaintLayerScrollableArea::DelayScrollOffsetClampScope::
+      clampingIsDelayed();
   if (needsScrollAnchoring && !clampingDelayed)
     getScrollableArea()->scrollAnchor()->restore();
 

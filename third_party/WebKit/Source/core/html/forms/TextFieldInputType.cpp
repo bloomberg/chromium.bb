@@ -228,9 +228,8 @@ void TextFieldInputType::forwardEvent(Event* event) {
         if (PaintLayer* innerLayer = innerEditorLayoutObject->layer()) {
           if (PaintLayerScrollableArea* innerScrollableArea =
                   innerLayer->getScrollableArea()) {
-            innerScrollableArea->setScrollPosition(
-                DoublePoint(innerScrollableArea->scrollOrigin()),
-                ProgrammaticScroll, ScrollBehaviorInstant);
+            innerScrollableArea->setScrollOffset(ScrollOffset(0, 0),
+                                                 ProgrammaticScroll);
           }
         }
       }

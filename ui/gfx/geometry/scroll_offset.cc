@@ -9,7 +9,7 @@
 namespace gfx {
 
 std::string ScrollOffset::ToString() const {
-  return base::StringPrintf("[%lf %lf]", x_, y_);
+  return base::StringPrintf("[%f %f]", x_, y_);
 }
 
 }  // namespace gfx

@@ -220,7 +220,7 @@ static bool pointWithScrollAndZoomIfPossible(const Document& document,
 
   FloatPoint pointInDocument(point);
   pointInDocument.scale(frame->pageZoomFactor(), frame->pageZoomFactor());
-  pointInDocument.moveBy(frameView->scrollPosition());
+  pointInDocument.move(frameView->scrollOffset());
   IntPoint roundedPointInDocument = roundedIntPoint(pointInDocument);
 
   if (!frameView->visibleContentRect().contains(roundedPointInDocument))

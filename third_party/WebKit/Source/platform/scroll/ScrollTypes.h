@@ -26,10 +26,21 @@
 #ifndef ScrollTypes_h
 #define ScrollTypes_h
 
-#include "platform/geometry/FloatSize.h"
+#include "platform/geometry/FloatPoint.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
+
+// A ScrollOffset represents an offset from the scroll origin of a
+// ScrollableArea.  Note that "scroll origin" is not the same as the layout
+// concept of "location", nor is it necessarily coincident with the top/left of
+// the ScrollableArea's overflow rect.  See core/layout/README.md for more
+// information.
+typedef FloatSize ScrollOffset;
+
+inline ScrollOffset toScrollOffset(const FloatPoint& p) {
+  return ScrollOffset(p.x(), p.y());
+}
 
 enum ScrollDirection {
   ScrollUpIgnoringWritingMode,
@@ -214,17 +225,18 @@ struct ScrollResult {
   float unusedScrollDeltaY;
 };
 
-inline FloatSize toScrollDelta(ScrollbarOrientation orientation, float delta) {
-  return orientation == HorizontalScrollbar ? FloatSize(delta, 0.0f)
-                                            : FloatSize(0.0f, delta);
+inline ScrollOffset toScrollDelta(ScrollbarOrientation orientation,
+                                  float delta) {
+  return orientation == HorizontalScrollbar ? ScrollOffset(delta, 0.0f)
+                                            : ScrollOffset(0.0f, delta);
 }
 
-inline FloatSize toScrollDelta(ScrollDirectionPhysical dir, float delta) {
+inline ScrollOffset toScrollDelta(ScrollDirectionPhysical dir, float delta) {
   if (dir == ScrollUp || dir == ScrollLeft)
     delta = -delta;
 
-  return (dir == ScrollLeft || dir == ScrollRight) ? FloatSize(delta, 0)
-                                                   : FloatSize(0, delta);
+  return (dir == ScrollLeft || dir == ScrollRight) ? ScrollOffset(delta, 0)
+                                                   : ScrollOffset(0, delta);
 }
 
 typedef unsigned ScrollbarControlPartMask;

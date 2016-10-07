@@ -96,9 +96,9 @@ static FloatRect toNormalizedRect(const FloatRect& absoluteRect,
   // leave consistent tickmarks.  So, use their position when the view is not
   // scrolled, like an absolute position.
   if (layoutObject->style()->position() == FixedPosition &&
-      container->isLayoutView())
-    normalizedRect.moveBy(
-        -toLayoutView(container)->frameView()->scrollPosition());
+      container->isLayoutView()) {
+    normalizedRect.move(-toLayoutView(container)->frameView()->scrollOffset());
+  }
 
   normalizedRect.scale(1 / containerRect.width(), 1 / containerRect.height());
   return normalizedRect;

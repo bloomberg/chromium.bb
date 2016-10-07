@@ -36,15 +36,15 @@ class ScrollableAreaTest : public ScrollbarTestSuite {};
 
 TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync) {
   MockScrollableArea* scrollableArea =
-      MockScrollableArea::create(IntPoint(0, 100));
-  scrollableArea->setScrollPosition(IntPoint(0, 10000), CompositorScroll);
-  EXPECT_EQ(100.0, scrollableArea->scrollAnimator().currentPosition().y());
+      MockScrollableArea::create(ScrollOffset(0, 100));
+  scrollableArea->setScrollOffset(ScrollOffset(0, 10000), CompositorScroll);
+  EXPECT_EQ(100.0, scrollableArea->scrollAnimator().currentOffset().height());
 }
 
 TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint) {
   ScrollbarThemeWithMockInvalidation theme;
   MockScrollableArea* scrollableArea =
-      MockScrollableArea::create(IntPoint(0, 100));
+      MockScrollableArea::create(ScrollOffset(0, 100));
   Scrollbar* scrollbar = Scrollbar::createForTesting(
       scrollableArea, HorizontalScrollbar, RegularScrollbar, &theme);
 
@@ -83,7 +83,7 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint) {
 TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
   ScrollbarTheme::setMockScrollbarsEnabled(true);
   MockScrollableArea* scrollableArea =
-      MockScrollableArea::create(IntPoint(0, 100));
+      MockScrollableArea::create(ScrollOffset(0, 100));
   FakeGraphicsLayerClient graphicsLayerClient;
   graphicsLayerClient.setIsTrackingRasterInvalidations(true);
   FakeGraphicsLayer graphicsLayer(&graphicsLayerClient);
@@ -106,7 +106,7 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
 TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves) {
   ScrollbarThemeWithMockInvalidation theme;
   MockScrollableArea* scrollableArea =
-      MockScrollableArea::create(IntPoint(100, 100));
+      MockScrollableArea::create(ScrollOffset(100, 100));
   Scrollbar* horizontalScrollbar = Scrollbar::createForTesting(
       scrollableArea, HorizontalScrollbar, RegularScrollbar, &theme);
   Scrollbar* verticalScrollbar = Scrollbar::createForTesting(
@@ -130,11 +130,11 @@ TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves) {
       .WillRepeatedly(Return(NoPart));
 
   // A scroll in each direction should only invalidate one scrollbar.
-  scrollableArea->setScrollPosition(DoublePoint(0, 50), ProgrammaticScroll);
+  scrollableArea->setScrollOffset(ScrollOffset(0, 50), ProgrammaticScroll);
   EXPECT_FALSE(scrollableArea->horizontalScrollbarNeedsPaintInvalidation());
   EXPECT_TRUE(scrollableArea->verticalScrollbarNeedsPaintInvalidation());
   scrollableArea->clearNeedsPaintInvalidationForScrollControls();
-  scrollableArea->setScrollPosition(DoublePoint(50, 50), ProgrammaticScroll);
+  scrollableArea->setScrollOffset(ScrollOffset(50, 50), ProgrammaticScroll);
   EXPECT_TRUE(scrollableArea->horizontalScrollbarNeedsPaintInvalidation());
   EXPECT_FALSE(scrollableArea->verticalScrollbarNeedsPaintInvalidation());
   scrollableArea->clearNeedsPaintInvalidationForScrollControls();
@@ -146,7 +146,7 @@ TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves) {
 TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   ScrollbarThemeWithMockInvalidation theme;
   MockScrollableArea* scrollableArea =
-      MockScrollableArea::create(IntPoint(100, 100));
+      MockScrollableArea::create(ScrollOffset(100, 100));
   Scrollbar* horizontalScrollbar = Scrollbar::createForTesting(
       scrollableArea, HorizontalScrollbar, RegularScrollbar, &theme);
   horizontalScrollbar->clearTrackNeedsRepaint();
@@ -183,7 +183,7 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   // the back button (i.e. the track).
   EXPECT_CALL(theme, invalidateOnThumbPositionChange(_, _, _))
       .WillOnce(Return(BackButtonStartPart));
-  scrollableArea->setScrollPosition(DoublePoint(50, 0), ProgrammaticScroll);
+  scrollableArea->setScrollOffset(ScrollOffset(50, 0), ProgrammaticScroll);
   EXPECT_TRUE(layerForHorizontalScrollbar.hasTrackedRasterInvalidations());
   EXPECT_FALSE(layerForVerticalScrollbar.hasTrackedRasterInvalidations());
   EXPECT_TRUE(horizontalScrollbar->trackNeedsRepaint());
@@ -194,7 +194,7 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   // Next, we'll scroll vertically, but invalidate the thumb.
   EXPECT_CALL(theme, invalidateOnThumbPositionChange(_, _, _))
       .WillOnce(Return(ThumbPart));
-  scrollableArea->setScrollPosition(DoublePoint(50, 50), ProgrammaticScroll);
+  scrollableArea->setScrollOffset(ScrollOffset(50, 50), ProgrammaticScroll);
   EXPECT_FALSE(layerForHorizontalScrollbar.hasTrackedRasterInvalidations());
   EXPECT_TRUE(layerForVerticalScrollbar.hasTrackedRasterInvalidations());
   EXPECT_FALSE(verticalScrollbar->trackNeedsRepaint());
@@ -209,7 +209,7 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   EXPECT_CALL(theme, invalidateOnThumbPositionChange(_, _, _))
       .Times(2)
       .WillRepeatedly(Return(NoPart));
-  scrollableArea->setScrollPosition(DoublePoint(70, 70), ProgrammaticScroll);
+  scrollableArea->setScrollOffset(ScrollOffset(70, 70), ProgrammaticScroll);
   EXPECT_TRUE(layerForHorizontalScrollbar.hasTrackedRasterInvalidations());
   EXPECT_TRUE(layerForVerticalScrollbar.hasTrackedRasterInvalidations());
   EXPECT_FALSE(horizontalScrollbar->trackNeedsRepaint());
@@ -223,7 +223,7 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
 
 TEST_F(ScrollableAreaTest, RecalculatesScrollbarOverlayIfBackgroundChanges) {
   MockScrollableArea* scrollableArea =
-      MockScrollableArea::create(IntPoint(0, 100));
+      MockScrollableArea::create(ScrollOffset(0, 100));
 
   EXPECT_EQ(ScrollbarOverlayStyleDefault,
             scrollableArea->getScrollbarOverlayStyle());

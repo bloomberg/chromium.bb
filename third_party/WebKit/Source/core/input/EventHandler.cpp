@@ -1797,9 +1797,10 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
         visualViewport.viewportToRootFrame(clippedRect.center());
   } else {
     locationInRootFrame = IntPoint(
-        rightAligned ? visualViewport.visibleRect().maxX() - kContextMenuMargin
-                     : visualViewport.location().x() + kContextMenuMargin,
-        visualViewport.location().y() + kContextMenuMargin);
+        rightAligned
+            ? visualViewport.visibleRect().maxX() - kContextMenuMargin
+            : visualViewport.scrollOffset().width() + kContextMenuMargin,
+        visualViewport.scrollOffset().height() + kContextMenuMargin);
   }
 
   m_frame->view()->setCursor(pointerCursor());

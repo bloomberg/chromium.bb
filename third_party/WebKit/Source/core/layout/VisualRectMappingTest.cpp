@@ -141,8 +141,8 @@ TEST_F(VisualRectMappingTest, LayoutView) {
 
   // This case involves clipping: frame height is 50, y-coordinate of result rect is 13,
   // so height should be clipped to (50 - 13) == 37.
-  frameDocument.view()->setScrollPosition(DoublePoint(0, 47),
-                                          ProgrammaticScroll);
+  frameDocument.view()->setScrollOffset(ScrollOffset(0, 47),
+                                        ProgrammaticScroll);
   LayoutRect originalRect(4, 60, 20, 80);
   LayoutRect rect = originalRect;
   EXPECT_TRUE(frameText->mapToVisualRectInAncestorSpace(frameContainer, rect));
@@ -208,8 +208,8 @@ TEST_F(VisualRectMappingTest, LayoutViewDisplayNone) {
 
   // This part is copied from the LayoutView test, just to ensure that the mapped
   // rect is valid before display:none is set on the iframe.
-  frameDocument.view()->setScrollPosition(DoublePoint(0, 47),
-                                          ProgrammaticScroll);
+  frameDocument.view()->setScrollOffset(ScrollOffset(0, 47),
+                                        ProgrammaticScroll);
   LayoutRect originalRect(4, 60, 20, 80);
   LayoutRect rect = originalRect;
   EXPECT_TRUE(frameDiv->mapToVisualRectInAncestorSpace(frameContainer, rect));

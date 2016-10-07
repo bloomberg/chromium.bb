@@ -499,8 +499,8 @@ bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent) {
         frameView, static_cast<const WebGestureEvent&>(inputEvent));
     float pageScaleFactor = page->pageScaleFactor();
     if (gestureEvent.type() == PlatformEvent::GesturePinchBegin) {
-      m_lastPinchAnchorCss = wrapUnique(
-          new IntPoint(frameView->scrollPosition() + gestureEvent.position()));
+      m_lastPinchAnchorCss = wrapUnique(new IntPoint(roundedIntPoint(
+          gestureEvent.position() + frameView->scrollOffset())));
       m_lastPinchAnchorDip = wrapUnique(new IntPoint(gestureEvent.position()));
       m_lastPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
     }

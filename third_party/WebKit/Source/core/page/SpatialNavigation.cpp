@@ -221,7 +221,7 @@ bool scrollInDirection(LocalFrame* frame, WebFocusType type) {
         return false;
     }
 
-    frame->view()->scrollBy(IntSize(dx, dy), UserScroll);
+    frame->view()->scrollBy(ScrollOffset(dx, dy), UserScroll);
     return true;
   }
   return false;
@@ -266,7 +266,7 @@ bool scrollInDirection(Node* container, WebFocusType type) {
         return false;
     }
 
-    container->layoutBox()->scrollByRecursively(IntSize(dx, dy));
+    container->layoutBox()->scrollByRecursively(ScrollOffset(dx, dy));
     return true;
   }
 
@@ -367,7 +367,7 @@ bool canScrollInDirection(const LocalFrame* frame, WebFocusType type) {
       ScrollbarAlwaysOff == verticalMode)
     return false;
   LayoutSize size(frame->view()->contentsSize());
-  LayoutSize offset(frame->view()->scrollOffset());
+  LayoutSize offset(frame->view()->scrollOffsetInt());
   LayoutRect rect(frame->view()->visibleContentRect(IncludeScrollbars));
 
   switch (type) {
@@ -399,7 +399,7 @@ static LayoutRect rectToAbsoluteCoordinates(LocalFrame* initialFrame,
         LayoutObject* layoutObject = element->layoutObject();
         element = layoutObject ? layoutObject->offsetParent() : nullptr;
       } while (element);
-      rect.move((-toLocalFrame(frame)->view()->scrollOffset()));
+      rect.move((-toLocalFrame(frame)->view()->scrollOffsetInt()));
     }
   }
   return rect;

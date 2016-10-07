@@ -35,6 +35,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
+#include "platform/scroll/ScrollTypes.h"
 
 namespace blink {
 
@@ -57,10 +58,10 @@ class DOMVisualViewport final : public EventTargetWithInlineData {
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;
 
-  double scrollLeft();
-  double scrollTop();
-  double pageX();
-  double pageY();
+  float scrollLeft();
+  float scrollTop();
+  float pageX();
+  float pageY();
   double clientWidth();
   double clientHeight();
   double scale();

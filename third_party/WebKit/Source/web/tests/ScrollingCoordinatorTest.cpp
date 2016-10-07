@@ -210,8 +210,8 @@ TEST_F(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   WebLayer* webScrollLayer =
       compositedLayerMapping->scrollingContentsLayer()->platformLayer();
   ASSERT_TRUE(webScrollLayer);
-  ASSERT_NEAR(1.2, webScrollLayer->scrollPositionDouble().x, 0.01);
-  ASSERT_NEAR(1.2, webScrollLayer->scrollPositionDouble().y, 0.01);
+  ASSERT_NEAR(1.2f, webScrollLayer->scrollPositionDouble().x, 0.01f);
+  ASSERT_NEAR(1.2f, webScrollLayer->scrollPositionDouble().y, 0.01f);
 
   RuntimeEnabledFeatures::setFractionalScrollOffsetsEnabled(
       origFractionalOffsetsEnabled);

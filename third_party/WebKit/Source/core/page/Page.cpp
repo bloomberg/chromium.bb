@@ -460,9 +460,10 @@ void Page::didCommitLoad(LocalFrame* frame) {
 
     // Need to reset visual viewport position here since before commit load we
     // would update the previous history item, Page::didCommitLoad is called
-    // after a new history item is created in FrameLoader. See crbug.com/642279
-    frameHost().visualViewport().setScrollPosition(DoublePoint(),
-                                                   ProgrammaticScroll);
+    // after a new history item is created in FrameLoader.
+    // See crbug.com/642279
+    frameHost().visualViewport().setScrollOffset(ScrollOffset(),
+                                                 ProgrammaticScroll);
     m_hostsUsingFeatures.updateMeasurementsAndClear();
     UserGestureIndicator::clearProcessedUserGestureSinceLoad();
   }

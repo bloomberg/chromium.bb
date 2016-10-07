@@ -85,20 +85,20 @@ void HistoryItem::setTarget(const String& target) {
   m_target = target;
 }
 
-const FloatPoint& HistoryItem::visualViewportScrollPoint() const {
-  return m_visualViewportScrollPoint;
+const ScrollOffset& HistoryItem::visualViewportScrollOffset() const {
+  return m_visualViewportScrollOffset;
 }
 
-void HistoryItem::setVisualViewportScrollPoint(const FloatPoint& point) {
-  m_visualViewportScrollPoint = point;
+void HistoryItem::setVisualViewportScrollOffset(const ScrollOffset& offset) {
+  m_visualViewportScrollOffset = offset;
 }
 
-const IntPoint& HistoryItem::scrollPoint() const {
-  return m_scrollPoint;
+const ScrollOffset& HistoryItem::scrollOffset() const {
+  return m_scrollOffset;
 }
 
-void HistoryItem::setScrollPoint(const IntPoint& point) {
-  m_scrollPoint = point;
+void HistoryItem::setScrollOffset(const ScrollOffset& offset) {
+  m_scrollOffset = offset;
 }
 
 float HistoryItem::pageScaleFactor() const {

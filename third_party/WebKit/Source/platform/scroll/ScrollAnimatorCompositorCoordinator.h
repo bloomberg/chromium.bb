@@ -11,7 +11,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
-#include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -69,11 +68,11 @@ class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator
     // Waiting to cancel the animation currently running on the compositor
     // while another animation is requested. In this case, the currently
     // running animation is aborted and an animation to the new target
-    // from the current position is started.
+    // from the current offset is started.
     WaitingToCancelOnCompositorButNewScroll,
 
     // Running an animation on the compositor but an adjustment to the
-    // scroll position was made on the main thread and the animation must
+    // scroll offset was made on the main thread and the animation must
     // be updated.
     RunningOnCompositorButNeedsAdjustment,
   };
@@ -92,10 +91,10 @@ class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator
   // and continues it on the main thread. This should only be called when in
   // DocumentLifecycle::LifecycleState::CompositingClean state.
   virtual void takeOverCompositorAnimation();
-  // Updates the scroll position of the animator's ScrollableArea by
+  // Updates the scroll offset of the animator's ScrollableArea by
   // adjustment and update the target of an ongoing scroll offset animation.
-  virtual void adjustAnimationAndSetScrollPosition(const DoublePoint& position,
-                                                   ScrollType);
+  virtual void adjustAnimationAndSetScrollOffset(const ScrollOffset&,
+                                                 ScrollType);
   virtual void updateCompositorAnimations();
 
   virtual ScrollableArea* getScrollableArea() const = 0;
@@ -112,7 +111,7 @@ class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator
  protected:
   explicit ScrollAnimatorCompositorCoordinator();
 
-  void scrollPositionChanged(const DoublePoint& offset, ScrollType);
+  void scrollOffsetChanged(const ScrollOffset&, ScrollType);
 
   void adjustImplOnlyScrollOffsetAnimation(const IntSize& adjustment);
   IntSize implOnlyAnimationAdjustmentForTesting() {
@@ -124,8 +123,20 @@ class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator
   void removeAnimation();
   virtual void abortAnimation();
 
-  FloatPoint compositorOffsetFromBlinkOffset(FloatPoint);
-  FloatPoint blinkOffsetFromCompositorOffset(FloatPoint);
+  // "offset" in the cc scrolling code is analagous to "position" in the blink
+  // scrolling code:
+  // they both represent the distance from the top-left of the overflow rect to
+  // the top-left
+  // of the viewport.  In blink, "offset" refers to the distance of the viewport
+  // from the
+  // beginning of flow of the contents.  In left-to-right flows, blink "offset"
+  // and "position" are
+  // equivalent, but in right-to-left flows (including direction:rtl,
+  // writing-mode:vertical-rl,
+  // and flex-direction:row-reverse), they aren't.  See core/layout/README.md
+  // for more info.
+  FloatPoint compositorOffsetFromBlinkOffset(ScrollOffset);
+  ScrollOffset blinkOffsetFromCompositorOffset(FloatPoint);
 
   void compositorAnimationFinished(int groupId);
   // Returns true if the compositor player was attached to a new layer.

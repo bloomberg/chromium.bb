@@ -119,8 +119,8 @@ TEST_P(FrameViewTest, HideTooltipWhenScrollPositionChanges) {
   document().view()->updateAllLifecyclePhases();
 
   EXPECT_CALL(chromeClient(), mockSetToolTip(document().frame(), String(), _));
-  document().view()->layoutViewportScrollableArea()->setScrollPosition(
-      DoublePoint(1, 1), UserScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(1, 1), UserScroll);
 }
 
 // NoOverflowInIncrementVisuallyNonEmptyPixelCount tests fail if the number of

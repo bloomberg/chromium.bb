@@ -177,7 +177,7 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result,
       LayoutPoint adjustedLocation = accumulatedOffset + location();
       LayoutPoint contentOffset = LayoutPoint(borderLeft() + paddingLeft(),
                                               borderTop() + paddingTop()) -
-                                  LayoutSize(childFrameView->scrollOffset());
+                                  LayoutSize(childFrameView->scrollOffsetInt());
       HitTestLocation newHitTestLocation(locationInContainer,
                                          -adjustedLocation - contentOffset);
       HitTestRequest newHitTestRequest(result.hitTestRequest().type() |

@@ -73,7 +73,7 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
       "</div>");
 
   FrameView* frameView = document().view();
-  frameView->setScrollPosition(DoublePoint(0, 400), ProgrammaticScroll);
+  frameView->setScrollOffset(ScrollOffset(0, 400), ProgrammaticScroll);
 
   PlatformMouseEvent mouseDownEvent(
       IntPoint(0, 0), IntPoint(100, 200), WebPointerProperties::Button::Left,

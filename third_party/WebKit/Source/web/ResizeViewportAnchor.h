@@ -6,8 +6,8 @@
 #define ResizeViewportAnchor_h
 
 #include "core/page/Page.h"
-#include "platform/geometry/DoubleSize.h"
 #include "platform/heap/Handle.h"
+#include "platform/scroll/ScrollTypes.h"
 
 namespace blink {
 
@@ -51,7 +51,7 @@ class ResizeViewportAnchor final
   // The amount of resize-induced clamping drift accumulated during the
   // ResizeScope.  Note that this should NOT include other kinds of scrolling
   // that may occur during layout, such as from ScrollAnchor.
-  DoubleSize m_drift;
+  ScrollOffset m_drift;
   Member<Page> m_page;
   int m_scopeCount;
 };

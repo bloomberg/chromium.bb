@@ -919,14 +919,13 @@ void Element::scrollLayoutBoxBy(const ScrollToOptions& scrollToOptions) {
                                            scrollBehavior);
   LayoutBox* box = layoutBox();
   if (box) {
-    double currentScaledLeft = box->scrollLeft();
-    double currentScaledTop = box->scrollTop();
-    double newScaledLeft =
+    float currentScaledLeft = box->scrollLeft().toFloat();
+    float currentScaledTop = box->scrollTop().toFloat();
+    float newScaledLeft =
         left * box->style()->effectiveZoom() + currentScaledLeft;
-    double newScaledTop =
-        top * box->style()->effectiveZoom() + currentScaledTop;
-    box->scrollToOffset(DoubleSize(newScaledLeft, newScaledTop),
-                        scrollBehavior);
+    float newScaledTop = top * box->style()->effectiveZoom() + currentScaledTop;
+    box->scrollToPosition(FloatPoint(newScaledLeft, newScaledTop),
+                          scrollBehavior);
   }
 }
 
@@ -937,8 +936,8 @@ void Element::scrollLayoutBoxTo(const ScrollToOptions& scrollToOptions) {
 
   LayoutBox* box = layoutBox();
   if (box) {
-    double scaledLeft = box->scrollLeft();
-    double scaledTop = box->scrollTop();
+    float scaledLeft = box->scrollLeft().toFloat();
+    float scaledTop = box->scrollTop().toFloat();
     if (scrollToOptions.hasLeft())
       scaledLeft =
           ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) *
@@ -947,7 +946,7 @@ void Element::scrollLayoutBoxTo(const ScrollToOptions& scrollToOptions) {
       scaledTop =
           ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.top()) *
           box->style()->effectiveZoom();
-    box->scrollToOffset(DoubleSize(scaledLeft, scaledTop), scrollBehavior);
+    box->scrollToPosition(FloatPoint(scaledLeft, scaledTop), scrollBehavior);
   }
 }
 
@@ -972,12 +971,12 @@ void Element::scrollFrameBy(const ScrollToOptions& scrollToOptions) {
   if (!viewport)
     return;
 
-  double newScaledLeft =
-      left * frame->pageZoomFactor() + viewport->scrollPositionDouble().x();
-  double newScaledTop =
-      top * frame->pageZoomFactor() + viewport->scrollPositionDouble().y();
-  viewport->setScrollPosition(DoublePoint(newScaledLeft, newScaledTop),
-                              ProgrammaticScroll, scrollBehavior);
+  float newScaledLeft =
+      left * frame->pageZoomFactor() + viewport->scrollOffset().width();
+  float newScaledTop =
+      top * frame->pageZoomFactor() + viewport->scrollOffset().height();
+  viewport->setScrollOffset(ScrollOffset(newScaledLeft, newScaledTop),
+                            ProgrammaticScroll, scrollBehavior);
 }
 
 void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions) {
@@ -992,8 +991,8 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions) {
   if (!viewport)
     return;
 
-  double scaledLeft = viewport->scrollPositionDouble().x();
-  double scaledTop = viewport->scrollPositionDouble().y();
+  float scaledLeft = viewport->scrollOffset().width();
+  float scaledTop = viewport->scrollOffset().height();
   if (scrollToOptions.hasLeft())
     scaledLeft =
         ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) *
@@ -1002,8 +1001,8 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions) {
     scaledTop =
         ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.top()) *
         frame->pageZoomFactor();
-  viewport->setScrollPosition(DoublePoint(scaledLeft, scaledTop),
-                              ProgrammaticScroll, scrollBehavior);
+  viewport->setScrollOffset(ScrollOffset(scaledLeft, scaledTop),
+                            ProgrammaticScroll, scrollBehavior);
 }
 
 bool Element::hasCompositorProxy() const {
@@ -1609,7 +1608,7 @@ void Element::removedFrom(ContainerNode* insertionPoint) {
   if (document().page())
     document().page()->pointerLockController().elementRemoved(this);
 
-  setSavedLayerScrollOffset(IntSize());
+  setSavedLayerScrollOffset(ScrollOffset());
 
   if (insertionPoint->isInTreeScope() && treeScope() == document()) {
     const AtomicString& idValue = getIdAttribute();
@@ -3616,12 +3615,12 @@ void Element::scheduleSVGFilterLayerUpdateHack() {
   document().scheduleSVGFilterLayerUpdateHack(*this);
 }
 
-IntSize Element::savedLayerScrollOffset() const {
+ScrollOffset Element::savedLayerScrollOffset() const {
   return hasRareData() ? elementRareData()->savedLayerScrollOffset()
-                       : IntSize();
+                       : ScrollOffset();
 }
 
-void Element::setSavedLayerScrollOffset(const IntSize& size) {
+void Element::setSavedLayerScrollOffset(const ScrollOffset& size) {
   if (size.isZero() && !hasRareData())
     return;
   ensureElementRareData().setSavedLayerScrollOffset(size);

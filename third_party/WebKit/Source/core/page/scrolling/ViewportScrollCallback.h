@@ -56,7 +56,7 @@ class ViewportScrollCallback : public ScrollStateCallback {
                          OverscrollController*,
                          RootFrameViewport&);
 
-  bool shouldScrollTopControls(const FloatSize&, ScrollGranularity) const;
+  bool shouldScrollTopControls(const ScrollOffset&, ScrollGranularity) const;
   bool scrollTopControls(ScrollState&);
 
   ScrollResult performNativeScroll(ScrollState&);

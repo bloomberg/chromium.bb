@@ -42,9 +42,9 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraints) {
   LayoutBoxModelObject* scroller =
       toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
-  scrollableArea->scrollToOffset(
-      DoubleSize(scrollableArea->adjustedScrollOffset().width(), 50));
-  ASSERT_EQ(50.0, scrollableArea->adjustedScrollOffset().height());
+  scrollableArea->scrollToAbsolutePosition(
+      FloatPoint(scrollableArea->scrollOffsetInt().width(), 50));
+  ASSERT_EQ(50.0, scrollableArea->scrollPosition().y());
   LayoutBoxModelObject* sticky =
       toLayoutBoxModelObject(getLayoutObjectByElementId("sticky"));
   sticky->updateStickyPositionConstraints();
@@ -79,9 +79,9 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionTransforms) {
   LayoutBoxModelObject* scroller =
       toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
-  scrollableArea->scrollToOffset(
-      DoubleSize(scrollableArea->adjustedScrollOffset().width(), 50));
-  ASSERT_EQ(50.0, scrollableArea->adjustedScrollOffset().height());
+  scrollableArea->scrollToAbsolutePosition(
+      FloatPoint(scrollableArea->scrollOffsetInt().width(), 50));
+  ASSERT_EQ(50.0, scrollableArea->scrollPosition().y());
   LayoutBoxModelObject* sticky =
       toLayoutBoxModelObject(getLayoutObjectByElementId("sticky"));
   sticky->updateStickyPositionConstraints();
@@ -115,9 +115,9 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionPercentageStyles) {
   LayoutBoxModelObject* scroller =
       toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
-  scrollableArea->scrollToOffset(
-      DoubleSize(scrollableArea->adjustedScrollOffset().width(), 50));
-  ASSERT_EQ(50.0, scrollableArea->adjustedScrollOffset().height());
+  scrollableArea->scrollToAbsolutePosition(
+      FloatPoint(scrollableArea->scrollPosition().x(), 50));
+  ASSERT_EQ(50.0, scrollableArea->scrollPosition().y());
   LayoutBoxModelObject* sticky =
       toLayoutBoxModelObject(getLayoutObjectByElementId("sticky"));
   sticky->updateStickyPositionConstraints();
@@ -149,9 +149,9 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionContainerIsScroller) {
   LayoutBoxModelObject* scroller =
       toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
-  scrollableArea->scrollToOffset(
-      DoubleSize(scrollableArea->adjustedScrollOffset().width(), 50));
-  ASSERT_EQ(50.0, scrollableArea->adjustedScrollOffset().height());
+  scrollableArea->scrollToAbsolutePosition(
+      FloatPoint(scrollableArea->scrollPosition().x(), 50));
+  ASSERT_EQ(50.0, scrollableArea->scrollPosition().y());
   LayoutBoxModelObject* sticky =
       toLayoutBoxModelObject(getLayoutObjectByElementId("sticky"));
   sticky->updateStickyPositionConstraints();
@@ -184,9 +184,9 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionAnonymousContainer) {
   LayoutBoxModelObject* scroller =
       toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
-  scrollableArea->scrollToOffset(
-      DoubleSize(scrollableArea->adjustedScrollOffset().width(), 50));
-  ASSERT_EQ(50.0, scrollableArea->adjustedScrollOffset().height());
+  scrollableArea->scrollToAbsolutePosition(
+      FloatPoint(scrollableArea->scrollPosition().x(), 50));
+  ASSERT_EQ(50.0, scrollableArea->scrollPosition().y());
   LayoutBoxModelObject* sticky =
       toLayoutBoxModelObject(getLayoutObjectByElementId("sticky"));
   sticky->updateStickyPositionConstraints();

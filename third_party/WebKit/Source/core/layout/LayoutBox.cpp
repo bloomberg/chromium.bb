@@ -264,21 +264,20 @@ void LayoutBox::styleDidChange(StyleDifference diff,
 
   // If our zoom factor changes and we have a defined scrollLeft/Top, we need to
   // adjust that value into the new zoomed coordinate space.  Note that the new
-  // scroll position may be outside the normal min/max range of the scrollable
+  // scroll offset may be outside the normal min/max range of the scrollable
   // area, which is weird but OK, because the scrollable area will update its
   // min/max in updateAfterLayout().
   if (hasOverflowClip() && oldStyle &&
       oldStyle->effectiveZoom() != newStyle.effectiveZoom()) {
     PaintLayerScrollableArea* scrollableArea = this->getScrollableArea();
     ASSERT(scrollableArea);
-    // We use scrollPosition() rather than adjustedScrollPosition(), because
-    // scrollPosition is the distance from the beginning of flow for the box,
-    // which is the dimension we want to preserve.
-    DoublePoint oldPosition = scrollableArea->scrollPositionDouble();
-    if (oldPosition.x() || oldPosition.y()) {
-      DoublePoint newPosition = oldPosition.scaledBy(newStyle.effectiveZoom() /
-                                                     oldStyle->effectiveZoom());
-      scrollableArea->setScrollPositionUnconditionally(newPosition);
+    // We use scrollOffset() rather than scrollPosition(), because scrollOffset is the distance
+    // from the beginning of flow for the box, which is the dimension we want to preserve.
+    ScrollOffset oldOffset = scrollableArea->scrollOffset();
+    if (oldOffset.width() || oldOffset.height()) {
+      ScrollOffset newOffset = oldOffset.scaledBy(newStyle.effectiveZoom() /
+                                                  oldStyle->effectiveZoom());
+      scrollableArea->setScrollOffsetUnconditionally(newOffset);
     }
   }
 
@@ -527,13 +526,13 @@ LayoutUnit LayoutBox::scrollHeight() const {
 
 LayoutUnit LayoutBox::scrollLeft() const {
   return hasOverflowClip()
-             ? LayoutUnit(getScrollableArea()->adjustedScrollOffset().width())
+             ? LayoutUnit(getScrollableArea()->scrollPosition().x())
              : LayoutUnit();
 }
 
 LayoutUnit LayoutBox::scrollTop() const {
   return hasOverflowClip()
-             ? LayoutUnit(getScrollableArea()->adjustedScrollOffset().height())
+             ? LayoutUnit(getScrollableArea()->scrollPosition().y())
              : LayoutUnit();
 }
 
@@ -555,12 +554,13 @@ void LayoutBox::setScrollLeft(LayoutUnit newLeft) {
   // setScrollTop does, presumably this code does as well.
   DisableCompositingQueryAsserts disabler;
 
-  if (hasOverflowClip()) {
-    PaintLayerScrollableArea* scrollableArea = getScrollableArea();
-    scrollableArea->scrollToOffset(
-        DoubleSize(newLeft, scrollableArea->adjustedScrollOffset().height()),
-        ScrollBehaviorAuto);
-  }
+  if (!hasOverflowClip())
+    return;
+
+  PaintLayerScrollableArea* scrollableArea = getScrollableArea();
+  FloatPoint newPosition(newLeft.toFloat(),
+                         scrollableArea->scrollPosition().y());
+  scrollableArea->scrollToAbsolutePosition(newPosition, ScrollBehaviorAuto);
 }
 
 void LayoutBox::setScrollTop(LayoutUnit newTop) {
@@ -568,22 +568,25 @@ void LayoutBox::setScrollTop(LayoutUnit newTop) {
   // compositing/overflow/do-not-assert-on-invisible-composited-layers.html
   DisableCompositingQueryAsserts disabler;
 
-  if (hasOverflowClip()) {
-    PaintLayerScrollableArea* scrollableArea = getScrollableArea();
-    scrollableArea->scrollToOffset(
-        DoubleSize(scrollableArea->adjustedScrollOffset().width(), newTop),
-        ScrollBehaviorAuto);
-  }
+  if (!hasOverflowClip())
+    return;
+
+  PaintLayerScrollableArea* scrollableArea = getScrollableArea();
+  FloatPoint newPosition(scrollableArea->scrollPosition().x(),
+                         newTop.toFloat());
+  scrollableArea->scrollToAbsolutePosition(newPosition, ScrollBehaviorAuto);
 }
 
-void LayoutBox::scrollToOffset(const DoubleSize& offset,
-                               ScrollBehavior scrollBehavior) {
+void LayoutBox::scrollToPosition(const FloatPoint& position,
+                                 ScrollBehavior scrollBehavior) {
   // This doesn't hit in any tests, but since the equivalent code in
   // setScrollTop does, presumably this code does as well.
   DisableCompositingQueryAsserts disabler;
 
-  if (hasOverflowClip())
-    getScrollableArea()->scrollToOffset(offset, scrollBehavior);
+  if (!hasOverflowClip())
+    return;
+
+  getScrollableArea()->scrollToAbsolutePosition(position, scrollBehavior);
 }
 
 // Returns true iff we are attempting an autoscroll inside an iframe with
@@ -1020,7 +1023,7 @@ IntSize LayoutBox::calculateAutoscrollDirection(
     return IntSize();
 
   IntRect box(absoluteBoundingBoxRect());
-  box.move(view()->frameView()->scrollOffset());
+  box.move(view()->frameView()->scrollOffsetInt());
   IntRect windowBox = view()->frameView()->contentsToRootFrame(box);
 
   IntPoint windowAutoscrollPoint = pointInRootFrame;
@@ -1104,7 +1107,7 @@ void LayoutBox::middleClickAutoscroll(const IntPoint& sourcePoint) {
   scroll(ScrollByPixel, FloatSize(adjustedScrollDelta(delta)));
 }
 
-void LayoutBox::scrollByRecursively(const DoubleSize& delta) {
+void LayoutBox::scrollByRecursively(const ScrollOffset& delta) {
   if (delta.isZero())
     return;
 
@@ -1116,13 +1119,13 @@ void LayoutBox::scrollByRecursively(const DoubleSize& delta) {
     PaintLayerScrollableArea* scrollableArea = this->getScrollableArea();
     ASSERT(scrollableArea);
 
-    DoubleSize newScrollOffset = scrollableArea->adjustedScrollOffset() + delta;
-    scrollableArea->scrollToOffset(newScrollOffset);
+    ScrollOffset newScrollOffset = scrollableArea->scrollOffset() + delta;
+    scrollableArea->setScrollOffset(newScrollOffset, ProgrammaticScroll);
 
     // If this layer can't do the scroll we ask the next layer up that can
     // scroll to try.
-    DoubleSize remainingScrollOffset =
-        newScrollOffset - scrollableArea->adjustedScrollOffset();
+    ScrollOffset remainingScrollOffset =
+        newScrollOffset - scrollableArea->scrollOffset();
     if (!remainingScrollOffset.isZero() && parent()) {
       if (LayoutBox* scrollableBox = enclosingScrollableBox())
         scrollableBox->scrollByRecursively(remainingScrollOffset);
@@ -1136,7 +1139,7 @@ void LayoutBox::scrollByRecursively(const DoubleSize& delta) {
     // programmatically scrolled, but doesn't have an overflow clip. Which means
     // that it is a document node that can be scrolled.
     // FIXME: Pass in DoubleSize. crbug.com/414283.
-    view()->frameView()->scrollBy(flooredIntSize(delta), UserScroll);
+    view()->frameView()->scrollBy(delta, UserScroll);
 
     // FIXME: If we didn't scroll the whole way, do we want to try looking at
     // the frames ownerElement?
@@ -1165,8 +1168,8 @@ IntSize LayoutBox::scrolledContentOffset() const {
   ASSERT(hasLayer());
   // FIXME: Return DoubleSize here. crbug.com/414283.
   PaintLayerScrollableArea* scrollableArea = getScrollableArea();
-  IntSize result = flooredIntSize(scrollableArea->scrollOffset()) +
-                   originAdjustmentForScrollbars();
+  IntSize result =
+      scrollableArea->scrollOffsetInt() + originAdjustmentForScrollbars();
   if (isHorizontalWritingMode() &&
       shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     result.expand(-verticalScrollbarWidth(), 0);
@@ -1765,9 +1768,8 @@ bool LayoutBox::intersectsVisibleViewport() const {
         LayoutAPIShim::layoutObjectFrom(layoutView->frame()->ownerLayoutItem())
             ->view();
   mapToVisualRectInAncestorSpace(layoutView, rect);
-  return rect.intersects(LayoutRect(layoutView->frameView()
-                                        ->getScrollableArea()
-                                        ->visibleContentRectDouble()));
+  return rect.intersects(LayoutRect(
+      layoutView->frameView()->getScrollableArea()->visibleContentRect()));
 }
 
 PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(

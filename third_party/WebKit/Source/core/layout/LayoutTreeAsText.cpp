@@ -598,13 +598,13 @@ static void write(TextStream& ts,
     else
       scrollableArea = layer.getScrollableArea();
 
-    DoublePoint adjustedScrollOffset =
-        scrollableArea->scrollPositionDouble() +
-        toDoubleSize(scrollableArea->scrollOrigin());
-    if (adjustedScrollOffset.x())
-      ts << " scrollX " << adjustedScrollOffset.x();
-    if (adjustedScrollOffset.y())
-      ts << " scrollY " << adjustedScrollOffset.y();
+    ScrollOffset adjustedScrollOffset =
+        scrollableArea->scrollOffset() +
+        toFloatSize(scrollableArea->scrollOrigin());
+    if (adjustedScrollOffset.width())
+      ts << " scrollX " << adjustedScrollOffset.width();
+    if (adjustedScrollOffset.height())
+      ts << " scrollY " << adjustedScrollOffset.height();
     if (layer.layoutBox() &&
         layer.layoutBox()->pixelSnappedClientWidth() !=
             layer.layoutBox()->pixelSnappedScrollWidth())

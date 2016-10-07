@@ -31,7 +31,6 @@
 #include "platform/scroll/ScrollAnimatorBase.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/geometry/FloatPoint.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "wtf/MathExtras.h"
 
@@ -42,23 +41,23 @@ ScrollAnimatorBase::ScrollAnimatorBase(ScrollableArea* scrollableArea)
 
 ScrollAnimatorBase::~ScrollAnimatorBase() {}
 
-FloatSize ScrollAnimatorBase::computeDeltaToConsume(
-    const FloatSize& delta) const {
-  FloatPoint newPos =
-      toFloatPoint(m_scrollableArea->clampScrollPosition(m_currentPos + delta));
-  return newPos - m_currentPos;
+ScrollOffset ScrollAnimatorBase::computeDeltaToConsume(
+    const ScrollOffset& delta) const {
+  ScrollOffset newPos =
+      m_scrollableArea->clampScrollOffset(m_currentOffset + delta);
+  return newPos - m_currentOffset;
 }
 
 ScrollResult ScrollAnimatorBase::userScroll(ScrollGranularity,
-                                            const FloatSize& delta) {
-  FloatSize consumedDelta = computeDeltaToConsume(delta);
-  FloatPoint newPos = m_currentPos + consumedDelta;
-  if (m_currentPos == newPos)
+                                            const ScrollOffset& delta) {
+  ScrollOffset consumedDelta = computeDeltaToConsume(delta);
+  ScrollOffset newPos = m_currentOffset + consumedDelta;
+  if (m_currentOffset == newPos)
     return ScrollResult(false, false, delta.width(), delta.height());
 
-  m_currentPos = newPos;
+  m_currentOffset = newPos;
 
-  notifyPositionChanged();
+  notifyOffsetChanged();
 
   return ScrollResult(consumedDelta.width(), consumedDelta.height(),
                       delta.width() - consumedDelta.width(),
@@ -66,21 +65,21 @@ ScrollResult ScrollAnimatorBase::userScroll(ScrollGranularity,
 }
 
 void ScrollAnimatorBase::scrollToOffsetWithoutAnimation(
-    const FloatPoint& offset) {
-  m_currentPos = offset;
-  notifyPositionChanged();
+    const ScrollOffset& offset) {
+  m_currentOffset = offset;
+  notifyOffsetChanged();
 }
 
-void ScrollAnimatorBase::setCurrentPosition(const FloatPoint& position) {
-  m_currentPos = position;
+void ScrollAnimatorBase::setCurrentOffset(const ScrollOffset& offset) {
+  m_currentOffset = offset;
 }
 
-FloatPoint ScrollAnimatorBase::currentPosition() const {
-  return m_currentPos;
+ScrollOffset ScrollAnimatorBase::currentOffset() const {
+  return m_currentOffset;
 }
 
-void ScrollAnimatorBase::notifyPositionChanged() {
-  scrollPositionChanged(m_currentPos, UserScroll);
+void ScrollAnimatorBase::notifyOffsetChanged() {
+  scrollOffsetChanged(m_currentOffset, UserScroll);
 }
 
 DEFINE_TRACE(ScrollAnimatorBase) {

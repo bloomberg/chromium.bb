@@ -337,7 +337,7 @@ void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     LayoutPartItem parentDocLayoutItem = frame()->ownerLayoutItem();
     if (!parentDocLayoutItem.isNull()) {
       if (!(mode & InputIsInFrameCoordinates)) {
-        transformState.move(-frame()->view()->scrollOffset());
+        transformState.move(LayoutSize(-frame()->view()->scrollOffset()));
       } else {
         // The flag applies to immediate LayoutView only.
         mode &= ~InputIsInFrameCoordinates;
@@ -358,8 +358,7 @@ const LayoutObject* LayoutView::pushMappingToContainer(
   LayoutObject* container = nullptr;
 
   if (m_frameView) {
-    offsetForFixedPosition =
-        LayoutSize(LayoutSize(m_frameView->scrollOffset()));
+    offsetForFixedPosition = LayoutSize(m_frameView->scrollOffset());
     if (hasOverflowClip())
       offsetForFixedPosition = LayoutSize(scrolledContentOffset());
   }
@@ -403,14 +402,14 @@ void LayoutView::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
                                                 mode & ~IsFixed);
 
       transformState.move(parentDocLayoutObject->contentBoxOffset());
-      transformState.move(-frame()->view()->scrollOffset());
+      transformState.move(LayoutSize(-frame()->view()->scrollOffset()));
     }
   } else {
     ASSERT(!ancestor);
   }
 
   if (mode & IsFixed)
-    transformState.move(frame()->view()->scrollOffset());
+    transformState.move(LayoutSize(frame()->view()->scrollOffset()));
 }
 
 void LayoutView::computeSelfHitTestRects(Vector<LayoutRect>& rects,

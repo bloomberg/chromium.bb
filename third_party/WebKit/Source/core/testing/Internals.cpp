@@ -235,7 +235,7 @@ void Internals::resetToConsistentState(Page* page) {
   page->deprecatedLocalMainFrame()
       ->view()
       ->layoutViewportScrollableArea()
-      ->setScrollPosition(IntPoint(0, 0), ProgrammaticScroll);
+      ->setScrollOffset(ScrollOffset(), ProgrammaticScroll);
   overrideUserPreferredLanguages(Vector<AtomicString>());
   if (!page->deprecatedLocalMainFrame()
            ->spellChecker()
@@ -1066,7 +1066,7 @@ void Internals::setFrameViewPosition(Document* document,
   bool scrollbarsSuppressedOldValue = frameView->scrollbarsSuppressed();
 
   frameView->setScrollbarsSuppressed(false);
-  frameView->setScrollOffsetFromInternals(IntPoint(x, y));
+  frameView->updateScrollOffsetFromInternals(IntSize(x, y));
   frameView->setScrollbarsSuppressed(scrollbarsSuppressedOldValue);
 }
 
@@ -2911,18 +2911,18 @@ int Internals::visualViewportWidth() {
       .width();
 }
 
-double Internals::visualViewportScrollX() {
+float Internals::visualViewportScrollX() {
   if (!frame())
     return 0;
 
-  return frame()->view()->getScrollableArea()->scrollPositionDouble().x();
+  return frame()->view()->getScrollableArea()->scrollOffset().width();
 }
 
-double Internals::visualViewportScrollY() {
+float Internals::visualViewportScrollY() {
   if (!frame())
     return 0;
 
-  return frame()->view()->getScrollableArea()->scrollPositionDouble().y();
+  return frame()->view()->getScrollableArea()->scrollOffset().height();
 }
 
 ValueIterable<int>::IterationSource* Internals::startIteration(

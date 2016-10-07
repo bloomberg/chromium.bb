@@ -4038,13 +4038,12 @@ inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value,
   return LayoutUnit(value / style.effectiveZoom());
 }
 
-inline double adjustScrollForAbsoluteZoom(double scrollOffset,
-                                          float zoomFactor) {
+inline float adjustScrollForAbsoluteZoom(float scrollOffset, float zoomFactor) {
   return scrollOffset / zoomFactor;
 }
 
-inline double adjustScrollForAbsoluteZoom(double scrollOffset,
-                                          const ComputedStyle& style) {
+inline float adjustScrollForAbsoluteZoom(float scrollOffset,
+                                         const ComputedStyle& style) {
   return adjustScrollForAbsoluteZoom(scrollOffset, style.effectiveZoom());
 }
 

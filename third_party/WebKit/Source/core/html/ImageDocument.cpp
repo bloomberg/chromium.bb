@@ -300,13 +300,13 @@ void ImageDocument::imageClicked(int x, int y) {
 
     double scale = this->scale();
 
-    double scrollX =
-        x / scale - static_cast<double>(frame()->view()->width()) / 2;
-    double scrollY =
-        y / scale - static_cast<double>(frame()->view()->height()) / 2;
+    float scrollX =
+        x / scale - static_cast<float>(frame()->view()->width()) / 2;
+    float scrollY =
+        y / scale - static_cast<float>(frame()->view()->height()) / 2;
 
-    frame()->view()->setScrollPosition(DoublePoint(scrollX, scrollY),
-                                       ProgrammaticScroll);
+    frame()->view()->setScrollOffset(ScrollOffset(scrollX, scrollY),
+                                     ProgrammaticScroll);
   }
 }
 

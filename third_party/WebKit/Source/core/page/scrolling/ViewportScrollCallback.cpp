@@ -34,7 +34,7 @@ DEFINE_TRACE(ViewportScrollCallback) {
 }
 
 bool ViewportScrollCallback::shouldScrollTopControls(
-    const FloatSize& delta,
+    const ScrollOffset& delta,
     ScrollGranularity granularity) const {
   if (granularity != ScrollByPixel && granularity != ScrollByPrecisePixel)
     return false;
@@ -42,14 +42,14 @@ bool ViewportScrollCallback::shouldScrollTopControls(
   if (!m_rootFrameViewport)
     return false;
 
-  DoublePoint maxScroll = m_rootFrameViewport->maximumScrollPositionDouble();
-  DoublePoint scrollPosition = m_rootFrameViewport->scrollPositionDouble();
+  ScrollOffset maxScroll = m_rootFrameViewport->maximumScrollOffset();
+  ScrollOffset scrollOffset = m_rootFrameViewport->scrollOffset();
 
   // Always give the delta to the top controls if the scroll is in
   // the direction to show the top controls. If it's in the
   // direction to hide the top controls, only give the delta to the
   // top controls when the frame can scroll.
-  return delta.height() < 0 || scrollPosition.y() < maxScroll.y();
+  return delta.height() < 0 || scrollOffset.height() < maxScroll.height();
 }
 
 bool ViewportScrollCallback::scrollTopControls(ScrollState& state) {

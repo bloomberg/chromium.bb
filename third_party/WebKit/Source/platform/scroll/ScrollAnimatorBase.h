@@ -33,8 +33,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/PlatformWheelEvent.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatSize.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollAnimatorCompositorCoordinator.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -61,21 +59,21 @@ class PLATFORM_EXPORT ScrollAnimatorBase
   // no unusedDelta and didScroll=true, i.e. fully consuming the scroll request.
   // This makes animations latch to a single scroller. Note, the semantics are
   // currently somewhat different on Mac - see ScrollAnimatorMac.mm.
-  virtual ScrollResult userScroll(ScrollGranularity, const FloatSize& delta);
+  virtual ScrollResult userScroll(ScrollGranularity, const ScrollOffset& delta);
 
-  virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
+  virtual void scrollToOffsetWithoutAnimation(const ScrollOffset&);
 
 #if OS(MACOSX)
   virtual void handleWheelEventPhase(PlatformWheelEventPhase) {}
 #endif
 
-  void setCurrentPosition(const FloatPoint&);
-  FloatPoint currentPosition() const;
-  virtual FloatPoint desiredTargetPosition() const { return currentPosition(); }
+  void setCurrentOffset(const ScrollOffset&);
+  ScrollOffset currentOffset() const;
+  virtual ScrollOffset desiredTargetOffset() const { return currentOffset(); }
 
   // Returns how much of pixelDelta will be used by the underlying scrollable
   // area.
-  virtual FloatSize computeDeltaToConsume(const FloatSize& delta) const;
+  virtual ScrollOffset computeDeltaToConsume(const ScrollOffset& delta) const;
 
   // ScrollAnimatorCompositorCoordinator implementation.
   ScrollableArea* getScrollableArea() const override {
@@ -112,7 +110,7 @@ class PLATFORM_EXPORT ScrollAnimatorBase
     return true;
   }
 
-  virtual void notifyContentAreaScrolled(const FloatSize&) {}
+  virtual void notifyContentAreaScrolled(const ScrollOffset&) {}
 
   virtual bool setScrollbarsVisibleForTesting(bool) { return false; }
 
@@ -121,11 +119,11 @@ class PLATFORM_EXPORT ScrollAnimatorBase
  protected:
   explicit ScrollAnimatorBase(ScrollableArea*);
 
-  virtual void notifyPositionChanged();
+  virtual void notifyOffsetChanged();
 
   Member<ScrollableArea> m_scrollableArea;
 
-  FloatPoint m_currentPos;
+  ScrollOffset m_currentOffset;
 };
 
 }  // namespace blink

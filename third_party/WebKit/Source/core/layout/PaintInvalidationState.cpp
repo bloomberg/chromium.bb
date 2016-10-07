@@ -348,7 +348,8 @@ void PaintInvalidationState::updateForNormalChildren() {
   if (box.isLayoutView()) {
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
       if (box != m_paintInvalidationContainer) {
-        m_paintOffset -= toLayoutView(box).frameView()->scrollOffset();
+        m_paintOffset -=
+            LayoutSize(toLayoutView(box).frameView()->scrollOffset());
         addClipRectRelativeToPaintOffset(toLayoutView(box).viewRect());
       }
       return;

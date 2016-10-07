@@ -126,8 +126,8 @@ TEST_F(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument) {
       "200px;'></div>");
 
   document().view()->updateAllLifecyclePhases();
-  document().view()->setScrollPosition(DoublePoint(-5000, 0),
-                                       ProgrammaticScroll);
+  document().view()->setScrollOffset(ScrollOffset(-5000, 0),
+                                     ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
 
   PaintLayer* paintLayer = document().layoutViewItem().layer();
@@ -462,7 +462,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 4600),
                  previousInterestRect(rootScrollingLayer));
 
-  document().view()->setScrollPosition(IntPoint(0, 300), ProgrammaticScroll);
+  document().view()->setScrollOffset(ScrollOffset(0, 300), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
   // Still use the previous interest rect because the recomputed rect hasn't
   // changed enough.
@@ -471,7 +471,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 4600),
                  previousInterestRect(rootScrollingLayer));
 
-  document().view()->setScrollPosition(IntPoint(0, 600), ProgrammaticScroll);
+  document().view()->setScrollOffset(ScrollOffset(0, 600), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
   // Use recomputed interest rect because it changed enough.
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 5200),
@@ -479,14 +479,14 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 5200),
                  previousInterestRect(rootScrollingLayer));
 
-  document().view()->setScrollPosition(IntPoint(0, 5400), ProgrammaticScroll);
+  document().view()->setScrollOffset(ScrollOffset(0, 5400), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
   EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600),
                  recomputeInterestRect(rootScrollingLayer));
   EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600),
                  previousInterestRect(rootScrollingLayer));
 
-  document().view()->setScrollPosition(IntPoint(0, 9000), ProgrammaticScroll);
+  document().view()->setScrollOffset(ScrollOffset(0, 9000), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
   // Still use the previous interest rect because it contains the recomputed
   // interest rect.
@@ -495,7 +495,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600),
                  previousInterestRect(rootScrollingLayer));
 
-  document().view()->setScrollPosition(IntPoint(0, 2000), ProgrammaticScroll);
+  document().view()->setScrollOffset(ScrollOffset(0, 2000), ProgrammaticScroll);
   // Use recomputed interest rect because it changed enough.
   document().view()->updateAllLifecyclePhases();
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 6600),
@@ -702,8 +702,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv) {
       "will-change: transform}</style><div id=target></div>");
 
   // Scroll 8000 pixels down to move the iframe into view.
-  document().view()->setScrollPosition(DoublePoint(0.0, 8000.0),
-                                       ProgrammaticScroll);
+  document().view()->setScrollOffset(ScrollOffset(0.0, 8000.0),
+                                     ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
 
   Element* target = frameDocument.getElementById("target");
@@ -733,8 +733,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe) {
   document().view()->updateAllLifecyclePhases();
 
   // Scroll 7500 pixels down to bring the scrollable area to the bottom.
-  frameDocument.view()->setScrollPosition(DoublePoint(0.0, 7500.0),
-                                          ProgrammaticScroll);
+  frameDocument.view()->setScrollOffset(ScrollOffset(0.0, 7500.0),
+                                        ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
 
   ASSERT_TRUE(frameDocument.view()->layoutViewItem().hasLayer());
@@ -766,8 +766,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
 
   // Scroll 3000 pixels down to bring the scrollable area to somewhere in the
   // middle.
-  frameDocument.view()->setScrollPosition(DoublePoint(0.0, 3000.0),
-                                          ProgrammaticScroll);
+  frameDocument.view()->setScrollOffset(ScrollOffset(0.0, 3000.0),
+                                        ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
 
   ASSERT_TRUE(frameDocument.view()->layoutViewItem().hasLayer());

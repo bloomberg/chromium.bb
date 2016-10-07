@@ -371,8 +371,7 @@ void PointerEventManager::dispatchTouchPointerEvents(
       FloatPoint pagePoint = touchInfo.targetFrame->view()->rootFrameToContents(
           touchInfo.point.pos());
       float scaleFactor = 1.0f / touchInfo.targetFrame->pageZoomFactor();
-      FloatPoint scrollPosition =
-          touchInfo.targetFrame->view()->scrollPosition();
+      FloatPoint scrollPosition(touchInfo.targetFrame->view()->scrollOffset());
       FloatPoint framePoint = pagePoint.scaledBy(scaleFactor);
       framePoint.moveBy(scrollPosition.scaledBy(-scaleFactor));
       PointerEvent* pointerEvent = m_pointerEventFactory.create(

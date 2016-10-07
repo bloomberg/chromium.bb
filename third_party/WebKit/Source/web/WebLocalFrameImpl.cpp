@@ -605,14 +605,15 @@ bool WebLocalFrameImpl::isFocused() const {
 
 WebSize WebLocalFrameImpl::scrollOffset() const {
   if (ScrollableArea* scrollableArea = layoutViewportScrollableArea())
-    return toIntSize(scrollableArea->scrollPosition());
+    return scrollableArea->scrollOffsetInt();
   return WebSize();
 }
 
 void WebLocalFrameImpl::setScrollOffset(const WebSize& offset) {
-  if (ScrollableArea* scrollableArea = layoutViewportScrollableArea())
-    scrollableArea->setScrollPosition(IntPoint(offset.width, offset.height),
-                                      ProgrammaticScroll);
+  if (ScrollableArea* scrollableArea = layoutViewportScrollableArea()) {
+    scrollableArea->setScrollOffset(ScrollOffset(offset.width, offset.height),
+                                    ProgrammaticScroll);
+  }
 }
 
 WebSize WebLocalFrameImpl::contentsSize() const {

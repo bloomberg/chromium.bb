@@ -3885,9 +3885,8 @@ bool LayoutBlockFlow::hitTestFloats(HitTestResult& result,
 
   LayoutPoint adjustedLocation = accumulatedOffset;
   if (isLayoutView()) {
-    DoublePoint position =
-        toLayoutView(this)->frameView()->scrollPositionDouble();
-    adjustedLocation.move(position.x(), position.y());
+    ScrollOffset offset = toLayoutView(this)->frameView()->scrollOffset();
+    adjustedLocation.move(LayoutSize(offset));
   }
 
   const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
@@ -4193,7 +4192,7 @@ void LayoutBlockFlow::positionDialog() {
   FrameView* frameView = document().view();
   LayoutUnit top = LayoutUnit((style()->position() == FixedPosition)
                                   ? 0
-                                  : frameView->scrollOffset().height());
+                                  : frameView->scrollOffsetInt().height());
   int visibleHeight = frameView->visibleContentRect(IncludeScrollbars).height();
   if (size().height() < visibleHeight)
     top += (visibleHeight - size().height()) / 2;

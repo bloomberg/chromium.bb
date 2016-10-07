@@ -31,11 +31,11 @@ class PLATFORM_EXPORT CompositorMutableState {
   const SkMatrix44& transform() const;
   void setTransform(const SkMatrix44&);
 
-  double scrollLeft() const;
-  void setScrollLeft(double);
+  float scrollLeft() const;
+  void setScrollLeft(float);
 
-  double scrollTop() const;
-  void setScrollTop(double);
+  float scrollTop() const;
+  void setScrollTop(float);
 
  private:
   CompositorMutation* m_mutation;

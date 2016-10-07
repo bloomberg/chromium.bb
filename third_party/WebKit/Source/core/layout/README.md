@@ -11,50 +11,48 @@ following document lifecycle states:
 Note that a new Blink layout system is under development. See the
 [LayoutNG design document](https://docs.google.com/document/d/1uxbDh4uONFQOiGuiumlJBLGgO4KDWB8ZEkp7Rd47fw4/preview).
 
-## Overflow rects and scroll offsets
+## Overflow and scrolling
 
-PaintLayerScrollableArea uses a "scroll origin" to conceptually represent the distance between
-the top-left corner of the box'es content rect and the top-left corner of its overflow rect
-when the box is scrolled to the logical beginning of its content (e.g. all the way to the left for
-LTR, all the way to the right for RTL).  For left-to-right and top-to-bottom flows, the scroll
-origin is zero, i.e., the top/left of the overflow rect is at the same position as the top/left of
-the box'es content rect when scrolled to the beginning of flow.  For right-to-left and bottom-to-top
-flows, the overflow rect extends to the top/left of the client rect.
+When a LayoutBox has scrollable overflow, it is associated with a PaintLayerScrollableArea.
+PaintLayerScrollableArea uses a "scroll origin" to represent the location of the top/left
+corner of the content rect (the visible part of the content) in the coordinate system
+defined by the top/left corner of the overflow rect, when the box is scrolled all the way
+to the beginning of its content.
 
-The default calculation for scroll origin is the distance between the top-left corner of the content
-rect and the top-left corner of the overflow rect.  To illustrate, here is a box with left overflow and
-no vertical scrollbar:
+For content which flows left-to-right and top-to-bottom, the scroll origin will be (0, 0),
+i.e., the top/left of the content rect is coincident with the top/left of the overflow rect
+when the box is scrolled all the way to the beginning of content.
 
-                                 content
-                                   rect
-                               |<-------->|
-                        scroll
-                        origin
-                    |<-------->|
-                     _____________________
-                    |          |          |
-                    |          |          |
-                    |          |          |
-    direction:rtl   |          |   box    |
-                    |          |          |
-                    |          |          |
-                    |__________|__________|
+For content which flows right-to-left (including direction:ltr, writing-mode:vertical-rl,
+and flex-direction:row-reverse), the x-coordinate of the scroll origin will be positive;
+and for content which flows bottom-to-top (e.g., flex-direction:column-reverse and
+vertical writing-mode with direction:ltr), the y-coordinate of the scroll origin will be
+positive.
 
-                          overflow rect
-                    |<--------------------->|
+In all cases, the term 'scrollOffset' (or just 'offset') is used to represent the distance
+of the scrolling viewport from its location when scrolled to the beginning of content, and
+it uses type ScrollOffset. The term 'scrollPosition' (or just 'position') represents a
+point in the coordinate space defined by the overflow rect, and it uses type FloatPoint.
 
+For illustrations of these concepts, see these files:
 
-However, if the box has a scrollbar for the orthogonal direction (e.g., a vertical scrollbar
-in a direction:rtl block), the size of the scrollbar must be added to the scroll origin calculation.
-Here are two examples -- note that it doesn't matter whether the vertical scrollbar is placed on
-the right or left of the box (the vertical scrollbar is the `|/|` part):
+doc/ltr-tb-scroll.png
+doc/rtl-bt-scroll.png
+doc/rtl-tb-scroll.png
+
+When computing the scroll origin, if the box is laid out right-to-left and it has a scrollbar
+for the orthogonal direction (e.g., a vertical scrollbar in a direction:rtl block), the size
+of the scrollbar must be added to the scroll origin calculation. Here are two examples --
+note that it doesn't matter whether the vertical scrollbar is placed on the right or left of
+the box (the vertical scrollbar is the `|/|` part):
+
 
                                    content
                                      rect
                                  |<-------->|
                         scroll
                         origin
-                    |<---------->|
+                    |----------->|
                      _______________________
                     |          |/|          |
                     |          |/|          |
@@ -63,29 +61,28 @@ the right or left of the box (the vertical scrollbar is the `|/|` part):
                     |          |/|          |
                     |          |/|          |
                     |__________|/|__________|
-
+    
                           overflow rect
                     |<--------------------->|
 
-                                     content
-                                       rect
-                                   |<-------->|
-                          scroll
-                          origin
-                      |<---------->|
-                         _______________________
-                        |          |          |/|
-                        |          |          |/|
-                        |          |          |/|
-    writing-mode:       |          |          |/|
-      vertical-rl       |          |          |/|
-                        |          |          |/|
-                        |          |          |/|
-                        |          |          |/|
-                        |__________|__________|/|
+                                   content
+                                     rect
+                                 |<-------->|
+                        scroll
+                        origin
+                    |----------->|
+                     _________________________
+                    |            |          |/|
+                    |            |          |/|
+                    |            |          |/|
+    writing-mode:   |            |    box   |/|
+      vertical-rl   |            |          |/|
+                    |            |          |/|
+                    |____________|__________|/|
+    
+                          overflow rect
+                    |<--------------------->|
 
-                              overflow rect
-                        |<--------------------->|
 
 ## Coordinate Spaces
 

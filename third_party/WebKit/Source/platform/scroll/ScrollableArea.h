@@ -28,7 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/geometry/DoublePoint.h"
+#include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
@@ -40,18 +40,14 @@
 
 namespace blink {
 
-class DoubleRect;
-class FloatPoint;
 class GraphicsLayer;
 class HostWindow;
 class LayoutBox;
-class PlatformWheelEvent;
 class ProgrammaticScrollAnimator;
 struct ScrollAlignment;
 class ScrollAnchor;
 class ScrollAnimatorBase;
 class CompositorAnimationTimeline;
-class Widget;
 
 enum IncludeScrollbarsInRect {
   ExcludeScrollbars,
@@ -68,7 +64,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   // Convert a non-finite scroll value (Infinity, -Infinity, NaN) to 0 as
   // per http://dev.w3.org/csswg/cssom-view/#normalize-non_finite-values.
-  static double normalizeNonFiniteScroll(double value) {
+  static float normalizeNonFiniteScroll(float value) {
     return std::isfinite(value) ? value : 0.0;
   }
 
@@ -77,18 +73,18 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // coordinate space.
   virtual HostWindow* getHostWindow() const { return 0; }
 
-  virtual ScrollResult userScroll(ScrollGranularity, const FloatSize&);
+  virtual ScrollResult userScroll(ScrollGranularity, const ScrollOffset&);
 
-  virtual void setScrollPosition(const DoublePoint&,
-                                 ScrollType,
-                                 ScrollBehavior = ScrollBehaviorInstant);
-  virtual void scrollBy(const DoubleSize&,
+  virtual void setScrollOffset(const ScrollOffset&,
+                               ScrollType,
+                               ScrollBehavior = ScrollBehaviorInstant);
+  virtual void scrollBy(const ScrollOffset&,
                         ScrollType,
                         ScrollBehavior = ScrollBehaviorInstant);
-  void setScrollPositionSingleAxis(ScrollbarOrientation,
-                                   double,
-                                   ScrollType,
-                                   ScrollBehavior = ScrollBehaviorInstant);
+  void setScrollOffsetSingleAxis(ScrollbarOrientation,
+                                 float,
+                                 ScrollType,
+                                 ScrollBehavior = ScrollBehaviorInstant);
 
   // Scrolls the area so that the given rect, given in the document's content
   // coordinates, such that it's visible in the area. Returns the new location
@@ -158,6 +154,8 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // device by default) we should do the truncation.  The justification is that
   // non-composited elements using fractional scroll offsets is causing too much
   // nasty bugs but does not add too benefit on low-dpi devices.
+  // TODO(szager): Now that scroll offsets are floats everywhere, can we get rid
+  // of this?
   virtual bool shouldUseIntegerScrollOffset() const {
     return !RuntimeEnabledFeatures::fractionalScrollOffsetsEnabled();
   }
@@ -197,26 +195,28 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual Scrollbar* horizontalScrollbar() const { return nullptr; }
   virtual Scrollbar* verticalScrollbar() const { return nullptr; }
 
-  // scrollPosition is relative to the scrollOrigin. i.e. If the page is RTL
-  // then scrollPosition will be negative. By default, scrollPositionDouble()
-  // just call into scrollPosition(). Subclass can override
-  // scrollPositionDouble() to return floating point precision scrolloffset.
-  // FIXME: Remove scrollPosition(). crbug.com/414283.
-  virtual IntPoint scrollPosition() const = 0;
-  virtual DoublePoint scrollPositionDouble() const {
-    return DoublePoint(scrollPosition());
+  // scrollPosition is the location of the top/left of the scroll viewport in
+  // the coordinate system defined by the top/left of the overflow rect.
+  // scrollOffset is the offset of the scroll viewport from its position when
+  // scrolled all the way to the beginning of its content's flow.
+  // For a more detailed explanation of scrollPosition, scrollOffset, and
+  // scrollOrigin, see core/layout/README.md.
+  FloatPoint scrollPosition() const {
+    return FloatPoint(scrollOrigin()) + scrollOffset();
   }
-  virtual IntPoint minimumScrollPosition() const = 0;
-  virtual DoublePoint minimumScrollPositionDouble() const {
-    return DoublePoint(minimumScrollPosition());
+  virtual IntSize scrollOffsetInt() const = 0;
+  virtual ScrollOffset scrollOffset() const {
+    return ScrollOffset(scrollOffsetInt());
   }
-  virtual IntPoint maximumScrollPosition() const = 0;
-  virtual DoublePoint maximumScrollPositionDouble() const {
-    return DoublePoint(maximumScrollPosition());
+  virtual IntSize minimumScrollOffsetInt() const = 0;
+  virtual ScrollOffset minimumScrollOffset() const {
+    return ScrollOffset(minimumScrollOffsetInt());
+  }
+  virtual IntSize maximumScrollOffsetInt() const = 0;
+  virtual ScrollOffset maximumScrollOffset() const {
+    return ScrollOffset(maximumScrollOffsetInt());
   }
 
-  virtual DoubleRect visibleContentRectDouble(
-      IncludeScrollbarsInRect = ExcludeScrollbars) const;
   virtual IntRect visibleContentRect(
       IncludeScrollbarsInRect = ExcludeScrollbars) const;
   virtual int visibleHeight() const { return visibleContentRect().height(); }
@@ -236,10 +236,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool scrollAnimatorEnabled() const { return false; }
 
   // NOTE: Only called from Internals for testing.
-  void setScrollOffsetFromInternals(const IntPoint&);
+  void updateScrollOffsetFromInternals(const IntSize&);
 
-  IntPoint clampScrollPosition(const IntPoint&) const;
-  DoublePoint clampScrollPosition(const DoublePoint&) const;
+  IntSize clampScrollOffset(const IntSize&) const;
+  ScrollOffset clampScrollOffset(const ScrollOffset&) const;
 
   // Let subclasses provide a way of asking for and servicing scroll
   // animations.
@@ -259,21 +259,21 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool shouldPlaceVerticalScrollbarOnLeft() const = 0;
 
   // Convenience functions
-  int scrollPosition(ScrollbarOrientation orientation) {
-    return orientation == HorizontalScrollbar ? scrollPosition().x()
-                                              : scrollPosition().y();
+  float scrollOffset(ScrollbarOrientation orientation) {
+    return orientation == HorizontalScrollbar ? scrollOffsetInt().width()
+                                              : scrollOffsetInt().height();
   }
-  int minimumScrollPosition(ScrollbarOrientation orientation) {
-    return orientation == HorizontalScrollbar ? minimumScrollPosition().x()
-                                              : minimumScrollPosition().y();
+  float minimumScrollOffset(ScrollbarOrientation orientation) {
+    return orientation == HorizontalScrollbar ? minimumScrollOffset().width()
+                                              : minimumScrollOffset().height();
   }
-  int maximumScrollPosition(ScrollbarOrientation orientation) {
-    return orientation == HorizontalScrollbar ? maximumScrollPosition().x()
-                                              : maximumScrollPosition().y();
+  float maximumScrollOffset(ScrollbarOrientation orientation) {
+    return orientation == HorizontalScrollbar ? maximumScrollOffset().width()
+                                              : maximumScrollOffset().height();
   }
-  int clampScrollPosition(ScrollbarOrientation orientation, int pos) {
-    return clampTo(pos, minimumScrollPosition(orientation),
-                   maximumScrollPosition(orientation));
+  float clampScrollOffset(ScrollbarOrientation orientation, float offset) {
+    return clampTo(offset, minimumScrollOffset(orientation),
+                   maximumScrollOffset(orientation));
   }
 
   virtual GraphicsLayer* layerForContainer() const;
@@ -309,9 +309,9 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // generalized to other types of ScrollableAreas.
   virtual bool isScrollable() { return true; }
 
-  // TODO(bokan): FrameView::setScrollPosition uses updateScrollbars to scroll
+  // TODO(bokan): FrameView::setScrollOffset uses updateScrollbars to scroll
   // which bails out early if its already in updateScrollbars, the effect being
-  // that programmatic scrolls (i.e. setScrollPosition) are disabled when in
+  // that programmatic scrolls (i.e. setScrollOffset) are disabled when in
   // updateScrollbars. Expose this here to allow RootFrameViewport to match the
   // semantics for now but it should be cleaned up at the source.
   virtual bool isProgrammaticallyScrollable() { return true; }
@@ -333,7 +333,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool isPaintLayerScrollableArea() const { return false; }
   virtual bool isRootFrameViewport() const { return false; }
 
-  // Returns true if the scroller adjusts the scroll position to compensate
+  // Returns true if the scroller adjusts the scroll offset to compensate
   // for layout movements (bit.ly/scroll-anchoring).
   virtual bool shouldPerformScrollAnchoring() const { return false; }
 
@@ -355,9 +355,9 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   void setScrollOrigin(const IntPoint&);
   void resetScrollOriginChanged() { m_scrollOriginChanged = false; }
 
-  // Needed to let the animators call scrollPositionChanged.
+  // Needed to let the animators call scrollOffsetChanged.
   friend class ScrollAnimatorCompositorCoordinator;
-  void scrollPositionChanged(const DoublePoint&, ScrollType);
+  void scrollOffsetChanged(const ScrollOffset&, ScrollType);
 
   bool horizontalScrollbarNeedsPaintInvalidation() const {
     return m_horizontalScrollbarNeedsPaintInvalidation;
@@ -375,12 +375,12 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   }
 
  private:
-  void programmaticScrollHelper(const DoublePoint&, ScrollBehavior);
-  void userScrollHelper(const DoublePoint&, ScrollBehavior);
+  void programmaticScrollHelper(const ScrollOffset&, ScrollBehavior);
+  void userScrollHelper(const ScrollOffset&, ScrollBehavior);
 
   // This function should be overriden by subclasses to perform the actual
   // scroll of the content.
-  virtual void setScrollOffset(const DoublePoint&, ScrollType) = 0;
+  virtual void updateScrollOffset(const ScrollOffset&, ScrollType) = 0;
 
   virtual int lineStep(ScrollbarOrientation) const;
   virtual int pageStep(ScrollbarOrientation) const;

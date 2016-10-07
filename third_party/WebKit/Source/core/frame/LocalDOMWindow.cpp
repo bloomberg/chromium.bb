@@ -976,7 +976,7 @@ double LocalDOMWindow::scrollX() const {
   document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   double viewportX =
-      view->layoutViewportScrollableArea()->scrollPositionDouble().x();
+      view->layoutViewportScrollableArea()->scrollOffset().width();
   return adjustScrollForAbsoluteZoom(viewportX, frame()->pageZoomFactor());
 }
 
@@ -994,7 +994,7 @@ double LocalDOMWindow::scrollY() const {
   document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   double viewportY =
-      view->layoutViewportScrollableArea()->scrollPositionDouble().y();
+      view->layoutViewportScrollableArea()->scrollOffset().height();
   return adjustScrollForAbsoluteZoom(viewportY, frame()->pageZoomFactor());
 }
 
@@ -1120,12 +1120,12 @@ void LocalDOMWindow::scrollBy(double x,
                                  ? view->layoutViewportScrollableArea()
                                  : view->getScrollableArea();
 
-  DoublePoint currentOffset = viewport->scrollPositionDouble();
-  DoubleSize scaledDelta(x * frame()->pageZoomFactor(),
-                         y * frame()->pageZoomFactor());
+  ScrollOffset currentOffset = viewport->scrollOffset();
+  ScrollOffset scaledDelta(x * frame()->pageZoomFactor(),
+                           y * frame()->pageZoomFactor());
 
-  viewport->setScrollPosition(currentOffset + scaledDelta, ProgrammaticScroll,
-                              scrollBehavior);
+  viewport->setScrollOffset(currentOffset + scaledDelta, ProgrammaticScroll,
+                            scrollBehavior);
 }
 
 void LocalDOMWindow::scrollBy(const ScrollToOptions& scrollToOptions) const {
@@ -1161,13 +1161,13 @@ void LocalDOMWindow::scrollTo(double x, double y) const {
   if (x || y)
     document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  DoublePoint layoutPos(x * frame()->pageZoomFactor(),
-                        y * frame()->pageZoomFactor());
+  ScrollOffset layoutOffset(x * frame()->pageZoomFactor(),
+                            y * frame()->pageZoomFactor());
   ScrollableArea* viewport = host->settings().inertVisualViewport()
                                  ? view->layoutViewportScrollableArea()
                                  : view->getScrollableArea();
-  viewport->setScrollPosition(layoutPos, ProgrammaticScroll,
-                              ScrollBehaviorAuto);
+  viewport->setScrollOffset(layoutOffset, ProgrammaticScroll,
+                            ScrollBehaviorAuto);
 }
 
 void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const {
@@ -1196,9 +1196,9 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const {
                                  ? view->layoutViewportScrollableArea()
                                  : view->getScrollableArea();
 
-  DoublePoint currentOffset = viewport->scrollPositionDouble();
-  scaledX = currentOffset.x();
-  scaledY = currentOffset.y();
+  ScrollOffset currentOffset = viewport->scrollOffset();
+  scaledX = currentOffset.width();
+  scaledY = currentOffset.height();
 
   if (scrollToOptions.hasLeft())
     scaledX = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) *
@@ -1212,8 +1212,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const {
   ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(),
                                            scrollBehavior);
 
-  viewport->setScrollPosition(DoublePoint(scaledX, scaledY), ProgrammaticScroll,
-                              scrollBehavior);
+  viewport->setScrollOffset(ScrollOffset(scaledX, scaledY), ProgrammaticScroll,
+                            scrollBehavior);
 }
 
 void LocalDOMWindow::moveBy(int x, int y) const {

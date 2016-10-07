@@ -456,7 +456,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren) {
   gatherFlexChildrenInfo(iterator, relayoutChildren, highestFlexGroup,
                          lowestFlexGroup, haveFlex);
 
-  PaintLayerScrollableArea::DelayScrollPositionClampScope delayClampScope;
+  PaintLayerScrollableArea::DelayScrollOffsetClampScope delayClampScope;
 
   // We do 2 passes.  The first pass is simply to lay everyone out at
   // their preferred widths.  The second pass handles flexing the children.
@@ -802,7 +802,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren) {
   if (haveLineClamp)
     applyLineClamp(iterator, relayoutChildren);
 
-  PaintLayerScrollableArea::DelayScrollPositionClampScope delayClampScope;
+  PaintLayerScrollableArea::DelayScrollOffsetClampScope delayClampScope;
 
   // We do 2 passes.  The first pass is simply to lay everyone out at
   // their preferred widths.  The second pass handles flexing the children.

@@ -563,9 +563,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual void setScrollLeft(LayoutUnit);
   virtual void setScrollTop(LayoutUnit);
 
-  void scrollToOffset(const DoubleSize&,
-                      ScrollBehavior = ScrollBehaviorInstant);
-  void scrollByRecursively(const DoubleSize& delta);
+  void scrollToPosition(const FloatPoint&,
+                        ScrollBehavior = ScrollBehaviorInstant);
+  void scrollByRecursively(const ScrollOffset& delta);
   // If makeVisibleInVisualViewport is set, the visual viewport will be scrolled
   // if required to make the rect visible.
   void scrollRectToVisible(const LayoutRect&,

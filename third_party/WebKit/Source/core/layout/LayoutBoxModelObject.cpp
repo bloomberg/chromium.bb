@@ -784,10 +784,9 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
     // The sticky position constraint rects should be independent of the current scroll position, so after
     // mapping we add in the scroll position to get the container's position within the ancestor scroller's
     // unscrolled layout overflow.
-    FloatSize scrollOffset(
+    ScrollOffset scrollOffset(
         scrollAncestor
-            ? toFloatSize(
-                  scrollAncestor->getScrollableArea()->adjustedScrollOffset())
+            ? toFloatSize(scrollAncestor->getScrollableArea()->scrollPosition())
             : FloatSize());
     scrollContainerRelativePaddingBoxRect.move(scrollOffset);
   }
@@ -908,7 +907,7 @@ FloatRect LayoutBoxModelObject::computeStickyConstrainingRect() const {
   FloatRect constrainingRect;
   constrainingRect =
       FloatRect(enclosingClippingBox->overflowClipRect(LayoutPoint(DoublePoint(
-          enclosingClippingBox->getScrollableArea()->adjustedScrollOffset()))));
+          enclosingClippingBox->getScrollableArea()->scrollPosition()))));
   constrainingRect.move(enclosingClippingBox->paddingLeft(),
                         enclosingClippingBox->paddingTop());
   constrainingRect.contract(

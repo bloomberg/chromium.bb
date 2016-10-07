@@ -394,7 +394,7 @@ void BackgroundImageGeometry::calculate(
       viewportRect.setLocation(LayoutPoint());
     } else {
       if (FrameView* frameView = obj.view()->frameView())
-        viewportRect.setLocation(frameView->scrollPosition());
+        viewportRect.setLocation(IntPoint(frameView->scrollOffsetInt()));
       // Compensate the translations created by ScrollRecorders.
       // TODO(trchen): Fix this for SP phase 2. crbug.com/529963.
       viewportRect.moveBy(

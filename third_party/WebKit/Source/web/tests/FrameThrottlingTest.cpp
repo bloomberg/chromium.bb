@@ -326,7 +326,7 @@ TEST_F(FrameThrottlingTest, UnthrottlingTriggersRepaint) {
       .mainFrameImpl()
       ->frameView()
       ->layoutViewportScrollableArea()
-      ->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
+      ->setScrollOffset(ScrollOffset(0, 480), ProgrammaticScroll);
   auto displayItems = compositeFrame();
   EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "green"));
 
@@ -365,7 +365,7 @@ TEST_F(FrameThrottlingTest, UnthrottlingTriggersRepaintInCompositedChild) {
       .mainFrameImpl()
       ->frameView()
       ->layoutViewportScrollableArea()
-      ->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
+      ->setScrollOffset(ScrollOffset(0, 480), ProgrammaticScroll);
   auto displayItems = compositeFrame();
   EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "green"));
 
@@ -399,7 +399,7 @@ TEST_F(FrameThrottlingTest, ChangeStyleInThrottledFrame) {
       .mainFrameImpl()
       ->frameView()
       ->layoutViewportScrollableArea()
-      ->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
+      ->setScrollOffset(ScrollOffset(0, 480), ProgrammaticScroll);
   auto displayItems = compositeFrame();
   EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "red"));
   EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "green"));
