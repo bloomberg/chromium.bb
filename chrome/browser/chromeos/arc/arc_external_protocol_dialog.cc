@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/arc/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/arc/page_transition_util.h"
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
@@ -34,6 +35,13 @@ namespace {
 
 constexpr uint32_t kMinVersionForHandleUrl = 2;
 constexpr uint32_t kMinVersionForRequestUrlHandlerList = 2;
+constexpr uint32_t kMinVersionForAddPreferredPackage = 7;
+
+void RecordUma(ArcNavigationThrottle::CloseReason close_reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Arc.IntentHandlerAction", static_cast<int>(close_reason),
+      static_cast<int>(ArcNavigationThrottle::CloseReason::SIZE));
+}
 
 // Shows the Chrome OS' original external protocol dialog as a fallback.
 void ShowFallbackExternalProtocolDialog(int render_process_host_id,
@@ -74,7 +82,11 @@ void OnIntentPickerClosed(int render_process_host_id,
 
   switch (close_reason) {
     case ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED: {
-      instance->AddPreferredPackage(handlers[selected_app_index]->package_name);
+      if (ArcIntentHelperBridge::GetIntentHelperInstance(
+              "AddPreferredPackage", kMinVersionForAddPreferredPackage)) {
+        instance->AddPreferredPackage(
+            handlers[selected_app_index]->package_name);
+      }
       // fall through.
     }
     case ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED: {
@@ -84,14 +96,16 @@ void OnIntentPickerClosed(int render_process_host_id,
       CloseTabIfNeeded(render_process_host_id, routing_id);
       break;
     }
-    case ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND: {
-      NOTREACHED();
-      break;
-    }
-    case ArcNavigationThrottle::CloseReason::ERROR:
+    case ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND:
     case ArcNavigationThrottle::CloseReason::INVALID: {
-      LOG(ERROR) << "IntentPickerBubbleView returned unexpected close_reason: "
-                 << static_cast<int>(close_reason);
+      NOTREACHED();
+      return;  // no UMA recording.
+    }
+    case ArcNavigationThrottle::CloseReason::ERROR: {
+      LOG(ERROR) << "IntentPickerBubbleView returned CloseReason::ERROR: "
+                 << "instance=" << instance
+                 << ", selected_app_index=" << selected_app_index
+                 << ", handlers.size=" << handlers.size();
       // fall through.
     }
     case ArcNavigationThrottle::CloseReason::DIALOG_DEACTIVATED: {
@@ -101,6 +115,7 @@ void OnIntentPickerClosed(int render_process_host_id,
       break;
     }
   }
+  RecordUma(close_reason);
 }
 
 // Called when ARC returned activity icons for the |handlers|.
@@ -156,6 +171,7 @@ void OnUrlHandlerList(int render_process_host_id,
       continue;
     instance->HandleUrl(url.spec(), handlers[i]->package_name);
     CloseTabIfNeeded(render_process_host_id, routing_id);
+    RecordUma(ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND);
     return;
   }
 
