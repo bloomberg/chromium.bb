@@ -79,6 +79,55 @@ def WriteBasicMetadata(builder_run):
 
   builder_run.attrs.metadata.UpdateWithDict(metadata)
 
+def WriteTagMetadata(builder_run):
+  """Add a 'tags' sub-dict to metadata.
+
+  This is a proof of concept for using tags to help find commonality
+  in failures.
+
+  TODO(crbug.com/653342): Refactor to more appropriate locations, and add a lot
+  more data. Especially board family, and builder-type.
+  """
+  # Yes, these values match general metadata values, but they are just
+  # proof of concept, so far.
+  tags = {
+      'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
+      'build-number': builder_run.buildnumber,
+      'builder-name': builder_run.GetBuilderName(),
+      'buildbot-url': os.environ.get('BUILDBOT_BUILDBOTURL', ''),
+      'buildbot-master-name':
+          os.environ.get('BUILDBOT_MASTERNAME', ''),
+      'bot-config': builder_run.config['name'],
+      'master_build_id': builder_run.options.master_build_id,
+  }
+
+  # Look up the git version.
+  try:
+    cmd_result = cros_build_lib.RunCommand(['git', '--version'],
+                                           capture_output=True)
+    tags['git_version'] = cmd_result.output
+  except cros_build_lib.RunCommandError:
+    pass  # If we fail, just don't include the tag.
+
+  # Look up the repo version.
+  try:
+    cmd_result = cros_build_lib.RunCommand(['repo', '--version'],
+                                           capture_output=True)
+
+    # Convert the following output into 'v1.12.17-cr3':
+    #
+    # repo version v1.12.17-cr3
+    #        (from https://chromium.googlesource.com/external/repo.git)
+    # repo launcher version 1.21
+    #        (from /usr/local/google/home/dgarrett/sand/depot_tools/repo)
+    # git version 2.8.0.rc3.226.g39d4020
+    # Python 2.7.6 (default, Jun 22 2015, 17:58:13)
+    # [GCC 4.8.2]
+    tags['repo_version'] = cmd_result.output.splitlines()[0].split(' ')[-1]
+  except (cros_build_lib.RunCommandError, IndexError):
+    pass  # If we fail, just don't include the tag.
+
+  builder_run.attrs.metadata.UpdateKeyDictWithDict('testing-tags', tags)
 
 def GetChildConfigListMetadata(child_configs, config_status_map):
   """Creates a list for the child configs metadata.
@@ -137,6 +186,7 @@ class BuildStartStage(generic_stages.BuilderStage):
                                 self._run.config['doc'])
 
     WriteBasicMetadata(self._run)
+    WriteTagMetadata(self._run)
 
     # This is a heuristic value for |important|, since patches that get applied
     # later in the build might change the config. We write it now anyway,
