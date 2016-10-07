@@ -81,8 +81,9 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
                 layoutObject);
     }
   }
-  // If we establish a new page height, then cache the offset to the top of the first page.
-  // We can compare this later on to figure out what part of the page we're actually on,
+  // If we establish a new page height, then cache the offset to the top of the
+  // first page. We can compare this later on to figure out what part of the
+  // page we're actually on.
   if (pageLogicalHeight || layoutObject.isLayoutFlowThread()) {
     m_pageLogicalHeight = pageLogicalHeight;
     bool isFlipped = layoutObject.style()->isFlippedBlocksWritingMode();
@@ -103,13 +104,14 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
     m_pageLogicalHeightChanged = false;
     m_isPaginated = false;
   } else {
-    // If we don't establish a new page height, then propagate the old page height and offset down.
+    // If we don't establish a new page height, then propagate the old page
+    // height and offset down.
     m_pageLogicalHeight = m_next->m_pageLogicalHeight;
     m_pageLogicalHeightChanged = m_next->m_pageLogicalHeightChanged;
     m_pageOffset = m_next->m_pageOffset;
 
-    // Disable pagination for objects we don't support. For now this includes overflow:scroll/auto, inline blocks and
-    // writing mode roots.
+    // Disable pagination for objects we don't support. For now this includes
+    // overflow:scroll/auto, inline blocks and writing mode roots.
     if (layoutObject.getPaginationBreakability() == LayoutBox::ForbidBreaks) {
       m_flowThread = nullptr;
       m_pageLogicalHeight = LayoutUnit();
@@ -119,7 +121,8 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
     }
   }
 
-  // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
+  // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if
+  // present.
 }
 
 LayoutState::LayoutState(LayoutObject& root)

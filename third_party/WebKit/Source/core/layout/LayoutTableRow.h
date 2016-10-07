@@ -4,7 +4,8 @@
  *           (C) 1998 Waldo Bastian (bastian@kde.org)
  *           (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2009, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2009, 2013 Apple Inc.
+ *               All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -51,7 +52,8 @@ static const unsigned maxRowIndex = 0x7FFFFFFE;  // 2,147,483,646
 // allow some layout overflow to occur).
 //
 // LayoutTableRow doesn't establish a containing block for the underlying
-// LayoutTableCells. That's why it inherits from LayoutTableBoxComponent and not LayoutBlock.
+// LayoutTableCells. That's why it inherits from LayoutTableBoxComponent and not
+// LayoutBlock.
 // One oddity is that LayoutTableRow doesn't establish a new coordinate system
 // for its children. LayoutTableCells are positioned with respect to the
 // enclosing LayoutTableSection (this object's parent()). This particularity is
@@ -125,8 +127,8 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
 
   const char* name() const override { return "LayoutTableRow"; }
 
-  // Whether a row has opaque background depends on many factors, e.g. border spacing,
-  // border collapsing, missing cells, etc.
+  // Whether a row has opaque background depends on many factors, e.g. border
+  // spacing, border collapsing, missing cells, etc.
   // For simplicity, just conservatively assume all table rows are not opaque.
   bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&,
                                          unsigned) const override {

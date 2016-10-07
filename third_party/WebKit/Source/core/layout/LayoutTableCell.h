@@ -4,7 +4,8 @@
  *           (C) 1998 Waldo Bastian (bastian@kde.org)
  *           (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2013 Apple Inc.
+ *               All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -152,7 +153,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
                                  ? 0
                                  : valueForLength(height, LayoutUnit()).toInt();
 
-    // In strict mode, box-sizing: content-box do the right thing and actually add in the border and padding.
+    // In strict mode, box-sizing: content-box do the right thing and actually
+    // add in the border and padding.
     // Call computedCSSPadding* directly to avoid including implicitPadding.
     if (!document().inQuirksMode() &&
         style()->boxSizing() != BoxSizingBorderBox)
@@ -163,7 +165,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   }
 
   int logicalHeightForRowSizing() const {
-    // FIXME: This function does too much work, and is very hot during table layout!
+    // FIXME: This function does too much work, and is very hot during table
+    // layout!
     int adjustedLogicalHeight =
         pixelSnappedLogicalHeight() -
         (intrinsicPaddingBefore() + intrinsicPaddingAfter());
@@ -208,9 +211,10 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   LayoutUnit paddingLeft() const override;
   LayoutUnit paddingRight() const override;
 
-  // FIXME: For now we just assume the cell has the same block flow direction as the table. It's likely we'll
-  // create an extra anonymous LayoutBlock to handle mixing directionality anyway, in which case we can lock
-  // the block flow directionality of the cells to the table's directionality.
+  // FIXME: For now we just assume the cell has the same block flow direction as
+  // the table. It's likely we'll create an extra anonymous LayoutBlock to
+  // handle mixing directionality anyway, in which case we can lock the block
+  // flow directionality of the cells to the table's directionality.
   LayoutUnit paddingBefore() const override;
   LayoutUnit paddingAfter() const override;
 
@@ -229,11 +233,12 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     return createAnonymousWithParent(parent);
   }
 
-  // This function is used to unify which table part's style we use for computing direction and
-  // writing mode. Writing modes are not allowed on row group and row but direction is.
-  // This means we can safely use the same style in all cases to simplify our code.
-  // FIXME: Eventually this function should replaced by style() once we support direction
-  // on all table parts and writing-mode on cells.
+  // This function is used to unify which table part's style we use for
+  // computing direction and writing mode. Writing modes are not allowed on row
+  // group and row but direction is. This means we can safely use the same style
+  // in all cases to simplify our code.
+  // FIXME: Eventually this function should replaced by style() once we support
+  // direction on all table parts and writing-mode on cells.
   const ComputedStyle& styleForCellFlow() const { return row()->styleRef(); }
 
   const BorderValue& borderAdjoiningTableStart() const {
@@ -254,13 +259,15 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   const BorderValue& borderAdjoiningCellBefore(const LayoutTableCell* cell) {
     DCHECK_EQ(table()->cellAfter(cell), this);
-    // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at the cell level.
+    // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality
+    // at the cell level.
     return style()->borderStart();
   }
 
   const BorderValue& borderAdjoiningCellAfter(const LayoutTableCell* cell) {
     DCHECK_EQ(table()->cellBefore(cell), this);
-    // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at the cell level.
+    // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality
+    // at the cell level.
     return style()->borderEnd();
   }
 
@@ -378,7 +385,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   void nextSibling() const = delete;
   void previousSibling() const = delete;
 
-  // Note MSVC will only pack members if they have identical types, hence we use unsigned instead of bool here.
+  // Note MSVC will only pack members if they have identical types, hence we use
+  // unsigned instead of bool here.
   unsigned m_absoluteColumnIndex : 29;
   unsigned m_cellWidthChanged : 1;
   unsigned m_hasColSpan : 1;

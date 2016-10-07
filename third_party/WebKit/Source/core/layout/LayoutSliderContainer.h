@@ -38,8 +38,8 @@ namespace blink {
 
 class SliderContainerElement;
 
-// FIXME: Find a way to cascade appearance and adjust heights, and get rid of this class.
-// http://webkit.org/b/62535
+// FIXME: Find a way to cascade appearance and adjust heights, and get rid of
+// this class. See http://webkit.org/b/62535
 class LayoutSliderContainer : public LayoutFlexibleBox {
  public:
   LayoutSliderContainer(SliderContainerElement*);

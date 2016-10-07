@@ -61,7 +61,8 @@ LayoutScrollbar::LayoutScrollbar(ScrollableArea* scrollableArea,
       m_owningFrame(owningFrame) {
   ASSERT(ownerNode || owningFrame);
 
-  // FIXME: We need to do this because LayoutScrollbar::styleChanged is called as soon as the scrollbar is created.
+  // FIXME: We need to do this because LayoutScrollbar::styleChanged is called
+  // as soon as the scrollbar is created.
 
   // Update the scrollbar size.
   IntRect rect(0, 0, 0, 0);
@@ -82,9 +83,10 @@ LayoutScrollbar::~LayoutScrollbar() {
   if (m_parts.isEmpty())
     return;
 
-  // When a scrollbar is detached from its parent (causing all parts removal) and
-  // ready to be destroyed, its destruction can be delayed because of RefPtr
-  // maintained in other classes such as EventHandler (m_lastScrollbarUnderMouse).
+  // When a scrollbar is detached from its parent (causing all parts removal)
+  // and ready to be destroyed, its destruction can be delayed because of
+  // RefPtr maintained in other classes such as EventHandler
+  // (m_lastScrollbarUnderMouse).
   // Meanwhile, we can have a call to updateScrollbarPart which recreates the
   // scrollbar part. So, we need to destroy these parts since we don't want them
   // to call on a destroyed scrollbar. See webkit bug 68009.
@@ -167,8 +169,8 @@ PassRefPtr<ComputedStyle> LayoutScrollbar::getScrollbarPseudoStyle(
       owningLayoutObject()->style());
   // Scrollbars for root frames should always have background color
   // unless explicitly specified as transparent. So we force it.
-  // This is because WebKit assumes scrollbar to be always painted and missing background
-  // causes visual artifact like non-paint invalidated dirty region.
+  // This is because WebKit assumes scrollbar to be always painted and missing
+  // background causes visual artifact like non-paint invalidated dirty region.
   if (result && m_owningFrame && m_owningFrame->view() &&
       !m_owningFrame->view()->isTransparent() && !result->hasBackground())
     result->setBackgroundColor(StyleColor(Color::white));
@@ -190,7 +192,8 @@ void LayoutScrollbar::updateScrollbarParts(bool destroy) {
   if (destroy)
     return;
 
-  // See if the scrollbar's thickness changed.  If so, we need to mark our owning object as needing a layout.
+  // See if the scrollbar's thickness changed.  If so, we need to mark our
+  // owning object as needing a layout.
   bool isHorizontal = orientation() == HorizontalScrollbar;
   int oldThickness = isHorizontal ? height() : width();
   int newThickness = 0;
@@ -253,7 +256,8 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType,
       !destroy && partStyle && partStyle->display() != EDisplay::None;
 
   if (needLayoutObject && partStyle->display() != EDisplay::Block) {
-    // See if we are a button that should not be visible according to OS settings.
+    // See if we are a button that should not be visible according to OS
+    // settings.
     WebScrollbarButtonsPlacement buttonsPlacement = theme().buttonsPlacement();
     switch (partType) {
       case BackButtonStartPart:

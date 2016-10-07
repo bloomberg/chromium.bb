@@ -72,7 +72,8 @@ struct Language {
   bool operator<(const Language& b) const { return strcmp(lang, b.lang) < 0; }
 };
 
-// Table of quotes from http://www.whatwg.org/specs/web-apps/current-work/multipage/rendering.html#quote
+// Table of quotes from
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/rendering.html#quote
 Language languages[] = {
     {"af", 0x201c, 0x201d, 0x2018, 0x2019, 0},
     {"agq", 0x201e, 0x201d, 0x201a, 0x2019, 0},

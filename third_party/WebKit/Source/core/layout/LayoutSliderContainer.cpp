@@ -79,7 +79,8 @@ void LayoutSliderContainer::computeLogicalHeight(
     if (zoomFactor != 1.0)
       trackHeight *= zoomFactor;
 
-    // FIXME: The trackHeight should have been added before updateLogicalHeight was called to avoid this hack.
+    // FIXME: The trackHeight should have been added before updateLogicalHeight
+    // was called to avoid this hack.
     setIntrinsicContentLogicalHeight(trackHeight);
 
     LayoutBox::computeLogicalHeight(trackHeight, logicalTop, computedValues);
@@ -88,7 +89,8 @@ void LayoutSliderContainer::computeLogicalHeight(
   if (isVertical)
     logicalHeight = LayoutUnit(LayoutSlider::defaultTrackLength);
 
-  // FIXME: The trackHeight should have been added before updateLogicalHeight was called to avoid this hack.
+  // FIXME: The trackHeight should have been added before updateLogicalHeight
+  // was called to avoid this hack.
   setIntrinsicContentLogicalHeight(logicalHeight);
 
   LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
@@ -100,9 +102,9 @@ void LayoutSliderContainer::layout() {
   mutableStyleRef().setFlexDirection(isVertical ? FlowColumn : FlowRow);
   TextDirection oldTextDirection = style()->direction();
   if (isVertical) {
-    // FIXME: Work around rounding issues in RTL vertical sliders. We want them to
-    // render identically to LTR vertical sliders. We can remove this work around when
-    // subpixel rendering is enabled on all ports.
+    // FIXME: Work around rounding issues in RTL vertical sliders. We want them
+    // to render identically to LTR vertical sliders. We can remove this work
+    // around when subpixel rendering is enabled on all ports.
     mutableStyleRef().setDirection(LTR);
   }
 
@@ -114,15 +116,18 @@ void LayoutSliderContainer::layout() {
   LayoutBox* track = trackElement ? trackElement->layoutBox() : 0;
 
   SubtreeLayoutScope layoutScope(*this);
-  // Force a layout to reset the position of the thumb so the code below doesn't move the thumb to the wrong place.
-  // FIXME: Make a custom layout class for the track and move the thumb positioning code there.
+  // Force a layout to reset the position of the thumb so the code below doesn't
+  // move the thumb to the wrong place.
+  // FIXME: Make a custom layout class for the track and move the thumb
+  // positioning code there.
   if (track)
     layoutScope.setChildNeedsLayout(track);
 
   LayoutFlexibleBox::layout();
 
   mutableStyleRef().setDirection(oldTextDirection);
-  // These should always exist, unless someone mutates the shadow DOM (e.g., in the inspector).
+  // These should always exist, unless someone mutates the shadow DOM (e.g., in
+  // the inspector).
   if (!thumb || !track)
     return;
 
@@ -142,9 +147,11 @@ void LayoutSliderContainer::layout() {
     thumbLocation.setX(thumbLocation.x() - offset);
   thumb->setLocation(thumbLocation);
 
-  // We need one-off invalidation code here because painting of the timeline element does not go through style.
+  // We need one-off invalidation code here because painting of the timeline
+  // element does not go through style.
   // Instead it has a custom implementation in C++ code.
-  // Therefore the style system cannot understand when it needs to be paint invalidated.
+  // Therefore the style system cannot understand when it needs to be paint
+  // invalidated.
   setShouldDoFullPaintInvalidation();
 }
 

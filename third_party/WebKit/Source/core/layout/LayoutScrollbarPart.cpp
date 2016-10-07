@@ -93,8 +93,9 @@ LayoutScrollbarPart* LayoutScrollbarPart::createAnonymous(
 }
 
 void LayoutScrollbarPart::layout() {
-  setLocation(
-      LayoutPoint());  // We don't worry about positioning ourselves. We're just determining our minimum width/height.
+  // We don't worry about positioning ourselves. We're just determining our
+  // minimum width/height.
+  setLocation(LayoutPoint());
   if (m_scrollbar->orientation() == HorizontalScrollbar)
     layoutHorizontalPart();
   else
@@ -134,8 +135,10 @@ static int calcScrollbarThicknessUsing(SizeType sizeType,
 void LayoutScrollbarPart::computeScrollbarWidth() {
   if (!m_scrollbar->owningLayoutObject())
     return;
-  // FIXME: We are querying layout information but nothing guarantees that it's up to date, especially since we are called at style change.
-  // FIXME: Querying the style's border information doesn't work on table cells with collapsing borders.
+  // FIXME: We are querying layout information but nothing guarantees that it's
+  // up to date, especially since we are called at style change.
+  // FIXME: Querying the style's border information doesn't work on table cells
+  // with collapsing borders.
   int visibleSize =
       (m_scrollbar->owningLayoutObject()->size().width() -
        m_scrollbar->owningLayoutObject()->style()->borderLeftWidth() -
@@ -151,7 +154,8 @@ void LayoutScrollbarPart::computeScrollbarWidth() {
                                                    visibleSize);
   setWidth(LayoutUnit(std::max(minWidth, std::min(maxWidth, w))));
 
-  // Buttons and track pieces can all have margins along the axis of the scrollbar.
+  // Buttons and track pieces can all have margins along the axis of the
+  // scrollbar.
   setMarginLeft(
       minimumValueForLength(style()->marginLeft(), LayoutUnit(visibleSize)));
   setMarginRight(
@@ -161,8 +165,10 @@ void LayoutScrollbarPart::computeScrollbarWidth() {
 void LayoutScrollbarPart::computeScrollbarHeight() {
   if (!m_scrollbar->owningLayoutObject())
     return;
-  // FIXME: We are querying layout information but nothing guarantees that it's up to date, especially since we are called at style change.
-  // FIXME: Querying the style's border information doesn't work on table cells with collapsing borders.
+  // FIXME: We are querying layout information but nothing guarantees that it's
+  // up to date, especially since we are called at style change.
+  // FIXME: Querying the style's border information doesn't work on table cells
+  // with collapsing borders.
   int visibleSize =
       (m_scrollbar->owningLayoutObject()->size().height() -
        m_scrollbar->owningLayoutObject()->style()->borderTopWidth() -
@@ -178,7 +184,8 @@ void LayoutScrollbarPart::computeScrollbarHeight() {
                             MaxSize, style()->maxHeight(), visibleSize);
   setHeight(LayoutUnit(std::max(minHeight, std::min(maxHeight, h))));
 
-  // Buttons and track pieces can all have margins along the axis of the scrollbar.
+  // Buttons and track pieces can all have margins along the axis of the
+  // scrollbar.
   setMarginTop(
       minimumValueForLength(style()->marginTop(), LayoutUnit(visibleSize)));
   setMarginBottom(
@@ -241,8 +248,8 @@ void LayoutScrollbarPart::setNeedsPaintInvalidation() {
 }
 
 LayoutRect LayoutScrollbarPart::visualRect() const {
-  // This returns the combined bounds of all scrollbar parts, which is sufficient for correctness
-  // but not as tight as it could be.
+  // This returns the combined bounds of all scrollbar parts, which is
+  // sufficient for correctness but not as tight as it could be.
   return m_scrollableArea->visualRectForScrollbarParts();
 }
 

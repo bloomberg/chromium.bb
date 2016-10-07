@@ -271,8 +271,9 @@ void LayoutBox::styleDidChange(StyleDifference diff,
       oldStyle->effectiveZoom() != newStyle.effectiveZoom()) {
     PaintLayerScrollableArea* scrollableArea = this->getScrollableArea();
     ASSERT(scrollableArea);
-    // We use scrollOffset() rather than scrollPosition(), because scrollOffset is the distance
-    // from the beginning of flow for the box, which is the dimension we want to preserve.
+    // We use scrollOffset() rather than scrollPosition(), because scrollOffset
+    // is the distance from the beginning of flow for the box, which is the
+    // dimension we want to preserve.
     ScrollOffset oldOffset = scrollableArea->scrollOffset();
     if (oldOffset.width() || oldOffset.height()) {
       ScrollOffset newOffset = oldOffset.scaledBy(newStyle.effectiveZoom() /

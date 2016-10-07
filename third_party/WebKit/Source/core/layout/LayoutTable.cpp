@@ -4,7 +4,8 @@
  *           (C) 1998 Waldo Bastian (bastian@kde.org)
  *           (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2013 Apple Inc.
+ *               All rights reserved.
  * Copyright (C) 2006 Alexey Proskuryakov (ap@nypop.com)
  *
  * This library is free software; you can redistribute it and/or
@@ -88,7 +89,8 @@ void LayoutTable::styleDidChange(StyleDifference diff,
       m_tableLayout->willChangeTableLayout();
 
     // According to the CSS2 spec, you only use fixed table layout if an
-    // explicit width is specified on the table.  Auto width implies auto table layout.
+    // explicit width is specified on the table. Auto width implies auto table
+    // layout.
     if (style()->isFixedTableLayout())
       m_tableLayout = wrapUnique(new TableLayoutAlgorithmFixed(this));
     else
@@ -278,7 +280,8 @@ void LayoutTable::updateLogicalWidth() {
     setLogicalWidth(convertStyleLogicalWidthToComputedWidth(
         styleLogicalWidth, containerWidthInInlineDirection));
   } else {
-    // Subtract out any fixed margins from our available width for auto width tables.
+    // Subtract out any fixed margins from our available width for auto width
+    // tables.
     LayoutUnit marginStart =
         minimumValueForLength(style()->marginStart(), availableLogicalWidth);
     LayoutUnit marginEnd =
@@ -296,8 +299,9 @@ void LayoutTable::updateLogicalWidth() {
 
     // Ensure we aren't bigger than our available width.
     LayoutUnit maxWidth = maxPreferredLogicalWidth();
-    // scaledWidthFromPercentColumns depends on m_layoutStruct in TableLayoutAlgorithmAuto, which
-    // maxPreferredLogicalWidth fills in. So scaledWidthFromPercentColumns has to be called after
+    // scaledWidthFromPercentColumns depends on m_layoutStruct in
+    // TableLayoutAlgorithmAuto, which maxPreferredLogicalWidth fills in. So
+    // scaledWidthFromPercentColumns has to be called after
     // maxPreferredLogicalWidth.
     LayoutUnit scaledWidth = m_tableLayout->scaledWidthFromPercentColumns() +
                              bordersPaddingAndSpacingInRowDirection();
@@ -318,8 +322,9 @@ void LayoutTable::updateLogicalWidth() {
         LayoutUnit(std::min(logicalWidth(), computedMaxLogicalWidth).floor()));
   }
 
-  // Ensure we aren't smaller than our min preferred width. This MUST be done after 'max-width' as
-  // we ignore it if it means we wouldn't accommodate our content.
+  // Ensure we aren't smaller than our min preferred width. This MUST be done
+  // after 'max-width' as we ignore it if it means we wouldn't accommodate our
+  // content.
   setLogicalWidth(
       LayoutUnit(std::max(logicalWidth(), minPreferredLogicalWidth()).floor()));
 
@@ -344,14 +349,16 @@ void LayoutTable::updateLogicalWidth() {
   setMarginStart(marginValues.m_start);
   setMarginEnd(marginValues.m_end);
 
-  // We should NEVER shrink the table below the min-content logical width, or else the table can't accommodate
-  // its own content which doesn't match CSS nor what authors expect.
-  // FIXME: When we convert to sub-pixel layout for tables we can remove the int conversion
-  // https://code.google.com/p/chromium/issues/detail?id=241198
+  // We should NEVER shrink the table below the min-content logical width, or
+  // else the table can't accommodate its own content which doesn't match CSS
+  // nor what authors expect.
+  // FIXME: When we convert to sub-pixel layout for tables we can remove the int
+  // conversion. http://crbug.com/241198
   ASSERT(logicalWidth().floor() >= minPreferredLogicalWidth().floor());
 }
 
-// This method takes a ComputedStyle's logical width, min-width, or max-width length and computes its actual value.
+// This method takes a ComputedStyle's logical width, min-width, or max-width
+// length and computes its actual value.
 LayoutUnit LayoutTable::convertStyleLogicalWidthToComputedWidth(
     const Length& styleLogicalWidth,
     LayoutUnit availableWidth) {
@@ -360,7 +367,8 @@ LayoutUnit LayoutTable::convertStyleLogicalWidthToComputedWidth(
         styleLogicalWidth, availableWidth,
         bordersPaddingAndSpacingInRowDirection());
 
-  // HTML tables' width styles already include borders and paddings, but CSS tables' width styles do not.
+  // HTML tables' width styles already include borders and paddings, but CSS
+  // tables' width styles do not.
   LayoutUnit borders;
   bool isCSSTable = !isHTMLTableElement(node());
   if (isCSSTable && styleLogicalWidth.isSpecified() &&
@@ -382,9 +390,11 @@ LayoutUnit LayoutTable::convertStyleLogicalHeightToComputedHeight(
   LayoutUnit borderAndPadding = borderAndPaddingBefore + borderAndPaddingAfter;
   LayoutUnit computedLogicalHeight;
   if (styleLogicalHeight.isFixed()) {
-    // HTML tables size as though CSS height includes border/padding, CSS tables do not.
+    // HTML tables size as though CSS height includes border/padding, CSS tables
+    // do not.
     LayoutUnit borders = LayoutUnit();
-    // FIXME: We cannot apply box-sizing: content-box on <table> which other browsers allow.
+    // FIXME: We cannot apply box-sizing: content-box on <table> which other
+    // browsers allow.
     if (isHTMLTableElement(node()) ||
         style()->boxSizing() == BoxSizingBorderBox) {
       borders = borderAndPadding;
@@ -404,15 +414,17 @@ LayoutUnit LayoutTable::convertStyleLogicalHeightToComputedHeight(
 
 void LayoutTable::layoutCaption(LayoutTableCaption& caption) {
   if (caption.needsLayout()) {
-    // The margins may not be available but ensure the caption is at least located beneath any previous sibling caption
-    // so that it does not mistakenly think any floats in the previous caption intrude into it.
+    // The margins may not be available but ensure the caption is at least
+    // located beneath any previous sibling caption so that it does not
+    // mistakenly think any floats in the previous caption intrude into it.
     caption.setLogicalLocation(
         LayoutPoint(caption.marginStart(),
                     collapsedMarginBeforeForChild(caption) + logicalHeight()));
     // If LayoutTableCaption ever gets a layout() function, use it here.
     caption.layoutIfNeeded();
   }
-  // Apply the margins to the location now that they are definitely available from layout
+  // Apply the margins to the location now that they are definitely available
+  // from layout
   LayoutUnit captionLogicalTop =
       collapsedMarginBeforeForChild(caption) + logicalHeight();
   caption.setLogicalLocation(
@@ -430,19 +442,23 @@ void LayoutTable::distributeExtraLogicalHeight(int extraLogicalHeight) {
   if (extraLogicalHeight <= 0)
     return;
 
-  // FIXME: Distribute the extra logical height between all table sections instead of giving it all to the first one.
+  // FIXME: Distribute the extra logical height between all table sections
+  // instead of giving it all to the first one.
   if (LayoutTableSection* section = firstBody())
     extraLogicalHeight -=
         section->distributeExtraLogicalHeightToRows(extraLogicalHeight);
 
-  // FIXME: We really would like to enable this ASSERT to ensure that all the extra space has been distributed.
-  // However our current distribution algorithm does not round properly and thus we can have some remaining height.
+  // FIXME: We really would like to enable this ASSERT to ensure that all the
+  // extra space has been distributed.
+  // However our current distribution algorithm does not round properly and thus
+  // we can have some remaining height.
   // ASSERT(!topSection() || !extraLogicalHeight);
 }
 
 void LayoutTable::simplifiedNormalFlowLayout() {
-  // FIXME: We should walk through the items in the tree in tree order to do the layout here
-  // instead of walking through individual parts of the tree. crbug.com/442737
+  // FIXME: We should walk through the items in the tree in tree order to do the
+  // layout here instead of walking through individual parts of the tree.
+  // crbug.com/442737
   for (auto& caption : m_captions)
     caption->layoutIfNeeded();
 
@@ -460,8 +476,8 @@ bool LayoutTable::recalcChildOverflowAfterStyleChange() {
   ASSERT(childNeedsOverflowRecalcAfterStyleChange());
   clearChildNeedsOverflowRecalcAfterStyleChange();
 
-  // If the table sections we keep pointers to have gone away then the table will be rebuilt and
-  // overflow will get recalculated anyway so return early.
+  // If the table sections we keep pointers to have gone away then the table
+  // will be rebuilt and overflow will get recalculated anyway so return early.
   if (needsSectionRecalc())
     return false;
 
@@ -484,20 +500,22 @@ void LayoutTable::layout() {
   if (simplifiedLayout())
     return;
 
-  // Note: LayoutTable is handled differently than other LayoutBlocks and the LayoutScope
+  // Note: LayoutTable is handled differently than other LayoutBlocks and the
+  // LayoutScope
   //       must be created before the table begins laying out.
   TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
   recalcSectionsIfNeeded();
-  // FIXME: We should do this recalc lazily in borderStart/borderEnd so that we don't have to make sure
-  // to call this before we call borderStart/borderEnd to avoid getting a stale value.
+  // FIXME: We should do this recalc lazily in borderStart/borderEnd so that we
+  // don't have to make sure to call this before we call borderStart/borderEnd
+  // to avoid getting a stale value.
   recalcBordersInRowDirection();
 
   SubtreeLayoutScope layouter(*this);
 
-  // If any table section moved vertically, we will just issue paint invalidations for everything from that
-  // section down (it is quite unlikely that any of the following sections
-  // did not shift).
+  // If any table section moved vertically, we will just issue paint
+  // invalidations for everything from that section down (it is quite unlikely
+  // that any of the following sections did not shift).
   bool sectionMoved = false;
   {
     LayoutState state(*this, locationOffset());
@@ -545,9 +563,10 @@ void LayoutTable::layout() {
         child->layoutIfNeeded();
         ASSERT(!child->needsLayout());
       } else {
-        // FIXME: We should never have other type of children (they should be wrapped in an
-        // anonymous table section) but our code is too crazy and this can happen in practice.
-        // Until this is fixed, let's make sure we don't leave non laid out children in the tree.
+        // FIXME: We should never have other type of children (they should be
+        // wrapped in an anonymous table section) but our code is too crazy and
+        // this can happen in practice. Until this is fixed, let's make sure we
+        // don't leave non laid out children in the tree.
         child->layoutIfNeeded();
       }
     }
@@ -609,14 +628,16 @@ void LayoutTable::layout() {
       section->setLogicalTop(logicalOffset);
       section->layoutRows();
       logicalOffset += section->logicalHeight();
-      // If the section is a repeating header group that allows at least one row of content then store the
-      // offset for other sections to offset their rows against.
+      // If the section is a repeating header group that allows at least one row
+      // of content then store the offset for other sections to offset their
+      // rows against.
       if (isPaginated && m_head && m_head == section &&
           section->logicalHeight() <
               section->pageLogicalHeightForOffset(logicalOffset) &&
           section->getPaginationBreakability() != LayoutBox::AllowAnyBreaks) {
         LayoutUnit offsetForTableHeaders = state.heightOffsetForTableHeaders();
-        // Don't include any strut in the header group - we only want the height from its content.
+        // Don't include any strut in the header group - we only want the height
+        // from its content.
         offsetForTableHeaders += section->logicalHeight();
         if (LayoutTableRow* row = section->firstRow())
           offsetForTableHeaders -= row->paginationStrut();
@@ -626,8 +647,8 @@ void LayoutTable::layout() {
 
     if (!topSection && computedLogicalHeight > totalSectionLogicalHeight &&
         !document().inQuirksMode()) {
-      // Completely empty tables (with no sections or anything) should at least honor specified height
-      // in strict mode.
+      // Completely empty tables (with no sections or anything) should at least
+      // honor specified height in strict mode.
       setLogicalHeight(logicalHeight() + computedLogicalHeight);
     }
 
@@ -645,7 +666,8 @@ void LayoutTable::layout() {
       section->setLogicalLocation(
           LayoutPoint(sectionLogicalLeft, logicalHeight()));
 
-      // As we may skip invalidation on the table, we need to ensure that sections are invalidated when they moved.
+      // As we may skip invalidation on the table, we need to ensure that
+      // sections are invalidated when they moved.
       if (sectionMoved && !section->selfNeedsLayout())
         section->setMayNeedPaintInvalidation();
 
@@ -703,9 +725,9 @@ void LayoutTable::invalidateCollapsedBorders() {
 }
 
 // Collect all the unique border values that we want to paint in a sorted list.
-// During the collection, each cell saves its recalculated borders into the cache
-// of its containing section, and invalidates itself if any border changes.
-// This method doesn't affect layout.
+// During the collection, each cell saves its recalculated borders into the
+// cache of its containing section, and invalidates itself if any border
+// changes. This method doesn't affect layout.
 void LayoutTable::recalcCollapsedBordersIfNeeded() {
   if (m_collapsedBordersValid || !collapseBorders())
     return;
@@ -729,8 +751,10 @@ void LayoutTable::recalcCollapsedBordersIfNeeded() {
 
 void LayoutTable::addOverflowFromChildren() {
   // Add overflow from borders.
-  // Technically it's odd that we are incorporating the borders into layout overflow, which is only supposed to be about overflow from our
-  // descendant objects, but since tables don't support overflow:auto, this works out fine.
+  // Technically it's odd that we are incorporating the borders into layout
+  // overflow, which is only supposed to be about overflow from our
+  // descendant objects, but since tables don't support overflow:auto, this
+  // works out fine.
   if (collapseBorders()) {
     int rightBorderOverflow =
         (size().width() + outerBorderRight() - borderRight()).toInt();
@@ -808,15 +832,18 @@ void LayoutTable::paintMask(const PaintInfo& paintInfo,
 void LayoutTable::computeIntrinsicLogicalWidths(LayoutUnit& minWidth,
                                                 LayoutUnit& maxWidth) const {
   recalcSectionsIfNeeded();
-  // FIXME: Do the recalc in borderStart/borderEnd and make those const_cast this call.
-  // Then m_borderStart/m_borderEnd will be transparent a cache and it removes the possibility
-  // of reading out stale values.
+  // FIXME: Do the recalc in borderStart/borderEnd and make those const_cast
+  // this call.
+  // Then m_borderStart/m_borderEnd will be transparent a cache and it removes
+  // the possibility of reading out stale values.
   const_cast<LayoutTable*>(this)->recalcBordersInRowDirection();
-  // FIXME: Restructure the table layout code so that we can make this method const.
+  // FIXME: Restructure the table layout code so that we can make this method
+  // const.
   const_cast<LayoutTable*>(this)->m_tableLayout->computeIntrinsicLogicalWidths(
       minWidth, maxWidth);
 
-  // FIXME: We should include captions widths here like we do in computePreferredLogicalWidths.
+  // FIXME: We should include captions widths here like we do in
+  // computePreferredLogicalWidths.
 }
 
 void LayoutTable::computePreferredLogicalWidths() {
@@ -838,7 +865,8 @@ void LayoutTable::computePreferredLogicalWidths() {
         m_minPreferredLogicalWidth, m_captions[i]->minPreferredLogicalWidth());
 
   const ComputedStyle& styleToUse = styleRef();
-  // FIXME: This should probably be checking for isSpecified since you should be able to use percentage or calc values for min-width.
+  // FIXME: This should probably be checking for isSpecified since you should be
+  // able to use percentage or calc values for min-width.
   if (styleToUse.logicalMinWidth().isFixed() &&
       styleToUse.logicalMinWidth().value() > 0) {
     m_maxPreferredLogicalWidth = std::max(
@@ -849,9 +877,11 @@ void LayoutTable::computePreferredLogicalWidths() {
                                         styleToUse.logicalMinWidth().value()));
   }
 
-  // FIXME: This should probably be checking for isSpecified since you should be able to use percentage or calc values for maxWidth.
+  // FIXME: This should probably be checking for isSpecified since you should be
+  // able to use percentage or calc values for maxWidth.
   if (styleToUse.logicalMaxWidth().isFixed()) {
-    // We don't constrain m_minPreferredLogicalWidth as the table should be at least the size of its min-content, regardless of 'max-width'.
+    // We don't constrain m_minPreferredLogicalWidth as the table should be at
+    // least the size of its min-content, regardless of 'max-width'.
     m_maxPreferredLogicalWidth = std::min(
         m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(
                                         styleToUse.logicalMaxWidth().value()));
@@ -859,8 +889,9 @@ void LayoutTable::computePreferredLogicalWidths() {
         std::max(m_minPreferredLogicalWidth, m_maxPreferredLogicalWidth);
   }
 
-  // FIXME: We should be adding borderAndPaddingLogicalWidth here, but m_tableLayout->computePreferredLogicalWidths already does,
-  // so a bunch of tests break doing this naively.
+  // FIXME: We should be adding borderAndPaddingLogicalWidth here, but
+  // m_tableLayout->computePreferredLogicalWidths already does, so a bunch of
+  // tests break doing this naively.
   clearPreferredLogicalWidthsDirty();
 }
 
@@ -877,8 +908,9 @@ void LayoutTable::splitEffectiveColumn(unsigned index, unsigned firstSpan) {
   m_effectiveColumns.insert(index, firstSpan);
   m_effectiveColumns[index + 1].span -= firstSpan;
 
-  // Propagate the change in our columns representation to the sections that don't need
-  // cell recalc. If they do, they will be synced up directly with m_columns later.
+  // Propagate the change in our columns representation to the sections that
+  // don't need cell recalc. If they do, they will be synced up directly with
+  // m_columns later.
   for (LayoutObject* child = firstChild(); child;
        child = child->nextSibling()) {
     if (!child->isTableSection())
@@ -898,14 +930,16 @@ void LayoutTable::appendEffectiveColumn(unsigned span) {
   unsigned newColumnIndex = m_effectiveColumns.size();
   m_effectiveColumns.append(span);
 
-  // Unless the table has cell(s) with colspan that exceed the number of columns afforded
-  // by the other rows in the table we can use the fast path when mapping columns to effective columns.
+  // Unless the table has cell(s) with colspan that exceed the number of columns
+  // afforded by the other rows in the table we can use the fast path when
+  // mapping columns to effective columns.
   if (span == 1 && m_noCellColspanAtLeast + 1 == numEffectiveColumns()) {
     m_noCellColspanAtLeast++;
   }
 
-  // Propagate the change in our columns representation to the sections that don't need
-  // cell recalc. If they do, they will be synced up directly with m_columns later.
+  // Propagate the change in our columns representation to the sections that
+  // don't need cell recalc. If they do, they will be synced up directly with
+  // m_columns later.
   for (LayoutObject* child = firstChild(); child;
        child = child->nextSibling()) {
     if (!child->isTableSection())
@@ -1036,7 +1070,8 @@ void LayoutTable::recalcSections() const {
     }
   }
 
-  // repair column count (addChild can grow it too much, because it always adds elements to the last row of a section)
+  // repair column count (addChild can grow it too much, because it always adds
+  // elements to the last row of a section)
   unsigned maxCols = 0;
   for (LayoutObject* child = firstChild(); child;
        child = child->nextSibling()) {
@@ -1060,7 +1095,8 @@ int LayoutTable::calcBorderStart() const {
   if (!collapseBorders())
     return LayoutBlock::borderStart();
 
-  // Determined by the first cell of the first row. See the CSS 2.1 spec, section 17.6.2.
+  // Determined by the first cell of the first row. See the CSS 2.1 spec,
+  // section 17.6.2.
   if (!numEffectiveColumns())
     return 0;
 
@@ -1072,7 +1108,8 @@ int LayoutTable::calcBorderStart() const {
   if (tableStartBorder.style() > BorderStyleHidden)
     borderWidth = tableStartBorder.width();
 
-  // TODO(dgrogan): This logic doesn't properly account for the first column in the first column-group case.
+  // TODO(dgrogan): This logic doesn't properly account for the first column in
+  // the first column-group case.
   if (LayoutTableCol* column =
           colElementAtAbsoluteColumn(0).innermostColOrColGroup()) {
     // FIXME: We don't account for direction on columns and column groups.
@@ -1119,7 +1156,8 @@ int LayoutTable::calcBorderEnd() const {
   if (!collapseBorders())
     return LayoutBlock::borderEnd();
 
-  // Determined by the last cell of the first row. See the CSS 2.1 spec, section 17.6.2.
+  // Determined by the last cell of the first row. See the CSS 2.1 spec, section
+  // 17.6.2.
   if (!numEffectiveColumns())
     return 0;
 
@@ -1133,7 +1171,8 @@ int LayoutTable::calcBorderEnd() const {
 
   unsigned endColumn = numEffectiveColumns() - 1;
 
-  // TODO(dgrogan): This logic doesn't properly account for the last column in the last column-group case.
+  // TODO(dgrogan): This logic doesn't properly account for the last column in
+  // the last column-group case.
   if (LayoutTableCol* column =
           colElementAtAbsoluteColumn(endColumn).innermostColOrColGroup()) {
     // FIXME: We don't account for direction on columns and column groups.
@@ -1177,7 +1216,8 @@ int LayoutTable::calcBorderEnd() const {
 }
 
 void LayoutTable::recalcBordersInRowDirection() {
-  // FIXME: We need to compute the collapsed before / after borders in the same fashion.
+  // FIXME: We need to compute the collapsed before / after borders in the same
+  // fashion.
   m_borderStart = calcBorderStart();
   m_borderEnd = calcBorderEnd();
 }
@@ -1453,9 +1493,10 @@ int LayoutTable::inlineBlockBaseline(LineDirectionMode) const {
 }
 
 int LayoutTable::firstLineBoxBaseline() const {
-  // The baseline of a 'table' is the same as the 'inline-table' baseline per CSS 3 Flexbox (CSS 2.1
-  // doesn't define the baseline of a 'table' only an 'inline-table').
-  // This is also needed to properly determine the baseline of a cell if it has a table child.
+  // The baseline of a 'table' is the same as the 'inline-table' baseline per
+  // CSS 3 Flexbox (CSS 2.1 doesn't define the baseline of a 'table' only an
+  // 'inline-table'). This is also needed to properly determine the baseline of
+  // a cell if it has a table child.
 
   if (isWritingModeRoot())
     return -1;
@@ -1470,7 +1511,8 @@ int LayoutTable::firstLineBoxBaseline() const {
   if (baseline >= 0)
     return (topNonEmptySection->logicalTop() + baseline).toInt();
 
-  // FF, Presto and IE use the top of the section as the baseline if its first row is empty of cells or content.
+  // FF, Presto and IE use the top of the section as the baseline if its first
+  // row is empty of cells or content.
   // The baseline of an empty row isn't specified by CSS 2.1.
   if (topNonEmptySection->firstRow() &&
       !topNonEmptySection->firstRow()->firstCell())
@@ -1488,9 +1530,10 @@ LayoutRect LayoutTable::overflowClipRect(
   // If we have a caption, expand the clip to include the caption.
   // FIXME: Technically this is wrong, but it's virtually impossible to fix this
   // for real until captions have been re-written.
-  // FIXME: This code assumes (like all our other caption code) that only top/bottom are
-  // supported.  When we actually support left/right and stop mapping them to top/bottom,
-  // we might have to hack this code first (depending on what order we do these bug fixes in).
+  // FIXME: This code assumes (like all our other caption code) that only
+  // top/bottom are supported.  When we actually support left/right and stop
+  // mapping them to top/bottom, we might have to hack this code first
+  // (depending on what order we do these bug fixes in).
   if (!m_captions.isEmpty()) {
     if (style()->isHorizontalWritingMode()) {
       rect.setHeight(size().height());

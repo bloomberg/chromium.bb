@@ -9,10 +9,12 @@
 
 namespace blink {
 
-// Placeholder layoutObject for column-span:all elements. The column-span:all layoutObject itself is a
-// descendant of the flow thread, but due to its out-of-flow nature, we need something on the
-// outside to take care of its positioning and sizing. LayoutMultiColumnSpannerPlaceholder objects
-// are siblings of LayoutMultiColumnSet objects, i.e. direct children of the multicol container.
+// Placeholder layoutObject for column-span:all elements. The column-span:all
+// layoutObject itself is a descendant of the flow thread, but due to its
+// out-of-flow nature, we need something on the outside to take care of its
+// positioning and sizing. LayoutMultiColumnSpannerPlaceholder objects are
+// siblings of LayoutMultiColumnSet objects, i.e. direct children of the
+// multicol container.
 class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
  public:
   bool isOfType(LayoutObjectType type) const override {
@@ -34,8 +36,9 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
   void markForLayoutIfObjectInFlowThreadNeedsLayout() {
     if (!m_layoutObjectInFlowThread->needsLayout())
       return;
-    // The containing block of a spanner is the multicol container (our parent here), but the
-    // spanner is laid out via its spanner set (us), so we need to make sure that we enter it.
+    // The containing block of a spanner is the multicol container (our parent
+    // here), but the spanner is laid out via its spanner set (us), so we need
+    // to make sure that we enter it.
     setChildNeedsLayout(MarkOnlyThis);
   }
 
@@ -67,8 +70,8 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
  private:
   LayoutMultiColumnSpannerPlaceholder(LayoutBox*);
 
-  LayoutBox*
-      m_layoutObjectInFlowThread;  // The actual column-span:all layoutObject inside the flow thread.
+  // The actual column-span:all layoutObject inside the flow thread.
+  LayoutBox* m_layoutObjectInFlowThread;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMultiColumnSpannerPlaceholder,

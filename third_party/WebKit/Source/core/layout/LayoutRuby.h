@@ -36,17 +36,21 @@
 
 namespace blink {
 
-// Following the HTML 5 spec, the box object model for a <ruby> element allows several runs of ruby
+// Following the HTML 5 spec, the box object model for a <ruby> element allows
+// several runs of ruby
 // bases with their respective ruby texts looks as follows:
 //
 // 1 LayoutRuby object, corresponding to the whole <ruby> HTML element
 //      1+ LayoutRubyRun (anonymous)
-//          0 or 1 LayoutRubyText - shuffled to the front in order to re-use existing block layouting
+//          0 or 1 LayoutRubyText - shuffled to the front in order to re-use
+//                                  existing block layouting
 //              0-n inline object(s)
-//          0 or 1 LayoutRubyBase - contains the inline objects that make up the ruby base
+//          0 or 1 LayoutRubyBase - contains the inline objects that make up the
+//                                  ruby base
 //              1-n inline object(s)
 //
-// Note: <rp> elements are defined as having 'display:none' and thus normally are not assigned a layoutObject.
+// Note: <rp> elements are defined as having 'display:none' and thus normally
+// are not assigned a layoutObject.
 //
 // Generated :before/:after content is shunted into anonymous inline blocks
 

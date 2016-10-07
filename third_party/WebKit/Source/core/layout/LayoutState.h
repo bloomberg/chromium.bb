@@ -83,8 +83,9 @@ class LayoutState {
 
   bool isPaginated() const { return m_isPaginated; }
 
-  // The page logical offset is the object's offset from the top of the page in the page progression
-  // direction (so an x-offset in vertical text and a y-offset for horizontal text).
+  // The page logical offset is the object's offset from the top of the page in
+  // the page progression direction (so an x-offset in vertical text and a
+  // y-offset for horizontal text).
   LayoutUnit pageLogicalOffset(const LayoutBox&,
                                const LayoutUnit& childLogicalOffset) const;
 
@@ -110,7 +111,8 @@ class LayoutState {
   LayoutObject& layoutObject() const { return m_layoutObject; }
 
  private:
-  // Do not add anything apart from bitfields until after m_flowThread. See https://bugs.webkit.org/show_bug.cgi?id=100173
+  // Do not add anything apart from bitfields until after m_flowThread. See
+  // https://bugs.webkit.org/show_bug.cgi?id=100173
   bool m_isPaginated : 1;
   // If our page height has changed, this will force all blocks to relayout.
   bool m_pageLogicalHeightChanged : 1;
@@ -120,16 +122,19 @@ class LayoutState {
 
   LayoutState* m_next;
 
-  // x/y offset from container. Does not include relative positioning or scroll offsets.
+  // x/y offset from container. Does not include relative positioning or scroll
+  // offsets.
   LayoutSize m_layoutOffset;
 
   // The current page height for the pagination model that encloses us.
   LayoutUnit m_pageLogicalHeight;
 
-  // The height we need to make available for repeating table headers in paginated layout.
+  // The height we need to make available for repeating table headers in
+  // paginated layout.
   LayoutUnit m_heightOffsetForTableHeaders;
 
-  // The offset of the start of the first page in the nearest enclosing pagination model.
+  // The offset of the start of the first page in the nearest enclosing
+  // pagination model.
   LayoutSize m_pageOffset;
 
   LayoutObject& m_layoutObject;

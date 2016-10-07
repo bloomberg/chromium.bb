@@ -9,10 +9,11 @@
 
 namespace blink {
 
-// A flow thread for paged overflow. FIXME: The current implementation relies on the multicol
-// implementation, but it in the long run it would be better to have what's common between
-// LayoutMultiColumnFlowThread and LayoutPagedFlowThread in LayoutFlowThread, and have both of them
-// inherit from that one.
+// A flow thread for paged overflow. FIXME: The current implementation relies on
+// the multicol implementation, but it in the long run it would be better to
+// have what's common between LayoutMultiColumnFlowThread and
+// LayoutPagedFlowThread in LayoutFlowThread, and have both of them inherit
+// from that one.
 class LayoutPagedFlowThread : public LayoutMultiColumnFlowThread {
  public:
   static LayoutPagedFlowThread* createAnonymous(

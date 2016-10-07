@@ -48,7 +48,8 @@ ETextAlign LayoutRubyText::textAlignmentForLine(bool endsWithSoftBreak) const {
   if (textAlign != ComputedStyle::initialTextAlign())
     return LayoutBlockFlow::textAlignmentForLine(endsWithSoftBreak);
 
-  // The default behavior is to allow ruby text to expand if it is shorter than the ruby base.
+  // The default behavior is to allow ruby text to expand if it is shorter than
+  // the ruby base.
   return JUSTIFY;
 }
 
@@ -66,8 +67,8 @@ void LayoutRubyText::adjustInlineDirectionLineBounds(
   if (maxPreferredLogicalWidth >= logicalWidth)
     return;
 
-  // Inset the ruby text by half the inter-ideograph expansion amount, but no more than a full-width
-  // ruby character on each side.
+  // Inset the ruby text by half the inter-ideograph expansion amount, but no
+  // more than a full-width ruby character on each side.
   LayoutUnit inset = (logicalWidth - maxPreferredLogicalWidth) /
                      (expansionOpportunityCount + 1);
   if (expansionOpportunityCount)

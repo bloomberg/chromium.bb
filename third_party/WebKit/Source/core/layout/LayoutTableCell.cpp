@@ -4,7 +4,8 @@
  *           (C) 1998 Waldo Bastian (bastian@kde.org)
  *           (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc.
+ *               All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -58,8 +59,9 @@ LayoutTableCell::LayoutTableCell(Element* element)
       m_cellWidthChanged(false),
       m_intrinsicPaddingBefore(0),
       m_intrinsicPaddingAfter(0) {
-  // We only update the flags when notified of DOM changes in colSpanOrRowSpanChanged()
-  // so we need to set their initial values here in case something asks for colSpan()/rowSpan() before then.
+  // We only update the flags when notified of DOM changes in
+  // colSpanOrRowSpanChanged() so we need to set their initial values here in
+  // case something asks for colSpan()/rowSpan() before then.
   updateColAndRowSpanFlags();
 }
 
@@ -68,15 +70,16 @@ void LayoutTableCell::willBeRemovedFromTree() {
 
   section()->setNeedsCellRecalc();
 
-  // When borders collapse, removing a cell can affect the the width of neighboring cells.
+  // When borders collapse, removing a cell can affect the the width of
+  // neighboring cells.
   LayoutTable* enclosingTable = table();
   DCHECK(enclosingTable);
   if (!enclosingTable->collapseBorders())
     return;
   if (previousCell()) {
     // TODO(dgrogan): Should this be setChildNeedsLayout or setNeedsLayout?
-    // remove-cell-with-border-box.html only passes with setNeedsLayout but other places
-    // use setChildNeedsLayout.
+    // remove-cell-with-border-box.html only passes with setNeedsLayout but
+    // other places use setChildNeedsLayout.
     previousCell()->setNeedsLayout(LayoutInvalidationReason::TableChanged);
     previousCell()->setPreferredLogicalWidthsDirty();
   }
@@ -147,12 +150,14 @@ Length LayoutTableCell::logicalWidthFromColumns(
 
     colWidthSum += colWidth.value();
     tableCol = tableCol->nextColumn();
-    // If no next <col> tag found for the span we just return what we have for now.
+    // If no next <col> tag found for the span we just return what we have for
+    // now.
     if (!tableCol)
       break;
   }
 
-  // Column widths specified on <col> apply to the border box of the cell, see bug 8126.
+  // Column widths specified on <col> apply to the border box of the cell, see
+  // bug 8126.
   // FIXME: Why is border/padding ignored in the negative width case?
   if (colWidthSum > 0)
     return Length(
@@ -162,9 +167,11 @@ Length LayoutTableCell::logicalWidthFromColumns(
 }
 
 void LayoutTableCell::computePreferredLogicalWidths() {
-  // The child cells rely on the grids up in the sections to do their computePreferredLogicalWidths work.  Normally the sections are set up early, as table
-  // cells are added, but relayout can cause the cells to be freed, leaving stale pointers in the sections'
-  // grids.  We must refresh those grids before the child cells try to use them.
+  // The child cells rely on the grids up in the sections to do their
+  // computePreferredLogicalWidths work.  Normally the sections are set up
+  // early, as table cells are added, but relayout can cause the cells to be
+  // freed, leaving stale pointers in the sections' grids. We must refresh those
+  // grids before the child cells try to use them.
   table()->recalcSectionsIfNeeded();
 
   LayoutBlockFlow::computePreferredLogicalWidths();
@@ -173,11 +180,10 @@ void LayoutTableCell::computePreferredLogicalWidths() {
     Length w = styleOrColLogicalWidth();
     const AtomicString& nowrap = toElement(node())->getAttribute(nowrapAttr);
     if (!nowrap.isNull() && w.isFixed()) {
-      // Nowrap is set, but we didn't actually use it because of the
-      // fixed width set on the cell.  Even so, it is a WinIE/Moz trait
-      // to make the minwidth of the cell into the fixed width.  They do this
-      // even in strict mode, so do not make this a quirk.  Affected the top
-      // of hiptop.com.
+      // Nowrap is set, but we didn't actually use it because of the fixed width
+      // set on the cell. Even so, it is a WinIE/Moz trait to make the minwidth
+      // of the cell into the fixed width. They do this even in strict mode, so
+      // do not make this a quirk. Affected the top of hiptop.com.
       m_minPreferredLogicalWidth =
           std::max(LayoutUnit(w.value()), m_minPreferredLogicalWidth);
     }
@@ -190,8 +196,9 @@ void LayoutTableCell::addLayerHitTestRects(
     const LayoutPoint& layerOffset,
     const LayoutRect& containerRect) const {
   LayoutPoint adjustedLayerOffset = layerOffset;
-  // LayoutTableCell's location includes the offset of it's containing LayoutTableRow, so
-  // we need to subtract that again here (as for LayoutTableCell::offsetFromContainer.
+  // LayoutTableCell's location includes the offset of it's containing
+  // LayoutTableRow, so we need to subtract that again here (as for
+  // LayoutTableCell::offsetFromContainer.
   if (parent())
     adjustedLayerOffset -= parentBox()->locationOffset();
   LayoutBox::addLayerHitTestRects(layerRects, currentLayer, adjustedLayerOffset,
@@ -238,8 +245,8 @@ void LayoutTableCell::computeIntrinsicPadding(int rowHeight,
   setIntrinsicPaddingBefore(intrinsicPaddingBefore);
   setIntrinsicPaddingAfter(intrinsicPaddingAfter);
 
-  // FIXME: Changing an intrinsic padding shouldn't trigger a relayout as it only shifts the cell inside the row but
-  // doesn't change the logical height.
+  // FIXME: Changing an intrinsic padding shouldn't trigger a relayout as it
+  // only shifts the cell inside the row but doesn't change the logical height.
   if (intrinsicPaddingBefore != oldIntrinsicPaddingBefore ||
       intrinsicPaddingAfter != oldIntrinsicPaddingAfter)
     layouter.setNeedsLayout(this, LayoutInvalidationReason::PaddingChanged);
@@ -265,10 +272,14 @@ void LayoutTableCell::layout() {
   int oldCellBaseline = cellBaselinePosition();
   layoutBlock(cellWidthChanged());
 
-  // If we have replaced content, the intrinsic height of our content may have changed since the last time we laid out. If that's the case the intrinsic padding we used
-  // for layout (the padding required to push the contents of the cell down to the row's baseline) is included in our new height and baseline and makes both
-  // of them wrong. So if our content's intrinsic height has changed push the new content up into the intrinsic padding and relayout so that the rest of
-  // table and row layout can use the correct baseline and height for this cell.
+  // If we have replaced content, the intrinsic height of our content may have
+  // changed since the last time we laid out. If that's the case the intrinsic
+  // padding we used for layout (the padding required to push the contents of
+  // the cell down to the row's baseline) is included in our new height and
+  // baseline and makes both of them wrong. So if our content's intrinsic height
+  // has changed push the new content up into the intrinsic padding and relayout
+  // so that the rest of table and row layout can use the correct baseline and
+  // height for this cell.
   if (isBaselineAligned() && section()->rowBaseline(rowIndex()) &&
       cellBaselinePosition() > section()->rowBaseline(rowIndex())) {
     int newIntrinsicPaddingBefore =
@@ -294,7 +305,8 @@ LayoutUnit LayoutTableCell::paddingTop() const {
     result += (style()->getWritingMode() == TopToBottomWritingMode
                    ? intrinsicPaddingBefore()
                    : intrinsicPaddingAfter());
-  // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
+  // TODO(leviw): The floor call should be removed when Table is sub-pixel
+  // aware. crbug.com/377847
   return LayoutUnit(result.floor());
 }
 
@@ -304,7 +316,8 @@ LayoutUnit LayoutTableCell::paddingBottom() const {
     result += (style()->getWritingMode() == TopToBottomWritingMode
                    ? intrinsicPaddingAfter()
                    : intrinsicPaddingBefore());
-  // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
+  // TODO(leviw): The floor call should be removed when Table is sub-pixel
+  // aware. crbug.com/377847
   return LayoutUnit(result.floor());
 }
 
@@ -314,7 +327,8 @@ LayoutUnit LayoutTableCell::paddingLeft() const {
     result += (style()->getWritingMode() == LeftToRightWritingMode
                    ? intrinsicPaddingBefore()
                    : intrinsicPaddingAfter());
-  // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
+  // TODO(leviw): The floor call should be removed when Table is sub-pixel
+  // aware. crbug.com/377847
   return LayoutUnit(result.floor());
 }
 
@@ -324,7 +338,8 @@ LayoutUnit LayoutTableCell::paddingRight() const {
     result += (style()->getWritingMode() == LeftToRightWritingMode
                    ? intrinsicPaddingAfter()
                    : intrinsicPaddingBefore());
-  // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
+  // TODO(leviw): The floor call should be removed when Table is sub-pixel
+  // aware. crbug.com/377847
   return LayoutUnit(result.floor());
 }
 
@@ -356,10 +371,11 @@ LayoutSize LayoutTableCell::offsetFromContainer(const LayoutObject* o) const {
 }
 
 LayoutRect LayoutTableCell::localOverflowRectForPaintInvalidation() const {
-  // If the table grid is dirty, we cannot get reliable information about adjoining cells,
-  // so we ignore outside borders. This should not be a problem because it means that
-  // the table is going to recalculate the grid, relayout and issue a paint invalidation of its current rect, which
-  // includes any outside borders of this cell.
+  // If the table grid is dirty, we cannot get reliable information about
+  // adjoining cells, so we ignore outside borders. This should not be a problem
+  // because it means that the table is going to recalculate the grid, relayout
+  // and issue a paint invalidation of its current rect, which includes any
+  // outside borders of this cell.
   if (!table()->collapseBorders() || table()->needsSectionRecalc())
     return LayoutBlockFlow::localOverflowRectForPaintInvalidation();
 
@@ -405,9 +421,11 @@ LayoutRect LayoutTableCell::localOverflowRectForPaintInvalidation() const {
 }
 
 int LayoutTableCell::cellBaselinePosition() const {
-  // <http://www.w3.org/TR/2007/CR-CSS21-20070719/tables.html#height-layout>: The baseline of a cell is the baseline of
-  // the first in-flow line box in the cell, or the first in-flow table-row in the cell, whichever comes first. If there
-  // is no such line box or table-row, the baseline is the bottom of content edge of the cell box.
+  // <http://www.w3.org/TR/2007/CR-CSS21-20070719/tables.html#height-layout>:
+  // The baseline of a cell is the baseline of the first in-flow line box in the
+  // cell, or the first in-flow table-row in the cell, whichever comes first. If
+  // there is no such line box or table-row, the baseline is the bottom of
+  // content edge of the cell box.
   int firstLineBaseline = firstLineBoxBaseline();
   if (firstLineBaseline != -1)
     return firstLineBaseline;
@@ -425,8 +443,10 @@ void LayoutTableCell::styleDidChange(StyleDifference diff,
       style()->height() != oldStyle->height())
     section()->rowLogicalHeightChanged(row());
 
-  // Our intrinsic padding pushes us down to align with the baseline of other cells on the row. If our vertical-align
-  // has changed then so will the padding needed to align with other cells - clear it so we can recalculate it from scratch.
+  // Our intrinsic padding pushes us down to align with the baseline of other
+  // cells on the row. If our vertical-align has changed then so will the
+  // padding needed to align with other cells - clear it so we can recalculate
+  // it from scratch.
   if (oldStyle && style()->verticalAlign() != oldStyle->verticalAlign())
     clearIntrinsicPadding();
 
@@ -443,31 +463,38 @@ void LayoutTableCell::styleDidChange(StyleDifference diff,
   if (LayoutTableBoxComponent::doCellsHaveDirtyWidth(*this, *table, diff,
                                                      *oldStyle)) {
     if (previousCell()) {
-      // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is needed instead of setNeedsLayout.
+      // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is
+      // needed instead of setNeedsLayout.
       previousCell()->setChildNeedsLayout();
       previousCell()->setPreferredLogicalWidthsDirty(MarkOnlyThis);
     }
     if (nextCell()) {
-      // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is needed instead of setNeedsLayout.
+      // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is
+      // needed instead of setNeedsLayout.
       nextCell()->setChildNeedsLayout();
       nextCell()->setPreferredLogicalWidthsDirty(MarkOnlyThis);
     }
   }
 }
 
-// The following rules apply for resolving conflicts and figuring out which border
-// to use.
-// (1) Borders with the 'border-style' of 'hidden' take precedence over all other conflicting
-// borders. Any border with this value suppresses all borders at this location.
-// (2) Borders with a style of 'none' have the lowest priority. Only if the border properties of all
-// the elements meeting at this edge are 'none' will the border be omitted (but note that 'none' is
-// the default value for the border style.)
-// (3) If none of the styles are 'hidden' and at least one of them is not 'none', then narrow borders
-// are discarded in favor of wider ones. If several have the same 'border-width' then styles are preferred
-// in this order: 'double', 'solid', 'dashed', 'dotted', 'ridge', 'outset', 'groove', and the lowest: 'inset'.
-// (4) If border styles differ only in color, then a style set on a cell wins over one on a row,
-// which wins over a row group, column, column group and, lastly, table. It is undefined which color
-// is used when two elements of the same type disagree.
+// The following rules apply for resolving conflicts and figuring out which
+// border to use.
+// (1) Borders with the 'border-style' of 'hidden' take precedence over all
+//     other conflicting borders. Any border with this value suppresses all
+//     borders at this location.
+// (2) Borders with a style of 'none' have the lowest priority. Only if the
+//     border properties of all the elements meeting at this edge are 'none'
+//     will the border be omitted (but note that 'none' is the default value for
+//     the border style.)
+// (3) If none of the styles are 'hidden' and at least one of them is not
+//     'none', then narrow borders are discarded in favor of wider ones. If
+//      several have the same 'border-width' then styles are preferred in this
+//      order: 'double', 'solid', 'dashed', 'dotted', 'ridge', 'outset',
+//     'groove', and the lowest: 'inset'.
+// (4) If border styles differ only in color, then a style set on a cell wins
+//     over one on a row, which wins over a row group, column, column group and,
+//     lastly, table. It is undefined which color is used when two elements of
+//     the same type disagree.
 static bool compareBorders(const CollapsedBorderValue& border1,
                            const CollapsedBorderValue& border2) {
   // Sanity check the values passed in. The null border have lowest priority.
@@ -482,7 +509,8 @@ static bool compareBorders(const CollapsedBorderValue& border1,
   if (border2.style() == BorderStyleHidden)
     return true;
 
-  // Rule #2 above.  A style of 'none' has lowest priority and always loses to any other border.
+  // Rule #2 above.  A style of 'none' has lowest priority and always loses to
+  // any other border.
   if (border2.style() == BorderStyleNone)
     return false;
   if (border1.style() == BorderStyleNone)
@@ -496,7 +524,8 @@ static bool compareBorders(const CollapsedBorderValue& border1,
   if (border1.style() != border2.style())
     return border1.style() < border2.style();
 
-  // The border have the same width and style.  Rely on precedence (cell over row over row group, etc.)
+  // The border have the same width and style.  Rely on precedence (cell over
+  // row over row group, etc.)
   return border1.precedence() < border2.precedence();
 }
 
@@ -512,8 +541,9 @@ bool LayoutTableCell::hasStartBorderAdjoiningTable() const {
                      table()->numEffectiveColumns() - 1;
   bool hasSameDirectionAsTable = hasSameDirectionAs(table());
 
-  // The table direction determines the row direction. In mixed directionality, we cannot guarantee that
-  // we have a common border with the table (think a ltr table with rtl start cell).
+  // The table direction determines the row direction. In mixed directionality,
+  // we cannot guarantee that we have a common border with the table (think a
+  // ltr table with rtl start cell).
   return (isStartColumn && hasSameDirectionAsTable) ||
          (isEndColumn && !hasSameDirectionAsTable);
 }
@@ -525,8 +555,9 @@ bool LayoutTableCell::hasEndBorderAdjoiningTable() const {
                      table()->numEffectiveColumns() - 1;
   bool hasSameDirectionAsTable = hasSameDirectionAs(table());
 
-  // The table direction determines the row direction. In mixed directionality, we cannot guarantee that
-  // we have a common border with the table (think a ltr table with ltr end cell).
+  // The table direction determines the row direction. In mixed directionality,
+  // we cannot guarantee that we have a common border with the table (think a
+  // ltr table with ltr end cell).
   return (isStartColumn && !hasSameDirectionAsTable) ||
          (isEndColumn && hasSameDirectionAsTable);
 }
@@ -561,7 +592,8 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(
         cellBefore->borderAdjoiningCellAfter(this),
         includeColor ? cellBefore->resolveColor(endColorProperty) : Color(),
         BorderPrecedenceCell);
-    // |result| should be the 2nd argument as |cellBefore| should win in case of equality per CSS 2.1 (Border conflict resolution, point 4).
+    // |result| should be the 2nd argument as |cellBefore| should win in case of
+    // equality per CSS 2.1 (Border conflict resolution, point 4).
     result = chooseBorder(cellBeforeAdjoiningBorder, result);
     if (!result.exists())
       return result;
@@ -607,9 +639,10 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(
       return result;
   }
   if (colAndColGroup.col) {
-    // Always apply the col's border irrespective of whether this cell touches it. This is per HTML5:
-    // "For the purposes of the CSS table model, the col element is expected to be treated as if it
-    // "was present as many times as its span attribute specifies".
+    // Always apply the col's border irrespective of whether this cell touches
+    // it. This is per HTML5: "For the purposes of the CSS table model, the col
+    // element is expected to be treated as if it "was present as many times as
+    // its span attribute specifies".
     result = chooseBorder(
         result,
         CollapsedBorderValue(
@@ -638,9 +671,10 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(
       if (!result.exists())
         return result;
     }
-    // Always apply the col's border irrespective of whether this cell touches it. This is per HTML5:
-    // "For the purposes of the CSS table model, the col element is expected to be treated as if it
-    // "was present as many times as its span attribute specifies".
+    // Always apply the col's border irrespective of whether this cell touches
+    // it. This is per HTML5: "For the purposes of the CSS table model, the col
+    // element is expected to be treated as if it "was present as many times as
+    // its span attribute specifies".
     if (colAndColGroup.col) {
       result = chooseBorder(
           CollapsedBorderValue(
@@ -672,8 +706,9 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(
 CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(
     IncludeBorderColorOrNot includeColor) const {
   LayoutTable* table = this->table();
-  // Note: We have to use the effective column information instead of whether we have a cell after as a table doesn't
-  // have to be regular (any row can have less cells than the total cell count).
+  // Note: We have to use the effective column information instead of whether we
+  // have a cell after as a table doesn't have to be regular (any row can have
+  // less cells than the total cell count).
   bool isEndColumn = table->absoluteColumnToEffectiveColumn(
                          absoluteColumnIndex() + colSpan() - 1) ==
                      table->numEffectiveColumns() - 1;
@@ -750,9 +785,10 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(
       return result;
   }
   if (colAndColGroup.col) {
-    // Always apply the col's border irrespective of whether this cell touches it. This is per HTML5:
-    // "For the purposes of the CSS table model, the col element is expected to be treated as if it
-    // "was present as many times as its span attribute specifies".
+    // Always apply the col's border irrespective of whether this cell touches
+    // it. This is per HTML5: "For the purposes of the CSS table model, the col
+    // element is expected to be treated as if it "was present as many times as
+    // its span attribute specifies".
     result = chooseBorder(
         result,
         CollapsedBorderValue(
@@ -770,7 +806,8 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(
         table->colElementAtAbsoluteColumn(absoluteColumnIndex() + colSpan());
     if (colAndColGroup.colgroup &&
         colAndColGroup.adjoinsStartBorderOfColGroup) {
-      // Only apply the colgroup's border if this cell touches the colgroup edge.
+      // Only apply the colgroup's border if this cell touches the colgroup
+      // edge.
       result = chooseBorder(
           result,
           CollapsedBorderValue(
@@ -783,9 +820,10 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(
         return result;
     }
     if (colAndColGroup.col) {
-      // Always apply the col's border irrespective of whether this cell touches it. This is per HTML5:
-      // "For the purposes of the CSS table model, the col element is expected to be treated as if it
-      // "was present as many times as its span attribute specifies".
+      // Always apply the col's border irrespective of whether this cell touches
+      // it. This is per HTML5: "For the purposes of the CSS table model, the
+      // col element is expected to be treated as if it "was present as many
+      // times as its span attribute specifies".
       result = chooseBorder(
           result, CollapsedBorderValue(
                       colAndColGroup.col->borderAdjoiningCellBefore(this),
@@ -1102,8 +1140,9 @@ int LayoutTableCell::borderBottom() const {
                                     : LayoutBlockFlow::borderBottom();
 }
 
-// FIXME: https://bugs.webkit.org/show_bug.cgi?id=46191, make the collapsed border drawing
-// work with different block flow values instead of being hard-coded to top-to-bottom.
+// FIXME: https://bugs.webkit.org/show_bug.cgi?id=46191, make the collapsed
+// border drawing work with different block flow values instead of being
+// hard-coded to top-to-bottom.
 int LayoutTableCell::borderStart() const {
   return table()->collapseBorders() ? borderHalfStart(false)
                                     : LayoutBlockFlow::borderStart();
@@ -1238,8 +1277,8 @@ void LayoutTableCell::collectBorderValues(
     changed = true;
     m_collapsedBorderValues = wrapUnique(new CollapsedBorderValues(newValues));
   } else {
-    // We check visuallyEquals so that the table cell is invalidated only if a changed
-    // collapsed border is visible in the first place.
+    // We check visuallyEquals so that the table cell is invalidated only if a
+    // changed collapsed border is visible in the first place.
     changed = !m_collapsedBorderValues->startBorder.visuallyEquals(
                   newValues.startBorder) ||
               !m_collapsedBorderValues->endBorder.visuallyEquals(
@@ -1252,8 +1291,10 @@ void LayoutTableCell::collectBorderValues(
       *m_collapsedBorderValues = newValues;
   }
 
-  // If collapsed borders changed, invalidate the cell's display item client on the table's backing.
-  // TODO(crbug.com/451090#c5): Need a way to invalidate/repaint the borders only.
+  // If collapsed borders changed, invalidate the cell's display item client on
+  // the table's backing.
+  // TODO(crbug.com/451090#c5): Need a way to invalidate/repaint the borders
+  // only.
   if (changed)
     ObjectPaintInvalidator(*table())
         .slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
@@ -1292,15 +1333,18 @@ void LayoutTableCell::scrollbarsChanged(bool horizontalScrollbarChanged,
   LayoutBlock::scrollbarsChanged(horizontalScrollbarChanged,
                                  verticalScrollbarChanged);
   int scrollbarHeight = scrollbarLogicalHeight();
+  // Not sure if we should be doing something when a scrollbar goes away or not.
   if (!scrollbarHeight)
-    return;  // Not sure if we should be doing something when a scrollbar goes away or not.
+    return;
 
-  // We only care if the scrollbar that affects our intrinsic padding has been added.
+  // We only care if the scrollbar that affects our intrinsic padding has been
+  // added.
   if ((isHorizontalWritingMode() && !horizontalScrollbarChanged) ||
       (!isHorizontalWritingMode() && !verticalScrollbarChanged))
     return;
 
-  // Shrink our intrinsic padding as much as possible to accommodate the scrollbar.
+  // Shrink our intrinsic padding as much as possible to accommodate the
+  // scrollbar.
   if (style()->verticalAlign() == VerticalAlignMiddle) {
     LayoutUnit totalHeight = logicalHeight();
     LayoutUnit heightWithoutIntrinsicPadding =
@@ -1336,8 +1380,9 @@ LayoutTableCell* LayoutTableCell::createAnonymousWithParent(
 
 bool LayoutTableCell::backgroundIsKnownToBeOpaqueInRect(
     const LayoutRect& localRect) const {
-  // If this object has layer, the area of collapsed borders should be transparent
-  // to expose the collapsed borders painted on the underlying layer.
+  // If this object has layer, the area of collapsed borders should be
+  // transparent to expose the collapsed borders painted on the underlying
+  // layer.
   if (hasLayer() && table()->collapseBorders())
     return false;
   return LayoutBlockFlow::backgroundIsKnownToBeOpaqueInRect(localRect);
@@ -1345,8 +1390,8 @@ bool LayoutTableCell::backgroundIsKnownToBeOpaqueInRect(
 
 // TODO(lunalu): Deliberately dump the "inner" box of table cells, since that
 // is what current results reflect.  We'd like to clean up the results to dump
-// both the outer box and the intrinsic padding so that both bits of
-// information are captured by the results.
+// both the outer box and the intrinsic padding so that both bits of information
+// are captured by the results.
 LayoutRect LayoutTableCell::debugRect() const {
   LayoutRect rect = LayoutRect(
       location().x(), location().y() + intrinsicPaddingBefore(), size().width(),

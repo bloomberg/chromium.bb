@@ -29,7 +29,8 @@
 
 namespace blink {
 
-// LayoutObject for frames via LayoutFrame and LayoutIFrame, and plugins via LayoutEmbeddedObject.
+// LayoutObject for frames via LayoutFrame and LayoutIFrame, and plugins via
+// LayoutEmbeddedObject.
 class CORE_EXPORT LayoutPart : public LayoutReplaced {
  public:
   explicit LayoutPart(Element*);

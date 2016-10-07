@@ -70,15 +70,15 @@ void LayoutPart::willBeDestroyed() {
 
 void LayoutPart::destroy() {
   willBeDestroyed();
-  // We call clearNode here because LayoutPart is ref counted. This call to destroy
-  // may not actually destroy the layout object. We can keep it around because of
-  // references from the FrameView class. (The actual destruction of the class happens
-  // in postDestroy() which is called from deref()).
+  // We call clearNode here because LayoutPart is ref counted. This call to
+  // destroy may not actually destroy the layout object. We can keep it around
+  // because of references from the FrameView class. (The actual destruction of
+  // the class happens in postDestroy() which is called from deref()).
   //
-  // But, we've told the system we've destroyed the layoutObject, which happens when
-  // the DOM node is destroyed. So there is a good change the DOM node this object
-  // points too is invalid, so we have to clear the node so we make sure we don't
-  // access it in the future.
+  // But, we've told the system we've destroyed the layoutObject, which happens
+  // when the DOM node is destroyed. So there is a good change the DOM node this
+  // object points too is invalid, so we have to clear the node so we make sure
+  // we don't access it in the future.
   clearNode();
   deref();
 }
@@ -105,10 +105,10 @@ PaintLayerType LayoutPart::layerTypeRequired() const {
 }
 
 bool LayoutPart::requiresAcceleratedCompositing() const {
-  // There are two general cases in which we can return true. First, if this is a plugin
-  // LayoutObject and the plugin has a layer, then we need a layer. Second, if this is
-  // a LayoutObject with a contentDocument and that document needs a layer, then we need
-  // a layer.
+  // There are two general cases in which we can return true. First, if this is
+  // a plugin LayoutObject and the plugin has a layer, then we need a layer.
+  // Second, if this is a LayoutObject with a contentDocument and that document
+  // needs a layer, then we need a layer.
   if (widget() && widget()->isPluginView() &&
       toPluginView(widget())->platformLayer())
     return true;
@@ -144,7 +144,8 @@ bool LayoutPart::nodeAtPointOverWidget(
   bool inside = LayoutReplaced::nodeAtPoint(result, locationInContainer,
                                             accumulatedOffset, action);
 
-  // Check to see if we are really over the widget itself (and not just in the border/padding area).
+  // Check to see if we are really over the widget itself (and not just in the
+  // border/padding area).
   if ((inside || result.isRectBasedTest()) && !hadResult &&
       result.innerNode() == node())
     result.setIsOverWidget(contentBoxRect().contains(result.localPoint()));
@@ -160,8 +161,8 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result,
     return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset,
                                  action);
 
-  // A hit test can never hit an off-screen element; only off-screen iframes are throttled;
-  // therefore, hit tests can skip descending into throttled iframes.
+  // A hit test can never hit an off-screen element; only off-screen iframes are
+  // throttled; therefore, hit tests can skip descending into throttled iframes.
   if (toFrameView(widget())->shouldThrottleRendering())
     return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset,
                                  action);
@@ -191,9 +192,9 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result,
       if (result.hitTestRequest().listBased()) {
         result.append(childFrameResult);
       } else if (isInsideChildFrame) {
-        // Force the result not to be cacheable because the parent
-        // frame should not cache this result; as it won't be notified of
-        // changes in the child.
+        // Force the result not to be cacheable because the parent frame should
+        // not cache this result; as it won't be notified of changes in the
+        // child.
         childFrameResult.setCacheable(false);
         result = childFrameResult;
       }
@@ -202,7 +203,8 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result,
       // true only when the hit test rect is totally within the iframe,
       // i.e. nodeAtPointOverWidget() also returns true.
       // Use a temporary HitTestResult because we don't want to collect the
-      // iframe element itself if the hit-test rect is totally within the iframe.
+      // iframe element itself if the hit-test rect is totally within the
+      // iframe.
       if (isInsideChildFrame) {
         if (!locationInContainer.isRectBasedTest())
           return true;
@@ -266,17 +268,18 @@ void LayoutPart::paintContents(const PaintInfo& paintInfo,
 CursorDirective LayoutPart::getCursor(const LayoutPoint& point,
                                       Cursor& cursor) const {
   if (widget() && widget()->isPluginView()) {
-    // A plugin is responsible for setting the cursor when the pointer is over it.
+    // A plugin is responsible for setting the cursor when the pointer is over
+    // it.
     return DoNotSetCursor;
   }
   return LayoutReplaced::getCursor(point, cursor);
 }
 
 LayoutRect LayoutPart::replacedContentRect() const {
-  // We don't propagate sub-pixel into sub-frame layout, in other words, the rect is snapped
-  // at the document boundary, and sub-pixel movement could cause the sub-frame to layout
-  // due to the 1px snap difference. In order to avoid that, the size of sub-frame is rounded
-  // in advance.
+  // We don't propagate sub-pixel into sub-frame layout, in other words, the
+  // rect is snapped at the document boundary, and sub-pixel movement could
+  // cause the sub-frame to layout due to the 1px snap difference. In order to
+  // avoid that, the size of sub-frame is rounded in advance.
   LayoutRect sizeRoundedRect = contentBoxRect();
   sizeRoundedRect.setSize(LayoutSize(roundedIntSize(sizeRoundedRect.size())));
   return sizeRoundedRect;
@@ -297,7 +300,8 @@ void LayoutPart::updateOnWidgetChange() {
     widget->hide();
   } else {
     widget->show();
-    // FIXME: Why do we issue a full paint invalidation in this case, but not the other?
+    // FIXME: Why do we issue a full paint invalidation in this case, but not
+    // the other?
     setShouldDoFullPaintInvalidation();
   }
 }
@@ -338,17 +342,20 @@ void LayoutPart::updateWidgetGeometryInternal() {
   ASSERT(widget);
 
   // Ignore transform here, as we only care about the sub-pixel accumulation.
-  // TODO(trchen): What about multicol? Need a LayoutBox function to query sub-pixel accumulation.
+  // TODO(trchen): What about multicol? Need a LayoutBox function to query
+  // sub-pixel accumulation.
   LayoutPoint absoluteLocation(localToAbsolute(FloatPoint()));
   LayoutRect absoluteReplacedRect = replacedContentRect();
   absoluteReplacedRect.moveBy(absoluteLocation);
 
   IntRect frameRect(IntPoint(),
                     pixelSnappedIntRect(absoluteReplacedRect).size());
-  // Normally the location of the frame rect is ignored by the painter, but currently it is
-  // still used by a family of coordinate conversion function in Widget/FrameView. This is
-  // incorrect because coordinate conversion needs to take transform and into account.
-  // A few callers still use the family of conversion function, including but not exhaustive:
+  // Normally the location of the frame rect is ignored by the painter, but
+  // currently it is still used by a family of coordinate conversion function in
+  // Widget/FrameView. This is incorrect because coordinate conversion needs to
+  // take transform and into account.
+  // A few callers still use the family of conversion function, including but
+  // not exhaustive:
   // FrameView::updateViewportIntersectionIfNeeded()
   // RemoteFrameView::frameRectsChanged().
   // WebPluginContainerImpl::reportGeometry()

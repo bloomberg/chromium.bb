@@ -55,8 +55,9 @@ void LayoutTableCol::styleDidChange(StyleDifference diff,
   if (!table)
     return;
 
-  // TODO(dgrogan): Is the "else" necessary for correctness or just a brittle optimization? The optimization would be:
-  // if the first branch is taken then the next one can't be, so don't even check its condition.
+  // TODO(dgrogan): Is the "else" necessary for correctness or just a brittle
+  // optimization? The optimization would be: if the first branch is taken then
+  // the next one can't be, so don't even check its condition.
   if (!table->selfNeedsLayout() && !table->normalChildNeedsLayout() &&
       oldStyle->border() != style()->border()) {
     table->invalidateCollapsedBorders();
@@ -64,9 +65,11 @@ void LayoutTableCol::styleDidChange(StyleDifference diff,
              LayoutTableBoxComponent::doCellsHaveDirtyWidth(*this, *table, diff,
                                                             *oldStyle)) {
     // TODO(dgrogan): Optimization opportunities:
-    // (1) Only mark cells which are affected by this col, not every cell in the table.
-    // (2) If only the col width changes and its border width doesn't, do the cells need to be marked as
-    //     needing layout or just given dirty widths?
+    // (1) Only mark cells which are affected by this col, not every cell in the
+    //     table.
+    // (2) If only the col width changes and its border width doesn't, do the
+    //     cells need to be marked as needing layout or just given dirty
+    //     widths?
     table->markAllCellsWidthsDirtyAndOrNeedsLayout(
         LayoutTable::MarkDirtyAndNeedsLayout);
   }
@@ -110,8 +113,7 @@ bool LayoutTableCol::canHaveChildren() const {
 
 LayoutRect LayoutTableCol::localOverflowRectForPaintInvalidation() const {
   // Entire table gets invalidated, instead of invalidating
-  // every cell in the column.
-  // This is simpler, but suboptimal.
+  // every cell in the column. This is simpler, but suboptimal.
 
   LayoutTable* table = this->table();
   if (!table)
@@ -149,14 +151,16 @@ LayoutTableCol* LayoutTableCol::enclosingColumnGroup() const {
 }
 
 LayoutTableCol* LayoutTableCol::nextColumn() const {
-  // If |this| is a column-group, the next column is the colgroup's first child column.
+  // If |this| is a column-group, the next column is the colgroup's first child
+  // column.
   if (LayoutObject* firstChild = this->firstChild())
     return toLayoutTableCol(firstChild);
 
   // Otherwise it's the next column along.
   LayoutObject* next = nextSibling();
 
-  // Failing that, the child is the last column in a column-group, so the next column is the next column/column-group after its column-group.
+  // Failing that, the child is the last column in a column-group, so the next
+  // column is the next column/column-group after its column-group.
   if (!next && parent()->isLayoutTableCol())
     next = parent()->nextSibling();
 

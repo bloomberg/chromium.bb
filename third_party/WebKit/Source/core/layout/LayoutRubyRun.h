@@ -39,7 +39,8 @@ namespace blink {
 class LayoutRubyBase;
 class LayoutRubyText;
 
-// LayoutRubyRun are 'inline-block/table' like objects,and wrap a single pairing of a ruby base with its ruby text(s).
+// LayoutRubyRun are 'inline-block/table' like objects,and wrap a single pairing
+// of a ruby base with its ruby text(s).
 // See LayoutRuby.h for further comments on the structure
 
 class LayoutRubyRun final : public LayoutBlockFlow {

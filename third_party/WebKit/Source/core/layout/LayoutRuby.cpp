@@ -88,8 +88,8 @@ void LayoutRubyAsInline::addChild(LayoutObject* child,
                            // Emergency fallback: fall through and just append.
   }
 
-  // If the new child would be appended, try to add the child to the previous run
-  // if possible, or create a new run otherwise.
+  // If the new child would be appended, try to add the child to the previous
+  // run if possible, or create a new run otherwise.
   // (The LayoutRubyRun object will handle the details)
   LayoutRubyRun* lastRun = lastRubyRun(this);
   if (!lastRun || lastRun->hasRubyText()) {
@@ -100,7 +100,8 @@ void LayoutRubyAsInline::addChild(LayoutObject* child,
 }
 
 void LayoutRubyAsInline::removeChild(LayoutObject* child) {
-  // If the child's parent is *this (must be a ruby run), just use the normal remove method.
+  // If the child's parent is *this (must be a ruby run), just use the normal
+  // remove method.
   if (child->parent() == this) {
     ASSERT(child->isRubyRun());
     LayoutInline::removeChild(child);
@@ -152,8 +153,8 @@ void LayoutRubyAsBlock::addChild(LayoutObject* child,
                            // Emergency fallback: fall through and just append.
   }
 
-  // If the new child would be appended, try to add the child to the previous run
-  // if possible, or create a new run otherwise.
+  // If the new child would be appended, try to add the child to the previous
+  // run if possible, or create a new run otherwise.
   // (The LayoutRubyRun object will handle the details)
   LayoutRubyRun* lastRun = lastRubyRun(this);
   if (!lastRun || lastRun->hasRubyText()) {
@@ -164,7 +165,8 @@ void LayoutRubyAsBlock::addChild(LayoutObject* child,
 }
 
 void LayoutRubyAsBlock::removeChild(LayoutObject* child) {
-  // If the child's parent is *this (must be a ruby run), just use the normal remove method.
+  // If the child's parent is *this (must be a ruby run), just use the normal
+  // remove method.
   if (child->parent() == this) {
     ASSERT(child->isRubyRun());
     LayoutBlockFlow::removeChild(child);

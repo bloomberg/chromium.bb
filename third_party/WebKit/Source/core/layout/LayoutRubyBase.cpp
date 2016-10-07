@@ -110,7 +110,8 @@ void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase,
   if (toBase->childrenInline())
     toBase->makeChildrenNonInline();
 
-  // If an anonymous block would be put next to another such block, then merge those.
+  // If an anonymous block would be put next to another such block, then merge
+  // those.
   LayoutObject* firstChildHere = firstChild();
   LayoutObject* lastChildThere = toBase->lastChild();
   if (firstChildHere->isAnonymousBlock() && firstChildHere->childrenInline() &&

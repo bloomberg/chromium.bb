@@ -30,16 +30,15 @@ bool LayoutPagedFlowThread::needsNewWidth() const {
 }
 
 void LayoutPagedFlowThread::updateLogicalWidth() {
-  // As long as we inherit from LayoutMultiColumnFlowThread, we need to bypass its implementation
-  // here. We're not split into columns, so the flow thread width will just be whatever is
-  // available in the containing block.
+  // As long as we inherit from LayoutMultiColumnFlowThread, we need to bypass
+  // its implementation here. We're not split into columns, so the flow thread
+  // width will just be whatever is available in the containing block.
   LayoutFlowThread::updateLogicalWidth();
 }
 
 void LayoutPagedFlowThread::layout() {
-  ASSERT(
-      firstMultiColumnBox() ==
-      lastMultiColumnBox());  // There should either be zero or one of those for paged layout.
+  // There should either be zero or one of those for paged layout.
+  DCHECK(firstMultiColumnBox() == lastMultiColumnBox());
   setProgressionIsInline(pagedBlockFlow()->style()->hasInlinePaginationAxis());
   LayoutMultiColumnFlowThread::layout();
 
@@ -49,9 +48,10 @@ void LayoutPagedFlowThread::layout() {
   LayoutUnit pageLogicalHeight =
       columnSet->pageLogicalHeightForOffset(LayoutUnit());
   if (!pageLogicalHeight)
-    return;  // Page height not calculated yet. Happens in the first layout pass when height is auto.
-  // Ensure uniform page height. We don't want the last page to be shorter than the others,
-  // or it'll be impossible to scroll that whole page into view.
+    return;  // Page height not calculated yet. Happens in the first layout pass
+             // when height is auto.
+  // Ensure uniform page height. We don't want the last page to be shorter than
+  // the others, or it'll be impossible to scroll that whole page into view.
   LayoutUnit paddedLogicalBottomInFlowThread = pageLogicalHeight * pageCount();
   ASSERT(paddedLogicalBottomInFlowThread >=
          columnSet->logicalBottomInFlowThread());

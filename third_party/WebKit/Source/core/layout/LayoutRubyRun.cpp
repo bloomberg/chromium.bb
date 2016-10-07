@@ -45,20 +45,22 @@ LayoutRubyRun::~LayoutRubyRun() {}
 
 bool LayoutRubyRun::hasRubyText() const {
   // The only place where a ruby text can be is in the first position
-  // Note: As anonymous blocks, ruby runs do not have ':before' or ':after' content themselves.
+  // Note: As anonymous blocks, ruby runs do not have ':before' or ':after'
+  // content themselves.
   return firstChild() && firstChild()->isRubyText();
 }
 
 bool LayoutRubyRun::hasRubyBase() const {
   // The only place where a ruby base can be is in the last position
-  // Note: As anonymous blocks, ruby runs do not have ':before' or ':after' content themselves.
+  // Note: As anonymous blocks, ruby runs do not have ':before' or ':after'
+  // content themselves.
   return lastChild() && lastChild()->isRubyBase();
 }
 
 LayoutRubyText* LayoutRubyRun::rubyText() const {
   LayoutObject* child = firstChild();
-  // If in future it becomes necessary to support floating or positioned ruby text,
-  // layout will have to be changed to handle them properly.
+  // If in future it becomes necessary to support floating or positioned ruby
+  // text, layout will have to be changed to handle them properly.
   ASSERT(!child || !child->isRubyText() ||
          !child->isFloatingOrOutOfFlowPositioned());
   return child && child->isRubyText() ? static_cast<LayoutRubyText*>(child) : 0;
@@ -110,7 +112,8 @@ void LayoutRubyRun::addChild(LayoutObject* child, LayoutObject* beforeChild) {
       newRun->addChild(beforeChild);
     } else if (hasRubyBase()) {
       // Insertion before a ruby base object.
-      // In this case we need insert a new run before the current one and split the base.
+      // In this case we need insert a new run before the current one and split
+      // the base.
       LayoutObject* ruby = parent();
       LayoutRubyRun* newRun = staticCreateRubyRun(ruby);
       ruby->addChild(newRun, this);
@@ -219,7 +222,8 @@ void LayoutRubyRun::layout() {
 
   rt->setLogicalLeft(LayoutUnit());
 
-  // Place the LayoutRubyText such that its bottom is flush with the lineTop of the first line of the LayoutRubyBase.
+  // Place the LayoutRubyText such that its bottom is flush with the lineTop of
+  // the first line of the LayoutRubyBase.
   LayoutUnit lastLineRubyTextBottom = rt->logicalHeight();
   LayoutUnit firstLineRubyTextTop;
   RootInlineBox* rootBox = rt->lastRootBox();
@@ -303,8 +307,8 @@ void LayoutRubyRun::getOverhang(bool firstLine,
     endOverhang = 0;
 
   // We overhang a ruby only if the neighboring layout object is a text.
-  // We can overhang the ruby by no more than half the width of the neighboring text
-  // and no more than half the font size.
+  // We can overhang the ruby by no more than half the width of the neighboring
+  // text and no more than half the font size.
   int halfWidthOfFontSize = rubyText->style(firstLine)->fontSize() / 2;
   if (startOverhang)
     startOverhang = std::min<int>(
@@ -331,7 +335,8 @@ bool LayoutRubyRun::canBreakBefore(
       static_cast<ULineBreak>(u_getIntPropertyValue(ch, UCHAR_LINE_BREAK));
   // UNICODE LINE BREAKING ALGORITHM
   // http://www.unicode.org/reports/tr14/
-  // And Requirements for Japanese Text Layout, 3.1.7 Characters Not Starting a Line
+  // And Requirements for Japanese Text Layout, 3.1.7 Characters Not Starting a
+  // Line
   // http://www.w3.org/TR/2012/NOTE-jlreq-20120403/#characters_not_starting_a_line
   switch (lineBreak) {
     case U_LB_WORD_JOINER:

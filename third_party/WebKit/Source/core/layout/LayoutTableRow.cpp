@@ -4,7 +4,8 @@
  *           (C) 1998 Waldo Bastian (bastian@kde.org)
  *           (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2013 zApple Inc.
+ *               All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -75,14 +76,16 @@ void LayoutTableRow::styleDidChange(StyleDifference diff,
 
   if (LayoutTableBoxComponent::doCellsHaveDirtyWidth(*this, *table, diff,
                                                      *oldStyle)) {
-    // If the border width changes on a row, we need to make sure the cells in the row know to lay out again.
-    // This only happens when borders are collapsed, since they end up affecting the border sides of the cell
-    // itself.
+    // If the border width changes on a row, we need to make sure the cells in
+    // the row know to lay out again.
+    // This only happens when borders are collapsed, since they end up affecting
+    // the border sides of the cell itself.
     for (LayoutBox* childBox = firstChildBox(); childBox;
          childBox = childBox->nextSiblingBox()) {
       if (!childBox->isTableCell())
         continue;
-      // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is needed instead of setNeedsLayout.
+      // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is
+      // needed instead of setNeedsLayout.
       childBox->setChildNeedsLayout();
       childBox->setPreferredLogicalWidthsDirty(MarkOnlyThis);
     }
@@ -101,7 +104,8 @@ const BorderValue& LayoutTableRow::borderAdjoiningStartCell(
 #if DCHECK_IS_ON()
   DCHECK(cell->isFirstOrLastCellInRow());
 #endif
-  // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at the cell level.
+  // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at
+  // the cell level.
   return style()->borderStart();
 }
 
@@ -110,7 +114,8 @@ const BorderValue& LayoutTableRow::borderAdjoiningEndCell(
 #if DCHECK_IS_ON()
   DCHECK(cell->isFirstOrLastCellInRow());
 #endif
-  // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at the cell level.
+  // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at
+  // the cell level.
   return style()->borderEnd();
 }
 
@@ -159,10 +164,12 @@ void LayoutTableRow::addChild(LayoutObject* child, LayoutObject* beforeChild) {
   ASSERT(!beforeChild || beforeChild->isTableCell());
   LayoutTableBoxComponent::addChild(cell, beforeChild);
 
-  // Generated content can result in us having a null section so make sure to null check our parent.
+  // Generated content can result in us having a null section so make sure to
+  // null check our parent.
   if (parent()) {
     section()->addCell(cell, this);
-    // When borders collapse, adding a cell can affect the the width of neighboring cells.
+    // When borders collapse, adding a cell can affect the the width of
+    // neighboring cells.
     LayoutTable* enclosingTable = table();
     if (enclosingTable && enclosingTable->collapseBorders()) {
       if (LayoutTableCell* previousCell = cell->previousCell())
@@ -191,11 +198,13 @@ void LayoutTableRow::layout() {
       markChildForPaginationRelayoutIfNeeded(*cell, layouter);
     if (cell->needsLayout())
       cell->layout();
-    // We're laying out each cell here to establish its raw logical height so it can be used to
-    // figure out the row's height and baseline later on in layoutRows(). As part of that we
-    // will layout the cell again if we're in a paginated context and come up with the
-    // correct strut. Any strut we come up with here will depend on the old paged layout and will
-    // give the cell an invalid height that is not useful for figuring out the raw height of the row.
+    // We're laying out each cell here to establish its raw logical height so it
+    // can be used to figure out the row's height and baseline later on in
+    // layoutRows(). As part of that we will layout the cell again if we're in a
+    // paginated context and come up with the correct strut. Any strut we come
+    // up with here will depend on the old paged layout and will give the cell
+    // an invalid height that is not useful for figuring out the raw height of
+    // the row.
     if (cell->firstRootBox() && cell->firstRootBox()->paginationStrut())
       cell->setLogicalHeight(cell->logicalHeight() -
                              cell->firstRootBox()->paginationStrut());
@@ -206,9 +215,10 @@ void LayoutTableRow::layout() {
   // We do not call addOverflowFromCell here. The cell are laid out to be
   // measured above and will be sized correctly in a follow-up phase.
 
-  // We only ever need to issue paint invalidations if our cells didn't, which means that they didn't need
-  // layout, so we know that our bounds didn't change. This code is just making up for
-  // the fact that we did not invalidate paints in setStyle() because we had a layout hint.
+  // We only ever need to issue paint invalidations if our cells didn't, which
+  // means that they didn't need layout, so we know that our bounds didn't
+  // change. This code is just making up for the fact that we did not invalidate
+  // paints in setStyle() because we had a layout hint.
   if (selfNeedsLayout()) {
     for (LayoutTableCell* cell = firstCell(); cell; cell = cell->nextCell()) {
       // FIXME: Is this needed when issuing paint invalidations after layout?
@@ -216,7 +226,8 @@ void LayoutTableRow::layout() {
     }
   }
 
-  // LayoutTableSection::layoutRows will set our logical height and width later, so it calls updateLayerTransform().
+  // LayoutTableSection::layoutRows will set our logical height and width later,
+  // so it calls updateLayerTransform().
   clearNeedsLayout();
 }
 
@@ -228,10 +239,10 @@ bool LayoutTableRow::nodeAtPoint(HitTestResult& result,
   // Table rows cannot ever be hit tested.  Effectively they do not exist.
   // Just forward to our children always.
   for (LayoutTableCell* cell = lastCell(); cell; cell = cell->previousCell()) {
-    // FIXME: We have to skip over inline flows, since they can show up inside table rows
-    // at the moment (a demoted inline <form> for example). If we ever implement a
-    // table-specific hit-test method (which we should do for performance reasons anyway),
-    // then we can remove this check.
+    // FIXME: We have to skip over inline flows, since they can show up inside
+    // table rows at the moment (a demoted inline <form> for example). If we
+    // ever implement a table-specific hit-test method (which we should do for
+    // performance reasons anyway), then we can remove this check.
     if (!cell->hasSelfPaintingLayer()) {
       LayoutPoint cellPoint =
           flipForWritingModeForChild(cell, accumulatedOffset);
@@ -275,8 +286,10 @@ void LayoutTableRow::computeOverflow() {
 }
 
 void LayoutTableRow::addOverflowFromCell(const LayoutTableCell* cell) {
-  // Non-row-spanning-cells don't create overflow (they are fully contained within this row).
-  // TODO(crbug.com/603993): This seems incorrect because cell may have visual effect overflow that should be included in this row.
+  // Non-row-spanning-cells don't create overflow (they are fully contained
+  // within this row).
+  // TODO(crbug.com/603993): This seems incorrect because cell may have visual
+  // effect overflow that should be included in this row.
   if (cell->rowSpan() == 1)
     return;
 

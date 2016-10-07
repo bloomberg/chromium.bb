@@ -36,13 +36,16 @@ namespace blink {
 
 void LayoutObjectChildList::destroyLeftoverChildren() {
   while (firstChild()) {
-    // List markers are owned by their enclosing list and so don't get destroyed by this container.
+    // List markers are owned by their enclosing list and so don't get destroyed
+    // by this container.
     if (firstChild()->isListMarker()) {
       firstChild()->remove();
       continue;
     }
 
-    // Destroy any anonymous children remaining in the layout tree, as well as implicit (shadow) DOM elements like those used in the engine-based text fields.
+    // Destroy any anonymous children remaining in the layout tree, as well as
+    // implicit (shadow) DOM elements like those used in the engine-based text
+    // fields.
     if (firstChild()->node())
       firstChild()->node()->setLayoutObject(nullptr);
     firstChild()->destroy();
@@ -59,8 +62,9 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner,
     toLayoutBox(oldChild)->removeFloatingOrPositionedChildFromBlockLists();
 
   if (!owner->documentBeingDestroyed()) {
-    // So that we'll get the appropriate dirty bit set (either that a normal flow child got yanked or
-    // that a positioned child got yanked). We also issue paint invalidations, so that the area exposed when the child
+    // So that we'll get the appropriate dirty bit set (either that a normal
+    // flow child got yanked or that a positioned child got yanked). We also
+    // issue paint invalidations, so that the area exposed when the child
     // disappears gets paint invalidated properly.
     if (notifyLayoutObject && oldChild->everHadLayout())
       oldChild->setNeedsLayoutAndPrefWidthsRecalc(
@@ -73,8 +77,8 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner,
     toLayoutBox(oldChild)->deleteLineBoxWrapper();
 
   if (!owner->documentBeingDestroyed()) {
-    // If oldChild is the start or end of the selection, then clear the selection to
-    // avoid problems of invalid pointers.
+    // If oldChild is the start or end of the selection, then clear the
+    // selection to avoid problems of invalid pointers.
     // FIXME: The FrameSelection should be responsible for this when it
     // is notified of DOM mutations.
     if (oldChild->isSelectionBorder())
@@ -91,9 +95,11 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner,
     }
   }
 
-  // WARNING: There should be no code running between willBeRemovedFromTree and the actual removal below.
-  // This is needed to avoid race conditions where willBeRemovedFromTree would dirty the tree's structure
-  // and the code running here would force an untimely rebuilding, leaving |oldChild| dangling.
+  // WARNING: There should be no code running between willBeRemovedFromTree and
+  // the actual removal below.
+  // This is needed to avoid race conditions where willBeRemovedFromTree would
+  // dirty the tree's structure and the code running here would force an
+  // untimely rebuilding, leaving |oldChild| dangling.
 
   if (oldChild->previousSibling())
     oldChild->previousSibling()->setNextSibling(oldChild->nextSibling());
@@ -133,8 +139,8 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner,
     beforeChild = beforeChild->parent();
 
   // This should never happen, but if it does prevent layout tree corruption
-  // where child->parent() ends up being owner but child->nextSibling()->parent()
-  // is not owner.
+  // where child->parent() ends up being owner but
+  // child->nextSibling()->parent() is not owner.
   if (beforeChild && beforeChild->parent() != owner) {
     ASSERT_NOT_REACHED();
     return;
@@ -179,8 +185,8 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner,
   newChild->setShouldDoFullPaintInvalidation(
       PaintInvalidationLayoutObjectInsertion);
   if (!owner->normalChildNeedsLayout())
-    owner
-        ->setChildNeedsLayout();  // We may supply the static position for an absolute positioned child.
+    owner->setChildNeedsLayout();  // We may supply the static position for an
+                                   // absolute positioned child.
 
   if (!owner->documentBeingDestroyed())
     owner->notifyOfSubtreeChange();

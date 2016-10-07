@@ -4,7 +4,8 @@
  *           (C) 1998 Waldo Bastian (bastian@kde.org)
  *           (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2009, 2010 Apple Inc.
+ *               All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -136,8 +137,10 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   explicit LayoutTable(Element*);
   ~LayoutTable() override;
 
-  // Per CSS 3 writing-mode: "The first and second values of the 'border-spacing' property represent spacing between columns
-  // and rows respectively, not necessarily the horizontal and vertical spacing respectively".
+  // Per CSS 3 writing-mode: "The first and second values of the
+  // 'border-spacing' property represent spacing between columns and rows
+  // respectively, not necessarily the horizontal and vertical spacing
+  // respectively".
   int hBorderSpacing() const { return m_hSpacing; }
   int vBorderSpacing() const { return m_vSpacing; }
 
@@ -239,8 +242,9 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     return m_effectiveColumnPositions;
   }
   void setEffectiveColumnPosition(unsigned index, int position) {
-    // Note that if our horizontal border-spacing changed, our position will change but not
-    // our column's width. In practice, horizontal border-spacing won't change often.
+    // Note that if our horizontal border-spacing changed, our position will
+    // change but not our column's width. In practice, horizontal border-spacing
+    // won't change often.
     m_columnLogicalWidthChanged |=
         m_effectiveColumnPositions[index] != position;
     m_effectiveColumnPositions[index] = position;
@@ -309,7 +313,8 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   LayoutUnit paddingLeft() const override;
   LayoutUnit paddingRight() const override;
 
-  // Override paddingStart/End to return pixel values to match behavor of LayoutTableCell.
+  // Override paddingStart/End to return pixel values to match behavor of
+  // LayoutTableCell.
   LayoutUnit paddingEnd() const override {
     return LayoutUnit(LayoutBlock::paddingEnd().toInt());
   }
@@ -318,7 +323,8 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   }
 
   LayoutUnit bordersPaddingAndSpacingInRowDirection() const {
-    // 'border-spacing' only applies to separate borders (see 17.6.1 The separated borders model).
+    // 'border-spacing' only applies to separate borders (see 17.6.1 The
+    // separated borders model).
     return borderStart() + borderEnd() +
            (collapseBorders() ? LayoutUnit() : (paddingStart() + paddingEnd() +
                                                 borderSpacingInRowDirection()));
@@ -341,7 +347,8 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   };
   ColAndColGroup colElementAtAbsoluteColumn(
       unsigned absoluteColumnIndex) const {
-    // The common case is to not have col/colgroup elements, make that case fast.
+    // The common case is to not have col/colgroup elements, make that case
+    // fast.
     if (!m_hasColElements)
       return ColAndColGroup();
     return slowColElementAtAbsoluteColumn(absoluteColumnIndex);
@@ -409,8 +416,9 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
   const char* name() const override { return "LayoutTable"; }
 
-  // Whether a table has opaque foreground depends on many factors, e.g. border spacing, missing cells, etc.
-  // For simplicity, just conservatively assume foreground of all tables are not opaque.
+  // Whether a table has opaque foreground depends on many factors, e.g. border
+  // spacing, missing cells, etc. For simplicity, just conservatively assume
+  // foreground of all tables are not opaque.
   bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&,
                                          unsigned) const override {
     return false;
@@ -478,25 +486,31 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
   void recalcCollapsedBordersIfNeeded();
 
-  // TODO(layout-dev): All mutables in this class are lazily updated by recalcSections()
-  // which is called by various getter methods (e.g. borderBefore(), borderAfter()).
-  // They allow dirty layout even after DocumentLifecycle::LayoutClean which seems not proper. crbug.com/538236.
+  // TODO(layout-dev): All mutables in this class are lazily updated by
+  // recalcSections() which is called by various getter methods (e.g.
+  // borderBefore(), borderAfter()).
+  // They allow dirty layout even after DocumentLifecycle::LayoutClean which
+  // seems not proper. crbug.com/538236.
 
   // Holds spans (number of absolute columns) of effective columns.
-  // See "absolute column index vs effective column index" in comments of LayoutTable.
+  // See "absolute column index vs effective column index" in comments of
+  // LayoutTable.
   mutable Vector<ColumnStruct> m_effectiveColumns;
 
-  // Holds the logical layout positions of effective columns, and the last item (whose index
-  // is numEffectiveColumns()) holds the position of the imaginary column after the last column.
-  // Because of the last item, m_effectiveColumnPositions.size() is always numEffectiveColumns() + 1.
+  // Holds the logical layout positions of effective columns, and the last item
+  // (whose index is numEffectiveColumns()) holds the position of the imaginary
+  // column after the last column.
+  // Because of the last item, m_effectiveColumnPositions.size() is always
+  // numEffectiveColumns() + 1.
   mutable Vector<int> m_effectiveColumnPositions;
 
   // The captions associated with this object.
   mutable Vector<LayoutTableCaption*> m_captions;
 
-  // Holds pointers to LayoutTableCol objects for <col>s and <colgroup>s under this table.
-  // There is no direct relationship between the size of and index into this vector and
-  // those of m_effectiveColumns because they hold different things.
+  // Holds pointers to LayoutTableCol objects for <col>s and <colgroup>s under
+  // this table.
+  // There is no direct relationship between the size of and index into this
+  // vector and those of m_effectiveColumns because they hold different things.
   mutable Vector<LayoutTableCol*> m_columnLayoutObjects;
 
   mutable LayoutTableSection* m_head;
