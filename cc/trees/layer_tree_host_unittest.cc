@@ -573,35 +573,36 @@ class LayerTreeHostFreeContextResourcesOnDestroy
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostFreeContextResourcesOnDestroy);
 
 // Test if the LTH successfully frees and stops freeing context resources
-// when the OutputSurface is lost and recreated.
-class LayerTreeHostCacheBehaviorOnOutputSurfaceRecreated
+// when the CompositorFrameSink is lost and recreated.
+class LayerTreeHostCacheBehaviorOnCompositorFrameSinkRecreated
     : public LayerTreeHostContextCacheTest {
  public:
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                   const BeginFrameArgs& args) override {
-    // This code is run once, to trigger recreation of our OutputSurface.
-    if (has_recreated_)
+    // This code is run once, to trigger recreation of our CompositorFrameSink.
+    if (test_state_ != TestState::INIT)
       return;
 
     // Ensure that our initialization expectations have completed.
     Mock::VerifyAndClearExpectations(mock_main_context_support_);
     Mock::VerifyAndClearExpectations(mock_worker_context_support_);
 
-    // Output surface lost expectations.
+    // CompositorFrameSink lost expectations.
     EXPECT_CALL(*mock_worker_context_support_,
                 SetAggressivelyFreeResources(true));
     EXPECT_CALL(*mock_main_context_support_,
                 SetAggressivelyFreeResources(true));
     host_impl->DidLoseCompositorFrameSink();
-    has_recreated_ = true;
+    test_state_ = TestState::RECREATED;
   }
 
-  void DidInitializeCompositorFrameSink() override {
-    // This is run after we have recreated our OutputSurface.
-    if (!has_recreated_)
+  void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
+                                   bool success) override {
+    // This is run after we have recreated our CompositorFrameSink.
+    if (test_state_ != TestState::RECREATED)
       return;
 
-    // Ensure that our initialization expectations have completed.
+    // Ensure that our expectations have completed.
     Mock::VerifyAndClearExpectations(mock_main_context_support_);
     Mock::VerifyAndClearExpectations(mock_worker_context_support_);
 
@@ -611,14 +612,16 @@ class LayerTreeHostCacheBehaviorOnOutputSurfaceRecreated
     EXPECT_CALL(*mock_main_context_support_,
                 SetAggressivelyFreeResources(true));
     EndTest();
+    test_state_ = TestState::DONE;
   }
 
  private:
-  bool has_recreated_ = false;
+  enum class TestState { INIT, RECREATED, DONE };
+  TestState test_state_ = TestState::INIT;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostCacheBehaviorOnOutputSurfaceRecreated);
+    LayerTreeHostCacheBehaviorOnCompositorFrameSinkRecreated);
 
 // Two setNeedsCommits in a row should lead to at least 1 commit and at least 1
 // draw with frame 0.
