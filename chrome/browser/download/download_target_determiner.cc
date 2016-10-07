@@ -792,15 +792,12 @@ Profile* DownloadTargetDeterminer::GetProfile() const {
 
 bool DownloadTargetDeterminer::ShouldPromptForDownload(
     const base::FilePath& filename) const {
-  if (is_resumption_) {
 #if BUILDFLAG(ANDROID_JAVA_UI)
-    // In case of file error, prompting user with the overwritten infobar
-    // won't solve the issue. Return false so that resumption will fail again
-    // if user hasn't performed any action to resolve file errors.
-    // TODO(qinmin): show an error toast to warn user that resume cannot
-    // continue due to file errors. http://crbug.com/581106.
+    // Don't prompt user about saving path on Android.
+    // TODO(qinmin): show an error toast to warn user in certain cases.
     return false;
-#else
+#endif
+  if (is_resumption_) {
     // For resumed downloads, if the target disposition or prefs require
     // prompting, the user has already been prompted. Try to respect the user's
     // selection, unless we've discovered that the target path cannot be used
@@ -809,7 +806,6 @@ bool DownloadTargetDeterminer::ShouldPromptForDownload(
     return (reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED ||
             reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE ||
             reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE);
-#endif
   }
 
   // If the download path is forced, don't prompt.
