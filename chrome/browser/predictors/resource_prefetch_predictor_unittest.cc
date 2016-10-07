@@ -46,7 +46,7 @@ scoped_refptr<net::HttpResponseHeaders> MakeResponseHeaders(
 }
 
 class EmptyURLRequestDelegate : public net::URLRequest::Delegate {
-  void OnResponseStarted(net::URLRequest* request) override {}
+  void OnResponseStarted(net::URLRequest* request, int net_error) override {}
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override {}
 };
 

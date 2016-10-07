@@ -793,14 +793,16 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
     net::URLRequest* url_request) {
   if (!url_request)
     return;
+  // TODO(maksims): remove this and use net_error argument in RequestComplete
+  // once ResourceDispatcherHostDelegate is modified.
+  int net_error = url_request->status().error();
   const ResourceRequestInfo* info =
       ResourceRequestInfo::ForRequest(url_request);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NotifyUIThreadOfRequestComplete,
                  info->GetWebContentsGetterForRequest(), url_request->url(),
-                 info->GetResourceType(), url_request->was_cached(),
-                 url_request->status().error(),
+                 info->GetResourceType(), url_request->was_cached(), net_error,
                  url_request->GetTotalReceivedBytes(),
                  base::TimeTicks::Now() - url_request->creation_time()));
 }

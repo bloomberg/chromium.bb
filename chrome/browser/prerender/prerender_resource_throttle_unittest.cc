@@ -126,7 +126,7 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
     throttle_->WillRedirectRequest(redirect_info, &was_deferred_);
     run_loop_->Quit();
   }
-  void OnResponseStarted(net::URLRequest* request) override {}
+  void OnResponseStarted(net::URLRequest* request, int net_error) override {}
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override {}
 
   // content::ResourceController implementation:

@@ -36,7 +36,7 @@ class ChromeExtensionsNetworkDelegate : public net::NetworkDelegateImpl {
 
   // If the |request| failed due to problems with a proxy, forward the error to
   // the proxy extension API.
-  virtual void ForwardProxyErrors(net::URLRequest* request);
+  virtual void ForwardProxyErrors(net::URLRequest* request, int net_error);
 
   // Notifies the extensions::ProcessManager for the associated RenderFrame, if
   // any, that a request has started or stopped.
@@ -60,8 +60,10 @@ class ChromeExtensionsNetworkDelegate : public net::NetworkDelegateImpl {
       GURL* allowed_unsafe_redirect_url) override;
   void OnBeforeRedirect(net::URLRequest* request,
                         const GURL& new_location) override;
-  void OnResponseStarted(net::URLRequest* request) override;
-  void OnCompleted(net::URLRequest* request, bool started) override;
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
+  void OnCompleted(net::URLRequest* request,
+                   bool started,
+                   int net_error) override;
   void OnURLRequestDestroyed(net::URLRequest* request) override;
   void OnPACScriptError(int line_number, const base::string16& error) override;
   net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(

@@ -29,6 +29,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
+#include "chrome/browser/net/chrome_extensions_network_delegate.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -299,8 +300,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     base::RunLoop().Run();
 
     EXPECT_TRUE(!request->is_pending());
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
-    EXPECT_EQ(0, request->status().error());
+    EXPECT_EQ(net::OK, delegate_.request_status());
     EXPECT_EQ(redirect_url, request->url());
     EXPECT_EQ(2U, request->url_chain().size());
     EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
@@ -350,8 +350,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     base::RunLoop().Run();
 
     EXPECT_TRUE(!request2->is_pending());
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request2->status().status());
-    EXPECT_EQ(0, request2->status().error());
+    EXPECT_EQ(net::OK, delegate_.request_status());
     EXPECT_EQ(redirect_url, request2->url());
     EXPECT_EQ(2U, request2->url_chain().size());
     EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
@@ -419,8 +418,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
   base::RunLoop().Run();
 
   EXPECT_TRUE(!request->is_pending());
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
-  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, request->status().error());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, delegate_.request_status());
   EXPECT_EQ(request_url, request->url());
   EXPECT_EQ(1U, request->url_chain().size());
   EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
@@ -483,12 +481,11 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
 
   request->Start();
   // request->Start() will have submitted OnBeforeRequest by the time we cancel.
-  request->Cancel();
+  int net_error = request->Cancel();
   run_loop.Run();
 
+  EXPECT_EQ(net::ERR_ABORTED, net_error);
   EXPECT_TRUE(!request->is_pending());
-  EXPECT_EQ(net::URLRequestStatus::CANCELED, request->status().status());
-  EXPECT_EQ(net::ERR_ABORTED, request->status().error());
   EXPECT_EQ(request_url, request->url());
   EXPECT_EQ(1U, request->url_chain().size());
   EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
@@ -1121,7 +1118,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
 
   EXPECT_TRUE(!request->is_pending());
   // This cannot succeed as we send the request to a server that does not exist.
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, delegate_.request_status());
   EXPECT_EQ(request_url, request->url());
   EXPECT_EQ(1U, request->url_chain().size());
   EXPECT_EQ(0U, ipc_sender_.GetNumTasks());

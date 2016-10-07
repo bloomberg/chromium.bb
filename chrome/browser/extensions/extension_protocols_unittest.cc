@@ -153,8 +153,7 @@ class ExtensionProtocolTest : public testing::Test {
   // Helper method to create a URLRequest, call StartRequest on it, and return
   // the result. If |extension| hasn't already been added to
   // |extension_info_map_|, this will add it.
-  net::URLRequestStatus::Status DoRequest(const Extension& extension,
-                                          const std::string& relative_path) {
+  int DoRequest(const Extension& extension, const std::string& relative_path) {
     if (!extension_info_map_->extensions().Contains(extension.id())) {
       extension_info_map_->AddExtension(&extension,
                                         base::Time::Now(),
@@ -166,7 +165,7 @@ class ExtensionProtocolTest : public testing::Test {
             extension.GetResourceURL(relative_path), net::DEFAULT_PRIORITY,
             &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MAIN_FRAME);
-    return request->status().status();
+    return test_delegate_.request_status();
   }
 
  protected:
@@ -219,13 +218,12 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
               extension->GetResourceURL("404.html"), net::DEFAULT_PRIORITY,
               &test_delegate_));
       StartRequest(request.get(), content::RESOURCE_TYPE_MAIN_FRAME);
-      EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
 
       if (cases[i].should_allow_main_frame_load) {
-        EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request->status().error()) <<
-            cases[i].name;
+        EXPECT_EQ(net::ERR_FILE_NOT_FOUND, test_delegate_.request_status())
+            << cases[i].name;
       } else {
-        EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, request->status().error())
+        EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, test_delegate_.request_status())
             << cases[i].name;
       }
     }
@@ -237,13 +235,12 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
               extension->GetResourceURL("404.html"), net::DEFAULT_PRIORITY,
               &test_delegate_));
       StartRequest(request.get(), content::RESOURCE_TYPE_SUB_FRAME);
-      EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
 
       if (cases[i].should_allow_sub_frame_load) {
-        EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request->status().error()) <<
-            cases[i].name;
+        EXPECT_EQ(net::ERR_FILE_NOT_FOUND, test_delegate_.request_status())
+            << cases[i].name;
       } else {
-        EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, request->status().error())
+        EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, test_delegate_.request_status())
             << cases[i].name;
       }
     }
@@ -279,7 +276,7 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
             extension->GetResourceURL("webstore_icon_16.png"),
             net::DEFAULT_PRIORITY, &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
+    EXPECT_EQ(net::OK, test_delegate_.request_status());
     CheckForContentLengthHeader(request.get());
   }
 
@@ -292,7 +289,7 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
             extension->GetResourceURL("webstore_icon_16.png"),
             net::DEFAULT_PRIORITY, &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
+    EXPECT_EQ(net::OK, test_delegate_.request_status());
     CheckForContentLengthHeader(request.get());
   }
 }
@@ -315,7 +312,7 @@ TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
             extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
             &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
+    EXPECT_EQ(net::OK, test_delegate_.request_status());
 
     // Check that cache-related headers are set.
     std::string etag;
@@ -356,7 +353,7 @@ TEST_F(ExtensionProtocolTest, AllowFrameRequests) {
             extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
             &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MAIN_FRAME);
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
+    EXPECT_EQ(net::OK, test_delegate_.request_status());
   }
   {
     std::unique_ptr<net::URLRequest> request(
@@ -364,7 +361,7 @@ TEST_F(ExtensionProtocolTest, AllowFrameRequests) {
             extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
             &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_SUB_FRAME);
-    EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, test_delegate_.request_status());
   }
 
   // And subresource types, such as media, should fail.
@@ -374,7 +371,7 @@ TEST_F(ExtensionProtocolTest, AllowFrameRequests) {
             extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
             &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_MEDIA);
-    EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, test_delegate_.request_status());
   }
 }
 
@@ -390,19 +387,19 @@ TEST_F(ExtensionProtocolTest, MetadataFolder) {
   ASSERT_NE(extension.get(), nullptr) << "error: " << error;
 
   // Loading "/test.html" should succeed.
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, DoRequest(*extension, "test.html"));
+  EXPECT_EQ(net::OK, DoRequest(*extension, "test.html"));
 
   // Loading "/_metadata/verified_contents.json" should fail.
   base::FilePath relative_path =
       base::FilePath(kMetadataFolder).Append(kVerifiedContentsFilename);
   EXPECT_TRUE(base::PathExists(extension_dir.Append(relative_path)));
-  EXPECT_EQ(net::URLRequestStatus::FAILED,
+  EXPECT_EQ(net::ERR_FAILED,
             DoRequest(*extension, relative_path.AsUTF8Unsafe()));
 
   // Loading "/_metadata/a.txt" should also fail.
   relative_path = base::FilePath(kMetadataFolder).AppendASCII("a.txt");
   EXPECT_TRUE(base::PathExists(extension_dir.Append(relative_path)));
-  EXPECT_EQ(net::URLRequestStatus::FAILED,
+  EXPECT_EQ(net::ERR_FAILED,
             DoRequest(*extension, relative_path.AsUTF8Unsafe()));
 }
 

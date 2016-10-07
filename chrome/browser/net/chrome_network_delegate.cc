@@ -127,15 +127,15 @@ void ReportInvalidReferrerSend(const GURL& target_url,
 
 // Record network errors that HTTP requests complete with, including OK and
 // ABORTED.
-void RecordNetworkErrorHistograms(const net::URLRequest* request) {
+void RecordNetworkErrorHistograms(const net::URLRequest* request,
+                                  int net_error) {
   if (request->url().SchemeIs("http")) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.HttpRequestCompletionErrorCodes",
-                                std::abs(request->status().error()));
+                                std::abs(net_error));
 
     if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
       UMA_HISTOGRAM_SPARSE_SLOWLY(
-          "Net.HttpRequestCompletionErrorCodes.MainFrame",
-          std::abs(request->status().error()));
+          "Net.HttpRequestCompletionErrorCodes.MainFrame", std::abs(net_error));
     }
   }
 }
@@ -352,9 +352,9 @@ void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
   extensions_delegate_->OnBeforeRedirect(request, new_location);
 }
 
-
-void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
-  extensions_delegate_->OnResponseStarted(request);
+void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request,
+                                              int net_error) {
+  extensions_delegate_->OnResponseStarted(request, net_error);
 }
 
 void ChromeNetworkDelegate::OnNetworkBytesReceived(net::URLRequest* request,
@@ -376,25 +376,26 @@ void ChromeNetworkDelegate::OnNetworkBytesSent(net::URLRequest* request,
 }
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
-                                        bool started) {
-  data_use_measurement_.OnCompleted(*request, started);
-  RecordNetworkErrorHistograms(request);
+                                        bool started,
+                                        int net_error) {
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
 
-  if (request->status().status() == net::URLRequestStatus::SUCCESS) {
+  // TODO(amohammadkhan): Verify that there is no double recording in data use
+  // of redirected requests.
+  data_use_measurement_.OnCompleted(*request, started);
+  RecordNetworkErrorHistograms(request, net_error);
+
+  if (net_error == net::OK) {
 #if BUILDFLAG(ANDROID_JAVA_UI)
     precache::UpdatePrecacheMetricsAndState(request, profile_);
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
-    extensions_delegate_->OnCompleted(request, started);
-  } else if (request->status().status() == net::URLRequestStatus::FAILED ||
-             request->status().status() == net::URLRequestStatus::CANCELED) {
-    extensions_delegate_->OnCompleted(request, started);
-  } else {
-    NOTREACHED();
   }
+
+  extensions_delegate_->OnCompleted(request, started, net_error);
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->OnCompleted(request, started);
   RecordRequestSourceBandwidth(request, started);
-  extensions_delegate_->ForwardProxyErrors(request);
+  extensions_delegate_->ForwardProxyErrors(request, net_error);
   extensions_delegate_->ForwardDoneRequestStatus(request);
 }
 

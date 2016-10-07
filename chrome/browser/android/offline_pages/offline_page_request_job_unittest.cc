@@ -99,8 +99,9 @@ class TestURLRequestDelegate : public net::URLRequest::Delegate {
       : read_completed_callback_(callback),
         buffer_(new net::IOBuffer(kBufSize)) {}
 
-  void OnResponseStarted(net::URLRequest* request) override {
-    if (!request->status().is_success()) {
+  void OnResponseStarted(net::URLRequest* request, int net_error) override {
+    DCHECK_NE(net::ERR_IO_PENDING, net_error);
+    if (net_error != net::OK) {
       read_completed_callback_.Run(0);
       return;
     }
