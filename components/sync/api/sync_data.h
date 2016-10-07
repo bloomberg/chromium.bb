@@ -15,10 +15,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "components/sync/api/attachments/attachment_id.h"
+#include "components/sync/api/attachments/attachment_service_proxy.h"
 #include "components/sync/base/immutable.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
-#include "components/sync/core/attachments/attachment_service_proxy.h"
 
 namespace sync_pb {
 class EntitySpecifics;

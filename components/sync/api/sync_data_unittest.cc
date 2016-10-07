@@ -9,8 +9,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/core/attachments/attachment_service.h"
-#include "components/sync/core/attachments/attachment_service_impl.h"
+#include "components/sync/api/attachments/attachment_service.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +28,7 @@ const base::Time kLastModifiedTime = base::Time();
 class SyncDataTest : public testing::Test {
  protected:
   SyncDataTest()
-      : attachment_service(AttachmentServiceImpl::CreateForTest()),
+      : attachment_service(AttachmentService::CreateForTest()),
         attachment_service_weak_ptr_factory(attachment_service.get()),
         attachment_service_proxy(
             base::ThreadTaskRunnerHandle::Get(),

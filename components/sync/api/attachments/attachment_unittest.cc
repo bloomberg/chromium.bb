@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "components/sync/core/attachments/attachment_util.h"
+#include "components/sync/engine/attachments/attachment_util.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

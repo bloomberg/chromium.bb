@@ -26,11 +26,8 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_data_type_controller.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/api/attachments/attachment_service.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/core/attachments/attachment_downloader.h"
-#include "components/sync/core/attachments/attachment_service.h"
-#include "components/sync/core/attachments/attachment_service_impl.h"
-#include "components/sync/core/attachments/attachment_uploader_impl.h"
 #include "components/sync/device_info/device_info_data_type_controller.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/data_type_manager_impl.h"
@@ -41,6 +38,8 @@
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/ui_data_type_controller.h"
+#include "components/sync/engine/attachments/attachment_downloader.h"
+#include "components/sync/engine/attachments/attachment_uploader.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
@@ -367,11 +366,11 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
     // TODO(maniscalco): Use shared (one per profile) thread-safe instances of
     // AttachmentUploader and AttachmentDownloader instead of creating a new one
     // per AttachmentService (bug 369536).
-    attachment_uploader.reset(new syncer::AttachmentUploaderImpl(
+    attachment_uploader = syncer::AttachmentUploader::Create(
         sync_service_url_, url_request_context_getter_,
         user_share.sync_credentials.account_id,
         user_share.sync_credentials.scope_set, token_service_provider,
-        store_birthday, model_type));
+        store_birthday, model_type);
 
     token_service_provider =
         new TokenServiceProvider(ui_thread_, token_service_);
@@ -389,12 +388,10 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
   const base::TimeDelta initial_backoff_delay =
       base::TimeDelta::FromMinutes(30);
   const base::TimeDelta max_backoff_delay = base::TimeDelta::FromHours(4);
-  std::unique_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::AttachmentServiceImpl(
-          std::move(attachment_store), std::move(attachment_uploader),
-          std::move(attachment_downloader), delegate, initial_backoff_delay,
-          max_backoff_delay));
-  return attachment_service;
+  return syncer::AttachmentService::Create(
+      std::move(attachment_store), std::move(attachment_uploader),
+      std::move(attachment_downloader), delegate, initial_backoff_delay,
+      max_backoff_delay);
 }
 
 syncer::SyncApiComponentFactory::SyncComponents

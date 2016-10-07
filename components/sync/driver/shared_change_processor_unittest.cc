@@ -12,11 +12,11 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "components/sync/api/attachments/attachment_id.h"
+#include "components/sync/api/attachments/attachment_service.h"
 #include "components/sync/api/attachments/attachment_store.h"
 #include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/api/fake_syncable_service.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/attachments/attachment_service_impl.h"
 #include "components/sync/core/test/test_user_share.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/fake_sync_client.h"
@@ -72,7 +72,7 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
       const std::string& store_birthday,
       ModelType model_type,
       AttachmentService::Delegate* delegate) override {
-    return AttachmentServiceImpl::CreateForTest();
+    return AttachmentService::CreateForTest();
   }
 };
 

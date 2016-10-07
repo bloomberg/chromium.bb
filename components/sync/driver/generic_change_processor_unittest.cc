@@ -12,13 +12,11 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/api/attachments/attachment_id.h"
+#include "components/sync/api/attachments/attachment_service.h"
 #include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/api/fake_syncable_service.h"
 #include "components/sync/api/sync_change.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/attachments/attachment_service_impl.h"
-#include "components/sync/core/attachments/fake_attachment_downloader.h"
-#include "components/sync/core/attachments/fake_attachment_uploader.h"
 #include "components/sync/core/read_node.h"
 #include "components/sync/core/read_transaction.h"
 #include "components/sync/core/sync_encryption_handler.h"
@@ -29,6 +27,8 @@
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_api_component_factory.h"
+#include "components/sync/engine/attachments/fake_attachment_downloader.h"
+#include "components/sync/engine/attachments/fake_attachment_uploader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,39 +37,26 @@ namespace syncer {
 namespace {
 
 // A mock that keeps track of attachments passed to UploadAttachments.
-class MockAttachmentService : public AttachmentServiceImpl {
+class MockAttachmentService : public AttachmentService {
  public:
-  MockAttachmentService(
-      std::unique_ptr<AttachmentStoreForSync> attachment_store);
-  ~MockAttachmentService() override;
-  void UploadAttachments(const AttachmentIdList& attachment_ids) override;
-  std::vector<AttachmentIdList>* attachment_id_lists();
+  MockAttachmentService() {}
+  ~MockAttachmentService() override {}
+
+  void GetOrDownloadAttachments(
+      const AttachmentIdList& attachment_ids,
+      const GetOrDownloadCallback& callback) override {}
+
+  void UploadAttachments(const AttachmentIdList& attachment_ids) override {
+    attachment_id_lists_.push_back(attachment_ids);
+  }
+
+  std::vector<AttachmentIdList>* attachment_id_lists() {
+    return &attachment_id_lists_;
+  }
 
  private:
   std::vector<AttachmentIdList> attachment_id_lists_;
 };
-
-MockAttachmentService::MockAttachmentService(
-    std::unique_ptr<AttachmentStoreForSync> attachment_store)
-    : AttachmentServiceImpl(
-          std::move(attachment_store),
-          std::unique_ptr<AttachmentUploader>(new FakeAttachmentUploader),
-          std::unique_ptr<AttachmentDownloader>(new FakeAttachmentDownloader),
-          NULL,
-          base::TimeDelta(),
-          base::TimeDelta()) {}
-
-MockAttachmentService::~MockAttachmentService() {}
-
-void MockAttachmentService::UploadAttachments(
-    const AttachmentIdList& attachment_ids) {
-  attachment_id_lists_.push_back(attachment_ids);
-  AttachmentServiceImpl::UploadAttachments(attachment_ids);
-}
-
-std::vector<AttachmentIdList>* MockAttachmentService::attachment_id_lists() {
-  return &attachment_id_lists_;
-}
 
 // MockSyncApiComponentFactory needed to initialize GenericChangeProcessor and
 // pass MockAttachmentService to it.
@@ -112,8 +99,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
       const std::string& store_birthday,
       ModelType model_type,
       AttachmentService::Delegate* delegate) override {
-    std::unique_ptr<MockAttachmentService> attachment_service(
-        new MockAttachmentService(std::move(attachment_store)));
+    auto attachment_service = base::MakeUnique<MockAttachmentService>();
     // GenericChangeProcessor takes ownership of the AttachmentService, but we
     // need to have a pointer to it so we can see that it was used properly.
     // Take a pointer and trust that GenericChangeProcessor does not prematurely

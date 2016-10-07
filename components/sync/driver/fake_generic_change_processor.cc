@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/api/syncable_service.h"
-#include "components/sync/core/attachments/attachment_service_impl.h"
 
 namespace syncer {
 

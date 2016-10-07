@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/sync/api/attachments/attachment_id.h"
-#include "components/sync/core/attachments/attachment_service_proxy_for_test.h"
+#include "components/sync/api/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
