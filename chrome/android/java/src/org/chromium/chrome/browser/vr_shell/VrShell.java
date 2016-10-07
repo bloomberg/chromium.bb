@@ -93,7 +93,6 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
 
         @Override
         public boolean dispatchTouchEvent(MotionEvent event) {
-            VrShell.this.onTouchEvent(event);
             return true;
         }
     }
@@ -258,6 +257,15 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     }
 
     @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            nativeOnTriggerEvent(mNativeVrShell);
+        }
+        // Don't mark this as handled so that Daydream screen alignment still functions.
+        return false;
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         if (mNativeVrShell != 0) {
@@ -318,15 +326,6 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     @Override
     public void setWebVrModeEnabled(boolean enabled) {
         nativeSetWebVrMode(mNativeVrShell, enabled);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            nativeOnTriggerEvent(mNativeVrShell);
-        }
-
-        return true;
     }
 
     @Override
