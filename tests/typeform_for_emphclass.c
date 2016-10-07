@@ -7,7 +7,7 @@ int
 main (int argc, char **argv)
 {
 	int result = 0;
-	const char *table = "emphclass_valid.utb";
+	const char *table = "tests/tables/emphclass/emphclass_valid.utb";
 	const char *class;
 	class = "italic";
 	formtype typeform = italic;

@@ -7,7 +7,7 @@
 int main(int argc, char **argv)
 {
   int ret = 0;
-  char *tables = "da-dk-g26.ctb";
+  char *tables = "tables/da-dk-g26.ctb";
   char *word = "alderen";
   char * hyphens = calloc(9, sizeof(char));
 

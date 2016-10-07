@@ -9,7 +9,7 @@
 int main(int argc, char **argv)
 {
   int ret = 0;
-  char *tables = "cs-g1.ctb,hyph_cs_CZ.dic";
+  char *tables = "tables/cs-g1.ctb,tables/hyph_cs_CZ.dic";
   char *word = "xxx";
   char * hyphens = calloc(5, sizeof(char));
 

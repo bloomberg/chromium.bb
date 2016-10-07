@@ -190,9 +190,9 @@ TESTS =				\
 	$(dist_check_SCRIPTS)   \
 	$(dist_yaml_TESTS)
 
-TESTS_ENVIRONMENT =																						\
-	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables,$(top_srcdir)/tests/tablesWithMetadata,$(top_srcdir)/tests/tables/emphclass,	\
-	UEB_TEST_DATA_PATH=$(top_srcdir)/tests/ueb_test_data																	\
-	PYTHONPATH=$(top_builddir)/python:$$PYTHONPATH																		\
-	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH															\
+AM_TESTS_ENVIRONMENT =								\
+	LOUIS_TABLEPATH=$(abs_top_srcdir)					\
+	UEB_TEST_DATA_PATH=$(top_srcdir)/tests/ueb_test_data			\
+	PYTHONPATH=$(top_builddir)/python:$$PYTHONPATH				\
+	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH	\
 	PATH=$(top_builddir)/tools:$$PATH

@@ -1,1 +1,1 @@
-#define TRANSLATION_TABLE "compress.cti,en-us-g2.ctb"
+#define TRANSLATION_TABLE "tables/compress.cti,tables/en-us-g2.ctb"
