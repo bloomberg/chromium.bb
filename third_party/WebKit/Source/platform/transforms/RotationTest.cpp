@@ -58,6 +58,10 @@ TEST(RotationTest, GetCommonAxisTest) {
   EXPECT_FALSE(Rotation::getCommonAxis(Rotation(FloatPoint3D(1, 2, 3), 50),
                                        Rotation(FloatPoint3D(3, 2, 1), 100),
                                        axis, angleA, angleB));
+
+  EXPECT_FALSE(Rotation::getCommonAxis(Rotation(FloatPoint3D(1, 2, 3), 50),
+                                       Rotation(FloatPoint3D(-1, -2, -3), 100),
+                                       axis, angleA, angleB));
 }
 
 }  // namespace blink

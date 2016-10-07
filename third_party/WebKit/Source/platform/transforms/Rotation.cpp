@@ -82,9 +82,12 @@ bool Rotation::getCommonAxis(const Rotation& a,
     return true;
   }
 
+  double dot = a.axis.dot(b.axis);
+  if (dot < 0)
+    return false;
+
   double aSquared = a.axis.lengthSquared();
   double bSquared = b.axis.lengthSquared();
-  double dot = a.axis.dot(b.axis);
   double error = std::abs(1 - (dot * dot) / (aSquared * bSquared));
   if (error > kAngleEpsilon)
     return false;

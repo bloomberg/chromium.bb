@@ -263,7 +263,7 @@ TEST(TransformOperationsTest, AbsoluteAnimatedAxisRotationBounds) {
   FloatBox box(1, 0, 0, 0, 0, 0);
   FloatBox bounds;
   EXPECT_TRUE(toSame.blendedBoundsForBox(box, fromOps, 0, 1, &bounds));
-  EXPECT_TRUE(toOpposite.blendedBoundsForBox(box, fromOps, 0, 1, &bounds));
+  EXPECT_FALSE(toOpposite.blendedBoundsForBox(box, fromOps, 0, 1, &bounds));
   EXPECT_FALSE(toDifferent.blendedBoundsForBox(box, fromOps, 0, 1, &bounds));
 }
 
