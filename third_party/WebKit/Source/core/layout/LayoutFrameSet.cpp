@@ -66,9 +66,11 @@ void LayoutFrameSet::GridAxis::resize(int size) {
   m_deltas.resize(size);
   m_deltas.fill(0);
 
-  // To track edges for resizability and borders, we need to be (size + 1). This is because a parent frameset
-  // may ask us for information about our left/top/right/bottom edges in order to make its own decisions about
-  // what to do. We are capable of tainting that parent frameset's borders, so we have to cache this info.
+  // To track edges for resizability and borders, we need to be (size + 1). This
+  // is because a parent frameset may ask us for information about our left/top/
+  // right/bottom edges in order to make its own decisions about what to do. We
+  // are capable of tainting that parent frameset's borders, so we have to cache
+  // this info.
   m_preventResize.resize(size + 1);
   m_allowBorder.resize(size + 1);
 }
@@ -100,24 +102,26 @@ void LayoutFrameSet::layOutAxis(GridAxis& axis,
   // First we need to investigate how many columns of each type we have and
   // how much space these columns are going to require.
   for (int i = 0; i < gridLen; ++i) {
-    // Count the total length of all of the fixed columns/rows -> totalFixed
-    // Count the number of columns/rows which are fixed -> countFixed
+    // Count the total length of all of the fixed columns/rows -> totalFixed.
+    // Count the number of columns/rows which are fixed -> countFixed.
     if (grid[i].isAbsolute()) {
       gridLayout[i] = max<int>(grid[i].value() * effectiveZoom, 0);
       totalFixed += gridLayout[i];
       countFixed++;
     }
 
-    // Count the total percentage of all of the percentage columns/rows -> totalPercent
-    // Count the number of columns/rows which are percentages -> countPercent
+    // Count the total percentage of all of the percentage columns/rows ->
+    // totalPercent. Count the number of columns/rows which are percentages ->
+    // countPercent.
     if (grid[i].isPercentage()) {
       gridLayout[i] = max<int>(grid[i].value() * availableLen / 100., 0);
       totalPercent += gridLayout[i];
       countPercent++;
     }
 
-    // Count the total relative of all the relative columns/rows -> totalRelative
-    // Count the number of columns/rows which are relative -> countRelative
+    // Count the total relative of all the relative columns/rows ->
+    // totalRelative. Count the number of columns/rows which are relative ->
+    // countRelative.
     if (grid[i].isRelative()) {
       totalRelative += max<int>(grid[i].value(), 1);
       countRelative++;
@@ -126,8 +130,8 @@ void LayoutFrameSet::layOutAxis(GridAxis& axis,
 
   int remainingLen = availableLen;
 
-  // Fixed columns/rows are our first priority. If there is not enough space to fit all fixed
-  // columns/rows we need to proportionally adjust their size.
+  // Fixed columns/rows are our first priority. If there is not enough space to
+  // fit all fixed columns/rows we need to proportionally adjust their size.
   if (totalFixed > remainingLen) {
     int remainingFixed = remainingLen;
 
@@ -141,10 +145,11 @@ void LayoutFrameSet::layOutAxis(GridAxis& axis,
     remainingLen -= totalFixed;
   }
 
-  // Percentage columns/rows are our second priority. Divide the remaining space proportionally
-  // over all percentage columns/rows. IMPORTANT: the size of each column/row is not relative
-  // to 100%, but to the total percentage. For example, if there are three columns, each of 75%,
-  // and the available space is 300px, each column will become 100px in width.
+  // Percentage columns/rows are our second priority. Divide the remaining space
+  // proportionally over all percentage columns/rows.
+  // NOTE: the size of each column/row is not relative to 100%, but to the total
+  // percentage. For example, if there are three columns, each of 75%, and the
+  // available space is 300px, each column will become 100px in width.
   if (totalPercent > remainingLen) {
     int remainingPercent = remainingLen;
 
@@ -158,8 +163,9 @@ void LayoutFrameSet::layOutAxis(GridAxis& axis,
     remainingLen -= totalPercent;
   }
 
-  // Relative columns/rows are our last priority. Divide the remaining space proportionally
-  // over all relative columns/rows. IMPORTANT: the relative value of 0* is treated as 1*.
+  // Relative columns/rows are our last priority. Divide the remaining space
+  // proportionally over all relative columns/rows.
+  // NOTE: the relative value of 0* is treated as 1*.
   if (countRelative) {
     int lastRelative = 0;
     int remainingRelative = remainingLen;
@@ -173,23 +179,24 @@ void LayoutFrameSet::layOutAxis(GridAxis& axis,
       }
     }
 
-    // If we could not evenly distribute the available space of all of the relative
-    // columns/rows, the remainder will be added to the last column/row.
-    // For example: if we have a space of 100px and three columns (*,*,*), the remainder will
-    // be 1px and will be added to the last column: 33px, 33px, 34px.
+    // If we could not evenly distribute the available space of all of the
+    // relative columns/rows, the remainder will be added to the last column/
+    // row. For example: if we have a space of 100px and three columns (*,*,*),
+    // the remainder will be 1px and will be added to the last column: 33px,
+    // 33px, 34px.
     if (remainingLen) {
       gridLayout[lastRelative] += remainingLen;
       remainingLen = 0;
     }
   }
 
-  // If we still have some left over space we need to divide it over the already existing
-  // columns/rows
+  // If we still have some left over space we need to divide it over the already
+  // existing columns/rows
   if (remainingLen) {
-    // Our first priority is to spread if over the percentage columns. The remaining
-    // space is spread evenly, for example: if we have a space of 100px, the columns
-    // definition of 25%,25% used to result in two columns of 25px. After this the
-    // columns will each be 50px in width.
+    // Our first priority is to spread if over the percentage columns. The
+    // remaining space is spread evenly, for example: if we have a space of
+    // 100px, the columns definition of 25%,25% used to result in two columns of
+    // 25px. After this the columns will each be 50px in width.
     if (countPercent && totalPercent) {
       int remainingPercent = remainingLen;
       int changePercent = 0;
@@ -202,9 +209,9 @@ void LayoutFrameSet::layOutAxis(GridAxis& axis,
         }
       }
     } else if (totalFixed) {
-      // Our last priority is to spread the remaining space over the fixed columns.
-      // For example if we have 100px of space and two column of each 40px, both
-      // columns will become exactly 50px.
+      // Our last priority is to spread the remaining space over the fixed
+      // columns. For example if we have 100px of space and two column of each
+      // 40px, both columns will become exactly 50px.
       int remainingFixed = remainingLen;
       int changeFixed = 0;
 
@@ -218,10 +225,10 @@ void LayoutFrameSet::layOutAxis(GridAxis& axis,
     }
   }
 
-  // If we still have some left over space we probably ended up with a remainder of
-  // a division. We cannot spread it evenly anymore. If we have any percentage
-  // columns/rows simply spread the remainder equally over all available percentage columns,
-  // regardless of their size.
+  // If we still have some left over space we probably ended up with a remainder
+  // of a division. We cannot spread it evenly anymore. If we have any
+  // percentage columns/rows simply spread the remainder equally over all
+  // available percentage columns, regardless of their size.
   if (remainingLen && countPercent) {
     int remainingPercent = remainingLen;
     int changePercent = 0;
@@ -234,9 +241,8 @@ void LayoutFrameSet::layOutAxis(GridAxis& axis,
       }
     }
   } else if (remainingLen && countFixed) {
-    // If we don't have any percentage columns/rows we only have
-    // fixed columns. Spread the remainder equally over all fixed
-    // columns/rows.
+    // If we don't have any percentage columns/rows we only have fixed columns.
+    // Spread the remainder equally over all fixed columns/rows.
     int remainingFixed = remainingLen;
     int changeFixed = 0;
 
@@ -273,8 +279,9 @@ void LayoutFrameSet::layOutAxis(GridAxis& axis,
 void LayoutFrameSet::notifyFrameEdgeInfoChanged() {
   if (needsLayout())
     return;
-  // FIXME: We should only recompute the edge info with respect to the frame that changed
-  // and its adjacent frame(s) instead of recomputing the edge info for the entire frameset.
+  // FIXME: We should only recompute the edge info with respect to the frame
+  // that changed and its adjacent frame(s) instead of recomputing the edge info
+  // for the entire frameset.
   computeEdgeInfo();
 }
 
@@ -406,10 +413,11 @@ void LayoutFrameSet::positionFrames() {
       child->setLocation(position);
       size.setWidth(LayoutUnit(m_cols.m_sizes[c]));
 
-      // If we have a new size, we need to resize and layout the child. If the size is 0x0 we
-      // also need to lay out, since this may mean that we're dealing with a child frameset
-      // that wasn't previously initialized properly, because it was previously hidden, but
-      // no longer is, because rows * cols may have increased.
+      // If we have a new size, we need to resize and layout the child. If the
+      // size is 0x0 we also need to lay out, since this may mean that we're
+      // dealing with a child frameset that wasn't previously initialized
+      // properly, because it was previously hidden, but no longer is, because
+      // rows * cols may have increased.
       if (size != child->size() || size.isEmpty()) {
         child->setSize(size);
         child->setNeedsLayoutAndFullPaintInvalidation(

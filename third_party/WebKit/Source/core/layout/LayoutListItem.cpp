@@ -119,7 +119,8 @@ static Node* enclosingList(const LayoutListItem* listItem) {
   if (!listItemNode)
     return nullptr;
   Node* firstNode = nullptr;
-  // We use parentNode because the enclosing list could be a ShadowRoot that's not Element.
+  // We use parentNode because the enclosing list could be a ShadowRoot that's
+  // not Element.
   for (Node* parent = FlatTreeTraversal::parent(*listItemNode); parent;
        parent = FlatTreeTraversal::parent(*parent)) {
     if (isList(*parent))
@@ -157,7 +158,8 @@ static LayoutListItem* nextListItem(const Node* listNode,
     if (layoutObject && layoutObject->isListItem())
       return toLayoutListItem(layoutObject);
 
-    // FIXME: Can this be optimized to skip the children of the elements without a layoutObject?
+    // FIXME: Can this be optimized to skip the children of the elements without
+    // a layoutObject?
     current = LayoutTreeBuilderTraversal::next(*current, listNode);
   }
 
@@ -300,7 +302,8 @@ bool LayoutListItem::updateMarkerLocation() {
   ASSERT(m_marker);
 
   LayoutObject* markerParent = m_marker->parent();
-  // list-style-position:inside makes the ::marker pseudo an ordinary position:static element that should be attached to LayoutListItem block.
+  // list-style-position:inside makes the ::marker pseudo an ordinary
+  // position:static element that should be attached to LayoutListItem block.
   LayoutObject* lineBoxParent =
       m_marker->isInside() ? this : getParentOfFirstLineBox(this, m_marker);
   if (!lineBoxParent) {
@@ -316,8 +319,10 @@ bool LayoutListItem::updateMarkerLocation() {
   if (markerParent != lineBoxParent) {
     m_marker->remove();
     lineBoxParent->addChild(m_marker, firstNonMarkerChild(lineBoxParent));
-    // TODO(rhogan): lineBoxParent and markerParent may be deleted by addChild, so they are not safe to reference here.
-    // Once we have a safe way of referencing them delete markerParent if it is an empty anonymous block.
+    // TODO(rhogan): lineBoxParent and markerParent may be deleted by addChild,
+    // so they are not safe to reference here.
+    // Once we have a safe way of referencing them delete markerParent if it is
+    // an empty anonymous block.
     m_marker->updateMarginsAndContent();
     return true;
   }
@@ -525,10 +530,11 @@ void LayoutListItem::updateListMarkerNumbers() {
     isListReversed = oListElement->isReversed();
   }
 
-  // FIXME: The n^2 protection below doesn't help if the elements were inserted after the
-  // the list had already been displayed.
+  // FIXME: The n^2 protection below doesn't help if the elements were inserted
+  // after the the list had already been displayed.
 
-  // Avoid an O(n^2) walk over the children below when they're all known to be attaching.
+  // Avoid an O(n^2) walk over the children below when they're all known to be
+  // attaching.
   if (listNode->needsAttach())
     return;
 

@@ -4,7 +4,8 @@
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Allan Sandfeld Jensen (kde@carewolf.com)
  *           (C) 2006 Samuel Weinig (sam.weinig@gmail.com)
- * Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2011 Apple Inc.
+ *               All rights reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
  * Copyright (C) Research In Motion Limited 2011-2012. All rights reserved.
  *
@@ -102,7 +103,8 @@ void LayoutImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect) {
     return;
   }
 
-  // Per the spec, we let the server-sent header override srcset/other sources of dpr.
+  // Per the spec, we let the server-sent header override srcset/other sources
+  // of dpr.
   // https://github.com/igrigorik/http-client-hints/blob/master/draft-grigorik-http-client-hints-01.txt#L255
   if (m_imageResource->cachedImage() &&
       m_imageResource->cachedImage()->hasDevicePixelRatioHeaderValue()) {
@@ -134,10 +136,10 @@ void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded() {
       m_imageResource->imageSize(style()->effectiveZoom());
   updateIntrinsicSizeIfNeeded(newIntrinsicSize);
 
-  // In the case of generated image content using :before/:after/content, we might not be
-  // in the layout tree yet. In that case, we just need to update our intrinsic size.
-  // layout() will be called after we are inserted in the tree which will take care of
-  // what we are doing here.
+  // In the case of generated image content using :before/:after/content, we
+  // might not be in the layout tree yet. In that case, we just need to update
+  // our intrinsic size. layout() will be called after we are inserted in the
+  // tree which will take care of what we are doing here.
   if (!containingBlock())
     return;
 
@@ -145,13 +147,15 @@ void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded() {
   if (imageSourceHasChangedSize)
     setPreferredLogicalWidthsDirty();
 
-  // If the actual area occupied by the image has changed and it is not constrained by style then a layout is required.
+  // If the actual area occupied by the image has changed and it is not
+  // constrained by style then a layout is required.
   bool imageSizeIsConstrained = style()->logicalWidth().isSpecified() &&
                                 style()->logicalHeight().isSpecified();
 
-  // FIXME: We only need to recompute the containing block's preferred size if the containing block's size
-  // depends on the image's size (i.e., the container uses shrink-to-fit sizing).
-  // There's no easy way to detect that shrink-to-fit is needed, always force a layout.
+  // FIXME: We only need to recompute the containing block's preferred size if
+  // the containing block's size depends on the image's size (i.e., the
+  // container uses shrink-to-fit sizing). There's no easy way to detect that
+  // shrink-to-fit is needed, always force a layout.
   bool containingBlockNeedsToRecomputePreferredSize =
       style()->logicalWidth().isPercentOrCalc() ||
       style()->logicalMaxWidth().isPercentOrCalc() ||
@@ -237,7 +241,8 @@ bool LayoutImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
   if ((backgroundClip == BorderFillBox || backgroundClip == PaddingFillBox) &&
       style()->hasPadding())
     return false;
-  // Object-position may leave parts of the content box empty, regardless of the value of object-fit.
+  // Object-position may leave parts of the content box empty, regardless of the
+  // value of object-fit.
   if (style()->objectPosition() != ComputedStyle::initialObjectPosition())
     return false;
   // Object-fit may leave parts of the content box empty.
@@ -293,7 +298,8 @@ void LayoutImage::computeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsicSizingInfo) const {
   LayoutReplaced::computeIntrinsicSizingInfo(intrinsicSizingInfo);
 
-  // Our intrinsicSize is empty if we're laying out generated images with relative width/height. Figure out the right intrinsic size to use.
+  // Our intrinsicSize is empty if we're laying out generated images with
+  // relative width/height. Figure out the right intrinsic size to use.
   if (intrinsicSizingInfo.size.isEmpty() &&
       m_imageResource->imageHasRelativeSize()) {
     LayoutObject* containingBlock =
@@ -305,8 +311,10 @@ void LayoutImage::computeIntrinsicSizingInfo(
           box->availableLogicalHeight(IncludeMarginBorderPadding).toFloat());
     }
   }
-  // Don't compute an intrinsic ratio to preserve historical WebKit behavior if we're painting alt text and/or a broken image.
-  // Video is excluded from this behavior because video elements have a default aspect ratio that a failed poster image load should not override.
+  // Don't compute an intrinsic ratio to preserve historical WebKit behavior if
+  // we're painting alt text and/or a broken image.
+  // Video is excluded from this behavior because video elements have a default
+  // aspect ratio that a failed poster image load should not override.
   if (m_imageResource && m_imageResource->errorOccurred() && !isVideo()) {
     intrinsicSizingInfo.aspectRatio = FloatSize(1, 1);
     return;

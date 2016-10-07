@@ -27,9 +27,10 @@
 
 namespace blink {
 
-// LayoutButtons are just like normal flexboxes except that they will generate an anonymous block child.
-// For inputs, they will also generate an anonymous LayoutText and keep its style and content up
-// to date as the button changes.
+// LayoutButtons are just like normal flexboxes except that they will generate
+// an anonymous block child.
+// For inputs, they will also generate an anonymous LayoutText and keep its
+// style and content up to date as the button changes.
 class LayoutButton final : public LayoutFlexibleBox {
  public:
   explicit LayoutButton(Element*);

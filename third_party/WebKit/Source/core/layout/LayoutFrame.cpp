@@ -45,10 +45,10 @@ void LayoutFrame::imageChanged(WrappedImagePtr image, const IntRect*) {
     for (const CursorData& cursor : *cursors) {
       if (cursor.image() && cursor.image()->cachedImage() == image) {
         if (LocalFrame* frame = this->frame()) {
-          // Cursor update scheduling is done by the local root, which is the main frame if there
-          // are no RemoteFrame ancestors in the frame tree. Use of localFrameRoot() is
-          // discouraged but will change when cursor update scheduling is moved from EventHandler
-          // to PageEventHandler.
+          // Cursor update scheduling is done by the local root, which is the
+          // main frame if there are no RemoteFrame ancestors in the frame tree.
+          // Use of localFrameRoot() is discouraged but will change when cursor
+          // update scheduling is moved from EventHandler to PageEventHandler.
           frame->localFrameRoot()->eventHandler().scheduleCursorUpdate();
         }
       }

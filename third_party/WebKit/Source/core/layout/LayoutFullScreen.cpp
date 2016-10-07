@@ -80,8 +80,8 @@ void LayoutFullScreen::willBeDestroyed() {
     DCHECK(!m_placeholder);
   }
 
-  // LayoutObjects are unretained, so notify the document (which holds a pointer to a LayoutFullScreen)
-  // if its LayoutFullScreen is destroyed.
+  // LayoutObjects are unretained, so notify the document (which holds a pointer
+  // to a LayoutFullScreen) if its LayoutFullScreen is destroyed.
   Fullscreen& fullscreen = Fullscreen::from(document());
   if (fullscreen.fullScreenLayoutObject() == this)
     fullscreen.fullScreenLayoutObjectDestroyed();
@@ -101,7 +101,9 @@ void LayoutFullScreen::updateStyle(LayoutObject* parent) {
 
   fullscreenStyle->setDisplay(EDisplay::Flex);
   fullscreenStyle->setJustifyContentPosition(ContentPositionCenter);
-  // TODO (lajava): Since the FullScrenn layout object is anonymous, its Default Alignment (align-items) value can't be used to resolve its children Self Alignment 'auto' values.
+  // TODO (lajava): Since the FullScrenn layout object is anonymous, its Default
+  // Alignment (align-items) value can't be used to resolve its children Self
+  // Alignment 'auto' values.
   fullscreenStyle->setAlignItemsPosition(ItemPositionCenter);
   fullscreenStyle->setFlexDirection(FlowColumn);
 
@@ -143,17 +145,19 @@ LayoutObject* LayoutFullScreen::wrapLayoutObject(LayoutObject* object,
     if (LayoutObject* parent = object->parent()) {
       LayoutBlock* containingBlock = object->containingBlock();
       DCHECK(containingBlock);
-      // Since we are moving the |object| to a new parent |fullscreenLayoutObject|,
-      // the line box tree underneath our |containingBlock| is not longer valid.
+      // Since we are moving the |object| to a new parent
+      // |fullscreenLayoutObject|, the line box tree underneath our
+      // |containingBlock| is not longer valid.
       if (containingBlock->isLayoutBlockFlow())
         toLayoutBlockFlow(containingBlock)->deleteLineBoxTree();
 
       parent->addChildWithWritingModeOfParent(fullscreenLayoutObject, object);
       object->remove();
 
-      // Always just do a full layout to ensure that line boxes get deleted properly.
-      // Because objects moved from |parent| to |fullscreenLayoutObject|, we want to
-      // make new line boxes instead of leaving the old ones around.
+      // Always just do a full layout to ensure that line boxes get deleted
+      // properly.
+      // Because objects moved from |parent| to |fullscreenLayoutObject|, we
+      // want to make new line boxes instead of leaving the old ones around.
       parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
           LayoutInvalidationReason::Fullscreen);
       containingBlock

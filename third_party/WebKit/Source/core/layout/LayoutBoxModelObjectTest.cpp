@@ -54,7 +54,8 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraints) {
       scrollableArea->stickyConstraintsMap().get(sticky->layer());
   ASSERT_EQ(0.f, constraints.topOffset());
 
-  // The coordinates of the constraint rects should all be with respect to the unscrolled scroller.
+  // The coordinates of the constraint rects should all be with respect to the
+  // unscrolled scroller.
   ASSERT_EQ(IntRect(15, 115, 170, 370),
             enclosingIntRect(
                 getScrollContainerRelativeContainingBlockRect(constraints)));
@@ -91,7 +92,8 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionTransforms) {
       scrollableArea->stickyConstraintsMap().get(sticky->layer());
   ASSERT_EQ(0.f, constraints.topOffset());
 
-  // The coordinates of the constraint rects should all be with respect to the unscrolled scroller.
+  // The coordinates of the constraint rects should all be with respect to the
+  // unscrolled scroller.
   ASSERT_EQ(IntRect(15, 115, 170, 370),
             enclosingIntRect(
                 getScrollContainerRelativeContainingBlockRect(constraints)));
@@ -135,8 +137,8 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionPercentageStyles) {
       enclosingIntRect(getScrollContainerRelativeStickyBoxRect(constraints)));
 }
 
-// Verifies that the sticky constraints are correct when the sticky position container is also
-// the ancestor scroller.
+// Verifies that the sticky constraints are correct when the sticky position
+// container is also the ancestor scroller.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionContainerIsScroller) {
   setBodyInnerHTML(
       "<style>#sticky { position: sticky; top: 0; width: 100px; height: 100px; "
@@ -167,8 +169,8 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionContainerIsScroller) {
       enclosingIntRect(getScrollContainerRelativeStickyBoxRect(constraints)));
 }
 
-// Verifies that the sticky constraints are correct when the sticky position object has an
-// anonymous containing block.
+// Verifies that the sticky constraints are correct when the sticky position
+// object has an anonymous containing block.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionAnonymousContainer) {
   setBodyInnerHTML(
       "<style>#sticky { display: inline-block; position: sticky; top: 0; "

@@ -4,7 +4,8 @@
  * Copyright (C) 2000 Dirk Mueller <mueller@kde.org>
  * Copyright (C) 2006 Allan Sandfeld Jensen <kde@carewolf.com>
  * Copyright (C) 2006 Samuel Weinig <sam.weinig@gmail.com>
- * Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009, 2010 Apple Inc.
+ *               All rights reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
  * Copyright (C) 2010 Patrick Gansterer <paroga@paroga.com>
  *

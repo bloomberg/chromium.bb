@@ -78,7 +78,8 @@ class LayoutCounter final : public LayoutText {
   PassRefPtr<StringImpl> originalText() const override;
 
   // Removes the reference to the CounterNode associated with this layoutObject.
-  // This is used to cause a counter display update when the CounterNode tree changes.
+  // This is used to cause a counter display update when the CounterNode tree
+  // changes.
   void invalidate();
 
   CounterContent m_counter;

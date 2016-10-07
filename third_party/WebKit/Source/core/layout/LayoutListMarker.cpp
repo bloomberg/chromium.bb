@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc.
+ *               All rights reserved.
  * Copyright (C) 2006 Andrew Wellington (proton@wiretapped.net)
  * Copyright (C) 2010 Daniel Bates (dbates@intudata.com)
  *
@@ -65,9 +66,10 @@ LayoutListMarker* LayoutListMarker::createAnonymous(LayoutListItem* item) {
 LayoutSize LayoutListMarker::imageBulletSize() const {
   ASSERT(isImage());
 
-  // FIXME: This is a somewhat arbitrary default width. Generated images for markers really won't
-  // become particularly useful until we support the CSS3 marker pseudoclass to allow control over
-  // the width and height of the marker box.
+  // FIXME: This is a somewhat arbitrary default width. Generated images for
+  // markers really won't become particularly useful until we support the CSS3
+  // marker pseudoclass to allow control over the width and height of the
+  // marker box.
   LayoutUnit bulletWidth = style()->getFontMetrics().ascent() / LayoutUnit(2);
   return m_image->imageSize(*this, style()->effectiveZoom(),
                             LayoutSize(bulletWidth, bulletWidth));
@@ -157,7 +159,8 @@ void LayoutListMarker::layout() {
 }
 
 void LayoutListMarker::imageChanged(WrappedImagePtr o, const IntRect*) {
-  // A list marker can't have a background or border image, so no need to call the base class method.
+  // A list marker can't have a background or border image, so no need to call
+  // the base class method.
   if (!m_image || o != m_image->data())
     return;
 
@@ -175,7 +178,8 @@ void LayoutListMarker::updateMarginsAndContent() {
 }
 
 void LayoutListMarker::updateContent() {
-  // FIXME: This if-statement is just a performance optimization, but it's messy to use the preferredLogicalWidths dirty bit for this.
+  // FIXME: This if-statement is just a performance optimization, but it's messy
+  // to use the preferredLogicalWidths dirty bit for this.
   // It's unclear if this is a premature optimization.
   if (!preferredLogicalWidthsDirty())
     return;
@@ -446,7 +450,8 @@ IntRect LayoutListMarker::getRelativeMarkerRect() const {
 }
 
 void LayoutListMarker::setSelectionState(SelectionState state) {
-  // The selection state for our containing block hierarchy is updated by the base class call.
+  // The selection state for our containing block hierarchy is updated by the
+  // base class call.
   LayoutBox::setSelectionState(state);
 
   if (inlineBoxWrapper() && canUpdateSelectionOnRootLineBoxes())
@@ -455,12 +460,12 @@ void LayoutListMarker::setSelectionState(SelectionState state) {
 
 void LayoutListMarker::listItemStyleDidChange() {
   RefPtr<ComputedStyle> newStyle = ComputedStyle::create();
-  // The marker always inherits from the list item, regardless of where it might end
-  // up (e.g., in some deeply nested line box). See CSS3 spec.
+  // The marker always inherits from the list item, regardless of where it might
+  // end up (e.g., in some deeply nested line box). See CSS3 spec.
   newStyle->inheritFrom(m_listItem->styleRef());
   if (style()) {
-    // Reuse the current margins. Otherwise resetting the margins to initial values
-    // would trigger unnecessary layout.
+    // Reuse the current margins. Otherwise resetting the margins to initial
+    // values would trigger unnecessary layout.
     newStyle->setMarginStart(style()->marginStart());
     newStyle->setMarginEnd(style()->marginRight());
   }

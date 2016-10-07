@@ -40,8 +40,9 @@ class LayoutMultiColumnSet;
 
 typedef ListHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
 
-// Layout state for multicol. To be stored when laying out a block child, so that we can roll back
-// to the initial state if we need to re-lay out said block child.
+// Layout state for multicol. To be stored when laying out a block child, so
+// that we can roll back to the initial state if we need to re-lay out said
+// block child.
 class MultiColumnLayoutState {
   friend class LayoutMultiColumnFlowThread;
 
@@ -56,10 +57,11 @@ class MultiColumnLayoutState {
   LayoutMultiColumnSet* m_columnSet;
 };
 
-// LayoutFlowThread is used to collect all the layout objects that participate in a flow thread. It
-// will also help in doing the layout. However, it will not layout directly to screen. Instead,
-// LayoutMultiColumnSet objects will redirect their paint and nodeAtPoint methods to this
-// object. Each LayoutMultiColumnSet will actually be a viewPort of the LayoutFlowThread.
+// LayoutFlowThread is used to collect all the layout objects that participate
+// in a flow thread. It will also help in doing the layout. However, it will not
+// layout directly to screen. Instead, LayoutMultiColumnSet objects will
+// redirect their paint and nodeAtPoint methods to this object. Each
+// LayoutMultiColumnSet will actually be a viewPort of the LayoutFlowThread.
 class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
  public:
   LayoutFlowThread();
@@ -127,12 +129,13 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
   virtual MultiColumnLayoutState multiColumnLayoutState() const = 0;
   virtual void restoreMultiColumnLayoutState(const MultiColumnLayoutState&) = 0;
 
-  // Find and return the next logical top after |flowThreadOffset| that can fit unbreakable
-  // content as tall as |contentLogicalHeight|. |flowThreadOffset| is expected to be at the exact
-  // top of a column that's known to not have enough space for |contentLogicalHeight|. This method
-  // is called when the current column is too short to fit the content, in the hope that there
-  // exists one that's tall enough further ahead. If no such column can be found,
-  // |flowThreadOffset| will be returned.
+  // Find and return the next logical top after |flowThreadOffset| that can fit
+  // unbreakable content as tall as |contentLogicalHeight|. |flowThreadOffset|
+  // is expected to be at the exact top of a column that's known to not have
+  // enough space for |contentLogicalHeight|. This method is called when the
+  // current column is too short to fit the content, in the hope that there
+  // exists one that's tall enough further ahead. If no such column can be
+  // found, |flowThreadOffset| will be returned.
   LayoutUnit nextLogicalTopForUnbreakableContent(
       LayoutUnit flowThreadOffset,
       LayoutUnit contentLogicalHeight) const;
@@ -140,12 +143,12 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
   virtual bool isPageLogicalHeightKnown() const { return true; }
   bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }
 
-  // Return the visual bounding box based on the supplied flow-thread bounding box. Both
-  // rectangles are completely physical in terms of writing mode.
+  // Return the visual bounding box based on the supplied flow-thread bounding
+  // box. Both rectangles are completely physical in terms of writing mode.
   LayoutRect fragmentsBoundingBox(const LayoutRect& layerBoundingBox) const;
 
-  // Convert a logical position in the flow thread coordinate space to a logical position in the
-  // containing coordinate space.
+  // Convert a logical position in the flow thread coordinate space to a logical
+  // position in the containing coordinate space.
   void flowThreadToContainingCoordinateSpace(LayoutUnit& blockPosition,
                                              LayoutUnit& inlinePosition) const;
 

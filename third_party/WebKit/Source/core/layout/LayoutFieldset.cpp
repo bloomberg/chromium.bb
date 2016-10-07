@@ -91,8 +91,8 @@ void LayoutFieldset::computeIntrinsicLogicalWidths(
 
   maxLogicalWidth = std::max(minLogicalWidth, maxLogicalWidth);
 
-  // Due to negative margins, it is possible that we calculated a negative intrinsic width. Make sure that we
-  // never return a negative width.
+  // Due to negative margins, it is possible that we calculated a negative
+  // intrinsic width. Make sure that we never return a negative width.
   minLogicalWidth = std::max(LayoutUnit(), minLogicalWidth);
   maxLogicalWidth = std::max(LayoutUnit(), maxLogicalWidth);
 
@@ -151,8 +151,8 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren,
           logicalLeft = borderStart() + paddingStart();
           break;
         case CENTER: {
-          // Make sure that the extra pixel goes to the end side in RTL (since it went to the end side
-          // in LTR).
+          // Make sure that the extra pixel goes to the end side in RTL (since
+          // it went to the end side in LTR).
           LayoutUnit centeredWidth =
               logicalWidth() - logicalWidthForChild(*legend);
           logicalLeft = centeredWidth - centeredWidth / 2;
@@ -177,8 +177,9 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren,
     // FIXME: We need to account for the legend's margin before too.
     if (fieldsetBorderBefore > legendLogicalHeight) {
       // The <legend> is smaller than the associated fieldset before border
-      // so the latter determines positioning of the <legend>. The sizing depends
-      // on the legend's margins as we want to still follow the author's cues.
+      // so the latter determines positioning of the <legend>. The sizing
+      // depends on the legend's margins as we want to still follow the
+      // author's cues.
       // Firefox completely ignores the margins in this case which seems wrong.
       legendLogicalTop = (fieldsetBorderBefore - legendLogicalHeight) / 2;
       collapsedLegendExtent = max<LayoutUnit>(
@@ -201,7 +202,8 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren,
     setLogicalHeight(paddingBefore() + collapsedLegendExtent);
 
     if (legend->frameRect() != oldLegendFrameRect) {
-      // We need to invalidate the fieldset border if the legend's frame changed.
+      // We need to invalidate the fieldset border if the legend's frame
+      // changed.
       setShouldDoFullPaintInvalidation();
       if (m_innerBlock)
         m_innerBlock->setNeedsLayout(LayoutInvalidationReason::FieldsetChanged,

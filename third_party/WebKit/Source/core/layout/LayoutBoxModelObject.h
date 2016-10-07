@@ -145,16 +145,18 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
                : relativePositionOffset().transposedSize();
   }
 
-  // Populates StickyPositionConstraints, setting the sticky box rect, containing block rect and updating
-  // the constraint offsets according to the available space.
+  // Populates StickyPositionConstraints, setting the sticky box rect,
+  // containing block rect and updating the constraint offsets according to the
+  // available space.
   FloatRect computeStickyConstrainingRect() const;
   void updateStickyPositionConstraints() const;
   LayoutSize stickyPositionOffset() const;
 
   LayoutSize offsetForInFlowPosition() const;
 
-  // IE extensions. Used to calculate offsetWidth/Height.  Overridden by inlines (LayoutFlow)
-  // to return the remaining width on a given line (and the height of a single line).
+  // IE extensions. Used to calculate offsetWidth/Height. Overridden by inlines
+  // (LayoutInline) to return the remaining width on a given line (and the height
+  // of a single line).
   virtual LayoutUnit offsetLeft(const Element*) const;
   virtual LayoutUnit offsetTop(const Element*) const;
   virtual LayoutUnit offsetWidth() const = 0;
@@ -175,18 +177,18 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   virtual void updateFromStyle();
 
-  // The type of PaintLayer to instantiate.
-  // Any value returned from this function other than NoPaintLayer
-  // will populate |m_layer|.
+  // The type of PaintLayer to instantiate. Any value returned from this
+  // function other than NoPaintLayer will populate |m_layer|.
   virtual PaintLayerType layerTypeRequired() const = 0;
 
-  // This will work on inlines to return the bounding box of all of the lines' border boxes.
+  // This will work on inlines to return the bounding box of all of the lines'
+  // border boxes.
   virtual IntRect borderBoundingBox() const = 0;
 
   virtual LayoutRect visualOverflowRect() const = 0;
 
-  // Checks if this box, or any of it's descendants, or any of it's continuations,
-  // will take up space in the layout of the page.
+  // Checks if this box, or any of it's descendants, or any of it's
+  // continuations, will take up space in the layout of the page.
   bool hasNonEmptyLayoutSize() const;
   bool usesCompositedScrolling() const;
 
@@ -228,7 +230,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   // These functions are used during layout.
   // - Table cells override them to include the intrinsic padding (see
-  // explanations in LayoutTableCell).
+  //   explanations in LayoutTableCell).
   // - Table override them to exclude padding with collapsing borders.
   virtual LayoutUnit paddingTop() const { return computedCSSPaddingTop(); }
   virtual LayoutUnit paddingBottom() const {
@@ -394,8 +396,9 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
 
   // http://www.w3.org/TR/css3-background/#body-background
-  // <html> root element with no background steals background from its first <body> child.
-  // The used background for such body element should be the initial value. (i.e. transparent)
+  // <html> root element with no background steals background from its first
+  // <body> child. The used background for such body element should be the
+  // initial value. (i.e. transparent)
   bool backgroundStolenForBeingBody(
       const ComputedStyle* rootElementStyle = nullptr) const;
 
@@ -450,9 +453,11 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   void invalidateStickyConstraints();
 
  public:
-  // These functions are only used internally to manipulate the layout tree structure via remove/insert/appendChildNode.
-  // Since they are typically called only to move objects around within anonymous blocks (which only have layers in
-  // the case of column spans), the default for fullRemoveInsert is false rather than true.
+  // These functions are only used internally to manipulate the layout tree
+  // structure via remove/insert/appendChildNode.
+  // Since they are typically called only to move objects around within
+  // anonymous blocks (which only have layers in the case of column spans), the
+  // default for fullRemoveInsert is false rather than true.
   void moveChildTo(LayoutBoxModelObject* toBoxModelObject,
                    LayoutObject* child,
                    LayoutObject* beforeChild,
@@ -472,8 +477,9 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     moveChildrenTo(toBoxModelObject, slowFirstChild(), 0, beforeChild,
                    fullRemoveInsert);
   }
-  // Move all of the kids from |startChild| up to but excluding |endChild|. 0 can be passed as the |endChild| to denote
-  // that all the kids from |startChild| onwards should be moved.
+  // Move all of the kids from |startChild| up to but excluding |endChild|. 0
+  // can be passed as the |endChild| to denote that all the kids from
+  // |startChild| onwards should be moved.
   void moveChildrenTo(LayoutBoxModelObject* toBoxModelObject,
                       LayoutObject* startChild,
                       LayoutObject* endChild,
@@ -501,8 +507,8 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   bool hasAutoHeightOrContainingBlockWithAutoHeight(
       bool checkingContainingBlock) const;
 
-  // The PaintLayer associated with this object.
-  // |m_layer| can be nullptr depending on the return value of layerTypeRequired().
+  // The PaintLayer associated with this object. |m_layer| can be nullptr
+  // depending on the return value of layerTypeRequired().
   std::unique_ptr<PaintLayer> m_layer;
 
   std::unique_ptr<LayoutBoxModelObjectRareData> m_rareData;

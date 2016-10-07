@@ -85,8 +85,8 @@ void LayoutBoxModelObject::setSelectionState(SelectionState state) {
   else
     LayoutObject::setSelectionState(state);
 
-  // FIXME: We should consider whether it is OK propagating to ancestor LayoutInlines.
-  // This is a workaround for http://webkit.org/b/32123
+  // FIXME: We should consider whether it is OK propagating to ancestor
+  // LayoutInlines. This is a workaround for http://webkit.org/b/32123
   // The containing block can be null in case of an orphaned tree.
   LayoutBlock* containingBlock = this->containingBlock();
   if (containingBlock && !containingBlock->isLayoutView())
@@ -120,8 +120,8 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const {
           std::min(style()->borderRightWidth(), style()->borderBottomWidth())));
   bool outlineOverlapsPaddingBox = style()->outlineOffset() < -minBorderWidth;
   bool hasCustomScrollbars = false;
-  // TODO(flackr): Detect opaque custom scrollbars which would cover up a border-box
-  // background.
+  // TODO(flackr): Detect opaque custom scrollbars which would cover up a
+  // border-box background.
   if (PaintLayerScrollableArea* scrollableArea = getScrollableArea()) {
     if ((scrollableArea->horizontalScrollbar() &&
          scrollableArea->horizontalScrollbar()->isCustomScrollbar()) ||
@@ -136,8 +136,9 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const {
   if (!style()->hasAutoClip())
     return false;
 
-  // TODO(flackr): Remove this when box shadows are still painted correctly when painting
-  // into the composited scrolling contents layer. https://crbug.com/646464
+  // TODO(flackr): Remove this when box shadows are still painted correctly when
+  // painting into the composited scrolling contents layer.
+  // https://crbug.com/646464
   if (style()->boxShadow())
     return false;
 
@@ -146,23 +147,24 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const {
     if (layer->attachment() == LocalBackgroundAttachment)
       continue;
 
-    // If the outline draws inside the border, it intends to draw on top of the scroller's background,
-    // however because it is painted into a layer behind the scrolling contents layer we avoid auto
-    // promoting in this case to avoid obscuring the outline.
-    // TODO(flackr): Outlines should be drawn on top of the scrolling contents layer so that
-    // they cannot be covered up by composited scrolling contents.
+    // If the outline draws inside the border, it intends to draw on top of the
+    // scroller's background, however because it is painted into a layer behind
+    // the scrolling contents layer we avoid auto promoting in this case to
+    // avoid obscuring the outline.
+    // TODO(flackr): Outlines should be drawn on top of the scrolling contents
+    // layer so that they cannot be covered up by composited scrolling contents.
     if (outlineOverlapsPaddingBox)
       return false;
 
-    // Solid color layers with an effective background clip of the padding box can be treated
-    // as local.
+    // Solid color layers with an effective background clip of the padding box
+    // can be treated as local.
     if (!layer->image() && !layer->next() &&
         resolveColor(CSSPropertyBackgroundColor).alpha() > 0) {
       EFillBox clip = layer->clip();
       if (clip == PaddingFillBox)
         continue;
-      // A border box can be treated as a padding box if the border is opaque or there is
-      // no border and we don't have custom scrollbars.
+      // A border box can be treated as a padding box if the border is opaque or
+      // there is no border and we don't have custom scrollbars.
       if (clip == BorderFillBox && !hasCustomScrollbars &&
           (style()->borderTopWidth() == 0 ||
            !resolveColor(CSSPropertyBorderTopColor).hasAlpha()) &&
@@ -174,7 +176,8 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const {
            !resolveColor(CSSPropertyBorderBottomColor).hasAlpha())) {
         continue;
       }
-      // A content fill box can be treated as a padding fill box if there is no padding.
+      // A content fill box can be treated as a padding fill box if there is no
+      // padding.
       if (clip == ContentFillBox && style()->paddingTop().isZero() &&
           style()->paddingLeft().isZero() && style()->paddingRight().isZero() &&
           style()->paddingBottom().isZero()) {
@@ -199,7 +202,8 @@ void LayoutBoxModelObject::willBeDestroyed() {
   ASSERT(!continuation());
 
   if (isPositioned()) {
-    // Don't use this->view() because the document's layoutView has been set to 0 during destruction.
+    // Don't use this->view() because the document's layoutView has been set to
+    // 0 during destruction.
     if (LocalFrame* frame = this->frame()) {
       if (FrameView* frameView = frame->view()) {
         if (style()->hasViewportConstrainedPosition())
@@ -215,14 +219,14 @@ void LayoutBoxModelObject::willBeDestroyed() {
 
 void LayoutBoxModelObject::styleWillChange(StyleDifference diff,
                                            const ComputedStyle& newStyle) {
-  // This object's layer may cease to be a stacking context, in which case the paint
-  // invalidation container of the children may change. Thus we need to invalidate paint
-  // eagerly for all such children.
+  // This object's layer may cease to be a stacking context, in which case the
+  // paint invalidation container of the children may change. Thus we need to
+  // invalidate paint eagerly for all such children.
   if (hasLayer() && enclosingLayer()->stackingNode() &&
       enclosingLayer()->stackingNode()->isStackingContext() &&
       !newStyle.isStackingContext()) {
-    // The following disablers are valid because we need to invalidate based on the current
-    // status.
+    // The following disablers are valid because we need to invalidate based on
+    // the current status.
     DisableCompositingQueryAsserts compositingDisabler;
     DisablePaintInvalidationStateAsserts paintDisabler;
     ObjectPaintInvalidator(*this)
@@ -255,13 +259,15 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
   LayoutObject::styleDidChange(diff, oldStyle);
   updateFromStyle();
 
-  // When an out-of-flow-positioned element changes its display between block and inline-block,
-  // then an incremental layout on the element's containing block lays out the element through
-  // LayoutPositionedObjects, which skips laying out the element's parent.
-  // The element's parent needs to relayout so that it calls
-  // LayoutBlockFlow::setStaticInlinePositionForChild with the out-of-flow-positioned child, so
-  // that when it's laid out, its LayoutBox::computePositionedLogicalWidth/Height takes into
-  // account its new inline/block position rather than its old block/inline position.
+  // When an out-of-flow-positioned element changes its display between block
+  // and inline-block, then an incremental layout on the element's containing
+  // block lays out the element through LayoutPositionedObjects, which skips
+  // laying out the element's parent.
+  // The element's parent needs to relayout so that it calls LayoutBlockFlow::
+  // setStaticInlinePositionForChild with the out-of-flow-positioned child, so
+  // that when it's laid out, its LayoutBox::computePositionedLogicalWidth/
+  // Height takes into account its new inline/block position rather than its old
+  // block/inline position.
   // Position changes and other types of display changes are handled elsewhere.
   if (oldStyle && isOutOfFlowPositioned() && parent() &&
       (parent() != containingBlock()) &&
@@ -287,11 +293,12 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
     }
   } else if (layer() && layer()->parent()) {
     PaintLayer* parentLayer = layer()->parent();
-    setHasTransformRelatedProperty(
-        false);  // Either a transform wasn't specified or the object doesn't support transforms, so just null out the bit.
+    // Either a transform wasn't specified or the object doesn't support
+    // transforms, so just null out the bit.
+    setHasTransformRelatedProperty(false);
     setHasReflection(false);
-    layer()
-        ->removeOnlyThisLayerAfterStyleChange();  // calls destroyLayer() which clears m_layer
+    // Calls destroyLayer() which clears m_layer.
+    layer()->removeOnlyThisLayerAfterStyleChange();
     if (wasFloatingBeforeStyleChanged && isFloating())
       setChildNeedsLayout();
     if (hadTransform)
@@ -368,18 +375,18 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
 
     if (newStyleIsSticky != oldStyleIsSticky) {
       if (newStyleIsSticky) {
-        // During compositing inputs update we'll have the scroll
-        // ancestor without having to walk up the tree and can compute
-        // the sticky position constraints then.
+        // During compositing inputs update we'll have the scroll ancestor
+        // without having to walk up the tree and can compute the sticky
+        // position constraints then.
         if (layer())
           layer()->setNeedsCompositingInputsUpdate();
 
         // TODO(pdr): When slimming paint v2 is enabled, we will need to
-        // invalidate the scroll paint property subtree for this so main
-        // thread scroll reasons are recomputed.
+        // invalidate the scroll paint property subtree for this so main thread
+        // scroll reasons are recomputed.
       } else {
-        // This may get re-added to viewport constrained objects if the object went
-        // from sticky to fixed.
+        // This may get re-added to viewport constrained objects if the object
+        // went from sticky to fixed.
         frameView->removeViewportConstrainedObject(this);
 
         // Remove sticky constraints for this layer.
@@ -392,8 +399,8 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
         }
 
         // TODO(pdr): When slimming paint v2 is enabled, we will need to
-        // invalidate the scroll paint property subtree for this so main
-        // thread scroll reasons are recomputed.
+        // invalidate the scroll paint property subtree for this so main thread
+        // scroll reasons are recomputed.
       }
     }
 
@@ -410,9 +417,9 @@ void LayoutBoxModelObject::invalidateStickyConstraints() {
   if (!layer())
     return;
 
-  // This intentionally uses the stale ancestor overflow layer compositing
-  // input as if we have saved constraints for this layer they were saved
-  // in the previous frame.
+  // This intentionally uses the stale ancestor overflow layer compositing input
+  // as if we have saved constraints for this layer they were saved in the
+  // previous frame.
   DisableCompositingQueryAsserts disabler;
   if (const PaintLayer* ancestorOverflowLayer =
           layer()->ancestorOverflowLayer())
@@ -447,14 +454,15 @@ void LayoutBoxModelObject::addLayerHitTestRects(
     const LayoutRect& containerRect) const {
   if (hasLayer()) {
     if (isLayoutView()) {
-      // LayoutView is handled with a special fast-path, but it needs to know the current layer.
+      // LayoutView is handled with a special fast-path, but it needs to know
+      // the current layer.
       LayoutObject::addLayerHitTestRects(rects, layer(), LayoutPoint(),
                                          LayoutRect());
     } else {
-      // Since a LayoutObject never lives outside it's container Layer, we can switch
-      // to marking entire layers instead. This may sometimes mark more than necessary (when
-      // a layer is made of disjoint objects) but in practice is a significant performance
-      // savings.
+      // Since a LayoutObject never lives outside it's container Layer, we can
+      // switch to marking entire layers instead. This may sometimes mark more
+      // than necessary (when a layer is made of disjoint objects) but in
+      // practice is a significant performance savings.
       layer()->addLayerHitTestRects(rects);
     }
   } else {
@@ -501,19 +509,23 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(
     newPaintInvalidationState
         .setForceSubtreeInvalidationCheckingWithinContainer();
 
-  // TODO(wangxianzhu): Combine this function into LayoutObject::invalidateTreeIfNeeded() when removing the following workarounds.
+  // TODO(wangxianzhu): Combine this function into LayoutObject::
+  // invalidateTreeIfNeeded() when removing the following workarounds.
 
-  // TODO(wangxianzhu): This is a workaround for crbug.com/533277. Will remove when we enable paint offset caching.
+  // TODO(wangxianzhu): This is a workaround for crbug.com/533277. Will remove
+  // when we enable paint offset caching.
   if (reason != PaintInvalidationNone && hasPercentageTransform(styleRef()))
     newPaintInvalidationState
         .setForceSubtreeInvalidationCheckingWithinContainer();
 
-  // TODO(wangxianzhu): This is a workaround for crbug.com/490725. We don't have enough saved information to do accurate check
-  // of clipping change. Will remove when we remove rect-based paint invalidation.
+  // TODO(wangxianzhu): This is a workaround for crbug.com/490725. We don't have
+  // enough saved information to do accurate check of clipping change. Will
+  // remove when we remove rect-based paint invalidation.
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
       previousPaintInvalidationRect != this->previousPaintInvalidationRect() &&
       !usesCompositedScrolling()
-      // Note that isLayoutView() below becomes unnecessary after the launch of root layer scrolling.
+      // Note that isLayoutView() below becomes unnecessary after the launch of
+      // root layer scrolling.
       && (hasOverflowClip() || isLayoutView()))
     newPaintInvalidationState
         .setForceSubtreeInvalidationRectUpdateWithinContainer();
@@ -528,11 +540,13 @@ void LayoutBoxModelObject::addOutlineRectsForNormalChildren(
     IncludeBlockVisualOverflowOrNot includeBlockOverflows) const {
   for (LayoutObject* child = slowFirstChild(); child;
        child = child->nextSibling()) {
-    // Outlines of out-of-flow positioned descendants are handled in LayoutBlock::addOutlineRects().
+    // Outlines of out-of-flow positioned descendants are handled in
+    // LayoutBlock::addOutlineRects().
     if (child->isOutOfFlowPositioned())
       continue;
 
-    // Outline of an element continuation or anonymous block continuation is added when we iterate the continuation chain.
+    // Outline of an element continuation or anonymous block continuation is
+    // added when we iterate the continuation chain.
     // See LayoutBlock::addOutlineRects() and LayoutInline::addOutlineRects().
     if (child->isElementContinuation() ||
         (child->isLayoutBlockFlow() &&
@@ -570,10 +584,12 @@ void LayoutBoxModelObject::addOutlineRectsForDescendant(
   }
 
   if (descendant.isLayoutInline()) {
-    // As an optimization, an ancestor has added rects for its line boxes covering descendants'
-    // line boxes, so descendants don't need to add line boxes again. For example, if the parent
-    // is a LayoutBlock, it adds rects for its RootOutlineBoxes which cover the line boxes of
-    // this LayoutInline. So the LayoutInline needs to add rects for children and continuations only.
+    // As an optimization, an ancestor has added rects for its line boxes
+    // covering descendants' line boxes, so descendants don't need to add line
+    // boxes again. For example, if the parent is a LayoutBlock, it adds rects
+    // for its RootOutlineBoxes which cover the line boxes of this LayoutInline.
+    // So the LayoutInline needs to add rects for children and continuations
+    // only.
     toLayoutInline(descendant)
         .addOutlineRectsForChildrenAndContinuations(rects, additionalOffset,
                                                     includeBlockOverflows);
@@ -621,28 +637,29 @@ static inline bool isOutOfFlowPositionedWithImplicitHeight(
 
 LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(
     Length logicalHeight) const {
-  // For percentage heights: The percentage is calculated with respect to the height of the generated box's
-  // containing block. If the height of the containing block is not specified explicitly (i.e., it depends
-  // on content height), and this element is not absolutely positioned,  the used height is calculated
-  // as if 'auto' was specified.
+  // For percentage heights: The percentage is calculated with respect to the
+  // height of the generated box's containing block. If the height of the
+  // containing block is not specified explicitly (i.e., it depends on content
+  // height), and this element is not absolutely positioned, the used height is
+  // calculated as if 'auto' was specified.
   if (!logicalHeight.isPercentOrCalc() || isOutOfFlowPositioned())
     return nullptr;
 
-  // Anonymous block boxes are ignored when resolving percentage values that would refer to it:
-  // the closest non-anonymous ancestor box is used instead.
+  // Anonymous block boxes are ignored when resolving percentage values that
+  // would refer to it: the closest non-anonymous ancestor box is used instead.
   LayoutBlock* cb = containingBlock();
   while (cb->isAnonymous())
     cb = cb->containingBlock();
 
   // Matching LayoutBox::percentageLogicalHeightIsResolvableFromBlock() by
-  // ignoring table cell's attribute value, where it says that table cells violate
-  // what the CSS spec says to do with heights. Basically we
-  // don't care if the cell specified a height or not.
+  // ignoring table cell's attribute value, where it says that table cells
+  // violate what the CSS spec says to do with heights. Basically we don't care
+  // if the cell specified a height or not.
   if (cb->isTableCell())
     return nullptr;
 
-  // Match LayoutBox::availableLogicalHeightUsing by special casing
-  // the layout view. The available height is taken from the frame.
+  // Match LayoutBox::availableLogicalHeightUsing by special casing the layout
+  // view. The available height is taken from the frame.
   if (cb->isLayoutView())
     return nullptr;
 
@@ -654,7 +671,8 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(
 
 bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight(
     bool checkingContainingBlock) const {
-  // TODO(rego): Check if we can somehow reuse LayoutBlock::availableLogicalHeightForPercentageComputation() (see http://crbug.com/635655).
+  // TODO(rego): Check if we can somehow reuse LayoutBlock::
+  // availableLogicalHeightForPercentageComputation() (see crbug.com/635655).
   const LayoutBox* thisBox = isBox() ? toLayoutBox(this) : nullptr;
   Length logicalHeightLength = style()->logicalHeight();
   LayoutBlock* cb = containingBlockForAutoHeightDetection(logicalHeightLength);
@@ -680,7 +698,8 @@ bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight(
   if (document().inQuirksMode())
     return false;
 
-  // If the height of the containing block computes to 'auto', then it hasn't been 'specified explicitly'.
+  // If the height of the containing block computes to 'auto', then it hasn't
+  // been 'specified explicitly'.
   if (cb)
     return cb->hasAutoHeightOrContainingBlockWithAutoHeight(true);
   return false;
@@ -696,10 +715,12 @@ LayoutSize LayoutBoxModelObject::relativePositionOffset() const {
 
   LayoutBlock* containingBlock = this->containingBlock();
 
-  // Objects that shrink to avoid floats normally use available line width when computing containing block width.  However
-  // in the case of relative positioning using percentages, we can't do this.  The offset should always be resolved using the
-  // available width of the containing block.  Therefore we don't use containingBlockLogicalWidthForContent() here, but instead explicitly
-  // call availableWidth on our containing block.
+  // Objects that shrink to avoid floats normally use available line width when
+  // computing containing block width. However in the case of relative
+  // positioning using percentages, we can't do this. The offset should always
+  // be resolved using the available width of the containing block. Therefore we
+  // don't use containingBlockLogicalWidthForContent() here, but instead
+  // explicitly call availableWidth on our containing block.
   if (!style()->left().isAuto()) {
     if (!style()->right().isAuto() &&
         !containingBlock->style()->isLeftToRightDirection())
@@ -715,11 +736,11 @@ LayoutSize LayoutBoxModelObject::relativePositionOffset() const {
         LayoutUnit());
   }
 
-  // If the containing block of a relatively positioned element does not
-  // specify a height, a percentage top or bottom offset should be resolved as
-  // auto. An exception to this is if the containing block has the WinIE quirk
-  // where <html> and <body> assume the size of the viewport. In this case,
-  // calculate the percent offset based on this height.
+  // If the containing block of a relatively positioned element does not specify
+  // a height, a percentage top or bottom offset should be resolved as auto.
+  // An exception to this is if the containing block has the WinIE quirk where
+  // <html> and <body> assume the size of the viewport. In this case, calculate
+  // the percent offset based on this height.
   // See <https://bugs.webkit.org/show_bug.cgi?id=26396>.
   if (!style()->top().isAuto() &&
       (!containingBlock->hasAutoHeightOrContainingBlockWithAutoHeight() ||
@@ -763,9 +784,11 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
       containingBlock->isLayoutView()
           ? containingBlock->logicalWidth()
           : containingBlock->containingBlockLogicalWidthForContent();
-  // Sticky positioned element ignore any override logical width on the containing block (as they don't call
-  // containingBlockLogicalWidthForContent). It's unclear whether this is totally fine.
-  // Compute the container-relative area within which the sticky element is allowed to move.
+  // Sticky positioned element ignore any override logical width on the
+  // containing block, as they don't call containingBlockLogicalWidthForContent.
+  // It's unclear whether this is totally fine.
+  // Compute the container-relative area within which the sticky element is
+  // allowed to move.
   LayoutUnit maxWidth = containingBlock->availableLogicalWidth();
 
   // Map the containing block to the scroll ancestor without transforms.
@@ -781,9 +804,10 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
     scrollContainerRelativePaddingBoxRect =
         transformState.lastPlanarQuad().boundingBox();
 
-    // The sticky position constraint rects should be independent of the current scroll position, so after
-    // mapping we add in the scroll position to get the container's position within the ancestor scroller's
-    // unscrolled layout overflow.
+    // The sticky position constraint rects should be independent of the current
+    // scroll position, so after mapping we add in the scroll position to get
+    // the container's position within the ancestor scroller's unscrolled layout
+    // overflow.
     ScrollOffset scrollOffset(
         scrollAncestor
             ? toFloatSize(scrollAncestor->getScrollableArea()->scrollPosition())
@@ -793,10 +817,11 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
 
   LayoutRect scrollContainerRelativeContainingBlockRect(
       scrollContainerRelativePaddingBoxRect);
-  // This is removing the padding of the containing block's overflow rect to get the flow
-  // box rectangle and removing the margin of the sticky element to ensure that space between
-  // the sticky element and its containing flow box. It is an open issue whether the margin
-  // should collapse (See https://www.w3.org/TR/css-position-3/#sticky-pos).
+  // This is removing the padding of the containing block's overflow rect to get
+  // the flow box rectangle and removing the margin of the sticky element to
+  // ensure that space between the sticky element and its containing flow box.
+  // It is an open issue whether the margin should collapse.
+  // See https://www.w3.org/TR/css-position-3/#sticky-pos
   scrollContainerRelativeContainingBlockRect.contractEdges(
       minimumValueForLength(containingBlock->style()->paddingTop(),
                             maxContainerWidth) +
@@ -822,8 +847,9 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
   FloatPoint stickyLocation =
       flippedStickyBoxRect.location() + skippedContainersOffset;
 
-  // The scrollContainerRelativePaddingBoxRect's position is the padding box so we need to remove the border when finding
-  // the position of the sticky box within the scroll ancestor if the container is not our scroll ancestor.
+  // The scrollContainerRelativePaddingBoxRect's position is the padding box so
+  // we need to remove the border when finding the position of the sticky box
+  // within the scroll ancestor if the container is not our scroll ancestor.
   if (containingBlock != scrollAncestor) {
     FloatSize containerBorderOffset(containingBlock->borderLeft(),
                                     containingBlock->borderTop());
@@ -834,7 +860,8 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
                     toFloatSize(stickyLocation),
                 flippedStickyBoxRect.size()));
 
-  // We skip the right or top sticky offset if there is not enough space to honor both the left/right or top/bottom offsets.
+  // We skip the right or top sticky offset if there is not enough space to
+  // honor both the left/right or top/bottom offsets.
   LayoutUnit horizontalOffsets =
       minimumValueForLength(style()->right(),
                             LayoutUnit(constrainingSize.width())) +
@@ -867,8 +894,9 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
   }
 
   bool skipBottom = false;
-  // TODO(flackr): Exclude top or bottom edge offset depending on the writing mode when related
-  // sections are fixed in spec: http://lists.w3.org/Archives/Public/www-style/2014May/0286.html
+  // TODO(flackr): Exclude top or bottom edge offset depending on the writing
+  // mode when related sections are fixed in spec.
+  // See http://lists.w3.org/Archives/Public/www-style/2014May/0286.html
   LayoutUnit verticalOffsets =
       minimumValueForLength(style()->top(),
                             LayoutUnit(constrainingSize.height())) +
@@ -920,15 +948,18 @@ FloatRect LayoutBoxModelObject::computeStickyConstrainingRect() const {
 
 LayoutSize LayoutBoxModelObject::stickyPositionOffset() const {
   const PaintLayer* ancestorOverflowLayer = layer()->ancestorOverflowLayer();
-  // TODO: Force compositing input update if we ask for offset before compositing inputs have been computed?
+  // TODO: Force compositing input update if we ask for offset before
+  // compositing inputs have been computed?
   if (!ancestorOverflowLayer)
     return LayoutSize();
   FloatRect constrainingRect = computeStickyConstrainingRect();
   PaintLayerScrollableArea* scrollableArea =
       ancestorOverflowLayer->getScrollableArea();
 
-  // The sticky offset is physical, so we can just return the delta computed in absolute coords (though it may be wrong with transforms).
-  // TODO: Force compositing input update if we ask for offset with stale compositing inputs.
+  // The sticky offset is physical, so we can just return the delta computed in
+  // absolute coords (though it may be wrong with transforms).
+  // TODO: Force compositing input update if we ask for offset with stale
+  // compositing inputs.
   if (!scrollableArea->stickyConstraintsMap().contains(layer()))
     return LayoutSize();
   return LayoutSize(
@@ -946,8 +977,8 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(
 
   LayoutPoint referencePoint = startPoint;
 
-  // If the base element is null, return the distance between the canvas origin and
-  // the left border edge of the element and stop this algorithm.
+  // If the base element is null, return the distance between the canvas origin
+  // and the left border edge of the element and stop this algorithm.
   if (!element)
     return referencePoint;
 
@@ -957,9 +988,10 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(
       if (isInFlowPositioned())
         referencePoint.move(offsetForInFlowPosition());
 
-      // Note that we may fail to find |offsetParent| while walking the container chain, if
-      // |offsetParent| is an inline split into continuations.
-      // <body style="display:inline;" id="offsetParent"><div></div><span id="this">
+      // Note that we may fail to find |offsetParent| while walking the
+      // container chain, if |offsetParent| is an inline split into
+      // continuations: <body style="display:inline;" id="offsetParent"><div>
+      // </div><span id="this">
       // This is why we have to do a nullptr check here.
       // offset(Left|Top) is generally broken when offsetParent is inline.
       for (const LayoutObject* current = container();
@@ -1205,8 +1237,10 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(
 
   LayoutSize adjustmentForSkippedAncestor;
   if (ancestorSkipped) {
-    // There can't be a transform between paintInvalidationContainer and ancestorToStopAt, because transforms create containers, so it should be safe
-    // to just subtract the delta between the ancestor and ancestorToStopAt.
+    // There can't be a transform between paintInvalidationContainer and
+    // ancestorToStopAt, because transforms create containers, so it should be
+    // safe to just subtract the delta between the ancestor and
+    // ancestorToStopAt.
     adjustmentForSkippedAncestor =
         -ancestorToStopAt->offsetFromAncestorContainer(container);
   }
@@ -1249,18 +1283,21 @@ void LayoutBoxModelObject::moveChildTo(LayoutBoxModelObject* toBoxModelObject,
                                        LayoutObject* child,
                                        LayoutObject* beforeChild,
                                        bool fullRemoveInsert) {
-  // We assume that callers have cleared their positioned objects list for child moves (!fullRemoveInsert) so the
-  // positioned layoutObject maps don't become stale. It would be too slow to do the map lookup on each call.
+  // We assume that callers have cleared their positioned objects list for child
+  // moves (!fullRemoveInsert) so the positioned layoutObject maps don't become
+  // stale. It would be too slow to do the map lookup on each call.
   ASSERT(!fullRemoveInsert || !isLayoutBlock() ||
          !toLayoutBlock(this)->hasPositionedObjects());
 
   ASSERT(this == child->parent());
   ASSERT(!beforeChild || toBoxModelObject == beforeChild->parent());
 
-  // If a child is moving from a block-flow to an inline-flow parent then any floats currently intruding into
-  // the child can no longer do so. This can happen if a block becomes floating or out-of-flow and is moved
-  // to an anonymous block. Remove all floats from their float-lists immediately as markAllDescendantsWithFloatsForLayout
-  // won't attempt to remove floats from parents that have inline-flow if we try later.
+  // If a child is moving from a block-flow to an inline-flow parent then any
+  // floats currently intruding into the child can no longer do so. This can
+  // happen if a block becomes floating or out-of-flow and is moved to an
+  // anonymous block. Remove all floats from their float-lists immediately as
+  // markAllDescendantsWithFloatsForLayout won't attempt to remove floats from
+  // parents that have inline-flow if we try later.
   if (child->isLayoutBlockFlow() && toBoxModelObject->childrenInline() &&
       !childrenInline()) {
     toLayoutBlockFlow(child)->removeFloatingObjectsFromDescendants();
@@ -1313,8 +1350,9 @@ void LayoutBoxModelObject::moveChildrenTo(
 bool LayoutBoxModelObject::backgroundStolenForBeingBody(
     const ComputedStyle* rootElementStyle) const {
   // http://www.w3.org/TR/css3-background/#body-background
-  // If the root element is <html> with no background, and a <body> child element exists,
-  // the root element steals the first <body> child element's background.
+  // If the root element is <html> with no background, and a <body> child
+  // element exists, the root element steals the first <body> child element's
+  // background.
   if (!isBody())
     return false;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Apple Inc.  All rights reserved.
+ * Copyright (C) 2012 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -78,18 +78,21 @@ static inline bool isMultiColumnContainer(const LayoutObject& object) {
   return toLayoutBlockFlow(object).multiColumnFlowThread();
 }
 
-// Return true if there's nothing that prevents the specified object from being in the ancestor
-// chain between some column spanner and its containing multicol container. A column spanner needs
-// the multicol container to be its containing block, so that the spanner is able to escape the flow
-// thread. (Everything contained by the flow thread is split into columns, but this is precisely
-// what shouldn't be done to a spanner, since it's supposed to span all columns.)
+// Return true if there's nothing that prevents the specified object from being
+// in the ancestor chain between some column spanner and its containing multicol
+// container. A column spanner needs the multicol container to be its containing
+// block, so that the spanner is able to escape the flow thread. (Everything
+// contained by the flow thread is split into columns, but this is precisely
+// what shouldn't be done to a spanner, since it's supposed to span all
+// columns.)
 //
-// We require that the parent of the spanner participate in the block formatting context established
-// by the multicol container (i.e. that there are no BFCs or other formatting contexts
-// in-between). We also require that there be no transforms, since transforms insist on being in the
-// containing block chain for everything inside it, which conflicts with a spanners's need to have
-// the multicol container as its direct containing block. We may also not put spanners inside
-// objects that don't support fragmentation.
+// We require that the parent of the spanner participate in the block formatting
+// context established by the multicol container (i.e. that there are no BFCs or
+// other formatting contexts in-between). We also require that there be no
+// transforms, since transforms insist on being in the containing block chain
+// for everything inside it, which conflicts with a spanners's need to have the
+// multicol container as its direct containing block. We may also not put
+// spanners inside objects that don't support fragmentation.
 static inline bool canContainSpannerInParentFragmentationContext(
     const LayoutObject& object) {
   if (!object.isLayoutBlockFlow())
@@ -108,20 +111,22 @@ static inline bool hasAnyColumnSpanners(
                       firstBox->isLayoutMultiColumnSpannerPlaceholder());
 }
 
-// Find the next layout object that has the multicol container in its containing block chain, skipping nested multicol containers.
+// Find the next layout object that has the multicol container in its containing
+// block chain, skipping nested multicol containers.
 static LayoutObject* nextInPreOrderAfterChildrenSkippingOutOfFlow(
     LayoutMultiColumnFlowThread* flowThread,
     LayoutObject* descendant) {
   ASSERT(descendant->isDescendantOf(flowThread));
   LayoutObject* object = descendant->nextInPreOrderAfterChildren(flowThread);
   while (object) {
-    // Walk through the siblings and find the first one which is either in-flow or has this
-    // flow thread as its containing block flow thread.
+    // Walk through the siblings and find the first one which is either in-flow
+    // or has this flow thread as its containing block flow thread.
     if (!object->isOutOfFlowPositioned())
       break;
     if (object->containingBlock()->flowThreadContainingBlock() == flowThread) {
-      // This out-of-flow object is still part of the flow thread, because its containing
-      // block (probably relatively positioned) is part of the flow thread.
+      // This out-of-flow object is still part of the flow thread, because its
+      // containing block (probably relatively positioned) is part of the flow
+      // thread.
       break;
     }
     object = object->nextInPreOrderAfterChildren(flowThread);
@@ -137,7 +142,8 @@ static LayoutObject* nextInPreOrderAfterChildrenSkippingOutOfFlow(
   return object;
 }
 
-// Find the previous layout object that has the multicol container in its containing block chain, skipping nested multicol containers.
+// Find the previous layout object that has the multicol container in its
+// containing block chain, skipping nested multicol containers.
 static LayoutObject* previousInPreOrderSkippingOutOfFlow(
     LayoutMultiColumnFlowThread* flowThread,
     LayoutObject* descendant) {
@@ -149,7 +155,8 @@ static LayoutObject* previousInPreOrderSkippingOutOfFlow(
           toLayoutBox(object)->spannerPlaceholder()->flowThread();
       if (placeholderFlowThread == flowThread)
         break;
-      // We're inside an inner multicol container. We have no business there. Continue on the outside.
+      // We're inside an inner multicol container. We have no business there.
+      // Continue on the outside.
       object = placeholderFlowThread->parent();
       ASSERT(object->isDescendantOf(flowThread));
       continue;
@@ -160,7 +167,8 @@ static LayoutObject* previousInPreOrderSkippingOutOfFlow(
         if (ancestor == flowThread)
           return object;
         if (isMultiColumnContainer(*ancestor)) {
-          // We're inside an inner multicol container. We have no business there.
+          // We're inside an inner multicol container. We have no business
+          // there.
           break;
         }
       }
@@ -168,7 +176,8 @@ static LayoutObject* previousInPreOrderSkippingOutOfFlow(
       ASSERT(ancestor->isDescendantOf(flowThread));
       continue;  // Continue on the outside of the inner flow thread.
     }
-    // We're inside something that's out-of-flow. Keep looking upwards and backwards in the tree.
+    // We're inside something that's out-of-flow. Keep looking upwards and
+    // backwards in the tree.
     object = object->previousInPreOrder(flowThread);
   }
   if (!object || object == flowThread)
@@ -186,8 +195,8 @@ static LayoutObject* firstLayoutObjectInSet(LayoutMultiColumnSet* multicolSet) {
   LayoutBox* sibling = multicolSet->previousSiblingMultiColumnBox();
   if (!sibling)
     return multicolSet->flowThread()->firstChild();
-  // Adjacent column content sets should not occur. We would have no way of figuring out what each
-  // of them contains then.
+  // Adjacent column content sets should not occur. We would have no way of
+  // figuring out what each of them contains then.
   ASSERT(sibling->isLayoutMultiColumnSpannerPlaceholder());
   LayoutBox* spanner = toLayoutMultiColumnSpannerPlaceholder(sibling)
                            ->layoutObjectInFlowThread();
@@ -197,10 +206,12 @@ static LayoutObject* firstLayoutObjectInSet(LayoutMultiColumnSet* multicolSet) {
 
 static LayoutObject* lastLayoutObjectInSet(LayoutMultiColumnSet* multicolSet) {
   LayoutBox* sibling = multicolSet->nextSiblingMultiColumnBox();
+  // By right we should return lastLeafChild() here, but the caller doesn't
+  // care, so just return nullptr.
   if (!sibling)
-    return nullptr;  // By right we should return lastLeafChild() here, but the caller doesn't care, so just return 0.
-  // Adjacent column content sets should not occur. We would have no way of figuring out what each
-  // of them contains then.
+    return nullptr;
+  // Adjacent column content sets should not occur. We would have no way of
+  // figuring out what each of them contains then.
   ASSERT(sibling->isLayoutMultiColumnSpannerPlaceholder());
   LayoutBox* spanner = toLayoutMultiColumnSpannerPlaceholder(sibling)
                            ->layoutObjectInFlowThread();
@@ -210,23 +221,24 @@ static LayoutObject* lastLayoutObjectInSet(LayoutMultiColumnSet* multicolSet) {
 
 LayoutMultiColumnSet* LayoutMultiColumnFlowThread::mapDescendantToColumnSet(
     LayoutObject* layoutObject) const {
-  ASSERT(!containingColumnSpannerPlaceholder(
-      layoutObject));  // should not be used for spanners or content inside them.
-  ASSERT(layoutObject != this);
-  ASSERT(layoutObject->isDescendantOf(this));
-  ASSERT(layoutObject->containingBlock()->isDescendantOf(
-      this));  // Out-of-flow objects don't belong in column sets.
-  ASSERT(layoutObject->flowThreadContainingBlock() == this);
-  ASSERT(!layoutObject->isLayoutMultiColumnSet());
-  ASSERT(!layoutObject->isLayoutMultiColumnSpannerPlaceholder());
+  // Should not be used for spanners or content inside them.
+  DCHECK(!containingColumnSpannerPlaceholder(layoutObject));
+  DCHECK(layoutObject != this);
+  DCHECK(layoutObject->isDescendantOf(this));
+  // Out-of-flow objects don't belong in column sets.
+  DCHECK(layoutObject->containingBlock()->isDescendantOf(this));
+  DCHECK(layoutObject->flowThreadContainingBlock() == this);
+  DCHECK(!layoutObject->isLayoutMultiColumnSet());
+  DCHECK(!layoutObject->isLayoutMultiColumnSpannerPlaceholder());
   LayoutMultiColumnSet* multicolSet = firstMultiColumnSet();
   if (!multicolSet)
     return nullptr;
   if (!multicolSet->nextSiblingMultiColumnSet())
     return multicolSet;
 
-  // This is potentially SLOW! But luckily very uncommon. You would have to dynamically insert a
-  // spanner into the middle of column contents to need this.
+  // This is potentially SLOW! But luckily very uncommon. You would have to
+  // dynamically insert a spanner into the middle of column contents to need
+  // this.
   for (; multicolSet; multicolSet = multicolSet->nextSiblingMultiColumnSet()) {
     LayoutObject* firstLayoutObject = firstLayoutObjectInSet(multicolSet);
     LayoutObject* lastLayoutObject = lastLayoutObjectInSet(multicolSet);
@@ -252,7 +264,8 @@ LayoutMultiColumnFlowThread::containingColumnSpannerPlaceholder(
   if (!hasAnyColumnSpanners(*this))
     return nullptr;
 
-  // We have spanners. See if the layoutObject in question is one or inside of one then.
+  // We have spanners. See if the layoutObject in question is one or inside of
+  // one then.
   for (const LayoutObject* ancestor = descendant; ancestor && ancestor != this;
        ancestor = ancestor->parent()) {
     if (LayoutMultiColumnSpannerPlaceholder* placeholder =
@@ -265,9 +278,10 @@ LayoutMultiColumnFlowThread::containingColumnSpannerPlaceholder(
 void LayoutMultiColumnFlowThread::populate() {
   LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
   ASSERT(!nextSibling());
-  // Reparent children preceding the flow thread into the flow thread. It's multicol content
-  // now. At this point there's obviously nothing after the flow thread, but layoutObjects (column
-  // sets and spanners) will be inserted there as we insert elements into the flow thread.
+  // Reparent children preceding the flow thread into the flow thread. It's
+  // multicol content now. At this point there's obviously nothing after the
+  // flow thread, but layoutObjects (column sets and spanners) will be inserted
+  // there as we insert elements into the flow thread.
   multicolContainer->removeFloatingObjectsFromDescendants();
   multicolContainer->moveChildrenTo(this, multicolContainer->firstChild(), this,
                                     true);
@@ -286,14 +300,15 @@ void LayoutMultiColumnFlowThread::evacuateAndDestroy() {
   ASSERT(!previousSibling());
   ASSERT(!nextSibling());
 
-  // Finally we can promote all flow thread's children. Before we move them to the flow thread's
-  // container, we need to unregister the flow thread, so that they aren't just re-added again to
-  // the flow thread that we're trying to empty.
+  // Finally we can promote all flow thread's children. Before we move them to
+  // the flow thread's container, we need to unregister the flow thread, so that
+  // they aren't just re-added again to the flow thread that we're trying to
+  // empty.
   multicolContainer->resetMultiColumnFlowThread();
   moveAllChildrenTo(multicolContainer, true);
 
-  // We used to manually nuke the line box tree here, but that should happen automatically when
-  // moving children around (the code above).
+  // We used to manually nuke the line box tree here, but that should happen
+  // automatically when moving children around (the code above).
   ASSERT(!firstLineBox());
 
   destroy();
@@ -301,8 +316,8 @@ void LayoutMultiColumnFlowThread::evacuateAndDestroy() {
 
 LayoutUnit LayoutMultiColumnFlowThread::maxColumnLogicalHeight() const {
   if (m_columnHeightAvailable) {
-    // If height is non-auto, it's already constrained against max-height as well.
-    // Just return it.
+    // If height is non-auto, it's already constrained against max-height as
+    // well. Just return it.
     return m_columnHeightAvailable;
   }
   const LayoutBlockFlow* multicolBlock = multiColumnBlockFlow();
@@ -365,8 +380,8 @@ LayoutSize LayoutMultiColumnFlowThread::flowThreadTranslationAtPoint(
   LayoutUnit blockOffset =
       isHorizontalWritingMode() ? flippedPoint.y() : flippedPoint.x();
 
-  // If block direction is flipped, points at a column boundary belong in the former column, not
-  // the latter.
+  // If block direction is flipped, points at a column boundary belong in the
+  // former column, not the latter.
   PageBoundaryRule rule = hasFlippedBlocksWritingMode()
                               ? AssociateWithFormerPage
                               : AssociateWithLatterPage;
@@ -416,12 +431,13 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(
     PageBoundaryRule pageBoundaryRule) const {
   LayoutMultiColumnSet* columnSet = m_lastSetWorkedOn;
   if (columnSet) {
-    // Layout in progress. We are calculating the set heights as we speak, so the column set range
-    // information is not up to date.
+    // Layout in progress. We are calculating the set heights as we speak, so
+    // the column set range information is not up to date.
     while (columnSet->logicalTopInFlowThread() > offset) {
-      // Sometimes we have to use a previous set. This happens when we're working with a block
-      // that contains a spanner (so that there's a column set both before and after the
-      // spanner, and both sets contain said block).
+      // Sometimes we have to use a previous set. This happens when we're
+      // working with a block that contains a spanner (so that there's a column
+      // set both before and after the spanner, and both sets contain said
+      // block).
       LayoutMultiColumnSet* previousSet =
           columnSet->previousSiblingMultiColumnSet();
       if (!previousSet)
@@ -446,9 +462,10 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(
   }
   if (pageBoundaryRule == AssociateWithFormerPage && columnSet &&
       offset == columnSet->logicalTopInFlowThread()) {
-    // The column set that we found starts at the exact same flow thread offset as we specified.
-    // Since we are to associate offsets at boundaries with the former fragmentainer, the
-    // fragmentainer we're looking for is in the previous column set.
+    // The column set that we found starts at the exact same flow thread offset
+    // as we specified. Since we are to associate offsets at boundaries with the
+    // former fragmentainer, the fragmentainer we're looking for is in the
+    // previous column set.
     if (LayoutMultiColumnSet* previousSet =
             columnSet->previousSiblingMultiColumnSet())
       return previousSet;
@@ -458,9 +475,9 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(
 
 void LayoutMultiColumnFlowThread::layoutColumns(
     SubtreeLayoutScope& layoutScope) {
-  // Since we ended up here, it means that the multicol container (our parent) needed
-  // layout. Since contents of the multicol container are diverted to the flow thread, the flow
-  // thread needs layout as well.
+  // Since we ended up here, it means that the multicol container (our parent)
+  // needed layout. Since contents of the multicol container are diverted to the
+  // flow thread, the flow thread needs layout as well.
   layoutScope.setChildNeedsLayout(this);
 
   if (FragmentationContext* enclosingFragmentationContext =
@@ -473,11 +490,12 @@ void LayoutMultiColumnFlowThread::layoutColumns(
     if (LayoutMultiColumnFlowThread* enclosingFlowThread =
             enclosingFragmentationContext->associatedFlowThread()) {
       if (LayoutMultiColumnSet* firstSet = firstMultiColumnSet()) {
-        // Before we can start to lay out the contents of this multicol container, we need
-        // to make sure that all ancestor multicol containers have established a row to hold
-        // the first column contents of this container (this multicol container may start at
-        // the beginning of a new outer row). Without sufficient rows in all ancestor
-        // multicol containers, we may use the wrong column height.
+        // Before we can start to lay out the contents of this multicol
+        // container, we need to make sure that all ancestor multicol containers
+        // have established a row to hold the first column contents of this
+        // container (this multicol container may start at the beginning of a
+        // new outer row). Without sufficient rows in all ancestor multicol
+        // containers, we may use the wrong column height.
         LayoutUnit offset = m_blockOffsetInEnclosingFragmentationContext +
                             firstSet->logicalTopFromMulticolContentEdge();
         enclosingFlowThread->appendNewFragmentainerGroupIfNeeded(
@@ -489,22 +507,22 @@ void LayoutMultiColumnFlowThread::layoutColumns(
   for (LayoutBox* columnBox = firstMultiColumnBox(); columnBox;
        columnBox = columnBox->nextSiblingMultiColumnBox()) {
     if (!columnBox->isLayoutMultiColumnSet()) {
-      ASSERT(
-          columnBox
-              ->isLayoutMultiColumnSpannerPlaceholder());  // no other type is expected.
+      // No other type is expected.
+      DCHECK(columnBox->isLayoutMultiColumnSpannerPlaceholder());
       continue;
     }
     LayoutMultiColumnSet* columnSet = toLayoutMultiColumnSet(columnBox);
     layoutScope.setChildNeedsLayout(columnSet);
     if (!m_columnHeightsChanged) {
-      // This is the initial layout pass. We need to reset the column height, because contents
-      // typically have changed.
+      // This is the initial layout pass. We need to reset the column height,
+      // because contents typically have changed.
       columnSet->resetColumnHeight();
     }
-    // Since column sets are regular block flow objects, and their position is changed in
-    // regular block layout code (with no means for the multicol code to notice unless we add
-    // hooks there), store the previous position now. If it changes in the imminent layout
-    // pass, we may have to rebalance its columns.
+    // Since column sets are regular block flow objects, and their position is
+    // changed in regular block layout code (with no means for the multicol code
+    // to notice unless we add hooks there), store the previous position now. If
+    // it changes in the imminent layout pass, we may have to rebalance its
+    // columns.
     columnSet->storeOldPosition();
   }
 
@@ -530,12 +548,14 @@ bool LayoutMultiColumnFlowThread::removeSpannerPlaceholderIfNoLongerValid(
   destroySpannerPlaceholder(spannerObjectInFlowThread->spannerPlaceholder());
   ASSERT(!spannerObjectInFlowThread->spannerPlaceholder());
 
-  // We may have a new containing block, since we're no longer a spanner. Mark it for relayout.
+  // We may have a new containing block, since we're no longer a spanner. Mark
+  // it for relayout.
   spannerObjectInFlowThread->containingBlock()
       ->setNeedsLayoutAndPrefWidthsRecalc(
           LayoutInvalidationReason::ColumnsChanged);
 
-  // Now generate a column set for this ex-spanner, if needed and none is there for us already.
+  // Now generate a column set for this ex-spanner, if needed and none is there
+  // for us already.
   flowThreadDescendantWasInserted(spannerObjectInFlowThread);
 
   return true;
@@ -544,8 +564,8 @@ bool LayoutMultiColumnFlowThread::removeSpannerPlaceholderIfNoLongerValid(
 LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::enclosingFlowThread()
     const {
   if (isLayoutPagedFlowThread()) {
-    // Paged overflow containers should never be fragmented by enclosing fragmentation
-    // contexts. They are to be treated as unbreakable content.
+    // Paged overflow containers should never be fragmented by enclosing
+    // fragmentation contexts. They are to be treated as unbreakable content.
     return nullptr;
   }
   if (multiColumnBlockFlow()->isInsideFlowThread())
@@ -566,19 +586,21 @@ void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(
     LayoutUnit offsetInFlowThread,
     PageBoundaryRule pageBoundaryRule) {
   if (!isPageLogicalHeightKnown()) {
-    // If we have no clue about the height of the multicol container, bail. This situation
-    // occurs initially when an auto-height multicol container is nested inside another
-    // auto-height multicol container. We need at least an estimated height of the outer
-    // multicol container before we can check what an inner fragmentainer group has room for.
+    // If we have no clue about the height of the multicol container, bail. This
+    // situation occurs initially when an auto-height multicol container is
+    // nested inside another auto-height multicol container. We need at least an
+    // estimated height of the outer multicol container before we can check what
+    // an inner fragmentainer group has room for.
     // Its height is indefinite for now.
     return;
   }
   LayoutMultiColumnSet* columnSet =
       columnSetAtBlockOffset(offsetInFlowThread, pageBoundaryRule);
   if (columnSet->isInitialHeightCalculated()) {
-    // We only insert additional fragmentainer groups in the initial layout pass. We only want
-    // to balance columns in the last fragmentainer group (if we need to balance at all), so we
-    // want that last fragmentainer group to be the same one in all layout passes that follow.
+    // We only insert additional fragmentainer groups in the initial layout
+    // pass. We only want to balance columns in the last fragmentainer group (if
+    // we need to balance at all), so we want that last fragmentainer group to
+    // be the same one in all layout passes that follow.
     return;
   }
 
@@ -586,25 +608,28 @@ void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(
                                                    pageBoundaryRule)) {
     FragmentationContext* enclosingFragmentationContext =
         this->enclosingFragmentationContext();
+    // Not nested. We'll never need more rows than the one we already have then.
     if (!enclosingFragmentationContext)
-      return;  // Not nested. We'll never need more rows than the one we already have then.
+      return;
     ASSERT(!isLayoutPagedFlowThread());
 
-    // We have run out of columns here, so we need to add at least one more row to hold more
-    // columns.
+    // We have run out of columns here, so we need to add at least one more row
+    // to hold more columns.
     LayoutMultiColumnFlowThread* enclosingFlowThread =
         enclosingFragmentationContext->associatedFlowThread();
     do {
       if (enclosingFlowThread) {
-        // When we add a new row here, it implicitly means that we're inserting another
-        // column in our enclosing multicol container. That in turn may mean that we've run
-        // out of columns there too. Need to insert additional rows in ancestral multicol
-        // containers before doing it in the descendants, in order to get the height
-        // constraints right down there.
+        // When we add a new row here, it implicitly means that we're inserting
+        // another column in our enclosing multicol container. That in turn may
+        // mean that we've run out of columns there too. Need to insert
+        // additional rows in ancestral multicol containers before doing it in
+        // the descendants, in order to get the height constraints right down
+        // there.
         const MultiColumnFragmentainerGroup& lastRow =
             columnSet->lastFragmentainerGroup();
-        // The top offset where where the new fragmentainer group will start in this column
-        // set, converted to the coordinate space of the enclosing multicol container.
+        // The top offset where where the new fragmentainer group will start in
+        // this column set, converted to the coordinate space of the enclosing
+        // multicol container.
         LayoutUnit logicalOffsetInOuter =
             lastRow.blockOffsetInEnclosingFragmentationContext() +
             lastRow.logicalHeight();
@@ -614,8 +639,8 @@ void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(
 
       const MultiColumnFragmentainerGroup& newRow =
           columnSet->appendNewFragmentainerGroup();
-      // Zero-height rows should really not occur here, but if it does anyway, break, so that
-      // we don't get stuck in an infinite loop.
+      // Zero-height rows should really not occur here, but if it does anyway,
+      // break, so that we don't get stuck in an infinite loop.
       ASSERT(newRow.logicalHeight() > 0);
       if (newRow.logicalHeight() <= 0)
         break;
@@ -680,8 +705,8 @@ void LayoutMultiColumnFlowThread::createAndInsertMultiColumnSet(
   multicolContainer->LayoutBlock::addChild(newSet, insertBefore);
   invalidateColumnSets();
 
-  // We cannot handle immediate column set siblings (and there's no need for it, either).
-  // There has to be at least one spanner separating them.
+  // We cannot handle immediate column set siblings (and there's no need for it,
+  // either). There has to be at least one spanner separating them.
   ASSERT(!newSet->previousSiblingMultiColumnBox() ||
          !newSet->previousSiblingMultiColumnBox()->isLayoutMultiColumnSet());
   ASSERT(!newSet->nextSiblingMultiColumnBox() ||
@@ -694,13 +719,13 @@ void LayoutMultiColumnFlowThread::createAndInsertSpannerPlaceholder(
   LayoutBox* insertBeforeColumnBox = nullptr;
   LayoutMultiColumnSet* setToSplit = nullptr;
   if (insertedBeforeInFlowThread) {
-    // The spanner is inserted before something. Figure out what this entails. If the
-    // next object is a spanner too, it means that we can simply insert a new spanner
-    // placeholder in front of its placeholder.
+    // The spanner is inserted before something. Figure out what this entails.
+    // If the next object is a spanner too, it means that we can simply insert a
+    // new spanner placeholder in front of its placeholder.
     insertBeforeColumnBox = insertedBeforeInFlowThread->spannerPlaceholder();
     if (!insertBeforeColumnBox) {
-      // The next object isn't a spanner; it's regular column content. Examine what
-      // comes right before us in the flow thread, then.
+      // The next object isn't a spanner; it's regular column content. Examine
+      // what comes right before us in the flow thread, then.
       LayoutObject* previousLayoutObject =
           previousInPreOrderSkippingOutOfFlow(this, spannerObjectInFlowThread);
       if (!previousLayoutObject || previousLayoutObject == this) {
@@ -714,15 +739,16 @@ void LayoutMultiColumnFlowThread::createAndInsertSpannerPlaceholder(
         insertBeforeColumnBox =
             previousPlaceholder->nextSiblingMultiColumnBox();
       } else {
-        // We're inside regular column content with both feet. Find out which column
-        // set this is. It needs to be split it into two sets, so that we can insert
-        // a new spanner placeholder between them.
+        // We're inside regular column content with both feet. Find out which
+        // column set this is. It needs to be split it into two sets, so that we
+        // can insert a new spanner placeholder between them.
         setToSplit = mapDescendantToColumnSet(previousLayoutObject);
         ASSERT(setToSplit ==
                mapDescendantToColumnSet(insertedBeforeInFlowThread));
         insertBeforeColumnBox = setToSplit->nextSiblingMultiColumnBox();
         // We've found out which set that needs to be split. Now proceed to
-        // inserting the spanner placeholder, and then insert a second column set.
+        // inserting the spanner placeholder, and then insert a second column
+        // set.
       }
     }
     ASSERT(setToSplit || insertBeforeColumnBox);
@@ -759,15 +785,21 @@ void LayoutMultiColumnFlowThread::destroySpannerPlaceholder(
 bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(
     LayoutObject* descendant) const {
   // This method needs to behave correctly in the following situations:
-  // - When the descendant doesn't have a spanner placeholder but should have one (return true)
-  // - When the descendant doesn't have a spanner placeholder and still should not have one (return false)
-  // - When the descendant has a spanner placeholder but should no longer have one (return false)
-  // - When the descendant has a spanner placeholder and should still have one (return true)
+  // - When the descendant doesn't have a spanner placeholder but should have
+  //   one (return true).
+  // - When the descendant doesn't have a spanner placeholder and still should
+  //   not have one (return false).
+  // - When the descendant has a spanner placeholder but should no longer have
+  //   one (return false).
+  // - When the descendant has a spanner placeholder and should still have one
+  //   (return true).
 
-  // We assume that we're inside the flow thread. This function is not to be called otherwise.
+  // We assume that we're inside the flow thread. This function is not to be
+  // called otherwise.
   ASSERT(descendant->isDescendantOf(this));
 
-  // The spec says that column-span only applies to in-flow block-level elements.
+  // The spec says that column-span only applies to in-flow block-level
+  // elements.
   if (descendant->style()->getColumnSpan() != ColumnSpanAll ||
       !descendant->isBox() || descendant->isInline() ||
       descendant->isFloatingOrOutOfFlowPositioned())
@@ -778,8 +810,9 @@ bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(
     return false;
   }
 
-  // This looks like a spanner, but if we're inside something unbreakable or something that
-  // establishes a new formatting context, it's not to be treated as one.
+  // This looks like a spanner, but if we're inside something unbreakable or
+  // something that establishes a new formatting context, it's not to be treated
+  // as one.
   for (LayoutBox* ancestor = toLayoutBox(descendant)->parentBox(); ancestor;
        ancestor = ancestor->containingBlock()) {
     if (ancestor->isLayoutFlowThread()) {
@@ -805,9 +838,9 @@ void LayoutMultiColumnFlowThread::addColumnSetToThread(
 }
 
 void LayoutMultiColumnFlowThread::willBeRemovedFromTree() {
-  // Detach all column sets from the flow thread. Cannot destroy them at this point, since they
-  // are siblings of this object, and there may be pointers to this object's sibling somewhere
-  // further up on the call stack.
+  // Detach all column sets from the flow thread. Cannot destroy them at this
+  // point, since they are siblings of this object, and there may be pointers to
+  // this object's sibling somewhere further up on the call stack.
   for (LayoutMultiColumnSet* columnSet = firstMultiColumnSet(); columnSet;
        columnSet = columnSet->nextSiblingMultiColumnSet())
     columnSet->detachFromFlowThread();
@@ -824,10 +857,9 @@ void LayoutMultiColumnFlowThread::skipColumnSpanner(
   LayoutBox* previousColumnBox = placeholder->previousSiblingMultiColumnBox();
   if (previousColumnBox && previousColumnBox->isLayoutMultiColumnSet()) {
     LayoutMultiColumnSet* columnSet = toLayoutMultiColumnSet(previousColumnBox);
+    // Negative margins may cause this.
     if (logicalTopInFlowThread < columnSet->logicalTopInFlowThread())
-      logicalTopInFlowThread =
-          columnSet
-              ->logicalTopInFlowThread();  // Negative margins may cause this.
+      logicalTopInFlowThread = columnSet->logicalTopInFlowThread();
     columnSet->endFlow(logicalTopInFlowThread);
   }
   LayoutBox* nextColumnBox = placeholder->nextSiblingMultiColumnBox();
@@ -837,13 +869,15 @@ void LayoutMultiColumnFlowThread::skipColumnSpanner(
     nextSet->beginFlow(logicalTopInFlowThread);
   }
 
-  // We'll lay out of spanners after flow thread layout has finished (during layout of the spanner
-  // placeholders). There may be containing blocks for out-of-flow positioned descendants of the
-  // spanner in the flow thread, so that out-of-flow objects inside the spanner will be laid out
-  // as part of flow thread layout (even if the spanner itself won't). We need to add such
-  // out-of-flow positioned objects to their containing blocks now, or they'll never get laid
-  // out. Since it's non-trivial to determine if we need this, and where such out-of-flow objects
-  // might be, just go through the whole subtree.
+  // We'll lay out of spanners after flow thread layout has finished (during
+  // layout of the spanner placeholders). There may be containing blocks for
+  // out-of-flow positioned descendants of the spanner in the flow thread, so
+  // that out-of-flow objects inside the spanner will be laid out as part of
+  // flow thread layout (even if the spanner itself won't). We need to add such
+  // out-of-flow positioned objects to their containing blocks now, or they'll
+  // never get laid out. Since it's non-trivial to determine if we need this,
+  // and where such out-of-flow objects might be, just go through the whole
+  // subtree.
   for (LayoutObject* descendant = layoutObject->slowFirstChild(); descendant;
        descendant = descendant->nextInPreOrder()) {
     if (descendant->isBox() && descendant->isOutOfFlowPositioned())
@@ -852,14 +886,15 @@ void LayoutMultiColumnFlowThread::skipColumnSpanner(
   }
 }
 
-// When processing layout objects to remove or when processing layout objects that have just been
-// inserted, certain types of objects should be skipped.
+// When processing layout objects to remove or when processing layout objects
+// that have just been inserted, certain types of objects should be skipped.
 static bool shouldSkipInsertedOrRemovedChild(
     LayoutMultiColumnFlowThread* flowThread,
     const LayoutObject& child) {
   if (child.isSVG() && !child.isSVGRoot()) {
-    // Don't descend into SVG objects. What's in there is of no interest, and there might even
-    // be a foreignObject there with column-span:all, which doesn't apply to us.
+    // Don't descend into SVG objects. What's in there is of no interest, and
+    // there might even be a foreignObject there with column-span:all, which
+    // doesn't apply to us.
     return true;
   }
   if (child.isLayoutFlowThread()) {
@@ -868,13 +903,14 @@ static bool shouldSkipInsertedOrRemovedChild(
   }
   if (child.isLayoutMultiColumnSet() ||
       child.isLayoutMultiColumnSpannerPlaceholder()) {
-    // Column sets and spanner placeholders in a child multicol context don't affect the parent
-    // flow thread.
+    // Column sets and spanner placeholders in a child multicol context don't
+    // affect the parent flow thread.
     return true;
   }
   if (child.isOutOfFlowPositioned() &&
       child.containingBlock()->flowThreadContainingBlock() != flowThread) {
-    // Out-of-flow with its containing block on the outside of the multicol container.
+    // Out-of-flow with its containing block on the outside of the multicol
+    // container.
     return true;
   }
   return false;
@@ -883,11 +919,12 @@ static bool shouldSkipInsertedOrRemovedChild(
 void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(
     LayoutObject* descendant) {
   ASSERT(!m_isBeingEvacuated);
-  // This method ensures that the list of column sets and spanner placeholders reflects the
-  // multicol content after having inserted a descendant (or descendant subtree). See the header
-  // file for more information. Go through the subtree that was just inserted and create column
-  // sets (needed by regular column content) and spanner placeholders (one needed by each spanner)
-  // where needed.
+  // This method ensures that the list of column sets and spanner placeholders
+  // reflects the multicol content after having inserted a descendant (or
+  // descendant subtree). See the header file for more information. Go through
+  // the subtree that was just inserted and create column sets (needed by
+  // regular column content) and spanner placeholders (one needed by each
+  // spanner) where needed.
   if (shouldSkipInsertedOrRemovedChild(this, *descendant))
     return;
   LayoutObject* objectAfterSubtree =
@@ -904,28 +941,33 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(
     if (containingColumnSpannerPlaceholder(layoutObject))
       continue;  // Inside a column spanner. Nothing to do, then.
     if (descendantIsValidColumnSpanner(layoutObject)) {
-      // This layoutObject is a spanner, so it needs to establish a spanner placeholder.
+      // This layoutObject is a spanner, so it needs to establish a spanner
+      // placeholder.
       createAndInsertSpannerPlaceholder(toLayoutBox(layoutObject),
                                         objectAfterSubtree);
       continue;
     }
-    // This layoutObject is regular column content (i.e. not a spanner). Create a set if necessary.
+    // This layoutObject is regular column content (i.e. not a spanner). Create
+    // a set if necessary.
     if (objectAfterSubtree) {
       if (LayoutMultiColumnSpannerPlaceholder* placeholder =
               objectAfterSubtree->spannerPlaceholder()) {
-        // If inserted right before a spanner, we need to make sure that there's a set for us there.
+        // If inserted right before a spanner, we need to make sure that there's
+        // a set for us there.
         LayoutBox* previous = placeholder->previousSiblingMultiColumnBox();
         if (!previous || !previous->isLayoutMultiColumnSet())
           createAndInsertMultiColumnSet(placeholder);
       } else {
-        // Otherwise, since |objectAfterSubtree| isn't a spanner, it has to mean that there's
-        // already a set for that content. We can use it for this layoutObject too.
+        // Otherwise, since |objectAfterSubtree| isn't a spanner, it has to mean
+        // that there's already a set for that content. We can use it for this
+        // layoutObject too.
         ASSERT(mapDescendantToColumnSet(objectAfterSubtree));
         ASSERT(mapDescendantToColumnSet(layoutObject) ==
                mapDescendantToColumnSet(objectAfterSubtree));
       }
     } else {
-      // Inserting at the end. Then we just need to make sure that there's a column set at the end.
+      // Inserting at the end. Then we just need to make sure that there's a
+      // column set at the end.
       LayoutBox* lastColumnBox = lastMultiColumnBox();
       if (!lastColumnBox || !lastColumnBox->isLayoutMultiColumnSet())
         createAndInsertMultiColumnSet();
@@ -935,10 +977,11 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(
 
 void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(
     LayoutObject* descendant) {
-  // This method ensures that the list of column sets and spanner placeholders reflects the
-  // multicol content that we'll be left with after removal of a descendant (or descendant
-  // subtree). See the header file for more information. Removing content may mean that we need to
-  // remove column sets and/or spanner placeholders.
+  // This method ensures that the list of column sets and spanner placeholders
+  // reflects the multicol content that we'll be left with after removal of a
+  // descendant (or descendant subtree). See the header file for more
+  // information. Removing content may mean that we need to remove column sets
+  // and/or spanner placeholders.
   if (m_isBeingEvacuated)
     return;
   if (shouldSkipInsertedOrRemovedChild(this, *descendant))
@@ -947,7 +990,8 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(
       containingColumnSpannerPlaceholder(descendant);
   bool processedSomething = false;
   LayoutObject* next;
-  // Remove spanner placeholders that are no longer needed, and merge column sets around them.
+  // Remove spanner placeholders that are no longer needed, and merge column
+  // sets around them.
   for (LayoutObject* layoutObject = descendant; layoutObject;
        layoutObject = next) {
     if (layoutObject != descendant &&
@@ -969,7 +1013,8 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(
   if (hadContainingPlaceholder || !processedSomething)
     return;  // No column content will be removed, so we can stop here.
 
-  // Column content will be removed. Does this mean that we should destroy a column set?
+  // Column content will be removed. Does this mean that we should destroy a
+  // column set?
   LayoutMultiColumnSpannerPlaceholder* adjacentPreviousSpannerPlaceholder =
       nullptr;
   LayoutObject* previousLayoutObject =
@@ -989,10 +1034,10 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(
     if (!adjacentNextSpannerPlaceholder)
       return;  // Followed by column content. Set still needed.
   }
-  // We have now determined that, with the removal of |descendant|, we should remove a column
-  // set. Locate it and remove it. Do it without involving mapDescendantToColumnSet(), as that
-  // might be very slow. Deduce the right set from the spanner placeholders that we've already
-  // found.
+  // We have now determined that, with the removal of |descendant|, we should
+  // remove a column set. Locate it and remove it. Do it without involving
+  // mapDescendantToColumnSet(), as that might be very slow. Deduce the right
+  // set from the spanner placeholders that we've already found.
   LayoutMultiColumnSet* columnSetToRemove;
   if (adjacentNextSpannerPlaceholder) {
     columnSetToRemove = toLayoutMultiColumnSet(
@@ -1004,8 +1049,9 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(
     columnSetToRemove = toLayoutMultiColumnSet(
         adjacentPreviousSpannerPlaceholder->nextSiblingMultiColumnBox());
   } else {
-    // If there were no adjacent spanners, it has to mean that there's only one column set,
-    // since it's only spanners that may cause creation of multiple sets.
+    // If there were no adjacent spanners, it has to mean that there's only one
+    // column set, since it's only spanners that may cause creation of
+    // multiple sets.
     columnSetToRemove = firstMultiColumnSet();
     ASSERT(columnSetToRemove);
     ASSERT(!columnSetToRemove->nextSiblingMultiColumnSet());
@@ -1017,10 +1063,11 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(
 static inline bool needsToReinsertIntoFlowThread(
     const ComputedStyle& oldStyle,
     const ComputedStyle& newStyle) {
-  // If we've become (or are about to become) a container for absolutely positioned descendants,
-  // or if we're no longer going to be one, we need to re-evaluate the need for column
-  // sets. There may be out-of-flow descendants further down that become part of the flow thread,
-  // or cease to be part of the flow thread, because of this change.
+  // If we've become (or are about to become) a container for absolutely
+  // positioned descendants, or if we're no longer going to be one, we need to
+  // re-evaluate the need for column sets. There may be out-of-flow descendants
+  // further down that become part of the flow thread, or cease to be part of
+  // the flow thread, because of this change.
   if (oldStyle.hasTransformRelatedProperty() !=
       newStyle.hasTransformRelatedProperty())
     return true;
@@ -1032,7 +1079,8 @@ static inline bool needsToReinsertIntoFlowThread(
 
 static inline bool needsToRemoveFromFlowThread(const ComputedStyle& oldStyle,
                                                const ComputedStyle& newStyle) {
-  // If an in-flow descendant goes out-of-flow, we may have to remove column sets and spanner placeholders.
+  // If an in-flow descendant goes out-of-flow, we may have to remove column
+  // sets and spanner placeholders.
   return (newStyle.hasOutOfFlowPosition() &&
           !oldStyle.hasOutOfFlowPosition()) ||
          needsToReinsertIntoFlowThread(oldStyle, newStyle);
@@ -1040,7 +1088,8 @@ static inline bool needsToRemoveFromFlowThread(const ComputedStyle& oldStyle,
 
 static inline bool needsToInsertIntoFlowThread(const ComputedStyle& oldStyle,
                                                const ComputedStyle& newStyle) {
-  // If an out-of-flow descendant goes in-flow, we may have to insert column sets and spanner placeholders.
+  // If an out-of-flow descendant goes in-flow, we may have to insert column
+  // sets and spanner placeholders.
   return (!newStyle.hasOutOfFlowPosition() &&
           oldStyle.hasOutOfFlowPosition()) ||
          needsToReinsertIntoFlowThread(oldStyle, newStyle);
@@ -1066,9 +1115,10 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantStyleDidChange(
     // We went from being regular column content to becoming a spanner.
     ASSERT(!descendant->spannerPlaceholder());
 
-    // First remove this as regular column content. Note that this will walk the entire subtree
-    // of |descendant|. There might be spanners there (which won't be spanners anymore, since
-    // we're not allowed to nest spanners), whose placeholders must die.
+    // First remove this as regular column content. Note that this will walk the
+    // entire subtree of |descendant|. There might be spanners there (which
+    // won't be spanners anymore, since we're not allowed to nest spanners),
+    // whose placeholders must die.
     flowThreadDescendantWillBeRemoved(descendant);
 
     createAndInsertSpannerPlaceholder(
@@ -1080,9 +1130,10 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantStyleDidChange(
 void LayoutMultiColumnFlowThread::computePreferredLogicalWidths() {
   LayoutFlowThread::computePreferredLogicalWidths();
 
-  // The min/max intrinsic widths calculated really tell how much space elements need when
-  // laid out inside the columns. In order to eventually end up with the desired column width,
-  // we need to convert them to values pertaining to the multicol container.
+  // The min/max intrinsic widths calculated really tell how much space elements
+  // need when laid out inside the columns. In order to eventually end up with
+  // the desired column width, we need to convert them to values pertaining to
+  // the multicol container.
   const LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
   const ComputedStyle* multicolStyle = multicolContainer->style();
   int columnCount =
@@ -1098,11 +1149,12 @@ void LayoutMultiColumnFlowThread::computePreferredLogicalWidths() {
     m_minPreferredLogicalWidth =
         std::min(m_minPreferredLogicalWidth, columnWidth);
   }
-  // Note that if column-count is auto here, we should resolve it to calculate the maximum
-  // intrinsic width, instead of pretending that it's 1. The only way to do that is by performing
-  // a layout pass, but this is not an appropriate time or place for layout. The good news is that
-  // if height is unconstrained and there are no explicit breaks, the resolved column-count really
-  // should be 1.
+  // Note that if column-count is auto here, we should resolve it to calculate
+  // the maximum intrinsic width, instead of pretending that it's 1. The only
+  // way to do that is by performing a layout pass, but this is not an
+  // appropriate time or place for layout. The good news is that if height is
+  // unconstrained and there are no explicit breaks, the resolved column-count
+  // really should be 1.
   m_maxPreferredLogicalWidth =
       std::max(m_maxPreferredLogicalWidth, columnWidth) * columnCount +
       gapExtra;
@@ -1132,12 +1184,13 @@ void LayoutMultiColumnFlowThread::layout() {
   if (LayoutMultiColumnSet* lastSet = lastMultiColumnSet()) {
     ASSERT(lastSet == m_lastSetWorkedOn);
     if (!lastSet->nextSiblingMultiColumnBox()) {
-      // Include trailing overflow in the last column set. The idea is that we will generate
-      // additional columns and pages to hold that overflow, since people do write bad content
-      // like <body style="height:0px"> in multi-column layouts.
-      // TODO(mstensho): Once we support nested multicol, adding in overflow here may result
-      // in the need for creating additional rows, since there may not be enough space
-      // remaining in the currently last row.
+      // Include trailing overflow in the last column set. The idea is that we
+      // will generate additional columns and pages to hold that overflow, since
+      // people do write bad content like <body style="height:0px"> in
+      // multi-column layouts.
+      // TODO(mstensho): Once we support nested multicol, adding in overflow
+      // here may result in the need for creating additional rows, since there
+      // may not be enough space remaining in the currently last row.
       LayoutRect layoutRect = layoutOverflowRect();
       LayoutUnit logicalBottomInFlowThread =
           isHorizontalWritingMode() ? layoutRect.maxY() : layoutRect.maxX();
@@ -1150,16 +1203,17 @@ void LayoutMultiColumnFlowThread::layout() {
 
 void LayoutMultiColumnFlowThread::contentWasLaidOut(
     LayoutUnit logicalBottomInFlowThreadAfterPagination) {
-  // Check if we need another fragmentainer group. If we've run out of columns in the last
-  // fragmentainer group (column row), we need to insert another fragmentainer group to hold more
-  // columns.
+  // Check if we need another fragmentainer group. If we've run out of columns
+  // in the last fragmentainer group (column row), we need to insert another
+  // fragmentainer group to hold more columns.
 
-  // First figure out if there's any chance that we're nested at all. If we can be sure that
-  // we're not, bail early. This code is run very often, and since locating a containing flow
-  // thread has some cost (depending on tree depth), avoid calling
-  // enclosingFragmentationContext() right away. This test may give some false positives (hence
-  // the "mayBe"), if we're in an out-of-flow subtree and have an outer multicol container that
-  // doesn't affect us, but that's okay. We'll discover that further down the road when trying to
+  // First figure out if there's any chance that we're nested at all. If we can
+  // be sure that we're not, bail early. This code is run very often, and since
+  // locating a containing flow thread has some cost (depending on tree depth),
+  // avoid calling enclosingFragmentationContext() right away. This test may
+  // give some false positives (hence the "mayBe"), if we're in an out-of-flow
+  // subtree and have an outer multicol container that doesn't affect us, but
+  // that's okay. We'll discover that further down the road when trying to
   // locate our enclosing flow thread for real.
   bool mayBeNested = multiColumnBlockFlow()->isInsideFlowThread() ||
                      view()->fragmentationContext();
@@ -1170,17 +1224,19 @@ void LayoutMultiColumnFlowThread::contentWasLaidOut(
 }
 
 bool LayoutMultiColumnFlowThread::canSkipLayout(const LayoutBox& root) const {
-  // Objects containing spanners is all we need to worry about, so if there are no spanners at all
-  // in this multicol container, we can just return the good news right away.
+  // Objects containing spanners is all we need to worry about, so if there are
+  // no spanners at all in this multicol container, we can just return the good
+  // news right away.
   if (!hasAnyColumnSpanners(*this))
     return true;
 
   LayoutObject* next;
   for (const LayoutObject* object = &root; object; object = next) {
     if (object->isColumnSpanAll()) {
-      // A spanner potentially ends one fragmentainer group and begins a new one, and thus
-      // determines the flow thread portion bottom and top of adjacent fragmentainer
-      // groups. It's just too hard to guess these values without laying out.
+      // A spanner potentially ends one fragmentainer group and begins a new
+      // one, and thus determines the flow thread portion bottom and top of
+      // adjacent fragmentainer groups. It's just too hard to guess these values
+      // without laying out.
       return false;
     }
     if (canContainSpannerInParentFragmentationContext(*object))

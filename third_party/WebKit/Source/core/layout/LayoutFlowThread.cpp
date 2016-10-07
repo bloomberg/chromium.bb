@@ -52,9 +52,10 @@ LayoutFlowThread* LayoutFlowThread::locateFlowThreadContainingBlockOf(
     curr = curr->parent();
     while (curr != container) {
       if (curr->isLayoutFlowThread()) {
-        // The nearest ancestor flow thread isn't in our containing block chain. Then we
-        // aren't really part of any flow thread, and we should stop looking. This happens
-        // when there are out-of-flow objects or column spanners.
+        // The nearest ancestor flow thread isn't in our containing block chain.
+        // Then we aren't really part of any flow thread, and we should stop
+        // looking. This happens when there are out-of-flow objects or column
+        // spanners.
         return nullptr;
       }
       curr = curr->parent();
@@ -68,10 +69,11 @@ void LayoutFlowThread::removeColumnSetFromThread(
   ASSERT(columnSet);
   m_multiColumnSetList.remove(columnSet);
   invalidateColumnSets();
-  // Clear the interval tree right away, instead of leaving it around with dead objects. Not that
-  // anyone _should_ try to access the interval tree when the column sets are marked as invalid,
-  // but this is actually possible if other parts of the engine has bugs that cause us to not lay
-  // out everything that was marked for layout, so that LayoutObject::assertLaidOut() (and a LOT
+  // Clear the interval tree right away, instead of leaving it around with dead
+  // objects. Not that anyone _should_ try to access the interval tree when the
+  // column sets are marked as invalid, but this is actually possible if other
+  // parts of the engine has bugs that cause us to not lay out everything that
+  // was marked for layout, so that LayoutObject::assertLaidOut() (and a LOT
   // of other assertions) fails.
   m_multiColumnSetIntervalTree.clear();
 }
@@ -90,7 +92,8 @@ void LayoutFlowThread::invalidateColumnSets() {
 
 void LayoutFlowThread::validateColumnSets() {
   m_columnSetsInvalidated = false;
-  updateLogicalWidth();  // Called to get the maximum logical width for the columnSet.
+  // Called to get the maximum logical width for the columnSet.
+  updateLogicalWidth();
   generateColumnSetIntervalTree();
 }
 
@@ -98,8 +101,8 @@ bool LayoutFlowThread::mapToVisualRectInAncestorSpace(
     const LayoutBoxModelObject* ancestor,
     LayoutRect& rect,
     VisualRectFlags visualRectFlags) const {
-  ASSERT(ancestor !=
-         this);  // A flow thread should never be an invalidation container.
+  // A flow thread should never be an invalidation container.
+  DCHECK(ancestor != this);
   rect = fragmentsBoundingBox(rect);
   return LayoutBlockFlow::mapToVisualRectInAncestorSpace(ancestor, rect,
                                                          visualRectFlags);
@@ -136,13 +139,14 @@ void LayoutFlowThread::absoluteQuadsForDescendant(const LayoutBox& descendant,
   }
   LayoutRect boundingRectInFlowThread(offsetFromFlowThread,
                                       descendant.frameRect().size());
-  // Set up a fragments relative to the descendant, in the flow thread coordinate space, and
-  // convert each of them, individually, to absolute coordinates.
+  // Set up a fragments relative to the descendant, in the flow thread
+  // coordinate space, and convert each of them, individually, to absolute
+  // coordinates.
   for (FragmentainerIterator iterator(*this, boundingRectInFlowThread);
        !iterator.atEnd(); iterator.advance()) {
     LayoutRect fragment = boundingRectInFlowThread;
-    // We use inclusiveIntersect() because intersect() would reset the coordinates for
-    // zero-height objects.
+    // We use inclusiveIntersect() because intersect() would reset the
+    // coordinates for zero-height objects.
     fragment.inclusiveIntersect(iterator.fragmentainerInFlowThread());
     fragment.moveBy(-offsetFromFlowThread);
     quads.append(descendant.localToAbsoluteQuad(FloatRect(fragment)));
@@ -181,7 +185,8 @@ LayoutUnit LayoutFlowThread::pageRemainingLogicalHeightForOffset(
 }
 
 void LayoutFlowThread::generateColumnSetIntervalTree() {
-  // FIXME: Optimize not to clear the interval all the time. This implies manually managing the tree nodes lifecycle.
+  // FIXME: Optimize not to clear the interval all the time. This implies
+  // manually managing the tree nodes lifecycle.
   m_multiColumnSetIntervalTree.clear();
   m_multiColumnSetIntervalTree.initIfNeeded();
   for (auto columnSet : m_multiColumnSetList)
@@ -217,7 +222,8 @@ void LayoutFlowThread::flowThreadToContainingCoordinateSpace(
     LayoutUnit& blockPosition,
     LayoutUnit& inlinePosition) const {
   LayoutPoint position(inlinePosition, blockPosition);
-  // First we have to make |position| physical, because that's what offsetLeft() expects and returns.
+  // First we have to make |position| physical, because that's what offsetLeft()
+  // expects and returns.
   if (!isHorizontalWritingMode())
     position = position.transposedPoint();
   position = flipForWritingMode(position);

@@ -82,8 +82,8 @@ void LayoutFileUploadControl::paintObject(
 void LayoutFileUploadControl::computeIntrinsicLogicalWidths(
     LayoutUnit& minLogicalWidth,
     LayoutUnit& maxLogicalWidth) const {
-  // Figure out how big the filename space needs to be for a given number of characters
-  // (using "0" as the nominal character).
+  // Figure out how big the filename space needs to be for a given number of
+  // characters (using "0" as the nominal character).
   const UChar character = '0';
   const String characterAsString = String(&character, 1);
   const Font& font = style()->font();
@@ -158,7 +158,8 @@ PositionWithAffinity LayoutFileUploadControl::positionForPoint(
 }
 
 HTMLInputElement* LayoutFileUploadControl::uploadButton() const {
-  // FIXME: This should be on HTMLInputElement as an API like innerButtonElement().
+  // FIXME: This should be on HTMLInputElement as an API like
+  // innerButtonElement().
   HTMLInputElement* input = toHTMLInputElement(node());
   Node* buttonNode = input->userAgentShadowRoot()->firstChild();
   return isHTMLInputElement(buttonNode) ? toHTMLInputElement(buttonNode) : 0;

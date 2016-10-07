@@ -42,7 +42,8 @@ class LayoutBoxModelObject;
 class TransformationMatrix;
 class TransformState;
 
-// Can be used while walking the layout tree to cache data about offsets and transforms.
+// Can be used while walking the layout tree to cache data about offsets and
+// transforms.
 class CORE_EXPORT LayoutGeometryMap {
   DISALLOW_NEW();
   WTF_MAKE_NONCOPYABLE(LayoutGeometryMap);
@@ -59,9 +60,10 @@ class CORE_EXPORT LayoutGeometryMap {
     return mapToAncestor(rect, 0).boundingBox();
   }
 
-  // Map to an ancestor. Will assert that the ancestor has been pushed onto this map.
-  // A null ancestor maps through the LayoutView (including its scale transform, if any).
-  // If the ancestor is the LayoutView, the scroll offset is applied, but not the scale.
+  // Map to an ancestor. Will assert that the ancestor has been pushed onto this
+  // map. A null ancestor maps through the LayoutView (including its scale
+  // transform, if any). If the ancestor is the LayoutView, the scroll offset is
+  // applied, but not the scale.
   FloatQuad mapToAncestor(const FloatRect&, const LayoutBoxModelObject*) const;
 
   // Called by code walking the layout or layer trees.
@@ -71,10 +73,12 @@ class CORE_EXPORT LayoutGeometryMap {
   void pushMappingsToAncestor(const LayoutObject*,
                               const LayoutBoxModelObject* ancestorLayoutObject);
 
-  // The following methods should only be called by layoutObjects inside a call to pushMappingsToAncestor().
+  // The following methods should only be called by layoutObjects inside a call
+  // to pushMappingsToAncestor().
 
-  // Push geometry info between this layoutObject and some ancestor. The ancestor must be its container() or some
-  // stacking context between the layoutObject and its container.
+  // Push geometry info between this layoutObject and some ancestor. The
+  // ancestor must be its container() or some stacking context between the
+  // layoutObject and its container.
   void push(const LayoutObject*,
             const LayoutSize&,
             GeometryInfoFlags = 0,

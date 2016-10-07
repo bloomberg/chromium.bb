@@ -2,7 +2,8 @@
  * This file is part of the select element layoutObject in WebCore.
  *
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ *               All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -75,7 +76,8 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
   bool hasLineIfEmpty() const override { return true; }
 
   // Flexbox defines baselines differently than regular blocks.
-  // For backwards compatibility, menulists need to do the regular block behavior.
+  // For backwards compatibility, menulists need to do the regular block
+  // behavior.
   int baselinePosition(FontBaseline baseline,
                        bool firstLine,
                        LineDirectionMode direction,

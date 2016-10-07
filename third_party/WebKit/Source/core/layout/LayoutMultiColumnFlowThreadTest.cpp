@@ -17,9 +17,10 @@ class MultiColumnRenderingTest : public RenderingTest {
  public:
   LayoutMultiColumnFlowThread* findFlowThread(const char* id) const;
 
-  // Generate a signature string based on what kind of column boxes the flow thread has
-  // established. 'c' is used for regular column content sets, while 's' is used for spanners.
-  // '?' is used when there's an unknown box type (which should be considered a failure).
+  // Generate a signature string based on what kind of column boxes the flow
+  // thread has established. 'c' is used for regular column content sets, while
+  // 's' is used for spanners. '?' is used when there's an unknown box type
+  // (which should be considered a failure).
   String columnSetSignature(LayoutMultiColumnFlowThread*);
   String columnSetSignature(const char* multicolId);
 
@@ -63,7 +64,8 @@ void MultiColumnRenderingTest::setMulticolHTML(const String& html) {
 }
 
 TEST_F(MultiColumnRenderingTest, OneBlockWithInDepthTreeStructureCheck) {
-  // Examine the layout tree established by a simple multicol container with a block with some text inside.
+  // Examine the layout tree established by a simple multicol container with a
+  // block with some text inside.
   setMulticolHTML("<div id='mc'><div>xxx</div></div>");
   LayoutBlockFlow* multicolContainer =
       toLayoutBlockFlow(getLayoutObjectByElementId("mc"));
@@ -104,7 +106,8 @@ TEST_F(MultiColumnRenderingTest, OneBlock) {
 }
 
 TEST_F(MultiColumnRenderingTest, TwoBlocks) {
-  // No matter how much content, we should only create one column set (unless there are spanners).
+  // No matter how much content, we should only create one column set (unless
+  // there are spanners).
   setMulticolHTML(
       "<div id='mc'><div id='block1'></div><div id='block2'></div></div>");
   LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
@@ -133,7 +136,8 @@ TEST_F(MultiColumnRenderingTest, Spanner) {
 }
 
 TEST_F(MultiColumnRenderingTest, ContentThenSpanner) {
-  // With some column content followed by a spanner, we need a column set followed by a spanner set.
+  // With some column content followed by a spanner, we need a column set
+  // followed by a spanner set.
   setMulticolHTML(
       "<div id='mc'><div id='columnContent'></div><div "
       "id='spanner'></div></div>");
@@ -153,7 +157,8 @@ TEST_F(MultiColumnRenderingTest, ContentThenSpanner) {
 }
 
 TEST_F(MultiColumnRenderingTest, SpannerThenContent) {
-  // With a spanner followed by some column content, we need a spanner set followed by a column set.
+  // With a spanner followed by some column content, we need a spanner set
+  // followed by a column set.
   setMulticolHTML(
       "<div id='mc'><div id='spanner'></div><div "
       "id='columnContent'></div></div>");
@@ -173,7 +178,8 @@ TEST_F(MultiColumnRenderingTest, SpannerThenContent) {
 }
 
 TEST_F(MultiColumnRenderingTest, ContentThenSpannerThenContent) {
-  // With column content followed by a spanner followed by some column content, we need a column
+  // With column content followed by a spanner followed by some column content,
+  // we need a column
   // set followed by a spanner set followed by a column set.
   setMulticolHTML(
       "<div id='mc'><div id='columnContentBefore'></div><div "
@@ -222,7 +228,8 @@ TEST_F(MultiColumnRenderingTest, TwoSpanners) {
 }
 
 TEST_F(MultiColumnRenderingTest, SpannerThenContentThenSpanner) {
-  // With two spanners and some column content in-between, we need a spanner set, a column set and another spanner set.
+  // With two spanners and some column content in-between, we need a spanner
+  // set, a column set and another spanner set.
   setMulticolHTML(
       "<div id='mc'><div id='spanner1'></div><div "
       "id='columnContent'></div><div id='spanner2'></div></div>");
@@ -568,7 +575,8 @@ class MultiColumnTreeModifyingTest : public MultiColumnRenderingTest {
 
 void MultiColumnTreeModifyingTest::setMulticolHTML(const char* html) {
   MultiColumnRenderingTest::setMulticolHTML(html);
-  // Allow modifications to the layout tree structure, because that's what we want to test.
+  // Allow modifications to the layout tree structure, because that's what we
+  // want to test.
   document().lifecycle().advanceTo(DocumentLifecycle::InStyleRecalc);
 }
 
@@ -585,7 +593,8 @@ void MultiColumnTreeModifyingTest::reparentLayoutObject(
 }
 
 void MultiColumnTreeModifyingTest::destroyLayoutObject(LayoutObject* child) {
-  // Remove and destroy in separate steps, so that we get to test removal of subtrees.
+  // Remove and destroy in separate steps, so that we get to test removal of
+  // subtrees.
   child->remove();
   child->node()->detachLayoutTree();
 }
@@ -608,7 +617,8 @@ TEST_F(MultiColumnTreeModifyingTest, InsertFirstContentAndRemove) {
   EXPECT_EQ(columnSetSignature(flowThread), "c");
 
   destroyLayoutObject(block);
-  // The set should be gone again now, since there's nothing inside the multicol container anymore.
+  // The set should be gone again now, since there's nothing inside the multicol
+  // container anymore.
   EXPECT_EQ(columnSetSignature("mc"), "");
 }
 
@@ -617,7 +627,8 @@ TEST_F(MultiColumnTreeModifyingTest, InsertContentBeforeContentAndRemove) {
       "<div id='block'></div><div id='mc'><div id='insertBefore'></div></div>");
   EXPECT_EQ(columnSetSignature("mc"), "c");
   reparentLayoutObject("mc", "block", "insertBefore");
-  // There was already some content prior to our insertion, so no new set should be inserted.
+  // There was already some content prior to our insertion, so no new set should
+  // be inserted.
   EXPECT_EQ(columnSetSignature("mc"), "c");
   destroyLayoutObject("block");
   // There's still some content after the removal, so the set should remain.
@@ -628,7 +639,8 @@ TEST_F(MultiColumnTreeModifyingTest, InsertContentAfterContentAndRemove) {
   setMulticolHTML("<div id='block'></div><div id='mc'><div></div></div>");
   EXPECT_EQ(columnSetSignature("mc"), "c");
   reparentLayoutObject("mc", "block");
-  // There was already some content prior to our insertion, so no new set should be inserted.
+  // There was already some content prior to our insertion, so no new set should
+  // be inserted.
   EXPECT_EQ(columnSetSignature("mc"), "c");
   destroyLayoutObject("block");
   // There's still some content after the removal, so the set should remain.
@@ -645,7 +657,8 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSpannerAndRemove) {
   spanner->remove();
   multicolContainer->addChild(spanner);
   EXPECT_EQ(spanner->parent(), flowThread);
-  // We should now have a spanner placeholder, since we just moved a spanner into the multicol container.
+  // We should now have a spanner placeholder, since we just moved a spanner
+  // into the multicol container.
   EXPECT_EQ(columnSetSignature(flowThread), "s");
   destroyLayoutObject(spanner);
   EXPECT_EQ(columnSetSignature(flowThread), "");
@@ -664,7 +677,8 @@ TEST_F(MultiColumnTreeModifyingTest, InsertTwoSpannersAndRemove) {
 TEST_F(MultiColumnTreeModifyingTest, InsertSpannerAfterContentAndRemove) {
   setMulticolHTML("<div id='spanner'></div><div id='mc'><div></div></div>");
   reparentLayoutObject("mc", "spanner");
-  // We should now have a spanner placeholder, since we just moved a spanner into the multicol container.
+  // We should now have a spanner placeholder, since we just moved a spanner
+  // into the multicol container.
   EXPECT_EQ(columnSetSignature("mc"), "cs");
   destroyLayoutObject("spanner");
   EXPECT_EQ(columnSetSignature("mc"), "c");
@@ -675,7 +689,8 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSpannerBeforeContentAndRemove) {
       "<div id='spanner'></div><div id='mc'><div "
       "id='columnContent'></div></div>");
   reparentLayoutObject("mc", "spanner", "columnContent");
-  // We should now have a spanner placeholder, since we just moved a spanner into the multicol container.
+  // We should now have a spanner placeholder, since we just moved a spanner
+  // into the multicol container.
   EXPECT_EQ(columnSetSignature("mc"), "sc");
   destroyLayoutObject("spanner");
   EXPECT_EQ(columnSetSignature("mc"), "c");
@@ -686,11 +701,13 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSpannerBetweenContentAndRemove) {
       "<div id='spanner'></div><div id='mc'><div></div><div "
       "id='insertBefore'></div></div>");
   reparentLayoutObject("mc", "spanner", "insertBefore");
-  // Since the spanner was inserted in the middle of column content, what used to be one column
-  // set had to be split in two, in order to get a spot to insert the spanner placeholder.
+  // Since the spanner was inserted in the middle of column content, what used
+  // to be one column set had to be split in two, in order to get a spot to
+  // insert the spanner placeholder.
   EXPECT_EQ(columnSetSignature("mc"), "csc");
   destroyLayoutObject("spanner");
-  // The spanner placeholder should be gone again now, and the two sets be merged into one.
+  // The spanner placeholder should be gone again now, and the two sets be
+  // merged into one.
   EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
@@ -774,8 +791,8 @@ TEST_F(MultiColumnTreeModifyingTest,
       "class='s'></div></div>");
   EXPECT_EQ(columnSetSignature("mc"), "cs");
   reparentLayoutObject("mc", "block", "insertBefore");
-  // There was already some content before the spanner prior to our insertion, so no new set
-  // should be inserted.
+  // There was already some content before the spanner prior to our insertion,
+  // so no new set should be inserted.
   EXPECT_EQ(columnSetSignature("mc"), "cs");
   destroyLayoutObject("block");
   EXPECT_EQ(columnSetSignature("mc"), "cs");

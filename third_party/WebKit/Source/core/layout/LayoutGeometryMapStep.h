@@ -64,8 +64,9 @@ struct LayoutGeometryMapStep {
   LayoutSize m_offset;
   std::unique_ptr<TransformationMatrix>
       m_transform;  // Includes offset if non-null.
-  // If m_offsetForFixedPosition could only apply to the fixed position steps, we may be able to merge
-  // with m_offsetForStickyPosition and simplify mapping.
+  // If m_offsetForFixedPosition could only apply to the fixed position steps,
+  // we may be able to merge with m_offsetForStickyPosition and simplify
+  // mapping.
   LayoutSize m_offsetForFixedPosition;
   LayoutSize m_offsetForStickyPosition;
   GeometryInfoFlags m_flags;

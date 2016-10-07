@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2000 Simon Hausmann <hausmann@kde.org>
  *           (C) 2000 Stefan Schimanski (1Stein@gmx.de)
- * Copyright (C) 2004, 2005, 2006, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2008, 2009, 2010 Apple Inc.
+ *               All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -49,11 +50,11 @@ LayoutEmbeddedObject::LayoutEmbeddedObject(Element* element)
 LayoutEmbeddedObject::~LayoutEmbeddedObject() {}
 
 PaintLayerType LayoutEmbeddedObject::layerTypeRequired() const {
-  // This can't just use LayoutPart::layerTypeRequired, because PaintLayerCompositor
-  // doesn't loop through LayoutEmbeddedObjects the way it does frames in order
-  // to update the self painting bit on their Layer.
-  // Also, unlike iframes, embeds don't used the usesCompositing bit on LayoutView
-  // in requiresAcceleratedCompositing.
+  // This can't just use LayoutPart::layerTypeRequired, because
+  // PaintLayerCompositor doesn't loop through LayoutEmbeddedObjects the way it
+  // does frames in order to update the self painting bit on their Layer.
+  // Also, unlike iframes, embeds don't used the usesCompositing bit on
+  // LayoutView in requiresAcceleratedCompositing.
   if (requiresAcceleratedCompositing())
     return NormalPaintLayer;
   return LayoutPart::layerTypeRequired();

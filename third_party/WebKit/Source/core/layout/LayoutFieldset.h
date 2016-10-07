@@ -41,7 +41,8 @@ class LayoutFieldset final : public LayoutFlexibleBox {
                 LayoutObject* beforeChild = nullptr) override;
   bool avoidsFloats() const override { return true; }
 
-  // We override the two baseline functions because we want our baseline to be the bottom of our margin box.
+  // We override the two baseline functions because we want our baseline to be
+  // the bottom of our margin box.
   int baselinePosition(FontBaseline,
                        bool firstLine,
                        LineDirectionMode,

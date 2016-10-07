@@ -52,7 +52,8 @@ LayoutGeometryMap::~LayoutGeometryMap() {}
 void LayoutGeometryMap::mapToAncestor(
     TransformState& transformState,
     const LayoutBoxModelObject* ancestor) const {
-  // If the mapping includes something like columns, we have to go via layoutObjects.
+  // If the mapping includes something like columns, we have to go via
+  // layoutObjects.
   if (hasNonUniformStep()) {
     m_mapping.last().m_layoutObject->mapLocalToAncestor(
         ancestor, transformState, ApplyContainerFlip | m_mapCoordinatesFlags);
@@ -69,7 +70,8 @@ void LayoutGeometryMap::mapToAncestor(
   for (int i = m_mapping.size() - 1; i >= 0; --i) {
     const LayoutGeometryMapStep& currentStep = m_mapping[i];
 
-    // If container is the root LayoutView (step 0) we want to apply its fixed position offset.
+    // If container is the root LayoutView (step 0) we want to apply its fixed
+    // position offset.
     if (i > 0 && currentStep.m_layoutObject == ancestor) {
 #if ENABLE(ASSERT)
       foundAncestor = true;
@@ -89,7 +91,8 @@ void LayoutGeometryMap::mapToAncestor(
     ASSERT(!i == isTopmostLayoutView(currentStep.m_layoutObject));
 
     if (!i) {
-      // A null container indicates mapping through the root LayoutView, so including its transform (the page scale).
+      // A null container indicates mapping through the root LayoutView, so
+      // including its transform (the page scale).
       if (!ancestor && currentStep.m_transform)
         transformState.applyTransform(*currentStep.m_transform.get());
     } else {
@@ -159,7 +162,8 @@ FloatQuad LayoutGeometryMap::mapToAncestor(
             ->localToAncestorQuad(rect, ancestor, m_mapCoordinatesFlags)
             .boundingBox();
 
-    // Inspector creates layoutObjects with negative width <https://bugs.webkit.org/show_bug.cgi?id=87194>.
+    // Inspector creates layoutObjects with negative width
+    // <https://bugs.webkit.org/show_bug.cgi?id=87194>.
     // Taking FloatQuad bounds avoids spurious assertions because of that.
     ASSERT(enclosingIntRect(layoutObjectMappedResult) ==
                enclosingIntRect(result.boundingBox()) ||
@@ -174,7 +178,8 @@ FloatQuad LayoutGeometryMap::mapToAncestor(
 void LayoutGeometryMap::pushMappingsToAncestor(
     const LayoutObject* layoutObject,
     const LayoutBoxModelObject* ancestorLayoutObject) {
-  // We need to push mappings in reverse order here, so do insertions rather than appends.
+  // We need to push mappings in reverse order here, so do insertions rather
+  // than appends.
   AutoReset<size_t> positionChange(&m_insertionPosition, m_mapping.size());
   do {
     layoutObject =
@@ -214,8 +219,8 @@ void LayoutGeometryMap::pushMappingsToAncestor(
       layer->layoutObject()->frame() != ancestorLayer->layoutObject()->frame();
   ASSERT(!crossDocument || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
 
-  // We have to visit all the layoutObjects to detect flipped blocks. This might defeat the gains
-  // from mapping via layers.
+  // We have to visit all the layoutObjects to detect flipped blocks. This might
+  // defeat the gains from mapping via layers.
   bool canConvertInLayerTree =
       (ancestorLayer && !crossDocument)
           ? canMapBetweenLayoutObjects(layer->layoutObject(),
