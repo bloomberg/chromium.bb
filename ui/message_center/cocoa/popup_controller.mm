@@ -221,6 +221,7 @@
   startBounds.origin.x += startBounds.size.width;
   [[self window] setFrame:startBounds display:NO];
   [[self window] setAlphaValue:0];
+  [[self window] setCanHide:NO];
   [self showWindow:nil];
 
   // Slide-in and fade-in simultaneously.
