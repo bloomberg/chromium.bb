@@ -518,74 +518,6 @@ size_t CalculatePositionsInFrame(
                                   point.y - decorationRect.origin.y));
 }
 
-// Given a newly created .webloc plist url file, also give it a resource
-// fork and insert 'TEXT and 'url ' resources holding further copies of the
-// url data. This is required for apps such as Terminal and Safari to accept it
-// as a real webloc file when dragged in.
-// It's expected that the resource fork requirement will go away at some
-// point and this code can then be deleted.
-OSErr WriteURLToNewWebLocFileResourceFork(NSURL* file, NSString* urlStr) {
-  ResFileRefNum refNum = kResFileNotOpened;
-  ResFileRefNum prevResRef = CurResFile();
-  FSRef fsRef;
-  OSErr err = noErr;
-  HFSUniStr255 resourceForkName;
-  FSGetResourceForkName(&resourceForkName);
-
-  if (![[NSFileManager defaultManager] fileExistsAtPath:[file path]])
-    return fnfErr;
-
-  if (!CFURLGetFSRef((CFURLRef)file, &fsRef))
-    return fnfErr;
-
-  err = FSCreateResourceFork(&fsRef,
-                             resourceForkName.length,
-                             resourceForkName.unicode,
-                             0);
-  if (err)
-    return err;
-  err = FSOpenResourceFile(&fsRef,
-                           resourceForkName.length,
-                           resourceForkName.unicode,
-                           fsRdWrPerm, &refNum);
-  if (err)
-    return err;
-
-  const char* utf8URL = [urlStr UTF8String];
-  int urlChars = strlen(utf8URL);
-
-  Handle urlHandle = NewHandle(urlChars);
-  memcpy(*urlHandle, utf8URL, urlChars);
-
-  Handle textHandle = NewHandle(urlChars);
-  memcpy(*textHandle, utf8URL, urlChars);
-
-  // Data for the 'drag' resource.
-  // This comes from derezzing webloc files made by the Finder.
-  // It's bigendian data, so it's represented here as chars to preserve
-  // byte order.
-  char dragData[] = {
-    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, // Header.
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
-    0x54, 0x45, 0x58, 0x54, 0x00, 0x00, 0x01, 0x00, // 'TEXT', 0, 256
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x75, 0x72, 0x6C, 0x20, 0x00, 0x00, 0x01, 0x00, // 'url ', 0, 256
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-  };
-  Handle dragHandle = NewHandleClear(sizeof(dragData));
-  memcpy(*dragHandle, &dragData[0], sizeof(dragData));
-
-  // Save the resources to the file.
-  ConstStr255Param noName = {0};
-  AddResource(dragHandle, 'drag', 128, noName);
-  AddResource(textHandle, 'TEXT', 256, noName);
-  AddResource(urlHandle, 'url ', 256, noName);
-
-  CloseResFile(refNum);
-  UseResFile(prevResRef);
-  return noErr;
-}
-
 // Returns the file path for file |name| if saved at NSURL |base|.
 static NSString* PathWithBaseURLAndName(NSURL* base, NSString* name) {
   NSString* filteredName =
@@ -684,9 +616,6 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
   [fileManager setAttributes:attr
                 ofItemAtPath:[outputURL path]
                        error:nil];
-  // Add resource data.
-  OSErr resStatus = WriteURLToNewWebLocFileResourceFork(outputURL, urlStr);
-  OSSTATUS_DCHECK(resStatus == noErr, resStatus);
 
   return [NSArray arrayWithObject:nameWithExtensionStr];
 }
