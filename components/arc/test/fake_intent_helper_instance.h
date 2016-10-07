@@ -51,10 +51,6 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
                      mojom::ActivityNamePtr activity,
                      mojom::ActionType action) override;
 
-  void HandleUrlListDeprecated(mojo::Array<mojom::UrlWithMimeTypePtr> urls,
-                               const mojo::String& package_name,
-                               mojom::ActionType action) override;
-
   void Init(mojom::IntentHelperHostPtr host_ptr) override;
 
   void RequestActivityIcons(

@@ -115,11 +115,6 @@ interface IntentHelperInstance {
                                  ActivityName activity,
                                  ActionType action_type);
 
-  // Deprecated. Use HandleUrlList.
-  [MinVersion=4] HandleUrlListDeprecated@5(array<UrlWithMimeType> urls,
-                                           string package_name,
-                                           ActionType action_type);
-
   // Establishes full-duplex communication with the host.
   Init@0(IntentHelperHost host_ptr);
 
