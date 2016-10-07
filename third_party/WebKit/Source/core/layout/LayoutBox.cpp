@@ -2554,14 +2554,6 @@ void LayoutBox::computeLogicalWidth(
   if (treatAsReplaced) {
     computedValues.m_extent =
         LayoutUnit(logicalWidthLength.value()) + borderAndPaddingLogicalWidth();
-  } else if (parent()->isLayoutGrid() && style()->logicalWidth().isAuto() &&
-             style()->logicalMinWidth().isAuto() &&
-             style()->overflowInlineDirection() == OverflowVisible &&
-             containerWidthInInlineDirection < minPreferredLogicalWidth()) {
-    // TODO (lajava) Move this logic to the LayoutGrid class.
-    // Implied minimum size of Grid items.
-    computedValues.m_extent = constrainLogicalWidthByMinMax(
-        minPreferredLogicalWidth(), containerWidthInInlineDirection, cb);
   } else {
     LayoutUnit preferredWidth =
         computeLogicalWidthUsing(MainOrPreferredSize, styleToUse.logicalWidth(),
@@ -2994,20 +2986,7 @@ void LayoutBox::computeLogicalHeight(
     // FIXME: Account for writing-mode in flexible boxes.
     // https://bugs.webkit.org/show_bug.cgi?id=46418
     if (hasOverrideLogicalContentHeight()) {
-      LayoutUnit contentHeight = overrideLogicalContentHeight();
-      if (parent()->isLayoutGrid() && style()->logicalMinHeight().isAuto() &&
-          style()->overflowY() == OverflowVisible) {
-        ASSERT(style()->logicalHeight().isAuto());
-        LayoutUnit minContentHeight = computeContentLogicalHeight(
-            MinSize, Length(MinContent),
-            computedValues.m_extent - borderAndPaddingLogicalHeight());
-        contentHeight = std::max(
-            contentHeight,
-            constrainContentBoxLogicalHeightByMinMax(
-                minContentHeight,
-                computedValues.m_extent - borderAndPaddingLogicalHeight()));
-      }
-      h = Length(contentHeight, Fixed);
+      h = Length(overrideLogicalContentHeight(), Fixed);
     } else if (treatAsReplaced) {
       h = Length(computeReplacedLogicalHeight(), Fixed);
     } else {
