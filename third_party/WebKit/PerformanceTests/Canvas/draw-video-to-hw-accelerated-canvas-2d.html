@@ -11,12 +11,11 @@ var destCtx2D = destCanvas2D.getContext("2d");
 var dummyCanvas2D = document.createElement("canvas");
 var dummyCtx2D = dummyCanvas2D.getContext("2d");
 
-dummyCanvas2D.width = 1;
-dummyCanvas2D.height = 1;
-
 function setSize(width, height) {
     destCanvas2D.width = width;
     destCanvas2D.height = height;
+    dummyCanvas2D.width = width;
+    dummyCanvas2D.height = height;
 }
 
 function startPerfTest() {
@@ -33,7 +32,9 @@ function doRun() {
 
 function ensureComplete() {
     // Using destCanvas2D as a source image is just to flush out the content when
-    // accelerated 2D canvas is in use. 
+    // accelerated 2D canvas is in use.
+    // dummyCtx2D must also be accelerated to prevent destCanvas2D from becoming
+    // non-accelerated due to the DisableAccelerationToAvoidReadbacks heuristic.
     dummyCtx2D.drawImage(destCanvas2D, 0, 0, 1, 1, 0, 0, 1, 1);
 }
 
