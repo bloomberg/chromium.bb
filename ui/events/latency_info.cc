@@ -279,7 +279,8 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
   LatencyMap::key_type key = std::make_pair(component, id);
   LatencyMap::iterator it = latency_components_.find(key);
   if (it == latency_components_.end()) {
-    LatencyComponent info = {component_sequence_number, time, event_count};
+    LatencyComponent info = {component_sequence_number, time, event_count, time,
+                             time};
     latency_components_[key] = info;
   } else {
     it->second.sequence_number = std::max(component_sequence_number,
@@ -292,6 +293,7 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
       it->second.event_time += (time - it->second.event_time) * event_count /
           new_count;
       it->second.event_count = new_count;
+      it->second.last_event_time = std::max(it->second.last_event_time, time);
     }
   }
 

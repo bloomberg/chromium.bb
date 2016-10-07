@@ -137,6 +137,10 @@ class EVENTS_BASE_EXPORT LatencyInfo {
     base::TimeTicks event_time;
     // Count of events that happened in this component
     uint32_t event_count;
+    // Time of the oldest event that happened in this component.
+    base::TimeTicks first_event_time;
+    // Time of the most recent event that happened in this component.
+    base::TimeTicks last_event_time;
   };
 
   // Empirically determined constant based on a typical scroll sequence.

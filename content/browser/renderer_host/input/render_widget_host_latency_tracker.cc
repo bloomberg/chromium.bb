@@ -92,6 +92,33 @@ void UpdateLatencyCoordinates(const WebInputEvent& event,
     (end.event_time - start.event_time).InMicroseconds(),          \
     1, 50000, 50)
 
+// Check valid timing for start and end latency components.
+#define CONFIRM_VALID_TIMING(start, end)     \
+  DCHECK(!start.first_event_time.is_null()); \
+  DCHECK(!end.last_event_time.is_null());    \
+  DCHECK_GE(end.last_event_time, start.first_event_time);
+
+// Touch/wheel to scroll latency that is mostly under 1 second.
+#define UMA_HISTOGRAM_TOUCH_WHEEL_TO_SCROLL_LATENCY(name, start, end)         \
+  CONFIRM_VALID_TIMING(start, end)                                            \
+  base::Histogram::FactoryGet(name, 1, 1000000, 100,                          \
+                              base::HistogramBase::kUmaTargetedHistogramFlag) \
+      ->Add((end.last_event_time - start.first_event_time).InMicroseconds());
+
+// Long touch/wheel scroll latency component that is mostly under 200ms.
+#define UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(name, start, end)                 \
+  CONFIRM_VALID_TIMING(start, end)                                            \
+  base::Histogram::FactoryGet(name, 1000, 200000, 50,                         \
+                              base::HistogramBase::kUmaTargetedHistogramFlag) \
+      ->Add((end.last_event_time - start.first_event_time).InMicroseconds());
+
+// Short touch/wheel scroll latency component that is mostly under 50ms.
+#define UMA_HISTOGRAM_SCROLL_LATENCY_SHORT_2(name, start, end)                \
+  CONFIRM_VALID_TIMING(start, end)                                            \
+  base::Histogram::FactoryGet(name, 1, 50000, 50,                             \
+                              base::HistogramBase::kUmaTargetedHistogramFlag) \
+      ->Add((end.last_event_time - start.first_event_time).InMicroseconds());
+
 void ComputeScrollLatencyHistograms(
     const LatencyInfo::LatencyComponent& gpu_swap_begin_component,
     const LatencyInfo::LatencyComponent& gpu_swap_end_component,
@@ -210,6 +237,91 @@ void ComputeScrollLatencyHistograms(
                                      gpu_swap_end_component);
 }
 
+void ComputeTouchAndWheelScrollLatencyHistograms(
+    const ui::LatencyInfo::LatencyComponent& gpu_swap_begin_component,
+    const ui::LatencyInfo::LatencyComponent& gpu_swap_end_component,
+    int64_t latency_component_id,
+    const ui::LatencyInfo& latency,
+    const std::string event_type_name) {
+  DCHECK(!latency.coalesced());
+  if (latency.coalesced())
+    return;
+
+  LatencyInfo::LatencyComponent original_component;
+  if (latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          latency_component_id, &original_component)) {
+    // This UMA metric tracks the time between the final frame swap for the
+    // first scroll event in a sequence and the original timestamp of that
+    // scroll event's underlying touch/wheel event.
+    UMA_HISTOGRAM_TOUCH_WHEEL_TO_SCROLL_LATENCY(
+        "Event.Latency." + event_type_name +
+            ".TimeToFirstScrollUpdateSwapBegin2",
+        original_component, gpu_swap_begin_component);
+  } else if (latency.FindLatency(
+                 ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+                 latency_component_id, &original_component)) {
+    // This UMA metric tracks the time from when the original touch event is
+    // created to when the scroll gesture results in final frame swap.
+    // First scroll events are excluded from this metric.
+    if (event_type_name == "Touch") {
+      UMA_HISTOGRAM_TOUCH_WHEEL_TO_SCROLL_LATENCY(
+          "Event.Latency." + event_type_name + ".TimeToScrollUpdateSwapBegin2",
+          original_component, gpu_swap_begin_component);
+    }
+  } else {
+    // No original component found.
+    return;
+  }
+
+  LatencyInfo::LatencyComponent rendering_scheduled_component;
+  bool rendering_scheduled_on_main = latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT, 0,
+      &rendering_scheduled_component);
+  if (!rendering_scheduled_on_main) {
+    if (!latency.FindLatency(
+            ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT, 0,
+            &rendering_scheduled_component))
+      return;
+  }
+
+  const std::string thread_name = rendering_scheduled_on_main ? "Main" : "Impl";
+
+  UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
+      "Event.Latency.ScrollUpdate." + event_type_name +
+          ".TimeToHandled2_" + thread_name,
+      original_component, rendering_scheduled_component);
+
+  LatencyInfo::LatencyComponent renderer_swap_component;
+  if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0,
+                           &renderer_swap_component))
+    return;
+
+  UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
+      "Event.Latency.ScrollUpdate." + event_type_name +
+          ".HandledToRendererSwap2_" + thread_name,
+      rendering_scheduled_component, renderer_swap_component);
+
+  LatencyInfo::LatencyComponent browser_received_swap_component;
+  if (!latency.FindLatency(
+          ui::INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT, 0,
+          &browser_received_swap_component))
+    return;
+
+  UMA_HISTOGRAM_SCROLL_LATENCY_SHORT_2(
+      "Event.Latency.ScrollUpdate." + event_type_name +
+          ".RendererSwapToBrowserNotified2",
+      renderer_swap_component, browser_received_swap_component);
+
+  UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
+      "Event.Latency.ScrollUpdate." + event_type_name +
+          ".BrowserNotifiedToBeforeGpuSwap2",
+      browser_received_swap_component, gpu_swap_begin_component);
+
+  UMA_HISTOGRAM_SCROLL_LATENCY_SHORT_2(
+      "Event.Latency.ScrollUpdate." + event_type_name + ".GpuSwap2",
+      gpu_swap_begin_component, gpu_swap_end_component);
+}
 // LatencyComponents generated in the renderer must have component IDs
 // provided to them by the browser process. This function adds the correct
 // component ID where necessary.
@@ -555,15 +667,6 @@ void RenderWidgetHostLatencyTracker::OnSwapCompositorFrame(
 void RenderWidgetHostLatencyTracker::OnFrameSwapped(
     const LatencyInfo& latency,
     bool is_running_navigation_hint_task) {
-  // Don't report frame latency on wheel events. Previously they were only
-  // reported on touch metrics and we need to be consistent across reporting
-  // metrics.
-  LatencyInfo::LatencyComponent mouse_wheel_scroll_update_component;
-  if (latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL, 0,
-          &mouse_wheel_scroll_update_component)) {
-    return;
-  }
 
   LatencyInfo::LatencyComponent gpu_swap_end_component;
   if (!latency.FindLatency(
@@ -593,9 +696,26 @@ void RenderWidgetHostLatencyTracker::OnFrameSwapped(
     return;
   }
 
-  ComputeScrollLatencyHistograms(gpu_swap_begin_component,
-                                 gpu_swap_end_component, latency_component_id_,
-                                 latency, is_running_navigation_hint_task);
+  ui::SourceEventType source_event_type = latency.source_event_type();
+  if (source_event_type == ui::SourceEventType::WHEEL ||
+      source_event_type == ui::SourceEventType::TOUCH) {
+    ComputeTouchAndWheelScrollLatencyHistograms(
+        gpu_swap_begin_component, gpu_swap_end_component, latency_component_id_,
+        latency,
+        source_event_type == ui::SourceEventType::WHEEL ? "Wheel" : "Touch");
+  }
+
+  // Compute the old scroll update latency metrics. They are exclusively
+  // calculated for touch scrolls, and will be deprecated on M56.
+  // (https://crbug.com/649754)
+  LatencyInfo::LatencyComponent mouse_wheel_scroll_update_component;
+  if (!latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL, 0,
+          &mouse_wheel_scroll_update_component)) {
+    ComputeScrollLatencyHistograms(
+        gpu_swap_begin_component, gpu_swap_end_component, latency_component_id_,
+        latency, is_running_navigation_hint_task);
+  }
 }
 
 }  // namespace content
