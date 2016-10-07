@@ -476,9 +476,6 @@ class CORE_EXPORT UseCounter {
     MixedContentPlugin = 616,
     MixedContentPrefetch = 617,
     MixedContentVideo = 618,
-    AudioListenerDopplerFactor = 620,
-    AudioListenerSpeedOfSound = 621,
-    AudioListenerSetVelocity = 622,
     CSSSelectorPseudoFullScreenAncestor = 628,
     CSSSelectorPseudoFullScreen = 629,
     WebKitCSSMatrix = 630,
@@ -990,7 +987,6 @@ class CORE_EXPORT UseCounter {
 
     CSSAtRuleApply = 1249,
     CSSSelectorPseudoAny = 1250,
-    PannerNodeSetVelocity = 1251,
     DocumentAllItemNoArguments = 1252,
     DocumentAllItemNamed = 1253,
     DocumentAllItemIndexed = 1254,

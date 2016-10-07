@@ -117,17 +117,6 @@ class AudioListener : public GarbageCollectedFinalized<AudioListener>,
     setUpVector(FloatPoint3D(upX, upY, upZ));
   }
 
-  // Velocity
-  void setVelocity(float x, float y, float z);
-
-  // Doppler factor
-  void setDopplerFactor(double);
-  double dopplerFactor() const { return m_dopplerFactor; }
-
-  // Speed of sound
-  void setSpeedOfSound(double);
-  double speedOfSound() const { return m_speedOfSound; }
-
   Mutex& listenerLock() { return m_listenerLock; }
   void addPanner(PannerHandler&);
   void removePanner(PannerHandler&);
@@ -165,9 +154,6 @@ class AudioListener : public GarbageCollectedFinalized<AudioListener>,
   Member<AudioParam> m_upX;
   Member<AudioParam> m_upY;
   Member<AudioParam> m_upZ;
-
-  double m_dopplerFactor;
-  double m_speedOfSound;
 
   // The position, forward, and up vectors from the last rendering quantum.
   FloatPoint3D m_lastPosition;

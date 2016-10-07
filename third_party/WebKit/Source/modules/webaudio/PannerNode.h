@@ -230,7 +230,6 @@ class PannerNode final : public AudioNode {
   void setPanningModel(const String&);
   void setPosition(float x, float y, float z);
   void setOrientation(float x, float y, float z);
-  void setVelocity(float x, float y, float z);
   String distanceModel() const;
   void setDistanceModel(const String&);
   double refDistance() const;

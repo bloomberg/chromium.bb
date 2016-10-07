@@ -187,23 +187,18 @@ interface AudioDestinationNode : AudioNode
     method constructor
 interface AudioListener
     attribute @@toStringTag
-    getter dopplerFactor
     getter forwardX
     getter forwardY
     getter forwardZ
     getter positionX
     getter positionY
     getter positionZ
-    getter speedOfSound
     getter upX
     getter upY
     getter upZ
     method constructor
     method setOrientation
     method setPosition
-    method setVelocity
-    setter dopplerFactor
-    setter speedOfSound
 interface AudioNode : EventTarget
     attribute @@toStringTag
     getter channelCount
@@ -4364,7 +4359,6 @@ interface PannerNode : AudioNode
     method constructor
     method setOrientation
     method setPosition
-    method setVelocity
     setter coneInnerAngle
     setter coneOuterAngle
     setter coneOuterGain

@@ -50,8 +50,6 @@ AudioListener::AudioListener(BaseAudioContext& context)
       m_upX(AudioParam::create(context, ParamTypeAudioListenerUpX, 0.0)),
       m_upY(AudioParam::create(context, ParamTypeAudioListenerUpY, 1.0)),
       m_upZ(AudioParam::create(context, ParamTypeAudioListenerUpZ, 0.0)),
-      m_dopplerFactor(1),
-      m_speedOfSound(343.3),
       m_lastUpdateTime(-1),
       m_isListenerDirty(false),
       m_positionXValues(AudioUtilities::kRenderQuantumFrames),
@@ -282,19 +280,6 @@ void AudioListener::setUpVector(const FloatPoint3D& upVector) {
   m_upY->setValue(upVector.y());
   m_upZ->setValue(upVector.z());
   markPannersAsDirty(PannerHandler::AzimuthElevationDirty);
-}
-
-void AudioListener::setVelocity(float x, float y, float z) {
-  // The velocity is not used internally and cannot be read back by scripts,
-  // so it can be ignored entirely.
-}
-
-void AudioListener::setDopplerFactor(double dopplerFactor) {
-  m_dopplerFactor = dopplerFactor;
-}
-
-void AudioListener::setSpeedOfSound(double speedOfSound) {
-  m_speedOfSound = speedOfSound;
 }
 
 }  // namespace blink

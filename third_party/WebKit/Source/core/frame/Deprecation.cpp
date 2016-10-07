@@ -57,16 +57,6 @@ String willBeRemoved(const char* feature,
       feature, milestoneString(milestone), details);
 }
 
-String dopplerWillBeRemoved(const char* feature,
-                            Milestone milestone,
-                            const char* details) {
-  return String::format(
-      "%s is deprecated and will be removed in %s. It has no effect as the Web "
-      "Audio doppler effects have already been removed internally. See "
-      "https://www.chromestatus.com/features/%s for more details.",
-      feature, milestoneString(milestone), details);
-}
-
 }  // anonymous namespace
 
 namespace blink {
@@ -292,22 +282,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
     case UseCounter::GetMatchedCSSRules:
       return "'getMatchedCSSRules()' is deprecated. For more help, check "
              "https://code.google.com/p/chromium/issues/detail?id=437569#c2";
-
-    case UseCounter::AudioListenerDopplerFactor:
-      return dopplerWillBeRemoved("'AudioListener.dopplerFactor'", M55,
-                                  "5238926818148352");
-
-    case UseCounter::AudioListenerSpeedOfSound:
-      return dopplerWillBeRemoved("'AudioListener.speedOfSound'", M55,
-                                  "5238926818148352");
-
-    case UseCounter::AudioListenerSetVelocity:
-      return dopplerWillBeRemoved("'AudioListener.setVelocity()'", M55,
-                                  "5238926818148352");
-
-    case UseCounter::PannerNodeSetVelocity:
-      return dopplerWillBeRemoved("'PannerNode.setVelocity()'", M55,
-                                  "5238926818148352");
 
     case UseCounter::PrefixedWindowURL:
       return replacedBy("'webkitURL'", "'URL'");

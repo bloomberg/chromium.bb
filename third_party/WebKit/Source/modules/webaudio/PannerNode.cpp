@@ -707,11 +707,6 @@ void PannerNode::setOrientation(float x, float y, float z) {
   pannerHandler().setOrientation(x, y, z);
 }
 
-void PannerNode::setVelocity(float x, float y, float z) {
-  // The velocity is not used internally and cannot be read back by scripts,
-  // so it can be ignored entirely.
-}
-
 String PannerNode::distanceModel() const {
   return pannerHandler().distanceModel();
 }

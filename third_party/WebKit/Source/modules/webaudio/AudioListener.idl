@@ -28,12 +28,8 @@
 
 // See https://webaudio.github.io/web-audio-api/#AudioListener
 interface AudioListener {
-    [DeprecateAs=AudioListenerDopplerFactor] attribute float dopplerFactor;  // same as OpenAL (default 1.0)
-    [DeprecateAs=AudioListenerSpeedOfSound] attribute float speedOfSound;   // in meters / second (default 343.3)
-
     [MeasureAs=AudioListenerSetPosition] void setPosition(float x, float y, float z);
     [MeasureAs=AudioListenerSetOrientation] void setOrientation(float x, float y, float z, float xUp, float yUp, float zUp);
-    [DeprecateAs=AudioListenerSetVelocity] void setVelocity(float x, float y, float z);
 
     // Location of the listener
     readonly attribute AudioParam positionX;
