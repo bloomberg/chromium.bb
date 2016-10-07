@@ -23,9 +23,6 @@ class SharedMemoryBufferTracker final
   std::unique_ptr<media::VideoCaptureBufferHandle> GetBufferHandle() override;
   bool ShareToProcess(base::ProcessHandle process_handle,
                       base::SharedMemoryHandle* new_handle) override;
-  bool ShareToProcess2(int plane,
-                       base::ProcessHandle process_handle,
-                       gfx::GpuMemoryBufferHandle* new_handle) override;
 
  private:
   friend class SharedMemoryBufferHandle;

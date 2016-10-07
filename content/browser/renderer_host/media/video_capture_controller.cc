@@ -219,9 +219,7 @@ void VideoCaptureController::AddClient(
   // report an error immediately and punt.
   if (!params.IsValid() ||
       params.requested_format.pixel_format != media::PIXEL_FORMAT_I420 ||
-      (params.requested_format.pixel_storage != media::PIXEL_STORAGE_CPU &&
-       params.requested_format.pixel_storage !=
-           media::PIXEL_STORAGE_GPUMEMORYBUFFER)) {
+      params.requested_format.pixel_storage != media::PIXEL_STORAGE_CPU) {
     // Crash in debug builds since the renderer should not have asked for
     // invalid or unsupported parameters.
     LOG(DFATAL) << "Invalid or unsupported video capture parameters requested: "
@@ -520,8 +518,6 @@ void VideoCaptureController::DoNewBufferOnIOThread(
       const size_t num_planes = media::VideoFrame::NumPlanes(frame->format());
       for (size_t i = 0; i < num_planes; ++i) {
         gfx::GpuMemoryBufferHandle remote_handle;
-        buffer_pool_->ShareToProcess2(
-            buffer_id, i, client->render_process_handle, &remote_handle);
         handles.push_back(remote_handle);
       }
       client->event_handler->OnBufferCreated2(client->controller_id, handles,

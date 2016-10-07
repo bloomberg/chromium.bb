@@ -85,10 +85,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   // Returns an nullptr if allocation fails.
   //
   // When requested |storage| is PIXEL_STORAGE_CPU, a single shared memory
-  // chunk is reserved; whereas for PIXEL_STORAGE_GPUMEMORYBUFFER, three
-  // GpuMemoryBuffers in R_8 format representing I420 planes are reserved. The
-  // output buffers stay reserved and mapped for use until the Buffer objects
-  // are destroyed or returned.
+  // chunk is reserved. The output buffers stay reserved and mapped for use
+  // until the Buffer objects are destroyed or returned.
   std::unique_ptr<Buffer> ReserveI420OutputBuffer(
       const gfx::Size& dimensions,
       media::VideoPixelStorage storage,
@@ -115,10 +113,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
 
   static const int kMaxDroppedFrames = 150;
 #endif  // DCHECK_IS_ON()
-
-  // Indication to the Client to copy-transform the incoming data into
-  // GpuMemoryBuffers.
-  const bool use_gpu_memory_buffers_;
 
   media::VideoPixelFormat last_captured_pixel_format_;
 

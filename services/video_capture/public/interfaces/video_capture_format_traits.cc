@@ -33,13 +33,7 @@ bool StructTraits<video_capture::mojom::VideoCaptureFormatDataView,
 video_capture::mojom::VideoPixelStorage
 EnumTraits<video_capture::mojom::VideoPixelStorage, media::VideoPixelStorage>::
     ToMojom(media::VideoPixelStorage video_pixel_storage) {
-  switch (video_pixel_storage) {
-    case media::PIXEL_STORAGE_CPU:
-      return video_capture::mojom::VideoPixelStorage::CPU;
-    case media::PIXEL_STORAGE_GPUMEMORYBUFFER:
-      return video_capture::mojom::VideoPixelStorage::GPUMEMORYBUFFER;
-  }
-  NOTREACHED();
+  DCHECK_EQ(media::PIXEL_STORAGE_CPU, video_pixel_storage);
   return video_capture::mojom::VideoPixelStorage::CPU;
 }
 
@@ -48,16 +42,9 @@ bool EnumTraits<video_capture::mojom::VideoPixelStorage,
                 media::VideoPixelStorage>::
     FromMojom(video_capture::mojom::VideoPixelStorage input,
               media::VideoPixelStorage* out) {
-  switch (input) {
-    case video_capture::mojom::VideoPixelStorage::CPU:
-      *out = media::PIXEL_STORAGE_CPU;
-      return true;
-    case video_capture::mojom::VideoPixelStorage::GPUMEMORYBUFFER:
-      *out = media::PIXEL_STORAGE_GPUMEMORYBUFFER;
-      return true;
-  }
-  NOTREACHED();
-  return false;
+  DCHECK_EQ(video_capture::mojom::VideoPixelStorage::CPU, input);
+  *out = media::PIXEL_STORAGE_CPU;
+  return true;
 }
 
 }  // namespace mojo

@@ -59,9 +59,7 @@ bool VideoCaptureFormat::IsValid() const {
          (frame_rate >= 0.0f) &&
          (frame_rate < media::limits::kMaxFramesPerSecond) &&
          (pixel_format >= PIXEL_FORMAT_UNKNOWN &&
-          pixel_format <= PIXEL_FORMAT_MAX) &&
-         (pixel_storage == PIXEL_STORAGE_CPU ||
-          pixel_storage == PIXEL_STORAGE_GPUMEMORYBUFFER);
+          pixel_format <= PIXEL_FORMAT_MAX);
 }
 
 size_t VideoCaptureFormat::ImageAllocationSize() const {
@@ -85,8 +83,6 @@ std::string VideoCaptureFormat::PixelStorageToString(
   switch (storage) {
     case PIXEL_STORAGE_CPU:
       return "CPU";
-    case PIXEL_STORAGE_GPUMEMORYBUFFER:
-      return "GPUMEMORYBUFFER";
   }
   NOTREACHED() << "Invalid VideoPixelStorage provided: "
                << static_cast<int>(storage);

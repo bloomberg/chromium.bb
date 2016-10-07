@@ -34,11 +34,6 @@ const char kAlsaInputDevice[] = "alsa-input-device";
 const char kAlsaOutputDevice[] = "alsa-output-device";
 #endif
 
-// Use GpuMemoryBuffers for Video Capture when this is an option for the device.
-// Experimental, see http://crbug.com/503835 and http://crbug.com/440843.
-const char kUseGpuMemoryBuffersForCapture[] =
-    "use-gpu-memory-buffers-for-capture";
-
 #if defined(OS_WIN)
 // Use exclusive mode audio streaming for Windows Vista and higher.
 // Leads to lower latencies for audio streams which uses the

@@ -84,9 +84,7 @@ class MockClient : public VideoCaptureDevice::Client {
       media::VideoPixelFormat format,
       media::VideoPixelStorage storage) {
     EXPECT_TRUE((format == media::PIXEL_FORMAT_ARGB &&
-                 storage == media::PIXEL_STORAGE_CPU) ||
-                (format == media::PIXEL_FORMAT_I420 &&
-                 storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER));
+                 storage == media::PIXEL_STORAGE_CPU));
     EXPECT_GT(dimensions.GetArea(), 0);
     const VideoCaptureFormat frame_format(dimensions, 0.0, format);
     return base::MakeUnique<MockBuffer>(0, frame_format.ImageAllocationSize());

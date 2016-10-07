@@ -47,24 +47,6 @@ bool VideoCaptureBufferPoolImpl::ShareToProcess(
   return false;
 }
 
-bool VideoCaptureBufferPoolImpl::ShareToProcess2(
-    int buffer_id,
-    int plane,
-    base::ProcessHandle process_handle,
-    gfx::GpuMemoryBufferHandle* new_handle) {
-  base::AutoLock lock(lock_);
-
-  VideoCaptureBufferTracker* tracker = GetTracker(buffer_id);
-  if (!tracker) {
-    NOTREACHED() << "Invalid buffer_id.";
-    return false;
-  }
-  if (tracker->ShareToProcess2(plane, process_handle, new_handle))
-    return true;
-  DPLOG(ERROR) << "Error mapping memory";
-  return false;
-}
-
 std::unique_ptr<VideoCaptureBufferHandle>
 VideoCaptureBufferPoolImpl::GetBufferHandle(int buffer_id) {
   base::AutoLock lock(lock_);

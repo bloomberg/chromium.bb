@@ -52,9 +52,6 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
 
   virtual bool ShareToProcess(base::ProcessHandle process_handle,
                               base::SharedMemoryHandle* new_handle) = 0;
-  virtual bool ShareToProcess2(int plane,
-                               base::ProcessHandle process_handle,
-                               gfx::GpuMemoryBufferHandle* new_handle) = 0;
 
  private:
   // |dimensions_| may change as a VideoCaptureBufferTracker is re-used, but

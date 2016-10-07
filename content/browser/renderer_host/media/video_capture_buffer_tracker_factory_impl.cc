@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 
-#include "content/browser/renderer_host/media/gpu_memory_buffer_tracker.h"
 #include "content/browser/renderer_host/media/shared_memory_buffer_tracker.h"
 
 namespace content {
@@ -14,14 +13,8 @@ namespace content {
 std::unique_ptr<media::VideoCaptureBufferTracker>
 VideoCaptureBufferTrackerFactoryImpl::CreateTracker(
     media::VideoPixelStorage storage) {
-  switch (storage) {
-    case media::PIXEL_STORAGE_GPUMEMORYBUFFER:
-      return base::MakeUnique<GpuMemoryBufferTracker>();
-    case media::PIXEL_STORAGE_CPU:
-      return base::MakeUnique<SharedMemoryBufferTracker>();
-  }
-  NOTREACHED();
-  return std::unique_ptr<media::VideoCaptureBufferTracker>();
+  DCHECK_EQ(media::PIXEL_STORAGE_CPU, storage);
+  return base::MakeUnique<SharedMemoryBufferTracker>();
 }
 
 }  // namespace content

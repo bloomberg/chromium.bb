@@ -38,10 +38,6 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
   bool ShareToProcess(int buffer_id,
                       base::ProcessHandle process_handle,
                       base::SharedMemoryHandle* new_handle) override;
-  bool ShareToProcess2(int buffer_id,
-                       int plane,
-                       base::ProcessHandle process_handle,
-                       gfx::GpuMemoryBufferHandle* new_handle) override;
   std::unique_ptr<VideoCaptureBufferHandle> GetBufferHandle(
       int buffer_id) override;
   int ReserveForProducer(const gfx::Size& dimensions,

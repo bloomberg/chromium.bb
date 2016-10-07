@@ -259,32 +259,12 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
   DLOG_IF(ERROR, !capture_buffer) << "Couldn't allocate Capture Buffer";
   DCHECK(capture_buffer->data()) << "Buffer has NO backing memory";
 
-  if (capture_format_.pixel_storage == PIXEL_STORAGE_GPUMEMORYBUFFER &&
-      capture_format_.pixel_format == media::PIXEL_FORMAT_I420) {
-    // Since SkBitmap expects a packed&continuous memory region for I420, we
-    // need to use |fake_frame_| to draw onto.
-    memset(fake_frame_.get(), 0, capture_format_.ImageAllocationSize());
-    DrawPacman(false /* use_argb */, fake_frame_.get(), elapsed_time_,
-               fake_capture_rate_, capture_format_.frame_size, current_zoom_);
-
-    // Copy data from |fake_frame_| into the reserved planes of GpuMemoryBuffer.
-    size_t offset = 0;
-    for (size_t i = 0; i < VideoFrame::NumPlanes(PIXEL_FORMAT_I420); ++i) {
-      const size_t plane_size =
-          VideoFrame::PlaneSize(PIXEL_FORMAT_I420, i,
-                                capture_format_.frame_size)
-              .GetArea();
-      memcpy(capture_buffer->data(i), fake_frame_.get() + offset, plane_size);
-      offset += plane_size;
-    }
-  } else {
-    DCHECK_EQ(capture_format_.pixel_storage, PIXEL_STORAGE_CPU);
-    DCHECK_EQ(capture_format_.pixel_format, PIXEL_FORMAT_ARGB);
-    uint8_t* data_ptr = static_cast<uint8_t*>(capture_buffer->data());
-    memset(data_ptr, 0, capture_buffer->mapped_size());
-    DrawPacman(true /* use_argb */, data_ptr, elapsed_time_, fake_capture_rate_,
-               capture_format_.frame_size, current_zoom_);
-  }
+  DCHECK_EQ(PIXEL_STORAGE_CPU, capture_format_.pixel_storage);
+  DCHECK_EQ(PIXEL_FORMAT_ARGB, capture_format_.pixel_format);
+  uint8_t* data_ptr = static_cast<uint8_t*>(capture_buffer->data());
+  memset(data_ptr, 0, capture_buffer->mapped_size());
+  DrawPacman(true /* use_argb */, data_ptr, elapsed_time_, fake_capture_rate_,
+             capture_format_.frame_size, current_zoom_);
 
   // Give the captured frame to the client.
   base::TimeTicks now = base::TimeTicks::Now();

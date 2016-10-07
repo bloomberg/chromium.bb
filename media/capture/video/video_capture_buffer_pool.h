@@ -45,10 +45,6 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   virtual bool ShareToProcess(int buffer_id,
                               base::ProcessHandle process_handle,
                               base::SharedMemoryHandle* new_handle) = 0;
-  virtual bool ShareToProcess2(int buffer_id,
-                               int plane,
-                               base::ProcessHandle process_handle,
-                               gfx::GpuMemoryBufferHandle* new_handle) = 0;
 
   // Try and obtain a BufferHandle for |buffer_id|.
   virtual std::unique_ptr<VideoCaptureBufferHandle> GetBufferHandle(

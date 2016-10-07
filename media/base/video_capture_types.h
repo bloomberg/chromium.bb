@@ -20,14 +20,12 @@ namespace media {
 // shared with device manager.
 typedef int VideoCaptureSessionId;
 
-// Storage type for the pixels. In principle, all combinations of Storage and
-// Format are possible, though some are very typical, such as texture + ARGB,
-// and others are only available if the platform allows it e.g. GpuMemoryBuffer.
+// Storage type for the pixels.
 // TODO(mcasas): http://crbug.com/504160 Consider making this an enum class.
+// TODO(chfremer): Extend or remove this enum.
 enum VideoPixelStorage {
   PIXEL_STORAGE_CPU,
-  PIXEL_STORAGE_GPUMEMORYBUFFER,
-  PIXEL_STORAGE_MAX = PIXEL_STORAGE_GPUMEMORYBUFFER,
+  PIXEL_STORAGE_MAX = PIXEL_STORAGE_CPU,
 };
 
 // Policies for capture devices that have source content that varies in size.

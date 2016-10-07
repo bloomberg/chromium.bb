@@ -41,12 +41,4 @@ bool SharedMemoryBufferTracker::ShareToProcess(
   return shared_memory_.ShareToProcess(process_handle, new_handle);
 }
 
-bool SharedMemoryBufferTracker::ShareToProcess2(
-    int plane,
-    base::ProcessHandle process_handle,
-    gfx::GpuMemoryBufferHandle* new_handle) {
-  NOTREACHED();
-  return false;
-}
-
 }  // namespace content
