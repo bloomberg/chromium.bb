@@ -2,10 +2,10 @@
 
 # Different clipping behavior, sometimes more accurate (e.g. about css clip),
 # sometimes less accurate (e.g. when clip has transforms). This doesn't matter.
-paint/invalidation/outline-clip-change.html [ NeedsRebaseline ]
-paint/invalidation/scroll-in-transformed-layer.html [ NeedsRebaseline ]
-paint/invalidation/scroll-with-transformed-parent-layer.html [ NeedsRebaseline ]
-paint/invalidation/shift-relative-positioned-container-with-image-addition.html [ NeedsRebaseline ]
+Bug(none) paint/invalidation/outline-clip-change.html [ NeedsRebaseline ]
+Bug(none) paint/invalidation/scroll-in-transformed-layer.html [ NeedsRebaseline ]
+Bug(none) paint/invalidation/scroll-with-transformed-parent-layer.html [ NeedsRebaseline ]
+Bug(none) paint/invalidation/shift-relative-positioned-container-with-image-addition.html [ NeedsRebaseline ]
 
 crbug.com/648274 fast/multicol/span/abspos-containing-block-outside-spanner.html [ Failure ]
 
@@ -20,7 +20,7 @@ crbug.com/648769 paint/invalidation/svg/animated-path-inside-transformed-html.xh
 # We use FrameView::x() and FrameView::y() which are integers to generate FrameView
 # preTranslation, but the old path uses offsets in the layout tree. Not sure if it's
 # a bug of the new path or the old path.
-paint/invalidation/repaint-during-scroll-with-zoom.html [ Failure ]
+Bug(none) paint/invalidation/repaint-during-scroll-with-zoom.html [ Failure ]
 
 # Missing SVG hairline stroke padding.
 crbug.com/651511 paint/invalidation/svg/hairline-stroke-squarecap.svg [ Failure ]
