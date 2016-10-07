@@ -26,7 +26,7 @@ enum VREye {
     readonly attribute VRStageParameters stageParameters;
 
     boolean getFrameData(VRFrameData frameData);
-    VRPose getPose();
+    [DeprecateAs=VRDeprecatedGetPose] VRPose getPose();
     void resetPose();
 
     attribute double depthNear;

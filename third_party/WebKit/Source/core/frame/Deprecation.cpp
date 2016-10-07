@@ -483,6 +483,13 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
     case UseCounter::PaymentAddressCareOf:
       return willBeRemoved("PaymentAddress.careOf", M56, "5728579069411328");
 
+    case UseCounter::VRDeprecatedFieldOfView:
+      return replacedBy("VREyeParameters.fieldOfView",
+                        "projection matrices provided by VRFrameData");
+
+    case UseCounter::VRDeprecatedGetPose:
+      return replacedBy("VRDisplay.getPose()", "VRDisplay.getFrameData()");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();

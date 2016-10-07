@@ -1340,7 +1340,10 @@ class CORE_EXPORT UseCounter {
     LongTaskObserver = 1615,
     CSSMotionInEffect = 1616,
     CSSOffsetInEffect = 1617,
-
+    VRGetDisplaysInsecureOrigin = 1618,
+    VRRequestPresent = 1619,
+    VRRequestPresentInsecureOrigin = 1620,
+    VRDeprecatedFieldOfView = 1621,
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
     // Also, run update_use_counter_feature_enum.py in

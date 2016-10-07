@@ -97,10 +97,6 @@ bool VRDisplay::getFrameData(VRFrameData* frameData) {
 }
 
 VRPose* VRDisplay::getPose() {
-  Document* document = m_navigatorVR->document();
-  if (document)
-    UseCounter::count(*document, UseCounter::VRDeprecatedGetPose);
-
   updatePose();
 
   if (!m_framePose)
@@ -149,6 +145,14 @@ void VRDisplay::cancelAnimationFrame(int id) {
 
 ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
                                         const HeapVector<VRLayer>& layers) {
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
+  UseCounter::count(executionContext, UseCounter::VRRequestPresent);
+  String errorMessage;
+  if (!executionContext->isSecureContext(errorMessage)) {
+    UseCounter::count(executionContext,
+                      UseCounter::VRRequestPresentInsecureOrigin);
+  }
+
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 

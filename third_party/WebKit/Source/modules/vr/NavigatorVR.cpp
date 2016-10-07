@@ -57,6 +57,10 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState) {
   }
 
   UseCounter::count(*document, UseCounter::VRGetDisplays);
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
+  String errorMessage;
+  if (!executionContext->isSecureContext(errorMessage))
+    UseCounter::count(*document, UseCounter::VRGetDisplaysInsecureOrigin);
 
   controller()->getDisplays(resolver);
 

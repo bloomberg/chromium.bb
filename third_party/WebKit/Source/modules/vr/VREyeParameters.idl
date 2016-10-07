@@ -8,7 +8,7 @@
 ] interface VREyeParameters {
   /* These values will vary after a FOV has been set */
   readonly attribute Float32Array offset;
-  readonly attribute VRFieldOfView fieldOfView;
+  [DeprecateAs=VRDeprecatedFieldOfView] readonly attribute VRFieldOfView fieldOfView;
   readonly attribute unsigned long renderWidth;
   readonly attribute unsigned long renderHeight;
 };
