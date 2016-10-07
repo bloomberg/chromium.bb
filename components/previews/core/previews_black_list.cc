@@ -89,8 +89,7 @@ void PreviewsBlackList::ClearBlackList(base::Time begin_time,
     ClearBlackListSync(begin_time, end_time);
   } else {
     QueuePendingTask(base::Bind(&PreviewsBlackList::ClearBlackListSync,
-                                weak_factory_.GetWeakPtr(), begin_time,
-                                end_time));
+                                base::Unretained(this), begin_time, end_time));
   }
 }
 
