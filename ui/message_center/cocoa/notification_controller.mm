@@ -184,12 +184,15 @@
   return self;
 }
 
-- (void)mouseDown:(NSEvent*)event {
-  if ([event type] != NSLeftMouseDown) {
-    [super mouseDown:event];
+- (void)mouseUp:(NSEvent*)event {
+  if (event.type != NSLeftMouseUp) {
+    [super mouseUp:event];
     return;
   }
-  [controller_ notificationClicked];
+  if (NSPointInRect([self convertPoint:event.locationInWindow fromView:nil],
+                    self.bounds)) {
+    [controller_ notificationClicked];
+  }
 }
 
 - (NSView*)hitTest:(NSPoint)point {
