@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
@@ -221,17 +222,34 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
   }
 };
 
-// This is manual for its long execution time.
+// RunsAudioVideoCall60SecsAndLogsInternalMetrics tests are flaky on Linux.
+// On other platforms, they are manual due to their long execution time.
+// See http://crbug.com/webrtc/6484.
+#if defined(OS_LINUX)
+#define MAYBE_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp8 \
+  DISABLED_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp8
+#define MAYBE_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9 \
+  DISABLED_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9
+#define MAYBE_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264 \
+  DISABLED_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264
+#else
+#define MAYBE_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp8 \
+  MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp8
+#define MAYBE_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9 \
+  MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9
+#define MAYBE_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264 \
+  MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264
+#endif
 
 IN_PROC_BROWSER_TEST_F(
     WebRtcPerfBrowserTest,
-    MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp8) {
+    MAYBE_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp8) {
   RunsAudioVideoCall60SecsAndLogsInternalMetrics("VP8");
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebRtcPerfBrowserTest,
-    MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9) {
+    MAYBE_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9) {
   RunsAudioVideoCall60SecsAndLogsInternalMetrics("VP9");
 }
 
@@ -239,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebRtcPerfBrowserTest,
-    MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264) {
+    MAYBE_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264) {
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
   if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
     LOG(WARNING) << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
