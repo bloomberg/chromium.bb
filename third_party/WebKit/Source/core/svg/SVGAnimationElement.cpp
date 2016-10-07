@@ -328,15 +328,6 @@ bool SVGAnimationElement::isAccumulated() const {
   return value == sum && getAnimationMode() != ToAnimation;
 }
 
-bool SVGAnimationElement::isTargetAttributeCSSProperty(
-    SVGElement* targetElement,
-    const QualifiedName& attributeName) {
-  ASSERT(targetElement);
-
-  return SVGElement::isAnimatableCSSProperty(attributeName) ||
-         targetElement->isPresentationAttribute(attributeName);
-}
-
 void SVGAnimationElement::calculateKeyTimesForCalcModePaced() {
   ASSERT(getCalcMode() == CalcModePaced);
   ASSERT(getAnimationMode() == ValuesAnimation);

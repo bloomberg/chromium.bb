@@ -69,8 +69,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(end, endEvent);
   DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(repeat, repeatEvent);
 
-  static bool isTargetAttributeCSSProperty(SVGElement*, const QualifiedName&);
-
   virtual bool isAdditive();
   bool isAccumulated() const;
   AnimationMode getAnimationMode() const { return m_animationMode; }

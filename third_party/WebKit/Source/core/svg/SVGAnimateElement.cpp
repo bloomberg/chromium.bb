@@ -34,6 +34,12 @@ namespace blink {
 
 namespace {
 
+bool isTargetAttributeCSSProperty(SVGElement& targetElement,
+                                  const QualifiedName& attributeName) {
+  return SVGElement::isAnimatableCSSProperty(attributeName) ||
+         targetElement.isPresentationAttribute(attributeName);
+}
+
 String computeCSSPropertyValue(SVGElement* element, CSSPropertyID id) {
   DCHECK(element);
   // TODO(fs): StyleEngine doesn't support document without a frame.
@@ -142,7 +148,7 @@ SVGAnimateElement::shouldApplyAnimation(SVGElement* targetElement,
 
   // Always animate CSS properties using the ApplyCSSAnimation code path,
   // regardless of the attributeType value.
-  if (isTargetAttributeCSSProperty(targetElement, attributeName)) {
+  if (isTargetAttributeCSSProperty(*targetElement, attributeName)) {
     if (targetElement->isPresentationAttributeWithSVGDOM(attributeName))
       return ApplyXMLandCSSAnimation;
 
@@ -287,7 +293,7 @@ void SVGAnimateElement::resetAnimatedType() {
   DCHECK_EQ(shouldApply, ApplyCSSAnimation);
 
   // CSS properties animation code-path.
-  DCHECK(isTargetAttributeCSSProperty(targetElement, attributeName));
+  DCHECK(isTargetAttributeCSSProperty(*targetElement, attributeName));
   String baseValue = computeCSSPropertyValue(
       targetElement, cssPropertyID(attributeName.localName()));
   m_animatedProperty = m_animator.createPropertyForAnimation(baseValue);
@@ -434,7 +440,7 @@ void SVGAnimateElement::checkInvalidCSSAttributeType() {
   bool hasInvalidCSSAttributeType =
       targetElement() && hasValidAttributeName() &&
       getAttributeType() == AttributeTypeCSS &&
-      !isTargetAttributeCSSProperty(targetElement(), attributeName());
+      !isTargetAttributeCSSProperty(*targetElement(), attributeName());
 
   if (hasInvalidCSSAttributeType != m_hasInvalidCSSAttributeType) {
     if (hasInvalidCSSAttributeType)
