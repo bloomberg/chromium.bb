@@ -3,5 +3,14 @@
 <body bgcolor="Silver">
 <video src="test.webm" controls id="video"></video>
 <video src="test2.webm" controls id="video2"></video>
+<script>
+function loadvideos() {
+  var video = document.getElementById('video');
+  var video2 = document.getElementById('video2');
+  video.load();
+  video2.load();
+}
+</script>
+<button id="button1" onclick="loadvideos()">Click me</button>
 </body>
 </html>
