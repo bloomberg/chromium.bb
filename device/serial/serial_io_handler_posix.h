@@ -5,8 +5,10 @@
 #ifndef DEVICE_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
 #define DEVICE_SERIAL_SERIAL_IO_HANDLER_POSIX_H_
 
+#include <memory>
+
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/serial/serial_io_handler.h"
@@ -18,8 +20,7 @@ namespace device {
 // a parity error.
 enum class ErrorDetectState { NO_ERROR, MARK_377_SEEN, MARK_0_SEEN };
 
-class SerialIoHandlerPosix : public SerialIoHandler,
-                             public base::MessageLoopForIO::Watcher {
+class SerialIoHandlerPosix : public SerialIoHandler {
  protected:
   // SerialIoHandler impl.
   void ReadImpl() override;
@@ -49,24 +50,19 @@ class SerialIoHandlerPosix : public SerialIoHandler,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   ~SerialIoHandlerPosix() override;
 
-  bool AttemptRead(bool within_read);
+  void AttemptRead(bool within_read);
   void RunReadCompleted(bool within_read,
                         int bytes_read,
                         serial::ReceiveError error);
 
-  // base::MessageLoopForIO::Watcher implementation.
-  void OnFileCanWriteWithoutBlocking(int fd) override;
-  void OnFileCanReadWithoutBlocking(int fd) override;
+  // Called when file() is writable without blocking.
+  void OnFileCanWriteWithoutBlocking();
 
   void EnsureWatchingReads();
   void EnsureWatchingWrites();
 
-  base::MessageLoopForIO::FileDescriptorWatcher file_read_watcher_;
-  base::MessageLoopForIO::FileDescriptorWatcher file_write_watcher_;
-
-  // Flags indicating if the message loop is watching the device for IO events.
-  bool is_watching_reads_;
-  bool is_watching_writes_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> file_read_watcher_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> file_write_watcher_;
 
   ErrorDetectState error_detect_state_;
   bool parity_check_enabled_;

@@ -140,15 +140,13 @@ void SerialIoHandlerPosix::WriteImpl() {
 
 void SerialIoHandlerPosix::CancelReadImpl() {
   DCHECK(CalledOnValidThread());
-  is_watching_reads_ = false;
-  file_read_watcher_.StopWatchingFileDescriptor();
+  file_read_watcher_.reset();
   QueueReadCompleted(0, read_cancel_reason());
 }
 
 void SerialIoHandlerPosix::CancelWriteImpl() {
   DCHECK(CalledOnValidThread());
-  is_watching_writes_ = false;
-  file_write_watcher_.StopWatchingFileDescriptor();
+  file_write_watcher_.reset();
   QueueWriteCompleted(0, write_cancel_reason());
 }
 
@@ -286,22 +284,14 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
 SerialIoHandlerPosix::SerialIoHandlerPosix(
     scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
-    : SerialIoHandler(file_thread_task_runner, ui_thread_task_runner),
-      is_watching_reads_(false),
-      is_watching_writes_(false) {
-}
+    : SerialIoHandler(file_thread_task_runner, ui_thread_task_runner) {}
 
 SerialIoHandlerPosix::~SerialIoHandlerPosix() {
 }
 
-void SerialIoHandlerPosix::OnFileCanReadWithoutBlocking(int fd) {
+void SerialIoHandlerPosix::AttemptRead(bool within_read) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(fd, file().GetPlatformFile());
 
-  AttemptRead(false);
-}
-
-bool SerialIoHandlerPosix::AttemptRead(bool within_read) {
   if (pending_read_buffer()) {
     int bytes_read = HANDLE_EINTR(read(file().GetPlatformFile(),
                                        pending_read_buffer(),
@@ -338,11 +328,8 @@ bool SerialIoHandlerPosix::AttemptRead(bool within_read) {
   } else {
     // Stop watching the fd if we get notifications with no pending
     // reads or writes to avoid starving the message loop.
-    is_watching_reads_ = false;
-    file_read_watcher_.StopWatchingFileDescriptor();
+    file_read_watcher_.reset();
   }
-
-  return true;
 }
 
 void SerialIoHandlerPosix::RunReadCompleted(bool within_read,
@@ -351,8 +338,7 @@ void SerialIoHandlerPosix::RunReadCompleted(bool within_read,
   if (within_read) {
     // Stop watching the fd to avoid more reads until the queued ReadCompleted()
     // completes and releases the pending_read_buffer.
-    is_watching_reads_ = false;
-    file_read_watcher_.StopWatchingFileDescriptor();
+    file_read_watcher_.reset();
 
     QueueReadCompleted(bytes_read, error);
   } else {
@@ -360,9 +346,8 @@ void SerialIoHandlerPosix::RunReadCompleted(bool within_read,
   }
 }
 
-void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking(int fd) {
+void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking() {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(fd, file().GetPlatformFile());
 
   if (pending_write_buffer()) {
     int bytes_written = HANDLE_EINTR(write(file().GetPlatformFile(),
@@ -376,35 +361,28 @@ void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking(int fd) {
   } else {
     // Stop watching the fd if we get notifications with no pending
     // writes to avoid starving the message loop.
-    is_watching_writes_ = false;
-    file_write_watcher_.StopWatchingFileDescriptor();
+    file_write_watcher_.reset();
   }
 }
 
 void SerialIoHandlerPosix::EnsureWatchingReads() {
   DCHECK(CalledOnValidThread());
   DCHECK(file().IsValid());
-  if (!is_watching_reads_) {
-    is_watching_reads_ = base::MessageLoopForIO::current()->WatchFileDescriptor(
-        file().GetPlatformFile(),
-        true,
-        base::MessageLoopForIO::WATCH_READ,
-        &file_read_watcher_,
-        this);
+  if (!file_read_watcher_) {
+    file_read_watcher_ = base::FileDescriptorWatcher::WatchReadable(
+        file().GetPlatformFile(), base::Bind(&SerialIoHandlerPosix::AttemptRead,
+                                             base::Unretained(this), false));
   }
 }
 
 void SerialIoHandlerPosix::EnsureWatchingWrites() {
   DCHECK(CalledOnValidThread());
   DCHECK(file().IsValid());
-  if (!is_watching_writes_) {
-    is_watching_writes_ =
-        base::MessageLoopForIO::current()->WatchFileDescriptor(
-            file().GetPlatformFile(),
-            true,
-            base::MessageLoopForIO::WATCH_WRITE,
-            &file_write_watcher_,
-            this);
+  if (!file_write_watcher_) {
+    file_write_watcher_ = base::FileDescriptorWatcher::WatchWritable(
+        file().GetPlatformFile(),
+        base::Bind(&SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking,
+                   base::Unretained(this)));
   }
 }
 
