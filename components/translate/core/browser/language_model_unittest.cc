@@ -27,10 +27,12 @@ TEST(LanguageModelTest, ListSorted) {
   LanguageModel::RegisterProfilePrefs(prefs.registry());
   LanguageModel model(&prefs);
 
-  model.OnPageVisited(kLang1);
-  model.OnPageVisited(kLang1);
-  model.OnPageVisited(kLang1);
-  model.OnPageVisited(kLang2);
+  for (int i = 0; i < 50; i++) {
+    model.OnPageVisited(kLang1);
+    model.OnPageVisited(kLang1);
+    model.OnPageVisited(kLang1);
+    model.OnPageVisited(kLang2);
+  }
 
   EXPECT_THAT(model.GetTopLanguages(),
               ElementsAre(LanguageModel::LanguageInfo{kLang1},
@@ -42,10 +44,12 @@ TEST(LanguageModelTest, ListSortedReversed) {
   LanguageModel::RegisterProfilePrefs(prefs.registry());
   LanguageModel model(&prefs);
 
-  model.OnPageVisited(kLang2);
-  model.OnPageVisited(kLang1);
-  model.OnPageVisited(kLang1);
-  model.OnPageVisited(kLang1);
+  for (int i = 0; i < 50; i++) {
+    model.OnPageVisited(kLang2);
+    model.OnPageVisited(kLang1);
+    model.OnPageVisited(kLang1);
+    model.OnPageVisited(kLang1);
+  }
 
   EXPECT_THAT(model.GetTopLanguages(),
               ElementsAre(LanguageModel::LanguageInfo{kLang1},
@@ -57,10 +61,12 @@ TEST(LanguageModelTest, RightFrequencies) {
   LanguageModel::RegisterProfilePrefs(prefs.registry());
   LanguageModel model(&prefs);
 
-  model.OnPageVisited(kLang1);
-  model.OnPageVisited(kLang1);
-  model.OnPageVisited(kLang1);
-  model.OnPageVisited(kLang2);
+  for (int i = 0; i < 50; i++) {
+    model.OnPageVisited(kLang1);
+    model.OnPageVisited(kLang1);
+    model.OnPageVisited(kLang1);
+    model.OnPageVisited(kLang2);
+  }
 
   // Corresponding frequencies are given by the model.
   EXPECT_THAT(model.GetLanguageFrequency(kLang1), FloatEq(0.75f));

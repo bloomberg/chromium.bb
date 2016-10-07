@@ -19,6 +19,7 @@ namespace {
 const char kLanguageModelCounters[] = "language_model_counters";
 
 const int kMaxCountersSum = 1000;
+const int kMinCountersSum = 100;
 const float kCutoffRatio = 0.005f;
 const float kDiscountFactor = 0.75f;
 
@@ -60,9 +61,13 @@ void DiscountAndCleanCounters(base::DictionaryValue* dict) {
 std::vector<LanguageModel::LanguageInfo> GetAllLanguages(
     const base::DictionaryValue& dict) {
 
-  std::vector<LanguageModel::LanguageInfo> top_languages;
   int counters_sum = GetCountersSum(dict);
 
+  // If the sample is not large enough yet, pretend there are no top languages.
+  if (counters_sum < kMinCountersSum)
+    return std::vector<LanguageModel::LanguageInfo>();
+
+  std::vector<LanguageModel::LanguageInfo> top_languages;
   int counter_value = 0;
   for (base::DictionaryValue::Iterator itr(dict); !itr.IsAtEnd();
        itr.Advance()) {
@@ -103,11 +108,14 @@ float LanguageModel::GetLanguageFrequency(
     const std::string& language_code) const {
   const base::DictionaryValue* dict =
       pref_service_->GetDictionary(kLanguageModelCounters);
+  int counters_sum = GetCountersSum(*dict);
+  // If the sample is not large enough yet, pretend there are no top languages.
+  if (counters_sum < kMinCountersSum)
+    return 0;
+
   int counter_value = 0;
   // If the key |language_code| does not exist, |counter_value| stays 0.
   dict->GetInteger(language_code, &counter_value);
-
-  int counters_sum = GetCountersSum(*dict);
 
   return static_cast<float>(counter_value) / counters_sum;
 }

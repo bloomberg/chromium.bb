@@ -30,7 +30,7 @@ class LanguageModel : public KeyedService {
     // The current estimated frequency of the language share, a number between 0
     // and 1 (can be understood as the probability that the next page the user
     // opens is in this language). Frequencies over all LanguageInfos from
-    // GetTopLanguages() sum to 1.
+    // GetTopLanguages() sum to 1 (unless there are no top languages, yet).
     float frequency;
 
     bool operator==(const LanguageInfo& m) const {
@@ -45,7 +45,8 @@ class LanguageModel : public KeyedService {
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Returns a list of the languages currently tracked by the model, sorted by
-  // frequency in decreasing order.
+  // frequency in decreasing order. The list is empty, if the model has not
+  // enough data points.
   std::vector<LanguageInfo> GetTopLanguages() const;
 
   // Returns the estimated frequency for the given language or 0 if the language
