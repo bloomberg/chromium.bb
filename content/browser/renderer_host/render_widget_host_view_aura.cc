@@ -1897,7 +1897,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
       }
     }
 
-    ModifyEventMovementAndCoords(&mouse_event);
+    ModifyEventMovementAndCoords(*event, &mouse_event);
 
     bool should_not_forward = is_move_to_center_event && synthetic_move_sent_;
     if (should_not_forward) {
@@ -1976,7 +1976,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 
       blink::WebMouseEvent mouse_event = ui::MakeWebMouseEvent(
           *event, base::Bind(&GetScreenLocationFromEvent));
-      ModifyEventMovementAndCoords(&mouse_event);
+      ModifyEventMovementAndCoords(*event, &mouse_event);
       if (ShouldRouteEvent(event)) {
         host_->delegate()->GetInputEventRouter()->RouteMouseEvent(
             this, &mouse_event, *event->latency());
@@ -2522,12 +2522,14 @@ void RenderWidgetHostViewAura::FinishImeCompositionSession() {
 }
 
 void RenderWidgetHostViewAura::ModifyEventMovementAndCoords(
+    const ui::MouseEvent& ui_mouse_event,
     blink::WebMouseEvent* event) {
   // If the mouse has just entered, we must report zero movementX/Y. Hence we
   // reset any global_mouse_position set previously.
-  if (event->type == blink::WebInputEvent::MouseEnter ||
-      event->type == blink::WebInputEvent::MouseLeave)
-    global_mouse_position_.SetPoint(event->globalX, event->globalY);
+  if (ui_mouse_event.type() == ui::ET_MOUSE_ENTERED ||
+      ui_mouse_event.type() == ui::ET_MOUSE_EXITED) {
+      global_mouse_position_.SetPoint(event->globalX, event->globalY);
+  }
 
   // Movement is computed by taking the difference of the new cursor position
   // and the previous. Under mouse lock the cursor will be warped back to the

@@ -424,7 +424,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // This method computes movementX/Y and keeps track of mouse location for
   // mouse lock on all mouse move events.
-  void ModifyEventMovementAndCoords(blink::WebMouseEvent* event);
+  // |ui_mouse_event| contains the mouse event received.
+  // |event| contains the WebMouseEvent being modified.
+  void ModifyEventMovementAndCoords(const ui::MouseEvent& ui_mouse_event,
+                                    blink::WebMouseEvent* event);
 
   // Sends an IPC to the renderer process to communicate whether or not
   // the mouse cursor is visible anywhere on the screen.
