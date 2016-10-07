@@ -499,7 +499,7 @@ void NTPSnippetsService::OnDatabaseError() {
 }
 
 void NTPSnippetsService::OnFetchFinished(
-    NTPSnippetsFetcher::OptionalSnippets snippets) {
+    NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!ready())
     return;
 
@@ -513,10 +513,11 @@ void NTPSnippetsService::OnFetchFinished(
 
   // If snippets were fetched successfully, update our |categories_| from each
   // category provided by the server.
-  if (snippets) {
+  if (fetched_categories) {
     // TODO(jkrcal): A bit hard to understand with so many variables called
     // "*categor*". Isn't here some room for simplification?
-    for (NTPSnippetsFetcher::FetchedCategory& fetched_category : *snippets) {
+    for (NTPSnippetsFetcher::FetchedCategory& fetched_category :
+         *fetched_categories) {
       Category category = fetched_category.category;
 
       // TODO(sfiera): Avoid hard-coding articles category checks in so many
@@ -528,13 +529,13 @@ void NTPSnippetsService::OnFetchFinished(
       }
       categories_[category].provided_by_server = true;
 
-      DCHECK_LE(snippets->size(), static_cast<size_t>(kMaxSnippetCount));
-      // TODO(sfiera): histograms for server categories.
-      // Sparse histogram used because the number of snippets is small (bound by
-      // kMaxSnippetCount).
+      // TODO(tschumann): Remove this histogram once we only talk to the content
+      // suggestions cloud backend.
       if (category == articles_category_) {
-        UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticlesFetched",
-                                    fetched_category.snippets.size());
+        UMA_HISTOGRAM_SPARSE_SLOWLY(
+            "NewTabPage.Snippets.NumArticlesFetched",
+            std::min(fetched_category.snippets.size(),
+                     static_cast<size_t>(kMaxSnippetCount + 1)));
       }
       ReplaceSnippets(category, std::move(fetched_category.snippets));
     }
@@ -561,7 +562,7 @@ void NTPSnippetsService::OnFetchFinished(
   // fetches, to make sure the fallback interval triggers only if no wifi fetch
   // succeeded, and also that we don't do a background fetch immediately after
   // a user-initiated one.
-  if (snippets)
+  if (fetched_categories)
     RescheduleFetching(true);
 }
 

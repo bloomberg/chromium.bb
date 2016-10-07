@@ -206,7 +206,8 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   void OnDatabaseError();
 
   // Callback for the NTPSnippetsFetcher.
-  void OnFetchFinished(NTPSnippetsFetcher::OptionalSnippets snippets);
+  void OnFetchFinished(
+      NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
 
   // Moves all snippets from |to_archive| into the archive of the |category|.
   // It also deletes the snippets from the DB and keeps the archive reasonably

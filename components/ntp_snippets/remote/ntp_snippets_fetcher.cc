@@ -137,8 +137,9 @@ bool AddSnippetsFromListValue(bool content_suggestions_api,
                               NTPSnippet::PtrVector* snippets) {
   for (const auto& value : list) {
     const base::DictionaryValue* dict = nullptr;
-    if (!value->GetAsDictionary(&dict))
+    if (!value->GetAsDictionary(&dict)) {
       return false;
+    }
 
     std::unique_ptr<NTPSnippet> snippet;
     if (content_suggestions_api) {
@@ -146,8 +147,9 @@ bool AddSnippetsFromListValue(bool content_suggestions_api,
     } else {
       snippet = NTPSnippet::CreateFromChromeReaderDictionary(*dict);
     }
-    if (!snippet)
+    if (!snippet) {
       return false;
+    }
 
     snippets->push_back(std::move(snippet));
   }
@@ -238,7 +240,7 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
     int count,
     bool interactive_request) {
   if (!request_throttler_.DemandQuotaForRequest(interactive_request)) {
-    FetchFinished(OptionalSnippets(),
+    FetchFinished(OptionalFetchedCategories(),
                   interactive_request
                       ? FetchResult::INTERACTIVE_QUOTA_ERROR
                       : FetchResult::NON_INTERACTIVE_QUOTA_ERROR,
@@ -484,7 +486,7 @@ void NTPSnippetsFetcher::OnGetTokenFailure(
 
   DLOG(ERROR) << "Unable to get token: " << error.ToString();
   FetchFinished(
-      OptionalSnippets(), FetchResult::OAUTH_TOKEN_ERROR,
+      OptionalFetchedCategories(), FetchResult::OAUTH_TOKEN_ERROR,
       /*extra_message=*/base::StringPrintf(" (%s)", error.ToString().c_str()));
 }
 
@@ -514,7 +516,8 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
       status.is_success() ? source->GetResponseCode() : status.error());
 
   if (!status.is_success()) {
-    FetchFinished(OptionalSnippets(), FetchResult::URL_REQUEST_STATUS_ERROR,
+    FetchFinished(OptionalFetchedCategories(),
+                  FetchResult::URL_REQUEST_STATUS_ERROR,
                   /*extra_message=*/base::StringPrintf(" %d", status.error()));
   } else if (source->GetResponseCode() != net::HTTP_OK) {
     // TODO(jkrcal): https://crbug.com/609084
@@ -523,7 +526,7 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
     // fetch a new auth token). We should extract that into a common class
     // instead of adding it to every single class that uses auth tokens.
     FetchFinished(
-        OptionalSnippets(), FetchResult::HTTP_ERROR,
+        OptionalFetchedCategories(), FetchResult::HTTP_ERROR,
         /*extra_message=*/base::StringPrintf(" %d", source->GetResponseCode()));
   } else {
     bool stores_result_to_string =
@@ -598,11 +601,12 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
 void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
   FetchedCategoriesVector categories;
   if (JsonToSnippets(*parsed, &categories)) {
-    FetchFinished(OptionalSnippets(std::move(categories)), FetchResult::SUCCESS,
+    FetchFinished(OptionalFetchedCategories(std::move(categories)),
+                  FetchResult::SUCCESS,
                   /*extra_message=*/std::string());
   } else {
     LOG(WARNING) << "Received invalid snippets: " << last_fetch_json_;
-    FetchFinished(OptionalSnippets(),
+    FetchFinished(OptionalFetchedCategories(),
                   FetchResult::INVALID_SNIPPET_CONTENT_ERROR,
                   /*extra_message=*/std::string());
   }
@@ -612,14 +616,15 @@ void NTPSnippetsFetcher::OnJsonError(const std::string& error) {
   LOG(WARNING) << "Received invalid JSON (" << error
                << "): " << last_fetch_json_;
   FetchFinished(
-      OptionalSnippets(), FetchResult::JSON_PARSE_ERROR,
+      OptionalFetchedCategories(), FetchResult::JSON_PARSE_ERROR,
       /*extra_message=*/base::StringPrintf(" (error %s)", error.c_str()));
 }
 
-void NTPSnippetsFetcher::FetchFinished(OptionalSnippets snippets,
-                                       FetchResult result,
-                                       const std::string& extra_message) {
-  DCHECK(result == FetchResult::SUCCESS || !snippets);
+void NTPSnippetsFetcher::FetchFinished(
+    OptionalFetchedCategories fetched_categories,
+    FetchResult result,
+    const std::string& extra_message) {
+  DCHECK(result == FetchResult::SUCCESS || !fetched_categories);
   last_status_ = FetchResultToString(result) + extra_message;
 
   // Don't record FetchTimes if the result indicates that a precondition
@@ -634,7 +639,7 @@ void NTPSnippetsFetcher::FetchFinished(OptionalSnippets snippets,
 
   DVLOG(1) << "Fetch finished: " << last_status_;
   if (!snippets_available_callback_.is_null())
-    snippets_available_callback_.Run(std::move(snippets));
+    snippets_available_callback_.Run(std::move(fetched_categories));
 }
 
 }  // namespace ntp_snippets

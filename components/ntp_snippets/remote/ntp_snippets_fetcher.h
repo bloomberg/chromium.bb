@@ -54,13 +54,13 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     FetchedCategory& operator=(FetchedCategory&&);  // = default, in .cc
   };
   using FetchedCategoriesVector = std::vector<FetchedCategory>;
-  using OptionalSnippets = base::Optional<FetchedCategoriesVector>;
+  using OptionalFetchedCategories = base::Optional<FetchedCategoriesVector>;
 
   // |snippets| contains parsed snippets if a fetch succeeded. If problems
   // occur, |snippets| contains no value (no actual vector in base::Optional).
   // Error details can be retrieved using last_status().
   using SnippetsAvailableCallback =
-      base::Callback<void(OptionalSnippets snippets)>;
+      base::Callback<void(OptionalFetchedCategories fetched_categories)>;
 
   // Enumeration listing all possible outcomes for fetch attempts. Used for UMA
   // histograms, so do not change existing values. Insert new values at the end,
@@ -195,7 +195,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
                       FetchedCategoriesVector* categories);
   void OnJsonParsed(std::unique_ptr<base::Value> parsed);
   void OnJsonError(const std::string& error);
-  void FetchFinished(OptionalSnippets snippets,
+  void FetchFinished(OptionalFetchedCategories fetched_categories,
                      FetchResult result,
                      const std::string& extra_message);
 

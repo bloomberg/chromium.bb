@@ -1172,4 +1172,19 @@ TEST_F(NTPSnippetsServiceTest, ShouldClearOrphanedImagesOnRestart) {
   EXPECT_TRUE(FetchImage(service.get(), MakeArticleID(kSnippetUrl)).IsEmpty());
 }
 
+TEST_F(NTPSnippetsServiceTest, ShouldHandleMoreThanMaxSnippetsInResponse) {
+  auto service = MakeSnippetsService();
+
+  std::vector<std::string> suggestions;
+  for (int i = 0 ; i < service->GetMaxSnippetCountForTesting() + 1; ++i) {
+    suggestions.push_back(GetSnippetWithUrl(
+        base::StringPrintf("http://localhost/snippet-id-%d", i)));
+  }
+  LoadFromJSONString(service.get(), GetTestJson(suggestions));
+  // TODO(tschumann): We should probably trim out any additional results and
+  // only serve the MaxSnippetCount items.
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
+              SizeIs(service->GetMaxSnippetCountForTesting() + 1));
+}
+
 }  // namespace ntp_snippets

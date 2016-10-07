@@ -63,16 +63,17 @@ MATCHER(HasValue, "") {
 }
 
 MATCHER(IsEmptyArticleList, "is an empty list of articles") {
-  NTPSnippetsFetcher::OptionalSnippets& snippets = *arg;
-  return snippets && snippets->size() == 1 &&
-         snippets->begin()->snippets.empty();
+  NTPSnippetsFetcher::OptionalFetchedCategories& fetched_categories = *arg;
+  return fetched_categories && fetched_categories->size() == 1 &&
+         fetched_categories->begin()->snippets.empty();
 }
 
 MATCHER_P(IsSingleArticle, url, "is a list with the single article %(url)s") {
-  NTPSnippetsFetcher::OptionalSnippets& snippets = *arg;
-  return snippets && snippets->size() == 1 &&
-         snippets->begin()->snippets.size() == 1 &&
-         snippets->begin()->snippets[0]->best_source().url.spec() == url;
+  NTPSnippetsFetcher::OptionalFetchedCategories& fetched_categories = *arg;
+  return fetched_categories && fetched_categories->size() == 1 &&
+         fetched_categories->begin()->snippets.size() == 1 &&
+         fetched_categories->begin()->snippets[0]->best_source().url.spec() ==
+             url;
 }
 
 MATCHER_P(EqualsJSON, json, "equals JSON") {
@@ -97,11 +98,14 @@ MATCHER_P(EqualsJSON, json, "equals JSON") {
 class MockSnippetsAvailableCallback {
  public:
   // Workaround for gMock's lack of support for movable arguments.
-  void WrappedRun(NTPSnippetsFetcher::OptionalSnippets snippets) {
-    Run(&snippets);
+  void WrappedRun(
+      NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
+    Run(&fetched_categories);
   }
 
-  MOCK_METHOD1(Run, void(NTPSnippetsFetcher::OptionalSnippets* snippets));
+  MOCK_METHOD1(
+      Run,
+      void(NTPSnippetsFetcher::OptionalFetchedCategories* fetched_categories));
 };
 
 // Factory for FakeURLFetcher objects that always generate errors.
@@ -528,18 +532,18 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
       "}]}";
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-  NTPSnippetsFetcher::OptionalSnippets snippets;
+  NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(), Run(_))
-      .WillOnce(WithArg<0>(MovePointeeTo(&snippets)));
+      .WillOnce(WithArg<0>(MovePointeeTo(&fetched_categories)));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
 
-  ASSERT_TRUE(snippets);
-  ASSERT_THAT(snippets->size(), Eq(2u));
-  for (const auto& category : *snippets) {
+  ASSERT_TRUE(fetched_categories);
+  ASSERT_THAT(fetched_categories->size(), Eq(2u));
+  for (const auto& category : *fetched_categories) {
     const auto& articles = category.snippets;
     switch (category.category.id()) {
       case static_cast<int>(KnownCategories::ARTICLES):
@@ -765,11 +769,11 @@ TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
 
 ::std::ostream& operator<<(
     ::std::ostream& os,
-    const NTPSnippetsFetcher::OptionalSnippets& snippets) {
-  if (snippets) {
+    const NTPSnippetsFetcher::OptionalFetchedCategories& fetched_categories) {
+  if (fetched_categories) {
     // Matchers above aren't any more precise than this, so this is sufficient
     // for test-failure diagnostics.
-    return os << "list with " << snippets->size() << " elements";
+    return os << "list with " << fetched_categories->size() << " elements";
   }
   return os << "null";
 }
