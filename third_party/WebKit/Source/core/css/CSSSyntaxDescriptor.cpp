@@ -132,7 +132,6 @@ const CSSValue* consumeSingleType(const CSSSyntaxComponent& syntax,
                                   CSSParserTokenRange& range) {
   using namespace CSSPropertyParserHelpers;
 
-  // TODO(timloh): Calc values need to be normalized
   switch (syntax.m_type) {
     case CSSSyntaxType::Ident:
       if (range.peek().type() == IdentToken &&
