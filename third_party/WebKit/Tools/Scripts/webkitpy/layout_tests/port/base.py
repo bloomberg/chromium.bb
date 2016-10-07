@@ -1316,6 +1316,24 @@ class Port(object):
                 _log.warning("additional_expectations path '%s' does not exist", path)
         return expectations
 
+    def all_expectations_dict(self):
+        """Returns an OrderedDict of name -> expectations strings (see:
+        |expectations_dict|), including all flag-specific expectation files."""
+        expectations = self.expectations_dict()
+
+        flag_path = self._filesystem.join(self.layout_tests_dir(), 'FlagExpectations')
+        if not self._filesystem.exists(flag_path):
+            return expectations
+
+        for (_, _, filenames) in self._filesystem.walk(flag_path):
+            if 'README.txt' in filenames:
+                filenames.remove('README.txt')
+            for filename in filenames:
+                path = self._filesystem.join(flag_path, filename)
+                expectations[path] = self._filesystem.read_text_file(path)
+
+        return expectations
+
     def bot_expectations(self):
         if not self.get_option('ignore_flaky_tests'):
             return {}

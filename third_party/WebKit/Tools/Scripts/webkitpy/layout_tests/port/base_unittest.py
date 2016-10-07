@@ -255,6 +255,19 @@ class PortTest(unittest.TestCase):
         port._options.additional_driver_flag = ['--special-flag']
         self.assertEqual('\n'.join(port.expectations_dict().values()), 'content3\ncontent1\n\ncontent2\n')
 
+    def test_flag_specific_expectations(self):
+        port = self.make_port(port_name='foo')
+        port.port_name = 'foo'
+        port.host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/FlagExpectations/special-flag-a', 'aa')
+        port.host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/FlagExpectations/special-flag-b', 'bb')
+        port.host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/FlagExpectations/README.txt', 'cc')
+
+        self.assertEqual('\n'.join(port.expectations_dict().values()), '')
+        self.assertEqual('\n'.join(port.all_expectations_dict().values()), 'bb\naa')
+
     def test_additional_env_var(self):
         port = self.make_port(options=optparse.Values({'additional_env_var': ['FOO=BAR', 'BAR=FOO']}))
         self.assertEqual(port.get_option('additional_env_var'), ['FOO=BAR', 'BAR=FOO'])

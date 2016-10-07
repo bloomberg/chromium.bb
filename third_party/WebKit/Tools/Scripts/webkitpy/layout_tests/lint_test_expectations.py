@@ -53,7 +53,7 @@ def lint(host, options):
 
     failures = []
     for port_to_lint in ports_to_lint:
-        expectations_dict = port_to_lint.expectations_dict()
+        expectations_dict = port_to_lint.all_expectations_dict()
 
         for expectations_file in expectations_dict.keys():
             if expectations_file in files_linted:
