@@ -791,38 +791,38 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFile(
 
 bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
     int child_id,
-    const storage::FileSystemURL& url,
+    const storage::FileSystemURL& filesystem_url,
     int permissions) {
-  if (!url.is_valid())
+  if (!filesystem_url.is_valid())
     return false;
 
-  // If |url.origin()| is not committable in this process, then this page
-  // should not be able to place content in that origin via the filesystem
+  // If |filesystem_url.origin()| is not committable in this process, then this
+  // page should not be able to place content in that origin via the filesystem
   // API either.
-  if (!CanCommitURL(child_id, url.origin())) {
+  if (!CanCommitURL(child_id, filesystem_url.origin())) {
     UMA_HISTOGRAM_BOOLEAN("FileSystem.OriginFailedCanCommitURL", true);
     return false;
   }
 
-  if (url.path().ReferencesParent())
+  if (filesystem_url.path().ReferencesParent())
     return false;
 
   // Any write access is disallowed on the root path.
-  if (storage::VirtualPath::IsRootPath(url.path()) &&
+  if (storage::VirtualPath::IsRootPath(filesystem_url.path()) &&
       (permissions & ~READ_FILE_GRANT)) {
     return false;
   }
 
-  if (url.mount_type() == storage::kFileSystemTypeIsolated) {
+  if (filesystem_url.mount_type() == storage::kFileSystemTypeIsolated) {
     // When Isolated filesystems is overlayed on top of another filesystem,
     // its per-filesystem permission overrides the underlying filesystem
     // permissions).
     return HasPermissionsForFileSystem(
-        child_id, url.mount_filesystem_id(), permissions);
+        child_id, filesystem_url.mount_filesystem_id(), permissions);
   }
 
   FileSystemPermissionPolicyMap::iterator found =
-      file_system_policy_map_.find(url.type());
+      file_system_policy_map_.find(filesystem_url.type());
   if (found == file_system_policy_map_.end())
     return false;
 
@@ -832,7 +832,7 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
   }
 
   if (found->second & storage::FILE_PERMISSION_USE_FILE_PERMISSION)
-    return HasPermissionsForFile(child_id, url.path(), permissions);
+    return HasPermissionsForFile(child_id, filesystem_url.path(), permissions);
 
   if (found->second & storage::FILE_PERMISSION_SANDBOX)
     return true;
@@ -842,39 +842,44 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
 
 bool ChildProcessSecurityPolicyImpl::CanReadFileSystemFile(
     int child_id,
-    const storage::FileSystemURL& url) {
-  return HasPermissionsForFileSystemFile(child_id, url, READ_FILE_GRANT);
+    const storage::FileSystemURL& filesystem_url) {
+  return HasPermissionsForFileSystemFile(child_id, filesystem_url,
+                                         READ_FILE_GRANT);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanWriteFileSystemFile(
     int child_id,
-    const storage::FileSystemURL& url) {
-  return HasPermissionsForFileSystemFile(child_id, url, WRITE_FILE_GRANT);
+    const storage::FileSystemURL& filesystem_url) {
+  return HasPermissionsForFileSystemFile(child_id, filesystem_url,
+                                         WRITE_FILE_GRANT);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCreateFileSystemFile(
     int child_id,
-    const storage::FileSystemURL& url) {
-  return HasPermissionsForFileSystemFile(child_id, url, CREATE_NEW_FILE_GRANT);
+    const storage::FileSystemURL& filesystem_url) {
+  return HasPermissionsForFileSystemFile(child_id, filesystem_url,
+                                         CREATE_NEW_FILE_GRANT);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFileSystemFile(
     int child_id,
-    const storage::FileSystemURL& url) {
-  return HasPermissionsForFileSystemFile(child_id, url,
+    const storage::FileSystemURL& filesystem_url) {
+  return HasPermissionsForFileSystemFile(child_id, filesystem_url,
                                          CREATE_READ_WRITE_FILE_GRANT);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCopyIntoFileSystemFile(
     int child_id,
-    const storage::FileSystemURL& url) {
-  return HasPermissionsForFileSystemFile(child_id, url, COPY_INTO_FILE_GRANT);
+    const storage::FileSystemURL& filesystem_url) {
+  return HasPermissionsForFileSystemFile(child_id, filesystem_url,
+                                         COPY_INTO_FILE_GRANT);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanDeleteFileSystemFile(
     int child_id,
-    const storage::FileSystemURL& url) {
-  return HasPermissionsForFileSystemFile(child_id, url, DELETE_FILE_GRANT);
+    const storage::FileSystemURL& filesystem_url) {
+  return HasPermissionsForFileSystemFile(child_id, filesystem_url,
+                                         DELETE_FILE_GRANT);
 }
 
 bool ChildProcessSecurityPolicyImpl::HasWebUIBindings(int child_id) {

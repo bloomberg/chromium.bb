@@ -137,14 +137,19 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool CanSetAsOriginHeader(int child_id, const GURL& url);
 
   // Explicit permissions checks for FileSystemURL specified files.
-  bool CanReadFileSystemFile(int child_id, const storage::FileSystemURL& url);
-  bool CanWriteFileSystemFile(int child_id, const storage::FileSystemURL& url);
-  bool CanCreateFileSystemFile(int child_id, const storage::FileSystemURL& url);
-  bool CanCreateReadWriteFileSystemFile(int child_id,
-                                        const storage::FileSystemURL& url);
+  bool CanReadFileSystemFile(int child_id,
+                             const storage::FileSystemURL& filesystem_url);
+  bool CanWriteFileSystemFile(int child_id,
+                              const storage::FileSystemURL& filesystem_url);
+  bool CanCreateFileSystemFile(int child_id,
+                               const storage::FileSystemURL& filesystem_url);
+  bool CanCreateReadWriteFileSystemFile(
+      int child_id,
+      const storage::FileSystemURL& filesystem_url);
   bool CanCopyIntoFileSystemFile(int child_id,
-                                 const storage::FileSystemURL& url);
-  bool CanDeleteFileSystemFile(int child_id, const storage::FileSystemURL& url);
+                                 const storage::FileSystemURL& filesystem_url);
+  bool CanDeleteFileSystemFile(int child_id,
+                               const storage::FileSystemURL& filesystem_url);
 
   // Returns true if the specified child_id has been granted ReadRawCookies.
   bool CanReadRawCookies(int child_id);
@@ -214,9 +219,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Determines if certain permissions were granted for a file in FileSystem
   // API. |permissions| is an internally defined bit-set.
-  bool HasPermissionsForFileSystemFile(int child_id,
-                                       const storage::FileSystemURL& url,
-                                       int permissions);
+  bool HasPermissionsForFileSystemFile(
+      int child_id,
+      const storage::FileSystemURL& filesystem_url,
+      int permissions);
 
   // Determines if certain permissions were granted for a file system.
   // |permissions| is an internally defined bit-set.
