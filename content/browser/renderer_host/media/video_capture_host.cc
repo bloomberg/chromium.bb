@@ -108,7 +108,7 @@ void VideoCaptureHost::OnBufferReady(
 }
 
 void VideoCaptureHost::OnEnded(VideoCaptureControllerID controller_id) {
-  DVLOG(1) << "VideoCaptureHost::OnEnded";
+  DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -116,7 +116,7 @@ void VideoCaptureHost::OnEnded(VideoCaptureControllerID controller_id) {
 }
 
 void VideoCaptureHost::DoError(VideoCaptureControllerID controller_id) {
-  DVLOG(1) << "VideoCaptureHost::DoError";
+  DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (controllers_.find(controller_id) == controllers_.end())
     return;
@@ -127,7 +127,7 @@ void VideoCaptureHost::DoError(VideoCaptureControllerID controller_id) {
 }
 
 void VideoCaptureHost::DoEnded(VideoCaptureControllerID controller_id) {
-  DVLOG(1) << "VideoCaptureHost::DoEnded";
+  DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (controllers_.find(controller_id) == controllers_.end())
     return;
@@ -137,8 +137,6 @@ void VideoCaptureHost::DoEnded(VideoCaptureControllerID controller_id) {
   DeleteVideoCaptureController(controller_id, false);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// IPC Messages handler.
 bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(VideoCaptureHost, message)
