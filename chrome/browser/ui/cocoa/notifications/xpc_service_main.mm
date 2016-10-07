@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <Foundation/Foundation.h>
+#include <xpc/xpc.h>
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/notifications/notification_service_delegate.h"
