@@ -68,6 +68,19 @@ class MandatoryCallback<ReturnType(ArgTypes...)> {
 #endif
   }
 
+  // This a overload that handles the case where there are no arguments provided
+  template <typename...>
+  ReturnType Run() {
+    DCHECK(cb_);  // Can't be run following std::move.
+
+#if DCHECK_IS_ON()
+    DCHECK(!was_run_);
+    was_run_ = true;
+#endif
+
+    cb_.Run();
+  }
+
   template <typename... RunArgs>
   ReturnType Run(RunArgs... args) {
     DCHECK(cb_);  // Can't be run following std::move.
@@ -97,6 +110,8 @@ MandatoryCallback<SignatureType> CreateMandatoryCallback(
     const base::Callback<SignatureType>& callback) {
   return MandatoryCallback<SignatureType>(callback);
 }
+
+using MandatoryClosure = MandatoryCallback<void()>;
 
 }  // namespace blimp
 

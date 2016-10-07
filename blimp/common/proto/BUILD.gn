@@ -31,6 +31,7 @@ proto_library("proto_internal") {
     "common.proto",
     "compositor.proto",
     "geolocation.proto",
+    "helium.proto",
     "ime.proto",
     "input.proto",
     "navigation.proto",

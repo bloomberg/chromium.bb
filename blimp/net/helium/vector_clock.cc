@@ -54,4 +54,15 @@ void VectorClock::IncrementLocal() {
   local_revision_++;
 }
 
+proto::VectorClockMessage VectorClock::ToProto() const {
+  proto::VectorClockMessage result;
+  result.set_local_revision(local_revision_);
+  result.set_remote_revision(remote_revision_);
+  return result;
+}
+
+VectorClock VectorClock::Invert() const {
+  return VectorClock(remote_revision_, local_revision_);
+}
+
 }  // namespace blimp

@@ -99,8 +99,10 @@ source_set("helium") {
     "helium/helium_result.h",
     "helium/helium_sync_manager.cc",
     "helium/helium_sync_manager.h",
+    "helium/syncable.h",
     "helium/vector_clock.cc",
     "helium/vector_clock.h",
+    "helium/vector_clock_generator.h",
   ]
   deps = [
     ":net_export",
@@ -165,6 +167,8 @@ source_set("unit_tests") {
     "engine_authentication_handler_unittest.cc",
     "engine_connection_manager_unittest.cc",
     "helium/helium_result_unittest.cc",
+    "helium/syncable_unittest.cc",
+    "helium/vector_clock_generator_unittest.cc",
     "helium/vector_clock_unittest.cc",
     "input_message_unittest.cc",
     "ssl_client_transport_unittest.cc",

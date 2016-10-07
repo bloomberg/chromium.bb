@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "blimp/common/proto/helium.pb.h"
 #include "blimp/net/blimp_net_export.h"
 
 namespace blimp {
@@ -20,7 +21,7 @@ namespace blimp {
 // For more info see:
 // https://en.wikipedia.org/wiki/Vector_clock
 
-typedef uint32_t Revision;
+typedef uint64_t Revision;
 
 class BLIMP_NET_EXPORT VectorClock {
  public:
@@ -28,6 +29,7 @@ class BLIMP_NET_EXPORT VectorClock {
 
   VectorClock(Revision local_revision, Revision remote_revision);
   VectorClock();
+  VectorClock(const VectorClock&) = default;
 
   // Compares two vector clocks. There are 4 possibilities for the result:
   // * LessThan: One revision is equal and for the other is smaller.
@@ -57,6 +59,14 @@ class BLIMP_NET_EXPORT VectorClock {
   void set_remote_revision(Revision remote_revision) {
     remote_revision_ = remote_revision;
   }
+
+  // Create the proto message corresponding to this object.
+  proto::VectorClockMessage ToProto() const;
+
+  // Inverts the local and remote components respectively.
+  // Used when we send VectorClock across the wire. The local becomes
+  // remote and vice versa.
+  VectorClock Invert() const;
 
  private:
   Revision local_revision_ = 0;
