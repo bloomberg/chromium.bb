@@ -19,6 +19,7 @@ proto_library("proto") {
     "profiler_event.proto",
     "sampled_profile.proto",
     "system_profile.proto",
+    "translate_event.proto",
     "user_action_event.proto",
   ]
 }
