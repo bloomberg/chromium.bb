@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -93,8 +92,7 @@ class PasswordManagerClient {
   // displayed, returns false and does not call |callback|.
   // |callback| should be invoked with the chosen form.
   virtual bool PromptUserToChooseCredentials(
-      ScopedVector<autofill::PasswordForm> local_forms,
-      ScopedVector<autofill::PasswordForm> federated_forms,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin,
       const CredentialsCallback& callback) = 0;
 
@@ -111,7 +109,7 @@ class PasswordManagerClient {
   // local credentials for the site. |origin| is a URL of the site the user was
   // auto signed in to.
   virtual void NotifyUserAutoSignin(
-      ScopedVector<autofill::PasswordForm> local_forms,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin) = 0;
 
   // Inform the embedder that automatic signin would have happened if the user

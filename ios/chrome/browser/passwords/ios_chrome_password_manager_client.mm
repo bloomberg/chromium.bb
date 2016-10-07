@@ -61,8 +61,7 @@ PasswordSyncState IOSChromePasswordManagerClient::GetPasswordSyncState() const {
 }
 
 bool IOSChromePasswordManagerClient::PromptUserToChooseCredentials(
-    ScopedVector<autofill::PasswordForm> local_forms,
-    ScopedVector<autofill::PasswordForm> federated_forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const GURL& origin,
     const CredentialsCallback& callback) {
   NOTIMPLEMENTED();
@@ -105,7 +104,7 @@ PasswordStore* IOSChromePasswordManagerClient::GetPasswordStore() const {
 }
 
 void IOSChromePasswordManagerClient::NotifyUserAutoSignin(
-    ScopedVector<autofill::PasswordForm> local_forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const GURL& origin) {}
 
 void IOSChromePasswordManagerClient::NotifyUserCouldBeAutoSignedIn(

@@ -249,8 +249,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
 }
 
 bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
-    ScopedVector<autofill::PasswordForm> local_forms,
-    ScopedVector<autofill::PasswordForm> federated_forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const GURL& origin,
     const CredentialsCallback& callback) {
   // Set up an intercept callback if the prompt is zero-clickable (e.g. just one
@@ -258,23 +257,21 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
   CredentialsCallback intercept =
       base::Bind(&ChromePasswordManagerClient::OnCredentialsChosen,
                  base::Unretained(this), callback, local_forms.size() == 1);
-  std::vector<std::unique_ptr<autofill::PasswordForm>> locals =
-      password_manager_util::ConvertScopedVector(std::move(local_forms));
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federations =
-      password_manager_util::ConvertScopedVector(std::move(federated_forms));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> dummy_federations;
 #if defined(OS_ANDROID)
   // Deletes itself on the event from Java counterpart, when user interacts with
   // dialog.
   AccountChooserDialogAndroid* acccount_chooser_dialog =
-      new AccountChooserDialogAndroid(web_contents(), std::move(locals),
-                                      std::move(federations), origin,
+      new AccountChooserDialogAndroid(web_contents(), std::move(local_forms),
+                                      std::move(dummy_federations), origin,
                                       intercept);
   acccount_chooser_dialog->ShowDialog();
   return true;
 #else
   return PasswordsClientUIDelegateFromWebContents(web_contents())
-      ->OnChooseCredentials(std::move(locals), std::move(federations), origin,
-                            intercept);
+      ->OnChooseCredentials(std::move(local_forms),
+                            std::move(dummy_federations),
+                            origin, intercept);
 #endif
 }
 
@@ -304,19 +301,17 @@ void ChromePasswordManagerClient::GeneratePassword() {
 }
 
 void ChromePasswordManagerClient::NotifyUserAutoSignin(
-    ScopedVector<autofill::PasswordForm> local_forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const GURL& origin) {
   DCHECK(!local_forms.empty());
   // If a site gets back a credential some navigations are likely to occur. They
   // shouldn't trigger the autofill password manager.
   password_manager_.DropFormManagers();
-  std::vector<std::unique_ptr<autofill::PasswordForm>> forms =
-      password_manager_util::ConvertScopedVector(std::move(local_forms));
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  ShowAutoSigninPrompt(web_contents(), forms[0]->username_value);
+  ShowAutoSigninPrompt(web_contents(), local_forms[0]->username_value);
 #else
   PasswordsClientUIDelegateFromWebContents(web_contents())
-      ->OnAutoSignin(std::move(forms), origin);
+      ->OnAutoSignin(std::move(local_forms), origin);
 #endif
 }
 
