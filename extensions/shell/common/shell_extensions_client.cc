@@ -10,6 +10,7 @@
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/extensions_aliases.h"
 #include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/json_feature_provider_source.h"
@@ -86,7 +87,8 @@ void ShellExtensionsClient::Initialize() {
   ManifestHandler::FinalizeRegistration();
   // TODO(jamescook): Do we need to whitelist any extensions?
 
-  PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions_);
+  PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions_,
+                                              GetExtensionsPermissionAliases());
 }
 
 const PermissionMessageProvider&

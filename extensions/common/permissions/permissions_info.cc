@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "extensions/common/alias.h"
 
 namespace extensions {
 
@@ -19,14 +20,15 @@ PermissionsInfo* PermissionsInfo::GetInstance() {
   return g_permissions_info.Pointer();
 }
 
-void PermissionsInfo::AddProvider(const PermissionsProvider& provider) {
-  auto permissions = provider.GetAllPermissions();
-  auto aliases = provider.GetAllAliases();
+void PermissionsInfo::AddProvider(
+    const PermissionsProvider& permissions_provider,
+    const std::vector<Alias>& aliases) {
+  auto permissions = permissions_provider.GetAllPermissions();
 
   for (auto& permission : permissions)
     RegisterPermission(std::move(permission));
   for (const auto& alias : aliases)
-    RegisterAlias(alias.name, alias.alias);
+    RegisterAlias(alias);
 }
 
 const APIPermissionInfo* PermissionsInfo::GetByID(APIPermission::ID id) const {
@@ -72,12 +74,10 @@ PermissionsInfo::PermissionsInfo()
 PermissionsInfo::~PermissionsInfo() {
 }
 
-void PermissionsInfo::RegisterAlias(
-    const char* name,
-    const char* alias) {
-  DCHECK(base::ContainsKey(name_map_, name));
-  DCHECK(!base::ContainsKey(name_map_, alias));
-  name_map_[alias] = name_map_[name];
+void PermissionsInfo::RegisterAlias(const Alias& alias) {
+  DCHECK(base::ContainsKey(name_map_, alias.real_name()));
+  DCHECK(!base::ContainsKey(name_map_, alias.name()));
+  name_map_[alias.name()] = name_map_[alias.real_name()];
 }
 
 void PermissionsInfo::RegisterPermission(

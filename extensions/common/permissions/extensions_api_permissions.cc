@@ -18,11 +18,6 @@ namespace extensions {
 
 namespace {
 
-const char kOldAlwaysOnTopWindowsPermission[] = "alwaysOnTopWindows";
-const char kOldFullscreenPermission[] = "fullscreen";
-const char kOldOverrideEscFullscreenPermission[] = "overrideEscFullscreen";
-const char kOldUnlimitedStoragePermission[] = "unlimited_storage";
-
 template <typename T>
 APIPermission* CreateAPIPermission(const APIPermissionInfo* permission) {
   return new T(permission);
@@ -124,21 +119,6 @@ ExtensionsAPIPermissions::GetAllPermissions() const {
     permissions.push_back(
         base::WrapUnique(new APIPermissionInfo(permissions_to_register[i])));
   return permissions;
-}
-
-std::vector<PermissionsProvider::AliasInfo>
-ExtensionsAPIPermissions::GetAllAliases() const {
-  std::vector<PermissionsProvider::AliasInfo> aliases;
-  aliases.push_back(PermissionsProvider::AliasInfo(
-      "app.window.alwaysOnTop", kOldAlwaysOnTopWindowsPermission));
-  aliases.push_back(PermissionsProvider::AliasInfo("app.window.fullscreen",
-                                                   kOldFullscreenPermission));
-  aliases.push_back(
-      PermissionsProvider::AliasInfo("app.window.fullscreen.overrideEsc",
-                                     kOldOverrideEscFullscreenPermission));
-  aliases.push_back(PermissionsProvider::AliasInfo(
-      "unlimitedStorage", kOldUnlimitedStoragePermission));
-  return aliases;
 }
 
 }  // namespace extensions

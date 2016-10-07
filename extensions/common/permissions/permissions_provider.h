@@ -19,21 +19,9 @@ class APIPermissionInfo;
 // permission message rules into ChromePermissionMessageProvider.
 class PermissionsProvider {
  public:
-  // An alias for a given permission |name|.
-  struct AliasInfo {
-    const char* name;
-    const char* alias;
-
-    AliasInfo(const char* name, const char* alias)
-        : name(name), alias(alias) {
-    }
-  };
   // Returns all the known permissions.
   virtual std::vector<std::unique_ptr<APIPermissionInfo>> GetAllPermissions()
       const = 0;
-
-  // Returns all the known permission aliases.
-  virtual std::vector<AliasInfo> GetAllAliases() const = 0;
 };
 
 }  // namespace extensions

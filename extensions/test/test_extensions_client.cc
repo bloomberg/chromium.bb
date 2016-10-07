@@ -8,6 +8,7 @@
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/extensions_aliases.h"
 #include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature_provider.h"
@@ -62,7 +63,8 @@ void TestExtensionsClient::Initialize() {
 
   // Allow the core API permissions.
   static ExtensionsAPIPermissions extensions_api_permissions;
-  PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions);
+  PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions,
+                                              GetExtensionsPermissionAliases());
 }
 
 const PermissionMessageProvider&

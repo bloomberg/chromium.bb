@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/api/manifest_features.h"
 #include "chrome/common/extensions/api/permission_features.h"
+#include "chrome/common/extensions/chrome_aliases.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
@@ -34,6 +35,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/extensions_aliases.h"
 #include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature_channel.h"
@@ -118,8 +120,10 @@ void ChromeExtensionsClient::Initialize() {
   }
 
   // Set up permissions.
-  PermissionsInfo::GetInstance()->AddProvider(chrome_api_permissions_);
-  PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions_);
+  PermissionsInfo::GetInstance()->AddProvider(chrome_api_permissions_,
+                                              GetChromePermissionAliases());
+  PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions_,
+                                              GetExtensionsPermissionAliases());
 
   // Set up the scripting whitelist.
   // Whitelist ChromeVox, an accessibility extension from Google that needs

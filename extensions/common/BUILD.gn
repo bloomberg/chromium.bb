@@ -33,6 +33,7 @@ if (enable_extensions) {
   # in. TODO(brettw): This reverse dependency should be fixed.
   static_library("common") {
     sources = [
+      "alias.h",
       "api/bluetooth/bluetooth_manifest_data.cc",
       "api/bluetooth/bluetooth_manifest_data.h",
       "api/bluetooth/bluetooth_manifest_handler.cc",
@@ -91,6 +92,8 @@ if (enable_extensions) {
       "extension_urls.cc",
       "extension_urls.h",
       "extension_utility_messages.h",
+      "extensions_aliases.cc",
+      "extensions_aliases.h",
       "extensions_client.cc",
       "extensions_client.h",
       "feature_switch.cc",

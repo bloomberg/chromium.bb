@@ -17,7 +17,6 @@ class ChromeAPIPermissions : public PermissionsProvider {
  public:
   std::vector<std::unique_ptr<APIPermissionInfo>> GetAllPermissions()
       const override;
-  std::vector<PermissionsProvider::AliasInfo> GetAllAliases() const override;
 };
 
 }  // namespace extensions

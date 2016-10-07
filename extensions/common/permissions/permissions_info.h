@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
@@ -21,6 +22,8 @@
 
 namespace extensions {
 
+class Alias;
+
 // A global object that holds the extension permission instances and provides
 // methods for accessing them.
 class PermissionsInfo {
@@ -28,7 +31,8 @@ class PermissionsInfo {
   static PermissionsInfo* GetInstance();
 
   // Initializes the permissions from the provider.
-  void AddProvider(const PermissionsProvider& provider);
+  void AddProvider(const PermissionsProvider& permission_provider,
+                   const std::vector<Alias>& aliases);
 
   // Returns the permission with the given |id|, and NULL if it doesn't exist.
   const APIPermissionInfo* GetByID(APIPermission::ID id) const;
@@ -59,7 +63,7 @@ class PermissionsInfo {
   virtual ~PermissionsInfo();
 
   // Registers an |alias| for a given permission |name|.
-  void RegisterAlias(const char* name, const char* alias);
+  void RegisterAlias(const Alias& alias);
 
   // Registers a permission with the specified attributes and flags.
   void RegisterPermission(std::unique_ptr<APIPermissionInfo> permission);
