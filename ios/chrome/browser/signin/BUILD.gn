@@ -14,6 +14,10 @@ source_set("signin") {
     "account_reconcilor_factory.h",
     "account_tracker_service_factory.cc",
     "account_tracker_service_factory.h",
+    "authentication_service.h",
+    "authentication_service.mm",
+    "authentication_service_factory.h",
+    "authentication_service_factory.mm",
     "browser_state_data_remover.h",
     "browser_state_data_remover.mm",
     "chrome_identity_service_observer_bridge.h",
@@ -44,16 +48,18 @@ source_set("signin") {
     "signin_util.mm",
   ]
   deps = [
-    "//components/pref_registry",
-    "//components/prefs",
+    "//components/browser_sync",
+    "//components/sync",
     "//ios/web",
     "//url",
   ]
   public_deps = [
     "//base",
     "//components/content_settings/core/browser",
+    "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/metrics",
+    "//components/pref_registry",
     "//components/prefs",
     "//components/signin/core/browser",
     "//components/signin/ios/browser",
@@ -67,67 +73,36 @@ source_set("signin") {
 # Temporary target to allow upstreaming authentication_service*.{cc,h}
 # without breaking downstream repository when rolling the CL. Will be
 # removed once downstream code no longer use it.
-source_set("authentication_service") {
-  sources = [
-    "authentication_service.h",
-    "authentication_service.mm",
-    "authentication_service_factory.h",
-    "authentication_service_factory.mm",
-  ]
-  deps = [
-    ":signin",
-    "//components/browser_sync",
-    "//components/prefs",
-    "//components/signin/ios/browser",
-    "//components/sync",
-    "//ios/chrome/browser",
-  ]
-  public_deps = [
-    "//base",
-    "//components/keyed_service/core",
-    "//components/keyed_service/ios",
-    "//components/pref_registry",
-    "//components/signin/core/browser",
-    "//google_apis",
-    "//ios/public/provider/chrome/browser",
-  ]
+group("authentication_service") {
 }
 
 source_set("test_support") {
   testonly = true
   sources = [
+    "authentication_service_fake.h",
+    "authentication_service_fake.mm",
     "fake_oauth2_token_service_builder.h",
     "fake_oauth2_token_service_builder.mm",
     "fake_signin_manager_builder.cc",
     "fake_signin_manager_builder.h",
   ]
   deps = [
-    ":signin",
-    "//base",
     "//components/signin/core/browser:test_support",
     "//components/signin/ios/browser",
     "//ios/chrome/browser",
+  ]
+  public_deps = [
+    ":signin",
+    "//base",
+    "//ios/public/provider/chrome/browser",
   ]
 }
 
 # Temporary target to allow upstreaming authentication_service*.{cc,h}
 # without breaking downstream repository when rolling the CL. Will be
 # removed once downstream code no longer use it.
-source_set("authentication_service_test_support") {
+group("authentication_service_test_support") {
   testonly = true
-  sources = [
-    "authentication_service_fake.h",
-    "authentication_service_fake.mm",
-  ]
-  deps = [
-    "//ios/chrome/browser",
-  ]
-  public_deps = [
-    ":authentication_service",
-    ":signin",
-    "//base",
-    "//ios/public/provider/chrome/browser",
-  ]
 }
 
 source_set("unit_tests") {
@@ -138,7 +113,6 @@ source_set("unit_tests") {
     "gaia_auth_fetcher_ios_unittest.mm",
   ]
   deps = [
-    ":authentication_service",
     ":signin",
     ":test_support",
     "//base",

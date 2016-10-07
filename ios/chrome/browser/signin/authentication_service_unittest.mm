@@ -135,7 +135,6 @@ class AuthenticationServiceTest : public PlatformTest,
     std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs =
         factory.CreateSyncable(registry.get());
     RegisterBrowserStatePrefs(registry.get());
-    AuthenticationService::RegisterPrefs(registry.get());
     return prefs;
   }
 
