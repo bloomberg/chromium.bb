@@ -4290,6 +4290,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     params.referrer_policy =
         web::ReferrerPolicyFromString(base::SysNSStringToUTF8(referrerPolicy));
   }
+  NSString* innerText = element[@"innerText"];
+  if ([innerText length] > 0) {
+    params.link_text.reset([innerText copy]);
+  }
   return params;
 }
 
