@@ -34,11 +34,11 @@ const wchar_t kTriggeredResetTimestamp[] = L"Timestamp";
 namespace {
 
 const char kTriggeredResetFieldTrialName[] = "TriggeredResetFieldTrial";
-const char kTriggeredResetOnGroup[] = "On";
+const char kTriggeredResetOffGroup[] = "Off";
 
-bool IsInTriggeredResetFieldTrial() {
+bool IsDisabledByFieldTrial() {
   return base::FieldTrialList::FindFullName(kTriggeredResetFieldTrialName) ==
-         kTriggeredResetOnGroup;
+         kTriggeredResetOffGroup;
 }
 
 }  // namespace
@@ -48,8 +48,7 @@ void TriggeredProfileResetter::Activate() {
 
   // System profiles don't contain user settings and bail out if we're not in
   // the field trial.
-  if (!profile_ || profile_->IsSystemProfile() ||
-      !IsInTriggeredResetFieldTrial()) {
+  if (!profile_ || profile_->IsSystemProfile() || IsDisabledByFieldTrial()) {
     UMA_HISTOGRAM_BOOLEAN("Profile.TriggeredReset", false);
     return;
   }
