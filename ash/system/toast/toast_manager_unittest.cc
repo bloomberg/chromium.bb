@@ -234,12 +234,7 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
   EXPECT_FALSE(toast_bounds.Intersects(shelf_bounds));
   EXPECT_EQ(round(shelf_bounds.right() +
                   (root_bounds.width() - shelf_bounds.width()) / 2.0),
-            round(precise_toast_bounds.CenterPoint().x()))
-      << "Shelf right bound: " << shelf_bounds.right()
-      << "\nRoot width: " << root_bounds.width()
-      << "\nShelf width: " << shelf_bounds.width()
-      << "\nPrecise toast center x position: "
-      << precise_toast_bounds.CenterPoint().x();
+            round(precise_toast_bounds.CenterPoint().x()));
 }
 
 TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
