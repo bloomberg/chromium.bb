@@ -851,6 +851,9 @@ void Database::runTransaction(SQLTransactionCallback* callback,
                               VoidCallback* successCallback,
                               bool readOnly,
                               const ChangeVersionData* changeVersionData) {
+  if (!getExecutionContext())
+    return;
+
   ASSERT(getExecutionContext()->isContextThread());
 // FIXME: Rather than passing errorCallback to SQLTransaction and then
 // sometimes firing it ourselves, this code should probably be pushed down
