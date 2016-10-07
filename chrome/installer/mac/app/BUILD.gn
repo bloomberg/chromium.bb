@@ -33,7 +33,6 @@ mac_app_bundle("mac_installer_app") {
   output_name = "$chrome_product_installer_full_name"
   info_plist = "Info.plist"
   extra_substitutions = [
-    "MACOSX_DEPLOYMENT_TARGET=10.9",
     "PRODUCT_INSTALLER_FULLNAME=$chrome_product_installer_full_name",
     "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
   ]
