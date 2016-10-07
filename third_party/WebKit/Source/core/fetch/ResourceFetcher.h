@@ -190,6 +190,8 @@ class CORE_EXPORT ResourceFetcher
   Resource* resourceForStaticData(const FetchRequest&,
                                   const ResourceFactory&,
                                   const SubstituteData&);
+  Resource* resourceForBlockedRequest(const FetchRequest&,
+                                      const ResourceFactory&);
 
   // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
   enum RevalidationPolicy { Use, Revalidate, Reload, Load };

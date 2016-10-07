@@ -1468,7 +1468,12 @@ void XMLHttpRequest::didFail(const ResourceError& error) {
   if (m_error)
     return;
 
-  if (error.isCancellation()) {
+  // Internally, access check violations are considered `cancellations`, but
+  // at least the mixed-content and CSP specs require them to be surfaced as
+  // network errors to the page. See:
+  //   [1] https://www.w3.org/TR/mixed-content/#algorithms,
+  //   [2] https://www.w3.org/TR/CSP3/#fetch-integration.
+  if (error.isCancellation() && !error.isAccessCheck()) {
     handleDidCancel();
     return;
   }

@@ -6,7 +6,7 @@
             var console = document.getElementById('console');
             var image = document.getElementById('image');
 
-            if (image.height && image.width)
+            if (image.naturalHeight && image.naturalWidth)
                 console.innerHTML = "PASSED";
             else
                 console.innerHTML = "FAILED";
@@ -23,7 +23,7 @@
             }
             var image = document.getElementById('image');
 
-            if (image.height || image.width) {
+            if (image.naturalHeight || image.naturalWidth) {
                 console.innerHTML = "FAILED";
                 return;
             }

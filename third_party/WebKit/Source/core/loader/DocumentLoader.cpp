@@ -190,7 +190,10 @@ Resource* DocumentLoader::startPreload(Resource::Type type,
       NOTREACHED();
   }
 
-  if (resource)
+  // CSP layout tests verify that preloads are subject to access checks by
+  // seeing if they are in the `preload started` list. Therefore do not add
+  // them to the list if the load is immediately denied.
+  if (resource && !resource->resourceError().isAccessCheck())
     fetcher()->preloadStarted(resource);
   return resource;
 }
@@ -681,7 +684,13 @@ void DocumentLoader::startLoadingMainResource() {
                             mainResourceLoadOptions);
   m_mainResource =
       RawResource::fetchMainResource(fetchRequest, fetcher(), m_substituteData);
-  if (!m_mainResource) {
+
+  // PlzNavigate:
+  // The final access checks are still performed here, potentially rejecting
+  // the "provisional" load, but the browser side already expects the renderer
+  // to be able to unconditionally commit.
+  if (!m_mainResource || (m_frame->settings()->browserSideNavigationEnabled() &&
+                          m_mainResource->errorOccurred())) {
     m_request = ResourceRequest(blankURL());
     maybeLoadEmpty();
     return;

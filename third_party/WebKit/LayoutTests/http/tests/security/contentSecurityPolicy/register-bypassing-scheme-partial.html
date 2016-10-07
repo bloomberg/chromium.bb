@@ -34,7 +34,7 @@
         return produceOutput(new Promise(function(resolve, reject) {
             var iframe = document.createElement('iframe');
             iframe.onload = function() {
-                var didLoad = iframe.contentDocument.styleSheets.length > 0;
+                var didLoad = iframe.contentDocument.styleSheets.length > 0 && iframe.contentDocument.styleSheets[0].rules.length > 0;
                 (shouldLoad == didLoad) ? resolve() : reject(new Error());
                 setTimeout(function() { iframe.remove(); }, 0);
             };

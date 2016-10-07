@@ -29,7 +29,8 @@
 <script>
     async_test(t => {
         window.onload = t.step_func_done(_ => {
-            assert_equals(document.styleSheets.length, 0);
+            assert_equals(document.styleSheets.length, 1);
+            assert_equals(document.styleSheets[0].rules.length, 0);
         });
     }, "Incorrectly nonced stylesheets do not load.");
 </script>
