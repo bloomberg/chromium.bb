@@ -18,7 +18,6 @@
 
 namespace content {
 
-class RenderViewHost;
 class WebContents;
 
 // Extends WebContentsObserver for providing a public Java API for some of the

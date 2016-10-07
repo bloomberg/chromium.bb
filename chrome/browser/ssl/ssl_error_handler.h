@@ -31,7 +31,6 @@ class Clock;
 }
 
 namespace content {
-class RenderViewHost;
 class WebContents;
 }
 

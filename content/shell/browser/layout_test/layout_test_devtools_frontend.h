@@ -11,7 +11,6 @@
 
 namespace content {
 
-class RenderViewHost;
 class Shell;
 class WebContents;
 

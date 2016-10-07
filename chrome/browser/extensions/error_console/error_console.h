@@ -26,7 +26,6 @@ namespace content {
 class BrowserContext;
 class NotificationDetails;
 class NotificationSource;
-class RenderViewHost;
 }
 
 class Profile;

@@ -36,7 +36,6 @@ class WindowTreeClient;
 
 namespace content {
 class BrowserContext;
-class RenderViewHost;
 class WebContents;
 }
 

@@ -17,10 +17,6 @@
 
 struct PrintHostMsg_DidPrintPage_Params;
 
-namespace content {
-class RenderViewHost;
-}
-
 namespace printing {
 
 class JobEventDetails;

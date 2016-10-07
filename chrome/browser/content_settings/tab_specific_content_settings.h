@@ -28,10 +28,6 @@
 
 class HostContentSettingsMap;
 
-namespace content {
-class RenderViewHost;
-}
-
 namespace net {
 class CookieOptions;
 }

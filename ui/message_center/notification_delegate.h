@@ -13,10 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "ui/message_center/message_center_export.h"
 
-namespace content {
-class RenderViewHost;
-}
-
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
 namespace views {
 class View;

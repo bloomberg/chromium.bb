@@ -13,10 +13,6 @@ namespace base {
 class RefCountedMemory;
 }
 
-namespace content {
-class RenderViewHost;
-}
-
 class MdDownloadsDOMHandler;
 
 class MdDownloadsUI : public content::WebUIController {

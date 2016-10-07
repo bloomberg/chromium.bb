@@ -14,7 +14,6 @@
 
 namespace content {
 class RenderFrameHost;
-class RenderViewHost;
 }
 
 namespace extensions {

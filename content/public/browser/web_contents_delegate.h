@@ -44,7 +44,6 @@ class DownloadItem;
 class JavaScriptDialogManager;
 class PageState;
 class RenderFrameHost;
-class RenderViewHost;
 class SessionStorageNamespace;
 class WebContents;
 class WebContentsImpl;
@@ -56,7 +55,7 @@ struct NativeWebKeyboardEvent;
 struct Referrer;
 struct SecurityStyleExplanations;
 struct SSLStatus;
-}
+}  // namespace content
 
 namespace gfx {
 class Point;

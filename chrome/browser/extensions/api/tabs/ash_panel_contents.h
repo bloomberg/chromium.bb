@@ -16,14 +16,6 @@
 
 class GURL;
 
-namespace content {
-class RenderViewHost;
-}
-
-namespace extensions {
-struct DraggableRegion;
-}
-
 // extensions::AppWindowContents class specific to panel windows created by v1
 // extenstions. This class maintains a WebContents instance and observes it for
 // the purpose of passing messages to the extensions system. It also creates

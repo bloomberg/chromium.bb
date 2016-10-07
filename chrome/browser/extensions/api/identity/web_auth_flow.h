@@ -21,8 +21,6 @@ class WebAuthFlowTest;
 namespace content {
 class NotificationDetails;
 class NotificationSource;
-class RenderViewHost;
-class WebContents;
 }
 
 namespace extensions {

@@ -29,7 +29,6 @@ class SkCanvas;
 class SkPicture;
 
 namespace content {
-class RenderViewHost;
 class WebContents;
 }
 

@@ -25,7 +25,6 @@ class Widget;
 }
 
 namespace content {
-class RenderViewHost;
 class WebContents;
 }
 

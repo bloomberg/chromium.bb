@@ -8,14 +8,7 @@
 #include "base/callback.h"
 #include "components/guest_view/browser/guest_view_base.h"
 
-namespace content {
-class RenderViewHost;
-class WebContents;
-}  // namespace content
-
 namespace extensions {
-
-class WebViewGuest;
 
 namespace api {
 namespace web_view_internal {
