@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_SERVICE_IMPL_H_
-#define CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_SERVICE_IMPL_H_
+#ifndef CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_SERVICE_IMPL_H_
+#define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_SERVICE_IMPL_H_
 
+#include "base/optional.h"
+#include "content/public/common/media_metadata.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.h"
 
@@ -12,6 +14,7 @@ namespace content {
 
 class RenderFrameHost;
 
+// There is one MediaSessionService per frame.
 class MediaSessionServiceImpl : public blink::mojom::MediaSessionService {
  public:
   ~MediaSessionServiceImpl() override;
@@ -29,7 +32,9 @@ class MediaSessionServiceImpl : public blink::mojom::MediaSessionService {
 
   RenderFrameHost* render_frame_host_;
 
-  // RAII binding of |this| to an MediaSession interface request.
+  base::Optional<MediaMetadata> metadata_;
+
+  // RAII binding of |this| to an MediaSessionService interface request.
   // The binding is removed when binding_ is cleared or goes out of scope.
   std::unique_ptr<mojo::Binding<blink::mojom::MediaSessionService>> binding_;
 
@@ -38,4 +43,4 @@ class MediaSessionServiceImpl : public blink::mojom::MediaSessionService {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_SERVICE_IMPL_H_
+#endif  // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_SERVICE_IMPL_H_

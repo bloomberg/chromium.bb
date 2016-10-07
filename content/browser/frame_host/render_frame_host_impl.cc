@@ -37,7 +37,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/media/android/media_session_service_impl.h"
+#include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/presentation/presentation_service_impl.h"
@@ -2167,12 +2167,13 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   GetInterfaceRegistry()->AddInterface(base::Bind(
       &PresentationServiceImpl::CreateMojoService, base::Unretained(this)));
 
+  GetInterfaceRegistry()->AddInterface(
+      base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
+
 #if defined(OS_ANDROID)
   GetInterfaceRegistry()->AddInterface(
       GetGlobalJavaInterfaces()
           ->CreateInterfaceFactory<device::VibrationManager>());
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 #else
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&device::VibrationManagerImpl::Create));

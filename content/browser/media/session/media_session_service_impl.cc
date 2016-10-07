@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/android/media_session_service_impl.h"
+#include "content/browser/media/session/media_session_service_impl.h"
 
-#include "base/strings/utf_string_conversions.h"
-#include "content/browser/media/android/browser_media_session_manager.h"
-#include "content/browser/media/android/media_web_contents_observer_android.h"
+#include "content/browser/media/session/media_metadata_sanitizer.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/media_metadata.h"
 
 namespace content {
 
@@ -31,12 +28,18 @@ void MediaSessionServiceImpl::Create(
 
 void MediaSessionServiceImpl::SetMetadata(
     const base::Optional<content::MediaMetadata>& metadata) {
-  WebContentsImpl* contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderFrameHost(render_frame_host_));
-  DCHECK(contents);
-  MediaWebContentsObserverAndroid::FromWebContents(contents)
-      ->GetMediaSessionManager(render_frame_host_)
-      ->OnSetMetadata(0, metadata);
+  // When receiving a MediaMetadata, the browser process can't trust that it is
+  // coming from a known and secure source. It must be processed accordingly.
+  if (metadata.has_value() &&
+      !MediaMetadataSanitizer::CheckSanity(metadata.value())) {
+    render_frame_host_->GetProcess()->ShutdownForBadMessage(
+        RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
+    return;
+  }
+
+  metadata_ = metadata;
+
+  NOTIMPLEMENTED();
 }
 
 void MediaSessionServiceImpl::Bind(

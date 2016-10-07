@@ -207,8 +207,6 @@ source_set("common") {
     "media/cdm_messages_enums.h",
     "media/media_devices.cc",
     "media/media_devices.h",
-    "media/media_metadata_sanitizer.cc",
-    "media/media_metadata_sanitizer.h",
     "media/media_player_delegate_messages.h",
     "media/media_player_messages_android.h",
     "media/media_stream_messages.h",
