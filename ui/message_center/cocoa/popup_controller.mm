@@ -116,9 +116,10 @@
 
     [window setLevel:NSFloatingWindowLevel];
     [window setExcludedFromWindowsMenu:YES];
-    [window setCollectionBehavior:
-        NSWindowCollectionBehaviorIgnoresCycle |
-        NSWindowCollectionBehaviorFullScreenAuxiliary];
+    [window
+        setCollectionBehavior:NSWindowCollectionBehaviorCanJoinAllSpaces |
+                              NSWindowCollectionBehaviorIgnoresCycle |
+                              NSWindowCollectionBehaviorFullScreenAuxiliary];
 
     [window setHasShadow:YES];
     [window setContentView:[notificationController_ view]];
