@@ -168,8 +168,8 @@ class NTPSnippetsFetcherTest : public testing::Test {
         fake_signin_manager_.get(), fake_token_service_.get(),
         scoped_refptr<net::TestURLRequestContextGetter>(
             new net::TestURLRequestContextGetter(mock_task_runner_.get())),
-        pref_service_.get(), &category_factory_, base::Bind(&ParseJsonDelayed),
-        kAPIKey);
+        pref_service_.get(), &category_factory_, nullptr,
+        base::Bind(&ParseJsonDelayed), kAPIKey);
 
     snippets_fetcher_->SetCallback(
         base::Bind(&MockSnippetsAvailableCallback::WrappedRun,
@@ -250,6 +250,9 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
   params.excluded_ids = {"1234567890"};
   params.count_to_fetch = 25;
   params.interactive_request = false;
+  params.ui_language.frequency = 0.0f;
+  params.other_top_language.frequency = 0.0f;
+
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_READER_API;
   EXPECT_THAT(params.BuildRequest(),
@@ -311,7 +314,8 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestUnauthenticated) {
   params.count_to_fetch = 10;
   params.excluded_ids = {};
   params.interactive_request = true;
-
+  params.ui_language.frequency = 0.0f;
+  params.other_top_language.frequency = 0.0f;
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_READER_API;
   EXPECT_THAT(params.BuildRequest(),
@@ -363,6 +367,8 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestExcludedIds) {
   for (int i = 0; i < 200; ++i) {
     params.excluded_ids.insert(base::StringPrintf("%03d", i));
   }
+  params.ui_language.frequency = 0.0f;
+  params.other_top_language.frequency = 0.0f;
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_CONTENT_SUGGESTIONS_API;
   EXPECT_THAT(params.BuildRequest(),
@@ -393,6 +399,82 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestExcludedIds) {
                          // Truncated to 100 entries. Currently, they happen to
                          // be those lexically first.
                          "  ]"
+                         "}"));
+}
+
+TEST_F(NTPSnippetsFetcherTest, BuildRequestWithTwoLanguages) {
+  NTPSnippetsFetcher::RequestParams params;
+  params.only_return_personalized_results = false;
+  params.host_restricts = {};
+  params.count_to_fetch = 10;
+  params.interactive_request = true;
+  params.ui_language.language_code = "en";
+  params.ui_language.frequency = 0.5f;
+  params.other_top_language.language_code = "de";
+  params.other_top_language.frequency = 0.5f;
+
+  params.fetch_api = NTPSnippetsFetcher::CHROME_CONTENT_SUGGESTIONS_API;
+  EXPECT_THAT(params.BuildRequest(),
+              EqualsJSON("{"
+                         "  \"regularlyVisitedHostNames\": [],"
+                         "  \"priority\": \"USER_ACTION\","
+                         "  \"excludedSuggestionIds\": [],"
+                         "  \"top_languages\": ["
+                         "    {"
+                         "      \"language\" : \"en\","
+                         "      \"frequency\" : 0.5"
+                         "    },"
+                         "    {"
+                         "      \"language\" : \"de\","
+                         "      \"frequency\" : 0.5"
+                         "    }"
+                         "  ]"
+                         "}"));
+}
+
+TEST_F(NTPSnippetsFetcherTest, BuildRequestWithUILanguageOnly) {
+  NTPSnippetsFetcher::RequestParams params;
+  params.only_return_personalized_results = false;
+  params.host_restricts = {};
+  params.count_to_fetch = 10;
+  params.interactive_request = true;
+  params.ui_language.language_code = "en";
+  params.ui_language.frequency = 0.5f;
+  params.other_top_language.frequency = 0.0f;
+
+  params.fetch_api = NTPSnippetsFetcher::CHROME_CONTENT_SUGGESTIONS_API;
+  EXPECT_THAT(params.BuildRequest(),
+              EqualsJSON("{"
+                         "  \"regularlyVisitedHostNames\": [],"
+                         "  \"priority\": \"USER_ACTION\","
+                         "  \"excludedSuggestionIds\": [],"
+                         "  \"top_languages\": [{"
+                         "    \"language\" : \"en\","
+                         "    \"frequency\" : 0.5"
+                         "  }]"
+                         "}"));
+}
+
+TEST_F(NTPSnippetsFetcherTest, BuildRequestWithOtherLanguageOnly) {
+  NTPSnippetsFetcher::RequestParams params;
+  params.only_return_personalized_results = false;
+  params.host_restricts = {};
+  params.count_to_fetch = 10;
+  params.interactive_request = true;
+  params.ui_language.frequency = 0.0f;
+  params.other_top_language.language_code = "de";
+  params.other_top_language.frequency = 0.5f;
+
+  params.fetch_api = NTPSnippetsFetcher::CHROME_CONTENT_SUGGESTIONS_API;
+  EXPECT_THAT(params.BuildRequest(),
+              EqualsJSON("{"
+                         "  \"regularlyVisitedHostNames\": [],"
+                         "  \"priority\": \"USER_ACTION\","
+                         "  \"excludedSuggestionIds\": [],"
+                         "  \"top_languages\": [{"
+                         "    \"language\" : \"de\","
+                         "    \"frequency\" : 0.5"
+                         "  }]"
                          "}"));
 }
 

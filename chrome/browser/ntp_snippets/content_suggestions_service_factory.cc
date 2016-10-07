@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/translate/language_model_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -42,6 +43,7 @@
 #include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/translate/core/browser/language_model.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -81,6 +83,7 @@ using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::TabDelegateSyncAdapter;
 using suggestions::ImageDecoderImpl;
 using syncer::SyncService;
+using translate::LanguageModel;
 
 namespace {
 
@@ -125,6 +128,7 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
                              OAuth2TokenService* token_service,
                              ContentSuggestionsService* service,
                              CategoryFactory* category_factory,
+                             LanguageModel* language_model,
                              PrefService* pref_service,
                              Profile* profile) {
   scoped_refptr<net::URLRequestContextGetter> request_context =
@@ -147,12 +151,12 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
   auto provider = base::MakeUnique<NTPSnippetsService>(
       service, service->category_factory(), pref_service,
       g_browser_process->GetApplicationLocale(), service->user_classifier(),
-      scheduler,
-      base::MakeUnique<NTPSnippetsFetcher>(
-          signin_manager, token_service, request_context, pref_service,
-          category_factory, base::Bind(&safe_json::SafeJsonParser::Parse),
-          is_stable_channel ? google_apis::GetAPIKey()
-                            : google_apis::GetNonStableAPIKey()),
+      scheduler, base::MakeUnique<NTPSnippetsFetcher>(
+                     signin_manager, token_service, request_context,
+                     pref_service, category_factory, language_model,
+                     base::Bind(&safe_json::SafeJsonParser::Parse),
+                     is_stable_channel ? google_apis::GetAPIKey()
+                                       : google_apis::GetNonStableAPIKey()),
       base::MakeUnique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
                                          request_context.get()),
       base::MakeUnique<ImageDecoderImpl>(),
@@ -249,6 +253,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
+  LanguageModel* language_model =
+      LanguageModelFactory::GetInstance()->GetForBrowserContext(profile);
 
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(
@@ -274,7 +280,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
   if (base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature)) {
     RegisterArticleProvider(signin_manager, token_service, service,
-                            category_factory, pref_service, profile);
+                            category_factory, language_model, pref_service,
+                            profile);
   }
 
   if (base::FeatureList::IsEnabled(

@@ -92,6 +92,7 @@ static_library("ntp_snippets") {
     "//components/sessions",
     "//components/strings",
     "//components/sync_sessions",
+    "//components/translate/core/browser",
     "//components/variations",
     "//components/variations/net",
     "//third_party/icu/",

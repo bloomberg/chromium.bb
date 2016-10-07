@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
+#include "components/translate/core/browser/language_model.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -26,6 +27,7 @@ class PrefService;
 class SigninManagerBase;
 
 namespace base {
+class ListValue;
 class Value;
 }  // namespace base
 
@@ -91,6 +93,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       PrefService* pref_service,
       CategoryFactory* category_factory,
+      translate::LanguageModel* language_model,
       const ParseJSONCallback& parse_json_callback,
       const std::string& api_key);
   ~NTPSnippetsFetcher() override;
@@ -148,6 +151,12 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestAuthenticated);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestUnauthenticated);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestExcludedIds);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest,
+                           BuildRequestWithTwoLanguages);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest,
+                           BuildRequestWithUILanguageOnly);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest,
+                           BuildRequestWithOtherLanguageOnly);
 
   enum FetchAPI {
     CHROME_READER_API,
@@ -163,6 +172,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     std::set<std::string> excluded_ids;
     int count_to_fetch;
     bool interactive_request;
+    translate::LanguageModel::LanguageInfo ui_language;
+    translate::LanguageModel::LanguageInfo other_top_language;
 
     RequestParams();
     ~RequestParams();
@@ -173,6 +184,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   void FetchSnippetsImpl(const GURL& url,
                          const std::string& auth_header,
                          const std::string& request);
+  void SetUpCommonFetchingParameters(RequestParams* params) const;
   void FetchSnippetsNonAuthenticated();
   void FetchSnippetsAuthenticated(const std::string& account_id,
                                   const std::string& oauth_access_token);
@@ -208,7 +220,10 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // Holds the URL request context.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
+  // Weak references, not owned.
   CategoryFactory* const category_factory_;
+  translate::LanguageModel* const language_model_;
+
   const ParseJSONCallback parse_json_callback_;
   base::TimeTicks fetch_start_time_;
   std::string last_status_;

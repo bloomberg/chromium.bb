@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -40,6 +41,7 @@ using net::URLFetcher;
 using net::URLRequestContextGetter;
 using net::HttpRequestHeaders;
 using net::URLRequestStatus;
+using translate::LanguageModel;
 
 namespace ntp_snippets {
 
@@ -64,6 +66,11 @@ const char kPersonalizationNonPersonalString[] = "non_personal";
 const char kPersonalizationBothString[] = "both";  // the default value
 
 const int kMaxExcludedIds = 100;
+
+// Variation parameter for sending LanguageModel info to the server.
+const char kSendTopLanguagesName[] = "send_top_languages";
+const char kSendTopLanguagesEnabled[] = "true";
+const char kSendTopLanguagesDisabled[] = "false";
 
 std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
   switch (result) {
@@ -117,6 +124,19 @@ std::string GetFetchEndpoint() {
   return endpoint.empty() ? kChromeReaderServer : endpoint;
 }
 
+bool IsSendingTopLanguagesEnabled() {
+  std::string send_top_languages = variations::GetVariationParamValueByFeature(
+        ntp_snippets::kArticleSuggestionsFeature, kSendTopLanguagesName);
+  if (send_top_languages == kSendTopLanguagesEnabled)
+    return true;
+  if (!send_top_languages.empty() &&
+      send_top_languages != kSendTopLanguagesDisabled) {
+    LOG(WARNING) << "Invalid value \"" << send_top_languages
+                 << "\" for variation parameter " << kSendTopLanguagesName;
+  }
+  return false;
+}
+
 bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
   if (endpoint == GURL(kChromeReaderServer))
     return false;
@@ -163,9 +183,33 @@ std::string PosixLocaleFromBCP47Language(const std::string& language_code) {
   // Translate the input to a posix locale.
   uloc_forLanguageTag(language_code.c_str(), locale, ULOC_FULLNAME_CAPACITY,
                       nullptr, &error);
-  DLOG_IF(WARNING, U_ZERO_ERROR != error)
-      << "Error in translating language code to a locale string: " << error;
+  if (error != U_ZERO_ERROR) {
+    DLOG(WARNING) << "Error in translating language code to a locale string: "
+                  << error;
+    return std::string();
+  }
   return locale;
+}
+
+std::string ISO639FromPosixLocale(const std::string& locale) {
+  char language[ULOC_LANG_CAPACITY];
+  UErrorCode error = U_ZERO_ERROR;
+  uloc_getLanguage(locale.c_str(), language, ULOC_LANG_CAPACITY, &error);
+  if (error != U_ZERO_ERROR) {
+    DLOG(WARNING)
+        << "Error in translating locale string to a ISO639 language code: "
+        << error;
+    return std::string();
+  }
+  return language;
+}
+
+void AppendLanguageInfoToList(base::ListValue* list,
+                              const LanguageModel::LanguageInfo& info) {
+  auto lang = base::MakeUnique<base::DictionaryValue>();
+  lang->SetString("language", info.language_code);
+  lang->SetDouble("frequency", info.frequency);
+  list->Append(std::move(lang));
 }
 
 }  // namespace
@@ -185,6 +229,7 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
     scoped_refptr<URLRequestContextGetter> url_request_context_getter,
     PrefService* pref_service,
     CategoryFactory* category_factory,
+    LanguageModel* language_model,
     const ParseJSONCallback& parse_json_callback,
     const std::string& api_key)
     : OAuth2TokenService::Consumer("ntp_snippets"),
@@ -193,6 +238,7 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
       waiting_for_refresh_token_(false),
       url_request_context_getter_(std::move(url_request_context_getter)),
       category_factory_(category_factory),
+      language_model_(language_model),
       parse_json_callback_(parse_json_callback),
       count_to_fetch_(0),
       fetch_url_(GetFetchEndpoint()),
@@ -359,6 +405,16 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
       }
       request->Set("excludedSuggestionIds", std::move(excluded));
 
+      if (ui_language.frequency == 0 && other_top_language.frequency == 0)
+        break;
+
+      auto language_list = base::MakeUnique<base::ListValue>();
+      if (ui_language.frequency > 0)
+        AppendLanguageInfoToList(language_list.get(), ui_language);
+      if (other_top_language.frequency > 0)
+        AppendLanguageInfoToList(language_list.get(), other_top_language);
+      request->Set("top_languages", std::move(language_list));
+
       // TODO(sfiera): support authentication and personalization
       // TODO(sfiera): support count_to_fetch
       break;
@@ -411,18 +467,46 @@ bool NTPSnippetsFetcher::UsesAuthentication() const {
           personalization_ == Personalization::kBoth);
 }
 
+void NTPSnippetsFetcher::SetUpCommonFetchingParameters(
+    RequestParams* params) const {
+  params->fetch_api = fetch_api_;
+  params->host_restricts = hosts_;
+  params->user_locale = locale_;
+  params->excluded_ids = excluded_ids_;
+  params->count_to_fetch = count_to_fetch_;
+  params->interactive_request = interactive_request_;
+  // TODO(jkrcal): add the initializers into the struct and remove it from here
+  // and from the unit-tests (building the request).
+  params->ui_language.frequency = 0;
+  params->other_top_language.frequency = 0;
+
+  // TODO(jkrcal): Add language model factory for iOS and add fakes to tests so
+  // that |language_model_| is never nullptr. Remove this check and add a DCHECK
+  // into the constructor.
+  if (!language_model_ || !IsSendingTopLanguagesEnabled())
+    return;
+
+  params->ui_language.language_code = ISO639FromPosixLocale(locale_);
+  params->ui_language.frequency =
+      language_model_->GetLanguageFrequency(params->ui_language.language_code);
+
+  std::vector<LanguageModel::LanguageInfo> top_languages =
+      language_model_->GetTopLanguages();
+  for (const LanguageModel::LanguageInfo& info : top_languages) {
+    if (info.language_code != params->ui_language.language_code) {
+      params->other_top_language = info;
+      break;
+    }
+  }
+}
+
 void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated() {
   // When not providing OAuth token, we need to pass the Google API key.
   GURL url(base::StringPrintf(kSnippetsServerNonAuthorizedFormat,
                               fetch_url_.spec().c_str(), api_key_.c_str()));
 
   RequestParams params;
-  params.fetch_api = fetch_api_;
-  params.host_restricts = hosts_;
-  params.excluded_ids = excluded_ids_;
-  params.count_to_fetch = count_to_fetch_;
-  params.interactive_request = interactive_request_;
-  params.user_locale = locale_;
+  SetUpCommonFetchingParameters(&params);
   FetchSnippetsImpl(url, std::string(), params.BuildRequest());
 }
 
@@ -430,15 +514,10 @@ void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
     const std::string& account_id,
     const std::string& oauth_access_token) {
   RequestParams params;
-  params.fetch_api = fetch_api_;
+  SetUpCommonFetchingParameters(&params);
   params.obfuscated_gaia_id = account_id;
   params.only_return_personalized_results =
       personalization_ == Personalization::kPersonal;
-  params.user_locale = locale_;
-  params.host_restricts = hosts_;
-  params.excluded_ids = excluded_ids_;
-  params.count_to_fetch = count_to_fetch_;
-  params.interactive_request = interactive_request_;
   // TODO(jkrcal, treib): Add unit-tests for authenticated fetches.
   FetchSnippetsImpl(fetch_url_,
                     base::StringPrintf(kAuthorizationRequestHeaderFormat,

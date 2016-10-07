@@ -8,6 +8,7 @@ include_rules = [
   "+components/prefs",
   "+components/signin",
   "+components/sync/driver",
+  "+components/translate/core/browser",
   "+components/variations",
   "+grit/components_strings.h",
   "+net/base",

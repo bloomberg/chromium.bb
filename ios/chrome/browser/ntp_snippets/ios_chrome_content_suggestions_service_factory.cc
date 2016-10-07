@@ -157,7 +157,7 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
             service->user_classifier(), scheduler,
             base::MakeUnique<NTPSnippetsFetcher>(
                 signin_manager, token_service, request_context, prefs,
-                service->category_factory(), base::Bind(&ParseJson),
+                service->category_factory(), nullptr, base::Bind(&ParseJson),
                 GetChannel() == version_info::Channel::STABLE
                     ? google_apis::GetAPIKey()
                     : google_apis::GetNonStableAPIKey()),
