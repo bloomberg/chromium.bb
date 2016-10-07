@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/common/system/system_notifier.h"
+#include "ash/common/test/test_session_state_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"

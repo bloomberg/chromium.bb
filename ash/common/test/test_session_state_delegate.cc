@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/test_session_state_delegate.h"
+#include "ash/common/test/test_session_state_delegate.h"
 
 #include <algorithm>
 #include <string>
@@ -102,8 +102,7 @@ TestSessionStateDelegate::TestSessionStateDelegate()
   user_list_.push_back(base::MakeUnique<MockUserInfo>("someone@tray"));
 }
 
-TestSessionStateDelegate::~TestSessionStateDelegate() {
-}
+TestSessionStateDelegate::~TestSessionStateDelegate() {}
 
 void TestSessionStateDelegate::AddUser(const AccountId& account_id) {
   user_list_.push_back(

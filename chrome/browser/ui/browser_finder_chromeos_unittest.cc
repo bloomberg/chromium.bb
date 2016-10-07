@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/browser_finder.h"
 
+#include "ash/common/test/test_session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/test_session_state_delegate.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
