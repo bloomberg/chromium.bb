@@ -14,6 +14,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -109,6 +110,7 @@ public class ManageSpaceActivityTest extends ChromeActivityTestCaseBase<ChromeAc
 
     @MediumTest
     @RetryOnFailure
+    @Feature({"SiteEngagement"})
     public void testClearUnimportantOnly() throws Exception {
         final String cookiesUrl =
                 mTestServer.getURL("/chrome/test/data/android/storage_persistance.html");
@@ -144,6 +146,7 @@ public class ManageSpaceActivityTest extends ChromeActivityTestCaseBase<ChromeAc
     }
 
     @MediumTest
+    @Feature({"SiteEngagement"})
     public void testClearUnimporantWithoutChromeStart() throws Exception {
         ManageSpaceActivity manageSpaceActivity = startManageSpaceActivity();
         // Click 'clear' in the CBD screen.
