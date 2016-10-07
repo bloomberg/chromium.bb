@@ -28,5 +28,5 @@ partial interface Navigator {
     [RuntimeEnabled=QuotaPromise] readonly attribute StorageQuota storageQuota;
 
     // https://storage.spec.whatwg.org/#api
-    [OriginTrialEnabled=DurableStorage] readonly attribute StorageManager storage;
+    [RuntimeEnabled=DurableStorage] readonly attribute StorageManager storage;
 };

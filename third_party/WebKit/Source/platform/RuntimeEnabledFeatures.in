@@ -83,7 +83,7 @@ DeviceLight status=experimental
 DisplayList2dCanvas status=stable
 DocumentWriteEvaluator
 DOMConvenienceAPI status=stable
-DurableStorage status=experimental, origin_trial_feature_name=DurableStorage
+DurableStorage status=stable
 ExpensiveBackgroundTimerThrottling status=experimental
 FontCacheScaling status=test
 ForceDisplayList2dCanvas

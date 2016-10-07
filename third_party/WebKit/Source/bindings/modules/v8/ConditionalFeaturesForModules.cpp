@@ -47,14 +47,6 @@ void installConditionalFeaturesForModules(
   const DOMWrapperWorld& world = scriptState->world();
   v8::Local<v8::Object> global = scriptState->context()->Global();
   if (wrapperTypeInfo == &V8Navigator::wrapperTypeInfo) {
-    if (RuntimeEnabledFeatures::durableStorageEnabled() ||
-        (originTrialContext &&
-         originTrialContext->isFeatureEnabled("DurableStorage"))) {
-      V8NavigatorPartial::installDurableStorage(
-          isolate, world, v8::Local<v8::Object>(), prototypeObject,
-          interfaceObject);  // Need to specify interface object explicitly to
-                             // avoid looping back here
-    }
     if (RuntimeEnabledFeatures::webBluetoothEnabled() ||
         (originTrialContext &&
          originTrialContext->isFeatureEnabled("WebBluetooth"))) {
@@ -75,21 +67,7 @@ void installConditionalFeaturesForModules(
       V8NavigatorPartial::installWebUSB(isolate, world, v8::Local<v8::Object>(),
                                         prototypeObject, interfaceObject);
     }
-  } else if (wrapperTypeInfo == &V8WorkerNavigator::wrapperTypeInfo) {
-    if (RuntimeEnabledFeatures::durableStorageEnabled() ||
-        (originTrialContext &&
-         originTrialContext->isFeatureEnabled("DurableStorage"))) {
-      V8WorkerNavigatorPartial::installDurableStorage(
-          isolate, world, v8::Local<v8::Object>(), prototypeObject,
-          interfaceObject);
-    }
   } else if (wrapperTypeInfo == &V8Window::wrapperTypeInfo) {
-    if (RuntimeEnabledFeatures::durableStorageEnabled() ||
-        (originTrialContext &&
-         originTrialContext->isFeatureEnabled("DurableStorage"))) {
-      V8WindowPartial::installDurableStorage(isolate, world, global,
-                                             prototypeObject, interfaceObject);
-    }
     if (RuntimeEnabledFeatures::webBluetoothEnabled() ||
         (originTrialContext &&
          originTrialContext->isFeatureEnabled("WebBluetooth"))) {
@@ -102,28 +80,7 @@ void installConditionalFeaturesForModules(
       V8WindowPartial::installWebUSB(isolate, world, global, prototypeObject,
                                      interfaceObject);
     }
-  } else if (wrapperTypeInfo == &V8SharedWorkerGlobalScope::wrapperTypeInfo) {
-    if (RuntimeEnabledFeatures::durableStorageEnabled() ||
-        (originTrialContext &&
-         originTrialContext->isFeatureEnabled("DurableStorage"))) {
-      V8SharedWorkerGlobalScopePartial::installDurableStorage(
-          isolate, world, global, prototypeObject, interfaceObject);
-    }
-  } else if (wrapperTypeInfo ==
-             &V8DedicatedWorkerGlobalScope::wrapperTypeInfo) {
-    if (RuntimeEnabledFeatures::durableStorageEnabled() ||
-        (originTrialContext &&
-         originTrialContext->isFeatureEnabled("DurableStorage"))) {
-      V8DedicatedWorkerGlobalScopePartial::installDurableStorage(
-          isolate, world, global, prototypeObject, interfaceObject);
-    }
   } else if (wrapperTypeInfo == &V8ServiceWorkerGlobalScope::wrapperTypeInfo) {
-    if (RuntimeEnabledFeatures::durableStorageEnabled() ||
-        (originTrialContext &&
-         originTrialContext->isFeatureEnabled("DurableStorage"))) {
-      V8ServiceWorkerGlobalScope::installDurableStorage(
-          isolate, world, global, prototypeObject, interfaceObject);
-    }
     if (RuntimeEnabledFeatures::foreignFetchEnabled() ||
         (originTrialContext &&
          originTrialContext->isFeatureEnabled("ForeignFetch"))) {

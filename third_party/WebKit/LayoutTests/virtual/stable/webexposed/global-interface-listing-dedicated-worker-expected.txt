@@ -548,6 +548,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method unregister
 [Worker]     method update
 [Worker]     setter onupdatefound
+[Worker] interface StorageManager
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method persisted
 [Worker] interface SubtleCrypto
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
@@ -692,6 +696,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter permissions
 [Worker]     getter platform
 [Worker]     getter product
+[Worker]     getter storage
 [Worker]     getter userAgent
 [Worker]     method constructor
 [Worker] interface XMLHttpRequest : XMLHttpRequestEventTarget

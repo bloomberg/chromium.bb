@@ -537,6 +537,9 @@ interface ServiceWorkerRegistration : EventTarget
     method unregister
     method update
     setter onupdatefound
+interface StorageManager
+    method constructor
+    method persisted
 interface SubtleCrypto
     method constructor
     method decrypt
@@ -683,6 +686,7 @@ interface WorkerNavigator
     getter permissions
     getter platform
     getter product
+    getter storage
     getter userAgent
     method constructor
 interface webkitIDBCursor

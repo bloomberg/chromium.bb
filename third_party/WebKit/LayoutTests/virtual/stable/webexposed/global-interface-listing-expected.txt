@@ -3463,6 +3463,7 @@ interface Navigator
     getter product
     getter productSub
     getter serviceWorker
+    getter storage
     getter userAgent
     getter vendor
     getter vendorSub
@@ -5357,6 +5358,11 @@ interface StorageEvent : Event
     getter url
     method constructor
     method initStorageEvent
+interface StorageManager
+    attribute @@toStringTag
+    method constructor
+    method persist
+    method persisted
 interface StyleSheet
     attribute @@toStringTag
     getter disabled

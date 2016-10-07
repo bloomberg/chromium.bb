@@ -6,7 +6,7 @@
 
 [
     Exposed=(Window,Worker),
-    OriginTrialEnabled=DurableStorage,
+    RuntimeEnabled=DurableStorage,
 ] interface StorageManager {
     [CallWith=ScriptState, MeasureAs=DurableStoragePersisted] Promise<boolean> persisted();
     [Exposed=Window, CallWith=ScriptState, MeasureAs=DurableStoragePersist] Promise<boolean> persist();
