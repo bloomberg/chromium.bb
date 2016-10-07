@@ -889,8 +889,6 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   content::WebContents* popup = OpenPopup(main_frame, popup_url);
   EXPECT_NE(popup, tab);
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
-  EXPECT_EQ(1u, pm->GetAllFrames().size());
   EXPECT_NE(popup->GetRenderProcessHost(), main_frame->GetProcess());
 
   // Ensure the popup's window.opener is defined.
@@ -943,8 +941,6 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   content::WebContents* popup = OpenPopup(extension_frame, popup_url);
   EXPECT_NE(popup, tab);
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
-  EXPECT_EQ(1u, pm->GetAllFrames().size());
   EXPECT_NE(popup->GetRenderProcessHost(), extension_frame->GetProcess());
   EXPECT_EQ(popup->GetRenderProcessHost(), main_frame->GetProcess());
 
