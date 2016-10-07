@@ -862,6 +862,14 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="ContentSettings.PermissionRequested.ProtectedMedia.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain that issues a Protected Media Identifier permission prompt.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="ContentSettings.Plugins.AddedAllowException"
     type="ETLD_PLUS_ONE">
   <owner>tommycli@chromium.org</owner>

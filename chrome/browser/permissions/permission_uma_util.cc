@@ -129,6 +129,11 @@ void RecordPermissionRequest(PermissionType permission,
           "ContentSettings.PermissionRequested.Midi.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
+    } else if (permission == PermissionType::PROTECTED_MEDIA_IDENTIFIER) {
+      rappor_service->RecordSample(
+          "ContentSettings.PermissionRequested.ProtectedMedia.Url2",
+          rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
+          rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
     }
   }
 
