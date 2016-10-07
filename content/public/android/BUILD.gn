@@ -170,6 +170,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/input/JoystickScrollProvider.java",
     "java/src/org/chromium/content/browser/input/JoystickZoomProvider.java",
     "java/src/org/chromium/content/browser/input/LegacyPastePopupMenu.java",
+    "java/src/org/chromium/content/browser/input/LGEmailActionModeWorkaround.java",
     "java/src/org/chromium/content/browser/input/PastePopupMenu.java",
     "java/src/org/chromium/content/browser/input/Range.java",
     "java/src/org/chromium/content/browser/input/ReplicaInputConnection.java",

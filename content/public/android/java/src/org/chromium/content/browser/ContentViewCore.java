@@ -67,6 +67,7 @@ import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;
 import org.chromium.content.browser.input.JoystickScrollProvider;
 import org.chromium.content.browser.input.JoystickZoomProvider;
+import org.chromium.content.browser.input.LGEmailActionModeWorkaround;
 import org.chromium.content.browser.input.LegacyPastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu.PastePopupMenuDelegate;
@@ -2053,15 +2054,19 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         if (mContainerView.getParent() != null) {
             assert mWebContents != null;
             ActionMode actionMode = startActionMode(allowFallbackIfFloatingActionModeCreationFails);
-            if (actionMode != null) mActionMode = new WebActionMode(actionMode, mContainerView);
+            if (actionMode != null) {
+                // This is to work around an LGE email issue. See crbug.com/651706 for more details.
+                LGEmailActionModeWorkaround.runIfNecessary(mContext, actionMode);
+                mActionMode = new WebActionMode(actionMode, mContainerView);
+            }
         }
         mUnselectAllOnActionModeDismiss = true;
         if (mActionMode == null) {
             // There is no ActionMode, so remove the selection.
             clearSelection();
         } else {
-            // TODO(jdduke): Refactor ContentViewClient.onContextualActionBarShown to be aware of
-            // non-action-bar (i.e., floating) ActionMode instances, crbug.com/524666.
+            // TODO(jdduke): Refactor ContentViewClient.onContextualActionBarShown to be aware
+            // of non-action-bar (i.e., floating) ActionMode instances, crbug.com/524666.
             if (!supportsFloatingActionMode()) {
                 getContentViewClient().onContextualActionBarShown();
             }
