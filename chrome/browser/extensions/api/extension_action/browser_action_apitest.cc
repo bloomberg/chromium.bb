@@ -991,7 +991,16 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest,
 // GET should automagically start working for downloads.
 // TODO(lukasza): https://crbug.com/650694: Add a "Get" flavour of the test once
 // the download works both for GET and POST requests.
-IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, DownloadViaPost) {
+
+// Disabled on Windows. See http://crbug.com/653856.
+#if defined(OS_WIN)
+#define MAYBE_DownloadViaPost DISABLED_DownloadViaPost
+#else
+#define MAYBE_DownloadViaPost DownloadViaPost
+#endif
+
+IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest,
+                       MAYBE_DownloadViaPost) {
   content::DownloadTestObserverTerminal downloads_observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()),
       1,  // == wait_count (only waiting for "download-test3.gif").
