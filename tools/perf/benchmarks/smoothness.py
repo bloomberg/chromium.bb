@@ -391,6 +391,7 @@ class SmoothnessGpuRasterizationToughScrollingCases(_Smoothness):
 
 
 @benchmark.Disabled('android')  # http://crbug.com/531593
+@benchmark.Disabled('win')  # http://crbug.com/652372
 class SmoothnessToughImageDecodeCases(_Smoothness):
   page_set = page_sets.ToughImageDecodeCasesPageSet
 
