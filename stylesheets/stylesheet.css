@@ -92,7 +92,7 @@ hr {
   padding-bottom: 2px;
 }
 
-.inner {
+.container {
   max-width: 740px;
   margin: 0 auto;
   min-width: 300px;
@@ -100,6 +100,8 @@ hr {
   width: 100%;
 }
 
+h3,
+h4,
 ul,
 ol,
 dl,
@@ -151,17 +153,15 @@ iframe {
   width: 100%;
 }
 
-.iframe-wrap-chrome,
-.iframe-chrome {
-  height: 500px;
+.iframe-wrap {
+  height: 600px;
 }
 
-.iframe-wrap-chrome {
-  overflow-x: auto;
+.iframe-wrap--chrome {
+  height: 400px;
 }
 
-.iframe-chrome {
-  height: 500px;
+.iframe--chrome {
   min-width: 400px;
   margin-left: -15px;
   width: 100%;
