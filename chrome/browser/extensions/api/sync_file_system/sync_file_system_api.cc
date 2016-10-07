@@ -46,7 +46,8 @@ const char kUnsupportedConflictResolutionPolicy[] =
     "Policy %s is not supported.";
 
 sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
-    Profile* profile) {
+    content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   sync_file_system::SyncFileSystemService* service =
       SyncFileSystemServiceFactory::GetForProfile(profile);
   if (!service)
@@ -355,33 +356,35 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
   SendResponse(true);
 }
 
-bool SyncFileSystemSetConflictResolutionPolicyFunction::RunSync() {
+ExtensionFunction::ResponseAction
+SyncFileSystemSetConflictResolutionPolicyFunction::Run() {
   std::string policy_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &policy_string));
   ConflictResolutionPolicy policy = ExtensionEnumToConflictResolutionPolicy(
       api::sync_file_system::ParseConflictResolutionPolicy(policy_string));
   if (policy != sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN) {
-    SetError(base::StringPrintf(kUnsupportedConflictResolutionPolicy,
-                                policy_string.c_str()));
-    return false;
+    return RespondNow(Error(base::StringPrintf(
+        kUnsupportedConflictResolutionPolicy, policy_string.c_str())));
   }
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool SyncFileSystemGetConflictResolutionPolicyFunction::RunSync() {
-  SetResult(base::MakeUnique<base::StringValue>(api::sync_file_system::ToString(
-      api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN)));
-  return true;
+ExtensionFunction::ResponseAction
+SyncFileSystemGetConflictResolutionPolicyFunction::Run() {
+  return RespondNow(OneArgument(
+      base::MakeUnique<base::StringValue>(api::sync_file_system::ToString(
+          api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN))));
 }
 
-bool SyncFileSystemGetServiceStatusFunction::RunSync() {
+ExtensionFunction::ResponseAction
+SyncFileSystemGetServiceStatusFunction::Run() {
   sync_file_system::SyncFileSystemService* service =
-      GetSyncFileSystemService(GetProfile());
+      GetSyncFileSystemService(browser_context());
   if (!service)
-    return false;
-  results_ = api::sync_file_system::GetServiceStatus::Results::Create(
-      SyncServiceStateToExtensionEnum(service->GetSyncServiceState()));
-  return true;
+    return RespondNow(Error(kUnknownErrorDoNotUse));
+  return RespondNow(
+      ArgumentList(api::sync_file_system::GetServiceStatus::Results::Create(
+          SyncServiceStateToExtensionEnum(service->GetSyncServiceState()))));
 }
 
 }  // namespace extensions

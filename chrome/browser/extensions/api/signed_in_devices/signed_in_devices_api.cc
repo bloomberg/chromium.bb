@@ -113,34 +113,33 @@ std::unique_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
   return device;
 }
 
-bool SignedInDevicesGetFunction::RunSync() {
+ExtensionFunction::ResponseAction SignedInDevicesGetFunction::Run() {
   std::unique_ptr<api::signed_in_devices::Get::Params> params(
       api::signed_in_devices::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool is_local = params->is_local.get() ? *params->is_local : false;
 
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   if (is_local) {
     std::unique_ptr<DeviceInfo> device =
-        GetLocalDeviceInfo(extension_id(), GetProfile());
+        GetLocalDeviceInfo(extension_id(), profile);
     std::unique_ptr<base::ListValue> result(new base::ListValue());
     if (device.get()) {
       result->Append(device->ToValue());
     }
-    SetResult(std::move(result));
-    return true;
+    return RespondNow(OneArgument(std::move(result)));
   }
 
   std::vector<std::unique_ptr<DeviceInfo>> devices =
-      GetAllSignedInDevices(extension_id(), GetProfile());
+      GetAllSignedInDevices(extension_id(), profile);
 
   std::unique_ptr<base::ListValue> result(new base::ListValue());
 
   for (const std::unique_ptr<DeviceInfo>& device : devices)
     result->Append(device->ToValue());
 
-  SetResult(std::move(result));
-  return true;
+  return RespondNow(OneArgument(std::move(result)));
 }
 
 }  // namespace extensions

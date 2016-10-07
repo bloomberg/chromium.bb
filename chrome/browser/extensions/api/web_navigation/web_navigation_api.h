@@ -169,16 +169,16 @@ class WebNavigationEventRouter : public TabStripModelObserver,
 };
 
 // API function that returns the state of a given frame.
-class WebNavigationGetFrameFunction : public ChromeSyncExtensionFunction {
+class WebNavigationGetFrameFunction : public UIThreadExtensionFunction {
   ~WebNavigationGetFrameFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("webNavigation.getFrame", WEBNAVIGATION_GETFRAME)
 };
 
 // API function that returns the states of all frames in a given tab.
-class WebNavigationGetAllFramesFunction : public ChromeSyncExtensionFunction {
+class WebNavigationGetAllFramesFunction : public UIThreadExtensionFunction {
   ~WebNavigationGetAllFramesFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("webNavigation.getAllFrames",
                              WEBNAVIGATION_GETALLFRAMES)
 };

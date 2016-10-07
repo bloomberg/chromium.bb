@@ -54,53 +54,50 @@ bool ignore_user_gesture_for_tests = false;
 
 }  // namespace
 
-bool PermissionsContainsFunction::RunSync() {
+ExtensionFunction::ResponseAction PermissionsContainsFunction::Run() {
   std::unique_ptr<Contains::Params> params(Contains::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // NOTE: |permissions| is not used to make any security decisions. Therefore,
   // it is entirely fine to set |allow_file_access| to true below. This will
   // avoid throwing error when extension() doesn't have access to file://.
+  std::string error;
   std::unique_ptr<const PermissionSet> permissions =
       helpers::UnpackPermissionSet(params->permissions,
-                                   true /* allow_file_access */, &error_);
+                                   true /* allow_file_access */, &error);
   if (!permissions.get())
-    return false;
+    return RespondNow(Error(error));
 
-  results_ = Contains::Results::Create(
+  return RespondNow(ArgumentList(Contains::Results::Create(
       extension()->permissions_data()->active_permissions().Contains(
-          *permissions));
-  return true;
+          *permissions))));
 }
 
-bool PermissionsGetAllFunction::RunSync() {
+ExtensionFunction::ResponseAction PermissionsGetAllFunction::Run() {
   std::unique_ptr<Permissions> permissions = helpers::PackPermissionSet(
       extension()->permissions_data()->active_permissions());
-  results_ = GetAll::Results::Create(*permissions);
-  return true;
+  return RespondNow(ArgumentList(GetAll::Results::Create(*permissions)));
 }
 
-bool PermissionsRemoveFunction::RunSync() {
+ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
   std::unique_ptr<Remove::Params> params(Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  std::string error;
   std::unique_ptr<const PermissionSet> permissions =
-      helpers::UnpackPermissionSet(
-          params->permissions,
-          ExtensionPrefs::Get(GetProfile())->AllowFileAccess(extension_->id()),
-          &error_);
+      helpers::UnpackPermissionSet(params->permissions,
+                                   ExtensionPrefs::Get(browser_context())
+                                       ->AllowFileAccess(extension_->id()),
+                                   &error);
+
   if (!permissions.get())
-    return false;
+    return RespondNow(Error(error));
 
   // Make sure they're only trying to remove permissions supported by this API.
   APIPermissionSet apis = permissions->apis();
-  for (APIPermissionSet::const_iterator i = apis.begin();
-       i != apis.end(); ++i) {
-    if (!i->info()->supports_optional()) {
-      error_ = ErrorUtils::FormatErrorMessage(
-          kNotWhitelistedError, i->name());
-      return false;
-    }
+  for (const APIPermission* permission : apis) {
+    if (!permission->info()->supports_optional())
+      return RespondNow(Error(kNotWhitelistedError, permission->name()));
   }
 
   // Make sure we only remove optional permissions, and not required
@@ -116,8 +113,7 @@ bool PermissionsRemoveFunction::RunSync() {
       !std::unique_ptr<const PermissionSet>(
            PermissionSet::CreateIntersection(*permissions, required))
            ->IsEmpty()) {
-    error_ = kCantRemoveRequiredPermissionsError;
-    return false;
+    return RespondNow(Error(kCantRemoveRequiredPermissionsError));
   }
 
   // Only try and remove those permissions that are active on the extension.
@@ -126,11 +122,10 @@ bool PermissionsRemoveFunction::RunSync() {
   permissions = PermissionSet::CreateIntersection(
       *permissions, extension()->permissions_data()->active_permissions());
 
-  PermissionsUpdater(GetProfile())
+  PermissionsUpdater(browser_context())
       .RemovePermissions(extension(), *permissions,
                          PermissionsUpdater::REMOVE_SOFT);
-  results_ = Remove::Results::Create(true);
-  return true;
+  return RespondNow(ArgumentList(Remove::Results::Create(true)));
 }
 
 // static

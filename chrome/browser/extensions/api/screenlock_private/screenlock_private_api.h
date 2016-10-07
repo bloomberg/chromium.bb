@@ -41,12 +41,12 @@ class ScreenlockPrivateSetLockedFunction : public ChromeAsyncExtensionFunction {
 };
 
 class ScreenlockPrivateAcceptAuthAttemptFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.acceptAuthAttempt",
                              SCREENLOCKPRIVATE_ACCEPTAUTHATTEMPT)
   ScreenlockPrivateAcceptAuthAttemptFunction();
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  private:
   ~ScreenlockPrivateAcceptAuthAttemptFunction() override;

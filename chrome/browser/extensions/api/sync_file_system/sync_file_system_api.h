@@ -120,36 +120,36 @@ class SyncFileSystemRequestFileSystemFunction
 };
 
 class SyncFileSystemSetConflictResolutionPolicyFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.setConflictResolutionPolicy",
                              SYNCFILESYSTEM_SETCONFLICTRESOLUTIONPOLICY)
 
  protected:
   ~SyncFileSystemSetConflictResolutionPolicyFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class SyncFileSystemGetConflictResolutionPolicyFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.getConflictResolutionPolicy",
                              SYNCFILESYSTEM_GETCONFLICTRESOLUTIONPOLICY)
 
  protected:
   ~SyncFileSystemGetConflictResolutionPolicyFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class SyncFileSystemGetServiceStatusFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.getServiceStatus",
                              SYNCFILESYSTEM_GETSERVICESTATUS)
 
  protected:
   ~SyncFileSystemGetServiceStatusFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

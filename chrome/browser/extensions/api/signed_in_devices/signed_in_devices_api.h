@@ -37,12 +37,12 @@ std::vector<std::unique_ptr<syncer::DeviceInfo>> GetAllSignedInDevices(
     syncer::DeviceInfoTracker* device_tracker,
     ExtensionPrefs* extension_prefs);
 
-class SignedInDevicesGetFunction : public ChromeSyncExtensionFunction {
+class SignedInDevicesGetFunction : public UIThreadExtensionFunction {
  protected:
   ~SignedInDevicesGetFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("signedInDevices.get", SIGNED_IN_DEVICES_GET)
 };
 

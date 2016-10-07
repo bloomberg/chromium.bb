@@ -96,7 +96,8 @@ ScreenlockPrivateAcceptAuthAttemptFunction::
 ScreenlockPrivateAcceptAuthAttemptFunction::
     ~ScreenlockPrivateAcceptAuthAttemptFunction() {}
 
-bool ScreenlockPrivateAcceptAuthAttemptFunction::RunSync() {
+ExtensionFunction::ResponseAction
+ScreenlockPrivateAcceptAuthAttemptFunction::Run() {
   std::unique_ptr<screenlock::AcceptAuthAttempt::Params> params(
       screenlock::AcceptAuthAttempt::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -105,7 +106,7 @@ bool ScreenlockPrivateAcceptAuthAttemptFunction::RunSync() {
   EasyUnlockService* service = EasyUnlockService::Get(profile);
   if (service)
     service->FinalizeUnlock(params->accept);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 ScreenlockPrivateEventRouter::ScreenlockPrivateEventRouter(

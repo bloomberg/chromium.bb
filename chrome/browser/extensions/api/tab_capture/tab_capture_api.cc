@@ -199,25 +199,21 @@ const char* const kMediaRouterExtensionIds[] = {
     "ekpaaapppgpmolpcldedioblbkmijaca",  // Beta
 };
 
-bool TabCaptureCaptureFunction::RunSync() {
+ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   std::unique_ptr<api::tab_capture::Capture::Params> params =
       TabCapture::Capture::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Figure out the active WebContents and retrieve the needed ids.
-  Browser* target_browser =
-      chrome::FindAnyBrowser(GetProfile(), include_incognito());
-  if (!target_browser) {
-    error_ = kFindingTabError;
-    return false;
-  }
+  Browser* target_browser = chrome::FindAnyBrowser(
+      Profile::FromBrowserContext(browser_context()), include_incognito());
+  if (!target_browser)
+    return RespondNow(Error(kFindingTabError));
 
   content::WebContents* target_contents =
       target_browser->tab_strip_model()->GetActiveWebContents();
-  if (!target_contents) {
-    error_ = kFindingTabError;
-    return false;
-  }
+  if (!target_contents)
+    return RespondNow(Error(kFindingTabError));
 
   const std::string& extension_id = extension()->id();
 
@@ -232,21 +228,17 @@ bool TabCaptureCaptureFunction::RunSync() {
                                   arraysize(kChromecastExtensionIds)) &&
       !SimpleFeature::IsIdInArray(extension_id, kMediaRouterExtensionIds,
                                   arraysize(kMediaRouterExtensionIds))) {
-    error_ = kGrantError;
-    return false;
+    return RespondNow(Error(kGrantError));
   }
 
-  if (!OptionsSpecifyAudioOrVideo(params->options)) {
-    error_ = kNoAudioOrVideo;
-    return false;
-  }
+  if (!OptionsSpecifyAudioOrVideo(params->options))
+    return RespondNow(Error(kNoAudioOrVideo));
 
-  TabCaptureRegistry* registry = TabCaptureRegistry::Get(GetProfile());
+  TabCaptureRegistry* registry = TabCaptureRegistry::Get(browser_context());
   if (!registry->AddRequest(target_contents, extension_id, false)) {
     // TODO(miu): Allow multiple consumers of single tab capture.
     // http://crbug.com/535336
-    error_ = kCapturingSameTab;
-    return false;
+    return RespondNow(Error(kCapturingSameTab));
   }
   FilterDeprecatedGoogConstraints(&params->options);
   AddMediaStreamSourceConstraints(target_contents, &params->options);
@@ -261,17 +253,15 @@ bool TabCaptureCaptureFunction::RunSync() {
   // chrome/renderer/resources/extensions/tab_capture_custom_bindings.js
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->MergeDictionary(params->options.ToValue().get());
-  SetResult(std::move(result));
-  return true;
+  return RespondNow(OneArgument(std::move(result)));
 }
 
-bool TabCaptureGetCapturedTabsFunction::RunSync() {
-  TabCaptureRegistry* registry = TabCaptureRegistry::Get(GetProfile());
+ExtensionFunction::ResponseAction TabCaptureGetCapturedTabsFunction::Run() {
+  TabCaptureRegistry* registry = TabCaptureRegistry::Get(browser_context());
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   if (registry)
     registry->GetCapturedTabs(extension()->id(), list.get());
-  SetResult(std::move(list));
-  return true;
+  return RespondNow(OneArgument(std::move(list)));
 }
 
 ExtensionFunction::ResponseAction TabCaptureCaptureOffscreenTabFunction::Run() {

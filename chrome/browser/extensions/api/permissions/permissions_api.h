@@ -16,7 +16,7 @@
 namespace extensions {
 
 // chrome.permissions.contains
-class PermissionsContainsFunction : public ChromeSyncExtensionFunction {
+class PermissionsContainsFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("permissions.contains", PERMISSIONS_CONTAINS)
 
@@ -24,11 +24,11 @@ class PermissionsContainsFunction : public ChromeSyncExtensionFunction {
   ~PermissionsContainsFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 // chrome.permissions.getAll
-class PermissionsGetAllFunction : public ChromeSyncExtensionFunction {
+class PermissionsGetAllFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("permissions.getAll", PERMISSIONS_GETALL)
 
@@ -36,11 +36,11 @@ class PermissionsGetAllFunction : public ChromeSyncExtensionFunction {
   ~PermissionsGetAllFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 // chrome.permissions.remove
-class PermissionsRemoveFunction : public ChromeSyncExtensionFunction {
+class PermissionsRemoveFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("permissions.remove", PERMISSIONS_REMOVE)
 
@@ -48,7 +48,7 @@ class PermissionsRemoveFunction : public ChromeSyncExtensionFunction {
   ~PermissionsRemoveFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 // chrome.permissions.request
