@@ -89,6 +89,9 @@ class VIEWS_EXPORT Textfield : public View,
   void AppendText(const base::string16& new_text);
 
   // Inserts |new_text| at the cursor position, replacing any selected text.
+  // This method is used to handle user input via paths Textfield doesn't
+  // normally handle, so it calls UpdateAfterChange() and notifies observers of
+  // changes.
   void InsertOrReplaceText(const base::string16& new_text);
 
   // Returns the text that is currently selected. Call sites should take care to

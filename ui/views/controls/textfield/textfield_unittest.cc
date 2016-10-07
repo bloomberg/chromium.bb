@@ -2840,6 +2840,16 @@ TEST_F(TextfieldTest, DestroyingTextfieldFromOnKeyEvent) {
   EXPECT_FALSE(controller.target());
 }
 
+TEST_F(TextfieldTest, CursorBlinkRestartsOnInsertOrReplace) {
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("abc"));
+  EXPECT_TRUE(test_api_->IsCursorBlinkTimerRunning());
+  textfield_->SelectRange(gfx::Range(1, 2));
+  EXPECT_FALSE(test_api_->IsCursorBlinkTimerRunning());
+  textfield_->InsertOrReplaceText(base::ASCIIToUTF16("foo"));
+  EXPECT_TRUE(test_api_->IsCursorBlinkTimerRunning());
+}
+
 class TextfieldTouchSelectionTest : public TextfieldTest {
  protected:
   // Simulates a complete tap.

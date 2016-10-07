@@ -41,6 +41,10 @@ class TextfieldTestApi {
     return textfield_->scheduled_text_edit_command_;
   }
 
+  bool IsCursorBlinkTimerRunning() const {
+    return textfield_->cursor_blink_timer_.IsRunning();
+  }
+
  private:
   Textfield* textfield_;
 
