@@ -42,9 +42,6 @@ class PlatformDisplayDelegate {
   virtual void OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
                                         const ViewportMetrics& new_metrics) = 0;
 
-  // Called when a compositor frame is finished drawing.
-  virtual void OnCompositorFrameDrawn() = 0;
-
  protected:
   virtual ~PlatformDisplayDelegate() {}
 };

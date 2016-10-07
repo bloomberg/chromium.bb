@@ -6,10 +6,15 @@
 #define SERVICES_UI_WS_FRAME_GENERATOR_H_
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/local_frame_id.h"
+#include "cc/surfaces/surface_sequence.h"
+#include "cc/surfaces/surface_sequence_generator.h"
+#include "services/ui/ws/server_window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -17,6 +22,7 @@ namespace cc {
 class CompositorFrame;
 class CopyOutputRequest;
 class RenderPass;
+class SurfaceId;
 }
 
 namespace gpu {
@@ -39,14 +45,15 @@ class FrameGeneratorTest;
 
 class FrameGeneratorDelegate;
 class ServerWindow;
+class ServerWindowSurface;
 
 // Responsible for redrawing the display in response to the redraw requests by
 // submitting CompositorFrames to the owned CompositorFrameSink.
-class FrameGenerator {
+class FrameGenerator : public ServerWindowObserver {
  public:
   FrameGenerator(FrameGeneratorDelegate* delegate,
                  scoped_refptr<DisplayCompositor> display_compositor);
-  virtual ~FrameGenerator();
+  ~FrameGenerator() override;
 
   void OnGpuChannelEstablished(scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
@@ -64,18 +71,16 @@ class FrameGenerator {
   void WantToDraw();
 
   // This method initiates a top level redraw of the display.
-  // TODO(fsamuel): This should use vblank as a signal rather than a timer
-  // http://crbug.com/533042
+  // TODO(fsamuel): In polliwog, this only gets called when the window manager
+  // changes.
   void Draw();
 
   // This is called after the CompositorFrameSink has completed generating a new
-  // frame for the display. TODO(fsamuel): Idle time processing should happen
-  // here if there is budget for it.
+  // frame for the display.
   void DidDraw();
 
   // Generates the CompositorFrame for the current |dirty_rect_|.
-  cc::CompositorFrame GenerateCompositorFrame(
-      const gfx::Rect& output_rect) const;
+  cc::CompositorFrame GenerateCompositorFrame(const gfx::Rect& output_rect);
 
   // DrawWindowTree recursively visits ServerWindows, creating a SurfaceDrawQuad
   // for each that lacks one.
@@ -83,11 +88,36 @@ class FrameGenerator {
                       ServerWindow* window,
                       const gfx::Vector2d& parent_to_root_origin_offset,
                       float opacity,
-                      bool* may_contain_video) const;
+                      bool* may_contain_video);
+
+  // Adds a reference to the current cc::Surface of the provided
+  // |window_surface|. If an existing reference is held with a different
+  // LocalFrameId then release that reference first. This is called on each
+  // ServerWindowSurface as FrameGenerator walks the window tree to generate a
+  /// CompositorFrame. This is done to make sure that the window surfaces are
+  // retained for the entirety of the time between submission of the top-level
+  // frame to drawing the frame to screen.
+  // TODO(fsamuel, kylechar): This will go away once we get surface lifetime
+  // management.
+  void AddOrUpdateSurfaceReference(ServerWindowSurface* window_surface);
+
+  // Releases any retained references for the provided FrameSink.
+  // TODO(fsamuel, kylechar): This will go away once we get surface lifetime
+  // management.
+  void ReleaseFrameSinkReference(const cc::FrameSinkId& frame_sink_id);
+
+  // Releases all retained references to surfaces.
+  // TODO(fsamuel, kylechar): This will go away once we get surface lifetime
+  // management.
+  void ReleaseAllSurfaceReferences();
+
+  // ServerWindowObserver implementation.
+  void OnWindowDestroying(ServerWindow* window) override;
 
   FrameGeneratorDelegate* delegate_;
   scoped_refptr<DisplayCompositor> display_compositor_;
   cc::FrameSinkId frame_sink_id_;
+  cc::SurfaceSequenceGenerator surface_sequence_generator_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 
   std::unique_ptr<surfaces::CompositorFrameSink> compositor_frame_sink_;
@@ -99,6 +129,12 @@ class FrameGenerator {
   base::Timer draw_timer_;
   bool frame_pending_ = false;
   bool may_contain_video_ = false;
+  struct SurfaceDependency {
+    cc::LocalFrameId local_frame_id;
+    cc::SurfaceSequence sequence;
+  };
+  std::unordered_map<cc::FrameSinkId, SurfaceDependency, cc::FrameSinkIdHash>
+      dependencies_;
 
   base::WeakPtrFactory<FrameGenerator> weak_factory_;
 

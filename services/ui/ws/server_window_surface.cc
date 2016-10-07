@@ -50,17 +50,8 @@ void ServerWindowSurface::SubmitCompositorFrame(
   // If the size of the CompostiorFrame has changed then destroy the existing
   // Surface and create a new one of the appropriate size.
   if (local_frame_id_.is_null() || frame_size != last_submitted_frame_size_) {
-    // Rendering of the topmost frame happens in two phases. First the frame
-    // is generated and submitted, and a later date it is actually drawn.
-    // During the time the frame is generated and drawn we can't destroy the
-    // surface, otherwise when drawn you get an empty surface. To deal with
-    // this we schedule destruction via the delegate. The delegate will call
-    // us back when we're not waiting on a frame to be drawn (which may be
-    // synchronously).
-    if (!local_frame_id_.is_null()) {
-      surfaces_scheduled_for_destruction_.insert(local_frame_id_);
-      window()->delegate()->ScheduleSurfaceDestruction(window());
-    }
+    if (!local_frame_id_.is_null())
+      surface_factory_.Destroy(local_frame_id_);
     local_frame_id_ = surface_id_allocator_.GenerateId();
     surface_factory_.Create(local_frame_id_);
   }
@@ -72,14 +63,9 @@ void ServerWindowSurface::SubmitCompositorFrame(
 }
 
 cc::SurfaceId ServerWindowSurface::GetSurfaceId() const {
+  if (local_frame_id_.is_null())
+    return cc::SurfaceId();
   return cc::SurfaceId(frame_sink_id_, local_frame_id_);
-}
-
-void ServerWindowSurface::DestroySurfacesScheduledForDestruction() {
-  std::set<cc::LocalFrameId> surfaces;
-  surfaces.swap(surfaces_scheduled_for_destruction_);
-  for (auto& id : surfaces)
-    surface_factory_.Destroy(id);
 }
 
 ServerWindow* ServerWindowSurface::window() {

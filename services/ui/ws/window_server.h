@@ -290,7 +290,6 @@ class WindowServer : public ServerWindowDelegate,
   // Overridden from ServerWindowDelegate:
   void OnScheduleWindowPaint(ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
-  void ScheduleSurfaceDestruction(ServerWindow* window) override;
 
   // Overridden from ServerWindowObserver:
   void OnWindowDestroyed(ServerWindow* window) override;

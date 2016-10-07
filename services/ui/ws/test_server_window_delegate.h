@@ -26,7 +26,6 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
   ui::DisplayCompositor* GetDisplayCompositor() override;
   void OnScheduleWindowPaint(ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
-  void ScheduleSurfaceDestruction(ServerWindow* window) override;
 
   const ServerWindow* root_window_;
   scoped_refptr<ui::DisplayCompositor> display_compositor_;

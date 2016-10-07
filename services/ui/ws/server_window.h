@@ -56,6 +56,7 @@ class ServerWindow {
 
   void AddObserver(ServerWindowObserver* observer);
   void RemoveObserver(ServerWindowObserver* observer);
+  bool HasObserver(ServerWindowObserver* observer);
 
   // Creates a new surface of the specified type, replacing the existing.
   void CreateSurface(mojom::SurfaceType surface_type,
@@ -160,9 +161,6 @@ class ServerWindow {
   // Returns true if this window is attached to a root and all ancestors are
   // visible.
   bool IsDrawn() const;
-
-  // Called when its appropriate to destroy surfaces scheduled for destruction.
-  void DestroySurfacesScheduledForDestruction();
 
   const gfx::Insets& extended_hit_test_region() const {
     return extended_hit_test_region_;

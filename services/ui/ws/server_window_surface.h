@@ -50,15 +50,25 @@ class ServerWindowSurface : public mojom::Surface,
       cc::CompositorFrame frame,
       const SubmitCompositorFrameCallback& callback) override;
 
+  // There is a 1-1 correspondence between FrameSinks and frame sources.
+  // The FrameSinkId uniquely identifies the FrameSink, and since there is
+  // one FrameSink per ServerWindowSurface, it allows the window server
+  // to uniquely identify the window, and the thus the client that generated the
+  // frame.
+  const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+
+  // The LocalFrameId can be thought of as an identifier to a bucket of
+  // sequentially submitted CompositorFrames in the same FrameSink all sharing
+  // the same size and device scale factor.
   const cc::LocalFrameId& local_frame_id() const { return local_frame_id_; }
+
+  bool has_frame() const { return !local_frame_id_.is_null(); }
 
   cc::SurfaceId GetSurfaceId() const;
 
-  // Destroys old surfaces that have been outdated by a new surface.
-  void DestroySurfacesScheduledForDestruction();
+  ServerWindow* window();
 
  private:
-  ServerWindow* window();
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
@@ -76,9 +86,6 @@ class ServerWindowSurface : public mojom::Surface,
 
   mojom::SurfaceClientPtr client_;
   mojo::Binding<Surface> binding_;
-
-  // Set of surface ids that need to be destroyed.
-  std::set<cc::LocalFrameId> surfaces_scheduled_for_destruction_;
 
   bool may_contain_video_ = false;
 

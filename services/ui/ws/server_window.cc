@@ -77,6 +77,10 @@ void ServerWindow::RemoveObserver(ServerWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool ServerWindow::HasObserver(ServerWindowObserver* observer) {
+  return observers_.HasObserver(observer);
+}
+
 void ServerWindow::CreateSurface(mojom::SurfaceType surface_type,
                                  mojo::InterfaceRequest<mojom::Surface> request,
                                  mojom::SurfaceClientPtr client) {
@@ -358,18 +362,6 @@ bool ServerWindow::IsDrawn() const {
   while (window && window != root && window->visible())
     window = window->parent();
   return root == window;
-}
-
-void ServerWindow::DestroySurfacesScheduledForDestruction() {
-  if (!surface_manager_)
-    return;
-  ServerWindowSurface* surface = surface_manager_->GetDefaultSurface();
-  if (surface)
-    surface->DestroySurfacesScheduledForDestruction();
-
-  surface = surface_manager_->GetUnderlaySurface();
-  if (surface)
-    surface->DestroySurfacesScheduledForDestruction();
 }
 
 ServerWindowSurfaceManager* ServerWindow::GetOrCreateSurfaceManager() {

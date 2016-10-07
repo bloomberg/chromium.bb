@@ -298,11 +298,6 @@ ServerWindow* DefaultPlatformDisplay::GetRootWindow() {
   return delegate_->GetRootWindow();
 }
 
-void DefaultPlatformDisplay::OnCompositorFrameDrawn() {
-  if (delegate_)
-    delegate_->OnCompositorFrameDrawn();
-}
-
 bool DefaultPlatformDisplay::IsInHighContrastMode() {
   return delegate_ ? delegate_->IsInHighContrastMode() : false;
 }

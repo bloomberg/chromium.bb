@@ -10,6 +10,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "cc/surfaces/surface_id.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/surfaces/compositor_frame_sink.h"
 #include "services/ui/ws/frame_generator_delegate.h"
@@ -30,9 +31,11 @@ FrameGenerator::FrameGenerator(
       draw_timer_(false, false),
       weak_factory_(this) {
   DCHECK(delegate_);
+  surface_sequence_generator_.set_frame_sink_id(frame_sink_id_);
 }
 
 FrameGenerator::~FrameGenerator() {
+  ReleaseAllSurfaceReferences();
   // Invalidate WeakPtrs now to avoid callbacks back into the
   // FrameGenerator during destruction of |compositor_frame_sink_|.
   weak_factory_.InvalidateWeakPtrs();
@@ -109,13 +112,12 @@ void FrameGenerator::Draw() {
 
 void FrameGenerator::DidDraw() {
   frame_pending_ = false;
-  delegate_->OnCompositorFrameDrawn();
   if (!dirty_rect_.IsEmpty())
     WantToDraw();
 }
 
 cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
-    const gfx::Rect& output_rect) const {
+    const gfx::Rect& output_rect) {
   const cc::RenderPassId render_pass_id(1, 1);
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetNew(render_pass_id, output_rect, dirty_rect_,
@@ -159,7 +161,7 @@ void FrameGenerator::DrawWindowTree(
     ServerWindow* window,
     const gfx::Vector2d& parent_to_root_origin_offset,
     float opacity,
-    bool* may_contain_video) const {
+    bool* may_contain_video) {
   if (!window->visible())
     return;
 
@@ -201,6 +203,7 @@ void FrameGenerator::DrawWindowTree(
                 combined_opacity, SkXfermode::kSrcOver_Mode,
                 0 /* sorting-context_id */);
     auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+    AddOrUpdateSurfaceReference(default_surface);
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
@@ -225,12 +228,93 @@ void FrameGenerator::DrawWindowTree(
                 0 /* sorting-context_id */);
 
     auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+    AddOrUpdateSurfaceReference(underlay_surface);
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
                  underlay_surface->GetSurfaceId());
     DCHECK(!underlay_surface->may_contain_video());
   }
+}
+
+void FrameGenerator::AddOrUpdateSurfaceReference(
+    ServerWindowSurface* window_surface) {
+  if (!window_surface->has_frame())
+    return;
+  cc::SurfaceId surface_id = window_surface->GetSurfaceId();
+  cc::SurfaceManager* surface_manager = display_compositor_->manager();
+  auto it = dependencies_.find(surface_id.frame_sink_id());
+  if (it == dependencies_.end()) {
+    cc::Surface* surface = surface_manager->GetSurfaceForId(surface_id);
+    if (!surface) {
+      LOG(ERROR) << "Attempting to add dependency to nonexistent surface "
+                 << surface_id.ToString();
+      return;
+    }
+    SurfaceDependency dependency = {
+        surface_id.local_frame_id(),
+        surface_sequence_generator_.CreateSurfaceSequence()};
+    surface->AddDestructionDependency(dependency.sequence);
+    dependencies_[surface_id.frame_sink_id()] = dependency;
+    // Observe |window_surface|'s window so that we can release references when
+    // the window is destroyed.
+    if (!window_surface->window()->HasObserver(this))
+      window_surface->window()->AddObserver(this);
+    return;
+  }
+
+  // We are already holding a reference to this surface so there's no work to do
+  // here.
+  if (surface_id.local_frame_id() == it->second.local_frame_id)
+    return;
+
+  // If we have have an existing reference to a surface from the given
+  // FrameSink, then we should release the reference, and then add this new
+  // reference. This results in a delete and lookup in the map but simplifies
+  // the code.
+  ReleaseFrameSinkReference(surface_id.frame_sink_id());
+
+  // This recursion will always terminate. This line is being called because
+  // there was a stale surface reference. The stale reference has been released
+  // in the previous line and cleared from the dependencies_ map. Thus, in the
+  // recursive call, we'll enter the second if blcok because the FrameSinkId
+  // is no longer referenced in the map.
+  AddOrUpdateSurfaceReference(window_surface);
+}
+
+void FrameGenerator::ReleaseFrameSinkReference(
+    const cc::FrameSinkId& frame_sink_id) {
+  auto it = dependencies_.find(frame_sink_id);
+  if (it == dependencies_.end())
+    return;
+  std::vector<uint32_t> sequences;
+  sequences.push_back(it->second.sequence.sequence);
+  cc::SurfaceManager* surface_manager = display_compositor_->manager();
+  surface_manager->DidSatisfySequences(frame_sink_id_, &sequences);
+  dependencies_.erase(it);
+}
+
+void FrameGenerator::ReleaseAllSurfaceReferences() {
+  cc::SurfaceManager* surface_manager = display_compositor_->manager();
+  std::vector<uint32_t> sequences;
+  for (auto& dependency : dependencies_)
+    sequences.push_back(dependency.second.sequence.sequence);
+  surface_manager->DidSatisfySequences(frame_sink_id_, &sequences);
+  dependencies_.clear();
+}
+
+void FrameGenerator::OnWindowDestroying(ServerWindow* window) {
+  window->RemoveObserver(this);
+  ServerWindowSurfaceManager* surface_manager = window->surface_manager();
+  // If FrameGenerator was observing |window|, then that means it had a surface
+  // at some point in time and should have a ServerWindowSurfaceManager.
+  DCHECK(surface_manager);
+  ServerWindowSurface* default_surface = surface_manager->GetDefaultSurface();
+  if (default_surface)
+    ReleaseFrameSinkReference(default_surface->frame_sink_id());
+  ServerWindowSurface* underlay_surface = surface_manager->GetUnderlaySurface();
+  if (underlay_surface)
+    ReleaseFrameSinkReference(underlay_surface->frame_sink_id());
 }
 
 }  // namespace ws

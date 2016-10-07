@@ -623,12 +623,6 @@ const ServerWindow* WindowServer::GetRootWindow(
   return display ? display->root_window() : nullptr;
 }
 
-void WindowServer::ScheduleSurfaceDestruction(ServerWindow* window) {
-  Display* display = display_manager_->GetDisplayContaining(window);
-  if (display)
-    display->ScheduleSurfaceDestruction(window);
-}
-
 void WindowServer::OnWindowDestroyed(ServerWindow* window) {
   ProcessWindowDeleted(window);
 }

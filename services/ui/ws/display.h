@@ -55,7 +55,6 @@ class Display : public PlatformDisplayDelegate,
                 public mojom::WindowTreeHost,
                 public FocusControllerObserver,
                 public FocusControllerDelegate,
-                public ServerWindowObserver,
                 public UserIdTrackerObserver,
                 public WindowManagerWindowTreeFactorySetObserver {
  public:
@@ -82,11 +81,6 @@ class Display : public PlatformDisplayDelegate,
 
   // Schedules a paint for the specified region in the coordinates of |window|.
   void SchedulePaint(const ServerWindow* window, const gfx::Rect& bounds);
-
-  // Schedules destruction of surfaces in |window|. If a frame has been
-  // scheduled but not drawn surface destruction is delayed until the frame is
-  // drawn, otherwise destruction is immediate.
-  void ScheduleSurfaceDestruction(ServerWindow* window);
 
   display::Display::Rotation GetRotation() const;
   gfx::Size GetSize() const;
@@ -175,7 +169,6 @@ class Display : public PlatformDisplayDelegate,
   void OnNativeCaptureLost() override;
   void OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
                                 const ViewportMetrics& new_metrics) override;
-  void OnCompositorFrameDrawn() override;
 
   // FocusControllerDelegate:
   bool CanHaveActiveChildren(ServerWindow* window) const override;
@@ -186,9 +179,6 @@ class Display : public PlatformDisplayDelegate,
   void OnFocusChanged(FocusControllerChangeSource change_source,
                       ServerWindow* old_focused_window,
                       ServerWindow* new_focused_window) override;
-
-  // ServerWindowObserver:
-  void OnWindowDestroyed(ServerWindow* window) override;
 
   // UserIdTrackerObserver:
   void OnUserIdRemoved(const UserId& id) override;
@@ -209,10 +199,6 @@ class Display : public PlatformDisplayDelegate,
   mojom::Cursor last_cursor_;
 
   ServerWindowTracker activation_parents_;
-
-  // Set of windows with surfaces that need to be destroyed once the frame
-  // draws.
-  std::set<ServerWindow*> windows_needing_frame_destruction_;
 
   WindowManagerDisplayRootMap window_manager_display_root_map_;
 

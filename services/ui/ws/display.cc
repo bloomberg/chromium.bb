@@ -54,9 +54,6 @@ Display::~Display() {
     focus_controller_.reset();
   }
 
-  for (ServerWindow* window : windows_needing_frame_destruction_)
-    window->RemoveObserver(this);
-
   if (!binding_) {
     for (auto& pair : window_manager_display_root_map_)
       pair.second->window_manager_state()->OnDisplayDestroying(this);
@@ -117,17 +114,6 @@ void Display::SchedulePaint(const ServerWindow* window,
                             const gfx::Rect& bounds) {
   DCHECK(root_->Contains(window));
   platform_display_->SchedulePaint(window, bounds);
-}
-
-void Display::ScheduleSurfaceDestruction(ServerWindow* window) {
-  if (!platform_display_->IsFramePending()) {
-    window->DestroySurfacesScheduledForDestruction();
-    return;
-  }
-  if (windows_needing_frame_destruction_.count(window))
-    return;
-  windows_needing_frame_destruction_.insert(window);
-  window->AddObserver(this);
 }
 
 display::Display::Rotation Display::GetRotation() const {
@@ -336,15 +322,6 @@ void Display::OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
   display_manager()->OnDisplayUpdate(this);
 }
 
-void Display::OnCompositorFrameDrawn() {
-  std::set<ServerWindow*> windows;
-  windows.swap(windows_needing_frame_destruction_);
-  for (ServerWindow* window : windows) {
-    window->RemoveObserver(this);
-    window->DestroySurfacesScheduledForDestruction();
-  }
-}
-
 bool Display::CanHaveActiveChildren(ServerWindow* window) const {
   return window && activation_parents_.Contains(window);
 }
@@ -416,11 +393,6 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
 
   UpdateTextInputState(new_focused_window,
                        new_focused_window->text_input_state());
-}
-
-void Display::OnWindowDestroyed(ServerWindow* window) {
-  windows_needing_frame_destruction_.erase(window);
-  window->RemoveObserver(this);
 }
 
 void Display::OnUserIdRemoved(const UserId& id) {

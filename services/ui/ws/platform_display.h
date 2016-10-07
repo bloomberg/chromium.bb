@@ -169,7 +169,6 @@ class DefaultPlatformDisplay : public PlatformDisplay,
 
   // FrameGeneratorDelegate:
   ServerWindow* GetRootWindow() override;
-  void OnCompositorFrameDrawn() override;
   bool IsInHighContrastMode() override;
   const ViewportMetrics& GetViewportMetrics() override;
 
