@@ -42,6 +42,11 @@ const char* kTestPage1ClientId = "1234";
 const char* kTestPage2ClientId = "5678";
 const char* kTestPage4ClientId = "9876";
 
+void BoolCallback(bool* actual_result, bool call_result) {
+  DCHECK(actual_result);
+  *actual_result = call_result;
+}
+
 }  // namespace
 
 class OfflinePageUtilsTest
@@ -139,7 +144,7 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
   std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestPage1Url, base::FilePath(FILE_PATH_LITERAL("page1.mhtml"))));
   offline_pages::ClientId client_id;
-  client_id.name_space = kBookmarkNamespace;
+  client_id.name_space = kDownloadNamespace;
   client_id.id = kTestPage1ClientId;
   model->SavePage(
       kTestPage1Url, client_id, 0l, std::move(archiver),
@@ -177,6 +182,22 @@ std::unique_ptr<OfflinePageTestArchiver> OfflinePageUtilsTest::BuildArchiver(
       base::string16(), kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
   archiver->set_filename(file_name);
   return archiver;
+}
+
+TEST_F(OfflinePageUtilsTest, CheckExistenceOfPagesWithURL) {
+  bool page_exists = false;
+  // This page should be available.
+  OfflinePageUtils::CheckExistenceOfPagesWithURL(
+      profile(), kDownloadNamespace, kTestPage1Url,
+      base::Bind(&BoolCallback, base::Unretained(&page_exists)));
+  RunUntilIdle();
+  EXPECT_TRUE(page_exists);
+  // This one should be missing
+  OfflinePageUtils::CheckExistenceOfPagesWithURL(
+      profile(), kDownloadNamespace, kTestPage3Url,
+      base::Bind(&BoolCallback, base::Unretained(&page_exists)));
+  RunUntilIdle();
+  EXPECT_FALSE(page_exists);
 }
 
 }  // namespace offline_pages

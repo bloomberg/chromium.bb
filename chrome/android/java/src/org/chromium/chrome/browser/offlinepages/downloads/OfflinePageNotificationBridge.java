@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.offlinepages.downloads;
 import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadNotifier;
+import org.chromium.ui.widget.Toast;
 
 /**
  * Class for dispatching offline page/request related notifications to the
@@ -136,6 +138,15 @@ public class OfflinePageNotificationBridge {
         if (notifier == null) return;
 
         notifier.notifyDownloadCanceled(guid);
+    }
+
+    /**
+     * Shows a "Downloading ..." toast for the requested items already scheduled for download.
+     * @param context Context to show toast.
+     */
+    @CalledByNative
+    public static void showDownloadingToast(Context context) {
+        Toast.makeText(context, R.string.download_pending, Toast.LENGTH_SHORT).show();
     }
 
     private static DownloadNotifier getDownloadNotifier(Context context) {

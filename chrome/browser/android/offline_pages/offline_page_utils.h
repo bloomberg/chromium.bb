@@ -48,6 +48,20 @@ class OfflinePageUtils {
   // when tab is not available. Returns true otherwise and sets |tab_id| to the
   // ID of the tab.
   static bool GetTabId(content::WebContents* web_contents, int* tab_id);
+
+  static void CheckExistenceOfPagesWithURL(
+      content::BrowserContext* browser_context,
+      const std::string name_space,
+      const GURL& offline_url,
+      const base::Callback<void(bool)>& callback);
+
+  static void CheckExistenceOfRequestsWithURL(
+      content::BrowserContext* browser_context,
+      const std::string name_space,
+      const GURL& offline_page_url,
+      const base::Callback<void(bool)>& callback);
+
+  static bool EqualsIgnoringFragment(const GURL& lhs, const GURL& rhs);
 };
 
 }  // namespace offline_pages

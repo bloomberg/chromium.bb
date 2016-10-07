@@ -134,6 +134,11 @@ MediaThrottleInfoBarDelegate*
     InfoBarDelegate::AsMediaThrottleInfoBarDelegate() {
   return nullptr;
 }
+
+offline_pages::OfflinePageInfoBarDelegate*
+InfoBarDelegate::AsOfflinePageInfoBarDelegate() {
+  return nullptr;
+}
 #endif
 
 InfoBarDelegate::InfoBarDelegate() : nav_entry_id_(0) {

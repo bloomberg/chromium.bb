@@ -26,6 +26,8 @@ class OfflinePageNotificationBridge : public OfflinePageDownloadNotifier {
   void NotifyDownloadPaused(const DownloadUIItem& item) override;
   void NotifyDownloadInterrupted(const DownloadUIItem& item) override;
   void NotifyDownloadCanceled(const DownloadUIItem& item) override;
+
+  void ShowDownloadingToast();
 };
 
 }  // namespace android

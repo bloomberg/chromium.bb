@@ -11,9 +11,11 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/android/offline_pages/downloads/offline_page_infobar_delegate.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "chrome/browser/android/offline_pages/recent_tab_helper.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/android/tab_android.h"
@@ -43,6 +45,127 @@ namespace offline_pages {
 namespace android {
 
 namespace {
+
+void SavePageCallback(const DownloadUIItem& item,
+                      OfflinePageModel::SavePageResult result,
+                      int64_t offline_id) {
+  OfflinePageNotificationBridge notification_bridge;
+  if (result == SavePageResult::SUCCESS)
+    notification_bridge.NotifyDownloadSuccessful(item);
+  else
+    notification_bridge.NotifyDownloadFailed(item);
+}
+
+content::WebContents* GetWebContentsFromJavaTab(
+    const ScopedJavaGlobalRef<jobject>& j_tab_ref) {
+  JNIEnv* env = AttachCurrentThread();
+  TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab_ref);
+  if (!tab)
+    return nullptr;
+
+  return tab->web_contents();
+}
+
+void SavePageIfNavigatedToURL(const GURL& query_url,
+                              const ScopedJavaGlobalRef<jobject>& j_tab_ref) {
+  content::WebContents* web_contents = GetWebContentsFromJavaTab(j_tab_ref);
+  if (!web_contents)
+    return;
+
+  // This doesn't detect navigations to the same URL, only that we are looking
+  // at a completely different page.
+  GURL url = web_contents->GetLastCommittedURL();
+  if (!OfflinePageUtils::EqualsIgnoringFragment(url, query_url))
+    return;
+
+  offline_pages::ClientId client_id;
+  client_id.name_space = offline_pages::kDownloadNamespace;
+  client_id.id = base::GenerateGUID();
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext())
+          ->GetOriginalProfile();
+
+  OfflinePageNotificationBridge notification_bridge;
+
+  // If the page is not loaded enough to be captured, submit a background loader
+  // request instead.
+  offline_pages::RecentTabHelper* tab_helper =
+      RecentTabHelper::FromWebContents(web_contents);
+  if (tab_helper && !tab_helper->is_page_ready_for_snapshot() &&
+      offline_pages::IsBackgroundLoaderForDownloadsEnabled()) {
+    // TODO(dimich): Improve this to wait for the page load if it is still going
+    // on. Pre-submit the request and if the load finishes and capture happens,
+    // remove request.
+    offline_pages::RequestCoordinator* request_coordinator =
+        offline_pages::RequestCoordinatorFactory::GetForBrowserContext(profile);
+    request_coordinator->SavePageLater(
+        url, client_id, true,
+        RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER);
+
+    notification_bridge.ShowDownloadingToast();
+    return;
+  }
+
+  // Page is ready, capture it right from the tab.
+  offline_pages::OfflinePageModel* offline_page_model =
+      OfflinePageModelFactory::GetForBrowserContext(profile);
+  if (!offline_page_model)
+    return;
+
+  auto archiver =
+      base::MakeUnique<offline_pages::OfflinePageMHTMLArchiver>(web_contents);
+
+  DownloadUIItem item;
+  item.guid = client_id.id;
+  item.url = url;
+
+  OfflinePageNotificationBridge bridge;
+  bridge.NotifyDownloadProgress(item);
+
+  notification_bridge.ShowDownloadingToast();
+  offline_page_model->SavePage(url, client_id, 0l, std::move(archiver),
+                               base::Bind(&SavePageCallback, item));
+}
+
+void RequestQueueDuplicateCheckDone(
+    const GURL& query_url,
+    const ScopedJavaGlobalRef<jobject>& j_tab_ref,
+    bool has_duplicates) {
+  if (has_duplicates) {
+    // TODO(fgorski): Additionally we could update existing request's expiration
+    // period, as it is still important. Alternative would be to actually take a
+    // snapshot on the spot, but that would only work if the page is loaded
+    // enough.
+    // This simply toasts that the item is downloading.
+    OfflinePageNotificationBridge notification_bridge;
+    notification_bridge.ShowDownloadingToast();
+    return;
+  }
+
+  SavePageIfNavigatedToURL(query_url, j_tab_ref);
+}
+
+void ModelDuplicateCheckDone(const GURL& query_url,
+                             const ScopedJavaGlobalRef<jobject>& j_tab_ref,
+                             bool has_duplicates) {
+  content::WebContents* web_contents = GetWebContentsFromJavaTab(j_tab_ref);
+  if (!web_contents)
+    return;
+
+  if (has_duplicates) {
+    OfflinePageInfoBarDelegate::Create(
+        base::Bind(&SavePageIfNavigatedToURL, query_url, j_tab_ref),
+        query_url.spec(), web_contents);
+    return;
+  }
+
+  OfflinePageUtils::CheckExistenceOfRequestsWithURL(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext())
+          ->GetOriginalProfile(),
+      kDownloadNamespace, query_url,
+      base::Bind(&RequestQueueDuplicateCheckDone, query_url, j_tab_ref));
+}
 
 void ToJavaOfflinePageDownloadItemList(
     JNIEnv* env,
@@ -151,18 +274,6 @@ bool OfflinePageDownloadBridge::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-// static
-void OfflinePageDownloadBridge::SavePageCallback(
-    const DownloadUIItem& item,
-    OfflinePageModel::SavePageResult result,
-    int64_t offline_id) {
-  OfflinePageNotificationBridge notification_bridge;
-  if (result == SavePageResult::SUCCESS)
-    notification_bridge.NotifyDownloadSuccessful(item);
-  else
-    notification_bridge.NotifyDownloadFailed(item);
-}
-
 void OfflinePageDownloadBridge::Destroy(JNIEnv* env,
                                         const JavaParamRef<jobject>&) {
   download_ui_adapter_->RemoveObserver(this);
@@ -220,49 +331,12 @@ void OfflinePageDownloadBridge::StartDownload(
     return;
 
   GURL url = web_contents->GetLastCommittedURL();
-  offline_pages::ClientId client_id;
-  client_id.name_space = offline_pages::kDownloadNamespace;
-  client_id.id = base::GenerateGUID();
 
-  // If the page is not loaded enough to be captured, submit a background loader
-  // request instead.
-  offline_pages::RecentTabHelper* tab_helper =
-      RecentTabHelper::FromWebContents(web_contents);
-  if (tab_helper &&
-      !tab_helper->is_page_ready_for_snapshot() &&
-      offline_pages::IsBackgroundLoaderForDownloadsEnabled()) {
-    // TODO(dimich): Improve this to wait for the page load if it is still going
-    // on. Pre-submit the request and if the load finishes and capture happens,
-    // remove request.
-    offline_pages::RequestCoordinator* request_coordinator =
-        offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
-            tab->GetProfile()->GetOriginalProfile());
-    request_coordinator->SavePageLater(
-        url, client_id, true,
-        RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER);
-    return;
-  }
+  ScopedJavaGlobalRef<jobject> j_tab_ref(env, j_tab);
 
-  // Page is ready, capture it right from the tab.
-  offline_pages::OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(
-          tab->GetProfile()->GetOriginalProfile());
-  if (!offline_page_model)
-    return;
-
-  auto archiver =
-      base::MakeUnique<offline_pages::OfflinePageMHTMLArchiver>(web_contents);
-
-  DownloadUIItem item;
-  item.guid = client_id.id;
-  item.url = url;
-
-  OfflinePageNotificationBridge bridge;
-  bridge.NotifyDownloadProgress(item);
-
-  offline_page_model->SavePage(
-      url, client_id, 0l, std::move(archiver),
-      base::Bind(&OfflinePageDownloadBridge::SavePageCallback, item));
+  OfflinePageUtils::CheckExistenceOfPagesWithURL(
+      tab->GetProfile()->GetOriginalProfile(), kDownloadNamespace, url,
+      base::Bind(&ModelDuplicateCheckDone, url, j_tab_ref));
 }
 
 void OfflinePageDownloadBridge::CancelDownload(

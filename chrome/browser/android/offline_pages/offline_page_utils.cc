@@ -13,7 +13,10 @@
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
+#include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/android/tab_android.h"
+#include "components/offline_pages/background/request_coordinator.h"
+#include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
@@ -102,6 +105,71 @@ bool OfflinePageUtils::GetTabId(content::WebContents* web_contents,
     return false;
   *tab_id = tab_android->GetAndroidId();
   return true;
+}
+
+// static
+void OfflinePageUtils::CheckExistenceOfPagesWithURL(
+    content::BrowserContext* browser_context,
+    const std::string name_space,
+    const GURL& offline_page_url,
+    const base::Callback<void(bool)>& callback) {
+  OfflinePageModel* offline_page_model =
+      OfflinePageModelFactory::GetForBrowserContext(browser_context);
+  DCHECK(offline_page_model);
+  auto continuation = [](const std::string& name_space,
+                         const base::Callback<void(bool)>& callback,
+                         const std::vector<OfflinePageItem>& pages) {
+    for (auto& page : pages) {
+      if (page.client_id.name_space == name_space) {
+        callback.Run(true);
+        return;
+      }
+    }
+    callback.Run(false);
+  };
+
+  offline_page_model->GetPagesByOnlineURL(
+      offline_page_url, base::Bind(continuation, name_space, callback));
+}
+
+// static
+void OfflinePageUtils::CheckExistenceOfRequestsWithURL(
+    content::BrowserContext* browser_context,
+    const std::string name_space,
+    const GURL& offline_page_url,
+    const base::Callback<void(bool)>& callback) {
+  RequestCoordinator* request_coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(browser_context);
+
+  auto request_coordinator_continuation = [](
+      const std::string& name_space, const GURL& offline_page_url,
+      const base::Callback<void(bool)>& callback,
+      std::vector<std::unique_ptr<SavePageRequest>> requests) {
+    for (auto& request : requests) {
+      if (request->url() == offline_page_url &&
+          request->client_id().name_space == name_space) {
+        callback.Run(true);
+        return;
+      }
+    }
+    callback.Run(false);
+  };
+
+  request_coordinator->GetAllRequests(
+      base::Bind(request_coordinator_continuation, name_space, offline_page_url,
+                 callback));
+}
+
+// static
+bool OfflinePageUtils::EqualsIgnoringFragment(const GURL& lhs,
+                                              const GURL& rhs) {
+  GURL::Replacements remove_params;
+  remove_params.ClearRef();
+
+  GURL lhs_stripped = lhs.ReplaceComponents(remove_params);
+  GURL rhs_stripped = lhs.ReplaceComponents(remove_params);
+
+  return lhs_stripped == rhs_stripped;
 }
 
 }  // namespace offline_pages

@@ -82,5 +82,11 @@ void OfflinePageNotificationBridge::NotifyDownloadCanceled(
       env, GetApplicationContext(), ConvertUTF8ToJavaString(env, item.guid));
 }
 
+void OfflinePageNotificationBridge::ShowDownloadingToast() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_OfflinePageNotificationBridge_showDownloadingToast(
+      env, GetApplicationContext());
+}
+
 }  // namespace android
 }  // namespace offline_pages

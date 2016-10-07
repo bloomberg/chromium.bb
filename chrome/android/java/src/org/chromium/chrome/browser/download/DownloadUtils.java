@@ -190,7 +190,6 @@ public class DownloadUtils {
         bridge.startDownload(tab);
         bridge.destroy();
         DownloadUtils.recordDownloadPageMetrics(tab);
-        DownloadUtils.showDownloadStartToast(context);
     }
 
     /**
