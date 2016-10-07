@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://mediasession.spec.whatwg.org/
-// https://github.com/whatwg/mediasession/pull/129 (spec proposal for artwork)
+// https://wicg.github.io/mediasession/#the-mediaimage-interface
 
 [
     ConstructorCallWith=ExecutionContext,
-    Constructor(MediaArtworkInit artwork),
+    Constructor(MediaImageInit image),
     RuntimeEnabled=MediaSession,
-] interface MediaArtwork {
+] interface MediaImage {
   readonly attribute USVString src;
   readonly attribute DOMString sizes;
   readonly attribute DOMString type;

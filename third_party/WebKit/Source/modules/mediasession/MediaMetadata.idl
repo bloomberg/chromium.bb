@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://mediasession.spec.whatwg.org/#the-mediametadata-interface
+// https://wicg.github.io/mediasession/#the-mediametadata-interface
 
 [
     ConstructorCallWith=ExecutionContext,
@@ -12,5 +12,5 @@
     readonly attribute DOMString title;
     readonly attribute DOMString artist;
     readonly attribute DOMString album;
-    readonly attribute FrozenArray<MediaArtwork> artwork;
+    readonly attribute FrozenArray<MediaImage> artwork;
 };

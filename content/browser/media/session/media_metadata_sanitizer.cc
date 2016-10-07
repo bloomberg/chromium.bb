@@ -19,17 +19,17 @@ namespace {
 // it.
 const size_t kMaxIPCStringLength = 4 * 1024;
 
-// Maximum type length of Artwork, which conforms to RFC 4288
+// Maximum type length of MediaImage, which conforms to RFC 4288
 // (https://tools.ietf.org/html/rfc4288).
-const size_t kMaxArtworkTypeLength = 2 * 127 + 1;
+const size_t kMaxMediaImageTypeLength = 2 * 127 + 1;
 
-// Maximum number of artwork images inside the MediaMetadata.
-const size_t kMaxNumberOfArtworkImages = 10;
+// Maximum number of MediaImages inside the MediaMetadata.
+const size_t kMaxNumberOfMediaImages = 10;
 
-// Maximum of sizes in an artwork image.
-const size_t kMaxNumberOfArtworkSizes = 10;
+// Maximum of sizes in a MediaImage.
+const size_t kMaxNumberOfMediaImageSizes = 10;
 
-bool CheckArtworkSrcSanity(const GURL& src) {
+bool CheckMediaImageSrcSanity(const GURL& src) {
   if (!src.is_valid())
     return false;
   if (!src.SchemeIsHTTPOrHTTPS() && !src.SchemeIs(url::kDataScheme))
@@ -40,30 +40,31 @@ bool CheckArtworkSrcSanity(const GURL& src) {
   return true;
 }
 
-bool CheckArtworkSanity(const MediaMetadata::Artwork& artwork) {
-  if (!CheckArtworkSrcSanity(artwork.src))
+bool CheckMediaImageSanity(const MediaMetadata::MediaImage& image) {
+  if (!CheckMediaImageSrcSanity(image.src))
     return false;
-  if (artwork.type.size() > kMaxArtworkTypeLength)
+  if (image.type.size() > kMaxMediaImageTypeLength)
     return false;
-  if (artwork.sizes.size() > kMaxNumberOfArtworkSizes)
+  if (image.sizes.size() > kMaxNumberOfMediaImageSizes)
     return false;
 
   return true;
 }
 
-// Sanitize artwork. The method should not be called if |artwork.src| is bad.
-MediaMetadata::Artwork SanitizeArtwork(const MediaMetadata::Artwork& artwork) {
-  MediaMetadata::Artwork sanitized_artwork;
+// Sanitize MediaImage. The method should not be called if |image.src| is bad.
+MediaMetadata::MediaImage SanitizeMediaImage(
+    const MediaMetadata::MediaImage& image) {
+  MediaMetadata::MediaImage sanitized_image;
 
-  sanitized_artwork.src = artwork.src;
-  sanitized_artwork.type = artwork.type.substr(0, kMaxArtworkTypeLength);
-  for (const auto& size : artwork.sizes) {
-    sanitized_artwork.sizes.push_back(size);
-    if (sanitized_artwork.sizes.size() == kMaxNumberOfArtworkSizes)
+  sanitized_image.src = image.src;
+  sanitized_image.type = image.type.substr(0, kMaxMediaImageTypeLength);
+  for (const auto& size : image.sizes) {
+    sanitized_image.sizes.push_back(size);
+    if (sanitized_image.sizes.size() == kMaxNumberOfMediaImageSizes)
       break;
   }
 
-  return sanitized_artwork;
+  return sanitized_image;
 }
 
 }  // anonymous namespace
@@ -75,12 +76,12 @@ bool MediaMetadataSanitizer::CheckSanity(const MediaMetadata& metadata) {
     return false;
   if (metadata.album.size() > kMaxIPCStringLength)
     return false;
-  if (metadata.artwork.size() > kMaxNumberOfArtworkImages)
+  if (metadata.artwork.size() > kMaxNumberOfMediaImages)
     return false;
 
-  for (const auto& artwork : metadata.artwork) {
-    if (!CheckArtworkSanity(artwork))
-        return false;
+  for (const auto& image : metadata.artwork) {
+    if (!CheckMediaImageSanity(image))
+      return false;
   }
 
   return true;
@@ -93,14 +94,14 @@ MediaMetadata MediaMetadataSanitizer::Sanitize(const MediaMetadata& metadata) {
   sanitized_metadata.artist = metadata.artist.substr(0, kMaxIPCStringLength);
   sanitized_metadata.album = metadata.album.substr(0, kMaxIPCStringLength);
 
-  for (const auto& artwork : metadata.artwork) {
-    if (!CheckArtworkSrcSanity(artwork.src))
+  for (const auto& image : metadata.artwork) {
+    if (!CheckMediaImageSrcSanity(image.src))
       continue;
 
     sanitized_metadata.artwork.push_back(
-        CheckArtworkSanity(artwork) ? artwork : SanitizeArtwork(artwork));
+        CheckMediaImageSanity(image) ? image : SanitizeMediaImage(image));
 
-    if (sanitized_metadata.artwork.size() == kMaxNumberOfArtworkImages)
+    if (sanitized_metadata.artwork.size() == kMaxNumberOfMediaImages)
       break;
   }
 

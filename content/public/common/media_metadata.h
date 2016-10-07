@@ -18,7 +18,7 @@ namespace content {
 struct CONTENT_EXPORT MediaMetadata {
   // TODO(zqzhang): move |Manifest::Icon| to a common place. See
   // https://crbug.com/621859.
-  using Artwork = Manifest::Icon;
+  using MediaImage = Manifest::Icon;
 
   MediaMetadata();
   ~MediaMetadata();
@@ -38,7 +38,7 @@ struct CONTENT_EXPORT MediaMetadata {
   base::string16 album;
 
   // Artwork associated to the MediaSession.
-  std::vector<Artwork> artwork;
+  std::vector<MediaImage> artwork;
 };
 
 }  // namespace content

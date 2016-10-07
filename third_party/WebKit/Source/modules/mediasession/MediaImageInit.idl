@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://mediasession.spec.whatwg.org/
-// https://github.com/whatwg/mediasession/pull/129 (spec proposal for artwork)
+// https://wicg.github.io/mediasession/#dictdef-mediaimageinit
 
-dictionary MediaArtworkInit {
+dictionary MediaImageInit {
   USVString src = "";
   DOMString sizes = "";
   DOMString type = "";

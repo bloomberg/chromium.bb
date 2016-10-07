@@ -11,23 +11,23 @@ namespace mojo {
 
 template <>
 struct StructTraits<blink::mojom::MediaImageDataView,
-                    content::MediaMetadata::Artwork> {
-  static const GURL& src(const content::MediaMetadata::Artwork& artwork) {
-    return artwork.src;
+                    content::MediaMetadata::MediaImage> {
+  static const GURL& src(const content::MediaMetadata::MediaImage& image) {
+    return image.src;
   }
 
   static const base::string16& type(
-      const content::MediaMetadata::Artwork& artwork) {
-    return artwork.type;
+      const content::MediaMetadata::MediaImage& image) {
+    return image.type;
   }
 
   static const std::vector<gfx::Size>& sizes(
-      const content::MediaMetadata::Artwork& artwork) {
-    return artwork.sizes;
+      const content::MediaMetadata::MediaImage& image) {
+    return image.sizes;
   }
 
   static bool Read(blink::mojom::MediaImageDataView data,
-                   content::MediaMetadata::Artwork* out) {
+                   content::MediaMetadata::MediaImage* out) {
     if (!data.ReadSrc(&out->src))
       return false;
     if (!data.ReadType(&out->type))
@@ -54,7 +54,7 @@ struct StructTraits<blink::mojom::MediaMetadataDataView,
     return metadata.album;
   }
 
-  static const std::vector<content::MediaMetadata::Artwork>& artwork(
+  static const std::vector<content::MediaMetadata::MediaImage>& artwork(
       const content::MediaMetadata& metadata) {
     return metadata.artwork;
   }

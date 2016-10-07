@@ -6,6 +6,6 @@ mojom = "//third_party/WebKit/public/platform/modules/mediasession/media_session
 public_headers = [ "//content/public/common/media_metadata.h" ]
 traits_headers = [ "//content/common/media/media_session_struct_traits.h" ]
 type_mappings = [
-  "blink.mojom.MediaImage=content::MediaMetadata::Artwork",
+  "blink.mojom.MediaImage=content::MediaMetadata::MediaImage",
   "blink.mojom.MediaMetadata=content::MediaMetadata",
 ]

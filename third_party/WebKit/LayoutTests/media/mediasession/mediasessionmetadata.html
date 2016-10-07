@@ -36,14 +36,14 @@
     assert_equals(metadata.artist, 'plop');
     assert_equals(2, metadata.artwork.length);
 
-    var artwork1 = new MediaArtwork({ src: 'src1', sizes: 'sizes1', type: 'type1'});
-    var artwork2 = new MediaArtwork({ src: 'src2', sizes: 'sizes2', type: 'type2'});
-    assert_equals(metadata.artwork[0].src, artwork1.src);
-    assert_equals(metadata.artwork[0].sizes, artwork1.sizes);
-    assert_equals(metadata.artwork[0].type, artwork1.type);
-    assert_equals(metadata.artwork[1].src, artwork2.src);
-    assert_equals(metadata.artwork[1].sizes, artwork2.sizes);
-    assert_equals(metadata.artwork[1].type, artwork2.type);
+    var image1 = new MediaImage({ src: 'src1', sizes: 'sizes1', type: 'type1'});
+    var image2 = new MediaImage({ src: 'src2', sizes: 'sizes2', type: 'type2'});
+    assert_equals(metadata.artwork[0].src, image1.src);
+    assert_equals(metadata.artwork[0].sizes, image1.sizes);
+    assert_equals(metadata.artwork[0].type, image1.type);
+    assert_equals(metadata.artwork[1].src, image2.src);
+    assert_equals(metadata.artwork[1].sizes, image2.sizes);
+    assert_equals(metadata.artwork[1].type, image2.type);
   }, 'Test the different values allowed in MediaMetadata init dictionary');
 
   test(function() {

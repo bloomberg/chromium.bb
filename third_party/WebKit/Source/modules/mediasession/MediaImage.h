@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaArtwork_h
-#define MediaArtwork_h
+#ifndef MediaImage_h
+#define MediaImage_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
@@ -13,15 +13,15 @@
 namespace blink {
 
 class ExecutionContext;
-class MediaArtworkInit;
+class MediaImageInit;
 
-class MODULES_EXPORT MediaArtwork final
-    : public GarbageCollectedFinalized<MediaArtwork>,
+class MODULES_EXPORT MediaImage final
+    : public GarbageCollectedFinalized<MediaImage>,
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MediaArtwork* create(ExecutionContext*, const MediaArtworkInit&);
+  static MediaImage* create(ExecutionContext*, const MediaImageInit&);
 
   String src() const;
   String sizes() const;
@@ -30,12 +30,13 @@ class MODULES_EXPORT MediaArtwork final
   DEFINE_INLINE_TRACE() {}
 
  private:
-  MediaArtwork(ExecutionContext*, const MediaArtworkInit&);
+  MediaImage(ExecutionContext*, const MediaImageInit&);
 
   String m_src;
   String m_sizes;
   String m_type;
 };
-}
 
-#endif  // MediaArtwork_h
+}  // namespace blink
+
+#endif  // MediaImage_h
