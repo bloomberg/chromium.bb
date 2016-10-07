@@ -222,17 +222,20 @@ MediaRouterUI::~MediaRouterUI() {
 }
 
 void MediaRouterUI::InitWithDefaultMediaSource(
-    const base::WeakPtr<PresentationServiceDelegateImpl>& delegate) {
-  DCHECK(delegate);
+    content::WebContents* initiator,
+    PresentationServiceDelegateImpl* delegate) {
+  DCHECK(initiator);
   DCHECK(!presentation_service_delegate_);
   DCHECK(!query_result_manager_.get());
 
-  presentation_service_delegate_ = delegate;
-  presentation_service_delegate_->AddDefaultPresentationRequestObserver(this);
-  InitCommon(presentation_service_delegate_->web_contents());
-  if (presentation_service_delegate_->HasDefaultPresentationRequest()) {
-    OnDefaultPresentationChanged(
-        presentation_service_delegate_->GetDefaultPresentationRequest());
+  InitCommon(initiator);
+  if (delegate) {
+    presentation_service_delegate_ = delegate->GetWeakPtr();
+    presentation_service_delegate_->AddDefaultPresentationRequestObserver(this);
+  }
+
+  if (delegate && delegate->HasDefaultPresentationRequest()) {
+    OnDefaultPresentationChanged(delegate->GetDefaultPresentationRequest());
   } else {
     // Register for MediaRoute updates without a media source.
     routes_observer_.reset(new UIMediaRoutesObserver(
@@ -243,16 +246,17 @@ void MediaRouterUI::InitWithDefaultMediaSource(
 
 void MediaRouterUI::InitWithPresentationSessionRequest(
     content::WebContents* initiator,
-    const base::WeakPtr<PresentationServiceDelegateImpl>& delegate,
+    PresentationServiceDelegateImpl* delegate,
     std::unique_ptr<CreatePresentationConnectionRequest>
         create_session_request) {
   DCHECK(initiator);
+  DCHECK(delegate);
   DCHECK(create_session_request);
   DCHECK(!create_session_request_);
   DCHECK(!query_result_manager_);
 
   create_session_request_ = std::move(create_session_request);
-  presentation_service_delegate_ = delegate;
+  presentation_service_delegate_ = delegate->GetWeakPtr();
   InitCommon(initiator);
   OnDefaultPresentationChanged(create_session_request_->presentation_request());
 }

@@ -311,13 +311,10 @@ void MediaRouterDialogControllerImpl::PopulateDialog(
 
   std::unique_ptr<CreatePresentationConnectionRequest>
       create_connection_request(TakeCreateConnectionRequest());
-  // TODO(imcheng): Don't create PresentationServiceDelegateImpl if it doesn't
-  // exist (crbug.com/508695).
-  base::WeakPtr<PresentationServiceDelegateImpl> delegate =
-      PresentationServiceDelegateImpl::GetOrCreateForWebContents(initiator())
-          ->GetWeakPtr();
+  PresentationServiceDelegateImpl* delegate =
+      PresentationServiceDelegateImpl::FromWebContents(initiator());
   if (!create_connection_request.get()) {
-    media_router_ui->InitWithDefaultMediaSource(delegate);
+    media_router_ui->InitWithDefaultMediaSource(initiator(), delegate);
   } else {
     media_router_ui->InitWithPresentationSessionRequest(
         initiator(), delegate, std::move(create_connection_request));

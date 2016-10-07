@@ -61,6 +61,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   // Initializes internal state (e.g. starts listening for MediaSinks) for
   // targeting the default MediaSource (if any) of the initiator tab that owns
+  // |initiator|: Reference to the WebContents that initiated the dialog.
+  //              Must not be null.
   // |delegate|, as well as mirroring sources of that tab.
   // The contents of the UI will change as the default MediaSource changes.
   // If there is a default MediaSource, then DEFAULT MediaCastMode will be
@@ -70,8 +72,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   //             Must not be null.
   // TODO(imcheng): Replace use of impl with an intermediate abstract
   // interface.
-  void InitWithDefaultMediaSource(
-      const base::WeakPtr<PresentationServiceDelegateImpl>& delegate);
+  void InitWithDefaultMediaSource(content::WebContents* initiator,
+                                  PresentationServiceDelegateImpl* delegate);
 
   // Initializes internal state targeting the presentation specified in
   // |request|. Also sets up mirroring sources based on |initiator|.
@@ -87,7 +89,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   //                         ownership of it. Must not be null.
   void InitWithPresentationSessionRequest(
       content::WebContents* initiator,
-      const base::WeakPtr<PresentationServiceDelegateImpl>& delegate,
+      PresentationServiceDelegateImpl* delegate,
       std::unique_ptr<CreatePresentationConnectionRequest>
           presentation_request);
 
