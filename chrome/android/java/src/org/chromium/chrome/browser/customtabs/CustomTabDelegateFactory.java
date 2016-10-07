@@ -47,13 +47,13 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
         }
 
         @Override
-        public void startActivity(Intent intent) {
-            super.startActivity(intent);
+        public void startActivity(Intent intent, boolean proxy) {
+            super.startActivity(intent, proxy);
             mHasActivityStarted = true;
         }
 
         @Override
-        public boolean startActivityIfNeeded(Intent intent) {
+        public boolean startActivityIfNeeded(Intent intent, boolean proxy) {
             boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(intent.toUri(0));
             boolean hasDefaultHandler = hasDefaultHandler(intent);
             try {
@@ -66,12 +66,19 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
                         return false;
                     }
                 }
-                // If android fails to find a handler, handle it ourselves.
-                Context context = getAvailableContext();
-                if (context instanceof Activity
-                        && ((Activity) context).startActivityIfNeeded(intent, -1)) {
+
+                if (proxy) {
+                    dispatchAuthenticatedIntent(intent);
                     mHasActivityStarted = true;
                     return true;
+                } else {
+                    // If android fails to find a handler, handle it ourselves.
+                    Context context = getAvailableContext();
+                    if (context instanceof Activity
+                            && ((Activity) context).startActivityIfNeeded(intent, -1)) {
+                        mHasActivityStarted = true;
+                        return true;
+                    }
                 }
                 return false;
             } catch (RuntimeException e) {

@@ -61,23 +61,36 @@ interface ExternalNavigationDelegate {
 
     /**
      * Start an activity for the intent. Used for intents that must be handled externally.
+     * @param intent The intent we want to send.
+     * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
+     *              used by Instant Apps intents).
      */
-    void startActivity(Intent intent);
+    void startActivity(Intent intent, boolean proxy);
 
     /**
      * Start an activity for the intent. Used for intents that may be handled internally or
      * externally. If the user chooses to handle the intent internally, this routine must return
      * false.
+     * @param intent The intent we want to send.
+     * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
+     *              used by Instant Apps intents).
      */
-    boolean startActivityIfNeeded(Intent intent);
+    boolean startActivityIfNeeded(Intent intent, boolean proxy);
 
     /**
      * Display a dialog warning the user that they may be leaving Chrome by starting this
      * intent. Give the user the opportunity to cancel the action. And if it is canceled, a
      * navigation will happen in Chrome.
+     * @param intent The intent for external application that will be sent.
+     * @param referrerUrl The referrer for the current navigation.
+     * @param fallbackUrl The URL to load if the user doesn't proceed with external intent.
+     * @param tab The current tab.
+     * @param needsToCloseTab Whether the current tab has to be closed after the intent is sent.
+     * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
+     *              used by Instant Apps intents.
      */
     void startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl, Tab tab,
-            boolean needsToCloseTab);
+            boolean needsToCloseTab, boolean proxy);
 
     /**
      * @param url The requested url.
