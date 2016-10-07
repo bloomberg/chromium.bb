@@ -8,20 +8,49 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserMode.h"
+#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/shadow/ShadowRootInit.h"
+#include "core/frame/FrameView.h"
+#include "core/html/HTMLElement.h"
+#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 class ActiveStyleSheetsTest : public ::testing::Test {
- public:
-  static CSSStyleSheet* createSheet() {
+ protected:
+  static CSSStyleSheet* createSheet(const String& cssText = String()) {
     StyleSheetContents* contents =
         StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
+    contents->parseString(cssText);
     contents->ensureRuleSet(MediaQueryEvaluator(),
                             RuleHasDocumentSecurityOrigin);
     return CSSStyleSheet::create(contents);
   }
 };
+
+class ApplyRulesetsTest : public ActiveStyleSheetsTest {
+ protected:
+  void SetUp() override {
+    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+  }
+
+  Document& document() { return m_dummyPageHolder->document(); }
+  StyleEngine& styleEngine() { return document().styleEngine(); }
+  ShadowRoot& attachShadow(Element& host);
+
+ private:
+  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+};
+
+ShadowRoot& ApplyRulesetsTest::attachShadow(Element& host) {
+  ShadowRootInit init;
+  init.setMode("open");
+  ShadowRoot* shadowRoot = host.attachShadow(
+      ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+  EXPECT_TRUE(shadowRoot);
+  return *shadowRoot;
+}
 
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_NoChange) {
   ActiveStyleSheetVector oldSheets;
@@ -269,6 +298,109 @@ TEST_F(ActiveStyleSheetsTest,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
   ASSERT_EQ(1u, changedRuleSets.size());
   EXPECT_EQ(&sheet3->contents()->ruleSet(), changedRuleSets[0]);
+}
+
+TEST_F(ApplyRulesetsTest, AddUniversalRuleToDocument) {
+  document().view()->updateAllLifecyclePhases();
+
+  CSSStyleSheet* sheet = createSheet("body * { color:red }");
+
+  ActiveStyleSheetVector newStyleSheets;
+  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+
+  applyRuleSetChanges(styleEngine(), document(), ActiveStyleSheetVector(),
+                      newStyleSheets);
+
+  EXPECT_EQ(SubtreeStyleChange, document().getStyleChangeType());
+}
+
+TEST_F(ApplyRulesetsTest, AddUniversalRuleToShadowTree) {
+  document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+  Element* host = document().getElementById("host");
+  ASSERT_TRUE(host);
+
+  ShadowRoot& shadowRoot = attachShadow(*host);
+  document().view()->updateAllLifecyclePhases();
+
+  CSSStyleSheet* sheet = createSheet("body * { color:red }");
+
+  ActiveStyleSheetVector newStyleSheets;
+  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+
+  applyRuleSetChanges(styleEngine(), shadowRoot, ActiveStyleSheetVector(),
+                      newStyleSheets);
+
+  EXPECT_FALSE(document().needsStyleRecalc());
+  EXPECT_EQ(SubtreeStyleChange, host->getStyleChangeType());
+}
+
+TEST_F(ApplyRulesetsTest, AddShadowV0BoundaryCrossingRuleToDocument) {
+  document().view()->updateAllLifecyclePhases();
+
+  CSSStyleSheet* sheet = createSheet(".a /deep/ .b { color:red }");
+
+  ActiveStyleSheetVector newStyleSheets;
+  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+
+  applyRuleSetChanges(styleEngine(), document(), ActiveStyleSheetVector(),
+                      newStyleSheets);
+
+  EXPECT_EQ(SubtreeStyleChange, document().getStyleChangeType());
+}
+
+TEST_F(ApplyRulesetsTest, AddShadowV0BoundaryCrossingRuleToShadowTree) {
+  document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+  Element* host = document().getElementById("host");
+  ASSERT_TRUE(host);
+
+  ShadowRoot& shadowRoot = attachShadow(*host);
+  document().view()->updateAllLifecyclePhases();
+
+  CSSStyleSheet* sheet = createSheet(".a /deep/ .b { color:red }");
+
+  ActiveStyleSheetVector newStyleSheets;
+  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+
+  applyRuleSetChanges(styleEngine(), shadowRoot, ActiveStyleSheetVector(),
+                      newStyleSheets);
+
+  EXPECT_FALSE(document().needsStyleRecalc());
+  EXPECT_EQ(SubtreeStyleChange, host->getStyleChangeType());
+}
+
+TEST_F(ApplyRulesetsTest, AddFontFaceRuleToDocument) {
+  document().view()->updateAllLifecyclePhases();
+
+  CSSStyleSheet* sheet =
+      createSheet("@font-face { font-family: ahum; src: url(ahum.ttf) }");
+
+  ActiveStyleSheetVector newStyleSheets;
+  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+
+  applyRuleSetChanges(styleEngine(), document(), ActiveStyleSheetVector(),
+                      newStyleSheets);
+
+  EXPECT_EQ(SubtreeStyleChange, document().getStyleChangeType());
+}
+
+TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {
+  document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+  Element* host = document().getElementById("host");
+  ASSERT_TRUE(host);
+
+  ShadowRoot& shadowRoot = attachShadow(*host);
+  document().view()->updateAllLifecyclePhases();
+
+  CSSStyleSheet* sheet =
+      createSheet("@font-face { font-family: ahum; src: url(ahum.ttf) }");
+
+  ActiveStyleSheetVector newStyleSheets;
+  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+
+  applyRuleSetChanges(styleEngine(), shadowRoot, ActiveStyleSheetVector(),
+                      newStyleSheets);
+
+  EXPECT_FALSE(document().needsLayoutTreeUpdate());
 }
 
 }  // namespace blink

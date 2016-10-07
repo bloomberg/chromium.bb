@@ -814,7 +814,7 @@ void StyleEngine::scheduleNthPseudoInvalidations(ContainerNode& nthParent) {
 
 void StyleEngine::scheduleRuleSetInvalidationsForElement(
     Element& element,
-    const HeapVector<Member<const RuleSet>>& ruleSets) {
+    const HeapVector<Member<RuleSet>>& ruleSets) {
   AtomicString id;
   const SpaceSplitString* classNames = nullptr;
 
@@ -857,7 +857,7 @@ void StyleEngine::invalidateSlottedElements(HTMLSlotElement& slot) {
 
 void StyleEngine::scheduleInvalidationsForRuleSets(
     TreeScope& treeScope,
-    const HeapVector<Member<const RuleSet>>& ruleSets) {
+    const HeapVector<Member<RuleSet>>& ruleSets) {
 #if DCHECK_IS_ON()
   // Full scope recalcs should be handled while collecting the ruleSets before
   // calling this method.

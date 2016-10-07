@@ -105,6 +105,22 @@ void ScopedStyleResolver::appendCSSStyleSheet(
       ruleSet.deviceDependentMediaQueryResults());
 }
 
+void ScopedStyleResolver::appendActiveStyleSheets(
+    unsigned index,
+    const ActiveStyleSheetVector& activeSheets) {
+  for (auto activeIterator = activeSheets.begin() + index;
+       activeIterator != activeSheets.end(); activeIterator++) {
+    CSSStyleSheet* sheet = activeIterator->first;
+    if (!activeIterator->second)
+      continue;
+    const RuleSet& ruleSet = *activeIterator->second;
+    m_authorStyleSheets.append(sheet);
+    addKeyframeRules(ruleSet);
+    addFontFaceRules(ruleSet);
+    addTreeBoundaryCrossingRules(ruleSet, sheet, index++);
+  }
+}
+
 void ScopedStyleResolver::collectFeaturesTo(
     RuleFeatureSet& features,
     HeapHashSet<Member<const StyleSheetContents>>&
@@ -157,7 +173,8 @@ void ScopedStyleResolver::addKeyframeStyle(StyleRuleKeyframes* rule) {
   }
 }
 
-static Node& invalidationRootFor(const TreeScope& treeScope) {
+ContainerNode& ScopedStyleResolver::invalidationRootForTreeScope(
+    const TreeScope& treeScope) {
   if (treeScope.rootNode() == treeScope.document())
     return treeScope.document();
   return toShadowRoot(treeScope.rootNode()).host();
@@ -190,7 +207,7 @@ void ScopedStyleResolver::keyframesRulesAdded(const TreeScope& treeScope) {
     // rules were found for the animation-name, we need to recalculate style
     // for the elements in the scope, including its shadow host if
     // applicable.
-    invalidationRootFor(treeScope).setNeedsStyleRecalc(
+    invalidationRootForTreeScope(treeScope).setNeedsStyleRecalc(
         SubtreeStyleChange, StyleChangeReasonForTracing::create(
                                 StyleChangeReason::StyleSheetChange));
     return;
