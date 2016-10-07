@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_TEST_RUNNER_WEB_TEST_DELEGATE_H_
 #define COMPONENTS_TEST_RUNNER_WEB_TEST_DELEGATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -25,10 +26,11 @@ class DictionaryValue;
 namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
-class WebFrame;
+class WebLocalFrame;
 class WebGamepad;
 class WebGamepads;
 class WebHistoryItem;
+class WebInputEvent;
 class WebLayer;
 class WebLocalFrame;
 class WebMediaStream;
@@ -53,7 +55,7 @@ namespace test_runner {
 class DeviceLightData;
 class GamepadController;
 class WebTask;
-class WebViewTestProxyBase;
+class WebWidgetTestProxyBase;
 struct TestPreferences;
 
 class WebTestDelegate {
@@ -161,6 +163,21 @@ class WebTestDelegate {
   // convert from window coordinates to viewport coordinates. When
   // use-zoom-for-dsf is disabled, this return always 1.0f.
   virtual float GetWindowToViewportScale() = 0;
+
+  // Converts |event| from screen coordinates used by test_runner::EventSender
+  // into coordinates that are understood by the widget associated with
+  // |web_widget_test_proxy_base|.  Returns nullptr if no transformation was
+  // necessary (e.g. for a keyboard event OR if widget requires no scaling
+  // and has coordinates starting at (0,0)).
+  virtual std::unique_ptr<blink::WebInputEvent>
+  TransformScreenToWidgetCoordinates(
+      test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base,
+      const blink::WebInputEvent& event) = 0;
+
+  // Gets WebWidgetTestProxyBase associated with |frame| (associated with either
+  // a RenderView or a RenderWidget for the local root).
+  virtual test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
+      blink::WebLocalFrame* frame) = 0;
 
   // Enable zoom-for-dsf option.
   virtual void EnableUseZoomForDSF() = 0;

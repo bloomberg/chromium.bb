@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -20,9 +22,11 @@
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_view_test_proxy.h"
+#include "components/test_runner/web_widget_test_proxy.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebPointerProperties.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -1280,8 +1284,8 @@ EventSender::SavedEvent::SavedEvent()
       milliseconds(0),
       modifiers(0) {}
 
-EventSender::EventSender(WebViewTestProxyBase* web_view_test_proxy_base)
-    : web_view_test_proxy_base_(web_view_test_proxy_base),
+EventSender::EventSender(WebWidgetTestProxyBase* web_widget_test_proxy_base)
+    : web_widget_test_proxy_base_(web_widget_test_proxy_base),
       replaying_saved_events_(false),
       weak_factory_(this) {
   Reset();
@@ -1294,10 +1298,10 @@ void EventSender::Reset() {
   current_drag_data_.reset();
   current_drag_effect_ = blink::WebDragOperationNone;
   current_drag_effects_allowed_ = blink::WebDragOperationNone;
-  if (view() &&
+  if (widget() &&
       current_pointer_state_[kRawMousePointerId].pressed_button_ !=
           WebMouseEvent::Button::NoButton)
-    view()->mouseCaptureLost();
+    widget()->mouseCaptureLost();
   current_pointer_state_.clear();
   is_drag_mode_ = true;
   force_layout_on_events_ = true;
@@ -1340,19 +1344,20 @@ void EventSender::SetContextMenuData(const WebContextMenuData& data) {
 
 void EventSender::DoDragDrop(const WebDragData& drag_data,
                               WebDragOperationsMask mask) {
-  WebMouseEvent unscaled_event;
+  WebMouseEvent raw_event;
   InitMouseEvent(WebInputEvent::MouseDown,
                  current_pointer_state_[kRawMousePointerId].pressed_button_,
                  current_pointer_state_[kRawMousePointerId].current_buttons_,
                  current_pointer_state_[kRawMousePointerId].last_pos_,
                  GetCurrentEventTimeSec(), click_count_,
                  current_pointer_state_[kRawMousePointerId].modifiers_,
-                 &unscaled_event);
+                 &raw_event);
 
-  std::unique_ptr<WebInputEvent> scaled_event = ScaleEvent(unscaled_event);
+  std::unique_ptr<WebInputEvent> widget_event =
+      TransformScreenToWidgetCoordinates(raw_event);
   const WebMouseEvent* event =
-      scaled_event.get() ? static_cast<WebMouseEvent*>(scaled_event.get())
-                         : &unscaled_event;
+      widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
+                         : &raw_event;
 
   WebPoint client_point(event->x, event->y);
   WebPoint screen_point(event->globalX, event->globalY);
@@ -1387,7 +1392,7 @@ void EventSender::PointerDown(int button_number,
                               int tiltX,
                               int tiltY) {
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
 
   DCHECK_NE(-1, button_number);
 
@@ -1424,7 +1429,7 @@ void EventSender::PointerUp(int button_number,
                             int tiltX,
                             int tiltY) {
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
 
   DCHECK_NE(-1, button_number);
 
@@ -1693,7 +1698,7 @@ void EventSender::KeyDown(const std::string& code_str,
   // EventSender.m forces a layout here, with at least one
   // test (fast/forms/focus-control-to-page.html) relying on this.
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
 
   // In the browser, if a keyboard event corresponds to an editor command,
   // the command will be dispatched to the renderer just before dispatching
@@ -1734,9 +1739,8 @@ void EventSender::FireKeyboardEventsToElement() {}
 void EventSender::ClearKillRing() {}
 
 std::vector<std::string> EventSender::ContextClick() {
-  if (force_layout_on_events_) {
-    view()->updateAllLifecyclePhases();
-  }
+  if (force_layout_on_events_)
+    widget()->updateAllLifecyclePhases();
 
   UpdateClickCountForButton(WebMouseEvent::Button::Right);
 
@@ -1910,7 +1914,7 @@ void EventSender::GestureFlingCancel() {
   event.timeStampSeconds = GetCurrentEventTimeSec();
 
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
 
   HandleInputEventOnViewOrPopup(event);
 }
@@ -1954,7 +1958,7 @@ void EventSender::GestureFlingStart(float x,
   event.timeStampSeconds = GetCurrentEventTimeSec();
 
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
 
   HandleInputEventOnViewOrPopup(event);
 }
@@ -2141,7 +2145,7 @@ void EventSender::MouseScrollBy(gin::Arguments* args,
 
 void EventSender::MouseMoveTo(gin::Arguments* args) {
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
 
   double x;
   double y;
@@ -2196,7 +2200,7 @@ void EventSender::MouseMoveTo(gin::Arguments* args) {
 
 void EventSender::MouseLeave() {
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
 
   WebMouseEvent event;
   InitMouseEvent(WebInputEvent::MouseLeave, WebMouseEvent::Button::NoButton, 0,
@@ -2265,7 +2269,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
   DCHECK_GT(static_cast<unsigned>(WebTouchEvent::kTouchesLengthCap),
             touch_points_.size());
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
 
   WebTouchEvent touch_event;
   touch_event.type = type;
@@ -2524,7 +2528,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   event.timeStampSeconds = GetCurrentEventTimeSec();
 
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
 
   WebInputEventResult result = HandleInputEventOnViewOrPopup(event);
 
@@ -2566,7 +2570,7 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
   // determined before we send events (as well as all the other methods
   // that send an event do).
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
 
   double horizontal;
   if (!args->GetNext(&horizontal)) {
@@ -2673,12 +2677,13 @@ void EventSender::InitPointerProperties(gin::Arguments* args,
     return;
 }
 
-void EventSender::FinishDragAndDrop(const WebMouseEvent& unscaled_event,
+void EventSender::FinishDragAndDrop(const WebMouseEvent& raw_event,
                                     blink::WebDragOperation drag_effect) {
-  std::unique_ptr<WebInputEvent> scaled_event = ScaleEvent(unscaled_event);
+  std::unique_ptr<WebInputEvent> widget_event =
+      TransformScreenToWidgetCoordinates(raw_event);
   const WebMouseEvent* event =
-      scaled_event.get() ? static_cast<const WebMouseEvent*>(scaled_event.get())
-                         : &unscaled_event;
+      widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
+                         : &raw_event;
 
   WebPoint client_point(event->x, event->y);
   WebPoint screen_point(event->globalX, event->globalY);
@@ -2696,11 +2701,12 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& unscaled_event,
   view()->dragSourceSystemDragEnded();
 }
 
-void EventSender::DoDragAfterMouseUp(const WebMouseEvent& unscaled_event) {
-  std::unique_ptr<WebInputEvent> scaled_event = ScaleEvent(unscaled_event);
+void EventSender::DoDragAfterMouseUp(const WebMouseEvent& raw_event) {
+  std::unique_ptr<WebInputEvent> widget_event =
+      TransformScreenToWidgetCoordinates(raw_event);
   const WebMouseEvent* event =
-      scaled_event.get() ? static_cast<WebMouseEvent*>(scaled_event.get())
-                         : &unscaled_event;
+      widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
+                         : &raw_event;
 
   last_click_time_sec_ = event->timeStampSeconds;
   last_click_pos_ = current_pointer_state_[kRawMousePointerId].last_pos_;
@@ -2719,20 +2725,21 @@ void EventSender::DoDragAfterMouseUp(const WebMouseEvent& unscaled_event) {
   if (current_drag_data_.isNull())
     return;
 
-  FinishDragAndDrop(unscaled_event, drag_effect);
+  FinishDragAndDrop(raw_event, drag_effect);
 }
 
-void EventSender::DoDragAfterMouseMove(const WebMouseEvent& unscaled_event) {
+void EventSender::DoDragAfterMouseMove(const WebMouseEvent& raw_event) {
   if (current_pointer_state_[kRawMousePointerId].pressed_button_ ==
           WebMouseEvent::Button::NoButton ||
       current_drag_data_.isNull()) {
     return;
   }
 
-  std::unique_ptr<WebInputEvent> scaled_event = ScaleEvent(unscaled_event);
+  std::unique_ptr<WebInputEvent> widget_event =
+      TransformScreenToWidgetCoordinates(raw_event);
   const WebMouseEvent* event =
-      scaled_event.get() ? static_cast<WebMouseEvent*>(scaled_event.get())
-                         : &unscaled_event;
+      widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
+                         : &raw_event;
 
   WebPoint client_point(event->x, event->y);
   WebPoint screen_point(event->globalX, event->globalY);
@@ -2789,18 +2796,26 @@ void EventSender::ReplaySavedEvents() {
 }
 
 WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
-    const WebInputEvent& unscaled_event) {
-  std::unique_ptr<WebInputEvent> scaled_event = ScaleEvent(unscaled_event);
-  const WebInputEvent* event =
-      scaled_event.get() ? scaled_event.get() : &unscaled_event;
+    const WebInputEvent& raw_event) {
+  last_event_timestamp_ = raw_event.timeStampSeconds;
 
-  last_event_timestamp_ = event->timeStampSeconds;
-
-  if (WebPagePopup* popup = view()->pagePopup()) {
-    if (!WebInputEvent::isKeyboardEventType(event->type))
-      return popup->handleInputEvent(*event);
+  WebPagePopup* popup = widget()->pagePopup();
+  if (popup && !WebInputEvent::isKeyboardEventType(raw_event.type)) {
+    // ui::ScaleWebInputEvent returns nullptr when the scale is 1.0f as the
+    // event does not have to be converted.
+    std::unique_ptr<WebInputEvent> scaled_event = ui::ScaleWebInputEvent(
+        raw_event, delegate()->GetWindowToViewportScale());
+    const WebInputEvent* popup_friendly_event =
+        scaled_event.get() ? scaled_event.get() : &raw_event;
+    return popup->handleInputEvent(*popup_friendly_event);
   }
-  return view()->handleInputEvent(*event);
+
+  std::unique_ptr<WebInputEvent> widget_event =
+      TransformScreenToWidgetCoordinates(raw_event);
+  const WebInputEvent* event =
+      widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
+                         : &raw_event;
+  return widget()->handleInputEvent(*event);
 }
 
 void EventSender::SendGesturesForMouseWheelEvent(
@@ -2829,7 +2844,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
   }
 
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
 
   HandleInputEventOnViewOrPopup(begin_event);
 
@@ -2845,7 +2860,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
       begin_event.data.scrollBegin.deltaHintUnits;
 
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
   HandleInputEventOnViewOrPopup(update_event);
 
   WebGestureEvent end_event;
@@ -2856,31 +2871,35 @@ void EventSender::SendGesturesForMouseWheelEvent(
       begin_event.data.scrollBegin.deltaHintUnits;
 
   if (force_layout_on_events_)
-    view()->updateAllLifecyclePhases();
+    widget()->updateAllLifecyclePhases();
   HandleInputEventOnViewOrPopup(end_event);
 }
 
 TestInterfaces* EventSender::interfaces() {
-  return web_view_test_proxy_base_->test_interfaces();
+  return web_widget_test_proxy_base_->web_view_test_proxy_base()
+      ->test_interfaces();
 }
 
 WebTestDelegate* EventSender::delegate() {
-  return web_view_test_proxy_base_->delegate();
+  return web_widget_test_proxy_base_->web_view_test_proxy_base()->delegate();
 }
 
 const blink::WebView* EventSender::view() const {
-  return web_view_test_proxy_base_->web_view();
+  return web_widget_test_proxy_base_->web_view_test_proxy_base()->web_view();
 }
 
 blink::WebView* EventSender::view() {
-  return web_view_test_proxy_base_->web_view();
+  return web_widget_test_proxy_base_->web_view_test_proxy_base()->web_view();
 }
 
-std::unique_ptr<WebInputEvent> EventSender::ScaleEvent(
+blink::WebWidget* EventSender::widget() {
+  return web_widget_test_proxy_base_->web_widget();
+}
+
+std::unique_ptr<WebInputEvent> EventSender::TransformScreenToWidgetCoordinates(
     const WebInputEvent& event) {
-  // ui::ScaleWebInputEvent returns nullptr when the scale is 1.0f as the event
-  // does not have to be converted.
-  return ui::ScaleWebInputEvent(event, delegate()->GetWindowToViewportScale());
+  return delegate()->TransformScreenToWidgetCoordinates(
+      web_widget_test_proxy_base_, event);
 }
 
 }  // namespace test_runner

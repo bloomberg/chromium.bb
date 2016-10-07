@@ -64,10 +64,6 @@ http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-chi
 # https://crbug.com/615156 - Need to make IntersectionObserver work with OOPIFs.
 http/tests/intersection-observer/iframe-cross-origin.html [ Timeout ]
 
-# https://crbug.com/616608 - Test-generated mouse click doesn't work with --site-per-process.
-http/tests/security/referrer-policy-redirect-link.html [ Timeout ]
-http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Timeout ]
-
 # https://crbug.com/616626 - allow_universal_access_from_file_urls doesn't work with --site-per-process.
 http/tests/local/drag-over-remote-content.html [ Timeout ]
 

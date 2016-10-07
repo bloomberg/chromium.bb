@@ -14,11 +14,15 @@
 #include "third_party/WebKit/public/web/WebWidgetClient.h"
 
 namespace blink {
+class WebLocalFrame;
 class WebString;
 class WebWidget;
 }
 
 namespace test_runner {
+
+class EventSender;
+class WebViewTestProxyBase;
 
 class TEST_RUNNER_EXPORT WebWidgetTestProxyBase {
  public:
@@ -36,6 +40,21 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxyBase {
     widget_test_client_ = std::move(widget_test_client);
   }
 
+  WebViewTestProxyBase* web_view_test_proxy_base() const {
+    return web_view_test_proxy_base_;
+  }
+  void set_web_view_test_proxy_base(
+      WebViewTestProxyBase* web_view_test_proxy_base) {
+    DCHECK(web_view_test_proxy_base);
+    DCHECK(!web_view_test_proxy_base_);
+    web_view_test_proxy_base_ = web_view_test_proxy_base;
+  }
+
+  EventSender* event_sender() { return event_sender_.get(); }
+
+  void Reset();
+  void BindTo(blink::WebLocalFrame* frame);
+
  protected:
   WebWidgetTestProxyBase();
   ~WebWidgetTestProxyBase();
@@ -46,7 +65,9 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxyBase {
 
  private:
   blink::WebWidget* web_widget_;
+  WebViewTestProxyBase* web_view_test_proxy_base_;
   std::unique_ptr<WebWidgetTestClient> widget_test_client_;
+  std::unique_ptr<EventSender> event_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(WebWidgetTestProxyBase);
 };

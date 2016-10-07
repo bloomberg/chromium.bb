@@ -461,6 +461,7 @@ static_library("layouttest_support") {
     "//device/bluetooth",
     "//skia",
     "//ui/accessibility:ax_gen",
+    "//ui/events/blink",
     "//v8",
   ]
 

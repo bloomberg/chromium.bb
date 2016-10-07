@@ -81,7 +81,6 @@ void WebViewTestProxyCreated(RenderView* render_view,
       LayoutTestRenderThreadObserver::GetInstance()
           ->test_interfaces()
           ->CreateWebWidgetTestClient(proxy);
-  widget_test_client->set_web_view_test_proxy_base(proxy);
   proxy->set_widget_test_client(std::move(widget_test_client));
   proxy->SetInterfaces(interfaces);
 }
@@ -100,7 +99,7 @@ void WebWidgetTestProxyCreated(blink::WebWidget* web_widget,
       LayoutTestRenderThreadObserver::GetInstance()
           ->test_interfaces()
           ->CreateWebWidgetTestClient(proxy);
-  widget_test_client->set_web_view_test_proxy_base(view_proxy);
+  proxy->set_web_view_test_proxy_base(view_proxy);
   proxy->set_widget_test_client(std::move(widget_test_client));
 }
 

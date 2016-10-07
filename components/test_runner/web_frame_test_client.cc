@@ -22,6 +22,7 @@
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_view_test_proxy.h"
+#include "components/test_runner/web_widget_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -369,8 +370,9 @@ blink::WebPlugin* WebFrameTestClient::createPlugin(
 
 void WebFrameTestClient::showContextMenu(
     const blink::WebContextMenuData& context_menu_data) {
-  web_view_test_proxy_base_->event_sender()->SetContextMenuData(
-      context_menu_data);
+  delegate_->GetWebWidgetTestProxyBase(web_frame_test_proxy_base_->web_frame())
+      ->event_sender()
+      ->SetContextMenuData(context_menu_data);
 }
 
 blink::WebUserMediaClient* WebFrameTestClient::userMediaClient() {
@@ -683,6 +685,7 @@ void WebFrameTestClient::checkIfAudioSinkExistsAndIsAuthorized(
 void WebFrameTestClient::didClearWindowObject(blink::WebLocalFrame* frame) {
   web_view_test_proxy_base_->test_interfaces()->BindTo(frame);
   web_view_test_proxy_base_->BindTo(frame);
+  delegate_->GetWebWidgetTestProxyBase(frame)->BindTo(frame);
 }
 
 bool WebFrameTestClient::runFileChooser(

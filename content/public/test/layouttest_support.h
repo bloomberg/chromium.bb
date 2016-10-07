@@ -22,7 +22,9 @@ class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGamepad;
 class WebGamepads;
+class WebInputEvent;
 class WebLayer;
+class WebLocalFrame;
 struct WebSize;
 class WebView;
 class WebWidget;
@@ -66,10 +68,16 @@ test_runner::WebViewTestProxyBase* GetWebViewTestProxyBase(
     RenderView* render_view);
 
 // "Casts" |render_frame| to |WebFrameTestProxyBase|.  Caller has to ensure
-// that prior to construction of |render_frame|, EnableiewTestProxyCreation
+// that prior to construction of |render_frame|, EnableTestProxyCreation
 // was called.
 test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
     RenderFrame* render_frame);
+
+// Gets WebWidgetTestProxyBase associated with |frame| (either the view's widget
+// or the local root's frame widget).  Caller has to ensure that prior to
+// construction of |render_frame|, EnableTestProxyCreation was called.
+test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
+    blink::WebLocalFrame* frame);
 
 // Enable injecting of a WebViewTestProxy between WebViews and RenderViews,
 // WebWidgetTestProxy between WebWidgets and RenderWidgets and WebFrameTestProxy
@@ -130,6 +138,14 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor);
 
 // Get the window to viewport scale.
 float GetWindowToViewportScale(RenderView* render_view);
+
+// Converts |event| from screen coordinates to coordinates used by the widget
+// associated with the |web_widget_test_proxy_base|.  Returns nullptr if no
+// transformation was necessary (e.g. for a keyboard event OR if widget requires
+// no scaling and has coordinates starting at (0,0)).
+std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
+    test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base,
+    const blink::WebInputEvent& event);
 
 // Get the ICC profile for a given name string. This is not in the ICCProfile
 // class to avoid bloating the shipping build.

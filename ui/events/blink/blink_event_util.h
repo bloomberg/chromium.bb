@@ -22,6 +22,7 @@ class WebTouchEvent;
 
 namespace gfx {
 class PointF;
+class Vector2d;
 }
 
 namespace ui {
@@ -49,6 +50,16 @@ int EventFlagsToWebEventModifiers(int flags);
 
 std::unique_ptr<blink::WebInputEvent> ScaleWebInputEvent(
     const blink::WebInputEvent& event,
+    float scale);
+
+// Transforms coordinates and other properties of |event|, by
+// 1) translating / shifting by |delta| and
+// 2) scaling by |scale|.
+// If |event| does not need to change, returns nullptr.
+// Otherwise, returns the transformed version of |event|.
+std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
+    const blink::WebInputEvent& event,
+    const gfx::Vector2d& delta,
     float scale);
 
 blink::WebPointerProperties::PointerType ToWebPointerType(

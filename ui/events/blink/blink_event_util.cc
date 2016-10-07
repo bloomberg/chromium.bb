@@ -22,6 +22,7 @@
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -362,13 +363,22 @@ WebGestureEvent CreateWebGestureEventFromGestureEventData(
 std::unique_ptr<blink::WebInputEvent> ScaleWebInputEvent(
     const blink::WebInputEvent& event,
     float scale) {
+  return TranslateAndScaleWebInputEvent(event, gfx::Vector2d(0, 0), scale);
+}
+
+std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
+    const blink::WebInputEvent& event,
+    const gfx::Vector2d& delta,
+    float scale) {
   std::unique_ptr<blink::WebInputEvent> scaled_event;
-  if (scale == 1.f)
+  if (scale == 1.f && delta.IsZero())
     return scaled_event;
   if (event.type == blink::WebMouseEvent::MouseWheel) {
     blink::WebMouseWheelEvent* wheel_event = new blink::WebMouseWheelEvent;
     scaled_event.reset(wheel_event);
     *wheel_event = static_cast<const blink::WebMouseWheelEvent&>(event);
+    wheel_event->x += delta.x();
+    wheel_event->y += delta.y();
     wheel_event->x *= scale;
     wheel_event->y *= scale;
     wheel_event->deltaX *= scale;
@@ -379,6 +389,8 @@ std::unique_ptr<blink::WebInputEvent> ScaleWebInputEvent(
     blink::WebMouseEvent* mouse_event = new blink::WebMouseEvent;
     scaled_event.reset(mouse_event);
     *mouse_event = static_cast<const blink::WebMouseEvent&>(event);
+    mouse_event->x += delta.x();
+    mouse_event->y += delta.y();
     mouse_event->x *= scale;
     mouse_event->y *= scale;
     mouse_event->windowX = mouse_event->x;
@@ -390,6 +402,8 @@ std::unique_ptr<blink::WebInputEvent> ScaleWebInputEvent(
     scaled_event.reset(touch_event);
     *touch_event = static_cast<const blink::WebTouchEvent&>(event);
     for (unsigned i = 0; i < touch_event->touchesLength; i++) {
+      touch_event->touches[i].position.x += delta.x();
+      touch_event->touches[i].position.y += delta.y();
       touch_event->touches[i].position.x *= scale;
       touch_event->touches[i].position.y *= scale;
       touch_event->touches[i].radiusX *= scale;
@@ -399,6 +413,8 @@ std::unique_ptr<blink::WebInputEvent> ScaleWebInputEvent(
     blink::WebGestureEvent* gesture_event = new blink::WebGestureEvent;
     scaled_event.reset(gesture_event);
     *gesture_event = static_cast<const blink::WebGestureEvent&>(event);
+    gesture_event->x += delta.x();
+    gesture_event->y += delta.y();
     gesture_event->x *= scale;
     gesture_event->y *= scale;
     switch (gesture_event->type) {

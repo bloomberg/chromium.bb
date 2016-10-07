@@ -18,6 +18,7 @@
 #include "components/test_runner/test_runner_for_specific_view.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_view_test_proxy.h"
+#include "components/test_runner/web_widget_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -45,7 +46,8 @@ void WebViewTestClient::startDragging(blink::WebLocalFrame* frame,
 
   // When running a test, we need to fake a drag drop operation otherwise
   // Windows waits for real mouse events to know when the drag is over.
-  web_view_test_proxy_base_->event_sender()->DoDragDrop(data, mask);
+  delegate()->GetWebWidgetTestProxyBase(frame)->event_sender()->DoDragDrop(
+      data, mask);
 }
 
 // The output from these methods in layout test mode should match that

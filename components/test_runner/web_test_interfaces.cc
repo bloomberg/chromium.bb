@@ -108,8 +108,7 @@ std::unique_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(
 std::unique_ptr<WebWidgetTestClient>
 WebTestInterfaces::CreateWebWidgetTestClient(
     WebWidgetTestProxyBase* web_widget_test_proxy_base) {
-  return base::MakeUnique<WebWidgetTestClient>(interfaces_->GetTestRunner(),
-                                               web_widget_test_proxy_base);
+  return base::MakeUnique<WebWidgetTestClient>(web_widget_test_proxy_base);
 }
 
 std::vector<blink::WebView*> WebTestInterfaces::GetWindowList() {

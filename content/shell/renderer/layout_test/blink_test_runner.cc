@@ -62,6 +62,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -498,6 +499,19 @@ void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
 
 float BlinkTestRunner::GetWindowToViewportScale() {
   return content::GetWindowToViewportScale(render_view());
+}
+
+std::unique_ptr<blink::WebInputEvent>
+BlinkTestRunner::TransformScreenToWidgetCoordinates(
+    test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base,
+    const blink::WebInputEvent& event) {
+  return content::TransformScreenToWidgetCoordinates(web_widget_test_proxy_base,
+                                                     event);
+}
+
+test_runner::WebWidgetTestProxyBase* BlinkTestRunner::GetWebWidgetTestProxyBase(
+    blink::WebLocalFrame* frame) {
+  return content::GetWebWidgetTestProxyBase(frame);
 }
 
 void BlinkTestRunner::EnableUseZoomForDSF() {

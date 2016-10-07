@@ -22,32 +22,27 @@
 namespace test_runner {
 
 WebWidgetTestClient::WebWidgetTestClient(
-    TestRunner* test_runner,
     WebWidgetTestProxyBase* web_widget_test_proxy_base)
-    : test_runner_(test_runner),
-      web_view_test_proxy_base_(nullptr),
-      web_widget_test_proxy_base_(web_widget_test_proxy_base),
+    : web_widget_test_proxy_base_(web_widget_test_proxy_base),
       animation_scheduled_(false),
       weak_factory_(this) {
-  DCHECK(test_runner);
   DCHECK(web_widget_test_proxy_base_);
 }
 
 WebWidgetTestClient::~WebWidgetTestClient() {}
 
 void WebWidgetTestClient::scheduleAnimation() {
-  if (!test_runner_->TestIsRunning())
+  if (!test_runner()->TestIsRunning())
     return;
 
   if (!animation_scheduled_) {
     animation_scheduled_ = true;
-    test_runner_->OnAnimationScheduled(
+    test_runner()->OnAnimationScheduled(
         web_widget_test_proxy_base_->web_widget());
 
-    web_view_test_proxy_base_->delegate()->PostDelayedTask(
-        base::Bind(&WebWidgetTestClient::AnimateNow,
-                   weak_factory_.GetWeakPtr()),
-        1);
+    delegate()->PostDelayedTask(base::Bind(&WebWidgetTestClient::AnimateNow,
+                                           weak_factory_.GetWeakPtr()),
+                                1);
   }
 }
 
@@ -55,7 +50,7 @@ void WebWidgetTestClient::AnimateNow() {
   if (animation_scheduled_) {
     blink::WebWidget* web_widget = web_widget_test_proxy_base_->web_widget();
     animation_scheduled_ = false;
-    test_runner_->OnAnimationBegun(web_widget);
+    test_runner()->OnAnimationBegun(web_widget);
 
     base::TimeDelta animate_time = base::TimeTicks::Now() - base::TimeTicks();
     web_widget->beginFrame(animate_time.InSecondsF());
@@ -70,7 +65,7 @@ void WebWidgetTestClient::AnimateNow() {
 blink::WebScreenInfo WebWidgetTestClient::screenInfo() {
   blink::WebScreenInfo screen_info;
   MockScreenOrientationClient* mock_client =
-      test_runner_->getMockScreenOrientationClient();
+      test_runner()->getMockScreenOrientationClient();
   if (mock_client->IsDisabled()) {
     // Indicate to WebViewTestProxy that there is no test/mock info.
     screen_info.orientationType = blink::WebScreenOrientationUndefined;
@@ -83,20 +78,20 @@ blink::WebScreenInfo WebWidgetTestClient::screenInfo() {
 }
 
 bool WebWidgetTestClient::requestPointerLock() {
-  return web_view_test_proxy_base_->view_test_runner()->RequestPointerLock();
+  return view_test_runner()->RequestPointerLock();
 }
 
 void WebWidgetTestClient::requestPointerUnlock() {
-  web_view_test_proxy_base_->view_test_runner()->RequestPointerUnlock();
+  view_test_runner()->RequestPointerUnlock();
 }
 
 bool WebWidgetTestClient::isPointerLocked() {
-  return web_view_test_proxy_base_->view_test_runner()->isPointerLocked();
+  return view_test_runner()->isPointerLocked();
 }
 
 void WebWidgetTestClient::setToolTipText(const blink::WebString& text,
                                          blink::WebTextDirection direction) {
-  test_runner_->setToolTipText(text);
+  test_runner()->setToolTipText(text);
 }
 
 void WebWidgetTestClient::resetInputMethod() {
@@ -105,6 +100,21 @@ void WebWidgetTestClient::resetInputMethod() {
   if (web_widget_test_proxy_base_)
     web_widget_test_proxy_base_->web_widget()->finishComposingText(
         blink::WebWidget::KeepSelection);
+}
+
+TestRunnerForSpecificView* WebWidgetTestClient::view_test_runner() {
+  return web_widget_test_proxy_base_->web_view_test_proxy_base()
+      ->view_test_runner();
+}
+
+WebTestDelegate* WebWidgetTestClient::delegate() {
+  return web_widget_test_proxy_base_->web_view_test_proxy_base()->delegate();
+}
+
+TestRunner* WebWidgetTestClient::test_runner() {
+  return web_widget_test_proxy_base_->web_view_test_proxy_base()
+      ->test_interfaces()
+      ->GetTestRunner();
 }
 
 }  // namespace test_runner

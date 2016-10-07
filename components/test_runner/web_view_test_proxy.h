@@ -44,7 +44,6 @@ struct WebWindowFeatures;
 namespace test_runner {
 
 class AccessibilityController;
-class EventSender;
 class TestInterfaces;
 class TestRunnerForSpecificView;
 class TextInputController;
@@ -82,8 +81,6 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase : public WebWidgetTestProxyBase {
   TestInterfaces* test_interfaces() { return test_interfaces_; }
   void SetInterfaces(WebTestInterfaces* web_test_interfaces);
 
-  EventSender* event_sender() { return event_sender_.get(); }
-
   AccessibilityController* accessibility_controller() {
     return accessibility_controller_.get();
   }
@@ -110,7 +107,6 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase : public WebWidgetTestProxyBase {
   blink::WebWidget* web_widget_;
   std::unique_ptr<WebViewTestClient> view_test_client_;
   std::unique_ptr<AccessibilityController> accessibility_controller_;
-  std::unique_ptr<EventSender> event_sender_;
   std::unique_ptr<TextInputController> text_input_controller_;
   std::unique_ptr<TestRunnerForSpecificView> view_test_runner_;
 

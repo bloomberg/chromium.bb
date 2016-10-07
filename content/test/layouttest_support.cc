@@ -41,11 +41,15 @@
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionData.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h"
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/events/blink/blink_event_util.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/icc_profile.h"
 
 #if defined(OS_MACOSX)
@@ -134,6 +138,12 @@ RenderFrameImpl* CreateWebFrameTestProxy(
   return render_frame_proxy;
 }
 
+float GetWindowToViewportScale(RenderWidget* render_widget) {
+  blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
+  render_widget->convertWindowToViewport(&rect);
+  return rect.width;
+}
+
 #if defined(OS_WIN)
 // DirectWrite only has access to %WINDIR%\Fonts by default. For developer
 // side-loading, support kRegisterFontFiles to allow access to additional fonts.
@@ -162,6 +172,55 @@ test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
   WebFrameTestProxyType* render_frame_proxy =
       static_cast<WebFrameTestProxyType*>(render_frame);
   return static_cast<test_runner::WebFrameTestProxyBase*>(render_frame_proxy);
+}
+
+test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
+    blink::WebLocalFrame* frame) {
+  DCHECK(frame);
+  RenderFrame* local_root = RenderFrame::FromWebFrame(frame->localRoot());
+  DCHECK(local_root);
+  // TODO(lfg): Simplify once RenderView no longer inherits from RenderWidget.
+  if (local_root->IsMainFrame()) {
+    test_runner::WebViewTestProxyBase* web_view_test_proxy_base =
+        GetWebViewTestProxyBase(local_root->GetRenderView());
+    auto* web_widget_test_proxy_base =
+        static_cast<test_runner::WebWidgetTestProxyBase*>(
+            web_view_test_proxy_base);
+    DCHECK(web_widget_test_proxy_base->web_widget()->isWebView());
+    return web_widget_test_proxy_base;
+  } else {
+    RenderWidget* render_widget =
+        static_cast<RenderFrameImpl*>(local_root)->GetRenderWidget();
+    DCHECK(render_widget);
+    WebWidgetTestProxyType* render_widget_proxy =
+        static_cast<WebWidgetTestProxyType*>(render_widget);
+    auto* web_widget_test_proxy_base =
+        static_cast<test_runner::WebWidgetTestProxyBase*>(render_widget_proxy);
+    DCHECK(web_widget_test_proxy_base->web_widget()->isWebFrameWidget());
+    return web_widget_test_proxy_base;
+  }
+}
+
+RenderWidget* GetRenderWidget(
+    test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base) {
+  DCHECK(web_widget_test_proxy_base);
+
+  blink::WebWidget* widget = web_widget_test_proxy_base->web_widget();
+  // TODO(lfg): Simplify once RenderView no longer inherits from RenderWidget.
+  if (widget->isWebView()) {
+    WebViewTestProxyType* render_view_proxy =
+        static_cast<WebViewTestProxyType*>(web_widget_test_proxy_base);
+    RenderViewImpl* render_view_impl =
+        static_cast<RenderViewImpl*>(render_view_proxy);
+    return render_view_impl;
+  } else if (widget->isWebFrameWidget()) {
+    WebWidgetTestProxyType* render_widget_proxy =
+        static_cast<WebWidgetTestProxyType*>(web_widget_test_proxy_base);
+    return static_cast<RenderWidget*>(render_widget_proxy);
+  } else {
+    NOTREACHED();
+    return nullptr;
+  }
 }
 
 void EnableWebTestProxyCreation(
@@ -392,9 +451,20 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor) {
 }
 
 float GetWindowToViewportScale(RenderView* render_view) {
-  blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
-  static_cast<RenderViewImpl*>(render_view)->convertWindowToViewport(&rect);
-  return rect.width;
+  return GetWindowToViewportScale(
+      static_cast<RenderViewImpl*>(render_view)->GetWidget());
+}
+
+std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
+    test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base,
+    const blink::WebInputEvent& event) {
+  DCHECK(web_widget_test_proxy_base);
+  RenderWidget* render_widget = GetRenderWidget(web_widget_test_proxy_base);
+
+  blink::WebRect view_rect = render_widget->viewRect();
+  float scale = GetWindowToViewportScale(render_widget);
+  gfx::Vector2d delta(-view_rect.x, -view_rect.y);
+  return ui::TranslateAndScaleWebInputEvent(event, delta, scale);
 }
 
 gfx::ICCProfile GetTestingICCProfile(const std::string& name) {
