@@ -28,12 +28,10 @@ bool HaveCommonElement(const std::set<std::string>& set1,
 
 bool IsUserAffiliated(const AffiliationIDSet& user_affiliation_ids,
                       const AffiliationIDSet& device_affiliation_ids,
-                      const std::string& email,
-                      const std::string& enterprise_domain) {
-  // An empty username means incognito user in case of ChromiumOS and
-  // no logged-in user in case of Chromium (SigninService). Many tests use
-  // nonsense email addresses (e.g. 'test') so treat those as non-enterprise
-  // users.
+                      const std::string& email) {
+  // An empty username means incognito user in case of Chrome OS and no
+  // logged-in user in case of Chrome (SigninService). Many tests use nonsense
+  // email addresses (e.g. 'test') so treat those as non-enterprise users.
   if (email.empty() || email.find('@') == std::string::npos) {
     return false;
   }
@@ -44,12 +42,6 @@ bool IsUserAffiliated(const AffiliationIDSet& user_affiliation_ids,
 
   if (!device_affiliation_ids.empty() && !user_affiliation_ids.empty()) {
     return HaveCommonElement(user_affiliation_ids, device_affiliation_ids);
-  }
-
-  // TODO(peletskyi): Remove the following backwards compatibility part.
-  if (gaia::ExtractDomainName(gaia::CanonicalizeEmail(email)) ==
-      enterprise_domain) {
-    return true;
   }
 
   return false;

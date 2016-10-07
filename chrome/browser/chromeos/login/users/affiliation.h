@@ -18,15 +18,14 @@ typedef std::set<std::string> AffiliationIDSet;
 bool HaveCommonElement(const std::set<std::string>& set1,
                        const std::set<std::string>& set2);
 
-// TODO(peletskyi): Remove email and enterprise domain after affiliation
-// based implementation will fully work. http://crbug.com/515476
+// TODO(peletskyi): Remove email after affiliation based implementation will
+// fully work. http://crbug.com/515476
 // The function makes a decision if user with |user_affiliation_ids| and
 // |email| is affiliated on the device with |device_affiliation_ids| and
 // |enterprise_domain|.
 bool IsUserAffiliated(const AffiliationIDSet& user_affiliation_ids,
                       const AffiliationIDSet& device_affiliation_ids,
-                      const std::string& email,
-                      const std::string& enterprise_domain);
+                      const std::string& email);
 
 }  // namespace chromeos
 

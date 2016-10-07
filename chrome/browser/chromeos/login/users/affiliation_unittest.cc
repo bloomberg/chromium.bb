@@ -78,31 +78,22 @@ TEST(AffiliationTest, Generic) {
   AffiliationIDSet user_ids;    // User affiliation IDs.
   AffiliationIDSet device_ids;  // Device affiliation IDs.
 
-  EXPECT_FALSE(IsUserAffiliated(user_ids, device_ids, "", ""));
+  // Empty affiliation IDs.
+  EXPECT_FALSE(IsUserAffiliated(user_ids, device_ids, "user@managed.com"));
 
-  EXPECT_FALSE(IsUserAffiliated(user_ids, device_ids, "user", ""));
-
-  // Not valid email.
-  EXPECT_FALSE(IsUserAffiliated(user_ids, device_ids, "user", "user"));
-
-  EXPECT_FALSE(IsUserAffiliated(user_ids, device_ids, "user@notmanaged.com",
-                                "managed.com"));
-
-  EXPECT_TRUE(IsUserAffiliated(user_ids, device_ids, "user@managed.com",
-                               "managed.com"));
-
-  user_ids.insert("aaaa");  // Only user affiliation IDs present. Compare email.
-  EXPECT_TRUE(IsUserAffiliated(user_ids, device_ids, "user@managed.com",
-                               "managed.com"));
+  user_ids.insert("aaaa");  // Only user affiliation IDs present.
+  EXPECT_FALSE(IsUserAffiliated(user_ids, device_ids, "user@managed.com"));
 
   device_ids.insert("bbbb");  // Device and user IDs do not overlap.
-  EXPECT_FALSE(IsUserAffiliated(user_ids, device_ids, "user@managed.com",
-                                "managed.com"));
+  EXPECT_FALSE(IsUserAffiliated(user_ids, device_ids, "user@managed.com"));
 
   user_ids.insert("cccc");  // Device and user IDs do overlap.
   device_ids.insert("cccc");
-  EXPECT_TRUE(IsUserAffiliated(user_ids, device_ids, "user@notmanaged.com",
-                               "managed.com"));
+  EXPECT_TRUE(IsUserAffiliated(user_ids, device_ids, "user@managed.com"));
+
+  // Invalid email overrides match of affiliation IDs.
+  EXPECT_FALSE(IsUserAffiliated(user_ids, device_ids, ""));
+  EXPECT_FALSE(IsUserAffiliated(user_ids, device_ids, "user"));
 }
 
 }  // namespace chromeos
