@@ -24,6 +24,18 @@ Adapter::~Adapter() {
   adapter_ = nullptr;
 }
 
+void Adapter::GetInfo(const GetInfoCallback& callback) {
+  mojom::AdapterInfoPtr adapter_info = mojom::AdapterInfo::New();
+  adapter_info->address = adapter_->GetAddress();
+  adapter_info->name = adapter_->GetName();
+  adapter_info->initialized = adapter_->IsInitialized();
+  adapter_info->present = adapter_->IsPresent();
+  adapter_info->powered = adapter_->IsPowered();
+  adapter_info->discoverable = adapter_->IsDiscoverable();
+  adapter_info->discovering = adapter_->IsDiscovering();
+  callback.Run(std::move(adapter_info));
+}
+
 void Adapter::GetDevices(const GetDevicesCallback& callback) {
   std::vector<mojom::DeviceInfoPtr> devices;
 

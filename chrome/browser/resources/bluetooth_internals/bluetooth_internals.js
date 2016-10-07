@@ -36,7 +36,7 @@ AdapterClient.prototype = {
   var adapter, adapterClient;
 
   /**
-   * TODO: Move to shared location. See crbug.com/652361.
+   * TODO: Move to shared location. See http://crbug.com/652361.
    * Helper to convert callback-based define() API to a promise-based API.
    * @param {!Array<string>} moduleNames
    * @return {!Promise}
@@ -89,8 +89,10 @@ AdapterClient.prototype = {
 
   document.addEventListener('DOMContentLoaded', function() {
     initializeProxies()
+      .then(function() {return adapter.getInfo(); })
+      .then(function(response) { console.log('info', response.info); })
       .then(function() { return adapter.getDevices(); })
-      .then(function(response) { console.log(response.devices); })
+      .then(function(response) { console.log('devices', response.devices); })
       .catch(function(error) { console.error(error); });
   });
 })();

@@ -23,6 +23,7 @@ class Adapter : public mojom::Adapter,
   ~Adapter() override;
 
   // mojom::Adapter overrides:
+  void GetInfo(const GetInfoCallback& callback) override;
   void GetDevices(const GetDevicesCallback& callback) override;
   void SetClient(mojom::AdapterClientPtr client) override;
 

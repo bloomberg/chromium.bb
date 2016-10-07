@@ -4,6 +4,16 @@
 
 module bluetooth.mojom;
 
+struct AdapterInfo {
+  string address;
+  string name;
+  bool initialized;
+  bool present;
+  bool powered;
+  bool discoverable;
+  bool discovering;
+};
+
 struct DeviceInfo {
   string? name;
   string name_for_display;
@@ -12,6 +22,9 @@ struct DeviceInfo {
 };
 
 interface Adapter {
+  // Gets basic information about the adapter.
+  GetInfo() => (AdapterInfo info);
+
   // Retrieves the list of the devices known by the adapter including Connected
   // Devices, GATT Connected Devices, Paired Devices and Devices discovered
   // during a classic or low-energy scan.
