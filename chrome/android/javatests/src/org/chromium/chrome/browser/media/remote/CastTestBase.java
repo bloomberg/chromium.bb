@@ -262,7 +262,6 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
 
         WebContents webContents = currentTab.getWebContents();
 
-        DOMUtils.clickNode(this, currentTab.getContentViewCore(), "button1");
         waitUntilVideoReady(VIDEO_ELEMENT, webContents);
 
         return DOMUtils.getNodeBounds(webContents, VIDEO_ELEMENT);

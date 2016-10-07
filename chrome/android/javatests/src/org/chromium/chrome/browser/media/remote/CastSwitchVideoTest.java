@@ -159,7 +159,6 @@ public class CastSwitchVideoTest extends CastTestBase {
             TimeoutException {
         final Tab tab = getActivity().getActivityTab();
         WebContents webContents = tab.getWebContents();
-        DOMUtils.clickNode(this, tab.getContentViewCore(), "button1");
         waitUntilVideoReady(videoElement, webContents);
         Rect videoRect = DOMUtils.getNodeBounds(webContents, videoElement);
 
@@ -171,7 +170,6 @@ public class CastSwitchVideoTest extends CastTestBase {
         final Tab tab = getActivity().getActivityTab();
         WebContents webContents = tab.getWebContents();
 
-        DOMUtils.clickNode(this, tab.getContentViewCore(), "button1");
         waitUntilVideoReady(videoElement, webContents);
 
         // Need to click on the video first to overcome the user gesture requirement.
