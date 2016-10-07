@@ -22,14 +22,17 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
+#include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -39,6 +42,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
@@ -184,9 +188,11 @@ class OmniboxResultView::MirroringContext {
 
 OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
                                      int model_index,
+                                     LocationBarView* location_bar_view,
                                      const gfx::FontList& font_list)
     : model_(model),
       model_index_(model_index),
+      location_bar_view_(location_bar_view),
       font_list_(font_list),
       font_height_(std::max(
           font_list.GetHeight(),
@@ -195,10 +201,11 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       keyword_icon_(new views::ImageView()),
       animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0);
+  if (default_icon_size_ == 0)
+    default_icon_size_ = LocationBarView::kIconWidth;
   keyword_icon_->set_owned_by_client();
   keyword_icon_->EnableCanvasFlippingForRTLUI(true);
-  keyword_icon_->SetImage(
-      GetVectorIcon(gfx::VectorIconId::OMNIBOX_KEYWORD_SEARCH));
+  keyword_icon_->SetImage(GetKeywordIcon());
   keyword_icon_->SizeToPreferredSize();
 }
 
@@ -246,13 +253,17 @@ void OmniboxResultView::ShowKeyword(bool show_keyword) {
 }
 
 void OmniboxResultView::Invalidate() {
-  const ResultViewState state = GetState();
-  if (state == NORMAL) {
-    set_background(nullptr);
-  } else {
-    const SkColor bg_color = GetColor(state, BACKGROUND);
-    set_background(new BackgroundWith1PxBorder(bg_color, bg_color));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    const ResultViewState state = GetState();
+    if (state == NORMAL) {
+      set_background(nullptr);
+    } else {
+      const SkColor bg_color = GetColor(state, BACKGROUND);
+      set_background(new BackgroundWith1PxBorder(bg_color, bg_color));
+    }
   }
+
+  keyword_icon_->SetImage(GetKeywordIcon());
 
   // While the text in the RenderTexts may not have changed, the styling
   // (color/bold) may need to change. So we reset them to cause them to be
@@ -492,7 +503,7 @@ std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateClassifiedRenderText(
     ColorKind color_kind = TEXT;
     if (classifications[i].style & ACMatchClassification::URL) {
       color_kind = URL;
-      // Consider logical string for domain "ABC.com/hello" where ABC are
+      // Consider logical string for domain "ABC.comי/hello" where ABC are
       // Hebrew (RTL) characters. This string should ideally show as
       // "CBA.com/hello". If we do not force LTR on URL, it will appear as
       // "com/hello.CBA".
@@ -551,6 +562,9 @@ int OmniboxResultView::GetDisplayOffset(
       (input_render_text->GetContentWidth() - start_padding) : start_padding;
 }
 
+// static
+int OmniboxResultView::default_icon_size_ = 0;
+
 const char* OmniboxResultView::GetClassName() const {
   return "OmniboxResultView";
 }
@@ -560,10 +574,51 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
   if (!image.IsEmpty())
     return image.AsImageSkia();
 
-  return GetVectorIcon(
-      model_->IsStarredMatch(match_)
-          ? gfx::VectorIconId::OMNIBOX_STAR
-          : AutocompleteMatch::TypeToVectorIcon(match_.type));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    return GetVectorIcon(
+        model_->IsStarredMatch(match_)
+            ? gfx::VectorIconId::OMNIBOX_STAR
+            : AutocompleteMatch::TypeToVectorIcon(match_.type));
+  }
+
+  int icon = model_->IsStarredMatch(match_) ?
+      IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
+  if (GetState() == SELECTED) {
+    switch (icon) {
+      case IDR_OMNIBOX_CALCULATOR:
+        icon = IDR_OMNIBOX_CALCULATOR_SELECTED;
+        break;
+      case IDR_OMNIBOX_EXTENSION_APP:
+        icon = IDR_OMNIBOX_EXTENSION_APP_SELECTED;
+        break;
+      case IDR_OMNIBOX_HTTP:
+        icon = IDR_OMNIBOX_HTTP_SELECTED;
+        break;
+      case IDR_OMNIBOX_SEARCH:
+        icon = IDR_OMNIBOX_SEARCH_SELECTED;
+        break;
+      case IDR_OMNIBOX_STAR:
+        icon = IDR_OMNIBOX_STAR_SELECTED;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  return *location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(icon);
+}
+
+gfx::ImageSkia OmniboxResultView::GetKeywordIcon() const {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return GetVectorIcon(gfx::VectorIconId::OMNIBOX_KEYWORD_SEARCH);
+
+  // NOTE: If we ever begin returning icons of varying size, then callers need
+  // to ensure that |keyword_icon_| is resized each time its image is reset.
+  int icon = IDR_OMNIBOX_TTS;
+  if (GetState() == SELECTED)
+    icon = IDR_OMNIBOX_TTS_SELECTED;
+
+  return *location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(icon);
 }
 
 gfx::ImageSkia OmniboxResultView::GetVectorIcon(
@@ -591,18 +646,31 @@ void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
 void OmniboxResultView::Layout() {
   int horizontal_padding =
       GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
-  // The horizontal bounds we're given are the outside bounds, so we can match
-  // the omnibox border outline shape exactly in OnPaint().  We have to inset
-  // here to keep the icons lined up.
-  const int start_x =
-      GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS) + horizontal_padding;
-  const int end_x = width() - start_x;
+  // In non-material, the horizontal bounds we're given are indented inside the
+  // omnibox border.  In material, we're given the outside bounds, so we can
+  // match the omnibox border outline shape exactly in OnPaint().  So we have to
+  // inset here to keep the icons lined up.
+  const int border_padding = ui::MaterialDesignController::IsModeMaterial() ?
+    GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS) : 0;
+  const int start_x = border_padding + horizontal_padding;
+  const int end_x = width() - border_padding - horizontal_padding;
 
   const gfx::ImageSkia icon = GetIcon();
-  icon_bounds_.SetRect(start_x, (GetContentLineHeight() - icon.height()) / 2,
+  // Pre-MD, normal icons are 19 px wide, while extension icons are 16 px wide.
+  // The code in IconLabelBubbleView::Layout() positions these icons in the
+  // omnibox using ICON_LABEL_VIEW_TRAILING_PADDING, so we use that here as well
+  // so the icons will line up.
+  //
+  // Technically we don't need the IsModeMaterial() check here, but it will make
+  // it easier to see that all this code is dead once we switch to MD.
+  int icon_x = start_x;
+  if (!ui::MaterialDesignController::IsModeMaterial() &&
+      (icon.width() != default_icon_size_))
+    icon_x += IconLabelBubbleView::kTrailingPaddingPreMd;
+  icon_bounds_.SetRect(icon_x, (GetContentLineHeight() - icon.height()) / 2,
                        icon.width(), icon.height());
 
-  const int text_x = start_x + LocationBarView::kIconWidth + horizontal_padding;
+  const int text_x = start_x + default_icon_size_ + horizontal_padding;
   int text_width = end_x - text_x;
 
   if (match_.associated_keyword.get()) {
@@ -625,7 +693,13 @@ void OmniboxResultView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
-  View::OnPaint(canvas);
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    View::OnPaint(canvas);
+  } else {
+    const ResultViewState state = GetState();
+    if (state != NORMAL)
+      canvas->DrawColor(GetColor(state, BACKGROUND));
+  }
 
   // NOTE: While animating the keyword match, both matches may be visible.
 
@@ -688,8 +762,7 @@ int OmniboxResultView::GetAnswerLineHeight() const {
 
 int OmniboxResultView::GetContentLineHeight() const {
   return std::max(
-      LocationBarView::kIconWidth +
-          GetLayoutInsets(OMNIBOX_DROPDOWN_ICON).height(),
+      default_icon_size_ + GetLayoutInsets(OMNIBOX_DROPDOWN_ICON).height(),
       GetTextHeight() + GetLayoutInsets(OMNIBOX_DROPDOWN_TEXT).height());
 }
 

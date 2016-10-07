@@ -20,22 +20,21 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "chrome/grit/theme_resources.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/user_manager/user.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/color_palette.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
@@ -313,25 +312,49 @@ void ChildNetworkConfigView::GetShareStateForLoginState(bool* default_value,
 
 // ControlledSettingIndicatorView
 
+ControlledSettingIndicatorView::ControlledSettingIndicatorView()
+    : managed_(false), image_view_(nullptr) {
+  Init();
+}
+
 ControlledSettingIndicatorView::ControlledSettingIndicatorView(
     const NetworkPropertyUIData& ui_data)
-    : managed_(ui_data.IsManaged()), image_view_(nullptr) {
-  image_view_ = new views::ImageView();
-  // Disable |image_view_| so mouse events propagate to the parent.
-  image_view_->SetEnabled(false);
-  image_view_->SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::BUSINESS, 16,
-                                              gfx::kChromeIconGrey));
-  image_view_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));
-  AddChildView(image_view_);
-  SetLayoutManager(new views::FillLayout());
+    : managed_(false), image_view_(nullptr) {
+  Init();
+  Update(ui_data);
 }
 
 ControlledSettingIndicatorView::~ControlledSettingIndicatorView() {}
 
+void ControlledSettingIndicatorView::Update(
+    const NetworkPropertyUIData& ui_data) {
+  if (managed_ == ui_data.IsManaged())
+    return;
+
+  managed_ = ui_data.IsManaged();
+  PreferredSizeChanged();
+}
+
 gfx::Size ControlledSettingIndicatorView::GetPreferredSize() const {
   return (managed_ && visible()) ? image_view_->GetPreferredSize()
                                  : gfx::Size();
+}
+
+void ControlledSettingIndicatorView::Layout() {
+  image_view_->SetBounds(0, 0, width(), height());
+}
+
+void ControlledSettingIndicatorView::Init() {
+  image_ = ResourceBundle::GetSharedInstance()
+               .GetImageNamed(IDR_OMNIBOX_HTTPS_POLICY_WARNING)
+               .ToImageSkia();
+  image_view_ = new views::ImageView();
+  // Disable |image_view_| so mouse events propagate to the parent.
+  image_view_->SetEnabled(false);
+  image_view_->SetImage(image_);
+  image_view_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));
+  AddChildView(image_view_);
 }
 
 }  // namespace chromeos

@@ -90,6 +90,9 @@ class OmniboxView {
   // the field is empty.
   bool IsEditingOrEmpty() const;
 
+  // Returns the resource ID of the icon to show for the current text.
+  int GetIcon() const;
+
   // Like GetIcon(), but returns a vector icon identifier.
   gfx::VectorIconId GetVectorIcon() const;
 

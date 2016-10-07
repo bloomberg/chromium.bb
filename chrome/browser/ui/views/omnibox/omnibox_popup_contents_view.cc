@@ -477,7 +477,8 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
 OmniboxResultView* OmniboxPopupContentsView::CreateResultView(
     int model_index,
     const gfx::FontList& font_list) {
-  return new OmniboxResultView(this, model_index, font_list);
+  return new OmniboxResultView(this, model_index, location_bar_view_,
+                               font_list);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
