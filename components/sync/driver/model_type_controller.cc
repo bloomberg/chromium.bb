@@ -25,6 +25,48 @@
 
 namespace syncer {
 
+namespace {
+
+SharedModelTypeProcessor* GetProcessorFromService(
+    const base::WeakPtr<ModelTypeService>& service) {
+  if (!service.get()) {
+    LOG(WARNING) << "ModelTypeService destroyed before DTC was stopped.";
+    return nullptr;
+  }
+  // TODO(gangwu): Casting should happen "near" where the processor factory has
+  // code that instantiates a new processor.
+  SharedModelTypeProcessor* processor =
+      (SharedModelTypeProcessor*)service->change_processor();
+  if (!processor) {
+    LOG(WARNING)
+        << "SharedModelTypeProcessor destroyed before DTC was stopped.";
+    return nullptr;
+  }
+  return processor;
+}
+
+// This function should only be run on model thread
+void CallProcessorGetAllNodes(
+    const base::WeakPtr<ModelTypeService>& service,
+    const ModelTypeController::AllNodesCallback& callback) {
+  SharedModelTypeProcessor* processor = GetProcessorFromService(service);
+  if (processor) {
+    processor->GetAllNodes(callback);
+  }
+}
+
+// This function should only be run on model thread
+void CallProcessorGetStatusCounters(
+    const base::WeakPtr<ModelTypeService>& service,
+    const ModelTypeController::StatusCountersCallback& callback) {
+  SharedModelTypeProcessor* processor = GetProcessorFromService(service);
+  if (processor) {
+    processor->GetStatusCounters(callback);
+  }
+}
+
+}  // namespace
+
 ModelTypeController::ModelTypeController(
     ModelType type,
     const base::Closure& dump_stack,
@@ -76,14 +118,17 @@ void ModelTypeController::LoadModels(
 void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
   base::WeakPtr<ModelTypeService> service =
       sync_client_->GetModelTypeServiceForType(type());
-  // TODO(gangwu): Casting should happen "near" where the processor factory has
-  // code that instantiates a new processor.
-  SharedModelTypeProcessor* processor =
-      static_cast<SharedModelTypeProcessor*>(service->change_processor());
-  model_thread_->PostTask(
-      FROM_HERE, base::Bind(&SharedModelTypeProcessor::GetAllNodes,
-                            base::Unretained(processor),
-                            base::ThreadTaskRunnerHandle::Get(), callback));
+  model_thread_->PostTask(FROM_HERE,
+                          base::Bind(&CallProcessorGetAllNodes, service,
+                                     BindToCurrentThread(callback)));
+}
+
+void ModelTypeController::GetStatusCounters(
+    const StatusCountersCallback& callback) {
+  base::WeakPtr<ModelTypeService> service =
+      sync_client_->GetModelTypeServiceForType(type());
+  model_thread_->PostTask(FROM_HERE, base::Bind(&CallProcessorGetStatusCounters,
+                                                service, callback));
 }
 
 void ModelTypeController::LoadModelsDone(ConfigureResult result,

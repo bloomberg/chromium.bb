@@ -39,6 +39,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/api/model_type_store.h"
 #include "components/sync/api/sync_error.h"
+#include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/passphrase_type.h"
 #include "components/sync/base/pref_names.h"
@@ -546,7 +547,7 @@ void ProfileSyncService::OnDirectoryTypeUpdateCounterUpdated(
                     OnUpdateCountersUpdated(type, counters));
 }
 
-void ProfileSyncService::OnDirectoryTypeStatusCounterUpdated(
+void ProfileSyncService::OnDatatypeStatusCounterUpdated(
     syncer::ModelType type,
     const syncer::StatusCounters& counters) {
   FOR_EACH_OBSERVER(syncer::TypeDebugInfoObserver, type_debug_info_observers_,
@@ -1811,7 +1812,7 @@ void ProfileSyncService::GetModelSafeRoutingInfo(
   }
 }
 
-base::Value* ProfileSyncService::GetTypeStatusMap() const {
+base::Value* ProfileSyncService::GetTypeStatusMap() {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
 
   if (!backend_.get() || !backend_initialized_) {
@@ -1894,11 +1895,15 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
       type_status->SetString("value", "Disabled by User");
     }
 
-    int live_count = detailed_status.num_entries_by_type[type] -
-                     detailed_status.num_to_delete_entries_by_type[type];
-    type_status->SetInteger("num_entries",
-                            detailed_status.num_entries_by_type[type]);
-    type_status->SetInteger("num_live", live_count);
+    const auto& dtc_iter = data_type_controllers_.find(type);
+    if (dtc_iter != data_type_controllers_.end()) {
+      // OnDatatypeStatusCounterUpdated that posts back to the UI thread so that
+      // real results can't get overwritten by the empty counters set at the end
+      // of this method.
+      dtc_iter->second->GetStatusCounters(BindToCurrentThread(
+          base::Bind(&ProfileSyncService::OnDatatypeStatusCounterUpdated,
+                     base::Unretained(this))));
+    }
 
     result->Append(std::move(type_status));
   }

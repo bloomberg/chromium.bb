@@ -35,6 +35,7 @@ class ModelTypeController : public DataTypeController {
   bool ShouldLoadModelBeforeConfigure() const override;
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void GetAllNodes(const AllNodesCallback& callback) override;
+  void GetStatusCounters(const StatusCountersCallback& callback) override;
 
   // Registers non-blocking data type with sync backend. In the process the
   // activation context is passed to ModelTypeRegistry, where ModelTypeWorker

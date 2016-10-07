@@ -32,6 +32,7 @@ class ProxyDataTypeController : public DataTypeController {
   void ActivateDataType(BackendDataTypeConfigurer* configurer) override;
   void DeactivateDataType(BackendDataTypeConfigurer* configurer) override;
   void GetAllNodes(const AllNodesCallback& callback) override;
+  void GetStatusCounters(const StatusCountersCallback& callback) override;
 
  protected:
   std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() override;

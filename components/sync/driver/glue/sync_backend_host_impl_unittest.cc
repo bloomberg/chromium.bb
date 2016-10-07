@@ -93,7 +93,7 @@ class MockSyncFrontend : public SyncFrontend {
                void(ModelType, const CommitCounters&));
   MOCK_METHOD2(OnDirectoryTypeUpdateCounterUpdated,
                void(ModelType, const UpdateCounters&));
-  MOCK_METHOD2(OnDirectoryTypeStatusCounterUpdated,
+  MOCK_METHOD2(OnDatatypeStatusCounterUpdated,
                void(ModelType, const StatusCounters&));
   MOCK_METHOD1(OnExperimentsChanged, void(const Experiments&));
   MOCK_METHOD1(OnActionableError, void(const SyncProtocolError& sync_error));

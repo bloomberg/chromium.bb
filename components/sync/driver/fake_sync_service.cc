@@ -174,7 +174,7 @@ SyncCycleSnapshot FakeSyncService::GetLastCycleSnapshot() const {
   return SyncCycleSnapshot();
 }
 
-base::Value* FakeSyncService::GetTypeStatusMap() const {
+base::Value* FakeSyncService::GetTypeStatusMap() {
   return new base::ListValue();
 }
 

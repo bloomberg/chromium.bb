@@ -24,6 +24,7 @@ class DirectoryDataTypeController : public DataTypeController {
   // DataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
   void GetAllNodes(const AllNodesCallback& callback) override;
+  void GetStatusCounters(const StatusCountersCallback& callback) override;
 
   // Directory based data types don't need to register with backend.
   // ModelTypeRegistry will create all necessary objects in

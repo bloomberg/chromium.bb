@@ -76,11 +76,11 @@ class SyncFrontend {
       ModelType type,
       const UpdateCounters& counters) = 0;
 
-  // Called when we receive an updated status counter for a directory type.
+  // Called when we receive an updated status counter for a datatype.
   //
   // Disabled by default.  Enable by calling
   // EnableDirectoryTypeDebugInfoForwarding() on the backend.
-  virtual void OnDirectoryTypeStatusCounterUpdated(
+  virtual void OnDatatypeStatusCounterUpdated(
       ModelType type,
       const StatusCounters& counters) = 0;
 

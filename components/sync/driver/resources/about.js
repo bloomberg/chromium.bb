@@ -32,6 +32,24 @@ cr.define('chrome.sync.about_tab', function() {
     refreshAboutInfo(e.details);
   }
 
+  function onAboutInfoCountersUpdated(e) {
+    var details = e.details;
+
+    var modelType = details.modelType;
+    var counters = details.counters;
+
+    var type_status_array = chrome.sync.aboutInfo.type_status;
+    type_status_array.forEach(function(row) {
+      if (row.name == modelType) {
+        row.num_entries = counters.numEntriesAndTombstones;
+        row.num_live = counters.numEntries;
+      }
+    });
+    jstProcess(
+        new JsEvalContext({ type_status: type_status_array }),
+        $('typeInfo'));
+  }
+
   /**
    * Helper to determine if an element is scrolled to its bottom limit.
    * @param {Element} elem element to check
@@ -143,6 +161,10 @@ cr.define('chrome.sync.about_tab', function() {
           'onAboutInfoUpdated',
           onAboutInfoUpdatedEvent);
 
+      chrome.sync.events.removeEventListener(
+          'onCountersUpdated',
+          onAboutInfoCountersUpdated);
+
       var aboutInfo = JSON.parse(data);
       refreshAboutInfo(aboutInfo);
     });
@@ -171,6 +193,10 @@ cr.define('chrome.sync.about_tab', function() {
     chrome.sync.events.addEventListener(
         'onAboutInfoUpdated',
         onAboutInfoUpdatedEvent);
+
+    chrome.sync.events.addEventListener(
+        'onCountersUpdated',
+        onAboutInfoCountersUpdated);
 
     // Register to receive a stream of event notifications.
     chrome.sync.registerForEvents();

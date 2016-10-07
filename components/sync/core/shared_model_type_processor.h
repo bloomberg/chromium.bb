@@ -22,6 +22,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/model_type_processor.h"
 #include "components/sync/core/non_blocking_sync_common.h"
+#include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -56,9 +57,13 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // Used for populating nodes in Sync Node Browser of chrome://sync-internals.
   // TODO(gangwu): GetAllNodes could be in a helper class.
   void GetAllNodes(
-      const scoped_refptr<base::TaskRunner>& task_runner,
       const base::Callback<void(const ModelType type,
                                 std::unique_ptr<base::ListValue>)>& callback);
+
+  // Returns StatusCounters for data type to |callback|.
+  // Used for updating data type counters in chrome://sync-internals.
+  void GetStatusCounters(
+      const base::Callback<void(ModelType, const StatusCounters&)>& callback);
 
   // ModelTypeChangeProcessor implementation.
   void Put(const std::string& storage_key,
@@ -153,7 +158,6 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // This is callback function for ModelTypeService::GetAllData. This function
   // will merge real data |batch| with metadata, then pass to |callback|.
   void MergeDataWithMetadata(
-      const scoped_refptr<base::TaskRunner>& task_runner,
       const base::Callback<void(const ModelType,
                                 std::unique_ptr<base::ListValue>)>& callback,
       SyncError error,

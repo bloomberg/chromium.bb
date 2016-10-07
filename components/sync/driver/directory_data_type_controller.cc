@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/core/user_share.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
 #include "components/sync/driver/sync_service.h"
@@ -34,6 +36,22 @@ void DirectoryDataTypeController::GetAllNodes(
       type(), sync_client_->GetSyncService()->GetUserShare()->directory.get());
   callback.Run(type(), std::move(node_list));
 }
+
+void DirectoryDataTypeController::GetStatusCounters(
+    const StatusCountersCallback& callback) {
+  std::vector<int> num_entries_by_type(syncer::MODEL_TYPE_COUNT, 0);
+  std::vector<int> num_to_delete_entries_by_type(syncer::MODEL_TYPE_COUNT, 0);
+  sync_client_->GetSyncService()
+      ->GetUserShare()
+      ->directory->CollectMetaHandleCounts(&num_entries_by_type,
+                                           &num_to_delete_entries_by_type);
+  syncer::StatusCounters counters;
+  counters.num_entries_and_tombstones = num_entries_by_type[type()];
+  counters.num_entries =
+      num_entries_by_type[type()] - num_to_delete_entries_by_type[type()];
+
+  callback.Run(type(), counters);
+};
 
 void DirectoryDataTypeController::RegisterWithBackend(
     BackendDataTypeConfigurer* configurer) {}

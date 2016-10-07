@@ -137,13 +137,25 @@ bool SharedModelTypeProcessor::IsConnected() const {
 }
 
 void SharedModelTypeProcessor::GetAllNodes(
-    const scoped_refptr<base::TaskRunner>& task_runner,
     const base::Callback<void(const ModelType,
                               std::unique_ptr<base::ListValue>)>& callback) {
   DCHECK(service_);
   service_->GetAllData(
       base::Bind(&SharedModelTypeProcessor::MergeDataWithMetadata,
-                 base::Unretained(this), task_runner, callback));
+                 base::Unretained(this), callback));
+}
+
+void SharedModelTypeProcessor::GetStatusCounters(
+    const base::Callback<void(ModelType, const StatusCounters&)>& callback) {
+  DCHECK(CalledOnValidThread());
+  syncer::StatusCounters counters;
+  counters.num_entries_and_tombstones = entities_.size();
+  for (auto it = entities_.begin(); it != entities_.end(); ++it) {
+    if (!it->second->metadata().is_deleted()) {
+      ++counters.num_entries;
+    }
+  }
+  callback.Run(type_, counters);
 }
 
 void SharedModelTypeProcessor::DisableSync() {
@@ -659,7 +671,6 @@ ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
 }
 
 void SharedModelTypeProcessor::MergeDataWithMetadata(
-    const scoped_refptr<base::TaskRunner>& task_runner,
     const base::Callback<void(const ModelType,
                               std::unique_ptr<base::ListValue>)>& callback,
     SyncError error,
@@ -697,8 +708,7 @@ void SharedModelTypeProcessor::MergeDataWithMetadata(
   rootnode->SetString("NON_UNIQUE_NAME", type_string);
   all_nodes->Append(std::move(rootnode));
 
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(callback, type_, base::Passed(&all_nodes)));
+  callback.Run(type_, std::move(all_nodes));
 }
 
 }  // namespace syncer

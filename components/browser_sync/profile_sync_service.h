@@ -310,7 +310,7 @@ class ProfileSyncService : public syncer::SyncService,
   base::string16 GetLastSyncedTimeString() const override;
   std::string GetBackendInitializationStateString() const override;
   syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
-  base::Value* GetTypeStatusMap() const override;
+  base::Value* GetTypeStatusMap() override;
   const GURL& sync_service_url() const override;
   std::string unrecoverable_error_message() const override;
   tracked_objects::Location unrecoverable_error_location() const override;
@@ -374,7 +374,7 @@ class ProfileSyncService : public syncer::SyncService,
   void OnDirectoryTypeUpdateCounterUpdated(
       syncer::ModelType type,
       const syncer::UpdateCounters& counters) override;
-  void OnDirectoryTypeStatusCounterUpdated(
+  void OnDatatypeStatusCounterUpdated(
       syncer::ModelType type,
       const syncer::StatusCounters& counters) override;
   void OnConnectionStatusChange(syncer::ConnectionStatus status) override;

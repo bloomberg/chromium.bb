@@ -16,6 +16,7 @@
 #include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
+#include "components/sync/engine/cycle/status_counters.h"
 
 namespace syncer {
 
@@ -69,6 +70,9 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   typedef base::Callback<void(const ModelType,
                               std::unique_ptr<base::ListValue>)>
       AllNodesCallback;
+
+  typedef base::Callback<void(ModelType, const StatusCounters&)>
+      StatusCountersCallback;
 
   typedef std::map<ModelType, std::unique_ptr<DataTypeController>> TypeMap;
   typedef std::map<ModelType, DataTypeController::State> StateMap;
@@ -145,6 +149,11 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // |callback| on this thread.
   // Used for populating nodes in Sync Node Browser of chrome://sync-internals.
   virtual void GetAllNodes(const AllNodesCallback& callback) = 0;
+
+  // Collects StatusCounters for this datatype and passes them to |callback|,
+  // which should be wrapped with syncer::BindToCurrentThread already.
+  // Used to display entity counts in chrome://sync-internals.
+  virtual void GetStatusCounters(const StatusCountersCallback& callback) = 0;
 
  protected:
   DataTypeController(ModelType type, const base::Closure& dump_stack);

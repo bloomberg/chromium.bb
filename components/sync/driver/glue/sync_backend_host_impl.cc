@@ -776,7 +776,7 @@ void SyncBackendHostImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop(
     const StatusCounters& counters) {
   if (!frontend_)
     return;
-  frontend_->OnDirectoryTypeStatusCounterUpdated(type, counters);
+  frontend_->OnDatatypeStatusCounterUpdated(type, counters);
 }
 
 void SyncBackendHostImpl::UpdateInvalidationVersions(
