@@ -185,6 +185,26 @@ class RequestCoordinator : public KeyedService,
   }
 
  private:
+  // Immediate start attempt status code for UMA.
+  // For any changes, also update corresponding histogram in histograms.xml.
+  enum OfflinerImmediateStartStatus {
+    // Did start processing request.
+    STARTED = 0,
+    // Already busy processing a request.
+    BUSY = 1,
+    // The Offliner did not accept processing the request.
+    NOT_ACCEPTED = 2,
+    // No current network connection.
+    NO_CONNECTION = 3,
+    // Weak network connection (worse than 2G speed)
+    // according to network quality estimator.
+    WEAK_CONNECTION = 4,
+    // Did not start because this is svelte device.
+    NOT_STARTED_ON_SVELTE = 5,
+    // NOTE: insert new values above this line and update histogram enum too.
+    STATUS_COUNT = 6,
+  };
+
   // Receives the results of a get from the request queue, and turns that into
   // SavePageRequest objects for the caller of GetQueuedRequests.
   void GetQueuedRequestsCallback(
@@ -220,6 +240,8 @@ class RequestCoordinator : public KeyedService,
   // Start processing now if connected (but with conservative assumption
   // as to other device conditions).
   void StartProcessingIfConnected();
+
+  OfflinerImmediateStartStatus TryImmediateStart();
 
   // Check the request queue, and schedule a task corresponding
   // to the least restrictive type of request in the queue.

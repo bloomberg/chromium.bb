@@ -373,30 +373,42 @@ bool RequestCoordinator::StartProcessing(
 }
 
 void RequestCoordinator::StartProcessingIfConnected() {
+  OfflinerImmediateStartStatus immediate_start_status = TryImmediateStart();
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.Background.ImmediateStartStatus", immediate_start_status,
+      RequestCoordinator::OfflinerImmediateStartStatus::STATUS_COUNT);
+}
+
+RequestCoordinator::OfflinerImmediateStartStatus
+RequestCoordinator::TryImmediateStart() {
   // Make sure not already busy processing.
-  if (is_busy_) return;
+  if (is_busy_)
+    return OfflinerImmediateStartStatus::BUSY;
 
   // Make sure we are not on svelte device to start immediately.
-  if (base::SysInfo::IsLowEndDevice()) return;
+  if (base::SysInfo::IsLowEndDevice())
+    return OfflinerImmediateStartStatus::NOT_STARTED_ON_SVELTE;
 
   // Make sure we have reasonable network quality (or at least a connection).
   if (network_quality_estimator_) {
     // TODO(dougarnett): Add UMA for quality type experienced.
     net::EffectiveConnectionType quality =
         network_quality_estimator_->GetEffectiveConnectionType();
-    if (quality < net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G) {
-      return;
-    }
+    if (quality < net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G)
+      return OfflinerImmediateStartStatus::WEAK_CONNECTION;
   } else if (GetConnectionType() ==
              net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE) {
-    return;
+    return OfflinerImmediateStartStatus::NO_CONNECTION;
   }
 
   // Start processing with manufactured conservative battery conditions
   // (i.e., assume no battery).
   // TODO(dougarnett): Obtain actual battery conditions (from Android/Java).
   DeviceConditions device_conditions(false, 0, GetConnectionType());
-  StartProcessing(device_conditions, base::Bind(&EmptySchedulerCallback));
+  if (StartProcessing(device_conditions, base::Bind(&EmptySchedulerCallback)))
+    return OfflinerImmediateStartStatus::STARTED;
+  else
+    return OfflinerImmediateStartStatus::NOT_ACCEPTED;
 }
 
 void RequestCoordinator::TryNextRequest() {
