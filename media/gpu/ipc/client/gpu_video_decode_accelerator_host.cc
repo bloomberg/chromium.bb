@@ -239,17 +239,14 @@ void GpuVideoDecodeAcceleratorHost::OnDismissPictureBuffer(
 }
 
 void GpuVideoDecodeAcceleratorHost::OnPictureReady(
-    int32_t picture_buffer_id,
-    int32_t bitstream_buffer_id,
-    const gfx::Rect& visible_rect,
-    bool allow_overlay,
-    bool size_changed) {
+    const AcceleratedVideoDecoderHostMsg_PictureReady_Params& params) {
   DCHECK(CalledOnValidThread());
   if (!client_)
     return;
-  Picture picture(picture_buffer_id, bitstream_buffer_id, visible_rect,
-                  allow_overlay);
-  picture.set_size_changed(size_changed);
+  Picture picture(params.picture_buffer_id, params.bitstream_buffer_id,
+                  params.visible_rect, params.color_space,
+                  params.allow_overlay);
+  picture.set_size_changed(params.size_changed);
   client_->PictureReady(picture);
 }
 

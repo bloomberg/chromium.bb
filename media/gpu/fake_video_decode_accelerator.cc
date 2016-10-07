@@ -170,7 +170,8 @@ void FakeVideoDecodeAccelerator::DoPictureReady() {
     free_output_buffers_.pop();
 
     const Picture picture =
-        Picture(buffer_id, bitstream_id, gfx::Rect(frame_buffer_size_), false);
+        Picture(buffer_id, bitstream_id, gfx::Rect(frame_buffer_size_),
+                gfx::ColorSpace(), false);
     client_->PictureReady(picture);
     // Bitstream no longer needed.
     client_->NotifyEndOfBitstreamBuffer(bitstream_id);
