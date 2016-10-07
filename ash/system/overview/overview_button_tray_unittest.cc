@@ -13,7 +13,6 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
-#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/status_area_widget_test_helper.h"
@@ -176,12 +175,11 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
   WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
   SetUserLoggedIn(false);
-  Shell::GetInstance()->UpdateAfterLoginStatusChange(
-      LoginStatus::NOT_LOGGED_IN);
+  WmShell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
   EXPECT_FALSE(GetTray()->visible());
   SetUserLoggedIn(true);
   SetSessionStarted(true);
-  Shell::GetInstance()->UpdateAfterLoginStatusChange(LoginStatus::USER);
+  WmShell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
   EXPECT_TRUE(GetTray()->visible());
   SetUserAddingScreenRunning(true);
   NotifySessionStateChanged();

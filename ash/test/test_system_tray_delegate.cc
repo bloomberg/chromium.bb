@@ -9,7 +9,6 @@
 #include "ash/common/login_status.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 
@@ -49,7 +48,7 @@ void TestSystemTrayDelegate::SetSystemUpdateRequired(bool required) {
 
 void TestSystemTrayDelegate::SetLoginStatus(LoginStatus login_status) {
   login_status_ = login_status;
-  Shell::GetInstance()->UpdateAfterLoginStatusChange(login_status);
+  WmShell::Get()->UpdateAfterLoginStatusChange(login_status);
 }
 
 void TestSystemTrayDelegate::SetSessionLengthLimitForTest(

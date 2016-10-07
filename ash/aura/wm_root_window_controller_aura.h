@@ -42,6 +42,7 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController {
   gfx::Point GetLastMouseLocationInRoot() override;
   void OnInitialWallpaperAnimationStarted() override;
   void OnWallpaperAnimationFinished(views::Widget* widget) override;
+  void UpdateAfterLoginStatusChange(LoginStatus status) override;
 
  protected:
   // WmRootWindowController:

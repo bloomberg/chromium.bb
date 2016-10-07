@@ -279,13 +279,6 @@ void Shell::OnLoginUserProfilePrepared() {
   CreateKeyboard();
 }
 
-void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
-  RootWindowControllerList controllers = GetAllRootWindowControllers();
-  for (RootWindowControllerList::iterator iter = controllers.begin();
-       iter != controllers.end(); ++iter)
-    (*iter)->UpdateAfterLoginStatusChange(status);
-}
-
 void Shell::OnAppTerminating() {
   FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
                     OnAppTerminating());

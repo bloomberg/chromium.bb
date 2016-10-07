@@ -114,6 +114,12 @@ void WmRootWindowControllerAura::OnWallpaperAnimationFinished(
   WmRootWindowController::OnWallpaperAnimationFinished(widget);
 }
 
+void WmRootWindowControllerAura::UpdateAfterLoginStatusChange(
+    LoginStatus status) {
+  root_window_controller_->UpdateAfterLoginStatusChange(status);
+  WmRootWindowController::UpdateAfterLoginStatusChange(status);
+}
+
 bool WmRootWindowControllerAura::ShouldDestroyWindowInCloseChildWindows(
     WmWindow* window) {
   return WmWindowAura::GetAuraWindow(window)->owned_by_parent();

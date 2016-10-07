@@ -752,12 +752,8 @@ void SystemTrayDelegateChromeOS::UserChangedChildStatus(
 
   // Returned user_profile might be NULL on restoring Users on browser start.
   // At some point profile is not yet fully initiated.
-  if (session_started_ &&
-      user_profile != NULL &&
-      user_profile_ == user_profile) {
-    ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
-        GetUserLoginStatus());
-  }
+  if (session_started_ && user_profile && user_profile_ == user_profile)
+    ash::WmShell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
 }
 
 ash::SystemTray* SystemTrayDelegateChromeOS::GetPrimarySystemTray() {
@@ -919,12 +915,12 @@ void SystemTrayDelegateChromeOS::NotifyIfLastWindowClosed() {
 // Overridden from SessionManagerClient::Observer.
 void SystemTrayDelegateChromeOS::ScreenIsLocked() {
   screen_locked_ = true;
-  ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
+  ash::WmShell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
 }
 
 void SystemTrayDelegateChromeOS::ScreenIsUnlocked() {
   screen_locked_ = false;
-  ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
+  ash::WmShell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
 }
 
 gfx::NativeWindow SystemTrayDelegateChromeOS::GetNativeWindow() const {
@@ -971,8 +967,7 @@ void SystemTrayDelegateChromeOS::Observe(
     }
     case chrome::NOTIFICATION_SESSION_STARTED: {
       session_started_ = true;
-      ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
-          GetUserLoginStatus());
+      ash::WmShell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
       SetProfile(ProfileManager::GetActiveUserProfile());
       break;
     }

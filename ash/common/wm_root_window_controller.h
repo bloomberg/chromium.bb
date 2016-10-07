@@ -37,6 +37,8 @@ class WmShell;
 class WmWindow;
 class WorkspaceController;
 
+enum class LoginStatus;
+
 namespace wm {
 class RootWindowLayoutManager;
 }
@@ -134,6 +136,10 @@ class ASH_EXPORT WmRootWindowController {
   // TODO: port remaining classic ash wallpaper functionality here.
   virtual void OnInitialWallpaperAnimationStarted();
   virtual void OnWallpaperAnimationFinished(views::Widget* widget);
+
+  // Called when the login status changes after login (such as lock/unlock).
+  // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
+  virtual void UpdateAfterLoginStatusChange(LoginStatus status);
 
  protected:
   // Moves child windows to |dest|.

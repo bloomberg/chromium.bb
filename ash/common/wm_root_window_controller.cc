@@ -276,6 +276,13 @@ void WmRootWindowController::OnWallpaperAnimationFinished(
   }
 }
 
+void WmRootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
+  StatusAreaWidget* status_area_widget =
+      GetShelf()->shelf_widget()->status_area_widget();
+  if (status_area_widget)
+    status_area_widget->UpdateAfterLoginStatusChange(status);
+}
+
 void WmRootWindowController::MoveWindowsTo(WmWindow* dest) {
   // Clear the workspace controller, so it doesn't incorrectly update the shelf.
   workspace_controller_.reset();

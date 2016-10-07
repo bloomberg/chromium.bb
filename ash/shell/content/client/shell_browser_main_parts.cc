@@ -138,7 +138,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   ash::Shell::CreateInstance(init_params);
   ash::WmShell::Get()->CreateShelf();
-  ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(LoginStatus::USER);
+  ash::WmShell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
 
   window_watcher_.reset(new ash::shell::WindowWatcher);
   display::Screen::GetScreen()->AddObserver(window_watcher_.get());

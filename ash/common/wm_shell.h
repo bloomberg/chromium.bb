@@ -81,6 +81,7 @@ class WmRootWindowController;
 class WmWindow;
 class WorkspaceEventHandler;
 
+enum class LoginStatus;
 enum class TaskSwitchSource;
 
 namespace wm {
@@ -344,6 +345,10 @@ class ASH_EXPORT WmShell {
 
   // Called after overview mode has ended.
   virtual void OnOverviewModeEnded() = 0;
+
+  // Called when the login status changes.
+  // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
+  void UpdateAfterLoginStatusChange(LoginStatus status);
 
   // Notify observers that fullscreen mode has changed for |root_window|.
   void NotifyFullscreenStateChanged(bool is_fullscreen, WmWindow* root_window);

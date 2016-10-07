@@ -9,7 +9,6 @@
 
 #include "ash/common/login_status.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -176,7 +175,7 @@ void TestSessionStateDelegate::SetActiveUserSessionStarted(
     user_manager_->SessionStarted();
     session_state_ = SESSION_STATE_ACTIVE;
     WmShell::Get()->CreateShelf();
-    Shell::GetInstance()->UpdateAfterLoginStatusChange(LoginStatus::USER);
+    WmShell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
   } else {
     session_state_ = SESSION_STATE_LOGIN_PRIMARY;
     user_manager_.reset(new TestUserManager());

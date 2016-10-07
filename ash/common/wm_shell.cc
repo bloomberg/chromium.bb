@@ -153,6 +153,13 @@ void WmShell::OnMaximizeModeEnded() {
   FOR_EACH_OBSERVER(ShellObserver, shell_observers_, OnMaximizeModeEnded());
 }
 
+void WmShell::UpdateAfterLoginStatusChange(LoginStatus status) {
+  for (WmWindow* root_window : GetAllRootWindows()) {
+    root_window->GetRootWindowController()->UpdateAfterLoginStatusChange(
+        status);
+  }
+}
+
 void WmShell::NotifyFullscreenStateChanged(bool is_fullscreen,
                                            WmWindow* root_window) {
   FOR_EACH_OBSERVER(ShellObserver, shell_observers_,

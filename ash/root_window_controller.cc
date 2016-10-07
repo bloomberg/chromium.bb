@@ -314,10 +314,6 @@ const aura::Window* RootWindowController::GetContainer(int container_id) const {
 void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
   if (status != LoginStatus::NOT_LOGGED_IN)
     mouse_event_target_.reset();
-  StatusAreaWidget* status_area_widget =
-      wm_shelf_aura_->shelf_widget()->status_area_widget();
-  if (status_area_widget)
-    status_area_widget->UpdateAfterLoginStatusChange(status);
 }
 
 void RootWindowController::OnInitialWallpaperAnimationStarted() {
