@@ -9,6 +9,6 @@
 
 // Checks the environment and starts Physical Web discovery if the required
 // conditions are met.
-void StartPhysicalWebDiscovery(PrefService* pref_service);
+void StartPhysicalWebDiscovery(PrefService* pref_service, bool is_incognito);
 
 #endif  // IOS_CHROME_BROWSER_PHYSICAL_WEB_START_PHYSICAL_WEB_DISCOVERY_H_

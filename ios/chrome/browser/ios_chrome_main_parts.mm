@@ -39,7 +39,6 @@
 #include "ios/chrome/browser/ios_chrome_field_trials.h"
 #include "ios/chrome/browser/metrics/field_trial_synchronizer.h"
 #include "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
-#include "ios/chrome/browser/physical_web/start_physical_web_discovery.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -179,8 +178,6 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
 
   translate::TranslateDownloadManager::RequestLanguageList(
       last_used_browser_state->GetPrefs());
-
-  StartPhysicalWebDiscovery(last_used_browser_state->GetPrefs());
 }
 
 void IOSChromeMainParts::PostMainMessageLoopRun() {
