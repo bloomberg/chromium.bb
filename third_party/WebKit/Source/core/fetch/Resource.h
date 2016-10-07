@@ -26,6 +26,7 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/CachedMetadataHandler.h"
+#include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/SharedBuffer.h"
@@ -195,8 +196,6 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool passesAccessControlCheck(SecurityOrigin*,
                                 String& errorDescription) const;
 
-  bool isEligibleForIntegrityCheck(SecurityOrigin*) const;
-
   virtual PassRefPtr<const SharedBuffer> resourceBuffer() const {
     return m_data;
   }
@@ -254,10 +253,21 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool isCacheValidator() const { return m_isRevalidating; }
   bool hasCacheControlNoStoreHeader() const;
   bool hasVaryHeader() const;
-  virtual bool mustRefetchDueToIntegrityMetadata(
-      const FetchRequest& request) const {
-    return false;
+
+  bool isEligibleForIntegrityCheck(SecurityOrigin*) const;
+
+  void setIntegrityMetadata(const IntegrityMetadataSet& metadata) {
+    m_integrityMetadata = metadata;
   }
+  const IntegrityMetadataSet& integrityMetadata() const {
+    return m_integrityMetadata;
+  }
+  // The argument must never be |NotChecked|.
+  void setIntegrityDisposition(ResourceIntegrityDisposition);
+  ResourceIntegrityDisposition integrityDisposition() const {
+    return m_integrityDisposition;
+  }
+  bool mustRefetchDueToIntegrityMetadata(const FetchRequest&) const;
 
   double currentAge() const;
   double freshnessLifetime();
@@ -413,6 +423,9 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   unsigned m_linkPreload : 1;
   bool m_isRevalidating : 1;
   bool m_isAlive : 1;
+
+  ResourceIntegrityDisposition m_integrityDisposition;
+  IntegrityMetadataSet m_integrityMetadata;
 
   bool m_isAddRemoveClientProhibited;
 

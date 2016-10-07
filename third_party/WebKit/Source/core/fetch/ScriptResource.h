@@ -75,19 +75,6 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   bool mimeTypeAllowedByNosniff() const;
 
-  void setIntegrityMetadata(const IntegrityMetadataSet& metadata) {
-    m_integrityMetadata = metadata;
-  }
-  const IntegrityMetadataSet& integrityMetadata() const {
-    return m_integrityMetadata;
-  }
-  // The argument must never be |NotChecked|.
-  void setIntegrityDisposition(ScriptIntegrityDisposition);
-  ScriptIntegrityDisposition integrityDisposition() {
-    return m_integrityDisposition;
-  }
-  bool mustRefetchDueToIntegrityMetadata(const FetchRequest&) const override;
-
  private:
   class ScriptResourceFactory : public ResourceFactory {
    public:
@@ -103,9 +90,6 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   ScriptResource(const ResourceRequest&,
                  const ResourceLoaderOptions&,
                  const String& charset);
-
-  ScriptIntegrityDisposition m_integrityDisposition;
-  IntegrityMetadataSet m_integrityMetadata;
 
   AtomicString m_script;
 };
