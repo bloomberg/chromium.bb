@@ -65,7 +65,7 @@ TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object)
     WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), WTF::ArrayBufferContents::NotShared);
     TestArrayBuffer* buffer = TestArrayBuffer::create(contents);
     v8::Local<v8::Object> associatedWrapper = buffer->associateWithWrapper(v8::Isolate::GetCurrent(), buffer->wrapperTypeInfo(), object);
-    ASSERT_UNUSED(associatedWrapper, associatedWrapper == object);
+    DCHECK(associatedWrapper == object);
 
     return buffer;
 }

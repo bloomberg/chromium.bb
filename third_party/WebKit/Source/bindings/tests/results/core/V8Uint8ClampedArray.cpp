@@ -61,7 +61,7 @@ TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Local<v8::Object> object)
         ASSERT_NOT_REACHED();
     }
     v8::Local<v8::Object> associatedWrapper = typedArray->associateWithWrapper(v8::Isolate::GetCurrent(), typedArray->wrapperTypeInfo(), object);
-    ASSERT_UNUSED(associatedWrapper, associatedWrapper == object);
+    DCHECK(associatedWrapper == object);
 
     return typedArray->toImpl<TestUint8ClampedArray>();
 }
