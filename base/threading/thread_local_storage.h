@@ -5,6 +5,8 @@
 #ifndef BASE_THREADING_THREAD_LOCAL_STORAGE_H_
 #define BASE_THREADING_THREAD_LOCAL_STORAGE_H_
 
+#include <stdint.h>
+
 #include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/macros.h"
@@ -123,6 +125,7 @@ class BASE_EXPORT ThreadLocalStorage {
     // The internals of this struct should be considered private.
     base::subtle::Atomic32 initialized_;
     int slot_;
+    uint32_t version_;
   };
 
   // A convenience wrapper around StaticSlot with a constructor. Can be used
