@@ -49,7 +49,6 @@
 #include "core/editing/commands/DeleteSelectionCommand.h"
 #include "core/editing/commands/IndentOutdentCommand.h"
 #include "core/editing/commands/InsertListCommand.h"
-#include "core/editing/commands/MoveSelectionCommand.h"
 #include "core/editing/commands/RemoveFormatCommand.h"
 #include "core/editing/commands/ReplaceSelectionCommand.h"
 #include "core/editing/commands/SimplifyMarkupCommand.h"

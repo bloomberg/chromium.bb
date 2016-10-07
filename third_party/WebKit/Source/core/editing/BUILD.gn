@@ -103,8 +103,6 @@ blink_core_sources("editing") {
     "commands/InsertTextCommand.h",
     "commands/MergeIdenticalElementsCommand.cpp",
     "commands/MergeIdenticalElementsCommand.h",
-    "commands/MoveSelectionCommand.cpp",
-    "commands/MoveSelectionCommand.h",
     "commands/RemoveCSSPropertyCommand.cpp",
     "commands/RemoveCSSPropertyCommand.h",
     "commands/RemoveFormatCommand.cpp",
