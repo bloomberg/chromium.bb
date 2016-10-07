@@ -217,6 +217,14 @@ if [ "$(uname -m)" = "x86_64" ]; then
 else
   TARGETARCH="ia32"
 fi
+if [[ "$(lsb_release -c)" = *"precise" ]]; then
+  HOST_DISTRO="precise"
+elif [[ "$(lsb_release -c)" = *"trusty" ]]; then
+  HOST_DISTRO="trusty"
+else
+  echo "Debian package can only be build on Ubuntu Precise or Trusty"
+  exit 1
+fi
 
 # call cleanup() on exit
 trap cleanup 0
@@ -277,12 +285,16 @@ echo "$DPKG_SHLIB_DEPS" | sed 's/, /\n/g' | \
 
 # Compare the expected dependency list to the generate list.
 BAD_DIFF=0
-diff -u "$SCRIPTDIR/expected_deps_$TARGETARCH" actual || BAD_DIFF=1
+diff -u "$SCRIPTDIR/expected_deps_${TARGETARCH}_${HOST_DISTRO}" actual || \
+  BAD_DIFF=1
 if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
   echo
   echo "ERROR: Shared library dependencies changed!"
   echo "If this is intentional, please update:"
-  echo "chrome/installer/linux/debian/expected_deps_$TARGETARCH"
+  echo "chrome/installer/linux/debian/expected_deps_ia32_precise"
+  echo "chrome/installer/linux/debian/expected_deps_ia32_trusty"
+  echo "chrome/installer/linux/debian/expected_deps_x64_precise"
+  echo "chrome/installer/linux/debian/expected_deps_x64_trusty"
   echo
   exit $BAD_DIFF
 fi
