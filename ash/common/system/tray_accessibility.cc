@@ -335,6 +335,10 @@ void AccessibilityDetailedView::HandleButtonPressed(views::Button* sender,
   owner()->system_tray()->CloseSystemBubble();
 }
 
+void AccessibilityDetailedView::ShowSettings() {
+  WmShell::Get()->system_tray_controller()->ShowAccessibilitySettings();
+}
+
 }  // namespace tray
 
 ////////////////////////////////////////////////////////////////////////////////

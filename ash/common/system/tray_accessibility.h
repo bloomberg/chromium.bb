@@ -64,6 +64,7 @@ class AccessibilityDetailedView : public TrayDetailsView,
   void HandleViewClicked(views::View* view) override;
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override;
+  void ShowSettings() override;
 
   // Add the accessibility feature list.
   void AppendAccessibilityList();
