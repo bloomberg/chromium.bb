@@ -74,7 +74,9 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
 #if defined(ENABLE_APP_LIST)
     case IDR_CHROME_APP_MANIFEST:
 #endif
+#if defined(ENABLE_PRINTING)
     case IDR_CLOUDPRINT_MANIFEST:
+#endif
     case IDR_CRYPTOTOKEN_MANIFEST:
     case IDR_FEEDBACK_MANIFEST:
     case IDR_GAIA_AUTH_MANIFEST:
