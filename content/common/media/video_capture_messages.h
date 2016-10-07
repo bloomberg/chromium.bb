@@ -17,18 +17,8 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::VideoCaptureState,
                           content::VIDEO_CAPTURE_STATE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(media::ResolutionChangePolicy,
-                          media::RESOLUTION_POLICY_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::StorageType,
                           media::VideoFrame::STORAGE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(media::PowerLineFrequency,
-                          media::PowerLineFrequency::FREQUENCY_MAX)
-
-IPC_STRUCT_TRAITS_BEGIN(media::VideoCaptureParams)
-  IPC_STRUCT_TRAITS_MEMBER(requested_format)
-  IPC_STRUCT_TRAITS_MEMBER(resolution_change_policy)
-  IPC_STRUCT_TRAITS_MEMBER(power_line_frequency)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(VideoCaptureMsg_BufferReady_Params)
   IPC_STRUCT_MEMBER(int, device_id)
@@ -87,20 +77,6 @@ IPC_MESSAGE_CONTROL2(VideoCaptureMsg_DeviceSupportedFormatsEnumerated,
 IPC_MESSAGE_CONTROL2(VideoCaptureMsg_DeviceFormatsInUseReceived,
                      int /* device_id */,
                      media::VideoCaptureFormats /* formats_in_use */)
-
-// Start a video capture as |device_id|, a new id picked by the renderer
-// process. The session to be started is determined by |params.session_id|.
-IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_Start,
-                     int /* device_id */,
-                     media::VideoCaptureSessionId, /* session_id */
-                     media::VideoCaptureParams /* params */)
-
-// Resume the video capture specified by |device_id|, |session_id| and
-// |params|.
-IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_Resume,
-                     int, /* device_id */
-                     media::VideoCaptureSessionId, /* session_id */
-                     media::VideoCaptureParams /* params */)
 
 // Tell the browser process that the renderer has finished reading from
 // a buffer previously delivered by VideoCaptureMsg_BufferReady.

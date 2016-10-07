@@ -134,7 +134,7 @@ void VideoCaptureImpl::SuspendCapture(bool suspend) {
   if (suspend)
     GetVideoCaptureHost()->Pause(device_id_);
   else
-    Send(new VideoCaptureHostMsg_Resume(device_id_, session_id_, params_));
+    GetVideoCaptureHost()->Resume(device_id_, session_id_, params_);
 }
 
 void VideoCaptureImpl::StartCapture(
@@ -532,7 +532,7 @@ void VideoCaptureImpl::StartCaptureInternal() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(device_id_);
 
-  Send(new VideoCaptureHostMsg_Start(device_id_, session_id_, params_));
+  GetVideoCaptureHost()->Start(device_id_, session_id_, params_);
   state_ = VIDEO_CAPTURE_STATE_STARTED;
 }
 

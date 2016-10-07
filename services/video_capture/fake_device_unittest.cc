@@ -36,8 +36,8 @@ TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
           }));
 
   fake_device_proxy_->Start(arbitrary_requested_format,
-                            mojom::ResolutionChangePolicy::FIXED_RESOLUTION,
-                            mojom::PowerLineFrequency::DEFAULT,
+                            media::RESOLUTION_POLICY_FIXED_RESOLUTION,
+                            media::PowerLineFrequency::FREQUENCY_DEFAULT,
                             std::move(client_proxy));
   wait_loop.Run();
 }

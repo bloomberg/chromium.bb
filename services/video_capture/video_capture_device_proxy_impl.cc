@@ -4,7 +4,6 @@
 
 #include "base/logging.h"
 #include "services/video_capture/device_client_mojo_to_media_adapter.h"
-#include "services/video_capture/mojo_media_conversions.h"
 #include "services/video_capture/video_capture_device_proxy_impl.h"
 
 namespace video_capture {
@@ -20,14 +19,13 @@ VideoCaptureDeviceProxyImpl::~VideoCaptureDeviceProxyImpl() {
 
 void VideoCaptureDeviceProxyImpl::Start(
     const media::VideoCaptureFormat& requested_format,
-    mojom::ResolutionChangePolicy resolution_change_policy,
-    mojom::PowerLineFrequency power_line_frequency,
+    media::ResolutionChangePolicy resolution_change_policy,
+    media::PowerLineFrequency power_line_frequency,
     mojom::VideoCaptureDeviceClientPtr client) {
   media::VideoCaptureParams params;
   params.requested_format = requested_format;
-  params.resolution_change_policy =
-      ConvertFromMojoToMedia(resolution_change_policy);
-  params.power_line_frequency = ConvertFromMojoToMedia(power_line_frequency);
+  params.resolution_change_policy = resolution_change_policy;
+  params.power_line_frequency = power_line_frequency;
   client.set_connection_error_handler(
       base::Bind(&VideoCaptureDeviceProxyImpl::OnClientConnectionErrorOrClose,
                  base::Unretained(this)));

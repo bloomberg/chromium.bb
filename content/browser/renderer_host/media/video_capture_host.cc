@@ -47,7 +47,7 @@ void VideoCaptureHost::OnDestruct() const {
 }
 
 void VideoCaptureHost::OnError(VideoCaptureControllerID controller_id) {
-  DVLOG(1) << "VideoCaptureHost::OnError";
+  DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -142,8 +142,6 @@ void VideoCaptureHost::DoEnded(VideoCaptureControllerID controller_id) {
 bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(VideoCaptureHost, message)
-    IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Start, OnStartCapture)
-    IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Resume, OnResumeCapture)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_BufferReady,
                         OnRendererFinishedWithBuffer)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceSupportedFormats,
@@ -154,57 +152,6 @@ bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void VideoCaptureHost::OnStartCapture(int device_id,
-                                      media::VideoCaptureSessionId session_id,
-                                      const media::VideoCaptureParams& params) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureHost::OnStartCapture:"
-           << " session_id=" << session_id << ", device_id=" << device_id
-           << ", format="
-           << media::VideoCaptureFormat::ToString(params.requested_format)
-           << "@" << params.requested_format.frame_rate << " ("
-           << (params.resolution_change_policy ==
-                       media::RESOLUTION_POLICY_FIXED_RESOLUTION
-                   ? "fixed resolution"
-                   : (params.resolution_change_policy ==
-                              media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO
-                          ? "fixed aspect ratio"
-                          : "variable resolution")) << ")";
-  VideoCaptureControllerID controller_id(device_id);
-  if (controllers_.find(controller_id) != controllers_.end()) {
-    Send(new VideoCaptureMsg_StateChanged(device_id,
-                                          VIDEO_CAPTURE_STATE_ERROR));
-    return;
-  }
-
-  controllers_[controller_id] = base::WeakPtr<VideoCaptureController>();
-  media_stream_manager_->video_capture_manager()->StartCaptureForClient(
-      session_id,
-      params,
-      PeerHandle(),
-      controller_id,
-      this,
-      base::Bind(&VideoCaptureHost::OnControllerAdded, this, device_id));
-}
-
-void VideoCaptureHost::OnResumeCapture(
-    int device_id,
-    media::VideoCaptureSessionId session_id,
-    const media::VideoCaptureParams& params) {
-  DVLOG(1) << __func__ << " " << device_id;
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  VideoCaptureControllerID controller_id(device_id);
-  auto it = controllers_.find(controller_id);
-  if (it == controllers_.end() || !it->second)
-    return;
-
-  media_stream_manager_->video_capture_manager()->ResumeCaptureForClient(
-      session_id, params, it->second.get(), controller_id, this);
-  Send(new VideoCaptureMsg_StateChanged(device_id,
-                                        VIDEO_CAPTURE_STATE_RESUMED));
 }
 
 void VideoCaptureHost::OnRendererFinishedWithBuffer(
@@ -257,6 +204,30 @@ void VideoCaptureHost::OnGetDeviceFormatsInUse(
                                                       formats_in_use));
 }
 
+void VideoCaptureHost::Start(int32_t device_id,
+                             int32_t session_id,
+                             const media::VideoCaptureParams& params) {
+  DVLOG(1) << __func__ << " session_id=" << session_id
+           << ", device_id=" << device_id << ", format="
+           << media::VideoCaptureFormat::ToString(params.requested_format);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  const VideoCaptureControllerID controller_id(device_id);
+  if (controllers_.find(controller_id) != controllers_.end()) {
+    Send(new VideoCaptureMsg_StateChanged(device_id,
+                                          VIDEO_CAPTURE_STATE_ERROR));
+    return;
+  }
+
+  controllers_[controller_id] = base::WeakPtr<VideoCaptureController>();
+  media_stream_manager_->video_capture_manager()->StartCaptureForClient(
+      session_id,
+      params,
+      PeerHandle(),
+      controller_id,
+      this,
+      base::Bind(&VideoCaptureHost::OnControllerAdded, this, device_id));
+}
+
 void VideoCaptureHost::Stop(int32_t device_id) {
   DVLOG(1) << __func__ << " " << device_id;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -280,6 +251,23 @@ void VideoCaptureHost::Pause(int32_t device_id) {
   media_stream_manager_->video_capture_manager()->PauseCaptureForClient(
       it->second.get(), controller_id, this);
   Send(new VideoCaptureMsg_StateChanged(device_id, VIDEO_CAPTURE_STATE_PAUSED));
+}
+
+void VideoCaptureHost::Resume(int32_t device_id,
+                              int32_t session_id,
+                              const media::VideoCaptureParams& params) {
+  DVLOG(1) << __func__ << " " << device_id;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  VideoCaptureControllerID controller_id(device_id);
+  auto it = controllers_.find(controller_id);
+  if (it == controllers_.end() || !it->second)
+    return;
+
+  media_stream_manager_->video_capture_manager()->ResumeCaptureForClient(
+      session_id, params, it->second.get(), controller_id, this);
+  Send(new VideoCaptureMsg_StateChanged(device_id,
+                                        VIDEO_CAPTURE_STATE_RESUMED));
 }
 
 void VideoCaptureHost::RequestRefreshFrame(int32_t device_id) {

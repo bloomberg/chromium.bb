@@ -85,8 +85,8 @@ TEST_F(FakeDeviceDescriptorTest, CanUseSecondRequestedProxy) {
           InvokeWithoutArgs([&wait_loop_2]() { wait_loop_2.Quit(); }));
 
   device_proxy_2->Start(arbitrary_requested_format,
-                        mojom::ResolutionChangePolicy::FIXED_RESOLUTION,
-                        mojom::PowerLineFrequency::DEFAULT,
+                        media::RESOLUTION_POLICY_FIXED_RESOLUTION,
+                        media::PowerLineFrequency::FREQUENCY_DEFAULT,
                         std::move(client_proxy));
   wait_loop_2.Run();
 }

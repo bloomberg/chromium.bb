@@ -5,6 +5,7 @@
 #ifndef SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_IMPL_H_
 #define SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_IMPL_H_
 
+#include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
 #include "services/video_capture/public/interfaces/video_capture_device_proxy.mojom.h"
 
@@ -20,8 +21,8 @@ class VideoCaptureDeviceProxyImpl : public mojom::VideoCaptureDeviceProxy {
 
   // mojom::VideoCaptureDeviceProxy:
   void Start(const media::VideoCaptureFormat& requested_format,
-             mojom::ResolutionChangePolicy resolution_change_policy,
-             mojom::PowerLineFrequency power_line_frequency,
+             media::ResolutionChangePolicy resolution_change_policy,
+             media::PowerLineFrequency power_line_frequency,
              mojom::VideoCaptureDeviceClientPtr client) override;
 
   void Stop();

@@ -4,14 +4,29 @@
 
 module content.mojom;
 
+import "services/video_capture/public/interfaces/video_capture_device_proxy.mojom";
+import "services/video_capture/public/interfaces/video_capture_format.mojom";
+
+struct VideoCaptureParams {
+  video_capture.mojom.VideoCaptureFormat requested_format;
+  video_capture.mojom.ResolutionChangePolicy resolution_change_policy;
+  video_capture.mojom.PowerLineFrequency power_line_frequency;
+};
 interface VideoCaptureHost {
   // TODO(mcasas): Migrate the rest of the messages, https://crbug.com/651897.
+
+  // Start the |session_id| session with |params|. The video capture will be
+  // identified as |device_id|, a new id picked by the renderer process.
+  Start(int32 device_id, int32 session_id, VideoCaptureParams params);
 
   // Closes the video capture specified by |device_id|.
   Stop(int32 device_id);
 
   // Pauses the video capture specified by |device_id|.
   Pause(int32 device_id);
+
+  // Resume |device_id| video capture, in |session_id| and with |params|.
+  Resume(int32 device_id, int32 session_id, VideoCaptureParams params);
 
   // Requests that the video capturer send a frame "soon" (e.g., to resolve
   // picture loss or quality issues).

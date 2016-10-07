@@ -386,7 +386,7 @@ class VideoCaptureHostTest : public testing::Test {
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
         gfx::Size(352, 288), 30, media::PIXEL_FORMAT_I420);
-    host_->OnStartCapture(kDeviceId, opened_session_id_, params);
+    host_->Start(kDeviceId, opened_session_id_, params);
     run_loop.Run();
   }
 
@@ -400,7 +400,7 @@ class VideoCaptureHostTest : public testing::Test {
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
         gfx::Size(352, 288), 30, media::PIXEL_FORMAT_I420);
-    host_->OnStartCapture(kDeviceId, opened_session_id_, params);
+    host_->Start(kDeviceId, opened_session_id_, params);
     host_->Stop(kDeviceId);
     run_loop.RunUntilIdle();
     WaitForVideoDeviceThread();
@@ -418,7 +418,7 @@ class VideoCaptureHostTest : public testing::Test {
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
         gfx::Size(352, 288), 30, media::PIXEL_FORMAT_I420);
-    host_->OnResumeCapture(kDeviceId, opened_session_id_, params);
+    host_->Resume(kDeviceId, opened_session_id_, params);
     run_loop.RunUntilIdle();
     WaitForVideoDeviceThread();
   }
@@ -438,7 +438,7 @@ class VideoCaptureHostTest : public testing::Test {
     params.requested_format =
         media::VideoCaptureFormat(gfx::Size(width, height), frame_rate);
     host_->SetDumpVideo(true);
-    host_->OnStartCapture(kDeviceId, opened_session_id_, params);
+    host_->Start(kDeviceId, opened_session_id_, params);
     run_loop.Run();
   }
 #endif

@@ -3,6 +3,7 @@ include_rules = [
 
   "+device/base/synchronization",
   "+services/shell/public/cpp",
+  "+services/video_capture/public/interfaces",
 
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.

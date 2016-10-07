@@ -39,8 +39,6 @@ source_set("lib") {
     "device_client_mojo_to_media_adapter.h",
     "device_mock_to_media_adapter.cc",
     "device_mock_to_media_adapter.h",
-    "mojo_media_conversions.cc",
-    "mojo_media_conversions.h",
     "video_capture_device_factory_impl.cc",
     "video_capture_device_factory_impl.h",
     "video_capture_device_proxy_impl.cc",

@@ -12,7 +12,7 @@
 //
 //   Renderer                             VideoCaptureHost
 //      |                                        |
-//      |  VideoCaptureHostMsg_Start >           |
+//      |  --------- StartCapture -------->      |
 //      | < VideoCaptureMsg_StateChanged         |
 //      |        (VIDEO_CAPTURE_STATE_STARTED)   |
 //      | < VideoCaptureMsg_NewBuffer(1)         |
@@ -110,12 +110,6 @@ class CONTENT_EXPORT VideoCaptureHost
   ~VideoCaptureHost() override;
 
   // IPC message handlers.
-  void OnStartCapture(int device_id,
-                      media::VideoCaptureSessionId session_id,
-                      const media::VideoCaptureParams& params);
-  void OnResumeCapture(int device_id,
-                       media::VideoCaptureSessionId session_id,
-                       const media::VideoCaptureParams& params);
   void OnRendererFinishedWithBuffer(int device_id,
                                     int buffer_id,
                                     const gpu::SyncToken& sync_token,
@@ -127,8 +121,14 @@ class CONTENT_EXPORT VideoCaptureHost
                                media::VideoCaptureSessionId capture_session_id);
 
   // mojom::VideoCaptureHost implementation
+  void Start(int32_t device_id,
+             int32_t session_id,
+             const media::VideoCaptureParams& params) override;
   void Stop(int32_t device_id) override;
   void Pause(int32_t device_id) override;
+  void Resume(int32_t device_id,
+              int32_t session_id,
+              const media::VideoCaptureParams& params) override;
   void RequestRefreshFrame(int32_t device_id) override;
 
   void OnControllerAdded(
