@@ -149,22 +149,22 @@ void PendingScript::notifyFinished(Resource* resource) {
     // resource has empty integrity metadata.
     if (!integrityAttr.isEmpty() &&
         !scriptResource->integrityMetadata().isEmpty()) {
-      ResourceIntegrityDisposition disposition =
+      ScriptIntegrityDisposition disposition =
           scriptResource->integrityDisposition();
-      if (disposition == ResourceIntegrityDisposition::Failed) {
+      if (disposition == ScriptIntegrityDisposition::Failed) {
         // TODO(jww): This should probably also generate a console
         // message identical to the one produced by
         // CheckSubresourceIntegrity below. See https://crbug.com/585267.
         m_integrityFailure = true;
-      } else if (disposition == ResourceIntegrityDisposition::NotChecked &&
+      } else if (disposition == ScriptIntegrityDisposition::NotChecked &&
                  resource->resourceBuffer()) {
         m_integrityFailure = !SubresourceIntegrity::CheckSubresourceIntegrity(
             scriptResource->integrityMetadata(), *m_element,
             resource->resourceBuffer()->data(),
             resource->resourceBuffer()->size(), resource->url(), *resource);
         scriptResource->setIntegrityDisposition(
-            m_integrityFailure ? ResourceIntegrityDisposition::Failed
-                               : ResourceIntegrityDisposition::Passed);
+            m_integrityFailure ? ScriptIntegrityDisposition::Failed
+                               : ScriptIntegrityDisposition::Passed);
       }
     }
   }
