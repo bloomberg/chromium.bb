@@ -4,7 +4,7 @@
 
 // http://mozvr.github.io/webvr-spec/webvr.html#vrpose
 [
-    RuntimeEnabled=WebVR,
+    OriginTrialEnabled=WebVR,
 ] interface VRPose {
     readonly attribute Float32Array? position;
     readonly attribute Float32Array? linearVelocity;

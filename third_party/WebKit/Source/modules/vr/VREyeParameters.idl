@@ -4,7 +4,7 @@
 
 // http://mozvr.github.io/webvr-spec/webvr.html#eyeparameters
 [
-    RuntimeEnabled=WebVR,
+    OriginTrialEnabled=WebVR,
 ] interface VREyeParameters {
   /* These values will vary after a FOV has been set */
   readonly attribute Float32Array offset;

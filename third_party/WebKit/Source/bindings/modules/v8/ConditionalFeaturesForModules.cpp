@@ -11,6 +11,8 @@
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/V8WorkerNavigator.h"
 #include "bindings/modules/v8/V8DedicatedWorkerGlobalScopePartial.h"
+#include "bindings/modules/v8/V8Gamepad.h"
+#include "bindings/modules/v8/V8GamepadButton.h"
 #include "bindings/modules/v8/V8InstallEvent.h"
 #include "bindings/modules/v8/V8NavigatorPartial.h"
 #include "bindings/modules/v8/V8ServiceWorkerGlobalScope.h"
@@ -67,6 +69,11 @@ void installConditionalFeaturesForModules(
       V8NavigatorPartial::installWebUSB(isolate, world, v8::Local<v8::Object>(),
                                         prototypeObject, interfaceObject);
     }
+    if (RuntimeEnabledFeatures::webVREnabled() ||
+        (originTrialContext && originTrialContext->isFeatureEnabled("WebVR"))) {
+      V8NavigatorPartial::installWebVR(isolate, world, global, prototypeObject,
+                                       interfaceObject);
+    }
   } else if (wrapperTypeInfo == &V8Window::wrapperTypeInfo) {
     if (RuntimeEnabledFeatures::webBluetoothEnabled() ||
         (originTrialContext &&
@@ -79,6 +86,16 @@ void installConditionalFeaturesForModules(
          originTrialContext->isFeatureEnabled("WebUSB"))) {
       V8WindowPartial::installWebUSB(isolate, world, global, prototypeObject,
                                      interfaceObject);
+    }
+    if (RuntimeEnabledFeatures::webVREnabled() ||
+        (originTrialContext && originTrialContext->isFeatureEnabled("WebVR"))) {
+      V8WindowPartial::installWebVR(isolate, world, global, prototypeObject,
+                                    interfaceObject);
+    }
+    if (RuntimeEnabledFeatures::gamepadExtensionsEnabled() ||
+        (originTrialContext && originTrialContext->isFeatureEnabled("WebVR"))) {
+      V8WindowPartial::installGamepadExtensions(
+          isolate, world, global, prototypeObject, interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8ServiceWorkerGlobalScope::wrapperTypeInfo) {
     if (RuntimeEnabledFeatures::foreignFetchEnabled() ||
@@ -94,6 +111,18 @@ void installConditionalFeaturesForModules(
       V8InstallEvent::installForeignFetch(isolate, world,
                                           v8::Local<v8::Object>(),
                                           prototypeObject, interfaceObject);
+    }
+  } else if (wrapperTypeInfo == &V8Gamepad::wrapperTypeInfo) {
+    if (RuntimeEnabledFeatures::gamepadExtensionsEnabled() ||
+        (originTrialContext && originTrialContext->isFeatureEnabled("WebVR"))) {
+      V8Gamepad::installGamepadExtensions(isolate, world, global,
+                                          prototypeObject, interfaceObject);
+    }
+  } else if (wrapperTypeInfo == &V8GamepadButton::wrapperTypeInfo) {
+    if (RuntimeEnabledFeatures::gamepadExtensionsEnabled() ||
+        (originTrialContext && originTrialContext->isFeatureEnabled("WebVR"))) {
+      V8GamepadButton::installGamepadExtensions(
+          isolate, world, global, prototypeObject, interfaceObject);
     }
   }
 }

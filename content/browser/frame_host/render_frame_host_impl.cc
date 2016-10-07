@@ -2201,13 +2201,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                  routing_id_));
 
 #if defined(ENABLE_WEBVR)
-  const base::CommandLine& browser_command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  if (browser_command_line.HasSwitch(switches::kEnableWebVR)) {
-    GetInterfaceRegistry()->AddInterface<device::VRService>(
-        base::Bind(&device::VRServiceImpl::BindRequest));
-  }
+  GetInterfaceRegistry()->AddInterface<device::VRService>(
+      base::Bind(&device::VRServiceImpl::BindRequest));
 #endif
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGenericSensors)) {

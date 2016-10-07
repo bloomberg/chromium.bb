@@ -4,7 +4,7 @@
 
 // http://mozvr.github.io/webvr-spec/webvr.html#vrfieldofview
 [
-    RuntimeEnabled=WebVR,
+    OriginTrialEnabled=WebVR,
 ] interface VRFieldOfView {
     attribute double upDegrees;
     attribute double downDegrees;

@@ -103,7 +103,7 @@ ForeignFetch status=experimental, origin_trial_feature_name=ForeignFetch
 FramebustingNeedsSameOriginOrUserGesture status=stable
 FullscreenUnprefixed status=test
 FrameTimingSupport status=experimental
-GamepadExtensions
+GamepadExtensions origin_trial_feature_name=WebVR
 GeometryInterfaces status=experimental, implied_by=CompositorWorker
 GetUserMedia status=stable
 GlobalCacheStorage status=stable
@@ -243,7 +243,7 @@ WebBluetooth origin_trial_feature_name=WebBluetooth
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
 WebUSB status=experimental, origin_trial_feature_name=WebUSB
-WebVR
+WebVR origin_trial_feature_name=WebVR
 WebVTTRegions status=experimental
 V8BasedStructuredClone
 V8IdleTasks

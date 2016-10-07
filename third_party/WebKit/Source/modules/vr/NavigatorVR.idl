@@ -4,7 +4,7 @@
 
 // http://mozvr.github.io/webvr-spec/webvr.html#navigator
 [
-    RuntimeEnabled=WebVR,
+    OriginTrialEnabled=WebVR,
 ] partial interface Navigator {
     [CallWith=ScriptState] Promise getVRDisplays();
 };

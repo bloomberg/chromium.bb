@@ -49,6 +49,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/HistoryItem.h"
+#include "core/origin_trials/OriginTrials.h"
 #include "core/page/Page.h"
 #include "core/page/WindowFeatures.h"
 #include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
@@ -155,7 +156,8 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld() {
       NavigatorGamepad::from(*document);
       NavigatorServiceWorker::from(*document);
       DOMWindowStorageController::from(*document);
-      if (RuntimeEnabledFeatures::webVREnabled())
+      if (RuntimeEnabledFeatures::webVREnabled() ||
+          OriginTrials::webVREnabled(document->getExecutionContext()))
         NavigatorVR::from(*document);
     }
   }

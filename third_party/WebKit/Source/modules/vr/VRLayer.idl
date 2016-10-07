@@ -6,7 +6,7 @@ typedef HTMLCanvasElement VRSource;
 
 // http://mozvr.github.io/webvr-spec/webvr.html#vrlayer
 [
-    RuntimeEnabled=WebVR
+    OriginTrialEnabled=WebVR
 ] dictionary VRLayer {
   // The canvas to be presented to the VRDisplay
   VRSource? source = null;

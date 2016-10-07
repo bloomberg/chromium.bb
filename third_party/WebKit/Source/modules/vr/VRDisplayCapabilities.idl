@@ -4,7 +4,7 @@
 
 // http://mozvr.github.io/webvr-spec/webvr.html#vrdisplaycapabilities
 [
-    RuntimeEnabled=WebVR
+    OriginTrialEnabled=WebVR
 ] interface VRDisplayCapabilities {
   // Whether or not the VR display is capable of reporting user orientation.
   readonly attribute boolean hasOrientation;

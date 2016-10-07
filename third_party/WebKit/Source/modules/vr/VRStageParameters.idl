@@ -4,7 +4,7 @@
 
 // http://mozvr.github.io/webvr-spec/webvr.html#vrstageparameters
 [
-    RuntimeEnabled=WebVR
+    OriginTrialEnabled=WebVR
 ] interface VRStageParameters {
   // A 16 element array containing the components of a 4x4 transform
   // matrix.  This matrix transforms the sitting space position
