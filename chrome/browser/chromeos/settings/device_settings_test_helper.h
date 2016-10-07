@@ -124,7 +124,7 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   void CheckArcAvailability(const ArcCallback& callback) override;
   void StartArcInstance(const cryptohome::Identification& cryptohome_id,
                         bool disable_boot_completed_broadcast,
-                        const ArcCallback& callback) override;
+                        const StartArcInstanceCallback& callback) override;
   void StopArcInstance(const ArcCallback& callback) override;
   void PrioritizeArcInstance(const ArcCallback& callback) override;
   void EmitArcBooted() override;

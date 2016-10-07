@@ -188,7 +188,7 @@ void DeviceSettingsTestHelper::CheckArcAvailability(
 void DeviceSettingsTestHelper::StartArcInstance(
     const cryptohome::Identification& cryptohome_id,
     bool disable_boot_completed_broadcast,
-    const ArcCallback& callback) {}
+    const StartArcInstanceCallback& callback) {}
 
 void DeviceSettingsTestHelper::StopArcInstance(const ArcCallback& callback) {}
 

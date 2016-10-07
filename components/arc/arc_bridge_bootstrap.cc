@@ -41,14 +41,13 @@ namespace arc {
 
 namespace {
 
+using StartArcInstanceResult =
+    chromeos::SessionManagerClient::StartArcInstanceResult;
+
 const base::FilePath::CharType kArcBridgeSocketPath[] =
     FILE_PATH_LITERAL("/var/run/chrome/arc_bridge.sock");
 
 const char kArcBridgeSocketGroup[] = "arc-bridge";
-
-const base::FilePath::CharType kDiskCheckPath[] = "/home";
-
-const int64_t kCriticalDiskFreeBytes = 64 << 20;  // 64MB
 
 // This is called when StopArcInstance D-Bus method completes. Since we have the
 // ArcInstanceStopped() callback and are notified if StartArcInstance fails, we
@@ -115,8 +114,6 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   //
   // NOT_STARTED
   //   Start() ->
-  // CHECKING_DISK_SPACE
-  //   OnDiskSpaceChecked() ->
   // CREATING_SOCKET
   //   CreateSocket() -> OnSocketCreated() ->
   // STARTING_INSTANCE
@@ -134,19 +131,19 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   //
   // NOT_STARTED:
   //   Do nothing. Immediately transition to the STOPPED state.
-  // CHECKING_DISK_SPACE, CREATING_SOCKET:
-  //   The main task of those phases runs on WorkerPool thread. So, Stop()
-  //   just sets the flag and return. On the main task completion, a callback
+  // CREATING_SOCKET:
+  //   The main task of the phase runs on WorkerPool thread. So, Stop() just
+  //   sets the flag and return. On the main task completion, a callback
   //   will run on the main (practically UI) thread, and the flag is checked
   //   at the beginning of them. This should work under the assumption that
   //   the main tasks do not block indefinitely.
   // STARTING_INSTANCE:
   //   The ARC instance is starting via SessionManager. So, similar to
-  //   CHECKING_DISK_SPACE/CREATING_SOCKET cases, Stop() just sets the flag
-  //   and return. In its callback, it checks if ARC instance is successfully
-  //   started or not. In case of success, a request to stop the ARC instance
-  //   is sent to SessionManager. Its completion will be notified via
-  //   ArcInstanceStopped. Otherwise, it just turns into STOPPED state.
+  //   CREATING_SOCKET case, Stop() just sets the flag and return. In its
+  //   callback, it checks if ARC instance is successfully started or not.
+  //   In case of success, a request to stop the ARC instance is sent to
+  //   SessionManager. Its completion will be notified via ArcInstanceStopped.
+  //   Otherwise, it just turns into STOPPED state.
   // CONNECTING_MOJO:
   //   The main task runs on WorkerPool thread, but it is blocking call.
   //   So, Stop() sends a request to cancel the blocking by closing the pipe
@@ -186,9 +183,6 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
     // ARC is not yet started.
     NOT_STARTED,
 
-    // Checking the disk space.
-    CHECKING_DISK_SPACE,
-
     // An UNIX socket is being created.
     CREATING_SOCKET,
 
@@ -213,16 +207,14 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   void Stop() override;
 
  private:
-  // Called after getting the device free disk space.
-  void OnFreeDiskSpaceObtained(int64_t disk_free_bytes);
-
   // Creates the UNIX socket on the bootstrap thread and then processes its
   // file descriptor.
   static base::ScopedFD CreateSocket();
   void OnSocketCreated(base::ScopedFD fd);
 
   // DBus callback for StartArcInstance().
-  void OnInstanceStarted(base::ScopedFD socket_fd, bool success);
+  void OnInstanceStarted(base::ScopedFD socket_fd,
+                         StartArcInstanceResult result);
 
   // Synchronously accepts a connection on |socket_fd| and then processes the
   // connected socket's file descriptor.
@@ -283,40 +275,8 @@ void ArcBridgeBootstrapImpl::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, State::NOT_STARTED);
   VLOG(2) << "Starting ARC session.";
-  VLOG(2) << "Checking disk space...";
-  state_ = State::CHECKING_DISK_SPACE;
+  VLOG(2) << "Creating socket...";
 
-  // TODO(crbug.com/628124): Move disk space checking logic to session_manager.
-  base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
-      base::Bind(&base::SysInfo::AmountOfFreeDiskSpace,
-                 base::FilePath(kDiskCheckPath)),
-      base::Bind(&ArcBridgeBootstrapImpl::OnFreeDiskSpaceObtained,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void ArcBridgeBootstrapImpl::OnFreeDiskSpaceObtained(int64_t disk_free_bytes) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(state_, State::CHECKING_DISK_SPACE);
-
-  if (stop_requested_) {
-    VLOG(1) << "Stop() called while checking disk space";
-    OnStopped(ArcBridgeService::StopReason::SHUTDOWN);
-    return;
-  }
-
-  if (disk_free_bytes < 0) {
-    LOG(ERROR) << "ARC: Failed to get free disk space";
-    OnStopped(ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE);
-    return;
-  }
-  if (disk_free_bytes < kCriticalDiskFreeBytes) {
-    LOG(ERROR) << "ARC: The device is too low on disk space to start ARC";
-    OnStopped(ArcBridgeService::StopReason::LOW_DISK_SPACE);
-    return;
-  }
-
-  VLOG(2) << "Disk space check is done. Creating socket...";
   state_ = State::CREATING_SOCKET;
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
@@ -399,7 +359,7 @@ void ArcBridgeBootstrapImpl::OnSocketCreated(base::ScopedFD socket_fd) {
 }
 
 void ArcBridgeBootstrapImpl::OnInstanceStarted(base::ScopedFD socket_fd,
-                                               bool success) {
+                                               StartArcInstanceResult result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ == State::STOPPED) {
     // This is the case that error is notified via DBus before the
@@ -411,7 +371,7 @@ void ArcBridgeBootstrapImpl::OnInstanceStarted(base::ScopedFD socket_fd,
   DCHECK_EQ(state_, State::STARTING_INSTANCE);
 
   if (stop_requested_) {
-    if (success) {
+    if (result == StartArcInstanceResult::SUCCESS) {
       // The ARC instance has started to run. Request to stop.
       StopArcInstance();
       return;
@@ -420,9 +380,11 @@ void ArcBridgeBootstrapImpl::OnInstanceStarted(base::ScopedFD socket_fd,
     return;
   }
 
-  if (!success) {
+  if (result != StartArcInstanceResult::SUCCESS) {
     LOG(ERROR) << "Failed to start ARC instance";
-    OnStopped(ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE);
+    OnStopped(result == StartArcInstanceResult::LOW_FREE_DISK_SPACE
+                  ? ArcBridgeService::StopReason::LOW_DISK_SPACE
+                  : ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE);
     return;
   }
 
@@ -540,7 +502,6 @@ void ArcBridgeBootstrapImpl::Stop() {
       OnStopped(ArcBridgeService::StopReason::SHUTDOWN);
       return;
 
-    case State::CHECKING_DISK_SPACE:
     case State::CREATING_SOCKET:
     case State::STARTING_INSTANCE:
       // Before starting the ARC instance, we do nothing here.
@@ -548,9 +509,8 @@ void ArcBridgeBootstrapImpl::Stop() {
       // and stopping procedure will be run there.
       // On Chrome shutdown, it is not the case because the message loop is
       // already stopped here. Practically, it is not a problem because;
-      // - On disk space checking or on socket creating, it is ok to simply
-      // ignore such cases, because we no-longer continue the bootstrap
-      // procedure.
+      // - On socket creating, it is ok to simply ignore such cases,
+      // because we no-longer continue the bootstrap procedure.
       // - On starting instance, the container instance can be leaked.
       // Practically it is not problematic because the session manager will
       // clean it up.

@@ -67,7 +67,7 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD3(StartArcInstance,
                void(const cryptohome::Identification&,
                     bool,
-                    const ArcCallback&));
+                    const StartArcInstanceCallback&));
   MOCK_METHOD1(StopArcInstance, void(const ArcCallback&));
   MOCK_METHOD1(PrioritizeArcInstance, void(const ArcCallback&));
   MOCK_METHOD0(EmitArcBooted, void(void));
