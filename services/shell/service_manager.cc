@@ -364,7 +364,7 @@ class ServiceManager::Instance
       LOG(ERROR) << "Instance: " << identity_.name() << " running as: "
                   << identity_.user_id() << " attempting to connect to: "
                   << target.name() << " as: " << target.user_id() << " without "
-                  << " the mojo:shell{user_id} capability class.";
+                  << " the service:shell{user_id} capability class.";
       callback.Run(mojom::ConnectResult::ACCESS_DENIED,
                    mojom::kInheritUserID);
       return false;
@@ -560,12 +560,10 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
   // TODO(beng): It'd be great to build this from the manifest, however there's
   //             a bit of a chicken-and-egg problem.
   CapabilitySpec spec;
-  Interfaces interfaces;
-  interfaces.insert("filesystem::mojom::Directory");
-  spec.provided["app"] = interfaces;
-  Instance* instance = CreateInstance(CreateServiceManagerIdentity(),
-                                      CreateCatalogIdentity(),
-                                      spec);
+  spec.provided["app"].insert("filesystem::mojom::Directory");
+  spec.provided["control"].insert("catalog::mojom::CatalogControl");
+  Instance* instance = CreateInstance(
+      CreateServiceManagerIdentity(), CreateCatalogIdentity(), spec);
   singletons_.insert(kCatalogName);
   instance->StartWithService(std::move(catalog));
 }

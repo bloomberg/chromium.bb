@@ -18,8 +18,10 @@
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.h"
 #include "mash/package/mash_packaged_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/shell/background/background_shell.h"
 #include "services/shell/native_runner_delegate.h"
 #include "services/shell/public/cpp/connector.h"
@@ -40,6 +42,23 @@ namespace {
 // kProcessType used to identify child processes.
 const char* kMashChild = "mash-child";
 
+const char kChromeMashServiceName[] = "service:chrome_mash";
+
+const char kChromeMashContentBrowserPackageName[] =
+    "chrome_mash_content_browser";
+const char kChromeContentGpuPackageName[] = "chrome_content_gpu";
+const char kChromeContentRendererPackageName[] = "chrome_content_renderer";
+const char kChromeContentUtilityPackageName[] = "chrome_content_utility";
+
+const char kPackagesPath[] = "Packages";
+const char kManifestFilename[] = "manifest.json";
+
+base::FilePath GetPackageManifestPath(const std::string& package_name) {
+  base::FilePath exe = base::CommandLine::ForCurrentProcess()->GetProgram();
+  return exe.DirName().AppendASCII(kPackagesPath).AppendASCII(package_name)
+      .AppendASCII(kManifestFilename);
+}
+
 bool IsChild() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kProcessType) &&
@@ -57,18 +76,6 @@ void InitializeResources() {
       locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 }
 
-// Convert the command line program from chrome_mash to chrome. This is
-// necessary as the shell will attempt to start chrome_mash. We want chrome.
-void ChangeChromeMashToChrome(base::CommandLine* command_line) {
-  base::FilePath exe_path(command_line->GetProgram());
-#if defined(OS_WIN)
-  exe_path = exe_path.DirName().Append(FILE_PATH_LITERAL("chrome.exe"));
-#else
-  exe_path = exe_path.DirName().Append(FILE_PATH_LITERAL("chrome"));
-#endif
-  command_line->SetProgram(exe_path);
-}
-
 class NativeRunnerDelegateImpl : public shell::NativeRunnerDelegate {
  public:
   NativeRunnerDelegateImpl() {}
@@ -79,9 +86,9 @@ class NativeRunnerDelegateImpl : public shell::NativeRunnerDelegate {
   void AdjustCommandLineArgumentsForTarget(
       const shell::Identity& target,
       base::CommandLine* command_line) override {
-    if (target.name() != "exe:chrome") {
-      if (target.name() == "exe:chrome_mash")
-        ChangeChromeMashToChrome(command_line);
+    if (target.name() != content::kBrowserServiceName) {
+      // If running anything other than the browser process, launch a mash
+      // child process. The new process will execute MashRunner::RunChild().
       command_line->AppendSwitchASCII(switches::kProcessType, kMashChild);
 #if defined(OS_WIN)
       command_line->AppendArg(switches::kPrefetchArgumentOther);
@@ -89,6 +96,8 @@ class NativeRunnerDelegateImpl : public shell::NativeRunnerDelegate {
       return;
     }
 
+    // When launching the browser process, ensure that we don't inherit the
+    // --mash flag so it proceeds with the normal content/browser startup path.
     base::CommandLine::StringVector argv(command_line->argv());
     auto iter =
         std::find(argv.begin(), argv.end(), FILE_PATH_LITERAL("--mash"));
@@ -126,7 +135,35 @@ void MashRunner::RunMain() {
   service_.reset(new mash::MashPackagedService);
   service_->set_context(base::MakeUnique<shell::ServiceContext>(
       service_.get(),
-      background_shell.CreateServiceRequest("exe:chrome_mash")));
+      background_shell.CreateServiceRequest(kChromeMashServiceName)));
+
+  // We need to send a sync messages to the Catalog, so we wait for a completed
+  // connection first.
+  std::unique_ptr<shell::Connection> catalog_connection =
+      service_->connector()->Connect("service:catalog");
+  {
+    base::RunLoop run_loop;
+    catalog_connection->AddConnectionCompletedClosure(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Synchronously override manifests needed for content process services.
+  catalog::mojom::CatalogControlPtr catalog_control;
+  catalog_connection->GetInterface(&catalog_control);
+  CHECK(catalog_control->OverrideManifestPath(
+      content::kBrowserServiceName,
+      GetPackageManifestPath(kChromeMashContentBrowserPackageName)));
+  CHECK(catalog_control->OverrideManifestPath(
+      content::kGpuServiceName,
+      GetPackageManifestPath(kChromeContentGpuPackageName)));
+  CHECK(catalog_control->OverrideManifestPath(
+      content::kRendererServiceName,
+      GetPackageManifestPath(kChromeContentRendererPackageName)));
+  CHECK(catalog_control->OverrideManifestPath(
+      content::kUtilityServiceName,
+      GetPackageManifestPath(kChromeContentUtilityPackageName)));
+
+  // Ping mash_session to ensure an instance is brought up
   service_->connector()->Connect("service:mash_session");
   base::RunLoop().Run();
 }

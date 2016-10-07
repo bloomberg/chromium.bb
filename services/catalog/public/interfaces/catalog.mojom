@@ -4,6 +4,8 @@
 
 module catalog.mojom;
 
+import "mojo/common/common_custom_types.mojom";
+
 struct Entry {
   string name;
   string display_name;
@@ -26,4 +28,11 @@ interface Catalog {
   // Returns the entry(ies) for applications that can handle links with the
   // specified scheme.
   GetEntriesSupportingScheme(string protocol_scheme) => (array<Entry> entries);
+};
+
+// A control interface which may be exposed to privileged services.
+interface CatalogControl {
+  // Overrides the manifest path for a specific service named |name|.
+  [Sync]
+  OverrideManifestPath(string name, mojo.common.mojom.FilePath path) => ();
 };

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/types.h"
 #include "services/shell/public/cpp/service.h"
@@ -44,7 +45,9 @@ class Store;
 class Catalog : public shell::Service,
                 public shell::InterfaceFactory<mojom::Catalog>,
                 public shell::InterfaceFactory<filesystem::mojom::Directory>,
-                public shell::InterfaceFactory<shell::mojom::Resolver> {
+                public shell::InterfaceFactory<shell::mojom::Resolver>,
+                public shell::InterfaceFactory<mojom::CatalogControl>,
+                public mojom::CatalogControl {
  public:
   // |manifest_provider| may be null.
   Catalog(base::SequencedWorkerPool* worker_pool,
@@ -79,6 +82,16 @@ class Catalog : public shell::Service,
   void Create(const shell::Identity& remote_identity,
               filesystem::mojom::DirectoryRequest request) override;
 
+  // shell::InterfaceFactory<mojom::CatalogControl>:
+  void Create(const shell::Identity& remote_identity,
+              mojom::CatalogControlRequest request) override;
+
+  // mojom::CatalogControl:
+  void OverrideManifestPath(
+      const std::string& service_name,
+      const base::FilePath& path,
+      const OverrideManifestPathCallback& callback) override;
+
   Instance* GetInstanceForUserId(const std::string& user_id);
 
   void SystemPackageDirScanned();
@@ -95,6 +108,8 @@ class Catalog : public shell::Service,
   bool loaded_ = false;
 
   scoped_refptr<filesystem::LockTable> lock_table_;
+
+  mojo::BindingSet<mojom::CatalogControl> control_bindings_;
 
   base::WeakPtrFactory<Catalog> weak_factory_;
 

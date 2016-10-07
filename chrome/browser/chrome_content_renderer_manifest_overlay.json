@@ -1,0 +1,7 @@
+{
+  "display_name": "Chrome Render Process",
+  "capabilities": {
+    "provided": {},
+    "required": {}
+  }
+}

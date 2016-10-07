@@ -1,0 +1,24 @@
+// NOTE: This overlay is applied to content_browser_manifest.json on top of
+// src/chrome/browser/chrome_content_browser_manifest_overlay.json.
+//
+// The resulting manifest is output to
+// ${out}/Packages/chrome_mash_content_browser/manifest.json and is used as the
+// manifest for "service:content_browser" (i.e. the browser process) when Chrome
+// is run in a Mash environment.
+{
+  "capabilities": {
+    "required": {
+      "service:ash": {
+        "interfaces": [
+          "ash::mojom::ShelfController",
+          "ash::mojom::SystemTray",
+          "ash::mojom::WallpaperController"
+        ]
+      },
+      "service:accessibility_autoclick": {
+        "interfaces": [ "ash::autoclick::mojom::AutoclickController" ]
+      },
+      "service:mash_session": { "classes": [ "app" ] }
+    }
+  }
+}

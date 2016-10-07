@@ -8,7 +8,7 @@
     },
     "required": {
       "*": { "classes": [ "accessibility", "app" ] },
-      "exe:chrome" : {
+      "service:content_browser" : {
         "interfaces": [
           "ash::mojom::SystemTrayClient",
           "ash::mojom::WallpaperManager",

@@ -3,6 +3,11 @@
   "name": "service:shell",
   "display_name": "Service Manager",
   "capabilities": {
+    // NOTE: This manifest is for documentation purposes only. Relevant
+    // capability spec is defined inline in the ServiceManager implementation.
+    //
+    // TODO(rockot): Fix this. We can bake this file into ServiceManager at
+    // build time or something. Same with service:catalog.
     "provided": {
       // Clients requesting this class are able to connect to other clients as
       // specific users other than their own.
@@ -20,7 +25,7 @@
       // Clients requesting this class block inbound requests to bind interfaces
       // from other sources who specify wildcard rules in their manifest
       // capability interface sets.
-      "shell:explicit_class": [ ]    
+      "shell:explicit_class": [ ]
     },
     "required": {
       "service:shell": { "classes": [ "shell:all_users" ] }

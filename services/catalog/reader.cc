@@ -121,10 +121,18 @@ void ScanDir(
   original_thread_task_runner->PostTask(FROM_HERE, read_complete_closure);
 }
 
-std::unique_ptr<Entry> ReadManifest(const base::FilePath& package_dir,
-                                    const std::string& mojo_name) {
-  std::unique_ptr<Entry> entry = CreateEntryForManifestAt(
-      GetManifestPath(package_dir, mojo_name), package_dir);
+std::unique_ptr<Entry> ReadManifest(
+    const base::FilePath& package_dir,
+    const std::string& mojo_name,
+    const base::FilePath& manifest_path_override) {
+  base::FilePath manifest_path;
+  if (manifest_path_override.empty())
+    manifest_path = GetManifestPath(package_dir, mojo_name);
+  else
+    manifest_path = manifest_path_override;
+
+  std::unique_ptr<Entry> entry = CreateEntryForManifestAt(manifest_path,
+                                                          package_dir);
   if (!entry) {
     entry.reset(new Entry(mojo_name));
     entry->set_path(GetExecutablePath(
@@ -192,11 +200,23 @@ void Reader::CreateEntryForName(
       return;
     }
   }
+
+  base::FilePath manifest_path_override;
+  auto override_iter = manifest_path_overrides_.find(mojo_name);
+  if (override_iter != manifest_path_overrides_.end())
+    manifest_path_override = override_iter->second;
+
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
-      base::Bind(&ReadManifest, system_package_dir_, mojo_name),
+      base::Bind(&ReadManifest, system_package_dir_, mojo_name,
+                 manifest_path_override),
       base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(), cache,
                   entry_created_callback));
+}
+
+void Reader::OverrideManifestPath(const std::string& service_name,
+                                  const base::FilePath& path) {
+  manifest_path_overrides_.insert(std::make_pair(service_name, path));
 }
 
 Reader::Reader(ManifestProvider* manifest_provider)

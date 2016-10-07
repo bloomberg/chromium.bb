@@ -12,10 +12,10 @@ import("//services/shell/public/constants.gni")
 #       The manifest file template for this service, must be valid JSON with
 #       a valid 'url' key matching name.
 #
-#   base_manifest (optional)
-#       A manifest file template to use as a base for |source|. Any properties
-#       defined in |source| will overwrite or be merged with properties defined
-#       in |base_manifest|.
+#   overlays (optional)
+#       A list of partial manifests to overlay onto the source manifest before
+#       emitting the final output. Overlays are applied as the last step, after
+#       any packaged manifests are embedded.
 #
 #   name
 #       The host portion of the mojo: URL of the service. A script validates
@@ -23,8 +23,10 @@ import("//services/shell/public/constants.gni")
 #       'url' property set in the manifest and throws a ValueError if they do
 #       not.
 #
-#   base_deps (optional)
-#       Dependencies required to generate |base_manifest| if applicable.
+#   output_name (optional)
+#       The name of the package to output. The default value is copied from
+#       |name|. Note that this has no effect on the contents of the manifest,
+#       but only determines the output subdirectory within ${out}/Packages.
 #
 #   deps (optional)
 #       An array of dependent instances of this template. This template enforces
@@ -49,9 +51,9 @@ template("service_manifest") {
   assert(defined(invoker.name),
          "\"name\" must be defined for the $target_name template")
   if (defined(invoker.deps)) {
-    assert(defined(invoker.packaged_services),
-           "\"packaged_services\" listing the directory containing the " +
-               "manifest.json of dependent services must be provided.")
+    assert(defined(invoker.packaged_services) || defined(invoker.overlays),
+           "\"deps\" implies that you also want \"packaged_services\" and/or" +
+               "\"overlays\", but you have neither.")
   }
   if (defined(invoker.packaged_services)) {
     assert(defined(invoker.deps),
@@ -75,9 +77,16 @@ template("service_manifest") {
     inputs = [
       invoker.source,
     ]
+    if (defined(invoker.overlays)) {
+      inputs += invoker.overlays
+    }
 
     if (type == "mojo") {
-      output = "$root_out_dir/$packages_directory/$name/manifest.json"
+      if (defined(invoker.output_name)) {
+        output = "$root_out_dir/$packages_directory/${invoker.output_name}/manifest.json"
+      } else {
+        output = "$root_out_dir/$packages_directory/$name/manifest.json"
+      }
     } else {
       output = "$root_out_dir/${name}_manifest.json"
     }
@@ -94,9 +103,11 @@ template("service_manifest") {
       "--output=$rebase_output",
     ]
 
-    if (defined(invoker.base_manifest)) {
-      rebase_base = rebase_path(invoker.base_manifest, root_build_dir)
-      args += [ "--base-manifest=$rebase_base" ]
+    if (defined(invoker.overlays)) {
+      args += [ "--overlays" ]
+      foreach(overlay_path, invoker.overlays) {
+        args += [ rebase_path(overlay_path, root_build_dir) ]
+      }
     }
 
     if (defined(invoker.packaged_services)) {
@@ -111,10 +122,6 @@ template("service_manifest") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
       data_deps += invoker.deps
-    }
-    if (defined(invoker.base_deps)) {
-      deps += invoker.base_deps
-      data_deps += invoker.base_deps
     }
   }
 

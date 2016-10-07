@@ -102,7 +102,7 @@ if (!is_android && !is_mac) {
       public_deps += [ ":reorder_imports" ]
     }
     if (use_aura && (is_win || is_linux)) {
-      data_deps += [ "//chrome/app:mojo_manifests" ]
+      data_deps += [ "//chrome/app:service_manifests" ]
     }
   }
 
@@ -248,7 +248,7 @@ if (!is_android && !is_mac) {
 
       if (enable_package_mash_services) {
         deps += [ "//chrome/app/mash" ]
-        data_deps += [ "//chrome/app:mojo_manifests" ]
+        data_deps += [ "//chrome/app:service_manifests" ]
       }
     }
 

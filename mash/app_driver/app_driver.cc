@@ -20,6 +20,8 @@ namespace mash {
 namespace app_driver {
 namespace {
 
+const char kBrowserServiceName[] = "service:content_browser";
+
 enum class Accelerator : uint32_t {
   NewChromeWindow,
   NewChromeTab,
@@ -109,11 +111,11 @@ void AppDriver::OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) {
 
   std::map<Accelerator, LaunchOptions> options{
       {Accelerator::NewChromeWindow,
-       {mojom::kWindow, "exe:chrome", LaunchMode::MAKE_NEW}},
+       {mojom::kWindow, kBrowserServiceName, LaunchMode::MAKE_NEW}},
       {Accelerator::NewChromeTab,
-       {mojom::kDocument, "exe:chrome", LaunchMode::MAKE_NEW}},
+       {mojom::kDocument, kBrowserServiceName, LaunchMode::MAKE_NEW}},
       {Accelerator::NewChromeIncognitoWindow,
-       {mojom::kIncognitoWindow, "exe:chrome", LaunchMode::MAKE_NEW}},
+       {mojom::kIncognitoWindow, kBrowserServiceName, LaunchMode::MAKE_NEW}},
       {Accelerator::ShowTaskManager,
        {mojom::kWindow, "service:task_viewer", LaunchMode::DEFAULT}},
   };

@@ -111,6 +111,7 @@ void Catalog::ScanSystemPackageDir() {
 bool Catalog::OnConnect(const shell::Identity& remote_identity,
                         shell::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Catalog>(this);
+  registry->AddInterface<mojom::CatalogControl>(this);
   registry->AddInterface<filesystem::mojom::Directory>(this);
   registry->AddInterface<shell::mojom::Resolver>(this);
   return true;
@@ -139,6 +140,19 @@ void Catalog::Create(const shell::Identity& remote_identity,
           resources_path, scoped_refptr<filesystem::SharedTempDir>(),
           lock_table_),
       std::move(request));
+}
+
+void Catalog::Create(const shell::Identity& remote_identity,
+                     mojom::CatalogControlRequest request) {
+  control_bindings_.AddBinding(this, std::move(request));
+}
+
+void Catalog::OverrideManifestPath(
+    const std::string& service_name,
+    const base::FilePath& path,
+    const OverrideManifestPathCallback& callback) {
+  system_reader_->OverrideManifestPath(service_name, path);
+  callback.Run();
 }
 
 Instance* Catalog::GetInstanceForUserId(const std::string& user_id) {

@@ -32,7 +32,7 @@ void Session::OnStart(const shell::Identity& identity) {
   StartWindowManager();
   StartQuickLaunch();
   // Launch a chrome window for dev convience; don't do this in the long term.
-  connector()->Connect("exe:chrome");
+  connector()->Connect("service:content_browser");
 }
 
 bool Session::OnConnect(const shell::Identity& remote_identity,

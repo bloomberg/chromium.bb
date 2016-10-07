@@ -339,26 +339,61 @@ static_library("test_support") {
 }
 
 if (use_aura) {
-  service_manifest("chrome_manifest") {
-    type = "exe"
-    name = "chrome"
-    source = "mojo/chrome_manifest.json"
-    base_manifest = "${root_out_dir}/Packages/content_browser/manifest.json"
-    base_deps = [ "//content/public/app:browser_manifest" ]
+  # NOTE: These rules generate compiled versions of the content service
+  # manifests with Chrome's overlays applied. These are only used at run-time,
+  # and only when running Chrome inside the Mash environment. In production
+  # Chrome, the content manifests and Chrome's overlays are baked into browser
+  # resources and merged at runtime.
+
+  service_manifest("chrome_content_browser_manifest") {
+    name = "content_browser"
+    output_name = "chrome_content_browser"
+    source = "${root_out_dir}/Packages/content_browser/manifest.json"
+    overlays =
+        [ "//chrome/browser/chrome_content_browser_manifest_overlay.json" ]
+    deps = [
+      "//content/public/app:browser_manifest",
+    ]
   }
 
-  service_manifest("chrome_renderer_manifest") {
-    type = "exe"
-    name = "chrome_renderer"
-    source = "mojo/chrome_renderer_manifest.json"
-    base_manifest = "${root_out_dir}/Packages/content_renderer/manifest.json"
-    base_deps = [ "//content/public/app:renderer_manifest" ]
+  service_manifest("chrome_content_gpu_manifest") {
+    name = "content_gpu"
+    output_name = "chrome_content_gpu"
+    source = "${root_out_dir}/Packages/content_gpu/manifest.json"
+    overlays = [ "//chrome/browser/chrome_content_gpu_manifest_overlay.json" ]
+    deps = [
+      "//content/public/app:gpu_manifest",
+    ]
   }
 
-  group("mojo_manifests") {
+  service_manifest("chrome_content_renderer_manifest") {
+    name = "content_renderer"
+    output_name = "chrome_content_renderer"
+    source = "${root_out_dir}/Packages/content_renderer/manifest.json"
+    overlays =
+        [ "//chrome/browser/chrome_content_renderer_manifest_overlay.json" ]
+    deps = [
+      "//content/public/app:renderer_manifest",
+    ]
+  }
+
+  service_manifest("chrome_content_utility_manifest") {
+    name = "content_utility"
+    output_name = "chrome_content_utility"
+    source = "${root_out_dir}/Packages/content_utility/manifest.json"
+    overlays =
+        [ "//chrome/browser/chrome_content_utility_manifest_overlay.json" ]
+    deps = [
+      "//content/public/app:utility_manifest",
+    ]
+  }
+
+  group("service_manifests") {
     data_deps = [
-      ":chrome_manifest",
-      ":chrome_renderer_manifest",
+      ":chrome_content_browser_manifest",
+      ":chrome_content_gpu_manifest",
+      ":chrome_content_renderer_manifest",
+      ":chrome_content_utility_manifest",
     ]
   }
 }

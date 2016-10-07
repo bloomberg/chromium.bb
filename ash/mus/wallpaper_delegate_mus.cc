@@ -65,7 +65,7 @@ void WallpaperDelegateMus::InitializeWallpaper() {
 
 void WallpaperDelegateMus::OpenSetWallpaperPage() {
   mojom::WallpaperManagerPtr wallpaper_manager;
-  connector_->ConnectToInterface("exe:chrome", &wallpaper_manager);
+  connector_->ConnectToInterface("service:content_browser", &wallpaper_manager);
   wallpaper_manager->Open();
 }
 

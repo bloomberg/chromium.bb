@@ -35,7 +35,7 @@ using shell::mojom::ServicePtr;
 namespace {
 
 const char kTestRunnerName[] = "exe:mash_browser_tests";
-const char kTestName[] = "exe:chrome";
+const char kTestName[] = "service:content_browser";
 
 // BackgroundTestState maintains all the state necessary to bind the test to
 // mojo. This class is only used on the thread created by BackgroundShell.
@@ -71,8 +71,8 @@ class BackgroundTestState {
     std::unique_ptr<shell::ConnectParams> params(new shell::ConnectParams);
     params->set_source(shell::CreateServiceManagerIdentity());
     // Use the default instance name (which should be "browser"). Otherwise a
-    // service (e.g. ash) that connects to the default "exe:chrome" will spawn
-    // a new instance.
+    // service (e.g. ash) that connects to the default "service:content_browser"
+    // will spawn a new instance.
     params->set_target(shell::Identity(kTestName, shell::mojom::kRootUserID));
 
     shell::mojom::ClientProcessConnectionPtr client_process_connection =
@@ -209,8 +209,8 @@ class MojoTestConnector::NativeRunnerDelegateImpl
   void AdjustCommandLineArgumentsForTarget(
       const shell::Identity& target,
       base::CommandLine* command_line) override {
-    if (target.name() != "exe:chrome") {
-      if (target.name() == "exe:mash_browser_tests")
+    if (target.name() != kTestName) {
+      if (target.name() == kTestRunnerName)
         RemoveMashFromBrowserTests(command_line);
       command_line->AppendSwitch(MojoTestConnector::kMashApp);
       return;

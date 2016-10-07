@@ -1185,7 +1185,7 @@ static_library("browser_tests_runner") {
 
     data_deps = [
       ":mash_browser_tests_manifest",
-      "//chrome/app:mojo_manifests",
+      "//chrome/app:service_manifests",
       "//mash/session",
     ]
   } else {
