@@ -191,7 +191,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
       }
 
       if (needs_update) {
-        ui::LatencyInfo latency = ui::LatencyInfo();
+        ui::LatencyInfo latency = ui::LatencyInfo(ui::SourceEventType::WHEEL);
         latency.AddLatencyNumber(
             ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL, 0,
             0);
@@ -279,7 +279,8 @@ void MouseWheelEventQueue::SendScrollEnd(WebGestureEvent update_event,
     if (scroll_end_timer_.IsRunning())
       scroll_end_timer_.Reset();
   }
-  client_->ForwardGestureEventWithLatencyInfo(scroll_end, ui::LatencyInfo());
+  client_->ForwardGestureEventWithLatencyInfo(
+      scroll_end, ui::LatencyInfo(ui::SourceEventType::WHEEL));
 }
 
 void MouseWheelEventQueue::SendScrollBegin(
@@ -302,7 +303,8 @@ void MouseWheelEventQueue::SendScrollBegin(
 
   needs_scroll_begin_ = false;
   needs_scroll_end_ = true;
-  client_->ForwardGestureEventWithLatencyInfo(scroll_begin, ui::LatencyInfo());
+  client_->ForwardGestureEventWithLatencyInfo(
+      scroll_begin, ui::LatencyInfo(ui::SourceEventType::WHEEL));
 }
 
 }  // namespace content

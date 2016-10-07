@@ -252,4 +252,18 @@ uint32_t WebInputEventTraits::GetUniqueTouchEventId(
   return 0U;
 }
 
+// static
+LatencyInfo WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
+    WebGestureEvent event) {
+  SourceEventType source_event_type = SourceEventType::UNKNOWN;
+  if (event.sourceDevice == blink::WebGestureDevice::WebGestureDeviceTouchpad) {
+    source_event_type = SourceEventType::WHEEL;
+  } else if (event.sourceDevice ==
+             blink::WebGestureDevice::WebGestureDeviceTouchscreen) {
+    source_event_type = SourceEventType::TOUCH;
+  }
+  LatencyInfo latency_info(source_event_type);
+  return latency_info;
+}
+
 }  // namespace ui

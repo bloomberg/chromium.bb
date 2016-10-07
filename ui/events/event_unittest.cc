@@ -967,6 +967,22 @@ TEST(EventTest, PointerEventToTouchEventDetails) {
   EXPECT_EQ(pointer_event.time_stamp(), touch_event.time_stamp());
 }
 
+TEST(EventTest, PointerEventSourceEventTypeExistsInLatencyInfo) {
+  ui::PointerEvent wheel_poniter_event(
+      ui::ET_POINTER_WHEEL_CHANGED, gfx::Point(), gfx::Point(), 0, 0, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+      ui::EventTimeForNow());
+  EXPECT_EQ(wheel_poniter_event.latency()->source_event_type(),
+            ui::SourceEventType::WHEEL);
+
+  ui::PointerEvent touch_poniter_event(
+      ui::ET_TOUCH_PRESSED, gfx::Point(), gfx::Point(), 0, 0, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      ui::EventTimeForNow());
+  EXPECT_EQ(touch_poniter_event.latency()->source_event_type(),
+            ui::SourceEventType::TOUCH);
+}
+
 // Checks that Event.Latency.OS.TOUCH_PRESSED, TOUCH_MOVED,
 // and TOUCH_RELEASED histograms are computed properly.
 #if defined(USE_X11)

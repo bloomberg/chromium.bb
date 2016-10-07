@@ -138,11 +138,14 @@ static base::LazyInstance<LatencyInfoEnabledInitializer>::Leaky
 
 namespace ui {
 
-LatencyInfo::LatencyInfo()
+LatencyInfo::LatencyInfo() : LatencyInfo(SourceEventType::UNKNOWN) {}
+
+LatencyInfo::LatencyInfo(SourceEventType type)
     : input_coordinates_size_(0),
       trace_id_(-1),
       coalesced_(false),
-      terminated_(false) {}
+      terminated_(false),
+      source_event_type_(type) {}
 
 LatencyInfo::LatencyInfo(const LatencyInfo& other) = default;
 
@@ -151,7 +154,8 @@ LatencyInfo::~LatencyInfo() {}
 LatencyInfo::LatencyInfo(int64_t trace_id, bool terminated)
     : input_coordinates_size_(0),
       trace_id_(trace_id),
-      terminated_(terminated) {}
+      terminated_(terminated),
+      source_event_type_(SourceEventType::UNKNOWN) {}
 
 bool LatencyInfo::Verify(const std::vector<LatencyInfo>& latency_info,
                          const char* referring_msg) {
