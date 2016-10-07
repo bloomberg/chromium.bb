@@ -10,15 +10,14 @@ var destCanvas2D = document.createElement("canvas");
 var destCtx2D = destCanvas2D.getContext("2d");
 var dummyCanvas2D = document.createElement("canvas");
 var dummyCtx2D = dummyCanvas2D.getContext("2d");
-
-dummyCanvas2D.width = 1;
-dummyCanvas2D.height = 1;
  
 function setSize(sourceWidth, sourceHeight, destWidth, destHeight) {
     sourceCanvas2D.width = sourceWidth;
     sourceCanvas2D.height = sourceHeight;
     destCanvas2D.width = destWidth;
     destCanvas2D.height = destHeight;
+    dummyCanvas2D.width = destWidth;
+    dummyCanvas2D.height = destHeight;
 }
 
 function rand(range) {
