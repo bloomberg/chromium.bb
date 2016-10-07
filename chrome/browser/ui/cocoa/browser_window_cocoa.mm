@@ -515,13 +515,6 @@ bool BrowserWindowCocoa::IsToolbarVisible() const {
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
 
-gfx::Rect BrowserWindowCocoa::GetRootWindowResizerRect() const {
-  if (IsDownloadShelfVisible())
-    return gfx::Rect();
-  NSRect tabRect = [controller_ selectedTabGrowBoxRect];
-  return gfx::Rect(NSRectToCGRect(tabRect));
-}
-
 void BrowserWindowCocoa::AddFindBar(
     FindBarCocoaController* find_bar_cocoa_controller) {
   [controller_ addFindBar:find_bar_cocoa_controller];

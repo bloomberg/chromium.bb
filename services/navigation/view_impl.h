@@ -50,7 +50,6 @@ class ViewImpl : public mojom::View,
   void GetWindowTreeClient(ui::mojom::WindowTreeClientRequest request) override;
   void ShowInterstitial(const mojo::String& html) override;
   void HideInterstitial() override;
-  void SetResizerSize(const gfx::Size& size) override;
 
   // content::WebContentsDelegate:
   void AddNewContents(content::WebContents* source,
@@ -70,7 +69,6 @@ class ViewImpl : public mojom::View,
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
-  gfx::Rect GetRootWindowResizerRect() const override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -102,8 +100,6 @@ class ViewImpl : public mojom::View,
   content::NotificationRegistrar registrar_;
 
   std::unique_ptr<views::Widget> widget_;
-
-  gfx::Size resizer_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewImpl);
 };

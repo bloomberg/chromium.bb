@@ -120,8 +120,4 @@ interface View {
 
   ShowInterstitial(string html);
   HideInterstitial();
-
-  // The resize area is a rectangle in the bottom corner of the view that allows
-  // the top-level window containing the view to be interactively resized.
-  SetResizerSize(gfx.mojom.Size size);
 };

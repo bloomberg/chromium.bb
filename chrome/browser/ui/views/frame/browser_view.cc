@@ -1229,12 +1229,6 @@ bool BrowserView::IsToolbarVisible() const {
          toolbar_;
 }
 
-gfx::Rect BrowserView::GetRootWindowResizerRect() const {
-  // Views does not support resizer rects because they caused page cycler
-  // performance regressions when they were added. See crrev.com/9654
-  return gfx::Rect();
-}
-
 void BrowserView::ShowUpdateChromeDialog() {
   UpdateRecommendedMessageBox::Show(GetNativeWindow());
 }

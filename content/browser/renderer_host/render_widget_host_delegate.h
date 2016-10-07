@@ -173,11 +173,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
                                   bool last_unlocked_by_target,
                                   bool privileged) {}
 
-  // Return the rect where to display the resize corner, if any, otherwise
-  // an empty rect.
-  virtual gfx::Rect GetRootWindowResizerRect(
-      RenderWidgetHostImpl* render_widget_host) const;
-
   // Returns whether the associated tab is in fullscreen mode.
   virtual bool IsFullscreenForCurrentTab() const;
 

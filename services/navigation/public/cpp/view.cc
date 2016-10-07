@@ -85,10 +85,6 @@ void View::HideInterstitial() {
   view_->HideInterstitial();
 }
 
-void View::SetResizerSize(const gfx::Size& size) {
-  view_->SetResizerSize(size);
-}
-
 void View::EmbedInWindow(ui::Window* parent) {
   ui::mojom::WindowTreeClientPtr client;
   view_->GetWindowTreeClient(GetProxy(&client));

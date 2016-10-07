@@ -66,11 +66,6 @@ class View : public mojom::ViewClient {
   void ShowInterstitial(const std::string& html);
   void HideInterstitial();
 
-  // When non-empty, specifies the size of an area in the bottom corner of the
-  // View that should allow the enclosing top-level window to be resized via the
-  // pointer.
-  void SetResizerSize(const gfx::Size& size);
-
   // Embed the View visually within |parent|.
   void EmbedInWindow(ui::Window* parent);
 

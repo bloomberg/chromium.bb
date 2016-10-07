@@ -149,10 +149,6 @@ bool TestBrowserWindow::IsToolbarVisible() const {
   return false;
 }
 
-gfx::Rect TestBrowserWindow::GetRootWindowResizerRect() const {
-  return gfx::Rect();
-}
-
 autofill::SaveCardBubbleView* TestBrowserWindow::ShowSaveCreditCardBubble(
     content::WebContents* contents,
     autofill::SaveCardBubbleController* controller,

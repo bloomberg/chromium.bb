@@ -1525,10 +1525,6 @@ bool Browser::TakeFocus(content::WebContents* source,
   return false;
 }
 
-gfx::Rect Browser::GetRootWindowResizerRect() const {
-  return window_->GetRootWindowResizerRect();
-}
-
 void Browser::BeforeUnloadFired(WebContents* web_contents,
                                 bool proceed,
                                 bool* proceed_to_fire_unload) {

@@ -85,7 +85,6 @@ class MockRenderWidgetHost
   int GetRoutingID() const override { return 0; }
   content::RenderWidgetHostView* GetView() const override { return nullptr; }
   bool IsLoading() const override { return false; }
-  void ResizeRectChanged(const gfx::Rect& new_rect) override {}
   void RestartHangMonitorTimeout() override {}
   void DisableHangMonitorForTesting() override {}
   void SetIgnoreInputEvents(bool ignore_input_events) override {}

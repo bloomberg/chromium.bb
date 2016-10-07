@@ -38,10 +38,6 @@ bool WebContentsDelegate::IsPopupOrPanel(const WebContents* source) const {
 
 bool WebContentsDelegate::CanOverscrollContent() const { return false; }
 
-gfx::Rect WebContentsDelegate::GetRootWindowResizerRect() const {
-  return gfx::Rect();
-}
-
 bool WebContentsDelegate::ShouldSuppressDialogs(WebContents* source) {
   return false;
 }

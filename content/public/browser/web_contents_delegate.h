@@ -183,10 +183,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Invoked when a vertical overscroll completes.
   virtual void OverscrollComplete() {}
 
-  // Return the rect where to display the resize corner, if any, otherwise
-  // an empty rect.
-  virtual gfx::Rect GetRootWindowResizerRect() const;
-
   // Invoked prior to showing before unload handler confirmation dialog.
   virtual void WillRunBeforeUnloadConfirm() {}
 

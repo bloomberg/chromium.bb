@@ -1370,14 +1370,6 @@ void WebContentsImpl::WasShown() {
 
   last_active_time_ = base::TimeTicks::Now();
 
-  // The resize rect might have changed while this was inactive -- send the new
-  // one to make sure it's up to date.
-  RenderViewHostImpl* rvh = GetRenderViewHost();
-  if (rvh) {
-    rvh->GetWidget()->ResizeRectChanged(
-        GetRootWindowResizerRect(rvh->GetWidget()));
-  }
-
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasShown());
 
   should_normally_be_visible_ = true;
@@ -4221,16 +4213,6 @@ RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {
 RendererPreferences WebContentsImpl::GetRendererPrefs(
     BrowserContext* browser_context) const {
   return renderer_preferences_;
-}
-
-gfx::Rect WebContentsImpl::GetRootWindowResizerRect(
-    RenderWidgetHostImpl* render_widget_host) const {
-  if (!RenderViewHostImpl::From(render_widget_host))
-    return gfx::Rect();
-
-  if (delegate_)
-    return delegate_->GetRootWindowResizerRect();
-  return gfx::Rect();
 }
 
 void WebContentsImpl::RemoveBrowserPluginEmbedder() {

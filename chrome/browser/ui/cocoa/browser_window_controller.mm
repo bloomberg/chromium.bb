@@ -196,12 +196,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 }  // namespace
 
-@interface NSWindow (NSPrivateApis)
-// Note: These functions are private, use -[NSObject respondsToSelector:]
-// before calling them.
-- (NSRect)_growBoxRect;
-@end
-
 @implementation BrowserWindowController
 
 + (BrowserWindowController*)browserWindowControllerForWindow:(NSWindow*)window {
@@ -951,17 +945,10 @@ bool IsTabDetachingInFullscreenEnabled() {
       [bookmarkBarController_ isAnimatingBetweenState:BookmarkBar::HIDDEN
                                              andState:BookmarkBar::SHOW];
 
-  BOOL resizeRectDirty = NO;
   if ((shouldAdjustBookmarkHeight && view == [bookmarkBarController_ view]) ||
       view == [downloadShelfController_ view]) {
     CGFloat deltaH = height - NSHeight(frame);
-    if ([self adjustWindowHeightBy:deltaH] &&
-        view == [downloadShelfController_ view]) {
-      // If the window height didn't change, the download shelf will change the
-      // size of the contents. If the contents size doesn't change, send it
-      // an explicit grow box invalidation (else, the resize message does that.)
-      resizeRectDirty = YES;
-    }
+    [self adjustWindowHeightBy:deltaH];
   }
 
   frame.size.height = height;
@@ -969,15 +956,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   [view setFrame:frame];
   [self layoutSubviews];
 
-  if (resizeRectDirty) {
-    // Send new resize rect to foreground tab.
-    if (WebContents* contents = [self webContents]) {
-      if (content::RenderViewHost* rvh = contents->GetRenderViewHost()) {
-        rvh->GetWidget()->ResizeRectChanged(
-            windowShim_->GetRootWindowResizerRect());
-      }
-    }
-  }
 }
 
 - (BOOL)handledByExtensionCommand:(NSEvent*)event
@@ -1035,23 +1013,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
   [toolbarController_ zoomChangedForActiveTab:canShowBubble];
-}
-
-// Return the rect, in WebKit coordinates (flipped), of the window's grow box
-// in the coordinate system of the content area of the currently selected tab.
-// |windowGrowBox| needs to be in the window's coordinate system.
-- (NSRect)selectedTabGrowBoxRect {
-  NSWindow* window = [self window];
-  if (![window respondsToSelector:@selector(_growBoxRect)])
-    return NSZeroRect;
-
-  // Before we return a rect, we need to convert it from window coordinates
-  // to tab content area coordinates and flip the coordinate system.
-  NSRect growBoxRect =
-      [[self tabContentArea] convertRect:[window _growBoxRect] fromView:nil];
-  growBoxRect.origin.y =
-      NSHeight([[self tabContentArea] frame]) - NSMaxY(growBoxRect);
-  return growBoxRect;
 }
 
 // Accept tabs from a BrowserWindowController with the same Profile.

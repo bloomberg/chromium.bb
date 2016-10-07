@@ -207,10 +207,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Returns true if the renderer is loading, false if not.
   virtual bool IsLoading() const = 0;
 
-  // Called to notify the RenderWidget that the resize rect has changed without
-  // the size of the RenderWidget itself changing.
-  virtual void ResizeRectChanged(const gfx::Rect& new_rect) = 0;
-
   // Restart the active hang monitor timeout. Clears all existing timeouts and
   // starts with a new one.  This can be because the renderer has become
   // active, the tab is being hidden, or the user has chosen to wait some more

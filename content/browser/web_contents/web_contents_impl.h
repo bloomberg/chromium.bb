@@ -662,8 +662,6 @@ class CONTENT_EXPORT WebContentsImpl
                           bool user_gesture,
                           bool last_unlocked_by_target,
                           bool privileged) override;
-  gfx::Rect GetRootWindowResizerRect(
-      RenderWidgetHostImpl* render_widget_host) const override;
   bool IsFullscreenForCurrentTab() const override;
   blink::WebDisplayMode GetDisplayMode(
       RenderWidgetHostImpl* render_widget_host) const override;

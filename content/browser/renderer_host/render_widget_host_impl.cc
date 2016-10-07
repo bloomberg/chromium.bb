@@ -600,7 +600,6 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
 
   GetScreenInfo(&resize_params->screen_info);
   if (delegate_) {
-    resize_params->resizer_rect = delegate_->GetRootWindowResizerRect(this);
     resize_params->is_fullscreen_granted =
         delegate_->IsFullscreenForCurrentTab();
     resize_params->display_mode = delegate_->GetDisplayMode(this);
@@ -681,10 +680,6 @@ void RenderWidgetHostImpl::WasResized() {
 
   if (delegate_)
     delegate_->RenderWidgetWasResized(this, width_changed);
-}
-
-void RenderWidgetHostImpl::ResizeRectChanged(const gfx::Rect& new_rect) {
-  Send(new ViewMsg_ChangeResizeRect(routing_id_, new_rect));
 }
 
 void RenderWidgetHostImpl::GotFocus() {

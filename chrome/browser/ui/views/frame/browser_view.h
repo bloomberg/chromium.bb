@@ -310,7 +310,6 @@ class BrowserView : public BrowserWindow,
   bool IsBookmarkBarAnimating() const override;
   bool IsTabStripEditable() const override;
   bool IsToolbarVisible() const override;
-  gfx::Rect GetRootWindowResizerRect() const override;
   void ShowUpdateChromeDialog() override;
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
   void ShowBookmarkAppBubble(
