@@ -556,6 +556,8 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
                                          GURL(), base::TimeDelta(),
                                          kCurrentTime, info_, 1000);
   expected_histogram_count_map["Precache.CacheStatus.NonPrefetch"] += 2;
+  expected_histogram_count_map
+      ["Precache.CacheStatus.NonPrefetch.FromPrecache"] += 2;
   expected_histogram_count_map["Precache.Latency.NonPrefetch"] += 2;
   expected_histogram_count_map["Precache.Latency.NonPrefetch.NonTopHosts"] += 2;
   expected_histogram_count_map["Precache.Saved"] += 2;

@@ -23,6 +23,11 @@ std::string GetKey(const GURL& url) {
 
 namespace precache {
 
+bool PrecacheURLInfo::operator==(const PrecacheURLInfo& other) const {
+  return was_precached == other.was_precached &&
+         is_precached == other.is_precached && was_used == other.was_used;
+}
+
 PrecacheURLTable::PrecacheURLTable() : db_(NULL) {}
 
 PrecacheURLTable::~PrecacheURLTable() {}
@@ -51,23 +56,18 @@ void PrecacheURLTable::AddURL(const GURL& url,
   statement.Run();
 }
 
-bool PrecacheURLTable::IsURLPrecached(const GURL& url) {
+PrecacheURLInfo PrecacheURLTable::GetURLInfo(const GURL& url) {
   Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
-      "SELECT time FROM precache_urls WHERE url=? and is_precached=1"));
-
+      "SELECT is_precached, was_used FROM precache_urls WHERE url=?"));
   statement.BindString(0, GetKey(url));
-  return statement.Step();
-}
 
-bool PrecacheURLTable::IsURLPrecachedAndUnused(const GURL& url) {
-  Statement statement(db_->GetCachedStatement(SQL_FROM_HERE,
-                                              "SELECT time FROM precache_urls "
-                                              "WHERE url=? and is_precached=1 "
-                                              "and was_used=0"));
-
-  statement.BindString(0, GetKey(url));
-  return statement.Step();
+  if (statement.Step()) {
+    return {/*present=*/true, /*is_precached=*/statement.ColumnBool(0),
+            /*was_used==*/statement.ColumnBool(1)};
+  } else {
+    return {/*present=*/false, /*is_precached=*/false, /*was_used=*/false};
+  }
 }
 
 void PrecacheURLTable::SetPrecachedURLAsUsed(const GURL& url) {

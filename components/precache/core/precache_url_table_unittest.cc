@@ -17,6 +17,11 @@
 
 namespace precache {
 
+void PrintTo(const PrecacheURLInfo& url_info, ::std::ostream* os) {
+  *os << "{" << url_info.was_precached << ", " << url_info.is_precached << ", "
+      << url_info.was_used << "}";
+}
+
 namespace {
 
 class PrecacheURLTableTest : public testing::Test {
@@ -80,17 +85,31 @@ TEST_F(PrecacheURLTableTest, SetURLAsNotPrecached) {
   EXPECT_EQ(expected_map, actual_map);
 }
 
-TEST_F(PrecacheURLTableTest, IsURLPrecached) {
-  EXPECT_FALSE(precache_url_table_->IsURLPrecached(GURL("http://url.com")));
+TEST_F(PrecacheURLTableTest, GetURLInfo) {
+  const GURL url("http://url.com");
 
-  precache_url_table_->AddURL(GURL("http://url.com"), 1, true,
-                              base::Time::FromInternalValue(100));
+  EXPECT_EQ((PrecacheURLInfo{false, false, false}),
+            precache_url_table_->GetURLInfo(url));
 
-  EXPECT_TRUE(precache_url_table_->IsURLPrecached(GURL("http://url.com")));
+  precache_url_table_->AddURL(url, 1, true, base::Time::FromInternalValue(100));
 
-  precache_url_table_->SetURLAsNotPrecached(GURL("http://url.com"));
+  EXPECT_EQ((PrecacheURLInfo{true, true, false}),
+            precache_url_table_->GetURLInfo(url));
 
-  EXPECT_FALSE(precache_url_table_->IsURLPrecached(GURL("http://url.com")));
+  precache_url_table_->SetPrecachedURLAsUsed(url);
+
+  EXPECT_EQ((PrecacheURLInfo{true, false, true}),
+            precache_url_table_->GetURLInfo(url));
+
+  precache_url_table_->AddURL(url, 1, true, base::Time::FromInternalValue(100));
+
+  EXPECT_EQ((PrecacheURLInfo{true, true, false}),
+            precache_url_table_->GetURLInfo(url));
+
+  precache_url_table_->SetURLAsNotPrecached(url);
+
+  EXPECT_EQ((PrecacheURLInfo{true, false, false}),
+            precache_url_table_->GetURLInfo(url));
 }
 
 TEST_F(PrecacheURLTableTest, DeleteAllPrecachedBefore) {

@@ -20,6 +20,23 @@ class Connection;
 
 namespace precache {
 
+// Information about a given URL with respect to the PrecacheURLTable.
+struct PrecacheURLInfo {
+  // The url has been prefetched in the past 60 days. (This number comes from
+  // kPrecacheHistoryExpiryPeriodDays in precache_database.cc.)
+  bool was_precached;
+
+  // True if the cache entry is the one fetched by PrecacheFetcher. False if a
+  // new network fetch overwrote the cache entry since the prefetch.
+  bool is_precached;
+
+  // The prefetched copy of the URL was used in browsing (i.e. while
+  // is_precached was true).
+  bool was_used;
+
+  bool operator==(const PrecacheURLInfo& other) const;
+};
+
 // Interface for database table that keeps track of the URLs that have been
 // precached but not used. This table is used to count how many bytes were saved
 // by precached resources.
@@ -44,11 +61,8 @@ class PrecacheURLTable {
               bool is_precached,
               const base::Time& precache_time);
 
-  // Returns true if the url is precached.
-  bool IsURLPrecached(const GURL& url);
-
-  // Returns true if the url is precached, and was not used before.
-  bool IsURLPrecachedAndUnused(const GURL& url);
+  // Returns information about the URL's status with respect to prefetching.
+  PrecacheURLInfo GetURLInfo(const GURL& url);
 
   // Sets the precached URL as used.
   void SetPrecachedURLAsUsed(const GURL& url);
