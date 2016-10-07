@@ -2591,7 +2591,7 @@ SpdySerializedFrame SpdyFramer::SerializeSynReply(
 SpdySerializedFrame SpdyFramer::SerializeRstStream(
     const SpdyRstStreamIR& rst_stream) const {
   // TODO(jgraettinger): For now, Chromium will support parsing RST_STREAM
-  // payloads, but will not emit them. SPDY4 is used for draft HTTP/2,
+  // payloads, but will not emit them. This is used for draft HTTP/2,
   // which doesn't currently include RST_STREAM payloads. GFE flags have been
   // commented but left in place to simplify future patching.
   // Compute the output buffer size, taking opaque data into account.
