@@ -46,6 +46,8 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
 
   ~KeyframeEffectReadOnly() override {}
 
+  bool isKeyframeEffectReadOnly() const override { return true; }
+
   Priority getPriority() const { return m_priority; }
   void downgradeToNormal() { m_priority = DefaultPriority; }
 
@@ -64,6 +66,14 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
 
   Priority m_priority;
 };
+
+// TODO(suzyh): Replace calls to toKeyframeEffect with toKeyframeEffectReadOnly
+// where possible
+DEFINE_TYPE_CASTS(KeyframeEffectReadOnly,
+                  AnimationEffectReadOnly,
+                  animationNode,
+                  animationNode->isKeyframeEffectReadOnly(),
+                  animationNode.isKeyframeEffectReadOnly());
 
 }  // namespace blink
 

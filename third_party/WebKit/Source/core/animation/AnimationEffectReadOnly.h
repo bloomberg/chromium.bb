@@ -79,6 +79,7 @@ class CORE_EXPORT AnimationEffectReadOnly
 
   virtual ~AnimationEffectReadOnly() {}
 
+  virtual bool isKeyframeEffectReadOnly() const { return false; }
   virtual bool isKeyframeEffect() const { return false; }
   virtual bool isInertEffect() const { return false; }
 
