@@ -545,4 +545,11 @@ DEFINE_TRACE(WebGLFramebuffer) {
   WebGLContextObject::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(WebGLFramebuffer) {
+  for (const auto& attachment : m_attachments) {
+    visitor->traceWrappers(attachment.value->object());
+  }
+  WebGLContextObject::traceWrappers(visitor);
+}
+
 }  // namespace blink

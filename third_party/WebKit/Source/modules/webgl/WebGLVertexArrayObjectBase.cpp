@@ -151,4 +151,12 @@ DEFINE_TRACE(WebGLVertexArrayObjectBase) {
   WebGLContextObject::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(WebGLVertexArrayObjectBase) {
+  visitor->traceWrappers(m_boundElementArrayBuffer);
+  for (size_t i = 0; i < m_arrayBufferList.size(); ++i) {
+    visitor->traceWrappers(m_arrayBufferList[i]);
+  }
+  WebGLContextObject::traceWrappers(visitor);
+}
+
 }  // namespace blink

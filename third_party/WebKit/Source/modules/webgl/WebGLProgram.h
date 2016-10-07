@@ -65,6 +65,7 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
                                      const v8::Persistent<v8::Object>&);
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
   explicit WebGLProgram(WebGLRenderingContextBase*);

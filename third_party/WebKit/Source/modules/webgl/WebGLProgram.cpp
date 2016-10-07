@@ -162,4 +162,10 @@ DEFINE_TRACE(WebGLProgram) {
   WebGLSharedPlatform3DObject::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(WebGLProgram) {
+  visitor->traceWrappers(m_vertexShader);
+  visitor->traceWrappers(m_fragmentShader);
+  WebGLSharedPlatform3DObject::traceWrappers(visitor);
+}
+
 }  // namespace blink

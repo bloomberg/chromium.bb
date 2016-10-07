@@ -7462,6 +7462,28 @@ DEFINE_TRACE(WebGLRenderingContextBase) {
   CanvasRenderingContext::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(WebGLRenderingContextBase) {
+  if (isContextLost()) {
+    return;
+  }
+  visitor->traceWrappers(m_boundArrayBuffer);
+  visitor->traceWrappers(m_renderbufferBinding);
+  visitor->traceWrappers(m_framebufferBinding);
+  visitor->traceWrappers(m_currentProgram);
+  visitor->traceWrappers(m_boundVertexArrayObject);
+  for (auto& unit : m_textureUnits) {
+    visitor->traceWrappers(unit.m_texture2DBinding);
+    visitor->traceWrappers(unit.m_textureCubeMapBinding);
+    visitor->traceWrappers(unit.m_texture3DBinding);
+    visitor->traceWrappers(unit.m_texture2DArrayBinding);
+  }
+  for (ExtensionTracker* tracker : m_extensions) {
+    WebGLExtension* extension = tracker->getExtensionObjectIfAlreadyEnabled();
+    visitor->traceWrappers(extension);
+  }
+  CanvasRenderingContext::traceWrappers(visitor);
+}
+
 int WebGLRenderingContextBase::externallyAllocatedBytesPerPixel() {
   if (isContextLost())
     return 0;

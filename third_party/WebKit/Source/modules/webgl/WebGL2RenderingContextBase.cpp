@@ -4261,6 +4261,33 @@ DEFINE_TRACE(WebGL2RenderingContextBase) {
   WebGLRenderingContextBase::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(WebGL2RenderingContextBase) {
+  if (isContextLost()) {
+    return;
+  }
+
+  visitor->traceWrappers(m_transformFeedbackBinding);
+  visitor->traceWrappers(m_readFramebufferBinding);
+  visitor->traceWrappers(m_boundCopyReadBuffer);
+  visitor->traceWrappers(m_boundCopyWriteBuffer);
+  visitor->traceWrappers(m_boundPixelPackBuffer);
+  visitor->traceWrappers(m_boundPixelUnpackBuffer);
+  visitor->traceWrappers(m_boundTransformFeedbackBuffer);
+  visitor->traceWrappers(m_boundUniformBuffer);
+  for (auto& buf : m_boundIndexedTransformFeedbackBuffers) {
+    visitor->traceWrappers(buf);
+  }
+  for (auto& buf : m_boundIndexedUniformBuffers) {
+    visitor->traceWrappers(buf);
+  }
+  visitor->traceWrappers(m_currentBooleanOcclusionQuery);
+  visitor->traceWrappers(m_currentTransformFeedbackPrimitivesWrittenQuery);
+  for (auto& unit : m_samplerUnits) {
+    visitor->traceWrappers(unit);
+  }
+  WebGLRenderingContextBase::traceWrappers(visitor);
+}
+
 WebGLTexture* WebGL2RenderingContextBase::validateTexture3DBinding(
     const char* functionName,
     GLenum target) {

@@ -164,6 +164,7 @@ DEFINE_TRACE_WRAPPERS(WebGL2RenderingContext) {
   visitor->traceWrappers(m_webglDebugRendererInfo);
   visitor->traceWrappers(m_webglDebugShaders);
   visitor->traceWrappers(m_webglLoseContext);
+  WebGL2RenderingContextBase::traceWrappers(visitor);
 }
 
 }  // namespace blink

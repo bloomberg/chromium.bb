@@ -718,6 +718,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
   EAGERLY_FINALIZE();
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
   friend class V8WebGL2RenderingContext;
