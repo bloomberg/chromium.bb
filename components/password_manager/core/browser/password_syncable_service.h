@@ -19,9 +19,6 @@
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
-template <typename T>
-class ScopedVector;
-
 namespace autofill {
 struct PasswordForm;
 }
@@ -65,7 +62,6 @@ class PasswordSyncableService : public syncer::SyncableService,
       const syncer::SyncableService::StartSyncFlare& flare);
 
  private:
-  typedef std::vector<autofill::PasswordForm*> PasswordForms;
   // Map from password sync tag to password form.
   typedef std::map<std::string, autofill::PasswordForm*> PasswordEntryMap;
 
@@ -79,7 +75,7 @@ class PasswordSyncableService : public syncer::SyncableService,
   // Retrieves the entries from password db and fills both |password_entries|
   // and |passwords_entry_map|. |passwords_entry_map| can be NULL.
   bool ReadFromPasswordStore(
-      ScopedVector<autofill::PasswordForm>* password_entries,
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* password_entries,
       PasswordEntryMap* passwords_entry_map) const;
 
   // Uses the |PasswordStore| APIs to change entries.
@@ -96,9 +92,10 @@ class PasswordSyncableService : public syncer::SyncableService,
 
   // Calls |operation| for each element in |entries| and appends the changes to
   // |all_changes|.
-  void WriteEntriesToDatabase(DatabaseOperation operation,
-                              const PasswordForms& entries,
-                              PasswordStoreChangeList* all_changes);
+  void WriteEntriesToDatabase(
+      DatabaseOperation operation,
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>& entries,
+      PasswordStoreChangeList* all_changes);
 
   // The factory that creates sync errors. |SyncError| has rich data
   // suitable for debugging.

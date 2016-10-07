@@ -4,11 +4,13 @@
 
 #include "components/password_manager/core/browser/password_syncable_service.h"
 
+#include <algorithm>
+#include <iterator>
 #include <utility>
 
 #include "base/auto_reset.h"
 #include "base/location.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
@@ -83,9 +85,9 @@ syncer::SyncChange::SyncChangeType GetSyncChangeType(
 void AppendPasswordFromSpecifics(
     const sync_pb::PasswordSpecificsData& specifics,
     base::Time sync_time,
-    ScopedVector<autofill::PasswordForm>* entries) {
-  entries->push_back(
-      new autofill::PasswordForm(PasswordFromSpecifics(specifics)));
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* entries) {
+  entries->push_back(base::MakeUnique<autofill::PasswordForm>(
+      PasswordFromSpecifics(specifics)));
   entries->back()->date_synced = sync_time;
 }
 
@@ -105,7 +107,7 @@ bool IsEmptyPasswordSpecificsData(
 }  // namespace
 
 struct PasswordSyncableService::SyncEntries {
-  ScopedVector<autofill::PasswordForm>* EntriesForChangeType(
+  std::vector<std::unique_ptr<autofill::PasswordForm>>* EntriesForChangeType(
       syncer::SyncChange::SyncChangeType type) {
     switch (type) {
       case syncer::SyncChange::ACTION_ADD:
@@ -122,15 +124,15 @@ struct PasswordSyncableService::SyncEntries {
   }
 
   // List that contains the entries that are known only to sync.
-  ScopedVector<autofill::PasswordForm> new_entries;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> new_entries;
 
   // List that contains the entries that are known to both sync and the local
   // database but have updates in sync. They need to be updated in the local
   // database.
-  ScopedVector<autofill::PasswordForm> updated_entries;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> updated_entries;
 
   // The list of entries to be deleted from the local database.
-  ScopedVector<autofill::PasswordForm> deleted_entries;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> deleted_entries;
 };
 
 PasswordSyncableService::PasswordSyncableService(
@@ -154,7 +156,7 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   // We add all the db entries as |new_local_entries| initially. During model
   // association entries that match a sync entry will be removed and this list
   // will only contain entries that are not in sync.
-  ScopedVector<autofill::PasswordForm> password_entries;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> password_entries;
   PasswordEntryMap new_local_entries;
   if (!ReadFromPasswordStore(&password_entries, &new_local_entries)) {
     merge_result.set_error(sync_error_factory->CreateAndUploadError(
@@ -193,7 +195,7 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
       // cleaned up. This should happen in M43 and can be verified using crash
       // reports.
       sync_entries.deleted_entries.push_back(
-          new autofill::PasswordForm(*it->second));
+          base::MakeUnique<autofill::PasswordForm>(*it->second));
     } else {
       updated_db_entries.push_back(
           syncer::SyncChange(FROM_HERE,
@@ -238,14 +240,16 @@ syncer::SyncDataList PasswordSyncableService::GetAllSyncData(
     syncer::ModelType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(syncer::PASSWORDS, type);
-  ScopedVector<autofill::PasswordForm> password_entries;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> password_entries;
   ReadFromPasswordStore(&password_entries, nullptr);
 
   syncer::SyncDataList sync_data;
-  for (PasswordForms::iterator it = password_entries.begin();
-       it != password_entries.end(); ++it) {
-    sync_data.push_back(SyncDataFromPassword(**it));
-  }
+  sync_data.reserve(password_entries.size());
+  std::transform(password_entries.begin(), password_entries.end(),
+                 std::back_inserter(sync_data),
+                 [](const std::unique_ptr<autofill::PasswordForm>& form) {
+                   return SyncDataFromPassword(*form);
+                 });
   return sync_data;
 }
 
@@ -260,7 +264,7 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
   for (syncer::SyncChangeList::const_iterator it = change_list.begin();
        it != change_list.end(); ++it) {
     const sync_pb::EntitySpecifics& specifics = it->sync_data().GetSpecifics();
-    ScopedVector<autofill::PasswordForm>* entries =
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* entries =
         sync_entries.EntriesForChangeType(it->change_type());
     if (!entries) {
       return sync_error_factory_->CreateAndUploadError(
@@ -310,7 +314,7 @@ void PasswordSyncableService::InjectStartSyncFlare(
 }
 
 bool PasswordSyncableService::ReadFromPasswordStore(
-    ScopedVector<autofill::PasswordForm>* password_entries,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* password_entries,
     PasswordEntryMap* passwords_entry_map) const {
   DCHECK(password_entries);
   std::vector<std::unique_ptr<autofill::PasswordForm>> autofillable_entries;
@@ -324,24 +328,19 @@ bool PasswordSyncableService::ReadFromPasswordStore(
                               syncer::MODEL_TYPE_COUNT);
     return false;
   }
-  password_entries->clear();
   password_entries->resize(autofillable_entries.size() +
                            blacklist_entries.size());
-  auto next = password_entries->begin();
-  for (auto& autofillable : autofillable_entries) {
-    *next++ = autofillable.release();
-  }
-  for (auto& blacklisted : blacklist_entries) {
-    *next++ = blacklisted.release();
-  }
+  std::move(autofillable_entries.begin(), autofillable_entries.end(),
+            password_entries->begin());
+  std::move(blacklist_entries.begin(), blacklist_entries.end(),
+            password_entries->begin() + autofillable_entries.size());
 
   if (!passwords_entry_map)
     return true;
 
   PasswordEntryMap& entry_map = *passwords_entry_map;
-  for (PasswordForms::iterator it = password_entries->begin();
-       it != password_entries->end(); ++it) {
-    autofill::PasswordForm* password_form = *it;
+  for (const auto& form : *password_entries) {
+    autofill::PasswordForm* password_form = form.get();
     entry_map[MakePasswordSyncTag(*password_form)] = password_form;
   }
 
@@ -350,12 +349,12 @@ bool PasswordSyncableService::ReadFromPasswordStore(
 
 void PasswordSyncableService::WriteToPasswordStore(const SyncEntries& entries) {
   PasswordStoreChangeList changes;
-  WriteEntriesToDatabase(&PasswordStoreSync::AddLoginSync,
-                         entries.new_entries.get(), &changes);
+  WriteEntriesToDatabase(&PasswordStoreSync::AddLoginSync, entries.new_entries,
+                         &changes);
   WriteEntriesToDatabase(&PasswordStoreSync::UpdateLoginSync,
-                         entries.updated_entries.get(), &changes);
+                         entries.updated_entries, &changes);
   WriteEntriesToDatabase(&PasswordStoreSync::RemoveLoginSync,
-                         entries.deleted_entries.get(), &changes);
+                         entries.deleted_entries, &changes);
 
   // We have to notify password store observers of the change by hand since
   // we use internal password store interfaces to make changes synchronously.
@@ -431,11 +430,10 @@ void PasswordSyncableService::CreateOrUpdateEntry(
 
 void PasswordSyncableService::WriteEntriesToDatabase(
     DatabaseOperation operation,
-    const PasswordForms& entries,
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& entries,
     PasswordStoreChangeList* all_changes) {
-  for (PasswordForms::const_iterator it = entries.begin(); it != entries.end();
-       ++it) {
-    PasswordStoreChangeList new_changes = (password_store_->*operation)(**it);
+  for (const std::unique_ptr<autofill::PasswordForm>& form : entries) {
+    PasswordStoreChangeList new_changes = (password_store_->*operation)(*form);
     all_changes->insert(all_changes->end(),
                         new_changes.begin(),
                         new_changes.end());
