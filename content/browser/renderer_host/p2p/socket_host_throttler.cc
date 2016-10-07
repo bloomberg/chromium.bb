@@ -31,7 +31,7 @@ void P2PMessageThrottler::SetSendIceBandwidth(int bandwidth_kbps) {
 
 bool P2PMessageThrottler::DropNextPacket(size_t packet_len) {
   double now =
-      rtc::TimeMicros() / static_cast<double>(rtc::kNumMicrosecsPerMillisec);
+      rtc::TimeNanos() / static_cast<double>(rtc::kNumNanosecsPerSec);
   if (!rate_limiter_->CanUse(packet_len, now)) {
     // Exceeding the send rate, this packet should be dropped.
     return true;
