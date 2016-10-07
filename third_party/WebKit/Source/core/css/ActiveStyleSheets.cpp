@@ -27,8 +27,10 @@ ActiveSheetsChange compareActiveStyleSheets(
     if (newStyleSheets[index].second == oldStyleSheets[index].second)
       continue;
 
-    changedRuleSets.append(newStyleSheets[index].second);
-    changedRuleSets.append(oldStyleSheets[index].second);
+    if (newStyleSheets[index].second)
+      changedRuleSets.append(newStyleSheets[index].second);
+    if (oldStyleSheets[index].second)
+      changedRuleSets.append(oldStyleSheets[index].second);
   }
 
   if (index == oldStyleSheetCount) {
@@ -37,16 +39,21 @@ ActiveSheetsChange compareActiveStyleSheets(
                                     : NoActiveSheetsChanged;
 
     // Sheets added at the end.
-    for (; index < newStyleSheetCount; index++)
-      changedRuleSets.append(newStyleSheets[index].second);
-    return ActiveSheetsAppended;
+    for (; index < newStyleSheetCount; index++) {
+      if (newStyleSheets[index].second)
+        changedRuleSets.append(newStyleSheets[index].second);
+    }
+    return changedRuleSets.size() ? ActiveSheetsAppended
+                                  : NoActiveSheetsChanged;
   }
 
   if (index == newStyleSheetCount) {
     // Sheets removed from the end.
-    for (; index < oldStyleSheetCount; index++)
-      changedRuleSets.append(oldStyleSheets[index].second);
-    return ActiveSheetsChanged;
+    for (; index < oldStyleSheetCount; index++) {
+      if (oldStyleSheets[index].second)
+        changedRuleSets.append(oldStyleSheets[index].second);
+    }
+    return changedRuleSets.size() ? ActiveSheetsChanged : NoActiveSheetsChanged;
   }
 
   DCHECK(index < oldStyleSheetCount && index < newStyleSheetCount);
@@ -71,7 +78,8 @@ ActiveSheetsChange compareActiveStyleSheets(
     if (mergedIterator == mergedSorted.end() ||
         (*mergedIterator).first != sheet1.first) {
       // Sheet either removed or inserted.
-      changedRuleSets.append(sheet1.second);
+      if (sheet1.second)
+        changedRuleSets.append(sheet1.second);
       continue;
     }
 
@@ -83,10 +91,12 @@ ActiveSheetsChange compareActiveStyleSheets(
 
     // Active rules for the given stylesheet changed.
     // DOM, CSSOM, or media query changes.
-    changedRuleSets.append(sheet1.second);
-    changedRuleSets.append(sheet2.second);
+    if (sheet1.second)
+      changedRuleSets.append(sheet1.second);
+    if (sheet2.second)
+      changedRuleSets.append(sheet2.second);
   }
-  return ActiveSheetsChanged;
+  return changedRuleSets.size() ? ActiveSheetsChanged : NoActiveSheetsChanged;
 }
 
 }  // namespace blink
