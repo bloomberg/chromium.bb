@@ -120,6 +120,8 @@ using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 using storage::ShareableFileReference;
+using SyncLoadResultCallback =
+    content::ResourceDispatcherHostImpl::SyncLoadResultCallback;
 
 // ----------------------------------------------------------------------------
 
@@ -222,15 +224,15 @@ bool IsDetachableResourceType(ResourceType type) {
 }
 
 // Aborts a request before an URLRequest has actually been created.
-void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
-                                IPC::Message* sync_result,
-                                int request_id,
-                                mojom::URLLoaderClientPtr url_loader_client) {
-  if (sync_result) {
+void AbortRequestBeforeItStarts(
+    ResourceMessageFilter* filter,
+    const SyncLoadResultCallback& sync_result_handler,
+    int request_id,
+    mojom::URLLoaderClientPtr url_loader_client) {
+  if (sync_result_handler) {
     SyncLoadResult result;
     result.error_code = net::ERR_ABORTED;
-    ResourceHostMsg_SyncLoad::WriteReplyParams(sync_result, result);
-    filter->Send(sync_result);
+    sync_result_handler.Run(&result);
   } else {
     // Tell the renderer that this request was disallowed.
     ResourceRequestCompletionStatus request_complete_data;
@@ -413,6 +415,22 @@ void NotifyForEachFrameFromUI(
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&NotifyForRouteSetOnIO, frame_callback,
                                      base::Passed(std::move(routing_ids))));
+}
+
+// Sends back the result of a synchronous loading result to the renderer through
+// Chrome IPC.
+void HandleSyncLoadResult(base::WeakPtr<ResourceMessageFilter> filter,
+                          std::unique_ptr<IPC::Message> sync_result,
+                          const SyncLoadResult* result) {
+  if (!filter)
+    return;
+
+  if (result) {
+    ResourceHostMsg_SyncLoad::WriteReplyParams(sync_result.get(), *result);
+  } else {
+    sync_result->set_reply_error();
+  }
+  filter->Send(sync_result.release());
 }
 
 }  // namespace
@@ -1060,7 +1078,7 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
                    request_data.render_frame_id,
                    request_data.url));
   }
-  BeginRequest(request_id, request_data, NULL, routing_id,
+  BeginRequest(request_id, request_data, SyncLoadResultCallback(), routing_id,
                std::move(mojo_request), std::move(url_loader_client));
 }
 
@@ -1075,7 +1093,10 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
 void ResourceDispatcherHostImpl::OnSyncLoad(int request_id,
                                             const ResourceRequest& request_data,
                                             IPC::Message* sync_result) {
-  BeginRequest(request_id, request_data, sync_result, sync_result->routing_id(),
+  SyncLoadResultCallback callback = base::Bind(
+      &HandleSyncLoadResult, filter_->GetWeakPtr(),
+      base::Passed(WrapUnique(sync_result)));
+  BeginRequest(request_id, request_data, callback, sync_result->routing_id(),
                nullptr, nullptr);
 }
 
@@ -1182,7 +1203,7 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
 void ResourceDispatcherHostImpl::BeginRequest(
     int request_id,
     const ResourceRequest& request_data,
-    IPC::Message* sync_result,  // only valid for sync
+    const SyncLoadResultCallback& sync_result_handler, // only valid for sync
     int route_id,
     mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
     mojom::URLLoaderClientPtr url_loader_client) {
@@ -1257,7 +1278,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   if (is_shutdown_ ||
       !ShouldServiceRequest(process_type, child_id, request_data, headers,
                             filter_, resource_context)) {
-    AbortRequestBeforeItStarts(filter_, sync_result, request_id,
+    AbortRequestBeforeItStarts(filter_, sync_result_handler, request_id,
                                std::move(url_loader_client));
     return;
   }
@@ -1282,22 +1303,22 @@ void ResourceDispatcherHostImpl::BeginRequest(
             it.name(), it.value(), child_id, resource_context,
             base::Bind(&ResourceDispatcherHostImpl::ContinuePendingBeginRequest,
                        base::Unretained(this), request_id, request_data,
-                       sync_result, route_id, headers,
+                       sync_result_handler, route_id, headers,
                        base::Passed(std::move(mojo_request)),
                        base::Passed(std::move(url_loader_client))));
         return;
       }
     }
   }
-  ContinuePendingBeginRequest(request_id, request_data, sync_result, route_id,
-                              headers, std::move(mojo_request),
+  ContinuePendingBeginRequest(request_id, request_data, sync_result_handler,
+                              route_id, headers, std::move(mojo_request),
                               std::move(url_loader_client), true, 0);
 }
 
 void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     int request_id,
     const ResourceRequest& request_data,
-    IPC::Message* sync_result,  // only valid for sync
+    const SyncLoadResultCallback& sync_result_handler, // only valid for sync
     int route_id,
     const net::HttpRequestHeaders& headers,
     mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
@@ -1308,7 +1329,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     // TODO(ananta): Find a way to specify the right error code here.  Passing
     // in a non-content error code is not safe.
     bad_message::ReceivedBadMessage(filter_, bad_message::RDH_ILLEGAL_ORIGIN);
-    AbortRequestBeforeItStarts(filter_, sync_result, request_id,
+    AbortRequestBeforeItStarts(filter_, sync_result_handler, request_id,
                                std::move(url_loader_client));
     return;
   }
@@ -1331,7 +1352,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
                                                   request_data.url,
                                                   request_data.resource_type,
                                                   resource_context)) {
-    AbortRequestBeforeItStarts(filter_, sync_result, request_id,
+    AbortRequestBeforeItStarts(filter_, sync_result_handler, request_id,
                                std::move(url_loader_client));
     return;
   }
@@ -1404,7 +1425,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   bool allow_download = request_data.allow_download &&
       IsResourceTypeFrame(request_data.resource_type);
   bool do_not_prompt_for_login = request_data.do_not_prompt_for_login;
-  bool is_sync_load = sync_result != NULL;
+  bool is_sync_load = !!sync_result_handler;
 
   // Raw headers are sensitive, as they include Cookie/Set-Cookie, so only
   // allow requesting them if requester has ReadRawCookies permission.
@@ -1516,8 +1537,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       request_data.should_reset_appcache);
 
   std::unique_ptr<ResourceHandler> handler(CreateResourceHandler(
-      new_request.get(), request_data, sync_result, route_id, process_type,
-      child_id, resource_context, std::move(mojo_request),
+      new_request.get(), request_data, sync_result_handler, route_id,
+      process_type, child_id, resource_context, std::move(mojo_request),
       std::move(url_loader_client)));
 
   if (handler)
@@ -1528,7 +1549,7 @@ std::unique_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::CreateResourceHandler(
     net::URLRequest* request,
     const ResourceRequest& request_data,
-    IPC::Message* sync_result,
+    const SyncLoadResultCallback& sync_result_handler,
     int route_id,
     int process_type,
     int child_id,
@@ -1541,7 +1562,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
           "456331 ResourceDispatcherHostImpl::CreateResourceHandler"));
   // Construct the IPC resource handler.
   std::unique_ptr<ResourceHandler> handler;
-  if (sync_result) {
+  if (sync_result_handler) {
     // download_to_file is not supported for synchronous requests.
     if (request_data.download_to_file) {
       bad_message::ReceivedBadMessage(filter_, bad_message::RDH_BAD_DOWNLOAD);
@@ -1550,7 +1571,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
 
     DCHECK(!mojo_request.is_pending());
     DCHECK(!url_loader_client);
-    handler.reset(new SyncResourceHandler(request, sync_result, this));
+    handler.reset(new SyncResourceHandler(request, sync_result_handler, this));
   } else {
     if (mojo_request.is_pending()) {
       handler.reset(new MojoAsyncResourceHandler(request, this,
@@ -1570,8 +1591,9 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
   bool start_detached = request_data.download_to_network_cache_only;
 
   // Prefetches and <a ping> requests outlive their child process.
-  if (!sync_result && (start_detached ||
-                       IsDetachableResourceType(request_data.resource_type))) {
+  if (!sync_result_handler &&
+      (start_detached ||
+       IsDetachableResourceType(request_data.resource_type))) {
     std::unique_ptr<DetachableResourceHandler> detachable_handler =
         base::MakeUnique<DetachableResourceHandler>(
             request,

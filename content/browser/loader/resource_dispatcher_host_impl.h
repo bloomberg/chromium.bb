@@ -19,8 +19,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -84,6 +86,11 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
       public ResourceLoaderDelegate {
  public:
+  // Used to handle the result of SyncLoad IPC. |result| is null if it's
+  // unavailable due to an error.
+  using SyncLoadResultCallback =
+      base::Callback<void(const SyncLoadResult* result)>;
+
   // This constructor should be used if we want downloads to work correctly.
   // TODO(ananta)
   // Work on moving creation of download handlers out of
@@ -532,12 +539,13 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                 const ResourceRequest& request_data,
                                 LoaderMap::iterator iter);
 
-  void BeginRequest(int request_id,
-                    const ResourceRequest& request_data,
-                    IPC::Message* sync_result,  // only valid for sync
-                    int route_id,               // only valid for async
-                    mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
-                    mojom::URLLoaderClientPtr url_loader_client);
+  void BeginRequest(
+      int request_id,
+      const ResourceRequest& request_data,
+      const SyncLoadResultCallback& sync_result_handler, // only valid for sync
+      int route_id,                                      // only valid for async
+      mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
+      mojom::URLLoaderClientPtr url_loader_client);
 
   // There are requests which need decisions to be made like the following:
   // Whether the presence of certain HTTP headers like the Origin header are
@@ -551,7 +559,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void ContinuePendingBeginRequest(
       int request_id,
       const ResourceRequest& request_data,
-      IPC::Message* sync_result,  // only valid for sync
+      const SyncLoadResultCallback& sync_result_handler, // only valid for sync
       int route_id,
       const net::HttpRequestHeaders& headers,
       mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
@@ -564,7 +572,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   std::unique_ptr<ResourceHandler> CreateResourceHandler(
       net::URLRequest* request,
       const ResourceRequest& request_data,
-      IPC::Message* sync_result,
+      const SyncLoadResultCallback& sync_result_handler,
       int route_id,
       int process_type,
       int child_id,

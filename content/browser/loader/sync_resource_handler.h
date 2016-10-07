@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/public/common/resource_response.h"
 
@@ -23,15 +24,17 @@ class URLRequest;
 
 namespace content {
 class ResourceContext;
-class ResourceDispatcherHostImpl;
 class ResourceMessageFilter;
 
 // Used to complete a synchronous resource request in response to resource load
 // events from the resource dispatcher host.
 class SyncResourceHandler : public ResourceHandler {
  public:
+  using SyncLoadResultCallback =
+      ResourceDispatcherHostImpl::SyncLoadResultCallback;
+
   SyncResourceHandler(net::URLRequest* request,
-                      IPC::Message* result_message,
+                      const SyncLoadResultCallback& sync_result_handler,
                       ResourceDispatcherHostImpl* resource_dispatcher_host);
   ~SyncResourceHandler() override;
 
@@ -54,7 +57,7 @@ class SyncResourceHandler : public ResourceHandler {
   scoped_refptr<net::IOBuffer> read_buffer_;
 
   SyncLoadResult result_;
-  IPC::Message* result_message_;
+  SyncLoadResultCallback result_handler_;
   ResourceDispatcherHostImpl* rdh_;
   int64_t total_transfer_size_;
 };
