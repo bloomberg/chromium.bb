@@ -6,11 +6,14 @@ found in the LICENSE file.
 
 <!--
 This file is a comprehensive list of Chrome user actions along with the owner
-and description for each user action. A user action should be tied to an actual
-action taken by a user. It should be logged immediately after a user takes the
-action, and should only be logged once per actual event. If an action is not
-user triggered, specify it using not_user_triggered="true" as an attribute to
-the <action> tag.
+and description for each user action.
+
+For best practices on writing user action descriptions, see
+https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/actions/README.md
+For details on how to modify this file to add your description, keep reading.
+
+If an action is not user triggered, specify it using not_user_triggered="true"
+as an attribute to the <action> tag.
 
 Please run extract_actions.py to add new actions and pretty-print this file.
 
