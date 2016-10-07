@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/signin/signin_error_handler.h"
 
 #include "base/bind.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/signin_ui_util.h"
@@ -37,14 +36,16 @@ void SigninErrorHandler::RegisterMessages() {
 
 void SigninErrorHandler::HandleSwitchToExistingProfile(
     const base::ListValue* args) {
-  if (!duplicate_profile_entry_)
+  if (duplicate_profile_path_.empty())
     return;
-  CloseDialog();
   // Switch to the existing duplicate profile. Do not create a new window when
   // any existing ones can be reused.
-  profiles::SwitchToProfile(duplicate_profile_entry_->GetPath(), false,
+  profiles::SwitchToProfile(duplicate_profile_path_, false,
                             ProfileManager::CreateCallback(),
                             ProfileMetrics::SWITCH_PROFILE_DUPLICATE);
+  // CloseDialog will eventually destroy this object, so nothing should access
+  // its members after this call.
+  CloseDialog();
 }
 
 void SigninErrorHandler::HandleConfirm(const base::ListValue* args) {
@@ -60,7 +61,7 @@ void SigninErrorHandler::HandleLearnMore(const base::ListValue* args) {
 
 void SigninErrorHandler::HandleInitializedWithSize(
     const base::ListValue* args) {
-  if (!duplicate_profile_entry_)
+  if (duplicate_profile_path_.empty())
     web_ui()->CallJavascriptFunctionUnsafe("signin.error.removeSwitchButton");
 
   signin::SetInitializedModalHeight(web_ui(), args);

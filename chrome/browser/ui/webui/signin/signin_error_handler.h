@@ -7,11 +7,11 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class Browser;
-class ProfileAttributesEntry;
 
 namespace base {
 class ListValue;
@@ -26,11 +26,11 @@ class SigninErrorHandler : public content::WebUIMessageHandler {
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
 
-  // Sets the existing profile entry that has the same username used for signin.
+  // Sets the existing profile path that has the same username used for signin.
   // This function is called when the signin error is a duplicate account error.
-  void set_duplicate_profile_entry(
-      const ProfileAttributesEntry* duplicate_profile_entry) {
-    duplicate_profile_entry_ = duplicate_profile_entry;
+  void set_duplicate_profile_path(
+      const base::FilePath& duplicate_profile_path) {
+    duplicate_profile_path_ = duplicate_profile_path;
   }
 
  protected:
@@ -54,10 +54,12 @@ class SigninErrorHandler : public content::WebUIMessageHandler {
   // a single integer value for the height the native view should resize to.
   virtual void HandleInitializedWithSize(const base::ListValue* args);
 
+  // CloseDialog will eventually destroy this object, so nothing should access
+  // its members after this call.
   void CloseDialog();
 
  private:
-  const ProfileAttributesEntry* duplicate_profile_entry_ = nullptr;
+  base::FilePath duplicate_profile_path_;
 
   bool is_system_profile_;
 

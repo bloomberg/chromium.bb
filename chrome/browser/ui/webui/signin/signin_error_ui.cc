@@ -89,7 +89,7 @@ SigninErrorUI::SigninErrorUI(content::WebUI* web_ui,
       for (const ProfileAttributesEntry* entry : entries) {
         if (gaia::AreEmailsSame(base::UTF16ToUTF8(email),
                                 base::UTF16ToUTF8(entry->GetUserName()))) {
-          handler->set_duplicate_profile_entry(entry);
+          handler->set_duplicate_profile_path(entry->GetPath());
           existing_name = entry->GetName();
         }
       }
