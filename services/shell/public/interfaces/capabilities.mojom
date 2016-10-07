@@ -4,9 +4,9 @@
 
 module shell.mojom;
 
-// Mojo Capabilities -----------------------------------------------------------
+// Capabilities ----------------------------------------------------------------
 //
-// Mojo applications expose interfaces and capability classes to one another.
+// Services expose interfaces and capability classes to one another.
 //
 // An interface is just a Mojo interface, defined in a mojom file like this one.
 // In a CapabilitySpec, an interface is represented by its fully qualified name,

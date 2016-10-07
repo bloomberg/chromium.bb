@@ -57,7 +57,7 @@ std::unique_ptr<LinuxSandbox> InitializeSandbox() {
 #endif
 
 // Should be created and initialized on the main thread and kept alive as long
-// a Mojo application is running in the current process.
+// a Service is running in the current process.
 class ScopedAppContext : public mojo::edk::ProcessDelegate {
  public:
   ScopedAppContext()

@@ -38,7 +38,7 @@ class ResponderThunk : public MessageReceiverWithStatus {
         task_runner_(std::move(runner)) {}
   ~ResponderThunk() override {
     if (!accept_was_invoked_) {
-      // The Mojo application handled a message that was expecting a response
+      // The Service handled a message that was expecting a response
       // but did not send a response.
       // We raise an error to signal the calling application that an error
       // condition occurred. Without this the calling application would have no

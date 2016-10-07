@@ -29,12 +29,8 @@ namespace {
 base::LazyInstance<base::Lock>::Leaky g_singleton_lock =
     LAZY_INSTANCE_INITIALIZER;
 
-// Whether we are the first TracingImpl to be created in this mojo
-// application. The first TracingImpl in a physical mojo application connects
-// to the mojo:tracing service.
-//
-// If this is a ContentHandler, it will outlive all its served Applications. If
-// this is a raw mojo application, it is the only Application served.
+// Whether we are the first TracingImpl to be created in this service. The first
+// TracingImpl in a physical service connects to the tracing service.
 bool g_tracing_singleton_created = false;
 
 }

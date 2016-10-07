@@ -16,7 +16,7 @@ class Connector;
 namespace ash {
 
 // Mus+ash implementation of the AppListPresenter interface for mash, which
-// talks to the mojo app list service in chrome.
+// talks to the app list service in chrome.
 class AppListPresenterMus : public app_list::AppListPresenter {
  public:
   explicit AppListPresenterMus(::shell::Connector* connector);
@@ -30,7 +30,7 @@ class AppListPresenterMus : public app_list::AppListPresenter {
   bool GetTargetVisibility() const override;
 
  private:
-  // Connect to the mojo app list service in chrome if the connection hasn't
+  // Connect to the app list service in chrome if the connection hasn't
   // been established or has an error.
   void ConnectIfNeeded();
 

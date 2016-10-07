@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/shell/runner/host/native_application_support.h"
+#include "services/shell/runner/host/native_library_runner.h"
 
 #include <stddef.h>
 
@@ -29,7 +29,7 @@ bool SetThunks(Thunks (*make_thunks)(),
   Thunks thunks = make_thunks();
   size_t expected_size = set_thunks(&thunks);
   if (expected_size > sizeof(Thunks)) {
-    LOG(ERROR) << "Invalid app library: expected " << function_name
+    LOG(ERROR) << "Invalid library: expected " << function_name
                << " to return thunks of size: " << expected_size;
     return false;
   }
@@ -38,28 +38,28 @@ bool SetThunks(Thunks (*make_thunks)(),
 
 }  // namespace
 
-base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path) {
-  DVLOG(2) << "Loading Mojo app in process from library: " << app_path.value();
+base::NativeLibrary LoadNativeLibrary(const base::FilePath& path) {
+  DVLOG(2) << "Loading Service in process from library: " << path.value();
 
   base::NativeLibraryLoadError error;
-  base::NativeLibrary app_library = base::LoadNativeLibrary(app_path, &error);
-  LOG_IF(ERROR, !app_library)
-      << "Failed to load app library (path: " << app_path.value()
+  base::NativeLibrary library = base::LoadNativeLibrary(path, &error);
+  LOG_IF(ERROR, !library)
+      << "Failed to load library (path: " << path.value()
       << " reason: " << error.ToString() << ")";
-  return app_library;
+  return library;
 }
 
-bool RunNativeApplication(base::NativeLibrary app_library,
-                          mojom::ServiceRequest request) {
-  // Tolerate |app_library| being null, to make life easier for callers.
-  if (!app_library)
+bool RunServiceInNativeLibrary(base::NativeLibrary library,
+                               mojom::ServiceRequest request) {
+  // Tolerate |library| being null, to make life easier for callers.
+  if (!library)
     return false;
 
 // Thunks aren't needed/used in component build, since the thunked methods
 // just live in their own dynamically loaded library.
 #if !defined(COMPONENT_BUILD)
   if (!SetThunks(&mojo::edk::MakeSystemThunks, "MojoSetSystemThunks",
-                 app_library)) {
+                 library)) {
     LOG(ERROR) << "MojoSetSystemThunks not found";
     return false;
   }
@@ -67,12 +67,12 @@ bool RunNativeApplication(base::NativeLibrary app_library,
 #if !defined(OS_WIN)
   // On Windows, initializing base::CommandLine with null parameters gets the
   // process's command line from the OS. Other platforms need it to be passed
-  // in. This needs to be passed in before the app initializes the command line,
-  // which is done as soon as it loads.
+  // in. This needs to be passed in before the service initializes the command
+  // line, which is done as soon as it loads.
   typedef void (*InitCommandLineArgs)(int, const char* const*);
   InitCommandLineArgs init_command_line_args =
       reinterpret_cast<InitCommandLineArgs>(
-          base::GetFunctionPointerFromNativeLibrary(app_library,
+          base::GetFunctionPointerFromNativeLibrary(library,
                                                     "InitCommandLineArgs"));
   if (init_command_line_args) {
     int argc = 0;
@@ -88,7 +88,7 @@ bool RunNativeApplication(base::NativeLibrary app_library,
 
   typedef MojoResult (*ServiceMainFunction)(MojoHandle);
   ServiceMainFunction main_function = reinterpret_cast<ServiceMainFunction>(
-      base::GetFunctionPointerFromNativeLibrary(app_library, "ServiceMain"));
+      base::GetFunctionPointerFromNativeLibrary(library, "ServiceMain"));
   if (!main_function) {
     LOG(ERROR) << "ServiceMain not found";
     return false;

@@ -75,7 +75,7 @@ void WaitForDebuggerIfNecessary() {
 }
 
 void CallLibraryEarlyInitialization(base::NativeLibrary app_library) {
-  // Do whatever warming that the mojo application wants.
+  // Do whatever warming that the service wants.
 
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
   typedef void (*LibraryEarlyInitFunction)(const uint8_t*);

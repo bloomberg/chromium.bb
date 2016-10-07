@@ -19,8 +19,8 @@
 #include "services/shell/public/interfaces/service_manager.mojom.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
 
-// Tests that multiple applications can be packaged in a single Mojo application
-// implementing ServiceFactory; that these applications can be specified by
+// Tests that multiple services can be packaged in a single service by
+// implementing ServiceFactory; that these services can be specified by
 // the package's manifest and are thus registered with the PackageManager.
 
 namespace shell {

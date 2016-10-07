@@ -186,11 +186,11 @@ void RenderWidgetHostViewMus::SetIsLoading(bool is_loading) {
 
 void RenderWidgetHostViewMus::TextInputStateChanged(
     const TextInputState& params) {
-  // TODO(fsamuel): Implement an IME mojo app.
+  // TODO(fsamuel): Implement an IME service.
 }
 
 void RenderWidgetHostViewMus::ImeCancelComposition() {
-  // TODO(fsamuel): Implement an IME mojo app.
+  // TODO(fsamuel): Implement an IME service.
 }
 
 void RenderWidgetHostViewMus::ImeCompositionRangeChanged(

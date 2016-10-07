@@ -7,7 +7,7 @@
 namespace switches {
 
 // Used internally by the main process to indicate that a new process should be
-// a child process. Takes the absolute path to the mojo application to load as
+// a child process. Takes the absolute path to the service library to load as
 // an argument. Not for user use.
 const char kChildProcess[] = "child-process";
 

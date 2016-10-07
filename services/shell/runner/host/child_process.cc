@@ -33,17 +33,17 @@
 #include "mojo/public/cpp/system/core.h"
 #include "services/shell/runner/common/switches.h"
 #include "services/shell/runner/host/child_process_base.h"
-#include "services/shell/runner/host/native_application_support.h"
+#include "services/shell/runner/host/native_library_runner.h"
 #include "services/shell/runner/init.h"
 
 namespace shell {
 
 namespace {
 
-void RunNativeLibrary(base::NativeLibrary app_library,
+void RunNativeLibrary(base::NativeLibrary library,
                       mojom::ServiceRequest service_request) {
-  if (!RunNativeApplication(app_library, std::move(service_request))) {
-    LOG(ERROR) << "Failure to RunNativeApplication()";
+  if (!RunServiceInNativeLibrary(library, std::move(service_request))) {
+    LOG(ERROR) << "Failure to RunServiceInNativeLibrary()";
   }
 }
 
@@ -54,17 +54,17 @@ int ChildProcessMain() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  base::NativeLibrary app_library = 0;
+  base::NativeLibrary library = 0;
   // Load the application library before we engage the sandbox.
-  base::FilePath app_library_path =
+  base::FilePath library_path =
       command_line.GetSwitchValuePath(switches::kChildProcess);
-  if (!app_library_path.empty())
-    app_library = LoadNativeApplication(app_library_path);
+  if (!library_path.empty())
+    library = LoadNativeLibrary(library_path);
   base::i18n::InitializeICU();
-  if (app_library)
-    CallLibraryEarlyInitialization(app_library);
+  if (library)
+    CallLibraryEarlyInitialization(library);
 
-  ChildProcessMainWithCallback(base::Bind(&RunNativeLibrary, app_library));
+  ChildProcessMainWithCallback(base::Bind(&RunNativeLibrary, library));
 
   return 0;
 }

@@ -25,9 +25,9 @@ class GpuService;
 
 namespace demo {
 
-// A simple MUS Demo mojo app. This app connects to the mojo:ui, creates a new
-// window and draws a spinning square in the center of the window. Provides a
-// simple way to demonstrate that the graphic stack works as intended.
+// A simple MUS Demo service. This service connects to the mojo:ui, creates a
+// new window and draws a spinning square in the center of the window. Provides
+// a simple way to demonstrate that the graphic stack works as intended.
 class MusDemo : public shell::Service,
                 public WindowTreeClientDelegate,
                 public WindowManagerDelegate {

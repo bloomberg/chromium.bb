@@ -31,7 +31,7 @@ Platform
 --------
 
 The platform/ subdirectory contains any build-time requirements (e.g., static
-libraries) that may be needed to produce a Mojo application for certain
+libraries) that may be needed to produce a Service library for certain
 platforms, such as a native shared library or as a NaCl binary.
 
 Tools

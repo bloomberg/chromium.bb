@@ -16,17 +16,17 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/shell/runner/host/native_application_support.h"
+#include "services/shell/runner/host/native_library_runner.h"
 #include "services/shell/runner/host/out_of_process_native_runner.h"
 #include "services/shell/runner/init.h"
 
 namespace shell {
 
-InProcessNativeRunner::InProcessNativeRunner() : app_library_(nullptr) {}
+InProcessNativeRunner::InProcessNativeRunner() : library_(nullptr) {}
 
 InProcessNativeRunner::~InProcessNativeRunner() {
   // It is important to let the thread exit before unloading the DSO (when
-  // app_library_ is destructed), because the library may have registered
+  // library_ is destructed), because the library may have registered
   // thread-local data and destructors to run on thread termination.
   if (thread_) {
     DCHECK(thread_->HasBeenStarted());
@@ -36,26 +36,26 @@ InProcessNativeRunner::~InProcessNativeRunner() {
 }
 
 mojom::ServicePtr InProcessNativeRunner::Start(
-    const base::FilePath& app_path,
+    const base::FilePath& library_path,
     const Identity& target,
     bool start_sandboxed,
     const base::Callback<void(base::ProcessId)>& pid_available_callback,
-    const base::Closure& app_completed_callback) {
-  app_path_ = app_path;
+    const base::Closure& service_completed_callback) {
+  library_path_ = library_path;
 
   DCHECK(!request_.is_pending());
   mojom::ServicePtr client;
   request_ = GetProxy(&client);
 
-  DCHECK(app_completed_callback_runner_.is_null());
-  app_completed_callback_runner_ = base::Bind(
+  DCHECK(service_completed_callback_runner_.is_null());
+  service_completed_callback_runner_ = base::Bind(
       &base::TaskRunner::PostTask, base::ThreadTaskRunnerHandle::Get(),
-      FROM_HERE, app_completed_callback);
+      FROM_HERE, service_completed_callback);
 
   DCHECK(!thread_);
   std::string thread_name = "Service Thread";
 #if defined(OS_WIN)
-  thread_name = base::WideToUTF8(app_path_.BaseName().value());
+  thread_name = base::WideToUTF8(library_path_.BaseName().value());
 #endif
   thread_.reset(new base::DelegateSimpleThread(this, thread_name));
   thread_->Start();
@@ -65,27 +65,27 @@ mojom::ServicePtr InProcessNativeRunner::Start(
 }
 
 void InProcessNativeRunner::Run() {
-  DVLOG(2) << "Loading/running Mojo app in process from library: "
-           << app_path_.value()
+  DVLOG(2) << "Loading/running Service in process from library: "
+           << library_path_.value()
            << " thread id=" << base::PlatformThread::CurrentId();
 
   // TODO(vtl): ScopedNativeLibrary doesn't have a .get() method!
-  base::NativeLibrary app_library = LoadNativeApplication(app_path_);
-  app_library_.Reset(app_library);
+  base::NativeLibrary library = LoadNativeLibrary(library_path_);
+  library_.Reset(library);
   // This hangs on Windows in the component build, so skip it since it's
   // unnecessary.
 #if !(defined(COMPONENT_BUILD) && defined(OS_WIN))
-  CallLibraryEarlyInitialization(app_library);
+  CallLibraryEarlyInitialization(library);
 #endif
-  RunNativeApplication(app_library, std::move(request_));
-  app_completed_callback_runner_.Run();
-  app_completed_callback_runner_.Reset();
+  RunServiceInNativeLibrary(library, std::move(request_));
+  service_completed_callback_runner_.Run();
+  service_completed_callback_runner_.Reset();
 }
 
 std::unique_ptr<NativeRunner> InProcessNativeRunnerFactory::Create(
-    const base::FilePath& app_path) {
-  // Non-Mojo apps are always run in a new process.
-  if (!app_path.MatchesExtension(FILE_PATH_LITERAL(".library"))) {
+    const base::FilePath& library_path) {
+  // Executables are always run in a new process.
+  if (!library_path.MatchesExtension(FILE_PATH_LITERAL(".library"))) {
     return base::MakeUnique<OutOfProcessNativeRunner>(launch_process_runner_,
                                                       nullptr);
   }

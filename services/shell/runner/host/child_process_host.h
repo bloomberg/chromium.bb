@@ -50,7 +50,7 @@ class ChildProcessHost {
 
   // |name| is just for debugging ease. We will spawn off a process so that it
   // can be sandboxed if |start_sandboxed| is true. |app_path| is a path to the
-  // mojo application we wish to start.
+  // service we wish to start.
   ChildProcessHost(base::TaskRunner* launch_process_runner,
                    NativeRunnerDelegate* delegate,
                    bool start_sandboxed,

@@ -7,7 +7,7 @@ System
 ------
 
 The system/ subdirectory provides definitions of the basic low-level API used by
-all Mojo applications (whether directly or indirectly). These consist primarily
+all Services (whether directly or indirectly). These consist primarily
 of the IPC primitives used to communicate with Mojo services.
 
 Though the message protocol is stable, the implementation of the transport is

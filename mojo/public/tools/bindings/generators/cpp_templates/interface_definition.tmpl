@@ -236,7 +236,7 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
   ~{{class_name}}_{{method.name}}_ProxyToResponder() {
 #if DCHECK_IS_ON()
     if (responder_) {
-      // Is the Mojo application destroying the callback without running it
+      // Is the Service destroying the callback without running it
       // and without first closing the pipe?
       responder_->DCheckInvalid("The callback passed to "
           "{{class_name}}::{{method.name}}() was never run.");

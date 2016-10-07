@@ -13,7 +13,6 @@
 #include "base/scoped_native_library.h"
 #include "base/threading/simple_thread.h"
 #include "services/shell/native_runner.h"
-#include "services/shell/runner/host/native_application_support.h"
 
 namespace base {
 class TaskRunner;
@@ -21,8 +20,8 @@ class TaskRunner;
 
 namespace shell {
 
-// An implementation of |NativeRunner| that loads/runs the given app (from the
-// file system) on a separate thread (in the current process).
+// An implementation of |NativeRunner| that loads/runs the given service (from
+// the file system) on a separate thread (in the current process).
 class InProcessNativeRunner : public NativeRunner,
                               public base::DelegateSimpleThread::Delegate {
  public:
@@ -31,21 +30,21 @@ class InProcessNativeRunner : public NativeRunner,
 
   // NativeRunner:
   mojom::ServicePtr Start(
-      const base::FilePath& app_path,
+      const base::FilePath& library_path,
       const Identity& target,
       bool start_sandboxed,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
-      const base::Closure& app_completed_callback) override;
+      const base::Closure& service_completed_callback) override;
 
  private:
   // |base::DelegateSimpleThread::Delegate| method:
   void Run() override;
 
-  base::FilePath app_path_;
+  base::FilePath library_path_;
   mojom::ServiceRequest request_;
-  base::Callback<bool(void)> app_completed_callback_runner_;
+  base::Callback<bool(void)> service_completed_callback_runner_;
 
-  base::ScopedNativeLibrary app_library_;
+  base::ScopedNativeLibrary library_;
   std::unique_ptr<base::DelegateSimpleThread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessNativeRunner);
@@ -57,7 +56,8 @@ class InProcessNativeRunnerFactory : public NativeRunnerFactory {
       : launch_process_runner_(launch_process_runner) {}
   ~InProcessNativeRunnerFactory() override {}
 
-  std::unique_ptr<NativeRunner> Create(const base::FilePath& app_path) override;
+  std::unique_ptr<NativeRunner> Create(
+      const base::FilePath& library_path) override;
 
  private:
   base::TaskRunner* const launch_process_runner_;

@@ -160,7 +160,7 @@ ViewsMusTestSuite::~ViewsMusTestSuite() {}
 
 void ViewsMusTestSuite::Initialize() {
   PlatformTestHelper::SetIsMus();
-  // Let other mojo apps know that we're running in tests. Do this with a
+  // Let other services know that we're running in tests. Do this with a
   // command line flag to avoid making blocking calls to other processes for
   // setup for tests (e.g. to unlock the screen in the window manager).
   EnsureCommandLineSwitch(ui::switches::kUseTestConfig);

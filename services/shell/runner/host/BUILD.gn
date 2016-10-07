@@ -15,10 +15,10 @@ group("host") {
   ]
 }
 
-source_set("native_application_support") {
+source_set("native_library_runner") {
   sources = [
-    "native_application_support.cc",
-    "native_application_support.h",
+    "native_library_runner.cc",
+    "native_library_runner.h",
   ]
 
   deps = [
@@ -86,7 +86,7 @@ source_set("lib") {
 
   deps = [
     ":child_process_base",
-    ":native_application_support",
+    ":native_library_runner",
     "//base:base_static",
     "//base:i18n",
     "//services/shell/public/cpp:sources",

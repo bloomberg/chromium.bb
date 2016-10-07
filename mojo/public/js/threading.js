@@ -7,7 +7,7 @@
 // Note: This file is for documentation purposes only. The code here is not
 // actually executed. The real module is implemented natively in Mojo.
 //
-// This module provides a way for a Mojo application implemented in JS
+// This module provides a way for a Service implemented in JS
 // to exit by quitting the current message loop. This module is not
 // intended to be used by Mojo JS application started by the JS
 // content handler.

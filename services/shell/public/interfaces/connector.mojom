@@ -82,7 +82,7 @@ struct ClientProcessConnection {
   handle<message_pipe> pid_receiver_request;
 };
 
-// Encapsulates establishing connections with other Mojo applications.
+// Encapsulates establishing connections with other Services.
 interface Connector {
   // Requests a connection with another application. The application originating
   // the request is referred to as the "source" and the one receiving the
