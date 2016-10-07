@@ -158,14 +158,24 @@ public class ApplicationTestUtils {
     /** Finishes all tasks Chrome has listed in Android's Overview. */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static void finishAllChromeTasks(final Context context) throws Exception {
-        // Close all of the tasks one by one.
-        ActivityManager activityManager =
-                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-            task.finishAndRemoveTask();
-        }
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // Close all of the tasks one by one.
+                    ActivityManager activityManager =
+                            (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+                    for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
+                        task.finishAndRemoveTask();
+                    }
+                } catch (Exception e) {
+                    // Ignore any exceptions the Android framework throws so that otherwise passing
+                    // tests don't fail during tear down. See crbug.com/653731.
+                }
+            }
+        });
 
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return getNumChromeTasks(context);
