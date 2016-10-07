@@ -80,9 +80,14 @@ class GaiaCookieManagerService : public KeyedService,
    public:
     // Called whenever a merge session is completed.  The account that was
     // merged is given by |account_id|.  If |error| is equal to
-    // GoogleServiceAuthError::AuthErrorNone() then the merge succeeeded.
+    // GoogleServiceAuthError::AuthErrorNone() then the merge succeeded.
     virtual void OnAddAccountToCookieCompleted(
         const std::string& account_id,
+        const GoogleServiceAuthError& error) {}
+
+    // Called whenever a logout is completed. If |error| is equal to
+    // GoogleServiceAuthError::AuthErrorNone() then the logout succeeded.
+    virtual void OnLogOutAccountsFromCookieCompleted(
         const GoogleServiceAuthError& error) {}
 
     // Called whenever the GaiaCookieManagerService's list of GAIA accounts is

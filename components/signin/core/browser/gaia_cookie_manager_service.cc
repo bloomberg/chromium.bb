@@ -666,8 +666,10 @@ void GaiaCookieManagerService::OnLogOutSuccess() {
   VLOG(1) << "GaiaCookieManagerService::OnLogOutSuccess";
 
   list_accounts_stale_ = true;
-
   fetcher_backoff_.InformOfRequest(true);
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnLogOutAccountsFromCookieCompleted(
+                        GoogleServiceAuthError(GoogleServiceAuthError::NONE)));
   HandleNextRequest();
 }
 
@@ -687,6 +689,8 @@ void GaiaCookieManagerService::OnLogOutFailure(
     return;
   }
 
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnLogOutAccountsFromCookieCompleted(error));
   HandleNextRequest();
 }
 
