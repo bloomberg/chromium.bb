@@ -4,11 +4,14 @@
 
 package org.chromium.chromoting;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import java.util.HashSet;
 
 /**
  * A thread-safe event queue which provides both {@link #add} and {@link #remove} functions with
- * O(log(n)) time complexity, and a {@link raise} function in the derived class
+ * O(log(n)) time complexity, and a {@link #raise} function in the derived class
  * {@link Event.Raisable} to execute all queued callbacks.
  *
  * @param <ParamT> The parameter used in {@link ParameterRunnable} callback.
@@ -25,11 +28,11 @@ public class Event<ParamT> {
     }
 
     /**
-     * An event provider version of {@link Event} implementation, provides {@link raise} function to
-     * execute appended {@link ParameterRunnable}, and {@link clear} function to clear all appended
-     * callbacks.
+     * An event provider version of {@link Event} implementation, provides {@link #raise} function
+     * to execute appended {@link ParameterRunnable}, and {@link #clear} function to clear all
+     * appended callbacks.
      */
-    public static final class Raisable<ParamT> extends Event<ParamT> {
+    public static class Raisable<ParamT> extends Event<ParamT> {
         /** Clears all appended callbacks */
         public void clear() {
             synchronized (mSet) {
@@ -60,6 +63,58 @@ public class Event<ParamT> {
         private void execute(Object obj, ParamT parameter) {
             ParameterRunnable<ParamT> runnable = (ParameterRunnable<ParamT>) obj;
             runnable.run(parameter);
+        }
+    }
+
+    /**
+     * A {@link Raisable} which always executes the newly added {@link ParameterRunnable} with the
+     * parameter sent to the last {@link #raise} function call. If the event has not been raised,
+     * this class has consistent behavior as {@link Raisable}. <br>
+     * This class is useful for some one-time events, such as RenderStub.onClientSizeChanged(). A
+     * later attached runnable will never be able to get the event. <br>
+     * The {@link ParameterRunnable} will be executed in the thread in which {@link #add}
+     * function is called if the event has been raised before. If there is not a {@link Looper} on
+     * current thread, the runnable will be executed immediately. Otherwise, a task will be posted
+     * to current looper. Note that it may be executed twice on different threads with the exactly
+     * same parameter.
+     */
+    public static final class PromisedRaisable<ParamT> extends Raisable<ParamT> {
+        private boolean mRaised;
+        private ParamT mLastParameter;
+
+        @Override
+        public Object add(final ParameterRunnable<ParamT> runnable) {
+            Object result = super.add(runnable);
+            if (result != null) {
+                synchronized (mSet) {
+                    if (mRaised) {
+                        if (Looper.myLooper() == null) {
+                            runnable.run(mLastParameter);
+                        } else {
+                            // We should always use the latest parameter, otherwise the order of
+                            // parameters current runnable gets may not be correct.
+                            final PromisedRaisable<ParamT> me = this;
+                            Handler h = new Handler(Looper.myLooper());
+                            h.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    runnable.run(me.mLastParameter);
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public int raise(ParamT parameter) {
+            synchronized (mSet) {
+                mRaised = true;
+                mLastParameter = parameter;
+            }
+            return super.raise(parameter);
         }
     }
 

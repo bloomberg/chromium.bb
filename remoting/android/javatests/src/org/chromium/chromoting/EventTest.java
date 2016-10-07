@@ -4,12 +4,17 @@
 
 package org.chromium.chromoting;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chromoting.test.util.MutableReference;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests for {@link Event}.
@@ -142,5 +147,149 @@ public class EventTest extends InstrumentationTestCase {
         assertEquals(event.raise(null), 0);
         assertFalse(called.get());
         assertTrue(event.isEmpty());
+    }
+
+    @SmallTest
+    @Feature({"Chromoting"})
+    public static void testPromisedEvent() {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                assertNull(Looper.myLooper());
+                Event.Raisable<Object> event = new Event.PromisedRaisable<>();
+                final List<Object> called1 = new ArrayList<>();
+                final List<Object> called2 = new ArrayList<>();
+                final List<Object> called3 = new ArrayList<>();
+                final List<Object> called4 = new ArrayList<>();
+                final List<Object> parameters = new ArrayList<>();
+                event.add(new Event.ParameterRunnable<Object>() {
+                    @Override
+                    public void run(Object obj) {
+                        called1.add(obj);
+                    }
+                });
+                Object parameter = new Object();
+                event.raise(parameter);
+                parameters.add(parameter);
+                event.add(new Event.ParameterRunnable<Object>() {
+                    @Override
+                    public void run(Object obj) {
+                        called2.add(obj);
+                    }
+                });
+                parameter = new Object();
+                event.raise(parameter);
+                parameters.add(parameter);
+                event.add(new Event.ParameterRunnable<Object>() {
+                    @Override
+                    public void run(Object obj) {
+                        called3.add(obj);
+                    }
+                });
+                parameter = new Object();
+                event.raise(parameter);
+                parameters.add(parameter);
+                event.add(new Event.ParameterRunnable<Object>() {
+                    @Override
+                    public void run(Object obj) {
+                        called4.add(obj);
+                    }
+                });
+
+                assertEquals(called1.size(), 3);
+                assertEquals(called2.size(), 3);
+                assertEquals(called3.size(), 2);
+                assertEquals(called4.size(), 1);
+
+                for (int i = 0; i < 3; i++) {
+                    assertTrue(called1.get(i) == parameters.get(i));
+                    assertTrue(called2.get(i) == parameters.get(i));
+                }
+                for (int i = 0; i < 2; i++) {
+                    assertTrue(called3.get(i) == parameters.get(i + 1));
+                }
+                assertTrue(called4.get(0) == parameters.get(2));
+            }
+        });
+        thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                // Forward exceptions from test thread.
+                assertFalse(true);
+            }
+        });
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException ex) { }
+    }
+
+    @SmallTest
+    @Feature({"Chromoting"})
+    public static void testPromisedEventWithLooper() {
+        assertNotNull(Looper.myLooper());
+        Event.Raisable<Object> event = new Event.PromisedRaisable<>();
+        final List<Object> called1 = new ArrayList<>();
+        final List<Object> called2 = new ArrayList<>();
+        final List<Object> called3 = new ArrayList<>();
+        final List<Object> called4 = new ArrayList<>();
+        final List<Object> parameters = new ArrayList<>();
+        event.add(new Event.ParameterRunnable<Object>() {
+            @Override
+            public void run(Object obj) {
+                called1.add(obj);
+            }
+        });
+        Object parameter = new Object();
+        event.raise(parameter);
+        parameters.add(parameter);
+        event.add(new Event.ParameterRunnable<Object>() {
+            @Override
+            public void run(Object obj) {
+                called2.add(obj);
+            }
+        });
+        parameter = new Object();
+        event.raise(parameter);
+        parameters.add(parameter);
+        event.add(new Event.ParameterRunnable<Object>() {
+            @Override
+            public void run(Object obj) {
+                called3.add(obj);
+            }
+        });
+        parameter = new Object();
+        event.raise(parameter);
+        parameters.add(parameter);
+        event.add(new Event.ParameterRunnable<Object>() {
+            @Override
+            public void run(Object obj) {
+                called4.add(obj);
+            }
+        });
+
+        Handler h = new Handler(Looper.myLooper());
+        h.post(new Runnable() {
+            @Override
+            public void run() {
+                Looper.myLooper().quit();
+            }
+        });
+        Looper.loop();
+
+        assertEquals(called1.size(), 3);
+        assertEquals(called2.size(), 3);
+        assertEquals(called3.size(), 2);
+        assertEquals(called4.size(), 1);
+
+        for (int i = 0; i < 3; i++) {
+            assertTrue(called1.get(i) == parameters.get(i));
+        }
+        assertTrue(called2.get(0) == parameters.get(1));
+        for (int i = 0; i < 2; i++) {
+            assertTrue(called2.get(i + 1) == parameters.get(2));
+            assertTrue(called3.get(i) == parameters.get(2));
+        }
+        assertTrue(called4.get(0) == parameters.get(2));
     }
 }
