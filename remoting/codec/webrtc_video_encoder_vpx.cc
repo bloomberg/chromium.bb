@@ -300,6 +300,10 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
   // Update active map based on updated region.
   if (params.clear_active_map)
     ClearActiveMap();
+
+  if (params.key_frame)
+    updated_region.SetRect(webrtc::DesktopRect::MakeSize(frame.size()));
+
   SetActiveMapFromRegion(updated_region);
 
   // Apply active map to the encoder.

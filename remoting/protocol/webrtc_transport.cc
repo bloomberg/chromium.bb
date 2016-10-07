@@ -336,9 +336,9 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
       }
     }
 
-    // Set bitrate range to 1-20 Mbps.
+    // Set bitrate range to 1-100 Mbps.
     //  - Setting min bitrate here enables padding.
-    //  - The default max bitrate is 600 kbps. Setting it to 20 Mbps allows to
+    //  - The default max bitrate is 600 kbps. Setting it to 100 Mbps allows to
     //    use higher bandwidth when it's available.
     //
     // TODO(sergeyu): Padding needs to be enabled to workaround BW estimator not
@@ -351,7 +351,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
     std::string vp8line_with_bitrate =
         vp8line +
         "a=fmtp:100 x-google-min-bitrate=1000\n"
-        "a=fmtp:100 x-google-max-bitrate=20000\n";
+        "a=fmtp:100 x-google-max-bitrate=100000\n";
     base::ReplaceSubstringsAfterOffset(&sdp, 0, vp8line, vp8line_with_bitrate);
 
     webrtc::SdpParseError error;
