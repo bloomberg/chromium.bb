@@ -31,8 +31,9 @@ namespace {
 bool GetQuarantinePropertiesDeprecated(
     const base::FilePath& file,
     base::scoped_nsobject<NSMutableDictionary>* properties) {
+  const UInt8* path = reinterpret_cast<const UInt8*>(file.value().c_str());
   FSRef file_ref;
-  if (!base::mac::FSRefFromPath(file.value(), &file_ref))
+  if (FSPathMakeRef(path, &file_ref, nullptr) != noErr)
     return false;
 
   base::ScopedCFTypeRef<CFTypeRef> quarantine_properties;
@@ -56,8 +57,9 @@ bool GetQuarantinePropertiesDeprecated(
 
 bool SetQuarantinePropertiesDeprecated(const base::FilePath& file,
                                        NSDictionary* properties) {
+  const UInt8* path = reinterpret_cast<const UInt8*>(file.value().c_str());
   FSRef file_ref;
-  if (!base::mac::FSRefFromPath(file.value(), &file_ref))
+  if (FSPathMakeRef(path, &file_ref, nullptr) != noErr)
     return false;
   OSStatus os_error = LSSetItemAttribute(
       &file_ref, kLSRolesAll, kLSItemQuarantineProperties, properties);
