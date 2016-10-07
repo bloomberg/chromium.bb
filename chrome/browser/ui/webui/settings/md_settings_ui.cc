@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/date_time_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
@@ -119,6 +120,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
                                                             profile);
   if (easy_unlock_handler)
     AddSettingsPageUIHandler(easy_unlock_handler);
+
+  AddSettingsPageUIHandler(
+      chromeos::settings::DateTimeHandler::Create(html_source));
 
   html_source->AddBoolean("stylusAllowed", ash::IsPaletteFeatureEnabled());
   html_source->AddBoolean("quickUnlockEnabled",

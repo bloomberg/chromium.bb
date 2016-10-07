@@ -1066,6 +1066,8 @@ split_static_library("ui") {
       "webui/settings/chromeos/change_picture_handler.h",
       "webui/settings/chromeos/cups_printers_handler.cc",
       "webui/settings/chromeos/cups_printers_handler.h",
+      "webui/settings/chromeos/date_time_handler.cc",
+      "webui/settings/chromeos/date_time_handler.h",
       "webui/settings/chromeos/device_keyboard_handler.cc",
       "webui/settings/chromeos/device_keyboard_handler.h",
       "webui/settings/chromeos/device_pointer_handler.cc",

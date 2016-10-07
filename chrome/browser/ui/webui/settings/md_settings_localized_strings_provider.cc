@@ -652,18 +652,18 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
 #endif
 }
 
+#if defined(OS_CHROMEOS)
 void AddDateTimeStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"dateTimePageTitle", IDS_SETTINGS_DATE_TIME},
       {"timeZone", IDS_SETTINGS_TIME_ZONE},
+      {"timeZoneGeolocation", IDS_SETTINGS_TIME_ZONE_GEOLOCATION},
       {"use24HourClock", IDS_SETTINGS_USE_24_HOUR_CLOCK},
-      {"dateTimeSetAutomatically", IDS_SETTINGS_DATE_TIME_SET_AUTOMATICALLY},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 }
 
-#if defined(OS_CHROMEOS)
 void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"easyUnlockSectionTitle", IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE},
@@ -1664,8 +1664,8 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 #if !defined(OS_CHROMEOS)
   AddDefaultBrowserStrings(html_source);
 #endif
-  AddDateTimeStrings(html_source);
 #if defined(OS_CHROMEOS)
+  AddDateTimeStrings(html_source);
   AddDeviceStrings(html_source);
 #endif
   AddDownloadsStrings(html_source);

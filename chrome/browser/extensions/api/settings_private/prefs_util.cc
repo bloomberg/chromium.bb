@@ -254,6 +254,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)["settings.enable_screen_lock"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
+  // Time zone settings.
+  (*s_whitelist)["settings.resolve_timezone_by_geolocation"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
   // Ash settings.
   (*s_whitelist)["settings.enable_stylus_tools"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;

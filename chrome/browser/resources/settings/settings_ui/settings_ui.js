@@ -89,9 +89,6 @@ Polymer({
           pageZoom: false,
         },
         advancedSettings: true,
-        dateTime: {
-          timeZoneSelector: false,
-        },
         privacy: {
           searchPrediction: false,
           networkPrediction: false,

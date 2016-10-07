@@ -898,21 +898,21 @@
     Disconnect Google Drive account
   </message>
 
-  <!-- Date/time Page -->
-  <message name="IDS_SETTINGS_DATE_TIME" desc="Name of the settings page which displays date and time preferences.">
-    Date and time
-  </message>
-  <message name="IDS_SETTINGS_TIME_ZONE" desc="Label for the picker which allows users to choose their time zone.">
-    Time zone:
-  </message>
-  <message name="IDS_SETTINGS_USE_24_HOUR_CLOCK" desc="Label for the checkbox which enables a 24-hour clock (as opposed to a 12-hour clock).">
-    Use 24-hour clock
-  </message>
-  <message name="IDS_SETTINGS_DATE_TIME_SET_AUTOMATICALLY" desc="Text which explains that the date and time are automatically set.">
-    Date and time are set automatically.
-  </message>
-
   <if expr="chromeos">
+    <!-- Date/Time Page -->
+    <message name="IDS_SETTINGS_DATE_TIME" desc="Name of the settings page which displays date and time preferences.">
+      Date and time
+    </message>
+    <message name="IDS_SETTINGS_TIME_ZONE" desc="Label for the picker which allows users to choose their time zone.">
+      Time zone:
+    </message>
+    <message name="IDS_SETTINGS_TIME_ZONE_GEOLOCATION" desc="Label for the checkbox which enables setting the time zone automatically with the detected location of the device.">
+      Set time zone automatically using your location
+    </message>
+    <message name="IDS_SETTINGS_USE_24_HOUR_CLOCK" desc="Label for the checkbox which enables a 24-hour clock (as opposed to a 12-hour clock).">
+      Use 24-hour clock
+    </message>
+
     <!-- Easy Unlock Page -->
     <message name="IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE" desc="The title of the Easy Unlock section on the settings page.">
       Smart Lock (beta)
@@ -953,9 +953,7 @@
     <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_RETRY" desc="The label text of the retry button on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
       Retry
     </message>
-  </if>
 
-  <if expr="chromeos">
     <!-- Strings specific to the Settings Internet Page -->
     <message name="IDS_SETTINGS_INTERNET" desc="Name of the settings page which displays internet preferences.">
       Internet connection

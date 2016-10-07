@@ -1,20 +1,23 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="/controls/settings_checkbox.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-date-time-page">
   <template>
     <style include="settings-shared"></style>
-    <div class="settings-box first block">
-      <div disabled$="[[!pageVisibility.timeZoneSelector]]">
-        $i18n{timeZone}
-      </div>
+    <div class="settings-box first">
+      <!-- TODO(michaelpg): Time zone dropdown menu. -->
       <settings-checkbox pref="{{prefs.settings.clock.use_24hour_clock}}"
           label="$i18n{use24HourClock}">
       </settings-checkbox>
-      <div id="setAutomatically">$i18n{dateTimeSetAutomatically}</div>
     </div>
+    <paper-checkbox class="settings-box continuation"
+        id="timeZoneDetectionCheckbox"
+        hidden="[[hideTimeZoneDetection_]]"
+        on-change="onTimeZoneDetectionCheckboxChange_">
+      $i18n{timeZoneGeolocation}
+    </paper-checkbox>
   </template>
   <script src="date_time_page.js"></script>
 </dom-module>
