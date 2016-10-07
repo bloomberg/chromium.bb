@@ -114,11 +114,6 @@ class CONTENT_EXPORT VideoCaptureHost
                                     int buffer_id,
                                     const gpu::SyncToken& sync_token,
                                     double consumer_resource_utilization);
-  void OnGetDeviceSupportedFormats(
-      int device_id,
-      media::VideoCaptureSessionId capture_session_id);
-  void OnGetDeviceFormatsInUse(int device_id,
-                               media::VideoCaptureSessionId capture_session_id);
 
   // mojom::VideoCaptureHost implementation
   void Start(int32_t device_id,
@@ -130,6 +125,14 @@ class CONTENT_EXPORT VideoCaptureHost
               int32_t session_id,
               const media::VideoCaptureParams& params) override;
   void RequestRefreshFrame(int32_t device_id) override;
+  void GetDeviceSupportedFormats(
+      int32_t device_id,
+      int32_t session_id,
+      const GetDeviceSupportedFormatsCallback& callback) override;
+  void GetDeviceFormatsInUse(
+      int32_t device_id,
+      int32_t session_id,
+      const GetDeviceFormatsInUseCallback& callback) override;
 
   void OnControllerAdded(
       int device_id,

@@ -215,21 +215,19 @@ void VideoCaptureImpl::RequestRefreshFrame() {
 void VideoCaptureImpl::GetDeviceSupportedFormats(
     const VideoCaptureDeviceFormatsCB& callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  device_formats_cb_queue_.push_back(callback);
-  if (device_formats_cb_queue_.size() == 1) {
-    Send(new VideoCaptureHostMsg_GetDeviceSupportedFormats(device_id_,
-                                                           session_id_));
-  }
+  GetVideoCaptureHost()->GetDeviceSupportedFormats(
+      device_id_, session_id_,
+      base::Bind(&VideoCaptureImpl::OnDeviceSupportedFormats,
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 void VideoCaptureImpl::GetDeviceFormatsInUse(
     const VideoCaptureDeviceFormatsCB& callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  device_formats_in_use_cb_queue_.push_back(callback);
-  if (device_formats_in_use_cb_queue_.size() == 1) {
-    Send(
-        new VideoCaptureHostMsg_GetDeviceFormatsInUse(device_id_, session_id_));
-  }
+  GetVideoCaptureHost()->GetDeviceFormatsInUse(
+      device_id_, session_id_,
+      base::Bind(&VideoCaptureImpl::OnDeviceFormatsInUse,
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 void VideoCaptureImpl::OnBufferCreated(base::SharedMemoryHandle handle,
@@ -466,25 +464,9 @@ void VideoCaptureImpl::OnStateChanged(VideoCaptureState state) {
   }
 }
 
-void VideoCaptureImpl::OnDeviceSupportedFormatsEnumerated(
-    const media::VideoCaptureFormats& supported_formats) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  for (size_t i = 0; i < device_formats_cb_queue_.size(); ++i)
-    device_formats_cb_queue_[i].Run(supported_formats);
-  device_formats_cb_queue_.clear();
-}
-
-void VideoCaptureImpl::OnDeviceFormatsInUseReceived(
-    const media::VideoCaptureFormats& formats_in_use) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  for (size_t i = 0; i < device_formats_in_use_cb_queue_.size(); ++i)
-    device_formats_in_use_cb_queue_[i].Run(formats_in_use);
-  device_formats_in_use_cb_queue_.clear();
-}
-
 void VideoCaptureImpl::OnDelegateAdded(int32_t device_id) {
+  DVLOG(1) << __func__ << " " << device_id;
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << "OnDelegateAdded: device_id " << device_id;
 
   device_id_ = device_id;
   ClientInfoMap::iterator it = clients_pending_on_filter_.begin();
@@ -533,6 +515,20 @@ void VideoCaptureImpl::StartCaptureInternal() {
 
   GetVideoCaptureHost()->Start(device_id_, session_id_, params_);
   state_ = VIDEO_CAPTURE_STATE_STARTED;
+}
+
+void VideoCaptureImpl::OnDeviceSupportedFormats(
+    const VideoCaptureDeviceFormatsCB& callback,
+    const media::VideoCaptureFormats& supported_formats) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  callback.Run(supported_formats);
+}
+
+void VideoCaptureImpl::OnDeviceFormatsInUse(
+    const VideoCaptureDeviceFormatsCB& callback,
+    const media::VideoCaptureFormats& formats_in_use) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  callback.Run(formats_in_use);
 }
 
 void VideoCaptureImpl::Send(IPC::Message* message) {

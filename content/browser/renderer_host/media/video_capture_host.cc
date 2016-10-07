@@ -144,10 +144,6 @@ bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(VideoCaptureHost, message)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_BufferReady,
                         OnRendererFinishedWithBuffer)
-    IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceSupportedFormats,
-                        OnGetDeviceSupportedFormats)
-    IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceFormatsInUse,
-                        OnGetDeviceFormatsInUse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -170,38 +166,6 @@ void VideoCaptureHost::OnRendererFinishedWithBuffer(
                                consumer_resource_utilization);
     }
   }
-}
-
-void VideoCaptureHost::OnGetDeviceSupportedFormats(
-    int device_id,
-    media::VideoCaptureSessionId session_id) {
-  DVLOG(1) << __func__ << " " << device_id;
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  media::VideoCaptureFormats device_supported_formats;
-  if (!media_stream_manager_->video_capture_manager()
-           ->GetDeviceSupportedFormats(session_id,
-                                       &device_supported_formats)) {
-    DLOG(WARNING)
-        << "Could not retrieve device supported formats for device_id="
-        << device_id << " session_id=" << session_id;
-  }
-  Send(new VideoCaptureMsg_DeviceSupportedFormatsEnumerated(
-      device_id, device_supported_formats));
-}
-
-void VideoCaptureHost::OnGetDeviceFormatsInUse(
-    int device_id,
-    media::VideoCaptureSessionId session_id) {
-  DVLOG(1) << __func__ << " " << device_id;
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  media::VideoCaptureFormats formats_in_use;
-  if (!media_stream_manager_->video_capture_manager()->GetDeviceFormatsInUse(
-           session_id, &formats_in_use)) {
-    DVLOG(1) << "Could not retrieve device format(s) in use for device_id="
-             << device_id << " session_id=" << session_id;
-  }
-  Send(new VideoCaptureMsg_DeviceFormatsInUseReceived(device_id,
-                                                      formats_in_use));
 }
 
 void VideoCaptureHost::Start(int32_t device_id,
@@ -283,6 +247,34 @@ void VideoCaptureHost::RequestRefreshFrame(int32_t device_id) {
     media_stream_manager_->video_capture_manager()
         ->RequestRefreshFrameForClient(controller);
   }
+}
+
+void VideoCaptureHost::GetDeviceSupportedFormats(
+    int32_t device_id,
+    int32_t session_id,
+    const GetDeviceSupportedFormatsCallback& callback) {
+  DVLOG(1) << __func__ << " " << device_id;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  media::VideoCaptureFormats supported_formats;
+  if (!media_stream_manager_->video_capture_manager()
+           ->GetDeviceSupportedFormats(session_id, &supported_formats)) {
+    DLOG(WARNING) << "Could not retrieve device supported formats";
+  }
+  callback.Run(supported_formats);
+}
+
+void VideoCaptureHost::GetDeviceFormatsInUse(
+    int32_t device_id,
+    int32_t session_id,
+    const GetDeviceFormatsInUseCallback& callback) {
+  DVLOG(1) << __func__ << " " << device_id;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  media::VideoCaptureFormats formats_in_use;
+  if (!media_stream_manager_->video_capture_manager()->GetDeviceFormatsInUse(
+           session_id, &formats_in_use)) {
+    DLOG(WARNING) << "Could not retrieve device format(s) in use";
+  }
+  callback.Run(formats_in_use);
 }
 
 void VideoCaptureHost::OnControllerAdded(

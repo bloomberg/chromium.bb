@@ -12,6 +12,7 @@ struct VideoCaptureParams {
   video_capture.mojom.ResolutionChangePolicy resolution_change_policy;
   video_capture.mojom.PowerLineFrequency power_line_frequency;
 };
+
 interface VideoCaptureHost {
   // TODO(mcasas): Migrate the rest of the messages, https://crbug.com/651897.
 
@@ -31,4 +32,12 @@ interface VideoCaptureHost {
   // Requests that the video capturer send a frame "soon" (e.g., to resolve
   // picture loss or quality issues).
   RequestRefreshFrame(int32 device_id);
+
+  // Get the formats supported by a device referenced by |session_id|.
+  GetDeviceSupportedFormats(int32 device_id, int32 session_id)
+    => (array<video_capture.mojom.VideoCaptureFormat> formats_supported);
+
+  // Get the format(s) in use by a device referenced by |session_id|.
+  GetDeviceFormatsInUse(int32 device_id, int32 session_id)
+    => (array<video_capture.mojom.VideoCaptureFormat> formats_in_use);
 };

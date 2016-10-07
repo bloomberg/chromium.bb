@@ -66,18 +66,6 @@ IPC_MESSAGE_CONTROL2(VideoCaptureMsg_FreeBuffer,
 IPC_MESSAGE_CONTROL1(VideoCaptureMsg_BufferReady,
                      VideoCaptureMsg_BufferReady_Params)
 
-// Notify the renderer about a device's supported formats; this is a response
-// to a VideoCaptureHostMsg_GetDeviceSupportedFormats request.
-IPC_MESSAGE_CONTROL2(VideoCaptureMsg_DeviceSupportedFormatsEnumerated,
-                     int /* device_id */,
-                     media::VideoCaptureFormats /* supported_formats */)
-
-// Notify the renderer about a device's format(s) in use; this is a response
-// to a VideoCaptureHostMsg_GetDeviceFormatInUse request.
-IPC_MESSAGE_CONTROL2(VideoCaptureMsg_DeviceFormatsInUseReceived,
-                     int /* device_id */,
-                     media::VideoCaptureFormats /* formats_in_use */)
-
 // Tell the browser process that the renderer has finished reading from
 // a buffer previously delivered by VideoCaptureMsg_BufferReady.
 IPC_MESSAGE_CONTROL4(VideoCaptureHostMsg_BufferReady,
@@ -85,13 +73,3 @@ IPC_MESSAGE_CONTROL4(VideoCaptureHostMsg_BufferReady,
                      int /* buffer_id */,
                      gpu::SyncToken /* sync_token */,
                      double /* consumer_resource_utilization */)
-
-// Get the formats supported by a device referenced by |capture_session_id|.
-IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_GetDeviceSupportedFormats,
-                     int /* device_id */,
-                     media::VideoCaptureSessionId /* session_id */)
-
-// Get the format(s) in use by a device referenced by |capture_session_id|.
-IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_GetDeviceFormatsInUse,
-                     int /* device_id */,
-                     media::VideoCaptureSessionId /* session_id */)

@@ -16,17 +16,29 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::Invoke;
 using ::testing::SaveArg;
+using ::testing::WithArgs;
 
 namespace content {
 
 const int kSessionId = 1;
 
+void RunEmptyFormatsCallback(const VideoCaptureDeviceFormatsCB& callback) {
+  media::VideoCaptureFormats formats;
+  callback.Run(formats);
+}
+
 // Mock implementation of the Mojo service. TODO(mcasas): Replace completely
 // MockVideoCaptureMessageFilter, https://crbug.com/651897
 class MockMojoVideoCaptureHost : public mojom::VideoCaptureHost {
  public:
-  MockMojoVideoCaptureHost() = default;
+  MockMojoVideoCaptureHost() {
+    ON_CALL(*this, GetDeviceSupportedFormats(_, _, _))
+        .WillByDefault(WithArgs<2>(Invoke(RunEmptyFormatsCallback)));
+    ON_CALL(*this, GetDeviceFormatsInUse(_, _, _))
+        .WillByDefault(WithArgs<2>(Invoke(RunEmptyFormatsCallback)));
+  }
 
   MOCK_METHOD3(Start, void(int32_t, int32_t, const media::VideoCaptureParams&));
   MOCK_METHOD1(Stop, void(int32_t));
@@ -34,6 +46,12 @@ class MockMojoVideoCaptureHost : public mojom::VideoCaptureHost {
   MOCK_METHOD3(Resume,
                void(int32_t, int32_t, const media::VideoCaptureParams&));
   MOCK_METHOD1(RequestRefreshFrame, void(int32_t));
+  MOCK_METHOD3(GetDeviceSupportedFormats,
+               void(int32_t,
+                    int32_t,
+                    const GetDeviceSupportedFormatsCallback&));
+  MOCK_METHOD3(GetDeviceFormatsInUse,
+               void(int32_t, int32_t, const GetDeviceFormatsInUseCallback&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMojoVideoCaptureHost);
@@ -68,10 +86,6 @@ class VideoCaptureImplTest : public ::testing::Test {
       IPC_BEGIN_MESSAGE_MAP(MockVideoCaptureImpl, *message)
         IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_BufferReady,
                             DeviceReceiveEmptyBuffer)
-        IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceSupportedFormats,
-                            DeviceGetSupportedFormats)
-        IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceFormatsInUse,
-                            DeviceGetFormatsInUse)
         IPC_MESSAGE_UNHANDLED(handled = false)
       IPC_END_MESSAGE_MAP()
       EXPECT_TRUE(handled);
@@ -83,18 +97,6 @@ class VideoCaptureImplTest : public ::testing::Test {
                                   const gpu::SyncToken& release_sync_token,
                                   double consumer_resource_utilization) {
       received_buffer_count_++;
-    }
-
-    void DeviceGetSupportedFormats(int device_id,
-                                   media::VideoCaptureSessionId session_id) {
-      // When the mock message filter receives a request for the device
-      // supported formats, replies immediately with an empty format list.
-      OnDeviceSupportedFormatsEnumerated(media::VideoCaptureFormats());
-    }
-
-    void DeviceGetFormatsInUse(int device_id,
-                               media::VideoCaptureSessionId session_id) {
-      OnDeviceFormatsInUseReceived(media::VideoCaptureFormats());
     }
 
     void ReceiveStateChangeMessage(VideoCaptureState state) {
@@ -244,6 +246,8 @@ TEST_F(VideoCaptureImplTest, SmallAndLarge) {
 // the provided callback.
 TEST_F(VideoCaptureImplTest, GetDeviceFormats) {
   EXPECT_CALL(*this, OnDeviceSupportedFormats(_));
+  EXPECT_CALL(mock_video_capture_host_,
+              GetDeviceSupportedFormats(_, kSessionId, _));
 
   GetDeviceSupportedFormats();
 }
@@ -252,6 +256,9 @@ TEST_F(VideoCaptureImplTest, GetDeviceFormats) {
 // calling the provided callbacks.
 TEST_F(VideoCaptureImplTest, TwoClientsGetDeviceFormats) {
   EXPECT_CALL(*this, OnDeviceSupportedFormats(_)).Times(2);
+  EXPECT_CALL(mock_video_capture_host_,
+              GetDeviceSupportedFormats(_, kSessionId, _))
+      .Times(2);
 
   GetDeviceSupportedFormats();
   GetDeviceSupportedFormats();
@@ -261,6 +268,8 @@ TEST_F(VideoCaptureImplTest, TwoClientsGetDeviceFormats) {
 // provided callback.
 TEST_F(VideoCaptureImplTest, GetDeviceFormatsInUse) {
   EXPECT_CALL(*this, OnDeviceFormatsInUse(_));
+  EXPECT_CALL(mock_video_capture_host_,
+              GetDeviceFormatsInUse(_, kSessionId, _));
 
   GetDeviceFormatsInUse();
 }

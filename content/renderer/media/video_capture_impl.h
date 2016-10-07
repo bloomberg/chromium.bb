@@ -132,10 +132,6 @@ class CONTENT_EXPORT VideoCaptureImpl
                         const gfx::Size& coded_size,
                         const gfx::Rect& visible_rect) override;
   void OnStateChanged(VideoCaptureState state) override;
-  void OnDeviceSupportedFormatsEnumerated(
-      const media::VideoCaptureFormats& supported_formats) override;
-  void OnDeviceFormatsInUseReceived(
-      const media::VideoCaptureFormats& formats_in_use) override;
   void OnDelegateAdded(int32_t device_id) override;
 
   // Sends an IPC message to browser process when all clients are done with the
@@ -152,6 +148,13 @@ class CONTENT_EXPORT VideoCaptureImpl
   void StopDevice();
   void RestartCapture();
   void StartCaptureInternal();
+
+  void OnDeviceSupportedFormats(
+      const VideoCaptureDeviceFormatsCB& callback,
+      const media::VideoCaptureFormats& supported_formats);
+  void OnDeviceFormatsInUse(
+      const VideoCaptureDeviceFormatsCB& callback,
+      const media::VideoCaptureFormats& formats_in_use);
 
   // Tries to remove |client_id| from |clients|, returning false if not found.
   bool RemoveClient(int client_id, ClientInfoMap* clients);
@@ -173,13 +176,6 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   mojom::VideoCaptureHostAssociatedPtr video_capture_host_;
   mojom::VideoCaptureHost* video_capture_host_for_testing_;
-
-  // Vector of callbacks to be notified of device format enumerations, used only
-  // on IO Thread.
-  std::vector<VideoCaptureDeviceFormatsCB> device_formats_cb_queue_;
-  // Vector of callbacks to be notified of a device's in use capture format(s),
-  // used only on IO Thread.
-  std::vector<VideoCaptureDeviceFormatsCB> device_formats_in_use_cb_queue_;
 
   // Buffers available for sending to the client.
   typedef std::map<int32_t, scoped_refptr<ClientBuffer>> ClientBufferMap;
