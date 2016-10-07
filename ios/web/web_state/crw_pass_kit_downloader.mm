@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_block.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
@@ -79,7 +78,7 @@ class PassKitFetcherDelegate : public URLFetcherDelegate {
   }
 
  private:
-  base::WeakNSObject<CRWPassKitDownloader> owner_;
+  __weak CRWPassKitDownloader* owner_;
   DISALLOW_COPY_AND_ASSIGN(PassKitFetcherDelegate);
 };
 

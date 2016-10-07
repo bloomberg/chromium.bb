@@ -4,7 +4,6 @@
 
 #import "ios/web/net/crw_ssl_status_updater.h"
 
-#import "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/web/public/navigation_item.h"
@@ -24,9 +23,7 @@ using web::SecurityStyle;
 
 @interface CRWSSLStatusUpdater () {
   // DataSource for CRWSSLStatusUpdater.
-  base::WeakNSProtocol<id<CRWSSLStatusUpdaterDataSource>> _dataSource;
-  // Backs up property of the same name.
-  base::WeakNSProtocol<id<CRWSSLStatusUpdaterDelegate>> _delegate;
+  __weak id<CRWSSLStatusUpdaterDataSource> _dataSource;
 }
 
 // Unowned pointer to web::NavigationManager.
@@ -54,6 +51,7 @@ using web::SecurityStyle;
 
 @implementation CRWSSLStatusUpdater
 @synthesize navigationManager = _navigationManager;
+@synthesize delegate = _delegate;
 
 #pragma mark - Public
 
@@ -62,18 +60,10 @@ using web::SecurityStyle;
   DCHECK(dataSource);
   DCHECK(navigationManager);
   if (self = [super init]) {
-    _dataSource.reset(dataSource);
+    _dataSource = dataSource;
     _navigationManager = navigationManager;
   }
   return self;
-}
-
-- (id<CRWSSLStatusUpdaterDelegate>)delegate {
-  return _delegate.get();
-}
-
-- (void)setDelegate:(id<CRWSSLStatusUpdaterDelegate>)delegate {
-  _delegate.reset(delegate);
 }
 
 - (void)updateSSLStatusForNavigationItem:(web::NavigationItem*)item
@@ -168,7 +158,7 @@ using web::SecurityStyle;
   int itemID = _navigationManager->GetLastCommittedItem()->GetUniqueID();
 
   DCHECK(_dataSource);
-  base::WeakNSObject<CRWSSLStatusUpdater> weakSelf(self);
+  __weak CRWSSLStatusUpdater* weakSelf = self;
   [_dataSource SSLStatusUpdater:self
          querySSLStatusForTrust:trust
                            host:host
