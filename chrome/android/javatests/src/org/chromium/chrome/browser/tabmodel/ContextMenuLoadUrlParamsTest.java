@@ -19,7 +19,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.ui.base.WindowAndroid;
 
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
@@ -48,10 +47,8 @@ public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
             return super.openNewTab(loadUrlParams, type, parent, incognito);
         }
 
-        public RecordingTabModelSelector(ChromeActivity activity, int selectorIndex,
-                WindowAndroid windowAndroid) {
-            super(activity, new TabbedModeTabPersistencePolicy(selectorIndex),
-                    windowAndroid, true);
+        public RecordingTabModelSelector(ChromeActivity activity, int selectorIndex) {
+            super(activity, new TabbedModeTabPersistencePolicy(selectorIndex), true);
         }
     }
 
@@ -67,9 +64,8 @@ public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
                         new TabModelSelectorFactory() {
                             @Override
                             public TabModelSelector buildSelector(ChromeActivity activity,
-                                    WindowAndroid windowAndroid, int selectorIndex) {
-                                return new RecordingTabModelSelector(activity, selectorIndex,
-                                        windowAndroid);
+                                    int selectorIndex) {
+                                return new RecordingTabModelSelector(activity, selectorIndex);
                             }
                         });
             }

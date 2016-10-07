@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.ui.base.WindowAndroid;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -59,11 +58,10 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     /**
      * Builds a {@link TabModelSelectorImpl} instance.
      * @param activity      The {@link ChromeActivity} this model selector lives in.
-     * @param windowAndroid The {@link WindowAndroid} associated with this model selector.
      * @param supportUndo   Whether a tab closure can be undone.
      */
     public TabModelSelectorImpl(ChromeActivity activity, TabPersistencePolicy persistencePolicy,
-            WindowAndroid windowAndroid, boolean supportUndo) {
+            boolean supportUndo) {
         super();
         mActivity = activity;
         mUma = new TabModelSelectorUma(mActivity);

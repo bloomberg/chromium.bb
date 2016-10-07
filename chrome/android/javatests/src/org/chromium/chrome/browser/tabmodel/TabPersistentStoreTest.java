@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -33,7 +32,6 @@ import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,7 +142,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         private final MockTabCreatorManager mTabCreatorManager;
         private final TabModelOrderController mTabModelOrderController;
 
-        public TestTabModelSelector(final Context context) throws Exception {
+        public TestTabModelSelector() throws Exception {
             mTabCreatorManager = new MockTabCreatorManager(this);
             mTabPersistentStoreObserver = new MockTabPersistentStoreObserver();
             mTabPersistentStore = ThreadUtils.runOnUiThreadBlocking(
@@ -260,10 +258,9 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
     private final TabWindowManager.TabModelSelectorFactory mMockTabModelSelectorFactory =
             new TabWindowManager.TabModelSelectorFactory() {
                 @Override
-                public TabModelSelector buildSelector(
-                        ChromeActivity activity, WindowAndroid windowAndroid, int selectorIndex) {
+                public TabModelSelector buildSelector(ChromeActivity activity, int selectorIndex) {
                     try {
-                        return new TestTabModelSelector(windowAndroid.getApplicationContext());
+                        return new TestTabModelSelector();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -657,7 +654,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
                         tabWindowManager.onActivityStateChange(
                                 mFakeChromeActivity, ActivityState.DESTROYED);
                         return (TestTabModelSelector) tabWindowManager.requestSelector(
-                                mFakeChromeActivity, new WindowAndroid(mAppContext), 0);
+                                mFakeChromeActivity, 0);
                     }
                 });
 

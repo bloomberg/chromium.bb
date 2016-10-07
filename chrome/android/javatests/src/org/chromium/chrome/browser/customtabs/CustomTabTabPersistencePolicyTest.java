@@ -424,7 +424,7 @@ public class CustomTabTabPersistencePolicyTest extends InstrumentationTestCase {
         CustomTabActivity activity = new CustomTabActivity();
         ApplicationStatus.onStateChangeForTesting(activity, ActivityState.CREATED);
         TabModelSelectorImpl selector = new TabModelSelectorImpl(
-                activity, buildTestPersistencePolicy(), null, false);
+                activity, buildTestPersistencePolicy(), false);
         selector.initializeForTesting(normalTabModel, incognitoTabModel);
         ApplicationStatus.onStateChangeForTesting(activity, ActivityState.DESTROYED);
         return selector;

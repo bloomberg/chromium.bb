@@ -441,7 +441,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         loadNativeLibraryAndInitBrowserProcess();
         TabPersistentStore.setBaseStateDirectoryForTests(mTabbedModeDirectory.getBaseDirectory());
 
-        TestTabModelSelector selector = new TestTabModelSelector(mContext);
+        TestTabModelSelector selector = new TestTabModelSelector();
         TabPersistentStore store = selector.mTabPersistentStore;
         MockTabPersistentStoreObserver mockObserver = selector.mTabPersistentStoreObserver;
 

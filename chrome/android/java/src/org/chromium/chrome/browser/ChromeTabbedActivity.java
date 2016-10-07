@@ -1033,7 +1033,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 && savedInstanceState.getBoolean("is_incognito_selected", false);
         int index = savedInstanceState != null ? savedInstanceState.getInt(WINDOW_INDEX, 0) : 0;
         mTabModelSelectorImpl = (TabModelSelectorImpl)
-                TabWindowManager.getInstance().requestSelector(this, getWindowAndroid(), index);
+                TabWindowManager.getInstance().requestSelector(this, index);
         if (mTabModelSelectorImpl == null) {
             Toast.makeText(this, getString(R.string.unsupported_number_of_windows),
                     Toast.LENGTH_LONG).show();
