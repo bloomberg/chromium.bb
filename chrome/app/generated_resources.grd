@@ -7142,13 +7142,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SESSION_CRASHED_BUBBLE_UMA_LINK_TEXT" desc="The text attached to the link that explains UMA optin option">
         usage statistics
       </message>
-      <message name="IDS_FLAGS_SESSION_CRASHED_BUBBLE_NAME" desc="Title for the flag to enable showing session restore request in bubbles.">
-        Session restore bubble UI
-      </message>
-      <message name="IDS_FLAGS_SESSION_CRASHED_BUBBLE_DESCRIPTION" desc="Description for the flag to enable showing session restore request in bubbles.">
-        The session restore UI will be shown in a bubble instead of an info bar.
-      </message>
-
 
       <!-- Bad Flags Info Bar-->
       <message name="IDS_BAD_FLAGS_WARNING_MESSAGE" desc="Message shown when an unsupported command-line flag is used. [Keep it short so it fits in the infobar.]">

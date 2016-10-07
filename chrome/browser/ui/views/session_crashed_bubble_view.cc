@@ -11,11 +11,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -23,19 +20,14 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "components/metrics/metrics_pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
@@ -66,12 +58,6 @@ const int kCheckboxTextDistance = 4;
 // The color of the text of the sub panel to offer UMA opt-in.
 const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
 
-#if !defined(OS_CHROMEOS)
-// The Finch study name and group name that enables session crashed bubble UI.
-const char kEnableBubbleUIFinchName[] = "EnableSessionCrashedBubbleUI";
-const char kDisableBubbleUIGroupPrefix[] = "Disabled";
-#endif
-
 enum SessionCrashedBubbleHistogramValue {
   SESSION_CRASHED_BUBBLE_SHOWN,
   SESSION_CRASHED_BUBBLE_ERROR,
@@ -90,6 +76,7 @@ void RecordBubbleHistogramValue(SessionCrashedBubbleHistogramValue value) {
 }
 
 // Whether or not the bubble UI should be used.
+// TODO(crbug.com/653966): Enable this on all desktop platforms.
 bool IsBubbleUIEnabled() {
 // Function ChangeMetricsReportingState (called when the user chooses to
 // opt-in to UMA) does not support Chrome OS yet, so don't show the bubble on
@@ -97,21 +84,7 @@ bool IsBubbleUIEnabled() {
 #if defined(OS_CHROMEOS)
   return false;
 #else
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDisableSessionCrashedBubble))
-    return false;
-  if (command_line.HasSwitch(switches::kEnableSessionCrashedBubble))
-    return true;
-  const std::string group_name = base::FieldTrialList::FindFullName(
-      kEnableBubbleUIFinchName);
-
-  // When |group_name| starts with |kDisableBubbleUIGroupPrefix|, disable the
-  // bubble UI. I.e. the default behavior is bubble enabled unless overridden.
-  // This is to accommodate potential new group names without needing to change
-  // the code here.
-  return !base::StartsWith(group_name, kDisableBubbleUIGroupPrefix,
-                           base::CompareCase::SENSITIVE);
+  return true;
 #endif
 }
 
@@ -184,12 +157,8 @@ void SessionCrashedBubbleView::ShowForReal(
   bool offer_uma_optin = false;
 
 #if defined(GOOGLE_CHROME_BUILD)
-  if (!uma_opted_in_already) {
-    offer_uma_optin =
-        g_browser_process->local_state()
-            ->FindPreference(metrics::prefs::kMetricsReportingEnabled)
-            ->IsUserModifiable();
-  }
+  if (!uma_opted_in_already)
+    offer_uma_optin = !IsMetricsReportingPolicyManaged();
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   Browser* browser = browser_observer->browser();

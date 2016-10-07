@@ -288,9 +288,6 @@ const char kDisableQuic[] = "disable-quic";
 // This only has an effect if QUIC protocol is enabled.
 const char kDisableQuicPortSelection[] = "disable-quic-port-selection";
 
-// Disables using bubbles for session restore request.
-const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
-
 // Disable settings in a separate browser window per profile
 // (see SettingsWindowEnabled() below).
 const char kDisableSettingsWindow[]          = "disable-settings-window";
@@ -453,9 +450,6 @@ const char kEnableQuic[] = "enable-quic";
 // Enable use of Chromium's port selection for the ephemeral port via bind().
 // This only has an effect if the QUIC protocol is enabled.
 const char kEnableQuicPortSelection[] = "enable-quic-port-selection";
-
-// Enables using bubbles for session restore request instead of infobars.
-const char kEnableSessionCrashedBubble[] = "enable-session-crashed-bubble";
 
 // Enable settings in a separate browser window per profile
 // (see SettingsWindowEnabled() below).
