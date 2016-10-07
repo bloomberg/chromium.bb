@@ -303,9 +303,8 @@ class PLATFORM_EXPORT DrawingBuffer
   Vector<RecycledBitmap> m_recycledBitmaps;
 
  private:
-  // All parameters necessary to generate the texture that will be passed to
-  // prepareMailbox.
-  struct TextureParameters {
+  // All parameters necessary to generate the texture for the ColorBuffer.
+  struct ColorBufferParameters {
     DISALLOW_NEW();
     GLenum target = 0;
     GLenum internalColorFormat = 0;
@@ -318,7 +317,11 @@ class PLATFORM_EXPORT DrawingBuffer
   };
 
   struct ColorBuffer : public RefCounted<ColorBuffer> {
-    ColorBuffer(DrawingBuffer*, const TextureParameters&, const IntSize&);
+    ColorBuffer(DrawingBuffer*,
+                const ColorBufferParameters&,
+                const IntSize&,
+                GLuint textureId,
+                GLuint imageId);
     ~ColorBuffer();
 
     // The owning DrawingBuffer. Note that DrawingBuffer is explicitly destroyed
@@ -326,11 +329,11 @@ class PLATFORM_EXPORT DrawingBuffer
     // ColorBuffers.
     RefPtr<DrawingBuffer> drawingBuffer;
 
-    const TextureParameters parameters;
+    const ColorBufferParameters parameters;
     const IntSize size;
 
-    GLuint textureId = 0;
-    GLuint imageId = 0;
+    const GLuint textureId = 0;
+    const GLuint imageId = 0;
 
     // The mailbox used to send this buffer to the compositor.
     gpu::Mailbox mailbox;
@@ -351,34 +354,36 @@ class PLATFORM_EXPORT DrawingBuffer
       std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
       bool forceGpuResult);
 
-  // Callbacks for mailboxes given to the compositor from PrepareTextureMailbox.
-  void gpuMailboxReleased(RefPtr<ColorBuffer>,
+  // Helper functions to be called only by prepareTextureMailboxInternal.
+  bool finishPrepareTextureMailboxGpu(
+      cc::TextureMailbox* outMailbox,
+      std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback);
+  bool finishPrepareTextureMailboxSoftware(
+      cc::TextureMailbox* outMailbox,
+      std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback);
+
+  // Callbacks for mailboxes given to the compositor from
+  // finishPrepareTextureMailboxGpu and finishPrepareTextureMailboxSoftware.
+  void mailboxReleasedGpu(RefPtr<ColorBuffer>,
                           const gpu::SyncToken&,
                           bool lostResource);
-  void softwareMailboxReleased(std::unique_ptr<cc::SharedBitmap>,
+  void mailboxReleasedSoftware(std::unique_ptr<cc::SharedBitmap>,
                                const IntSize&,
                                const gpu::SyncToken&,
                                bool lostResource);
 
   // The texture parameters to use for a texture that will be backed by a
-  // CHROMIUM_image.
-  TextureParameters chromiumImageTextureParameters();
+  // CHROMIUM_image, backed by a GpuMemoryBuffer.
+  ColorBufferParameters gpuMemoryBufferColorBufferParameters();
 
-  // The texture parameters to use for a default texture.
-  TextureParameters defaultTextureParameters();
-
-  // Creates and binds a texture with the given parameters. Returns 0 on
-  // failure, or the newly created texture id on success. The caller takes
-  // ownership of the newly created texture.
-  GLuint createColorTexture(const TextureParameters&);
+  // The texture parameters to use for an ordinary GL texture.
+  ColorBufferParameters textureColorBufferParameters();
 
   // Attempts to allocator storage for, or resize all buffers. Returns whether
   // the operation was successful.
   bool resizeDefaultFramebuffer(const IntSize&);
 
   void clearPlatformLayer();
-
-  PassRefPtr<ColorBuffer> takeRecycledMailbox();
 
   std::unique_ptr<cc::SharedBitmap> createOrRecycleBitmap();
 
@@ -400,16 +405,6 @@ class PLATFORM_EXPORT DrawingBuffer
   // Helper function to flip a bitmap vertically.
   void flipVertically(uint8_t* data, int width, int height);
 
-  // Allocate a storage texture if possible. Otherwise, allocate a regular
-  // texture.
-  void allocateConditionallyImmutableTexture(GLenum target,
-                                             GLenum internalformat,
-                                             GLsizei width,
-                                             GLsizei height,
-                                             GLint border,
-                                             GLenum format,
-                                             GLenum type);
-
   // If RGB emulation is required, then the CHROMIUM image's alpha channel
   // must be immediately cleared after it is bound to a texture. Nothing
   // should be allowed to change the alpha channel after this.
@@ -417,11 +412,12 @@ class PLATFORM_EXPORT DrawingBuffer
 
   // Tries to create a CHROMIUM_image backed texture if
   // RuntimeEnabledFeatures::webGLImageChromiumEnabled() is true. On failure,
-  // or if the flag is false, creates a default texture.
-  RefPtr<ColorBuffer> createTextureAndAllocateMemory(const IntSize&);
+  // or if the flag is false, creates a default texture. Always returns a valid
+  // ColorBuffer.
+  RefPtr<ColorBuffer> createColorBuffer(const IntSize&);
 
-  // Creates and allocates space for a default texture.
-  RefPtr<ColorBuffer> createDefaultTextureAndAllocateMemory(const IntSize&);
+  // Creates or recycles a ColorBuffer of size |m_size|.
+  PassRefPtr<ColorBuffer> createOrRecycleColorBuffer();
 
   // Attaches |m_backColorBuffer| to |m_fbo|, which is always the source for
   // read operations.
@@ -462,10 +458,6 @@ class PLATFORM_EXPORT DrawingBuffer
   bool m_hasImplicitStencilBuffer = false;
   bool m_storageTextureSupported = false;
 
-  // This is the ColorBuffer that was most recently presented to the compositor
-  // by prepareTextureMailboxInternal.
-  RefPtr<ColorBuffer> m_frontColorBuffer;
-
   std::unique_ptr<WTF::Closure> m_newMailboxCallback;
 
   // This is used when the user requests either a depth or stencil buffer.
@@ -480,12 +472,15 @@ class PLATFORM_EXPORT DrawingBuffer
 
   // When wantExplicitResolve() returns false, the target of all draw and
   // read operations. When wantExplicitResolve() returns true, the target of
-  // all read operations. A swap is performed by exchanging |m_backColorBuffer|
-  // with |m_frontColorBuffer|.
+  // all read operations.
   GLuint m_fbo = 0;
 
-  // All information about the texture storage for |m_fbo|.
+  // The ColorBuffer that backs |m_fbo|.
   RefPtr<ColorBuffer> m_backColorBuffer;
+
+  // The ColorBuffer that was most recently presented to the compositor by
+  // prepareTextureMailboxInternal.
+  RefPtr<ColorBuffer> m_frontColorBuffer;
 
   // True if our contents have been modified since the last presentation of this
   // buffer.
@@ -520,7 +515,7 @@ class PLATFORM_EXPORT DrawingBuffer
 
   // Mailboxes that were released by the compositor can be used again by this
   // DrawingBuffer.
-  Deque<RefPtr<ColorBuffer>> m_recycledMailboxQueue;
+  Deque<RefPtr<ColorBuffer>> m_recycledColorBufferQueue;
 
   // If the width and height of the Canvas's backing store don't
   // match those that we were given in the most recent call to
@@ -528,9 +523,6 @@ class PLATFORM_EXPORT DrawingBuffer
   // frame buffer into. This seems to happen when CSS styles are
   // used to resize the Canvas.
   SkBitmap m_resizingBitmap;
-
-  // Used to flip a bitmap vertically.
-  Vector<uint8_t> m_scanline;
 
   // In the case of OffscreenCanvas, we do not want to enable the
   // WebGLImageChromium flag, so we replace all the
