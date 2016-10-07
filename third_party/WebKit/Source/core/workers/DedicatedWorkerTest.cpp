@@ -18,6 +18,19 @@
 
 namespace blink {
 
+namespace {
+
+// These are chosen by trial-and-error. Making these intervals smaller causes
+// test flakiness. The main thread needs to wait until message confirmation and
+// activity report separately. If the intervals are very short, they are
+// notified to the main thread almost at the same time and the thread may miss
+// the second notification.
+const double kDefaultIntervalInSec = 0.01;
+const double kNextIntervalInSec = 0.01;
+const double kMaxIntervalInSec = 0.02;
+
+}  // namespace
+
 class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
  public:
   DedicatedWorkerThreadForTest(
@@ -49,8 +62,9 @@ class InProcessWorkerMessagingProxyForTest
       : InProcessWorkerMessagingProxy(executionContext,
                                       nullptr /* workerObject */,
                                       nullptr /* workerClients */) {
-    workerObjectProxy().m_nextIntervalInSec = 0.1;
-    workerObjectProxy().m_maxIntervalInSec = 0.2;
+    workerObjectProxy().m_defaultIntervalInSec = kDefaultIntervalInSec;
+    workerObjectProxy().m_nextIntervalInSec = kNextIntervalInSec;
+    workerObjectProxy().m_maxIntervalInSec = kMaxIntervalInSec;
 
     m_mockWorkerLoaderProxyProvider =
         wrapUnique(new MockWorkerLoaderProxyProvider());
@@ -214,7 +228,7 @@ TEST_P(DedicatedWorkerTest, PendingActivity_NoActivity) {
 
 TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeout) {
   // Start an oneshot timer on initial script evaluation.
-  const String sourceCode = "setTimeout(function() {}, 50);";
+  const String sourceCode = "setTimeout(function() {}, 0);";
   startWithSourceCode(sourceCode);
 
   // Worker initialization should be counted as a pending activity.
@@ -229,7 +243,8 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeout) {
 
 TEST_P(DedicatedWorkerTest, PendingActivity_SetInterval) {
   // Start a repeated timer on initial script evaluation, and stop it when a
-  // message is received.
+  // message is received. The timer needs a non-zero delay or else worker
+  // activities would not run.
   const String sourceCode =
       "var id = setInterval(function() {}, 50);"
       "addEventListener('message', function(event) { clearInterval(id); });";
@@ -259,7 +274,7 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeoutOnMessageEvent) {
   // Start an oneshot timer on a message event.
   const String sourceCode =
       "addEventListener('message', function(event) {"
-      "  setTimeout(function() {}, 50);"
+      "  setTimeout(function() {}, 0);"
       "});";
   startWithSourceCode(sourceCode);
 
@@ -289,7 +304,8 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeoutOnMessageEvent) {
 
 TEST_P(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
   // Start a repeated timer on a message event, and stop it when another
-  // message is received.
+  // message is received. The timer needs a non-zero delay or else worker
+  // activities would not run.
   const String sourceCode =
       "var count = 0;"
       "var id;"
@@ -321,8 +337,11 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
       workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
 
   // Run the message loop for a while to make sure the timer is counted as a
-  // pending activity until it's stopped.
-  testing::runDelayedTasks(1000);
+  // pending activity until it's stopped. The delay is equal to the max
+  // interval so that the pending activity timer may be able to have a chance
+  // to run before the next expectation check.
+  const double kDelayInMs = kMaxIntervalInSec * 1000;
+  testing::runDelayedTasks(kDelayInMs);
   EXPECT_TRUE(
       workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
 

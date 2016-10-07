@@ -107,8 +107,12 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
   // cancelled when the worker global scope is destroyed.
   std::unique_ptr<Timer<InProcessWorkerObjectProxy>> m_timer;
 
+  // The default interval duration of the timer. This is usually
+  // kDefaultIntervalInSec but made as a member variable for testing.
+  double m_defaultIntervalInSec;
+
   // The next interval duration of the timer. This is initially set to
-  // kDefaultIntervalInSec and exponentially increased up to
+  // |m_defaultIntervalInSec| and exponentially increased up to
   // |m_maxIntervalInSec|.
   double m_nextIntervalInSec;
 
