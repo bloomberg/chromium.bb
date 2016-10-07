@@ -25,9 +25,9 @@ namespace test {
 //
 // AshTestBase creates an AshTestEnvironment by way of
 // AshTestEnvironment::Create(). The implementation of Create() depends upon
-// the ash target that was linked against: //ash:test_support_with_content
-// includes AshTestEnvironmentContent and //ash:test_support_without_content
-// includes AshTestEnvironmentDefault.
+// the ash target that was linked against: //ash/test:test_support_with_content
+// includes AshTestEnvironmentContent and
+// //ash/test:test_support_without_content includes AshTestEnvironmentDefault.
 class AshTestEnvironment {
  public:
   virtual ~AshTestEnvironment() {}

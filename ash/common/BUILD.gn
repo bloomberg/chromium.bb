@@ -1,0 +1,24 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("unittests") {
+  testonly = true
+  sources = [
+    "wm_window_unittest.cc",
+  ]
+  deps = [
+    "//ash",
+    "//ash/common/test:test_support",
+    "//ash/test:test_support_without_content",
+    "//ui/base",
+    "//ui/display",
+    "//ui/keyboard",
+    "//ui/views",
+    "//ui/wm",
+  ]
+
+  if (is_chromeos) {
+    sources += [ "system/chromeos/brightness/tray_brightness_unittest.cc" ]
+  }
+}

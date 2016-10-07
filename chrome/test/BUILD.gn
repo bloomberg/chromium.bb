@@ -227,8 +227,8 @@ static_library("test_support") {
 
     public_deps += [
       "//ash",
-      "//ash:ash_with_aura_test_support",
-      "//ash:test_support_with_content",
+      "//ash/test:ash_with_aura_test_support",
+      "//ash/test:test_support_with_content",
       "//ui/aura",
       "//ui/aura:test_support",
     ]
@@ -759,7 +759,7 @@ if (!is_android) {
           "base/view_event_test_platform_part_default.cc",
         ]
       }
-      deps += [ "//ash:interactive_ui_test_support" ]
+      deps += [ "//ash/test:interactive_ui_test_support" ]
     }
 
     if (enable_notifications) {
@@ -2072,8 +2072,8 @@ test("browser_tests") {
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
       ]
       deps += [
-        "//ash:ash_with_aura_test_support",
-        "//ash:test_support_with_content",
+        "//ash/test:ash_with_aura_test_support",
+        "//ash/test:test_support_with_content",
       ]
 
       if (enable_app_list) {
@@ -4040,10 +4040,10 @@ test("unit_tests") {
       "../browser/ui/window_sizer/window_sizer_ash_unittest.cc",
     ]
     deps += [
-      "//ash:ash_with_aura_test_support",
-      "//ash:test_support_with_content",
       "//ash/common/strings",
       "//ash/resources",
+      "//ash/test:ash_with_aura_test_support",
+      "//ash/test:test_support_with_content",
     ]
 
     # We eventually want to compile both in Win Aura builds, see

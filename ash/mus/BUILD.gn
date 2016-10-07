@@ -234,7 +234,6 @@ source_set("unittests") {
   testonly = true
 
   sources = [
-    "../common/wm_window_unittest.cc",
     "accelerators/accelerator_controller_registrar_test_api.cc",
     "accelerators/accelerator_controller_registrar_test_api.h",
     "accelerators/accelerator_controller_unittest.cc",
@@ -260,7 +259,7 @@ source_set("unittests") {
     ":lib",
     ":resources",
     "//ash",
-    "//ash:test_support_without_content",
+    "//ash/common/test:test_support",
     "//ash/public/interfaces",
     "//base",
     "//base/test:test_config",
@@ -294,9 +293,4 @@ source_set("unittests") {
   ]
 
   defines = [ "NOTIMPLEMENTED_POLICY=5" ]
-
-  if (is_chromeos) {
-    sources +=
-        [ "../common/system/chromeos/brightness/tray_brightness_unittest.cc" ]
-  }
 }

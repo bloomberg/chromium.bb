@@ -49,8 +49,8 @@ class WindowOwner {
 // ash/common and run in both mus and aura.
 //
 // The implementation of AshTestImpl that is used depends upon gn targets. To
-// use the aura backend depend on "//ash:ash_with_aura_test_support." The mus
-// backend is not provided as a separate link target.
+// use the aura backend depend on "//ash/test:ash_with_aura_test_support." The
+// mus backend is not provided as a separate link target.
 class AshTest : public testing::Test {
  public:
   AshTest();
