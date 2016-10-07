@@ -1428,8 +1428,16 @@ void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32_t requests) {
   // Note that if we're not currently observing the root window, outstanding
   // vsync requests will be pushed if/when we resume observing in
   // |StartObservingRootWindow()|.
-  if (observing_root_window_ && should_request_vsync)
-    content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
+  if (observing_root_window_ && should_request_vsync) {
+    ui::WindowAndroid* windowAndroid = content_view_core_->GetWindowAndroid();
+    DCHECK(windowAndroid);
+    // TODO(boliu): This check should be redundant with
+    // |observing_root_window_| check above. However we are receiving trickle
+    // of crash reports (crbug.com/639868) with no root cause. Should
+    // investigate more when time allows what corner case is missed.
+    if (windowAndroid)
+      windowAndroid->RequestVSyncUpdate();
+  }
 }
 
 void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
