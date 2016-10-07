@@ -12,11 +12,9 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/workers/AbstractWorker.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
 
@@ -44,10 +42,6 @@ class CORE_EXPORT InProcessWorkerBase : public AbstractWorker,
   // ScriptWrappable
   bool hasPendingActivity() const final;
 
-  ContentSecurityPolicy* contentSecurityPolicy();
-
-  String referrerPolicy();
-
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
   DECLARE_VIRTUAL_TRACE();
@@ -69,8 +63,6 @@ class CORE_EXPORT InProcessWorkerBase : public AbstractWorker,
   void onFinished();
 
   RefPtr<WorkerScriptLoader> m_scriptLoader;
-  Member<ContentSecurityPolicy> m_contentSecurityPolicy;
-  String m_referrerPolicy;
 
   // The proxy outlives the worker to perform thread shutdown.
   InProcessWorkerMessagingProxy* m_contextProxy;

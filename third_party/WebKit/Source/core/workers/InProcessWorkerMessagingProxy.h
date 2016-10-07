@@ -56,7 +56,9 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
   // These methods should only be used on the parent context thread.
   void startWorkerGlobalScope(const KURL& scriptURL,
                               const String& userAgent,
-                              const String& sourceCode);
+                              const String& sourceCode,
+                              ContentSecurityPolicy*,
+                              const String& referrerPolicy);
   void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>,
                                       std::unique_ptr<MessagePortChannelArray>);
 

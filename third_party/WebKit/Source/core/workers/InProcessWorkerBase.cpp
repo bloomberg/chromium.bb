@@ -7,13 +7,10 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/events/MessageEvent.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
-#include "core/workers/WorkerThread.h"
-#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include <memory>
 
 namespace blink {
@@ -86,18 +83,6 @@ bool InProcessWorkerBase::hasPendingActivity() const {
          m_scriptLoader;
 }
 
-ContentSecurityPolicy* InProcessWorkerBase::contentSecurityPolicy() {
-  if (m_scriptLoader)
-    return m_scriptLoader->contentSecurityPolicy();
-  return m_contentSecurityPolicy.get();
-}
-
-String InProcessWorkerBase::referrerPolicy() {
-  if (m_scriptLoader)
-    return m_scriptLoader->referrerPolicy();
-  return m_referrerPolicy;
-}
-
 void InProcessWorkerBase::onResponse() {
   InspectorInstrumentation::didReceiveScriptResponse(
       getExecutionContext(), m_scriptLoader->identifier());
@@ -105,28 +90,23 @@ void InProcessWorkerBase::onResponse() {
 
 void InProcessWorkerBase::onFinished() {
   if (m_scriptLoader->canceled()) {
-    m_scriptLoader = nullptr;
-    return;
-  }
-
-  if (m_scriptLoader->failed()) {
+    // Do nothing.
+  } else if (m_scriptLoader->failed()) {
     dispatchEvent(Event::createCancelable(EventTypeNames::error));
   } else {
-    DCHECK(m_contextProxy);
-    m_contextProxy->startWorkerGlobalScope(m_scriptLoader->url(),
-                                           getExecutionContext()->userAgent(),
-                                           m_scriptLoader->script());
+    m_contextProxy->startWorkerGlobalScope(
+        m_scriptLoader->url(), getExecutionContext()->userAgent(),
+        m_scriptLoader->script(),
+        m_scriptLoader->releaseContentSecurityPolicy(),
+        m_scriptLoader->referrerPolicy());
     InspectorInstrumentation::scriptImported(getExecutionContext(),
                                              m_scriptLoader->identifier(),
                                              m_scriptLoader->script());
   }
-  m_contentSecurityPolicy = m_scriptLoader->releaseContentSecurityPolicy();
-  m_referrerPolicy = m_scriptLoader->referrerPolicy();
   m_scriptLoader = nullptr;
 }
 
 DEFINE_TRACE(InProcessWorkerBase) {
-  visitor->trace(m_contentSecurityPolicy);
   AbstractWorker::trace(visitor);
 }
 
