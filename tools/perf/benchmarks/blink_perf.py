@@ -142,7 +142,11 @@ class BlinkPerfBindings(perf_benchmark.PerfBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    return cls.IsSvelte(possible_browser)  # http://crbug.com/563979
+    # http://crbug.com/563979
+    return (cls.IsSvelte(possible_browser)
+      # http://crbug.com/653970
+      or (possible_browser.browser_type == 'reference' and
+        possible_browser.platform.GetOSName() == 'android'))
 
 
 @benchmark.Enabled('content-shell')
