@@ -14,6 +14,15 @@ var request;
  */
 function ccBuy() {  // eslint-disable-line no-unused-vars
   try {
+    var details = {
+      total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+      shippingOptions: [{
+        id: 'freeShippingOption',
+        label: 'Free global shipping',
+        amount: {currency: 'USD', value: '0'},
+        selected: true
+      }]
+    };
     request = new PaymentRequest(
         [{supportedMethods: ['visa']}], {
           total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
@@ -38,6 +47,12 @@ function ccBuy() {  // eslint-disable-line no-unused-vars
         }).catch(function(error) {
           print(error);
         });
+    request.addEventListener('shippingaddresschange', function(e) {
+      e.updateWith(new Promise(function(resolve) {
+        // No changes in price based on shipping address change.
+        resolve(details);
+      }));
+    })
   } catch (error) {
     print(error.message);
   }

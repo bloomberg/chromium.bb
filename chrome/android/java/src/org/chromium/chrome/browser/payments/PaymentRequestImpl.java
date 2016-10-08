@@ -144,6 +144,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private final List<PaymentApp> mApps;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
+    private final PaymentRequestJourneyLogger mJourneyLogger = new PaymentRequestJourneyLogger();
 
     private Bitmap mFavicon;
     private PaymentRequestClient mClient;
@@ -306,6 +307,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 }
             }
 
+            // Log the number of suggested shipping addresses.
+            mJourneyLogger.setNumberOfSuggestionsShown(
+                    PaymentRequestJourneyLogger.SECTION_SHIPPING_ADDRESS, addresses.size());
+
             // Automatically select the first address if one is complete and if the merchant does
             // not require a shipping address to calculate shipping costs.
             int firstCompleteAddressIndex = SectionInformation.NO_SELECTION;
@@ -352,6 +357,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
             // Limit the number of suggestions.
             contacts = contacts.subList(0, Math.min(contacts.size(), SUGGESTIONS_LIMIT));
+
+            // Log the number of suggested contact infos.
+            mJourneyLogger.setNumberOfSuggestionsShown(
+                    PaymentRequestJourneyLogger.SECTION_CONTACT_INFO, contacts.size());
 
             // Automatically select the first address if it is complete.
             int firstCompleteContactIndex = SectionInformation.NO_SELECTION;
@@ -713,6 +722,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             assert option instanceof AutofillAddress;
+            // Log the change of shipping address.
+            mJourneyLogger.incrementSelectionChanges(
+                    PaymentRequestJourneyLogger.SECTION_SHIPPING_ADDRESS);
             AutofillAddress address = (AutofillAddress) option;
             if (address.isComplete()) {
                 mShippingAddressesSection.setSelectedItem(option);
@@ -731,6 +743,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             assert option instanceof AutofillContact;
+            // Log the change of contact info.
+            mJourneyLogger.incrementSelectionChanges(
+                    PaymentRequestJourneyLogger.SECTION_CONTACT_INFO);
             AutofillContact contact = (AutofillContact) option;
 
             if (contact.isComplete()) {
@@ -742,6 +757,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             assert option instanceof PaymentInstrument;
             if (option instanceof AutofillPaymentInstrument) {
+                // Log the change of credit card.
+                mJourneyLogger.incrementSelectionChanges(
+                        PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS);
                 AutofillPaymentInstrument card = (AutofillPaymentInstrument) option;
 
                 if (!card.isComplete()) {
@@ -762,12 +780,19 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             editAddress(null);
             mPaymentInformationCallback = callback;
+            // Log the add of shipping address.
+            mJourneyLogger.incrementSelectionAdds(
+                    PaymentRequestJourneyLogger.SECTION_SHIPPING_ADDRESS);
             return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             editContact(null);
+            // Log the add of contact info.
+            mJourneyLogger.incrementSelectionAdds(PaymentRequestJourneyLogger.SECTION_CONTACT_INFO);
             return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             editCard(null);
+            // Log the add of credit card.
+            mJourneyLogger.incrementSelectionAdds(PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS);
             return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
         }
 
@@ -775,6 +800,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     private void editAddress(final AutofillAddress toEdit) {
+        if (toEdit != null) {
+            // Log the edit of a shipping address.
+            mJourneyLogger.incrementSelectionEdits(
+                    PaymentRequestJourneyLogger.SECTION_SHIPPING_ADDRESS);
+        }
         mAddressEditor.edit(toEdit, new Callback<AutofillAddress>() {
             @Override
             public void onResult(AutofillAddress completeAddress) {
@@ -793,6 +823,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     private void editContact(final AutofillContact toEdit) {
+        if (toEdit != null) {
+            // Log the edit of a contact info.
+            mJourneyLogger.incrementSelectionEdits(
+                    PaymentRequestJourneyLogger.SECTION_CONTACT_INFO);
+        }
         mContactEditor.edit(toEdit, new Callback<AutofillContact>() {
             @Override
             public void onResult(AutofillContact completeContact) {
@@ -810,6 +845,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     private void editCard(final AutofillPaymentInstrument toEdit) {
+        if (toEdit != null) {
+            // Log the edit of a credit card.
+            mJourneyLogger.incrementSelectionEdits(
+                    PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS);
+        }
         mCardEditor.edit(toEdit, new Callback<AutofillPaymentInstrument>() {
             @Override
             public void onResult(AutofillPaymentInstrument completeCard) {
@@ -936,6 +976,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         // > Incomplete autofill instruments.
         Collections.sort(mPendingAutofillInstruments, COMPLETENESS_COMPARATOR);
         mPendingInstruments.addAll(mPendingAutofillInstruments);
+
+        // Log the number of suggested credit cards.
+        mJourneyLogger.setNumberOfSuggestionsShown(PaymentRequestJourneyLogger.SECTION_CREDIT_CARDS,
+                mPendingAutofillInstruments.size());
 
         mPendingAutofillInstruments.clear();
         mPendingAutofillInstruments = null;
@@ -1198,6 +1242,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     private void recordSuccessFunnelHistograms(String funnelPart) {
         RecordHistogram.recordBooleanHistogram("PaymentRequest.CheckoutFunnel." + funnelPart, true);
+
+        if (funnelPart.equals("Completed")) {
+            mJourneyLogger.recordJourneyStatsHistograms("Completed");
+        }
     }
 
     /**
@@ -1213,5 +1261,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         RecordHistogram.recordEnumeratedHistogram(
                 "PaymentRequest.CheckoutFunnel.Aborted", abortReason,
                 PaymentRequestMetrics.ABORT_REASON_MAX);
+
+        if (abortReason == PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER) {
+            mJourneyLogger.recordJourneyStatsHistograms("UserAborted");
+        } else {
+            mJourneyLogger.recordJourneyStatsHistograms("OtherAborted");
+        }
     }
 }
