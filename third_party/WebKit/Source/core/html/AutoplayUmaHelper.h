@@ -54,6 +54,10 @@ class AutoplayUmaHelper final : public EventListener {
 
   void didMoveToNewDocument(Document& oldDocument);
 
+  bool isVisible() const { return m_isVisible; }
+
+  bool hasSource() const { return m_source != AutoplaySource::NumberOfSources; }
+
   DECLARE_VIRTUAL_TRACE();
 
  private:

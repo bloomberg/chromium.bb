@@ -59,7 +59,7 @@ void AutoplayUmaHelper::onAutoplayInitiated(AutoplaySource source) {
   // Autoplay already initiated
   // TODO(zqzhang): how about having autoplay attribute and calling `play()` in
   // the script?
-  if (m_source != AutoplaySource::NumberOfSources)
+  if (hasSource())
     return;
 
   m_source = source;

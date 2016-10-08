@@ -296,6 +296,8 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   virtual bool isHTMLAudioElement() const { return false; }
   virtual bool isHTMLVideoElement() const { return false; }
 
+  void videoWillBeDrawnToCanvas() const;
+
   // Temporary callback for crbug.com/487345,402044
   void notifyPositionMayHaveChanged(const IntRect&);
   void updatePositionNotificationRegistration();

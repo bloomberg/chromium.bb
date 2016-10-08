@@ -875,8 +875,11 @@ static inline CanvasImageSource* toImageSourceInternal(
   }
   if (value.isHTMLImageElement())
     return value.getAsHTMLImageElement();
-  if (value.isHTMLVideoElement())
-    return value.getAsHTMLVideoElement();
+  if (value.isHTMLVideoElement()) {
+    HTMLVideoElement* video = value.getAsHTMLVideoElement();
+    video->videoWillBeDrawnToCanvas();
+    return video;
+  }
   if (value.isHTMLCanvasElement())
     return value.getAsHTMLCanvasElement();
   if (value.isImageBitmap()) {
