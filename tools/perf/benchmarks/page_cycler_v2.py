@@ -17,36 +17,32 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
-def TimelineBasedMeasurementOptionsForLoadingMetric():
-  cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
-
-  # "blink.console" is used for marking ranges in
-  # cache_temperature.MarkTelemetryInternal.
-  cat_filter.AddIncludedCategory('blink.console')
-
-  # "navigation" and "blink.user_timing" are needed to capture core
-  # navigation events.
-  cat_filter.AddIncludedCategory('navigation')
-  cat_filter.AddIncludedCategory('blink.user_timing')
-
-  # "loading" is needed for first-meaningful-paint computation.
-  cat_filter.AddIncludedCategory('loading')
-
-  # "toplevel" category is used to capture TaskQueueManager events
-  # necessary to compute time-to-interactive.
-  cat_filter.AddIncludedCategory('toplevel')
-
-  tbm_options = timeline_based_measurement.Options(
-      overhead_level=cat_filter)
-  tbm_options.SetTimelineBasedMetrics(['loadingMetric'])
-  return tbm_options
-
-
 class _PageCyclerV2(perf_benchmark.PerfBenchmark):
   options = {'pageset_repeat': 2}
 
   def CreateTimelineBasedMeasurementOptions(self):
-    return TimelineBasedMeasurementOptionsForLoadingMetric()
+    cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
+
+    # "blink.console" is used for marking ranges in
+    # cache_temperature.MarkTelemetryInternal.
+    cat_filter.AddIncludedCategory('blink.console')
+
+    # "navigation" and "blink.user_timing" are needed to capture core
+    # navigation events.
+    cat_filter.AddIncludedCategory('navigation')
+    cat_filter.AddIncludedCategory('blink.user_timing')
+
+    # "loading" is needed for first-meaningful-paint computation.
+    cat_filter.AddIncludedCategory('loading')
+
+    # "toplevel" category is used to capture TaskQueueManager events
+    # necessary to compute time-to-interactive.
+    cat_filter.AddIncludedCategory('toplevel')
+
+    tbm_options = timeline_based_measurement.Options(
+        overhead_level=cat_filter)
+    tbm_options.SetTimelineBasedMetrics(['loadingMetric'])
+    return tbm_options
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
