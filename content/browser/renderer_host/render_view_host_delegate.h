@@ -240,6 +240,8 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // Desktop Site" feature.
   virtual bool IsOverridingUserAgent();
 
+  virtual bool IsJavaScriptDialogShowing() const;
+
  protected:
   virtual ~RenderViewHostDelegate() {}
 };

@@ -585,10 +585,15 @@ void RenderViewHostImpl::ClosePage() {
       TimeDelta::FromMilliseconds(kUnloadTimeoutMS),
       RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_CLOSE_PAGE);
 
-  if (IsRenderViewLive()) {
+  bool is_javascript_dialog_showing = delegate_->IsJavaScriptDialogShowing();
+
+  // If there is a JavaScript dialog up, don't bother sending the renderer the
+  // close event because it is known unresponsive, waiting for the reply from
+  // the dialog.
+  if (IsRenderViewLive() && !is_javascript_dialog_showing) {
     // Since we are sending an IPC message to the renderer, increase the event
     // count to prevent the hang monitor timeout from being stopped by input
-    // event acknowledgements.
+    // event acknowledgments.
     GetWidget()->increment_in_flight_event_count();
 
     // TODO(creis): Should this be moved to Shutdown?  It may not be called for
@@ -600,7 +605,7 @@ void RenderViewHostImpl::ClosePage() {
 
     Send(new ViewMsg_ClosePage(GetRoutingID()));
   } else {
-    // This RenderViewHost doesn't have a live renderer, so just skip the unload
+    // This RenderViewHost doesn't have a live renderer, so just skip the close
     // event and close the page.
     ClosePageIgnoringUnloadEvents();
   }

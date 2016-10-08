@@ -2374,14 +2374,21 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation,
     // handler.
     is_waiting_for_beforeunload_ack_ = true;
     unload_ack_is_for_navigation_ = for_navigation;
-    // Increment the in-flight event count, to ensure that input events won't
-    // cancel the timeout timer.
-    render_view_host_->GetWidget()->increment_in_flight_event_count();
-    render_view_host_->GetWidget()->StartHangMonitorTimeout(
-        TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS),
-        RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_BEFORE_UNLOAD);
-    send_before_unload_start_time_ = base::TimeTicks::Now();
-    Send(new FrameMsg_BeforeUnload(routing_id_, is_reload));
+    if (render_view_host_->GetDelegate()->IsJavaScriptDialogShowing()) {
+      // If there is a JavaScript dialog up, don't bother sending the renderer
+      // the unload event because it is known unresponsive, waiting for the
+      // reply from the dialog.
+      SimulateBeforeUnloadAck();
+    } else {
+      // Increment the in-flight event count, to ensure that input events won't
+      // cancel the timeout timer.
+      render_view_host_->GetWidget()->increment_in_flight_event_count();
+      render_view_host_->GetWidget()->StartHangMonitorTimeout(
+          TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS),
+          RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_BEFORE_UNLOAD);
+      send_before_unload_start_time_ = base::TimeTicks::Now();
+      Send(new FrameMsg_BeforeUnload(routing_id_, is_reload));
+    }
   }
 }
 

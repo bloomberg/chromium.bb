@@ -2383,6 +2383,10 @@ bool WebContentsImpl::IsOverridingUserAgent() {
          GetController().GetVisibleEntry()->GetIsOverridingUserAgent();
 }
 
+bool WebContentsImpl::IsJavaScriptDialogShowing() const {
+  return is_showing_javascript_dialog_;
+}
+
 AccessibilityMode WebContentsImpl::GetAccessibilityMode() const {
   return accessibility_mode_;
 }
@@ -4130,6 +4134,7 @@ void WebContentsImpl::RunJavaScriptMessage(
       !delegate_->GetJavaScriptDialogManager(this);
 
   if (!suppress_this_message) {
+    is_showing_javascript_dialog_ = true;
     dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
     dialog_manager_->RunJavaScriptDialog(
         this, frame_url, javascript_message_type, message, default_prompt,
@@ -5045,6 +5050,7 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
                       BeforeUnloadDialogCancelled());
   }
 
+  is_showing_javascript_dialog_ = false;
   is_showing_before_unload_dialog_ = false;
   if (rfh) {
     rfh->JavaScriptDialogClosed(reply_msg, success, user_input,

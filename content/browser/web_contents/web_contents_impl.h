@@ -565,11 +565,12 @@ class CONTENT_EXPORT WebContentsImpl
   SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) override;
   SessionStorageNamespaceMap GetSessionStorageNamespaceMap() override;
+  double GetPendingPageZoomLevel() override;
   FrameTree* GetFrameTree() override;
   void SetIsVirtualKeyboardRequested(bool requested) override;
   bool IsVirtualKeyboardRequested() override;
   bool IsOverridingUserAgent() override;
-  double GetPendingPageZoomLevel() override;
+  bool IsJavaScriptDialogShowing() const override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -1292,6 +1293,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Pointer to the JavaScript dialog manager, lazily assigned. Used because the
   // delegate of this WebContentsImpl is nulled before its destructor is called.
   JavaScriptDialogManager* dialog_manager_;
+
+  // Set to true when there is an active JavaScript dialog showing.
+  bool is_showing_javascript_dialog_ = false;
 
   // Set to true when there is an active "before unload" dialog.  When true,
   // we've forced the throbber to start in Navigate, and we need to remember to

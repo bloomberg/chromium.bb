@@ -52,4 +52,8 @@ bool RenderViewHostDelegate::IsOverridingUserAgent() {
   return false;
 }
 
+bool RenderViewHostDelegate::IsJavaScriptDialogShowing() const {
+  return false;
+}
+
 }  // namespace content
