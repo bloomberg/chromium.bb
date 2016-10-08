@@ -48,8 +48,7 @@ public class SigninPromoItem extends StatusItem implements ItemGroup {
                 org.chromium.chrome.R.string.sign_in_button);
         mDismissed = ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
                              .getNewTabPageSigninPromoDismissed();
-        SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
-        mVisible = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
+        mVisible = !SigninManager.get(ContextUtils.getApplicationContext()).isSignedInOnNative();
     }
 
     @Override

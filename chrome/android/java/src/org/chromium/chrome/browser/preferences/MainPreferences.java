@@ -76,16 +76,17 @@ public class MainPreferences extends PreferenceFragment
         // the SignInPreference.
         updatePreferences();
 
-        if (isUserAllowedToSignIn()) {
+        if (!mIsDemoUser) {
             SigninManager.get(getActivity()).addSignInStateObserver(this);
             setupSignInPref();
         }
+
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (isUserAllowedToSignIn()) {
+        if (!mIsDemoUser) {
             SigninManager.get(getActivity()).removeSignInStateObserver(this);
             clearSignInPref();
         }
@@ -168,7 +169,7 @@ public class MainPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(dataReduction);
         }
 
-        if (!isUserAllowedToSignIn()) {
+        if (mIsDemoUser) {
             getPreferenceScreen().removePreference(findPreference(PREF_SIGN_IN));
         }
     }
@@ -222,11 +223,6 @@ public class MainPreferences extends PreferenceFragment
     @Override
     public void onSignedOut() {
         updatePreferences();
-    }
-
-    private boolean isUserAllowedToSignIn() {
-        boolean allowSignIn = SigninManager.get(getActivity()).isSignInAllowed();
-        return allowSignIn && !mIsDemoUser;
     }
 
     private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
