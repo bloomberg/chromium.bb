@@ -61,6 +61,10 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
             std::unique_ptr<CompositorTimingHistory> compositor_timing_history);
   ~Scheduler() override;
 
+  // This is needed so that the scheduler doesn't perform spurious actions while
+  // the compositor is being torn down.
+  void Stop();
+
   // BeginFrameObserverBase
   void OnBeginFrameSourcePausedChanged(bool paused) override;
   bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override;
@@ -150,27 +154,26 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   std::unique_ptr<CompositorTimingHistory> compositor_timing_history_;
 
-  std::deque<BeginFrameArgs> begin_retro_frame_args_;
   SchedulerStateMachine::BeginImplFrameDeadlineMode
       begin_impl_frame_deadline_mode_;
   BeginFrameTracker begin_impl_frame_tracker_;
   BeginFrameArgs begin_main_frame_args_;
 
-  base::Closure begin_retro_frame_closure_;
   base::Closure begin_impl_frame_deadline_closure_;
-  base::CancelableClosure begin_retro_frame_task_;
   base::CancelableClosure begin_impl_frame_deadline_task_;
+  base::CancelableClosure missed_begin_frame_task_;
 
   SchedulerStateMachine state_machine_;
   bool inside_process_scheduled_actions_;
   SchedulerStateMachine::Action inside_action_;
+
+  bool stopped_;
 
  private:
   void ScheduleBeginImplFrameDeadline();
   void ScheduleBeginImplFrameDeadlineIfNeeded();
   void BeginImplFrameNotExpectedSoon();
   void SetupNextBeginFrameIfNeeded();
-  void PostBeginRetroFrameIfNeeded();
   void DrawAndSwapIfPossible();
   void DrawAndSwapForced();
   void ProcessScheduledActions();
@@ -184,7 +187,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
       base::TimeDelta bmf_to_activate_estimate) const;
   void AdvanceCommitStateIfPossible();
   bool IsBeginMainFrameSentOrStarted() const;
-  void BeginRetroFrame();
   void BeginImplFrameWithDeadline(const BeginFrameArgs& args);
   void BeginImplFrameSynchronous(const BeginFrameArgs& args);
   void BeginImplFrame(const BeginFrameArgs& args);

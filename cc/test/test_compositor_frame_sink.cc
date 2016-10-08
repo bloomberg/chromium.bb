@@ -36,8 +36,7 @@ TestCompositorFrameSink::TestCompositorFrameSink(
       surface_factory_(
           new SurfaceFactory(frame_sink_id_, surface_manager_.get(), this)),
       display_context_shared_with_compositor_(
-          display_output_surface->context_provider() == context_provider()),
-      weak_ptrs_(this) {
+          display_output_surface->context_provider() == context_provider()) {
   std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
   std::unique_ptr<DisplayScheduler> scheduler;
   if (!synchronous_composite) {
@@ -113,7 +112,6 @@ void TestCompositorFrameSink::DetachFromClient() {
   surface_factory_ = nullptr;
   surface_id_allocator_ = nullptr;
   surface_manager_ = nullptr;
-  weak_ptrs_.InvalidateWeakPtrs();
   CompositorFrameSink::DetachFromClient();
 }
 
@@ -137,7 +135,7 @@ void TestCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
   surface_factory_->SubmitCompositorFrame(
       delegated_local_frame_id_, std::move(frame),
       base::Bind(&TestCompositorFrameSink::DidDrawCallback,
-                 weak_ptrs_.GetWeakPtr(), synchronous));
+                 base::Unretained(this)));
 
   for (std::unique_ptr<CopyOutputRequest>& copy_request : copy_requests_) {
     surface_factory_->RequestCopyOfSurface(delegated_local_frame_id_,
@@ -149,17 +147,10 @@ void TestCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
     display_->DrawAndSwap();
 }
 
-void TestCompositorFrameSink::DidDrawCallback(bool synchronous) {
+void TestCompositorFrameSink::DidDrawCallback() {
   // This is the frame ack to unthrottle the next frame, not actually a notice
   // that drawing is done.
-  if (synchronous) {
-    // For synchronous draws, this must be posted to a new stack because we are
-    // still the original call to SwapBuffers, and we want to leave that before
-    // saying that it is done.
-    CompositorFrameSink::PostSwapBuffersComplete();
-  } else {
-    client_->DidSwapBuffersComplete();
-  }
+  CompositorFrameSink::PostSwapBuffersComplete();
 }
 
 void TestCompositorFrameSink::ForceReclaimResources() {

@@ -78,6 +78,7 @@ bool DirectCompositorFrameSink::BindToClient(
 
 void DirectCompositorFrameSink::DetachFromClient() {
   DCHECK(HasClient());
+
   // Unregister the SurfaceFactoryClient here instead of the dtor so that only
   // one client is alive for this namespace at any given time.
   surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
@@ -144,9 +145,7 @@ void DirectCompositorFrameSink::DisplayDidDrawAndSwap() {
 }
 
 void DirectCompositorFrameSink::DidDrawCallback() {
-  // TODO(danakj): Why the lost check?
-  if (!is_lost_)
-    client_->DidSwapBuffersComplete();
+  CompositorFrameSink::PostSwapBuffersComplete();
 }
 
 }  // namespace cc

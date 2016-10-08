@@ -72,9 +72,7 @@ const SchedulerStateMachine::BeginMainFrameState begin_main_frame_states[] = {
     SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE,
     SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT,
     SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_STARTED,
-    SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT,
-    SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION,
-    SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW};
+    SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT};
 
 // Exposes the protected state fields of the SchedulerStateMachine for testing
 class StateMachine : public SchedulerStateMachine {
@@ -1114,60 +1112,55 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
   state.NotifyReadyToCommit();
   EXPECT_MAIN_FRAME_STATE(
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT);
-
   // Commit.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
-
-  // Now commit should wait for activation.
-  EXPECT_MAIN_FRAME_STATE(
-      SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION);
-
-  // No activation yet, so this commit is not drawn yet. Force to draw this
-  // frame, and still block BeginMainFrame.
-  state.SetNeedsRedraw(true);
-  state.SetNeedsBeginMainFrame();
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // Cannot BeginMainFrame yet since last commit is not yet activated and drawn.
-  state.OnBeginImplFrame();
-  EXPECT_MAIN_FRAME_STATE(
-      SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // Now activate sync tree.
+  // Commit always calls NotifyReadyToActivate in this mode.
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // No draw because we haven't received NotifyReadyToDraw yet.
+  state.OnBeginImplFrameDeadline();
   EXPECT_TRUE(state.active_tree_needs_first_draw());
   EXPECT_TRUE(state.needs_redraw());
-  EXPECT_MAIN_FRAME_STATE(
-      SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW);
-
-  // Swap throttled. Do not draw.
-  state.DidSwapBuffers();
-  state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.DidSwapBuffersComplete();
 
-  // Haven't draw since last commit, do not begin new main frame.
+  // Can't BeginMainFrame yet since last commit hasn't been drawn yet.
+  state.SetNeedsBeginMainFrame();
   state.OnBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
-  // At BeginImplFrame deadline, draw. This draws unblocks BeginMainFrame.
+  // Now call ready to draw which will allow the draw to happen and
+  // BeginMainFrame to be sent.
+  state.NotifyReadyToDraw();
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  // Swap throttled from this point.
   state.DidSwapBuffers();
-  state.DidSwapBuffersComplete();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
-  // Now will be able to start main frame.
-  EXPECT_MAIN_FRAME_STATE(SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
-  EXPECT_FALSE(state.needs_redraw());
+  // Can't BeginMainFrame yet since we're swap throttled.
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Swap ack unblocks BeginMainFrame.
+  state.DidSwapBuffersComplete();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Draw the newly activated tree.
+  state.NotifyReadyToDraw();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
 TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {

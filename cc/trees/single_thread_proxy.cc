@@ -289,16 +289,17 @@ void SingleThreadProxy::Stop() {
     DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
     DebugScopedSetImplThread impl(task_runner_provider_);
 
+    // Prevent the scheduler from performing actions while we're in an
+    // inconsistent state.
+    if (scheduler_on_impl_thread_)
+      scheduler_on_impl_thread_->Stop();
     // Take away the CompositorFrameSink before destroying things so it doesn't
     // try to call into its client mid-shutdown.
     layer_tree_host_impl_->ReleaseCompositorFrameSink();
-
-    BlockingTaskRunner::CapturePostTasks blocked(
-        task_runner_provider_->blocking_main_thread_task_runner());
     scheduler_on_impl_thread_ = nullptr;
     layer_tree_host_impl_ = nullptr;
   }
-  layer_tree_host_ = NULL;
+  layer_tree_host_ = nullptr;
 }
 
 void SingleThreadProxy::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {
