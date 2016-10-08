@@ -14,4 +14,4 @@ class GpuRasterizationExpectations(GpuTestExpectations):
 
     # Seems to be flaky on the new AMD R7 240 drivers.
     self.Flaky('GpuRasterization.BlueBox',
-        ['win', ('amd', '0x6613')], bug=653538)
+        ['win', ('amd', 0x6613)], bug=653538)

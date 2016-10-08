@@ -43,7 +43,22 @@ class GpuExpectation(test_expectations.Expectation):
     if isinstance(condition, tuple):
       c0 = condition[0].lower()
       if c0 in GPU_CONDITIONS:
-        self.device_id_conditions.append((c0, condition[1]))
+        device = condition[1]
+        if isinstance(device, str):
+          # If the device is parseable as an int, that's not allowed.
+          # It's too easy to make a mistake specifying the device ID
+          # as a string instead of an int.
+          was_int = False
+          try:
+            int(device, 0)
+            was_int = True
+          except Exception:
+            pass
+          if was_int:
+            raise ValueError(
+              'Device id %s should have been specified as an integer' %
+              condition[1])
+        self.device_id_conditions.append((c0, device))
       else:
         raise ValueError('Unknown expectation condition: "%s"' % c0)
     else:

@@ -71,6 +71,10 @@ class SampleTestExpectations(gpu_test_expectations.GpuTestExpectations):
     self.Flaky('test8.html', ['win'], bug=123, max_num_retries=6)
     self.Flaky('wildcardtest*.html', ['win'], bug=123, max_num_retries=7)
 
+class InvalidDeviceIDExpectation(gpu_test_expectations.GpuTestExpectations):
+  def SetExpectations(self):
+    self.Fail('test1.html', [('amd', '0x6613')], bug=123)
+
 class GpuTestExpectationsTest(unittest.TestCase):
   def setUp(self):
     self.expectations = SampleTestExpectations()
@@ -198,3 +202,8 @@ class GpuTestExpectationsTest(unittest.TestCase):
     self.assertEquals(7, self.getRetriesForPage(page2, StubPlatform('win')))
     self.assertExpectationEquals('pass', page2, StubPlatform('mac'))
     self.assertEquals(0, self.getRetriesForPage(page2, StubPlatform('mac')))
+
+  # Test that device IDs are checked to be integers.
+  def testDeviceIDIsInteger(self):
+    with self.assertRaises(ValueError):
+      InvalidDeviceIDExpectation()
