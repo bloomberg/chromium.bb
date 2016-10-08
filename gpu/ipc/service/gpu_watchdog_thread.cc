@@ -367,10 +367,6 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
 
   bool using_high_res_timer = base::Time::IsHighResolutionTimerInUse();
   base::debug::Alias(&using_high_res_timer);
-
-  bool message_pump_is_signaled =
-      watched_message_loop_->MessagePumpWasSignaled();
-  base::debug::Alias(&message_pump_is_signaled);
 #endif
 
   base::Time current_time = base::Time::Now();
