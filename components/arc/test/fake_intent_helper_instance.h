@@ -39,10 +39,13 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
 
   const std::vector<Broadcast>& broadcasts() const { return broadcasts_; }
 
-  // mojom::HelpIntentInstance:
+  // mojom::IntentHelperInstance:
   ~FakeIntentHelperInstance() override;
 
   void AddPreferredPackage(const mojo::String& package_name) override;
+
+  void HandleIntent(mojom::IntentInfoPtr intent,
+                    mojom::ActivityNamePtr activity) override;
 
   void HandleUrl(const mojo::String& url,
                  const mojo::String& package_name) override;
@@ -57,6 +60,10 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
       mojo::Array<mojom::ActivityNamePtr> activities,
       ::arc::mojom::ScaleFactor scale_factor,
       const RequestActivityIconsCallback& callback) override;
+
+  void RequestIntentHandlerList(
+      mojom::IntentInfoPtr intent,
+      const RequestIntentHandlerListCallback& callback) override;
 
   void RequestUrlHandlerList(
       const mojo::String& url,
