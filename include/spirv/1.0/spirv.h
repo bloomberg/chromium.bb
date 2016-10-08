@@ -428,6 +428,9 @@ typedef enum SpvBuiltIn_ {
     SpvBuiltInSubgroupGtMaskKHR = 4418,
     SpvBuiltInSubgroupLeMaskKHR = 4419,
     SpvBuiltInSubgroupLtMaskKHR = 4420,
+    SpvBuiltInBaseVertex = 4424,
+    SpvBuiltInBaseInstance = 4425,
+    SpvBuiltInDrawIndex = 4426,
     SpvBuiltInMax = 0x7fffffff,
 } SpvBuiltIn;
 
@@ -604,6 +607,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityStorageImageWriteWithoutFormat = 56,
     SpvCapabilityMultiViewport = 57,
     SpvCapabilitySubgroupBallotKHR = 4423,
+    SpvCapabilityDrawParameters = 4427,
     SpvCapabilityMax = 0x7fffffff,
 } SpvCapability;
 

@@ -939,7 +939,7 @@
       "operands" : [
         { "kind" : "IdResultType" },
         { "kind" : "IdResult" },
-        { "kind" : "IdRef",        "name" : "'Image'" },
+        { "kind" : "IdRef",        "name" : "'Sampled Image'" },
         { "kind" : "IdRef",        "name" : "'Coordinate'" }
       ],
       "capabilities" : [ "ImageQuery" ]
@@ -4884,6 +4884,21 @@
           "enumerant" : "SubgroupLtMaskKHR",
           "value" : 4420,
           "capabilities" : [ "SubgroupBallotKHR" ]
+        },
+        {
+          "enumerant" : "BaseVertex",
+          "value" : 4424,
+          "capabilities" : [ "DrawParameters" ]
+        },
+        {
+          "enumerant" : "BaseInstance",
+          "value" : 4425,
+          "capabilities" : [ "DrawParameters" ]
+        },
+        {
+          "enumerant" : "DrawIndex",
+          "value" : 4426,
+          "capabilities" : [ "DrawParameters" ]
         }
       ]
     },
@@ -5247,6 +5262,11 @@
           "enumerant" : "SubgroupBallotKHR",
           "value" : 4423,
           "extensions" : [ "SPV_KHR_shader_ballot" ]
+        },
+        {
+          "enumerant" : "DrawParameters",
+          "value" : 4427,
+          "extensions" : [ "SPV_KHR_shader_draw_parameters" ]
         }
       ]
     },

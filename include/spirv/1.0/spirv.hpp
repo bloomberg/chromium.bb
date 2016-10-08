@@ -424,6 +424,9 @@ enum BuiltIn {
     BuiltInSubgroupGtMaskKHR = 4418,
     BuiltInSubgroupLeMaskKHR = 4419,
     BuiltInSubgroupLtMaskKHR = 4420,
+    BuiltInBaseVertex = 4424,
+    BuiltInBaseInstance = 4425,
+    BuiltInDrawIndex = 4426,
     BuiltInMax = 0x7fffffff,
 };
 
@@ -600,6 +603,7 @@ enum Capability {
     CapabilityStorageImageWriteWithoutFormat = 56,
     CapabilityMultiViewport = 57,
     CapabilitySubgroupBallotKHR = 4423,
+    CapabilityDrawParameters = 4427,
     CapabilityMax = 0x7fffffff,
 };
 
