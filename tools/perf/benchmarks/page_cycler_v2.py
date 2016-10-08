@@ -69,6 +69,7 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
     return False
 
 
+@benchmark.Disabled('win10')
 class PageCyclerV2Typical25(_PageCyclerV2):
   """Page load time benchmark for a 25 typical web pages.
 
