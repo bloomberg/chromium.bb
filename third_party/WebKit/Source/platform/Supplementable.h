@@ -31,7 +31,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 #include "wtf/Threading.h"
 #endif
 
@@ -119,22 +119,28 @@ class Supplementable : public virtual GarbageCollectedMixin {
 
  public:
   void provideSupplement(const char* key, Supplement<T>* supplement) {
-    ASSERT(m_threadId == currentThread());
+#if DCHECK_IS_ON()
+    DCHECK_EQ(m_threadId, currentThread());
+#endif
     this->m_supplements.set(key, supplement);
   }
 
   void removeSupplement(const char* key) {
-    ASSERT(m_threadId == currentThread());
+#if DCHECK_IS_ON()
+    DCHECK_EQ(m_threadId, currentThread());
+#endif
     this->m_supplements.remove(key);
   }
 
   Supplement<T>* requireSupplement(const char* key) {
-    ASSERT(m_threadId == currentThread());
+#if DCHECK_IS_ON()
+    DCHECK_EQ(m_threadId, currentThread());
+#endif
     return this->m_supplements.get(key);
   }
 
   void reattachThread() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_threadId = currentThread();
 #endif
   }
@@ -147,13 +153,13 @@ class Supplementable : public virtual GarbageCollectedMixin {
   SupplementMap m_supplements;
 
   Supplementable()
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       : m_threadId(currentThread())
 #endif
   {
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
  private:
   ThreadIdentifier m_threadId;
 #endif
