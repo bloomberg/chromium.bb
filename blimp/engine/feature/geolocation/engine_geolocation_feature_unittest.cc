@@ -110,6 +110,7 @@ class EngineGeolocationFeatureTest : public testing::Test {
     out_processor_ = new MockBlimpMessageProcessor();
     feature_.set_outgoing_message_processor(base::WrapUnique(out_processor_));
     location_provider_->SetUpdateCallback(mock_callback_);
+    base::RunLoop().RunUntilIdle();
   }
 
   void OnLocationUpdate(const device::LocationProvider* provider,
@@ -178,6 +179,7 @@ TEST_F(EngineGeolocationFeatureTest, UpdateRequestLevel) {
   location_provider_->StartProvider(true);
   location_provider_->StartProvider(false);
   location_provider_->StopProvider();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(EngineGeolocationFeatureTest, UnexpectedMessageReceived) {
@@ -200,15 +202,10 @@ TEST_F(EngineGeolocationFeatureTest,
   EXPECT_CALL(*out_processor_,
               MockableProcessMessage(EqualsRequestRefresh(), _))
       .Times(1);
-  EXPECT_CALL(*out_processor_,
-              MockableProcessMessage(
-                  EqualsUpdatedRequestLevel(
-                      GeolocationSetInterestLevelMessage::NO_INTEREST),
-                  _))
-      .Times(1);
 
   location_provider_->StartProvider(true);
   location_provider_->OnPermissionGranted();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace engine

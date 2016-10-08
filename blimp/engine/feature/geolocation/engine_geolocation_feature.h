@@ -47,7 +47,6 @@ class EngineGeolocationFeature : public BlimpMessageProcessor,
 
   std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;
   GeopositionReceivedCallback geoposition_received_callback_;
-  scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;
   base::WeakPtrFactory<EngineGeolocationFeature> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineGeolocationFeature);

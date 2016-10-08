@@ -27,17 +27,20 @@ class BlimpGeolocationDelegate : public device::GeolocationDelegate {
   explicit BlimpGeolocationDelegate(
       base::WeakPtr<BlimpLocationProvider::Delegate> feature_delegate) {
     feature_delegate_ = feature_delegate;
+    feature_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
   bool UseNetworkLocationProviders() final { return false; }
 
   std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider()
       final {
-    return base::MakeUnique<BlimpLocationProvider>(feature_delegate_);
+    return base::MakeUnique<BlimpLocationProvider>(feature_delegate_,
+                                                   feature_task_runner_);
   }
 
  private:
   base::WeakPtr<BlimpLocationProvider::Delegate> feature_delegate_;
+  scoped_refptr<base::SingleThreadTaskRunner> feature_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpGeolocationDelegate);
 };
@@ -122,8 +125,7 @@ void EngineGeolocationFeature::ProcessMessage(
 
 void EngineGeolocationFeature::NotifyCallback(
     const device::Geoposition& position) {
-  callback_task_runner_->PostTask(
-      FROM_HERE, base::Bind(geoposition_received_callback_, position));
+  geoposition_received_callback_.Run(position);
 }
 
 void EngineGeolocationFeature::RequestAccuracy(
@@ -154,9 +156,6 @@ void EngineGeolocationFeature::OnPermissionGranted() {
 void EngineGeolocationFeature::SetUpdateCallback(
     const GeopositionReceivedCallback& callback) {
   geoposition_received_callback_ = callback;
-
-  // Set |callback_task_runner_| to run on the current thread.
-  callback_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 }  // namespace engine

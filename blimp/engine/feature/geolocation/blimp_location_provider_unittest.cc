@@ -9,12 +9,15 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/engine/feature/geolocation/mock_blimp_location_provider_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
 using testing::SaveArg;
+using testing::_;
 
 namespace blimp {
 namespace engine {
@@ -25,19 +28,28 @@ class BlimpLocationProviderTest : public testing::Test {
       : mock_callback_(base::Bind(&BlimpLocationProviderTest::OnLocationUpdate,
                                   base::Unretained(this))),
         delegate_(base::WrapUnique(new MockBlimpLocationProviderDelegate)),
-        location_provider_(new BlimpLocationProvider(delegate_->GetWeakPtr())) {
+        location_provider_(base::MakeUnique<BlimpLocationProvider>(
+            delegate_->GetWeakPtr(),
+            base::ThreadTaskRunnerHandle::Get())) {}
+
+  void SetUp() override { on_location_update_called_ = false; }
+
+  void TearDown() override {
+    location_provider_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
-  void SetUp() override {}
-
-  MOCK_METHOD2(OnLocationUpdate,
-               void(const device::LocationProvider* provider,
-                    const device::Geoposition& geoposition));
+  void OnLocationUpdate(const device::LocationProvider* provider,
+                        const device::Geoposition& geoposition) {
+    on_location_update_called_ = true;
+  }
 
  protected:
+  const base::MessageLoop loop_;
   device::LocationProvider::LocationProviderUpdateCallback mock_callback_;
   std::unique_ptr<MockBlimpLocationProviderDelegate> delegate_;
   std::unique_ptr<BlimpLocationProvider> location_provider_;
+  bool on_location_update_called_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlimpLocationProviderTest);
@@ -59,14 +71,16 @@ TEST_F(BlimpLocationProviderTest, StartProviderRunsCorrectly) {
 
   EXPECT_TRUE(location_provider_->StartProvider(true));
   EXPECT_TRUE(location_provider_->StartProvider(false));
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(BlimpLocationProviderTest, StartProviderHandlesNullDelegate) {
   EXPECT_CALL(*delegate_, RequestAccuracy(_)).Times(0);
 
   delegate_.reset();
-  EXPECT_FALSE(location_provider_->StartProvider(true));
-  EXPECT_FALSE(location_provider_->StartProvider(false));
+  location_provider_->StartProvider(true);
+  location_provider_->StartProvider(false);
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(BlimpLocationProviderTest, StopProviderRunsCorrectly) {
@@ -80,6 +94,7 @@ TEST_F(BlimpLocationProviderTest, StopProviderRunsCorrectly) {
 
   location_provider_->StartProvider(true);
   location_provider_->StopProvider();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(BlimpLocationProviderTest, StopProviderHandlesNullDelegate) {
@@ -89,8 +104,10 @@ TEST_F(BlimpLocationProviderTest, StopProviderHandlesNullDelegate) {
       .Times(1);
 
   location_provider_->StartProvider(true);
+  base::RunLoop().RunUntilIdle();
   delegate_.reset();
   location_provider_->StopProvider();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(BlimpLocationProviderTest, LocationProviderDeleted) {
@@ -104,30 +121,67 @@ TEST_F(BlimpLocationProviderTest, LocationProviderDeleted) {
 
   location_provider_->StartProvider(true);
   location_provider_.reset();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(BlimpLocationProviderTest, OnPermissionGranted) {
   EXPECT_CALL(*delegate_, OnPermissionGranted()).Times(1);
+  EXPECT_CALL(
+      *delegate_,
+      RequestAccuracy(GeolocationSetInterestLevelMessage::HIGH_ACCURACY))
+      .Times(1);
+  EXPECT_CALL(*delegate_,
+              RequestAccuracy(GeolocationSetInterestLevelMessage::NO_INTEREST))
+      .Times(1);
 
   location_provider_->StartProvider(true);
   location_provider_->OnPermissionGranted();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(BlimpLocationProviderTest, OnPermissionGrantedHandlesNullDelegate) {
-  EXPECT_CALL(*delegate_, OnPermissionGranted()).Times(0);
+  EXPECT_CALL(
+      *delegate_,
+      RequestAccuracy(GeolocationSetInterestLevelMessage::HIGH_ACCURACY))
+      .Times(1);
 
   location_provider_->StartProvider(true);
+  base::RunLoop().RunUntilIdle();
   delegate_.reset();
   location_provider_->OnPermissionGranted();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(BlimpLocationProviderTest, SetUpdateCallbackPropagatesCallback) {
-  base::Callback<void(const device::Geoposition&)> callback;
-  EXPECT_CALL(*delegate_, SetUpdateCallback(_)).WillOnce(SaveArg<0>(&callback));
-  EXPECT_CALL(*this, OnLocationUpdate(location_provider_.get(), _)).Times(1);
+  EXPECT_CALL(*delegate_, SetUpdateCallback(_));
 
   location_provider_->SetUpdateCallback(mock_callback_);
-  callback.Run(device::Geoposition());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(BlimpLocationProviderTest, NoCallbackWhenProviderDeleted) {
+  base::Callback<void(const device::Geoposition&)> callback;
+  EXPECT_CALL(*delegate_, SetUpdateCallback(_)).WillOnce(SaveArg<0>(&callback));
+  location_provider_->SetUpdateCallback(mock_callback_);
+  base::RunLoop().RunUntilIdle();
+
+  location_provider_.reset();
+  device::Geoposition position;
+  callback.Run(position);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(on_location_update_called_);
+}
+
+TEST_F(BlimpLocationProviderTest, CallbackCalledProperly) {
+  base::Callback<void(const device::Geoposition&)> callback;
+  EXPECT_CALL(*delegate_, SetUpdateCallback(_)).WillOnce(SaveArg<0>(&callback));
+  location_provider_->SetUpdateCallback(mock_callback_);
+  base::RunLoop().RunUntilIdle();
+
+  device::Geoposition position;
+  callback.Run(position);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(on_location_update_called_);
 }
 
 TEST_F(BlimpLocationProviderTest, SetUpdateCallbackHandlesNullDelegate) {
@@ -135,6 +189,7 @@ TEST_F(BlimpLocationProviderTest, SetUpdateCallbackHandlesNullDelegate) {
 
   delegate_.reset();
   location_provider_->SetUpdateCallback(mock_callback_);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace engine

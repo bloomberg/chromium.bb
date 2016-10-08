@@ -17,11 +17,11 @@ namespace engine {
 class BlimpLocationProvider : public device::LocationProvider {
  public:
   // A delegate that implements a subset of LocationProvider's functions.
+  // All methods will be executed on |delegate_task_runner_|.
   class Delegate {
    public:
     using GeopositionReceivedCallback =
         base::Callback<void(const device::Geoposition&)>;
-
     virtual ~Delegate() {}
 
     virtual void RequestAccuracy(
@@ -31,7 +31,9 @@ class BlimpLocationProvider : public device::LocationProvider {
         const GeopositionReceivedCallback& callback) = 0;
   };
 
-  explicit BlimpLocationProvider(base::WeakPtr<Delegate> delegate);
+  BlimpLocationProvider(
+      base::WeakPtr<Delegate> delegate,
+      scoped_refptr<base::SequencedTaskRunner> delegate_task_runner);
   ~BlimpLocationProvider() override;
 
   // device::LocationProvider implementation.
@@ -43,13 +45,20 @@ class BlimpLocationProvider : public device::LocationProvider {
       const LocationProviderUpdateCallback& callback) override;
 
  private:
+  void OnLocationUpdate(const device::Geoposition& geoposition);
+
   // This delegate handles a subset of the LocationProvider functionality.
   base::WeakPtr<Delegate> delegate_;
 
+  scoped_refptr<base::SequencedTaskRunner> delegate_task_runner_;
   device::Geoposition cached_position_;
 
   // True if a successful StartProvider call has occured.
   bool is_started_;
+
+  LocationProviderUpdateCallback location_update_callback_;
+
+  base::WeakPtrFactory<BlimpLocationProvider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpLocationProvider);
 };
