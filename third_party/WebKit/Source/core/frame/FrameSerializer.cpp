@@ -332,6 +332,16 @@ void FrameSerializer::serializeFrame(const LocalFrame& frame) {
 
 void FrameSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet,
                                              const KURL& url) {
+  // If the URL is invalid or if it is a data URL this means that this CSS is
+  // defined inline, respectively in a <style> tag or in the data URL itself.
+  bool isInlineCss = !url.isValid() || url.protocolIsData();
+  // If this CSS is not inline then it is identifiable by its URL. So just skip
+  // it if it has already been analyzed before.
+  if (!isInlineCss && (m_resourceURLs.contains(url) ||
+                       m_delegate.shouldSkipResourceWithURL(url))) {
+    return;
+  }
+
   TRACE_EVENT2("page-serialization", "FrameSerializer::serializeCSSStyleSheet",
                "type", "CSS", "url", url.elidedString().utf8().data());
   // Only report UMA metric if this is not a reentrant CSS serialization call.
@@ -341,25 +351,24 @@ void FrameSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet,
     cssStartTime = monotonicallyIncreasingTime();
   }
 
-  StringBuilder cssText;
-  cssText.append("@charset \"");
-  cssText.append(styleSheet.contents()->charset().lower());
-  cssText.append("\";\n\n");
+  // If this CSS is inlined its definition was already serialized with the frame
+  // HTML code that was previously generated. No need to regenerate it here.
+  if (!isInlineCss) {
+    StringBuilder cssText;
+    cssText.append("@charset \"");
+    cssText.append(styleSheet.contents()->charset().lower());
+    cssText.append("\";\n\n");
 
-  for (unsigned i = 0; i < styleSheet.length(); ++i) {
-    CSSRule* rule = styleSheet.item(i);
-    String itemText = rule->cssText();
-    if (!itemText.isEmpty()) {
-      cssText.append(itemText);
-      if (i < styleSheet.length() - 1)
-        cssText.append("\n\n");
+    for (unsigned i = 0; i < styleSheet.length(); ++i) {
+      CSSRule* rule = styleSheet.item(i);
+      String itemText = rule->cssText();
+      if (!itemText.isEmpty()) {
+        cssText.append(itemText);
+        if (i < styleSheet.length() - 1)
+          cssText.append("\n\n");
+      }
     }
 
-    // Some rules have resources associated with them that we need to retrieve.
-    serializeCSSRule(rule);
-  }
-
-  if (shouldAddURL(url)) {
     WTF::TextEncoding textEncoding(styleSheet.contents()->charset());
     ASSERT(textEncoding.isValid());
     String textString = cssText.toString();
@@ -370,6 +379,11 @@ void FrameSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet,
                            SharedBuffer::create(text.data(), text.length())));
     m_resourceURLs.add(url);
   }
+
+  // Sub resources need to be serialized even if the CSS definition doesn't
+  // need to be.
+  for (unsigned i = 0; i < styleSheet.length(); ++i)
+    serializeCSSRule(styleSheet.item(i));
 
   if (cssStartTime != 0) {
     m_isSerializingCss = false;
