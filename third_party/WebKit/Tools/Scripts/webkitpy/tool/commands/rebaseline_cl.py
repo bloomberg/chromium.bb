@@ -76,17 +76,13 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         # TODO(qyearsley): Fix places where non-existing tests may be added:
         #  1. Make sure that the tests obtained when passing --only-changed-tests include only existing tests.
-        #  2. Make sure that update-w3c-test-expectations doesn't specify non-existing tests (http://crbug.com/649691).
         test_prefix_list = self._filter_existing(test_prefix_list)
 
         self._log_test_prefix_list(test_prefix_list)
 
         if options.dry_run:
             return
-        # NOTE(qyearsley): If this is changed to stage all new files with git,
-        # e.g. if update_scm is not False, then update_w3c_test_expectations.py
-        # should be changed to not call git add --all.
-        self.rebaseline(options, test_prefix_list, update_scm=False)
+        self.rebaseline(options, test_prefix_list)
 
     def _filter_existing(self, test_prefix_list):
         """Filters out entries in |test_prefix_list| for tests that don't exist."""

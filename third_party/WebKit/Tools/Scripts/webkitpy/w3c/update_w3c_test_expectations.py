@@ -316,9 +316,6 @@ class W3CExpectationsLineAdder(object):
                 '--no-trigger-jobs',
                 '--only-changed-tests',
             ] + tests_to_rebaseline)
-            # NOTE(qyearsley): If rebaseline-cl is changed to stage all new files
-            # with git, then this would be unnecessary and should be removed.
-            self.host.executive.run_command(['git', 'add', '--all'])
         return tests_results
 
     def get_modified_existing_tests(self):

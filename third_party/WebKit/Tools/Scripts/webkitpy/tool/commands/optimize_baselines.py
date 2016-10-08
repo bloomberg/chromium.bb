@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import logging
-import optparse
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
 from webkitpy.layout_tests.controllers.test_result_writer import baseline_name
@@ -22,8 +21,6 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
     def __init__(self):
         super(OptimizeBaselines, self).__init__(options=[
             self.suffixes_option,
-            optparse.make_option('--no-modify-scm', action='store_true', default=False,
-                                 help='Dump SCM commands as JSON instead of actually committing changes.'),
         ] + self.platform_options)
 
     def _optimize_baseline(self, optimizer, test_name):
@@ -31,11 +28,9 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
         files_to_add = []
         for suffix in self._baseline_suffix_list:
             name = baseline_name(self._tool.filesystem, test_name, suffix)
-            succeeded, more_files_to_delete, more_files_to_add = optimizer.optimize(name)
+            succeeded = optimizer.optimize(name)
             if not succeeded:
                 _log.error("Heuristics failed to optimize %s", name)
-            files_to_delete.extend(more_files_to_delete)
-            files_to_add.extend(more_files_to_add)
         return files_to_delete, files_to_add
 
     def execute(self, options, args, tool):
@@ -46,12 +41,7 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
             _log.error("No port names match '%s'", options.platform)
             return
         port = tool.port_factory.get(port_names[0])
-        optimizer = BaselineOptimizer(tool, port, port_names, skip_scm_commands=options.no_modify_scm)
+        optimizer = BaselineOptimizer(tool, port, port_names)
         tests = port.tests(args)
         for test_name in tests:
-            files_to_delete, files_to_add = self._optimize_baseline(optimizer, test_name)
-            for path in files_to_delete:
-                self._scm_changes.delete_file(path)
-            for path in files_to_add:
-                self._scm_changes.add_file(path)
-        self._print_scm_changes()
+            self._optimize_baseline(optimizer, test_name)

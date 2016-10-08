@@ -19,41 +19,6 @@ class TestOptimizeBaselines(BaseTestCase):
     def setUp(self):
         super(TestOptimizeBaselines, self).setUp()
 
-    def test_modify_scm(self):
-        test_port = self.tool.port_factory.get('test')
-        self._write_test_file(test_port, 'another/test.html', "Dummy test contents")
-        self._write_test_file(test_port, 'platform/test-mac-mac10.10/another/test-expected.txt', "result A")
-        self._write_test_file(test_port, 'another/test-expected.txt', "result A")
-
-        OutputCapture().assert_outputs(self, self.command.execute, args=[
-            optparse.Values({'suffixes': 'txt', 'no_modify_scm': False, 'platform': 'test-mac-mac10.10'}),
-            ['another/test.html'],
-            self.tool,
-        ], expected_stdout='{"add": [], "remove-lines": [], "delete": []}\n')
-
-        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(
-            test_port.layout_tests_dir(), 'platform/test-mac-mac10.10/another/test-expected.txt')))
-        self.assertTrue(self.tool.filesystem.exists(self.tool.filesystem.join(
-            test_port.layout_tests_dir(), 'another/test-expected.txt')))
-
-    def test_no_modify_scm(self):
-        test_port = self.tool.port_factory.get('test')
-        self._write_test_file(test_port, 'another/test.html', "Dummy test contents")
-        self._write_test_file(test_port, 'platform/test-mac-mac10.10/another/test-expected.txt', "result A")
-        self._write_test_file(test_port, 'another/test-expected.txt', "result A")
-
-        OutputCapture().assert_outputs(self, self.command.execute, args=[
-            optparse.Values({'suffixes': 'txt', 'no_modify_scm': True, 'platform': 'test-mac-mac10.10'}),
-            ['another/test.html'],
-            self.tool,
-        ], expected_stdout=('{"add": [], "remove-lines": [], '
-                            '"delete": ["/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.txt"]}\n'))
-
-        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(
-            test_port.layout_tests_dir(), 'platform/mac/another/test-expected.txt')))
-        self.assertTrue(self.tool.filesystem.exists(self.tool.filesystem.join(
-            test_port.layout_tests_dir(), 'another/test-expected.txt')))
-
     def test_optimize_all_suffixes_by_default(self):
         test_port = self.tool.port_factory.get('test')
         self._write_test_file(test_port, 'another/test.html', "Dummy test contents")
@@ -70,13 +35,8 @@ class TestOptimizeBaselines(BaseTestCase):
                 ['another/test.html'],
                 self.tool)
         finally:
-            out, _, _ = oc.restore_output()
+            oc.restore_output()
 
-        self.assertEquals(
-            out,
-            '{"add": [], "remove-lines": [], '
-            '"delete": ["/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.txt", '
-            '"/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.png"]}\n')
         self.assertFalse(
             self.tool.filesystem.exists(self.tool.filesystem.join(
                 test_port.layout_tests_dir(), 'platform/mac/another/test-expected.txt')))

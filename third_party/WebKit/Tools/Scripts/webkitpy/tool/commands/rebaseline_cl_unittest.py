@@ -88,7 +88,6 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
     def test_execute_with_issue_number_given(self):
         self.command.execute(self.command_options(issue=11112222), [], self.tool)
-        print self._log.messages()
         self.assertLog([
             'INFO: Tests to rebaseline:\n',
             'INFO:   svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win (5000)\n',
@@ -177,5 +176,5 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                   '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html']],
                 [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
                   '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html', '--build-number', '5000']],
-                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']]
+                [['python', 'echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']]
             ])

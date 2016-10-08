@@ -73,6 +73,6 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
             _log.error("No port names match '%s'", options.platform)
             return
         self._port = tool.port_factory.get(port_names[0])
-        self._baseline_optimizer = self._optimizer_class(tool, self._port, port_names, skip_scm_commands=False)
+        self._baseline_optimizer = self._optimizer_class(tool, self._port, port_names)
         for test_name in self._port.tests(args):
             self._analyze_baseline(options, test_name)

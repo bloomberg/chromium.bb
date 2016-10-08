@@ -99,8 +99,12 @@ class Git(SCM):
     def _rebase_in_progress(self):
         return self._filesystem.exists(self.absolute_path(self._filesystem.join('.git', 'rebase-apply')))
 
-    def has_working_directory_changes(self):
-        return self._run_git(['diff', 'HEAD', '--no-renames', '--name-only']) != ""
+    def has_working_directory_changes(self, pathspec=None):
+        """Checks whether there are uncommitted changes."""
+        command = ['diff', 'HEAD', '--no-renames', '--name-only']
+        if pathspec:
+            command.extend(['--', pathspec])
+        return self._run_git(command) != ''
 
     def _discard_working_directory_changes(self):
         # Could run git clean here too, but that wouldn't match subversion
@@ -116,6 +120,12 @@ class Git(SCM):
 
     def _status_regexp(self, expected_types):
         return '^(?P<status>[%s])\t(?P<filename>.+)$' % expected_types
+
+    def add_all(self, pathspec=None):
+        command = ['add', '--all']
+        if pathspec:
+            command.append(pathspec)
+        return self._run_git(command)
 
     def add_list(self, paths, return_exit_code=False, recurse=True):
         return self._run_git(["add"] + paths, return_exit_code=return_exit_code)

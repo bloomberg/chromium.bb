@@ -31,6 +31,10 @@ from webkitpy.common.system.executive_mock import MockExecutive
 
 
 class MockSCM(object):
+
+    # Arguments are generally unused in methods that return canned values below.
+    # pylint: disable=unused-argument
+
     executable_name = "MockSCM"
 
     def __init__(self, filesystem=None, executive=None):
@@ -40,6 +44,12 @@ class MockSCM(object):
         self._executive = executive or MockExecutive()
         self._local_commits = []
 
+    def add_all(self, pathspec=None):
+        if not pathspec:
+            pathspec = self.checkout_root
+        for path in self._filesystem.glob(pathspec):
+            self.add_list(self._filesystem.files_under(path))
+
     def add(self, destination_path, return_exit_code=False):
         self.add_list([destination_path], return_exit_code)
 
@@ -48,7 +58,7 @@ class MockSCM(object):
         if return_exit_code:
             return 0
 
-    def has_working_directory_changes(self):
+    def has_working_directory_changes(self, pathspec=None):
         return False
 
     def ensure_cleanly_tracking_remote_master(self):

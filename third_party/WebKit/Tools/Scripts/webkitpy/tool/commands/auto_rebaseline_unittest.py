@@ -236,9 +236,9 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
                  '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html'],
             ],
             [
-                ['python', 'echo', 'optimize-baselines', '--no-modify-scm',
+                ['python', 'echo', 'optimize-baselines',
                  '--suffixes', 'png', 'fast/dom/prototype-strawberry.html'],
-                ['python', 'echo', 'optimize-baselines', '--no-modify-scm',
+                ['python', 'echo', 'optimize-baselines',
                  '--suffixes', 'txt', 'fast/dom/prototype-taco.html'],
             ],
             ['git', 'cl', 'upload', '-f'],
@@ -301,7 +301,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
               '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html']],
             [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
               '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html']],
-            [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']],
+            [['python', 'echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']],
             ['git', 'cl', 'upload', '-f'],
         ])
 

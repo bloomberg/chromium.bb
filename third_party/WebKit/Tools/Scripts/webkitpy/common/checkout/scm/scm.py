@@ -43,6 +43,9 @@ _log = logging.getLogger(__name__)
 # SCM methods are expected to return paths relative to self.checkout_root.
 class SCM:
 
+    # Arguments are generally unused in abstract base methods below.
+    # pylint: disable=unused-argument
+
     def __init__(self, cwd, executive=None, filesystem=None):
         self.cwd = cwd
         self._executive = executive or Executive()
@@ -99,6 +102,9 @@ class SCM:
     def find_checkout_root(self, path):
         SCM._subclass_must_implement()
 
+    def add_all(self, pathspec=None):
+        self._subclass_must_implement()
+
     def add(self, path, return_exit_code=False, recurse=True):
         self.add_list([path], return_exit_code, recurse)
 
@@ -139,7 +145,7 @@ class SCM:
     def blame(self, path):
         self._subclass_must_implement()
 
-    def has_working_directory_changes(self):
+    def has_working_directory_changes(self, pathspec=None):
         self._subclass_must_implement()
 
     #--------------------------------------------------------------------------
