@@ -69,6 +69,7 @@ class GLES2Interface;
 namespace media {
 class ChunkDemuxer;
 class GpuVideoAcceleratorFactories;
+class MediaKeys;
 class MediaLog;
 class UrlIndex;
 class VideoFrameCompositor;
@@ -306,9 +307,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // tracks separately in WebSourceBufferImpl.
   void OnFFmpegMediaTracksUpdated(std::unique_ptr<MediaTracks> tracks);
 
-  // Sets |cdm_context| on the pipeline and fires |cdm_attached_cb| when done.
-  // Parameter order is reversed for easy binding.
-  void SetCdm(const CdmAttachedCB& cdm_attached_cb, CdmContext* cdm_context);
+  // Sets CdmContext from |cdm| on the pipeline and calls OnCdmAttached()
+  // when done.
+  void SetCdm(blink::WebContentDecryptionModule* cdm);
 
   // Called when a CDM has been attached to the |pipeline_|.
   void OnCdmAttached(bool success);
@@ -486,8 +487,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   std::unique_ptr<blink::WebContentDecryptionModuleResult> set_cdm_result_;
 
-  // Whether a CDM has been successfully attached.
-  bool is_cdm_attached_;
+  // If a CDM is attached keep a reference to it, so that it is not destroyed
+  // until after the pipeline is done with it.
+  scoped_refptr<MediaKeys> cdm_;
+
+  // Keep track of the CDM while it is in the process of attaching to the
+  // pipeline.
+  scoped_refptr<MediaKeys> pending_cdm_;
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   WebMediaPlayerCast cast_impl_;

@@ -90,10 +90,8 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   void RemoveSession(const std::string& session_id,
                      std::unique_ptr<SimpleCdmPromise> promise);
 
-  // Returns the CdmContext associated with |media_keys_|.
-  // TODO(jrummell): Figure out lifetimes, as WMPI may still use the decryptor
-  // after WebContentDecryptionModule is freed. http://crbug.com/330324
-  CdmContext* GetCdmContext();
+  // Returns a reference to the CDM.
+  scoped_refptr<MediaKeys> GetCdm();
 
   // Returns the key system name.
   const std::string& GetKeySystem() const;

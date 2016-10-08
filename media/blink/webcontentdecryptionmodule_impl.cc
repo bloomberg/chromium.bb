@@ -101,8 +101,8 @@ void WebContentDecryptionModuleImpl::setServerCertificate(
           new CdmResultPromise<>(result, std::string())));
 }
 
-CdmContext* WebContentDecryptionModuleImpl::GetCdmContext() {
-  return adapter_->GetCdmContext();
+scoped_refptr<MediaKeys> WebContentDecryptionModuleImpl::GetCdm() {
+  return adapter_->GetCdm();
 }
 
 }  // namespace media

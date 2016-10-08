@@ -123,8 +123,8 @@ void CdmSessionAdapter::RemoveSession(
   cdm_->RemoveSession(session_id, std::move(promise));
 }
 
-CdmContext* CdmSessionAdapter::GetCdmContext() {
-  return cdm_->GetCdmContext();
+scoped_refptr<MediaKeys> CdmSessionAdapter::GetCdm() {
+  return cdm_;
 }
 
 const std::string& CdmSessionAdapter::GetKeySystem() const {
