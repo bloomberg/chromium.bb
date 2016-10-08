@@ -75,7 +75,7 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
 TrayDetailsView::~TrayDetailsView() {}
 
 void TrayDetailsView::OnViewClicked(views::View* sender) {
-  if (!MaterialDesignController::IsSystemTrayMenuMaterial() &&
+  if (!MaterialDesignController::IsSystemTrayMenuMaterial() && title_row_ &&
       sender == title_row_->content()) {
     TransitionToDefaultView();
     return;
