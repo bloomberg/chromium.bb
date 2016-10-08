@@ -427,9 +427,7 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
         << media::VideoPixelFormatToString(frame->format());
 
     // Sanity-checks to confirm |frame| is actually being backed by |buffer|.
-    DCHECK(frame->storage_type() == media::VideoFrame::STORAGE_SHMEM ||
-           (frame->storage_type() ==
-                media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS));
+    DCHECK(frame->storage_type() == media::VideoFrame::STORAGE_SHMEM);
     DCHECK(frame->data(media::VideoFrame::kYPlane) >= buffer->data(0) &&
            (frame->data(media::VideoFrame::kYPlane) <
             (reinterpret_cast<const uint8_t*>(buffer->data(0)) +
@@ -512,31 +510,13 @@ void VideoCaptureController::DoNewBufferOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const int buffer_id = buffer->id();
 
-  switch (frame->storage_type()) {
-    case media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS: {
-      std::vector<gfx::GpuMemoryBufferHandle> handles;
-      const size_t num_planes = media::VideoFrame::NumPlanes(frame->format());
-      for (size_t i = 0; i < num_planes; ++i) {
-        gfx::GpuMemoryBufferHandle remote_handle;
-        handles.push_back(remote_handle);
-      }
-      client->event_handler->OnBufferCreated2(client->controller_id, handles,
-                                              buffer->dimensions(), buffer_id);
-      break;
-    }
-    case media::VideoFrame::STORAGE_SHMEM: {
-      base::SharedMemoryHandle remote_handle;
-      buffer_pool_->ShareToProcess(buffer_id, client->render_process_handle,
-                                   &remote_handle);
-      client->event_handler->OnBufferCreated(
-          client->controller_id, remote_handle, buffer->mapped_size(),
-          buffer_id);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
+  DCHECK_EQ(media::VideoFrame::STORAGE_SHMEM, frame->storage_type());
+
+  base::SharedMemoryHandle remote_handle;
+  buffer_pool_->ShareToProcess(buffer_id, client->render_process_handle,
+                               &remote_handle);
+  client->event_handler->OnBufferCreated(client->controller_id, remote_handle,
+                                         buffer->mapped_size(), buffer_id);
 }
 
 VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(

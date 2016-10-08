@@ -36,10 +36,6 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
                void(base::SharedMemoryHandle handle,
                     int length,
                     int buffer_id));
-  MOCK_METHOD3(OnBufferCreated2,
-               void(const std::vector<gfx::GpuMemoryBufferHandle>& handles,
-                    const gfx::Size& size,
-                    int buffer_id));
   MOCK_METHOD1(OnBufferDestroyed, void(int buffer_id));
   MOCK_METHOD7(OnBufferReceived,
                void(int buffer_id,

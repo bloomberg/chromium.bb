@@ -14,7 +14,6 @@
 #include "base/numerics/safe_math.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
-#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "ipc/ipc_message_macros.h"
@@ -166,7 +165,6 @@ bool GpuVideoEncodeAccelerator::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoEncodeAccelerator, message)
     IPC_MESSAGE_HANDLER(AcceleratedVideoEncoderMsg_Encode, OnEncode)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoEncoderMsg_Encode2, OnEncode2)
     IPC_MESSAGE_HANDLER(AcceleratedVideoEncoderMsg_UseOutputBitstreamBuffer,
                         OnUseOutputBitstreamBuffer)
     IPC_MESSAGE_HANDLER(
@@ -310,16 +308,6 @@ void GpuVideoEncodeAccelerator::OnEncode(
       &GpuVideoEncodeAccelerator::EncodeFrameFinished,
       weak_this_factory_.GetWeakPtr(), params.frame_id, base::Passed(&shm))));
   encoder_->Encode(frame, params.force_keyframe);
-}
-
-void GpuVideoEncodeAccelerator::OnEncode2(
-    const AcceleratedVideoEncoderMsg_Encode_Params2& params) {
-  DVLOG(3) << __FUNCTION__ << " frame_id = " << params.frame_id
-           << ", size=" << params.size.ToString()
-           << ", force_keyframe=" << params.force_keyframe
-           << ", handle type=" << params.gpu_memory_buffer_handles[0].type;
-  // Encoding GpuMemoryBuffer backed frames is not supported.
-  NOTREACHED();
 }
 
 void GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(

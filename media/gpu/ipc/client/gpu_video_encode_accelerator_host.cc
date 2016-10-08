@@ -12,7 +12,6 @@
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/common/media_messages.h"
 #include "media/video/video_encode_accelerator.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace media {
 
@@ -115,15 +114,13 @@ void GpuVideoEncodeAcceleratorHost::Encode(
     bool force_keyframe) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(PIXEL_FORMAT_I420, frame->format());
+  DCHECK_EQ(VideoFrame::STORAGE_SHMEM, frame->storage_type());
   if (!channel_)
     return;
 
   switch (frame->storage_type()) {
     case VideoFrame::STORAGE_SHMEM:
       EncodeSharedMemoryFrame(frame, force_keyframe);
-      break;
-    case VideoFrame::STORAGE_GPU_MEMORY_BUFFERS:
-      EncodeGpuMemoryBufferFrame(frame, force_keyframe);
       break;
     default:
       PostNotifyError(FROM_HERE, kPlatformFailureError,
@@ -182,33 +179,6 @@ void GpuVideoEncodeAcceleratorHost::OnWillDeleteImpl() {
 
   // The gpu::CommandBufferProxyImpl is going away; error out this VEA.
   OnChannelError();
-}
-
-void GpuVideoEncodeAcceleratorHost::EncodeGpuMemoryBufferFrame(
-    const scoped_refptr<VideoFrame>& frame,
-    bool force_keyframe) {
-  DCHECK_EQ(VideoFrame::NumPlanes(PIXEL_FORMAT_I420),
-            frame->gpu_memory_buffer_handles().size());
-  AcceleratedVideoEncoderMsg_Encode_Params2 params;
-  params.frame_id = next_frame_id_;
-  params.timestamp = frame->timestamp();
-  bool requires_sync_point = false;
-  for (const auto& handle : frame->gpu_memory_buffer_handles()) {
-    gfx::GpuMemoryBufferHandle new_handle =
-        channel_->ShareGpuMemoryBufferToGpuProcess(handle,
-                                                   &requires_sync_point);
-    if (new_handle.is_null()) {
-      PostNotifyError(FROM_HERE, kPlatformFailureError,
-                      "EncodeGpuMemoryBufferFrame(): failed to share gpu "
-                      "memory buffer handle for gpu process");
-      return;
-    }
-    params.gpu_memory_buffer_handles.push_back(new_handle);
-  }
-  params.size = frame->coded_size();
-  params.force_keyframe = force_keyframe;
-
-  Send(new AcceleratedVideoEncoderMsg_Encode2(encoder_route_id_, params));
 }
 
 void GpuVideoEncodeAcceleratorHost::EncodeSharedMemoryFrame(

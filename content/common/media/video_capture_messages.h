@@ -47,14 +47,6 @@ IPC_MESSAGE_CONTROL4(VideoCaptureMsg_NewBuffer,
                      int /* length */,
                      int /* buffer_id */)
 
-// Tell the renderer process that a new GpuMemoryBuffer backed buffer is
-// allocated for video capture.
-IPC_MESSAGE_CONTROL4(VideoCaptureMsg_NewBuffer2,
-                     int /* device id */,
-                     std::vector<gfx::GpuMemoryBufferHandle> /* handles */,
-                     gfx::Size /* dimensions */,
-                     int /* buffer_id */)
-
 // Tell the renderer process that it should release a buffer previously
 // allocated by VideoCaptureMsg_NewBuffer.
 IPC_MESSAGE_CONTROL2(VideoCaptureMsg_FreeBuffer,

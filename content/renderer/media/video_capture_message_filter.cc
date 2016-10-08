@@ -59,7 +59,6 @@ bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_BufferReady, OnBufferReceived)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_StateChanged, OnDeviceStateChanged)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnBufferCreated)
-    IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer2, OnBufferCreated2)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_FreeBuffer, OnBufferDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -113,24 +112,6 @@ void VideoCaptureMessageFilter::OnBufferCreated(int device_id,
   }
 
   delegate->OnBufferCreated(handle, length, buffer_id);
-}
-
-void VideoCaptureMessageFilter::OnBufferCreated2(
-    int device_id,
-    const std::vector<gfx::GpuMemoryBufferHandle>& handles,
-    const gfx::Size& size,
-    int buffer_id) {
-  Delegate* const delegate = find_delegate(device_id);
-  if (!delegate) {
-    DLOG(WARNING) << "OnBufferCreated: Got video GMB buffer for a "
-                     "non-existent or removed video capture.";
-    Send(new VideoCaptureHostMsg_BufferReady(
-        device_id, buffer_id, gpu::SyncToken() /* release_sync_token */,
-        -1.0 /* consumer_resource_utilization */));
-    return;
-  }
-
-  delegate->OnBufferCreated2(handles, size, buffer_id);
 }
 
 void VideoCaptureMessageFilter::OnBufferReceived(

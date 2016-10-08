@@ -46,7 +46,6 @@ int WebRtcVideoFrameAdapter::StrideV() const {
 
 void* WebRtcVideoFrameAdapter::native_handle() const {
   if (frame_->HasTextures() ||
-      frame_->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS ||
       frame_->storage_type() == media::VideoFrame::STORAGE_SHMEM)
     return frame_.get();
   return nullptr;

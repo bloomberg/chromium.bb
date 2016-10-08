@@ -37,15 +37,6 @@ IPC_STRUCT_BEGIN(AcceleratedVideoEncoderMsg_Encode_Params)
   IPC_STRUCT_MEMBER(bool, force_keyframe)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(AcceleratedVideoEncoderMsg_Encode_Params2)
-  IPC_STRUCT_MEMBER(int32_t, frame_id)
-  IPC_STRUCT_MEMBER(base::TimeDelta, timestamp)
-  IPC_STRUCT_MEMBER(std::vector<gfx::GpuMemoryBufferHandle>,
-                    gpu_memory_buffer_handles)
-  IPC_STRUCT_MEMBER(gfx::Size, size)
-  IPC_STRUCT_MEMBER(bool, force_keyframe)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(AcceleratedVideoDecoderHostMsg_PictureReady_Params)
   IPC_STRUCT_MEMBER(int32_t, picture_buffer_id)
   IPC_STRUCT_MEMBER(int32_t, bitstream_buffer_id)
@@ -158,12 +149,6 @@ IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateVideoEncoder,
 // by AcceleratedVideoEncoderHostMsg_NotifyInputDone.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderMsg_Encode,
                     AcceleratedVideoEncoderMsg_Encode_Params)
-
-// Queue a GpuMemoryBuffer backed video frame to the encoder to encode.
-// |frame_id| will be returned by
-// AcceleratedVideoEncoderHostMsg_NotifyInputDone.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderMsg_Encode2,
-                    AcceleratedVideoEncoderMsg_Encode_Params2)
 
 // Queue a buffer to the encoder for use in returning output.  |buffer_id| will
 // be returned by AcceleratedVideoEncoderHostMsg_BitstreamBufferReady.

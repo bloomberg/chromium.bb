@@ -22,7 +22,6 @@
 #include "ipc/message_filter.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 struct VideoCaptureMsg_BufferReady_Params;
 
@@ -36,13 +35,6 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
     virtual void OnBufferCreated(base::SharedMemoryHandle handle,
                                  int length,
                                  int buffer_id) = 0;
-
-    // Called when a GpuMemoryBuffer backed video frame buffer is created in the
-    // browser process.
-    virtual void OnBufferCreated2(
-        const std::vector<gfx::GpuMemoryBufferHandle>& handles,
-        const gfx::Size& size,
-        int buffer_id) = 0;
 
     virtual void OnBufferDestroyed(int buffer_id) = 0;
 
@@ -98,13 +90,6 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
                        base::SharedMemoryHandle handle,
                        int length,
                        int buffer_id);
-
-  // Receive a newly created GpuMemoryBuffer backed buffer from browser process.
-  void OnBufferCreated2(
-      int device_id,
-      const std::vector<gfx::GpuMemoryBufferHandle>& handles,
-      const gfx::Size& size,
-      int buffer_id);
 
   // Release a buffer received by OnBufferCreated.
   void OnBufferDestroyed(int device_id,

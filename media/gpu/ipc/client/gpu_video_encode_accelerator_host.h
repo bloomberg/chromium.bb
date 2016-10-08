@@ -20,7 +20,6 @@
 #include "media/video/video_encode_accelerator.h"
 
 namespace gfx {
-struct GpuMemoryBufferHandle;
 class Size;
 }  // namespace gfx
 
@@ -75,8 +74,6 @@ class GpuVideoEncodeAcceleratorHost
   ~GpuVideoEncodeAcceleratorHost() override;
 
   // Encode specific video frame types.
-  void EncodeGpuMemoryBufferFrame(const scoped_refptr<VideoFrame>& frame,
-                                  bool force_keyframe);
   void EncodeSharedMemoryFrame(const scoped_refptr<VideoFrame>& frame,
                                bool force_keyframe);
 

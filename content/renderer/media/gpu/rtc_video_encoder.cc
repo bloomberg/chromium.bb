@@ -565,7 +565,8 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   if (next_frame->video_frame_buffer()->native_handle()) {
     frame = static_cast<media::VideoFrame*>(
         next_frame->video_frame_buffer()->native_handle());
-    requires_copy = RequiresSizeChange(frame);
+    requires_copy = RequiresSizeChange(frame) ||
+                    frame->storage_type() != media::VideoFrame::STORAGE_SHMEM;
   } else {
     requires_copy = true;
   }

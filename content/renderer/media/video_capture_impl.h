@@ -98,7 +98,6 @@ class CONTENT_EXPORT VideoCaptureImpl
   // Carries a shared memory for transferring video frames from browser to
   // renderer.
   class ClientBuffer;
-  class ClientBuffer2;
 
   // Contains information for a video capture client. Including parameters
   // for capturing and callbacks to the client.
@@ -120,9 +119,6 @@ class CONTENT_EXPORT VideoCaptureImpl
   void OnBufferCreated(base::SharedMemoryHandle handle,
                        int length,
                        int buffer_id) override;
-  void OnBufferCreated2(const std::vector<gfx::GpuMemoryBufferHandle>& handles,
-                        const gfx::Size& size,
-                        int buffer_id) override;
   void OnBufferDestroyed(int buffer_id) override;
   void OnBufferReceived(int buffer_id,
                         base::TimeDelta timestamp,
@@ -140,10 +136,6 @@ class CONTENT_EXPORT VideoCaptureImpl
                               const scoped_refptr<ClientBuffer>& buffer,
                               const gpu::SyncToken& release_sync_token,
                               double consumer_resource_utilization);
-  void OnClientBufferFinished2(int buffer_id,
-                               const scoped_refptr<ClientBuffer2>& buffer,
-                               const gpu::SyncToken& release_sync_token,
-                               double consumer_resource_utilization);
 
   void StopDevice();
   void RestartCapture();
@@ -180,8 +172,6 @@ class CONTENT_EXPORT VideoCaptureImpl
   // Buffers available for sending to the client.
   typedef std::map<int32_t, scoped_refptr<ClientBuffer>> ClientBufferMap;
   ClientBufferMap client_buffers_;
-  typedef std::map<int32_t, scoped_refptr<ClientBuffer2>> ClientBuffer2Map;
-  ClientBuffer2Map client_buffer2s_;
 
   ClientInfoMap clients_;
   ClientInfoMap clients_pending_on_filter_;

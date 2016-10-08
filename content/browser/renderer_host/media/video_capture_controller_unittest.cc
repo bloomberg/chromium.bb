@@ -51,7 +51,6 @@ class MockVideoCaptureControllerEventHandler
   // These mock methods are delegated to by our fake implementation of
   // VideoCaptureControllerEventHandler, to be used in EXPECT_CALL().
   MOCK_METHOD1(DoBufferCreated, void(VideoCaptureControllerID));
-  MOCK_METHOD1(DoBufferCreated2, void(VideoCaptureControllerID));
   MOCK_METHOD1(DoBufferDestroyed, void(VideoCaptureControllerID));
   MOCK_METHOD2(DoI420BufferReady,
                void(VideoCaptureControllerID, const gfx::Size&));
@@ -65,13 +64,6 @@ class MockVideoCaptureControllerEventHandler
                        base::SharedMemoryHandle handle,
                        int length, int buffer_id) override {
     DoBufferCreated(id);
-  }
-  void OnBufferCreated2(
-      VideoCaptureControllerID id,
-      const std::vector<gfx::GpuMemoryBufferHandle>& handles,
-      const gfx::Size& size,
-      int buffer_id) override {
-    DoBufferCreated2(id);
   }
   void OnBufferDestroyed(VideoCaptureControllerID id, int buffer_id) override {
     DoBufferDestroyed(id);

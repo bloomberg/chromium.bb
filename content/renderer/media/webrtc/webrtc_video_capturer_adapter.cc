@@ -135,8 +135,7 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
   // cropping support for texture yet. See http://crbug/503653.
   // Return |frame| directly if it is GpuMemoryBuffer backed, as we want to
   // keep the frame on native buffers.
-  if (frame->HasTextures() ||
-      frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS) {
+  if (frame->HasTextures()) {
     OnFrame(cricket::WebRtcVideoFrame(
                 new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame),
                 webrtc::kVideoRotation_0, translated_camera_time_us),

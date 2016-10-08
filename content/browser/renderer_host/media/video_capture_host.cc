@@ -65,18 +65,6 @@ void VideoCaptureHost::OnBufferCreated(VideoCaptureControllerID controller_id,
   Send(new VideoCaptureMsg_NewBuffer(controller_id, handle, length, buffer_id));
 }
 
-void VideoCaptureHost::OnBufferCreated2(
-    VideoCaptureControllerID controller_id,
-    const std::vector<gfx::GpuMemoryBufferHandle>& handles,
-    const gfx::Size& size,
-    int buffer_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (controllers_.find(controller_id) == controllers_.end())
-    return;
-
-  Send(new VideoCaptureMsg_NewBuffer2(controller_id, handles, size, buffer_id));
-}
-
 void VideoCaptureHost::OnBufferDestroyed(VideoCaptureControllerID controller_id,
                                          int buffer_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

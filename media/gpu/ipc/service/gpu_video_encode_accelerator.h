@@ -20,7 +20,6 @@
 #include "ui/gfx/geometry/size.h"
 
 struct AcceleratedVideoEncoderMsg_Encode_Params;
-struct AcceleratedVideoEncoderMsg_Encode_Params2;
 
 namespace base {
 class SharedMemory;
@@ -83,7 +82,6 @@ class GpuVideoEncodeAccelerator
   // IPC handlers, proxying VideoEncodeAccelerator for the renderer
   // process.
   void OnEncode(const AcceleratedVideoEncoderMsg_Encode_Params& params);
-  void OnEncode2(const AcceleratedVideoEncoderMsg_Encode_Params2& params);
   void OnUseOutputBitstreamBuffer(int32_t buffer_id,
                                   base::SharedMemoryHandle buffer_handle,
                                   uint32_t buffer_size);
