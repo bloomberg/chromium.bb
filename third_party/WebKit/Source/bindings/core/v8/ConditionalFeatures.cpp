@@ -28,7 +28,7 @@ void installConditionalFeaturesCore(const WrapperTypeInfo* wrapperTypeInfo,
   if (wrapperTypeInfo == &V8HTMLLinkElement::wrapperTypeInfo) {
     if (RuntimeEnabledFeatures::linkServiceWorkerEnabled() ||
         (originTrialContext &&
-         originTrialContext->isFeatureEnabled("ForeignFetch"))) {
+         originTrialContext->isTrialEnabled("ForeignFetch"))) {
       V8HTMLLinkElement::installLinkServiceWorker(
           scriptState->isolate(), scriptState->world(), v8::Local<v8::Object>(),
           prototypeObject, interfaceObject);

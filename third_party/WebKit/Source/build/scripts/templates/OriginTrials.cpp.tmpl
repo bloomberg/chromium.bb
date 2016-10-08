@@ -23,7 +23,7 @@ bool OriginTrials::{{feature.first_lowered_name}}Enabled(ExecutionContext* execu
 {% endif %}
 
     OriginTrialContext* context = OriginTrialContext::from(executionContext, OriginTrialContext::DontCreateIfNotExists);
-    return context && context->isFeatureEnabled("{{feature.origin_trial_feature_name}}");
+    return context && context->isTrialEnabled("{{feature.origin_trial_feature_name}}");
 {% if feature.origin_trial_os %}
 #else
     return false;

@@ -169,17 +169,17 @@ void OriginTrialContext::addTokens(const Vector<String>& tokens) {
   }
 }
 
-bool OriginTrialContext::isFeatureEnabled(const String& featureName) {
+bool OriginTrialContext::isTrialEnabled(const String& trialName) {
   if (!RuntimeEnabledFeatures::originTrialsEnabled())
     return false;
 
-  return m_enabledFeatures.contains(featureName);
+  return m_enabledTrials.contains(trialName);
 }
 
 void OriginTrialContext::validateToken(const String& token) {
   DCHECK(!token.isEmpty());
 
-  // Feature trials are only enabled for secure origins
+  // Origin trials are only enabled for secure origins
   if (!m_host->isSecureContext()) {
     tokenValidationResultHistogram().count(
         static_cast<int>(WebOriginTrialTokenStatus::Insecure));
@@ -193,11 +193,11 @@ void OriginTrialContext::validateToken(const String& token) {
   }
 
   WebSecurityOrigin origin(m_host->getSecurityOrigin());
-  WebString featureName;
+  WebString trialName;
   WebOriginTrialTokenStatus tokenResult =
-      m_trialTokenValidator->validateToken(token, origin, &featureName);
+      m_trialTokenValidator->validateToken(token, origin, &trialName);
   if (tokenResult == WebOriginTrialTokenStatus::Success)
-    m_enabledFeatures.add(featureName);
+    m_enabledTrials.add(trialName);
 
   tokenValidationResultHistogram().count(static_cast<int>(tokenResult));
 }

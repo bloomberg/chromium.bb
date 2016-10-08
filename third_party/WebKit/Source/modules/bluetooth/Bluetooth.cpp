@@ -166,7 +166,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
   OriginTrialContext* originTrials = OriginTrialContext::from(
       context, OriginTrialContext::DontCreateIfNotExists);
   bool originTrialActiveForThisPage =
-      originTrials && originTrials->isFeatureEnabled("WebBluetooth");
+      originTrials && originTrials->isTrialEnabled("WebBluetooth");
 
   if (!originTrialActiveForThisPage && !promotedOriginTrial) {
     promotedOriginTrial = true;

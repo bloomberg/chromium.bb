@@ -51,76 +51,74 @@ void installConditionalFeaturesForModules(
   if (wrapperTypeInfo == &V8Navigator::wrapperTypeInfo) {
     if (RuntimeEnabledFeatures::webBluetoothEnabled() ||
         (originTrialContext &&
-         originTrialContext->isFeatureEnabled("WebBluetooth"))) {
+         originTrialContext->isTrialEnabled("WebBluetooth"))) {
       V8NavigatorPartial::installWebBluetooth(isolate, world,
                                               v8::Local<v8::Object>(),
                                               prototypeObject, interfaceObject);
     }
     if (RuntimeEnabledFeatures::webShareEnabled() ||
         (originTrialContext &&
-         originTrialContext->isFeatureEnabled("WebShare"))) {
+         originTrialContext->isTrialEnabled("WebShare"))) {
       V8NavigatorPartial::installWebShare(isolate, world,
                                           v8::Local<v8::Object>(),
                                           prototypeObject, interfaceObject);
     }
     if (RuntimeEnabledFeatures::webUSBEnabled() ||
-        (originTrialContext &&
-         originTrialContext->isFeatureEnabled("WebUSB"))) {
+        (originTrialContext && originTrialContext->isTrialEnabled("WebUSB"))) {
       V8NavigatorPartial::installWebUSB(isolate, world, v8::Local<v8::Object>(),
                                         prototypeObject, interfaceObject);
     }
     if (RuntimeEnabledFeatures::webVREnabled() ||
-        (originTrialContext && originTrialContext->isFeatureEnabled("WebVR"))) {
+        (originTrialContext && originTrialContext->isTrialEnabled("WebVR"))) {
       V8NavigatorPartial::installWebVR(isolate, world, global, prototypeObject,
                                        interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8Window::wrapperTypeInfo) {
     if (RuntimeEnabledFeatures::webBluetoothEnabled() ||
         (originTrialContext &&
-         originTrialContext->isFeatureEnabled("WebBluetooth"))) {
+         originTrialContext->isTrialEnabled("WebBluetooth"))) {
       V8WindowPartial::installWebBluetooth(isolate, world, global,
                                            prototypeObject, interfaceObject);
     }
     if (RuntimeEnabledFeatures::webUSBEnabled() ||
-        (originTrialContext &&
-         originTrialContext->isFeatureEnabled("WebUSB"))) {
+        (originTrialContext && originTrialContext->isTrialEnabled("WebUSB"))) {
       V8WindowPartial::installWebUSB(isolate, world, global, prototypeObject,
                                      interfaceObject);
     }
     if (RuntimeEnabledFeatures::webVREnabled() ||
-        (originTrialContext && originTrialContext->isFeatureEnabled("WebVR"))) {
+        (originTrialContext && originTrialContext->isTrialEnabled("WebVR"))) {
       V8WindowPartial::installWebVR(isolate, world, global, prototypeObject,
                                     interfaceObject);
     }
     if (RuntimeEnabledFeatures::gamepadExtensionsEnabled() ||
-        (originTrialContext && originTrialContext->isFeatureEnabled("WebVR"))) {
+        (originTrialContext && originTrialContext->isTrialEnabled("WebVR"))) {
       V8WindowPartial::installGamepadExtensions(
           isolate, world, global, prototypeObject, interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8ServiceWorkerGlobalScope::wrapperTypeInfo) {
     if (RuntimeEnabledFeatures::foreignFetchEnabled() ||
         (originTrialContext &&
-         originTrialContext->isFeatureEnabled("ForeignFetch"))) {
+         originTrialContext->isTrialEnabled("ForeignFetch"))) {
       V8ServiceWorkerGlobalScope::installForeignFetch(
           isolate, world, global, prototypeObject, interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8InstallEvent::wrapperTypeInfo) {
     if (RuntimeEnabledFeatures::foreignFetchEnabled() ||
         (originTrialContext &&
-         originTrialContext->isFeatureEnabled("ForeignFetch"))) {
+         originTrialContext->isTrialEnabled("ForeignFetch"))) {
       V8InstallEvent::installForeignFetch(isolate, world,
                                           v8::Local<v8::Object>(),
                                           prototypeObject, interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8Gamepad::wrapperTypeInfo) {
     if (RuntimeEnabledFeatures::gamepadExtensionsEnabled() ||
-        (originTrialContext && originTrialContext->isFeatureEnabled("WebVR"))) {
+        (originTrialContext && originTrialContext->isTrialEnabled("WebVR"))) {
       V8Gamepad::installGamepadExtensions(isolate, world, global,
                                           prototypeObject, interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8GamepadButton::wrapperTypeInfo) {
     if (RuntimeEnabledFeatures::gamepadExtensionsEnabled() ||
-        (originTrialContext && originTrialContext->isFeatureEnabled("WebVR"))) {
+        (originTrialContext && originTrialContext->isTrialEnabled("WebVR"))) {
       V8GamepadButton::installGamepadExtensions(
           isolate, world, global, prototypeObject, interfaceObject);
     }

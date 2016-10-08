@@ -94,8 +94,7 @@ void installConditionalFeaturesForTests(
       executionContext, OriginTrialContext::DontCreateIfNotExists);
 
   if (type == &V8OriginTrialsTest::wrapperTypeInfo) {
-    if (originTrialContext &&
-        originTrialContext->isFeatureEnabled("Frobulate")) {
+    if (originTrialContext && originTrialContext->isTrialEnabled("Frobulate")) {
       V8OriginTrialsTest::installOriginTrialsSampleAPI(
           scriptState->isolate(), scriptState->world(), v8::Local<v8::Object>(),
           prototypeObject, interfaceObject);
