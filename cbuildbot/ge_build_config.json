@@ -849,7 +849,7 @@
           "experimental": true,
           "leader_board": false,
           "board_group": "reef",
-          "arch": "UNKNOWN"
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -993,7 +993,7 @@
           "experimental": true,
           "leader_board": false,
           "board_group": "reef",
-          "arch": "UNKNOWN"
+          "arch": "X86_INTERNAL"
         }
       ]
     },
