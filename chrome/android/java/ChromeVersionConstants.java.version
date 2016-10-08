@@ -9,6 +9,8 @@ class ChromeVersionConstants {
     static final String PRODUCT_VERSION = "@MAJOR@.@MINOR@.@BUILD@.@PATCH@";
     static final boolean IS_OFFICIAL_BUILD = @OFFICIAL_BUILD@ == 1;
 
+    static final int PRODUCT_MAJOR_VERSION = @MAJOR@;
+
     static final int CHANNEL_DEFAULT = 0;
     static final int CHANNEL_CANARY = 1;
     static final int CHANNEL_DEV = 2;

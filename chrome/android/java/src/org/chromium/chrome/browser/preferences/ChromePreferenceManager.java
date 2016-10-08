@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
@@ -23,7 +24,7 @@ public class ChromePreferenceManager {
     private static final String TAG = "preferences";
 
     private static final String PROMOS_SKIPPED_ON_FIRST_START = "promos_skipped_on_first_start";
-    private static final String SIGNIN_PROMO_LAST_SHOWN = "signin_promo_last_timestamp_key";
+    private static final String SIGNIN_PROMO_LAST_SHOWN = "signin_promo_last_shown_chrome_version";
     private static final String SHOW_SIGNIN_PROMO = "show_signin_promo";
     private static final String ALLOW_LOW_END_DEVICE_UI = "allow_low_end_device_ui";
     private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
@@ -50,9 +51,6 @@ public class ChromePreferenceManager {
 
     private static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
     private static final String FAILURE_UPLOAD_SUFFIX = "_crash_failure_upload";
-
-    private static final int SIGNIN_PROMO_CYCLE_IN_DAYS = 120;
-    private static final long MILLISECONDS_IN_DAY = 1000 * 60 * 60 * 24;
 
     private static ChromePreferenceManager sPrefs;
 
@@ -174,23 +172,28 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * Signin promo could be shown at most once every 12 weeks. This method checks
-     * wheter the signin promo has already been shown in the current cycle.
-     * @return Whether the signin promo has been shown in the current cycle.
+     * Signin promo could be shown at most once every at least 2 Chrome major versions. This method
+     * checks wheter the signin promo has already been shown in the current range.
+     * @return Whether the signin promo has been shown in the current range.
      */
     public boolean getSigninPromoShown() {
-        long signinPromoLastShown = mSharedPreferences.getLong(SIGNIN_PROMO_LAST_SHOWN, 0);
-        long numDaysElapsed =
-                (System.currentTimeMillis() - signinPromoLastShown) / MILLISECONDS_IN_DAY;
-        return numDaysElapsed < SIGNIN_PROMO_CYCLE_IN_DAYS;
+        int lastMajorVersion = mSharedPreferences.getInt(SIGNIN_PROMO_LAST_SHOWN, 0);
+        if (lastMajorVersion == 0) {
+            setSigninPromoShown();
+            return true;
+        }
+
+        return ChromeVersionInfo.getProductMajorVersion() < lastMajorVersion + 2;
     }
 
     /**
-     * Sets the preference for tracking when the signin promo was last shown.
+     * Sets the preference for tracking Chrome major version number when the signin promo was last
+     * shown.
      */
     public void setSigninPromoShown() {
         SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putLong(SIGNIN_PROMO_LAST_SHOWN, System.currentTimeMillis());
+        sharedPreferencesEditor.putInt(
+                SIGNIN_PROMO_LAST_SHOWN, ChromeVersionInfo.getProductMajorVersion());
         sharedPreferencesEditor.apply();
     }
 

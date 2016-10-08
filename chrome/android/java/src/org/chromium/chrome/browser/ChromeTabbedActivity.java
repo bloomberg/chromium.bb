@@ -358,6 +358,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             launchFirstRunExperience();
 
+            refreshSignIn();
+
             ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance(this);
             // Promos can only be shown when we start with ACTION_MAIN intent and
             // after FRE is complete.
@@ -374,8 +376,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     preferenceManager.setPromosSkippedOnFirstStart(true);
                 }
             }
-
-            refreshSignIn();
 
             initializeUI();
 
