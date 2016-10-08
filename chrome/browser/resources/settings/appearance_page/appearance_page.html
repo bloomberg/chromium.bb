@@ -19,7 +19,14 @@
 
 <dom-module id="settings-appearance-page">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      :host {
+        --paper-input-container-label: {
+          font-size: inherit;
+          font-weight: inherit;
+        };
+      }
+    </style>
     <settings-animated-pages id="pages" section="appearance">
       <neon-animatable route-path="default">
 <if expr="chromeos">

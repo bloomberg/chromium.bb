@@ -16,10 +16,6 @@
         flex-direction: column;
       }
 
-      #addWordRow {
-        display: flex;
-      }
-
       #newWord {
         flex: .5;
       }
@@ -32,17 +28,19 @@
       iron-list .word {
         flex: 1;
       }
+
+      paper-button {
+        -webkit-margin-start: 16px;
+      }
     </style>
-    <div class="settings-box block">
-      <div id="addWordRow">
-        <iron-a11y-keys id="keys" keys="enter esc"
-            on-keys-pressed="onKeysPress_"></iron-a11y-keys>
-        <paper-input id="newWord" no-label-float
-            label="$i18n{addDictionaryWordLabel}"></paper-input>
-        <paper-button on-tap="onAddWordTap_">
-          $i18n{addDictionaryWordButton}
-        </paper-button>
-      </div>
+    <div class="settings-box">
+      <iron-a11y-keys id="keys" keys="enter esc"
+          on-keys-pressed="onKeysPress_"></iron-a11y-keys>
+      <paper-input id="newWord" no-label-float
+          label="$i18n{addDictionaryWordLabel}"></paper-input>
+      <paper-button on-tap="onAddWordTap_">
+        $i18n{addDictionaryWordButton}
+      </paper-button>
     </div>
     <div class="settings-box block">
       <h2>$i18n{customDictionaryWords}</h2>
