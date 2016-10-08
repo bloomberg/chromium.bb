@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/overlay_candidate_validator.h"
@@ -45,8 +44,7 @@ class CompositorFrameSinkClient;
 //      From here on, it will only be used on the compositor thread.
 //   3. If the 3D context is lost, then the compositor will delete the output
 //      surface (on the compositor thread) and go back to step 1.
-class CC_EXPORT CompositorFrameSink
-    : public base::trace_event::MemoryDumpProvider {
+class CC_EXPORT CompositorFrameSink {
  public:
   struct Capabilities {
     Capabilities() = default;
@@ -67,7 +65,7 @@ class CC_EXPORT CompositorFrameSink
   explicit CompositorFrameSink(
       scoped_refptr<VulkanContextProvider> vulkan_context_provider);
 
-  ~CompositorFrameSink() override;
+  virtual ~CompositorFrameSink();
 
   // Called by the compositor on the compositor thread. This is a place where
   // thread-specific data for the output surface can be initialized, since from
@@ -112,10 +110,6 @@ class CC_EXPORT CompositorFrameSink
   // (via OnSwapBuffersComplete()) eventually.
   virtual void SwapBuffers(CompositorFrame frame) = 0;
   virtual void OnSwapBuffersComplete();
-
-  // base::trace_event::MemoryDumpProvider implementation.
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
   // This is used by both display and delegating implementations.

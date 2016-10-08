@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "cc/output/context_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/command_buffer_metrics.h"
@@ -45,7 +46,8 @@ class WebGraphicsContext3DCommandBufferImpl;
 // Implementation of cc::ContextProvider that provides a GL implementation over
 // command buffer to the GPU process.
 class CONTENT_EXPORT ContextProviderCommandBuffer
-    : NON_EXPORTED_BASE(public cc::ContextProvider) {
+    : NON_EXPORTED_BASE(public cc::ContextProvider),
+      public base::trace_event::MemoryDumpProvider {
  public:
   ContextProviderCommandBuffer(
       scoped_refptr<gpu::GpuChannelHost> channel,
@@ -77,6 +79,10 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   gpu::Capabilities ContextCapabilities() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // Set the default task runner for command buffers to use for handling IPCs.
   // If not specified, this will be the ThreadTaskRunner for the thread on

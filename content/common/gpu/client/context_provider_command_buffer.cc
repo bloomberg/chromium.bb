@@ -13,8 +13,10 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "cc/output/context_cache_controller.h"
 #include "cc/output/managed_memory_policy.h"
 #include "content/common/gpu/client/command_buffer_metrics.h"
@@ -27,7 +29,11 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
+#include "third_party/skia/include/core/SkTraceMemoryDump.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "ui/gl/trace_util.h"
+
+class SkDiscardableMemory;
 
 namespace {
 
@@ -47,7 +53,96 @@ class AutoSet {
   bool* b_;
   const bool set_;
 };
-}
+
+// Derives from SkTraceMemoryDump and implements graphics specific memory
+// backing functionality.
+class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
+ public:
+  // This should never outlive the provided ProcessMemoryDump, as it should
+  // always be scoped to a single OnMemoryDump funciton call.
+  explicit SkiaGpuTraceMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                                  uint64_t share_group_tracing_guid)
+      : pmd_(pmd), share_group_tracing_guid_(share_group_tracing_guid) {}
+
+  // Overridden from SkTraceMemoryDump:
+  void dumpNumericValue(const char* dump_name,
+                        const char* value_name,
+                        const char* units,
+                        uint64_t value) override {
+    auto* dump = GetOrCreateAllocatorDump(dump_name);
+    dump->AddScalar(value_name, units, value);
+  }
+
+  void setMemoryBacking(const char* dump_name,
+                        const char* backing_type,
+                        const char* backing_object_id) override {
+    const uint64_t tracing_process_id =
+        base::trace_event::MemoryDumpManager::GetInstance()
+            ->GetTracingProcessId();
+
+    // For uniformity, skia provides this value as a string. Convert back to a
+    // uint32_t.
+    uint32_t gl_id =
+        std::strtoul(backing_object_id, nullptr /* str_end */, 10 /* base */);
+
+    // Constants used by SkiaGpuTraceMemoryDump to identify different memory
+    // types.
+    const char* kGLTextureBackingType = "gl_texture";
+    const char* kGLBufferBackingType = "gl_buffer";
+    const char* kGLRenderbufferBackingType = "gl_renderbuffer";
+
+    // Populated in if statements below.
+    base::trace_event::MemoryAllocatorDumpGuid guid;
+
+    if (strcmp(backing_type, kGLTextureBackingType) == 0) {
+      guid = gl::GetGLTextureClientGUIDForTracing(share_group_tracing_guid_,
+                                                  gl_id);
+    } else if (strcmp(backing_type, kGLBufferBackingType) == 0) {
+      guid = gl::GetGLBufferGUIDForTracing(tracing_process_id, gl_id);
+    } else if (strcmp(backing_type, kGLRenderbufferBackingType) == 0) {
+      guid = gl::GetGLRenderbufferGUIDForTracing(tracing_process_id, gl_id);
+    }
+
+    if (!guid.empty()) {
+      pmd_->CreateSharedGlobalAllocatorDump(guid);
+
+      auto* dump = GetOrCreateAllocatorDump(dump_name);
+
+      const int kImportance = 2;
+      pmd_->AddOwnershipEdge(dump->guid(), guid, kImportance);
+    }
+  }
+
+  void setDiscardableMemoryBacking(
+      const char* dump_name,
+      const SkDiscardableMemory& discardable_memory_object) override {
+    // We don't use this class for dumping discardable memory.
+    NOTREACHED();
+  }
+
+  LevelOfDetail getRequestedDetails() const override {
+    // TODO(ssid): Use MemoryDumpArgs to create light dumps when requested
+    // (crbug.com/499731).
+    return kObjectsBreakdowns_LevelOfDetail;
+  }
+
+ private:
+  // Helper to create allocator dumps.
+  base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
+      const char* dump_name) {
+    auto* dump = pmd_->GetAllocatorDump(dump_name);
+    if (!dump)
+      dump = pmd_->CreateAllocatorDump(dump_name);
+    return dump;
+  }
+
+  base::trace_event::ProcessMemoryDump* pmd_;
+  uint64_t share_group_tracing_guid_;
+
+  DISALLOW_COPY_AND_ASSIGN(SkiaGpuTraceMemoryDump);
+};
+
+}  // namespace
 
 namespace content {
 
@@ -102,6 +197,9 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
     command_buffer_->SetLock(nullptr);
     // Disconnect lost callbacks during destruction.
     gles2_impl_->SetLostContextCallback(base::Closure());
+    // Unregister memory dump provider.
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        this);
   }
 }
 
@@ -131,6 +229,11 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   // Early outs should report failure.
   AutoSet set_bind_failed(&bind_failed_, true);
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      default_task_runner_;
+  if (!task_runner)
+    task_runner = base::ThreadTaskRunnerHandle::Get();
+
   // It's possible to be running BindToCurrentThread on two contexts
   // on different threads at the same time, but which will be in the same share
   // group. To ensure they end up in the same group, hold the lock on the
@@ -152,10 +255,6 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
 
     // This command buffer is a client-side proxy to the command buffer in the
     // GPU process.
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        default_task_runner_;
-    if (!task_runner)
-      task_runner = base::ThreadTaskRunnerHandle::Get();
     command_buffer_ = gpu::CommandBufferProxyImpl::Create(
         std::move(channel_), surface_handle_, shared_command_buffer, stream_id_,
         stream_priority_, attributes_, active_url_, task_runner);
@@ -217,8 +316,8 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
 
     shared_providers_->list.push_back(this);
 
-    cache_controller_.reset(new cc::ContextCacheController(
-        gles2_impl_.get(), std::move(task_runner)));
+    cache_controller_.reset(
+        new cc::ContextCacheController(gles2_impl_.get(), task_runner));
   }
   set_bind_failed.Reset();
   bind_succeeded_ = true;
@@ -252,6 +351,8 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     command_buffer_->SetLock(&context_lock_);
     cache_controller_->SetLock(&context_lock_);
   }
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "ContextProviderCommandBuffer", std::move(task_runner));
   return true;
 }
 
@@ -340,6 +441,25 @@ void ContextProviderCommandBuffer::SetLostContextCallback(
   DCHECK(lost_context_callback_.is_null() ||
          lost_context_callback.is_null());
   lost_context_callback_ = lost_context_callback;
+}
+
+bool ContextProviderCommandBuffer::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK(bind_succeeded_);
+  if (!gr_context_)
+    return false;
+
+  base::Optional<base::AutoLock> hold;
+  if (support_locking_)
+    hold.emplace(context_lock_);
+
+  context_thread_checker_.DetachFromThread();
+  SkiaGpuTraceMemoryDump trace_memory_dump(
+      pmd, gles2_impl_->ShareGroupTracingGUID());
+  gr_context_->get()->dumpMemoryStatistics(&trace_memory_dump);
+  context_thread_checker_.DetachFromThread();
+  return true;
 }
 
 }  // namespace content

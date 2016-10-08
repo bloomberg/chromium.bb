@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/overlay_candidate_validator.h"
@@ -46,7 +45,7 @@ class OutputSurfaceFrame;
 //      From here on, it will only be used on the compositor thread.
 //   3. If the 3D context is lost, then the compositor will delete the output
 //      surface (on the compositor thread) and go back to step 1.
-class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
+class CC_EXPORT OutputSurface {
  public:
   struct Capabilities {
     Capabilities() = default;
@@ -67,7 +66,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   explicit OutputSurface(
       scoped_refptr<VulkanContextProvider> vulkan_context_provider);
 
-  ~OutputSurface() override;
+  virtual ~OutputSurface();
 
   // Called by the compositor on the compositor thread. This is a place where
   // thread-specific data for the output surface can be initialized, since from
@@ -132,10 +131,6 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   // itself). For successful swaps, the implementation must call
   // OutputSurfaceClient::DidSwapBuffersComplete() eventually.
   virtual void SwapBuffers(OutputSurfaceFrame frame) = 0;
-
-  // base::trace_event::MemoryDumpProvider implementation.
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
   void PostSwapBuffersComplete();
