@@ -60,8 +60,8 @@ int adjustJoint(int outlineWidth,
         case BSRight:  // Clockwise
           return outlineWidth;
         case BSLeft:  // Counterclockwise
-          edge1.x2 += outlineWidth;
-          edge2.y2 += outlineWidth;
+          edge1.x2 = saturatedAddition(edge1.x2, outlineWidth);
+          edge2.y2 = saturatedAddition(edge2.y2, outlineWidth);
           return -outlineWidth;
         default:  // Same side or no joint.
           return 0;
@@ -71,8 +71,8 @@ int adjustJoint(int outlineWidth,
         case BSBottom:  // Clockwise
           return outlineWidth;
         case BSTop:  // Counterclockwise
-          edge1.y2 += outlineWidth;
-          edge2.x1 -= outlineWidth;
+          edge1.y2 = saturatedAddition(edge1.y2, outlineWidth);
+          edge2.x1 = saturatedSubtraction(edge2.x1, outlineWidth);
           return -outlineWidth;
         default:  // Same side or no joint.
           return 0;
@@ -82,8 +82,8 @@ int adjustJoint(int outlineWidth,
         case BSLeft:  // Clockwise
           return outlineWidth;
         case BSRight:  // Counterclockwise
-          edge1.x1 -= outlineWidth;
-          edge2.y1 -= outlineWidth;
+          edge1.x1 = saturatedSubtraction(edge1.x1, outlineWidth);
+          edge2.y1 = saturatedSubtraction(edge2.y1, outlineWidth);
           return -outlineWidth;
         default:  // Same side or no joint.
           return 0;
@@ -93,8 +93,8 @@ int adjustJoint(int outlineWidth,
         case BSTop:  // Clockwise
           return outlineWidth;
         case BSBottom:  // Counterclockwise
-          edge1.y1 -= outlineWidth;
-          edge2.x2 += outlineWidth;
+          edge1.y1 = saturatedSubtraction(edge1.y1, outlineWidth);
+          edge2.x2 = saturatedAddition(edge2.x2, outlineWidth);
           return -outlineWidth;
         default:  // Same side or no joint.
           return 0;
@@ -142,21 +142,21 @@ void paintComplexOutline(GraphicsContext& graphicsContext,
     edge.y2 = SkScalarTruncToInt(points[1].y());
     if (edge.x1 == edge.x2) {
       if (edge.y1 < edge.y2) {
-        edge.x1 -= width;
+        edge.x1 = saturatedSubtraction(edge.x1, width);
         edge.side = BSRight;
       } else {
         std::swap(edge.y1, edge.y2);
-        edge.x2 += width;
+        edge.x2 = saturatedAddition(edge.x2, width);
         edge.side = BSLeft;
       }
     } else {
       ASSERT(edge.y1 == edge.y2);
       if (edge.x1 < edge.x2) {
-        edge.y2 += width;
+        edge.y2 = saturatedAddition(edge.y2, width);
         edge.side = BSTop;
       } else {
         std::swap(edge.x1, edge.x2);
-        edge.y1 -= width;
+        edge.y1 = saturatedSubtraction(edge.y1, width);
         edge.side = BSBottom;
       }
     }
@@ -213,6 +213,10 @@ void fillQuad(GraphicsContext& context,
   paint.setColor(color.rgb());
 
   context.drawPath(path, paint);
+}
+
+int thirdOfDouble(int width) {
+  return std::max((width * 2 + 1) / 3, 0);
 }
 
 }  // namespace
@@ -350,11 +354,11 @@ void ObjectPainter::drawLineForBoxSide(GraphicsContext& graphicsContext,
   int thickness;
   int length;
   if (side == BSTop || side == BSBottom) {
-    thickness = y2 - y1;
-    length = x2 - x1;
+    thickness = saturatedSubtraction(y2, y1);
+    length = saturatedSubtraction(x2, x1);
   } else {
-    thickness = x2 - x1;
-    length = y2 - y1;
+    thickness = saturatedSubtraction(x2, x1);
+    length = saturatedSubtraction(y2, y1);
   }
 
   // We would like this check to be an ASSERT as we don't want to draw empty
@@ -425,13 +429,13 @@ void ObjectPainter::drawDashedOrDottedBoxSide(GraphicsContext& graphicsContext,
   switch (side) {
     case BSBottom:
     case BSTop: {
-      int midY = y1 + thickness / 2;
+      int midY = saturatedAddition(y1, thickness / 2);
       graphicsContext.drawLine(IntPoint(x1, midY), IntPoint(x2, midY));
       break;
     }
     case BSRight:
     case BSLeft: {
-      int midX = x1 + thickness / 2;
+      int midX = saturatedAddition(x1, thickness / 2);
       graphicsContext.drawLine(IntPoint(midX, y1), IntPoint(midX, y2));
       break;
     }
@@ -452,7 +456,7 @@ void ObjectPainter::drawDoubleBoxSide(GraphicsContext& graphicsContext,
                                       int adjacentWidth1,
                                       int adjacentWidth2,
                                       bool antialias) {
-  int thirdOfThickness = (thickness + 1) / 3;
+  int thirdOfThickness = saturatedAddition(thickness, 1) / 3;
   ASSERT(thirdOfThickness > 0);
 
   if (!adjacentWidth1 && !adjacentWidth2) {
@@ -468,13 +472,15 @@ void ObjectPainter::drawDoubleBoxSide(GraphicsContext& graphicsContext,
       case BSBottom:
         graphicsContext.drawRect(IntRect(x1, y1, length, thirdOfThickness));
         graphicsContext.drawRect(
-            IntRect(x1, y2 - thirdOfThickness, length, thirdOfThickness));
+            IntRect(x1, saturatedSubtraction(y2, thirdOfThickness), length,
+                    thirdOfThickness));
         break;
       case BSLeft:
       case BSRight:
         graphicsContext.drawRect(IntRect(x1, y1, thirdOfThickness, length));
         graphicsContext.drawRect(
-            IntRect(x2 - thirdOfThickness, y1, thirdOfThickness, length));
+            IntRect(saturatedSubtraction(x2, thirdOfThickness), y1,
+                    thirdOfThickness, length));
         break;
     }
 
@@ -484,58 +490,68 @@ void ObjectPainter::drawDoubleBoxSide(GraphicsContext& graphicsContext,
   }
 
   int adjacent1BigThird =
-      ((adjacentWidth1 > 0) ? adjacentWidth1 + 1 : adjacentWidth1 - 1) / 3;
+      ((adjacentWidth1 > 0) ? saturatedAddition(adjacentWidth1, 1)
+                            : saturatedSubtraction(adjacentWidth1, 1)) /
+      3;
   int adjacent2BigThird =
-      ((adjacentWidth2 > 0) ? adjacentWidth2 + 1 : adjacentWidth2 - 1) / 3;
+      ((adjacentWidth2 > 0) ? saturatedAddition(adjacentWidth2, 1)
+                            : saturatedSubtraction(adjacentWidth2, 1)) /
+      3;
 
   switch (side) {
     case BSTop:
-      drawLineForBoxSide(graphicsContext,
-                         x1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0), y1,
-                         x2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0),
-                         y1 + thirdOfThickness, side, color, BorderStyleSolid,
-                         adjacent1BigThird, adjacent2BigThird, antialias);
       drawLineForBoxSide(
-          graphicsContext, x1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0),
-          y2 - thirdOfThickness, x2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0),
-          y2, side, color, BorderStyleSolid, adjacent1BigThird,
-          adjacent2BigThird, antialias);
+          graphicsContext,
+          saturatedAddition(x1, thirdOfDouble(-adjacentWidth1)), y1,
+          saturatedSubtraction(x2, thirdOfDouble(-adjacentWidth2)),
+          saturatedAddition(y1, thirdOfThickness), side, color,
+          BorderStyleSolid, adjacent1BigThird, adjacent2BigThird, antialias);
+      drawLineForBoxSide(
+          graphicsContext, saturatedAddition(x1, thirdOfDouble(adjacentWidth1)),
+          saturatedSubtraction(y2, thirdOfThickness),
+          saturatedSubtraction(x2, thirdOfDouble(adjacentWidth2)), y2, side,
+          color, BorderStyleSolid, adjacent1BigThird, adjacent2BigThird,
+          antialias);
       break;
     case BSLeft:
       drawLineForBoxSide(
-          graphicsContext, x1, y1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0),
-          x1 + thirdOfThickness,
-          y2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0), side, color,
+          graphicsContext, x1,
+          saturatedAddition(y1, thirdOfDouble(-adjacentWidth1)),
+          saturatedAddition(x1, thirdOfThickness),
+          saturatedSubtraction(y2, thirdOfDouble(-adjacentWidth2)), side, color,
           BorderStyleSolid, adjacent1BigThird, adjacent2BigThird, antialias);
-      drawLineForBoxSide(graphicsContext, x2 - thirdOfThickness,
-                         y1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0), x2,
-                         y2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0), side,
-                         color, BorderStyleSolid, adjacent1BigThird,
-                         adjacent2BigThird, antialias);
+      drawLineForBoxSide(
+          graphicsContext, saturatedSubtraction(x2, thirdOfThickness),
+          saturatedAddition(y1, thirdOfDouble(adjacentWidth1)), x2,
+          saturatedSubtraction(y2, thirdOfDouble(adjacentWidth2)), side, color,
+          BorderStyleSolid, adjacent1BigThird, adjacent2BigThird, antialias);
       break;
     case BSBottom:
-      drawLineForBoxSide(graphicsContext,
-                         x1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0), y1,
-                         x2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0),
-                         y1 + thirdOfThickness, side, color, BorderStyleSolid,
-                         adjacent1BigThird, adjacent2BigThird, antialias);
       drawLineForBoxSide(
-          graphicsContext, x1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0),
-          y2 - thirdOfThickness,
-          x2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0), y2, side, color,
+          graphicsContext, saturatedAddition(x1, thirdOfDouble(adjacentWidth1)),
+          y1, saturatedSubtraction(x2, thirdOfDouble(adjacentWidth2)),
+          saturatedAddition(y1, thirdOfThickness), side, color,
           BorderStyleSolid, adjacent1BigThird, adjacent2BigThird, antialias);
+      drawLineForBoxSide(
+          graphicsContext,
+          saturatedAddition(x1, thirdOfDouble(-adjacentWidth1)),
+          saturatedSubtraction(y2, thirdOfThickness),
+          saturatedSubtraction(x2, thirdOfDouble(-adjacentWidth2)), y2, side,
+          color, BorderStyleSolid, adjacent1BigThird, adjacent2BigThird,
+          antialias);
       break;
     case BSRight:
       drawLineForBoxSide(
-          graphicsContext, x1, y1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0),
-          x1 + thirdOfThickness, y2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0),
-          side, color, BorderStyleSolid, adjacent1BigThird, adjacent2BigThird,
-          antialias);
-      drawLineForBoxSide(graphicsContext, x2 - thirdOfThickness,
-                         y1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0), x2,
-                         y2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0), side,
-                         color, BorderStyleSolid, adjacent1BigThird,
-                         adjacent2BigThird, antialias);
+          graphicsContext, x1,
+          saturatedAddition(y1, thirdOfDouble(adjacentWidth1)),
+          saturatedAddition(x1, thirdOfThickness),
+          saturatedSubtraction(y2, thirdOfDouble(adjacentWidth2)), side, color,
+          BorderStyleSolid, adjacent1BigThird, adjacent2BigThird, antialias);
+      drawLineForBoxSide(
+          graphicsContext, saturatedSubtraction(x2, thirdOfThickness),
+          saturatedAddition(y1, thirdOfDouble(-adjacentWidth1)), x2,
+          saturatedSubtraction(y2, thirdOfDouble(-adjacentWidth2)), side, color,
+          BorderStyleSolid, adjacent1BigThird, adjacent2BigThird, antialias);
       break;
     default:
       break;
@@ -564,50 +580,78 @@ void ObjectPainter::drawRidgeOrGrooveBoxSide(GraphicsContext& graphicsContext,
   }
 
   int adjacent1BigHalf =
-      ((adjacentWidth1 > 0) ? adjacentWidth1 + 1 : adjacentWidth1 - 1) / 2;
+      ((adjacentWidth1 > 0) ? saturatedAddition(adjacentWidth1, 1)
+                            : saturatedSubtraction(adjacentWidth1, 1)) /
+      2;
   int adjacent2BigHalf =
-      ((adjacentWidth2 > 0) ? adjacentWidth2 + 1 : adjacentWidth2 - 1) / 2;
+      ((adjacentWidth2 > 0) ? saturatedAddition(adjacentWidth2, 1)
+                            : saturatedSubtraction(adjacentWidth2, 1)) /
+      2;
 
   switch (side) {
     case BSTop:
-      drawLineForBoxSide(graphicsContext, x1 + std::max(-adjacentWidth1, 0) / 2,
-                         y1, x2 - std::max(-adjacentWidth2, 0) / 2,
-                         (y1 + y2 + 1) / 2, side, color, s1, adjacent1BigHalf,
-                         adjacent2BigHalf, antialias);
       drawLineForBoxSide(
-          graphicsContext, x1 + std::max(adjacentWidth1 + 1, 0) / 2,
-          (y1 + y2 + 1) / 2, x2 - std::max(adjacentWidth2 + 1, 0) / 2, y2, side,
-          color, s2, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
+          graphicsContext,
+          saturatedAddition(x1, std::max(-adjacentWidth1, 0) / 2), y1,
+          saturatedSubtraction(x2, std::max(-adjacentWidth2, 0) / 2),
+          saturatedAddition(y1, saturatedAddition(y2, 1)) / 2, side, color, s1,
+          adjacent1BigHalf, adjacent2BigHalf, antialias);
+      drawLineForBoxSide(
+          graphicsContext,
+          saturatedAddition(
+              x1, std::max(saturatedAddition(adjacentWidth1, 1), 0) / 2),
+          saturatedAddition(y1, saturatedAddition(y2, 1)) / 2,
+          saturatedSubtraction(
+              x2, std::max(saturatedAddition(adjacentWidth2, 1), 0) / 2),
+          y2, side, color, s2, adjacentWidth1 / 2, adjacentWidth2 / 2,
+          antialias);
       break;
     case BSLeft:
       drawLineForBoxSide(
-          graphicsContext, x1, y1 + std::max(-adjacentWidth1, 0) / 2,
-          (x1 + x2 + 1) / 2, y2 - std::max(-adjacentWidth2, 0) / 2, side, color,
-          s1, adjacent1BigHalf, adjacent2BigHalf, antialias);
-      drawLineForBoxSide(graphicsContext, (x1 + x2 + 1) / 2,
-                         y1 + std::max(adjacentWidth1 + 1, 0) / 2, x2,
-                         y2 - std::max(adjacentWidth2 + 1, 0) / 2, side, color,
-                         s2, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
+          graphicsContext, x1,
+          saturatedAddition(y1, std::max(-adjacentWidth1, 0) / 2),
+          saturatedAddition(x1, saturatedAddition(x2, 1)) / 2,
+          saturatedSubtraction(y2, std::max(-adjacentWidth2, 0) / 2), side,
+          color, s1, adjacent1BigHalf, adjacent2BigHalf, antialias);
+      drawLineForBoxSide(
+          graphicsContext, saturatedAddition(x1, saturatedAddition(x2, 1)) / 2,
+          saturatedAddition(
+              y1, std::max(saturatedAddition(adjacentWidth1, 1), 0) / 2),
+          x2, saturatedSubtraction(
+                  y2, std::max(saturatedAddition(adjacentWidth2, 1), 0) / 2),
+          side, color, s2, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
       break;
     case BSBottom:
-      drawLineForBoxSide(graphicsContext, x1 + std::max(adjacentWidth1, 0) / 2,
-                         y1, x2 - std::max(adjacentWidth2, 0) / 2,
-                         (y1 + y2 + 1) / 2, side, color, s2, adjacent1BigHalf,
-                         adjacent2BigHalf, antialias);
       drawLineForBoxSide(
-          graphicsContext, x1 + std::max(-adjacentWidth1 + 1, 0) / 2,
-          (y1 + y2 + 1) / 2, x2 - std::max(-adjacentWidth2 + 1, 0) / 2, y2,
-          side, color, s1, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
+          graphicsContext,
+          saturatedAddition(x1, std::max(adjacentWidth1, 0) / 2), y1,
+          saturatedSubtraction(x2, std::max(adjacentWidth2, 0) / 2),
+          saturatedAddition(y1, saturatedAddition(y2, 1)) / 2, side, color, s2,
+          adjacent1BigHalf, adjacent2BigHalf, antialias);
+      drawLineForBoxSide(
+          graphicsContext,
+          saturatedAddition(
+              x1, std::max(saturatedAddition(-adjacentWidth1, 1), 0) / 2),
+          saturatedAddition(y1, saturatedAddition(y2, 1)) / 2,
+          saturatedSubtraction(
+              x2, std::max(saturatedAddition(-adjacentWidth2, 1), 0) / 2),
+          y2, side, color, s1, adjacentWidth1 / 2, adjacentWidth2 / 2,
+          antialias);
       break;
     case BSRight:
       drawLineForBoxSide(
-          graphicsContext, x1, y1 + std::max(adjacentWidth1, 0) / 2,
-          (x1 + x2 + 1) / 2, y2 - std::max(adjacentWidth2, 0) / 2, side, color,
-          s2, adjacent1BigHalf, adjacent2BigHalf, antialias);
-      drawLineForBoxSide(graphicsContext, (x1 + x2 + 1) / 2,
-                         y1 + std::max(-adjacentWidth1 + 1, 0) / 2, x2,
-                         y2 - std::max(-adjacentWidth2 + 1, 0) / 2, side, color,
-                         s1, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
+          graphicsContext, x1,
+          saturatedAddition(y1, std::max(adjacentWidth1, 0) / 2),
+          saturatedAddition(x1, saturatedAddition(x2, 1)) / 2,
+          saturatedSubtraction(y2, std::max(adjacentWidth2, 0) / 2), side,
+          color, s2, adjacent1BigHalf, adjacent2BigHalf, antialias);
+      drawLineForBoxSide(
+          graphicsContext, saturatedAddition(x1, saturatedAddition(x2, 1)) / 2,
+          saturatedAddition(
+              y1, std::max(saturatedAddition(-adjacentWidth1, 1), 0) / 2),
+          x2, saturatedSubtraction(
+                  y2, std::max(saturatedAddition(-adjacentWidth2, 1), 0) / 2),
+          side, color, s1, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
       break;
   }
 }
@@ -631,7 +675,9 @@ void ObjectPainter::drawSolidBoxSide(GraphicsContext& graphicsContext,
     bool wasAntialiased = graphicsContext.shouldAntialias();
     if (antialias != wasAntialiased)
       graphicsContext.setShouldAntialias(antialias);
-    graphicsContext.fillRect(IntRect(x1, y1, x2 - x1, y2 - y1), color);
+    graphicsContext.fillRect(IntRect(x1, y1, saturatedSubtraction(x2, x1),
+                                     saturatedSubtraction(y2, y1)),
+                             color);
     if (antialias != wasAntialiased)
       graphicsContext.setShouldAntialias(wasAntialiased);
     return;
@@ -640,28 +686,44 @@ void ObjectPainter::drawSolidBoxSide(GraphicsContext& graphicsContext,
   FloatPoint quad[4];
   switch (side) {
     case BSTop:
-      quad[0] = FloatPoint(x1 + std::max(-adjacentWidth1, 0), y1);
-      quad[1] = FloatPoint(x1 + std::max(adjacentWidth1, 0), y2);
-      quad[2] = FloatPoint(x2 - std::max(adjacentWidth2, 0), y2);
-      quad[3] = FloatPoint(x2 - std::max(-adjacentWidth2, 0), y1);
+      quad[0] =
+          FloatPoint(saturatedAddition(x1, std::max(-adjacentWidth1, 0)), y1);
+      quad[1] =
+          FloatPoint(saturatedAddition(x1, std::max(adjacentWidth1, 0)), y2);
+      quad[2] =
+          FloatPoint(saturatedSubtraction(x2, std::max(adjacentWidth2, 0)), y2);
+      quad[3] = FloatPoint(
+          saturatedSubtraction(x2, std::max(-adjacentWidth2, 0)), y1);
       break;
     case BSBottom:
-      quad[0] = FloatPoint(x1 + std::max(adjacentWidth1, 0), y1);
-      quad[1] = FloatPoint(x1 + std::max(-adjacentWidth1, 0), y2);
-      quad[2] = FloatPoint(x2 - std::max(-adjacentWidth2, 0), y2);
-      quad[3] = FloatPoint(x2 - std::max(adjacentWidth2, 0), y1);
+      quad[0] =
+          FloatPoint(saturatedAddition(x1, std::max(adjacentWidth1, 0)), y1);
+      quad[1] =
+          FloatPoint(saturatedAddition(x1, std::max(-adjacentWidth1, 0)), y2);
+      quad[2] = FloatPoint(
+          saturatedSubtraction(x2, std::max(-adjacentWidth2, 0)), y2);
+      quad[3] =
+          FloatPoint(saturatedSubtraction(x2, std::max(adjacentWidth2, 0)), y1);
       break;
     case BSLeft:
-      quad[0] = FloatPoint(x1, y1 + std::max(-adjacentWidth1, 0));
-      quad[1] = FloatPoint(x1, y2 - std::max(-adjacentWidth2, 0));
-      quad[2] = FloatPoint(x2, y2 - std::max(adjacentWidth2, 0));
-      quad[3] = FloatPoint(x2, y1 + std::max(adjacentWidth1, 0));
+      quad[0] =
+          FloatPoint(x1, saturatedAddition(y1, std::max(-adjacentWidth1, 0)));
+      quad[1] = FloatPoint(
+          x1, saturatedSubtraction(y2, std::max(-adjacentWidth2, 0)));
+      quad[2] =
+          FloatPoint(x2, saturatedSubtraction(y2, std::max(adjacentWidth2, 0)));
+      quad[3] =
+          FloatPoint(x2, saturatedAddition(y1, std::max(adjacentWidth1, 0)));
       break;
     case BSRight:
-      quad[0] = FloatPoint(x1, y1 + std::max(adjacentWidth1, 0));
-      quad[1] = FloatPoint(x1, y2 - std::max(adjacentWidth2, 0));
-      quad[2] = FloatPoint(x2, y2 - std::max(-adjacentWidth2, 0));
-      quad[3] = FloatPoint(x2, y1 + std::max(-adjacentWidth1, 0));
+      quad[0] =
+          FloatPoint(x1, saturatedAddition(y1, std::max(adjacentWidth1, 0)));
+      quad[1] =
+          FloatPoint(x1, saturatedSubtraction(y2, std::max(adjacentWidth2, 0)));
+      quad[2] = FloatPoint(
+          x2, saturatedSubtraction(y2, std::max(-adjacentWidth2, 0)));
+      quad[3] =
+          FloatPoint(x2, saturatedAddition(y1, std::max(-adjacentWidth1, 0)));
       break;
   }
 

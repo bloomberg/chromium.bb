@@ -310,7 +310,7 @@ Color Color::dark() const {
   getRGBA(r, g, b, a);
 
   float v = std::max(r, std::max(g, b));
-  float multiplier = std::max(0.0f, (v - 0.33f) / v);
+  float multiplier = (v == 0.0f) ? 0.0f : std::max(0.0f, (v - 0.33f) / v);
 
   return Color(static_cast<int>(multiplier * r * scaleFactor),
                static_cast<int>(multiplier * g * scaleFactor),
