@@ -355,6 +355,11 @@ class PersonalDataManager : public KeyedService,
   // credit cards the user has. On subsequent calls, does nothing.
   void LogLocalCreditCardCount() const;
 
+  // The first time this is called, logs an UMA metric for the number of server
+  // credit cards the user has (both masked and unmasked). On subsequent calls,
+  // does nothing.
+  void LogServerCreditCardCounts() const;
+
   // Returns the value of the AutofillEnabled pref.
   virtual bool IsAutofillEnabled() const;
 
@@ -501,7 +506,11 @@ class PersonalDataManager : public KeyedService,
 
   // Whether we have already logged the number of local credit cards this
   // session.
-  mutable bool has_logged_credit_card_count_;
+  mutable bool has_logged_local_credit_card_count_;
+
+  // Whether we have already logged the number of server credit cards this
+  // session.
+  mutable bool has_logged_server_credit_card_counts_;
 
   // An observer to listen for changes to prefs::kAutofillEnabled.
   std::unique_ptr<BooleanPrefMember> enabled_pref_;

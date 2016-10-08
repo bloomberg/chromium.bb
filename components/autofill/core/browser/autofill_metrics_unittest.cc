@@ -1513,6 +1513,56 @@ TEST_F(AutofillMetricsTest, StoredLocalCreditCardCount) {
   }
 }
 
+// Test that the masked server credit card counts are logged correctly.
+TEST_F(AutofillMetricsTest, StoredServerCreditCardCounts_Masked) {
+  // The metrics should be logged when the credit cards are first loaded.
+  {
+    base::HistogramTester histogram_tester;
+    personal_data_->RecreateCreditCards(
+        false /* include_local_credit_card */,
+        true /* include_masked_server_credit_card */,
+        false /* include_full_server_credit_card */);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.StoredServerCreditCardCount.Masked", 1, 1);
+  }
+
+  // The metrics should only be logged once.
+  {
+    base::HistogramTester histogram_tester;
+    personal_data_->RecreateCreditCards(
+        false /* include_local_credit_card */,
+        true /* include_masked_server_credit_card */,
+        true /* include_full_server_credit_card */);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.StoredServerCreditCardCount.Masked", 0);
+  }
+}
+
+// Test that the unmasked (full) server credit card counts are logged correctly.
+TEST_F(AutofillMetricsTest, StoredServerCreditCardCounts_Unmasked) {
+  // The metrics should be logged when the credit cards are first loaded.
+  {
+    base::HistogramTester histogram_tester;
+    personal_data_->RecreateCreditCards(
+        false /* include_local_credit_card */,
+        false /* include_masked_server_credit_card */,
+        true /* include_full_server_credit_card */);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.StoredServerCreditCardCount.Unmasked", 1, 1);
+  }
+
+  // The metrics should only be logged once.
+  {
+    base::HistogramTester histogram_tester;
+    personal_data_->RecreateCreditCards(
+        false /* include_local_credit_card */,
+        false /* include_masked_server_credit_card */,
+        true /* include_full_server_credit_card */);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.StoredServerCreditCardCount.Unmasked", 0);
+  }
+}
+
 // Test that we correctly log when Autofill is enabled.
 TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;

@@ -263,7 +263,8 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
       account_tracker_(NULL),
       is_off_the_record_(false),
       has_logged_profile_count_(false),
-      has_logged_credit_card_count_(false) {}
+      has_logged_local_credit_card_count_(false),
+      has_logged_server_credit_card_counts_(false) {}
 
 void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
                                PrefService* pref_service,
@@ -388,6 +389,8 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
         // disabled, force mask all cards back to the unsaved state.
         if (!OfferStoreUnmaskedCards())
           ResetFullServerCards();
+
+        LogServerCreditCardCounts();
       }
       break;
     default:
@@ -1284,9 +1287,25 @@ void PersonalDataManager::LogProfileCount() const {
 }
 
 void PersonalDataManager::LogLocalCreditCardCount() const {
-  if (!has_logged_credit_card_count_) {
+  if (!has_logged_local_credit_card_count_) {
     AutofillMetrics::LogStoredLocalCreditCardCount(local_credit_cards_.size());
-    has_logged_credit_card_count_ = true;
+    has_logged_local_credit_card_count_ = true;
+  }
+}
+
+void PersonalDataManager::LogServerCreditCardCounts() const {
+  if (!has_logged_server_credit_card_counts_) {
+    size_t unmasked_cards = 0, masked_cards = 0;
+    for (CreditCard* card : server_credit_cards_) {
+      if (card->record_type() == CreditCard::MASKED_SERVER_CARD) {
+        masked_cards++;
+      } else if (card->record_type() == CreditCard::FULL_SERVER_CARD) {
+        unmasked_cards++;
+      }
+    }
+    AutofillMetrics::LogStoredServerCreditCardCounts(masked_cards,
+                                                     unmasked_cards);
+    has_logged_server_credit_card_counts_ = true;
   }
 }
 

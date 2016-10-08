@@ -601,6 +601,10 @@ class AutofillMetrics {
   // This should be called each time a new profile is launched.
   static void LogStoredLocalCreditCardCount(size_t num_local_cards);
 
+  // This should be called each time a new profile is launched.
+  static void LogStoredServerCreditCardCounts(size_t num_masked_cards,
+                                              size_t num_unmasked_cards);
+
   // Log the number of profiles available when an autofillable form is
   // submitted.
   static void LogNumberOfProfilesAtAutofillableFormSubmission(

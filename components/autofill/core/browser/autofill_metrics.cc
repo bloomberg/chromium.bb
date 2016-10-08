@@ -529,6 +529,16 @@ void AutofillMetrics::LogStoredLocalCreditCardCount(size_t num_local_cards) {
 }
 
 // static
+void AutofillMetrics::LogStoredServerCreditCardCounts(
+    size_t num_masked_cards,
+    size_t num_unmasked_cards) {
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Masked",
+                            num_masked_cards);
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Unmasked",
+                            num_unmasked_cards);
+}
+
+// static
 void AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
     size_t num_profiles) {
   UMA_HISTOGRAM_COUNTS(
