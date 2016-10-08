@@ -33,6 +33,7 @@ from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
+from chromite.lib import auth
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
@@ -354,9 +355,9 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
 
   def setUp(self):
     self.PatchObject(buildbucket_lib, 'GetServiceAccount',
-                     return_value=True)
-    self.PatchObject(buildbucket_lib, 'BuildBucketAuth',
-                     return_value=mock.Mock())
+                     return_value='server_account')
+    self.PatchObject(auth.AuthorizedHttp, '__init__',
+                     return_value=None)
     # Create and set up a fake cidb instance.
     self.fake_db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
@@ -462,7 +463,6 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
         stage.ScheduleSlaveBuildsViaBuildbucket,
         important_only=False, dryrun=True)
 
-
 class BaseCQTestCase(generic_stages_unittest.StageTestCase):
   """Helper class for testing the CommitQueueSync stage"""
   MANIFEST_CONTENTS = '<manifest/>'
@@ -495,10 +495,12 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
                      side_effect=AssertionError('Test should not push.'))
 
     self.PatchObject(buildbucket_lib, 'GetServiceAccount',
-                     return_value=True)
-    self.PatchObject(buildbucket_lib, 'BuildBucketAuth',
-                     return_value=mock.Mock())
-    self.PatchObject(buildbucket_lib, 'BuildBucketRequest')
+                     return_value='server_account')
+    self.PatchObject(auth.AuthorizedHttp, '__init__',
+                     return_value=None)
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     'SendBuildbucketRequest',
+                     return_value=None)
 
     # Create a fake repo / manifest on disk that is used by subclasses.
     for subdir in ('repo', 'manifests'):
@@ -1338,9 +1340,10 @@ pre-cq-configs: link-pre-cq
     completed_content = {'build': {'status': 'COMPLETED'}}
     cancel_content = {'build': {'status': 'COMPLETED'}}
     self.PatchObject(cidb.CIDBConnection, 'InsertCLActions')
-    self.PatchObject(buildbucket_lib, 'GetBuildBucket',
+    self.PatchObject(buildbucket_lib.BuildbucketClient, 'GetBuildRequest',
                      return_value=stated_content)
-    mock_cancel = self.PatchObject(buildbucket_lib, 'CancelBuildBucket',
+    mock_cancel = self.PatchObject(buildbucket_lib.BuildbucketClient,
+                                   'CancelBuildRequest',
                                    return_value=cancel_content)
     old_build_action = clactions.CLAction(
         0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING,
@@ -1348,19 +1351,21 @@ pre-cq-configs: link-pre-cq
         datetime.datetime.now() - datetime.timedelta(hours=1), '100')
     self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
     mock_cancel.assert_called_once_with(
-        '100', mock.ANY, False, dryrun=self.sync_stage._run.options.debug)
+        '100', False, dryrun=self.sync_stage._run.options.debug)
 
-    self.PatchObject(buildbucket_lib, 'GetBuildBucket',
+    mock_cancel.reset_mock()
+    self.PatchObject(buildbucket_lib.BuildbucketClient, 'GetBuildRequest',
                      return_value=scheduled_content)
     self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
     mock_cancel.assert_called_twice_with(
-        '100', mock.ANY, False, dryrun=self.sync_stage._run.options.debug)
+        '100', False, dryrun=self.sync_stage._run.options.debug)
 
-    self.PatchObject(buildbucket_lib, 'GetBuildBucket',
+    mock_cancel.reset_mock()
+    self.PatchObject(buildbucket_lib.BuildbucketClient, 'GetBuildRequest',
                      return_value=completed_content)
     self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
     mock_cancel.assert_called_twice_with(
-        '100', mock.ANY, False, dryrun=self.sync_stage._run.options.debug)
+        '100', False, dryrun=self.sync_stage._run.options.debug)
 
   def test_ProcessOldPatchPreCQRuns(self):
     """Test _ProcessOldPatchPreCQRuns."""
@@ -1418,8 +1423,8 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
 
     self.PatchObject(buildbucket_lib, 'GetServiceAccount',
                      return_value=True)
-    self.PatchObject(buildbucket_lib, 'BuildBucketAuth',
-                     return_value=mock.Mock())
+    self.PatchObject(auth.AuthorizedHttp, '__init__',
+                     return_value=None)
 
     self._Prepare()
 

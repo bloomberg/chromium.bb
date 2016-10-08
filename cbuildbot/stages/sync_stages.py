@@ -366,11 +366,10 @@ class SyncStage(generic_stages.BuilderStage):
     # at self.internal when it can always be retrieved from config?
     self.internal = self._run.config.internal
 
-    self.buildbucket_http = None
+    self.buildbucket_client = None
     if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
-      self.buildbucket_http = buildbucket_lib.BuildBucketAuth(
-          service_account=buildbucket_lib.GetServiceAccount(
-              constants.CHROMEOS_SERVICE_ACCOUNT))
+      self.buildbucket_client = buildbucket_lib.BuildbucketClient(
+          service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
 
   def _GetManifestVersionsRepoUrl(self, internal=None, test=False):
     if internal is None:
@@ -510,9 +509,8 @@ class SyncStage(generic_stages.BuilderStage):
                 'master:False']
     })
 
-    content = buildbucket_lib.PutBuildBucket(
-        body, self.buildbucket_http, self._run.options.test_tryjob,
-        dryrun)
+    content = self.buildbucket_client.PutBuildRequest(
+        body, self._run.options.test_tryjob, dryrun)
 
     buildbucket_id = buildbucket_lib.GetBuildId(content)
 
@@ -526,17 +524,17 @@ class SyncStage(generic_stages.BuilderStage):
       important_only: Whether only schedule important slave builds.
       dryrun: Whether a dryrun.
     """
-    if self.buildbucket_http is None:
+    if self.buildbucket_client is None:
       if cros_build_lib.HostIsCIBuilder() and not dryrun:
         # If it's a buildbot running on a CI builder and not in dryrun.
-        # mode, buildbucket_http cannot be None in order to trigger slave
-        # builds.
-        raise buildbucket_lib.NoBuildBucketHttpException(
-            'No Buildbucket http instance in this CI Builder. '
+        # mode, buildbucket_client cannot be None in order to trigger
+        # slave builds.
+        raise buildbucket_lib.NoBuildbucketClientException(
+            'No Buildbucket_client created. '
             'Please check the service account file %s.' %
             constants.CHROMEOS_SERVICE_ACCOUNT)
       else:
-        logging.info('No buildbucket_http. Skip scheduling slaves.')
+        logging.info('No buildbucket_client. Skip scheduling slaves.')
         return
 
     build_id, _ = self._run.GetCIDBHandle()
@@ -1627,17 +1625,15 @@ class PreCQLauncherStage(SyncStage):
       testjob: Whether to use the test instance of the buildbucket server.
     """
     buildbucket_id = old_build_action.buildbucket_id
-    get_content = buildbucket_lib.GetBuildBucket(
-        buildbucket_id, self.buildbucket_http, testjob,
-        dryrun=self._run.options.debug)
+    get_content = self.buildbucket_client.GetBuildRequest(
+        buildbucket_id, testjob, dryrun=self._run.options.debug)
 
     status = buildbucket_lib.GetBuildStatus(get_content)
     if status in [buildbucket_lib.STARTED_STATUS,
                   buildbucket_lib.SCHEDULED_STATUS]:
       logging.info('Cancelling old build %s %s', buildbucket_id, status)
-      cancel_content = buildbucket_lib.CancelBuildBucket(
-          buildbucket_id, self.buildbucket_http, testjob,
-          dryrun=self._run.options.debug)
+      cancel_content = self.buildbucket_client.CancelBuildRequest(
+          buildbucket_id, testjob, dryrun=self._run.options.debug)
       cancel_status = buildbucket_lib.GetBuildStatus(cancel_content)
       if cancel_status:
         logging.info('Cancelled buildbucket_id: %s status: %s \ncontent: %s',
@@ -1732,7 +1728,7 @@ class PreCQLauncherStage(SyncStage):
     _, db = self._run.GetCIDBHandle()
     action_history = db.GetActionsForChanges(changes)
 
-    if self.buildbucket_http is not None:
+    if self.buildbucket_client is not None:
       for change in changes:
         self._ProcessOldPatchPreCQRuns(db, change, action_history)
 

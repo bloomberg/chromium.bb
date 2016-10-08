@@ -17,6 +17,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
+from chromite.lib import auth
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
@@ -331,7 +332,8 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
   def setUp(self):
     self.PatchObject(buildbucket_lib, 'GetServiceAccount',
                      return_value=True)
-    self.PatchObject(buildbucket_lib, 'BuildBucketAuth')
+    self.PatchObject(auth.AuthorizedHttp, '__init__',
+                     return_value=None)
     self._Prepare()
 
   def ConstructStage(self):
@@ -357,7 +359,8 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
             'build_type:tryjob',
             'master:False']
     }]
-    self.PatchObject(buildbucket_lib, 'SearchAllBuilds',
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     'SearchAllBuilds',
                      return_value=searched_builds)
 
     cancel_content = {
@@ -377,8 +380,8 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
             }
         }]
     }
-    cancel_mock = self.PatchObject(buildbucket_lib,
-                                   'CancelBatchBuildBucket',
+    cancel_mock = self.PatchObject(buildbucket_lib.BuildbucketClient,
+                                   'CancelBatchBuildsRequest',
                                    return_value=cancel_content)
 
     stage = self.ConstructStage()
@@ -392,11 +395,12 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
         'kind': 'kind',
         'etag': 'etag'
     }
-    self.PatchObject(buildbucket_lib, 'SearchBuildBucket',
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     'SearchBuildsRequest',
                      return_value=search_content)
 
-    cancel_mock = self.PatchObject(buildbucket_lib,
-                                   'CancelBatchBuildBucket')
+    cancel_mock = self.PatchObject(buildbucket_lib.BuildbucketClient,
+                                   'CancelBatchBuildsRequest')
 
     stage = self.ConstructStage()
     stage.CancelObsoleteSlaveBuilds()

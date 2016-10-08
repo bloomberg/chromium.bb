@@ -107,12 +107,11 @@ class CleanUpStage(generic_stages.BuilderStage):
     logging.info('Cancelling obsolete slave builds.')
 
     if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
-      buildbucket_http = buildbucket_lib.BuildBucketAuth(
+      buildbucket_client = buildbucket_lib.BuildbucketClient(
           service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
 
       # Search for started slave builds in the chromiumos and chromeos.
-      builds = buildbucket_lib.SearchAllBuilds(
-          buildbucket_http,
+      builds = buildbucket_client.SearchAllBuilds(
           self._run.options.test_tryjob,
           self._run.options.debug,
           buckets=[constants.CHROMIUMOS_BUILDBUCKET_BUCKET,
@@ -127,15 +126,15 @@ class CleanUpStage(generic_stages.BuilderStage):
         logging.info('Going to cancel buildbucket_ids: %s',
                      str(buildbucket_ids))
         # TODO: set dryrun to True to prevent it from cancelling builds.
-        cancel_content = buildbucket_lib.CancelBatchBuildBucket(
+        cancel_content = buildbucket_client.CancelBatchBuildsRequest(
             buildbucket_ids,
-            buildbucket_http,
             self._run.options.test_tryjob,
             dryrun=True)
 
         result_map = buildbucket_lib.GetResultMap(cancel_content)
         for build_id, result in result_map.iteritems():
-          if buildbucket_lib.HasError(result):
+          # Check if the result contains error messages.
+          if buildbucket_lib.GetNestedAttr(result, ['error']):
             # TODO(nxia): Get build url and log url in the warnings.
             logging.warning("Error cancelling build %s with reason: %s. "
                             "Please check the status of the build.",
