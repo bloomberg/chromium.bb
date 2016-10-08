@@ -78,6 +78,7 @@ void InspectorEmulationAgent::disable(ErrorString*) {
   setScriptExecutionDisabled(&error, false);
   setTouchEmulationEnabled(&error, false, protocol::Maybe<String>());
   setEmulatedMedia(&error, String());
+  setCPUThrottlingRate(&error, 1);
   resetViewport(&error);
 }
 
