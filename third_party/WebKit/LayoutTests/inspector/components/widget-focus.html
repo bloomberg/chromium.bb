@@ -75,7 +75,7 @@ function test()
 
     function dumpFocus()
     {
-        var focused = WebInspector.currentFocusElement();
+        var focused = document.deepActiveElement();
         if (focused === outerInput) {
             InspectorTest.addResult("Outer Focused");
         } else if (focused === input1) {

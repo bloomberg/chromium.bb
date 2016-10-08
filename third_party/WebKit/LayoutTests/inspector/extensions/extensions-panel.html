@@ -334,7 +334,7 @@ function extension_testGlobalShortcuts(nextTest)
     {
         output("Panel hidden, test passed.");
         testPanel.onShown.removeListener(onPanelHidden);
-        evaluateOnFrontend("reply(WebInspector.inspectorView.closeDrawer())", nextTest);
+        evaluateOnFrontend("reply(WebInspector.inspectorView._closeDrawer())", nextTest);
     }
 }
 
