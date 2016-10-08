@@ -64,7 +64,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   ~LayoutView() override;
   void willBeDestroyed() override;
 
-  // hitTest() will update layout, style and compositing first while hitTestNoLifecycleUpdate() does not.
+  // hitTest() will update layout, style and compositing first while
+  // hitTestNoLifecycleUpdate() does not.
   bool hitTest(HitTestResult&);
   bool hitTestNoLifecycleUpdate(HitTestResult&);
 
@@ -185,7 +186,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   IntRect documentRect() const;
 
-  // LayoutObject that paints the root background has background-images which all have background-attachment: fixed.
+  // LayoutObject that paints the root background has background-images which
+  // all have background-attachment: fixed.
   bool rootBackgroundIsEntirelyFixed() const;
 
   IntervalArena* intervalArena();
@@ -194,9 +196,9 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   LayoutQuote* layoutQuoteHead() const { return m_layoutQuoteHead; }
 
   // FIXME: This is a work around because the current implementation of counters
-  // requires walking the entire tree repeatedly and most pages don't actually use either
-  // feature so we shouldn't take the performance hit when not needed. Long term we should
-  // rewrite the counter and quotes code.
+  // requires walking the entire tree repeatedly and most pages don't actually
+  // use either feature so we shouldn't take the performance hit when not
+  // needed. Long term we should rewrite the counter and quotes code.
   void addLayoutCounter() { m_layoutCounterCount++; }
   void removeLayoutCounter() {
     ASSERT(m_layoutCounterCount > 0);
@@ -207,7 +209,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   bool backgroundIsKnownToBeOpaqueInRect(
       const LayoutRect& localRect) const override;
 
-  // Returns the viewport size in (CSS pixels) that vh and vw units are calculated from.
+  // Returns the viewport size in (CSS pixels) that vh and vw units are
+  // calculated from.
   FloatSize viewportSizeForViewportUnits() const;
 
   void pushLayoutState(LayoutState& layoutState) {
@@ -221,12 +224,15 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   LayoutRect visualOverflowRect() const override;
   LayoutRect localOverflowRectForPaintInvalidation() const override;
 
-  // Invalidates paint for the entire view, including composited descendants, but not including child frames.
+  // Invalidates paint for the entire view, including composited descendants,
+  // but not including child frames.
   // It is very likely you do not want to call this method.
   void setShouldDoFullPaintInvalidationForViewAndAllDescendants();
 
-  // The document scrollbar is always on the right, even in RTL. This is to prevent it from moving around on navigations.
-  // TODO(skobes): This is not quite the ideal behavior, see http://crbug.com/250514 and http://crbug.com/249860.
+  // The document scrollbar is always on the right, even in RTL. This is to
+  // prevent it from moving around on navigations.
+  // TODO(skobes): This is not quite the ideal behavior, see
+  // http://crbug.com/250514 and http://crbug.com/249860.
   bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const override {
     return false;
   }

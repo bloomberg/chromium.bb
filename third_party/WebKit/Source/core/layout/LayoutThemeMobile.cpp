@@ -60,7 +60,8 @@ String LayoutThemeMobile::extraFullscreenStyleSheet() {
 void LayoutThemeMobile::adjustInnerSpinButtonStyle(ComputedStyle& style) const {
   if (LayoutTestSupport::isRunningLayoutTest()) {
     // Match Linux spin button style in layout tests.
-    // FIXME: Consider removing the conditional if a future Android theme matches this.
+    // FIXME: Consider removing the conditional if a future Android theme
+    // matches this.
     IntSize size = Platform::current()->themeEngine()->getSize(
         WebThemeEngine::PartInnerSpinButton);
 

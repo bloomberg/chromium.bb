@@ -144,9 +144,8 @@ void LayoutTextCombine::updateFont() {
         (TextDecorationUnderline | TextDecorationOverline)))
     emWidth *= textCombineMargin;
 
-  description.setOrientation(
-      FontOrientation::
-          Horizontal);  // We are going to draw combined text horizontally.
+  // We are going to draw combined text horizontally.
+  description.setOrientation(FontOrientation::Horizontal);
   m_combinedTextWidth = originalFont().width(run);
 
   FontSelector* fontSelector = style()->font().getFontSelector();
@@ -174,7 +173,8 @@ void LayoutTextCombine::updateFont() {
       }
     }
 
-    // If width > ~1em, shrink to fit within ~1em, otherwise render without scaling (no expansion)
+    // If width > ~1em, shrink to fit within ~1em, otherwise render without
+    // scaling (no expansion).
     // http://dev.w3.org/csswg/css-writing-modes-3/#text-combine-compression
     if (m_combinedTextWidth > emWidth) {
       m_scaleX = emWidth / m_combinedTextWidth;

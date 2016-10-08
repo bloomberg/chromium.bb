@@ -1,6 +1,7 @@
 /**
  * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
- *           (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ *           (C) 2008 Torch Mobile Inc. All rights reserved.
+ *               (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -73,7 +74,8 @@ static inline void updateUserModifyProperty(HTMLTextFormControlElement& node,
 void LayoutTextControl::adjustInnerEditorStyle(
     ComputedStyle& textBlockStyle) const {
   // The inner block, if present, always has its direction set to LTR,
-  // so we need to inherit the direction and unicode-bidi style from the element.
+  // so we need to inherit the direction and unicode-bidi style from the
+  // element.
   textBlockStyle.setDirection(style()->direction());
   textBlockStyle.setUnicodeBidi(style()->unicodeBidi());
 
@@ -104,7 +106,8 @@ void LayoutTextControl::updateFromElement() {
 }
 
 int LayoutTextControl::scrollbarThickness() const {
-  // FIXME: We should get the size of the scrollbar from the LayoutTheme instead.
+  // FIXME: We should get the size of the scrollbar from the LayoutTheme
+  // instead.
   return ScrollbarTheme::theme().scrollbarThickness();
 }
 
@@ -122,15 +125,16 @@ void LayoutTextControl::computeLogicalHeight(
                                    PositionOfInteriorLineBoxes),
         nonContentHeight);
 
-    // We are able to have a horizontal scrollbar if the overflow style is scroll, or if its auto and there's no word wrap.
+    // We are able to have a horizontal scrollbar if the overflow style is
+    // scroll, or if its auto and there's no word wrap.
     if (style()->overflowInlineDirection() == OverflowScroll ||
         (style()->overflowInlineDirection() == OverflowAuto &&
          innerEditor->layoutObject()->style()->overflowWrap() ==
              NormalOverflowWrap))
       logicalHeight += scrollbarThickness();
 
-    // FIXME: The logical height of the inner text box should have been added before calling computeLogicalHeight to
-    // avoid this hack.
+    // FIXME: The logical height of the inner text box should have been added
+    // before calling computeLogicalHeight to avoid this hack.
     setIntrinsicContentLogicalHeight(logicalHeight);
 
     logicalHeight += borderAndPaddingHeight();
@@ -193,11 +197,11 @@ static const char* const fontFamiliesWithInvalidCharWidth[] = {
     "#PilGi",
 };
 
-// For font families where any of the fonts don't have a valid entry in the OS/2 table
-// for avgCharWidth, fallback to the legacy webkit behavior of getting the avgCharWidth
-// from the width of a '0'. This only seems to apply to a fixed number of Mac fonts,
-// but, in order to get similar rendering across platforms, we do this check for
-// all platforms.
+// For font families where any of the fonts don't have a valid entry in the OS/2
+// table for avgCharWidth, fallback to the legacy webkit behavior of getting the
+// avgCharWidth from the width of a '0'. This only seems to apply to a fixed
+// number of Mac fonts, but, in order to get similar rendering across platforms,
+// we do this check for all platforms.
 bool LayoutTextControl::hasValidAvgCharWidth(const SimpleFontData* font,
                                              const AtomicString& family) {
   // Some fonts match avgCharWidth to CJK full-width characters.
@@ -240,7 +244,8 @@ float LayoutTextControl::getAvgCharWidth(const AtomicString& family) const {
 }
 
 float LayoutTextControl::scaleEmToUnits(int x) const {
-  // This matches the unitsPerEm value for MS Shell Dlg and Courier New from the "head" font table.
+  // This matches the unitsPerEm value for MS Shell Dlg and Courier New from the
+  // "head" font table.
   float unitsPerEm = 2048.0f;
   return roundf(style()->font().getFontDescription().computedSize() * x /
                 unitsPerEm);

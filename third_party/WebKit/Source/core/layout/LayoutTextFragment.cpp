@@ -121,8 +121,8 @@ UChar LayoutTextFragment::previousCharacter() const {
   return LayoutText::previousCharacter();
 }
 
-// If this is the layoutObject for a first-letter pseudoNode then we have to look
-// at the node for the remaining text to find our content.
+// If this is the layoutObject for a first-letter pseudoNode then we have to
+// look at the node for the remaining text to find our content.
 Text* LayoutTextFragment::associatedTextNode() const {
   Node* node = this->firstLetterPseudoElement();
   if (m_isRemainingTextLayoutObject || !node) {

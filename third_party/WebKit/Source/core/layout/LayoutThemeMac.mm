@@ -87,7 +87,8 @@
 - (CFDictionaryRef)_coreUIDrawOptionsWithFrame:(NSRect)cellFrame
                                         inView:(NSView*)controlView
                                   includeFocus:(BOOL)includeFocus {
-  // FIXME: This is a post-Lion-only workaround for <rdar://problem/11385461>. When that bug is resolved, we should remove this code.
+  // FIXME: This is a post-Lion-only workaround for <rdar://problem/11385461>.
+  // When that bug is resolved, we should remove this code.
   CFMutableDictionaryRef coreUIDrawOptions = CFDictionaryCreateMutableCopy(
       NULL, 0, [super _coreUIDrawOptionsWithFrame:cellFrame
                                            inView:controlView
@@ -270,10 +271,12 @@ static RGBA32 convertNSColorToColor(NSColor* color) {
         static_cast<int>(scaleFactor * [colorInColorSpace blueComponent]));
   }
 
-  // This conversion above can fail if the NSColor in question is an NSPatternColor
+  // This conversion above can fail if the NSColor in question is an
+  // NSPatternColor
   // (as many system colors are). These colors are actually a repeating pattern
   // not just a solid color. To work around this we simply draw a 1x1 image of
-  // the color and use that pixel's color. It might be better to use an average of
+  // the color and use that pixel's color. It might be better to use an average
+  // of
   // the colors in the pattern instead.
   NSBitmapImageRep* offscreenRep =
       [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
@@ -1066,7 +1069,8 @@ void LayoutThemeMac::adjustMediaSliderThumbSize(ComputedStyle& style) const {
 }
 
 String LayoutThemeMac::extraFullscreenStyleSheet() {
-  // FIXME: Chromium may wish to style its default media controls differently in fullscreen.
+  // FIXME: Chromium may wish to style its default media controls differently in
+  // fullscreen.
   return String();
 }
 

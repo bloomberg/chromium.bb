@@ -231,7 +231,8 @@ bool LayoutThemeDefault::shouldOpenPickerWithF4Key() const {
 bool LayoutThemeDefault::shouldUseFallbackTheme(
     const ComputedStyle& style) const {
   if (useMockTheme()) {
-    // The mock theme can't handle zoomed controls, so we fall back to the "fallback" theme.
+    // The mock theme can't handle zoomed controls, so we fall back to the
+    // "fallback" theme.
     ControlPart part = style.appearance();
     if (part == CheckboxPart || part == RadioPart)
       return style.effectiveZoom() != 1;

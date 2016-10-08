@@ -26,9 +26,9 @@
 
 namespace blink {
 
-// LayoutTextCombine uses different coordinate systems for layout and inlineTextBox,
-// because it is treated as 1em-box character in vertical flow for the layout,
-// while its inline box is in horizontal flow.
+// LayoutTextCombine uses different coordinate systems for layout and
+// inlineTextBox, because it is treated as 1em-box character in vertical flow
+// for the layout, while its inline box is in horizontal flow.
 class LayoutTextCombine final : public LayoutText {
  public:
   LayoutTextCombine(Node*, PassRefPtr<StringImpl>);

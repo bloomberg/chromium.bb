@@ -54,8 +54,8 @@ enum LayoutAsTextBehaviorFlags {
   LayoutAsTextShowIDAndClass = 1 << 4,  // Show id and class attributes
   LayoutAsTextPrintingMode = 1 << 5,    // Dump the tree in printing mode.
   LayoutAsTextDontUpdateLayout =
-      1
-      << 6,  // Don't update layout, to make it safe to call showLayerTree() from the debugger inside layout or painting code.
+      1 << 6,  // Don't update layout, to make it safe to call showLayerTree()
+               // from the debugger inside layout or painting code.
   LayoutAsTextShowLayoutState =
       1 << 7,  // Print the various 'needs layout' bits on layoutObjects.
   LayoutAsTextShowLineTrees =
@@ -63,7 +63,8 @@ enum LayoutAsTextBehaviorFlags {
 };
 typedef unsigned LayoutAsTextBehavior;
 
-// You don't need pageWidthInPixels if you don't specify LayoutAsTextInPrintingMode.
+// You don't need pageWidthInPixels if you don't specify
+// LayoutAsTextInPrintingMode.
 CORE_EXPORT String
 externalRepresentation(LocalFrame*,
                        LayoutAsTextBehavior = LayoutAsTextBehaviorNormal,
@@ -78,8 +79,9 @@ void write(TextStream&,
 
 class LayoutTreeAsText {
   STATIC_ONLY(LayoutTreeAsText);
-  // FIXME: This is a cheesy hack to allow easy access to ComputedStyle colors.  It won't be needed if we convert
-  // it to use visitedDependentColor instead. (This just involves rebaselining many results though, so for now it's
+  // FIXME: This is a cheesy hack to allow easy access to ComputedStyle colors.
+  // It won't be needed if we convert it to use visitedDependentColor instead.
+  // (This just involves rebaselining many results though, so for now it's
   // not being done).
  public:
   static void writeLayoutObject(TextStream&,

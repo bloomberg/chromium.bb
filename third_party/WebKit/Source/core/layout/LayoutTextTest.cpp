@@ -43,7 +43,8 @@ TEST_F(LayoutTextTest, WidthZeroFromMaxLength) {
   setBasicBody(kTacoText);
   float width = getBasicText()->width(0u, std::numeric_limits<unsigned>::max(),
                                       LayoutUnit(), LTR, false);
-  // Width may vary by platform and we just want to make sure it's something roughly reasonable.
+  // Width may vary by platform and we just want to make sure it's something
+  // roughly reasonable.
   ASSERT_GE(width, 100.f);
   ASSERT_LE(width, 160.f);
 }
@@ -56,7 +57,8 @@ TEST_F(LayoutTextTest, WidthMaxFromMaxLength) {
 }
 
 TEST_F(LayoutTextTest, WidthWithHugeLengthAvoidsOverflow) {
-  // The test case from http://crbug.com/647820 uses a 288-length string, so for posterity we follow that closely.
+  // The test case from http://crbug.com/647820 uses a 288-length string, so for
+  // posterity we follow that closely.
   setBodyInnerHTML(
       "<div "
       "id='target'>"
@@ -67,7 +69,8 @@ TEST_F(LayoutTextTest, WidthWithHugeLengthAvoidsOverflow) {
       "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
       "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
       "</div>");
-  // Width may vary by platform and we just want to make sure it's something roughly reasonable.
+  // Width may vary by platform and we just want to make sure it's something
+  // roughly reasonable.
   float width =
       getBasicText()->width(23u, 4294967282u, LayoutUnit(2.59375), RTL, false);
   ASSERT_GE(width, 100.f);
@@ -81,7 +84,8 @@ TEST_F(LayoutTextTest, WidthFromBeyondLength) {
 
 TEST_F(LayoutTextTest, WidthLengthBeyondLength) {
   setBasicBody("x");
-  // Width may vary by platform and we just want to make sure it's something roughly reasonable.
+  // Width may vary by platform and we just want to make sure it's something
+  // roughly reasonable.
   float width = getBasicText()->width(0u, 2u, LayoutUnit(), LTR, false);
   ASSERT_GE(width, 4.f);
   ASSERT_LE(width, 20.f);

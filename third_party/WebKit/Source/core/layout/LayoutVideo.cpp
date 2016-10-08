@@ -75,13 +75,15 @@ LayoutSize LayoutVideo::calculateIntrinsicSize() {
 
   // Spec text from 4.8.6
   //
-  // The intrinsic width of a video element's playback area is the intrinsic width
-  // of the video resource, if that is available; otherwise it is the intrinsic
-  // width of the poster frame, if that is available; otherwise it is 300 CSS pixels.
+  // The intrinsic width of a video element's playback area is the intrinsic
+  // width of the video resource, if that is available; otherwise it is the
+  // intrinsic width of the poster frame, if that is available; otherwise it is
+  // 300 CSS pixels.
   //
-  // The intrinsic height of a video element's playback area is the intrinsic height
-  // of the video resource, if that is available; otherwise it is the intrinsic
-  // height of the poster frame, if that is available; otherwise it is 150 CSS pixels.
+  // The intrinsic height of a video element's playback area is the intrinsic
+  // height of the video resource, if that is available; otherwise it is the
+  // intrinsic height of the poster frame, if that is available; otherwise it is
+  // 150 CSS pixels.
   WebMediaPlayer* webMediaPlayer = mediaElement()->webMediaPlayer();
   if (webMediaPlayer &&
       video->getReadyState() >= HTMLVideoElement::kHaveMetadata) {
@@ -97,7 +99,8 @@ LayoutSize LayoutVideo::calculateIntrinsicSize() {
   // <video> in standalone media documents should not use the default 300x150
   // size since they also have audio-only files. By setting the intrinsic
   // size to 300x1 the video will resize itself in these cases, and audio will
-  // have the correct height (it needs to be > 0 for controls to layout properly).
+  // have the correct height (it needs to be > 0 for controls to layout
+  // properly).
   if (video->ownerDocument() && video->ownerDocument()->isMediaDocument())
     return LayoutSize(defaultSize().width(), LayoutUnit(1));
 
@@ -107,9 +110,10 @@ LayoutSize LayoutVideo::calculateIntrinsicSize() {
 void LayoutVideo::imageChanged(WrappedImagePtr newImage, const IntRect* rect) {
   LayoutMedia::imageChanged(newImage, rect);
 
-  // Cache the image intrinsic size so we can continue to use it to draw the image correctly
-  // even if we know the video intrinsic size but aren't able to draw video frames yet
-  // (we don't want to scale the poster to the video size without keeping aspect ratio).
+  // Cache the image intrinsic size so we can continue to use it to draw the
+  // image correctly even if we know the video intrinsic size but aren't able to
+  // draw video frames yet (we don't want to scale the poster to the video size
+  // without keeping aspect ratio).
   if (videoElement()->shouldDisplayPosterImage())
     m_cachedImageSize = intrinsicSize();
 
@@ -173,14 +177,15 @@ LayoutUnit LayoutVideo::minimumReplacedHeight() const {
 
 LayoutRect LayoutVideo::replacedContentRect() const {
   if (shouldDisplayVideo()) {
-    // Video codecs may need to restart from an I-frame when the output is resized.
-    // Round size in advance to avoid 1px snap difference.
-    // TODO(trchen): The way of rounding is different from LayoutPart just to match
-    // existing behavior. This is probably a bug and We should unify it with LayoutPart.
+    // Video codecs may need to restart from an I-frame when the output is
+    // resized. Round size in advance to avoid 1px snap difference.
+    // TODO(trchen): The way of rounding is different from LayoutPart just to
+    // match existing behavior. This is probably a bug and We should unify it
+    // with LayoutPart.
     return LayoutRect(pixelSnappedIntRect(computeObjectFit()));
   }
-  // If we are displaying the poster image no pre-rounding is needed, but the size of
-  // the image should be used for fitting instead.
+  // If we are displaying the poster image no pre-rounding is needed, but the
+  // size of the image should be used for fitting instead.
   return computeObjectFit(&m_cachedImageSize);
 }
 

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006, 2007, 2009 Apple Inc. All rights reserved.
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008 Torch Mobile Inc. All rights reserved.
+ *               (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
  *
  * This library is free software; you can redistribute it and/or

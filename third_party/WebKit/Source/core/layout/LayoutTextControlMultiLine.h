@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008 Torch Mobile Inc. All rights reserved.
+ *               (http://www.torchmobile.com/)
  * Copyright (C) 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -48,7 +49,8 @@ class LayoutTextControlMultiLine final : public LayoutTextControl {
   LayoutUnit computeControlLogicalHeight(
       LayoutUnit lineHeight,
       LayoutUnit nonContentHeight) const override;
-  // We override the two baseline functions because we want our baseline to be the bottom of our margin box.
+  // We override the two baseline functions because we want our baseline to be
+  // the bottom of our margin box.
   int baselinePosition(
       FontBaseline,
       bool firstLine,

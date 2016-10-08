@@ -4,7 +4,8 @@
  *           (C) 1998 Waldo Bastian (bastian@kde.org)
  *           (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2009, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2009, 2013 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -32,7 +33,8 @@
 
 namespace blink {
 
-// This variable is used to balance the memory consumption vs the paint invalidation time on big tables.
+// This variable is used to balance the memory consumption vs the paint
+// invalidation time on big tables.
 const float gMaxAllowedOverflowingCellRatioForFastPaintPath = 0.1f;
 
 // Helper class for paintObject.
@@ -225,7 +227,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
         row, effectiveColumn);
   }
 
-  // Returns null for cells with a rowspan that exceed the last row. Possibly others.
+  // Returns null for cells with a rowspan that exceed the last row. Possibly
+  // others.
   LayoutTableRow* rowLayoutObjectAt(unsigned row) {
     return m_grid[row].rowLayoutObject;
   }
@@ -275,8 +278,10 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   void rowLogicalHeightChanged(LayoutTableRow*);
 
-  // distributeExtraLogicalHeightToRows methods return the *consumed* extra logical height.
-  // FIXME: We may want to introduce a structure holding the in-flux layout information.
+  // distributeExtraLogicalHeightToRows methods return the *consumed* extra
+  // logical height.
+  // FIXME: We may want to introduce a structure holding the in-flux layout
+  // information.
   int distributeExtraLogicalHeightToRows(int extraLogicalHeight);
 
   static LayoutTableSection* createAnonymousWithParent(const LayoutObject*);
@@ -287,7 +292,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   void paint(const PaintInfo&, const LayoutPoint&) const override;
 
-  // Flip the rect so it aligns with the coordinates used by the rowPos and columnPos vectors.
+  // Flip the rect so it aligns with the coordinates used by the rowPos and
+  // columnPos vectors.
   LayoutRect logicalRectForWritingModeAndDirection(const LayoutRect&) const;
 
   CellSpan dirtiedRows(const LayoutRect& paintInvalidationRect) const;
@@ -300,9 +306,9 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   const char* name() const override { return "LayoutTableSection"; }
 
-  // Whether a section has opaque background depends on many factors, e.g. border spacing,
-  // border collapsing, missing cells, etc.
-  // For simplicity, just conservatively assume all table sections are not opaque.
+  // Whether a section has opaque background depends on many factors, e.g.
+  // border spacing, border collapsing, missing cells, etc. For simplicity,
+  // just conservatively assume all table sections are not opaque.
   bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&,
                                          unsigned) const override {
     return false;
@@ -401,8 +407,10 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     return CellSpan(0, table()->numEffectiveColumns());
   }
 
-  // These two functions take a rectangle as input that has been flipped by logicalRectForWritingModeAndDirection.
-  // The returned span of rows or columns is end-exclusive, and empty if start==end.
+  // These two functions take a rectangle as input that has been flipped by
+  // logicalRectForWritingModeAndDirection.
+  // The returned span of rows or columns is end-exclusive, and empty if
+  // start==end.
   CellSpan spannedRows(const LayoutRect& flippedRect) const;
   CellSpan spannedEffectiveColumns(const LayoutRect& flippedRect) const;
 
@@ -445,8 +453,9 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   bool m_needsCellRecalc;
 
   // This HashSet holds the overflowing cells for faster painting.
-  // If we have more than gMaxAllowedOverflowingCellRatio * total cells, it will be empty
-  // and m_forceSlowPaintPathWithOverflowingCell will be set to save memory.
+  // If we have more than gMaxAllowedOverflowingCellRatio * total cells, it will
+  // be empty and m_forceSlowPaintPathWithOverflowingCell will be set to save
+  // memory.
   HashSet<LayoutTableCell*> m_overflowingCells;
   bool m_forceSlowPaintPathWithOverflowingCell;
 

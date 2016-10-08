@@ -115,7 +115,8 @@ static void makeCapitalized(String* string, UChar previous) {
   stringWithPrevious[0] =
       previous == noBreakSpaceCharacter ? spaceCharacter : previous;
   for (unsigned i = 1; i < length + 1; i++) {
-    // Replace &nbsp with a real space since ICU no longer treats &nbsp as a word separator.
+    // Replace &nbsp with a real space since ICU no longer treats &nbsp as a
+    // word separator.
     if (input[i - 1] == noBreakSpaceCharacter)
       stringWithPrevious[i] = spaceCharacter;
     else
@@ -159,7 +160,8 @@ LayoutText::LayoutText(Node* node, PassRefPtr<StringImpl> str)
       m_firstTextBox(nullptr),
       m_lastTextBox(nullptr) {
   ASSERT(m_text);
-  // FIXME: Some clients of LayoutText (and subclasses) pass Document as node to create anonymous layoutObject.
+  // FIXME: Some clients of LayoutText (and subclasses) pass Document as node to
+  // create anonymous layoutObject.
   // They should be switched to passing null and using setDocumentForAnonymous.
   if (node && node->isDocumentNode())
     setDocumentForAnonymous(toDocument(node));
@@ -189,10 +191,10 @@ bool LayoutText::isWordBreak() const {
 
 void LayoutText::styleDidChange(StyleDifference diff,
                                 const ComputedStyle* oldStyle) {
-  // There is no need to ever schedule paint invalidations from a style change of a text run, since
-  // we already did this for the parent of the text run.
-  // We do have to schedule layouts, though, since a style change can force us to
-  // need to relayout.
+  // There is no need to ever schedule paint invalidations from a style change
+  // of a text run, since we already did this for the parent of the text run.
+  // We do have to schedule layouts, though, since a style change can force us
+  // to need to relayout.
   if (diff.needsFullLayout()) {
     setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
     m_knownToHaveNoOverflowAndNoFallbackFonts = false;
@@ -305,7 +307,8 @@ String LayoutText::plainText() const {
   if (node())
     return blink::plainText(EphemeralRange::rangeOfContents(*node()));
 
-  // FIXME: this is just a stopgap until TextIterator is adapted to support generated text.
+  // FIXME: this is just a stopgap until TextIterator is adapted to support
+  // generated text.
   StringBuilder plainTextBuilder;
   for (InlineTextBox* textBox = firstTextBox(); textBox;
        textBox = textBox->nextTextBox()) {
@@ -354,18 +357,21 @@ void LayoutText::absoluteRectsForRange(Vector<IntRect>& rects,
                                        unsigned start,
                                        unsigned end,
                                        bool useSelectionHeight) {
-  // Work around signed/unsigned issues. This function takes unsigneds, and is often passed UINT_MAX
-  // to mean "all the way to the end". InlineTextBox coordinates are unsigneds, so changing this
-  // function to take ints causes various internal mismatches. But selectionRect takes ints, and
-  // passing UINT_MAX to it causes trouble. Ideally we'd change selectionRect to take unsigneds, but
-  // that would cause many ripple effects, so for now we'll just clamp our unsigned parameters to INT_MAX.
+  // Work around signed/unsigned issues. This function takes unsigneds, and is
+  // often passed UINT_MAX to mean "all the way to the end". InlineTextBox
+  // coordinates are unsigneds, so changing this function to take ints causes
+  // various internal mismatches. But selectionRect takes ints, and passing
+  // UINT_MAX to it causes trouble. Ideally we'd change selectionRect to take
+  // unsigneds, but that would cause many ripple effects, so for now we'll just
+  // clamp our unsigned parameters to INT_MAX.
   ASSERT(end == UINT_MAX || end <= INT_MAX);
   ASSERT(start <= INT_MAX);
   start = std::min(start, static_cast<unsigned>(INT_MAX));
   end = std::min(end, static_cast<unsigned>(INT_MAX));
 
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-    // Note: box->end() returns the index of the last character, not the index past it
+    // Note: box->end() returns the index of the last character, not the index
+    // past it
     if (start <= box->start() && box->end() < end) {
       FloatRect r(box->calculateBoundaries());
       if (useSelectionHeight) {
@@ -380,7 +386,8 @@ void LayoutText::absoluteRectsForRange(Vector<IntRect>& rects,
       }
       rects.append(localToAbsoluteQuad(r).enclosingBoundingBox());
     } else {
-      // FIXME: This code is wrong. It's converting local to absolute twice. http://webkit.org/b/65722
+      // FIXME: This code is wrong. It's converting local to absolute twice.
+      // http://webkit.org/b/65722
       FloatRect rect = localQuadForTextBox(box, start, end, useSelectionHeight);
       if (!rect.isZero())
         rects.append(localToAbsoluteQuad(rect).enclosingBoundingBox());
@@ -403,9 +410,9 @@ static IntRect ellipsisRectForBox(InlineTextBox* box,
     int ellipsisStartPosition = std::max<int>(startPos - box->start(), 0);
     int ellipsisEndPosition = std::min<int>(endPos - box->start(), box->len());
 
-    // The ellipsis should be considered to be selected if the end of
-    // the selection is past the beginning of the truncation and the
-    // beginning of the selection is before or at the beginning of the truncation.
+    // The ellipsis should be considered to be selected if the end of the
+    // selection is past the beginning of the truncation and the beginning of
+    // the selection is before or at the beginning of the truncation.
     if (ellipsisEndPosition >= truncation &&
         ellipsisStartPosition <= truncation)
       return ellipsis->selectionRect();
@@ -421,7 +428,8 @@ void LayoutText::quads(Vector<FloatQuad>& quads,
     FloatRect boundaries(box->calculateBoundaries());
 
     // Shorten the width of this text box if it ends in an ellipsis.
-    // FIXME: ellipsisRectForBox should switch to return FloatRect soon with the subpixellayout branch.
+    // FIXME: ellipsisRectForBox should switch to return FloatRect soon with the
+    // subpixellayout branch.
     IntRect ellipsisRect = (option == ClipToEllipsis)
                                ? ellipsisRectForBox(box, 0, textLength())
                                : IntRect();
@@ -446,11 +454,13 @@ void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads,
                                        unsigned start,
                                        unsigned end,
                                        bool useSelectionHeight) {
-  // Work around signed/unsigned issues. This function takes unsigneds, and is often passed UINT_MAX
-  // to mean "all the way to the end". InlineTextBox coordinates are unsigneds, so changing this
-  // function to take ints causes various internal mismatches. But selectionRect takes ints, and
-  // passing UINT_MAX to it causes trouble. Ideally we'd change selectionRect to take unsigneds, but
-  // that would cause many ripple effects, so for now we'll just clamp our unsigned parameters to INT_MAX.
+  // Work around signed/unsigned issues. This function takes unsigneds, and is
+  // often passed UINT_MAX to mean "all the way to the end". InlineTextBox
+  // coordinates are unsigneds, so changing this function to take ints causes
+  // various internal mismatches. But selectionRect takes ints, and passing
+  // UINT_MAX to it causes trouble. Ideally we'd change selectionRect to take
+  // unsigneds, but that would cause many ripple effects, so for now we'll just
+  // clamp our unsigned parameters to INT_MAX.
   ASSERT(end == UINT_MAX || end <= INT_MAX);
   ASSERT(start <= INT_MAX);
   start = std::min(start, static_cast<unsigned>(INT_MAX));
@@ -465,7 +475,8 @@ void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads,
   end = std::min(std::max(caretMinOffset, end), caretMaxOffset);
 
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-    // Note: box->end() returns the index of the last character, not the index past it
+    // Note: box->end() returns the index of the last character, not the index
+    // past it
     if (start <= box->start() && box->end() < end) {
       LayoutRect r(box->calculateBoundaries());
       if (useSelectionHeight) {
@@ -508,9 +519,9 @@ static bool lineDirectionPointFitsInBox(
     ShouldAffinityBeDownstream& shouldAffinityBeDownstream) {
   shouldAffinityBeDownstream = AlwaysDownstream;
 
-  // the x coordinate is equal to the left edge of this box
-  // the affinity must be downstream so the position doesn't jump back to the previous line
-  // except when box is the first box in the line
+  // the x coordinate is equal to the left edge of this box the affinity must be
+  // downstream so the position doesn't jump back to the previous line except
+  // when box is the first box in the line
   if (pointLineDirection <= box->logicalLeft()) {
     shouldAffinityBeDownstream = !box->prevLeafChild()
                                      ? UpstreamIfPositionIsNotAtStart
@@ -532,9 +543,9 @@ static bool lineDirectionPointFitsInBox(
     return true;
 
   if (!box->nextLeafChildIgnoringLineBreak()) {
-    // box is last on line
-    // and the x coordinate is to the right of the last text box right edge
-    // generate VisiblePosition, use TextAffinity::Upstream affinity if possible
+    // box is last on line and the x coordinate is to the right of the last text
+    // box right edge generate VisiblePosition, use TextAffinity::Upstream
+    // affinity if possible
     shouldAffinityBeDownstream = UpstreamIfPositionIsNotAtStart;
     return true;
   }
@@ -771,7 +782,8 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox,
       break;
   }
 
-  // for unicode-bidi: plaintext, use inlineBoxBidiLevel() to test the correct direction for the cursor.
+  // for unicode-bidi: plaintext, use inlineBoxBidiLevel() to test the correct
+  // direction for the cursor.
   if (rightAligned && style()->unicodeBidi() == Plaintext) {
     if (inlineBox->bidiLevel() % 2 != 1)
       rightAligned = false;
@@ -838,7 +850,8 @@ void LayoutText::trimmedPrefWidths(LayoutUnit leadWidthLayoutUnit,
                                    TextDirection direction) {
   float floatMinWidth = 0.0f, floatMaxWidth = 0.0f;
 
-  // Convert leadWidth to a float here, to avoid multiple implict conversions below.
+  // Convert leadWidth to a float here, to avoid multiple implict conversions
+  // below.
   float leadWidth = leadWidthLayoutUnit.toFloat();
 
   bool collapseWhiteSpace = style()->collapseWhiteSpace();
@@ -1155,8 +1168,8 @@ void LayoutText::computePreferredLogicalWidths(
     if (wordLen) {
       bool isSpace = (j < len) && c == spaceCharacter;
 
-      // Non-zero only when kerning is enabled, in which case we measure words with their trailing
-      // space, then subtract its width.
+      // Non-zero only when kerning is enabled, in which case we measure words
+      // with their trailing space, then subtract its width.
       float wordTrailingSpaceWidth = 0;
       if (isSpace &&
           (f.getFontDescription().getTypesettingFeatures() & Kerning)) {
@@ -1223,7 +1236,8 @@ void LayoutText::computePreferredLogicalWidths(
       if (j < len && styleToUse.autoWrap())
         m_hasBreakableChar = true;
 
-      // Add in wordSpacing to our currMaxWidth, but not if this is the last word on a line or the
+      // Add in wordSpacing to our currMaxWidth, but not if this is the last
+      // word on a line or the
       // last word in the run.
       if (wordSpacing && (isSpace || isCollapsibleWhiteSpace) &&
           !containsOnlyWhitespace(j, len - j))
@@ -1231,9 +1245,11 @@ void LayoutText::computePreferredLogicalWidths(
 
       if (firstWord) {
         firstWord = false;
-        // If the first character in the run is breakable, then we consider ourselves to have a beginning
-        // minimum width of 0, since a break could occur right before our run starts, preventing us from ever
-        // being appended to a previous text run when considering the total minimum width of the containing block.
+        // If the first character in the run is breakable, then we consider
+        // ourselves to have a beginning minimum width of 0, since a break could
+        // occur right before our run starts, preventing us from ever being
+        // appended to a previous text run when considering the total minimum
+        // width of the containing block.
         if (hasBreak)
           m_hasBreakableChar = true;
         m_firstLineMinWidth = hasBreak ? 0 : currMinWidth;
@@ -1246,8 +1262,8 @@ void LayoutText::computePreferredLogicalWidths(
 
       i += wordLen - 1;
     } else {
-      // Nowrap can never be broken, so don't bother setting the
-      // breakable character boolean. Pre can only be broken if we encounter a newline.
+      // Nowrap can never be broken, so don't bother setting the breakable
+      // character boolean. Pre can only be broken if we encounter a newline.
       if (style()->autoWrap() || isNewline)
         m_hasBreakableChar = true;
 
@@ -1255,7 +1271,8 @@ void LayoutText::computePreferredLogicalWidths(
         m_minWidth = currMinWidth;
       currMinWidth = 0;
 
-      if (isNewline) {  // Only set if preserveNewline was true and we saw a newline.
+      // Only set if preserveNewline was true and we saw a newline.
+      if (isNewline) {
         if (firstLine) {
           firstLine = false;
           leadWidth = 0;
@@ -1331,9 +1348,8 @@ bool LayoutText::isRenderedCharacter(int offsetInNode) const {
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
     if (offsetInNode < static_cast<int>(box->start()) &&
         !containsReversedText()) {
-      // The offset we're looking for is before this node
-      // this means the offset must be in content that is
-      // not laid out. Return false.
+      // The offset we're looking for is before this node this means the offset
+      // must be in content that is not laid out. Return false.
       return false;
     }
     if (offsetInNode >= static_cast<int>(box->start()) &&
@@ -1422,9 +1438,11 @@ void LayoutText::setTextWithOffset(PassRefPtr<StringImpl> text,
 
   bool dirtiedLines = false;
 
-  // Dirty all text boxes that include characters in between offset and offset+len.
+  // Dirty all text boxes that include characters in between offset and
+  // offset+len.
   for (InlineTextBox* curr = firstTextBox(); curr; curr = curr->nextTextBox()) {
-    // FIXME: This shouldn't rely on the end of a dirty line box. See https://bugs.webkit.org/show_bug.cgi?id=97264
+    // FIXME: This shouldn't rely on the end of a dirty line box. See
+    // https://bugs.webkit.org/show_bug.cgi?id=97264
     // Text run is entirely before the affected range.
     if (curr->end() < offset)
       continue;
@@ -1435,8 +1453,8 @@ void LayoutText::setTextWithOffset(PassRefPtr<StringImpl> text,
       RootInlineBox* root = &curr->root();
       if (!firstRootBox) {
         firstRootBox = root;
-        // The affected area was in between two runs. Go ahead and mark the root box of
-        // the run after the affected area as dirty.
+        // The affected area was in between two runs. Go ahead and mark the root
+        // box of the run after the affected area as dirty.
         firstRootBox->markDirty();
         dirtiedLines = true;
       }
@@ -1456,8 +1474,8 @@ void LayoutText::setTextWithOffset(PassRefPtr<StringImpl> text,
     }
   }
 
-  // Now we have to walk all of the clean lines and adjust their cached line break information
-  // to reflect our updated offsets.
+  // Now we have to walk all of the clean lines and adjust their cached line
+  // break information to reflect our updated offsets.
   if (lastRootBox)
     lastRootBox = lastRootBox->nextRootBox();
   if (firstRootBox) {
@@ -1590,7 +1608,8 @@ void LayoutText::secureText(UChar mask) {
   if (lastTypedCharacterOffsetToReveal >= 0) {
     m_text.replace(lastTypedCharacterOffsetToReveal, 1,
                    String(&revealedText, 1));
-    // m_text may be updated later before timer fires. We invalidate the lastTypedCharacterOffset to avoid inconsistency.
+    // m_text may be updated later before timer fires. We invalidate the
+    // lastTypedCharacterOffset to avoid inconsistency.
     secureTextTimer->invalidate();
   }
 }
@@ -1602,9 +1621,10 @@ void LayoutText::setText(PassRefPtr<StringImpl> text, bool force) {
     return;
 
   setTextInternal(std::move(text));
-  // If preferredLogicalWidthsDirty() of an orphan child is true, LayoutObjectChildList::
-  // insertChildNode() fails to set true to owner. To avoid that, we call
-  // setNeedsLayoutAndPrefWidthsRecalc() only if this LayoutText has parent.
+  // If preferredLogicalWidthsDirty() of an orphan child is true,
+  // LayoutObjectChildList::insertChildNode() fails to set true to owner.
+  // To avoid that, we call setNeedsLayoutAndPrefWidthsRecalc() only if this
+  // LayoutText has parent.
   if (parent())
     setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
         LayoutInvalidationReason::TextChanged);

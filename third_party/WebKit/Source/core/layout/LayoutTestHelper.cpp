@@ -41,9 +41,10 @@ void RenderingTest::TearDown() {
     document().frame()->host()->decrementSubframeCount();
   }
 
-  // We need to destroy most of the Blink structure here because derived tests may restore
-  // RuntimeEnabledFeatures setting during teardown, which happens before our destructor
-  // getting invoked, breaking the assumption that REF can't change during Blink lifetime.
+  // We need to destroy most of the Blink structure here because derived tests
+  // may restore RuntimeEnabledFeatures setting during teardown, which happens
+  // before our destructor getting invoked, breaking the assumption that REF
+  // can't change during Blink lifetime.
   m_pageHolder = nullptr;
 
   // Clear memory cache, otherwise we can leak pruned resources.

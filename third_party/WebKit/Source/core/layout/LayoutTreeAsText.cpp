@@ -192,7 +192,8 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts,
       if (o.parent()->resolveColor(CSSPropertyColor) != color)
         ts << " [color=" << color << "]";
 
-      // Do not dump invalid or transparent backgrounds, since that is the default.
+      // Do not dump invalid or transparent backgrounds, since that is the
+      // default.
       Color backgroundColor = o.resolveColor(CSSPropertyBackgroundColor);
       if (o.parent()->resolveColor(CSSPropertyBackgroundColor) !=
               backgroundColor &&
@@ -432,8 +433,9 @@ void LayoutTreeAsText::writeLineBoxTree(TextStream& ts,
 static void writeTextRun(TextStream& ts,
                          const LayoutText& o,
                          const InlineTextBox& run) {
-  // FIXME: For now use an "enclosingIntRect" model for x, y and logicalWidth, although this makes it harder
-  // to detect any changes caused by the conversion to floating point. :(
+  // FIXME: For now use an "enclosingIntRect" model for x, y and logicalWidth,
+  // although this makes it harder to detect any changes caused by the
+  // conversion to floating point. :(
   int x = run.x().toInt();
   int y = run.y().toInt();
   int logicalWidth = (run.left() + run.logicalWidth()).ceil() - x;
@@ -863,7 +865,8 @@ String counterValueForElement(Element* element) {
   element->document().updateStyleAndLayout();
   TextStream stream;
   bool isFirstCounter = true;
-  // The counter layoutObjects should be children of :before or :after pseudo-elements.
+  // The counter layoutObjects should be children of :before or :after
+  // pseudo-elements.
   if (LayoutObject* before = element->pseudoElementLayoutObject(PseudoIdBefore))
     writeCounterValuesFromChildren(stream, before, isFirstCounter);
   if (LayoutObject* after = element->pseudoElementLayoutObject(PseudoIdAfter))

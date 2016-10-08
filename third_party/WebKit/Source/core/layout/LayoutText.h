@@ -191,7 +191,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   InlineTextBox* firstTextBox() const { return m_firstTextBox; }
   InlineTextBox* lastTextBox() const { return m_lastTextBox; }
 
-  // True if we have inline text box children which implies rendered text (or whitespace) output.
+  // True if we have inline text box children which implies rendered text (or
+  // whitespace) output.
   bool hasTextBoxes() const { return firstTextBox(); }
 
   int caretMinOffset() const override;
@@ -286,19 +287,20 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void checkConsistency() const;
 
   // We put the bitfield first to minimize padding on 64-bit.
-  bool
-      m_hasBreakableChar : 1;  // Whether or not we can be broken into multiple lines.
-  bool
-      m_hasBreak : 1;  // Whether or not we have a hard break (e.g., <pre> with '\n').
-  bool
-      m_hasTab : 1;  // Whether or not we have a variable width tab character (e.g., <pre> with '\t').
+
+  // Whether or not we can be broken into multiple lines.
+  bool m_hasBreakableChar : 1;
+  // Whether or not we have a hard break (e.g., <pre> with '\n').
+  bool m_hasBreak : 1;
+  // Whether or not we have a variable width tab character (e.g., <pre> with '\t').
+  bool m_hasTab : 1;
   bool m_hasBreakableStart : 1;
   bool m_hasBreakableEnd : 1;
   bool m_hasEndWhiteSpace : 1;
-  // This bit indicates that the text run has already dirtied specific
-  // line boxes, and this hint will enable layoutInlineChildren to avoid
-  // just dirtying everything when character data is modified (e.g., appended/inserted
-  // or removed).
+  // This bit indicates that the text run has already dirtied specific line
+  // boxes, and this hint will enable layoutInlineChildren to avoid just
+  // dirtying everything when character data is modified (e.g., appended/
+  // inserted or removed).
   bool m_linesDirty : 1;
   bool m_containsReversedText : 1;
   bool m_canUseSimpleFontCodePath : 1;

@@ -104,7 +104,8 @@ class LayoutThemeMac final : public LayoutTheme {
  public:
   // Constants and methods shared with ThemePainterMac
 
-  // Get the control size based off the font. Used by some of the controls (like buttons).
+  // Get the control size based off the font. Used by some of the controls (like
+  // buttons).
   NSControlSize controlSizeForFont(const ComputedStyle&) const;
   NSControlSize controlSizeForSystemFont(const ComputedStyle&) const;
   void setControlSize(NSCell*,
@@ -138,7 +139,8 @@ class LayoutThemeMac final : public LayoutTheme {
   NSSearchFieldCell* search() const;
   NSTextFieldCell* textField() const;
 
-  // A view associated to the contained document. Subclasses may not have such a view and return a fake.
+  // A view associated to the contained document. Subclasses may not have such a
+  // view and return a fake.
   NSView* documentViewFor(const LayoutObject&) const;
 
   void updateActiveState(NSCell*, const LayoutObject&);
@@ -166,7 +168,8 @@ class LayoutThemeMac final : public LayoutTheme {
   void adjustMediaSliderThumbSize(ComputedStyle&) const;
   String extraFullscreenStyleSheet() override;
 
-  // Controls color values returned from platformFocusRingColor(). systemColor() will be used when false.
+  // Controls color values returned from platformFocusRingColor(). systemColor()
+  // will be used when false.
   bool usesTestModeFocusRingColor() const;
 
   bool shouldUseFallbackTheme(const ComputedStyle&) const override;
