@@ -669,11 +669,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void absoluteQuads(Vector<FloatQuad>&) const override;
   FloatRect localBoundingBoxRectForAccessibility() const final;
 
-  int reflectionOffset() const;
-  // Given a rect in the object's coordinate space, returns the corresponding
-  // rect in the reflection.
-  LayoutRect reflectedRect(const LayoutRect&) const;
-
   void layout() override;
   void paint(const PaintInfo&, const LayoutPoint&) const override;
   bool nodeAtPoint(HitTestResult&,

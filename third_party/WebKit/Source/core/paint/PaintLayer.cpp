@@ -1122,7 +1122,7 @@ bool PaintLayer::hasAncestorWithFilterThatMovesPixels() const {
   return false;
 }
 
-static void expandClipRectForDescendantsAndReflection(
+static void expandClipRectForDescendants(
     LayoutRect& clipRect,
     const PaintLayer* layer,
     const PaintLayer* rootLayer,
@@ -1141,19 +1141,6 @@ static void expandClipRectForDescendantsAndReflection(
           curr, rootLayer, transparencyBehavior,
           PaintLayer::DescendantsOfTransparencyClipBox, subPixelAccumulation,
           globalPaintFlags));
-  }
-
-  // If we have a reflection, then we need to account for that when we push the
-  // clip.  Reflect our entire current transparencyClipBox to catch all child
-  // layers.
-  // FIXME: Accelerated compositing will eventually want to do something smart
-  // here to avoid incorporating this size into the parent layer.
-  if (layer->layoutObject()->hasReflection()) {
-    LayoutPoint delta;
-    layer->convertToLayerCoords(rootLayer, delta);
-    clipRect.move(-delta.x(), -delta.y());
-    clipRect.unite(layer->layoutBox()->reflectedRect(clipRect));
-    clipRect.moveBy(delta);
   }
 }
 
@@ -1195,9 +1182,8 @@ LayoutRect PaintLayer::transparencyClipBox(
     // We don't use fragment boxes when collecting a transformed layer's
     // bounding box, since it always paints unfragmented.
     LayoutRect clipRect = layer->physicalBoundingBox(LayoutPoint());
-    expandClipRectForDescendantsAndReflection(
-        clipRect, layer, layer, transparencyBehavior, subPixelAccumulation,
-        globalPaintFlags);
+    expandClipRectForDescendants(clipRect, layer, layer, transparencyBehavior,
+                                 subPixelAccumulation, globalPaintFlags);
     LayoutRect result = enclosingLayoutRect(
         transform.mapRect(layer->mapRectForFilter(FloatRect(clipRect))));
     if (!paginationLayer)
@@ -1219,10 +1205,17 @@ LayoutRect PaintLayer::transparencyClipBox(
   LayoutRect clipRect = layer->shouldFragmentCompositedBounds(rootLayer)
                             ? layer->fragmentsBoundingBox(rootLayer)
                             : layer->physicalBoundingBox(rootLayer);
-  expandClipRectForDescendantsAndReflection(
-      clipRect, layer, rootLayer, transparencyBehavior, subPixelAccumulation,
-      globalPaintFlags);
+  expandClipRectForDescendants(clipRect, layer, rootLayer, transparencyBehavior,
+                               subPixelAccumulation, globalPaintFlags);
+
+  // Convert clipRect into local coordinates for mapLayerRectForFilter(), and
+  // convert back after.
+  LayoutPoint delta;
+  layer->convertToLayerCoords(rootLayer, delta);
+  clipRect.moveBy(-delta);
   clipRect = layer->mapLayoutRectForFilter(clipRect);
+  clipRect.moveBy(delta);
+
   clipRect.move(subPixelAccumulation);
   return clipRect;
 }

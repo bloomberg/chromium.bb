@@ -1203,6 +1203,7 @@ source_set("unit_tests") {
     "paint/PaintLayerClipperTest.cpp",
     "paint/PaintLayerPainterTest.cpp",
     "paint/PaintLayerScrollableAreaTest.cpp",
+    "paint/PaintLayerTest.cpp",
     "paint/PaintPropertyTreeBuilderTest.cpp",
     "paint/PaintPropertyTreePrinterTest.cpp",
     "paint/SVGInlineTextBoxPainterTest.cpp",
