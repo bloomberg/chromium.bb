@@ -40,10 +40,13 @@ source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
 bindings_script_path = os.path.join(source_path, 'bindings', 'scripts')
 sys.path.append(bindings_script_path)  # for Source/bindings imports
 
-from code_generator_v8 import CodeGeneratorUnionType, CodeGeneratorCallbackFunction
+from code_generator_v8 import CodeGeneratorDictionaryImpl
+from code_generator_v8 import CodeGeneratorV8
+from code_generator_v8 import CodeGeneratorUnionType
+from code_generator_v8 import CodeGeneratorCallbackFunction
 from compute_interfaces_info_individual import InterfaceInfoCollector
 from compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
-from idl_compiler import IdlCompilerDictionaryImpl, IdlCompilerV8
+from idl_compiler import IdlCompiler
 from utilities import ComponentInfoProviderCore
 from utilities import ComponentInfoProviderModules
 from utilities import write_file
@@ -294,8 +297,9 @@ def bindings_tests(output_directory, verbose):
             generate_union_type_containers(output_dir, component)
             generate_callback_function_impl(output_dir, component)
 
-            idl_compiler = IdlCompilerV8(
-                output_dir,
+            idl_compiler = IdlCompiler(
+                output_directory=output_dir,
+                code_generator_class=CodeGeneratorV8,
                 info_provider=component_info_providers[component],
                 target_component=component)
             if component == 'core':
@@ -303,15 +307,18 @@ def bindings_tests(output_directory, verbose):
                                                             'modules')
                 if not os.path.exists(partial_interface_output_dir):
                     os.makedirs(partial_interface_output_dir)
-                idl_partial_interface_compiler = IdlCompilerV8(
-                    partial_interface_output_dir,
+                idl_partial_interface_compiler = IdlCompiler(
+                    output_directory=partial_interface_output_dir,
+                    code_generator_class=CodeGeneratorV8,
                     info_provider=component_info_providers['modules'],
                     target_component='modules')
             else:
                 idl_partial_interface_compiler = None
 
-            dictionary_impl_compiler = IdlCompilerDictionaryImpl(
-                output_dir, info_provider=component_info_providers[component],
+            dictionary_impl_compiler = IdlCompiler(
+                output_directory=output_dir,
+                info_provider=component_info_providers[component],
+                code_generator_class=CodeGeneratorDictionaryImpl,
                 target_component=component)
 
             idl_filenames = []
