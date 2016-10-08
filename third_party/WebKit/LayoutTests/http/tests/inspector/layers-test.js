@@ -105,13 +105,12 @@ function initialize_LayerTreeTests()
     InspectorTest.dispatchMouseEvent = function(eventType, button, element, offsetX, offsetY)
     {
         var totalOffset = element.totalOffset();
-        var scrollOffset = element.scrollOffset();
         var eventArguments = {
             bubbles: true,
             cancelable: true,
             view: window,
-            screenX: totalOffset.left - scrollOffset.left + offsetX,
-            screenY: totalOffset.top - scrollOffset.top + offsetY,
+            screenX: totalOffset.left - element.scrollLeft + offsetX,
+            screenY: totalOffset.top - element.scrollTop + offsetY,
             clientX: totalOffset.left + offsetX,
             clientY: totalOffset.top + offsetY,
             button: button
