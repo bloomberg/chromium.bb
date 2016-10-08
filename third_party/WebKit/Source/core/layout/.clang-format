@@ -1,5 +1,0 @@
-# TODO(thakis): Remove this once comments are reflown in this file,
-# https://crbug.com/563793
-BasedOnStyle: Chromium
-Standard: Cpp11
-ReflowComments: false

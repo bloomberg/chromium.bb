@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2006 Andrew Wellington (proton@wiretapped.net)
  * Copyright (C) 2010 Daniel Bates (dbates@intudata.com)
  *
@@ -69,8 +70,9 @@ static String toRoman(int number, bool upper) {
   return String(&letters[lettersSize - length], length);
 }
 
-// The typedef is needed because taking sizeof(number) in the const expression below doesn't work with some compilers.
-// This is likely the case because of the template.
+// The typedef is needed because taking sizeof(number) in the const expression
+// below doesn't work with some compilers. This is likely the case because of
+// the template.
 typedef int numberType;
 
 template <typename CharacterType>
@@ -80,9 +82,8 @@ static inline String toAlphabeticOrNumeric(numberType number,
                                            SequenceType type) {
   ASSERT(sequenceSize >= 2);
 
-  const int lettersSize =
-      sizeof(numberType) * 8 +
-      1;  // Binary is the worst case; requires one character per bit plus a minus sign.
+  // Binary is the worst case; requires one character per bit plus a minus sign.
+  const int lettersSize = sizeof(numberType) * 8 + 1;
 
   CharacterType letters[lettersSize];
 
@@ -123,7 +124,8 @@ static String toSymbolic(int number,
   unsigned numberShadow = number;
   --numberShadow;
 
-  // The asterisks list-style-type is the worst case; we show |numberShadow| asterisks.
+  // The asterisks list-style-type is the worst case; we show |numberShadow|
+  // asterisks.
   StringBuilder letters;
   letters.append(symbols[numberShadow % symbolsSize]);
   unsigned numSymbols = numberShadow / symbolsSize;
@@ -167,7 +169,8 @@ static inline String toSymbolic(int number,
 
 static void toHebrewUnder1000(int number, Vector<UChar>& letters) {
   // FIXME: CSS3 mentions various refinements not implemented here.
-  // FIXME: Should take a look at Mozilla's HebrewToText function (in nsBulletFrame).
+  // FIXME: Should take a look at Mozilla's HebrewToText function (in
+  // nsBulletFrame).
   ASSERT(number >= 0 && number < 1000);
   int fourHundreds = number / 400;
   for (int i = 0; i < fourHundreds; i++)
@@ -309,7 +312,8 @@ enum CJKLang { Chinese = 1, Korean, Japanese };
 enum CJKStyle { Formal, Informal };
 
 // The table uses the order from the CSS3 specification:
-// first 3 group markers, then 3 digit markers, then ten digits, then negative symbols.
+// first 3 group markers, then 3 digit markers, then ten digits, then negative
+// symbols.
 static String toCJKIdeographic(int number,
                                const UChar table[26],
                                CJKStyle cjkStyle) {
@@ -528,7 +532,8 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int count) {
 
 UChar suffix(EListStyleType type, int count) {
   // If the list-style-type cannot represent |count| because it's outside its
-  // ordinal range then we fall back to some list style that can represent |count|.
+  // ordinal range then we fall back to some list style that can represent
+  // |count|.
   EListStyleType effectiveType = effectiveListMarkerType(type, count);
 
   // Note, the following switch statement has been explicitly
@@ -601,8 +606,9 @@ UChar suffix(EListStyleType type, int count) {
 }
 
 String text(EListStyleType type, int count) {
-  // If the list-style-type, say hebrew, cannot represent |count| because it's outside
-  // its ordinal range then we fallback to some list style that can represent |count|.
+  // If the list-style-type, say hebrew, cannot represent |count| because it's
+  // outside its ordinal range then we fallback to some list style that can
+  // represent |count|.
   switch (effectiveListMarkerType(type, count)) {
     case NoneListStyle:
       return "";
@@ -917,8 +923,8 @@ String text(EListStyleType type, int count) {
     case Armenian:
     case UpperArmenian:
       // CSS3 says "armenian" means "lower-armenian".
-      // But the CSS2.1 test suite contains uppercase test results for "armenian",
-      // so we'll match the test suite.
+      // But the CSS2.1 test suite contains uppercase test results for
+      // "armenian", so we'll match the test suite.
       return toArmenian(count, true);
     case LowerArmenian:
       return toArmenian(count, false);

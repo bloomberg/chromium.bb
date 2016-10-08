@@ -742,7 +742,7 @@ void LayoutTableSection::distributeRowSpanHeightToRows(
 
     // FIXME: Inner spanning cell height should not change if it have fixed
     // height when it's parent spanning cell is distributing it's extra height
-    //in rows.
+    // in rows.
 
     // Calculate total percentage, total auto rows height and total rows height
     // except percent rows.
