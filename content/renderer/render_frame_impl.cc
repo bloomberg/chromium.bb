@@ -5757,13 +5757,6 @@ void RenderFrameImpl::NavigateInternal(
           GetWebHTTPBodyForRequestBody(common_params.post_data));
     }
 
-    // A session history navigation should have been accompanied by state.
-    // TODO(creis): This is known to be failing in UseSubframeNavigationEntries
-    // in https://crbug.com/568703, when the PageState on a FrameNavigationEntry
-    // is unexpectedly empty.  Until the cause is found, keep this as a DCHECK
-    // and load the URL without PageState.
-    DCHECK_EQ(request_params.page_id, -1);
-
     should_load_request = true;
   }
 

@@ -379,6 +379,14 @@ bool NavigatorImpl::NavigateToEntry(
     if (is_transfer)
       dest_render_frame_host->set_is_loading(true);
 
+    // A session history navigation should have been accompanied by state.
+    // TODO(creis): This is known to be failing in UseSubframeNavigationEntries
+    // in https://crbug.com/568703, when the PageState on a FrameNavigationEntry
+    // is unexpectedly empty.  Until the cause is found, keep this as a DCHECK
+    // and load the URL without PageState.
+    if (is_pending_entry && controller_->GetPendingEntryIndex() != -1)
+      DCHECK(frame_entry.page_state().IsValid());
+
     // Navigate in the desired RenderFrameHost.
     // We can skip this step in the rare case that this is a transfer navigation
     // which began in the chosen RenderFrameHost, since the request has already
