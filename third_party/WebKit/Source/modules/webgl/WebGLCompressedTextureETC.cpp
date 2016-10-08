@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webgl/WebGLCompressedTextureES30.h"
+#include "modules/webgl/WebGLCompressedTextureETC.h"
 
 #include "modules/webgl/WebGLRenderingContextBase.h"
 
 namespace blink {
 
-WebGLCompressedTextureES30::WebGLCompressedTextureES30(
+WebGLCompressedTextureETC::WebGLCompressedTextureETC(
     WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
   context->addCompressedTextureFormat(GL_COMPRESSED_R11_EAC);
@@ -25,25 +25,25 @@ WebGLCompressedTextureES30::WebGLCompressedTextureES30(
   context->addCompressedTextureFormat(GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC);
 }
 
-WebGLCompressedTextureES30::~WebGLCompressedTextureES30() {}
+WebGLCompressedTextureETC::~WebGLCompressedTextureETC() {}
 
-WebGLExtensionName WebGLCompressedTextureES30::name() const {
-  return WebGLCompressedTextureES30Name;
+WebGLExtensionName WebGLCompressedTextureETC::name() const {
+  return WebGLCompressedTextureETCName;
 }
 
-WebGLCompressedTextureES30* WebGLCompressedTextureES30::create(
+WebGLCompressedTextureETC* WebGLCompressedTextureETC::create(
     WebGLRenderingContextBase* context) {
-  return new WebGLCompressedTextureES30(context);
+  return new WebGLCompressedTextureETC(context);
 }
 
-bool WebGLCompressedTextureES30::supported(WebGLRenderingContextBase* context) {
+bool WebGLCompressedTextureETC::supported(WebGLRenderingContextBase* context) {
   Extensions3DUtil* extensionsUtil = context->extensionsUtil();
   return extensionsUtil->supportsExtension(
-      "GL_CHROMIUM_compressed_texture_es3_0");
+      "GL_CHROMIUM_compressed_texture_etc");
 }
 
-const char* WebGLCompressedTextureES30::extensionName() {
-  return "WEBGL_compressed_texture_es3_0";
+const char* WebGLCompressedTextureETC::extensionName() {
+  return "WEBGL_compressed_texture_etc";
 }
 
 }  // namespace blink

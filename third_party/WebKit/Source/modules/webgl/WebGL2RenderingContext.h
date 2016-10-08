@@ -61,7 +61,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<OESTextureFloatLinear> m_oesTextureFloatLinear;
   Member<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
   Member<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
-  Member<WebGLCompressedTextureES30> m_webglCompressedTextureES30;
+  Member<WebGLCompressedTextureETC> m_webglCompressedTextureETC;
   Member<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
   Member<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
   Member<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;

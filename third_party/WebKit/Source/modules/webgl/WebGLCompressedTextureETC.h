@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLCompressedTextureES30_h
-#define WebGLCompressedTextureES30_h
+#ifndef WebGLCompressedTextureETC_h
+#define WebGLCompressedTextureETC_h
 
 #include "modules/webgl/WebGLExtension.h"
 
 namespace blink {
 
-class WebGLCompressedTextureES30 final : public WebGLExtension {
+class WebGLCompressedTextureETC final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLCompressedTextureES30* create(WebGLRenderingContextBase*);
+  static WebGLCompressedTextureETC* create(WebGLRenderingContextBase*);
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~WebGLCompressedTextureES30() override;
+  ~WebGLCompressedTextureETC() override;
   WebGLExtensionName name() const override;
 
  private:
-  explicit WebGLCompressedTextureES30(WebGLRenderingContextBase*);
+  explicit WebGLCompressedTextureETC(WebGLRenderingContextBase*);
 };
 
 }  // namespace blink
 
-#endif  // WebGLCompressedTextureES30_h
+#endif  // WebGLCompressedTextureETC_h

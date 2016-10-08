@@ -17,7 +17,7 @@
 #include "modules/webgl/OESTextureFloatLinear.h"
 #include "modules/webgl/WebGLCompressedTextureASTC.h"
 #include "modules/webgl/WebGLCompressedTextureATC.h"
-#include "modules/webgl/WebGLCompressedTextureES30.h"
+#include "modules/webgl/WebGLCompressedTextureETC.h"
 #include "modules/webgl/WebGLCompressedTextureETC1.h"
 #include "modules/webgl/WebGLCompressedTexturePVRTC.h"
 #include "modules/webgl/WebGLCompressedTextureS3TC.h"
@@ -120,7 +120,7 @@ void WebGL2RenderingContext::registerContextExtensions() {
   registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear);
   registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC);
   registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC);
-  registerExtension<WebGLCompressedTextureES30>(m_webglCompressedTextureES30);
+  registerExtension<WebGLCompressedTextureETC>(m_webglCompressedTextureETC);
   registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1);
   registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC);
   registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC);
@@ -138,7 +138,7 @@ DEFINE_TRACE(WebGL2RenderingContext) {
   visitor->trace(m_oesTextureFloatLinear);
   visitor->trace(m_webglCompressedTextureASTC);
   visitor->trace(m_webglCompressedTextureATC);
-  visitor->trace(m_webglCompressedTextureES30);
+  visitor->trace(m_webglCompressedTextureETC);
   visitor->trace(m_webglCompressedTextureETC1);
   visitor->trace(m_webglCompressedTexturePVRTC);
   visitor->trace(m_webglCompressedTextureS3TC);
@@ -156,7 +156,7 @@ DEFINE_TRACE_WRAPPERS(WebGL2RenderingContext) {
   visitor->traceWrappers(m_oesTextureFloatLinear);
   visitor->traceWrappers(m_webglCompressedTextureASTC);
   visitor->traceWrappers(m_webglCompressedTextureATC);
-  visitor->traceWrappers(m_webglCompressedTextureES30);
+  visitor->traceWrappers(m_webglCompressedTextureETC);
   visitor->traceWrappers(m_webglCompressedTextureETC1);
   visitor->traceWrappers(m_webglCompressedTexturePVRTC);
   visitor->traceWrappers(m_webglCompressedTextureS3TC);

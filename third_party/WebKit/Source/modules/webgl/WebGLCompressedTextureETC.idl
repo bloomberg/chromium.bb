@@ -6,7 +6,7 @@
     NoInterfaceObject,
     DoNotCheckConstants,
     SetWrapperReferenceFrom=canvas,
-] interface WebGLCompressedTextureES30 {
+] interface WebGLCompressedTextureETC {
     /* Compressed Texture Format */
     const unsigned long COMPRESSED_R11_EAC                        = 0x9270;
     const unsigned long COMPRESSED_SIGNED_R11_EAC                 = 0x9271;

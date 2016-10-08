@@ -2288,7 +2288,7 @@ _NAMED_TYPE_INFO = {
   },
 }
 
-_ES30_COMPRESSED_TEXTURE_FORMATS = [
+_ETC_COMPRESSED_TEXTURE_FORMATS = [
   'GL_COMPRESSED_R11_EAC',
   'GL_COMPRESSED_SIGNED_R11_EAC',
   'GL_COMPRESSED_RG11_EAC',
@@ -10940,12 +10940,12 @@ extern const NameToFunc g_gles2_function_table[] = {
           f.write(code % {
             'name': ToUnderscore(name),
           })
-      f.write("UpdateES30CompressedTextureFormats();");
+      f.write("UpdateETCCompressedTextureFormats();");
       f.write("}\n\n");
 
-      f.write("void Validators::UpdateES30CompressedTextureFormats() {\n")
+      f.write("void Validators::UpdateETCCompressedTextureFormats() {\n")
       for name in ['CompressedTextureFormat', 'TextureInternalFormatStorage']:
-        for fmt in _ES30_COMPRESSED_TEXTURE_FORMATS:
+        for fmt in _ETC_COMPRESSED_TEXTURE_FORMATS:
           code = """  %(name)s.AddValue(%(format)s);
 """
           f.write(code % {
@@ -11018,7 +11018,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
               'CompressedTextureFormat',
               'TextureInternalFormatStorage',
             ]:
-            for es3_enum in _ES30_COMPRESSED_TEXTURE_FORMATS:
+            for es3_enum in _ETC_COMPRESSED_TEXTURE_FORMATS:
               valid_list.append(es3_enum)
           assert len(valid_list) == len(set(valid_list))
           if len(valid_list) > 0:

@@ -1,10 +1,10 @@
 Name
 
-    CHROMIUM_compressed_texture_es3_0
+    CHROMIUM_compressed_texture_etc
 
 Name Strings
 
-    GL_CHROMIUM_compressed_texture_es3_0
+    GL_CHROMIUM_compressed_texture_etc
 
 Version
 

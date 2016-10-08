@@ -1018,8 +1018,8 @@ void FeatureInfo::InitializeFeatures() {
   // TODO(kainino): Once we have a way to query whether ANGLE is exposing
   // native support for ETC2 textures, require that here.
   if (gl_version_info_->is_es3) {
-    AddExtensionString("GL_CHROMIUM_compressed_texture_es3_0");
-    validators_.UpdateES30CompressedTextureFormats();
+    AddExtensionString("GL_CHROMIUM_compressed_texture_etc");
+    validators_.UpdateETCCompressedTextureFormats();
   }
 
   if (extensions.Contains("GL_AMD_compressed_ATC_texture")) {

@@ -1502,10 +1502,10 @@ void Validators::UpdateValuesES3() {
                                arraysize(valid_vertex_attrib_type_table_es3));
   vertex_attribute.AddValues(valid_vertex_attribute_table_es3,
                              arraysize(valid_vertex_attribute_table_es3));
-  UpdateES30CompressedTextureFormats();
+  UpdateETCCompressedTextureFormats();
 }
 
-void Validators::UpdateES30CompressedTextureFormats() {
+void Validators::UpdateETCCompressedTextureFormats() {
   compressed_texture_format.AddValue(GL_COMPRESSED_R11_EAC);
   compressed_texture_format.AddValue(GL_COMPRESSED_SIGNED_R11_EAC);
   compressed_texture_format.AddValue(GL_COMPRESSED_RG11_EAC);

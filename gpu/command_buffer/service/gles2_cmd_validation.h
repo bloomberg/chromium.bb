@@ -64,7 +64,7 @@ struct Validators {
   Validators();
 
   void UpdateValuesES3();
-  void UpdateES30CompressedTextureFormats();
+  void UpdateETCCompressedTextureFormats();
 
 #include "gpu/command_buffer/service/gles2_cmd_validation_autogen.h"
 };

@@ -322,7 +322,7 @@ modules_idl_files =
                     "webgl/WebGLBuffer.idl",
                     "webgl/WebGLCompressedTextureASTC.idl",
                     "webgl/WebGLCompressedTextureATC.idl",
-                    "webgl/WebGLCompressedTextureES30.idl",
+                    "webgl/WebGLCompressedTextureETC.idl",
                     "webgl/WebGLCompressedTextureETC1.idl",
                     "webgl/WebGLCompressedTexturePVRTC.idl",
                     "webgl/WebGLCompressedTextureS3TC.idl",

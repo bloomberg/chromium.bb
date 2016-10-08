@@ -449,11 +449,11 @@ TEST_P(FeatureInfoTest, InitializeEXT_texture_compression_s3tc_srgbGL) {
       GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT));
 }
 
-TEST_P(FeatureInfoTest, InitializeCHROMIUM_compressed_texture_es3_0) {
+TEST_P(FeatureInfoTest, InitializeCHROMIUM_compressed_texture_etc) {
   SetupInitExpectationsWithGLVersion("", "",
                                      "OpenGL ES 3.0");
   EXPECT_THAT(info_->extensions(),
-              HasSubstr("GL_CHROMIUM_compressed_texture_es3_0"));
+              HasSubstr("GL_CHROMIUM_compressed_texture_etc"));
   EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_R11_EAC));
   EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(

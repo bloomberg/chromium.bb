@@ -179,7 +179,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'OES_texture_float_linear',
         'WEBGL_compressed_texture_astc',
         'WEBGL_compressed_texture_atc',
-        'WEBGL_compressed_texture_es3_0',
+        'WEBGL_compressed_texture_etc',
         'WEBGL_compressed_texture_etc1',
         'WEBGL_compressed_texture_pvrtc',
         'WEBGL_compressed_texture_s3tc',
