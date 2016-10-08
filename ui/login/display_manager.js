@@ -613,7 +613,8 @@ cr.define('cr.ui.login', function() {
 
 
       // Show sign-in screen instead of account picker if pod row is empty.
-      if (screenId == SCREEN_ACCOUNT_PICKER && $('pod-row').pods.length == 0) {
+      if (screenId == SCREEN_ACCOUNT_PICKER && $('pod-row').pods.length == 0 &&
+          cr.isChromeOS) {
         // Manually hide 'add-user' header bar, because of the case when
         // 'Cancel' button is used on the offline login page.
         $('add-user-header-bar-item').hidden = true;
