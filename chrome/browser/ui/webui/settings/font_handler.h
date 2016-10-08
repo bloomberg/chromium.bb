@@ -31,7 +31,7 @@ class Profile;
 
 namespace settings {
 
-// Handle OS font list, font preference settings and character encoding.
+// Handle OS font list and font preference settings.
 class FontHandler : public SettingsPageUIHandler,
                     public extensions::ExtensionRegistryObserver {
  public:

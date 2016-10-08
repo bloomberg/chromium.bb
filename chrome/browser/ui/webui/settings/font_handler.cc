@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/character_encoding.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"

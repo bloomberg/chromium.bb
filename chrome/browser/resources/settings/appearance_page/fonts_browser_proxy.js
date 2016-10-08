@@ -5,7 +5,6 @@
 /**
  * @typedef {{
  *   fontList: Array<{0: string, 1: (string|undefined), 2: (string|undefined)}>,
- *   encodingList: Array<{0: string, 1: string}>,
  *   extensionUrl: string
  * }}
  */
@@ -17,8 +16,8 @@ cr.define('settings', function() {
 
   FontsBrowserProxy.prototype = {
     /**
-     * @return {!Promise<!FontsData>} Fonts, encodings and the advanced font
-     *     settings extension URL.
+     * @return {!Promise<!FontsData>} Fonts and the advanced font settings
+     *     extension URL.
      */
     fetchFontsData: assertNotReached,
 
