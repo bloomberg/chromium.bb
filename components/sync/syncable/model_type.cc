@@ -139,7 +139,7 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {READING_LIST, "READING_LIST", "reading_list", "Reading List",
      sync_pb::EntitySpecifics::kReadingListFieldNumber, 38},
     {PROXY_TABS, "", "", "Tabs", -1, 25},
-    {NIGORI, "NIGORI", "nigori", "Encryption keys",
+    {NIGORI, "NIGORI", "nigori", "Encryption Keys",
      sync_pb::EntitySpecifics::kNigoriFieldNumber, 17},
     {EXPERIMENTS, "EXPERIMENTS", "experiments", "Experiments",
      sync_pb::EntitySpecifics::kExperimentsFieldNumber, 19},
