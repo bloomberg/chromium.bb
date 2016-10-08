@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_NET_HELIUM_VECTOR_CLOCK_H_
-#define BLIMP_NET_HELIUM_VECTOR_CLOCK_H_
+#ifndef BLIMP_NET_HELIUM_VERSION_VECTOR_H_
+#define BLIMP_NET_HELIUM_VERSION_VECTOR_H_
 
 #include <stdint.h>
 
@@ -12,24 +12,24 @@
 
 namespace blimp {
 
-// From wikipedia:
-// A vector clock is an algorithm for generating a partial ordering of events
-// in a distributed system and detecting causality violations. This is used
-// in Blimp to allow client and server modify a local copy of an object and
-// later be able to detect ordering or conflicts if any.
+// Version Vectors are used to store revisions of both client and engine
+// objects. It will allow determining partial ordering between 2 VersionVectors.
 //
-// For more info see:
-// https://en.wikipedia.org/wiki/Vector_clock
+// It's similar to a vector clock, but it different according to the Wikipedia
+// definition specially when handling merge. Vector Clocks specifies you should
+// advance your local version, whereas VersionVectors you won't advance your
+// local version (Unless you have to handle a merge conflict and requires to
+// send data to the other side).
 
 typedef uint64_t Revision;
 
-class BLIMP_NET_EXPORT VectorClock {
+class BLIMP_NET_EXPORT VersionVector {
  public:
   enum class Comparison { LessThan, EqualTo, GreaterThan, Conflict };
 
-  VectorClock(Revision local_revision, Revision remote_revision);
-  VectorClock();
-  VectorClock(const VectorClock&) = default;
+  VersionVector(Revision local_revision, Revision remote_revision);
+  VersionVector();
+  VersionVector(const VersionVector&) = default;
 
   // Compares two vector clocks. There are 4 possibilities for the result:
   // * LessThan: One revision is equal and for the other is smaller.
@@ -38,14 +38,15 @@ class BLIMP_NET_EXPORT VectorClock {
   // * GreaterThan: One revision is equal and for the other is greater.
   // (2,0).CompareTo((1, 0));
   // * Conflict: Both revisions are different. (1,0).CompareTo(0,1)
-  Comparison CompareTo(const VectorClock& other) const;
+  Comparison CompareTo(const VersionVector& other) const;
 
   // Merges two vector clocks. This function should be used at synchronization
   // points. i.e. when client receives data from the server or vice versa.
-  VectorClock MergeWith(const VectorClock& other) const;
+  VersionVector MergeWith(const VersionVector& other) const;
 
   // Increments local_revision_ by one. This is used when something changes
-  // in the local state like setting a property or applying a change set.
+  // in the local state like setting a property or applying a change set with
+  // a conflict that requires sending state to the other peer.
   void IncrementLocal();
 
   Revision local_revision() const { return local_revision_; }
@@ -61,12 +62,12 @@ class BLIMP_NET_EXPORT VectorClock {
   }
 
   // Create the proto message corresponding to this object.
-  proto::VectorClockMessage ToProto() const;
+  proto::VersionVectorMessage ToProto() const;
 
   // Inverts the local and remote components respectively.
-  // Used when we send VectorClock across the wire. The local becomes
+  // Used when we send VersionVector across the wire. The local becomes
   // remote and vice versa.
-  VectorClock Invert() const;
+  VersionVector Invert() const;
 
  private:
   Revision local_revision_ = 0;
@@ -75,4 +76,4 @@ class BLIMP_NET_EXPORT VectorClock {
 
 }  // namespace blimp
 
-#endif  // BLIMP_NET_HELIUM_VECTOR_CLOCK_H_
+#endif  // BLIMP_NET_HELIUM_VERSION_VECTOR_H_

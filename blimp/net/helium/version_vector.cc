@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/helium/vector_clock.h"
+#include "blimp/net/helium/version_vector.h"
 
 #include <algorithm>
 
@@ -10,59 +10,60 @@
 
 namespace blimp {
 
-VectorClock::VectorClock() {}
+VersionVector::VersionVector() {}
 
-VectorClock::VectorClock(Revision local_revision, Revision remote_revision)
+VersionVector::VersionVector(Revision local_revision, Revision remote_revision)
     : local_revision_(local_revision), remote_revision_(remote_revision) {}
 
-VectorClock::Comparison VectorClock::CompareTo(const VectorClock& other) const {
+VersionVector::Comparison VersionVector::CompareTo(
+    const VersionVector& other) const {
   DCHECK(local_revision_ >= other.local_revision());
 
   if (local_revision_ == other.local_revision()) {
     if (remote_revision_ == other.remote_revision()) {
-      return VectorClock::Comparison::EqualTo;
+      return VersionVector::Comparison::EqualTo;
     } else if (remote_revision_ < other.remote_revision()) {
-      return VectorClock::Comparison::LessThan;
+      return VersionVector::Comparison::LessThan;
     } else {
-      return VectorClock::Comparison::GreaterThan;
+      return VersionVector::Comparison::GreaterThan;
     }
   } else {
     if (local_revision_ > other.local_revision()) {
       if (remote_revision_ == other.remote_revision()) {
-        return VectorClock::Comparison::GreaterThan;
+        return VersionVector::Comparison::GreaterThan;
       } else {
-        return VectorClock::Comparison::Conflict;
+        return VersionVector::Comparison::Conflict;
       }
     } else {  // We know its not equal or greater, so its smaller
       if (remote_revision_ == other.remote_revision()) {
-        return VectorClock::Comparison::LessThan;
+        return VersionVector::Comparison::LessThan;
       } else {
         LOG(FATAL) << "Local revision should always be greater or equal.";
-        return VectorClock::Comparison::Conflict;
+        return VersionVector::Comparison::Conflict;
       }
     }
   }
 }
 
-VectorClock VectorClock::MergeWith(const VectorClock& other) const {
-  VectorClock result(std::max(local_revision_, other.local_revision()),
-                     std::max(remote_revision_, other.remote_revision()));
+VersionVector VersionVector::MergeWith(const VersionVector& other) const {
+  VersionVector result(std::max(local_revision_, other.local_revision()),
+                       std::max(remote_revision_, other.remote_revision()));
   return result;
 }
 
-void VectorClock::IncrementLocal() {
+void VersionVector::IncrementLocal() {
   local_revision_++;
 }
 
-proto::VectorClockMessage VectorClock::ToProto() const {
-  proto::VectorClockMessage result;
+proto::VersionVectorMessage VersionVector::ToProto() const {
+  proto::VersionVectorMessage result;
   result.set_local_revision(local_revision_);
   result.set_remote_revision(remote_revision_);
   return result;
 }
 
-VectorClock VectorClock::Invert() const {
-  return VectorClock(remote_revision_, local_revision_);
+VersionVector VersionVector::Invert() const {
+  return VersionVector(remote_revision_, local_revision_);
 }
 
 }  // namespace blimp

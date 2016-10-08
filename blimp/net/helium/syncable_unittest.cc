@@ -20,22 +20,22 @@ namespace {
 // For simplicity of this example, the ChangeSet will be an integer.
 class FakeIntSyncable : public Syncable<int> {
  public:
-  explicit FakeIntSyncable(VectorClockGenerator* clock_gen)
+  explicit FakeIntSyncable(VersionVectorGenerator* clock_gen)
       : Syncable<int>(), clock_gen_(clock_gen), value_(0) {
     last_modified_ = clock_gen_->current();
   }
 
-  bool ModifiedSince(const VectorClock& from) const override {
+  bool ModifiedSince(const VersionVector& from) const override {
     return from.local_revision() < last_modified_.local_revision();
   }
 
   std::unique_ptr<int> CreateChangesetToCurrent(
-      const VectorClock& from) override {
+      const VersionVector& from) override {
     return base::MakeUnique<int>(value_);
   }
 
-  void ApplyChangeset(const VectorClock& from,
-                      const VectorClock& to,
+  void ApplyChangeset(const VersionVector& from,
+                      const VersionVector& to,
                       std::unique_ptr<int> changeset) override {
     // Restore the value
     value_ = *changeset;
@@ -44,7 +44,7 @@ class FakeIntSyncable : public Syncable<int> {
     last_modified_ = to;
   }
 
-  void ReleaseCheckpointsBefore(const VectorClock& checkpoint) override {
+  void ReleaseCheckpointsBefore(const VersionVector& checkpoint) override {
     last_modified_ = checkpoint;
   }
 
@@ -60,8 +60,8 @@ class FakeIntSyncable : public Syncable<int> {
 
  private:
   // The last time this object was changed
-  VectorClockGenerator* clock_gen_;
-  VectorClock last_modified_;
+  VersionVectorGenerator* clock_gen_;
+  VersionVector last_modified_;
   int32_t value_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeIntSyncable);
@@ -69,11 +69,11 @@ class FakeIntSyncable : public Syncable<int> {
 
 class ParentObjectSyncable : public TwoPhaseSyncable {
  public:
-  explicit ParentObjectSyncable(VectorClockGenerator* clock_gen)
+  explicit ParentObjectSyncable(VersionVectorGenerator* clock_gen)
       : TwoPhaseSyncable(), child1_(clock_gen), child2_(clock_gen) {}
 
   std::unique_ptr<proto::ChangesetMessage> CreateChangesetToCurrent(
-      const VectorClock& from) override {
+      const VersionVector& from) override {
     std::unique_ptr<proto::ChangesetMessage> changeset =
         base::MakeUnique<proto::ChangesetMessage>();
 
@@ -93,8 +93,8 @@ class ParentObjectSyncable : public TwoPhaseSyncable {
   }
 
   void ApplyChangeset(
-      const VectorClock& from,
-      const VectorClock& to,
+      const VersionVector& from,
+      const VersionVector& to,
       std::unique_ptr<proto::ChangesetMessage> changeset) override {
     proto::TestChangesetMessage bm = changeset->test();
 
@@ -109,22 +109,22 @@ class ParentObjectSyncable : public TwoPhaseSyncable {
     }
   }
 
-  void ReleaseCheckpointsBefore(const VectorClock& checkpoint) override {
+  void ReleaseCheckpointsBefore(const VersionVector& checkpoint) override {
     child1_.ReleaseCheckpointsBefore(checkpoint);
     child2_.ReleaseCheckpointsBefore(checkpoint);
   }
 
-  bool ModifiedSince(const VectorClock& from) const override {
+  bool ModifiedSince(const VersionVector& from) const override {
     return child1_.ModifiedSince(from) || child2_.ModifiedSince(from);
   }
 
-  void PreCreateChangesetToCurrent(const VectorClock& from,
+  void PreCreateChangesetToCurrent(const VersionVector& from,
                                    MandatoryClosure&& done) override {
     done.Run();
   }
 
-  void PostApplyChangeset(const VectorClock& from,
-                          const VectorClock& to,
+  void PostApplyChangeset(const VersionVector& from,
+                          const VersionVector& to,
                           MandatoryClosure&& done) override {
     done.Run();
   }
@@ -142,8 +142,8 @@ class ParentObjectSyncable : public TwoPhaseSyncable {
 class SyncableTest : public testing::Test {
  public:
   SyncableTest()
-      : clock_gen1_(base::MakeUnique<VectorClockGenerator>()),
-        clock_gen2_(base::MakeUnique<VectorClockGenerator>()),
+      : clock_gen1_(base::MakeUnique<VersionVectorGenerator>()),
+        clock_gen2_(base::MakeUnique<VersionVectorGenerator>()),
         last_sync_local_(clock_gen1_->current()),
         last_sync_remote_(clock_gen2_->current()),
         parent_local_(clock_gen1_.get()),
@@ -168,8 +168,8 @@ class SyncableTest : public testing::Test {
     std::unique_ptr<proto::ChangesetMessage> changeset =
         parent_local_.CreateChangesetToCurrent(last_sync_local_);
 
-    VectorClock local_clock = clock_gen1_->current();
-    VectorClock remote_clock = local_clock.Invert();
+    VersionVector local_clock = clock_gen1_->current();
+    VersionVector remote_clock = local_clock.Invert();
 
     parent_remote_.ApplyChangeset(last_sync_remote_, remote_clock,
                                   std::move(changeset));
@@ -182,10 +182,10 @@ class SyncableTest : public testing::Test {
     EXPECT_EQ(value2_get, child_to_be_read_only->value());
   }
 
-  std::unique_ptr<VectorClockGenerator> clock_gen1_;
-  std::unique_ptr<VectorClockGenerator> clock_gen2_;
-  VectorClock last_sync_local_;
-  VectorClock last_sync_remote_;
+  std::unique_ptr<VersionVectorGenerator> clock_gen1_;
+  std::unique_ptr<VersionVectorGenerator> clock_gen2_;
+  VersionVector last_sync_local_;
+  VersionVector last_sync_remote_;
   ParentObjectSyncable parent_local_;
   ParentObjectSyncable parent_remote_;
 

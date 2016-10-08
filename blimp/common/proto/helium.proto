@@ -13,8 +13,8 @@ package blimp.proto;
 
 // Vector clock that is used to get the partial order of changes.
 // This class is the proto definition of
-// //blimp/net/helium/vector_clock.h
-message VectorClockMessage {
+// //blimp/net/helium/version_vector.h
+message VersionVectorMessage {
   uint64 local_revision = 1;
   uint64 remote_revision = 2;
 }
@@ -43,13 +43,13 @@ message HeliumMessage {
   // Identifies the local revision that this changeset applies to (relative
   // to the sender), and the remote revision that the local side most recently
   // received (i.e. an ACK, in effect).
-  VectorClockMessage from = 1;
+  VersionVectorMessage from = 1;
 
   // Provides the local view of the vector-clock following application of
   // the changeset. This allows a single changeset to collate changes across
   // several revisions, following a break in connectivity, rather than simply
   // re-transmitting the lost changesets.
-  VectorClockMessage to = 2;
+  VersionVectorMessage to = 2;
 
   // Identifies the Object to which this changeset applies.
   uint32 object_id = 3;

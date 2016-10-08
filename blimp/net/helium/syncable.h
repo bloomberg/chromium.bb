@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "blimp/common/mandatory_callback.h"
-#include "blimp/net/helium/vector_clock.h"
-#include "blimp/net/helium/vector_clock_generator.h"
+#include "blimp/net/helium/version_vector.h"
+#include "blimp/net/helium/version_vector_generator.h"
 
 namespace blimp {
 
@@ -42,26 +42,26 @@ class Syncable {
   // Constructs a changeset between the |from| revision and its current state.
   // The Sync layer will encapsulate the changeset with details since |from|,
   // but the Syncable is responsible for including any revision information
-  // additional to that expressed by the VectorClocks, that is necessary to
+  // additional to that expressed by the VersionVectors, that is necessary to
   // detect and resolve conflicts.
   // The changeset is returned as a return value.
   virtual std::unique_ptr<ChangesetType> CreateChangesetToCurrent(
-      const VectorClock& from) = 0;
+      const VersionVector& from) = 0;
 
   // Applies a |changeset| given as parameter to the contents of the
   // Syncable.
-  // The VectorClocks |from| and |to| can be used to detect and resolve
+  // The VersionVectors |from| and |to| can be used to detect and resolve
   // concurrent change conflicts.
-  virtual void ApplyChangeset(const VectorClock& from,
-                              const VectorClock& to,
+  virtual void ApplyChangeset(const VersionVector& from,
+                              const VersionVector& to,
                               std::unique_ptr<ChangesetType> changeset) = 0;
 
   // Gives a chance for the Syncable to delete any old data previous to the
   // |checkpoint|.
-  virtual void ReleaseCheckpointsBefore(const VectorClock& checkpoint) = 0;
+  virtual void ReleaseCheckpointsBefore(const VersionVector& checkpoint) = 0;
 
   // Returns true if the object has been modified since |from|.
-  virtual bool ModifiedSince(const VectorClock& from) const = 0;
+  virtual bool ModifiedSince(const VersionVector& from) const = 0;
 };
 
 // Extends the Syncable interface by adding support to asynchronously replicate
@@ -89,7 +89,7 @@ class TwoPhaseSyncable : public Syncable<proto::ChangesetMessage> {
   //
   // The callback |done| should be called once the local instance is ready
   // to accept the call to CreateChangesetToCurrent.
-  virtual void PreCreateChangesetToCurrent(const VectorClock& from,
+  virtual void PreCreateChangesetToCurrent(const VersionVector& from,
                                            MandatoryClosure&& done) = 0;
 
   // This is called after calling ApplyChangeset to allow the changes to
@@ -97,8 +97,8 @@ class TwoPhaseSyncable : public Syncable<proto::ChangesetMessage> {
   //
   // The callback |done| should be called once the external world object is
   // updated.
-  virtual void PostApplyChangeset(const VectorClock& from,
-                                  const VectorClock& to,
+  virtual void PostApplyChangeset(const VersionVector& from,
+                                  const VersionVector& to,
                                   MandatoryClosure&& done) = 0;
 };
 
