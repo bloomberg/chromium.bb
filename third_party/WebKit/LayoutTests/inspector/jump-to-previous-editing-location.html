@@ -54,7 +54,7 @@ function test()
             var columnNumber = columns[i];
             var originSelection = editor.selection();
             editor.setSelection(WebInspector.TextRange.createFromLocation(lineNumber, columnNumber));
-            editor._delegate.onJumpToPosition(originSelection, editor.selection());
+            editor._reportJump(originSelection, editor.selection());
             dumpSelection("Mouse click (" + lineNumber + ", " + columnNumber + ")");
         }
     }
