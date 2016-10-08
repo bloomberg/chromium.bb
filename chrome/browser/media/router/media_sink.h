@@ -45,9 +45,7 @@ class MediaSink {
     description_ = description;
   }
   const std::string& description() const { return description_; }
-  void set_domain(const std::string& domain) {
-    domain_ = domain;
-  }
+  void set_domain(const std::string& domain) { domain_ = domain; }
   const std::string& domain() const { return domain_; }
   IconType icon_type() const { return icon_type_; }
 

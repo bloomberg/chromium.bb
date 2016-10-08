@@ -8,6 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -30,11 +31,11 @@ enum PresentationConnectionCloseReason {
 // Represents a presentation session that has been established via either
 // browser actions or Presentation API.
 struct CONTENT_EXPORT PresentationSessionInfo {
-  PresentationSessionInfo(const std::string& presentation_url,
+  PresentationSessionInfo(const GURL& presentation_url,
                           const std::string& presentation_id);
   ~PresentationSessionInfo();
 
-  const std::string presentation_url;
+  const GURL presentation_url;
   const std::string presentation_id;
 };
 

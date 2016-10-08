@@ -110,18 +110,17 @@ class CONTENT_EXPORT PresentationServiceImpl
   class CONTENT_EXPORT ScreenAvailabilityListenerImpl
       : public PresentationScreenAvailabilityListener {
    public:
-    ScreenAvailabilityListenerImpl(
-        const std::string& availability_url,
-        PresentationServiceImpl* service);
+    ScreenAvailabilityListenerImpl(const GURL& availability_url,
+                                   PresentationServiceImpl* service);
     ~ScreenAvailabilityListenerImpl() override;
 
     // PresentationScreenAvailabilityListener implementation.
-    std::string GetAvailabilityUrl() const override;
+    GURL GetAvailabilityUrl() const override;
     void OnScreenAvailabilityChanged(bool available) override;
     void OnScreenAvailabilityNotSupported() override;
 
    private:
-    const std::string availability_url_;
+    const GURL availability_url_;
     PresentationServiceImpl* const service_;
   };
 
@@ -256,10 +255,10 @@ class CONTENT_EXPORT PresentationServiceImpl
   // availability) to.
   blink::mojom::PresentationServiceClientPtr client_;
 
-  std::vector<std::string> default_presentation_urls_;
+  std::vector<GURL> default_presentation_urls_;
 
   using ScreenAvailabilityListenerMap =
-      std::map<std::string, std::unique_ptr<ScreenAvailabilityListenerImpl>>;
+      std::map<GURL, std::unique_ptr<ScreenAvailabilityListenerImpl>>;
   ScreenAvailabilityListenerMap screen_availability_listeners_;
 
   // For StartSession requests.

@@ -13,7 +13,6 @@
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "content/public/browser/presentation_session.h"
-#include "url/gurl.h"
 
 namespace media_router {
 

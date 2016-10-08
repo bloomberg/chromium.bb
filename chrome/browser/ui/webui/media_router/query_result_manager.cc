@@ -12,6 +12,7 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "content/public/browser/browser_thread.h"
+#include "url/gurl.h"
 
 namespace media_router {
 

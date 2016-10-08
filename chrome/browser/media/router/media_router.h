@@ -65,7 +65,7 @@ class MediaRouter : public KeyedService {
   ~MediaRouter() override = default;
 
   // Creates a media route from |source_id| to |sink_id|.
-  // |origin| is the URL of requestor's page.
+  // |origin| is the origin of requestor's page.
   // |web_contents| is the WebContents of the tab in which the request was made.
   // |origin| and |web_contents| are used for enforcing same-origin and/or
   // same-tab scope for JoinRoute() requests. (e.g., if enforced, the page

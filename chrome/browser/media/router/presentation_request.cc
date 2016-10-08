@@ -10,7 +10,7 @@ namespace media_router {
 
 PresentationRequest::PresentationRequest(
     const RenderFrameHostId& render_frame_host_id,
-    const std::vector<std::string>& presentation_urls,
+    const std::vector<GURL>& presentation_urls,
     const GURL& frame_url)
     : render_frame_host_id_(render_frame_host_id),
       presentation_urls_(presentation_urls),

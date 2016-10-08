@@ -12,7 +12,8 @@ namespace media_router {
 
 TEST(MediaSinksObserverTest, OriginMatching) {
   MockMediaRouter router;
-  MediaSource source(MediaSourceForPresentationUrl("https://presentation.com"));
+  MediaSource source(
+      MediaSourceForPresentationUrl(GURL("https://presentation.com")));
   GURL origin("https://origin.com");
   std::vector<GURL> origin_list;
   origin_list.push_back(origin);

@@ -14,6 +14,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using testing::Eq;
 using testing::IsEmpty;
@@ -115,7 +116,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
       query_result_manager_.GetSourcesForCastMode(MediaCastMode::DEFAULT);
   EXPECT_EQ(0u, actual_sources.size());
 
-  MediaSource source(MediaSourceForPresentationUrl("http://foo.com"));
+  MediaSource source(MediaSourceForPresentationUrl(GURL("http://foo.com")));
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
       .WillOnce(Return(true));
   query_result_manager_.SetSourcesForCastMode(MediaCastMode::DEFAULT, {source},
@@ -130,7 +131,8 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
   EXPECT_EQ(source, actual_sources[0]);
 
   // Register a different set of sources for the same cast mode.
-  MediaSource another_source(MediaSourceForPresentationUrl("http://bar.com"));
+  MediaSource another_source(
+      MediaSourceForPresentationUrl(GURL("http://bar.com")));
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_)).Times(1);
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
       .WillOnce(Return(true));
@@ -161,8 +163,10 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
   MediaSink sink3("sinkId3", "Sink 3", MediaSink::IconType::CAST);
   MediaSink sink4("sinkId4", "Sink 4", MediaSink::IconType::CAST);
   MediaSink sink5("sinkId5", "Sink 5", MediaSink::IconType::CAST);
-  MediaSource default_source1 = MediaSourceForPresentationUrl("http://bar.com");
-  MediaSource default_source2 = MediaSourceForPresentationUrl("http://baz.com");
+  MediaSource default_source1 =
+      MediaSourceForPresentationUrl(GURL("http://bar.com"));
+  MediaSource default_source2 =
+      MediaSourceForPresentationUrl(GURL("http://baz.com"));
   MediaSource tab_source = MediaSourceForTab(123);
   GURL origin(kOrigin);
 
@@ -277,9 +281,12 @@ TEST_F(QueryResultManagerTest, MultipleUrls) {
   const MediaSink sink2("sinkId2", "Sink 2", MediaSink::IconType::CAST);
   const MediaSink sink3("sinkId3", "Sink 3", MediaSink::IconType::CAST);
   const MediaSink sink4("sinkId4", "Sink 4", MediaSink::IconType::CAST);
-  const MediaSource source_a(MediaSourceForPresentationUrl("http://urlA.com"));
-  const MediaSource source_b(MediaSourceForPresentationUrl("http://urlB.com"));
-  const MediaSource source_c(MediaSourceForPresentationUrl("http://urlC.com"));
+  const MediaSource source_a(
+      MediaSourceForPresentationUrl(GURL("http://urlA.com")));
+  const MediaSource source_b(
+      MediaSourceForPresentationUrl(GURL("http://urlB.com")));
+  const MediaSource source_c(
+      MediaSourceForPresentationUrl(GURL("http://urlC.com")));
   const MediaSource source_tab(MediaSourceForTab(1));
   // The sources are in decreasing order of priority.
   const std::vector<MediaSource> default_sources = {source_a, source_b,
@@ -377,7 +384,8 @@ TEST_F(QueryResultManagerTest, MultipleUrls) {
 }
 
 TEST_F(QueryResultManagerTest, AddInvalidSource) {
-  const MediaSource source(MediaSourceForPresentationUrl("http://url.com"));
+  const MediaSource source(
+      MediaSourceForPresentationUrl(GURL("http://url.com")));
   const GURL origin(kOrigin);
 
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))

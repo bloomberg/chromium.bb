@@ -23,7 +23,11 @@ const char kRouteId[] =
 class CreatePresentationConnectionRequestTest : public ::testing::Test {
  public:
   CreatePresentationConnectionRequestTest()
-      : cb_invoked_(false), render_frame_host_id_(1, 2) {}
+      : cb_invoked_(false),
+        render_frame_host_id_(1, 2),
+        presentation_url_(kPresentationUrl),
+        presentation_urls_({presentation_url_}) {}
+
   ~CreatePresentationConnectionRequestTest() override {}
 
   void OnSuccess(const content::PresentationSessionInfo& expected_info,
@@ -52,6 +56,8 @@ class CreatePresentationConnectionRequestTest : public ::testing::Test {
 
   bool cb_invoked_;
   const RenderFrameHostId render_frame_host_id_;
+  GURL presentation_url_;
+  std::vector<GURL> presentation_urls_;
 };
 
 // Test that the object's getters match the constructor parameters.
@@ -59,24 +65,24 @@ TEST_F(CreatePresentationConnectionRequestTest, Getters) {
   content::PresentationError error(content::PRESENTATION_ERROR_UNKNOWN,
                                    "Unknown error.");
   CreatePresentationConnectionRequest request(
-      render_frame_host_id_, kPresentationUrl, GURL(kFrameUrl),
+      render_frame_host_id_, presentation_url_, GURL(kFrameUrl),
       base::Bind(&CreatePresentationConnectionRequestTest::FailOnSuccess,
                  base::Unretained(this)),
       base::Bind(&CreatePresentationConnectionRequestTest::OnError,
                  base::Unretained(this), error));
 
   PresentationRequest presentation_request(render_frame_host_id_,
-                                           {kPresentationUrl}, GURL(kFrameUrl));
+                                           presentation_urls_, GURL(kFrameUrl));
   EXPECT_TRUE(request.presentation_request().Equals(presentation_request));
   // Since we didn't explicitly call Invoke*, the error callback will be
   // invoked when |request| is destroyed.
 }
 
 TEST_F(CreatePresentationConnectionRequestTest, SuccessCallback) {
-  content::PresentationSessionInfo session_info(kPresentationUrl,
+  content::PresentationSessionInfo session_info(presentation_url_,
                                                 kPresentationId);
   CreatePresentationConnectionRequest request(
-      render_frame_host_id_, kPresentationUrl, GURL(kFrameUrl),
+      render_frame_host_id_, presentation_url_, GURL(kFrameUrl),
       base::Bind(&CreatePresentationConnectionRequestTest::OnSuccess,
                  base::Unretained(this), session_info),
       base::Bind(&CreatePresentationConnectionRequestTest::FailOnError,
@@ -90,7 +96,7 @@ TEST_F(CreatePresentationConnectionRequestTest, ErrorCallback) {
       content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
       "This is an error message");
   CreatePresentationConnectionRequest request(
-      render_frame_host_id_, kPresentationUrl, GURL(kFrameUrl),
+      render_frame_host_id_, presentation_url_, GURL(kFrameUrl),
       base::Bind(&CreatePresentationConnectionRequestTest::FailOnSuccess,
                  base::Unretained(this)),
       base::Bind(&CreatePresentationConnectionRequestTest::OnError,

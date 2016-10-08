@@ -1082,9 +1082,9 @@ TEST_F(MediaRouterMojoImplTest, RouteMessagesMultipleObservers) {
 
 TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
   MediaRoute::Id route_id("route-id");
-  const std::string kPresentationUrl("http://foo.fakeUrl");
+  const GURL presentation_url("http://www.example.com/presentation.html");
   const std::string kPresentationId("pid");
-  content::PresentationSessionInfo connection(kPresentationUrl,
+  content::PresentationSessionInfo connection(presentation_url,
                                               kPresentationId);
   MockPresentationConnectionStateChangedCallback callback;
   std::unique_ptr<PresentationConnectionStateSubscription> subscription =

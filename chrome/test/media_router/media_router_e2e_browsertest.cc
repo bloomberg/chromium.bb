@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_TabMirroring) {
 
 IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_CastApp) {
   // Wait for 30 seconds to make sure the route is stable.
-  CreateMediaRoute(MediaSourceForPresentationUrl(kCastAppPresentationUrl),
+  CreateMediaRoute(MediaSourceForPresentationUrl(GURL(kCastAppPresentationUrl)),
                    GURL(kOriginUrl), nullptr);
   Wait(base::TimeDelta::FromSeconds(30));
 

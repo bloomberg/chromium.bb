@@ -20,7 +20,6 @@ namespace {
 // See: https://www.ietf.org/rfc/rfc3406.txt
 constexpr char kTabMediaUrnFormat[] = "urn:x-org.chromium.media:source:tab:%d";
 constexpr char kDesktopMediaUrn[] = "urn:x-org.chromium.media:source:desktop";
-constexpr char kCastUrnPrefix[] = "urn:x-com.google.cast:application:";
 constexpr char kTabRemotingUrnFormat[] =
     "urn:x-org.chromium.media:source:tab_content_remoting:%d";
 
@@ -40,11 +39,7 @@ MediaSource MediaSourceForDesktop() {
   return MediaSource(std::string(kDesktopMediaUrn));
 }
 
-MediaSource MediaSourceForCastApp(const std::string& app_id) {
-  return MediaSource(kCastUrnPrefix + app_id);
-}
-
-MediaSource MediaSourceForPresentationUrl(const std::string& presentation_url) {
+MediaSource MediaSourceForPresentationUrl(const GURL& presentation_url) {
   return MediaSource(presentation_url);
 }
 
@@ -75,20 +70,13 @@ int TabIdFromMediaSource(const MediaSource& source) {
 }
 
 bool IsValidMediaSource(const MediaSource& source) {
-  return (TabIdFromMediaSource(source) > 0 ||
-          IsDesktopMirroringMediaSource(source) ||
-          base::StartsWith(source.id(), kCastUrnPrefix,
-                           base::CompareCase::SENSITIVE) ||
-          IsValidPresentationUrl(source.id()));
+  return TabIdFromMediaSource(source) > 0 ||
+         IsDesktopMirroringMediaSource(source) ||
+         IsValidPresentationUrl(GURL(source.id()));
 }
 
-std::string PresentationUrlFromMediaSource(const MediaSource& source) {
-  return IsValidPresentationUrl(source.id()) ? source.id() : "";
-}
-
-bool IsValidPresentationUrl(const std::string& url) {
-  GURL gurl(url);
-  return gurl.is_valid() && gurl.SchemeIsHTTPOrHTTPS();
+bool IsValidPresentationUrl(const GURL& url) {
+  return url.is_valid() && url.SchemeIsHTTPOrHTTPS();
 }
 
 }  // namespace media_router

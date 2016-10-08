@@ -6,10 +6,15 @@
 
 #include <string>
 
+#include "url/gurl.h"
+
 namespace media_router {
 
 MediaSource::MediaSource(const MediaSource::Id& source_id) : id_(source_id) {
 }
+
+MediaSource::MediaSource(const GURL& presentation_url)
+    : id_(presentation_url.spec()) {}
 
 MediaSource::~MediaSource() {}
 

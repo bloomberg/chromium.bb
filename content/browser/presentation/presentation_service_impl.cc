@@ -181,22 +181,22 @@ void PresentationServiceImpl::SetClient(
 }
 
 void PresentationServiceImpl::ListenForScreenAvailability(const GURL& url) {
-  DVLOG(2) << "ListenForScreenAvailability " << url;
+  DVLOG(2) << "ListenForScreenAvailability " << url.spec();
   if (!delegate_) {
     client_->OnScreenAvailabilityUpdated(url, false);
     return;
   }
 
-  if (screen_availability_listeners_.count(url.spec()))
+  if (screen_availability_listeners_.count(url))
     return;
 
   std::unique_ptr<ScreenAvailabilityListenerImpl> listener(
-      new ScreenAvailabilityListenerImpl(url.spec(), this));
+      new ScreenAvailabilityListenerImpl(url, this));
   if (delegate_->AddScreenAvailabilityListener(
       render_process_id_,
       render_frame_id_,
       listener.get())) {
-    screen_availability_listeners_[url.spec()] = std::move(listener);
+    screen_availability_listeners_[url] = std::move(listener);
   } else {
     DVLOG(1) << "AddScreenAvailabilityListener failed. Ignoring request.";
   }
@@ -208,7 +208,7 @@ void PresentationServiceImpl::StopListeningForScreenAvailability(
   if (!delegate_)
     return;
 
-  auto listener_it = screen_availability_listeners_.find(url.spec());
+  auto listener_it = screen_availability_listeners_.find(url);
   if (listener_it == screen_availability_listeners_.end())
     return;
 
@@ -236,16 +236,10 @@ void PresentationServiceImpl::StartSession(
     return;
   }
 
-  std::vector<std::string> presentation_urls_for_delegate(
-      presentation_urls.size());
-  std::transform(presentation_urls.begin(), presentation_urls.end(),
-                 presentation_urls_for_delegate.begin(),
-                 [](const GURL& url) { return url.spec(); });
-
   start_session_request_id_ = GetNextRequestSessionId();
   pending_start_session_cb_.reset(new NewSessionCallbackWrapper(callback));
   delegate_->StartSession(
-      render_process_id_, render_frame_id_, presentation_urls_for_delegate,
+      render_process_id_, render_frame_id_, presentation_urls,
       base::Bind(&PresentationServiceImpl::OnStartSessionSucceeded,
                  weak_factory_.GetWeakPtr(), start_session_request_id_),
       base::Bind(&PresentationServiceImpl::OnStartSessionError,
@@ -265,19 +259,13 @@ void PresentationServiceImpl::JoinSession(
     return;
   }
 
-  std::vector<std::string> presentation_urls_for_delegate(
-      presentation_urls.size());
-  std::transform(presentation_urls.begin(), presentation_urls.end(),
-                 presentation_urls_for_delegate.begin(),
-                 [](const GURL& url) { return url.spec(); });
-
   int request_session_id = RegisterJoinSessionCallback(callback);
   if (request_session_id == kInvalidRequestSessionId) {
     InvokeNewSessionCallbackWithError(callback);
     return;
   }
   delegate_->JoinSession(
-      render_process_id_, render_frame_id_, presentation_urls_for_delegate,
+      render_process_id_, render_frame_id_, presentation_urls,
       presentation_id.value_or(std::string()),
       base::Bind(&PresentationServiceImpl::OnJoinSessionSucceeded,
                  weak_factory_.GetWeakPtr(), request_session_id),
@@ -373,18 +361,12 @@ void PresentationServiceImpl::SetDefaultPresentationUrls(
   if (!delegate_)
     return;
 
-  std::vector<std::string> presentation_urls_for_delegate(
-      presentation_urls.size());
-  std::transform(presentation_urls.begin(), presentation_urls.end(),
-                 presentation_urls_for_delegate.begin(),
-                 [](const GURL& url) { return url.spec(); });
-
-  if (default_presentation_urls_ == presentation_urls_for_delegate)
+  if (default_presentation_urls_ == presentation_urls)
     return;
 
-  default_presentation_urls_ = presentation_urls_for_delegate;
+  default_presentation_urls_ = presentation_urls;
   delegate_->SetDefaultPresentationUrls(
-      render_process_id_, render_frame_id_, presentation_urls_for_delegate,
+      render_process_id_, render_frame_id_, presentation_urls,
       base::Bind(&PresentationServiceImpl::OnDefaultPresentationStarted,
                  weak_factory_.GetWeakPtr()));
 }
@@ -577,12 +559,10 @@ void PresentationServiceImpl::OnDefaultPresentationStarted(
   ListenForConnectionStateChange(connection);
 }
 
-PresentationServiceImpl::ScreenAvailabilityListenerImpl
-::ScreenAvailabilityListenerImpl(
-    const std::string& availability_url,
-    PresentationServiceImpl* service)
-    : availability_url_(availability_url),
-      service_(service) {
+PresentationServiceImpl::ScreenAvailabilityListenerImpl::
+    ScreenAvailabilityListenerImpl(const GURL& availability_url,
+                                   PresentationServiceImpl* service)
+    : availability_url_(availability_url), service_(service) {
   DCHECK(service_);
   DCHECK(service_->client_.get());
 }
@@ -591,20 +571,19 @@ PresentationServiceImpl::ScreenAvailabilityListenerImpl::
 ~ScreenAvailabilityListenerImpl() {
 }
 
-std::string PresentationServiceImpl::ScreenAvailabilityListenerImpl
-    ::GetAvailabilityUrl() const {
+GURL PresentationServiceImpl::ScreenAvailabilityListenerImpl::
+    GetAvailabilityUrl() const {
   return availability_url_;
 }
 
 void PresentationServiceImpl::ScreenAvailabilityListenerImpl
 ::OnScreenAvailabilityChanged(bool available) {
-  service_->client_->OnScreenAvailabilityUpdated(GURL(availability_url_),
-                                                 available);
+  service_->client_->OnScreenAvailabilityUpdated(availability_url_, available);
 }
 
 void PresentationServiceImpl::ScreenAvailabilityListenerImpl
 ::OnScreenAvailabilityNotSupported() {
-  service_->client_->OnScreenAvailabilityNotSupported(GURL(availability_url_));
+  service_->client_->OnScreenAvailabilityNotSupported(availability_url_);
 }
 
 PresentationServiceImpl::NewSessionCallbackWrapper

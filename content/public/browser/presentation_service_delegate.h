@@ -15,6 +15,8 @@
 #include "content/public/browser/presentation_session.h"
 #include "content/public/browser/presentation_session_message.h"
 
+class GURL;
+
 namespace content {
 
 class PresentationScreenAvailabilityListener;
@@ -113,11 +115,10 @@ class CONTENT_EXPORT PresentationServiceDelegate {
   // PresentationSessionInfo object.
   // If |default_presentation_urls| is empty, the default presentation URLs will
   // be cleared and the previously registered callback (if any) will be removed.
-  // TODO(crbug.com/632623): Use GURL instead of std::string for URLs
   virtual void SetDefaultPresentationUrls(
       int render_process_id,
       int render_frame_id,
-      const std::vector<std::string>& default_presentation_urls,
+      const std::vector<GURL>& default_presentation_urls,
       const PresentationSessionStartedCallback& callback) = 0;
 
   // Starts a new presentation session. The presentation id of the session will
@@ -130,11 +131,10 @@ class CONTENT_EXPORT PresentationServiceDelegate {
   // successfully.
   // |error_cb|: Invoked with error reason, if presentation session did not
   // start.
-  // TODO(crbug.com/632623): Use GURL instead of std::string for URLs
   virtual void StartSession(
       int render_process_id,
       int render_frame_id,
-      const std::vector<std::string>& presentation_urls,
+      const std::vector<GURL>& presentation_urls,
       const PresentationSessionStartedCallback& success_cb,
       const PresentationSessionErrorCallback& error_cb) = 0;
 
@@ -146,11 +146,10 @@ class CONTENT_EXPORT PresentationServiceDelegate {
   // |success_cb|: Invoked with session info, if presentation session joined
   // successfully.
   // |error_cb|: Invoked with error reason, if joining failed.
-  // TODO(crbug.com/632623): Use GURL instead of std::string for URLs
   virtual void JoinSession(
       int render_process_id,
       int render_frame_id,
-      const std::vector<std::string>& presentation_urls,
+      const std::vector<GURL>& presentation_urls,
       const std::string& presentation_id,
       const PresentationSessionStartedCallback& success_cb,
       const PresentationSessionErrorCallback& error_cb) = 0;

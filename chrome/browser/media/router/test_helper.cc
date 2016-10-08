@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/test_helper.h"
 
+#include "chrome/browser/media/router/media_source.h"
+
 namespace media_router {
 
 MockIssuesObserver::MockIssuesObserver(MediaRouter* router)

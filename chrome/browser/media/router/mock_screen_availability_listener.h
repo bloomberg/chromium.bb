@@ -13,17 +13,17 @@ namespace media_router {
 class MockScreenAvailabilityListener
     : public content::PresentationScreenAvailabilityListener {
  public:
-  explicit MockScreenAvailabilityListener(const std::string& availability_url);
+  explicit MockScreenAvailabilityListener(const GURL& availability_url);
   ~MockScreenAvailabilityListener() override;
 
-  std::string GetAvailabilityUrl() const override;
+  GURL GetAvailabilityUrl() const override;
 
   MOCK_METHOD1(OnScreenAvailabilityChanged, void(bool available));
 
   MOCK_METHOD0(OnScreenAvailabilityNotSupported, void());
 
  private:
-  std::string availability_url_;
+  GURL availability_url_;
 };
 
 }  // namespace media_router

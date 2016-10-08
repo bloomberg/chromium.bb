@@ -24,14 +24,14 @@ namespace media_router {
 class PresentationMediaSinksObserverTest : public ::testing::Test {
  public:
   PresentationMediaSinksObserverTest()
-      : listener_("http://example.com/presentation.html") {}
+      : listener_(GURL("http://example.com/presentation.html")) {}
   ~PresentationMediaSinksObserverTest() override {}
 
   void SetUp() override {
     EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).WillOnce(Return(true));
     observer_.reset(new PresentationMediaSinksObserver(
-        &router_, &listener_,
-        MediaSourceForPresentationUrl("http://example.com/presentation.html"),
+        &router_, &listener_, MediaSourceForPresentationUrl(
+                                  GURL("http://example.com/presentation.html")),
         GURL("https://google.com")));
     EXPECT_TRUE(observer_->Init());
   }

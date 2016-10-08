@@ -38,14 +38,12 @@ class MediaSinksObserver;
 class PresentationFrameManager;
 class RouteRequestResult;
 
-// Implementation of PresentationServiceDelegate that interfaces an
-// instance of WebContents with the Chrome Media Router. It uses the Media
-// Router to handle presentation API calls forwarded from
-// PresentationServiceImpl. In addition, it also
-// provides default presentation URL that is required for creating
-// browser-initiated sessions.
-// It is scoped to the lifetime of a WebContents, and is managed by the
-// associated WebContents.
+// Implementation of PresentationServiceDelegate that interfaces an instance of
+// WebContents with the Chrome Media Router. It uses the Media Router to handle
+// presentation API calls forwarded from PresentationServiceImpl. In addition,
+// it also provides default presentation URL that is required for creating
+// browser-initiated sessions.  It is scoped to the lifetime of a WebContents,
+// and is managed by the associated WebContents.
 class PresentationServiceDelegateImpl
     : public content::WebContentsUserData<PresentationServiceDelegateImpl>,
       public content::PresentationServiceDelegate {
@@ -93,18 +91,18 @@ class PresentationServiceDelegateImpl
   void SetDefaultPresentationUrls(
       int render_process_id,
       int render_frame_id,
-      const std::vector<std::string>& default_presentation_urls,
+      const std::vector<GURL>& default_presentation_urls,
       const content::PresentationSessionStartedCallback& callback) override;
   void StartSession(
       int render_process_id,
       int render_frame_id,
-      const std::vector<std::string>& presentation_urls,
+      const std::vector<GURL>& presentation_urls,
       const content::PresentationSessionStartedCallback& success_cb,
       const content::PresentationSessionErrorCallback& error_cb) override;
   void JoinSession(
       int render_process_id,
       int render_frame_id,
-      const std::vector<std::string>& presentation_urls,
+      const std::vector<GURL>& presentation_urls,
       const std::string& presentation_id,
       const content::PresentationSessionStartedCallback& success_cb,
       const content::PresentationSessionErrorCallback& error_cb) override;

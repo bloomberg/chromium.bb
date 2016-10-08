@@ -30,9 +30,9 @@ using ::testing::StrictMock;
 
 namespace {
 
-const char kPresentationUrl1[] = "http://foo.fakeUrl.com/";
-const char kPresentationUrl2[] = "http://bar.fakeUrl.com/";
-const char kFrameUrl[] = "http://anotherFrameUrl.fakeUrl.com/";
+const char kPresentationUrl1[] = "http://foo.fakeurl.com/";
+const char kPresentationUrl2[] = "http://bar.fakeurl.com/";
+const char kFrameUrl[] = "http://anotherframeurl.fakeurl.com/";
 
 }  // namespace
 
@@ -65,7 +65,10 @@ class MockCreatePresentationConnnectionCallbacks {
 class PresentationServiceDelegateImplTest
     : public ChromeRenderViewHostTestHarness {
  public:
-  PresentationServiceDelegateImplTest() : delegate_impl_(nullptr) {}
+  PresentationServiceDelegateImplTest()
+      : delegate_impl_(nullptr),
+        presentation_url1_(kPresentationUrl1),
+        presentation_url2_(kPresentationUrl2) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -74,6 +77,7 @@ class PresentationServiceDelegateImplTest
     PresentationServiceDelegateImpl::CreateForWebContents(wc);
     delegate_impl_ = PresentationServiceDelegateImpl::FromWebContents(wc);
     delegate_impl_->SetMediaRouterForTest(&router_);
+    presentation_urls_.push_back(presentation_url1_);
   }
 
   MOCK_METHOD1(OnDefaultPresentationStarted,
@@ -93,7 +97,7 @@ class PresentationServiceDelegateImplTest
         base::Unretained(this));
     std::vector<std::string> urls({kPresentationUrl1});
     delegate_impl_->SetDefaultPresentationUrls(render_process_id, routing_id,
-                                               urls, callback);
+                                               presentation_urls_, callback);
 
     ASSERT_TRUE(delegate_impl_->HasDefaultPresentationRequest());
     PresentationRequest request =
@@ -106,10 +110,10 @@ class PresentationServiceDelegateImplTest
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
 
     // Should not trigger callback since request doesn't match.
-    PresentationRequest different_request(RenderFrameHostId(100, 200),
-                                          {kPresentationUrl2}, GURL(kFrameUrl));
+    PresentationRequest different_request(
+        RenderFrameHostId(100, 200), {presentation_url2_}, GURL(kFrameUrl));
     MediaRoute* media_route = new MediaRoute(
-        "differentRouteId", MediaSourceForPresentationUrl(kPresentationUrl2),
+        "differentRouteId", MediaSourceForPresentationUrl(presentation_url2_),
         "mediaSinkId", "", true, "", true);
     media_route->set_incognito(incognito);
     result = RouteRequestResult::FromSuccess(base::WrapUnique(media_route),
@@ -120,7 +124,7 @@ class PresentationServiceDelegateImplTest
     // Should trigger callback since request matches.
     EXPECT_CALL(*this, OnDefaultPresentationStarted(_)).Times(1);
     MediaRoute* media_route2 = new MediaRoute(
-        "routeId", MediaSourceForPresentationUrl(kPresentationUrl1),
+        "routeId", MediaSourceForPresentationUrl(presentation_url1_),
         "mediaSinkId", "", true, "", true);
     media_route2->set_incognito(incognito);
     result = RouteRequestResult::FromSuccess(base::WrapUnique(media_route2),
@@ -130,6 +134,9 @@ class PresentationServiceDelegateImplTest
 
   PresentationServiceDelegateImpl* delegate_impl_;
   MockMediaRouter router_;
+  const GURL presentation_url1_;
+  const GURL presentation_url2_;
+  std::vector<GURL> presentation_urls_;
 };
 
 class PresentationServiceDelegateImplIncognitoTest
@@ -161,10 +168,10 @@ class PresentationServiceDelegateImplIncognitoTest
 };
 
 TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
-  MediaSource source1 = MediaSourceForPresentationUrl(kPresentationUrl1);
-  MediaSource source2 = MediaSourceForPresentationUrl(kPresentationUrl2);
-  MockScreenAvailabilityListener listener1(kPresentationUrl1);
-  MockScreenAvailabilityListener listener2(kPresentationUrl2);
+  MediaSource source1 = MediaSourceForPresentationUrl(presentation_url1_);
+  MediaSource source2 = MediaSourceForPresentationUrl(presentation_url2_);
+  MockScreenAvailabilityListener listener1(presentation_url1_);
+  MockScreenAvailabilityListener listener2(presentation_url2_);
   content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
   ASSERT_TRUE(main_frame);
   int render_process_id = main_frame->GetProcess()->GetID();
@@ -202,10 +209,10 @@ TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
 TEST_F(PresentationServiceDelegateImplTest, AddMultipleListenersToFrame) {
   ON_CALL(router_, RegisterMediaSinksObserver(_)).WillByDefault(Return(true));
 
-  MediaSource source1 = MediaSourceForPresentationUrl(kPresentationUrl1);
-  MediaSource source2 = MediaSourceForPresentationUrl(kPresentationUrl2);
-  MockScreenAvailabilityListener listener1(kPresentationUrl1);
-  MockScreenAvailabilityListener listener2(kPresentationUrl2);
+  MediaSource source1 = MediaSourceForPresentationUrl(presentation_url1_);
+  MediaSource source2 = MediaSourceForPresentationUrl(presentation_url2_);
+  MockScreenAvailabilityListener listener1(presentation_url1_);
+  MockScreenAvailabilityListener listener2(presentation_url2_);
   content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
   ASSERT_TRUE(main_frame);
   int render_process_id = main_frame->GetProcess()->GetID();
@@ -235,8 +242,8 @@ TEST_F(PresentationServiceDelegateImplTest, AddMultipleListenersToFrame) {
 }
 
 TEST_F(PresentationServiceDelegateImplTest, AddSameListenerTwice) {
-  MediaSource source1(MediaSourceForPresentationUrl(kPresentationUrl1));
-  MockScreenAvailabilityListener listener1(kPresentationUrl1);
+  MediaSource source1(MediaSourceForPresentationUrl(presentation_url1_));
+  MockScreenAvailabilityListener listener1(presentation_url1_);
   content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
   ASSERT_TRUE(main_frame);
   int render_process_id = main_frame->GetProcess()->GetID();
@@ -273,32 +280,31 @@ TEST_F(PresentationServiceDelegateImplTest, SetDefaultPresentationUrl) {
   auto callback = base::Bind(
       &PresentationServiceDelegateImplTest::OnDefaultPresentationStarted,
       base::Unretained(this));
-  std::vector<std::string> urls({kPresentationUrl1});
   delegate_impl_->SetDefaultPresentationUrls(render_process_id, routing_id,
-                                             urls, callback);
+                                             presentation_urls_, callback);
   ASSERT_TRUE(delegate_impl_->HasDefaultPresentationRequest());
   PresentationRequest request1 =
       delegate_impl_->GetDefaultPresentationRequest();
-  EXPECT_EQ(kPresentationUrl1, request1.presentation_url());
+  EXPECT_EQ(presentation_url1_, request1.presentation_url());
   EXPECT_EQ(RenderFrameHostId(render_process_id, routing_id),
             request1.render_frame_host_id());
   EXPECT_EQ(frame_url, request1.frame_url());
 
   // Set to a new default presentation URL
-  std::vector<std::string> new_urls({kPresentationUrl2});
+  std::vector<GURL> new_urls = {presentation_url2_};
   delegate_impl_->SetDefaultPresentationUrls(render_process_id, routing_id,
                                              new_urls, callback);
   ASSERT_TRUE(delegate_impl_->HasDefaultPresentationRequest());
   PresentationRequest request2 =
       delegate_impl_->GetDefaultPresentationRequest();
-  EXPECT_EQ(kPresentationUrl2, request2.presentation_url());
+  EXPECT_EQ(presentation_url2_, request2.presentation_url());
   EXPECT_EQ(RenderFrameHostId(render_process_id, routing_id),
             request2.render_frame_host_id());
   EXPECT_EQ(frame_url, request2.frame_url());
 
   // Remove default presentation URL.
-  delegate_impl_->SetDefaultPresentationUrls(
-      render_process_id, routing_id, std::vector<std::string>(), callback);
+  delegate_impl_->SetDefaultPresentationUrls(render_process_id, routing_id,
+                                             std::vector<GURL>(), callback);
   EXPECT_FALSE(delegate_impl_->HasDefaultPresentationRequest());
 }
 
@@ -328,12 +334,12 @@ TEST_F(PresentationServiceDelegateImplTest,
   int render_process_id = main_frame->GetProcess()->GetID();
   int routing_id = main_frame->GetRoutingID();
 
+  std::vector<GURL> request1_urls = {presentation_url1_};
   PresentationRequest observed_request1(
-      RenderFrameHostId(render_process_id, routing_id), {kPresentationUrl1},
+      RenderFrameHostId(render_process_id, routing_id), request1_urls,
       frame_url);
   EXPECT_CALL(observer, OnDefaultPresentationChanged(Equals(observed_request1)))
       .Times(1);
-  std::vector<std::string> request1_urls({kPresentationUrl1});
   delegate_impl_->SetDefaultPresentationUrls(render_process_id, routing_id,
                                              request1_urls, callback);
 
@@ -344,12 +350,12 @@ TEST_F(PresentationServiceDelegateImplTest,
 
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer));
 
+  std::vector<GURL> request2_urls = {presentation_url2_};
   PresentationRequest observed_request2(
-      RenderFrameHostId(render_process_id, routing_id), {kPresentationUrl2},
+      RenderFrameHostId(render_process_id, routing_id), request2_urls,
       frame_url);
   EXPECT_CALL(observer, OnDefaultPresentationChanged(Equals(observed_request2)))
       .Times(1);
-  std::vector<std::string> request2_urls({kPresentationUrl2});
   delegate_impl_->SetDefaultPresentationUrls(render_process_id, routing_id,
                                              request2_urls, callback);
   ASSERT_TRUE(delegate_impl_->HasDefaultPresentationRequest());
@@ -361,8 +367,8 @@ TEST_F(PresentationServiceDelegateImplTest,
 
   // Remove default presentation URL.
   EXPECT_CALL(observer, OnDefaultPresentationRemoved()).Times(1);
-  delegate_impl_->SetDefaultPresentationUrls(
-      render_process_id, routing_id, std::vector<std::string>(), callback);
+  delegate_impl_->SetDefaultPresentationUrls(render_process_id, routing_id,
+                                             std::vector<GURL>(), callback);
 }
 
 TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
@@ -380,10 +386,9 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
       .WillOnce(SaveArg<4>(&route_response_callbacks));
 
   const std::string kPresentationId("pid");
-  std::vector<std::string> join_urls({kPresentationUrl1});
   MockCreatePresentationConnnectionCallbacks mock_create_connection_callbacks;
   delegate_impl_->JoinSession(
-      render_process_id, routing_id, join_urls, kPresentationId,
+      render_process_id, routing_id, presentation_urls_, kPresentationId,
       base::Bind(&MockCreatePresentationConnnectionCallbacks::
                      OnCreateConnectionSuccess,
                  base::Unretained(&mock_create_connection_callbacks)),
@@ -395,7 +400,7 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
       .Times(1);
   std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
       base::MakeUnique<MediaRoute>(
-          "routeId", MediaSourceForPresentationUrl(kPresentationUrl1),
+          "routeId", MediaSourceForPresentationUrl(presentation_url1_),
           "mediaSinkId", "description", true, "", true),
       kPresentationId);
   for (const auto& route_response_callback : route_response_callbacks)
@@ -405,7 +410,7 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
   content::PresentationConnectionStateChangedCallback callback =
       base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
                  base::Unretained(&mock_callback));
-  content::PresentationSessionInfo connection(kPresentationUrl1,
+  content::PresentationSessionInfo connection(presentation_url1_,
                                               kPresentationId);
   EXPECT_CALL(router_, OnAddPresentationConnectionStateChangedCallbackInvoked(
                            Equals(callback)));
@@ -417,8 +422,8 @@ TEST_F(PresentationServiceDelegateImplTest, Reset) {
   EXPECT_CALL(router_, RegisterMediaSinksObserver(_))
       .WillRepeatedly(Return(true));
 
-  MediaSource source = MediaSourceForPresentationUrl(kPresentationUrl1);
-  MockScreenAvailabilityListener listener1(kPresentationUrl1);
+  MediaSource source = MediaSourceForPresentationUrl(presentation_url1_);
+  MockScreenAvailabilityListener listener1(presentation_url1_);
 
   content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
   ASSERT_TRUE(main_frame);
@@ -454,7 +459,7 @@ TEST_F(PresentationServiceDelegateImplTest, DelegateObservers) {
 }
 
 TEST_F(PresentationServiceDelegateImplTest, SinksObserverCantRegister) {
-  MockScreenAvailabilityListener listener(kPresentationUrl1);
+  MockScreenAvailabilityListener listener(presentation_url1_);
   content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
   ASSERT_TRUE(main_frame);
   int render_process_id = main_frame->GetProcess()->GetID();

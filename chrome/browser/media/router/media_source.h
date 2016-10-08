@@ -12,14 +12,19 @@
 
 #include "base/hash.h"
 
-namespace media_router {
+class GURL;
 
+// TODO(mfoltz): Right now this is a wrapper for std::string.  Factor methods
+// from media_source_helper here so this object becomes useful; and don't just
+// pass it around by Id.
+namespace media_router {
 
 class MediaSource {
  public:
   using Id = std::string;
 
   explicit MediaSource(const MediaSource::Id& id);
+  explicit MediaSource(const GURL& presentation_url);
   ~MediaSource();
 
   // Gets the ID of the media source.

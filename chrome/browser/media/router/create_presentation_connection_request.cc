@@ -6,6 +6,7 @@
 
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/route_request_result.h"
+#include "url/gurl.h"
 
 using content::PresentationSessionInfo;
 using content::PresentationError;
@@ -14,7 +15,7 @@ namespace media_router {
 
 CreatePresentationConnectionRequest::CreatePresentationConnectionRequest(
     const RenderFrameHostId& render_frame_host_id,
-    const std::string& presentation_url,
+    const GURL& presentation_url,
     const GURL& frame_url,
     const PresentationSessionSuccessCallback& success_cb,
     const PresentationSessionErrorCallback& error_cb)

@@ -7,12 +7,15 @@
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace media_router {
 
 TEST(MediaRouterCastModesWithMediaSourcesTest, AddAndRemoveSources) {
-  const MediaSource defaultSource1(MediaSourceForPresentationUrl("http://1"));
-  const MediaSource defaultSource2(MediaSourceForPresentationUrl("http://2"));
+  const MediaSource defaultSource1(MediaSourceForPresentationUrl(
+      GURL("http://www.example.com/presentation.html")));
+  const MediaSource defaultSource2(MediaSourceForPresentationUrl(
+      GURL("http://www.example.net/presentation.html")));
   const MediaSource tabSourceA(MediaSourceForTab(123));
   const CastModeSet castModeSetEmpty;
   const CastModeSet castModeSetDefault({MediaCastMode::DEFAULT});

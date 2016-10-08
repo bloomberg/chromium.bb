@@ -7,11 +7,9 @@
 namespace content {
 
 PresentationSessionInfo::PresentationSessionInfo(
-    const std::string& presentation_url,
+    const GURL& presentation_url,
     const std::string& presentation_id)
-    : presentation_url(presentation_url),
-      presentation_id(presentation_id) {
-}
+    : presentation_url(presentation_url), presentation_id(presentation_id) {}
 
 PresentationSessionInfo::~PresentationSessionInfo() {
 }

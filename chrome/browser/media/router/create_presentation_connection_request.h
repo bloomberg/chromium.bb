@@ -14,7 +14,8 @@
 #include "chrome/browser/media/router/presentation_request.h"
 #include "chrome/browser/media/router/render_frame_host_id.h"
 #include "content/public/browser/presentation_service_delegate.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace content {
 struct PresentationError;
@@ -45,7 +46,7 @@ class CreatePresentationConnectionRequest {
   // |erorr_cb|: Callback to invoke when the request fails. Must be valid.
   CreatePresentationConnectionRequest(
       const RenderFrameHostId& render_frame_host_id,
-      const std::string& presentation_url,
+      const GURL& presentation_url,
       const GURL& frame_url,
       const PresentationSessionSuccessCallback& success_cb,
       const PresentationSessionErrorCallback& error_cb);

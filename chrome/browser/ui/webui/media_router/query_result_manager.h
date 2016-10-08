@@ -21,6 +21,8 @@
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/webui/media_router/media_sink_with_cast_modes.h"
 
+class GURL;
+
 namespace media_router {
 
 class MediaRouter;

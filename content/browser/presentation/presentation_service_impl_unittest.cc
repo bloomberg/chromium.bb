@@ -53,18 +53,10 @@ MATCHER_P(SessionInfoEquals, expected, "") {
 const char kPresentationId[] = "presentationId";
 const char kPresentationUrl1[] = "http://foo.com/index.html";
 const char kPresentationUrl2[] = "http://example.com/index.html";
+const char kPresentationUrl3[] = "http://example.net/index.html";
 
 void DoNothing(blink::mojom::PresentationSessionInfoPtr info,
                blink::mojom::PresentationErrorPtr error) {}
-
-// TODO(crbug.com/632623): Convert downstream APIs to GURL and remove
-// conversions.
-std::vector<GURL> ToGURLs(const std::vector<std::string>& urls) {
-  std::vector<GURL> gurls(urls.size());
-  std::transform(urls.begin(), urls.end(), gurls.begin(),
-                 [](const std::string& url) { return GURL(url); });
-  return gurls;
-}
 
 }  // namespace
 
@@ -98,18 +90,18 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
   MOCK_METHOD4(SetDefaultPresentationUrls,
                void(int render_process_id,
                     int routing_id,
-                    const std::vector<std::string>& default_presentation_urls,
+                    const std::vector<GURL>& default_presentation_urls,
                     const PresentationSessionStartedCallback& callback));
   MOCK_METHOD5(StartSession,
                void(int render_process_id,
                     int render_frame_id,
-                    const std::vector<std::string>& presentation_urls,
+                    const std::vector<GURL>& presentation_urls,
                     const PresentationSessionStartedCallback& success_cb,
                     const PresentationSessionErrorCallback& error_cb));
   MOCK_METHOD6(JoinSession,
                void(int render_process_id,
                     int render_frame_id,
-                    const std::vector<std::string>& presentation_urls,
+                    const std::vector<GURL>& presentation_urls,
                     const std::string& presentation_id,
                     const PresentationSessionStartedCallback& success_cb,
                     const PresentationSessionErrorCallback& error_cb));
@@ -209,7 +201,10 @@ class MockPresentationServiceClient
 
 class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
  public:
-  PresentationServiceImplTest() {}
+  PresentationServiceImplTest()
+      : presentation_url1_(GURL(kPresentationUrl1)),
+        presentation_url2_(GURL(kPresentationUrl2)),
+        presentation_url3_(GURL(kPresentationUrl3)) {}
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
@@ -227,6 +222,9 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
         new mojo::Binding<blink::mojom::PresentationServiceClient>(
             &mock_client_, mojo::GetProxy(&client_ptr)));
     service_impl_->SetClient(std::move(client_ptr));
+
+    presentation_urls_.push_back(presentation_url1_);
+    presentation_urls_.push_back(presentation_url2_);
   }
 
   void TearDown() override {
@@ -238,7 +236,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::TearDown();
   }
 
-  void ListenForScreenAvailabilityAndWait(const std::string& url,
+  void ListenForScreenAvailabilityAndWait(const GURL& url,
                                           bool delegate_success) {
     base::RunLoop run_loop;
     // This will call to |service_impl_| via mojo. Process the message
@@ -249,7 +247,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
         .WillOnce(DoAll(
             InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
             Return(delegate_success)));
-    service_ptr_->ListenForScreenAvailability(GURL(url));
+    service_ptr_->ListenForScreenAvailability(url);
     run_loop.Run();
 
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_delegate_));
@@ -269,13 +267,13 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     run_loop_quit_closure_.Reset();
   }
 
-  void SimulateScreenAvailabilityChangeAndWait(
-      const std::string& url, bool available) {
+  void SimulateScreenAvailabilityChangeAndWait(const GURL& url,
+                                               bool available) {
     auto listener_it = service_impl_->screen_availability_listeners_.find(url);
     ASSERT_TRUE(listener_it->second);
 
     base::RunLoop run_loop;
-    EXPECT_CALL(mock_client_, OnScreenAvailabilityUpdated(GURL(url), available))
+    EXPECT_CALL(mock_client_, OnScreenAvailabilityUpdated(url, available))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     listener_it->second->OnScreenAvailabilityChanged(available);
     run_loop.Run();
@@ -288,7 +286,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
   void ExpectCleanState() {
     EXPECT_TRUE(service_impl_->default_presentation_urls_.empty());
     EXPECT_EQ(
-        service_impl_->screen_availability_listeners_.find(kPresentationUrl1),
+        service_impl_->screen_availability_listeners_.find(presentation_url1_),
         service_impl_->screen_availability_listeners_.end());
     EXPECT_FALSE(service_impl_->on_session_messages_callback_.get());
   }
@@ -340,7 +338,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 
     blink::mojom::PresentationSessionInfoPtr session(
         blink::mojom::PresentationSessionInfo::New());
-    session->url = GURL(kPresentationUrl1);
+    session->url = presentation_url1_;
     session->id = kPresentationId;
 
     PresentationSessionMessageCallback message_cb;
@@ -385,18 +383,23 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
       client_binding_;
 
   base::Closure run_loop_quit_closure_;
+
+  GURL presentation_url1_;
+  GURL presentation_url2_;
+  GURL presentation_url3_;
+  std::vector<GURL> presentation_urls_;
 };
 
 TEST_F(PresentationServiceImplTest, ListenForScreenAvailability) {
-  ListenForScreenAvailabilityAndWait(kPresentationUrl1, true);
+  ListenForScreenAvailabilityAndWait(presentation_url1_, true);
 
-  SimulateScreenAvailabilityChangeAndWait(kPresentationUrl1, true);
-  SimulateScreenAvailabilityChangeAndWait(kPresentationUrl1, false);
-  SimulateScreenAvailabilityChangeAndWait(kPresentationUrl1, true);
+  SimulateScreenAvailabilityChangeAndWait(presentation_url1_, true);
+  SimulateScreenAvailabilityChangeAndWait(presentation_url1_, false);
+  SimulateScreenAvailabilityChangeAndWait(presentation_url1_, true);
 }
 
 TEST_F(PresentationServiceImplTest, Reset) {
-  ListenForScreenAvailabilityAndWait(kPresentationUrl1, true);
+  ListenForScreenAvailabilityAndWait(presentation_url1_, true);
 
   ExpectReset();
   service_impl_->Reset();
@@ -404,7 +407,7 @@ TEST_F(PresentationServiceImplTest, Reset) {
 }
 
 TEST_F(PresentationServiceImplTest, DidNavigateThisFrame) {
-  ListenForScreenAvailabilityAndWait(kPresentationUrl1, true);
+  ListenForScreenAvailabilityAndWait(presentation_url1_, true);
 
   ExpectReset();
   service_impl_->DidNavigateAnyFrame(
@@ -415,7 +418,7 @@ TEST_F(PresentationServiceImplTest, DidNavigateThisFrame) {
 }
 
 TEST_F(PresentationServiceImplTest, DidNavigateOtherFrame) {
-  ListenForScreenAvailabilityAndWait(kPresentationUrl1, true);
+  ListenForScreenAvailabilityAndWait(presentation_url1_, true);
 
   // TODO(imcheng): How to get a different RenderFrameHost?
   service_impl_->DidNavigateAnyFrame(
@@ -425,11 +428,11 @@ TEST_F(PresentationServiceImplTest, DidNavigateOtherFrame) {
 
   // Availability is reported and callback is invoked since it was not
   // removed.
-  SimulateScreenAvailabilityChangeAndWait(kPresentationUrl1, true);
+  SimulateScreenAvailabilityChangeAndWait(presentation_url1_, true);
 }
 
 TEST_F(PresentationServiceImplTest, ThisRenderFrameDeleted) {
-  ListenForScreenAvailabilityAndWait(kPresentationUrl1, true);
+  ListenForScreenAvailabilityAndWait(presentation_url1_, true);
 
   ExpectReset();
 
@@ -440,53 +443,55 @@ TEST_F(PresentationServiceImplTest, ThisRenderFrameDeleted) {
 }
 
 TEST_F(PresentationServiceImplTest, OtherRenderFrameDeleted) {
-  ListenForScreenAvailabilityAndWait(kPresentationUrl1, true);
+  ListenForScreenAvailabilityAndWait(presentation_url1_, true);
 
   // TODO(imcheng): How to get a different RenderFrameHost?
   service_impl_->RenderFrameDeleted(nullptr);
 
   // Availability is reported and callback should be invoked since listener
   // has not been deleted.
-  SimulateScreenAvailabilityChangeAndWait(kPresentationUrl1, true);
+  SimulateScreenAvailabilityChangeAndWait(presentation_url1_, true);
 }
 
 TEST_F(PresentationServiceImplTest, DelegateFails) {
-  ListenForScreenAvailabilityAndWait(kPresentationUrl1, false);
+  ListenForScreenAvailabilityAndWait(presentation_url1_, false);
   ASSERT_EQ(
-      service_impl_->screen_availability_listeners_.find(kPresentationUrl1),
+      service_impl_->screen_availability_listeners_.find(presentation_url1_),
       service_impl_->screen_availability_listeners_.end());
 }
 
 TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrls) {
-  std::vector<std::string> urls({kPresentationUrl1, kPresentationUrl2});
-  EXPECT_CALL(mock_delegate_, SetDefaultPresentationUrls(_, _, urls, _))
+  EXPECT_CALL(mock_delegate_,
+              SetDefaultPresentationUrls(_, _, presentation_urls_, _))
       .Times(1);
 
-  service_impl_->SetDefaultPresentationUrls(ToGURLs(urls));
+  service_impl_->SetDefaultPresentationUrls(presentation_urls_);
 
   // Sets different DPUs.
-  std::vector<std::string> more_urls(
-      {kPresentationUrl1, kPresentationUrl2, "http://barurl.com/"});
+  std::vector<GURL> more_urls = presentation_urls_;
+  more_urls.push_back(presentation_url3_);
 
   content::PresentationSessionStartedCallback callback;
   EXPECT_CALL(mock_delegate_, SetDefaultPresentationUrls(_, _, more_urls, _))
       .WillOnce(SaveArg<3>(&callback));
-  service_impl_->SetDefaultPresentationUrls(ToGURLs(more_urls));
+  service_impl_->SetDefaultPresentationUrls(more_urls);
 
   blink::mojom::PresentationSessionInfo session_info;
-  session_info.url = GURL(kPresentationUrl2);
+  session_info.url = presentation_url2_;
   session_info.id = kPresentationId;
+
   base::RunLoop run_loop;
   EXPECT_CALL(mock_client_,
               OnDefaultSessionStarted(SessionInfoEquals(ByRef(session_info))))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _));
   callback.Run(
-      content::PresentationSessionInfo(kPresentationUrl2, kPresentationId));
+      content::PresentationSessionInfo(presentation_url2_, kPresentationId));
   run_loop.Run();
 }
 
 TEST_F(PresentationServiceImplTest, ListenForConnectionStateChange) {
-  content::PresentationSessionInfo connection(kPresentationUrl1,
+  content::PresentationSessionInfo connection(presentation_url1_,
                                               kPresentationId);
   content::PresentationConnectionStateChangedCallback state_changed_cb;
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
@@ -495,7 +500,7 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionStateChange) {
 
   // Trigger state change. It should be propagated back up to |mock_client_|.
   blink::mojom::PresentationSessionInfo presentation_connection;
-  presentation_connection.url = GURL(kPresentationUrl1);
+  presentation_connection.url = presentation_url1_;
   presentation_connection.id = kPresentationId;
   {
     base::RunLoop run_loop;
@@ -511,7 +516,7 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionStateChange) {
 }
 
 TEST_F(PresentationServiceImplTest, ListenForConnectionClose) {
-  content::PresentationSessionInfo connection(kPresentationUrl1,
+  content::PresentationSessionInfo connection(presentation_url1_,
                                               kPresentationId);
   content::PresentationConnectionStateChangedCallback state_changed_cb;
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
@@ -521,7 +526,7 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionClose) {
   // Trigger connection close. It should be propagated back up to
   // |mock_client_|.
   blink::mojom::PresentationSessionInfo presentation_connection;
-  presentation_connection.url = GURL(kPresentationUrl1);
+  presentation_connection.url = presentation_url1_;
   presentation_connection.id = kPresentationId;
   {
     base::RunLoop run_loop;
@@ -542,48 +547,43 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionClose) {
 }
 
 TEST_F(PresentationServiceImplTest, SetSameDefaultPresentationUrls) {
-  std::vector<std::string> urls({kPresentationUrl1, kPresentationUrl2});
-
-  EXPECT_CALL(mock_delegate_, SetDefaultPresentationUrls(_, _, urls, _))
+  EXPECT_CALL(mock_delegate_,
+              SetDefaultPresentationUrls(_, _, presentation_urls_, _))
       .Times(1);
-  service_impl_->SetDefaultPresentationUrls(ToGURLs(urls));
+  service_impl_->SetDefaultPresentationUrls(presentation_urls_);
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_delegate_));
 
   // Same URLs as before; no-ops.
-  service_impl_->SetDefaultPresentationUrls(ToGURLs(urls));
+  service_impl_->SetDefaultPresentationUrls(presentation_urls_);
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_delegate_));
 }
 
 TEST_F(PresentationServiceImplTest, StartSessionSuccess) {
-  std::vector<std::string> urls({kPresentationUrl1, kPresentationUrl2});
-
   service_ptr_->StartSession(
-      ToGURLs(urls),
+      presentation_urls_,
       base::Bind(&PresentationServiceImplTest::ExpectNewSessionCallbackSuccess,
                  base::Unretained(this)));
   base::RunLoop run_loop;
   base::Callback<void(const PresentationSessionInfo&)> success_cb;
-  EXPECT_CALL(mock_delegate_, StartSession(_, _, urls, _, _))
+  EXPECT_CALL(mock_delegate_, StartSession(_, _, presentation_urls_, _, _))
       .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
                       SaveArg<3>(&success_cb)));
   run_loop.Run();
 
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
       .Times(1);
-  success_cb.Run(PresentationSessionInfo(kPresentationUrl1, kPresentationId));
+  success_cb.Run(PresentationSessionInfo(presentation_url1_, kPresentationId));
   SaveQuitClosureAndRunLoop();
 }
 
 TEST_F(PresentationServiceImplTest, StartSessionError) {
-  std::vector<std::string> urls({kPresentationUrl1, kPresentationUrl2});
-
   service_ptr_->StartSession(
-      ToGURLs(urls),
+      presentation_urls_,
       base::Bind(&PresentationServiceImplTest::ExpectNewSessionCallbackError,
                  base::Unretained(this)));
   base::RunLoop run_loop;
   base::Callback<void(const PresentationError&)> error_cb;
-  EXPECT_CALL(mock_delegate_, StartSession(_, _, urls, _, _))
+  EXPECT_CALL(mock_delegate_, StartSession(_, _, presentation_urls_, _, _))
       .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
                       SaveArg<4>(&error_cb)));
   run_loop.Run();
@@ -592,35 +592,33 @@ TEST_F(PresentationServiceImplTest, StartSessionError) {
 }
 
 TEST_F(PresentationServiceImplTest, JoinSessionSuccess) {
-  std::vector<std::string> urls({kPresentationUrl1, kPresentationUrl2});
-
   service_ptr_->JoinSession(
-      ToGURLs(urls), base::Optional<std::string>(kPresentationId),
+      presentation_urls_, base::Optional<std::string>(kPresentationId),
       base::Bind(&PresentationServiceImplTest::ExpectNewSessionCallbackSuccess,
                  base::Unretained(this)));
   base::RunLoop run_loop;
   base::Callback<void(const PresentationSessionInfo&)> success_cb;
-  EXPECT_CALL(mock_delegate_, JoinSession(_, _, urls, kPresentationId, _, _))
+  EXPECT_CALL(mock_delegate_,
+              JoinSession(_, _, presentation_urls_, kPresentationId, _, _))
       .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
                       SaveArg<4>(&success_cb)));
   run_loop.Run();
 
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
       .Times(1);
-  success_cb.Run(PresentationSessionInfo(kPresentationUrl1, kPresentationId));
+  success_cb.Run(PresentationSessionInfo(presentation_url1_, kPresentationId));
   SaveQuitClosureAndRunLoop();
 }
 
 TEST_F(PresentationServiceImplTest, JoinSessionError) {
-  std::vector<std::string> urls({kPresentationUrl1, kPresentationUrl2});
-
   service_ptr_->JoinSession(
-      ToGURLs(urls), base::Optional<std::string>(kPresentationId),
+      presentation_urls_, base::Optional<std::string>(kPresentationId),
       base::Bind(&PresentationServiceImplTest::ExpectNewSessionCallbackError,
                  base::Unretained(this)));
   base::RunLoop run_loop;
   base::Callback<void(const PresentationError&)> error_cb;
-  EXPECT_CALL(mock_delegate_, JoinSession(_, _, urls, kPresentationId, _, _))
+  EXPECT_CALL(mock_delegate_,
+              JoinSession(_, _, presentation_urls_, kPresentationId, _, _))
       .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
                       SaveArg<5>(&error_cb)));
   run_loop.Run();
@@ -629,8 +627,7 @@ TEST_F(PresentationServiceImplTest, JoinSessionError) {
 }
 
 TEST_F(PresentationServiceImplTest, CloseConnection) {
-  GURL url(kPresentationUrl1);
-  service_ptr_->CloseConnection(url, kPresentationId);
+  service_ptr_->CloseConnection(presentation_url1_, kPresentationId);
 
   base::RunLoop run_loop;
   EXPECT_CALL(mock_delegate_, CloseConnection(_, _, Eq(kPresentationId)))
@@ -639,8 +636,7 @@ TEST_F(PresentationServiceImplTest, CloseConnection) {
 }
 
 TEST_F(PresentationServiceImplTest, Terminate) {
-  GURL url(kPresentationUrl1);
-  service_ptr_->Terminate(url, kPresentationId);
+  service_ptr_->Terminate(presentation_url1_, kPresentationId);
   base::RunLoop run_loop;
   EXPECT_CALL(mock_delegate_, Terminate(_, _, Eq(kPresentationId)))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
@@ -666,15 +662,14 @@ TEST_F(PresentationServiceImplTest, ListenForSessionMessagesWithEmptyMsg) {
 }
 
 TEST_F(PresentationServiceImplTest, StartSessionInProgress) {
-  std::vector<std::string> urls({"http://foourl.com/", "http://barurl.com/"});
-
-  EXPECT_CALL(mock_delegate_, StartSession(_, _, urls, _, _)).Times(1);
-  service_ptr_->StartSession(ToGURLs(urls), base::Bind(&DoNothing));
+  EXPECT_CALL(mock_delegate_, StartSession(_, _, presentation_urls_, _, _))
+      .Times(1);
+  service_ptr_->StartSession(presentation_urls_, base::Bind(&DoNothing));
 
   // This request should fail immediately, since there is already a StartSession
   // in progress.
   service_ptr_->StartSession(
-      ToGURLs(urls),
+      presentation_urls_,
       base::Bind(&PresentationServiceImplTest::ExpectNewSessionCallbackError,
                  base::Unretained(this)));
   SaveQuitClosureAndRunLoop();
@@ -685,7 +680,7 @@ TEST_F(PresentationServiceImplTest, SendStringMessage) {
 
   blink::mojom::PresentationSessionInfoPtr session(
       blink::mojom::PresentationSessionInfo::New());
-  session->url = GURL(kPresentationUrl1);
+  session->url = presentation_url1_;
   session->id = kPresentationId;
   blink::mojom::SessionMessagePtr message_request(
       blink::mojom::SessionMessage::New());
@@ -723,7 +718,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
 
   blink::mojom::PresentationSessionInfoPtr session(
       blink::mojom::PresentationSessionInfo::New());
-  session->url = GURL(kPresentationUrl1);
+  session->url = presentation_url1_;
   session->id = kPresentationId;
   blink::mojom::SessionMessagePtr message_request(
       blink::mojom::SessionMessage::New());
@@ -767,7 +762,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
 
   blink::mojom::PresentationSessionInfoPtr session(
       blink::mojom::PresentationSessionInfo::New());
-  session->url = GURL(kPresentationUrl1);
+  session->url = presentation_url1_;
   session->id = kPresentationId;
   blink::mojom::SessionMessagePtr message_request(
       blink::mojom::SessionMessage::New());
@@ -798,7 +793,7 @@ TEST_F(PresentationServiceImplTest, SendBlobData) {
 
   blink::mojom::PresentationSessionInfoPtr session(
       blink::mojom::PresentationSessionInfo::New());
-  session->url = GURL(kPresentationUrl1);
+  session->url = presentation_url1_;
   session->id = kPresentationId;
   blink::mojom::SessionMessagePtr message_request(
       blink::mojom::SessionMessage::New());
@@ -839,12 +834,12 @@ TEST_F(PresentationServiceImplTest, MaxPendingJoinSessionRequests) {
   EXPECT_CALL(mock_delegate_, JoinSession(_, _, _, _, _, _))
       .Times(num_requests);
   for (; i < num_requests; ++i) {
-    std::vector<GURL> urls({GURL(base::StringPrintf(presentation_url, i))});
+    std::vector<GURL> urls = {GURL(base::StringPrintf(presentation_url, i))};
     service_ptr_->JoinSession(urls, base::StringPrintf(presentation_id, i),
                               base::Bind(&DoNothing));
   }
 
-  std::vector<GURL> urls({GURL(base::StringPrintf(presentation_url, i))});
+  std::vector<GURL> urls = {GURL(base::StringPrintf(presentation_url, i))};
   // Exceeded maximum queue size, should invoke mojo callback with error.
   service_ptr_->JoinSession(
       urls, base::StringPrintf(presentation_id, i),
@@ -855,11 +850,11 @@ TEST_F(PresentationServiceImplTest, MaxPendingJoinSessionRequests) {
 
 TEST_F(PresentationServiceImplTest, ScreenAvailabilityNotSupported) {
   mock_delegate_.set_screen_availability_listening_supported(false);
-  GURL url(kPresentationUrl1);
   base::RunLoop run_loop;
-  EXPECT_CALL(mock_client_, OnScreenAvailabilityNotSupported(url))
+  EXPECT_CALL(mock_client_,
+              OnScreenAvailabilityNotSupported(presentation_url1_))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  ListenForScreenAvailabilityAndWait(kPresentationUrl1, false);
+  ListenForScreenAvailabilityAndWait(presentation_url1_, false);
   run_loop.Run();
 }
 

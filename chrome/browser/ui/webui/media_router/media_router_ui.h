@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/media_router/query_result_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "third_party/icu/source/common/unicode/uversion.h"
+#include "url/gurl.h"
 
 namespace content {
 class WebContents;
