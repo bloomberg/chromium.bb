@@ -973,7 +973,6 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(
 void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren,
                                         SubtreeLayoutScope& layoutScope) {
   Vector<LineContext> lineContexts;
-  OrderedFlexItemList orderedChildren;
   LayoutUnit sumFlexBaseSize;
   double totalFlexGrow;
   double totalFlexShrink;
@@ -989,13 +988,37 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren,
   LayoutObject* childToExclude =
       layoutSpecialExcludedChild(relayoutChildren, layoutScope);
 
+  // Set up our master list of flex items. All of the rest of the algorithm
+  // should work off this list of a subset.
+  // TODO(cbiesinger): That second part is not yet true.
+  ChildLayoutType layoutType = relayoutChildren ? ForceLayout : LayoutIfNeeded;
+  OrderedFlexItemList allItems;
   m_orderIterator.first();
+  for (LayoutBox* child = m_orderIterator.currentChild(); child;
+       child = m_orderIterator.next()) {
+    if (childToExclude == child)
+      continue;  // Skip this child, since it will be positioned by the
+                 // specialized subclass (fieldsets runs).
+
+    if (child->isOutOfFlowPositioned()) {
+      // TODO(cbiesinger): As abspos children are not actually flex items, we
+      // should not create FlexItem objects for them. However, this requires
+      // some refactoring to make alignment work correctly.
+      allItems.append(FlexItem(child));
+      continue;
+    }
+
+    allItems.append(constructFlexItem(*child, layoutType));
+  }
+
   LayoutUnit crossAxisOffset =
       flowAwareBorderBefore() + flowAwarePaddingBefore();
-  while (computeNextFlexLine(orderedChildren, sumFlexBaseSize, totalFlexGrow,
-                             totalFlexShrink, totalWeightedFlexShrink,
-                             sumHypotheticalMainSize, relayoutChildren,
-                             childToExclude)) {
+  OrderedFlexItemList lineItems;
+  size_t nextIndex = 0;
+  while (computeNextFlexLine(
+      allItems, nextIndex, lineItems, sumFlexBaseSize, totalFlexGrow,
+      totalFlexShrink, totalWeightedFlexShrink, sumHypotheticalMainSize)) {
+    DCHECK_GE(lineItems.size(), 0ULL);
     LayoutUnit containerMainInnerSize =
         mainAxisContentExtent(sumHypotheticalMainSize);
     // availableFreeSpace is the initial amount of free space in this flexbox.
@@ -1006,13 +1029,13 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren,
     FlexSign flexSign = (sumHypotheticalMainSize < containerMainInnerSize)
                             ? PositiveFlexibility
                             : NegativeFlexibility;
-    freezeInflexibleItems(flexSign, orderedChildren, remainingFreeSpace,
+    freezeInflexibleItems(flexSign, lineItems, remainingFreeSpace,
                           totalFlexGrow, totalFlexShrink,
                           totalWeightedFlexShrink);
     // The initial free space gets calculated after freezing inflexible items.
     // https://drafts.csswg.org/css-flexbox/#resolve-flexible-lengths step 3
     const LayoutUnit initialFreeSpace = remainingFreeSpace;
-    while (!resolveFlexibleLengths(flexSign, orderedChildren, initialFreeSpace,
+    while (!resolveFlexibleLengths(flexSign, lineItems, initialFreeSpace,
                                    remainingFreeSpace, totalFlexGrow,
                                    totalFlexShrink, totalWeightedFlexShrink)) {
       DCHECK_GE(totalFlexGrow, 0);
@@ -1022,16 +1045,15 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren,
     // Recalculate the remaining free space. The adjustment for flex factors
     // between 0..1 means we can't just use remainingFreeSpace here.
     remainingFreeSpace = containerMainInnerSize;
-    for (size_t i = 0; i < orderedChildren.size(); ++i) {
-      FlexItem& flexItem = orderedChildren[i];
-      LayoutBox* child = orderedChildren[i].box;
-      if (child->isOutOfFlowPositioned())
+    for (size_t i = 0; i < lineItems.size(); ++i) {
+      FlexItem& flexItem = lineItems[i];
+      if (flexItem.box->isOutOfFlowPositioned())
         continue;
-      remainingFreeSpace -= orderedChildren[i].flexedContentSize +
+      remainingFreeSpace -= flexItem.flexedContentSize +
                             flexItem.mainAxisBorderAndPadding +
                             flexItem.mainAxisMargin;
     }
-    layoutAndPlaceChildren(crossAxisOffset, orderedChildren, remainingFreeSpace,
+    layoutAndPlaceChildren(crossAxisOffset, lineItems, remainingFreeSpace,
                            relayoutChildren, layoutScope, lineContexts);
   }
   if (hasLineIfEmpty()) {
@@ -1371,6 +1393,19 @@ DISABLE_CFI_PERF
 LayoutFlexibleBox::FlexItem LayoutFlexibleBox::constructFlexItem(
     LayoutBox& child,
     ChildLayoutType layoutType) {
+  // If this condition is true, then computeMainAxisExtentForChild will call
+  // child.intrinsicContentLogicalHeight() and
+  // child.scrollbarLogicalHeight(), so if the child has intrinsic
+  // min/max/preferred size, run layout on it now to make sure its logical
+  // height and scroll bars are up to date.
+  if (layoutType != NeverLayout && childHasIntrinsicMainAxisSize(child) &&
+      child.needsLayout()) {
+    child.clearOverrideSize();
+    child.forceChildLayout();
+    cacheChildMainSize(child);
+    layoutType = LayoutIfNeeded;
+  }
+
   LayoutUnit borderAndPadding = isHorizontalFlow()
                                     ? child.borderAndPaddingWidth()
                                     : child.borderAndPaddingHeight();
@@ -1385,68 +1420,45 @@ LayoutFlexibleBox::FlexItem LayoutFlexibleBox::constructFlexItem(
 }
 
 bool LayoutFlexibleBox::computeNextFlexLine(
-    OrderedFlexItemList& orderedChildren,
+    const OrderedFlexItemList& allItems,
+    size_t& nextIndex,
+    OrderedFlexItemList& lineItems,
     LayoutUnit& sumFlexBaseSize,
     double& totalFlexGrow,
     double& totalFlexShrink,
     double& totalWeightedFlexShrink,
-    LayoutUnit& sumHypotheticalMainSize,
-    bool relayoutChildren,
-    LayoutObject* childToExclude) {
-  orderedChildren.clear();
+    LayoutUnit& sumHypotheticalMainSize) {
+  lineItems.clear();
   sumFlexBaseSize = LayoutUnit();
   totalFlexGrow = totalFlexShrink = totalWeightedFlexShrink = 0;
   sumHypotheticalMainSize = LayoutUnit();
-
-  if (!m_orderIterator.currentChild())
-    return false;
 
   LayoutUnit lineBreakLength = mainAxisContentExtent(LayoutUnit::max());
 
   bool lineHasInFlowItem = false;
 
-  for (LayoutBox* child = m_orderIterator.currentChild(); child;
-       child = m_orderIterator.next()) {
-    if (childToExclude == child)
-      continue;  // Skip this child, since it will be positioned by the
-                 // specialized subclass (fieldsets runs).
-
-    if (child->isOutOfFlowPositioned()) {
-      orderedChildren.append(FlexItem(child));
+  for (; nextIndex < allItems.size(); ++nextIndex) {
+    const FlexItem& flexItem = allItems[nextIndex];
+    if (flexItem.box->isOutOfFlowPositioned()) {
+      lineItems.append(flexItem);
       continue;
     }
-
-    ChildLayoutType layoutType =
-        relayoutChildren ? ForceLayout : LayoutIfNeeded;
-
-    // If this condition is true, then computeMainAxisExtentForChild will call
-    // child.intrinsicContentLogicalHeight() and
-    // child.scrollbarLogicalHeight(), so if the child has intrinsic
-    // min/max/preferred size, run layout on it now to make sure its logical
-    // height and scroll bars are up to date.
-    if (childHasIntrinsicMainAxisSize(*child) && child->needsLayout()) {
-      child->clearOverrideSize();
-      child->forceChildLayout();
-      cacheChildMainSize(*child);
-      layoutType = LayoutIfNeeded;
-    }
-
-    FlexItem flexItem = constructFlexItem(*child, layoutType);
     if (isMultiline() &&
         sumHypotheticalMainSize + flexItem.hypotheticalMainAxisMarginBoxSize() >
             lineBreakLength &&
         lineHasInFlowItem)
       break;
-    orderedChildren.append(flexItem);
+    lineItems.append(flexItem);
     lineHasInFlowItem = true;
     sumFlexBaseSize += flexItem.flexBaseMarginBoxSize();
-    totalFlexGrow += child->style()->flexGrow();
-    totalFlexShrink += child->style()->flexShrink();
+    totalFlexGrow += flexItem.box->style()->flexGrow();
+    totalFlexShrink += flexItem.box->style()->flexShrink();
     totalWeightedFlexShrink +=
-        child->style()->flexShrink() * flexItem.flexBaseContentSize;
+        flexItem.box->style()->flexShrink() * flexItem.flexBaseContentSize;
     sumHypotheticalMainSize += flexItem.hypotheticalMainAxisMarginBoxSize();
   }
-  return true;
+  DCHECK(lineItems.size() > 0 || nextIndex == allItems.size());
+  return lineItems.size() > 0;
 }
 
 void LayoutFlexibleBox::freezeViolations(Vector<FlexItem*>& violations,
@@ -1530,9 +1542,8 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(
   for (size_t i = 0; i < children.size(); ++i) {
     FlexItem& flexItem = children[i];
     LayoutBox* child = flexItem.box;
-    if (child->isOutOfFlowPositioned())
-      continue;
 
+    // This check also covers out-of-flow children.
     if (flexItem.frozen)
       continue;
 
@@ -1774,6 +1785,8 @@ ItemPosition LayoutFlexibleBox::alignmentForChild(
 
 size_t LayoutFlexibleBox::numberOfInFlowPositionedChildren(
     const OrderedFlexItemList& children) const {
+  // TODO(cbiesinger): Replace this entire function with children.size() once
+  // we no longer create flex items for out-of-flow children.
   size_t count = 0;
   for (size_t i = 0; i < children.size(); ++i) {
     LayoutBox* child = children[i].box;

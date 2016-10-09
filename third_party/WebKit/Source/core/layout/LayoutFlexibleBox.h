@@ -115,9 +115,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   struct LineContext;
 
   typedef Vector<FlexItem> OrderedFlexItemList;
-  // Use an inline capacity of 8, since flexbox containers usually have less
-  // than 8 children.
-  typedef Vector<LayoutRect, 8> ChildFrameRects;
 
   bool hasOrthogonalFlow(const LayoutBox& child) const;
   bool isColumnFlow() const;
@@ -204,14 +201,14 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   FlexItem constructFlexItem(LayoutBox& child, ChildLayoutType);
   // The hypothetical main size of an item is the flex base size clamped
   // according to its min and max main size properties
-  bool computeNextFlexLine(OrderedFlexItemList& orderedChildren,
+  bool computeNextFlexLine(const OrderedFlexItemList& allItems,
+                           size_t& nextIndex,
+                           OrderedFlexItemList& lineItems,
                            LayoutUnit& sumFlexBaseSize,
                            double& totalFlexGrow,
                            double& totalFlexShrink,
                            double& totalWeightedFlexShrink,
-                           LayoutUnit& sumHypotheticalMainSize,
-                           bool relayoutChildren,
-                           LayoutObject* childToExclude);
+                           LayoutUnit& sumHypotheticalMainSize);
 
   void freezeInflexibleItems(FlexSign,
                              OrderedFlexItemList& children,
