@@ -1,40 +1,34 @@
 
 
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='composited'",
+      "position": [10, 10],
+      "transformOrigin": [-10, -10],
+      "bounds": [590, 210],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='composited'",
+      "position": [10, 260],
+      "transformOrigin": [-10, -10],
+      "bounds": [590, 210],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner box'",
+      "position": [490, 110],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV class='composited'",
-          "position": [10, 10],
-          "transformOrigin": [-10, -10],
-          "bounds": [590, 210],
-          "drawsContent": true
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV class='composited'",
-          "position": [10, 260],
-          "transformOrigin": [-10, -10],
-          "bounds": [590, 210],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner box'",
-              "position": [490, 110],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF"
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#0000FF"
     }
   ]
 }

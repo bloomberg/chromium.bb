@@ -1,21 +1,17 @@
 TEST
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV class='transform'",
-          "position": [8, 8],
-          "bounds": [100, 30],
-          "drawsContent": true
-        }
-      ]
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='transform'",
+      "position": [8, 8],
+      "bounds": [100, 30],
+      "drawsContent": true
     }
   ]
 }

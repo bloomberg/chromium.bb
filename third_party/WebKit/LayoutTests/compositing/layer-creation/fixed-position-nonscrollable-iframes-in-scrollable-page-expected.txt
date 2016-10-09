@@ -1,35 +1,31 @@
 In all iframes, the green fixed-position element should not be composited.
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 4016],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 4016],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
+      "position": [50, 360],
+      "bounds": [300, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
-          "position": [50, 360],
-          "bounds": [300, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#00FFFF"
-        },
-        {
-          "name": "LayoutIFrame (positioned) IFRAME id='iframe2' class='composited'",
-          "position": [10, 200],
-          "bounds": [154, 154],
-          "drawsContent": true
-        },
-        {
-          "name": "LayoutIFrame (positioned) IFRAME id='iframe3'",
-          "position": [10, 380],
-          "bounds": [154, 154],
-          "drawsContent": true
-        }
-      ]
+      "backgroundColor": "#00FFFF"
+    },
+    {
+      "name": "LayoutIFrame (positioned) IFRAME id='iframe2' class='composited'",
+      "position": [10, 200],
+      "bounds": [154, 154],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutIFrame (positioned) IFRAME id='iframe3'",
+      "position": [10, 380],
+      "bounds": [154, 154],
+      "drawsContent": true
     }
   ]
 }

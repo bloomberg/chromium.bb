@@ -1,78 +1,62 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutIFrame (positioned) IFRAME",
+      "bounds": [400, 400],
+      "drawsContent": true
+    },
+    {
+      "name": "Frame Overflow Controls Host Layer",
+      "bounds": [400, 400]
+    },
+    {
+      "name": "Frame Clipping Layer",
+      "bounds": [385, 385]
+    },
+    {
+      "name": "Frame Scrolling Layer",
+      "position": [615, 0]
+    },
+    {
+      "name": "Content Root Layer",
+      "position": [-615, 0],
+      "bounds": [1000, 1000]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [1000, 1000],
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutIFrame (positioned) IFRAME",
-          "bounds": [400, 400],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Frame Overflow Controls Host Layer",
-              "bounds": [400, 400],
-              "children": [
-                {
-                  "name": "Frame Clipping Layer",
-                  "bounds": [385, 385],
-                  "children": [
-                    {
-                      "name": "Frame Scrolling Layer",
-                      "position": [615, 0],
-                      "children": [
-                        {
-                          "name": "Content Root Layer",
-                          "position": [-615, 0],
-                          "bounds": [1000, 1000],
-                          "children": [
-                            {
-                              "name": "LayoutView #document",
-                              "bounds": [1000, 1000],
-                              "drawsContent": true,
-                              "backgroundColor": "#FF0000",
-                              "children": [
-                                {
-                                  "name": "LayoutBlockFlow (positioned) DIV class='positioned layer'",
-                                  "position": [665, 50],
-                                  "bounds": [100, 100],
-                                  "contentsOpaque": true,
-                                  "drawsContent": true,
-                                  "backgroundColor": "#008000"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "name": "Frame Horizontal Scrollbar Layer",
-                  "position": [0, 385],
-                  "bounds": [385, 15]
-                },
-                {
-                  "name": "Frame Vertical Scrollbar Layer",
-                  "position": [385, 0],
-                  "bounds": [15, 385]
-                },
-                {
-                  "name": "Frame Scroll Corner Layer",
-                  "position": [385, 385],
-                  "bounds": [15, 15],
-                  "drawsContent": true
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#FF0000"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='positioned layer'",
+      "position": [665, 50],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "Frame Horizontal Scrollbar Layer",
+      "position": [0, 385],
+      "bounds": [385, 15]
+    },
+    {
+      "name": "Frame Vertical Scrollbar Layer",
+      "position": [385, 0],
+      "bounds": [15, 385]
+    },
+    {
+      "name": "Frame Scroll Corner Layer",
+      "position": [385, 385],
+      "bounds": [15, 15],
+      "drawsContent": true
     }
   ]
 }

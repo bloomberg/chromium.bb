@@ -1,35 +1,27 @@
 {
-  "name": "Frame Overflow Controls Host Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "Frame Clipping Layer",
+      "bounds": [785, 600]
+    },
+    {
+      "name": "LayoutView #document (background) Layer",
+      "transformOrigin": [0, 0],
       "bounds": [785, 600],
-      "children": [
-        {
-          "name": "LayoutView #document (background) Layer",
-          "transformOrigin": [0, 0],
-          "bounds": [785, 600],
-          "contentsOpaque": true,
-          "drawsContent": true
-        },
-        {
-          "name": "Frame Scrolling Layer",
-          "children": [
-            {
-              "name": "Content Root Layer",
-              "bounds": [785, 3700],
-              "children": [
-                {
-                  "name": "LayoutView #document",
-                  "bounds": [785, 3700],
-                  "drawsContent": true
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "Frame Scrolling Layer"
+    },
+    {
+      "name": "Content Root Layer",
+      "bounds": [785, 3700]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [785, 3700],
+      "drawsContent": true
     }
   ]
 }

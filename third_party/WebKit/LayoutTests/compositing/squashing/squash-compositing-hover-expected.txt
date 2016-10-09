@@ -2,237 +2,205 @@ Test overlap is rendered correctly when hovering over elements
 
 Case 1, original layer tree:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited'",
+      "position": [8, 8],
+      "bounds": [784, 0]
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
+      "position": [100, 100],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV class='composited'",
-          "position": [8, 8],
-          "bounds": [784, 0]
-        },
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
-              "position": [100, 100],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
-              "position": [180, 180],
-              "bounds": [260, 260],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
+      "position": [180, 180],
+      "bounds": [260, 260],
+      "drawsContent": true
     }
   ]
 }
 Case 2: hovering over the "middle" element (causes that div to become its own composited layer)
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited'",
+      "position": [8, 8],
+      "bounds": [784, 0]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
+      "position": [100, 100],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV class='composited'",
-          "position": [8, 8],
-          "bounds": [784, 0]
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
-          "position": [100, 100],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#0000FF"
-        },
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
-              "position": [180, 180],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#008000"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle2')",
-              "position": [260, 260],
-              "bounds": [180, 180],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
+      "position": [180, 180],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle2')",
+      "position": [260, 260],
+      "bounds": [180, 180],
+      "drawsContent": true
     }
   ]
 }
 Case 3: hovering over the "middle2" element (causes that div to become its own composited layer)
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited'",
+      "position": [8, 8],
+      "bounds": [784, 0]
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
+      "position": [100, 100],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV class='composited'",
-          "position": [8, 8],
-          "bounds": [784, 0]
-        },
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
-              "position": [100, 100],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
-              "position": [180, 180],
-              "bounds": [100, 100],
-              "drawsContent": true
-            }
-          ]
-        },
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV class='box middle2'",
-              "position": [260, 260],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#008000"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
-              "position": [340, 340],
-              "bounds": [100, 100],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
+      "position": [180, 180],
+      "bounds": [100, 100],
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='box middle2'",
+      "position": [260, 260],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
+      "position": [340, 340],
+      "bounds": [100, 100],
+      "drawsContent": true
     }
   ]
 }
 Case 4: hovering over the "top" element (causes that div to become its own composited layer)
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited'",
+      "position": [8, 8],
+      "bounds": [784, 0]
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
+      "position": [100, 100],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV class='composited'",
-          "position": [8, 8],
-          "bounds": [784, 0]
-        },
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
-              "position": [100, 100],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
-              "position": [180, 180],
-              "bounds": [180, 180],
-              "drawsContent": true
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV class='box top'",
-          "position": [340, 340],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#008000"
-        }
-      ]
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
+      "position": [180, 180],
+      "bounds": [180, 180],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='box top'",
+      "position": [340, 340],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
     }
   ]
 }
 Case 5: back to situation in case 1
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited'",
+      "position": [8, 8],
+      "bounds": [784, 0]
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
+      "position": [100, 100],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV class='composited'",
-          "position": [8, 8],
-          "bounds": [784, 0]
-        },
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
-              "position": [100, 100],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
-              "position": [180, 180],
-              "bounds": [260, 260],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
+      "position": [180, 180],
+      "bounds": [260, 260],
+      "drawsContent": true
     }
   ]
 }

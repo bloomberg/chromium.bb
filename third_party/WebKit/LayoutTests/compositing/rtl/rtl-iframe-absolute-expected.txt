@@ -1,60 +1,44 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutIFrame (positioned) IFRAME",
+      "bounds": [400, 400],
+      "drawsContent": true
+    },
+    {
+      "name": "Frame Overflow Controls Host Layer",
+      "bounds": [400, 400]
+    },
+    {
+      "name": "Frame Clipping Layer",
+      "bounds": [400, 400]
+    },
+    {
+      "name": "Frame Scrolling Layer"
+    },
+    {
+      "name": "Content Root Layer",
+      "bounds": [400, 400]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [400, 400],
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutIFrame (positioned) IFRAME",
-          "bounds": [400, 400],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Frame Overflow Controls Host Layer",
-              "bounds": [400, 400],
-              "children": [
-                {
-                  "name": "Frame Clipping Layer",
-                  "bounds": [400, 400],
-                  "children": [
-                    {
-                      "name": "Frame Scrolling Layer",
-                      "children": [
-                        {
-                          "name": "Content Root Layer",
-                          "bounds": [400, 400],
-                          "children": [
-                            {
-                              "name": "LayoutView #document",
-                              "bounds": [400, 400],
-                              "drawsContent": true,
-                              "backgroundColor": "#FF0000",
-                              "children": [
-                                {
-                                  "name": "LayoutBlockFlow (positioned) DIV class='positioned layer'",
-                                  "position": [50, 50],
-                                  "bounds": [100, 100],
-                                  "contentsOpaque": true,
-                                  "drawsContent": true,
-                                  "backgroundColor": "#008000"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#FF0000"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='positioned layer'",
+      "position": [50, 50],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
     }
   ]
 }

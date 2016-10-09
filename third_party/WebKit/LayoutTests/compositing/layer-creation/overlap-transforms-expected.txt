@@ -1,42 +1,34 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
+      "position": [8, 8],
+      "bounds": [122, 242],
+      "drawsContent": true
+    },
+    {
+      "name": "Child Containment Layer",
+      "position": [1, 1],
+      "bounds": [120, 240]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='transformed box'",
+      "position": [10, 10],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
-          "position": [8, 8],
-          "bounds": [122, 242],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Child Containment Layer",
-              "position": [1, 1],
-              "bounds": [120, 240],
-              "children": [
-                {
-                  "name": "LayoutBlockFlow (relative positioned) DIV class='transformed box'",
-                  "position": [10, 10],
-                  "bounds": [100, 100],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#0000FF",
-                  "transform": [
-                    [1, 0, 0, 0],
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 1, 1]
-                  ]
-                }
-              ]
-            }
-          ]
-        }
+      "backgroundColor": "#0000FF",
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 1]
       ]
     }
   ]

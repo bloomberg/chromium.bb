@@ -1,40 +1,34 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutVideo (positioned) VIDEO",
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutVideo (positioned) VIDEO",
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#ADD8E6",
-          "children": [
-            {
-              "name": "LayoutFlexibleBox (relative positioned) DIV",
-              "bounds": [100, 100],
-              "drawsContent": true
-            },
-            {
-              "name": "LayoutFlexibleBox (relative positioned) DIV",
-              "bounds": [100, 58]
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV",
-          "position": [50, 50],
-          "bounds": [200, 200],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#D3D3D3"
-        }
-      ]
+      "backgroundColor": "#ADD8E6"
+    },
+    {
+      "name": "LayoutFlexibleBox (relative positioned) DIV",
+      "bounds": [100, 100],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutFlexibleBox (relative positioned) DIV",
+      "bounds": [100, 58]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
+      "position": [50, 50],
+      "bounds": [200, 200],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#D3D3D3"
     }
   ]
 }

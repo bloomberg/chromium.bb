@@ -1,51 +1,45 @@
 Test CSS clip with composited layers. Left and right sides should look the same.
 
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
+      "position": [25, 35],
+      "transformOrigin": [45, 35],
+      "bounds": [90, 80],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
-          "position": [25, 35],
-          "transformOrigin": [45, 35],
-          "bounds": [90, 80],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#808080",
-          "transform": [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 1, 1]
-          ]
-        },
-        {
-          "name": "Ancestor Clipping Layer",
-          "position": [225, 35],
-          "bounds": [90, 80],
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner'",
-              "position": [-15, -25],
-              "bounds": [120, 120],
-              "drawsContent": true,
-              "backgroundColor": "#00000033",
-              "transform": [
-                [1, 0, 0, 0],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 1, 1]
-              ]
-            }
-          ]
-        }
+      "backgroundColor": "#808080",
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 1]
+      ]
+    },
+    {
+      "name": "Ancestor Clipping Layer",
+      "position": [225, 35],
+      "bounds": [90, 80],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner'",
+      "position": [-15, -25],
+      "bounds": [120, 120],
+      "drawsContent": true,
+      "backgroundColor": "#00000033",
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 1]
       ]
     }
   ]

@@ -1,34 +1,28 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='squashing'",
+      "position": [-33554430, 0],
+      "bounds": [1, 1],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV id='squashing'",
-              "position": [-33554430, 0],
-              "bounds": [1, 1],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#FFFFFF"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='squashed')",
-              "position": [600, 0],
-              "bounds": [200, 200],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='squashed')",
+      "position": [600, 0],
+      "bounds": [200, 200],
+      "drawsContent": true
     }
   ]
 }

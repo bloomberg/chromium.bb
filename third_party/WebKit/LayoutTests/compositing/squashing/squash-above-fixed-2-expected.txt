@@ -2,84 +2,72 @@ This scenario verifies that the cyan "container" element scrolls properly with s
 
 CASE 1, original layer tree:
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 4050],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 4050],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
+      "bounds": [400, 200],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "bounds": [400, 200],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backfaceVisibility": "hidden",
-          "backgroundColor": "#0000FF",
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV id='compositedInsideFixed'",
-              "bounds": [50, 50],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backfaceVisibility": "hidden",
-              "backgroundColor": "#FF0000"
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='container'",
-          "position": [100, 50],
-          "bounds": [200, 4000],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#00FFFF"
-        }
-      ]
+      "backfaceVisibility": "hidden",
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='compositedInsideFixed'",
+      "bounds": [50, 50],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backfaceVisibility": "hidden",
+      "backgroundColor": "#FF0000"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='container'",
+      "position": [100, 50],
+      "bounds": [200, 4000],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#00FFFF"
     }
   ]
 }
 CASE 2, scrolling y to 80, the "container" element should remain positioned with respect to the scrolled document, the fixed-pos layer compensates for the new scroll position:
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 4050],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 4050],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
+      "position": [0, 80],
+      "bounds": [400, 200],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "position": [0, 80],
-          "bounds": [400, 200],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backfaceVisibility": "hidden",
-          "backgroundColor": "#0000FF",
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV id='compositedInsideFixed'",
-              "bounds": [50, 50],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backfaceVisibility": "hidden",
-              "backgroundColor": "#FF0000"
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='container'",
-          "position": [100, 50],
-          "bounds": [200, 4000],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#00FFFF"
-        }
-      ]
+      "backfaceVisibility": "hidden",
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='compositedInsideFixed'",
+      "bounds": [50, 50],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backfaceVisibility": "hidden",
+      "backgroundColor": "#FF0000"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='container'",
+      "position": [100, 50],
+      "bounds": [200, 4000],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#00FFFF"
     }
   ]
 }

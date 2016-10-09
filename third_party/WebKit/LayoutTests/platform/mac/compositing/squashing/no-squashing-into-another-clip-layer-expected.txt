@@ -1,44 +1,36 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV",
+      "position": [8, 8],
+      "bounds": [784, 10],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV",
-          "position": [8, 8],
-          "bounds": [784, 10],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#ADD8E6",
-          "children": [
-            {
-              "name": "Child Containment Layer",
-              "bounds": [784, 10],
-              "children": [
-                {
-                  "name": "LayoutBlockFlow DIV id='inner'",
-                  "bounds": [784, 10],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#F5F5F5"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV class='hoverable'",
-          "position": [8, 0],
-          "bounds": [211, 100],
-          "drawsContent": true,
-          "backgroundColor": "#90EE90"
-        }
-      ]
+      "backgroundColor": "#ADD8E6"
+    },
+    {
+      "name": "Child Containment Layer",
+      "bounds": [784, 10]
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='inner'",
+      "bounds": [784, 10],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#F5F5F5"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='hoverable'",
+      "position": [8, 0],
+      "bounds": [211, 100],
+      "drawsContent": true,
+      "backgroundColor": "#90EE90"
     }
   ]
 }

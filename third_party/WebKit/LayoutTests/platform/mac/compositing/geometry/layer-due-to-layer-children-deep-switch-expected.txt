@@ -3,9 +3,7 @@ Box should switch between perspective and flat
 
 First dump layer tree:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
@@ -17,63 +15,53 @@ First dump layer tree:
 
 Second dump layer tree:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='parent'",
+      "position": [8, 8],
+      "bounds": [342, 292],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='child'",
+      "position": [31, 39],
+      "bounds": [250, 220],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='parent'",
-          "position": [8, 8],
-          "bounds": [342, 292],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (relative positioned) DIV id='child'",
-              "position": [31, 39],
-              "bounds": [250, 220],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF",
-              "children": [
-                {
-                  "name": "LayoutBlockFlow (relative positioned) DIV id='grandchild'",
-                  "position": [10, 10],
-                  "bounds": [200, 200],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#FFFF00",
-                  "transform": [
-                    [0.866025403784439, 0.5, 0, 0],
-                    [-0.5, 0.866025403784439, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, 1]
-                  ],
-                  "children": [
-                    {
-                      "name": "LayoutBlockFlow (relative positioned) DIV id='greatgrandchild'",
-                      "position": [100, 0],
-                      "bounds": [250, 100],
-                      "contentsOpaque": true,
-                      "drawsContent": true,
-                      "backgroundColor": "#008000",
-                      "transform": [
-                        [0.5, 0, -0.866025403784439, 0.0021650635094611],
-                        [0, 1, 0, 0],
-                        [0.866025403784439, 0, 0.5, -0.00125],
-                        [-30, 30, 100, 0.75]
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='grandchild'",
+      "position": [10, 10],
+      "bounds": [200, 200],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FFFF00",
+      "transform": [
+        [0.866025403784439, 0.5, 0, 0],
+        [-0.5, 0.866025403784439, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='greatgrandchild'",
+      "position": [100, 0],
+      "bounds": [250, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000",
+      "transform": [
+        [0.5, 0, -0.866025403784439, 0.0021650635094611],
+        [0, 1, 0, 0],
+        [0.866025403784439, 0, 0.5, -0.00125],
+        [-30, 30, 100, 0.75]
       ]
     }
   ]
@@ -81,12 +69,10 @@ Second dump layer tree:
 
 Third dump layer tree:
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 1496],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 1496],
+      "bounds": [785, 1316],
       "contentsOpaque": true,
       "drawsContent": true
     }

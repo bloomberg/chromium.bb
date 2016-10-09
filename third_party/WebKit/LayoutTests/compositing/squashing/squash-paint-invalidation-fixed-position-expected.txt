@@ -1,43 +1,39 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
+      "position": [8, 8],
+      "bounds": [100, 5000],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
+      "backgroundColor": "#ADD8E6"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
+      "position": [8, 25],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#D3D3D3"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='foo'",
+      "position": [8, 50],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FF0000",
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (positioned) DIV",
-          "position": [8, 8],
-          "bounds": [100, 5000],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#ADD8E6"
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV",
-          "position": [8, 25],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#D3D3D3"
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='foo'",
-          "position": [8, 50],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#FF0000",
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='foo'",
-              "rect": [0, 0, 100, 100],
-              "reason": "style change"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV id='foo'",
+          "rect": [0, 0, 100, 100],
+          "reason": "style change"
         }
       ]
     }
@@ -50,45 +46,41 @@
   ]
 }
  {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
+      "position": [8, 8],
+      "bounds": [100, 5000],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
+      "backgroundColor": "#ADD8E6"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
+      "position": [8, 25],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#D3D3D3"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='foo'",
+      "position": [8, 50],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF",
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (positioned) DIV",
-          "position": [8, 8],
-          "bounds": [100, 5000],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#ADD8E6"
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV",
-          "position": [8, 25],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#D3D3D3"
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='foo'",
-          "position": [8, 50],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#0000FF",
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='foo'",
-              "rect": [0, 0, 100, 100],
-              "reason": "style change"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV id='foo'",
+          "rect": [0, 0, 100, 100],
+          "reason": "style change"
         }
       ]
     }

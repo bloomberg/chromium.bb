@@ -1,89 +1,81 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 812],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 812],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate1' class='box animating1'",
+      "position": [18, 120],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate1' class='box animating1'",
-          "position": [18, 120],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#0000FF",
-          "transform": [
-            [...],
-            [...],
-            [...],
-            [...]
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
-          "position": [58, 230],
-          "bounds": [122, 462],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#FFFFFF",
-          "children": [
-            {
-              "name": "Child Containment Layer",
-              "position": [1, 1],
-              "bounds": [120, 460],
-              "children": [
-                {
-                  "name": "LayoutBlockFlow (relative positioned) DIV class='box gray force-layer'",
-                  "position": [10, 10],
-                  "bounds": [100, 100],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#808080",
-                  "transform": [
-                    [...],
-                    [...],
-                    [...],
-                    [...]
-                  ]
-                },
-                {
-                  "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate2' class='box animating2'",
-                  "position": [10, 230],
-                  "bounds": [100, 100],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#0000FF",
-                  "transform": [
-                    [...],
-                    [...],
-                    [...],
-                    [...]
-                  ]
-                },
-                {
-                  "name": "LayoutBlockFlow (relative positioned) DIV class='box yellow'",
-                  "position": [10, 340],
-                  "bounds": [100, 100],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#FFFF00"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV class='box yellow'",
-          "position": [18, 702],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#FFFF00"
-        }
+      "backgroundColor": "#0000FF",
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
       ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
+      "position": [58, 230],
+      "bounds": [122, 462],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Child Containment Layer",
+      "position": [1, 1],
+      "bounds": [120, 460]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='box gray force-layer'",
+      "position": [10, 10],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#808080",
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate2' class='box animating2'",
+      "position": [10, 230],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF",
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='box yellow'",
+      "position": [10, 340],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FFFF00"
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='box yellow'",
+      "position": [18, 702],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FFFF00"
     }
   ]
 }

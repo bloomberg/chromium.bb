@@ -4,145 +4,127 @@ The catch is that the squashing requirements should be computed in correct paint
 
 CASE 1, original layer tree:
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 4100],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 4100],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
+      "bounds": [400, 400],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
-          "bounds": [400, 400],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#808080"
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='container'",
-          "position": [100, 100],
-          "bounds": [100, 4000],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#008000",
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
-              "position": [0, 50],
-              "bounds": [200, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF"
-            },
-            {
-              "name": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
-              "position": [100, 0],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#00FF00"
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#808080"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='container'",
+      "position": [100, 100],
+      "bounds": [100, 4000],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
+      "position": [0, 50],
+      "bounds": [200, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
+      "position": [100, 0],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#00FF00"
     }
   ]
 }
 CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll properly.
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 4100],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 4100],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
+      "position": [0, 10],
+      "bounds": [400, 400],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
-          "position": [0, 10],
-          "bounds": [400, 400],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#808080"
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='container'",
-          "position": [100, 100],
-          "bounds": [100, 4000],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#008000",
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
-              "position": [0, 60],
-              "bounds": [200, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF"
-            },
-            {
-              "name": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
-              "position": [100, 0],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#00FF00"
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#808080"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='container'",
+      "position": [100, 100],
+      "bounds": [100, 4000],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
+      "position": [0, 60],
+      "bounds": [200, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
+      "position": [100, 0],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#00FF00"
     }
   ]
 }
 CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos layer, then the stacking context of "container" includes the "innerScrolling" layer, and doubles in width:
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 4100],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 4100],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
+      "position": [0, 110],
+      "bounds": [400, 400],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
+      "backgroundColor": "#808080"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='container'",
+      "position": [100, 100],
+      "bounds": [200, 4000],
+      "drawsContent": true,
+      "backgroundColor": "#008000",
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
-          "position": [0, 110],
-          "bounds": [400, 400],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#808080"
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='container'",
-          "position": [100, 100],
-          "bounds": [200, 4000],
-          "drawsContent": true,
-          "backgroundColor": "#008000",
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
-              "rect": [100, 0, 100, 100],
-              "reason": "compositing update"
-            }
-          ],
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
-              "position": [0, 160],
-              "bounds": [200, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
+          "rect": [100, 0, 100, 100],
+          "reason": "compositing update"
         }
       ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
+      "position": [0, 160],
+      "bounds": [200, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
     }
   ],
   "objectPaintInvalidations": [

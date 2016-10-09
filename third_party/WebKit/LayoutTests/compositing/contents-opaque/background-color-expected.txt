@@ -1,34 +1,30 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='box composited'",
+      "position": [8, 8],
+      "bounds": [100, 100]
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='box translucent composited'",
+      "position": [8, 108],
+      "bounds": [100, 100],
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV class='box composited'",
-          "position": [8, 8],
-          "bounds": [100, 100]
-        },
-        {
-          "name": "LayoutBlockFlow DIV class='box translucent composited'",
-          "position": [8, 108],
-          "bounds": [100, 100],
-          "drawsContent": true,
-          "backgroundColor": "#00FF007F"
-        },
-        {
-          "name": "LayoutBlockFlow DIV class='box opaque composited'",
-          "position": [8, 208],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#008000"
-        }
-      ]
+      "backgroundColor": "#00FF007F"
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='box opaque composited'",
+      "position": [8, 208],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
     }
   ]
 }

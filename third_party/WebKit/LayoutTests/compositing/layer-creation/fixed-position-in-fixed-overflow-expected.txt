@@ -1,56 +1,44 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='overflow fixed'",
+      "position": [8, 13],
+      "bounds": [800, 600],
+      "shouldFlattenTransform": false,
+      "drawsContent": true
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [785, 600],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [785, 1000],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='yellow fixed'",
+      "position": [192, 0],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV class='overflow fixed'",
-          "position": [8, 13],
-          "bounds": [800, 600],
-          "shouldFlattenTransform": false,
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Scrolling Layer",
-              "bounds": [785, 600],
-              "shouldFlattenTransform": false,
-              "children": [
-                {
-                  "name": "Scrolling Contents Layer",
-                  "bounds": [785, 1000],
-                  "drawsContent": true,
-                  "children": [
-                    {
-                      "name": "LayoutBlockFlow (positioned) DIV class='yellow fixed'",
-                      "position": [192, 0],
-                      "bounds": [100, 100],
-                      "contentsOpaque": true,
-                      "drawsContent": true,
-                      "backgroundColor": "#FFFF00"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "Overflow Controls Host Layer",
-              "bounds": [800, 600],
-              "children": [
-                {
-                  "name": "Vertical Scrollbar Layer",
-                  "position": [785, 0],
-                  "bounds": [15, 600]
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#FFFF00"
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [800, 600]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600]
     }
   ]
 }

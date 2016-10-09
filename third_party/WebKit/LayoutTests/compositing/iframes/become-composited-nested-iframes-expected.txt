@@ -1,196 +1,144 @@
 
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 1500],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 1500],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutIFrame IFRAME",
+      "position": [20, 120],
+      "bounds": [284, 204],
+      "drawsContent": true
+    },
+    {
+      "name": "Frame Overflow Controls Host Layer",
+      "position": [2, 2],
+      "bounds": [280, 200]
+    },
+    {
+      "name": "Frame Clipping Layer",
+      "bounds": [280, 200]
+    },
+    {
+      "name": "Frame Scrolling Layer"
+    },
+    {
+      "name": "Content Root Layer",
+      "bounds": [280, 200]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [280, 200],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutIFrame IFRAME",
+      "position": [8, 8],
+      "bounds": [252, 172],
+      "drawsContent": true
+    },
+    {
+      "name": "Frame Overflow Controls Host Layer",
+      "position": [1, 1],
+      "bounds": [250, 170]
+    },
+    {
+      "name": "Frame Clipping Layer",
+      "bounds": [250, 170]
+    },
+    {
+      "name": "Frame Scrolling Layer"
+    },
+    {
+      "name": "Content Root Layer",
+      "bounds": [250, 230]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [250, 230],
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutIFrame IFRAME",
-          "position": [20, 120],
-          "bounds": [284, 204],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Frame Overflow Controls Host Layer",
-              "position": [2, 2],
-              "bounds": [280, 200],
-              "children": [
-                {
-                  "name": "Frame Clipping Layer",
-                  "bounds": [280, 200],
-                  "children": [
-                    {
-                      "name": "Frame Scrolling Layer",
-                      "children": [
-                        {
-                          "name": "Content Root Layer",
-                          "bounds": [280, 200],
-                          "children": [
-                            {
-                              "name": "LayoutView #document",
-                              "bounds": [280, 200],
-                              "drawsContent": true,
-                              "children": [
-                                {
-                                  "name": "LayoutIFrame IFRAME",
-                                  "position": [8, 8],
-                                  "bounds": [252, 172],
-                                  "drawsContent": true,
-                                  "children": [
-                                    {
-                                      "name": "Frame Overflow Controls Host Layer",
-                                      "position": [1, 1],
-                                      "bounds": [250, 170],
-                                      "children": [
-                                        {
-                                          "name": "Frame Clipping Layer",
-                                          "bounds": [250, 170],
-                                          "children": [
-                                            {
-                                              "name": "Frame Scrolling Layer",
-                                              "children": [
-                                                {
-                                                  "name": "Content Root Layer",
-                                                  "bounds": [250, 230],
-                                                  "children": [
-                                                    {
-                                                      "name": "LayoutView #document",
-                                                      "bounds": [250, 230],
-                                                      "drawsContent": true,
-                                                      "backgroundColor": "#C0C0C0",
-                                                      "children": [
-                                                        {
-                                                          "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
-                                                          "position": [18, 10],
-                                                          "bounds": [210, 210],
-                                                          "contentsOpaque": true,
-                                                          "drawsContent": true,
-                                                          "backgroundColor": "#0000FF"
-                                                        }
-                                                      ]
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "LayoutIFrame IFRAME",
-          "position": [20, 344],
-          "bounds": [284, 204],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Frame Overflow Controls Host Layer",
-              "position": [2, 2],
-              "bounds": [280, 200],
-              "children": [
-                {
-                  "name": "Frame Clipping Layer",
-                  "bounds": [280, 200],
-                  "children": [
-                    {
-                      "name": "Frame Scrolling Layer",
-                      "children": [
-                        {
-                          "name": "Content Root Layer",
-                          "bounds": [280, 200],
-                          "children": [
-                            {
-                              "name": "LayoutView #document",
-                              "bounds": [280, 200],
-                              "drawsContent": true,
-                              "children": [
-                                {
-                                  "name": "LayoutIFrame IFRAME",
-                                  "position": [8, 8],
-                                  "bounds": [252, 172],
-                                  "drawsContent": true,
-                                  "children": [
-                                    {
-                                      "name": "Frame Overflow Controls Host Layer",
-                                      "position": [1, 1],
-                                      "bounds": [250, 170],
-                                      "children": [
-                                        {
-                                          "name": "Frame Clipping Layer",
-                                          "bounds": [250, 170],
-                                          "children": [
-                                            {
-                                              "name": "Frame Scrolling Layer",
-                                              "children": [
-                                                {
-                                                  "name": "Content Root Layer",
-                                                  "bounds": [250, 230],
-                                                  "children": [
-                                                    {
-                                                      "name": "LayoutView #document",
-                                                      "bounds": [250, 230],
-                                                      "drawsContent": true,
-                                                      "backgroundColor": "#C0C0C0",
-                                                      "children": [
-                                                        {
-                                                          "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
-                                                          "position": [18, 10],
-                                                          "bounds": [210, 210],
-                                                          "contentsOpaque": true,
-                                                          "drawsContent": true,
-                                                          "backgroundColor": "#0000FF"
-                                                        }
-                                                      ]
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow DIV id='box' class='composited'",
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#0000FF"
-        }
-      ]
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
+      "position": [18, 10],
+      "bounds": [210, 210],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutIFrame IFRAME",
+      "position": [20, 344],
+      "bounds": [284, 204],
+      "drawsContent": true
+    },
+    {
+      "name": "Frame Overflow Controls Host Layer",
+      "position": [2, 2],
+      "bounds": [280, 200]
+    },
+    {
+      "name": "Frame Clipping Layer",
+      "bounds": [280, 200]
+    },
+    {
+      "name": "Frame Scrolling Layer"
+    },
+    {
+      "name": "Content Root Layer",
+      "bounds": [280, 200]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [280, 200],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutIFrame IFRAME",
+      "position": [8, 8],
+      "bounds": [252, 172],
+      "drawsContent": true
+    },
+    {
+      "name": "Frame Overflow Controls Host Layer",
+      "position": [1, 1],
+      "bounds": [250, 170]
+    },
+    {
+      "name": "Frame Clipping Layer",
+      "bounds": [250, 170]
+    },
+    {
+      "name": "Frame Scrolling Layer"
+    },
+    {
+      "name": "Content Root Layer",
+      "bounds": [250, 230]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [250, 230],
+      "drawsContent": true,
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
+      "position": [18, 10],
+      "bounds": [210, 210],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='box' class='composited'",
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
     }
   ]
 }

@@ -1,22 +1,18 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [3616, 1170],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [3616, 1170],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='composited'",
+      "position": [16, 16],
+      "bounds": [3600, 20],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV id='composited'",
-          "position": [16, 16],
-          "bounds": [3600, 20],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#0000FF"
-        }
-      ]
+      "backgroundColor": "#0000FF"
     }
   ]
 }

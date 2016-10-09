@@ -1,156 +1,140 @@
 Before:
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 802],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 802],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate1' class='box animating1'",
+      "position": [18, 120],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate1' class='box animating1'",
-          "position": [18, 120],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#0000FF",
-          "transform": [
-            [...],
-            [...],
-            [...],
-            [...]
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
-          "position": [47, 230],
-          "bounds": [144, 452],
-          "drawsContent": true,
-          "backgroundColor": "#FFFFFF",
-          "children": [
-            {
-              "name": "Squashing Containment Layer",
-              "shouldFlattenTransform": false,
-              "children": [
-                {
-                  "name": "LayoutBlockFlow (relative positioned) DIV class='box gray force-layer'",
-                  "position": [22, 11],
-                  "bounds": [100, 100],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#808080",
-                  "transform": [
-                    [...],
-                    [...],
-                    [...],
-                    [...]
-                  ]
-                },
-                {
-                  "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box yellow')",
-                  "position": [-29, 462],
-                  "bounds": [100, 100],
-                  "drawsContent": true
-                }
-              ]
-            }
-          ]
-        }
+      "backgroundColor": "#0000FF",
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
       ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
+      "position": [47, 230],
+      "bounds": [144, 452],
+      "drawsContent": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='box gray force-layer'",
+      "position": [22, 11],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#808080",
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
+      ]
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box yellow')",
+      "position": [-29, 462],
+      "bounds": [100, 100],
+      "drawsContent": true
     }
   ]
 }
 
 After:
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 802],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 802],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate1' class='box animating1'",
+      "position": [18, 120],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate1' class='box animating1'",
-          "position": [18, 120],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#0000FF",
-          "transform": [
-            [...],
-            [...],
-            [...],
-            [...]
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
-          "position": [58, 230],
-          "bounds": [122, 452],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#FFFFFF",
-          "children": [
-            {
-              "name": "LayoutBlockFlow (relative positioned) DIV class='box gray force-layer'",
-              "position": [11, 11],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#808080",
-              "transform": [
-                [...],
-                [...],
-                [...],
-                [...]
-              ]
-            },
-            {
-              "name": "LayoutBlockFlow (relative positioned) DIV id='first-green-box' class='box green rotate-45deg'",
-              "position": [10, 120],
-              "bounds": [102, 102],
-              "drawsContent": true,
-              "backgroundColor": "#008000",
-              "transform": [
-                [...],
-                [...],
-                [...],
-                [...]
-              ]
-            },
-            {
-              "name": "Squashing Containment Layer",
-              "shouldFlattenTransform": false,
-              "children": [
-                {
-                  "name": "LayoutBlockFlow (relative positioned) DIV class='box green rotate-45deg'",
-                  "position": [10, 230],
-                  "bounds": [102, 102],
-                  "drawsContent": true,
-                  "backgroundColor": "#008000",
-                  "transform": [
-                    [...],
-                    [...],
-                    [...],
-                    [...]
-                  ]
-                },
-                {
-                  "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box green')",
-                  "position": [-40, 340],
-                  "bounds": [152, 222],
-                  "drawsContent": true
-                }
-              ]
-            }
-          ]
-        }
+      "backgroundColor": "#0000FF",
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
       ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
+      "position": [58, 230],
+      "bounds": [122, 452],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='box gray force-layer'",
+      "position": [11, 11],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#808080",
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='first-green-box' class='box green rotate-45deg'",
+      "position": [10, 120],
+      "bounds": [102, 102],
+      "drawsContent": true,
+      "backgroundColor": "#008000",
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
+      ]
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='box green rotate-45deg'",
+      "position": [10, 230],
+      "bounds": [102, 102],
+      "drawsContent": true,
+      "backgroundColor": "#008000",
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
+      ]
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box green')",
+      "position": [-40, 340],
+      "bounds": [152, 222],
+      "drawsContent": true
     }
   ]
 }

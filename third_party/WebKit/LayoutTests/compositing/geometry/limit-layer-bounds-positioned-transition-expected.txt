@@ -1,32 +1,26 @@
 Text here
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "children": [
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV class='compositing'",
-              "position": [29, 29],
-              "bounds": [100, 100]
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='indicator')",
-              "position": [-771, 8],
-              "bounds": [1200, 142],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='compositing'",
+      "position": [29, 29],
+      "bounds": [100, 100]
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='indicator')",
+      "position": [-771, 8],
+      "bounds": [1200, 142],
+      "drawsContent": true
     }
   ]
 }

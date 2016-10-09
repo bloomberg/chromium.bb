@@ -1,21 +1,17 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 2513],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 2513],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
-          "position": [0, 200],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true
-        }
-      ]
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "position": [0, 200],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true
     }
   ]
 }

@@ -1,42 +1,36 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='container'",
+      "position": [23, 8],
+      "transformOrigin": [377, 0],
+      "bounds": [256, 256],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV id='container'",
-          "position": [23, 8],
-          "transformOrigin": [377, 0],
-          "bounds": [256, 256],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "transform": [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [-10, 0, 0, 1]
-          ],
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV id='composited'",
-              "position": [385, 0],
-              "contentsOpaque": true
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='green'",
-          "bounds": [300, 300],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#008000"
-        }
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [-10, 0, 0, 1]
       ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='composited'",
+      "position": [385, 0],
+      "contentsOpaque": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='green'",
+      "bounds": [300, 300],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
     }
   ]
 }

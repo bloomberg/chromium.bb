@@ -1,67 +1,51 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutIFrame (positioned) IFRAME",
+      "bounds": [304, 304],
+      "drawsContent": true
+    },
+    {
+      "name": "Frame Overflow Controls Host Layer",
+      "position": [2, 2],
+      "bounds": [300, 300]
+    },
+    {
+      "name": "Frame Clipping Layer",
+      "bounds": [300, 300]
+    },
+    {
+      "name": "Frame Scrolling Layer"
+    },
+    {
+      "name": "Content Root Layer",
+      "bounds": [300, 300]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [300, 300],
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutIFrame (positioned) IFRAME",
-          "bounds": [304, 304],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Frame Overflow Controls Host Layer",
-              "position": [2, 2],
-              "bounds": [300, 300],
-              "children": [
-                {
-                  "name": "Frame Clipping Layer",
-                  "bounds": [300, 300],
-                  "children": [
-                    {
-                      "name": "Frame Scrolling Layer",
-                      "children": [
-                        {
-                          "name": "Content Root Layer",
-                          "bounds": [300, 300],
-                          "children": [
-                            {
-                              "name": "LayoutView #document",
-                              "bounds": [300, 300],
-                              "drawsContent": true,
-                              "backgroundColor": "#C0C0C0",
-                              "children": [
-                                {
-                                  "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
-                                  "position": [18, 10],
-                                  "bounds": [210, 210],
-                                  "contentsOpaque": true,
-                                  "drawsContent": true,
-                                  "backgroundColor": "#0000FF"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "LayoutIFrame (positioned) IFRAME id='overlap'",
-          "position": [250, 0],
-          "bounds": [304, 304],
-          "drawsContent": true
-        }
-      ]
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
+      "position": [18, 10],
+      "bounds": [210, 210],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutIFrame (positioned) IFRAME id='overlap'",
+      "position": [250, 0],
+      "bounds": [304, 304],
+      "drawsContent": true
     }
   ]
 }

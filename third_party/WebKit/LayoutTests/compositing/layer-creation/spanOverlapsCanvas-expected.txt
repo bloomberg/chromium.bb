@@ -1,32 +1,26 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "children": [
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutHTMLCanvas CANVAS id='world'",
-              "position": [8, 8],
-              "bounds": [100, 50],
-              "drawsContent": true
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='output')",
-              "position": [8, 8],
-              "bounds": [100, 50],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutHTMLCanvas CANVAS id='world'",
+      "position": [8, 8],
+      "bounds": [100, 50],
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='output')",
+      "position": [8, 8],
+      "bounds": [100, 50],
+      "drawsContent": true
     }
   ]
 }

@@ -1,56 +1,50 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 1021],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 1021],
+      "contentsOpaque": true
+    },
+    {
+      "name": "LayoutBlockFlow HTML",
+      "bounds": [800, 1021],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "position": [8, 1013],
+      "bounds": [10, 10],
       "contentsOpaque": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow HTML",
-          "bounds": [800, 1021],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
-              "position": [8, 1013],
-              "bounds": [10, 10],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#C0C0C0"
-            },
-            {
-              "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
-              "position": [8, -100],
-              "bounds": [10, 10],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#C0C0C0"
-            },
-            {
-              "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
-              "position": [1000, 0],
-              "bounds": [10, 10],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#C0C0C0"
-            },
-            {
-              "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
-              "bounds": [10, 10],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#C0C0C0"
-            },
-            {
-              "name": "LayoutBlockFlow HTML (foreground) Layer",
-              "bounds": [800, 1021],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "drawsContent": true,
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "position": [8, -100],
+      "bounds": [10, 10],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "position": [1000, 0],
+      "bounds": [10, 10],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "bounds": [10, 10],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "LayoutBlockFlow HTML (foreground) Layer",
+      "bounds": [800, 1021],
+      "drawsContent": true
     }
   ]
 }

@@ -1,12 +1,5 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "paintingPhases": [
-    "GraphicsLayerPaintBackground",
-    "GraphicsLayerPaintForeground",
-    "GraphicsLayerPaintMask"
-  ],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
@@ -16,87 +9,79 @@
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
         "GraphicsLayerPaintMask"
-      ],
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV class='scroller'",
-          "position": [8, 8],
-          "bounds": [102, 102],
-          "shouldFlattenTransform": false,
-          "drawsContent": true,
-          "paintingPhases": [
-            "GraphicsLayerPaintBackground",
-            "GraphicsLayerPaintMask",
-            "GraphicsLayerPaintCompositedScroll"
-          ],
-          "children": [
-            {
-              "name": "Scrolling Layer",
-              "position": [1, 1],
-              "bounds": [85, 85],
-              "shouldFlattenTransform": false,
-              "paintingPhases": [
-                "GraphicsLayerPaintBackground",
-                "GraphicsLayerPaintForeground",
-                "GraphicsLayerPaintMask"
-              ],
-              "children": [
-                {
-                  "name": "Scrolling Contents Layer",
-                  "bounds": [85, 120],
-                  "drawsContent": true,
-                  "paintingPhases": [
-                    "GraphicsLayerPaintForeground",
-                    "GraphicsLayerPaintOverflowContents",
-                    "GraphicsLayerPaintCompositedScroll"
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "Overflow Controls Host Layer",
-              "bounds": [102, 102],
-              "paintingPhases": [
-                "GraphicsLayerPaintBackground",
-                "GraphicsLayerPaintForeground",
-                "GraphicsLayerPaintMask"
-              ],
-              "children": [
-                {
-                  "name": "Horizontal Scrollbar Layer",
-                  "position": [1, 86],
-                  "bounds": [85, 15],
-                  "paintingPhases": [
-                    "GraphicsLayerPaintBackground",
-                    "GraphicsLayerPaintForeground",
-                    "GraphicsLayerPaintMask"
-                  ]
-                },
-                {
-                  "name": "Vertical Scrollbar Layer",
-                  "position": [86, 1],
-                  "bounds": [15, 85],
-                  "paintingPhases": [
-                    "GraphicsLayerPaintBackground",
-                    "GraphicsLayerPaintForeground",
-                    "GraphicsLayerPaintMask"
-                  ]
-                },
-                {
-                  "name": "Scroll Corner Layer",
-                  "position": [86, 86],
-                  "bounds": [15, 15],
-                  "drawsContent": true,
-                  "paintingPhases": [
-                    "GraphicsLayerPaintBackground",
-                    "GraphicsLayerPaintForeground",
-                    "GraphicsLayerPaintMask"
-                  ]
-                }
-              ]
-            }
-          ]
-        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='scroller'",
+      "position": [8, 8],
+      "bounds": [102, 102],
+      "shouldFlattenTransform": false,
+      "drawsContent": true,
+      "paintingPhases": [
+        "GraphicsLayerPaintBackground",
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintCompositedScroll"
+      ]
+    },
+    {
+      "name": "Scrolling Layer",
+      "position": [1, 1],
+      "bounds": [85, 85],
+      "shouldFlattenTransform": false,
+      "paintingPhases": [
+        "GraphicsLayerPaintBackground",
+        "GraphicsLayerPaintForeground",
+        "GraphicsLayerPaintMask"
+      ]
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [85, 120],
+      "drawsContent": true,
+      "paintingPhases": [
+        "GraphicsLayerPaintForeground",
+        "GraphicsLayerPaintOverflowContents",
+        "GraphicsLayerPaintCompositedScroll"
+      ]
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [102, 102],
+      "paintingPhases": [
+        "GraphicsLayerPaintBackground",
+        "GraphicsLayerPaintForeground",
+        "GraphicsLayerPaintMask"
+      ]
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [1, 86],
+      "bounds": [85, 15],
+      "paintingPhases": [
+        "GraphicsLayerPaintBackground",
+        "GraphicsLayerPaintForeground",
+        "GraphicsLayerPaintMask"
+      ]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [86, 1],
+      "bounds": [15, 85],
+      "paintingPhases": [
+        "GraphicsLayerPaintBackground",
+        "GraphicsLayerPaintForeground",
+        "GraphicsLayerPaintMask"
+      ]
+    },
+    {
+      "name": "Scroll Corner Layer",
+      "position": [86, 86],
+      "bounds": [15, 15],
+      "drawsContent": true,
+      "paintingPhases": [
+        "GraphicsLayerPaintBackground",
+        "GraphicsLayerPaintForeground",
+        "GraphicsLayerPaintMask"
       ]
     }
   ]

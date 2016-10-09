@@ -2,44 +2,36 @@ A squashing Layer that becomes non-composited should correctly send a repaint in
 
 CASE 1, original layer tree:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='forceComposited' class='composited underneath'",
+      "position": [60, 60],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV id='forceComposited' class='composited underneath'",
-              "position": [60, 60],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#808080"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
-              "position": [140, 140],
-              "bounds": [260, 260],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#808080"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
+      "position": [140, 140],
+      "bounds": [260, 260],
+      "drawsContent": true
     }
   ]
 }
 CASE 2, The original composited layer is no longer composited, which then also removes all squashing layers. The important point is that there should be an appropriate repaint to the root GraphicsLayer:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],

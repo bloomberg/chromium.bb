@@ -1,34 +1,26 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV class='resizable composited box'",
-          "position": [18, 10],
-          "bounds": [100, 100],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Overflow Controls Host Layer",
-              "bounds": [100, 100],
-              "children": [
-                {
-                  "name": "Scroll Corner Layer",
-                  "position": [85, 85],
-                  "bounds": [15, 15],
-                  "drawsContent": true
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='resizable composited box'",
+      "position": [18, 10],
+      "bounds": [100, 100],
+      "drawsContent": true
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [100, 100]
+    },
+    {
+      "name": "Scroll Corner Layer",
+      "position": [85, 85],
+      "bounds": [15, 15],
+      "drawsContent": true
     }
   ]
 }

@@ -1,114 +1,94 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='outer'",
+      "position": [8, 8],
+      "bounds": [404, 404],
+      "shouldFlattenTransform": false,
+      "drawsContent": true
+    },
+    {
+      "name": "Scrolling Layer",
+      "position": [2, 2],
+      "bounds": [400, 400],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [400, 704],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='inner'",
+      "position": [0, 500],
+      "bounds": [204, 204],
+      "shouldFlattenTransform": false,
+      "drawsContent": true
+    },
+    {
+      "name": "Scrolling Layer",
+      "position": [2, 2],
+      "bounds": [200, 200],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [5000, 9000],
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='grey'",
+      "position": [2, 502],
+      "bounds": [100, 800],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='outer'",
-          "position": [8, 8],
-          "bounds": [404, 404],
-          "shouldFlattenTransform": false,
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Scrolling Layer",
-              "position": [2, 2],
-              "bounds": [400, 400],
-              "shouldFlattenTransform": false,
-              "children": [
-                {
-                  "name": "Scrolling Contents Layer",
-                  "bounds": [400, 704],
-                  "drawsContent": true,
-                  "children": [
-                    {
-                      "name": "LayoutBlockFlow (positioned) DIV id='inner'",
-                      "position": [0, 500],
-                      "bounds": [204, 204],
-                      "shouldFlattenTransform": false,
-                      "drawsContent": true,
-                      "children": [
-                        {
-                          "name": "Scrolling Layer",
-                          "position": [2, 2],
-                          "bounds": [200, 200],
-                          "shouldFlattenTransform": false,
-                          "children": [
-                            {
-                              "name": "Scrolling Contents Layer",
-                              "bounds": [5000, 9000],
-                              "drawsContent": true
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Squashing Containment Layer",
-                      "shouldFlattenTransform": false,
-                      "children": [
-                        {
-                          "name": "LayoutBlockFlow (positioned) DIV id='grey'",
-                          "position": [2, 502],
-                          "bounds": [100, 800],
-                          "contentsOpaque": true,
-                          "drawsContent": true,
-                          "backgroundColor": "#808080"
-                        },
-                        {
-                          "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='spacer')",
-                          "position": [2, 2502],
-                          "bounds": [5000, 1000],
-                          "drawsContent": true
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Overflow Controls Host Layer",
-                      "position": [2, 502],
-                      "bounds": [204, 204],
-                      "children": [
-                        {
-                          "name": "Horizontal Scrollbar Layer",
-                          "position": [2, 195],
-                          "bounds": [193, 7]
-                        },
-                        {
-                          "name": "Vertical Scrollbar Layer",
-                          "position": [195, 2],
-                          "bounds": [7, 193]
-                        },
-                        {
-                          "name": "Scroll Corner Layer",
-                          "position": [195, 195],
-                          "bounds": [7, 7],
-                          "drawsContent": true
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "Overflow Controls Host Layer",
-              "bounds": [404, 404],
-              "children": [
-                {
-                  "name": "Vertical Scrollbar Layer",
-                  "position": [395, 2],
-                  "bounds": [7, 400]
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#808080"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='spacer')",
+      "position": [2, 2502],
+      "bounds": [5000, 1000],
+      "drawsContent": true
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "position": [2, 502],
+      "bounds": [204, 204]
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [2, 195],
+      "bounds": [193, 7]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [195, 2],
+      "bounds": [7, 193]
+    },
+    {
+      "name": "Scroll Corner Layer",
+      "position": [195, 195],
+      "bounds": [7, 7],
+      "drawsContent": true
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [404, 404]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [395, 2],
+      "bounds": [7, 400]
     }
   ]
 }

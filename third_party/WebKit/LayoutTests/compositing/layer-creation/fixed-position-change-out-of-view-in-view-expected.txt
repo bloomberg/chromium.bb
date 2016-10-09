@@ -1,93 +1,81 @@
 Layer tree when the fixed elements are out-of-view (should have just a root layer):
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 4016],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 4016],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='fixed1'",
+      "position": [100, -100],
+      "bounds": [10, 10],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='fixed1'",
-          "position": [100, -100],
-          "bounds": [10, 10],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#C0C0C0"
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='fixed2'",
-          "position": [100, 100],
-          "bounds": [10, 0],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#C0C0C0"
-        }
-      ]
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='fixed2'",
+      "position": [100, 100],
+      "bounds": [10, 0],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#C0C0C0"
     }
   ]
 }
 Layer tree when the fixed elements are in-view (both fixed elements should have layers):
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 4016],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 4016],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='fixed1'",
+      "position": [100, 50],
+      "bounds": [10, 10],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='fixed1'",
-          "position": [100, 50],
-          "bounds": [10, 10],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#C0C0C0"
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='fixed2'",
-          "position": [100, 100],
-          "bounds": [10, 10],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#C0C0C0"
-        }
-      ]
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='fixed2'",
+      "position": [100, 100],
+      "bounds": [10, 10],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#C0C0C0"
     }
   ]
 }
 Layer tree when the fixed elements are out-of-view again (should have just a root layer):
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 4016],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 4016],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='fixed1'",
+      "position": [100, -100],
+      "bounds": [10, 10],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='fixed1'",
-          "position": [100, -100],
-          "bounds": [10, 10],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#C0C0C0"
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='fixed2'",
-          "position": [100, 100],
-          "bounds": [10, 0],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#C0C0C0"
-        }
-      ]
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='fixed2'",
+      "position": [100, 100],
+      "bounds": [10, 0],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#C0C0C0"
     }
   ]
 }

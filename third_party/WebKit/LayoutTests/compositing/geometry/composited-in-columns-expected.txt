@@ -1,48 +1,40 @@
  {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited block'",
+      "position": [14, 162],
+      "bounds": [210, 60],
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV class='composited block'",
-          "position": [14, 162],
-          "bounds": [210, 60],
-          "drawsContent": true,
-          "backgroundColor": "#0000FF",
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV class='composited box'",
-              "position": [5, 5],
-              "bounds": [50, 50],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#008000"
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow DIV class='composited block'",
-          "position": [272, 88],
-          "bounds": [210, 60],
-          "drawsContent": true,
-          "backgroundColor": "#0000FF",
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV class='composited box'",
-              "position": [5, 5],
-              "bounds": [50, 50],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#008000"
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited box'",
+      "position": [5, 5],
+      "bounds": [50, 50],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited block'",
+      "position": [272, 88],
+      "bounds": [210, 60],
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited box'",
+      "position": [5, 5],
+      "bounds": [50, 50],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
     }
   ]
 }

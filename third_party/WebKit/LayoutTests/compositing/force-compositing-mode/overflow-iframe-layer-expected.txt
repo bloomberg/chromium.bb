@@ -1,68 +1,54 @@
 
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutIFrame IFRAME id='iframe'",
-          "position": [8, 8],
-          "bounds": [154, 154],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Frame Overflow Controls Host Layer",
-              "position": [2, 2],
-              "bounds": [150, 150],
-              "children": [
-                {
-                  "name": "Frame Clipping Layer",
-                  "bounds": [135, 135],
-                  "children": [
-                    {
-                      "name": "Frame Scrolling Layer",
-                      "children": [
-                        {
-                          "name": "Content Root Layer",
-                          "bounds": [508, 516],
-                          "children": [
-                            {
-                              "name": "LayoutView #document",
-                              "bounds": [508, 516],
-                              "drawsContent": true
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "name": "Frame Horizontal Scrollbar Layer",
-                  "position": [0, 135],
-                  "bounds": [135, 15]
-                },
-                {
-                  "name": "Frame Vertical Scrollbar Layer",
-                  "position": [135, 0],
-                  "bounds": [15, 135]
-                },
-                {
-                  "name": "Frame Scroll Corner Layer",
-                  "position": [135, 135],
-                  "bounds": [15, 15],
-                  "drawsContent": true
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutIFrame IFRAME id='iframe'",
+      "position": [8, 8],
+      "bounds": [154, 154],
+      "drawsContent": true
+    },
+    {
+      "name": "Frame Overflow Controls Host Layer",
+      "position": [2, 2],
+      "bounds": [150, 150]
+    },
+    {
+      "name": "Frame Clipping Layer",
+      "bounds": [135, 135]
+    },
+    {
+      "name": "Frame Scrolling Layer"
+    },
+    {
+      "name": "Content Root Layer",
+      "bounds": [508, 516]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [508, 516],
+      "drawsContent": true
+    },
+    {
+      "name": "Frame Horizontal Scrollbar Layer",
+      "position": [0, 135],
+      "bounds": [135, 15]
+    },
+    {
+      "name": "Frame Vertical Scrollbar Layer",
+      "position": [135, 0],
+      "bounds": [15, 135]
+    },
+    {
+      "name": "Frame Scroll Corner Layer",
+      "position": [135, 135],
+      "bounds": [15, 15],
+      "drawsContent": true
     }
   ]
 }

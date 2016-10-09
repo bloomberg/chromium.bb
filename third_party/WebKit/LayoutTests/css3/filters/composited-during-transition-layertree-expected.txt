@@ -3,40 +3,36 @@
    
   
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutImage IMG id='grayscale-box'",
-          "position": [18, 18],
-          "bounds": [160, 90],
-          "drawsContent": true
-        },
-        {
-          "name": "LayoutImage IMG id='saturate-box'",
-          "position": [18, 132],
-          "bounds": [160, 90],
-          "drawsContent": true
-        },
-        {
-          "name": "LayoutImage IMG id='invert-box'",
-          "position": [18, 246],
-          "bounds": [160, 90],
-          "drawsContent": true
-        },
-        {
-          "name": "LayoutImage IMG id='brightness-box'",
-          "position": [18, 360],
-          "bounds": [160, 90],
-          "drawsContent": true
-        }
-      ]
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutImage IMG id='grayscale-box'",
+      "position": [18, 18],
+      "bounds": [160, 90],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutImage IMG id='saturate-box'",
+      "position": [18, 132],
+      "bounds": [160, 90],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutImage IMG id='invert-box'",
+      "position": [18, 246],
+      "bounds": [160, 90],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutImage IMG id='brightness-box'",
+      "position": [18, 360],
+      "bounds": [160, 90],
+      "drawsContent": true
     }
   ]
 }

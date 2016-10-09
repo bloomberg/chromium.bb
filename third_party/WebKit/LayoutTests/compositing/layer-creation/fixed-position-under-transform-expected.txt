@@ -1,35 +1,31 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 5021],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 5021],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='transform'",
+      "position": [108, 113],
+      "transformOrigin": [284.5, -100],
+      "bounds": [256, 256],
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV id='transform'",
-          "position": [108, 113],
-          "transformOrigin": [284.5, -100],
-          "bounds": [256, 256],
-          "drawsContent": true,
-          "transform": [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 1000, 0, 1]
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='overlap'",
-          "position": [0, 1000],
-          "bounds": [500, 500],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#008000"
-        }
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 1000, 0, 1]
       ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='overlap'",
+      "position": [0, 1000],
+      "bounds": [500, 500],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
     }
   ]
 }

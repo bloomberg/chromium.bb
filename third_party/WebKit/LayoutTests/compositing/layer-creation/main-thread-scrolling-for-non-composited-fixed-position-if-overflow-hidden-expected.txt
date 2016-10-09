@@ -1,8 +1,6 @@
 TEST
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 5021],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 5021],

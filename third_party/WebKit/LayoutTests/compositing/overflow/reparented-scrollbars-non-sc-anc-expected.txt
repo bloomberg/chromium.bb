@@ -1,85 +1,65 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [1208, 821],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [1208, 821],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "children": [
-        {
-          "name": "Ancestor Clipping Layer",
-          "position": [8, 8],
-          "bounds": [1200, 800],
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (relative positioned) DIV id='positioned'",
-              "bounds": [1200, 800],
-              "drawsContent": true,
-              "children": [
-                {
-                  "name": "Child Containment Layer",
-                  "bounds": [1200, 800],
-                  "children": [
-                    {
-                      "name": "Ancestor Clipping Layer",
-                      "bounds": [1200, 1000],
-                      "shouldFlattenTransform": false,
-                      "children": [
-                        {
-                          "name": "LayoutBlockFlow DIV id='scroller'",
-                          "bounds": [1200, 1000],
-                          "shouldFlattenTransform": false,
-                          "drawsContent": true,
-                          "children": [
-                            {
-                              "name": "Scrolling Layer",
-                              "bounds": [1200, 1000],
-                              "shouldFlattenTransform": false,
-                              "children": [
-                                {
-                                  "name": "Scrolling Contents Layer",
-                                  "bounds": [1200, 10000],
-                                  "drawsContent": true
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='foreground'",
-          "position": [8, 10008],
-          "bounds": [1200, 0]
-        },
-        {
-          "name": "Overflow Controls Ancestor Clipping Layer",
-          "position": [8, 8],
-          "bounds": [1200, 1000],
-          "children": [
-            {
-              "name": "Overflow Controls Host Layer",
-              "bounds": [1200, 1000],
-              "children": [
-                {
-                  "name": "Vertical Scrollbar Layer",
-                  "position": [1193, 0],
-                  "bounds": [7, 1000]
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "drawsContent": true
+    },
+    {
+      "name": "Ancestor Clipping Layer",
+      "position": [8, 8],
+      "bounds": [1200, 800],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='positioned'",
+      "bounds": [1200, 800],
+      "drawsContent": true
+    },
+    {
+      "name": "Child Containment Layer",
+      "bounds": [1200, 800]
+    },
+    {
+      "name": "Ancestor Clipping Layer",
+      "bounds": [1200, 1000],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='scroller'",
+      "bounds": [1200, 1000],
+      "shouldFlattenTransform": false,
+      "drawsContent": true
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [1200, 1000],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [1200, 10000],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='foreground'",
+      "position": [8, 10008],
+      "bounds": [1200, 0]
+    },
+    {
+      "name": "Overflow Controls Ancestor Clipping Layer",
+      "position": [8, 8],
+      "bounds": [1200, 1000]
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [1200, 1000]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [1193, 0],
+      "bounds": [7, 1000]
     }
   ]
 }

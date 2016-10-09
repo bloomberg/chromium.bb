@@ -5,58 +5,50 @@ TEST COMPLETE
 The layer trees before and after should be the same, except for the position of the 50x50 sized composited fixed position layer.
 BEFORE:
 {
-  "name": "Content Root Layer",
-  "bounds": [2008, 2016],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [2008, 2016],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
+      "position": [20, -80],
+      "bounds": [50, 50],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
-          "position": [20, -80],
-          "bounds": [50, 50],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#C0C0C0",
-          "transform": [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 100, 0, 1]
-          ]
-        }
+      "backgroundColor": "#C0C0C0",
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 100, 0, 1]
       ]
     }
   ]
 }
 AFTER:
 {
-  "name": "Content Root Layer",
-  "bounds": [2008, 2016],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [2008, 2016],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
+      "position": [20, -70],
+      "bounds": [50, 50],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
-          "position": [20, -70],
-          "bounds": [50, 50],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#C0C0C0",
-          "transform": [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 100, 0, 1]
-          ]
-        }
+      "backgroundColor": "#C0C0C0",
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 100, 0, 1]
       ]
     }
   ]

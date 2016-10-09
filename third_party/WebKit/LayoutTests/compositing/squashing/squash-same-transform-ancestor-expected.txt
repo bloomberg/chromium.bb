@@ -1,49 +1,41 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='transform-parent'",
+      "position": [8, 8],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV id='transform-parent'",
-          "position": [8, 8],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#008000",
-          "transform": [
-            [0.866025403784439, -0.5, 0, 0],
-            [0.5, 0.866025403784439, 0, 0],
-            [0, 0, 1, 0],
-            [100, 100, 0, 1]
-          ],
-          "children": [
-            {
-              "name": "Squashing Containment Layer",
-              "shouldFlattenTransform": false,
-              "children": [
-                {
-                  "name": "LayoutBlockFlow (positioned) DIV id='squashing'",
-                  "bounds": [1, 1],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#FFFFFF"
-                },
-                {
-                  "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='squashed')",
-                  "position": [-100, 0],
-                  "bounds": [200, 200],
-                  "drawsContent": true
-                }
-              ]
-            }
-          ]
-        }
+      "backgroundColor": "#008000",
+      "transform": [
+        [0.866025403784439, -0.5, 0, 0],
+        [0.5, 0.866025403784439, 0, 0],
+        [0, 0, 1, 0],
+        [100, 100, 0, 1]
       ]
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='squashing'",
+      "bounds": [1, 1],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='squashed')",
+      "position": [-100, 0],
+      "bounds": [200, 200],
+      "drawsContent": true
     }
   ]
 }

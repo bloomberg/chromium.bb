@@ -1,36 +1,30 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "Ancestor Clipping Layer",
+      "position": [8, 8],
+      "bounds": [100, 100],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='composited'",
+      "position": [0, 50],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "Ancestor Clipping Layer",
-          "position": [8, 8],
-          "bounds": [100, 100],
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (relative positioned) DIV id='composited'",
-              "position": [0, 50],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#FA8072"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='squashed')",
-              "position": [0, 50],
-              "bounds": [100, 100],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#FA8072"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='squashed')",
+      "position": [0, 50],
+      "bounds": [100, 100],
+      "drawsContent": true
     }
   ]
 }

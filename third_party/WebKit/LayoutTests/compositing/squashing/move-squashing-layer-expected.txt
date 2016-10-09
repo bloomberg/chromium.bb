@@ -1,44 +1,38 @@
 This tests that squashed layers' offset from renderer is updated properly. If not properly updated, the two divs will appear to be aligned vertically in the pixel results, while really the blue div ('squashed') should be offset 100px left of the green ('host').
 
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='background'",
+      "position": [8, 50],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='background'",
-          "position": [8, 50],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#FFFF00"
-        },
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV id='host'",
-              "position": [100, 100],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#008000"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='squashed')",
-              "position": [8, 8],
-              "bounds": [100, 100],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#FFFF00"
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='host'",
+      "position": [100, 100],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='squashed')",
+      "position": [8, 8],
+      "bounds": [100, 100],
+      "drawsContent": true
     }
   ]
 }

@@ -1,89 +1,77 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 5516],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 5516],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='top'",
+      "position": [8, 8],
+      "bounds": [500, 500],
+      "shouldFlattenTransform": false,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV id='top'",
-              "position": [8, 8],
-              "bounds": [500, 500],
-              "shouldFlattenTransform": false,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF",
-              "children": [
-                {
-                  "name": "Scrolling Layer",
-                  "bounds": [485, 485],
-                  "shouldFlattenTransform": false,
-                  "children": [
-                    {
-                      "name": "Scrolling Contents Layer",
-                      "bounds": [485, 5000],
-                      "contentsOpaque": true,
-                      "drawsContent": true
-                    }
-                  ]
-                },
-                {
-                  "name": "Overflow Controls Host Layer",
-                  "bounds": [500, 500],
-                  "children": [
-                    {
-                      "name": "Horizontal Scrollbar Layer",
-                      "position": [0, 485],
-                      "bounds": [485, 15]
-                    },
-                    {
-                      "name": "Vertical Scrollbar Layer",
-                      "position": [485, 0],
-                      "bounds": [15, 485]
-                    },
-                    {
-                      "name": "Scroll Corner Layer",
-                      "position": [485, 485],
-                      "bounds": [15, 15],
-                      "drawsContent": true
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='middle')",
-              "position": [8, 8],
-              "bounds": [400, 400],
-              "drawsContent": true
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='child'",
-          "position": [8, 8],
-          "bounds": [300, 300],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backfaceVisibility": "hidden",
-          "backgroundColor": "#FFFF00"
-        },
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='tall'",
-          "position": [8, 8],
-          "bounds": [20, 5000],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#FA8072",
-          "hasScrollParent": true
-        }
-      ]
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [485, 485],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [485, 5000],
+      "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [500, 500]
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [0, 485],
+      "bounds": [485, 15]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [485, 0],
+      "bounds": [15, 485]
+    },
+    {
+      "name": "Scroll Corner Layer",
+      "position": [485, 485],
+      "bounds": [15, 15],
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='middle')",
+      "position": [8, 8],
+      "bounds": [400, 400],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='child'",
+      "position": [8, 8],
+      "bounds": [300, 300],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backfaceVisibility": "hidden",
+      "backgroundColor": "#FFFF00"
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='tall'",
+      "position": [8, 8],
+      "bounds": [20, 5000],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FA8072",
+      "hasScrollParent": true
     }
   ]
 }

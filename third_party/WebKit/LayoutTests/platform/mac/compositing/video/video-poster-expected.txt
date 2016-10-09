@@ -3,9 +3,7 @@ This test can not be run manually, it requires testRunner.layerTreeAsText.
 
 Case: No src, no poster
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
@@ -18,12 +16,10 @@ Case: No src, no poster
 
 Case: Displaying poster
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 617],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 617],
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true
     }
@@ -33,39 +29,33 @@ Case: Displaying poster
 
 Case: Displaying movie
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 842],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 842],
+      "bounds": [785, 782],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutVideo VIDEO",
-          "position": [8, 8],
-          "bounds": [352, 288]
-        },
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutFlexibleBox (relative positioned) DIV",
-              "position": [8, 8],
-              "bounds": [352, 288],
-              "drawsContent": true
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutFlexibleBox (relative positioned) DIV)",
-              "position": [8, 8],
-              "bounds": [352, 246],
-              "drawsContent": true
-            }
-          ]
-        }
-      ]
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutVideo VIDEO",
+      "position": [8, 8],
+      "bounds": [352, 288]
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutFlexibleBox (relative positioned) DIV",
+      "position": [8, 8],
+      "bounds": [352, 288],
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutFlexibleBox (relative positioned) DIV)",
+      "position": [8, 8],
+      "bounds": [352, 246],
+      "drawsContent": true
     }
   ]
 }

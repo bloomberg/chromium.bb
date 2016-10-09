@@ -3,9 +3,7 @@ Box should switch between perspective and flat
 
 First dump layer tree:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
@@ -17,37 +15,31 @@ First dump layer tree:
 
 Second dump layer tree:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='parent' class='parent'",
+      "position": [8, 8],
+      "bounds": [242, 192],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='child' class='child'",
+      "position": [121, 41],
+      "bounds": [250, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='parent' class='parent'",
-          "position": [8, 8],
-          "bounds": [242, 192],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (relative positioned) DIV id='child' class='child'",
-              "position": [121, 41],
-              "bounds": [250, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#008000",
-              "transform": [
-                [0.707106781186548, 0, -0.707106781186548, 0.00117851130197758],
-                [0, 1, 0, 0],
-                [0.707106781186548, 0, 0.707106781186548, -0.00117851130197758],
-                [-50, 10, 100, 0.833333333333333]
-              ]
-            }
-          ]
-        }
+      "backgroundColor": "#008000",
+      "transform": [
+        [0.707106781186548, 0, -0.707106781186548, 0.00117851130197758],
+        [0, 1, 0, 0],
+        [0.707106781186548, 0, 0.707106781186548, -0.00117851130197758],
+        [-50, 10, 100, 0.833333333333333]
       ]
     }
   ]
@@ -55,12 +47,10 @@ Second dump layer tree:
 
 Third dump layer tree:
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 1058],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 1058],
+      "bounds": [785, 930],
       "contentsOpaque": true,
       "drawsContent": true
     }
