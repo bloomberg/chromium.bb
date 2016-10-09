@@ -738,7 +738,6 @@ if (use_v8_in_net && !is_android) {
     ]
 
     public_deps = [
-      ":mojo_type_converters",
       ":net_with_v8",
       "//base",
       "//mojo/common",
@@ -750,22 +749,6 @@ if (use_v8_in_net && !is_android) {
       # the utility process side Mojo services in the browser process.
       # Ultimately, this will go away when we only support out-of-process.
       ":net_utility_services",
-    ]
-  }
-
-  source_set("mojo_type_converters") {
-    sources = [
-      "dns/mojo_host_type_converters.cc",
-      "dns/mojo_host_type_converters.h",
-      "proxy/mojo_proxy_type_converters.cc",
-      "proxy/mojo_proxy_type_converters.h",
-    ]
-
-    public_deps = [
-      ":net",
-      "//base",
-      "//mojo/public/cpp/bindings",
-      "//net/interfaces",
     ]
   }
 
@@ -786,7 +769,6 @@ if (use_v8_in_net && !is_android) {
     ]
 
     public_deps = [
-      ":mojo_type_converters",
       ":net",
       "//mojo/common",
       "//mojo/public/cpp/bindings",

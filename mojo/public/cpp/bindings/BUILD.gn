@@ -39,7 +39,6 @@ component("bindings") {
     "bindings_export.h",
     "connection_error_callback.h",
     "connector.h",
-    "enum_traits.h",
     "filter_chain.h",
     "interface_data_view.h",
     "interface_endpoint_client.h",
@@ -166,6 +165,7 @@ component("bindings") {
 
 source_set("struct_traits") {
   sources = [
+    "enum_traits.h",
     "struct_traits.h",
   ]
 }

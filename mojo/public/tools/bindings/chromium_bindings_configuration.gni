@@ -18,6 +18,7 @@ _typemap_imports = [
   "//media/mojo/interfaces/typemaps.gni",
   "//mojo/common/typemaps.gni",
   "//mojo/public/cpp/bindings/tests/chromium_typemaps.gni",
+  "//net/interfaces/typemaps.gni",
   "//services/shell/public/cpp/typemaps.gni",
   "//services/ui/public/interfaces/display/typemaps.gni",
   "//services/video_capture/public/interfaces/typemaps.gni",
