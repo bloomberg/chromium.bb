@@ -1,5 +1,7 @@
 {
-  "layers": [
+  "name": "Content Root Layer",
+  "bounds": [1059, 585],
+  "children": [
     {
       "name": "LayoutView #document",
       "bounds": [1059, 585],
@@ -8,12 +10,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutTableCell TH id='target'",
-          "rect": [8, 68, 840, 190],
+          "rect": [8, 72, 839, 190],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [10, 68, 836, 190],
+          "rect": [10, 72, 835, 190],
           "reason": "style change"
         }
       ]

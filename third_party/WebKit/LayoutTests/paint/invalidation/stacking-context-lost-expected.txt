@@ -1,38 +1,34 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='outer'",
+      "position": [278, 278],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
+      "backfaceVisibility": "hidden",
+      "backgroundColor": "#008000",
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='outer'",
-          "position": [278, 278],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backfaceVisibility": "hidden",
-          "backgroundColor": "#008000",
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (relative positioned) DIV id='inner'",
-              "rect": [0, 0, 100, 100],
-              "reason": "subtree"
-            },
-            {
-              "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
-              "rect": [0, 0, 100, 100],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
-              "rect": [0, 0, 100, 100],
-              "reason": "subtree"
-            }
-          ]
+          "object": "LayoutBlockFlow (relative positioned) DIV id='inner'",
+          "rect": [0, 0, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
+          "rect": [0, 0, 100, 100],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
+          "rect": [0, 0, 100, 100],
+          "reason": "subtree"
         }
       ]
     }

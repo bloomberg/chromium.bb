@@ -1,7 +1,5 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 735],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 735],

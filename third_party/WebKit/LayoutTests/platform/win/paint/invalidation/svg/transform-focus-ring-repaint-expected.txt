@@ -1,47 +1,43 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='target'",
+      "position": [7, 57],
+      "bounds": [402, 542],
       "drawsContent": true,
-      "children": [
+      "backfaceVisibility": "hidden",
+      "backgroundColor": "#FFFF00",
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (positioned) DIV id='target'",
-          "position": [7, 57],
-          "bounds": [402, 542],
-          "drawsContent": true,
-          "backfaceVisibility": "hidden",
-          "backgroundColor": "#FFFF00",
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='target'",
-              "rect": [0, 0, 402, 542],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='target'",
-              "rect": [0, 0, 200, 200],
-              "reason": "full"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [0, 0, 402, 542],
+          "reason": "style change"
         },
         {
-          "name": "LayoutBlockFlow (positioned) DIV",
-          "position": [108, 158],
-          "transformOrigin": [150, 150],
-          "bounds": [440, 300],
-          "drawsContent": true,
-          "backgroundColor": "#0000FF",
-          "transform": [
-            [0, 1, 0, 0],
-            [-1, 0, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [0, 0, 200, 200],
+          "reason": "full"
         }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
+      "position": [108, 158],
+      "transformOrigin": [150, 150],
+      "bounds": [440, 300],
+      "drawsContent": true,
+      "backgroundColor": "#0000FF",
+      "transform": [
+        [0, 1, 0, 0],
+        [-1, 0, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
       ]
     }
   ],

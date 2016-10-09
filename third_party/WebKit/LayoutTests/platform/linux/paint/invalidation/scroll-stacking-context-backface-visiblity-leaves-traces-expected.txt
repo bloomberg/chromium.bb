@@ -1,41 +1,37 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 5056],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 5056],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) HEADER",
+      "position": [8, 28],
+      "bounds": [769, 1972],
       "drawsContent": true,
-      "children": [
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (relative positioned) HEADER",
-          "position": [8, 28],
-          "bounds": [769, 1972],
-          "drawsContent": true,
-          "backfaceVisibility": "hidden",
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
-              "rect": [10, 1822, 150, 150],
-              "reason": "subtree"
-            },
-            {
-              "object": "LayoutBlockFlow DIV id='recentlink'",
-              "rect": [10, 1822, 150, 150],
-              "reason": "subtree"
-            },
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
-              "rect": [10, 1422, 150, 150],
-              "reason": "subtree"
-            },
-            {
-              "object": "LayoutBlockFlow DIV id='recentlink'",
-              "rect": [10, 1422, 150, 150],
-              "reason": "subtree"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
+          "rect": [10, 1822, 150, 150],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='recentlink'",
+          "rect": [10, 1822, 150, 150],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
+          "rect": [10, 1422, 150, 150],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='recentlink'",
+          "rect": [10, 1422, 150, 150],
+          "reason": "subtree"
         }
       ]
     }
