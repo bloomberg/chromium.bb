@@ -66,6 +66,7 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Disabled('win10')
+@benchmark.Disabled('android')  # crbug.com/654217
 class PageCyclerV2Typical25(_PageCyclerV2):
   """Page load time benchmark for a 25 typical web pages.
 
