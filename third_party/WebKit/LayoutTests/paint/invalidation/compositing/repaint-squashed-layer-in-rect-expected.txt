@@ -1,39 +1,33 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [808, 816],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [808, 816],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow DIV",
+      "position": [8, 8],
+      "bounds": [800, 800],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
+      "backgroundColor": "#D3D3D3"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
+      "position": [8, 0],
+      "bounds": [592, 600],
+      "drawsContent": true,
+      "paintInvalidations": [
         {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV",
-              "position": [8, 8],
-              "bounds": [800, 800],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#D3D3D3"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
-              "position": [8, 0],
-              "bounds": [592, 600],
-              "drawsContent": true,
-              "paintInvalidations": [
-                {
-                  "object": "LayoutBlockFlow DIV id='imgElement'",
-                  "rect": [392, 400, 200, 200],
-                  "reason": "style change"
-                }
-              ]
-            }
-          ]
+          "object": "LayoutBlockFlow DIV id='imgElement'",
+          "rect": [392, 400, 200, 200],
+          "reason": "style change"
         }
       ]
     }

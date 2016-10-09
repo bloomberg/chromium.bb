@@ -1,80 +1,70 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='scroller'",
+      "position": [8, 44],
+      "bounds": [100, 100],
+      "shouldFlattenTransform": false,
+      "drawsContent": true
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [100, 100],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [205, 1019],
       "drawsContent": true,
-      "children": [
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow DIV id='scroller'",
-          "position": [8, 44],
-          "bounds": [100, 100],
-          "shouldFlattenTransform": false,
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Scrolling Layer",
-              "bounds": [100, 100],
-              "shouldFlattenTransform": false,
-              "children": [
-                {
-                  "name": "Scrolling Contents Layer",
-                  "bounds": [205, 1019],
-                  "drawsContent": true,
-                  "paintInvalidations": [
-                    {
-                      "object": "LayoutTextControl INPUT id='text'",
-                      "rect": [-3, 997, 211, 25],
-                      "reason": "subtree"
-                    },
-                    {
-                      "object": "LayoutBlockFlow DIV id='inner-editor'",
-                      "rect": [3, 1003, 200, 13],
-                      "reason": "subtree"
-                    },
-                    {
-                      "object": "LayoutBlockFlow DIV id='inner-editor'",
-                      "rect": [2, 1002, 3, 15],
-                      "reason": "invalidate paint rectangle"
-                    },
-                    {
-                      "object": "LayoutBlockFlow DIV id='inner-editor'",
-                      "rect": [2, 1002, 3, 15],
-                      "reason": "invalidate paint rectangle"
-                    },
-                    {
-                      "object": "LayoutBlockFlow DIV id='inner-editor'",
-                      "rect": [2, 1002, 3, 15],
-                      "reason": "invalidate paint rectangle"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "Overflow Controls Host Layer",
-              "bounds": [100, 100],
-              "children": [
-                {
-                  "name": "Horizontal Scrollbar Layer",
-                  "position": [0, 100],
-                  "bounds": [100, 0],
-                  "drawsContent": true
-                },
-                {
-                  "name": "Vertical Scrollbar Layer",
-                  "position": [100, 0],
-                  "bounds": [0, 100],
-                  "drawsContent": true
-                }
-              ]
-            }
-          ]
+          "object": "LayoutTextControl INPUT id='text'",
+          "rect": [-3, 997, 211, 25],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [3, 1003, 200, 13],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [2, 1002, 3, 15],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [2, 1002, 3, 15],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [2, 1002, 3, 15],
+          "reason": "invalidate paint rectangle"
         }
       ]
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [100, 100]
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [0, 100],
+      "bounds": [100, 0],
+      "drawsContent": true
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [100, 0],
+      "bounds": [0, 100],
+      "drawsContent": true
     }
   ],
   "objectPaintInvalidations": [

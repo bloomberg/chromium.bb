@@ -1,32 +1,28 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
+      "position": [0, 100],
+      "bounds": [200, 200],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
+      "backgroundColor": "#0000FF",
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (positioned) DIV",
-          "position": [0, 100],
-          "bounds": [200, 200],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#0000FF",
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV",
-              "rect": [0, 0, 200, 200],
-              "reason": "full"
-            },
-            {
-              "object": "LayoutBlockFlow (positioned) DIV",
-              "rect": [185, 0, 15, 200],
-              "reason": "scroll"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [0, 0, 200, 200],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [185, 0, 15, 200],
+          "reason": "scroll"
         }
       ]
     }

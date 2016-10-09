@@ -1,71 +1,55 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutIFrame IFRAME",
+      "bounds": [300, 100],
+      "drawsContent": true
+    },
+    {
+      "name": "Frame Overflow Controls Host Layer",
+      "bounds": [300, 100]
+    },
+    {
+      "name": "Frame Clipping Layer",
+      "bounds": [300, 100]
+    },
+    {
+      "name": "Frame Scrolling Layer"
+    },
+    {
+      "name": "Content Root Layer",
+      "bounds": [300, 100]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [300, 100],
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutIFrame IFRAME",
-          "bounds": [300, 100],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Frame Overflow Controls Host Layer",
-              "bounds": [300, 100],
-              "children": [
-                {
-                  "name": "Frame Clipping Layer",
-                  "bounds": [300, 100],
-                  "children": [
-                    {
-                      "name": "Frame Scrolling Layer",
-                      "children": [
-                        {
-                          "name": "Content Root Layer",
-                          "bounds": [300, 100],
-                          "children": [
-                            {
-                              "name": "LayoutView #document",
-                              "bounds": [300, 100],
-                              "drawsContent": true,
-                              "backgroundColor": "#FFFF00",
-                              "children": [
-                                {
-                                  "name": "LayoutBlockFlow BODY",
-                                  "position": [8, 8],
-                                  "bounds": [284, 84],
-                                  "drawsContent": true,
-                                  "backgroundColor": "#FFFF00"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV",
-          "bounds": [300, 100],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#D3D3D3",
-          "transform": [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [151, 0, 0, 1]
-          ]
-        }
+      "backgroundColor": "#FFFF00"
+    },
+    {
+      "name": "LayoutBlockFlow BODY",
+      "position": [8, 8],
+      "bounds": [284, 84],
+      "drawsContent": true,
+      "backgroundColor": "#FFFF00"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
+      "bounds": [300, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#D3D3D3",
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [151, 0, 0, 1]
       ]
     }
   ]

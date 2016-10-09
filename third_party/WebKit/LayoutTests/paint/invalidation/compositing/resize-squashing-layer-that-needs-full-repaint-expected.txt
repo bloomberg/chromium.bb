@@ -1,46 +1,40 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow DIV",
+      "position": [8, 8],
+      "bounds": [500, 500]
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
+      "position": [55, 55],
+      "bounds": [500, 500],
       "drawsContent": true,
-      "children": [
+      "paintInvalidations": [
         {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV",
-              "position": [8, 8],
-              "bounds": [500, 500]
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
-              "position": [55, 55],
-              "bounds": [500, 500],
-              "drawsContent": true,
-              "paintInvalidations": [
-                {
-                  "object": "LayoutBlockFlow (positioned) DIV",
-                  "rect": [55, 55, 500, 500],
-                  "reason": "subtree"
-                },
-                {
-                  "object": "LayoutBlockFlow (positioned) DIV",
-                  "rect": [0, 0, 500, 500],
-                  "reason": "compositing update"
-                },
-                {
-                  "object": "LayoutBlockFlow (positioned) DIV id='to-be-removed'",
-                  "rect": [0, 0, 50, 50],
-                  "reason": "layoutObject removal"
-                }
-              ]
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [55, 55, 500, 500],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [0, 0, 500, 500],
+          "reason": "compositing update"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='to-be-removed'",
+          "rect": [0, 0, 50, 50],
+          "reason": "layoutObject removal"
         }
       ]
     }

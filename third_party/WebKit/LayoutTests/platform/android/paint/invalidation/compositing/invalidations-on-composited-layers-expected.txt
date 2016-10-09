@@ -1,0 +1,57 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "name": "LayoutBlockFlow DIV id='parent'",
+          "position": [8, 8],
+          "bounds": [400, 400],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#008000",
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow DIV id='parent'",
+              "rect": [0, 0, 400, 400],
+              "reason": "style change"
+            }
+          ],
+          "children": [
+            {
+              "name": "LayoutBlockFlow (relative positioned) DIV id='child'",
+              "position": [50, 50],
+              "bounds": [75, 75],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF",
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (relative positioned) DIV id='child'",
+                  "rect": [0, 0, 75, 75],
+                  "reason": "style change"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='parent'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='child'",
+      "reason": "style change"
+    }
+  ]
+}
+

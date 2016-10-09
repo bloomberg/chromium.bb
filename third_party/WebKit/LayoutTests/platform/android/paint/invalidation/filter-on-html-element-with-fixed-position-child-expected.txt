@@ -1,0 +1,59 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [785, 10016],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [785, 10016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 785, 10016],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 10, 785, 600],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [100, 110, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [100, 100, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [8, 18, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [8, 8, 100, 100],
+          "reason": "subtree"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "subtree"
+    }
+  ]
+}
+

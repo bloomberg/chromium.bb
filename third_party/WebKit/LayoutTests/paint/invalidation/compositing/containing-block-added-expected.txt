@@ -1,7 +1,5 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
@@ -13,22 +11,20 @@
           "rect": [50, 50, 75, 75],
           "reason": "subtree"
         }
-      ],
-      "children": [
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='container'",
+      "position": [200, 100],
+      "transformOrigin": [50, 50],
+      "bounds": [125, 125],
+      "drawsContent": true,
+      "backgroundColor": "#0000FF",
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (positioned) DIV id='container'",
-          "position": [200, 100],
-          "transformOrigin": [50, 50],
-          "bounds": [125, 125],
-          "drawsContent": true,
-          "backgroundColor": "#0000FF",
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
-              "rect": [50, 50, 75, 75],
-              "reason": "style change"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+          "rect": [50, 50, 75, 75],
+          "reason": "style change"
         }
       ]
     }

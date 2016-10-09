@@ -1,39 +1,33 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow DIV",
+      "position": [8, 8],
+      "bounds": [200, 200],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
+      "backgroundColor": "#ADD8E6"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='container')",
+      "position": [50, 50],
+      "bounds": [50, 50],
+      "drawsContent": true,
+      "paintInvalidations": [
         {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV",
-              "position": [8, 8],
-              "bounds": [200, 200],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#ADD8E6"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='container')",
-              "position": [50, 50],
-              "bounds": [50, 50],
-              "drawsContent": true,
-              "paintInvalidations": [
-                {
-                  "object": "LayoutBlockFlow (positioned) SPAN class='child embiggen'",
-                  "rect": [0, 0, 50, 50],
-                  "reason": "style change"
-                }
-              ]
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) SPAN class='child embiggen'",
+          "rect": [0, 0, 50, 50],
+          "reason": "style change"
         }
       ]
     }

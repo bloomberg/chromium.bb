@@ -1,34 +1,28 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='blur'",
+      "position": [8, 8],
+      "bounds": [200, 200],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='resize' class='accelerated'",
+      "bounds": [100, 200],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
+      "backgroundColor": "#008000",
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow DIV class='blur'",
-          "position": [8, 8],
-          "bounds": [200, 200],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV id='resize' class='accelerated'",
-              "bounds": [100, 200],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#008000",
-              "paintInvalidations": [
-                {
-                  "object": "LayoutBlockFlow DIV id='resize' class='accelerated'",
-                  "rect": [100, 0, 100, 200],
-                  "reason": "incremental"
-                }
-              ]
-            }
-          ]
+          "object": "LayoutBlockFlow DIV id='resize' class='accelerated'",
+          "rect": [100, 0, 100, 200],
+          "reason": "incremental"
         }
       ]
     }

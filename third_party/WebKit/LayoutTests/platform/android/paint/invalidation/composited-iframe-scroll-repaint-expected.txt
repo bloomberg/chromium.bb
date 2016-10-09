@@ -1,0 +1,21 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [300, 516],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [300, 516],
+      "drawsContent": true,
+      "backgroundColor": "#EEEEEE",
+      "children": [
+        {
+          "name": "LayoutBlockFlow BODY",
+          "position": [8, 8],
+          "bounds": [284, 500],
+          "drawsContent": true
+        }
+      ]
+    }
+  ]
+}
+

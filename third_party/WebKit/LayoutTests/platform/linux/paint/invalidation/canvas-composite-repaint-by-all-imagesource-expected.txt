@@ -1,7 +1,5 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 933],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 933],
@@ -229,32 +227,28 @@
           "rect": [173, 65, 50, 40],
           "reason": "invalidate paint rectangle"
         }
-      ],
-      "children": [
-        {
-          "name": "LayoutVideo VIDEO id='video'",
-          "position": [15, 859],
-          "bounds": [150, 60]
-        },
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutFlexibleBox (relative positioned) DIV",
-              "position": [15, 859],
-              "bounds": [150, 60],
-              "drawsContent": true
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutFlexibleBox (relative positioned) DIV)",
-              "position": [15, 859],
-              "bounds": [150, 18],
-              "drawsContent": true
-            }
-          ]
-        }
       ]
+    },
+    {
+      "name": "LayoutVideo VIDEO id='video'",
+      "position": [15, 859],
+      "bounds": [150, 60]
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutFlexibleBox (relative positioned) DIV",
+      "position": [15, 859],
+      "bounds": [150, 60],
+      "drawsContent": true
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutFlexibleBox (relative positioned) DIV)",
+      "position": [15, 859],
+      "bounds": [150, 18],
+      "drawsContent": true
     }
   ],
   "objectPaintInvalidations": [

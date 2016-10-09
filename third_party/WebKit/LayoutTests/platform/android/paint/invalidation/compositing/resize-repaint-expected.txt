@@ -1,0 +1,57 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "name": "LayoutBlockFlow DIV id='resizing'",
+          "position": [8, 8],
+          "bounds": [402, 207],
+          "drawsContent": true,
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow DIV id='resizing'",
+              "rect": [0, 104, 402, 103],
+              "reason": "incremental"
+            },
+            {
+              "object": "LayoutBlockFlow DIV id='resizing'",
+              "rect": [0, 105, 402, 102],
+              "reason": "incremental"
+            },
+            {
+              "object": "LayoutBlockFlow DIV",
+              "rect": [2, 155, 398, 50],
+              "reason": "layoutObject insertion"
+            },
+            {
+              "object": "LayoutBlockFlow DIV",
+              "rect": [2, 104, 398, 50],
+              "reason": "layoutObject insertion"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='resizing'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

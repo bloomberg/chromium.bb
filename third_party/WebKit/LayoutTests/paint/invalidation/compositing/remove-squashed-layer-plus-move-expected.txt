@@ -1,7 +1,5 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [1418, 1008],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [1418, 1008],
@@ -23,51 +21,47 @@
           "rect": [8, 62, 769, 54],
           "reason": "bounds change"
         }
-      ],
-      "children": [
+      ]
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
+      "position": [8, 8],
+      "bounds": [1000, 1000]
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='mv-tile')",
+      "position": [8, 8],
+      "bounds": [1000, 104],
+      "drawsContent": true,
+      "paintInvalidations": [
         {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (positioned) DIV",
-              "position": [8, 8],
-              "bounds": [1000, 1000]
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='mv-tile')",
-              "position": [8, 8],
-              "bounds": [1000, 104],
-              "drawsContent": true,
-              "paintInvalidations": [
-                {
-                  "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
-                  "rect": [0, 108, 1000, 50],
-                  "reason": "subtree"
-                },
-                {
-                  "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
-                  "rect": [0, 54, 1000, 50],
-                  "reason": "compositing update"
-                },
-                {
-                  "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
-                  "rect": [0, 54, 100, 50],
-                  "reason": "subtree"
-                },
-                {
-                  "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
-                  "rect": [0, 0, 100, 50],
-                  "reason": "forced by layout"
-                },
-                {
-                  "object": "LayoutBlockFlow (relative positioned) DIV id='foo' class='mv-tile'",
-                  "rect": [0, 0, 100, 50],
-                  "reason": "layoutObject removal"
-                }
-              ]
-            }
-          ]
+          "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+          "rect": [0, 108, 1000, 50],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+          "rect": [0, 54, 1000, 50],
+          "reason": "compositing update"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+          "rect": [0, 54, 100, 50],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+          "rect": [0, 0, 100, 50],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='foo' class='mv-tile'",
+          "rect": [0, 0, 100, 50],
+          "reason": "layoutObject removal"
         }
       ]
     }

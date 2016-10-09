@@ -1,41 +1,31 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='outer'",
-          "position": [50, 50],
-          "bounds": [300, 300],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Child Containment Layer",
-              "bounds": [300, 300],
-              "children": [
-                {
-                  "name": "Ancestor Clipping Layer",
-                  "bounds": [285, 300],
-                  "shouldFlattenTransform": false,
-                  "children": [
-                    {
-                      "name": "LayoutBlockFlow DIV id='content'",
-                      "bounds": [285, 1000],
-                      "contentsOpaque": true,
-                      "drawsContent": true
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='outer'",
+      "position": [50, 50],
+      "bounds": [300, 300],
+      "drawsContent": true
+    },
+    {
+      "name": "Child Containment Layer",
+      "bounds": [300, 300]
+    },
+    {
+      "name": "Ancestor Clipping Layer",
+      "bounds": [285, 300],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='content'",
+      "bounds": [285, 1000],
+      "contentsOpaque": true,
+      "drawsContent": true
     }
   ]
 }

@@ -1,26 +1,22 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutTableRow TR",
+      "position": [8, 8],
+      "bounds": [75, 21],
       "drawsContent": true,
-      "children": [
+      "backgroundColor": "#FF0000",
+      "paintInvalidations": [
         {
-          "name": "LayoutTableRow TR",
-          "position": [8, 8],
-          "bounds": [75, 21],
-          "drawsContent": true,
-          "backgroundColor": "#FF0000",
-          "paintInvalidations": [
-            {
-              "object": "LayoutTableCell TD id='target'",
-              "rect": [0, 0, 38, 22],
-              "reason": "style change"
-            }
-          ]
+          "object": "LayoutTableCell TD id='target'",
+          "rect": [0, 0, 38, 22],
+          "reason": "style change"
         }
       ]
     }

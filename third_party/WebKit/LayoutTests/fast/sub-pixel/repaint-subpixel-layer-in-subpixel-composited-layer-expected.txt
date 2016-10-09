@@ -1,31 +1,27 @@
 10.5px,12.5px,10.5px:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
+      "position": [11, 0],
+      "bounds": [100, 50],
       "drawsContent": true,
-      "children": [
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
-          "position": [11, 0],
-          "bounds": [100, 50],
-          "drawsContent": true,
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='test'",
-              "rect": [12, 0, 12, 12],
-              "reason": "bounds change"
-            },
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='test'",
-              "rect": [10, 0, 12, 12],
-              "reason": "bounds change"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV id='test'",
+          "rect": [12, 0, 12, 12],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='test'",
+          "rect": [10, 0, 12, 12],
+          "reason": "bounds change"
         }
       ]
     }
@@ -39,32 +35,28 @@
 }
 10.6px,12.4px,10.4px:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
+      "position": [11, 0],
+      "bounds": [100, 50],
       "drawsContent": true,
-      "children": [
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
-          "position": [11, 0],
-          "bounds": [100, 50],
-          "drawsContent": true,
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='test'",
-              "rect": [11, 0, 13, 12],
-              "reason": "bounds change"
-            },
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='test'",
-              "rect": [9, 0, 13, 12],
-              "reason": "bounds change"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV id='test'",
+          "rect": [11, 0, 13, 12],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='test'",
+          "rect": [9, 0, 13, 12],
+          "reason": "bounds change"
         }
       ]
     }
@@ -78,32 +70,28 @@
 }
 10.4px,12.6px,10.6px:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
+      "position": [10, 0],
+      "bounds": [100, 50],
       "drawsContent": true,
-      "children": [
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
-          "position": [10, 0],
-          "bounds": [100, 50],
-          "drawsContent": true,
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='test'",
-              "rect": [12, 0, 13, 12],
-              "reason": "bounds change"
-            },
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='test'",
-              "rect": [10, 0, 13, 12],
-              "reason": "bounds change"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV id='test'",
+          "rect": [12, 0, 13, 12],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='test'",
+          "rect": [10, 0, 13, 12],
+          "reason": "bounds change"
         }
       ]
     }
@@ -117,32 +105,28 @@
 }
 10.6px,12.6px,10.6px:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
+      "position": [11, 0],
+      "bounds": [100, 50],
       "drawsContent": true,
-      "children": [
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
-          "position": [11, 0],
-          "bounds": [100, 50],
-          "drawsContent": true,
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='test'",
-              "rect": [12, 0, 13, 12],
-              "reason": "bounds change"
-            },
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='test'",
-              "rect": [10, 0, 13, 12],
-              "reason": "bounds change"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV id='test'",
+          "rect": [12, 0, 13, 12],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='test'",
+          "rect": [10, 0, 13, 12],
+          "reason": "bounds change"
         }
       ]
     }
@@ -156,32 +140,28 @@
 }
 10.4px,12.4px,10.4px:
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
+      "position": [10, 0],
+      "bounds": [100, 50],
       "drawsContent": true,
-      "children": [
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
-          "position": [10, 0],
-          "bounds": [100, 50],
-          "drawsContent": true,
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='test'",
-              "rect": [12, 0, 13, 12],
-              "reason": "bounds change"
-            },
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='test'",
-              "rect": [10, 0, 13, 12],
-              "reason": "bounds change"
-            }
-          ]
+          "object": "LayoutBlockFlow (positioned) DIV id='test'",
+          "rect": [12, 0, 13, 12],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='test'",
+          "rect": [10, 0, 13, 12],
+          "reason": "bounds change"
         }
       ]
     }
