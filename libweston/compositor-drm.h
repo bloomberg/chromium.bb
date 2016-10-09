@@ -138,7 +138,6 @@ struct weston_drm_backend_config {
 	 */
 	void (*configure_device)(struct weston_compositor *compositor,
 				 struct libinput_device *device);
-	bool use_current_mode;
 };
 
 #ifdef  __cplusplus

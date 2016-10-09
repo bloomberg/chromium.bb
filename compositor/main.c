@@ -78,6 +78,7 @@ struct wet_compositor {
 	struct weston_config *config;
 	struct wet_output_config *parsed_options;
 	struct wl_listener pending_output_listener;
+	bool drm_use_current_mode;
 };
 
 static FILE *weston_logfile = NULL;
@@ -1153,6 +1154,7 @@ drm_backend_output_configure(struct wl_listener *listener, void *data)
 {
 	struct weston_output *output = data;
 	struct weston_config *wc = wet_get_config(output->compositor);
+	struct wet_compositor *wet = to_wet_compositor(output->compositor);
 	struct weston_config_section *section;
 	const struct weston_drm_output_api *api = weston_drm_output_get_api(output->compositor);
 	enum weston_drm_backend_output_mode mode =
@@ -1175,7 +1177,7 @@ drm_backend_output_configure(struct wl_listener *listener, void *data)
 		weston_output_disable(output);
 		free(s);
 		return;
-	} else if (strcmp(s, "current") == 0) {
+	} else if (wet->drm_use_current_mode || strcmp(s, "current") == 0) {
 		mode = WESTON_DRM_BACKEND_OUTPUT_CURRENT;
 	} else if (strcmp(s, "preferred") != 0) {
 		modeline = s;
@@ -1213,13 +1215,16 @@ load_drm_backend(struct weston_compositor *c,
 {
 	struct weston_drm_backend_config config = {{ 0, }};
 	struct weston_config_section *section;
+	struct wet_compositor *wet = to_wet_compositor(c);
 	int ret = 0;
+
+	wet->drm_use_current_mode = false;
 
 	const struct weston_option options[] = {
 		{ WESTON_OPTION_INTEGER, "connector", 0, &config.connector },
 		{ WESTON_OPTION_STRING, "seat", 0, &config.seat_id },
 		{ WESTON_OPTION_INTEGER, "tty", 0, &config.tty },
-		{ WESTON_OPTION_BOOLEAN, "current-mode", 0, &config.use_current_mode },
+		{ WESTON_OPTION_BOOLEAN, "current-mode", 0, &wet->drm_use_current_mode },
 		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &config.use_pixman },
 	};
 

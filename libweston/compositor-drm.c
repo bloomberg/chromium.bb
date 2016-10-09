@@ -118,8 +118,6 @@ struct drm_backend {
 
 	int32_t cursor_width;
 	int32_t cursor_height;
-
-	bool use_current_mode;
 };
 
 struct drm_mode {
@@ -3145,7 +3143,6 @@ drm_backend_create(struct weston_compositor *compositor,
 	b->sprites_are_broken = 1;
 	b->compositor = compositor;
 	b->use_pixman = config->use_pixman;
-	b->use_current_mode = config->use_current_mode;
 
 	if (parse_gbm_format(config->gbm_format, GBM_FORMAT_XRGB8888, &b->gbm_format) < 0)
 		goto err_compositor;
