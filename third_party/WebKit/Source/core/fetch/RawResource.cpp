@@ -327,15 +327,6 @@ NEVER_INLINE void RawResourceClientStateChecker::dataSent() {
 }
 
 NEVER_INLINE void RawResourceClientStateChecker::responseReceived() {
-  // TODO(hiroshige): Temporarily we insert the checks below to capture the
-  // wrong state. The checks should be reverted shortly. crbug.com/640960.
-  SECURITY_CHECK(m_state != NotAddedAsClient);
-  SECURITY_CHECK(m_state != RedirectBlocked);
-  SECURITY_CHECK(m_state != ResponseReceived);
-  SECURITY_CHECK(m_state != SetSerializedCachedMetadata);
-  SECURITY_CHECK(m_state != DataReceived);
-  SECURITY_CHECK(m_state != DataDownloaded);
-  SECURITY_CHECK(m_state != NotifyFinished);
   SECURITY_CHECK(m_state == Started);
   m_state = ResponseReceived;
 }
