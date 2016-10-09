@@ -1695,6 +1695,7 @@
       'quic/core/quic_arena_scoped_ptr_test.cc',
       'quic/core/quic_bandwidth_test.cc',
       'quic/core/quic_buffered_packet_store_test.cc',
+      'quic/core/quic_client_promised_info_test.cc',
       'quic/core/quic_client_push_promise_index_test.cc',
       'quic/core/quic_clock_test.cc',
       'quic/core/quic_config_test.cc',
