@@ -91,7 +91,7 @@ struct wayland_output {
 	struct weston_output base;
 
 	struct {
-		int draw_initial_frame;
+		bool draw_initial_frame;
 		struct wl_surface *surface;
 
 		struct wl_output *output;
@@ -461,7 +461,7 @@ wayland_output_start_repaint_loop(struct weston_output *output_base)
 	 * callback won't be invoked. The buffer is transparent and of the
 	 * same size as the future real output buffer. */
 	if (output->parent.draw_initial_frame) {
-		output->parent.draw_initial_frame = 0;
+		output->parent.draw_initial_frame = false;
 
 		draw_initial_frame(output);
 	}
@@ -989,7 +989,7 @@ wayland_output_switch_mode(struct weston_output *output_base,
 							   &mode_status);
 
 	/* This should kick-start things again */
-	output->parent.draw_initial_frame = 1;
+	output->parent.draw_initial_frame = true;
 	wayland_output_start_repaint_loop(&output->base);
 
 	mode_status = MODE_STATUS_UNKNOWN;
@@ -1043,7 +1043,7 @@ wayland_backend_create_output_surface(struct wayland_output *output)
 
 	wl_surface_set_user_data(output->parent.surface, output);
 
-	output->parent.draw_initial_frame = 1;
+	output->parent.draw_initial_frame = true;
 
 	if (b->parent.shell) {
 		output->parent.shell_surface =
