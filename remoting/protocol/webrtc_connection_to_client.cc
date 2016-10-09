@@ -21,6 +21,7 @@
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/message_pipe.h"
 #include "remoting/protocol/transport_context.h"
+#include "remoting/protocol/webrtc_audio_stream.h"
 #include "remoting/protocol/webrtc_transport.h"
 #include "remoting/protocol/webrtc_video_stream.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
@@ -37,13 +38,15 @@ namespace protocol {
 WebrtcConnectionToClient::WebrtcConnectionToClient(
     std::unique_ptr<protocol::Session> session,
     scoped_refptr<protocol::TransportContext> transport_context,
-    scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner)
     : transport_(
           new WebrtcTransport(jingle_glue::JingleThreadWrapper::current(),
                               transport_context,
                               this)),
       session_(std::move(session)),
       video_encode_task_runner_(video_encode_task_runner),
+      audio_task_runner_(audio_task_runner),
       control_dispatcher_(new HostControlDispatcher()),
       event_dispatcher_(new HostEventDispatcher()),
       weak_factory_(this) {
@@ -74,18 +77,23 @@ void WebrtcConnectionToClient::Disconnect(ErrorCode error) {
 
 std::unique_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
     std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(transport_);
+
   std::unique_ptr<WebrtcVideoStream> stream(new WebrtcVideoStream());
-  if (!stream->Start(std::move(desktop_capturer), transport_.get(),
-                     video_encode_task_runner_)) {
-    return nullptr;
-  }
+  stream->Start(std::move(desktop_capturer), transport_.get(),
+                video_encode_task_runner_);
   return std::move(stream);
 }
 
 std::unique_ptr<AudioStream> WebrtcConnectionToClient::StartAudioStream(
     std::unique_ptr<AudioSource> audio_source) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(transport_);
+
+  std::unique_ptr<WebrtcAudioStream> stream(new WebrtcAudioStream());
+  stream->Start(audio_task_runner_, std::move(audio_source), transport_.get());
+  return std::move(stream);
 }
 
 // Return pointer to ClientStub.
@@ -142,6 +150,7 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
       control_dispatcher_.reset();
       event_dispatcher_.reset();
       transport_->Close(state == Session::CLOSED ? OK : session_->error());
+      transport_.reset();
       event_handler_->OnConnectionClosed(
           state == Session::CLOSED ? OK : session_->error());
       break;
@@ -149,6 +158,7 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
 }
 
 void WebrtcConnectionToClient::OnWebrtcTransportConnecting() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Create outgoing control channel. |event_dispatcher_| is initialized later
   // because event channel is expected to be created by the client.
   control_dispatcher_->Init(
@@ -168,6 +178,7 @@ void WebrtcConnectionToClient::OnWebrtcTransportError(ErrorCode error) {
 void WebrtcConnectionToClient::OnWebrtcTransportIncomingDataChannel(
     const std::string& name,
     std::unique_ptr<MessagePipe> pipe) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (name == event_dispatcher_->channel_name() &&
       !event_dispatcher_->is_connected()) {
     event_dispatcher_->set_on_input_event_callback(
@@ -179,11 +190,14 @@ void WebrtcConnectionToClient::OnWebrtcTransportIncomingDataChannel(
 
 void WebrtcConnectionToClient::OnWebrtcTransportMediaStreamAdded(
     scoped_refptr<webrtc::MediaStreamInterface> stream) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   LOG(WARNING) << "The client created an unexpected media stream.";
 }
 
 void WebrtcConnectionToClient::OnWebrtcTransportMediaStreamRemoved(
-    scoped_refptr<webrtc::MediaStreamInterface> stream) {}
+    scoped_refptr<webrtc::MediaStreamInterface> stream) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void WebrtcConnectionToClient::OnChannelInitialized(
     ChannelDispatcherBase* channel_dispatcher) {

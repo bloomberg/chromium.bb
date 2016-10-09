@@ -17,6 +17,7 @@
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_source.h"
 #include "remoting/protocol/audio_stub.h"
+#include "remoting/protocol/fake_audio_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -32,24 +33,6 @@ std::unique_ptr<AudioPacket> MakeAudioPacket() {
 }
 
 }  // namespace
-
-class FakeAudioSource : public AudioSource {
- public:
-  FakeAudioSource() {}
-  ~FakeAudioSource() override {}
-
-  bool Start(const PacketCapturedCallback& callback) override {
-    callback_ = callback;
-    return true;
-  }
-
-  const PacketCapturedCallback& callback() { return callback_; }
-
- private:
-  PacketCapturedCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAudioSource);
-};
 
 class FakeAudioEncoder : public AudioEncoder {
  public:

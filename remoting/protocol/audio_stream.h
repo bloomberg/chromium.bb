@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_audio_stream_H_
-#define REMOTING_PROTOCOL_audio_stream_H_
+#ifndef REMOTING_PROTOCOL_AUDIO_STREAM_H_
+#define REMOTING_PROTOCOL_AUDIO_STREAM_H_
 
 namespace remoting {
 namespace protocol {
@@ -24,4 +24,4 @@ class AudioStream {
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_audio_stream_H_
+#endif  // REMOTING_PROTOCOL_AUDIO_STREAM_H_

@@ -41,7 +41,7 @@ class WebrtcVideoStream : public VideoStream,
   WebrtcVideoStream();
   ~WebrtcVideoStream() override;
 
-  bool Start(std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
+  void Start(std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
              WebrtcTransport* webrtc_transport,
              scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner);
 

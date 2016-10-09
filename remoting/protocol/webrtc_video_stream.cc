@@ -77,7 +77,7 @@ WebrtcVideoStream::~WebrtcVideoStream() {
   encode_task_runner_->DeleteSoon(FROM_HERE, encoder_.release());
 }
 
-bool WebrtcVideoStream::Start(
+void WebrtcVideoStream::Start(
     std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
     WebrtcTransport* webrtc_transport,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
@@ -112,12 +112,15 @@ bool WebrtcVideoStream::Start(
 
   stream_ = peer_connection_factory->CreateLocalMediaStream(kStreamLabel);
 
-  if (!stream_->AddTrack(video_track.get()) ||
-      !peer_connection_->AddStream(stream_.get())) {
-    stream_ = nullptr;
-    peer_connection_ = nullptr;
-    return false;
-  }
+  // AddTrack() may fail only if there is another track with the same name,
+  // which is impossible because it's a brand new stream.
+  bool result = stream_->AddTrack(video_track.get());
+  DCHECK(result);
+
+  // AddStream() may fail if there is another stream with the same name or when
+  // the PeerConnection is closed, neither is expected.
+  result = peer_connection_->AddStream(stream_.get());
+  DCHECK(result);
 
   // Register for PLI requests.
   webrtc_transport_->video_encoder_factory()->SetKeyFrameRequestCallback(
@@ -137,8 +140,6 @@ bool WebrtcVideoStream::Start(
                                this);
 
   scheduler_.reset(new WebrtcFrameSchedulerSimple());
-
-  return true;
 }
 
 void WebrtcVideoStream::Pause(bool pause) {

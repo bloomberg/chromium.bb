@@ -268,7 +268,7 @@ void ChromotingHost::OnIncomingSession(
       protocol::SessionConfig::Protocol::WEBRTC) {
     connection.reset(new protocol::WebrtcConnectionToClient(
         base::WrapUnique(session), transport_context_,
-        video_encode_task_runner_));
+        video_encode_task_runner_, audio_task_runner_));
   } else {
     connection.reset(new protocol::IceConnectionToClient(
         base::WrapUnique(session), transport_context_,

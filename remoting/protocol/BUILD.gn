@@ -206,6 +206,10 @@ static_library("protocol") {
       "video_frame_pump.h",
       "webrtc_audio_module.cc",
       "webrtc_audio_module.h",
+      "webrtc_audio_source_adapter.cc",
+      "webrtc_audio_source_adapter.h",
+      "webrtc_audio_stream.cc",
+      "webrtc_audio_stream.h",
       "webrtc_connection_to_client.cc",
       "webrtc_connection_to_client.h",
       "webrtc_connection_to_host.cc",
@@ -247,6 +251,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_audio_source.cc",
+    "fake_audio_source.h",
     "fake_authenticator.cc",
     "fake_authenticator.h",
     "fake_connection_to_client.cc",
@@ -314,6 +320,7 @@ source_set("unit_tests") {
     "v2_authenticator_unittest.cc",
     "validating_authenticator_unittest.cc",
     "video_frame_pump_unittest.cc",
+    "webrtc_audio_source_adapter_unittest.cc",
     "webrtc_transport_unittest.cc",
   ]
 
