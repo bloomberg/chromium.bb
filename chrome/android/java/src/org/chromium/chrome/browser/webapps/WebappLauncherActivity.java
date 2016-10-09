@@ -42,52 +42,50 @@ public class WebappLauncherActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        WebappInfo webappInfo = WebappInfo.create(getIntent());
-        if (webappInfo == null) {
-            // {@link WebappInfo#create()} returns null if the intent does not specify the id or the
-            // uri.
-            super.onCreate(null);
-            ApiCompatibilityUtils.finishAndRemoveTask(this);
-            return;
-        }
-
         super.onCreate(savedInstanceState);
+        launchActivity();
+        ApiCompatibilityUtils.finishAndRemoveTask(this);
+    }
+
+    public void launchActivity() {
         Intent intent = getIntent();
+        WebappInfo webappInfo = WebappInfo.create(intent);
+
+        // {@link WebappInfo#create()} returns null if the intent does not specify the id or the
+        // uri.
+        if (webappInfo == null) return;
+
         String webappUrl = webappInfo.uri().toString();
         String webApkPackageName = webappInfo.webApkPackageName();
         int webappSource = webappInfo.source();
+        String webappMac = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_MAC);
 
-        Intent launchIntent = null;
+        ChromeWebApkHost.init();
+        boolean isValidWebApk = isValidWebApk(webApkPackageName, webappUrl);
 
         // Permit the launch to a standalone web app frame if any of the following are true:
         // - the request was for a WebAPK that is valid;
         // - the MAC is present and valid for the homescreen shortcut to be opened;
         // - the intent was sent by Chrome.
-        ChromeWebApkHost.init();
-        boolean isValidWebApk = isValidWebApk(webApkPackageName, webappUrl);
-
-        if (isValidWebApk
-                || isValidMacForUrl(webappUrl, IntentUtils.safeGetStringExtra(
-                        intent, ShortcutHelper.EXTRA_MAC))
+        if (isValidWebApk || isValidMacForUrl(webappUrl, webappMac)
                 || wasIntentFromChrome(intent)) {
             LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl, webappSource);
-            launchIntent = createWebappLaunchIntent(webappInfo, webappSource, isValidWebApk);
-        } else {
-            Log.e(TAG, "Shortcut (%s) opened in Chrome.", webappUrl);
-
-            // The shortcut data doesn't match the current encoding.  Change the intent action
-            // launch the URL with a VIEW Intent in the regular browser.
-            launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(webappUrl));
-            launchIntent.setClassName(getPackageName(), ChromeLauncherActivity.class.getName());
-            launchIntent.putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
-            launchIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, webappSource);
-            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | ApiCompatibilityUtils.getActivityNewDocumentFlag());
+            Intent launchIntent = createWebappLaunchIntent(webappInfo, webappSource, isValidWebApk);
+            startActivity(launchIntent);
+            return;
         }
 
-        startActivity(launchIntent);
+        Log.e(TAG, "Shortcut (%s) opened in Chrome.", webappUrl);
 
-        ApiCompatibilityUtils.finishAndRemoveTask(this);
+        // The shortcut data doesn't match the current encoding. Change the intent action to
+        // launch the URL with a VIEW Intent in the regular browser.
+        Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(webappUrl));
+        launchIntent.setClassName(getPackageName(), ChromeLauncherActivity.class.getName());
+        launchIntent.putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
+        launchIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, webappSource);
+        launchIntent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
+        startActivity(launchIntent);
     }
 
     /**
