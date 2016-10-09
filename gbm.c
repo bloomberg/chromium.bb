@@ -158,34 +158,9 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 	struct gbm_bo *bo;
 	struct drv_import_fd_data drv_data;
 	struct gbm_import_fd_data *fd_data = buffer;
-	struct gbm_import_fd_planar_data *fd_planar_data = buffer;
-	int i;
 
-	memset(&drv_data, 0, sizeof(drv_data));
-
-	switch (type) {
-	case GBM_BO_IMPORT_FD:
-		drv_data.width = fd_data->width;
-		drv_data.height = fd_data->height;
-		drv_data.format = gbm_convert_format(fd_data->format);
-		drv_data.fds[0] = fd_data->fd;
-		drv_data.strides[0] = fd_data->stride;
-		break;
-	case GBM_BO_IMPORT_FD_PLANAR:
-		drv_data.width = fd_planar_data->width;
-		drv_data.height = fd_planar_data->height;
-		drv_data.format = gbm_convert_format(fd_planar_data->format);
-		for (i = 0; i < 4; i++) {
-			drv_data.fds[i] = fd_planar_data->fds[i];
-			drv_data.offsets[i] = fd_planar_data->offsets[i];
-			drv_data.strides[i] = fd_planar_data->strides[i];
-			drv_data.format_modifiers[i] =
-				fd_planar_data->format_modifiers[i];
-		}
-		break;
-	default:
+	if (type != GBM_BO_IMPORT_FD)
 		return NULL;
-	}
 
 	if (!gbm_device_is_format_supported(gbm, fd_data->format, usage))
 		return NULL;
@@ -194,6 +169,21 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 
 	if (!bo)
 		return NULL;
+
+	/*
+	 * Minigbm only supports importing single-plane formats at moment.
+	 * If multi-plane import is desired, the interface will have to be
+	 * modified.
+	 */
+
+	memset(&drv_data, 0, sizeof(drv_data));
+	drv_data.fds[0] = fd_data->fd;
+	drv_data.strides[0] = fd_data->stride;
+	drv_data.offsets[0] = 0;
+	drv_data.sizes[0] = fd_data->height * fd_data->stride;
+	drv_data.width = fd_data->width;
+	drv_data.height = fd_data->height;
+	drv_data.format = gbm_convert_format(fd_data->format);
 
 	bo->bo = drv_bo_import(gbm->drv, &drv_data);
 
