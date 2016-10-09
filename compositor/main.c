@@ -1579,7 +1579,7 @@ load_wayland_backend(struct weston_compositor *c,
 	config.display_name = NULL;
 	config.fullscreen = 0;
 	config.sprawl = 0;
-	config.use_pixman = 0;
+	config.use_pixman = false;
 
 	const struct weston_option wayland_options[] = {
 		{ WESTON_OPTION_INTEGER, "width", 0, &parsed_options->width },

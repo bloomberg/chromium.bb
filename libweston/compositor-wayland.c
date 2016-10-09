@@ -75,7 +75,7 @@ struct wayland_backend {
 		uint32_t event_mask;
 	} parent;
 
-	int use_pixman;
+	bool use_pixman;
 	int sprawl_across_outputs;
 	int fullscreen;
 
@@ -2345,7 +2345,7 @@ wayland_backend_create(struct weston_compositor *compositor,
 		gl_renderer = weston_load_module("gl-renderer.so",
 						 "gl_renderer_interface");
 		if (!gl_renderer)
-			b->use_pixman = 1;
+			b->use_pixman = true;
 	}
 
 	if (!b->use_pixman) {
@@ -2357,7 +2357,7 @@ wayland_backend_create(struct weston_compositor *compositor,
 					0) < 0) {
 			weston_log("Failed to initialize the GL renderer; "
 				   "falling back to pixman.\n");
-			b->use_pixman = 1;
+			b->use_pixman = true;
 		}
 	}
 
