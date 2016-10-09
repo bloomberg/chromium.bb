@@ -1,26 +1,22 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='target'",
+      "position": [8, 8],
+      "bounds": [600, 400],
       "drawsContent": true,
-      "children": [
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow DIV id='target'",
-          "position": [8, 8],
-          "bounds": [600, 400],
-          "drawsContent": true,
-          "backfaceVisibility": "hidden",
-          "paintInvalidations": [
-            {
-              "object": "LayoutText #text",
-              "rect": [520, 0, 80, 340],
-              "reason": "style change"
-            }
-          ]
+          "object": "LayoutText #text",
+          "rect": [520, 0, 80, 340],
+          "reason": "style change"
         }
       ]
     }

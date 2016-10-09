@@ -1,0 +1,96 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "name": "LayoutVideo VIDEO id='v'",
+          "position": [8, 8],
+          "bounds": [700, 525]
+        },
+        {
+          "name": "Squashing Containment Layer",
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "name": "LayoutFlexibleBox (relative positioned) DIV",
+              "position": [8, 8],
+              "bounds": [700, 525],
+              "drawsContent": true
+            },
+            {
+              "name": "Squashing Layer (first squashed layer: LayoutFlexibleBox (relative positioned) DIV)",
+              "position": [8, 8],
+              "bounds": [700, 525],
+              "drawsContent": true,
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow DIV id='track'",
+                  "rect": [562, 485, 106, 48],
+                  "reason": "subtree"
+                },
+                {
+                  "object": "LayoutFlexibleBox DIV",
+                  "rect": [580, 508, 70, 2],
+                  "reason": "subtree"
+                },
+                {
+                  "object": "LayoutSlider INPUT",
+                  "rect": [580, 508, 70, 2],
+                  "reason": "subtree"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='thumb'",
+                  "rect": [597, 485, 36, 48],
+                  "reason": "subtree"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='thumb'",
+                  "rect": [562, 485, 36, 48],
+                  "reason": "subtree"
+                },
+                {
+                  "object": "LayoutButton INPUT",
+                  "rect": [530, 493, 32, 32],
+                  "reason": "subtree"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutVideo VIDEO id='v'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutButton INPUT",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSlider INPUT",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutFlexibleBox DIV",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='track'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='thumb'",
+      "reason": "subtree"
+    }
+  ]
+}
+

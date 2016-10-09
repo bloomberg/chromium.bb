@@ -1,85 +1,71 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='intervening'",
+      "position": [98, 90],
+      "bounds": [300, 300],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV id='intervening'",
-          "position": [98, 90],
-          "bounds": [300, 300],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backfaceVisibility": "hidden",
-          "backgroundColor": "#FFEFD5",
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV id='scroller'",
-              "bounds": [102, 102],
-              "shouldFlattenTransform": false,
-              "drawsContent": true,
-              "children": [
-                {
-                  "name": "Scrolling Layer",
-                  "position": [1, 1],
-                  "bounds": [100, 100],
-                  "shouldFlattenTransform": false,
-                  "children": [
-                    {
-                      "name": "Scrolling Contents Layer",
-                      "bounds": [100, 180]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
-          "position": [60, 60],
-          "bounds": [80, 80],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#008000"
-        },
-        {
-          "name": "Squashing Containment Layer",
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "name": "LayoutBlockFlow (relative positioned) DIV class='scrolled'",
-              "position": [103, 95],
-              "bounds": [60, 40],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF"
-            },
-            {
-              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='scrolled')",
-              "position": [103, 139],
-              "bounds": [60, 128],
-              "drawsContent": true
-            }
-          ]
-        },
-        {
-          "name": "Overflow Controls Host Layer",
-          "position": [98, 90],
-          "bounds": [102, 102],
-          "children": [
-            {
-              "name": "Vertical Scrollbar Layer",
-              "position": [94, 1],
-              "bounds": [7, 100]
-            }
-          ]
-        }
-      ]
+      "backfaceVisibility": "hidden",
+      "backgroundColor": "#FFEFD5"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='scroller'",
+      "bounds": [102, 102],
+      "shouldFlattenTransform": false,
+      "drawsContent": true
+    },
+    {
+      "name": "Scrolling Layer",
+      "position": [1, 1],
+      "bounds": [100, 100],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [100, 180]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
+      "position": [60, 60],
+      "bounds": [80, 80],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "Squashing Containment Layer",
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='scrolled'",
+      "position": [103, 95],
+      "bounds": [60, 40],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='scrolled')",
+      "position": [103, 139],
+      "bounds": [60, 128],
+      "drawsContent": true
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "position": [98, 90],
+      "bounds": [102, 102]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [94, 1],
+      "bounds": [7, 100]
     }
   ]
 }

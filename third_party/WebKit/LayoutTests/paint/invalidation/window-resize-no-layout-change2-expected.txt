@@ -1,7 +1,5 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [2008, 2008],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [2008, 2008],
@@ -11,9 +9,7 @@
   ]
 }
 {
-  "name": "Content Root Layer",
-  "bounds": [2008, 2008],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [2008, 2008],
@@ -23,9 +19,7 @@
   ]
 }
 {
-  "name": "Content Root Layer",
-  "bounds": [2008, 2008],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [2008, 2008],
@@ -35,9 +29,7 @@
   ]
 }
 {
-  "name": "Content Root Layer",
-  "bounds": [2008, 2008],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [2008, 2008],

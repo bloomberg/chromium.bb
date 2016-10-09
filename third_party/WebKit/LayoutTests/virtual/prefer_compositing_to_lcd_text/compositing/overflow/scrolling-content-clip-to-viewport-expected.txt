@@ -1,63 +1,53 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='scroller'",
+      "bounds": [320, 340],
+      "shouldFlattenTransform": false,
+      "drawsContent": true
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [305, 325],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [305, 1224]
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [320, 340]
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [0, 325],
+      "bounds": [305, 15]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [305, 0],
+      "bounds": [15, 325]
+    },
+    {
+      "name": "Scroll Corner Layer",
+      "position": [305, 325],
+      "bounds": [15, 15],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='column'",
+      "position": [10, 10],
+      "bounds": [284, 1204],
+      "contentsOpaque": true,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV class='scroller'",
-          "bounds": [320, 340],
-          "shouldFlattenTransform": false,
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Scrolling Layer",
-              "bounds": [305, 325],
-              "shouldFlattenTransform": false,
-              "children": [
-                {
-                  "name": "Scrolling Contents Layer",
-                  "bounds": [305, 1224]
-                }
-              ]
-            },
-            {
-              "name": "Overflow Controls Host Layer",
-              "bounds": [320, 340],
-              "children": [
-                {
-                  "name": "Horizontal Scrollbar Layer",
-                  "position": [0, 325],
-                  "bounds": [305, 15]
-                },
-                {
-                  "name": "Vertical Scrollbar Layer",
-                  "position": [305, 0],
-                  "bounds": [15, 325]
-                },
-                {
-                  "name": "Scroll Corner Layer",
-                  "position": [305, 325],
-                  "bounds": [15, 15],
-                  "drawsContent": true
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "LayoutBlockFlow (relative positioned) DIV class='column'",
-          "position": [10, 10],
-          "bounds": [284, 1204],
-          "contentsOpaque": true,
-          "drawsContent": true,
-          "backgroundColor": "#C0C0C0"
-        }
-      ]
+      "backgroundColor": "#C0C0C0"
     }
   ]
 }
