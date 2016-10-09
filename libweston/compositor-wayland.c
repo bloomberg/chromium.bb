@@ -645,10 +645,7 @@ wayland_output_disable(struct weston_output *base)
 		wl_egl_window_destroy(output->gl.egl_window);
 	}
 
-	/* Done on output->enable when not fullscreen, otherwise
-	 * done in output_create, to get the proper mode */
-	if (!b->fullscreen)
-		wayland_backend_destroy_output_surface(output);
+	wayland_backend_destroy_output_surface(output);
 
 	if (output->frame)
 		frame_destroy(output->frame);
@@ -665,12 +662,8 @@ static void
 wayland_output_destroy(struct weston_output *base)
 {
 	struct wayland_output *output = to_wayland_output(base);
-	struct wayland_backend *b = to_wayland_backend(base->compositor);
 
 	wayland_output_disable(&output->base);
-
-	if (b->fullscreen)
-		wayland_backend_destroy_output_surface(output);
 
 	weston_output_destroy(&output->base);
 
@@ -1068,15 +1061,12 @@ wayland_output_enable(struct weston_output *base)
 	struct wayland_backend *b = to_wayland_backend(base->compositor);
 	int ret = 0;
 
-
 	weston_log("Creating %dx%d wayland output at (%d, %d)\n",
 		   output->base.current_mode->width,
 		   output->base.current_mode->height,
 		   output->base.x, output->base.y);
 
-	/* If fullscreen was specified, this needs to be done before
-	 * enable to get the proper mode */
-	if (!b->fullscreen)
+	if (!output->parent.surface)
 		ret = wayland_backend_create_output_surface(output);
 
 	if (ret < 0)
@@ -1132,8 +1122,7 @@ wayland_output_enable(struct weston_output *base)
 	return 0;
 
 err_output:
-	if (!b->fullscreen)
-		wayland_backend_destroy_output_surface(output);
+	wayland_backend_destroy_output_surface(output);
 
 	return -1;
 }
