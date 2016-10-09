@@ -1088,10 +1088,20 @@ wayland_output_enable(struct weston_output *base)
 	if (b->use_pixman) {
 		if (wayland_output_init_pixman_renderer(output) < 0)
 			goto err_output;
+
+		output->base.repaint = wayland_output_repaint_pixman;
 	} else {
 		if (wayland_output_init_gl_renderer(output) < 0)
 			goto err_output;
+
+		output->base.repaint = wayland_output_repaint_gl;
 	}
+
+	output->base.start_repaint_loop = wayland_output_start_repaint_loop;
+	output->base.assign_planes = NULL;
+	output->base.set_backlight = NULL;
+	output->base.set_dpms = NULL;
+	output->base.switch_mode = wayland_output_switch_mode;
 
 	if (b->sprawl_across_outputs) {
 		wayland_output_set_fullscreen(output,
@@ -1166,7 +1176,6 @@ static int
 wayland_output_set_size(struct weston_output *base, int width, int height)
 {
 	struct wayland_output *output = to_wayland_output(base);
-	struct wayland_backend *b = to_wayland_backend(base->compositor);
 	int output_width, output_height;
 
 	/* We can only be called once. */
@@ -1207,17 +1216,6 @@ wayland_output_set_size(struct weston_output *base, int width, int height)
 	/* XXX: Calculate proper size. */
 	output->base.mm_width = width;
 	output->base.mm_height = height;
-
-	if (b->use_pixman)
-		output->base.repaint = wayland_output_repaint_pixman;
-	else
-		output->base.repaint = wayland_output_repaint_gl;
-
-	output->base.start_repaint_loop = wayland_output_start_repaint_loop;
-	output->base.assign_planes = NULL;
-	output->base.set_backlight = NULL;
-	output->base.set_dpms = NULL;
-	output->base.switch_mode = wayland_output_switch_mode;
 
 	return 0;
 }
