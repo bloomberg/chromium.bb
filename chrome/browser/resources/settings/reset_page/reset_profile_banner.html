@@ -64,8 +64,8 @@
         </paper-button>
       </div>
     </div>
-    <template is="dom-if" if="[[showResetProfileDialog_]]">
-      <settings-reset-profile-dialog on-reset-done="onResetDone_">
+    <template is="dom-if" if="[[showResetProfileDialog_]]" restamp>
+      <settings-reset-profile-dialog on-close="onDialogClose_">
       </settings-reset-profile-dialog>
     </template>
   </template>

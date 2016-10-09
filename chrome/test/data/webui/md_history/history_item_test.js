@@ -29,7 +29,7 @@ cr.define('md_history.history_item_test', function() {
 
       test('basic separator insertion', function() {
         element.addNewResults(TEST_HISTORY_RESULTS);
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           // Check that the correct number of time gaps are inserted.
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
@@ -47,7 +47,7 @@ cr.define('md_history.history_item_test', function() {
         element.addNewResults(SEARCH_HISTORY_RESULTS);
         element.searchedTerm = 'search';
 
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
@@ -59,7 +59,7 @@ cr.define('md_history.history_item_test', function() {
 
       test('separator insertion after deletion', function() {
         element.addNewResults(TEST_HISTORY_RESULTS);
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
@@ -78,10 +78,10 @@ cr.define('md_history.history_item_test', function() {
 
       test('remove bookmarks', function() {
         element.addNewResults(TEST_HISTORY_RESULTS);
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           element.set('historyData_.1.starred', true);
           element.set('historyData_.5.starred', true);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
 
           items = Polymer.dom(element.root).querySelectorAll('history-item');

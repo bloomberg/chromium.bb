@@ -14,7 +14,7 @@ cr.define('md_history.history_drawer_test', function () {
       test('drawer has correct selection', function() {
         app.selectedPage_ = 'syncedTabs';
         app.hasDrawer_ = true;
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var drawer = app.$$('#drawer');
           var drawerSideBar = app.$$('#drawer-side-bar');
 

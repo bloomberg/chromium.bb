@@ -23,7 +23,7 @@ cr.define('md_history.history_supervised_user_test', function() {
       });
 
       test('checkboxes disabled for supervised user', function() {
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 

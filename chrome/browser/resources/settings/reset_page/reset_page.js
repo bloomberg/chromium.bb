@@ -31,13 +31,18 @@ Polymer({
       type: Boolean,
       value: cr.isChromeOS ? loadTimeData.getBoolean('allowPowerwash') : false
     },
+
+    /** @private */
+    showResetProfileDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @protected */
   currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.Route.RESET_DIALOG) {
-      this.$.resetProfileDialog.get().open();
-    }
+    this.showResetProfileDialog_ =
+        settings.getCurrentRoute() == settings.Route.RESET_DIALOG;
   },
 
   /** @private */

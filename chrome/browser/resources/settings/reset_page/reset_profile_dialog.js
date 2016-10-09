@@ -34,7 +34,8 @@ Polymer({
     }.bind(this));
   },
 
-  open: function() {
+  /** @override */
+  attached: function() {
     this.$.dialog.showModal();
     this.browserProxy_.onShowResetProfileDialog();
   },

@@ -48,7 +48,7 @@ cr.define('md_history.history_grouped_list_test', function() {
         listContainer = app.$['history'];
         toolbar = app.$['toolbar'];
         sidebar = app.$['content-side-bar'];
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           groupedList = app.$.history.$$('#grouped-list');
           assertTrue(!!groupedList);
         });
@@ -83,7 +83,7 @@ cr.define('md_history.history_grouped_list_test', function() {
         info.queryStartTime = 'Yesterday';
         info.queryEndTime = 'Now';
         app.historyResult(info, SIMPLE_RESULTS);
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var data = groupedList.groupedHistoryData_;
           // 1 card for the day with 3 domains.
           assertEquals(1, data.length);
@@ -103,7 +103,7 @@ cr.define('md_history.history_grouped_list_test', function() {
       test('items grouped by day in week view', function() {
         app.set('queryState_.range', HistoryRange.WEEK);
         app.historyResult(createHistoryInfo(), PER_DAY_RESULTS);
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var data = groupedList.groupedHistoryData_;
 
           // 3 cards.
@@ -124,7 +124,7 @@ cr.define('md_history.history_grouped_list_test', function() {
       test('items grouped by month in month view', function() {
         app.set('queryState_.range', HistoryRange.MONTH);
         app.historyResult(createHistoryInfo(), PER_MONTH_RESULTS);
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var data = groupedList.groupedHistoryData_;
 
           // 1 card.
@@ -140,11 +140,11 @@ cr.define('md_history.history_grouped_list_test', function() {
         app.set('queryState_.range', HistoryRange.WEEK);
         app.historyResult(createHistoryInfo(), SIMPLE_RESULTS);
 
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           assertEquals(
               0, polymerSelectAll(groupedList, 'history-item').length);
           MockInteractions.tap(groupedList.$$('.domain-heading'));
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           assertEquals(
               2, polymerSelectAll(groupedList, 'history-item').length);
@@ -172,7 +172,7 @@ cr.define('md_history.history_grouped_list_test', function() {
           polymerSelectAll(groupedList, '.dropdown-indicator').
               forEach(MockInteractions.tap);
 
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           var items = polymerSelectAll(groupedList, 'history-item');
 
@@ -223,7 +223,7 @@ cr.define('md_history.history_grouped_list_test', function() {
           polymerSelectAll(groupedList, '.dropdown-indicator').
               forEach(MockInteractions.tap);
 
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           var items = polymerSelectAll(groupedList, 'history-item');
 
@@ -238,13 +238,13 @@ cr.define('md_history.history_grouped_list_test', function() {
           MockInteractions.tap(items[1].$.checkbox);
           MockInteractions.tap(items[1].$.checkbox);
 
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
           var dialog = listContainer.$.dialog.get();
 
           registerMessageCallback('removeVisits', this, function() {
-            flush().then(function() {
+            PolymerTest.flushTasks().then(function() {
               deleteComplete();
               return waitForEvent(groupedList, 'dom-change', function() {
                 return polymerSelectAll(

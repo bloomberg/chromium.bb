@@ -44,7 +44,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
         ];
         setForeignSessions(sessionList);
 
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var card = element.$$('history-synced-device-card');
           assertEquals(
               'http://www.google.com',
@@ -71,7 +71,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
         ];
         setForeignSessions(sessionList);
 
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var cards = getCards(element);
           assertEquals(2, cards.length);
 
@@ -92,7 +92,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
         setForeignSessions([session1, session2]);
 
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var session1updated = createSession('Chromebook', [
             createWindow(['http://www.example.com', 'http://crbug.com/new']),
             createWindow(['http://web.site'])
@@ -101,7 +101,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
           setForeignSessions([session1updated, session2]);
 
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           // There should only be two cards.
           var cards = getCards(element);
@@ -136,7 +136,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
         ];
         setForeignSessions(sessionList);
 
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var cards = getCards(element);
           assertEquals(2, cards.length);
 
@@ -145,7 +145,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           assertEquals(2, numWindowSeparators(cards[1]));
           element.searchTerm = 'g';
 
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           var cards = getCards(element);
 
@@ -166,7 +166,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
                   .textContent.trim());
 
           element.searchTerm = 'Sans';
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           assertEquals(0, getCards(element).length);
 
@@ -182,12 +182,12 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
         setForeignSessions(sessionList);
 
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var cards = getCards(element);
           assertEquals(2, cards.length);
 
           MockInteractions.tap(cards[0].$['menu-button']);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           registerMessageCallback('deleteForeignSession', this, function(args) {
             assertEquals('Nexus 5', args[0]);
@@ -195,7 +195,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
             // Simulate deleting the first device.
             setForeignSessions([sessionList[1]]);
 
-            flush().then(function() {
+            PolymerTest.flushTasks().then(function() {
               cards = getCards(element);
               assertEquals(1, cards.length);
               assertEquals('http://www.badssl.com', cards[0].tabs[0].title);
@@ -214,14 +214,14 @@ cr.define('md_history.history_synced_tabs_test', function() {
         ];
 
         setForeignSessions(sessionList);
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var cards = getCards(element);
           MockInteractions.tap(cards[0].$['card-heading']);
           assertFalse(cards[0].opened);
 
           // Simulate deleting the first device.
           setForeignSessions([sessionList[1]]);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           var cards = getCards(element);
           assertTrue(cards[0].opened);
@@ -248,7 +248,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           lastFocused = e.currentTarget;
         };
 
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           cards = polymerSelectAll(element, 'history-synced-device-card');
 
           focused = cards[0].$['menu-button'];
@@ -289,7 +289,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           // Remove the second URL from the first card.
           sessionList[0].windows[0].tabs.splice(1, 1);
           setForeignSessions(sessionList.slice());
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           cards = polymerSelectAll(element, 'history-synced-device-card');
 
@@ -305,7 +305,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           // Remove the second card.
           sessionList.splice(1, 1);
           setForeignSessions(sessionList.slice());
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           cards = polymerSelectAll(element, 'history-synced-device-card');
 
@@ -332,7 +332,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           done();
         });
 
-        flush().then(function() {
+        PolymerTest.flushTasks().then(function() {
           var cards = getCards(element);
           var anchor = cards[0].root.querySelector('a');
           MockInteractions.tap(anchor, {emulateTouch: true});
@@ -344,7 +344,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
             [createSession(
                 'Chromebook', [createWindow(['https://example.com'])])]);
 
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var cards = getCards(element);
           MockInteractions.tap(cards[0].$['menu-button']);
           assertTrue(element.$.menu.getIfExists().menuOpen);
@@ -353,10 +353,10 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
       test('show sign in promo', function() {
         element.signInState = false;
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           assertFalse(element.$['sign-in-guide'].hidden);
           element.signInState = true;
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           assertTrue(element.$['sign-in-guide'].hidden);
         });
@@ -366,7 +366,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
         // When user is not logged in, there is no synced tabs.
         element.signInState = false;
         element.syncedDevices_ = [];
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           assertTrue(element.$['no-synced-tabs'].hidden);
 
           var cards = getCards(element);
@@ -374,14 +374,14 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
           element.signInState = true;
 
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           // When user signs in, first show loading message.
           assertNoSyncedTabsMessageShown(element, 'loading');
 
           var sessionList = [];
           setForeignSessions(sessionList);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           cards = getCards(element);
           assertEquals(0, cards.length);
@@ -396,7 +396,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           ];
           setForeignSessions(sessionList);
 
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           cards = getCards(element);
           assertEquals(1, cards.length);
@@ -404,7 +404,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           assertTrue(element.$['no-synced-tabs'].hidden);
 
           element.signInState = false;
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           // When user signs out, don't show the message.
           assertTrue(element.$['no-synced-tabs'].hidden);
@@ -413,7 +413,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
       test('hide sign in promo in guest mode', function() {
         element.guestSession_ = true;
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           assertTrue(element.$['sign-in-guide'].hidden);
         });
       });
@@ -434,7 +434,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
         app.selectedPage_ = 'syncedTabs';
         assertEquals('syncedTabs', app.$['content-side-bar'].$.menu.selected);
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           element = app.$$('#synced-devices');
           assertTrue(!!element);
         });
@@ -451,7 +451,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
         // Open tabs sync is enabled.
         setForeignSessions(sessionList, true);
 
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var cards = getCards(element);
           assertEquals(1, cards.length);
           assertTrue(element.$['no-synced-tabs'].hidden);
@@ -459,7 +459,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           // Open tabs sync is disabled.
           setForeignSessions(sessionList, false);
 
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(function() {
           cards = getCards(element);
           assertEquals(0, cards.length);

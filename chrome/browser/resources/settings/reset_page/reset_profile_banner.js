@@ -24,18 +24,15 @@ Polymer({
   },
 
   /**
-   * Creates and shows a <settings-reset-profile-dialog>.
+   * Shows a <settings-reset-profile-dialog>.
    * @private
    */
-  showDialog_: function(dialogName) {
+  showDialog_: function() {
     this.showResetProfileDialog_ = true;
-    this.async(function() {
-      var dialog = this.$$('settings-reset-profile-dialog');
-      dialog.open();
-    }.bind(this));
   },
 
-  onResetDone_: function() {
+  /** @private */
+  onDialogClose_: function() {
     this.showResetProfileDialog_ = false;
   },
 });

@@ -24,7 +24,7 @@ cr.define('md_history.history_routing_test', function() {
       test('changing route changes active view', function() {
         assertEquals('history', app.$.content.selected);
         navigateTo('/syncedTabs');
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           assertEquals('syncedTabs', app.$.content.selected);
           assertEquals('chrome://history/syncedTabs', window.location.href);
         });
@@ -105,7 +105,7 @@ cr.define('md_history.history_routing_test_with_query_param', function() {
       test('search initiated on load', function(done) {
         var verifyFunction = function(info) {
           assertEquals(expectedQuery, info[0]);
-          flush().then(function() {
+          PolymerTest.flushTasks().then(function() {
             assertEquals(
                 expectedQuery,
                 toolbar.$['main-toolbar'].getSearchField().getValue());

@@ -48,7 +48,7 @@ cr.define('md_history.history_metrics_test', function() {
 
           /** @override */
           deleteItems: function() {
-            return flush();
+            return PolymerTest.flushTasks();
           }
         };
       });
@@ -62,7 +62,7 @@ cr.define('md_history.history_metrics_test', function() {
 
         app = replaceApp();
         updateSignInState(false);
-        return flush();
+        return PolymerTest.flushTasks();
       });
 
       test('History.HistoryPageView', function() {
@@ -74,7 +74,7 @@ cr.define('md_history.history_metrics_test', function() {
         app.selectedPage_ = 'syncedTabs';
         assertEquals(1, histogram[HistoryPageViewHistogram.SIGNIN_PROMO]);
         updateSignInState(true);
-        return flush().then(() => {
+        return PolymerTest.flushTasks().then(() => {
           assertEquals(1, histogram[HistoryPageViewHistogram.SYNCED_TABS]);
           app.selectedPage_ = 'history';
           assertEquals(2, histogram[HistoryPageViewHistogram.HISTORY]);
@@ -94,7 +94,7 @@ cr.define('md_history.history_metrics_test', function() {
           historyEntry
         ]);
 
-        return flush().then(() => {
+        return PolymerTest.flushTasks().then(() => {
           var items = polymerSelectAll(
               app.$.history.$['infinite-list'], 'history-item');
           MockInteractions.tap(items[1].$$('#bookmark-star'));
@@ -114,7 +114,7 @@ cr.define('md_history.history_metrics_test', function() {
             createHistoryEntry('2015-01-01', 'http://www.google.com'),
             createHistoryEntry('2015-01-01', 'http://www.google.com')
           ]);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(() => {
           items = polymerSelectAll(
               app.$.history.$['infinite-list'], 'history-item');
@@ -124,28 +124,28 @@ cr.define('md_history.history_metrics_test', function() {
           assertEquals(1, histogramMap['HistoryPage.ClickPositionSubset'][0]);
           MockInteractions.tap(items[0].$.checkbox);
           MockInteractions.tap(items[4].$.checkbox);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(() => {
           MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
           assertEquals(1, actionMap['RemoveSelected']);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(() => {
           MockInteractions.tap(app.$.history.$$('.cancel-button'));
           assertEquals(1, actionMap['CancelRemoveSelected']);
           MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(() => {
           MockInteractions.tap(app.$.history.$$('.action-button'));
           assertEquals(1, actionMap['ConfirmRemoveSelected']);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(() => {
           items = polymerSelectAll(
               app.$.history.$['infinite-list'], 'history-item');
           MockInteractions.tap(items[0].$['menu-button']);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(() => {
           MockInteractions.tap(app.$.history.$$('#menuRemoveButton'));
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(() => {
           assertEquals(
               1, histogramMap['HistoryPage.RemoveEntryPosition'][0]);
@@ -157,7 +157,7 @@ cr.define('md_history.history_metrics_test', function() {
       test('synced-device-manager', function() {
         app.selectedPage_ = 'syncedTabs';
         var histogram;
-        return flush().then(() => {
+        return PolymerTest.flushTasks().then(() => {
           histogram =
               histogramMap[SYNCED_TABS_HISTOGRAM_NAME];
           assertEquals(1, histogram[SyncedTabsHistogram.INITIALIZED]);
@@ -176,10 +176,10 @@ cr.define('md_history.history_metrics_test', function() {
             ),
           ];
           setForeignSessions(sessionList, true);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(() => {
           assertEquals(1, histogram[SyncedTabsHistogram.HAS_FOREIGN_DATA]);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(() => {
           cards = polymerSelectAll(
               app.$$('#synced-devices'), 'history-synced-device-card');
@@ -191,7 +191,7 @@ cr.define('md_history.history_metrics_test', function() {
           assertEquals(1, histogram[SyncedTabsHistogram.LINK_CLICKED]);
 
           MockInteractions.tap(cards[0].$['menu-button']);
-          return flush();
+          return PolymerTest.flushTasks();
         }).then(() => {
           MockInteractions.tap(app.$$('#synced-devices').$$('#menuOpenButton'));
           assertEquals(1, histogram[SyncedTabsHistogram.OPEN_ALL]);

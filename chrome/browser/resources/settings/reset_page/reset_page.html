@@ -21,7 +21,7 @@
       </div>
       <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
-    <template is="cr-lazy-render" id="resetProfileDialog">
+    <template is="dom-if" if="[[showResetProfileDialog_]]" restamp>
       <settings-reset-profile-dialog on-close="onResetProfileDialogClose_">
       </settings-reset-profile-dialog>
     </template>

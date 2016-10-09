@@ -19,13 +19,13 @@ cr.define('md_history.history_toolbar_test', function() {
         app = replaceApp();
         element = app.$['history'].$['infinite-list'];
         toolbar = app.$['toolbar'];
-        return flush();
+        return PolymerTest.flushTasks();
       });
 
       test('selecting checkbox causes toolbar to change', function() {
         element.addNewResults(TEST_HISTORY_RESULTS);
 
-        return flush().then(function() {
+        return PolymerTest.flushTasks().then(function() {
           var item = element.$$('history-item');
           MockInteractions.tap(item.$.checkbox);
 
@@ -127,7 +127,7 @@ cr.define('md_history.history_toolbar_focus_test', function() {
         toolbar.$['main-toolbar'].narrow_ = false;
 
         historyResult(createHistoryInfo(), []);
-        return flush().then(() => {
+        return PolymerTest.flushTasks().then(() => {
           // Ensure the search bar is focused on load.
           assertTrue(
               app.$.toolbar.$['main-toolbar']
@@ -140,7 +140,7 @@ cr.define('md_history.history_toolbar_focus_test', function() {
         toolbar.$['main-toolbar'].narrow_ = true;
 
         historyResult(createHistoryInfo(), []);
-        return flush().then(() => {
+        return PolymerTest.flushTasks().then(() => {
           // Ensure the search bar is focused on load.
           assertFalse(
               $('history-app')
