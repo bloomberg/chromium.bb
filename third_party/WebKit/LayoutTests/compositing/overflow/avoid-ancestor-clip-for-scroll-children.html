@@ -46,20 +46,15 @@ description('Verifies that scroll children do not create ancestor clipping ' +
 if (window.internals)
   internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
-function scrollChildHasNoScrollClip(layer) {
-  if (layer.children) {
-    for (var i = 0; i < layer.children.length; i++) {
-      var child = layer.children[i];
-      // The only layer that should have a transform in this example is the
-      // scroll child. If this is not the case, we have a scroll clip.
-      if (child.transform && child.hasScrollParent)
-        return true;
-
-      if (scrollChildHasNoScrollClip(child))
-        return true;
-    }
-  }
-  return false;
+function scrollChildHasNoScrollClip(layers) {
+  var found = false;
+  layers["layers"].forEach(function(layer) {
+    // The only layer that should have a transform in this example is the
+    // scroll child. If this is not the case, we have a scroll clip.
+    if (layer.transform && layer.hasScrollParent)
+      found = true;
+  });
+  return found;
 }
 
 onload = function() {

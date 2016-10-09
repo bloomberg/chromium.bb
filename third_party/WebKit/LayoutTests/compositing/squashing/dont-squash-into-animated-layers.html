@@ -23,9 +23,9 @@ if (window.testRunner) {
 onload = function() {
     target.style.transform = "translateX(10px)";
     if (window.internals) {
-        var layers = JSON.parse(internals.layerTreeAsText(document, 1));
-        assert_true(layers.children[0].children[1].compositingReasons[1] == "Layer was separately composited because it could not be squashed.");
-        assert_true(layers.children[0].children[1].squashingDisallowedReasons[0] == "Cannot squash into a layer that is animating.");
+        var layers = JSON.parse(internals.layerTreeAsText(document, 1))["layers"]
+        assert_true(layers[2].compositingReasons[1] == "Layer was separately composited because it could not be squashed.");
+        assert_true(layers[2].squashingDisallowedReasons[0] == "Cannot squash into a layer that is animating.");
     }
 };
 </script>

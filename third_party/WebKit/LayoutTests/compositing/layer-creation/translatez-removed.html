@@ -26,7 +26,7 @@ function doTest()
 {
     document.getElementById('test').classList.remove('composited');
     if (window.testRunner)
-        document.getElementById('layers').innerText = window.internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST);
+        document.getElementById('layers').innerText = window.internals.layerTreeAsText(document);
 }
 window.addEventListener('load', doTest, false);
 </script>

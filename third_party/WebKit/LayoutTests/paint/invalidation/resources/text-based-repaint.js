@@ -2,7 +2,6 @@
 // time.
 window.testIsAsync = false;
 window.outputRepaintRects = true;
-window.outputLayerList = false;
 
 // All repaint tests are asynchronous.
 if (window.testRunner)
@@ -84,9 +83,6 @@ function finishRepaintTest()
 
     if (window.layerTreeAsTextAdditionalFlags)
         flags |= window.layerTreeAsTextAdditionalFlags;
-
-    if (window.outputLayerList)
-        flags |= window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST;
 
     var layersWithInvalidationsText = window.internals.layerTreeAsText(document, flags);
 

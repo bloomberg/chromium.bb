@@ -56,7 +56,7 @@
 
     function finish() {
         var layerTree = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
-        var invalidations = JSON.parse(layerTree).objectPaintInvalidations;
+        var invalidations = JSON.parse(layerTree)["layers"][0].objectPaintInvalidations;
         // Passes if there is no invalidations other than imgForAdvanceImageAnimation,
         // or only invalidations because of background obscuration change.
         // This is because before the delayed image decoder finishes decoding the image,

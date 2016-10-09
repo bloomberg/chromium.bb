@@ -49,7 +49,7 @@ var result = "";
 onload = function() {
     if (window.internals) {
         result += "No clip path ancestor (should be using composited scrolling): ";
-        var layers = window.internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST);
+        var layers = window.internals.layerTreeAsText(document);
         if (isUsingCompositedScrolling(JSON.parse(layers)))
             result += "Pass.\n";
         else
@@ -59,7 +59,7 @@ onload = function() {
     requestAnimationFrame(function() {
         if (window.internals) {
             result += "Has clip path ancestor (should not be using composited scrolling): ";
-            var layers = window.internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST);
+            var layers = window.internals.layerTreeAsText(document);
             if (!isUsingCompositedScrolling(JSON.parse(layers)))
                 result += "Pass.\n";
             else

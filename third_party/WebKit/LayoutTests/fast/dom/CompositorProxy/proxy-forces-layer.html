@@ -9,35 +9,31 @@ async_test(function(test) {
     window.addEventListener('load', function() {
         // The container should not have a layer.
         var container = document.getElementById('container');
-        var docLayer = JSON.parse(window.internals.layerTreeAsText(document));
-        assert_equals(1, docLayer.children.length);
-        assert_equals('undefined', typeof docLayer.children[0].children);
+        var layers = JSON.parse(window.internals.layerTreeAsText(document))["layers"];
+        assert_equals(1, layers.length);
 
         // Creating a proxy should force the container to have a layer.
         var proxy = new CompositorProxy(container, ['opacity']);
-        docLayer = JSON.parse(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_COMPOSITING_REASONS));
-        assert_equals(1, docLayer.children.length);
-        assert_equals(1, docLayer.children[0].children.length);
-        assert_in_array('compositorProxy', docLayer.children[0].children[0].compositingReasons);
+        layers = JSON.parse(window.internals.layerTreeAsText(document,
+            internals.LAYER_TREE_INCLUDES_COMPOSITING_REASONS))["layers"];
+        assert_equals(2, layers.length);
+        assert_in_array('compositorProxy', layers[1].compositingReasons);
 
         // Detach the element from the document. The corresponding layer should be removed.
         container.parentNode.removeChild(container);
-        docLayer = JSON.parse(window.internals.layerTreeAsText(document));
-        assert_equals(1, docLayer.children.length);
-        assert_equals('undefined', typeof docLayer.children[0].children);
+        layers = JSON.parse(window.internals.layerTreeAsText(document))["layers"];
+        assert_equals(1, layers.length);
 
         // Add the element back to the document. The corresponding layer should reappear.
         document.body.appendChild(container);
-        docLayer = JSON.parse(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_COMPOSITING_REASONS));
-        assert_equals(1, docLayer.children.length);
-        assert_equals(1, docLayer.children[0].children.length);
-        assert_in_array('compositorProxy', docLayer.children[0].children[0].compositingReasons);
+        layers = JSON.parse(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_COMPOSITING_REASONS))["layers"];
+        assert_equals(2, layers.length);
+        assert_in_array('compositorProxy', layers[1].compositingReasons);
 
         // Disconnecting the proxy should also remove the layer.
         proxy.disconnect();
-        docLayer = JSON.parse(window.internals.layerTreeAsText(document));
-        assert_equals(1, docLayer.children.length);
-        assert_equals('undefined', typeof docLayer.children[0].children);
+        layers = JSON.parse(window.internals.layerTreeAsText(document))["layers"];
+        assert_equals(1, layers.length);
 
         test.done();
     });

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="resources/composited-scroll.js"></script>
 <style>
 .composited {
   transform: translateZ(0);
@@ -29,18 +30,6 @@ description('Verifies that toggling pointer-events correctly updates scrolling '
 
 if (window.internals)
   internals.settings.setPreferCompositingToLCDTextEnabled(true);
-
-function isUsingCompositedScrolling(layer) {
-  if (layer.bounds[1] == 1000)
-    return true;
-  if (layer.children) {
-    for (var i = 0; i < layer.children.length; i++) {
-      if (isUsingCompositedScrolling(layer.children[i]))
-        return true;
-    }
-  }
-  return false;
-}
 
 onload = function() {
   documentLayerTree = JSON.parse(window.internals.layerTreeAsText(document));

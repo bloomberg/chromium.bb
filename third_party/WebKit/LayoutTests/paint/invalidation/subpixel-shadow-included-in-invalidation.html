@@ -35,13 +35,14 @@ if (!window.internals) {
         box.style.boxShadow = 'none';
 
         runAfterLayoutAndPaint(function() {
-            var layerTree = JSON.parse(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
-            var repaintRects = layerTree.children[0].repaintRects;
+            var layers = JSON.parse(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS))["layers"];
+            console.log(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
+            var paintInvalidations = layers[0]["paintInvalidations"];
             var shadowRect = [1.4, 1.4, 100, 100];
-            if (repaintRects.some(repaintRect => rectContainsRect(repaintRect, shadowRect)))
+            if (paintInvalidations.some(paintInvalidationRect => rectContainsRect(paintInvalidationRect, shadowRect)))
                 testPassed('Subpixel shadow was repainted.');
             else
-                testFailed('Subpixel shadow ' + JSON.stringify(shadowRect) + ' was not repainted. Repaint rects were ' + JSON.stringify(repaintRects) + '.');
+                testFailed('Subpixel shadow ' + JSON.stringify(shadowRect) + ' was not repainted. Repaint rects were ' + JSON.stringify(paintInvalidations) + '.');
 
             internals.stopTrackingRepaints(document);
             box.remove();

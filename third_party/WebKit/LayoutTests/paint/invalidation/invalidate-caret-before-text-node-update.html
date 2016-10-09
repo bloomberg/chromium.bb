@@ -20,14 +20,14 @@ test(function() {
   	document.execCommand('delete');
 
  	if (window.internals) {
-	 	var layers = JSON.parse(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
-	    assert_equals(layers.children[0].paintInvalidations[2].reason, "invalidate paint rectangle");
-		var previousOffset = layers.children[0].paintInvalidations[2].rect[0];
-		assert_equals(layers.children[0].paintInvalidations[2].rect[3], 20, "Old caret rect location");
+	 	var layers = JSON.parse(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS))["layers"]
+	    assert_equals(layers[0].paintInvalidations[2].reason, "invalidate paint rectangle");
+		var previousOffset = layers[0].paintInvalidations[2].rect[0];
+		assert_equals(layers[0].paintInvalidations[2].rect[3], 20, "Old caret rect location");
 
-	    assert_equals(layers.children[0].paintInvalidations[3].reason, "invalidate paint rectangle");
+	    assert_equals(layers[0].paintInvalidations[3].reason, "invalidate paint rectangle");
 	    // Check that thet x offset is previousOffset - 1. This for the caret rect after delete.
-		assert_not_equals(layers.children[0].paintInvalidations[3].rect[0], previousOffset, "New caret rect location");
+		assert_not_equals(layers[0].paintInvalidations[3].rect[0], previousOffset, "New caret rect location");
 	 }
 });
 </script>

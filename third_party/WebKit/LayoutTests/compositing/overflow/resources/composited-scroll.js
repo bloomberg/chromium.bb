@@ -7,3 +7,21 @@ function isUsingCompositedScrolling(layers) {
 
     return foundScrollingContentsLayer;
 }
+
+function hasOpaqueCompositedScrollingContentsLayer(layers) {
+    var found = false;
+    layers["layers"].forEach(function(layer) {
+      if (layer.name == "Scrolling Contents Layer")
+        found = found || layer.contentsOpaque;
+    });
+    return found;
+}
+
+function hasNotOpaqueCompositedScrollingContentsLayer(layers) {
+    var found = false;
+    layers["layers"].forEach(function(layer) {
+      if (layer.name == "Scrolling Contents Layer")
+        found = found || !layer.contentsOpaque;
+    });
+    return found;
+}

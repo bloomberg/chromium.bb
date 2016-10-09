@@ -77,7 +77,7 @@ function registerTest(imageType, test) {
                     // Check that the we got the correct paint invalidation.
                     if (window.internals) {
                         const layers = JSON.parse(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
-                        const paintInvalidations = layers['children'][0]['paintInvalidations'];
+                        const paintInvalidations = layers['layers'][0]['paintInvalidations'];
                         assert_equals(!paintInvalidations, !!test.noInvalidation);
                         if (paintInvalidations) {
                             assert_equals(paintInvalidations.length, 1, 'There should be only one paint invalidation.');

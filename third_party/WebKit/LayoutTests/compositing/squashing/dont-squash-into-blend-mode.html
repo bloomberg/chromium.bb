@@ -8,9 +8,9 @@ if (window.testRunner)
     testRunner.dumpAsText();
 onload = function() {
     if (window.internals) {
-        var layers = JSON.parse(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_DEBUG_INFO));
-        assert_true(layers.children[0].children[0].children[1].compositingReasons[1] == "Layer was separately composited because it could not be squashed.");
-        assert_true(layers.children[0].children[0].children[1].squashingDisallowedReasons[0] == "Squashing a layer with blending is not supported.");
+        var layers = JSON.parse(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_DEBUG_INFO))["layers"];
+        assert_true(layers[3].compositingReasons[1] == "Layer was separately composited because it could not be squashed.");
+        assert_true(layers[3].squashingDisallowedReasons[0] == "Squashing a layer with blending is not supported.");
     }
 };
 </script>

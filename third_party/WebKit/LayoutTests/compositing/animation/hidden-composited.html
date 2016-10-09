@@ -24,21 +24,17 @@ description('Verifies hidden, compositor-animated layers still get composited');
 if (window.internals)
   internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
-function hiddenLayerIsComposited(layer) {
-  if (layer.children) {
-    for (var i = 0; i < layer.children.length; i++) {
-      var child = layer.children[i];
-      if (child.bounds[0] == 100 && child.bounds[1] == 100) {
-        for (var j = 0; j < child.compositingReasons.length; j++) {
-          if (child.compositingReasons[j] === 'activeAnimation')
-            return true;
-        }
+function hiddenLayerIsComposited(layers) {
+  var found = false;
+  layers["layers"].forEach(function(layer) {
+    if (layer.bounds[0] == 100 && layer.bounds[1] == 100) {
+      for (var j = 0; j < layer.compositingReasons.length; j++) {
+        if (layer.compositingReasons[j] === 'activeAnimation')
+          found = true;
       }
-      if (hiddenLayerIsComposited(child))
-        return true;
     }
-  }
-  return false;
+  });
+  return found;
 }
 
 onload = function() {

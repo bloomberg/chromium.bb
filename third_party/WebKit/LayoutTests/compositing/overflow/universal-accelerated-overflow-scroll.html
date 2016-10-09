@@ -258,7 +258,7 @@ function doTest() {
     var pre = document.getElementById("console");
 
     if (window.internals) {
-        var layerTreeAsText = internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST);
+        var layerTreeAsText = internals.layerTreeAsText(document);
         pre.style.left = "-80000px";
         pre.innerHTML = layerTreeAsText;
     } else {

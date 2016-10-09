@@ -58,8 +58,9 @@ enum {
   LayerTreeIncludesRootLayer = 1 << 3,
   LayerTreeIncludesClipAndScrollParents = 1 << 4,
   LayerTreeIncludesCompositingReasons = 1 << 5,
-  // Outputs all children of the given layer as a layer list, in paint order.
-  OutputChildrenAsLayerList = 1 << 6,
+  // Outputs all layers as a layer tree. The default is output children
+  // (excluding the root) as a layer list, in paint (preorder) order.
+  OutputAsLayerTree = 1 << 6,
 };
 typedef unsigned LayerTreeFlags;
 

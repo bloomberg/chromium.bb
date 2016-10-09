@@ -1,4 +1,5 @@
 <script src="../../resources/run-after-layout-and-paint.js"></script>
+<script src="resources/composited-scroll.js"></script>
 <script>
     if (window.internals)
         internals.runtimeFlags.compositeOpaqueScrollersEnabled = true;
@@ -8,36 +9,12 @@
         testRunner.waitUntilDone();
     }
 
-    function hasOpaqueCompositedScrollingContentsLayer(layer) {
-        if (layer.name == "Scrolling Contents Layer")
-            return layer.contentsOpaque;
-        if (layer.children) {
-            for (var i = 0; i < layer.children.length; i++) {
-                if (hasOpaqueCompositedScrollingContentsLayer(layer.children[i]))
-                    return true;
-            }
-        }
-        return false;
-    }
-
-    function hasCompositedScrollingContentsLayer(layer) {
-        if (layer.name == "Scrolling Contents Layer")
-            return true;
-        if (layer.children) {
-            for (var i = 0; i < layer.children.length; i++) {
-                if (hasCompositedScrollingContentsLayer(layer.children[i]))
-                    return true;
-            }
-        }
-        return false;
-    }
-
     onload = function() {
         if (!window.testRunner || !window.internals)
             return;
 
         var result = "Should not have opaque composited scrolling contents layer: ";
-        if (!hasCompositedScrollingContentsLayer(JSON.parse(window.internals.layerTreeAsText(document))))
+        if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
             result += "Pass.\n";
         else
             result += "Fail.\n";

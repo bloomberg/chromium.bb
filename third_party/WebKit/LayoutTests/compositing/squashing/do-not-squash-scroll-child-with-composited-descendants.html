@@ -57,31 +57,26 @@ description('Verifies that scroll children with composited descendants' +
 if (window.internals)
   internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
-function scrollChildDoesNotSquash(layer) {
-  if (layer.children) {
-    for (var i = 0; i < layer.children.length; i++) {
-      var child = layer.children[i];
-      if (child.bounds && layer.bounds &&
-          child.bounds[0] == 20 && child.bounds[1] == 20 &&
-          layer.bounds[0] == 102 && layer.bounds[1] == 102) {
-        // If the child's bounds are 20x20, we're the scroll child with the
-        // composited descendant. We should not have squashed and therefore our
-        // bounds should remain 102x102 (100x100 plus the 1px border).
-        return true;
-      }
-
-      if (scrollChildDoesNotSquash(child))
-        return true;
-    }
-  }
-  return false;
+function scrollChildDoesNotSquash(layers) {
+  var foundParent = false;
+  var foundChild = false;
+  layers["layers"].forEach(function(layer) {
+    // If the child's bounds are 20x20, we're the scroll child with the
+    // composited descendant. We should not have squashed and therefore our
+    // bounds should remain 102x102 (100x100 plus the 1px border).
+    if (layer.bounds &&  layer.bounds[0] == 20 && layer.bounds[1] == 20)
+      foundChild = true;
+    if (layer.bounds && layer.bounds[0] == 102 && layer.bounds[1] == 102)
+      foundParent = true;
+  });
+  return foundParent && foundChild;
 }
 
 onload = function() {
   if (!window.internals)
     return;
-  documentLayerTree = JSON.parse(window.internals.layerTreeAsText(document));
-  shouldBe('scrollChildDoesNotSquash(documentLayerTree)', 'true');
+  layers = JSON.parse(window.internals.layerTreeAsText(document));
+  shouldBe('scrollChildDoesNotSquash(layers)', 'true');
 };
 
 </script>

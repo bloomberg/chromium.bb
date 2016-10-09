@@ -1,18 +1,8 @@
+<!doctype HTML>
+<script src="resources/composited-scroll.js"></script>
 <script>
 if (window.testRunner)
     window.testRunner.dumpAsText();
-
-function hasOpaqueCompositedScrollingContentsLayer(layer) {
-    if (layer.name == "Scrolling Contents Layer")
-        return layer.contentsOpaque;
-    if (layer.children) {
-        for (var i = 0; i < layer.children.length; i++) {
-            if (hasOpaqueCompositedScrollingContentsLayer(layer.children[i]))
-                return true;
-        }
-    }
-    return false;
-}
 
 onload = function() {
     if (!window.testRunner || !window.internals)

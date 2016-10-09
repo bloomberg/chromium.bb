@@ -605,15 +605,14 @@ static String pointerAsString(const void* ptr) {
 std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSON(
     LayerTreeFlags flags) const {
   RenderingContextMap renderingContextMap;
-  if (flags & OutputChildrenAsLayerList) {
-    std::unique_ptr<JSONObject> json = JSONObject::create();
-    std::unique_ptr<JSONArray> layersArray = JSONArray::create();
-    for (auto& child : m_children)
-      child->layersAsJSONArray(flags, renderingContextMap, layersArray.get());
-    json->setArray("layers", std::move(layersArray));
-    return json;
-  }
-  return layerTreeAsJSONInternal(flags, renderingContextMap);
+  if (flags & OutputAsLayerTree)
+    return layerTreeAsJSONInternal(flags, renderingContextMap);
+  std::unique_ptr<JSONObject> json = JSONObject::create();
+  std::unique_ptr<JSONArray> layersArray = JSONArray::create();
+  for (auto& child : m_children)
+    child->layersAsJSONArray(flags, renderingContextMap, layersArray.get());
+  json->setArray("layers", std::move(layersArray));
+  return json;
 }
 
 std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(

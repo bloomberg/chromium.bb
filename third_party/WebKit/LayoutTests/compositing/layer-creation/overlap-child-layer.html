@@ -46,7 +46,7 @@
 
     window.addEventListener('load', function() {
         if (window.testRunner) {
-            document.getElementById("layertree").innerText = window.internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST);
+            document.getElementById("layertree").innerText = window.internals.layerTreeAsText(document);
             testRunner.notifyDone();
         }
     }, false);

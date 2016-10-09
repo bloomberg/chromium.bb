@@ -20,17 +20,14 @@
 
 var t = async_test("Check that the preferCompositingToLCDText flag results in compositing");
 
-function isUsingCompositedScrolling(layer) {
-    layer = layer || JSON.parse(window.internals.layerTreeAsText(document));
-    if (layer.bounds[1] == 1000)
-        return true;
-    if (layer.children) {
-        for (var i = 0; i < layer.children.length; i++) {
-            if (isUsingCompositedScrolling(layer.children[i]))
-                return true;
-        }
-    }
-    return false;
+function isUsingCompositedScrolling() {
+    var layers = JSON.parse(window.internals.layerTreeAsText(document));
+    var found = false;
+    layers["layers"].forEach(function(layer) {
+        if (layer.bounds[1] == 1000)
+            found = true;
+    });
+    return found;
 }
 
 window.onload = function() {

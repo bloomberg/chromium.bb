@@ -11,6 +11,6 @@ if (window.testRunner)
     testRunner.dumpAsText();
 if (window.internals) {
     var layers = JSON.parse(internals.layerTreeAsText(document));
-    assert_true(layers.children.length == 1 && layers.children[0].children.length == 1);
+    assert_true(layers["layers"].length == 3);
 }
 </script>
