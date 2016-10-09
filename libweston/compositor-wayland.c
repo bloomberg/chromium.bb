@@ -1244,7 +1244,6 @@ wayland_output_create_for_parent_output(struct wayland_backend *b,
 	output->base.make = poutput->physical.make;
 	output->base.model = poutput->physical.model;
 
-	/* XXX: Clear previously added values */
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert_list(&output->base.mode_list, &poutput->mode_list);
 	wl_list_init(&poutput->mode_list);
@@ -2234,10 +2233,30 @@ wayland_destroy(struct weston_compositor *ec)
 {
 	struct wayland_backend *b = to_wayland_backend(ec);
 
+	wl_event_source_remove(b->parent.wl_source);
+
 	weston_compositor_shutdown(ec);
 
 	if (b->parent.shm)
 		wl_shm_destroy(b->parent.shm);
+
+	if (b->parent.fshell)
+		zwp_fullscreen_shell_v1_release(b->parent.fshell);
+
+	if (b->parent.compositor)
+		wl_compositor_destroy(b->parent.compositor);
+
+	wl_registry_destroy(b->parent.registry);
+	wl_display_flush(b->parent.wl_display);
+	wl_display_disconnect(b->parent.wl_display);
+
+	if (b->theme)
+		theme_destroy(b->theme);
+
+	if (b->frame_device)
+		cairo_device_destroy(b->frame_device);
+
+	wl_cursor_theme_destroy(b->cursor_theme);
 
 	free(b);
 }
