@@ -629,6 +629,19 @@ wayland_backend_destroy_output_surface(struct wayland_output *output)
 	wl_surface_destroy(output->parent.surface);
 }
 
+static void
+wayland_output_destroy_shm_buffers(struct wayland_output *output)
+{
+	struct wayland_shm_buffer *buffer, *next;
+
+	/* Throw away any remaining SHM buffers */
+	wl_list_for_each_safe(buffer, next, &output->shm.free_buffers, free_link)
+		wayland_shm_buffer_destroy(buffer);
+	/* These will get thrown away when they get released */
+	wl_list_for_each(buffer, &output->shm.buffers, link)
+		buffer->output = NULL;
+}
+
 static int
 wayland_output_disable(struct weston_output *base)
 {
@@ -644,6 +657,8 @@ wayland_output_disable(struct weston_output *base)
 		gl_renderer->output_destroy(&output->base);
 		wl_egl_window_destroy(output->gl.egl_window);
 	}
+
+	wayland_output_destroy_shm_buffers(output);
 
 	wayland_backend_destroy_output_surface(output);
 
@@ -719,7 +734,6 @@ wayland_output_resize_surface(struct wayland_output *output)
 {
 	struct wayland_backend *b =
 		to_wayland_backend(output->base.compositor);
-	struct wayland_shm_buffer *buffer, *next;
 	int32_t ix, iy, iwidth, iheight;
 	int32_t width, height;
 	struct wl_region *region;
@@ -783,12 +797,7 @@ wayland_output_resize_surface(struct wayland_output *output)
 		output->gl.border.bottom = NULL;
 	}
 
-	/* Throw away any remaining SHM buffers */
-	wl_list_for_each_safe(buffer, next, &output->shm.free_buffers, free_link)
-		wayland_shm_buffer_destroy(buffer);
-	/* These will get thrown away when they get released */
-	wl_list_for_each(buffer, &output->shm.buffers, link)
-		buffer->output = NULL;
+	wayland_output_destroy_shm_buffers(output);
 }
 
 static int
