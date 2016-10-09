@@ -2347,29 +2347,19 @@ drm_output_set_mode(struct weston_output *base,
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
 
-	struct drm_mode *drm_mode, *next, *current;
+	struct drm_mode *current;
 	drmModeModeInfo crtc_mode;
-	int i;
 
 	output->base.make = "unknown";
 	output->base.model = "unknown";
 	output->base.serial_number = "unknown";
-	wl_list_init(&output->base.mode_list);
-
-	output->original_crtc = drmModeGetCrtc(b->drm.fd, output->crtc_id);
 
 	if (connector_get_current_mode(output->connector, b->drm.fd, &crtc_mode) < 0)
-		goto err_free;
-
-	for (i = 0; i < output->connector->count_modes; i++) {
-		drm_mode = drm_output_add_mode(output, &output->connector->modes[i]);
-		if (!drm_mode)
-			goto err_free;
-	}
+		return -1;
 
 	current = drm_output_choose_initial_mode(b, output, mode, modeline, &crtc_mode);
 	if (!current)
-		goto err_free;
+		return -1;
 
 	output->base.current_mode = &current->base;
 	output->base.current_mode->flags |= WL_OUTPUT_MODE_CURRENT;
@@ -2382,18 +2372,6 @@ drm_output_set_mode(struct weston_output *base,
 	output->base.mm_height = output->connector->mmHeight;
 
 	return 0;
-
-err_free:
-	drmModeFreeCrtc(output->original_crtc);
-	output->original_crtc = NULL;
-
-	wl_list_for_each_safe(drm_mode, next, &output->base.mode_list,
-							base.link) {
-		wl_list_remove(&drm_mode->base.link);
-		free(drm_mode);
-	}
-
-	return -1;
 }
 
 static void
@@ -2515,6 +2493,7 @@ drm_output_destroy(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
+	struct drm_mode *drm_mode, *next;
 	drmModeCrtcPtr origcrtc = output->original_crtc;
 
 	if (output->page_flip_pending) {
@@ -2525,6 +2504,12 @@ drm_output_destroy(struct weston_output *base)
 
 	if (output->base.enabled)
 		drm_output_deinit(&output->base);
+
+	wl_list_for_each_safe(drm_mode, next, &output->base.mode_list,
+			      base.link) {
+		wl_list_remove(&drm_mode->base.link);
+		free(drm_mode);
+	}
 
 	if (origcrtc) {
 		/* Restore original CRTC state */
@@ -2587,17 +2572,18 @@ create_output_for_connector(struct drm_backend *b,
 			    struct udev_device *drm_device)
 {
 	struct drm_output *output;
+	struct drm_mode *drm_mode;
 	int i;
 
 	i = find_crtc_for_connector(b, resources, connector);
 	if (i < 0) {
 		weston_log("No usable crtc/encoder pair for connector.\n");
-		return -1;
+		goto err;
 	}
 
 	output = zalloc(sizeof *output);
 	if (output == NULL)
-		return -1;
+		goto err;
 
 	output->connector = connector;
 	output->crtc_id = resources->crtcs[i];
@@ -2607,6 +2593,8 @@ create_output_for_connector(struct drm_backend *b,
 	output->backlight = backlight_init(drm_device,
 					   connector->connector_type);
 
+	output->original_crtc = drmModeGetCrtc(b->drm.fd, output->crtc_id);
+
 	output->base.enable = drm_output_enable;
 	output->base.destroy = drm_output_destroy;
 	output->base.disable = drm_output_disable;
@@ -2614,12 +2602,27 @@ create_output_for_connector(struct drm_backend *b,
 
 	output->destroy_pending = 0;
 	output->disable_pending = 0;
-	output->original_crtc = NULL;
 
 	weston_output_init(&output->base, b->compositor);
+
+	wl_list_init(&output->base.mode_list);
+
+	for (i = 0; i < output->connector->count_modes; i++) {
+		drm_mode = drm_output_add_mode(output, &output->connector->modes[i]);
+		if (!drm_mode) {
+			drm_output_destroy(&output->base);
+			return -1;
+		}
+	}
+
 	weston_compositor_add_pending_output(&output->base, b->compositor);
 
 	return 0;
+
+err:
+	drmModeFreeConnector(connector);
+
+	return -1;
 }
 
 static void
@@ -2719,10 +2722,8 @@ create_outputs(struct drm_backend *b, struct udev_device *drm_device)
 		    (b->connector == 0 ||
 		     connector->connector_id == b->connector)) {
 			if (create_output_for_connector(b, resources,
-							connector, drm_device) < 0) {
-				drmModeFreeConnector(connector);
+							connector, drm_device) < 0)
 				continue;
-			}
 		} else {
 			drmModeFreeConnector(connector);
 		}
