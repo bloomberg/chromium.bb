@@ -39,7 +39,7 @@ extern "C" {
 struct weston_wayland_backend_config {
 	struct weston_backend_config base;
 	bool use_pixman;
-	int sprawl;
+	bool sprawl;
 	char *display_name;
 	int fullscreen;
 	char *cursor_theme;

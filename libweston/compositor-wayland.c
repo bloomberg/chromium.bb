@@ -76,7 +76,7 @@ struct wayland_backend {
 	} parent;
 
 	bool use_pixman;
-	int sprawl_across_outputs;
+	bool sprawl_across_outputs;
 	int fullscreen;
 
 	struct theme *theme;
@@ -2448,7 +2448,7 @@ backend_init(struct weston_compositor *compositor,
 		return -1;
 
 	if (new_config.sprawl || b->parent.fshell) {
-		b->sprawl_across_outputs = 1;
+		b->sprawl_across_outputs = true;
 		wl_display_roundtrip(b->parent.wl_display);
 
 		wl_list_for_each(poutput, &b->parent.output_list, link)

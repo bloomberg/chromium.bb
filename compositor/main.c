@@ -1578,7 +1578,7 @@ load_wayland_backend(struct weston_compositor *c,
 	config.cursor_theme = NULL;
 	config.display_name = NULL;
 	config.fullscreen = 0;
-	config.sprawl = 0;
+	config.sprawl = false;
 	config.use_pixman = false;
 
 	const struct weston_option wayland_options[] = {
