@@ -1,26 +1,22 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [785, 616],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [785, 616],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV",
+      "position": [8, 408],
+      "transformOrigin": [100, 100],
+      "bounds": [304, 200],
       "drawsContent": true,
-      "children": [
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow DIV",
-          "position": [8, 408],
-          "transformOrigin": [100, 100],
-          "bounds": [304, 200],
-          "drawsContent": true,
-          "paintInvalidations": [
-            {
-              "object": "LayoutBlockFlow DIV",
-              "rect": [10, 10, 50, 50],
-              "reason": "style change"
-            }
-          ]
+          "object": "LayoutBlockFlow DIV",
+          "rect": [10, 10, 50, 50],
+          "reason": "style change"
         }
       ]
     }

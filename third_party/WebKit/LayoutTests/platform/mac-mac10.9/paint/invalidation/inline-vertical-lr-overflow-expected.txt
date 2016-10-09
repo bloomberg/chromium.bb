@@ -1,16 +1,16 @@
 {
   "name": "Content Root Layer",
-  "bounds": [785, 4934],
+  "bounds": [800, 600],
   "children": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 4934],
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [8, 2408, 100, 100],
+          "object": "LayoutText #text",
+          "rect": [33, 33, 100, 250],
           "reason": "style change"
         }
       ]
@@ -18,7 +18,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='target'",
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'A\u00A0\u00A0B'",
       "reason": "style change"
     }
   ]

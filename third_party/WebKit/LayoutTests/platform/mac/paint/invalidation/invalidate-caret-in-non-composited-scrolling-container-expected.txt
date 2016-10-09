@@ -1,56 +1,52 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutTextControl INPUT id='root'",
+      "position": [5, 5],
+      "bounds": [47, 25],
       "drawsContent": true,
-      "children": [
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
         {
-          "name": "LayoutTextControl INPUT id='root'",
-          "position": [5, 5],
-          "bounds": [47, 25],
-          "drawsContent": true,
-          "backgroundColor": "#FFFFFF",
-          "paintInvalidations": [
-            {
-              "object": "LayoutTextControl INPUT id='root'",
-              "rect": [0, 0, 47, 25],
-              "reason": "subtree"
-            },
-            {
-              "object": "LayoutTextControl INPUT id='root'",
-              "rect": [0, 0, 41, 19],
-              "reason": "full"
-            },
-            {
-              "object": "LayoutBlockFlow DIV id='inner-editor'",
-              "rect": [6, 6, 35, 13],
-              "reason": "subtree"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [6, 6, 35, 13],
-              "reason": "subtree"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [38, 6, 3, 13],
-              "reason": "invalidate paint rectangle"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [38, 6, 3, 13],
-              "reason": "invalidate paint rectangle"
-            },
-            {
-              "object": "LayoutText #text",
-              "rect": [38, 6, 3, 13],
-              "reason": "invalidate paint rectangle"
-            }
-          ]
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 47, 25],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 41, 19],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [6, 6, 35, 13],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [6, 6, 35, 13],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [38, 6, 3, 13],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [38, 6, 3, 13],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [38, 6, 3, 13],
+          "reason": "invalidate paint rectangle"
         }
       ]
     }

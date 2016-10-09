@@ -1,81 +1,69 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutTextControl INPUT id='root'",
+      "position": [7, 7],
+      "bounds": [70, 24],
       "drawsContent": true,
-      "children": [
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
         {
-          "name": "LayoutTextControl INPUT id='root'",
-          "position": [7, 7],
-          "bounds": [70, 24],
-          "drawsContent": true,
-          "backgroundColor": "#FFFFFF",
-          "paintInvalidations": [
-            {
-              "object": "LayoutTextControl INPUT id='root'",
-              "rect": [0, 0, 70, 24],
-              "reason": "subtree"
-            },
-            {
-              "object": "LayoutTextControl INPUT id='root'",
-              "rect": [0, 0, 68, 22],
-              "reason": "full"
-            }
-          ],
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV id='inner-editor'",
-              "position": [3, 4],
-              "bounds": [64, 16],
-              "shouldFlattenTransform": false,
-              "drawsContent": true,
-              "children": [
-                {
-                  "name": "Scrolling Layer",
-                  "bounds": [64, 16],
-                  "shouldFlattenTransform": false,
-                  "children": [
-                    {
-                      "name": "Scrolling Contents Layer",
-                      "bounds": [75, 16],
-                      "drawsContent": true,
-                      "paintInvalidations": [
-                        {
-                          "object": "LayoutText #text",
-                          "rect": [72, -1, 3, 18],
-                          "reason": "invalidate paint rectangle"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "name": "Overflow Controls Host Layer",
-                  "bounds": [64, 16],
-                  "children": [
-                    {
-                      "name": "Horizontal Scrollbar Layer",
-                      "position": [0, 16],
-                      "bounds": [64, 0],
-                      "drawsContent": true
-                    },
-                    {
-                      "name": "Vertical Scrollbar Layer",
-                      "position": [64, 0],
-                      "bounds": [0, 16],
-                      "drawsContent": true
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 70, 24],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 68, 22],
+          "reason": "full"
         }
       ]
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='inner-editor'",
+      "position": [3, 4],
+      "bounds": [64, 16],
+      "shouldFlattenTransform": false,
+      "drawsContent": true
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [64, 16],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [75, 16],
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutText #text",
+          "rect": [72, -1, 3, 18],
+          "reason": "invalidate paint rectangle"
+        }
+      ]
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [64, 16]
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [0, 16],
+      "bounds": [64, 0],
+      "drawsContent": true
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [64, 0],
+      "bounds": [0, 16],
+      "drawsContent": true
     }
   ],
   "objectPaintInvalidations": [

@@ -1,58 +1,48 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='scroller'",
+      "position": [300, 300],
+      "bounds": [200, 200],
+      "shouldFlattenTransform": false,
+      "drawsContent": true
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [185, 200],
+      "shouldFlattenTransform": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [185, 4900],
       "drawsContent": true,
-      "children": [
+      "paintInvalidations": [
         {
-          "name": "LayoutBlockFlow (positioned) DIV id='scroller'",
-          "position": [300, 300],
-          "bounds": [200, 200],
-          "shouldFlattenTransform": false,
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "Scrolling Layer",
-              "bounds": [185, 200],
-              "shouldFlattenTransform": false,
-              "children": [
-                {
-                  "name": "Scrolling Contents Layer",
-                  "bounds": [185, 4900],
-                  "drawsContent": true,
-                  "paintInvalidations": [
-                    {
-                      "object": "LayoutBlockFlow DIV id='target'",
-                      "rect": [0, 2400, 100, 100],
-                      "reason": "style change"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "Overflow Controls Host Layer",
-              "bounds": [200, 200],
-              "children": [
-                {
-                  "name": "Vertical Scrollbar Layer",
-                  "position": [185, 0],
-                  "bounds": [15, 200],
-                  "paintInvalidations": [
-                    {
-                      "object": "Vertical Scrollbar Layer",
-                      "rect": [0, 0, 15, 200],
-                      "reason": "full"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [0, 2400, 100, 100],
+          "reason": "style change"
+        }
+      ]
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "bounds": [200, 200]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [185, 0],
+      "bounds": [15, 200],
+      "paintInvalidations": [
+        {
+          "object": "Vertical Scrollbar Layer",
+          "rect": [0, 0, 15, 200],
+          "reason": "full"
         }
       ]
     }

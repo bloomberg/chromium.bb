@@ -9,14 +9,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [8, 108, 100, 100],
-          "reason": "layoutObject removal"
-        },
-        {
           "object": "LayoutText #text",
-          "rect": [8, 108, 100, 36],
-          "reason": "layoutObject removal"
+          "rect": [667, 33, 100, 250],
+          "reason": "style change"
         }
       ]
     }
@@ -24,11 +19,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "layoutObject removal"
+      "reason": "style change"
     },
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "layoutObject removal"
+      "object": "InlineTextBox 'A\u00A0\u00A0B'",
+      "reason": "style change"
     }
   ]
 }

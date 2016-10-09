@@ -1,7 +1,5 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
@@ -18,35 +16,31 @@
           "rect": [48, -156, 40, 20],
           "reason": "bounds change"
         }
-      ],
-      "children": [
+      ]
+    },
+    {
+      "name": "LayoutListItem (floating) LI id='watches'",
+      "position": [30, 44],
+      "transformOrigin": [18, 10],
+      "bounds": [25, 19],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
+      "position": [18, 0],
+      "bounds": [0, 19],
+      "backfaceVisibility": "hidden"
+    },
+    {
+      "name": "LayoutListItem (relative positioned) (floating) LI id='menu'",
+      "position": [30, 44],
+      "bounds": [18, 19],
+      "drawsContent": true,
+      "paintInvalidations": [
         {
-          "name": "LayoutListItem (floating) LI id='watches'",
-          "position": [30, 44],
-          "transformOrigin": [18, 10],
-          "bounds": [25, 19],
-          "drawsContent": true,
-          "children": [
-            {
-              "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
-              "position": [18, 0],
-              "bounds": [0, 19],
-              "backfaceVisibility": "hidden"
-            }
-          ]
-        },
-        {
-          "name": "LayoutListItem (relative positioned) (floating) LI id='menu'",
-          "position": [30, 44],
-          "bounds": [18, 19],
-          "drawsContent": true,
-          "paintInvalidations": [
-            {
-              "object": "LayoutListMarker (anonymous)",
-              "rect": [0, 0, 7, 19],
-              "reason": "forced by layout"
-            }
-          ]
+          "object": "LayoutListMarker (anonymous)",
+          "rect": [0, 0, 7, 19],
+          "reason": "forced by layout"
         }
       ]
     }
