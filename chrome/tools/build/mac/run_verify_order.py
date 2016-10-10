@@ -19,7 +19,7 @@ if __name__ == '__main__':
                       help='Path to Xcode.')
 
   args, unknown_args = parser.parse_known_args()
-  if (args.developer_dir):
+  if args.developer_dir:
     os.environ['DEVELOPER_DIR'] = args.developer_dir
 
   this_script_dir = os.path.dirname(sys.argv[0])

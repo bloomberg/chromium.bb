@@ -16,7 +16,7 @@ if __name__ == '__main__':
                       help='Path to Xcode.')
   args, unknown_args = parser.parse_known_args()
 
-  if (args.developer_dir):
+  if args.developer_dir:
     os.environ['DEVELOPER_DIR'] = args.developer_dir
 
   rv = subprocess.check_call(['xcrun'] + unknown_args)

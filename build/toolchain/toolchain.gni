@@ -47,12 +47,12 @@ declare_args() {
   # obtained with gclient sync after setting the environment variable
   # FORCE_MAC_TOOLCHAIN].
   use_system_xcode = true
-
-  # The path to the hermetic install of Xcode. Only relevant when
-  # use_system_xcode = false.
-  hermetic_xcode_path =
-      rebase_path("//build/mac_files/Xcode.app", "", root_build_dir)
 }
+
+# The path to the hermetic install of Xcode. Only relevant when
+# use_system_xcode = false.
+hermetic_xcode_path =
+    rebase_path("//build/mac_files/Xcode.app", "", root_build_dir)
 
 declare_args() {
   if (is_clang) {
