@@ -392,12 +392,6 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_NUM_COOKIES" desc="The label of the counts for allowed cookies that are in use on the page.">
         {NUM_COOKIES, plural, =1 {1 in use} other {# in use}}
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_FIRST_PARTY_SITE_DATA" desc="The label of the counts for allowed and blocked cookies and site data for the top-level origin (i.e. the origin in the Omnibox).">
-        {NUM_COOKIES, plural, =1 {1 from this site} other {# from this site}}
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_SITE_DATA" desc="The label of the counts for allowed and blocked third party cookies and site data.">
-        {NUM_COOKIES, plural, =1 {1 from other sites} other {# from other sites}}
-      </message>
       <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ALLOW" desc="The text of the menu item of a permissions menu on the Website Settings UI that resets the setting to the default setting which is allow.">
         Use global default (Allow)
       </message>
@@ -421,9 +415,6 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_DETECT_IMPORTANT_CONTENT" desc="The text of the menu item of a permissions menu on the Website Settings UI that sets the setting to detect important content.">
         Always detect important content on this site
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_PERMISSION_TYPE" desc="The label that is used to display permission types in the Website Settings popup. ">
-        <ph name="PERMISSION_TYPE_LABEL">$1<ex>Plugins</ex></ph>:
       </message>
 
       <message name="IDS_PERMISSIONS_BUBBLE_PERSIST_TEXT" desc="The label for the checkbox used to allow users to optionally persist a permission request decision">

@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/views/website_settings/chosen_object_row_observer.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_row_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
@@ -50,7 +49,7 @@ enum : int {
   // Left icon margin.
   kPermissionIconMarginLeft = 6,
   // The width of the column that contains the permissions icons.
-  kPermissionIconColumnWidth = 20,
+  kPermissionIconColumnWidth = 16,
 };
 
 // The views implementation of the website settings UI.
@@ -130,14 +129,6 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   // returned view is transferred to the caller.
   views::View* CreateSiteSettingsView() WARN_UNUSED_RESULT;
 
-  // The site settings view contains several sections with a |headline|
-  // followed by the section |contents| and an optional |link|. This method
-  // creates a section for the given |headline|, |contents| and |link|. |link|
-  // can be NULL if the section should not contain a link.
-  views::View* CreateSection(const base::string16& headline,
-                             views::View* contents,
-                             views::Link* link) WARN_UNUSED_RESULT;
-
   // Used to asynchronously handle clicks since these calls may cause the
   // destruction of the settings view and the base class window still needs to
   // be alive to finish handling the mouse or keyboard click.
@@ -155,23 +146,18 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   // The separator between the header and the site settings view.
   views::Separator* separator_;
 
-  // The view that contains the site data and permissions sections.
+  // The view that contains the cookie and permissions sections.
   views::View* site_settings_view_;
-  // The view that contains the contents of the "Cookies and Site data" section
-  // of the site settings view.
-  views::View* site_data_content_;
+  // The view that contains the contents of the "Cookies" part of the site
+  // settings view.
+  views::View* cookies_view_;
   // The link that opens the "Cookies" dialog.
   views::Link* cookie_dialog_link_;
-  // The view that contains the contents of the "Permissions" section
-  // of the site settings view.
-  views::View* permissions_content_;
+  // The view that contains the "Permissions" table of the site settings view.
+  views::View* permissions_view_;
 
   // The certificate provided by the site, if one exists.
   scoped_refptr<net::X509Certificate> certificate_;
-
-  // The link to open the site settings page that provides full control over
-  // the origin's permissions.
-  views::Link* site_settings_link_;
 
   base::WeakPtrFactory<WebsiteSettingsPopupView> weak_factory_;
 

@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/gfx/image/image.h"
@@ -25,6 +24,11 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+// Minimum distance between the label and its corresponding menu.
+const int kMinSeparationBetweenLabelAndMenu = 16;
+}
 
 namespace internal {
 
@@ -234,25 +238,15 @@ PermissionSelectorRow::PermissionSelectorRow(
   SetLayoutManager(layout);
   const int column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::FIXED,
-                        kPermissionIconColumnWidth,
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                        views::GridLayout::FIXED, kPermissionIconColumnWidth,
                         0);
   column_set->AddPaddingColumn(0, kPermissionIconMarginLeft);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(1, kMinSeparationBetweenLabelAndMenu);
+  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 0,
+                        views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(1, column_set_id);
   // Create the permission icon.
@@ -265,9 +259,8 @@ PermissionSelectorRow::PermissionSelectorRow(
                   views::GridLayout::CENTER,
                   views::GridLayout::CENTER);
   // Create the label that displays the permission type.
-  views::Label* label = new views::Label(l10n_util::GetStringFUTF16(
-      IDS_WEBSITE_SETTINGS_PERMISSION_TYPE,
-      WebsiteSettingsUI::PermissionTypeToUIString(permission.type)));
+  views::Label* label = new views::Label(
+      WebsiteSettingsUI::PermissionTypeToUIString(permission.type));
   layout->AddView(label,
                   1,
                   1,
