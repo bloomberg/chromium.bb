@@ -3764,6 +3764,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_ADD_AND_TRUE_TO_LOOP_CONDITION;
   if (workarounds().rewrite_do_while_loops)
     driver_bug_workarounds |= SH_REWRITE_DO_WHILE_LOOPS;
+  if (workarounds().emulate_isnan_on_float)
+    driver_bug_workarounds |= SH_EMULATE_ISNAN_FLOAT_FUNCTION;
 
   resources.WEBGL_debug_shader_precision =
       group_->gpu_preferences().emulate_shader_precision;
