@@ -370,9 +370,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
             ? WebURLRequest::FetchCredentialsModeInclude
             : WebURLRequest::FetchCredentialsModeOmit);
     if (m_didRedirect) {
-      crossOriginRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
-          m_referrerAfterRedirect.referrerPolicy, crossOriginRequest.url(),
-          m_referrerAfterRedirect.referrer));
+      crossOriginRequest.setHTTPReferrer(m_referrerAfterRedirect);
     }
     loadRequest(crossOriginRequest, crossOriginOptions);
   } else {
@@ -391,9 +389,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
     m_actualOptions = crossOriginOptions;
 
     if (m_didRedirect) {
-      m_actualRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
-          m_referrerAfterRedirect.referrerPolicy, m_actualRequest.url(),
-          m_referrerAfterRedirect.referrer));
+      m_actualRequest.setHTTPReferrer(m_referrerAfterRedirect);
     }
 
     bool shouldForcePreflight =

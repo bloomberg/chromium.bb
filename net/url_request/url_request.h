@@ -84,7 +84,11 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // A ReferrerPolicy for the request can be set with
   // set_referrer_policy() and controls the contents of the Referer
-  // header when URLRequest follows server redirects.
+  // header when URLRequest follows server redirects. Note that setting
+  // a ReferrerPolicy on the request has no effect on the Referer header
+  // of the initial leg of the request; the caller is responsible for
+  // setting the initial Referer, and the ReferrerPolicy only controls
+  // what happens to the Referer while following redirects.
   enum ReferrerPolicy {
     // Clear the referrer header if the protocol changes from HTTPS to
     // HTTP. This is the default behavior of URLRequest.

@@ -54,7 +54,6 @@ class CONTENT_EXPORT WebURLLoaderImpl
   static void PopulateURLRequestForRedirect(
       const blink::WebURLRequest& request,
       const net::RedirectInfo& redirect_info,
-      blink::WebReferrerPolicy referrer_policy,
       blink::WebURLRequest::SkipServiceWorker skip_service_worker,
       blink::WebURLRequest* new_request);
 

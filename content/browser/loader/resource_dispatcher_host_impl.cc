@@ -263,9 +263,13 @@ void SetReferrerForRequest(net::URLRequest* request, const Referrer& referrer) {
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
   switch (referrer.policy) {
     case blink::WebReferrerPolicyAlways:
-    case blink::WebReferrerPolicyNever:
-    case blink::WebReferrerPolicyOrigin:
       net_referrer_policy = net::URLRequest::NEVER_CLEAR_REFERRER;
+      break;
+    case blink::WebReferrerPolicyNever:
+      net_referrer_policy = net::URLRequest::NO_REFERRER;
+      break;
+    case blink::WebReferrerPolicyOrigin:
+      net_referrer_policy = net::URLRequest::ORIGIN;
       break;
     case blink::WebReferrerPolicyNoReferrerWhenDowngrade:
       net_referrer_policy =

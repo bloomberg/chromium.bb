@@ -147,6 +147,31 @@ net::RequestPriority ConvertWebKitPriorityToNetPriority(
   }
 }
 
+blink::WebReferrerPolicy NetReferrerPolicyToBlinkReferrerPolicy(
+    net::URLRequest::ReferrerPolicy net_policy) {
+  switch (net_policy) {
+    case net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
+      return blink::WebReferrerPolicyNoReferrerWhenDowngrade;
+    case net::URLRequest::
+        REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
+      return blink::
+          WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+    case net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
+      return blink::WebReferrerPolicyOriginWhenCrossOrigin;
+    case net::URLRequest::NEVER_CLEAR_REFERRER:
+      return blink::WebReferrerPolicyAlways;
+    case net::URLRequest::ORIGIN:
+      return blink::WebReferrerPolicyOrigin;
+    case net::URLRequest::NO_REFERRER:
+      return blink::WebReferrerPolicyNever;
+    case net::URLRequest::MAX_REFERRER_POLICY:
+      NOTREACHED();
+      return blink::WebReferrerPolicyDefault;
+  }
+  NOTREACHED();
+  return blink::WebReferrerPolicyDefault;
+}
+
 // Extracts info from a data scheme URL |url| into |info| and |data|. Returns
 // net::OK if successful. Returns a net error code otherwise.
 int GetInfoFromDataURL(const GURL& url,
@@ -372,7 +397,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   WebURLLoaderClient* client_;
   ResourceDispatcher* resource_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  WebReferrerPolicy referrer_policy_;
   std::unique_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   std::unique_ptr<StreamOverrideParameters> stream_override_;
   std::unique_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
@@ -418,7 +442,6 @@ WebURLLoaderImpl::Context::Context(WebURLLoaderImpl* loader,
       client_(NULL),
       resource_dispatcher_(resource_dispatcher),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      referrer_policy_(blink::WebReferrerPolicyDefault),
       defers_loading_(NOT_DEFERRING),
       request_id_(-1),
       url_loader_factory_(url_loader_factory) {}
@@ -521,8 +544,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->request_initiator = request.requestorOrigin();
   resource_request->referrer = referrer_url;
 
-  referrer_policy_ = request.referrerPolicy();
-  resource_request->referrer_policy = referrer_policy_;
+  resource_request->referrer_policy = request.referrerPolicy();
 
   resource_request->headers = GetWebURLRequestHeaders(request);
   resource_request->load_flags = GetLoadFlagsForWebURLRequest(request);
@@ -626,7 +648,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 
   WebURLRequest new_request;
   PopulateURLRequestForRedirect(
-      request_, redirect_info, referrer_policy_,
+      request_, redirect_info,
       info.was_fetched_via_service_worker
           ? blink::WebURLRequest::SkipServiceWorker::None
           : blink::WebURLRequest::SkipServiceWorker::All,
@@ -1130,7 +1152,6 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
 void WebURLLoaderImpl::PopulateURLRequestForRedirect(
     const blink::WebURLRequest& request,
     const net::RedirectInfo& redirect_info,
-    blink::WebReferrerPolicy referrer_policy,
     blink::WebURLRequest::SkipServiceWorker skip_service_worker,
     blink::WebURLRequest* new_request) {
   // TODO(darin): We lack sufficient information to construct the actual
@@ -1148,7 +1169,8 @@ void WebURLLoaderImpl::PopulateURLRequestForRedirect(
   new_request->setFetchCredentialsMode(request.getFetchCredentialsMode());
 
   new_request->setHTTPReferrer(WebString::fromUTF8(redirect_info.new_referrer),
-                              referrer_policy);
+                               NetReferrerPolicyToBlinkReferrerPolicy(
+                                   redirect_info.new_referrer_policy));
   new_request->setPriority(request.getPriority());
 
   std::string old_method = request.httpMethod().utf8();
