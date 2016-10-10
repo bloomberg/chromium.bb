@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.14",
+  "version": "11.15",
   "entries": [
     {
       "id": 1,
@@ -1334,6 +1334,18 @@ LONG_STRING_CONST(
                         "0x9874", "0x9874", "0x9874", "0x9874", "0x98e4",
                         "0x98e4", "0x98e4"]
         }
+      ]
+    },
+    {
+      "id": 123,
+      "description": "Accelerated VPx decoding is hanging on some videos.",
+      "cr_bugs": [654111],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "accelerated_vpx_decode"
       ]
     }
   ]
