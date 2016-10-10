@@ -27,9 +27,7 @@ class BrowserThreadTest : public testing::Test {
                                   base::MessageLoop::QuitWhenIdleClosure());
   }
 
-  void StopFileThread() {
-    file_thread_->Stop();
-  }
+  void StopUIThread() { ui_thread_->Stop(); }
 
  protected:
   void SetUp() override {
@@ -40,8 +38,8 @@ class BrowserThreadTest : public testing::Test {
   }
 
   void TearDown() override {
-    ui_thread_->Stop();
-    StopFileThread();
+    StopUIThread();
+    file_thread_->Stop();
   }
 
   static void BasicFunction(base::MessageLoop* message_loop) {
@@ -78,22 +76,22 @@ class BrowserThreadTest : public testing::Test {
   mutable base::MessageLoop loop_;
 };
 
-class FileThreadDestructionObserver
+class UIThreadDestructionObserver
     : public base::MessageLoop::DestructionObserver {
  public:
-  explicit FileThreadDestructionObserver(bool* did_shutdown,
-                                         const base::Closure& callback)
+  explicit UIThreadDestructionObserver(bool* did_shutdown,
+                                       const base::Closure& callback)
       : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         callback_(callback),
-        file_task_runner_(
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)),
+        ui_task_runner_(
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)),
         did_shutdown_(did_shutdown) {
-    BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)->PostTask(
-        FROM_HERE, base::Bind(&Watch, this));
+    BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)
+        ->PostTask(FROM_HERE, base::Bind(&Watch, this));
   }
 
  private:
-  static void Watch(FileThreadDestructionObserver* observer) {
+  static void Watch(UIThreadDestructionObserver* observer) {
     base::MessageLoop::current()->AddDestructionObserver(observer);
   }
 
@@ -102,8 +100,8 @@ class FileThreadDestructionObserver
     // Ensure that even during MessageLoop teardown the BrowserThread ID is
     // correctly associated with this thread and the BrowserThreadTaskRunner
     // knows it's on the right thread.
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    EXPECT_TRUE(file_task_runner_->BelongsToCurrentThread());
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    EXPECT_TRUE(ui_task_runner_->BelongsToCurrentThread());
 
     base::MessageLoop::current()->RemoveDestructionObserver(this);
     *did_shutdown_ = true;
@@ -112,7 +110,7 @@ class FileThreadDestructionObserver
 
   const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;
   const base::Closure callback_;
-  const scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   bool* did_shutdown_;
 };
 
@@ -165,10 +163,10 @@ TEST_F(BrowserThreadTest, PostTaskAndReply) {
 TEST_F(BrowserThreadTest, RunsTasksOnCurrentThreadDuringShutdown) {
   bool did_shutdown = false;
   base::RunLoop loop;
-  FileThreadDestructionObserver observer(&did_shutdown, loop.QuitClosure());
+  UIThreadDestructionObserver observer(&did_shutdown, loop.QuitClosure());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&BrowserThreadTest::StopFileThread, base::Unretained(this)));
+      base::Bind(&BrowserThreadTest::StopUIThread, base::Unretained(this)));
   loop.Run();
 
   EXPECT_TRUE(did_shutdown);
