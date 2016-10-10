@@ -26,7 +26,7 @@ distwin32-dir :
 	  make && \
 	  make install; \
 	elif which docker >/dev/null; then \
-	  gtar --transform='s/Dockerfile.dev/Dockerfile/' -cz .dockerignore * | docker build -t liblouis-dev - && \
+	  gtar --transform='s/Dockerfile.dev/Dockerfile/' --exclude-from=.dockerignore -cz * | docker build -t liblouis-dev - && \
 	  mkdir -p liblouis-$(VERSION)-win32 && \
 	  docker run --rm -v $(CURDIR)/liblouis-$(VERSION)-win32:/root/src/liblouis/liblouis-$(VERSION)-win32 liblouis-dev \
 	    make PKG_CONFIG_PATH=/root/build/win32/libyaml/lib/pkgconfig distwin32-dir; \
@@ -46,7 +46,7 @@ distwin64-dir :
 	  make && \
 	  make install; \
 	elif which docker >/dev/null; then \
-	  gtar --transform='s/Dockerfile.dev/Dockerfile/' -cz .dockerignore * | docker build -t liblouis-dev - && \
+	  gtar --transform='s/Dockerfile.dev/Dockerfile/' --exclude-from=.dockerignore -cz * | docker build -t liblouis-dev - && \
 	  mkdir -p liblouis-$(VERSION)-win64 && \
 	  docker run --rm -v $(CURDIR)/liblouis-$(VERSION)-win64:/root/src/liblouis/liblouis-$(VERSION)-win64 liblouis-dev \
 	    make PKG_CONFIG_PATH=/root/build/win64/libyaml/lib/pkgconfig distwin64-dir; \
