@@ -323,8 +323,9 @@ ExtensionActionFunction::ExtensionActionFunction()
 ExtensionActionFunction::~ExtensionActionFunction() {
 }
 
-bool ExtensionActionFunction::RunSync() {
-  ExtensionActionManager* manager = ExtensionActionManager::Get(GetProfile());
+ExtensionFunction::ResponseAction ExtensionActionFunction::Run() {
+  ExtensionActionManager* manager =
+      ExtensionActionManager::Get(browser_context());
   if (base::StartsWith(name(), "systemIndicator.",
                        base::CompareCase::INSENSITIVE_ASCII)) {
     extension_action_ = manager->GetSystemIndicator(*extension());
@@ -338,8 +339,7 @@ bool ExtensionActionFunction::RunSync() {
     // TODO(kalman): ideally the browserAction/pageAction APIs wouldn't event
     // exist for extensions that don't have one declared. This should come as
     // part of the Feature system.
-    error_ = kNoExtensionActionError;
-    return false;
+    return RespondNow(Error(kNoExtensionActionError));
   }
 
   // Populates the tab_id_ and details_ members.
@@ -347,18 +347,11 @@ bool ExtensionActionFunction::RunSync() {
 
   // Find the WebContents that contains this tab id if one is required.
   if (tab_id_ != ExtensionAction::kDefaultTabId) {
-    ExtensionTabUtil::GetTabById(tab_id_,
-                                 GetProfile(),
-                                 include_incognito(),
-                                 NULL,
-                                 NULL,
-                                 &contents_,
-                                 NULL);
-    if (!contents_) {
-      error_ = ErrorUtils::FormatErrorMessage(
-          kNoTabError, base::IntToString(tab_id_));
-      return false;
-    }
+    ExtensionTabUtil::GetTabById(tab_id_, browser_context(),
+                                 include_incognito(), nullptr, nullptr,
+                                 &contents_, nullptr);
+    if (!contents_)
+      return RespondNow(Error(kNoTabError, base::IntToString(tab_id_)));
   } else {
     // Only browser actions and system indicators have a default tabId.
     ActionInfo::Type action_type = extension_action_->action_type();
@@ -417,27 +410,31 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
 }
 
 void ExtensionActionFunction::NotifyChange() {
-  ExtensionActionAPI::Get(GetProfile())->NotifyChange(
-      extension_action_, contents_, GetProfile());
+  ExtensionActionAPI::Get(browser_context())
+      ->NotifyChange(extension_action_, contents_, browser_context());
 }
 
-bool ExtensionActionFunction::SetVisible(bool visible) {
+void ExtensionActionFunction::SetVisible(bool visible) {
   if (extension_action_->GetIsVisible(tab_id_) == visible)
-    return true;
+    return;
   extension_action_->SetIsVisible(tab_id_, visible);
   NotifyChange();
-  return true;
 }
 
-bool ExtensionActionShowFunction::RunExtensionAction() {
-  return SetVisible(true);
+ExtensionFunction::ResponseAction
+ExtensionActionShowFunction::RunExtensionAction() {
+  SetVisible(true);
+  return RespondNow(NoArguments());
 }
 
-bool ExtensionActionHideFunction::RunExtensionAction() {
-  return SetVisible(false);
+ExtensionFunction::ResponseAction
+ExtensionActionHideFunction::RunExtensionAction() {
+  SetVisible(false);
+  return RespondNow(NoArguments());
 }
 
-bool ExtensionActionSetIconFunction::RunExtensionAction() {
+ExtensionFunction::ResponseAction
+ExtensionActionSetIconFunction::RunExtensionAction() {
   EXTENSION_FUNCTION_VALIDATE(details_);
 
   // setIcon can take a variant argument: either a dictionary of canvas
@@ -450,32 +447,32 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
     EXTENSION_FUNCTION_VALIDATE(
         ExtensionAction::ParseIconFromCanvasDictionary(*canvas_set, &icon));
 
-    if (icon.isNull()) {
-      error_ = "Icon invalid.";
-      return false;
-    }
+    if (icon.isNull())
+      return RespondNow(Error("Icon invalid."));
 
     extension_action_->SetIcon(tab_id_, gfx::Image(icon));
   } else if (details_->GetInteger("iconIndex", &icon_index)) {
     // Obsolete argument: ignore it.
-    return true;
+    return RespondNow(NoArguments());
   } else {
     EXTENSION_FUNCTION_VALIDATE(false);
   }
   NotifyChange();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool ExtensionActionSetTitleFunction::RunExtensionAction() {
+ExtensionFunction::ResponseAction
+ExtensionActionSetTitleFunction::RunExtensionAction() {
   EXTENSION_FUNCTION_VALIDATE(details_);
   std::string title;
   EXTENSION_FUNCTION_VALIDATE(details_->GetString("title", &title));
   extension_action_->SetTitle(tab_id_, title);
   NotifyChange();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool ExtensionActionSetPopupFunction::RunExtensionAction() {
+ExtensionFunction::ResponseAction
+ExtensionActionSetPopupFunction::RunExtensionAction() {
   EXTENSION_FUNCTION_VALIDATE(details_);
   std::string popup_string;
   EXTENSION_FUNCTION_VALIDATE(details_->GetString("popup", &popup_string));
@@ -486,19 +483,21 @@ bool ExtensionActionSetPopupFunction::RunExtensionAction() {
 
   extension_action_->SetPopupUrl(tab_id_, popup_url);
   NotifyChange();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool ExtensionActionSetBadgeTextFunction::RunExtensionAction() {
+ExtensionFunction::ResponseAction
+ExtensionActionSetBadgeTextFunction::RunExtensionAction() {
   EXTENSION_FUNCTION_VALIDATE(details_);
   std::string badge_text;
   EXTENSION_FUNCTION_VALIDATE(details_->GetString("text", &badge_text));
   extension_action_->SetBadgeText(tab_id_, badge_text);
   NotifyChange();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
+ExtensionFunction::ResponseAction
+ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
   EXTENSION_FUNCTION_VALIDATE(details_);
   base::Value* color_value = NULL;
   EXTENSION_FUNCTION_VALIDATE(details_->Get("color", &color_value));
@@ -518,44 +517,42 @@ bool ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
   } else if (color_value->IsType(base::Value::TYPE_STRING)) {
     std::string color_string;
     EXTENSION_FUNCTION_VALIDATE(details_->GetString("color", &color_string));
-    if (!image_util::ParseCssColorString(color_string, &color)) {
-      error_ = kInvalidColorError;
-      return false;
-    }
+    if (!image_util::ParseCssColorString(color_string, &color))
+      return RespondNow(Error(kInvalidColorError));
   }
 
   extension_action_->SetBadgeBackgroundColor(tab_id_, color);
   NotifyChange();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool ExtensionActionGetTitleFunction::RunExtensionAction() {
-  SetResult(base::MakeUnique<base::StringValue>(
-      extension_action_->GetTitle(tab_id_)));
-  return true;
+ExtensionFunction::ResponseAction
+ExtensionActionGetTitleFunction::RunExtensionAction() {
+  return RespondNow(OneArgument(base::MakeUnique<base::StringValue>(
+      extension_action_->GetTitle(tab_id_))));
 }
 
-bool ExtensionActionGetPopupFunction::RunExtensionAction() {
-  SetResult(base::MakeUnique<base::StringValue>(
-      extension_action_->GetPopupUrl(tab_id_).spec()));
-  return true;
+ExtensionFunction::ResponseAction
+ExtensionActionGetPopupFunction::RunExtensionAction() {
+  return RespondNow(OneArgument(base::MakeUnique<base::StringValue>(
+      extension_action_->GetPopupUrl(tab_id_).spec())));
 }
 
-bool ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
-  SetResult(base::MakeUnique<base::StringValue>(
-      extension_action_->GetBadgeText(tab_id_)));
-  return true;
+ExtensionFunction::ResponseAction
+ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
+  return RespondNow(OneArgument(base::MakeUnique<base::StringValue>(
+      extension_action_->GetBadgeText(tab_id_))));
 }
 
-bool ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
+ExtensionFunction::ResponseAction
+ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   SkColor color = extension_action_->GetBadgeBackgroundColor(tab_id_);
   list->AppendInteger(static_cast<int>(SkColorGetR(color)));
   list->AppendInteger(static_cast<int>(SkColorGetG(color)));
   list->AppendInteger(static_cast<int>(SkColorGetB(color)));
   list->AppendInteger(static_cast<int>(SkColorGetA(color)));
-  SetResult(std::move(list));
-  return true;
+  return RespondNow(OneArgument(std::move(list)));
 }
 
 BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction()

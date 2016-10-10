@@ -124,58 +124,44 @@ FileSystemProviderInternalFunction::FileSystemProviderInternalFunction()
     : request_id_(0), request_manager_(NULL) {
 }
 
-bool FileSystemProviderInternalFunction::RejectRequest(
+ExtensionFunction::ResponseAction
+FileSystemProviderInternalFunction::RejectRequest(
     std::unique_ptr<chromeos::file_system_provider::RequestValue> value,
     base::File::Error error) {
   const base::File::Error result =
       request_manager_->RejectRequest(request_id_, std::move(value), error);
-  if (result != base::File::FILE_OK) {
-    SetError(FileErrorToString(result));
-    return false;
-  }
-
-  return true;
+  if (result != base::File::FILE_OK)
+    return RespondNow(Error(FileErrorToString(result)));
+  return RespondNow(NoArguments());
 }
 
-bool FileSystemProviderInternalFunction::FulfillRequest(
+ExtensionFunction::ResponseAction
+FileSystemProviderInternalFunction::FulfillRequest(
     std::unique_ptr<RequestValue> value,
     bool has_more) {
   const base::File::Error result =
       request_manager_->FulfillRequest(request_id_, std::move(value), has_more);
-  if (result != base::File::FILE_OK) {
-    SetError(FileErrorToString(result));
-    return false;
-  }
-
-  return true;
+  if (result != base::File::FILE_OK)
+    return RespondNow(Error(FileErrorToString(result)));
+  return RespondNow(NoArguments());
 }
 
-bool FileSystemProviderInternalFunction::RunSync() {
-  DCHECK(args_);
-  if (!Parse())
-    return false;
-
-  return RunWhenValid();
-}
-
-bool FileSystemProviderInternalFunction::Parse() {
+bool FileSystemProviderInternalFunction::PreRunValidation(std::string* error) {
   std::string file_system_id;
 
-  if (!args_->GetString(0, &file_system_id) ||
-      !args_->GetInteger(1, &request_id_)) {
-    set_bad_message(true);
-    return false;
-  }
+  EXTENSION_FUNCTION_PRERUN_VALIDATE(args_->GetString(0, &file_system_id));
+  EXTENSION_FUNCTION_PRERUN_VALIDATE(args_->GetInteger(1, &request_id_));
 
-  Service* service = Service::Get(GetProfile());
+  Service* service = Service::Get(browser_context());
   if (!service) {
+    *error = "File system provider service not found.";
     return false;
   }
 
   ProvidedFileSystemInterface* file_system =
       service->GetProvidedFileSystem(extension_id(), file_system_id);
   if (!file_system) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_NOT_FOUND));
+    *error = FileErrorToString(base::File::FILE_ERROR_NOT_FOUND);
     return false;
   }
 

@@ -140,7 +140,7 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
 // tabIds while browserAction's are optional, they have different internal
 // browser notification requirements, and not all functions are defined for all
 // APIs).
-class ExtensionActionFunction : public ChromeSyncExtensionFunction {
+class ExtensionActionFunction : public UIThreadExtensionFunction {
  public:
   static bool ParseCSSColorString(const std::string& color_string,
                                   SkColor* result);
@@ -148,12 +148,13 @@ class ExtensionActionFunction : public ChromeSyncExtensionFunction {
  protected:
   ExtensionActionFunction();
   ~ExtensionActionFunction() override;
-  bool RunSync() override;
-  virtual bool RunExtensionAction() = 0;
+  ResponseAction Run() override;
+
+  virtual ResponseAction RunExtensionAction() = 0;
 
   bool ExtractDataFromArguments();
   void NotifyChange();
-  bool SetVisible(bool visible);
+  void SetVisible(bool visible);
 
   // All the extension action APIs take a single argument called details that
   // is a dictionary.
@@ -181,42 +182,42 @@ class ExtensionActionFunction : public ChromeSyncExtensionFunction {
 class ExtensionActionShowFunction : public ExtensionActionFunction {
  protected:
   ~ExtensionActionShowFunction() override {}
-  bool RunExtensionAction() override;
+  ResponseAction RunExtensionAction() override;
 };
 
 // hide
 class ExtensionActionHideFunction : public ExtensionActionFunction {
  protected:
   ~ExtensionActionHideFunction() override {}
-  bool RunExtensionAction() override;
+  ResponseAction RunExtensionAction() override;
 };
 
 // setIcon
 class ExtensionActionSetIconFunction : public ExtensionActionFunction {
  protected:
   ~ExtensionActionSetIconFunction() override {}
-  bool RunExtensionAction() override;
+  ResponseAction RunExtensionAction() override;
 };
 
 // setTitle
 class ExtensionActionSetTitleFunction : public ExtensionActionFunction {
  protected:
   ~ExtensionActionSetTitleFunction() override {}
-  bool RunExtensionAction() override;
+  ResponseAction RunExtensionAction() override;
 };
 
 // setPopup
 class ExtensionActionSetPopupFunction : public ExtensionActionFunction {
  protected:
   ~ExtensionActionSetPopupFunction() override {}
-  bool RunExtensionAction() override;
+  ResponseAction RunExtensionAction() override;
 };
 
 // setBadgeText
 class ExtensionActionSetBadgeTextFunction : public ExtensionActionFunction {
  protected:
   ~ExtensionActionSetBadgeTextFunction() override {}
-  bool RunExtensionAction() override;
+  ResponseAction RunExtensionAction() override;
 };
 
 // setBadgeBackgroundColor
@@ -224,28 +225,28 @@ class ExtensionActionSetBadgeBackgroundColorFunction
     : public ExtensionActionFunction {
  protected:
   ~ExtensionActionSetBadgeBackgroundColorFunction() override {}
-  bool RunExtensionAction() override;
+  ResponseAction RunExtensionAction() override;
 };
 
 // getTitle
 class ExtensionActionGetTitleFunction : public ExtensionActionFunction {
  protected:
   ~ExtensionActionGetTitleFunction() override {}
-  bool RunExtensionAction() override;
+  ResponseAction RunExtensionAction() override;
 };
 
 // getPopup
 class ExtensionActionGetPopupFunction : public ExtensionActionFunction {
  protected:
   ~ExtensionActionGetPopupFunction() override {}
-  bool RunExtensionAction() override;
+  ResponseAction RunExtensionAction() override;
 };
 
 // getBadgeText
 class ExtensionActionGetBadgeTextFunction : public ExtensionActionFunction {
  protected:
   ~ExtensionActionGetBadgeTextFunction() override {}
-  bool RunExtensionAction() override;
+  ResponseAction RunExtensionAction() override;
 };
 
 // getBadgeBackgroundColor
@@ -253,7 +254,7 @@ class ExtensionActionGetBadgeBackgroundColorFunction
     : public ExtensionActionFunction {
  protected:
   ~ExtensionActionGetBadgeBackgroundColorFunction() override {}
-  bool RunExtensionAction() override;
+  ResponseAction RunExtensionAction() override;
 };
 
 //

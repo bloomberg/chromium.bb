@@ -50,39 +50,29 @@ base::File::Error ProviderErrorToFileError(
 
 // Base class for internal API functions handling request results, either
 // a success or a failure.
-class FileSystemProviderInternalFunction : public ChromeSyncExtensionFunction {
+class FileSystemProviderInternalFunction : public UIThreadExtensionFunction {
  public:
   FileSystemProviderInternalFunction();
 
  protected:
   ~FileSystemProviderInternalFunction() override {}
 
-  // Rejects the request and sets a response for this API function. Returns true
-  // on success, and false on failure.
-  bool RejectRequest(
+  // Rejects the request and returns a response for this API function.
+  ResponseAction RejectRequest(
       std::unique_ptr<chromeos::file_system_provider::RequestValue> value,
       base::File::Error error);
 
   // Fulfills the request with parsed arguments of this API function
-  // encapsulated as a RequestValue instance. Also, sets a response.
+  // encapsulated as a RequestValue instance and returns a response.
   // If |has_more| is set to true, then the function will be called again for
-  // this request. Returns true on success, and false on failure.
-  bool FulfillRequest(
+  // this request.
+  ResponseAction FulfillRequest(
       std::unique_ptr<chromeos::file_system_provider::RequestValue> value,
       bool has_more);
 
-  // Subclasses implement this for their functionality.
-  // Called after Parse() is successful, such that |request_id_| and
-  // |request_manager_| have been fully initialized.
-  virtual bool RunWhenValid() = 0;
-
-  // ChromeSyncExtensionFunction overrides.
-  bool RunSync() override;
-
  private:
-  // Parses the request in order to extract the request manager. If fails, then
-  // sets a response and returns false.
-  bool Parse();
+  // Guarantees |request_id_| and |request_manager_| are valid.
+  bool PreRunValidation(std::string* error) override;
 
   int request_id_;
   chromeos::file_system_provider::RequestManager* request_manager_;

@@ -72,7 +72,7 @@ class FileSystemProviderInternalUnmountRequestedSuccessFunction
 
  protected:
   ~FileSystemProviderInternalUnmountRequestedSuccessFunction() override {}
-  bool RunWhenValid() override;
+  ResponseAction Run() override;
 };
 
 class FileSystemProviderInternalGetMetadataRequestedSuccessFunction
@@ -84,7 +84,7 @@ class FileSystemProviderInternalGetMetadataRequestedSuccessFunction
 
  protected:
   ~FileSystemProviderInternalGetMetadataRequestedSuccessFunction() override {}
-  bool RunWhenValid() override;
+  ResponseAction Run() override;
 };
 
 class FileSystemProviderInternalGetActionsRequestedSuccessFunction
@@ -96,7 +96,7 @@ class FileSystemProviderInternalGetActionsRequestedSuccessFunction
 
  protected:
   ~FileSystemProviderInternalGetActionsRequestedSuccessFunction() override {}
-  bool RunWhenValid() override;
+  ResponseAction Run() override;
 };
 
 class FileSystemProviderInternalReadDirectoryRequestedSuccessFunction
@@ -108,7 +108,7 @@ class FileSystemProviderInternalReadDirectoryRequestedSuccessFunction
 
  protected:
   ~FileSystemProviderInternalReadDirectoryRequestedSuccessFunction() override {}
-  bool RunWhenValid() override;
+  ResponseAction Run() override;
 };
 
 class FileSystemProviderInternalReadFileRequestedSuccessFunction
@@ -120,7 +120,7 @@ class FileSystemProviderInternalReadFileRequestedSuccessFunction
 
  protected:
   ~FileSystemProviderInternalReadFileRequestedSuccessFunction() override {}
-  bool RunWhenValid() override;
+  ResponseAction Run() override;
 };
 
 class FileSystemProviderInternalOperationRequestedSuccessFunction
@@ -132,7 +132,7 @@ class FileSystemProviderInternalOperationRequestedSuccessFunction
 
  protected:
   ~FileSystemProviderInternalOperationRequestedSuccessFunction() override {}
-  bool RunWhenValid() override;
+  ResponseAction Run() override;
 };
 
 class FileSystemProviderInternalOperationRequestedErrorFunction
@@ -144,7 +144,7 @@ class FileSystemProviderInternalOperationRequestedErrorFunction
 
  protected:
   ~FileSystemProviderInternalOperationRequestedErrorFunction() override {}
-  bool RunWhenValid() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions
