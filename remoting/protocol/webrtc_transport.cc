@@ -146,11 +146,10 @@ class WebrtcTransport::PeerConnectionWrapper
       std::unique_ptr<cricket::PortAllocator> port_allocator,
       base::WeakPtr<WebrtcTransport> transport)
       : transport_(transport) {
-    scoped_refptr<WebrtcAudioModule> audio_module =
-        new rtc::RefCountedObject<WebrtcAudioModule>();
+    audio_module_ = new rtc::RefCountedObject<WebrtcAudioModule>();
 
     peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
-        worker_thread, rtc::Thread::Current(), audio_module.get(),
+        worker_thread, rtc::Thread::Current(), audio_module_.get(),
         encoder_factory.release(), nullptr);
 
     webrtc::FakeConstraints constraints;
@@ -161,6 +160,10 @@ class WebrtcTransport::PeerConnectionWrapper
         std::move(port_allocator), nullptr, this);
   }
   virtual ~PeerConnectionWrapper() { peer_connection_->Close(); }
+
+  WebrtcAudioModule* audio_module() {
+    return audio_module_.get();
+  }
 
   webrtc::PeerConnectionInterface* peer_connection() {
     return peer_connection_.get();
@@ -225,12 +228,21 @@ WebrtcTransport::WebrtcTransport(
     rtc::Thread* worker_thread,
     scoped_refptr<TransportContext> transport_context,
     EventHandler* event_handler)
-    : worker_thread_(worker_thread),
-      transport_context_(transport_context),
+    : transport_context_(transport_context),
       event_handler_(event_handler),
       handshake_hmac_(crypto::HMAC::SHA256),
       weak_factory_(this) {
   transport_context_->set_relay_mode(TransportContext::RelayMode::TURN);
+
+  video_encoder_factory_ = new WebrtcDummyVideoEncoderFactory();
+  std::unique_ptr<cricket::PortAllocator> port_allocator =
+      transport_context_->port_allocator_factory()->CreatePortAllocator(
+          transport_context_);
+
+  // Takes ownership of video_encoder_factory_.
+  peer_connection_wrapper_.reset(new PeerConnectionWrapper(
+      worker_thread, base::WrapUnique(video_encoder_factory_),
+      std::move(port_allocator), weak_factory_.GetWeakPtr()));
 }
 
 WebrtcTransport::~WebrtcTransport() {
@@ -246,6 +258,12 @@ webrtc::PeerConnectionFactoryInterface*
 WebrtcTransport::peer_connection_factory() {
   return peer_connection_wrapper_
              ? peer_connection_wrapper_->peer_connection_factory()
+             : nullptr;
+}
+
+WebrtcAudioModule* WebrtcTransport::audio_module() {
+  return peer_connection_wrapper_
+             ? peer_connection_wrapper_->audio_module()
              : nullptr;
 }
 
@@ -273,16 +291,6 @@ void WebrtcTransport::Start(
   if (!handshake_hmac_.Init(authenticator->GetAuthKey())) {
     LOG(FATAL) << "HMAC::Init() failed.";
   }
-
-  video_encoder_factory_ = new WebrtcDummyVideoEncoderFactory();
-  std::unique_ptr<cricket::PortAllocator> port_allocator =
-      transport_context_->port_allocator_factory()->CreatePortAllocator(
-          transport_context_);
-
-  // Takes ownership of video_encoder_factory_.
-  peer_connection_wrapper_.reset(new PeerConnectionWrapper(
-      worker_thread_, base::WrapUnique(video_encoder_factory_),
-      std::move(port_allocator), weak_factory_.GetWeakPtr()));
 
   event_handler_->OnWebrtcTransportConnecting();
 
@@ -433,6 +441,13 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
     return;
   }
   description_sdp = NormalizeSessionDescription(description_sdp);
+
+  // Update SDP format to use stereo for opus codec.
+  std::string opus_line = "a=rtpmap:111 opus/48000/2\n";
+  std::string opus_line_with_bitrate =
+      opus_line + "a=fmtp:111 stereo=1; x-google-min-bitrate=160\n";
+  base::ReplaceSubstringsAfterOffset(&description_sdp, 0, opus_line,
+                                     opus_line_with_bitrate);
 
   // Format and send the session description to the peer.
   std::unique_ptr<XmlElement> transport_info(

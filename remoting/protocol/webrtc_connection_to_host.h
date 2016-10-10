@@ -24,6 +24,7 @@ class ClientControlDispatcher;
 class ClientEventDispatcher;
 class SessionConfig;
 class WebrtcVideoRendererAdapter;
+class WebrtcAudioSinkAdapter;
 
 class WebrtcConnectionToHost : public ConnectionToHost,
                                public Session::EventHandler,
@@ -39,7 +40,7 @@ class WebrtcConnectionToHost : public ConnectionToHost,
   void set_video_renderer(VideoRenderer* video_renderer) override;
   void InitializeAudio(
       scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
-      base::WeakPtr<AudioStub> audio_stub) override;
+      base::WeakPtr<AudioStub> audio_consumer) override;
   void Connect(std::unique_ptr<Session> session,
                scoped_refptr<TransportContext> transport_context,
                HostEventCallback* event_callback) override;
@@ -83,9 +84,12 @@ class WebrtcConnectionToHost : public ConnectionToHost,
 
   HostEventCallback* event_callback_ = nullptr;
 
+  scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner_;
+
   // Stub for incoming messages.
   ClientStub* client_stub_ = nullptr;
   VideoRenderer* video_renderer_ = nullptr;
+  base::WeakPtr<AudioStub> audio_consumer_;
   ClipboardStub* clipboard_stub_ = nullptr;
 
   std::unique_ptr<Session> session_;
@@ -97,12 +101,12 @@ class WebrtcConnectionToHost : public ConnectionToHost,
   InputFilter event_forwarder_;
 
   std::unique_ptr<WebrtcVideoRendererAdapter> video_adapter_;
+  std::unique_ptr<WebrtcAudioSinkAdapter> audio_adapter_;
 
   // Internal state of the connection.
   State state_ = INITIALIZING;
   ErrorCode error_ = OK;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(WebrtcConnectionToHost);
 };
 

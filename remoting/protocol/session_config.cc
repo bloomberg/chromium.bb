@@ -149,18 +149,18 @@ std::unique_ptr<SessionConfig> SessionConfig::GetFinalConfig(
 // static
 std::unique_ptr<SessionConfig> SessionConfig::ForTest() {
   std::unique_ptr<SessionConfig> result(new SessionConfig(Protocol::ICE));
-  result->control_config_ = ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-                                          kControlStreamVersion,
-                                          ChannelConfig::CODEC_UNDEFINED);
-  result->event_config_ = ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-                                        kDefaultStreamVersion,
-                                        ChannelConfig::CODEC_UNDEFINED);
-  result->video_config_ = ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
-                                        kDefaultStreamVersion,
-                                        ChannelConfig::CODEC_VP8);
-  result->audio_config_ = ChannelConfig(ChannelConfig::TRANSPORT_NONE,
-                                        kDefaultStreamVersion,
-                                        ChannelConfig::CODEC_UNDEFINED);
+  result->control_config_ =
+      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM, kControlStreamVersion,
+                    ChannelConfig::CODEC_UNDEFINED);
+  result->event_config_ =
+      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM, kDefaultStreamVersion,
+                    ChannelConfig::CODEC_UNDEFINED);
+  result->video_config_ =
+      ChannelConfig(ChannelConfig::TRANSPORT_STREAM, kDefaultStreamVersion,
+                    ChannelConfig::CODEC_VP8);
+  result->audio_config_ =
+      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM, kDefaultStreamVersion,
+                    ChannelConfig::CODEC_OPUS);
   return result;
 }
 

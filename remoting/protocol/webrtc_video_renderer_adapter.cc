@@ -78,10 +78,9 @@ void WebrtcVideoRendererAdapter::SetMediaStream(
   media_stream_ = std::move(media_stream);
 
   webrtc::VideoTrackVector video_tracks = media_stream_->GetVideoTracks();
-  if (video_tracks.empty()) {
-    LOG(ERROR) << "Received media stream with no video tracks.";
-    return;
-  }
+
+  // Caller must verify that the media stream contains video tracks.
+  DCHECK(!video_tracks.empty());
 
   if (video_tracks.size() > 1U) {
     LOG(WARNING) << "Received media stream with multiple video tracks.";

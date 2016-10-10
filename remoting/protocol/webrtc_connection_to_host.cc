@@ -16,6 +16,8 @@
 #include "remoting/protocol/message_pipe.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_renderer.h"
+#include "remoting/protocol/webrtc_audio_module.h"
+#include "remoting/protocol/webrtc_audio_sink_adapter.h"
 #include "remoting/protocol/webrtc_transport.h"
 #include "remoting/protocol/webrtc_video_renderer_adapter.h"
 
@@ -34,6 +36,8 @@ void WebrtcConnectionToHost::Connect(
 
   transport_.reset(new WebrtcTransport(
       jingle_glue::JingleThreadWrapper::current(), transport_context, this));
+
+  transport_->audio_module()->SetAudioTaskRunner(audio_decode_task_runner_);
 
   session_ = std::move(session);
   session_->SetEventHandler(this);
@@ -74,8 +78,9 @@ void WebrtcConnectionToHost::set_video_renderer(VideoRenderer* video_renderer) {
 
 void WebrtcConnectionToHost::InitializeAudio(
     scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
-    base::WeakPtr<AudioStub> audio_stub) {
-  NOTIMPLEMENTED();
+    base::WeakPtr<AudioStub> audio_consumer) {
+  audio_decode_task_runner_ = audio_decode_task_runner;
+  audio_consumer_ = audio_consumer;
 }
 
 void WebrtcConnectionToHost::OnSessionStateChange(Session::State state) {
@@ -144,7 +149,13 @@ void WebrtcConnectionToHost::OnWebrtcTransportIncomingDataChannel(
 
 void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamAdded(
     scoped_refptr<webrtc::MediaStreamInterface> stream) {
-  GetOrCreateVideoAdapter(stream->label())->SetMediaStream(stream);
+  if (stream->GetVideoTracks().size() > 0) {
+    GetOrCreateVideoAdapter(stream->label())->SetMediaStream(stream);
+  } else if (stream->GetAudioTracks().size() > 0) {
+    audio_adapter_.reset(new WebrtcAudioSinkAdapter(stream, audio_consumer_));
+  } else {
+    LOG(ERROR) << "Received MediaStream with no video or audio tracks.";
+  }
 }
 
 void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamRemoved(

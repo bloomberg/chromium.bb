@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define _USE_MATH_DEFINES // For VC++ to get M_PI. This has to be first.
+
 #include <utility>
 
 #include "base/bind.h"
@@ -10,6 +12,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/base/constants.h"
+#include "remoting/proto/audio.pb.h"
+#include "remoting/protocol/audio_source.h"
+#include "remoting/protocol/audio_stream.h"
+#include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/fake_video_renderer.h"
 #include "remoting/protocol/ice_connection_to_client.h"
@@ -93,6 +99,137 @@ class TestScreenCapturer : public webrtc::DesktopCapturer {
   bool first_frame_sent_ = false;
 };
 
+static const int kAudioSampleRate = AudioPacket::SAMPLING_RATE_48000;
+static const int kAudioPacketDurationMs = 50;
+static constexpr int kSamplesPerAudioPacket =
+    kAudioSampleRate * kAudioPacketDurationMs /
+    base::Time::kMillisecondsPerSecond;
+static constexpr base::TimeDelta kAudioPacketDuration =
+    base::TimeDelta::FromMilliseconds(kAudioPacketDurationMs);
+
+static const int kAudioChannels = 2;
+
+static const int kTestAudioSignalFrequencyLeftHz = 3000;
+static const int kTestAudioSignalFrequencyRightHz = 2000;
+
+class TestAudioSource : public AudioSource {
+ public:
+  TestAudioSource() {}
+  ~TestAudioSource() override {}
+
+  // AudioSource interface.
+  bool Start(const PacketCapturedCallback& callback) override {
+    callback_ = callback;
+    timer_.Start(FROM_HERE, kAudioPacketDuration,
+                 base::Bind(&TestAudioSource::GenerateAudioSamples,
+                            base::Unretained(this)));
+    return true;
+  }
+
+ private:
+  static int16_t GetSampleValue(double pos, int frequency) {
+    const int kMaxSampleValue = 32767;
+    return static_cast<int>(
+        sin(pos * 2 * M_PI * frequency / kAudioSampleRate) * kMaxSampleValue +
+        0.5);
+  }
+
+  void GenerateAudioSamples() {
+    std::vector<int16_t> data(kSamplesPerAudioPacket * kAudioChannels);
+    for (int i = 0; i < kSamplesPerAudioPacket; ++i) {
+      data[i * kAudioChannels] = GetSampleValue(
+          position_samples_ + i, kTestAudioSignalFrequencyLeftHz);
+      data[i * kAudioChannels + 1] = GetSampleValue(
+          position_samples_ + i, kTestAudioSignalFrequencyRightHz);
+    }
+    position_samples_ += kSamplesPerAudioPacket;
+
+    std::unique_ptr<AudioPacket> packet(new AudioPacket());
+    packet->add_data(reinterpret_cast<char*>(&(data[0])),
+                     kSamplesPerAudioPacket * kAudioChannels * sizeof(int16_t));
+    packet->set_encoding(AudioPacket::ENCODING_RAW);
+    packet->set_sampling_rate(AudioPacket::SAMPLING_RATE_48000);
+    packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
+    packet->set_channels(AudioPacket::CHANNELS_STEREO);
+    callback_.Run(std::move(packet));
+  }
+
+  PacketCapturedCallback callback_;
+  base::RepeatingTimer timer_;
+  int position_samples_ = 0;
+};
+
+class FakeAudioPlayer : public AudioStub {
+ public:
+  FakeAudioPlayer() : weak_factory_(this) {}
+  ~FakeAudioPlayer() override {}
+
+  // AudioStub interface.
+  void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
+                          const base::Closure& done) override {
+    EXPECT_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
+    EXPECT_EQ(AudioPacket::SAMPLING_RATE_48000, packet->sampling_rate());
+    EXPECT_EQ(AudioPacket::BYTES_PER_SAMPLE_2, packet->bytes_per_sample());
+    EXPECT_EQ(AudioPacket::CHANNELS_STEREO, packet->channels());
+
+    data_.insert(data_.end(), packet->data(0).begin(), packet->data(0).end());
+
+    if (run_loop_ && data_.size() >= samples_expected_ * 4)
+      run_loop_->Quit();
+
+    if (!done.is_null())
+      done.Run();
+  }
+
+  void WaitForSamples(size_t samples_expected) {
+    samples_expected_ = samples_expected;
+    base::RunLoop run_loop;
+    run_loop_ = &run_loop;
+    run_loop.Run();
+    run_loop_ = nullptr;
+  }
+
+  void Verify() {
+    const int16_t* data = reinterpret_cast<const int16_t*>(data_.data());
+    int num_samples = data_.size() / kAudioChannels / sizeof(int16_t);
+
+    int skipped_samples = 0;
+    while (skipped_samples < num_samples &&
+           data[skipped_samples * kAudioChannels] == 0 &&
+           data[skipped_samples * kAudioChannels + 1] == 0) {
+      skipped_samples += kAudioChannels;
+    }
+
+    // Estimate signal frequency by counting how often it crosses 0.
+    int left = 0;
+    int right = 0;
+    for (int i = skipped_samples + 1; i < num_samples; ++i) {
+      if (data[(i - 1) * kAudioChannels] < 0 && data[i * kAudioChannels] >= 0) {
+        ++left;
+      }
+      if (data[(i - 1) * kAudioChannels + 1] < 0 &&
+          data[i * kAudioChannels + 1] >= 0) {
+        ++right;
+      }
+    }
+    int left_hz = (left * kAudioSampleRate / (num_samples - skipped_samples));
+    EXPECT_LE(kTestAudioSignalFrequencyLeftHz - 50, left_hz);
+    EXPECT_GE(kTestAudioSignalFrequencyLeftHz + 50, left_hz);
+    int right_hz = (right * kAudioSampleRate / (num_samples - skipped_samples));
+    EXPECT_LE(kTestAudioSignalFrequencyRightHz - 50, right_hz);
+    EXPECT_GE(kTestAudioSignalFrequencyRightHz + 50, right_hz);
+  }
+
+  base::WeakPtr<AudioStub> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
+
+ private:
+  std::vector<char> data_;
+  base::RunLoop* run_loop_ = nullptr;
+  size_t samples_expected_ = 0;
+
+  base::WeakPtrFactory<FakeAudioPlayer> weak_factory_;
+};
+
 }  // namespace
 
 class ConnectionTest : public testing::Test,
@@ -140,6 +277,9 @@ class ConnectionTest : public testing::Test,
     client_connection_->set_client_stub(&client_stub_);
     client_connection_->set_clipboard_stub(&client_clipboard_stub_);
     client_connection_->set_video_renderer(&client_video_renderer_);
+
+    client_connection_->InitializeAudio(message_loop_.task_runner(),
+                                        client_audio_player_.GetWeakPtr());
   }
 
   void Connect() {
@@ -266,6 +406,7 @@ class ConnectionTest : public testing::Test,
   MockClientStub client_stub_;
   MockClipboardStub client_clipboard_stub_;
   FakeVideoRenderer client_video_renderer_;
+  FakeAudioPlayer client_audio_player_;
   std::unique_ptr<ConnectionToHost> client_connection_;
   FakeSession* client_session_;  // Owned by |client_connection_|.
   std::unique_ptr<FakeSession> owned_client_session_;
@@ -436,6 +577,17 @@ TEST_P(ConnectionTest, VideoStats) {
   EXPECT_TRUE(stats.client_stats.time_decoded <=
               stats.client_stats.time_rendered);
   EXPECT_TRUE(stats.client_stats.time_rendered <= finish_time);
+}
+
+TEST_P(ConnectionTest, Audio) {
+  Connect();
+
+  std::unique_ptr<AudioStream> audio_stream =
+      host_connection_->StartAudioStream(base::MakeUnique<TestAudioSource>());
+
+  // Wait for 1 second worth of audio samples.
+  client_audio_player_.WaitForSamples(kAudioSampleRate * 2);
+  client_audio_player_.Verify();
 }
 
 }  // namespace protocol
