@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/url_constants.h"
@@ -23,6 +24,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
@@ -60,10 +62,10 @@ void LogHostedAppUnlimitedStorageUsage(
   GURL launch_url =
       extensions::AppLaunchInfo::GetLaunchWebURL(extension.get()).GetOrigin();
   content::StoragePartition* partition =
-      browser_context ?  // |browser_context| can be NULL in unittests.
+      browser_context ?  // |browser_context| can be nullptr in unittests.
       content::BrowserContext::GetStoragePartitionForSite(browser_context,
                                                           launch_url) :
-      NULL;
+      nullptr;
   if (partition) {
     // We only have to query for kStorageTypePersistent data usage, because apps
     // cannot ask for any more temporary storage, according to
@@ -79,9 +81,11 @@ void LogHostedAppUnlimitedStorageUsage(
 
 }  // namespace
 
-ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
-    content_settings::CookieSettings* cookie_settings)
-    : cookie_settings_(cookie_settings) {
+ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(Profile* profile)
+    : profile_(profile) {
+  if (profile_) {
+    cookie_settings_ = CookieSettingsFactory::GetForProfile(profile_).get();
+  }
 }
 
 ExtensionSpecialStoragePolicy::~ExtensionSpecialStoragePolicy() {}
@@ -109,7 +113,7 @@ bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
 }
 
 bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
-  if (cookie_settings_.get() == NULL)
+  if (cookie_settings_ == nullptr)
     return false;
   return cookie_settings_->IsCookieSessionOnly(origin);
 }
@@ -120,9 +124,9 @@ bool ExtensionSpecialStoragePolicy::CanQueryDiskSize(const GURL& origin) {
 }
 
 bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
-  if (cookie_settings_.get() == NULL)
+  if (cookie_settings_ == nullptr)
     return false;
-  if (cookie_settings_->GetDefaultCookieSetting(NULL) ==
+  if (cookie_settings_->GetDefaultCookieSetting(nullptr) ==
       CONTENT_SETTING_SESSION_ONLY)
     return true;
   ContentSettingsForOneType entries;
@@ -140,7 +144,10 @@ bool ExtensionSpecialStoragePolicy::HasIsolatedStorage(const GURL& origin) {
 }
 
 bool ExtensionSpecialStoragePolicy::IsStorageDurable(const GURL& origin) {
-  return cookie_settings_->IsStorageDurable(origin);
+  blink::mojom::PermissionStatus status =
+      PermissionManager::Get(profile_)->GetPermissionStatus(
+          content::PermissionType::DURABLE_STORAGE, origin, origin);
+  return status == blink::mojom::PermissionStatus::GRANTED;
 }
 
 bool ExtensionSpecialStoragePolicy::NeedsProtection(

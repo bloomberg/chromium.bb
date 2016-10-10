@@ -320,7 +320,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
   TestingProfile profile;
   content_settings::CookieSettings* cookie_settings =
       CookieSettingsFactory::GetForProfile(&profile).get();
-  policy_ = new ExtensionSpecialStoragePolicy(cookie_settings);
+  policy_ = new ExtensionSpecialStoragePolicy(&profile);
 
   EXPECT_FALSE(policy_->HasSessionOnlyOrigins());
 
@@ -345,20 +345,18 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
 
 TEST_F(ExtensionSpecialStoragePolicyTest, IsStorageDurableTest) {
   TestingProfile profile;
-  content_settings::CookieSettings* cookie_settings =
-      CookieSettingsFactory::GetForProfile(&profile).get();
-  policy_ = new ExtensionSpecialStoragePolicy(cookie_settings);
-  const GURL kHttpUrl("http://foo.com");
+  policy_ = new ExtensionSpecialStoragePolicy(&profile);
+  const GURL kHttpsUrl("https://foo.com");
 
-  EXPECT_FALSE(policy_->IsStorageDurable(kHttpUrl));
+  EXPECT_FALSE(policy_->IsStorageDurable(kHttpsUrl));
 
   HostContentSettingsMap* content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   content_settings_map->SetContentSettingDefaultScope(
-      kHttpUrl, GURL(), CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, std::string(),
+      kHttpsUrl, GURL(), CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, std::string(),
       CONTENT_SETTING_ALLOW);
 
-  EXPECT_TRUE(policy_->IsStorageDurable(kHttpUrl));
+  EXPECT_TRUE(policy_->IsStorageDurable(kHttpsUrl));
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, NotificationTest) {

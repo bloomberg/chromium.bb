@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/synchronization/lock.h"
+#include "chrome/browser/profiles/profile.h"
 #include "extensions/common/extension_set.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
@@ -30,8 +31,7 @@ class Extension;
 // to determine which origins have these rights.
 class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
  public:
-  explicit ExtensionSpecialStoragePolicy(
-      content_settings::CookieSettings* cookie_settings);
+  explicit ExtensionSpecialStoragePolicy(Profile* profile);
 
   // storage::SpecialStoragePolicy methods used by storage subsystems and the
   // browsing data remover. These methods are safe to call on any thread.
@@ -94,7 +94,9 @@ class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   SpecialCollection file_handler_extensions_;
   SpecialCollection isolated_extensions_;
   SpecialCollection content_capabilities_unlimited_extensions_;
+
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
+  Profile* profile_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SPECIAL_STORAGE_POLICY_H_
