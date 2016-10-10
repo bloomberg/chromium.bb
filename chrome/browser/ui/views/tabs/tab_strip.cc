@@ -1442,7 +1442,9 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
     active_tab->Paint(context);
 
   // Paint the New Tab button.
-  if (newtab_button_->state() != views::CustomButton::STATE_PRESSED) {
+  if (newtab_button_->state() == views::CustomButton::STATE_PRESSED) {
+    newtab_button_->Paint(context);
+  } else {
     // Match the inactive tab opacity for non-pressed states.  See comments in
     // NewTabButton::PaintFill() for why we don't do this for the pressed state.
     // This call doesn't need to set |lcd_text_requires_opaque_layer| to false
