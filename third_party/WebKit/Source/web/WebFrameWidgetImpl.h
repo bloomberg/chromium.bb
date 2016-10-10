@@ -115,7 +115,6 @@ class WebFrameWidgetImpl final
   void setTextDirection(WebTextDirection) override;
   bool isAcceleratedCompositingActive() const override;
   void willCloseLayerTreeView() override;
-  void didChangeWindowResizerRect() override;
   void didAcquirePointerLock() override;
   void didNotAcquirePointerLock() override;
   void didLosePointerLock() override;

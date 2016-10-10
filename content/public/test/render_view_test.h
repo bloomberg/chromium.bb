@@ -148,9 +148,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   uint32_t GetNavigationIPCType();
 
   // Resize the view.
-  void Resize(gfx::Size new_size,
-              gfx::Rect resizer_rect,
-              bool is_fullscreen);
+  void Resize(gfx::Size new_size, bool is_fullscreen);
 
   // Simulates typing the |ascii_character| into this render view. Also accepts
   // ui::VKEY_BACK for backspace. Will flush the message loop if

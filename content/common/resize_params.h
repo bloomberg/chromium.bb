@@ -42,9 +42,6 @@ struct CONTENT_EXPORT ResizeParams {
   // DPI-adjusted pixels.
   gfx::Size visible_viewport_size;
 
-  // The resizer rect.
-  gfx::Rect resizer_rect;
-
   // Indicates whether tab-initiated fullscreen was granted.
   bool is_fullscreen_granted;
 

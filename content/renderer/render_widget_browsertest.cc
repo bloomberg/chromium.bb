@@ -37,7 +37,6 @@ TEST_F(RenderWidgetTest, OnResize) {
   resize_params.physical_backing_size = gfx::Size();
   resize_params.top_controls_height = 0.f;
   resize_params.top_controls_shrink_blink_size = false;
-  resize_params.resizer_rect = gfx::Rect();
   resize_params.is_fullscreen_granted = false;
   resize_params.needs_resize_ack = false;
   OnResize(resize_params);

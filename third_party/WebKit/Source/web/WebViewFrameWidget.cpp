@@ -187,10 +187,6 @@ void WebViewFrameWidget::didLosePointerLock() {
   return m_webView->didLosePointerLock();
 }
 
-void WebViewFrameWidget::didChangeWindowResizerRect() {
-  return m_webView->didChangeWindowResizerRect();
-}
-
 WebColor WebViewFrameWidget::backgroundColor() const {
   return m_webView->backgroundColor();
 }

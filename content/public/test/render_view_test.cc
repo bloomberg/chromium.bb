@@ -527,7 +527,6 @@ uint32_t RenderViewTest::GetNavigationIPCType() {
 }
 
 void RenderViewTest::Resize(gfx::Size new_size,
-                            gfx::Rect resizer_rect,
                             bool is_fullscreen_granted) {
   ResizeParams params;
   params.screen_info = ScreenInfo();
@@ -535,7 +534,6 @@ void RenderViewTest::Resize(gfx::Size new_size,
   params.physical_backing_size = new_size;
   params.top_controls_height = 0.f;
   params.top_controls_shrink_blink_size = false;
-  params.resizer_rect = resizer_rect;
   params.is_fullscreen_granted = is_fullscreen_granted;
   params.display_mode = blink::WebDisplayModeBrowser;
   std::unique_ptr<IPC::Message> resize_message(new ViewMsg_Resize(0, params));

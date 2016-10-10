@@ -2941,11 +2941,6 @@ void WebViewImpl::didLosePointerLock() {
     page()->pointerLockController().didLosePointerLock();
 }
 
-void WebViewImpl::didChangeWindowResizerRect() {
-  if (mainFrameImpl()->frameView())
-    mainFrameImpl()->frameView()->windowResizerRectChanged();
-}
-
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
 // well. This code needs to be refactored  (http://crbug.com/629721).
 bool WebViewImpl::getCompositionCharacterBounds(WebVector<WebRect>& bounds) {

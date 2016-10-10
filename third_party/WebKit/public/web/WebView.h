@@ -115,7 +115,6 @@ class WebView : protected WebWidget {
   using WebWidget::didAcquirePointerLock;
   using WebWidget::didNotAcquirePointerLock;
   using WebWidget::didLosePointerLock;
-  using WebWidget::didChangeWindowResizerRect;
   using WebWidget::backgroundColor;
   using WebWidget::pagePopup;
   using WebWidget::updateTopControlsState;

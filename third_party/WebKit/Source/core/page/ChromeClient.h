@@ -177,8 +177,6 @@ class CORE_EXPORT ChromeClient : public HostWindow {
 
   virtual void* webView() const = 0;
 
-  virtual IntRect windowResizerRect(LocalFrame&) const = 0;
-
   // Methods used by HostWindow.
   virtual WebScreenInfo screenInfo() const = 0;
   virtual void setCursor(const Cursor&, LocalFrame* localRoot) = 0;

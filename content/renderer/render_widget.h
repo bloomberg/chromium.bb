@@ -269,7 +269,6 @@ class CONTENT_EXPORT RenderWidget
   void setToolTipText(const blink::WebString& text,
                       blink::WebTextDirection hint) override;
   void setWindowRect(const blink::WebRect&) override;
-  blink::WebRect windowResizerRect() override;
   blink::WebScreenInfo screenInfo() override;
   void resetInputMethod() override;
   void didHandleGestureEvent(const blink::WebGestureEvent& event,
@@ -480,7 +479,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnResize(const ResizeParams& params);
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();
-  void OnChangeResizeRect(const gfx::Rect& resizer_rect);
   virtual void OnWasHidden();
   virtual void OnWasShown(bool needs_repainting,
                           const ui::LatencyInfo& latency_info);
@@ -658,9 +656,6 @@ class CONTENT_EXPORT RenderWidget
 
   // The size of the visible viewport in DPI-adjusted pixels.
   gfx::Size visible_viewport_size_;
-
-  // The area that must be reserved for drawing the resize corner.
-  gfx::Rect resizer_rect_;
 
   // Flags for the next ViewHostMsg_UpdateRect message.
   int next_paint_flags_;

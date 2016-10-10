@@ -585,13 +585,6 @@ class CORE_EXPORT FrameView final
   // Functions for converting to screen coordinates.
   IntRect contentsToScreen(const IntRect&) const;
 
-  // These functions are used to enable scrollbars to avoid window resizer
-  // controls that overlap the scroll view.  This happens only on Mac OS X 10.6.
-  IntRect windowResizerRect() const;
-  bool containsScrollbarsAvoidingResizer() const;
-  void adjustScrollbarsAvoidingResizerCount(int overlapDelta);
-  void windowResizerRectChanged();
-
   // For platforms that need to hit test scrollbars from within the engine's
   // event handlers (like Win32).
   Scrollbar* scrollbarAtFramePoint(const IntPoint&);
@@ -759,7 +752,6 @@ class CORE_EXPORT FrameView final
       const IntSize& docSize,
       ComputeScrollbarExistenceOption = FirstPass) const;
   void updateScrollbarGeometry();
-  IntRect adjustScrollbarRectForResizer(const IntRect&, Scrollbar&);
 
   // Called to update the scrollbars to accurately reflect the state of the
   // view.
@@ -1016,7 +1008,6 @@ class CORE_EXPORT FrameView final
   ScrollOffset m_scrollOffset;
   IntSize m_contentsSize;
 
-  int m_scrollbarsAvoidingResizer;
   bool m_scrollbarsSuppressed;
 
   bool m_inUpdateScrollbars;

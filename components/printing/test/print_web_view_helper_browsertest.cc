@@ -328,7 +328,7 @@ TEST_F(MAYBE_PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
   print_render_thread_->printer()->ResetPrinter();
   LoadHTML(kPrintOnUserAction);
   gfx::Size new_size(200, 100);
-  Resize(new_size, gfx::Rect(), false);
+  Resize(new_size, false);
 
   gfx::Rect bounds = GetElementBounds("print");
   EXPECT_FALSE(bounds.IsEmpty());
@@ -635,7 +635,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, BlockScriptInitiatedPrinting) {
 TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintWithJavaScript) {
   LoadHTML(kPrintOnUserAction);
   gfx::Size new_size(200, 100);
-  Resize(new_size, gfx::Rect(), false);
+  Resize(new_size, false);
 
   gfx::Rect bounds = GetElementBounds("print");
   EXPECT_FALSE(bounds.IsEmpty());

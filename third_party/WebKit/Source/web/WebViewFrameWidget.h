@@ -87,7 +87,6 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
   void didAcquirePointerLock() override;
   void didNotAcquirePointerLock() override;
   void didLosePointerLock() override;
-  void didChangeWindowResizerRect() override;
   WebColor backgroundColor() const override;
   WebPagePopup* pagePopup() const override;
   bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;

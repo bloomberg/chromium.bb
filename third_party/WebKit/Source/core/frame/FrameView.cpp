@@ -177,7 +177,6 @@ FrameView::FrameView(LocalFrame* frame)
       m_verticalScrollbarMode(ScrollbarAuto),
       m_horizontalScrollbarLock(false),
       m_verticalScrollbarLock(false),
-      m_scrollbarsAvoidingResizer(0),
       m_scrollbarsSuppressed(false),
       m_inUpdateScrollbars(false),
       m_frameTimingRequestsDirty(true),
@@ -2311,12 +2310,6 @@ void FrameView::getTickmarks(Vector<IntRect>& tickmarks) const {
         DocumentMarker::TextMatch);
 }
 
-IntRect FrameView::windowResizerRect() const {
-  if (Page* page = frame().page())
-    return page->chromeClient().windowResizerRect(frame());
-  return IntRect();
-}
-
 void FrameView::setInputEventsTransformForEmulation(const IntSize& offset,
                                                     float contentScaleFactor) {
   m_inputEventsOffsetForEmulation = offset;
@@ -3348,15 +3341,7 @@ void FrameView::setParent(Widget* parentView) {
   if (parentView == parent())
     return;
 
-  if (m_scrollbarsAvoidingResizer && parent())
-    toFrameView(parent())->adjustScrollbarsAvoidingResizerCount(
-        -m_scrollbarsAvoidingResizer);
-
   Widget::setParent(parentView);
-
-  if (m_scrollbarsAvoidingResizer && parent())
-    toFrameView(parent())->adjustScrollbarsAvoidingResizerCount(
-        m_scrollbarsAvoidingResizer);
 
   updateScrollableAreaSet();
   setNeedsUpdateViewportIntersection();
@@ -3446,10 +3431,6 @@ void FrameView::setHasHorizontalScrollbar(bool hasBar) {
     m_horizontalScrollbar->styleChanged();
   } else {
     willRemoveScrollbar(*m_horizontalScrollbar, HorizontalScrollbar);
-    // If the scrollbar has been marked as overlapping the window resizer,
-    // then its removal should reduce the count.
-    if (m_horizontalScrollbar->overlapsResizer())
-      adjustScrollbarsAvoidingResizerCount(-1);
     removeChild(m_horizontalScrollbar.get());
     m_horizontalScrollbar->disconnectFromScrollableArea();
     m_horizontalScrollbar = nullptr;
@@ -3469,10 +3450,6 @@ void FrameView::setHasVerticalScrollbar(bool hasBar) {
     m_verticalScrollbar->styleChanged();
   } else {
     willRemoveScrollbar(*m_verticalScrollbar, VerticalScrollbar);
-    // If the scrollbar has been marked as overlapping the window resizer,
-    // then its removal should reduce the count.
-    if (m_verticalScrollbar->overlapsResizer())
-      adjustScrollbarsAvoidingResizerCount(-1);
     removeChild(m_verticalScrollbar.get());
     m_verticalScrollbar->disconnectFromScrollableArea();
     m_verticalScrollbar = nullptr;
@@ -3654,10 +3631,6 @@ void FrameView::clearScrollAnchor() {
   m_scrollAnchor.clear();
 }
 
-void FrameView::windowResizerRectChanged() {
-  updateScrollbars();
-}
-
 bool FrameView::hasOverlayScrollbars() const {
   return (m_horizontalScrollbar &&
           m_horizontalScrollbar->isOverlayScrollbar()) ||
@@ -3729,8 +3702,7 @@ void FrameView::updateScrollbarGeometry() {
         height() - thickness,
         width() - (m_verticalScrollbar ? m_verticalScrollbar->width() : 0),
         thickness);
-    m_horizontalScrollbar->setFrameRect(
-        adjustScrollbarRectForResizer(hBarRect, *m_horizontalScrollbar));
+    m_horizontalScrollbar->setFrameRect(hBarRect);
     if (oldRect != m_horizontalScrollbar->frameRect())
       setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
 
@@ -3748,8 +3720,7 @@ void FrameView::updateScrollbarGeometry() {
         thickness,
         height() -
             (m_horizontalScrollbar ? m_horizontalScrollbar->height() : 0));
-    m_verticalScrollbar->setFrameRect(
-        adjustScrollbarRectForResizer(vBarRect, *m_verticalScrollbar));
+    m_verticalScrollbar->setFrameRect(vBarRect);
     if (oldRect != m_verticalScrollbar->frameRect())
       setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
 
@@ -3757,37 +3728,6 @@ void FrameView::updateScrollbarGeometry() {
     m_verticalScrollbar->setProportion(clientHeight, contentsHeight());
     m_verticalScrollbar->offsetDidChange();
   }
-}
-
-IntRect FrameView::adjustScrollbarRectForResizer(const IntRect& rect,
-                                                 Scrollbar& scrollbar) {
-  // Get our window resizer rect and see if we overlap. Adjust to avoid the
-  // overlap if necessary.
-  IntRect adjustedRect(rect);
-  bool overlapsResizer = false;
-  if (!rect.isEmpty() && !windowResizerRect().isEmpty()) {
-    IntRect resizerRect = convertFromRootFrame(windowResizerRect());
-    if (rect.intersects(resizerRect)) {
-      if (scrollbar.orientation() == HorizontalScrollbar) {
-        int overlap = rect.maxX() - resizerRect.x();
-        if (overlap > 0 && resizerRect.maxX() >= rect.maxX()) {
-          adjustedRect.setWidth(rect.width() - overlap);
-          overlapsResizer = true;
-        }
-      } else {
-        int overlap = rect.maxY() - resizerRect.y();
-        if (overlap > 0 && resizerRect.maxY() >= rect.maxY()) {
-          adjustedRect.setHeight(rect.height() - overlap);
-          overlapsResizer = true;
-        }
-      }
-    }
-  }
-  if (overlapsResizer != scrollbar.overlapsResizer()) {
-    scrollbar.setOverlapsResizer(overlapsResizer);
-    adjustScrollbarsAvoidingResizerCount(overlapsResizer ? 1 : -1);
-  }
-  return adjustedRect;
 }
 
 bool FrameView::adjustScrollbarExistence(
@@ -4037,25 +3977,6 @@ IntPoint FrameView::soonToBeRemovedUnscaledViewportToContents(
           pointInViewport));
   IntPoint pointInThisFrame = convertFromRootFrame(pointInRootFrame);
   return frameToContents(pointInThisFrame);
-}
-
-bool FrameView::containsScrollbarsAvoidingResizer() const {
-  return !m_scrollbarsAvoidingResizer;
-}
-
-void FrameView::adjustScrollbarsAvoidingResizerCount(int overlapDelta) {
-  int oldCount = m_scrollbarsAvoidingResizer;
-  m_scrollbarsAvoidingResizer += overlapDelta;
-  if (parent()) {
-    toFrameView(parent())->adjustScrollbarsAvoidingResizerCount(overlapDelta);
-  } else if (!scrollbarsSuppressed()) {
-    // If we went from n to 0 or from 0 to n and we're the outermost view,
-    // we need to invalidate the windowResizerRect(), since it will now need to
-    // paint differently.
-    if ((oldCount > 0 && m_scrollbarsAvoidingResizer == 0) ||
-        (oldCount == 0 && m_scrollbarsAvoidingResizer > 0))
-      invalidateRect(windowResizerRect());
-  }
 }
 
 Scrollbar* FrameView::scrollbarAtFramePoint(const IntPoint& pointInFrame) {

@@ -102,9 +102,6 @@ class WebWidgetClient {
   // Called when a tooltip should be shown at the current cursor position.
   virtual void setToolTipText(const WebString&, WebTextDirection hint) {}
 
-  // Called to get the position of the resizer rect in window coordinates.
-  virtual WebRect windowResizerRect() { return WebRect(); }
-
   // Called to query information about the screen where this widget is
   // displayed.
   virtual WebScreenInfo screenInfo() { return WebScreenInfo(); }

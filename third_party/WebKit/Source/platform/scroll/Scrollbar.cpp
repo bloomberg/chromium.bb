@@ -59,7 +59,6 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea,
       m_documentDragPos(0),
       m_enabled(true),
       m_scrollTimer(this, &Scrollbar::autoscrollTimerFired),
-      m_overlapsResizer(false),
       m_elasticOverscroll(0),
       m_trackNeedsRepaint(true),
       m_thumbNeedsRepaint(true) {

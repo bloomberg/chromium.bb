@@ -541,14 +541,6 @@ bool ChromeClientImpl::tabsToLinks() {
   return m_webView->tabsToLinks();
 }
 
-IntRect ChromeClientImpl::windowResizerRect(LocalFrame& frame) const {
-  return WebLocalFrameImpl::fromFrame(&frame)
-      ->localRoot()
-      ->frameWidget()
-      ->client()
-      ->windowResizerRect();
-}
-
 void ChromeClientImpl::invalidateRect(const IntRect& updateRect) {
   if (!updateRect.isEmpty())
     m_webView->invalidateRect(updateRect);

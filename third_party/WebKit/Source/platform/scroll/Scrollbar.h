@@ -173,11 +173,6 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
   bool thumbNeedsRepaint() const { return m_thumbNeedsRepaint; }
   void clearThumbNeedsRepaint() { m_thumbNeedsRepaint = false; }
 
-  bool overlapsResizer() const { return m_overlapsResizer; }
-  void setOverlapsResizer(bool overlapsResizer) {
-    m_overlapsResizer = overlapsResizer;
-  }
-
   // DisplayItemClient methods.
   String debugName() const final {
     return m_orientation == HorizontalScrollbar ? "HorizontalScrollbar"
@@ -239,7 +234,6 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
   bool m_enabled;
 
   Timer<Scrollbar> m_scrollTimer;
-  bool m_overlapsResizer;
 
   float m_elasticOverscroll;
 

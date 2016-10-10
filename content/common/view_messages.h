@@ -184,7 +184,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResizeParams)
   IPC_STRUCT_TRAITS_MEMBER(top_controls_height)
   IPC_STRUCT_TRAITS_MEMBER(bottom_controls_height)
   IPC_STRUCT_TRAITS_MEMBER(visible_viewport_size)
-  IPC_STRUCT_TRAITS_MEMBER(resizer_rect)
   IPC_STRUCT_TRAITS_MEMBER(is_fullscreen_granted)
   IPC_STRUCT_TRAITS_MEMBER(display_mode)
   IPC_STRUCT_TRAITS_MEMBER(needs_resize_ack)
@@ -419,10 +418,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_EnableDeviceEmulation,
 
 // Disables device emulation, enabled previously by EnableDeviceEmulation.
 IPC_MESSAGE_ROUTED0(ViewMsg_DisableDeviceEmulation)
-
-// Tells the render view that the resize rect has changed.
-IPC_MESSAGE_ROUTED1(ViewMsg_ChangeResizeRect,
-                    gfx::Rect /* resizer_rect */)
 
 // Sent to inform the view that it was hidden.  This allows it to reduce its
 // resource utilization.

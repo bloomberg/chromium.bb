@@ -2391,7 +2391,6 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
         top_controls_shrink_blink_size_;
     resize_params.top_controls_height = top_controls_height_;
     resize_params.visible_viewport_size = visible_viewport_size_;
-    resize_params.resizer_rect = resizer_rect_;
     resize_params.is_fullscreen_granted = is_fullscreen_granted();
     resize_params.display_mode = display_mode_;
     resize_params.needs_resize_ack = false;
@@ -2949,7 +2948,6 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   params.physical_backing_size = gfx::ScaleToCeiledSize(size(), factor);
   params.top_controls_shrink_blink_size = false;
   params.top_controls_height = 0.f;
-  params.resizer_rect = WebRect();
   params.is_fullscreen_granted = is_fullscreen_granted();
   params.display_mode = display_mode_;
   OnResize(params);

@@ -159,7 +159,6 @@ class WEB_EXPORT WebViewImpl final
   void didAcquirePointerLock() override;
   void didNotAcquirePointerLock() override;
   void didLosePointerLock() override;
-  void didChangeWindowResizerRect() override;
 
   // WebView methods:
   virtual bool isWebView() const { return true; }

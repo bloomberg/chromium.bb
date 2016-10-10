@@ -869,11 +869,6 @@ void WebFrameWidgetImpl::willCloseLayerTreeView() {
   m_layerTreeViewClosed = true;
 }
 
-void WebFrameWidgetImpl::didChangeWindowResizerRect() {
-  if (m_localRoot->frameView())
-    m_localRoot->frameView()->windowResizerRectChanged();
-}
-
 void WebFrameWidgetImpl::didAcquirePointerLock() {
   page()->pointerLockController().didAcquirePointerLock();
 }

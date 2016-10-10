@@ -513,7 +513,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnEnableDeviceEmulation)
     IPC_MESSAGE_HANDLER(ViewMsg_DisableDeviceEmulation,
                         OnDisableDeviceEmulation)
-    IPC_MESSAGE_HANDLER(ViewMsg_ChangeResizeRect, OnChangeResizeRect)
     IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_WasShown, OnWasShown)
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnRepaint)
@@ -564,7 +563,6 @@ void RenderWidget::SetWindowRectSynchronously(
   params.physical_backing_size =
       gfx::ScaleToCeiledSize(new_window_rect.size(), device_scale_factor_);
   params.visible_viewport_size = new_window_rect.size();
-  params.resizer_rect = gfx::Rect();
   params.is_fullscreen_granted = is_fullscreen_granted_;
   params.display_mode = display_mode_;
   params.needs_resize_ack = false;
@@ -630,7 +628,6 @@ void RenderWidget::OnEnableDeviceEmulation(
     resize_params.new_size = size_;
     resize_params.physical_backing_size = physical_backing_size_;
     resize_params.visible_viewport_size = visible_viewport_size_;
-    resize_params.resizer_rect = resizer_rect_;
     resize_params.is_fullscreen_granted = is_fullscreen_granted_;
     resize_params.display_mode = display_mode_;
     screen_metrics_emulator_.reset(new RenderWidgetScreenMetricsEmulator(
@@ -643,14 +640,6 @@ void RenderWidget::OnEnableDeviceEmulation(
 
 void RenderWidget::OnDisableDeviceEmulation() {
   screen_metrics_emulator_.reset();
-}
-
-void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
-  if (resizer_rect_ == resizer_rect)
-    return;
-  resizer_rect_ = resizer_rect;
-  if (GetWebWidget())
-    GetWebWidget()->didChangeWindowResizerRect();
 }
 
 void RenderWidget::OnWasHidden() {
@@ -1071,7 +1060,6 @@ void RenderWidget::Resize(const ResizeParams& params) {
   }
 
   visible_viewport_size_ = params.visible_viewport_size;
-  resizer_rect_ = params.resizer_rect;
 
   // NOTE: We may have entered fullscreen mode without changing our size.
   bool fullscreen_change =
@@ -1416,10 +1404,6 @@ void RenderWidget::SetPendingWindowRect(const WebRect& rect) {
       window_screen_rect_ = rect;
       view_screen_rect_ = rect;
   }
-}
-
-WebRect RenderWidget::windowResizerRect() {
-  return resizer_rect_;
 }
 
 void RenderWidget::OnImeSetComposition(
