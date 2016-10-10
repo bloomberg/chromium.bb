@@ -125,38 +125,35 @@ public class DesktopCanvas {
     }
 
     /**
-     * Sets the offset values used to calculate the space used by System UI.
+     * Handles System UI size and visibility changes.
      *
-     * @param left The space used by System UI on the left edge of the screen.
-     * @param top The space used by System UI on the top edge of the screen.
-     * @param right The space used by System UI on the right edge of the screen.
-     * @param bottom The space used by System UI on the bottom edge of the screen.
+     * @param parameter The set of values defining the current System UI state.
      */
-    public void setSystemUiOffsetValues(int left, int top, int right, int bottom) {
-        mSystemUiScreenSize.set(left, top, right, bottom);
+    public void onSystemUiVisibilityChanged(SystemUiVisibilityChangedEventParameter parameter) {
+        if (parameter.systemUiVisible) {
+            mSystemUiScreenSize.set(parameter.left, parameter.top,
+                    mRenderData.screenWidth - parameter.right,
+                    mRenderData.screenHeight - parameter.bottom);
 
-        if (mAdjustViewportForSystemUi) {
-            // Adjust the cursor position to ensure it's visible when large System UI (defined as
-            // 1/3 or more of the total screen size) is displayed.  This is typically the Soft
-            // Keyboard. Without this change, it is difficult for users to enter text into edit
-            // controls which are located bottom of the screen and may not be able to view their
-            // cursor at all.
-            if (bottom > (mRenderData.screenHeight / 3)) {
-                // Center the cursor within the viewable area (not obscured by System UI).
-                mCursorOffsetScreenY = (((float) mRenderData.screenHeight - bottom) / 2.0f);
-            } else {
-                mCursorOffsetScreenY = 0.0f;
+            if (mAdjustViewportForSystemUi) {
+                // Adjust the cursor position to ensure it's visible when large System UI (1/3 or
+                // more of the total screen size) is displayed (typically the Soft Keyboard).
+                // Without this change, it is difficult for users to enter text into edit controls
+                // which are located bottom of the screen and may not see the cursor at all.
+                if (mSystemUiScreenSize.bottom > (mRenderData.screenHeight / 3)) {
+                    // Center the cursor within the viewable area (not obscured by System UI).
+                    mCursorOffsetScreenY = (float) parameter.bottom / 2.0f;
+                } else {
+                    mCursorOffsetScreenY = 0.0f;
+                }
+
+                // Apply the cursor offset.
+                setCursorPosition(mCursorPosition.x, mCursorPosition.y);
             }
-
-            // Apply the cursor offset.
-            setCursorPosition(mCursorPosition.x, mCursorPosition.y);
+        } else {
+            mCursorOffsetScreenY = 0.0f;
+            mSystemUiScreenSize.setEmpty();
         }
-    }
-
-    /** Called to indicate that no System UI is visible. */
-    public void clearSystemUiOffsets() {
-        mCursorOffsetScreenY = 0.0f;
-        mSystemUiScreenSize.setEmpty();
     }
 
     public void adjustViewportForSystemUi(boolean adjustViewportForSystemUi) {

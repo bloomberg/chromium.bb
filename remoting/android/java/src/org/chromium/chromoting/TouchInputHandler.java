@@ -250,7 +250,7 @@ public class TouchInputHandler {
                 new Event.ParameterRunnable<SystemUiVisibilityChangedEventParameter>() {
                     @Override
                     public void run(SystemUiVisibilityChangedEventParameter parameter) {
-                        handleSystemUiVisibilityChanged(parameter);
+                        mDesktopCanvas.onSystemUiVisibilityChanged(parameter);
                     }
                 });
 
@@ -346,17 +346,6 @@ public class TouchInputHandler {
 
         // Ensure the cursor state is updated appropriately.
         mRenderStub.setCursorVisibility(mRenderData.drawCursor);
-    }
-
-    private void handleSystemUiVisibilityChanged(
-            SystemUiVisibilityChangedEventParameter parameter) {
-        if (parameter.systemUiVisible) {
-            mDesktopCanvas.setSystemUiOffsetValues(parameter.left, parameter.top,
-                    mRenderData.screenWidth - parameter.right,
-                    mRenderData.screenHeight - parameter.bottom);
-        } else {
-            mDesktopCanvas.clearSystemUiOffsets();
-        }
     }
 
     private boolean handleTouchEvent(MotionEvent event) {
