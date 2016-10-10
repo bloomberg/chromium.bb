@@ -98,8 +98,6 @@ class GPU_EXPORT TransformFeedbackManager {
   // Removes a TransformFeedback info for the given client ID.
   void RemoveTransformFeedback(GLuint client_id);
 
-  void RemoveBoundBuffer(Buffer* buffer);
-
   GLuint max_transform_feedback_separate_attribs() const {
     return max_transform_feedback_separate_attribs_;
   }

@@ -387,12 +387,13 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     return bind_attrib_location_map_;
   }
 
-  const std::vector<std::string>& transform_feedback_varyings() const {
-    return transform_feedback_varyings_;
+  const std::vector<std::string>& effective_transform_feedback_varyings()
+      const {
+    return effective_transform_feedback_varyings_;
   }
 
-  GLenum transform_feedback_buffer_mode() const {
-    return transform_feedback_buffer_mode_;
+  GLenum effective_transform_feedback_buffer_mode() const {
+    return effective_transform_feedback_buffer_mode_;
   }
 
   // See member declaration for details.
@@ -554,9 +555,13 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // uniform-location binding map from glBindUniformLocationCHROMIUM() calls.
   LocationMap bind_uniform_location_map_;
 
+  // Set by glTransformFeedbackVaryings().
   std::vector<std::string> transform_feedback_varyings_;
-
   GLenum transform_feedback_buffer_mode_;
+
+  // After a successful link.
+  std::vector<std::string> effective_transform_feedback_varyings_;
+  GLenum effective_transform_feedback_buffer_mode_;
 
   // Fragment input-location binding map from
   // glBindFragmentInputLocationCHROMIUM() calls.
