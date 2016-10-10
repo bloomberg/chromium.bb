@@ -427,6 +427,11 @@ post_process_cmdline() {
     for c in ${CODECS}; do
         enabled ${c} && enable_feature ${c##*_}s
     done
+
+    # Fix up experiment dependencies
+    enabled ec_adapt && ! enabled rans && soft_enable daala_ec
+    enabled ec_adapt && ! enabled daala_ec && soft_enable rans
+    enabled rans && enable_feature ans
 }
 
 
