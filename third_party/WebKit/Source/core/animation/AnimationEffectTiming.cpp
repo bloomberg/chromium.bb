@@ -9,6 +9,7 @@
 #include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/AnimationEffectTimingReadOnly.h"
 #include "core/animation/KeyframeEffect.h"
+#include "core/animation/TimingInput.h"
 #include "platform/animation/TimingFunction.h"
 
 namespace blink {

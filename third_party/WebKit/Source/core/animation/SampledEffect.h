@@ -7,7 +7,7 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/Interpolation.h"
-#include "core/animation/KeyframeEffect.h"
+#include "core/animation/KeyframeEffectReadOnly.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
@@ -21,7 +21,7 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
   WTF_MAKE_NONCOPYABLE(SampledEffect);
 
  public:
-  static SampledEffect* create(KeyframeEffect* animation) {
+  static SampledEffect* create(KeyframeEffectReadOnly* animation) {
     return new SampledEffect(animation);
   }
 
@@ -34,7 +34,7 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
     return m_interpolations;
   }
 
-  KeyframeEffect* effect() const { return m_effect; }
+  KeyframeEffectReadOnly* effect() const { return m_effect; }
   unsigned sequenceNumber() const { return m_sequenceNumber; }
   KeyframeEffectReadOnly::Priority priority() const { return m_priority; }
   bool willNeverChange() const;
@@ -44,9 +44,9 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
   DECLARE_TRACE();
 
  private:
-  SampledEffect(KeyframeEffect*);
+  SampledEffect(KeyframeEffectReadOnly*);
 
-  WeakMember<KeyframeEffect> m_effect;
+  WeakMember<KeyframeEffectReadOnly> m_effect;
   Vector<RefPtr<Interpolation>> m_interpolations;
   const unsigned m_sequenceNumber;
   KeyframeEffectReadOnly::Priority m_priority;
