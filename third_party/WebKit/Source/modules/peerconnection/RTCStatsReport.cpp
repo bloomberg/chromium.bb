@@ -17,6 +17,20 @@ bool addPropertyValue(v8::Local<v8::Object>& v8Object,
       isolate->GetCurrentContext(), v8String(isolate, name), value));
 }
 
+bool addPropertySequenceOfBooleans(v8::Local<v8::Object>& v8Object,
+                                   v8::Isolate* isolate,
+                                   WebString name,
+                                   const WebVector<int>& webVector) {
+  v8::Local<v8::Array> v8Array = v8::Array::New(isolate, webVector.size());
+  for (size_t i = 0; i < webVector.size(); ++i) {
+    if (!v8CallBoolean(v8Array->CreateDataProperty(
+            isolate->GetCurrentContext(), static_cast<uint32_t>(i),
+            v8::Boolean::New(isolate, static_cast<bool>(webVector[i])))))
+      return false;
+  }
+  return addPropertyValue(v8Object, isolate, name, v8Array);
+}
+
 template <typename T>
 bool addPropertySequenceOfNumbers(v8::Local<v8::Object>& v8Object,
                                   v8::Isolate* isolate,
@@ -64,6 +78,11 @@ v8::Local<v8::Value> webRTCStatsToValue(ScriptState* scriptState,
       continue;
     WebString name = member->name();
     switch (member->type()) {
+      case WebRTCStatsMemberTypeBool:
+        success &=
+            addPropertyValue(v8Object, isolate, name,
+                             v8::Boolean::New(isolate, member->valueBool()));
+        break;
       case WebRTCStatsMemberTypeInt32:
         success &= addPropertyValue(
             v8Object, isolate, name,
@@ -96,6 +115,10 @@ v8::Local<v8::Value> webRTCStatsToValue(ScriptState* scriptState,
       case WebRTCStatsMemberTypeString:
         success &= addPropertyValue(v8Object, isolate, name,
                                     v8String(isolate, member->valueString()));
+        break;
+      case WebRTCStatsMemberTypeSequenceBool:
+        success &= addPropertySequenceOfBooleans(v8Object, isolate, name,
+                                                 member->valueSequenceBool());
         break;
       case WebRTCStatsMemberTypeSequenceInt32:
         success &= addPropertySequenceOfNumbers(v8Object, isolate, name,

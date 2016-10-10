@@ -680,12 +680,14 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
 
   std::unique_ptr<webrtc::RTCTestStats> stats_defined_members(
       new webrtc::RTCTestStats("RTCDefinedStats", 2000));
+  stats_defined_members->m_bool = true;
   stats_defined_members->m_int32 = 42;
   stats_defined_members->m_uint32 = 42;
   stats_defined_members->m_int64 = 42;
   stats_defined_members->m_uint64 = 42;
   stats_defined_members->m_double = 42.0;
   stats_defined_members->m_string = "42";
+  stats_defined_members->m_sequence_bool = ToSequence<bool>(true);
   stats_defined_members->m_sequence_int32 = ToSequence<int32_t>(42);
   stats_defined_members->m_sequence_uint32 = ToSequence<uint32_t>(42);
   stats_defined_members->m_sequence_int64 = ToSequence<int64_t>(42);
@@ -729,6 +731,9 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
         EXPECT_TRUE(member->isDefined());
         members.insert(member->type());
         switch (member->type()) {
+          case blink::WebRTCStatsMemberTypeBool:
+            EXPECT_EQ(member->valueBool(), true);
+            break;
           case blink::WebRTCStatsMemberTypeInt32:
             EXPECT_EQ(member->valueInt32(), static_cast<int32_t>(42));
             break;
@@ -746,6 +751,9 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
             break;
           case blink::WebRTCStatsMemberTypeString:
             EXPECT_EQ(member->valueString(), blink::WebString::fromUTF8("42"));
+            break;
+          case blink::WebRTCStatsMemberTypeSequenceBool:
+            ExpectSequenceEquals(member->valueSequenceBool(), 1);
             break;
           case blink::WebRTCStatsMemberTypeSequenceInt32:
             ExpectSequenceEquals(member->valueSequenceInt32(),
@@ -774,7 +782,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
             NOTREACHED();
         }
       }
-      EXPECT_EQ(members.size(), static_cast<size_t>(12));
+      EXPECT_EQ(members.size(), static_cast<size_t>(14));
     } else {
       NOTREACHED();
     }

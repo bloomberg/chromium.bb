@@ -29,12 +29,14 @@ function assert_expected_report(report) {
   assert_true(stats != null);
   assert_equals(stats.type, 'mock-stats');
   assert_equals(stats.timestamp, 1234.0);
+  assert_equals(stats.bool, true);
   assert_equals(stats.int32, 42);
   assert_equals(stats.uint32, 42);
   assert_equals(stats.int64, 42);
   assert_equals(stats.uint64, 42);
   assert_equals(stats.double, 42);
   assert_equals(stats.string, '42');
+  assert_true(stringify_equals(stats.sequenceBool, [true]));
   assert_true(stringify_equals(stats.sequenceInt32, [42]));
   assert_true(stringify_equals(stats.sequenceUint32, [42]));
   assert_true(stringify_equals(stats.sequenceInt64, [42]));

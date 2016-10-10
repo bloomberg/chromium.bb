@@ -127,6 +127,7 @@ class MockWebRTCStatsMember : public blink::WebRTCStatsMember {
     return type_;
   }
   bool isDefined() const override { return true; }
+  bool valueBool() const override { return true; }
   int32_t valueInt32() const override { return 42; }
   uint32_t valueUint32() const override { return 42; }
   int64_t valueInt64() const override { return 42; }
@@ -134,6 +135,9 @@ class MockWebRTCStatsMember : public blink::WebRTCStatsMember {
   double valueDouble() const override { return 42.0; }
   blink::WebString valueString() const override {
     return blink::WebString::fromUTF8("42");
+  }
+  WebVector<int> valueSequenceBool() const override {
+    return sequenceWithValue<int>(1);
   }
   WebVector<int32_t> valueSequenceInt32() const override {
     return sequenceWithValue<int32_t>(42);
@@ -519,12 +523,14 @@ void MockWebRTCPeerConnectionHandler::getStats(
     std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
   std::unique_ptr<MockWebRTCStatsReport> report(new MockWebRTCStatsReport());
   MockWebRTCStats stats("mock-stats-01", "mock-stats", 1234.0);
+  stats.addMember("bool", blink::WebRTCStatsMemberTypeBool);
   stats.addMember("int32", blink::WebRTCStatsMemberTypeInt32);
   stats.addMember("uint32", blink::WebRTCStatsMemberTypeUint32);
   stats.addMember("int64", blink::WebRTCStatsMemberTypeInt64);
   stats.addMember("uint64", blink::WebRTCStatsMemberTypeUint64);
   stats.addMember("double", blink::WebRTCStatsMemberTypeDouble);
   stats.addMember("string", blink::WebRTCStatsMemberTypeString);
+  stats.addMember("sequenceBool", blink::WebRTCStatsMemberTypeSequenceBool);
   stats.addMember("sequenceInt32", blink::WebRTCStatsMemberTypeSequenceInt32);
   stats.addMember("sequenceUint32", blink::WebRTCStatsMemberTypeSequenceUint32);
   stats.addMember("sequenceInt64", blink::WebRTCStatsMemberTypeSequenceInt64);

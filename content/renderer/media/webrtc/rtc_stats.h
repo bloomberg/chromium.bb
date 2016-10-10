@@ -61,12 +61,14 @@ class RTCStatsMember : public blink::WebRTCStatsMember {
   blink::WebRTCStatsMemberType type() const override;
   bool isDefined() const override;
 
+  bool valueBool() const override;
   int32_t valueInt32() const override;
   uint32_t valueUint32() const override;
   int64_t valueInt64() const override;
   uint64_t valueUint64() const override;
   double valueDouble() const override;
   blink::WebString valueString() const override;
+  blink::WebVector<int> valueSequenceBool() const override;
   blink::WebVector<int32_t> valueSequenceInt32() const override;
   blink::WebVector<uint32_t> valueSequenceUint32() const override;
   blink::WebVector<int64_t> valueSequenceInt64() const override;

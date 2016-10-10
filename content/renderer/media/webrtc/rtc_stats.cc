@@ -98,6 +98,8 @@ blink::WebString RTCStatsMember::name() const {
 
 blink::WebRTCStatsMemberType RTCStatsMember::type() const {
   switch (member_->type()) {
+    case webrtc::RTCStatsMemberInterface::kBool:
+      return blink::WebRTCStatsMemberTypeBool;
     case webrtc::RTCStatsMemberInterface::kInt32:
       return blink::WebRTCStatsMemberTypeInt32;
     case webrtc::RTCStatsMemberInterface::kUint32:
@@ -110,6 +112,8 @@ blink::WebRTCStatsMemberType RTCStatsMember::type() const {
       return blink::WebRTCStatsMemberTypeDouble;
     case webrtc::RTCStatsMemberInterface::kString:
       return blink::WebRTCStatsMemberTypeString;
+    case webrtc::RTCStatsMemberInterface::kSequenceBool:
+      return blink::WebRTCStatsMemberTypeSequenceBool;
     case webrtc::RTCStatsMemberInterface::kSequenceInt32:
       return blink::WebRTCStatsMemberTypeSequenceInt32;
     case webrtc::RTCStatsMemberInterface::kSequenceUint32:
@@ -130,6 +134,11 @@ blink::WebRTCStatsMemberType RTCStatsMember::type() const {
 
 bool RTCStatsMember::isDefined() const {
   return member_->is_defined();
+}
+
+bool RTCStatsMember::valueBool() const {
+  DCHECK(isDefined());
+  return *member_->cast_to<webrtc::RTCStatsMember<bool>>();
 }
 
 int32_t RTCStatsMember::valueInt32() const {
@@ -161,6 +170,18 @@ blink::WebString RTCStatsMember::valueString() const {
   DCHECK(isDefined());
   return blink::WebString::fromUTF8(
       *member_->cast_to<webrtc::RTCStatsMember<std::string>>());
+}
+
+blink::WebVector<int> RTCStatsMember::valueSequenceBool() const {
+  DCHECK(isDefined());
+  const std::vector<bool>& vector =
+      *member_->cast_to<webrtc::RTCStatsMember<std::vector<bool>>>();
+  std::vector<int> uint32_vector;
+  uint32_vector.reserve(vector.size());
+  for (size_t i = 0; i < vector.size(); ++i) {
+    uint32_vector.push_back(vector[i] ? 1 : 0);
+  }
+  return blink::WebVector<int>(uint32_vector);
 }
 
 blink::WebVector<int32_t> RTCStatsMember::valueSequenceInt32() const {

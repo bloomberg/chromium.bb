@@ -19,6 +19,7 @@ class WebRTCStats;
 class WebRTCStatsMember;
 
 enum WebRTCStatsMemberType {
+  WebRTCStatsMemberTypeBool,    // bool
   WebRTCStatsMemberTypeInt32,   // int32_t
   WebRTCStatsMemberTypeUint32,  // uint32_t
   WebRTCStatsMemberTypeInt64,   // int64_t
@@ -26,6 +27,7 @@ enum WebRTCStatsMemberType {
   WebRTCStatsMemberTypeDouble,  // double
   WebRTCStatsMemberTypeString,  // WebString
 
+  WebRTCStatsMemberTypeSequenceBool,    // WebVector<int>
   WebRTCStatsMemberTypeSequenceInt32,   // WebVector<int32_t>
   WebRTCStatsMemberTypeSequenceUint32,  // WebVector<uint32_t>
   WebRTCStatsMemberTypeSequenceInt64,   // WebVector<int64_t>
@@ -70,12 +72,15 @@ class WebRTCStatsMember {
 
   // Value getters. No conversion is performed; the function must match the
   // member's |type|.
+  virtual bool valueBool() const = 0;
   virtual int32_t valueInt32() const = 0;
   virtual uint32_t valueUint32() const = 0;
   virtual int64_t valueInt64() const = 0;
   virtual uint64_t valueUint64() const = 0;
   virtual double valueDouble() const = 0;
   virtual WebString valueString() const = 0;
+  // |WebVector<int> because |WebVector| is incompatible with |bool|.
+  virtual WebVector<int> valueSequenceBool() const = 0;
   virtual WebVector<int32_t> valueSequenceInt32() const = 0;
   virtual WebVector<uint32_t> valueSequenceUint32() const = 0;
   virtual WebVector<int64_t> valueSequenceInt64() const = 0;
