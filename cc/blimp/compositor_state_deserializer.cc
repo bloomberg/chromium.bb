@@ -6,10 +6,15 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "cc/blimp/client_picture_cache.h"
 #include "cc/blimp/compositor_state_deserializer_client.h"
+#include "cc/blimp/deserialized_content_layer_client.h"
 #include "cc/blimp/layer_factory.h"
+#include "cc/blimp/picture_data_conversions.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/picture_layer.h"
+#include "cc/layers/solid_color_scrollbar_layer.h"
 #include "cc/proto/cc_conversions.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/proto/layer_tree_host.pb.h"
@@ -28,16 +33,43 @@ class DefaultLayerFactory : public LayerFactory {
   scoped_refptr<Layer> CreateLayer(int engine_layer_id) override {
     return Layer::Create();
   }
+  scoped_refptr<PictureLayer> CreatePictureLayer(
+      int engine_layer_id,
+      ContentLayerClient* content_layer_client) override {
+    return PictureLayer::Create(content_layer_client);
+  }
+  scoped_refptr<SolidColorScrollbarLayer> CreateSolidColorScrollbarLayer(
+      int engine_layer_id,
+      ScrollbarOrientation orientation,
+      int thumb_thickness,
+      int track_start,
+      bool is_left_side_vertical_scrollbar,
+      int scroll_layer_id) override {
+    return SolidColorScrollbarLayer::Create(
+        orientation, thumb_thickness, track_start,
+        is_left_side_vertical_scrollbar, scroll_layer_id);
+  }
 };
 
 }  // namespace
 
+CompositorStateDeserializer::LayerData::LayerData() = default;
+
+CompositorStateDeserializer::LayerData::~LayerData() = default;
+
+CompositorStateDeserializer::LayerData::LayerData(LayerData&& other) = default;
+
+CompositorStateDeserializer::LayerData& CompositorStateDeserializer::LayerData::
+operator=(LayerData&& other) = default;
+
 CompositorStateDeserializer::CompositorStateDeserializer(
     LayerTreeHost* layer_tree_host,
-    ScrollCallback scroll_callback,
+    std::unique_ptr<ClientPictureCache> client_picture_cache,
+    const ScrollCallback& scroll_callback,
     CompositorStateDeserializerClient* client)
     : layer_factory_(base::MakeUnique<DefaultLayerFactory>()),
       layer_tree_host_(layer_tree_host),
+      client_picture_cache_(std::move(client_picture_cache)),
       scroll_callback_(scroll_callback),
       client_(client) {
   DCHECK(layer_tree_host_);
@@ -50,7 +82,7 @@ Layer* CompositorStateDeserializer::GetLayerForEngineId(
     int engine_layer_id) const {
   EngineIdToLayerMap::const_iterator layer_it =
       engine_id_to_layer_.find(engine_layer_id);
-  return layer_it != engine_id_to_layer_.end() ? layer_it->second.get()
+  return layer_it != engine_id_to_layer_.end() ? layer_it->second.layer.get()
                                                : nullptr;
 }
 
@@ -58,11 +90,21 @@ void CompositorStateDeserializer::DeserializeCompositorUpdate(
     const proto::LayerTreeHost& layer_tree_host_proto) {
   SychronizeLayerTreeState(layer_tree_host_proto.layer_tree());
 
+  // Ensure ClientPictureCache contains all the necessary SkPictures before
+  // deserializing the properties.
+  proto::SkPictures proto_pictures = layer_tree_host_proto.pictures();
+  std::vector<PictureData> pictures =
+      SkPicturesProtoToPictureDataVector(proto_pictures);
+  client_picture_cache_->ApplyCacheUpdate(pictures);
+
   const proto::LayerUpdate& layer_updates =
       layer_tree_host_proto.layer_updates();
   for (int i = 0; i < layer_updates.layers_size(); ++i) {
     SynchronizeLayerState(layer_updates.layers(i));
   }
+
+  // The deserialization is finished, so now clear the cache.
+  client_picture_cache_->Flush();
 }
 
 void CompositorStateDeserializer::SetLayerFactoryForTesting(
@@ -78,16 +120,35 @@ void CompositorStateDeserializer::SychronizeLayerTreeState(
   // TODO(khushalsagar): Don't do this if the hierarchy didn't change. See
   // crbug.com/605170.
   EngineIdToLayerMap new_engine_id_to_layer;
+  ScrollbarLayerToScrollLayerId scrollbar_layer_to_scroll_layer;
   if (layer_tree_proto.has_root_layer()) {
     const proto::LayerNode& root_layer_node = layer_tree_proto.root_layer();
     layer_tree->SetRootLayer(
-        GetLayerAndAddToNewMap(root_layer_node, &new_engine_id_to_layer));
-    SynchronizeLayerHierarchyRecursive(
-        layer_tree->root_layer(), root_layer_node, &new_engine_id_to_layer);
+        GetLayerAndAddToNewMap(root_layer_node, &new_engine_id_to_layer,
+                               &scrollbar_layer_to_scroll_layer));
+    SynchronizeLayerHierarchyRecursive(layer_tree->root_layer(),
+                                       root_layer_node, &new_engine_id_to_layer,
+                                       &scrollbar_layer_to_scroll_layer);
   } else {
     layer_tree->SetRootLayer(nullptr);
   }
   engine_id_to_layer_.swap(new_engine_id_to_layer);
+
+  // Now that the tree has been synced, we can set up the scroll layers, since
+  // the corresponding engine layers have been created.
+  for (const auto& scrollbar : scrollbar_layer_to_scroll_layer) {
+    // This corresponds to the id of the Scrollbar Layer.
+    int scrollbar_layer_id = scrollbar.first;
+
+    // This corresponds to the id of the scroll layer for this scrollbar.
+    int scroll_layer_id = scrollbar.second;
+
+    SolidColorScrollbarLayer* scrollbar_layer =
+        static_cast<SolidColorScrollbarLayer*>(
+            GetLayerForEngineId(scrollbar_layer_id));
+
+    scrollbar_layer->SetScrollLayer(GetClientIdFromEngineId(scroll_layer_id));
+  }
 
   // Synchronize rest of the tree state.
   layer_tree->RegisterViewportLayers(
@@ -139,8 +200,8 @@ void CompositorStateDeserializer::SynchronizeLayerState(
   int engine_layer_id = layer_properties_proto.id();
   Layer* layer = GetLayerForEngineId(engine_layer_id);
 
+  // Layer Inputs -----------------------------------------------------
   const proto::BaseLayerProperties& base = layer_properties_proto.base();
-
   layer->SetNeedsDisplayRect(ProtoToRect(base.update_rect()));
   layer->SetBounds(ProtoToSize(base.bounds()));
   layer->SetMasksToBounds(base.masks_to_bounds());
@@ -196,32 +257,69 @@ void CompositorStateDeserializer::SynchronizeLayerState(
 
   layer->SetHasWillChangeTransformHint(base.has_will_change_transform_hint());
   layer->SetHideLayerAndSubtree(base.hide_layer_and_subtree());
+
+  // ------------------------------------------------------------------
+
+  // PictureLayer Properties deserialization.
+  if (layer_properties_proto.has_picture()) {
+    const proto::PictureLayerProperties& picture_properties =
+        layer_properties_proto.picture();
+
+    // Only PictureLayers set picture.
+    PictureLayer* picture_layer =
+        static_cast<PictureLayer*>(GetLayerForEngineId(engine_layer_id));
+    picture_layer->SetNearestNeighbor(picture_properties.nearest_neighbor());
+
+    gfx::Rect recorded_viewport =
+        ProtoToRect(picture_properties.recorded_viewport());
+    scoped_refptr<DisplayItemList> display_list;
+    std::vector<uint32_t> used_engine_picture_ids;
+    if (picture_properties.has_display_list()) {
+      display_list = DisplayItemList::CreateFromProto(
+          picture_properties.display_list(), client_picture_cache_.get(),
+          &used_engine_picture_ids);
+    } else {
+      display_list = nullptr;
+    }
+
+    // TODO(khushalsagar): The caching here is sub-optimal. If a layer does not
+    // PushProperties, its pictures won't get counted here even if the layer
+    // is drawn in the current frame.
+    for (uint32_t engine_picture_id : used_engine_picture_ids)
+      client_picture_cache_->MarkUsed(engine_picture_id);
+
+    GetContentLayerClient(engine_layer_id)
+        ->UpdateDisplayListAndRecordedViewport(display_list, recorded_viewport);
+  }
 }
 
 void CompositorStateDeserializer::SynchronizeLayerHierarchyRecursive(
     Layer* layer,
     const proto::LayerNode& layer_node,
-    EngineIdToLayerMap* new_layer_map) {
+    EngineIdToLayerMap* new_layer_map,
+    ScrollbarLayerToScrollLayerId* scrollbar_layer_to_scroll_layer) {
   layer->RemoveAllChildren();
 
   // Children.
   for (int i = 0; i < layer_node.children_size(); i++) {
     const proto::LayerNode& child_layer_node = layer_node.children(i);
-    scoped_refptr<Layer> child_layer =
-        GetLayerAndAddToNewMap(child_layer_node, new_layer_map);
+    scoped_refptr<Layer> child_layer = GetLayerAndAddToNewMap(
+        child_layer_node, new_layer_map, scrollbar_layer_to_scroll_layer);
     layer->AddChild(child_layer);
     SynchronizeLayerHierarchyRecursive(child_layer.get(), child_layer_node,
-                                       new_layer_map);
+                                       new_layer_map,
+                                       scrollbar_layer_to_scroll_layer);
   }
 
   // Mask Layer.
   if (layer_node.has_mask_layer()) {
     const proto::LayerNode& mask_layer_node = layer_node.mask_layer();
-    scoped_refptr<Layer> mask_layer =
-        GetLayerAndAddToNewMap(mask_layer_node, new_layer_map);
+    scoped_refptr<Layer> mask_layer = GetLayerAndAddToNewMap(
+        mask_layer_node, new_layer_map, scrollbar_layer_to_scroll_layer);
     layer->SetMaskLayer(mask_layer.get());
     SynchronizeLayerHierarchyRecursive(mask_layer.get(), mask_layer_node,
-                                       new_layer_map);
+                                       new_layer_map,
+                                       scrollbar_layer_to_scroll_layer);
   } else {
     layer->SetMaskLayer(nullptr);
   }
@@ -232,46 +330,91 @@ void CompositorStateDeserializer::SynchronizeLayerHierarchyRecursive(
 
 scoped_refptr<Layer> CompositorStateDeserializer::GetLayerAndAddToNewMap(
     const proto::LayerNode& layer_node,
-    EngineIdToLayerMap* new_layer_map) {
+    EngineIdToLayerMap* new_layer_map,
+    ScrollbarLayerToScrollLayerId* scrollbar_layer_to_scroll_layer) {
   DCHECK(new_layer_map->find(layer_node.id()) == new_layer_map->end())
       << "A LayerNode should have been de-serialized only once";
 
+  scoped_refptr<Layer> layer;
   EngineIdToLayerMap::iterator layer_map_it =
       engine_id_to_layer_.find(layer_node.id());
 
   if (layer_map_it != engine_id_to_layer_.end()) {
     // We can re-use the old layer.
-    (*new_layer_map)[layer_node.id()] = layer_map_it->second;
-    return layer_map_it->second;
+    layer = layer_map_it->second.layer;
+    (*new_layer_map)[layer_node.id()] = std::move(layer_map_it->second);
+    engine_id_to_layer_.erase(layer_map_it);
+    return layer;
   }
 
   // We need to create a new layer.
-  scoped_refptr<Layer> layer;
+  auto& layer_data = (*new_layer_map)[layer_node.id()];
   switch (layer_node.type()) {
     case proto::LayerNode::UNKNOWN:
       NOTREACHED() << "Unknown Layer type";
     case proto::LayerNode::LAYER:
-      layer = layer_factory_->CreateLayer(layer_node.id());
+      layer_data.layer = layer_factory_->CreateLayer(layer_node.id());
       break;
-    default:
-      // TODO(khushalsagar): Add other Layer types.
+    case proto::LayerNode::PICTURE_LAYER:
+      layer_data.content_layer_client =
+          base::MakeUnique<DeserializedContentLayerClient>();
+      layer_data.layer = layer_factory_->CreatePictureLayer(
+          layer_node.id(), layer_data.content_layer_client.get());
+      break;
+    case proto::LayerNode::SOLID_COLOR_SCROLLBAR_LAYER: {
+      // SolidColorScrollbarLayers attach their properties in the LayerNode
+      // itself.
+      const proto::SolidColorScrollbarLayerProperties& scrollbar =
+          layer_node.solid_scrollbar();
+
+      DCHECK(scrollbar_layer_to_scroll_layer->find(layer_node.id()) ==
+             scrollbar_layer_to_scroll_layer->end());
+      int scroll_layer_id = scrollbar.scroll_layer_id();
+      (*scrollbar_layer_to_scroll_layer)[layer_node.id()] = scroll_layer_id;
+
+      int thumb_thickness = scrollbar.thumb_thickness();
+      int track_start = scrollbar.track_start();
+      bool is_left_side_vertical_scrollbar =
+          scrollbar.is_left_side_vertical_scrollbar();
+      ScrollbarOrientation orientation =
+          ScrollbarOrientationFromProto(scrollbar.orientation());
+
+      // We use the invalid id for the |scroll_layer_id| because the
+      // corresponding layer on the client may not have been created yet.
+      layer_data.layer = layer_factory_->CreateSolidColorScrollbarLayer(
+          layer_node.id(), orientation, thumb_thickness, track_start,
+          is_left_side_vertical_scrollbar, Layer::LayerIdLabels::INVALID_ID);
+    } break;
+    case proto::LayerNode::HEADS_UP_DISPLAY_LAYER:
+      // TODO(khushalsagar): Remove this from proto.
       NOTREACHED();
   }
 
-  (*new_layer_map)[layer_node.id()] = layer;
+  layer = layer_data.layer;
   return layer;
 }
 
-int CompositorStateDeserializer::GetClientIdFromEngineId(int engine_layer_id) {
+int CompositorStateDeserializer::GetClientIdFromEngineId(
+    int engine_layer_id) const {
   Layer* layer = GetLayerForEngineId(engine_layer_id);
   return layer ? layer->id() : Layer::LayerIdLabels::INVALID_ID;
 }
 
 scoped_refptr<Layer> CompositorStateDeserializer::GetLayer(
-    int engine_layer_id) {
+    int engine_layer_id) const {
   EngineIdToLayerMap::const_iterator layer_it =
       engine_id_to_layer_.find(engine_layer_id);
-  return layer_it != engine_id_to_layer_.end() ? layer_it->second : nullptr;
+  return layer_it != engine_id_to_layer_.end() ? layer_it->second.layer
+                                               : nullptr;
+}
+
+DeserializedContentLayerClient*
+CompositorStateDeserializer::GetContentLayerClient(int engine_layer_id) const {
+  EngineIdToLayerMap::const_iterator layer_it =
+      engine_id_to_layer_.find(engine_layer_id);
+  return layer_it != engine_id_to_layer_.end()
+             ? layer_it->second.content_layer_client.get()
+             : nullptr;
 }
 
 }  // namespace cc

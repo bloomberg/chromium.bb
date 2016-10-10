@@ -77,15 +77,12 @@ scoped_refptr<Layer> Layer::Create() {
 }
 
 Layer::Layer()
-    // Layer IDs start from 1.
-    : Layer(g_next_layer_id.GetNext() + 1) {}
-
-Layer::Layer(int layer_id)
     : ignore_set_needs_commit_(false),
       parent_(nullptr),
       layer_tree_host_(nullptr),
       layer_tree_(nullptr),
-      inputs_(layer_id),
+      // Layer IDs start from 1.
+      inputs_(g_next_layer_id.GetNext() + 1),
       num_descendants_that_draw_content_(0),
       transform_tree_index_(TransformTree::kInvalidNodeId),
       effect_tree_index_(EffectTree::kInvalidNodeId),
@@ -1865,6 +1862,10 @@ gfx::Transform Layer::screen_space_transform() const {
 
 LayerTree* Layer::GetLayerTree() const {
   return layer_tree_;
+}
+
+void Layer::SetLayerIdForTesting(int id) {
+  inputs_.layer_id = id;
 }
 
 }  // namespace cc

@@ -8,6 +8,8 @@
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/blimp/compositor_proto_state.h"
+#include "cc/blimp/engine_picture_cache.h"
+#include "cc/blimp/picture_data_conversions.h"
 #include "cc/blimp/remote_compositor_bridge.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_sink.h"
@@ -46,6 +48,7 @@ LayerTreeHostRemote::LayerTreeHostRemote(InitParams* params,
           TaskRunnerProvider::Create(std::move(params->main_task_runner),
                                      nullptr)),
       remote_compositor_bridge_(std::move(params->remote_compositor_bridge)),
+      engine_picture_cache_(std::move(params->engine_picture_cache)),
       settings_(*params->settings),
       layer_tree_(std::move(layer_tree)),
       weak_factory_(this) {
@@ -53,6 +56,7 @@ LayerTreeHostRemote::LayerTreeHostRemote(InitParams* params,
   DCHECK(remote_compositor_bridge_);
   DCHECK(client_);
   remote_compositor_bridge_->BindToClient(this);
+  layer_tree_->set_engine_picture_cache(engine_picture_cache_.get());
 }
 
 LayerTreeHostRemote::~LayerTreeHostRemote() = default;
@@ -439,7 +443,10 @@ void LayerTreeHostRemote::SerializeCurrentState(
         layer_tree_host_proto->mutable_layer_updates(), inputs_only);
   layer_tree_->LayersThatShouldPushProperties().clear();
 
-  // TODO(khushalsagar): Deal with picture caching.
+  std::vector<PictureData> pictures =
+      engine_picture_cache_->CalculateCacheUpdateAndFlush();
+  proto::PictureDataVectorToSkPicturesProto(
+      pictures, layer_tree_host_proto->mutable_pictures());
 }
 
 }  // namespace cc

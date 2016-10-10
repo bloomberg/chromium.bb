@@ -210,10 +210,9 @@ void PictureLayer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto,
                                                   bool inputs_only) {
   Layer::LayerSpecificPropertiesToProto(proto, inputs_only);
   DropRecordingSourceContentIfInvalid();
-
   proto::PictureLayerProperties* picture = proto->mutable_picture();
-  recording_source_->ToProtobuf(picture->mutable_recording_source());
 
+  picture->set_nearest_neighbor(picture_layer_inputs_.nearest_neighbor);
   RectToProto(picture_layer_inputs_.recorded_viewport,
               picture->mutable_recorded_viewport());
   if (picture_layer_inputs_.display_list) {
@@ -229,12 +228,13 @@ void PictureLayer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto,
     }
   }
 
+  if (inputs_only)
+    return;
+
+  recording_source_->ToProtobuf(picture->mutable_recording_source());
   RegionToProto(last_updated_invalidation_, picture->mutable_invalidation());
   picture->set_is_mask(is_mask_);
-  picture->set_nearest_neighbor(picture_layer_inputs_.nearest_neighbor);
-
   picture->set_update_source_frame_number(update_source_frame_number_);
-
   last_updated_invalidation_.Clear();
 }
 

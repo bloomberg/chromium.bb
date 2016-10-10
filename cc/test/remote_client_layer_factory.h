@@ -20,6 +20,16 @@ class RemoteClientLayerFactory : public LayerFactory {
 
   // LayerFactory implementation.
   scoped_refptr<Layer> CreateLayer(int engine_layer_id) override;
+  scoped_refptr<PictureLayer> CreatePictureLayer(
+      int engine_layer_id,
+      ContentLayerClient* content_layer_client) override;
+  scoped_refptr<SolidColorScrollbarLayer> CreateSolidColorScrollbarLayer(
+      int engine_layer_id,
+      ScrollbarOrientation orientation,
+      int thumb_thickness,
+      int track_start,
+      bool is_left_side_vertical_scrollbar,
+      int scroll_layer_id) override;
 };
 
 }  // namespace cc

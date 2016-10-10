@@ -50,6 +50,8 @@ component("cc") {
     "blimp/compositor_state_deserializer.cc",
     "blimp/compositor_state_deserializer.h",
     "blimp/compositor_state_deserializer_client.h",
+    "blimp/deserialized_content_layer_client.cc",
+    "blimp/deserialized_content_layer_client.h",
     "blimp/engine_picture_cache.h",
     "blimp/image_serialization_processor.h",
     "blimp/layer_factory.h",

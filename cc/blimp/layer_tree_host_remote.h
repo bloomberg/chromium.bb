@@ -25,6 +25,8 @@ class LayerTreeHost;
 }  // namespace proto
 
 class AnimationHost;
+class EnginePictureCache;
+class ImageSerializationProcessor;
 class RemoteCompositorBridge;
 class LayerTreeHostClient;
 
@@ -36,6 +38,7 @@ class CC_EXPORT LayerTreeHostRemote : public LayerTreeHost,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
     std::unique_ptr<AnimationHost> animation_host;
     std::unique_ptr<RemoteCompositorBridge> remote_compositor_bridge;
+    std::unique_ptr<EnginePictureCache> engine_picture_cache;
     LayerTreeSettings const* settings = nullptr;
 
     InitParams();
@@ -137,6 +140,11 @@ class CC_EXPORT LayerTreeHostRemote : public LayerTreeHost,
 
   // The RemoteCompositorBridge used to submit frame updates to the client.
   std::unique_ptr<RemoteCompositorBridge> remote_compositor_bridge_;
+
+  // Used to cache SkPictures sent with DisplayLists to the client.
+  // TODO(khushalsagar): Restructure to give this with the CompositorProtoState
+  // and eliminate this abstraction. See crbug.com/648442.
+  std::unique_ptr<EnginePictureCache> engine_picture_cache_;
 
   LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;

@@ -7,9 +7,13 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "cc/input/scrollbar.h"
 
 namespace cc {
+class ContentLayerClient;
 class Layer;
+class PictureLayer;
+class SolidColorScrollbarLayer;
 
 // Used to allow tests to inject the Layer created by the
 // CompositorStateDeserializer on the client.
@@ -18,6 +22,18 @@ class LayerFactory {
   virtual ~LayerFactory() {}
 
   virtual scoped_refptr<Layer> CreateLayer(int engine_layer_id) = 0;
+
+  virtual scoped_refptr<PictureLayer> CreatePictureLayer(
+      int engine_layer_id,
+      ContentLayerClient* content_layer_client) = 0;
+
+  virtual scoped_refptr<SolidColorScrollbarLayer>
+  CreateSolidColorScrollbarLayer(int engine_layer_id,
+                                 ScrollbarOrientation orientation,
+                                 int thumb_thickness,
+                                 int track_start,
+                                 bool is_left_side_vertical_scrollbar,
+                                 int scroll_layer_id) = 0;
 };
 
 }  // namespace cc

@@ -360,9 +360,8 @@ class LayerSerializationTest : public testing::Test {
 
   void VerifySolidColorScrollbarLayerAfterSerializationAndDeserialization(
       scoped_refptr<SolidColorScrollbarLayer> source_scrollbar) {
-    proto::LayerProperties serialized_scrollbar;
-    source_scrollbar->LayerSpecificPropertiesToProto(&serialized_scrollbar,
-                                                     false);
+    proto::LayerNode serialized_scrollbar_node;
+    source_scrollbar->ToLayerNodeProto(&serialized_scrollbar_node);
 
     scoped_refptr<SolidColorScrollbarLayer> deserialized_scrollbar =
         SolidColorScrollbarLayer::Create(ScrollbarOrientation::HORIZONTAL, -1,
@@ -372,9 +371,9 @@ class LayerSerializationTest : public testing::Test {
 
     // FromLayerSpecificPropertiesProto expects a non-null LayerTreeHost to be
     // set.
-    deserialized_scrollbar->SetLayerTreeHost(layer_tree_host_.get());
-    deserialized_scrollbar->FromLayerSpecificPropertiesProto(
-        serialized_scrollbar);
+    Layer::LayerIdMap layer_map;
+    deserialized_scrollbar->FromLayerNodeProto(
+        serialized_scrollbar_node, layer_map, layer_tree_host_.get());
 
     EXPECT_EQ(source_scrollbar->solid_color_scrollbar_layer_inputs_.track_start,
               deserialized_scrollbar->solid_color_scrollbar_layer_inputs_

@@ -6,18 +6,27 @@
 
 #include "base/run_loop.h"
 #include "cc/animation/animation_host.h"
+#include "cc/blimp/client_picture_cache.h"
 #include "cc/blimp/compositor_proto_state.h"
 #include "cc/blimp/compositor_state_deserializer_client.h"
 #include "cc/blimp/layer_tree_host_remote.h"
+#include "cc/layers/content_layer_client.h"
+#include "cc/layers/picture_layer.h"
+#include "cc/layers/solid_color_scrollbar_layer.h"
+#include "cc/playback/display_item_list.h"
+#include "cc/playback/drawing_display_item.h"
 #include "cc/proto/compositor_message.pb.h"
+#include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_remote_compositor_bridge.h"
 #include "cc/test/remote_client_layer_factory.h"
+#include "cc/test/skia_common.h"
 #include "cc/test/stub_layer_tree_host_client.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 
 namespace cc {
 namespace {
@@ -26,6 +35,28 @@ namespace {
   EXPECT_EQ(                                                                \
       compositor_state_deserializer_->GetLayerForEngineId(engine_layer_id), \
       client_layer);
+
+class FakeContentLayerClient : public ContentLayerClient {
+ public:
+  FakeContentLayerClient(scoped_refptr<DisplayItemList> display_list,
+                         gfx::Rect recorded_viewport)
+      : display_list_(std::move(display_list)),
+        recorded_viewport_(recorded_viewport) {}
+  ~FakeContentLayerClient() override {}
+
+  // ContentLayerClient implementation.
+  gfx::Rect PaintableRegion() override { return recorded_viewport_; }
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+      PaintingControlSetting painting_status) override {
+    return display_list_;
+  }
+  bool FillsBoundsCompletely() const override { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
+
+ private:
+  scoped_refptr<DisplayItemList> display_list_;
+  gfx::Rect recorded_viewport_;
+};
 
 class RemoteCompositorBridgeForTest : public FakeRemoteCompositorBridge {
  public:
@@ -68,6 +99,8 @@ class CompositorStateDeserializerTest
             base::Bind(
                 &CompositorStateDeserializerTest::ProcessCompositorStateUpdate,
                 base::Unretained(this)));
+    params.engine_picture_cache =
+        image_serialization_processor_.CreateEnginePictureCache();
     LayerTreeSettings settings;
     params.settings = &settings;
 
@@ -76,9 +109,11 @@ class CompositorStateDeserializerTest
     // Client side setup.
     layer_tree_host_in_process_ = FakeLayerTreeHost::Create(
         &layer_tree_host_client_client_, &task_graph_runner_);
+    std::unique_ptr<ClientPictureCache> client_picture_cache =
+        image_serialization_processor_.CreateClientPictureCache();
     compositor_state_deserializer_ =
         base::MakeUnique<CompositorStateDeserializer>(
-            layer_tree_host_in_process_.get(),
+            layer_tree_host_in_process_.get(), std::move(client_picture_cache),
             base::Bind(&CompositorStateDeserializerTest::LayerScrolled,
                        base::Unretained(this)),
             this);
@@ -233,6 +268,8 @@ class CompositorStateDeserializerTest
   std::unique_ptr<CompositorStateDeserializer> compositor_state_deserializer_;
   FakeLayerTreeHostClient layer_tree_host_client_client_;
   TestTaskGraphRunner task_graph_runner_;
+
+  FakeImageSerializationProcessor image_serialization_processor_;
 
   bool should_retain_client_scroll_ = false;
   bool should_retain_client_scale_ = false;
@@ -415,6 +452,118 @@ TEST_F(CompositorStateDeserializerTest, PropertyTreesAreIdentical) {
       layer_tree_host_in_process_->property_trees();
 
   EXPECT_EQ(*engine_property_trees, *client_property_trees);
+}
+
+TEST_F(CompositorStateDeserializerTest, SolidColorScrollbarLayer) {
+  scoped_refptr<Layer> root_layer = Layer::Create();
+  layer_tree_host_remote_->GetLayerTree()->SetRootLayer(root_layer);
+
+  scoped_refptr<Layer> child_layer1 = Layer::Create();
+  root_layer->AddChild(child_layer1);
+  scoped_refptr<SolidColorScrollbarLayer> scroll_layer1 =
+      SolidColorScrollbarLayer::Create(ScrollbarOrientation::HORIZONTAL, 20, 5,
+                                       true, 3);
+  scroll_layer1->SetScrollLayer(child_layer1->id());
+  child_layer1->AddChild(scroll_layer1);
+
+  scoped_refptr<SolidColorScrollbarLayer> scroll_layer2 =
+      SolidColorScrollbarLayer::Create(ScrollbarOrientation::VERTICAL, 2, 9,
+                                       false, 3);
+  root_layer->AddChild(scroll_layer2);
+  scoped_refptr<Layer> child_layer2 = Layer::Create();
+  scroll_layer2->AddChild(child_layer2);
+  scroll_layer2->SetScrollLayer(child_layer2->id());
+
+  // Synchronize State and verify.
+  base::RunLoop().RunUntilIdle();
+  VerifyTreesAreIdentical();
+
+  // Verify Scrollbar layers.
+  SolidColorScrollbarLayer* client_scroll_layer1 =
+      static_cast<SolidColorScrollbarLayer*>(
+          compositor_state_deserializer_->GetLayerForEngineId(
+              scroll_layer1->id()));
+  EXPECT_EQ(client_scroll_layer1->ScrollLayerId(),
+            compositor_state_deserializer_
+                ->GetLayerForEngineId(scroll_layer1->ScrollLayerId())
+                ->id());
+  EXPECT_EQ(client_scroll_layer1->orientation(), scroll_layer1->orientation());
+
+  SolidColorScrollbarLayer* client_scroll_layer2 =
+      static_cast<SolidColorScrollbarLayer*>(
+          compositor_state_deserializer_->GetLayerForEngineId(
+              scroll_layer2->id()));
+  EXPECT_EQ(client_scroll_layer2->ScrollLayerId(),
+            compositor_state_deserializer_
+                ->GetLayerForEngineId(scroll_layer2->ScrollLayerId())
+                ->id());
+  EXPECT_EQ(client_scroll_layer2->orientation(), scroll_layer2->orientation());
+}
+
+TEST_F(CompositorStateDeserializerTest, PictureLayer) {
+  scoped_refptr<Layer> root_layer = Layer::Create();
+  layer_tree_host_remote_->GetLayerTree()->SetRootLayer(root_layer);
+
+  gfx::Size layer_size = gfx::Size(5, 5);
+
+  gfx::PointF offset(2.f, 3.f);
+  SkPictureRecorder recorder;
+  sk_sp<SkCanvas> canvas;
+  SkPaint red_paint;
+  red_paint.setColor(SK_ColorRED);
+  canvas = sk_ref_sp(recorder.beginRecording(SkRect::MakeXYWH(
+      offset.x(), offset.y(), layer_size.width(), layer_size.height())));
+  canvas->translate(offset.x(), offset.y());
+  canvas->drawRectCoords(0.f, 0.f, 4.f, 4.f, red_paint);
+  sk_sp<SkPicture> test_picture = recorder.finishRecordingAsPicture();
+
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = false;
+  scoped_refptr<DisplayItemList> display_list =
+      DisplayItemList::Create(settings);
+  const gfx::Rect visual_rect(0, 0, 42, 42);
+  display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(visual_rect,
+                                                               test_picture);
+  display_list->Finalize();
+  FakeContentLayerClient content_client(display_list, gfx::Rect(layer_size));
+
+  scoped_refptr<PictureLayer> picture_layer =
+      PictureLayer::Create(&content_client);
+  picture_layer->SetBounds(layer_size);
+  root_layer->AddChild(picture_layer);
+
+  // Synchronize State and verify.
+  base::RunLoop().RunUntilIdle();
+  VerifyTreesAreIdentical();
+
+  // Verify PictureLayer.
+  PictureLayer* client_picture_layer = static_cast<PictureLayer*>(
+      compositor_state_deserializer_->GetLayerForEngineId(picture_layer->id()));
+  scoped_refptr<DisplayItemList> client_display_list =
+      client_picture_layer->client()->PaintContentsToDisplayList(
+          ContentLayerClient::PaintingControlSetting::PAINTING_BEHAVIOR_NORMAL);
+  EXPECT_TRUE(AreDisplayListDrawingResultsSame(
+      gfx::Rect(layer_size), display_list.get(), client_display_list.get()));
+
+  // Now attach new layer with the same DisplayList.
+  scoped_refptr<PictureLayer> picture_layer2 =
+      PictureLayer::Create(&content_client);
+  picture_layer->SetBounds(layer_size);
+  root_layer->AddChild(picture_layer2);
+
+  // Synchronize State and verify.
+  base::RunLoop().RunUntilIdle();
+  VerifyTreesAreIdentical();
+
+  // Verify PictureLayer2.
+  PictureLayer* client_picture_layer2 = static_cast<PictureLayer*>(
+      compositor_state_deserializer_->GetLayerForEngineId(
+          picture_layer2->id()));
+  scoped_refptr<DisplayItemList> client_display_list2 =
+      client_picture_layer2->client()->PaintContentsToDisplayList(
+          ContentLayerClient::PaintingControlSetting::PAINTING_BEHAVIOR_NORMAL);
+  EXPECT_TRUE(AreDisplayListDrawingResultsSame(
+      gfx::Rect(layer_size), display_list.get(), client_display_list2.get()));
 }
 
 }  // namespace

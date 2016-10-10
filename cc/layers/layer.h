@@ -358,7 +358,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // hierarchical structure to the given LayerNode proto. In addition to the
   // structure itself, the Layer id and type is also written to facilitate
   // construction of the correct layer on the client.
-  void ToLayerNodeProto(proto::LayerNode* proto) const;
+  virtual void ToLayerNodeProto(proto::LayerNode* proto) const;
 
   // Recursively iterate over this layer and all children and reset the
   // properties sent with the hierarchical structure in the LayerNode protos.
@@ -371,9 +371,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // into this node and its children. The |layer_map| should be used to look
   // for previously existing Layers, since they should be re-used between each
   // hierarchy update.
-  void FromLayerNodeProto(const proto::LayerNode& proto,
-                          const LayerIdMap& layer_map,
-                          LayerTreeHost* layer_tree_host);
+  virtual void FromLayerNodeProto(const proto::LayerNode& proto,
+                                  const LayerIdMap& layer_map,
+                                  LayerTreeHost* layer_tree_host);
 
   // This method is similar to PushPropertiesTo, but instead of pushing to
   // a LayerImpl, it pushes the properties to proto::LayerProperties. It is
@@ -488,15 +488,15 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   ElementListType GetElementTypeForAnimation() const;
 
+  // Tests in remote mode need to explicitly set the layer id so it matches the
+  // layer id for the corresponding Layer on the engine.
+  void SetLayerIdForTesting(int id);
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
   virtual ~Layer();
   Layer();
-
-  // Tests in remote mode need to explicitly set the layer id so it matches the
-  // layer id for the corresponding Layer on the engine.
-  explicit Layer(int layer_id);
 
   LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }

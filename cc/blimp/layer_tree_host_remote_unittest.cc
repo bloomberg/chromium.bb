@@ -10,6 +10,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_remote_compositor_bridge.h"
 #include "cc/test/stub_layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -146,6 +147,8 @@ class LayerTreeHostRemoteTest : public testing::Test {
                 main_task_runner);
     remote_compositor_bridge_ = remote_compositor_bridge.get();
     params.remote_compositor_bridge = std::move(remote_compositor_bridge);
+    params.engine_picture_cache =
+        image_serialization_processor_.CreateEnginePictureCache();
     LayerTreeSettings settings;
     params.settings = &settings;
 
@@ -186,6 +189,7 @@ class LayerTreeHostRemoteTest : public testing::Test {
   StrictMock<MockLayerTreeHostClient> mock_layer_tree_host_client_;
   UpdateTrackingRemoteCompositorBridge* remote_compositor_bridge_ = nullptr;
   scoped_refptr<MockLayer> root_layer_;
+  FakeImageSerializationProcessor image_serialization_processor_;
 
   bool needs_animate_during_main_frame_ = false;
   bool needs_commit_during_main_frame_ = false;

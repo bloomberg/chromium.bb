@@ -70,6 +70,41 @@ ScrollbarLayerInterface* SolidColorScrollbarLayer::ToScrollbarLayer() {
   return this;
 }
 
+void SolidColorScrollbarLayer::ToLayerNodeProto(proto::LayerNode* proto) const {
+  Layer::ToLayerNodeProto(proto);
+
+  proto::SolidColorScrollbarLayerProperties* scrollbar =
+      proto->mutable_solid_scrollbar();
+  scrollbar->set_scroll_layer_id(
+      solid_color_scrollbar_layer_inputs_.scroll_layer_id);
+  scrollbar->set_thumb_thickness(
+      solid_color_scrollbar_layer_inputs_.thumb_thickness);
+  scrollbar->set_track_start(solid_color_scrollbar_layer_inputs_.track_start);
+  scrollbar->set_is_left_side_vertical_scrollbar(
+      solid_color_scrollbar_layer_inputs_.is_left_side_vertical_scrollbar);
+  scrollbar->set_orientation(ScrollbarOrientationToProto(
+      solid_color_scrollbar_layer_inputs_.orientation));
+}
+
+void SolidColorScrollbarLayer::FromLayerNodeProto(
+    const proto::LayerNode& proto,
+    const LayerIdMap& layer_map,
+    LayerTreeHost* layer_tree_host) {
+  Layer::FromLayerNodeProto(proto, layer_map, layer_tree_host);
+
+  const proto::SolidColorScrollbarLayerProperties& scrollbar =
+      proto.solid_scrollbar();
+  solid_color_scrollbar_layer_inputs_.scroll_layer_id =
+      scrollbar.scroll_layer_id();
+  solid_color_scrollbar_layer_inputs_.thumb_thickness =
+      scrollbar.thumb_thickness();
+  solid_color_scrollbar_layer_inputs_.track_start = scrollbar.track_start();
+  solid_color_scrollbar_layer_inputs_.is_left_side_vertical_scrollbar =
+      scrollbar.is_left_side_vertical_scrollbar();
+  solid_color_scrollbar_layer_inputs_.orientation =
+      ScrollbarOrientationFromProto(scrollbar.orientation());
+}
+
 void SolidColorScrollbarLayer::SetOpacity(float opacity) {
   // The opacity of a solid color scrollbar layer is always 0 on main thread.
   DCHECK_EQ(opacity, 0.f);
@@ -116,41 +151,6 @@ ScrollbarOrientation SolidColorScrollbarLayer::orientation() const {
 void SolidColorScrollbarLayer::SetTypeForProtoSerialization(
     proto::LayerNode* proto) const {
   proto->set_type(proto::LayerNode::SOLID_COLOR_SCROLLBAR_LAYER);
-}
-
-void SolidColorScrollbarLayer::LayerSpecificPropertiesToProto(
-    proto::LayerProperties* proto,
-    bool inputs_only) {
-  Layer::LayerSpecificPropertiesToProto(proto, inputs_only);
-
-  proto::SolidColorScrollbarLayerProperties* scrollbar =
-      proto->mutable_solid_scrollbar();
-  scrollbar->set_scroll_layer_id(
-      solid_color_scrollbar_layer_inputs_.scroll_layer_id);
-  scrollbar->set_thumb_thickness(
-      solid_color_scrollbar_layer_inputs_.thumb_thickness);
-  scrollbar->set_track_start(solid_color_scrollbar_layer_inputs_.track_start);
-  scrollbar->set_is_left_side_vertical_scrollbar(
-      solid_color_scrollbar_layer_inputs_.is_left_side_vertical_scrollbar);
-  scrollbar->set_orientation(ScrollbarOrientationToProto(
-      solid_color_scrollbar_layer_inputs_.orientation));
-}
-
-void SolidColorScrollbarLayer::FromLayerSpecificPropertiesProto(
-    const proto::LayerProperties& proto) {
-  Layer::FromLayerSpecificPropertiesProto(proto);
-
-  const proto::SolidColorScrollbarLayerProperties& scrollbar =
-      proto.solid_scrollbar();
-  solid_color_scrollbar_layer_inputs_.scroll_layer_id =
-      scrollbar.scroll_layer_id();
-  solid_color_scrollbar_layer_inputs_.thumb_thickness =
-      scrollbar.thumb_thickness();
-  solid_color_scrollbar_layer_inputs_.track_start = scrollbar.track_start();
-  solid_color_scrollbar_layer_inputs_.is_left_side_vertical_scrollbar =
-      scrollbar.is_left_side_vertical_scrollbar();
-  solid_color_scrollbar_layer_inputs_.orientation =
-      ScrollbarOrientationFromProto(scrollbar.orientation());
 }
 
 }  // namespace cc
