@@ -199,7 +199,7 @@ void QuicSentPacketManager::SetHandshakeConfirmed() {
 void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
                                           QuicTime ack_receive_time) {
   DCHECK_LE(ack_frame.largest_observed, unacked_packets_.largest_sent_packet());
-  QuicByteCount bytes_in_flight = unacked_packets_.bytes_in_flight();
+  QuicByteCount prior_in_flight = unacked_packets_.bytes_in_flight();
   UpdatePacketInformationReceivedByPeer(ack_frame);
   bool rtt_updated = MaybeUpdateRTT(ack_frame, ack_receive_time);
   DCHECK_GE(ack_frame.largest_observed, unacked_packets_.largest_observed());
@@ -211,7 +211,7 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
   if (consecutive_rto_count_ > 0 && !use_new_rto_) {
     packets_lost_.clear();
   }
-  MaybeInvokeCongestionEvent(rtt_updated, bytes_in_flight);
+  MaybeInvokeCongestionEvent(rtt_updated, prior_in_flight);
   unacked_packets_.RemoveObsoletePackets();
 
   sustained_bandwidth_recorder_.RecordEstimate(
@@ -270,15 +270,15 @@ void QuicSentPacketManager::UpdatePacketInformationReceivedByPeer(
 
 void QuicSentPacketManager::MaybeInvokeCongestionEvent(
     bool rtt_updated,
-    QuicByteCount bytes_in_flight) {
+    QuicByteCount prior_in_flight) {
   if (!rtt_updated && packets_acked_.empty() && packets_lost_.empty()) {
     return;
   }
   if (using_pacing_) {
-    pacing_sender_.OnCongestionEvent(rtt_updated, bytes_in_flight,
+    pacing_sender_.OnCongestionEvent(rtt_updated, prior_in_flight,
                                      packets_acked_, packets_lost_);
   } else {
-    send_algorithm_->OnCongestionEvent(rtt_updated, bytes_in_flight,
+    send_algorithm_->OnCongestionEvent(rtt_updated, prior_in_flight,
                                        packets_acked_, packets_lost_);
   }
   packets_acked_.clear();
@@ -585,9 +585,9 @@ void QuicSentPacketManager::OnRetransmissionTimeout() {
       return;
     case LOSS_MODE: {
       ++stats_->loss_timeout_count;
-      QuicByteCount bytes_in_flight = unacked_packets_.bytes_in_flight();
+      QuicByteCount prior_in_flight = unacked_packets_.bytes_in_flight();
       InvokeLossDetection(clock_->Now());
-      MaybeInvokeCongestionEvent(false, bytes_in_flight);
+      MaybeInvokeCongestionEvent(false, prior_in_flight);
       return;
     }
     case TLP_MODE:
