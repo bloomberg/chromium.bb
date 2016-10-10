@@ -4656,7 +4656,7 @@ def CMDtry(parser, args):
   # TODO(tandrii): get rid of this.
   group.add_option(
       '--use-rietveld', action='store_true', default=False,
-      help='Use Rietveld to trigger try jobs.')
+      help='DEPRECATED, NOT SUPPORTED.')
   group.add_option(
       '--buildbucket-host', default='cr-buildbucket.appspot.com',
       help='Host of buildbucket. The default host is %default.')
@@ -4665,8 +4665,8 @@ def CMDtry(parser, args):
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
 
-  if options.use_rietveld and options.properties:
-    parser.error('Properties can only be specified with buildbucket')
+  if options.use_rietveld:
+    parser.error('--use-rietveld is not longer supported.')
 
   # Make sure that all properties are prop=value pairs.
   bad_params = [x for x in options.properties if '=' not in x]
