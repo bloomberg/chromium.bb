@@ -23,6 +23,8 @@ class DataSaverBrowserTest : public InProcessBrowserTest {
   void EnableDataSaver(bool enabled) {
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
+    // Give the setting notification a chance to propagate.
+    content::RunAllPendingInMessageLoop();
   }
 
   void VerifySaveDataHeader(const std::string& expected_header_value) {
@@ -61,6 +63,8 @@ class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
   void EnableDataSaver(bool enabled) {
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
+    // Give the setting notification a chance to propagate.
+    content::RunAllPendingInMessageLoop();
   }
 
   std::unique_ptr<net::test_server::HttpResponse> VerifySaveDataHeader(

@@ -665,6 +665,16 @@ void PrefsTabHelper::OnFontFamilyPrefChanged(const std::string& pref_name) {
 }
 
 void PrefsTabHelper::OnWebPrefChanged(const std::string& pref_name) {
+  // Use PostTask to dispatch the OnWebkitPreferencesChanged notification to
+  // give other observers (particularly the FontFamilyCache) a chance to react
+  // to the pref change.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PrefsTabHelper::NotifyWebkitPreferencesChanged,
+                            weak_ptr_factory_.GetWeakPtr(), pref_name));
+}
+
+void PrefsTabHelper::NotifyWebkitPreferencesChanged(
+    const std::string& pref_name) {
 #if !defined(OS_ANDROID)
   OnFontFamilyPrefChanged(pref_name);
 #endif
