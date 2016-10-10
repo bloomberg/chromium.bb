@@ -37,7 +37,10 @@ const size_t kMaxFrameRateDenominator = 1;
 const size_t kMaxResolutionWidth = 1920;
 const size_t kMaxResolutionHeight = 1088;
 const size_t kNumInputBuffers = 3;
-const size_t kOneSecondInMicroseconds = 1000000;
+// Media Foundation uses 100 nanosecond units for time, see
+// https://msdn.microsoft.com/en-us/library/windows/desktop/ms697282(v=vs.85).aspx
+const size_t kOneMicrosecondInMFSampleTimeUnits = 10;
+const size_t kOneSecondInMFSampleTimeUnits = 10000000;
 const size_t kOutputSampleBufferSizeRatio = 4;
 
 constexpr const wchar_t* const kMediaFoundationVideoEncoderDLLs[] = {
@@ -424,8 +427,9 @@ void MediaFoundationVideoEncodeAccelerator::EncodeTask(
                      input_visible_size_.width(), input_visible_size_.height());
   }
 
-  input_sample_->SetSampleTime(frame->timestamp().InMicroseconds() * 10);
-  input_sample_->SetSampleDuration(kOneSecondInMicroseconds / frame_rate_);
+  input_sample_->SetSampleTime(frame->timestamp().InMicroseconds() *
+                               kOneMicrosecondInMFSampleTimeUnits);
+  input_sample_->SetSampleDuration(kOneSecondInMFSampleTimeUnits / frame_rate_);
   HRESULT hr = encoder_->ProcessInput(0, input_sample_.get(), 0);
   // According to MSDN, if encoder returns MF_E_NOTACCEPTING, we need to try
   // processing the output. This error indicates that encoder does not accept
@@ -472,6 +476,14 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
   hr = output_buffer->GetCurrentLength(&size);
   RETURN_ON_HR_FAILURE(hr, "Couldn't get buffer length", );
 
+  base::TimeDelta timestamp;
+  LONGLONG sample_time;
+  hr = output_sample_->GetSampleTime(&sample_time);
+  if (SUCCEEDED(hr)) {
+    timestamp = base::TimeDelta::FromMicroseconds(
+        sample_time / kOneMicrosecondInMFSampleTimeUnits);
+  }
+
   const bool keyframe = MFGetAttributeUINT32(
       output_sample_.get(), MFSampleExtension_CleanPoint, false);
   DVLOG(3) << "We HAVE encoded data with size:" << size << " keyframe "
@@ -481,7 +493,7 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
     DVLOG(3) << "No bitstream buffers.";
     // We need to copy the output so that encoding can continue.
     std::unique_ptr<EncodeOutput> encode_output(
-        new EncodeOutput(size, keyframe, base::Time::Now() - base::Time()));
+        new EncodeOutput(size, keyframe, timestamp));
     {
       MediaBufferScopedPointer scoped_buffer(output_buffer.get());
       memcpy(encode_output->memory(), scoped_buffer.get(), size);
@@ -500,9 +512,8 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
   }
 
   client_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Client::BitstreamBufferReady, client_, buffer_ref->id, size,
-                 keyframe, base::Time::Now() - base::Time()));
+      FROM_HERE, base::Bind(&Client::BitstreamBufferReady, client_,
+                            buffer_ref->id, size, keyframe, timestamp));
 
   // Keep calling ProcessOutput recursively until MF_E_TRANSFORM_NEED_MORE_INPUT
   // is returned to flush out all the output.
