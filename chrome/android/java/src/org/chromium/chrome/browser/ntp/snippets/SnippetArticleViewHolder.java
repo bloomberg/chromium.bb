@@ -28,7 +28,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
@@ -78,9 +77,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
     private final boolean mUseFaviconService;
     private final UiConfig mUiConfig;
-
-    @SuppressFBWarnings("URF_UNREAD_FIELD")
-    private ImpressionTracker mImpressionTracker;
 
     /**
      * Listener for when the context menu is created.
@@ -146,11 +142,10 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     }
 
     /**
-     * Constructs a SnippetCardItemView item used to display snippets
+     * Constructs a {@link SnippetArticleViewHolder} item used to display snippets.
      *
-     * @param parent The ViewGroup that is going to contain the newly created view.
-     * @param manager The NTPManager object used to open an article
-     * @param suggestionsSource The source used to retrieve the thumbnails.
+     * @param parent The NewTabPageRecyclerView that is going to contain the newly created view.
+     * @param manager The NewTabPageManager object used to open an article.
      * @param uiConfig The NTP UI configuration object used to adjust the article UI.
      */
     public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager,
@@ -163,7 +158,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
         mArticleSnippetTextView = (TextView) itemView.findViewById(R.id.article_snippet);
 
-        mImpressionTracker = new ImpressionTracker(itemView, this);
+        new ImpressionTracker(itemView, this);
 
         mUiConfig = uiConfig;
         new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
