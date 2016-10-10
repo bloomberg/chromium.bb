@@ -38,9 +38,7 @@ config("libsrtp_config") {
   if (is_win) {
     defines += [ "HAVE_WINSOCK2_H" ]
   }
-}
 
-config("libsrtp_public_config") {
   # Supports clients depending on SRTP_RELATIVE_PATH.
   # TODO(mattdr): Remove SRTP_RELATIVE_PATH and this config.
   include_dirs = [
@@ -54,8 +52,7 @@ config("libsrtp_public_config") {
 static_library("libsrtp") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-  configs += [ ":libsrtp_config" ]
-  public_configs = [ ":libsrtp_public_config" ]
+  public_configs = [ ":libsrtp_config" ]
   sources = [
     # includes
     "include/ekt.h",
@@ -117,10 +114,7 @@ template("srtp_test") {
   test("srtp_test_${target_name}") {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
-    configs += [
-      ":libsrtp_config",
-      ":srtp_test_config",
-    ]
+    configs += [ ":srtp_test_config" ]
     deps = [
       ":libsrtp",
     ]
@@ -168,10 +162,7 @@ if (is_posix) {
   executable("rtpw") {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
-    configs += [
-      ":libsrtp_config",
-      ":srtp_test_config",
-    ]
+    configs += [ ":srtp_test_config" ]
     deps = [
       ":libsrtp",
     ]
