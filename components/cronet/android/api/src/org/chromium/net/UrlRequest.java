@@ -26,7 +26,7 @@ public interface UrlRequest {
      * Builder for {@link UrlRequest}s. Allows configuring requests before constructing them
      * with {@link Builder#build}.
      */
-    public static final class Builder {
+    public static class Builder {
         private static final String ACCEPT_ENCODING = "Accept-Encoding";
         // All fields are temporary storage of UrlRequest configuration to be
         // copied to built UrlRequests.

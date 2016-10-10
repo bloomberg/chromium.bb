@@ -1154,4 +1154,20 @@ public abstract class CronetEngine {
      * @hide it's a prototype.
      */
     public abstract void removeRequestFinishedListener(RequestFinishedInfo.Listener listener);
+
+    /**
+     * Creates a builder for {@link UrlRequest}. All callbacks formatted
+     * generated {@link UrlRequest} objects will be invoked on
+     * {@code executor}'s threads. {@code executor} must not run tasks on the
+     * thread calling {@link Executor#execute} to prevent blocking networking
+     * operations and causing exceptions during shutdown.
+     *
+     * @param url URL for the generated requests.
+     * @param callback callback object that gets invoked on different events.
+     * @param executor {@link Executor} on which all callbacks will be invoked.
+     */
+    public UrlRequest.Builder newUrlRequestBuilder(
+            String url, UrlRequest.Callback callback, Executor executor) {
+        return new UrlRequest.Builder(url, callback, executor, this);
+    }
 }
