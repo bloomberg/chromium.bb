@@ -61,9 +61,9 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verifier.h"
-#include "net/cert/ct_verify_result.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert_net/nss_ocsp.h"
 #include "net/cookies/cookie_monster.h"
@@ -6378,7 +6378,7 @@ class MockCTVerifier : public CTVerifier {
   int Verify(X509Certificate* cert,
              const std::string& stapled_ocsp_response,
              const std::string& sct_list_from_tls_extension,
-             ct::CTVerifyResult* result,
+             SignedCertificateTimestampAndStatusList* output_scts,
              const NetLogWithSource& net_log) override {
     return net::OK;
   }

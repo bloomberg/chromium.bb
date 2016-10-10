@@ -1766,7 +1766,7 @@ int SSLClientSocketImpl::VerifyCT() {
   // external communication.
   cert_transparency_verifier_->Verify(
       server_cert_verify_result_.verified_cert.get(), ocsp_response_, sct_list,
-      &ct_verify_result_, net_log_);
+      &ct_verify_result_.scts, net_log_);
 
   ct_verify_result_.ct_policies_applied = true;
   ct_verify_result_.ev_policy_compliance =

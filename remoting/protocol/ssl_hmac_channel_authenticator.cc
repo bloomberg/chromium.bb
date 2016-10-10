@@ -25,6 +25,7 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verifier.h"
+#include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
@@ -75,7 +76,7 @@ class IgnoresCTVerifier : public net::CTVerifier {
   int Verify(net::X509Certificate* cert,
              const std::string& stapled_ocsp_response,
              const std::string& sct_list_from_tls_extension,
-             net::ct::CTVerifyResult* result,
+             net::SignedCertificateTimestampAndStatusList* output_scts,
              const net::NetLogWithSource& net_log) override {
     return net::OK;
   }

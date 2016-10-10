@@ -32,6 +32,7 @@
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/test_root_certs.h"
 #include "net/der/input.h"
 #include "net/der/parser.h"
@@ -706,7 +707,7 @@ class MockCTVerifier : public CTVerifier {
                int(X509Certificate*,
                    const std::string&,
                    const std::string&,
-                   ct::CTVerifyResult*,
+                   SignedCertificateTimestampAndStatusList*,
                    const NetLogWithSource&));
   MOCK_METHOD1(SetObserver, void(CTVerifier::Observer*));
 };
