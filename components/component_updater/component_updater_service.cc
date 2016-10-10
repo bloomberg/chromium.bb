@@ -55,8 +55,9 @@ const char kRecoveryComponentId[] = "npdjjkjlcidkjlamlmmdelcjbcpdjocm";
 
 namespace component_updater {
 
-ComponentInfo::ComponentInfo(const std::string& id, const base::string16& name)
-    : id(id), name(name) {}
+ComponentInfo::ComponentInfo(const std::string& id, const base::string16& name,
+                             const base::Version& version)
+    : id(id), name(name), version(version) {}
 ComponentInfo::~ComponentInfo() {}
 
 CrxUpdateService::CrxUpdateService(
@@ -207,7 +208,8 @@ std::unique_ptr<ComponentInfo> CrxUpdateService::GetComponentForMimeType(
   if (!component)
     return nullptr;
   return base::MakeUnique<ComponentInfo>(GetCrxComponentID(*component),
-                                         base::UTF8ToUTF16(component->name));
+                                         base::UTF8ToUTF16(component->name),
+                                         component->version);
 }
 
 OnDemandUpdater& CrxUpdateService::GetOnDemandUpdater() {

@@ -47,6 +47,7 @@ enum class ChromeViewHostMsg_GetPluginInfo_Status {
   kOutdatedBlocked,
   kOutdatedDisallowed,
   kPlayImportantContent,
+  kRestartRequired,
   kUnauthorized,
 };
 

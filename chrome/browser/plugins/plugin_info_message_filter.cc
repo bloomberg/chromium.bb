@@ -471,6 +471,12 @@ void PluginInfoMessageFilter::ComponentPluginLookupDone(
   if (cus_plugin_info) {
     output->status =
         ChromeViewHostMsg_GetPluginInfo_Status::kComponentUpdateRequired;
+#if defined(OS_LINUX)
+    if (cus_plugin_info->version != base::Version("0")) {
+      output->status =
+          ChromeViewHostMsg_GetPluginInfo_Status::kRestartRequired;
+    }
+#endif  // defined(OS_LINUX)
     plugin_metadata.reset(new PluginMetadata(
         cus_plugin_info->id, cus_plugin_info->name, false, GURL(), GURL(),
         base::ASCIIToUTF16(cus_plugin_info->id), std::string()));

@@ -57,11 +57,13 @@ using CrxComponent = update_client::CrxComponent;
 using CrxUpdateItem = update_client::CrxUpdateItem;
 
 struct ComponentInfo {
-  ComponentInfo(const std::string& id, const base::string16& name);
+  ComponentInfo(const std::string& id, const base::string16& name,
+                const base::Version& version);
   ~ComponentInfo();
 
   const std::string id;
   const base::string16 name;
+  const base::Version version;
 };
 
 // The component update service is in charge of installing or upgrading
