@@ -16,6 +16,8 @@ class CategoryFactory;
 // locally on the device. Categories provided by the server (IDs strictly larger
 // than REMOTE_CATEGORIES_OFFSET) only need to be hard-coded here if they need
 // to be recognized by the client implementation.
+// NOTE: These are persisted, so don't reorder or remove values, and insert new
+// values only in the appropriate places marked below.
 // On Android builds, a Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
 enum class KnownCategories {
@@ -33,6 +35,7 @@ enum class KnownCategories {
 
   // Pages recently browsed to on other devices.
   FOREIGN_TABS,
+  // INSERT NEW LOCAL CATEGORIES HERE!
 
   // Follows the last local category.
   LOCAL_CATEGORIES_COUNT,
@@ -42,6 +45,7 @@ enum class KnownCategories {
 
   // Articles for you.
   ARTICLES,
+  // INSERT NEW REMOTE CATEGORIES HERE!
 };
 
 // A category groups ContentSuggestions which belong together. Use the
@@ -55,8 +59,6 @@ class Category {
   // Returns a non-negative identifier that is unique for the category and can
   // be converted back to a Category instance using
   // |CategoryFactory::FromIDValue(id)|.
-  // Note that these IDs are not necessarily stable across multiple runs of
-  // the application, so they should not be persisted.
   int id() const { return id_; }
 
   // Returns whether this category matches the given |known_category|.

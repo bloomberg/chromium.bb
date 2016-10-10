@@ -92,6 +92,8 @@ const char kSnippetUrl2[] = "http://foo.com/bar";
 
 const char kTestJsonDefaultCategoryTitle[] = "Some title";
 
+const int kUnknownRemoteCategoryId = 1234;
+
 base::Time GetDefaultCreationTime() {
   base::Time out_time;
   EXPECT_TRUE(base::Time::FromUTCExploded(kDefaultCreationTime, &out_time));
@@ -125,7 +127,8 @@ std::string GetTestJsonWithoutTitle(const std::vector<std::string>& snippets) {
 }
 
 std::string GetMultiCategoryJson(const std::vector<std::string>& articles,
-                                 const std::vector<std::string>& others) {
+                                 const std::vector<std::string>& others,
+                                 int other_id = 2) {
   return base::StringPrintf(
       "{\n"
       "  \"categories\": [{\n"
@@ -133,12 +136,12 @@ std::string GetMultiCategoryJson(const std::vector<std::string>& articles,
       "    \"localizedTitle\": \"Articles for You\",\n"
       "    \"suggestions\": [%s]\n"
       "  }, {\n"
-      "    \"id\": 2,\n"
+      "    \"id\": %i,\n"
       "    \"localizedTitle\": \"Other Things\",\n"
       "    \"suggestions\": [%s]\n"
       "  }]\n"
       "}\n",
-      base::JoinString(articles, ", ").c_str(),
+      base::JoinString(articles, ", ").c_str(), other_id,
       base::JoinString(others, ", ").c_str());
 }
 
@@ -475,6 +478,10 @@ class NTPSnippetsServiceTest : public ::testing::Test {
 
   Category other_category() { return category_factory_.FromRemoteCategory(2); }
 
+  Category unknown_category() {
+    return category_factory_.FromRemoteCategory(kUnknownRemoteCategoryId);
+  }
+
  protected:
   const GURL& test_url() { return test_url_; }
   FakeContentSuggestionsProviderObserver& observer() { return *observer_; }
@@ -736,6 +743,41 @@ TEST_F(NTPSnippetsServiceTest, MultipleCategories) {
               base::UTF16ToUTF8(suggestion.publisher_name()));
     EXPECT_EQ(GURL(kSnippetAmpUrl), suggestion.amp_url());
   }
+}
+
+TEST_F(NTPSnippetsServiceTest, PersistCategoryInfos) {
+  auto service = MakeSnippetsService();
+
+  LoadFromJSONString(service.get(),
+                     GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)},
+                                          kUnknownRemoteCategoryId));
+
+  ASSERT_NE(observer().StatusForCategory(articles_category()),
+            CategoryStatus::NOT_PROVIDED);
+  ASSERT_NE(observer().StatusForCategory(unknown_category()),
+            CategoryStatus::NOT_PROVIDED);
+
+  CategoryInfo info_articles_before =
+      service->GetCategoryInfo(articles_category());
+  CategoryInfo info_unknown_before =
+      service->GetCategoryInfo(unknown_category());
+
+  // Recreate the service to simulate a Chrome restart.
+  ResetSnippetsService(&service);
+
+  // The categories should have been restored.
+  ASSERT_NE(observer().StatusForCategory(articles_category()),
+            CategoryStatus::NOT_PROVIDED);
+  ASSERT_NE(observer().StatusForCategory(unknown_category()),
+            CategoryStatus::NOT_PROVIDED);
+
+  CategoryInfo info_articles_after =
+      service->GetCategoryInfo(articles_category());
+  CategoryInfo info_unknown_after =
+      service->GetCategoryInfo(unknown_category());
+
+  EXPECT_EQ(info_articles_before.title(), info_articles_after.title());
+  EXPECT_EQ(info_unknown_before.title(), info_unknown_after.title());
 }
 
 TEST_F(NTPSnippetsServiceTest, Clear) {

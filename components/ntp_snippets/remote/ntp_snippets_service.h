@@ -279,6 +279,9 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // Calls UpdateCategoryStatus() for all provided categories.
   void UpdateAllCategoryStatus(CategoryStatus status);
 
+  void RestoreCategoriesFromPrefs();
+  void StoreCategoriesToPrefs();
+
   State state_;
 
   PrefService* pref_service_;
