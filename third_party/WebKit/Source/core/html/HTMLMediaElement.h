@@ -90,6 +90,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
 
   static void setMediaStreamRegistry(URLRegistry*);
   static bool isMediaStreamURL(const String& url);
+  static bool isHLSURL(const KURL&);
 
   DECLARE_VIRTUAL_TRACE();
 

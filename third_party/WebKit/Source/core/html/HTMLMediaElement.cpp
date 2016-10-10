@@ -389,6 +389,17 @@ bool HTMLMediaElement::isMediaStreamURL(const String& url) {
   return s_mediaStreamRegistry ? s_mediaStreamRegistry->contains(url) : false;
 }
 
+bool HTMLMediaElement::isHLSURL(const KURL& url) {
+  // Keep the same logic as in media_codec_util.h.
+  if (url.isNull() || url.isEmpty())
+    return false;
+
+  if (!url.isLocalFile() && !url.protocolIs("http") && !url.protocolIs("https"))
+    return false;
+
+  return url.getString().contains("m3u8");
+}
+
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
                                    Document& document)
     : HTMLElement(tagName, document),

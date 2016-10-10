@@ -673,6 +673,10 @@ bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton() {
   if (HTMLMediaSource::lookup(url))
     return false;
 
+  // HLS stream shouldn't have a download button.
+  if (HTMLMediaElement::isHLSURL(url))
+    return false;
+
   return true;
 }
 
