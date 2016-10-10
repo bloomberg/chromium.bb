@@ -1712,6 +1712,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY,
                                          &spdy_request_headers_frame_length));
   AddWrite(ConstructClientAckPacket(2, 3, 1));  // Ack the data packet
+  AddWrite(ConstructClientAckAndRstStreamPacket(3, 4, 4, 1));
 
   Initialize();
 

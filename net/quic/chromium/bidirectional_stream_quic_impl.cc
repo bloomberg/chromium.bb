@@ -241,19 +241,8 @@ void BidirectionalStreamQuicImpl::OnHeadersAvailable(
     if (delegate_)
       delegate_->OnHeadersReceived(headers);
   } else {
-    if (stream_->IsDoneReading()) {
-      // If the write side is closed, OnFinRead() will call
-      // BidirectionalStreamQuicImpl::OnClose().
-      stream_->OnFinRead();
-    }
-    if (!delegate_)
-      return;
-    // Complete any remaining read. The task is posted because
-    // |delegate_|->OnTrailersReceived() might destroy |this|.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BidirectionalStreamQuicImpl::OnDataAvailable,
-                              weak_factory_.GetWeakPtr()));
-    delegate_->OnTrailersReceived(headers);
+    if (delegate_)
+      delegate_->OnTrailersReceived(headers);
     // |this| can be destroyed after this point.
   }
 }

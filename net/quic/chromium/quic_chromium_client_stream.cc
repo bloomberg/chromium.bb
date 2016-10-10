@@ -249,7 +249,7 @@ void QuicChromiumClientStream::OnError(int error) {
 }
 
 int QuicChromiumClientStream::Read(IOBuffer* buf, int buf_len) {
-  if (sequencer()->IsClosed())
+  if (IsDoneReading())
     return 0;  // EOF
 
   if (!HasBytesToRead())
@@ -258,7 +258,12 @@ int QuicChromiumClientStream::Read(IOBuffer* buf, int buf_len) {
   iovec iov;
   iov.iov_base = buf->data();
   iov.iov_len = buf_len;
-  return Readv(&iov, 1);
+  size_t bytes_read = Readv(&iov, 1);
+  // If no more body bytes and trailers are to be delivered, return
+  // ERR_IO_PENDING now because onDataAvailable() will be called after trailers.
+  if (bytes_read == 0 && !FinishedReadingTrailers())
+    return ERR_IO_PENDING;
+  return bytes_read;
 }
 
 bool QuicChromiumClientStream::CanWrite(const CompletionCallback& callback) {
@@ -288,6 +293,8 @@ void QuicChromiumClientStream::NotifyDelegateOfHeadersComplete(
   if (headers_delivered_) {
     MarkTrailersConsumed(decompressed_trailers().length());
     MarkTrailersConsumed();
+    // Post an async task to notify delegate of the FIN flag.
+    NotifyDelegateOfDataAvailableLater();
     net_log_.AddEvent(
         NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_TRAILERS,
         base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
