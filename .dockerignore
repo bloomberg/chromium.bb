@@ -4,6 +4,9 @@
 # for .dockerignore
 .git
 
+# MacOS
+# .DS_Store
+
 # tag files
 # TAGS
 GPATH
@@ -88,12 +91,10 @@ gnulib/*.la
 gnulib/Makefile
 gnulib/Makefile.in
 gnulib/arg-nonnull.h
-gnulib/c++defs.h
+gnulib/c\+\+defs.h
 gnulib/dirent.h
 gnulib/errno.h
 gnulib/getopt.h
-gnulib/m4/absolute-header.m4
-gnulib/m4/ld-output-def.m4
 gnulib/stddef.h
 gnulib/stdio.h
 gnulib/stdlib.h
@@ -255,7 +256,7 @@ tools/gnulib/*.la
 tools/gnulib/Makefile
 tools/gnulib/Makefile.in
 tools/gnulib/arg-nonnull.h
-tools/gnulib/c++defs.h
+tools/gnulib/c\+\+defs.h
 tools/gnulib/errno.h
 tools/gnulib/getopt.h
 tools/gnulib/stddef.h
