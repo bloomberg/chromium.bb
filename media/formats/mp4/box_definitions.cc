@@ -1207,14 +1207,13 @@ TrackFragment::~TrackFragment() {}
 FourCC TrackFragment::BoxType() const { return FOURCC_TRAF; }
 
 bool TrackFragment::Parse(BoxReader* reader) {
-  RCHECK(reader->ScanChildren() &&
-         reader->ReadChild(&header) &&
+  RCHECK(reader->ScanChildren() && reader->ReadChild(&header) &&
          // Media Source specific: 'tfdt' required
-         reader->ReadChild(&decode_time) &&
-         reader->MaybeReadChildren(&runs) &&
+         reader->ReadChild(&decode_time) && reader->MaybeReadChildren(&runs) &&
          reader->MaybeReadChild(&auxiliary_offset) &&
          reader->MaybeReadChild(&auxiliary_size) &&
-         reader->MaybeReadChild(&sdtp));
+         reader->MaybeReadChild(&sdtp) &&
+         reader->MaybeReadChild(&sample_encryption));
 
   // There could be multiple SampleGroupDescription and SampleToGroup boxes with
   // different grouping types. For common encryption, the relevant grouping type

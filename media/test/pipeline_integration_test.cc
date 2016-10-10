@@ -2030,6 +2030,28 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
+// 'SAIZ' and 'SAIO' boxes contain redundant information which is already
+// available in 'SENC' box. Although 'SAIZ' and 'SAIO' boxes are required per
+// CENC spec for backward compatibility reasons, but we do not use the two
+// boxes if 'SENC' box is present, so the code should work even if the two
+// boxes are not present.
+TEST_F(PipelineIntegrationTest,
+       MAYBE_EME(EncryptedPlayback_MP4_CENC_SENC_NO_SAIZ_SAIO_Video)) {
+  MockMediaSource source("bear-640x360-v_frag-cenc-senc-no-saiz-saio.mp4",
+                         kMP4Video, kAppendWholeFile);
+  FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
+  EXPECT_EQ(PIPELINE_OK,
+            StartPipelineWithEncryptedMedia(&source, &encrypted_media));
+
+  source.EndOfStream();
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Shutdown();
+  Stop();
+}
+
 TEST_F(PipelineIntegrationTest,
        MAYBE_EME(EncryptedPlayback_MP4_CENC_KeyRotation_Video)) {
   MockMediaSource source("bear-1280x720-v_frag-cenc-key_rotation.mp4",
