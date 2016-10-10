@@ -132,6 +132,7 @@ public class ExternalNavigationHandler {
     }
 
     private boolean resolversSubsetOf(List<ResolveInfo> infos, List<ResolveInfo> container) {
+        if (container == null) return false;
         HashSet<ComponentName> containerSet = new HashSet<>();
         for (ResolveInfo info : container) {
             containerSet.add(
@@ -309,6 +310,8 @@ public class ExternalNavigationHandler {
         }
 
         List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(intent);
+        if (resolvingInfos == null) return OverrideUrlLoadingResult.NO_OVERRIDE;
+
         boolean canResolveActivity = resolvingInfos.size() > 0;
         // check whether the intent can be resolved. If not, we will see
         // whether we can download it from the Market.
@@ -433,7 +436,7 @@ public class ExternalNavigationHandler {
 
                     if (previousIntent != null
                             && resolversSubsetOf(resolvingInfos,
-                                       mDelegate.queryIntentActivities(previousIntent))) {
+                                    mDelegate.queryIntentActivities(previousIntent))) {
                         return OverrideUrlLoadingResult.NO_OVERRIDE;
                     }
                 }
@@ -542,8 +545,10 @@ public class ExternalNavigationHandler {
         if (url.startsWith(SCHEME_WTAI_MC)) return true;
         try {
             Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
-            return intent.getPackage() != null
-                    || mDelegate.queryIntentActivities(intent).size() > 0;
+            if (intent.getPackage() != null) return true;
+
+            List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(intent);
+            if (resolvingInfos != null && resolvingInfos.size() > 0) return true;
         } catch (Exception ex) {
             // Ignore the error.
             Log.w(TAG, "Bad URI %s", url, ex);

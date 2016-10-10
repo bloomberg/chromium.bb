@@ -8,10 +8,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
-import android.os.TransactionTooLargeException;
 import android.text.TextUtils;
 
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -23,6 +21,7 @@ import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab.TopControlsVisibilityDelegate;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
 /**
@@ -82,7 +81,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
                 }
                 return false;
             } catch (RuntimeException e) {
-                logTransactionTooLargeOrRethrow(e, intent);
+                IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
                 return false;
             }
         }
@@ -104,7 +103,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
                     }
                 }
             } catch (RuntimeException e) {
-                logTransactionTooLargeOrRethrow(e, intent);
+                IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
             }
             return false;
         }
@@ -115,15 +114,6 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
         @VisibleForTesting
         public boolean hasExternalActivityStarted() {
             return mHasActivityStarted;
-        }
-
-        private static void logTransactionTooLargeOrRethrow(RuntimeException e, Intent intent) {
-            // See http://crbug.com/369574.
-            if (e.getCause() instanceof TransactionTooLargeException) {
-                Log.e(TAG, "Could not resolve Activity for intent " + intent.toString(), e);
-            } else {
-                throw e;
-            }
         }
     }
 
