@@ -10,7 +10,9 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.util.AndroidRuntimeException;
 import android.util.Log;
+
 
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
@@ -80,13 +82,22 @@ public class AwTestBase
 
     @Override
     protected void setUp() throws Exception {
-        Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
-        mBrowserContext = new AwBrowserContext(new InMemorySharedPreferences(), appContext);
+        if (needsAwBrowserContextCreated()) {
+            createAwBrowserContext();
+        }
 
         super.setUp();
         if (needsBrowserProcessStarted()) {
             startBrowserProcess();
         }
+    }
+
+    protected void createAwBrowserContext() {
+        if (mBrowserContext != null) {
+            throw new AndroidRuntimeException("There should only be one browser context.");
+        }
+        Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
+        mBrowserContext = new AwBrowserContext(new InMemorySharedPreferences(), appContext);
     }
 
     protected void startBrowserProcess() throws Exception {
@@ -98,6 +109,14 @@ public class AwTestBase
                 AwBrowserProcess.start();
             }
         });
+    }
+
+    /**
+     * Override this to return false if the test doesn't want to create an AwBrowserContext
+     * automatically.
+     */
+    protected boolean needsAwBrowserContextCreated() {
+        return true;
     }
 
     /**

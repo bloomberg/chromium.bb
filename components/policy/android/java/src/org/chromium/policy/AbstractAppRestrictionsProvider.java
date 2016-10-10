@@ -124,7 +124,8 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
      */
     @VisibleForTesting
     public static void setTestRestrictions(Bundle policies) {
-        Log.d(TAG, "Test Restrictions: %s", policies.keySet().toArray());
+        Log.d(TAG, "Test Restrictions: %s",
+                (policies == null ? null : policies.keySet().toArray()));
         sTestRestrictions = policies;
     }
 }

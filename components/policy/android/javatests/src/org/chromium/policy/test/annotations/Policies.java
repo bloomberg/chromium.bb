@@ -134,8 +134,13 @@ public final class Policies {
     public static class RegistrationHook implements PreTestHook {
         @Override
         public void run(Context targetContext, Method testMethod) {
-            final Bundle policyBundle = PolicyData.asBundle(getPolicies(testMethod).values());
-            AbstractAppRestrictionsProvider.setTestRestrictions(policyBundle);
+            Map<String, PolicyData> policyMap = getPolicies(testMethod);
+            if (policyMap.isEmpty()) {
+                AbstractAppRestrictionsProvider.setTestRestrictions(null);
+            } else {
+                final Bundle policyBundle = PolicyData.asBundle(policyMap.values());
+                AbstractAppRestrictionsProvider.setTestRestrictions(policyBundle);
+            }
         }
     }
 }
