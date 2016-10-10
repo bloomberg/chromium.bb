@@ -85,8 +85,6 @@
          etc1_power_of_two_only)                             \
   GPU_OP(EMULATE_ABS_INT_FUNCTION,                           \
          emulate_abs_int_function)                           \
-  GPU_OP(EMULATE_ISNAN_ON_FLOAT,                             \
-         emulate_isnan_on_float)                             \
   GPU_OP(EXIT_ON_CONTEXT_LOST,                               \
          exit_on_context_lost)                               \
   GPU_OP(FORCE_CUBE_COMPLETE,                                \
