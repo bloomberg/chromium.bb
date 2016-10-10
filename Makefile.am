@@ -21,15 +21,16 @@ distwin32-zip : distwin32-dir
 distwin32-dir :
 	rm -rf liblouis-$(VERSION)-win32/*
 	@if which i586-mingw32msvc-gcc >/dev/null; then \
+	  export CPPFLAGS='-I/root/build/win32/libyaml/include/' && \
+	  export LDFLAGS='-L/root/build/win32/libyaml/lib/' && \
 	  ./configure --host i586-mingw32msvc --prefix=$(CURDIR)/liblouis-$(VERSION)-win32 && \
-	  make LDFLAGS='-avoid-version -Xcompiler -static-libgcc' && \
-	  make && \
+	  make LDFLAGS="$$LDFLAGS -avoid-version -Xcompiler -static-libgcc" && \
 	  make install; \
 	elif which docker >/dev/null; then \
 	  gtar --transform='s/Dockerfile.dev/Dockerfile/' --exclude-from=.dockerignore -cz * | docker build -t liblouis-dev - && \
 	  mkdir -p liblouis-$(VERSION)-win32 && \
 	  docker run --rm -v $(CURDIR)/liblouis-$(VERSION)-win32:/root/src/liblouis/liblouis-$(VERSION)-win32 liblouis-dev \
-	    make PKG_CONFIG_PATH=/root/build/win32/libyaml/lib/pkgconfig distwin32-dir; \
+	    make distwin32-dir; \
 	fi
 
 distwin64 : distwin64-zip
@@ -42,14 +43,13 @@ distwin64-dir :
 	rm -rf liblouis-$(VERSION)-win64/*
 	@if which x86_64-w64-mingw32-gcc >/dev/null; then \
 	  ./configure --host x86_64-w64-mingw32 --prefix=$(CURDIR)/liblouis-$(VERSION)-win64 && \
-	  make LDFLAGS='-avoid-version -Xcompiler -static-libgcc'&& \
-	  make && \
+	  make LDFLAGS='-avoid-version -Xcompiler -static-libgcc' && \
 	  make install; \
 	elif which docker >/dev/null; then \
 	  gtar --transform='s/Dockerfile.dev/Dockerfile/' --exclude-from=.dockerignore -cz * | docker build -t liblouis-dev - && \
 	  mkdir -p liblouis-$(VERSION)-win64 && \
 	  docker run --rm -v $(CURDIR)/liblouis-$(VERSION)-win64:/root/src/liblouis/liblouis-$(VERSION)-win64 liblouis-dev \
-	    make PKG_CONFIG_PATH=/root/build/win64/libyaml/lib/pkgconfig distwin64-dir; \
+	    make distwin64-dir; \
 	fi
 
 # .dockerignore
