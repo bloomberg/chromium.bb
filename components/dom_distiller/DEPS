@@ -2,8 +2,8 @@ include_rules = [
   "+components/leveldb_proto",
   "+components/pref_registry",
   "+components/prefs",
-  "+components/sync/api",
   "+components/sync/core/attachments", # Needed for tests.
+  "+components/sync/model",
   "+components/sync/protocol",
   "+components/variations",
   "+google", # For third_party/protobuf.

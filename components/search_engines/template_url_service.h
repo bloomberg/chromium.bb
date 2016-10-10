@@ -27,8 +27,8 @@
 #include "components/search_engines/keyword_web_data_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_id.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/sync_change.h"
+#include "components/sync/model/syncable_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
 class GURL;

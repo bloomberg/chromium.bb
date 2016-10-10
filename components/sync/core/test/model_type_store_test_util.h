@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "components/sync/api/model_type_store.h"
+#include "components/sync/model/model_type_store.h"
 
 namespace syncer {
 

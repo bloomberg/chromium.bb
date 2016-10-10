@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "components/sync/api/mock_model_type_store.h"
+#include "components/sync/model/mock_model_type_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

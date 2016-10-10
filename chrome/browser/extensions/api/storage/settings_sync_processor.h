@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/sync/api/sync_error.h"
+#include "components/sync/model/sync_error.h"
 #include "extensions/browser/value_store/value_store_change.h"
 
 namespace syncer {

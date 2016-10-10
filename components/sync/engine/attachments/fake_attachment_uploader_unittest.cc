@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
-#include "components/sync/api/attachments/attachment.h"
+#include "components/sync/model/attachments/attachment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

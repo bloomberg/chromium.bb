@@ -6,8 +6,8 @@
 #define COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATOR_MOCK_H__
 
 #include "base/location.h"
-#include "components/sync/api/sync_error.h"
 #include "components/sync/driver/model_associator.h"
+#include "components/sync/model/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {

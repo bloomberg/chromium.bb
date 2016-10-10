@@ -18,7 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/api/attachments/attachment.h"
+#include "components/sync/model/attachments/attachment.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"

@@ -12,7 +12,7 @@
 
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/syncable_service.h"
 #include "components/sync_sessions/local_session_event_router.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
 

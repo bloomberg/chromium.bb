@@ -22,7 +22,7 @@
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/install_gate.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
-#include "components/sync/api/string_ordinal.h"
+#include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/crx_file_info.h"

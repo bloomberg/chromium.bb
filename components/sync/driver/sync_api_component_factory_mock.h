@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
-#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
+#include "components/sync/model/data_type_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {

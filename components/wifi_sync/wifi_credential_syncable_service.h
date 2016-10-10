@@ -12,8 +12,8 @@
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/api/sync_change_processor.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/sync_change_processor.h"
+#include "components/sync/model/syncable_service.h"
 #include "components/wifi_sync/wifi_config_delegate.h"
 #include "components/wifi_sync/wifi_credential.h"
 #include "components/wifi_sync/wifi_security_class.h"

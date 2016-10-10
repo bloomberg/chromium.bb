@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "base/synchronization/lock.h"
-#include "components/sync/api/sync_error.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model/sync_error.h"
 
 namespace syncer {
 

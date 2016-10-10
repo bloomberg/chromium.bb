@@ -14,7 +14,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/sync_bundle.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/syncable_service.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 

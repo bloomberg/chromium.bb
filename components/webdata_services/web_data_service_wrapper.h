@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/syncable_service.h"
 #include "sql/init_status.h"
 
 class KeywordWebDataService;

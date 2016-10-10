@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
-#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/model/sync_error_factory.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

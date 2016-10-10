@@ -26,9 +26,9 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_id.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_error_factory.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/sync_change.h"
+#include "components/sync/model/sync_error_factory.h"
+#include "components/sync/model/syncable_service.h"
 #include "url/gurl.h"
 
 namespace chrome {

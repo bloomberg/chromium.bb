@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/callback.h"
-#include "components/sync/api/attachments/attachment.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model/attachments/attachment.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
 
 namespace net {

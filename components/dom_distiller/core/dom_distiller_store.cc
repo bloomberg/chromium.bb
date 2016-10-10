@@ -14,7 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/dom_distiller/core/article_entry.h"
-#include "components/sync/api/sync_change.h"
+#include "components/sync/model/sync_change.h"
 #include "components/sync/protocol/article_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 

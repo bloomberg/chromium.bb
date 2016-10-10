@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/sync/api/string_ordinal.h"
+#include "components/sync/model/string_ordinal.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {

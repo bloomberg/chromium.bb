@@ -17,8 +17,8 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
-#include "components/sync/api/sync_data.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/sync_data.h"
+#include "components/sync/model/syncable_service.h"
 #include "components/syncable_prefs/synced_pref_observer.h"
 
 namespace base {

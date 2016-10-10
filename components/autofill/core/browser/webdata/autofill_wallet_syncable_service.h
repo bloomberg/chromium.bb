@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/syncable_service.h"
 
 namespace autofill {
 

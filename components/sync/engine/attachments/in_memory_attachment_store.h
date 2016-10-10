@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
-#include "components/sync/api/attachments/attachment.h"
-#include "components/sync/api/attachments/attachment_id.h"
-#include "components/sync/api/attachments/attachment_store.h"
 #include "components/sync/engine/attachments/attachment_store_backend.h"
+#include "components/sync/model/attachments/attachment.h"
+#include "components/sync/model/attachments/attachment_id.h"
+#include "components/sync/model/attachments/attachment_store.h"
 
 namespace base {
 class SequencedTaskRunner;

@@ -16,7 +16,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
-#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/model/sync_error_factory.h"
 #include "net/base/escape.h"
 
 namespace password_manager {

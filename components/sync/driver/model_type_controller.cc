@@ -12,16 +12,16 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/api/data_type_error_handler_impl.h"
-#include "components/sync/api/model_type_change_processor.h"
-#include "components/sync/api/model_type_service.h"
-#include "components/sync/api/sync_error.h"
-#include "components/sync/api/sync_merge_result.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
 #include "components/sync/driver/sync_client.h"
+#include "components/sync/model/data_type_error_handler_impl.h"
+#include "components/sync/model/model_type_change_processor.h"
+#include "components/sync/model/model_type_service.h"
+#include "components/sync/model/sync_error.h"
+#include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
 
@@ -36,7 +36,7 @@ SharedModelTypeProcessor* GetProcessorFromService(
   // TODO(gangwu): Casting should happen "near" where the processor factory has
   // code that instantiates a new processor.
   SharedModelTypeProcessor* processor =
-      (SharedModelTypeProcessor*)service->change_processor();
+      static_cast<SharedModelTypeProcessor*>(service->change_processor());
   if (!processor) {
     LOG(WARNING)
         << "SharedModelTypeProcessor destroyed before DTC was stopped.";

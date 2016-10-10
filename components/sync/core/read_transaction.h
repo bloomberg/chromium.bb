@@ -12,8 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/core/base_transaction.h"
+#include "components/sync/model/attachments/attachment_id.h"
 
 namespace tracked_objects {
 class Location;

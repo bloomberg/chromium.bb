@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DATA_TYPE_MANAGER_MOCK_H__
 #define COMPONENTS_SYNC_DRIVER_DATA_TYPE_MANAGER_MOCK_H__
 
-#include "components/sync/api/sync_error.h"
 #include "components/sync/driver/data_type_manager.h"
+#include "components/sync/model/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {

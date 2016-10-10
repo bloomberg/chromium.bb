@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
-#include "components/sync/api/sync_change_processor.h"
+#include "components/sync/model/sync_change_processor.h"
 
 namespace syncer {
 class SyncChangeProcessor;

@@ -15,13 +15,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "components/sync/api/attachments/attachment_service.h"
-#include "components/sync/api/attachments/attachment_service_proxy.h"
-#include "components/sync/api/attachments/attachment_store.h"
-#include "components/sync/api/data_type_error_handler.h"
-#include "components/sync/api/sync_change_processor.h"
-#include "components/sync/api/sync_merge_result.h"
 #include "components/sync/driver/change_processor.h"
+#include "components/sync/model/attachments/attachment_service.h"
+#include "components/sync/model/attachments/attachment_service_proxy.h"
+#include "components/sync/model/attachments/attachment_store.h"
+#include "components/sync/model/data_type_error_handler.h"
+#include "components/sync/model/sync_change_processor.h"
+#include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
 

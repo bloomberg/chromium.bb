@@ -16,9 +16,9 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility_stub.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/mock_homedir_methods.h"
-#include "components/sync/api/fake_sync_change_processor.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_error_factory_mock.h"
+#include "components/sync/model/fake_sync_change_processor.h"
+#include "components/sync/model/sync_change.h"
+#include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace chromeos {

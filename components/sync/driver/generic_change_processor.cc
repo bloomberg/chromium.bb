@@ -13,10 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/api/local_change_observer.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_error.h"
-#include "components/sync/api/syncable_service.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/core/base_node.h"
 #include "components/sync/core/change_record.h"
@@ -26,6 +22,10 @@
 #include "components/sync/core/write_transaction.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_client.h"
+#include "components/sync/model/local_change_observer.h"
+#include "components/sync/model/sync_change.h"
+#include "components/sync/model/sync_error.h"
+#include "components/sync/model/syncable_service.h"
 #include "components/sync/syncable/entry.h"  // TODO(tim): Bug 123674.
 
 namespace syncer {

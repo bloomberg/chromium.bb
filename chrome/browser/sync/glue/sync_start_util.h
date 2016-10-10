@@ -8,7 +8,7 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_SYNC_START_UTIL_H_
 #define CHROME_BROWSER_SYNC_GLUE_SYNC_START_UTIL_H_
 
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/syncable_service.h"
 
 namespace base {
 class FilePath;

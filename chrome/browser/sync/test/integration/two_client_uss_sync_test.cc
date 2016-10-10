@@ -14,7 +14,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/sync/api/fake_model_type_service.h"
+#include "components/sync/model/fake_model_type_service.h"
 
 using browser_sync::ChromeSyncClient;
 using browser_sync::ProfileSyncComponentsFactoryImpl;

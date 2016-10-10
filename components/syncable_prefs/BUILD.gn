@@ -64,7 +64,7 @@ source_set("unit_tests") {
     ":test_support",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/sync:test_support_sync_api",
+    "//components/sync:test_support_sync_model",
     "//testing/gtest",
   ]
 }

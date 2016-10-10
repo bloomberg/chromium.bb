@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "components/crx_file/id_util.h"
-#include "components/sync/api/string_ordinal.h"
+#include "components/sync/model/string_ordinal.h"
 #include "components/version_info/version_info.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install_flag.h"

@@ -4,7 +4,6 @@ include_rules = [
   "+components/nacl/browser",
   "+components/nacl/common",
   "+components/pref_registry",
-  "+components/sync/api",
   "+components/update_client",
   "+components/user_prefs",
   "+components/web_modal",

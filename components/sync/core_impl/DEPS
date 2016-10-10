@@ -1,10 +1,10 @@
 include_rules = [
-  "+components/sync/api",
   "+components/sync/base",
   "+components/sync/core",
   "+components/sync/engine",
   "+components/sync/engine_impl",
   "+components/sync/js",
+  "+components/sync/model",
   "+components/sync/protocol",
   "+components/sync/syncable",
   "+components/sync/test",

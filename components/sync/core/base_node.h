@@ -15,8 +15,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/sync/api/attachments/attachment.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model/attachments/attachment.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "url/gurl.h"
 

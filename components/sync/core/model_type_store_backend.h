@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/threading/thread_collision_warner.h"
-#include "components/sync/api/model_type_store.h"
+#include "components/sync/model/model_type_store.h"
 
 namespace leveldb {
 class DB;

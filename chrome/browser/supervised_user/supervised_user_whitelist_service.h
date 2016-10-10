@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/syncable_service.h"
 
 class PrefService;
 class SupervisedUserSiteList;

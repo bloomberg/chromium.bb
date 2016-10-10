@@ -24,10 +24,10 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_change_processor.h"
-#include "components/sync/api/sync_data.h"
-#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/model/sync_change.h"
+#include "components/sync/model/sync_change_processor.h"
+#include "components/sync/model/sync_data.h"
+#include "components/sync/model/sync_error_factory.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace autofill {

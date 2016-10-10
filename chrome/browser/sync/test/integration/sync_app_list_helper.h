@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "components/sync/api/string_ordinal.h"
+#include "components/sync/model/string_ordinal.h"
 
 class Profile;
 class SyncTest;

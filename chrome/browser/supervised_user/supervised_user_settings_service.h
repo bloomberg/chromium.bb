@@ -17,7 +17,7 @@
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_store.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/syncable_service.h"
 
 class PersistentPrefStore;
 class Profile;

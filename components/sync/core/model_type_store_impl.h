@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "components/sync/api/model_type_store.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model/model_type_store.h"
 
 namespace leveldb {
 class WriteBatch;

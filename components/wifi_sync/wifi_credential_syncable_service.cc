@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_data.h"
-#include "components/sync/api/sync_error.h"
-#include "components/sync/api/sync_error_factory.h"
-#include "components/sync/api/sync_merge_result.h"
+#include "components/sync/model/sync_change.h"
+#include "components/sync/model/sync_data.h"
+#include "components/sync/model/sync_error.h"
+#include "components/sync/model/sync_error_factory.h"
+#include "components/sync/model/sync_merge_result.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/wifi_sync/wifi_credential.h"
 #include "components/wifi_sync/wifi_security_class.h"

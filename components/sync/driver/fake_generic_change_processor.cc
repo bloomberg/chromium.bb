@@ -8,7 +8,7 @@
 
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/syncable_service.h"
 
 namespace syncer {
 

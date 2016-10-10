@@ -13,9 +13,9 @@
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/sync/api/sync_change_processor.h"
-#include "components/sync/api/sync_data.h"
-#include "components/sync/api/sync_merge_result.h"
+#include "components/sync/model/sync_change_processor.h"
+#include "components/sync/model/sync_data.h"
+#include "components/sync/model/sync_merge_result.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace arc {

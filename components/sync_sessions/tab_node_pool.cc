@@ -7,9 +7,9 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_data.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model/sync_change.h"
+#include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 

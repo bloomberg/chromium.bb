@@ -7,12 +7,12 @@
 #include <stddef.h>
 
 #include "base/message_loop/message_loop.h"
-#include "components/sync/api/attachments/attachment_service_proxy_for_test.h"
-#include "components/sync/api/sync_change_processor_wrapper_for_test.h"
-#include "components/sync/api/sync_error_factory_mock.h"
 #include "components/sync/base/time.h"
 #include "components/sync/device_info/device_info_util.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
+#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
+#include "components/sync/model/sync_change_processor_wrapper_for_test.h"
+#include "components/sync/model/sync_error_factory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

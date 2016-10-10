@@ -11,9 +11,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/api/attachments/attachment.h"
-#include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/engine/attachments/attachment_store_backend.h"
+#include "components/sync/model/attachments/attachment.h"
+#include "components/sync/model/attachments/attachment_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

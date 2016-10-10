@@ -10,8 +10,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/version.h"
-#include "components/sync/api/string_ordinal.h"
-#include "components/sync/api/sync_change.h"
+#include "components/sync/model/string_ordinal.h"
+#include "components/sync/model/sync_change.h"
 #include "extensions/common/constants.h"
 #include "url/gurl.h"
 

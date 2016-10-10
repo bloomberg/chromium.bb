@@ -17,9 +17,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
-#include "components/sync/api/sync_change_processor.h"
-#include "components/sync/api/sync_error.h"
-#include "components/sync/api/sync_error_factory_mock.h"
+#include "components/sync/model/sync_change_processor.h"
+#include "components/sync/model/sync_error.h"
+#include "components/sync/model/sync_error_factory_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

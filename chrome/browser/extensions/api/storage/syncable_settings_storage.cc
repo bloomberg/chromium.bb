@@ -10,7 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
-#include "components/sync/api/sync_data.h"
+#include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/extension_setting_specifics.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/settings_namespace.h"

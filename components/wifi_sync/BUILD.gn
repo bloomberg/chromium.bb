@@ -51,7 +51,7 @@ source_set("unit_tests") {
     "//base",
     "//chromeos",
     "//components/onc",
-    "//components/sync:test_support_sync_api",
+    "//components/sync:test_support_sync_model",
     "//testing/gmock",
     "//testing/gtest",
   ]

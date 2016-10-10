@@ -12,7 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/sync/api/time.h"
+#include "components/sync/model/time.h"
 #include "components/sync/protocol/favicon_image_specifics.pb.h"
 #include "components/sync/protocol/favicon_tracking_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"

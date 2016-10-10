@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "components/sync/api/sync_change.h"
+#include "components/sync/model/sync_change.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"

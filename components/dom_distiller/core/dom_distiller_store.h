@@ -17,12 +17,12 @@
 #include "components/dom_distiller/core/dom_distiller_model.h"
 #include "components/dom_distiller/core/dom_distiller_observer.h"
 #include "components/leveldb_proto/proto_database.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_data.h"
-#include "components/sync/api/sync_error.h"
-#include "components/sync/api/sync_error_factory.h"
-#include "components/sync/api/sync_merge_result.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/sync_change.h"
+#include "components/sync/model/sync_data.h"
+#include "components/sync/model/sync_error.h"
+#include "components/sync/model/sync_error_factory.h"
+#include "components/sync/model/sync_merge_result.h"
+#include "components/sync/model/syncable_service.h"
 #include "url/gurl.h"
 
 namespace base {

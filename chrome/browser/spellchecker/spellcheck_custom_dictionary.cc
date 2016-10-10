@@ -18,8 +18,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "components/spellcheck/browser/spellcheck_host_metrics.h"
 #include "components/spellcheck/common/spellcheck_common.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/model/sync_change.h"
+#include "components/sync/model/sync_error_factory.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "content/public/browser/browser_thread.h"
 

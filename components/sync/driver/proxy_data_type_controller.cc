@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "components/sync/api/sync_merge_result.h"
+#include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
 

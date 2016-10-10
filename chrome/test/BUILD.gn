@@ -476,7 +476,7 @@ if (!is_android) {
       "//chrome/renderer",
       "//components/resources",
       "//components/sync",
-      "//components/sync:test_support_sync_api",
+      "//components/sync:test_support_sync_model",
       "//content/app/resources",
       "//content/test:test_support",
       "//crypto:platform",
@@ -899,8 +899,8 @@ if (!is_android) {
       "//components/invalidation/impl",
       "//components/invalidation/impl:test_support",
       "//components/sync",
-      "//components/sync:test_support_sync_api",
       "//components/sync:test_support_sync_fake_server",
+      "//components/sync:test_support_sync_model",
       "//components/sync:test_support_sync_testserver",
       "//content/test:test_support",
       "//net",
@@ -1222,7 +1222,7 @@ test("browser_tests") {
     ":repack_pseudo_locales",
     ":test_support",
     "//base",
-    "//components/sync:test_support_sync_api",
+    "//components/sync:test_support_sync_model",
   ]
 
   data_deps = []
@@ -3398,9 +3398,9 @@ test("unit_tests") {
     "//components/browser_sync:test_support",
     "//components/content_settings/core/test:test_support",
     "//components/resources",
-    "//components/sync:test_support_sync_api",
     "//components/sync:test_support_sync_core",
     "//components/sync:test_support_sync_core_impl",
+    "//components/sync:test_support_sync_model",
     "//components/sync_sessions:test_support",
     "//content/public/app:both",
     "//content/test:test_support",

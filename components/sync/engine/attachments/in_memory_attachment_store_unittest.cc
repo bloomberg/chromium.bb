@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/api/attachments/attachment_store.h"
+#include "components/sync/model/attachments/attachment_store.h"
 
 #include "components/sync/engine/attachments/attachment_store_test_template.h"
 

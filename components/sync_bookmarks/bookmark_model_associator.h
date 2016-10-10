@@ -22,9 +22,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
-#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/driver/model_associator.h"
+#include "components/sync/model/data_type_error_handler.h"
 
 class GURL;
 

@@ -20,10 +20,10 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_data.h"
-#include "components/sync/api/sync_error.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/sync_change.h"
+#include "components/sync/model/sync_data.h"
+#include "components/sync/model/sync_error.h"
+#include "components/sync/model/syncable_service.h"
 
 namespace browser_sync {
 class FakeServerUpdater;

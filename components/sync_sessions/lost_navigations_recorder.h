@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
-#include "components/sync/api/local_change_observer.h"
-#include "components/sync/api/sync_change.h"
+#include "components/sync/model/local_change_observer.h"
+#include "components/sync/model/sync_change.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 
 namespace sync_sessions {

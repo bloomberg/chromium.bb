@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "components/sync/api/sync_error.h"
 #include "components/sync/driver/frontend_data_type_controller.h"
+#include "components/sync/model/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {

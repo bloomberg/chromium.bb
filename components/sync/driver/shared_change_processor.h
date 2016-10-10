@@ -14,14 +14,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "components/sync/api/data_type_error_handler.h"
-#include "components/sync/api/sync_change_processor.h"
-#include "components/sync/api/sync_data.h"
-#include "components/sync/api/sync_error.h"
-#include "components/sync/api/sync_error_factory.h"
-#include "components/sync/api/sync_merge_result.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/engine/model_safe_worker.h"
+#include "components/sync/model/data_type_error_handler.h"
+#include "components/sync/model/sync_change_processor.h"
+#include "components/sync/model/sync_data.h"
+#include "components/sync/model/sync_error.h"
+#include "components/sync/model/sync_error_factory.h"
+#include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
 

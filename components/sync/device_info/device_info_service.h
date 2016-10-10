@@ -17,11 +17,11 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/sync/api/model_type_service.h"
-#include "components/sync/api/model_type_store.h"
 #include "components/sync/core/simple_metadata_change_list.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/device_info/local_device_info_provider.h"
+#include "components/sync/model/model_type_service.h"
+#include "components/sync/model/model_type_store.h"
 
 namespace syncer {
 class SyncError;

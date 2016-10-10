@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model/data_type_error_handler.h"
 
 namespace syncer {
 

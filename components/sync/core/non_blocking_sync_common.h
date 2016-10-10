@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "components/sync/api/entity_data.h"
+#include "components/sync/model/entity_data.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {

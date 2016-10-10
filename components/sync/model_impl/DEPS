@@ -1,0 +1,7 @@
+include_rules = [
+  "+components/sync/base",
+  "+components/sync/core",
+  "+components/sync/engine",
+  "+components/sync/model",
+  "+components/sync/protocol",
+]

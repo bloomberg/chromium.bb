@@ -280,7 +280,7 @@ source_set("chrome_extensions_browsertests") {
     "//components/resources",
     "//components/strings",
     "//components/sync",
-    "//components/sync:test_support_sync_api",
+    "//components/sync:test_support_sync_model",
     "//components/translate/core/common",
     "//crypto:platform",
     "//crypto:test_support",

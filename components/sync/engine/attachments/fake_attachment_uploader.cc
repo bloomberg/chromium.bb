@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/api/attachments/attachment.h"
+#include "components/sync/model/attachments/attachment.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {

@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "components/sync/api/syncable_service.h"
 #include "components/sync/driver/generic_change_processor.h"
+#include "components/sync/model/syncable_service.h"
 
 namespace syncer {
 

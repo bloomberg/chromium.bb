@@ -6,11 +6,11 @@
 
 #include <utility>
 
-#include "components/sync/api/attachments/attachment_service.h"
-#include "components/sync/api/attachments/attachment_store.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/change_processor.h"
 #include "components/sync/driver/model_associator.h"
+#include "components/sync/model/attachments/attachment_service.h"
+#include "components/sync/model/attachments/attachment_store.h"
 
 using testing::_;
 using testing::InvokeWithoutArgs;

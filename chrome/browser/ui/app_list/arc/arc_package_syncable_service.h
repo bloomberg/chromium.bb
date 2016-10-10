@@ -15,10 +15,10 @@
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_change_processor.h"
-#include "components/sync/api/sync_error_factory.h"
-#include "components/sync/api/syncable_service.h"
+#include "components/sync/model/sync_change.h"
+#include "components/sync/model/sync_change_processor.h"
+#include "components/sync/model/sync_error_factory.h"
+#include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/arc_package_specifics.pb.h"
 
 class Profile;

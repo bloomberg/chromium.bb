@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/sync/api/data_batch.h"
-#include "components/sync/api/entity_data.h"
+#include "components/sync/model/data_batch.h"
+#include "components/sync/model/entity_data.h"
 
 namespace syncer {
 

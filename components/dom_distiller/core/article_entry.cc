@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "components/dom_distiller/core/article_attachments_data.h"
-#include "components/sync/api/sync_change.h"
+#include "components/sync/model/sync_change.h"
 
 using sync_pb::EntitySpecifics;
 using sync_pb::ArticlePage;

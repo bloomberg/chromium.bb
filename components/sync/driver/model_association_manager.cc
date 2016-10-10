@@ -14,8 +14,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
-#include "components/sync/api/sync_merge_result.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
 

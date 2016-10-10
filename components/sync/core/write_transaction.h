@@ -12,8 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/sync/api/sync_change_processor.h"
 #include "components/sync/core/base_transaction.h"
+#include "components/sync/model/sync_change_processor.h"
 
 namespace tracked_objects {
 class Location;

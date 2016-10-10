@@ -8,9 +8,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/sync/api/attachments/attachment.h"
-#include "components/sync/api/attachments/attachment_id.h"
-#include "components/sync/api/attachments/attachment_store.h"
+#include "components/sync/model/attachments/attachment.h"
+#include "components/sync/model/attachments/attachment_id.h"
+#include "components/sync/model/attachments/attachment_store.h"
 
 namespace base {
 class SequencedTaskRunner;

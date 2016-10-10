@@ -4,7 +4,7 @@ include_rules = [
   "+components/password_manager/core",
   "+components/prefs",
   "+components/strings/grit",
-  "+components/sync/api",
+  "+components/sync/model",
   "+components/sync/protocol",
   "+net/base",
   "+net/http/http_status_code.h",

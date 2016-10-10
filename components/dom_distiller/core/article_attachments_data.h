@@ -9,7 +9,7 @@
 #include <string>
 
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
-#include "components/sync/api/attachments/attachment.h"
+#include "components/sync/model/attachments/attachment.h"
 #include "components/sync/protocol/article_specifics.pb.h"
 
 namespace dom_distiller {

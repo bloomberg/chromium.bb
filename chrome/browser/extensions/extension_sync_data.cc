@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
 #include "components/crx_file/id_util.h"
-#include "components/sync/api/sync_data.h"
+#include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/extension_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"

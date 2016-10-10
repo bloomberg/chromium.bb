@@ -4,12 +4,13 @@
 
 #include "components/sync/engine/attachments/fake_attachment_downloader.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "components/sync/api/attachments/attachment.h"
+#include "components/sync/model/attachments/attachment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

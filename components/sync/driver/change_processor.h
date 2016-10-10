@@ -10,10 +10,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/core/base_transaction.h"
 #include "components/sync/core/change_record.h"
 #include "components/sync/core/user_share.h"
+#include "components/sync/model/data_type_error_handler.h"
 
 namespace syncer {
 

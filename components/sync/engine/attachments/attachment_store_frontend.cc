@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
-#include "components/sync/api/attachments/attachment.h"
 #include "components/sync/engine/attachments/attachment_store_backend.h"
+#include "components/sync/model/attachments/attachment.h"
 
 namespace syncer {
 

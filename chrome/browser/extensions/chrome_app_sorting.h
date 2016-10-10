@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/sync/api/string_ordinal.h"
+#include "components/sync/model/string_ordinal.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"

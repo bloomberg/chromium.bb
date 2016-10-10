@@ -5,6 +5,7 @@
 #include "components/sync/engine_impl/attachments/attachment_downloader_impl.h"
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -14,9 +15,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/api/attachments/attachment.h"
 #include "components/sync/engine/attachments/attachment_util.h"
 #include "components/sync/engine_impl/attachments/attachment_uploader_impl.h"
+#include "components/sync/model/attachments/attachment.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/http/http_response_headers.h"
