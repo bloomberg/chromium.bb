@@ -25,27 +25,62 @@ namespace offline_pages {
 
 namespace {
 const bool kUserRequest = true;
+const int kMinDurationSeconds = 1;
+const int kMaxDurationSeconds = 7 * 24 * 60 * 60;  // 7 days
+const int kDurationBuckets = 50;
+
+// TODO(dougarnett): Move to util location and share with model impl.
+std::string AddHistogramSuffix(const ClientId& client_id,
+                               const char* histogram_name) {
+  if (client_id.name_space.empty()) {
+    NOTREACHED();
+    return histogram_name;
+  }
+  std::string adjusted_histogram_name(histogram_name);
+  adjusted_histogram_name += "." + client_id.name_space;
+  return adjusted_histogram_name;
+}
 
 // Records the final request status UMA for an offlining request. This should
 // only be called once per Offliner::LoadAndSave request.
 void RecordOfflinerResultUMA(const ClientId& client_id,
+                             const base::Time& request_creation_time,
                              Offliner::RequestStatus request_status) {
-  // TODO(dougarnett): Consider exposing AddHistogramSuffix from
-  // offline_page_model_impl.cc as visible utility method.
-  std::string histogram_name("OfflinePages.Background.OfflinerRequestStatus");
-  if (!client_id.name_space.empty()) {
-    histogram_name += "." + client_id.name_space;
-  }
-
   // The histogram below is an expansion of the UMA_HISTOGRAM_ENUMERATION
   // macro adapted to allow for a dynamically suffixed histogram name.
   // Note: The factory creates and owns the histogram.
   base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
-      histogram_name, 1,
-      static_cast<int>(Offliner::RequestStatus::STATUS_COUNT),
+      AddHistogramSuffix(client_id,
+                         "OfflinePages.Background.OfflinerRequestStatus"),
+      1, static_cast<int>(Offliner::RequestStatus::STATUS_COUNT),
       static_cast<int>(Offliner::RequestStatus::STATUS_COUNT) + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(static_cast<int>(request_status));
+
+  // For successful requests also record time from request to save.
+  if (request_status == Offliner::RequestStatus::SAVED) {
+    // Using regular histogram (with dynamic suffix) rather than time-oriented
+    // one to record samples in seconds rather than milliseconds.
+    base::HistogramBase* histogram = base::Histogram::FactoryGet(
+        AddHistogramSuffix(client_id, "OfflinePages.Background.TimeToSaved"),
+        kMinDurationSeconds, kMaxDurationSeconds, kDurationBuckets,
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+    base::TimeDelta duration = base::Time::Now() - request_creation_time;
+    histogram->Add(duration.InSeconds());
+  }
+}
+
+void RecordCancelTimeUMA(const SavePageRequest& canceled_request) {
+  // Using regular histogram (with dynamic suffix) rather than time-oriented
+  // one to record samples in seconds rather than milliseconds.
+  base::HistogramBase* histogram = base::Histogram::FactoryGet(
+      AddHistogramSuffix(canceled_request.client_id(),
+                         "OfflinePages.Background.TimeToCanceled"),
+      kMinDurationSeconds, kMaxDurationSeconds, kDurationBuckets,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  base::TimeDelta duration =
+      base::Time::Now() - canceled_request.creation_time();
+  histogram->Add(duration.InSeconds());
 }
 
 // Records the number of started attempts for completed requests (whether
@@ -165,6 +200,7 @@ void RequestCoordinator::StopPrerendering(Offliner::RequestStatus stop_status) {
                                        last_offlining_status_,
                                        active_request_->request_id());
     RecordOfflinerResultUMA(active_request_->client_id(),
+                            active_request_->creation_time(),
                             last_offlining_status_);
     is_busy_ = false;
     active_request_.reset();
@@ -324,6 +360,10 @@ void RequestCoordinator::HandleRemovedRequestsAndCallback(
     const RemoveRequestsCallback& callback,
     BackgroundSavePageResult status,
     std::unique_ptr<UpdateRequestsResult> result) {
+  // TODO(dougarnett): Define status code for user/api cancel and use here
+  // to determine whether to record cancel time UMA.
+  for (const auto& request : result->updated_items)
+    RecordCancelTimeUMA(request);
   callback.Run(result->item_statuses);
   HandleRemovedRequests(status, std::move(result));
 }
@@ -515,7 +555,8 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   event_logger_.RecordOfflinerResult(request.client_id().name_space, status,
                                      request.request_id());
   last_offlining_status_ = status;
-  RecordOfflinerResultUMA(request.client_id(), last_offlining_status_);
+  RecordOfflinerResultUMA(request.client_id(), request.creation_time(),
+                          last_offlining_status_);
   watchdog_timer_.Stop();
 
   is_busy_ = false;
