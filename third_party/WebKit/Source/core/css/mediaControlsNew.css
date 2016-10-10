@@ -371,10 +371,10 @@ video::-internal-media-controls-text-track-list, video::-internal-media-controls
     overflow-y: auto;
     white-space: nowrap;
     font-size: 14px;
-    border-radius: 2px;
-    box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14),
-                0 3px 14px 2px rgba(0, 0, 0, 0.12),
-                0 5px 5px -3px rgba(0, 0, 0, 0.4);
+    border-radius: 1px;
+    box-shadow: 0 8px 20px 1px rgba(0, 0, 0, 0.14),
+                0 3px 28px 2px rgba(0, 0, 0, 0.12),
+                0 5px 10px -3px rgba(0, 0, 0, 0.4);
 }
 
 video::-internal-media-controls-text-track-list-item {
