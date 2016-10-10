@@ -214,6 +214,7 @@ class VIEWS_EXPORT Textfield : public View,
   int GetBaseline() const override;
   gfx::Size GetPreferredSize() const override;
   const char* GetClassName() const override;
+  void SetBorder(std::unique_ptr<Border> b) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -513,6 +514,9 @@ class VIEWS_EXPORT Textfield : public View,
   // Tracks if touch editing handles are hidden because user has started
   // scrolling. If |true|, handles are shown after scrolling ends.
   bool touch_handles_hidden_due_to_scroll_;
+
+  // True if this textfield should use a focus ring to indicate focus.
+  bool use_focus_ring_;
 
   // Context menu related members.
   std::unique_ptr<ui::SimpleMenuModel> context_menu_contents_;

@@ -261,11 +261,12 @@ Textfield::Textfield()
       aggregated_clicks_(0),
       drag_start_display_offset_(0),
       touch_handles_hidden_due_to_scroll_(false),
+      use_focus_ring_(ui::MaterialDesignController::IsSecondaryUiMaterial()),
       weak_ptr_factory_(this) {
   set_context_menu_controller(this);
   set_drag_controller(this);
   GetRenderText()->SetFontList(GetDefaultFontList());
-  SetBorder(std::unique_ptr<Border>(new FocusableBorder()));
+  View::SetBorder(std::unique_ptr<Border>(new FocusableBorder()));
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   // These allow BrowserView to pass edit commands from the Chrome menu to us
@@ -555,6 +556,13 @@ gfx::Size Textfield::GetPreferredSize() const {
 
 const char* Textfield::GetClassName() const {
   return kViewClassName;
+}
+
+void Textfield::SetBorder(std::unique_ptr<Border> b) {
+  if (use_focus_ring_ && HasFocus())
+    FocusRing::Uninstall(this);
+  use_focus_ring_ = false;
+  View::SetBorder(std::move(b));
 }
 
 gfx::NativeCursor Textfield::GetCursor(const ui::MouseEvent& event) {
@@ -983,16 +991,15 @@ void Textfield::OnFocus() {
   GetRenderText()->set_focused(true);
   if (ShouldShowCursor())
     GetRenderText()->set_cursor_visible(true);
-  SchedulePaint();
   if (GetInputMethod())
     GetInputMethod()->SetFocusedTextInputClient(this);
   OnCaretBoundsChanged();
   if (ShouldBlinkCursor())
     StartBlinkingCursor();
-  View::OnFocus();
-  SchedulePaint();
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (use_focus_ring_)
     FocusRing::Install(this);
+  SchedulePaint();
+  View::OnFocus();
 }
 
 void Textfield::OnBlur() {
@@ -1008,10 +1015,10 @@ void Textfield::OnBlur() {
 
   DestroyTouchSelection();
 
-  // Border typically draws focus indicator.
-  SchedulePaint();
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (use_focus_ring_)
     FocusRing::Uninstall(this);
+  SchedulePaint();
+  View::OnBlur();
 }
 
 gfx::Point Textfield::GetKeyboardContextMenuLocation() {
