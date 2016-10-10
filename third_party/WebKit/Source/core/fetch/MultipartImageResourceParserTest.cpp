@@ -5,9 +5,6 @@
 #include "core/fetch/MultipartImageResourceParser.h"
 
 #include "platform/network/ResourceResponse.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <stddef.h>
@@ -59,70 +56,6 @@ TEST(MultipartResponseTest, SkippableLength) {
               MultipartImageResourceParser::skippableLengthForTest(
                   input, lineTests[i].position));
   }
-}
-
-TEST(MultipartResponseTest, ParseMultipartHeadersResult) {
-  struct {
-    const char* data;
-    const bool result;
-    const size_t end;
-  } tests[] = {
-      {"This is junk", false, 0},
-      {"Foo: bar\nBaz:\n\nAfter:\n", true, 15},
-      {"Foo: bar\nBaz:\n", false, 0},
-      {"Foo: bar\r\nBaz:\r\n\r\nAfter:\r\n", true, 18},
-      {"Foo: bar\r\nBaz:\r\n", false, 0},
-      {"Foo: bar\nBaz:\r\n\r\nAfter:\n\n", true, 17},
-      {"Foo: bar\r\nBaz:\n", false, 0},
-      {"\r\n", true, 2},
-  };
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
-    WebURLResponse response;
-    size_t end = 0;
-    bool result = Platform::current()->parseMultipartHeadersFromBody(
-        tests[i].data, strlen(tests[i].data), &response, &end);
-    EXPECT_EQ(tests[i].result, result);
-    EXPECT_EQ(tests[i].end, end);
-  }
-}
-
-TEST(MultipartResponseTest, ParseMultipartHeaders) {
-  WebURLResponse webResponse;
-  webResponse.addHTTPHeaderField(WebString::fromLatin1("foo"),
-                                 WebString::fromLatin1("bar"));
-  webResponse.addHTTPHeaderField(WebString::fromLatin1("range"),
-                                 WebString::fromLatin1("piyo"));
-  webResponse.addHTTPHeaderField(WebString::fromLatin1("content-length"),
-                                 WebString::fromLatin1("999"));
-
-  const char data[] = "content-type: image/png\ncontent-length: 10\n\n";
-  size_t end = 0;
-  bool result = Platform::current()->parseMultipartHeadersFromBody(
-      data, strlen(data), &webResponse, &end);
-  const ResourceResponse& response = webResponse.toResourceResponse();
-
-  EXPECT_TRUE(result);
-  EXPECT_EQ(strlen(data), end);
-  EXPECT_EQ("image/png", response.httpHeaderField("content-type"));
-  EXPECT_EQ("10", response.httpHeaderField("content-length"));
-  EXPECT_EQ("bar", response.httpHeaderField("foo"));
-  EXPECT_EQ(AtomicString(), response.httpHeaderField("range"));
-}
-
-TEST(MultipartResponseTest, ParseMultipartHeadersContentCharset) {
-  WebURLResponse webResponse;
-
-  const char data[] = "content-type: text/html; charset=utf-8\n\n";
-  size_t end = 0;
-  bool result = Platform::current()->parseMultipartHeadersFromBody(
-      data, strlen(data), &webResponse, &end);
-  const ResourceResponse& response = webResponse.toResourceResponse();
-
-  EXPECT_TRUE(result);
-  EXPECT_EQ(strlen(data), end);
-  EXPECT_EQ("text/html; charset=utf-8",
-            response.httpHeaderField("content-type"));
-  EXPECT_EQ("utf-8", response.textEncodingName());
 }
 
 TEST(MultipartResponseTest, FindBoundary) {

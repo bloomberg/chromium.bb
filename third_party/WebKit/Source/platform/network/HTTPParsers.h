@@ -41,6 +41,7 @@
 namespace blink {
 
 class Suborigin;
+class ResourceResponse;
 
 typedef enum {
   ContentDispositionNone,
@@ -148,6 +149,13 @@ PLATFORM_EXPORT bool parseSuboriginHeader(const String& header,
 
 PLATFORM_EXPORT ContentTypeOptionsDisposition
 parseContentTypeOptionsHeader(const String& header);
+
+// Returns true and stores the position of the end of the headers to |*end|
+// if the headers part ends in |bytes[0..size]|. Returns false otherwise.
+PLATFORM_EXPORT bool parseMultipartHeadersFromBody(const char* bytes,
+                                                   size_t,
+                                                   ResourceResponse*,
+                                                   size_t* end);
 
 }  // namespace blink
 

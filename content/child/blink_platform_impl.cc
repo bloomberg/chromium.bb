@@ -434,15 +434,6 @@ WebURLError BlinkPlatformImpl::cancelledError(
   return CreateWebURLError(unreachableURL, false, net::ERR_ABORTED);
 }
 
-bool BlinkPlatformImpl::parseMultipartHeadersFromBody(
-    const char* bytes,
-    size_t size,
-    blink::WebURLResponse* response,
-    size_t* end) const {
-  return WebURLLoaderImpl::ParseMultipartHeadersFromBody(
-      bytes, size, response, end);
-}
-
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
   std::unique_ptr<WebThreadImplForWorkerScheduler> thread(
       new WebThreadImplForWorkerScheduler(name));

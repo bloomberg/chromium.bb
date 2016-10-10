@@ -375,15 +375,6 @@ class BLINK_PLATFORM_EXPORT Platform {
     return WebURLError();
   }
 
-  // Returns true and stores the position of the end of the headers to |*end|
-  // if the headers part ends in |bytes[0..size]|. Returns false otherwise.
-  virtual bool parseMultipartHeadersFromBody(const char* bytes,
-                                             size_t /* size */,
-                                             WebURLResponse*,
-                                             size_t* end) const {
-    return false;
-  }
-
   // Plugins -------------------------------------------------------------
 
   // If refresh is true, then cached information should not be used to

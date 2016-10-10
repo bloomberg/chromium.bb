@@ -90,10 +90,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
                               blink::WebString& mimetype,
                               blink::WebString& charset) override;
   blink::WebURLError cancelledError(const blink::WebURL& url) const override;
-  bool parseMultipartHeadersFromBody(const char* bytes,
-                                     size_t size,
-                                     blink::WebURLResponse* response,
-                                     size_t* end) const override;
   blink::WebThread* createThread(const char* name) override;
   blink::WebThread* currentThread() override;
   void recordAction(const blink::UserMetricsAction&) override;

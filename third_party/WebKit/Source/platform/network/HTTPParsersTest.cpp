@@ -5,6 +5,7 @@
 #include "platform/network/HTTPParsers.h"
 
 #include "platform/heap/Handle.h"
+#include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/Suborigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/MathExtras.h"
@@ -431,6 +432,64 @@ TEST(HTTPParsersTest, ParseHTTPRefresh) {
       parseHTTPRefresh("10\nurl=dest", isASCIISpace<UChar>, delay, url));
   EXPECT_EQ(10, delay);
   EXPECT_EQ("dest", url);
+}
+
+TEST(HTTPParsersTest, ParseMultipartHeadersResult) {
+  struct {
+    const char* data;
+    const bool result;
+    const size_t end;
+  } tests[] = {
+      {"This is junk", false, 0},
+      {"Foo: bar\nBaz:\n\nAfter:\n", true, 15},
+      {"Foo: bar\nBaz:\n", false, 0},
+      {"Foo: bar\r\nBaz:\r\n\r\nAfter:\r\n", true, 18},
+      {"Foo: bar\r\nBaz:\r\n", false, 0},
+      {"Foo: bar\nBaz:\r\n\r\nAfter:\n\n", true, 17},
+      {"Foo: bar\r\nBaz:\n", false, 0},
+      {"\r\n", true, 2},
+  };
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
+    ResourceResponse response;
+    size_t end = 0;
+    bool result = parseMultipartHeadersFromBody(
+        tests[i].data, strlen(tests[i].data), &response, &end);
+    EXPECT_EQ(tests[i].result, result);
+    EXPECT_EQ(tests[i].end, end);
+  }
+}
+
+TEST(HTTPParsersTest, ParseMultipartHeaders) {
+  ResourceResponse response;
+  response.addHTTPHeaderField("foo", "bar");
+  response.addHTTPHeaderField("range", "piyo");
+  response.addHTTPHeaderField("content-length", "999");
+
+  const char data[] = "content-type: image/png\ncontent-length: 10\n\n";
+  size_t end = 0;
+  bool result =
+      parseMultipartHeadersFromBody(data, strlen(data), &response, &end);
+
+  EXPECT_TRUE(result);
+  EXPECT_EQ(strlen(data), end);
+  EXPECT_EQ("image/png", response.httpHeaderField("content-type"));
+  EXPECT_EQ("10", response.httpHeaderField("content-length"));
+  EXPECT_EQ("bar", response.httpHeaderField("foo"));
+  EXPECT_EQ(AtomicString(), response.httpHeaderField("range"));
+}
+
+TEST(HTTPParsersTest, ParseMultipartHeadersContentCharset) {
+  ResourceResponse response;
+  const char data[] = "content-type: text/html; charset=utf-8\n\n";
+  size_t end = 0;
+  bool result =
+      parseMultipartHeadersFromBody(data, strlen(data), &response, &end);
+
+  EXPECT_TRUE(result);
+  EXPECT_EQ(strlen(data), end);
+  EXPECT_EQ("text/html; charset=utf-8",
+            response.httpHeaderField("content-type"));
+  EXPECT_EQ("utf-8", response.textEncodingName());
 }
 
 }  // namespace blink

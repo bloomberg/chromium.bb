@@ -4,8 +4,7 @@
 
 #include "core/fetch/MultipartImageResourceParser.h"
 
-#include "public/platform/Platform.h"
-#include "public/platform/WebURLResponse.h"
+#include "platform/network/HTTPParsers.h"
 #include "wtf/NotFound.h"
 #include "wtf/text/WTFString.h"
 
@@ -138,20 +137,21 @@ bool MultipartImageResourceParser::parseHeaders() {
   // Eat leading \r\n
   size_t pos = skippableLength(m_data, 0);
 
-  // Create a WebURLResponse based on the original set of headers + the
+  // Create a ResourceResponse based on the original set of headers + the
   // replacement headers. We only replace the same few headers that gecko does.
   // See netwerk/streamconv/converters/nsMultiMixedConv.cpp.
-  WebURLResponse response(m_originalResponse.url());
+  ResourceResponse response;
+  response.setURL(m_originalResponse.url());
   for (const auto& header : m_originalResponse.httpHeaderFields())
     response.addHTTPHeaderField(header.key, header.value);
 
   size_t end = 0;
-  if (!Platform::current()->parseMultipartHeadersFromBody(
-          m_data.data() + pos, m_data.size() - pos, &response, &end))
+  if (!parseMultipartHeadersFromBody(m_data.data() + pos, m_data.size() - pos,
+                                     &response, &end))
     return false;
   m_data.remove(0, end + pos);
   // Send the response!
-  m_client->onePartInMultipartReceived(response.toResourceResponse());
+  m_client->onePartInMultipartReceived(response);
   return true;
 }
 
