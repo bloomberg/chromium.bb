@@ -19,6 +19,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/renderer_preferences.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -103,6 +104,9 @@ void Tab::Reload() {
 
 void Tab::RenderViewCreated(content::RenderViewHost* render_view_host) {
   DCHECK(render_view_host);
+  web_contents_->GetMutableRendererPrefs()->caret_blink_interval = 0;
+  render_view_host->SyncRendererPrefs();
+
   render_widget_feature_->OnRenderWidgetCreated(tab_id_,
                                                 render_view_host->GetWidget());
 }

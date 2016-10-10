@@ -360,6 +360,7 @@ source_set("session") {
     "//blimp/common/proto",
     "//blimp/net",
     "//content/public/browser",
+    "//content/public/common",
     "//device/geolocation",
     "//net",
     "//ui/aura",
