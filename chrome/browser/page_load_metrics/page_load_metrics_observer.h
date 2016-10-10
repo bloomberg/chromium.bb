@@ -163,7 +163,7 @@ class PageLoadMetricsObserver {
   // first data for the request. The navigation handle holds relevant data for
   // the navigation, but will be destroyed soon after this call. Don't hold a
   // reference to it.
-  // Note that this does not get called for same page navigations.
+  // Note that this does not get called for same-page navigations.
   // Observers that return STOP_OBSERVING will not receive any additional
   // callbacks, and will be deleted after invocation of this method returns.
   virtual ObservePolicy OnCommit(content::NavigationHandle* navigation_handle);
@@ -249,7 +249,9 @@ class PageLoadMetricsObserver {
   // instead.
 
   // OnComplete is invoked for tracked page loads that committed, immediately
-  // before the observer is deleted.
+  // before the observer is deleted. Observers that implement OnComplete may
+  // also want to implement FlushMetricsOnAppEnterBackground, to avoid loss of
+  // data if the application is killed while in the background.
   virtual void OnComplete(const PageLoadTiming& timing,
                           const PageLoadExtraInfo& extra_info) {}
 
