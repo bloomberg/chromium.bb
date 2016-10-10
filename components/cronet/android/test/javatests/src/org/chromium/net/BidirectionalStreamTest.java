@@ -246,17 +246,11 @@ public class BidirectionalStreamTest extends CronetTestBase {
         requestFinishedListener.blockUntilDone();
         Date endTime = new Date();
         RequestFinishedInfo finishedInfo = requestFinishedListener.getRequestInfo();
-        assertNotNull("RequestFinishedInfo.Listener must be called", finishedInfo);
-        RequestFinishedInfo.Metrics metrics = finishedInfo.getMetrics();
-        assertNotNull(metrics);
-        MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
-        MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, true);
-        assertTrue(metrics.getSentBytesCount() > 0);
-        assertTrue(metrics.getReceivedBytesCount() > 0);
-        assertEquals(url, finishedInfo.getUrl());
+        MetricsTestUtil.checkRequestFinishedInfo(finishedInfo, url, startTime, endTime);
+        assertEquals(RequestFinishedInfo.SUCCEEDED, finishedInfo.getFinishedReason());
+        MetricsTestUtil.checkHasConnectTiming(finishedInfo.getMetrics(), startTime, endTime, true);
         assertEquals(newHashSet("request annotation", this),
                 new HashSet<Object>(finishedInfo.getAnnotations()));
-        assertNotNull(finishedInfo.getResponseInfo());
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("Test String1234567890woot!", callback.mResponseAsString);
         assertEquals("bar", callback.mResponseInfo.getAllHeaders().get("echo-foo").get(0));

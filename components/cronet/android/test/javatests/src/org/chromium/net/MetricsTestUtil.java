@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
@@ -150,5 +151,28 @@ public class MetricsTestUtil {
         assertNull(metrics.getSslEnd());
         assertNull(metrics.getConnectStart());
         assertNull(metrics.getConnectEnd());
+    }
+
+    /**
+     * Check that RequestFinishedInfo looks the way it should look for a normal successful request.
+     */
+    public static void checkRequestFinishedInfo(
+            RequestFinishedInfo info, String url, Date startTime, Date endTime) {
+        assertNotNull("RequestFinishedInfo.Listener must be called", info);
+        assertEquals(url, info.getUrl());
+        assertNotNull(info.getResponseInfo());
+        assertNull(info.getException());
+        RequestFinishedInfo.Metrics metrics = info.getMetrics();
+        assertNotNull("RequestFinishedInfo.getMetrics() must not be null", metrics);
+        // Check old (deprecated) timing metrics
+        assertTrue(metrics.getTotalTimeMs() > 0);
+        assertTrue(metrics.getTotalTimeMs() >= metrics.getTtfbMs());
+        // Check new timing metrics
+        checkTimingMetrics(metrics, startTime, endTime);
+        assertNull(metrics.getPushStart());
+        assertNull(metrics.getPushEnd());
+        // Check data use metrics
+        assertTrue(metrics.getSentBytesCount() > 0);
+        assertTrue(metrics.getReceivedBytesCount() > 0);
     }
 }

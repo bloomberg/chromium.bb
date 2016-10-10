@@ -229,13 +229,9 @@ public class QuicTest extends CronetTestBase {
         assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
 
         RequestFinishedInfo requestInfo = requestFinishedListener.getRequestInfo();
-        assertNotNull(requestInfo);
-        RequestFinishedInfo.Metrics metrics = requestInfo.getMetrics();
-        assertNotNull(metrics);
-
-        MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
-        MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, true);
-        assertTrue(metrics.getSentBytesCount() > 0);
+        MetricsTestUtil.checkRequestFinishedInfo(requestInfo, quicURL, startTime, endTime);
+        assertEquals(RequestFinishedInfo.SUCCEEDED, requestInfo.getFinishedReason());
+        MetricsTestUtil.checkHasConnectTiming(requestInfo.getMetrics(), startTime, endTime, true);
 
         // Second request should use the same connection and not have ConnectTiming numbers
         callback = new TestUrlRequestCallback();
@@ -252,13 +248,9 @@ public class QuicTest extends CronetTestBase {
         assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
 
         requestInfo = requestFinishedListener.getRequestInfo();
-        assertNotNull(requestInfo);
-        metrics = requestInfo.getMetrics();
-        assertNotNull(metrics);
-
-        MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
-        MetricsTestUtil.checkNoConnectTiming(metrics);
-        assertTrue(metrics.getSentBytesCount() > 0);
+        MetricsTestUtil.checkRequestFinishedInfo(requestInfo, quicURL, startTime, endTime);
+        assertEquals(RequestFinishedInfo.SUCCEEDED, requestInfo.getFinishedReason());
+        MetricsTestUtil.checkNoConnectTiming(requestInfo.getMetrics());
 
         mTestFramework.mCronetEngine.shutdown();
     }

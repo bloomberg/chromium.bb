@@ -94,26 +94,11 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         Date endTime = new Date();
 
         RequestFinishedInfo requestInfo = requestFinishedListener.getRequestInfo();
-        assertNotNull("RequestFinishedInfo.Listener must be called", requestInfo);
-        assertEquals(mUrl, requestInfo.getUrl());
-        assertNotNull(requestInfo.getResponseInfo());
+        MetricsTestUtil.checkRequestFinishedInfo(requestInfo, mUrl, startTime, endTime);
+        assertEquals(RequestFinishedInfo.SUCCEEDED, requestInfo.getFinishedReason());
+        MetricsTestUtil.checkHasConnectTiming(requestInfo.getMetrics(), startTime, endTime, false);
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(requestInfo.getAnnotations()));
-        assertEquals(RequestFinishedInfo.SUCCEEDED, requestInfo.getFinishedReason());
-        assertNull(requestInfo.getException());
-        RequestFinishedInfo.Metrics metrics = requestInfo.getMetrics();
-        assertNotNull("RequestFinishedInfo.getMetrics() must not be null", metrics);
-        // Check old (deprecated) timing metrics
-        assertTrue(metrics.getTotalTimeMs() > 0);
-        assertTrue(metrics.getTotalTimeMs() >= metrics.getTtfbMs());
-        // Check new timing metrics
-        MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
-        MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, false);
-        assertNull(metrics.getPushStart());
-        assertNull(metrics.getPushEnd());
-        // Check data use metrics
-        assertTrue(metrics.getSentBytesCount() > 0);
-        assertTrue(metrics.getReceivedBytesCount() > 0);
         mTestFramework.mCronetEngine.shutdown();
     }
 
@@ -142,21 +127,11 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         Date endTime = new Date();
 
         RequestFinishedInfo requestInfo = requestFinishedListener.getRequestInfo();
-        assertNotNull("RequestFinishedInfo.Listener must be called", requestInfo);
-        assertEquals(mUrl, requestInfo.getUrl());
-        assertNotNull(requestInfo.getResponseInfo());
+        MetricsTestUtil.checkRequestFinishedInfo(requestInfo, mUrl, startTime, endTime);
+        assertEquals(RequestFinishedInfo.SUCCEEDED, requestInfo.getFinishedReason());
+        MetricsTestUtil.checkHasConnectTiming(requestInfo.getMetrics(), startTime, endTime, false);
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(requestInfo.getAnnotations()));
-        assertEquals(RequestFinishedInfo.SUCCEEDED, requestInfo.getFinishedReason());
-        assertNull(requestInfo.getException());
-        RequestFinishedInfo.Metrics metrics = requestInfo.getMetrics();
-        assertNotNull("RequestFinishedInfo.getMetrics() must not be null", metrics);
-        assertTrue(metrics.getTotalTimeMs() > 0);
-        assertTrue(metrics.getTotalTimeMs() >= metrics.getTtfbMs());
-        MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
-        MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, false);
-        assertTrue(metrics.getSentBytesCount() > 0);
-        assertTrue(metrics.getReceivedBytesCount() > 0);
         mTestFramework.mCronetEngine.shutdown();
     }
 
@@ -185,36 +160,21 @@ public class RequestFinishedInfoTest extends CronetTestBase {
 
         RequestFinishedInfo firstRequestInfo = firstListener.getRequestInfo();
         RequestFinishedInfo secondRequestInfo = secondListener.getRequestInfo();
-        assertNotNull("First RequestFinishedInfo.Listener must be called", firstRequestInfo);
-        assertNotNull("Second RequestFinishedInfo.Listener must be called", secondRequestInfo);
-        assertEquals(mUrl, firstRequestInfo.getUrl());
-        assertEquals(mUrl, secondRequestInfo.getUrl());
-        assertNotNull(firstRequestInfo.getResponseInfo());
-        assertNotNull(secondRequestInfo.getResponseInfo());
+
+        MetricsTestUtil.checkRequestFinishedInfo(firstRequestInfo, mUrl, startTime, endTime);
+        assertEquals(RequestFinishedInfo.SUCCEEDED, firstRequestInfo.getFinishedReason());
+        MetricsTestUtil.checkHasConnectTiming(
+                firstRequestInfo.getMetrics(), startTime, endTime, false);
+
+        MetricsTestUtil.checkRequestFinishedInfo(secondRequestInfo, mUrl, startTime, endTime);
+        assertEquals(RequestFinishedInfo.SUCCEEDED, secondRequestInfo.getFinishedReason());
+        MetricsTestUtil.checkHasConnectTiming(
+                secondRequestInfo.getMetrics(), startTime, endTime, false);
+
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(firstRequestInfo.getAnnotations()));
         assertEquals(newHashSet("request annotation", this),
                 new HashSet<Object>(secondRequestInfo.getAnnotations()));
-        assertEquals(RequestFinishedInfo.SUCCEEDED, firstRequestInfo.getFinishedReason());
-        assertEquals(RequestFinishedInfo.SUCCEEDED, secondRequestInfo.getFinishedReason());
-        assertNull(firstRequestInfo.getException());
-        assertNull(secondRequestInfo.getException());
-        RequestFinishedInfo.Metrics firstMetrics = firstRequestInfo.getMetrics();
-        assertNotNull("RequestFinishedInfo.getMetrics() must not be null", firstMetrics);
-        assertTrue(firstMetrics.getTotalTimeMs() > 0);
-        assertTrue(firstMetrics.getTotalTimeMs() >= firstMetrics.getTtfbMs());
-        MetricsTestUtil.checkTimingMetrics(firstMetrics, startTime, endTime);
-        MetricsTestUtil.checkHasConnectTiming(firstMetrics, startTime, endTime, false);
-        assertTrue(firstMetrics.getSentBytesCount() > 0);
-        assertTrue(firstMetrics.getReceivedBytesCount() > 0);
-        RequestFinishedInfo.Metrics secondMetrics = secondRequestInfo.getMetrics();
-        assertNotNull("RequestFinishedInfo.getMetrics() must not be null", secondMetrics);
-        assertTrue(secondMetrics.getTotalTimeMs() > 0);
-        assertTrue(secondMetrics.getTotalTimeMs() >= secondMetrics.getTtfbMs());
-        MetricsTestUtil.checkTimingMetrics(secondMetrics, startTime, endTime);
-        MetricsTestUtil.checkHasConnectTiming(secondMetrics, startTime, endTime, false);
-        assertTrue(secondMetrics.getSentBytesCount() > 0);
-        assertTrue(secondMetrics.getReceivedBytesCount() > 0);
         mTestFramework.mCronetEngine.shutdown();
     }
 
@@ -319,24 +279,12 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         Date endTime = new Date();
 
         RequestFinishedInfo requestInfo = requestFinishedListener.getRequestInfo();
-        assertNotNull("RequestFinishedInfo.Listener must be called", requestInfo);
-        assertEquals(mUrl, requestInfo.getUrl());
-        assertNotNull(requestInfo.getResponseInfo());
+        MetricsTestUtil.checkRequestFinishedInfo(requestInfo, mUrl, startTime, endTime);
+        assertEquals(RequestFinishedInfo.CANCELED, requestInfo.getFinishedReason());
+        MetricsTestUtil.checkHasConnectTiming(requestInfo.getMetrics(), startTime, endTime, false);
+
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(requestInfo.getAnnotations()));
-        RequestFinishedInfo.Metrics metrics = requestInfo.getMetrics();
-        assertNotNull("RequestFinishedInfo.getMetrics() must not be null", metrics);
-        // Check old (deprecated) timing metrics
-        assertTrue(metrics.getTotalTimeMs() > 0);
-        assertTrue(metrics.getTotalTimeMs() >= metrics.getTtfbMs());
-        // Check new timing metrics
-        MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
-        MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, false);
-        assertNull(metrics.getPushStart());
-        assertNull(metrics.getPushEnd());
-        // Check data use metrics
-        assertTrue(metrics.getSentBytesCount() > 0);
-        assertTrue(metrics.getReceivedBytesCount() > 0);
         mTestFramework.mCronetEngine.shutdown();
     }
 

@@ -113,17 +113,11 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
         requestFinishedListener.blockUntilDone();
         Date endTime = new Date();
         RequestFinishedInfo finishedInfo = requestFinishedListener.getRequestInfo();
-        assertNotNull("RequestFinishedInfo.Listener must be called", finishedInfo);
-        RequestFinishedInfo.Metrics metrics = finishedInfo.getMetrics();
-        assertNotNull(metrics);
-        MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
-        MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, true);
-        assertTrue(metrics.getSentBytesCount() > 0);
-        assertTrue(metrics.getReceivedBytesCount() > 0);
-        assertEquals(quicURL, finishedInfo.getUrl());
+        MetricsTestUtil.checkRequestFinishedInfo(finishedInfo, quicURL, startTime, endTime);
+        assertEquals(RequestFinishedInfo.SUCCEEDED, finishedInfo.getFinishedReason());
+        MetricsTestUtil.checkHasConnectTiming(finishedInfo.getMetrics(), startTime, endTime, true);
         assertEquals(newHashSet("request annotation", this),
                 new HashSet<Object>(finishedInfo.getAnnotations()));
-        assertNotNull(finishedInfo.getResponseInfo());
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("This is a simple text file served by QUIC.\n", callback.mResponseAsString);
         assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
