@@ -147,7 +147,7 @@ const CGFloat kPatternHorizontalOffset = -5;
   // Per http://crbug.com/73779 and http://crbug.com/75223, we need this to
   // properly activate windows if Chrome is not the active application.
   [[controller window] makeKeyAndOrderFront:controller];
-  [NSApp activateIgnoringOtherApps:NO];
+  [NSApp activateIgnoringOtherApps:YES];
 }
 
 @end
