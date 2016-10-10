@@ -59,6 +59,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         suspend_is_pending_(false),
         suspending_from_dark_resume_(false),
         num_pending_suspend_readiness_callbacks_(0),
+        notifying_observers_about_suspend_imminent_(false),
         last_is_projecting_(false),
         weak_ptr_factory_(this) {}
 
@@ -548,10 +549,17 @@ class PowerManagerClientImpl : public PowerManagerClient {
     suspending_from_dark_resume_ = in_dark_resume;
     num_pending_suspend_readiness_callbacks_ = 0;
 
+    // Record the fact that observers are being notified to ensure that we don't
+    // report readiness prematurely if one of them calls
+    // GetSuspendReadinessCallback() and then runs the callback synchonously
+    // instead of asynchronously.
+    notifying_observers_about_suspend_imminent_ = true;
     if (suspending_from_dark_resume_)
       FOR_EACH_OBSERVER(Observer, observers_, DarkSuspendImminent());
     else
       FOR_EACH_OBSERVER(Observer, observers_, SuspendImminent());
+    notifying_observers_about_suspend_imminent_ = false;
+
     base::PowerMonitorDeviceSource::HandleSystemSuspending();
     MaybeReportSuspendReadiness();
   }
@@ -748,6 +756,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
   void MaybeReportSuspendReadiness() {
     CHECK(suspend_is_pending_);
 
+    // Avoid reporting suspend readiness if some observers have yet to be
+    // notified about the pending attempt.
+    if (notifying_observers_about_suspend_imminent_)
+      return;
+
     if (num_pending_suspend_readiness_callbacks_ > 0) {
       // TODO(derat): Remove after http://crbug.com/648580 is fixed.
       VLOG(1) << "Not reporting suspend readiness; waiting for "
@@ -832,6 +845,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // GetSuspendReadinessCallback() during the currently-pending suspend
   // attempt but have not yet been called.
   int num_pending_suspend_readiness_callbacks_;
+
+  // Inspected by MaybeReportSuspendReadiness() to avoid prematurely notifying
+  // powerd about suspend readiness while |observers_|' SuspendImminent()
+  // methods are being called by HandleSuspendImminent().
+  bool notifying_observers_about_suspend_imminent_;
 
   // Last state passed to SetIsProjecting().
   bool last_is_projecting_;

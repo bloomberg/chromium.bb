@@ -96,6 +96,9 @@ class TestObserver : public PowerManagerClient::Observer {
   void set_take_suspend_readiness_callback(bool take_callback) {
     take_suspend_readiness_callback_ = take_callback;
   }
+  void set_run_suspend_readiness_callback_immediately(bool run) {
+    run_suspend_readiness_callback_immediately_ = run;
+  }
 
   // Runs |suspend_readiness_callback_|.
   bool RunSuspendReadinessCallback() WARN_UNUSED_RESULT {
@@ -113,6 +116,8 @@ class TestObserver : public PowerManagerClient::Observer {
     num_suspend_imminent_++;
     if (take_suspend_readiness_callback_)
       suspend_readiness_callback_ = client_->GetSuspendReadinessCallback();
+    if (run_suspend_readiness_callback_immediately_)
+      CHECK(RunSuspendReadinessCallback());
   }
   void SuspendDone(const base::TimeDelta& sleep_duration) override {
     num_suspend_done_++;
@@ -121,6 +126,8 @@ class TestObserver : public PowerManagerClient::Observer {
     num_dark_suspend_imminent_++;
     if (take_suspend_readiness_callback_)
       suspend_readiness_callback_ = client_->GetSuspendReadinessCallback();
+    if (run_suspend_readiness_callback_immediately_)
+      CHECK(RunSuspendReadinessCallback());
   }
 
  private:
@@ -135,6 +142,11 @@ class TestObserver : public PowerManagerClient::Observer {
   // Should SuspendImminent() and DarkSuspendImminent() call |client_|'s
   // GetSuspendReadinessCallback() method?
   bool take_suspend_readiness_callback_ = false;
+
+  // Should SuspendImminent() and DarkSuspendImminent() run the suspend
+  // readiness callback synchronously after taking it? Only has an effect if
+  // |take_suspend_readiness_callback_| is true.
+  bool run_suspend_readiness_callback_immediately_ = false;
 
   // Callback returned by |client_|'s GetSuspendReadinessCallback() method.
   base::Closure suspend_readiness_callback_;
@@ -518,6 +530,40 @@ TEST_F(PowerManagerClientTest, DarkSuspendImminentWhileCallbackPending) {
   EXPECT_EQ(1, observer.num_suspend_done());
   regular_callback.Run();
   dark_callback.Run();
+}
+
+// Tests that PowerManagerClient handles a single observer that requests a
+// suspend-readiness callback and then runs it synchronously from within
+// SuspendImminent() instead of running it asynchronously:
+// http://crosbug.com/p/58295
+TEST_F(PowerManagerClientTest, SyncCallbackWithSingleObserver) {
+  TestObserver observer(client_.get());
+  observer.set_take_suspend_readiness_callback(true);
+  observer.set_run_suspend_readiness_callback_immediately(true);
+
+  const int kSuspendId = 1;
+  ExpectSuspendReadiness(kHandleSuspendReadiness, kSuspendId, kSuspendDelayId);
+  EmitSuspendImminentSignal(kSuspendImminent, kSuspendId);
+  EmitSuspendDoneSignal(kSuspendId);
+}
+
+// Tests the case where one observer reports suspend readiness by running its
+// callback before a second observer even gets notified about the suspend
+// attempt. We shouldn't report suspend readiness until the second observer has
+// been notified and confirmed readiness.
+TEST_F(PowerManagerClientTest, SyncCallbackWithMultipleObservers) {
+  TestObserver observer1(client_.get());
+  observer1.set_take_suspend_readiness_callback(true);
+  observer1.set_run_suspend_readiness_callback_immediately(true);
+
+  TestObserver observer2(client_.get());
+  observer2.set_take_suspend_readiness_callback(true);
+
+  const int kSuspendId = 1;
+  EmitSuspendImminentSignal(kSuspendImminent, kSuspendId);
+  ExpectSuspendReadiness(kHandleSuspendReadiness, kSuspendId, kSuspendDelayId);
+  EXPECT_TRUE(observer2.RunSuspendReadinessCallback());
+  EmitSuspendDoneSignal(kSuspendId);
 }
 
 }  // namespace chromeos
