@@ -40,7 +40,9 @@ class RequestThrottler {
  public:
   // Enumeration listing all current applications of the request counter.
   enum class RequestType {
-    CONTENT_SUGGESTION_FETCHER,
+    CONTENT_SUGGESTION_FETCHER_RARE_NTP_USER,
+    CONTENT_SUGGESTION_FETCHER_ACTIVE_NTP_USER,
+    CONTENT_SUGGESTION_FETCHER_ACTIVE_SUGGESTIONS_CONSUMER,
     CONTENT_SUGGESTION_THUMBNAIL,
   };
 

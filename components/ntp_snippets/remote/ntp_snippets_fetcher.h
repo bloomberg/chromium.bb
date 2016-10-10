@@ -33,6 +33,8 @@ class Value;
 
 namespace ntp_snippets {
 
+class UserClassifier;
+
 // Fetches snippet data for the NTP from the server.
 class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
                            public OAuth2TokenService::Observer,
@@ -95,7 +97,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
       CategoryFactory* category_factory,
       translate::LanguageModel* language_model,
       const ParseJSONCallback& parse_json_callback,
-      const std::string& api_key);
+      const std::string& api_key,
+      const UserClassifier* user_classifier);
   ~NTPSnippetsFetcher() override;
 
   // Set a callback that is called when a new set of snippets are downloaded,
@@ -151,6 +154,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestAuthenticated);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestUnauthenticated);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestExcludedIds);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestNoUserClass);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest,
                            BuildRequestWithTwoLanguages);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest,
@@ -172,6 +176,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     std::set<std::string> excluded_ids;
     int count_to_fetch;
     bool interactive_request;
+    std::string user_class;
     translate::LanguageModel::LanguageInfo ui_language;
     translate::LanguageModel::LanguageInfo other_top_language;
 
@@ -210,6 +215,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   void FetchFinished(OptionalFetchedCategories fetched_categories,
                      FetchResult result,
                      const std::string& extra_message);
+
+  bool DemandQuotaForRequest(bool interactive_request);
 
   // Authorization for signed-in users.
   SigninManagerBase* signin_manager_;
@@ -264,8 +271,13 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // Allow for an injectable tick clock for testing.
   std::unique_ptr<base::TickClock> tick_clock_;
 
-  // Request throttler for limiting requests.
-  RequestThrottler request_throttler_;
+  // Classifier that tells us how active the user is. Not owned.
+  const UserClassifier* user_classifier_;
+
+  // Request throttlers for limiting requests for different classes of users.
+  RequestThrottler request_throttler_rare_ntp_user_;
+  RequestThrottler request_throttler_active_ntp_user_;
+  RequestThrottler request_throttler_active_suggestions_consumer_;
 
   // When a token request gets canceled, we want to retry once.
   bool oauth_token_retried_;

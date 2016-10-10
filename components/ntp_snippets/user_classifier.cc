@@ -267,6 +267,10 @@ double UserClassifier::GetEstimatedAvgTime(Metric metric) const {
 }
 
 UserClassifier::UserClass UserClassifier::GetUserClass() const {
+  // The pref_service_ can be null in tests.
+  if (!pref_service_)
+    return UserClass::ACTIVE_NTP_USER;
+
   if (GetEstimatedAvgTime(Metric::NTP_OPENED) >=
       rare_user_opens_ntp_at_most_once_per_hours_) {
     return UserClass::RARE_NTP_USER;

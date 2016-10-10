@@ -5,6 +5,7 @@
 #include "components/ntp_snippets/remote/request_throttler.h"
 
 #include <climits>
+#include <set>
 #include <vector>
 
 #include "base/metrics/histogram.h"
@@ -50,11 +51,22 @@ struct RequestThrottler::RequestTypeInfo {
 // When adding a new type here, extend also the "RequestThrottlerTypes"
 // <histogram_suffixes> in histograms.xml with the |name| string.
 const RequestThrottler::RequestTypeInfo RequestThrottler::kRequestTypeInfo[] = {
-    // RequestCounter::RequestType::CONTENT_SUGGESTION_FETCHER,
-    {"SuggestionFetcher", prefs::kSnippetFetcherRequestCount,
+    // The following three types share the same prefs. They differ in quota
+    // values (and UMA histograms).
+    // RequestCounter::RequestType::CONTENT_SUGGESTION_FETCHER_RARE_NTP_USER,
+    {"SuggestionFetcherRareNTPUser", prefs::kSnippetFetcherRequestCount,
      prefs::kSnippetFetcherInteractiveRequestCount,
-     prefs::kSnippetFetcherRequestsDay, 50, kUnlimitedQuota},
-     // RequestCounter::RequestType::CONTENT_SUGGESTION_THUMBNAIL,
+     prefs::kSnippetFetcherRequestsDay, 5, kUnlimitedQuota},
+    // RequestCounter::RequestType::CONTENT_SUGGESTION_FETCHER_ACTIVE_NTP_USER,
+    {"SuggestionFetcherActiveNTPUser", prefs::kSnippetFetcherRequestCount,
+     prefs::kSnippetFetcherInteractiveRequestCount,
+     prefs::kSnippetFetcherRequestsDay, 20, kUnlimitedQuota},
+    // RequestCounter::RequestType::CONTENT_SUGGESTION_FETCHER_ACTIVE_SUGGESTIONS_CONSUMER,
+    {"SuggestionFetcherActiveSuggestionsConsumer",
+     prefs::kSnippetFetcherRequestCount,
+     prefs::kSnippetFetcherInteractiveRequestCount,
+     prefs::kSnippetFetcherRequestsDay, 20, kUnlimitedQuota},
+    // RequestCounter::RequestType::CONTENT_SUGGESTION_THUMBNAIL,
     {"SuggestionThumbnailFetcher", prefs::kSnippetThumbnailsRequestCount,
      prefs::kSnippetThumbnailsInteractiveRequestCount,
      prefs::kSnippetThumbnailsRequestsDay, kUnlimitedQuota, kUnlimitedQuota}};
@@ -107,11 +119,17 @@ RequestThrottler::RequestThrottler(PrefService* pref_service, RequestType type)
 
 // static
 void RequestThrottler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  // Collect all pref keys in a set to make sure we register each key exactly
+  // once, even if they repeat.
+  std::set<std::string> keys_to_register;
   for (const RequestTypeInfo& info : kRequestTypeInfo) {
-    registry->RegisterIntegerPref(info.count_pref, 0);
-    registry->RegisterIntegerPref(info.interactive_count_pref, 0);
-    registry->RegisterIntegerPref(info.day_pref, 0);
+    keys_to_register.insert(info.day_pref);
+    keys_to_register.insert(info.count_pref);
+    keys_to_register.insert(info.interactive_count_pref);
   }
+
+  for (const std::string& key : keys_to_register)
+    registry->RegisterIntegerPref(key, 0);
 }
 
 bool RequestThrottler::DemandQuotaForRequest(bool interactive_request) {

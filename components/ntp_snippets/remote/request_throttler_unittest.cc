@@ -24,8 +24,8 @@ class RequestThrottlerTest : public testing::Test {
     RequestThrottler::RegisterProfilePrefs(test_prefs_.registry());
     // Use any arbitrary RequestType for this unittest.
     throttler_.reset(new RequestThrottler(
-        &test_prefs_,
-        RequestThrottler::RequestType::CONTENT_SUGGESTION_FETCHER));
+        &test_prefs_, RequestThrottler::RequestType::
+                          CONTENT_SUGGESTION_FETCHER_ACTIVE_NTP_USER));
     throttler_->quota_ = kCounterQuota;
   }
 

@@ -18,6 +18,7 @@
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -163,13 +164,15 @@ class NTPSnippetsFetcherTest : public testing::Test {
         test_lang_("en-US"),
         test_url_(gurl) {
     RequestThrottler::RegisterProfilePrefs(pref_service_->registry());
+    UserClassifier::RegisterProfilePrefs(pref_service_->registry());
+    user_classifier_ = base::MakeUnique<UserClassifier>(pref_service_.get());
 
     snippets_fetcher_ = base::MakeUnique<NTPSnippetsFetcher>(
         fake_signin_manager_.get(), fake_token_service_.get(),
         scoped_refptr<net::TestURLRequestContextGetter>(
             new net::TestURLRequestContextGetter(mock_task_runner_.get())),
         pref_service_.get(), &category_factory_, nullptr,
-        base::Bind(&ParseJsonDelayed), kAPIKey);
+        base::Bind(&ParseJsonDelayed), kAPIKey, user_classifier_.get());
 
     snippets_fetcher_->SetCallback(
         base::Bind(&MockSnippetsAvailableCallback::WrappedRun,
@@ -222,6 +225,7 @@ class NTPSnippetsFetcherTest : public testing::Test {
   std::unique_ptr<OAuth2TokenService> fake_token_service_;
   std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<UserClassifier> user_classifier_;
   CategoryFactory category_factory_;
   MockSnippetsAvailableCallback mock_callback_;
   const std::string test_lang_;
@@ -250,6 +254,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
   params.excluded_ids = {"1234567890"};
   params.count_to_fetch = 25;
   params.interactive_request = false;
+  params.user_class = "ACTIVE_NTP_USER";
   params.ui_language.frequency = 0.0f;
   params.other_top_language.frequency = 0.0f;
 
@@ -303,7 +308,8 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
                          "  ],"
                          "  \"excludedSuggestionIds\": ["
                          "    \"1234567890\""
-                         "  ]"
+                         "  ],"
+                         "  \"userActivenessClass\": \"ACTIVE_NTP_USER\""
                          "}"));
 }
 
@@ -314,6 +320,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestUnauthenticated) {
   params.count_to_fetch = 10;
   params.excluded_ids = {};
   params.interactive_request = true;
+  params.user_class = "ACTIVE_NTP_USER";
   params.ui_language.frequency = 0.0f;
   params.other_top_language.frequency = 0.0f;
 
@@ -354,7 +361,8 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestUnauthenticated) {
               EqualsJSON("{"
                          "  \"regularlyVisitedHostNames\": [],"
                          "  \"priority\": \"USER_ACTION\","
-                         "  \"excludedSuggestionIds\": []"
+                         "  \"excludedSuggestionIds\": [],"
+                         "  \"userActivenessClass\": \"ACTIVE_NTP_USER\""
                          "}"));
 }
 
@@ -367,6 +375,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestExcludedIds) {
   for (int i = 0; i < 200; ++i) {
     params.excluded_ids.insert(base::StringPrintf("%03d", i));
   }
+  params.user_class = "ACTIVE_NTP_USER";
   params.ui_language.frequency = 0.0f;
   params.other_top_language.frequency = 0.0f;
 
@@ -398,7 +407,26 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestExcludedIds) {
                          "    \"095\", \"096\", \"097\", \"098\", \"099\""
                          // Truncated to 100 entries. Currently, they happen to
                          // be those lexically first.
-                         "  ]"
+                         "  ],"
+                         "  \"userActivenessClass\": \"ACTIVE_NTP_USER\""
+                         "}"));
+}
+
+TEST_F(NTPSnippetsFetcherTest, BuildRequestNoUserClass) {
+  NTPSnippetsFetcher::RequestParams params;
+  params.only_return_personalized_results = false;
+  params.host_restricts = {};
+  params.count_to_fetch = 10;
+  params.interactive_request = false;
+  params.ui_language.frequency = 0.0f;
+  params.other_top_language.frequency = 0.0f;
+
+  params.fetch_api = NTPSnippetsFetcher::CHROME_CONTENT_SUGGESTIONS_API;
+  EXPECT_THAT(params.BuildRequest(),
+              EqualsJSON("{"
+                         "  \"regularlyVisitedHostNames\": [],"
+                         "  \"priority\": \"BACKGROUND_PREFETCH\","
+                         "  \"excludedSuggestionIds\": []"
                          "}"));
 }
 
@@ -419,7 +447,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestWithTwoLanguages) {
                          "  \"regularlyVisitedHostNames\": [],"
                          "  \"priority\": \"USER_ACTION\","
                          "  \"excludedSuggestionIds\": [],"
-                         "  \"top_languages\": ["
+                         "  \"topLanguages\": ["
                          "    {"
                          "      \"language\" : \"en\","
                          "      \"frequency\" : 0.5"
@@ -448,7 +476,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestWithUILanguageOnly) {
                          "  \"regularlyVisitedHostNames\": [],"
                          "  \"priority\": \"USER_ACTION\","
                          "  \"excludedSuggestionIds\": [],"
-                         "  \"top_languages\": [{"
+                         "  \"topLanguages\": [{"
                          "    \"language\" : \"en\","
                          "    \"frequency\" : 0.5"
                          "  }]"
@@ -471,7 +499,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestWithOtherLanguageOnly) {
                          "  \"regularlyVisitedHostNames\": [],"
                          "  \"priority\": \"USER_ACTION\","
                          "  \"excludedSuggestionIds\": [],"
-                         "  \"top_languages\": [{"
+                         "  \"topLanguages\": [{"
                          "    \"language\" : \"de\","
                          "    \"frequency\" : 0.5"
                          "  }]"

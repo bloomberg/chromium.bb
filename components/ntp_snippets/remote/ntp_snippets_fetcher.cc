@@ -24,6 +24,7 @@
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
+#include "components/ntp_snippets/user_classifier.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -69,8 +70,12 @@ const int kMaxExcludedIds = 100;
 
 // Variation parameter for sending LanguageModel info to the server.
 const char kSendTopLanguagesName[] = "send_top_languages";
-const char kSendTopLanguagesEnabled[] = "true";
-const char kSendTopLanguagesDisabled[] = "false";
+
+// Variation parameter for sending UserClassifier info to the server.
+const char kSendUserClassName[] = "send_user_class";
+
+const char kBooleanParameterEnabled[] = "true";
+const char kBooleanParameterDisabled[] = "false";
 
 std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
   switch (result) {
@@ -124,17 +129,27 @@ std::string GetFetchEndpoint() {
   return endpoint.empty() ? kChromeReaderServer : endpoint;
 }
 
-bool IsSendingTopLanguagesEnabled() {
-  std::string send_top_languages = variations::GetVariationParamValueByFeature(
-        ntp_snippets::kArticleSuggestionsFeature, kSendTopLanguagesName);
-  if (send_top_languages == kSendTopLanguagesEnabled)
+bool IsBooleanParameterEnabled(const std::string& param_name,
+                               bool default_value) {
+  std::string param_value = variations::GetVariationParamValueByFeature(
+        ntp_snippets::kArticleSuggestionsFeature, param_name);
+  if (param_value == kBooleanParameterEnabled)
     return true;
-  if (!send_top_languages.empty() &&
-      send_top_languages != kSendTopLanguagesDisabled) {
-    LOG(WARNING) << "Invalid value \"" << send_top_languages
-                 << "\" for variation parameter " << kSendTopLanguagesName;
+  if (param_value == kBooleanParameterDisabled)
+    return false;
+  if (!param_value.empty()) {
+    LOG(WARNING) << "Invalid value \"" << param_value
+                 << "\" for variation parameter " << param_name;
   }
-  return false;
+  return default_value;
+}
+
+bool IsSendingTopLanguagesEnabled() {
+  return IsBooleanParameterEnabled(kSendTopLanguagesName, false);
+}
+
+bool IsSendingUserClassEnabled() {
+  return IsBooleanParameterEnabled(kSendUserClassName, false);
 }
 
 bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
@@ -212,6 +227,19 @@ void AppendLanguageInfoToList(base::ListValue* list,
   list->Append(std::move(lang));
 }
 
+std::string GetUserClassString(UserClassifier::UserClass user_class) {
+  switch (user_class) {
+    case UserClassifier::UserClass::RARE_NTP_USER:
+      return "RARE_NTP_USER";
+    case UserClassifier::UserClass::ACTIVE_NTP_USER:
+      return "ACTIVE_NTP_USER";
+    case UserClassifier::UserClass::ACTIVE_SUGGESTIONS_CONSUMER:
+      return "ACTIVE_SUGGESTIONS_CONSUMER";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 }  // namespace
 
 NTPSnippetsFetcher::FetchedCategory::FetchedCategory(Category c)
@@ -231,7 +259,8 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
     CategoryFactory* category_factory,
     LanguageModel* language_model,
     const ParseJSONCallback& parse_json_callback,
-    const std::string& api_key)
+    const std::string& api_key,
+    const UserClassifier* user_classifier)
     : OAuth2TokenService::Consumer("ntp_snippets"),
       signin_manager_(signin_manager),
       token_service_(token_service),
@@ -248,9 +277,19 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
       api_key_(api_key),
       interactive_request_(false),
       tick_clock_(new base::DefaultTickClock()),
-      request_throttler_(
+      user_classifier_(user_classifier),
+      request_throttler_rare_ntp_user_(
           pref_service,
-          RequestThrottler::RequestType::CONTENT_SUGGESTION_FETCHER),
+          RequestThrottler::RequestType::
+              CONTENT_SUGGESTION_FETCHER_RARE_NTP_USER),
+      request_throttler_active_ntp_user_(
+          pref_service,
+          RequestThrottler::RequestType::
+              CONTENT_SUGGESTION_FETCHER_ACTIVE_NTP_USER),
+      request_throttler_active_suggestions_consumer_(
+          pref_service,
+          RequestThrottler::RequestType::
+              CONTENT_SUGGESTION_FETCHER_ACTIVE_SUGGESTIONS_CONSUMER),
       oauth_token_retried_(false),
       weak_ptr_factory_(this) {
   // Parse the variation parameters and set the defaults if missing.
@@ -285,7 +324,7 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
     const std::set<std::string>& excluded_ids,
     int count,
     bool interactive_request) {
-  if (!request_throttler_.DemandQuotaForRequest(interactive_request)) {
+  if (!DemandQuotaForRequest(interactive_request)) {
     FetchFinished(OptionalFetchedCategories(),
                   interactive_request
                       ? FetchResult::INTERACTIVE_QUOTA_ERROR
@@ -329,7 +368,8 @@ NTPSnippetsFetcher::RequestParams::RequestParams()
       user_locale(),
       host_restricts(),
       count_to_fetch(),
-      interactive_request() {}
+      interactive_request(),
+      user_class() {}
 
 NTPSnippetsFetcher::RequestParams::~RequestParams() = default;
 
@@ -405,6 +445,9 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
       }
       request->Set("excludedSuggestionIds", std::move(excluded));
 
+      if (!user_class.empty())
+        request->SetString("userActivenessClass", user_class);
+
       if (ui_language.frequency == 0 && other_top_language.frequency == 0)
         break;
 
@@ -413,7 +456,7 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
         AppendLanguageInfoToList(language_list.get(), ui_language);
       if (other_top_language.frequency > 0)
         AppendLanguageInfoToList(language_list.get(), other_top_language);
-      request->Set("top_languages", std::move(language_list));
+      request->Set("topLanguages", std::move(language_list));
 
       // TODO(sfiera): support authentication and personalization
       // TODO(sfiera): support count_to_fetch
@@ -475,6 +518,10 @@ void NTPSnippetsFetcher::SetUpCommonFetchingParameters(
   params->excluded_ids = excluded_ids_;
   params->count_to_fetch = count_to_fetch_;
   params->interactive_request = interactive_request_;
+
+  if (IsSendingUserClassEnabled())
+    params->user_class = GetUserClassString(user_classifier_->GetUserClass());
+
   // TODO(jkrcal): add the initializers into the struct and remove it from here
   // and from the unit-tests (building the request).
   params->ui_language.frequency = 0;
@@ -719,6 +766,22 @@ void NTPSnippetsFetcher::FetchFinished(
   DVLOG(1) << "Fetch finished: " << last_status_;
   if (!snippets_available_callback_.is_null())
     snippets_available_callback_.Run(std::move(fetched_categories));
+}
+
+bool NTPSnippetsFetcher::DemandQuotaForRequest(bool interactive_request) {
+  switch (user_classifier_->GetUserClass()) {
+    case UserClassifier::UserClass::RARE_NTP_USER:
+      return request_throttler_rare_ntp_user_.DemandQuotaForRequest(
+          interactive_request);
+    case UserClassifier::UserClass::ACTIVE_NTP_USER:
+      return request_throttler_active_ntp_user_.DemandQuotaForRequest(
+          interactive_request);
+    case UserClassifier::UserClass::ACTIVE_SUGGESTIONS_CONSUMER:
+      return request_throttler_active_suggestions_consumer_
+          .DemandQuotaForRequest(interactive_request);
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace ntp_snippets

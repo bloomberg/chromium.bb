@@ -160,7 +160,8 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
                 service->category_factory(), nullptr, base::Bind(&ParseJson),
                 GetChannel() == version_info::Channel::STABLE
                     ? google_apis::GetAPIKey()
-                    : google_apis::GetNonStableAPIKey()),
+                    : google_apis::GetNonStableAPIKey(),
+                service->user_classifier()),
             base::MakeUnique<ImageFetcherImpl>(
                 request_context.get(), web::WebThread::GetBlockingPool()),
             CreateIOSImageDecoder(task_runner),
