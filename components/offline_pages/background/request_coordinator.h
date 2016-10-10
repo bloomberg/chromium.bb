@@ -6,6 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_BACKGROUND_REQUEST_COORDINATOR_H_
 
 #include <memory>
+#include <set>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -347,6 +348,9 @@ class RequestCoordinator : public KeyedService,
   Offliner::RequestStatus last_offlining_status_;
   // Class to choose which request to schedule next
   std::unique_ptr<RequestPicker> picker_;
+  // A set of request_ids that we are holding off until the download manager is
+  // done with them.
+  std::set<int64_t> disabled_requests_;
   // Calling this returns to the scheduler across the JNI bridge.
   base::Callback<void(bool)> scheduler_callback_;
   // Logger to record events.

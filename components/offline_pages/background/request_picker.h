@@ -6,6 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_BACKGROUND_REQUEST_PICKER_H_
 
 #include <memory>
+#include <set>
 
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/background/device_conditions.h"
@@ -35,11 +36,13 @@ class RequestPicker {
   void ChooseNextRequest(
       RequestCoordinator::RequestPickedCallback picked_callback,
       RequestCoordinator::RequestNotPickedCallback not_picked_callback,
-      DeviceConditions* device_conditions);
+      DeviceConditions* device_conditions,
+      const std::set<int64_t>& disabled_requests);
 
  private:
   // Callback for the GetRequest results to be delivered.
   void GetRequestResultCallback(
+      const std::set<int64_t>& disabled_requests,
       RequestQueue::GetRequestsResult result,
       std::vector<std::unique_ptr<SavePageRequest>> results);
 

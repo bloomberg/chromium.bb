@@ -124,6 +124,11 @@ int64_t RequestCoordinator::SavePageLater(const GURL& url,
   offline_pages::SavePageRequest request(id, url, client_id, base::Time::Now(),
                                          user_requested);
 
+  // If the download manager is not done with the request, put it on the
+  // disabled list.
+  if (availability == RequestAvailability::DISABLED_FOR_OFFLINER)
+    disabled_requests_.insert(id);
+
   // Put the request on the request queue.
   queue_->AddRequest(request,
                      base::Bind(&RequestCoordinator::AddRequestResultCallback,
@@ -433,7 +438,8 @@ void RequestCoordinator::TryNextRequest() {
                                         weak_ptr_factory_.GetWeakPtr()),
                              base::Bind(&RequestCoordinator::RequestNotPicked,
                                         weak_ptr_factory_.GetWeakPtr()),
-                             current_conditions_.get());
+                             current_conditions_.get(),
+                             disabled_requests_);
 }
 
 // Called by the request picker when a request has been picked.
@@ -575,7 +581,9 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   }
 }
 
-void RequestCoordinator::EnableForOffliner(int64_t request_id) {}
+void RequestCoordinator::EnableForOffliner(int64_t request_id) {
+    disabled_requests_.erase(request_id);
+}
 
 void RequestCoordinator::MarkRequestCompleted(int64_t request_id) {}
 
