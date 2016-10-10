@@ -909,9 +909,6 @@ public class NewTabPageView extends FrameLayout
         int oldHeight = oldBottom - oldTop;
         int newHeight = bottom - top;
 
-        // Close the Context Menu as it may have moved (https://crbug.com/642688).
-        mManager.closeContextMenu();
-
         if (oldHeight == newHeight && !mTileCountChanged) return;
         mTileCountChanged = false;
 
@@ -1219,6 +1216,9 @@ public class NewTabPageView extends FrameLayout
         // layout pass, which means that the new style will only be visible after layout happens
         // again. We prefer updating here to avoid having to require that additional layout pass.
         mUiConfig.updateDisplayStyle();
+
+        // Close the Context Menu as it may have moved (https://crbug.com/642688).
+        mManager.closeContextMenu();
     }
 
     private int getVerticalScroll() {
