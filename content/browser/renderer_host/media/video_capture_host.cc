@@ -296,11 +296,13 @@ void VideoCaptureHost::DeleteVideoCaptureController(
   if (it == controllers_.end())
     return;
 
-  if (it->second) {
-    media_stream_manager_->video_capture_manager()->StopCaptureForClient(
-        it->second.get(), controller_id, this, on_error);
-  }
+  const base::WeakPtr<VideoCaptureController> controller = it->second;
   controllers_.erase(it);
+  if (!controller)
+    return;
+
+  media_stream_manager_->video_capture_manager()->StopCaptureForClient(
+      controller.get(), controller_id, this, on_error);
 }
 
 }  // namespace content
