@@ -56,15 +56,20 @@ class DirectOutputSurface : public cc::OutputSurface {
   ~DirectOutputSurface() override {}
 
   // cc::OutputSurface implementation.
+  bool BindToClient(cc::OutputSurfaceClient* client) override {
+    return OutputSurface::BindToClient(client);
+  }
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override {
     context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
   }
-  bool BindToClient(cc::OutputSurfaceClient* client) override {
-    if (!OutputSurface::BindToClient(client))
-      return false;
-    return true;
+  void Reshape(const gfx::Size& size,
+               float device_scale_factor,
+               const gfx::ColorSpace& color_space,
+               bool has_alpha) override {
+    context_provider()->ContextGL()->ResizeCHROMIUM(
+        size.width(), size.height(), device_scale_factor, has_alpha);
   }
   void SwapBuffers(cc::OutputSurfaceFrame frame) override {
     DCHECK(context_provider_.get());

@@ -68,26 +68,6 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
   return true;
 }
 
-void OutputSurface::Reshape(const gfx::Size& size,
-                            float scale_factor,
-                            const gfx::ColorSpace& color_space,
-                            bool has_alpha) {
-  device_color_space_ = color_space;
-  if (size == surface_size_ && scale_factor == device_scale_factor_ &&
-      has_alpha == has_alpha_)
-    return;
-
-  surface_size_ = size;
-  device_scale_factor_ = scale_factor;
-  has_alpha_ = has_alpha;
-  if (context_provider_.get()) {
-    context_provider_->ContextGL()->ResizeCHROMIUM(size.width(), size.height(),
-                                                   scale_factor, has_alpha);
-  }
-  if (software_device_)
-    software_device_->Resize(size, scale_factor);
-}
-
 void OutputSurface::PostSwapBuffersComplete() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&OutputSurface::OnSwapBuffersComplete,

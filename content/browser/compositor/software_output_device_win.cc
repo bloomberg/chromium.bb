@@ -114,8 +114,6 @@ void SoftwareOutputDeviceWin::Resize(const gfx::Size& viewport_pixel_size,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!in_paint_);
 
-  scale_factor_ = scale_factor;
-
   if (viewport_pixel_size_ == viewport_pixel_size)
     return;
 

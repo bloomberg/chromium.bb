@@ -46,6 +46,14 @@ void SoftwareBrowserCompositorOutputSurface::BindFramebuffer() {
   NOTREACHED();
 }
 
+void SoftwareBrowserCompositorOutputSurface::Reshape(
+    const gfx::Size& size,
+    float device_scale_factor,
+    const gfx::ColorSpace& color_space,
+    bool has_alpha) {
+  software_device()->Resize(size, device_scale_factor);
+}
+
 void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
     cc::OutputSurfaceFrame frame) {
   base::TimeTicks swap_time = base::TimeTicks::Now();

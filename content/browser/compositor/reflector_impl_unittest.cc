@@ -84,7 +84,6 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
                                        std::move(vsync_manager),
                                        begin_frame_source,
                                        CreateTestValidatorOzone()) {
-    device_scale_factor_ = 1.f;
   }
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
@@ -92,6 +91,10 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override {}
+  void Reshape(const gfx::Size& size,
+               float device_scale_factor,
+               const gfx::ColorSpace& color_space,
+               bool has_alpha) override {}
   void SwapBuffers(cc::OutputSurfaceFrame frame) override {}
   uint32_t GetFramebufferCopyTextureFormat() override { return GL_RGB; }
   bool IsDisplayedAsOverlayPlane() const override { return false; }

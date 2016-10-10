@@ -886,14 +886,14 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
 }
 
 std::unique_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
+    DrawingFrame* frame,
     const gfx::Rect& bounding_rect) {
   std::unique_ptr<ScopedResource> device_background_texture =
       ScopedResource::Create(resource_provider_);
   // CopyTexImage2D fails when called on a texture having immutable storage.
-  device_background_texture->Allocate(bounding_rect.size(),
-                                      ResourceProvider::TEXTURE_HINT_DEFAULT,
-                                      resource_provider_->best_texture_format(),
-                                      output_surface_->device_color_space());
+  device_background_texture->Allocate(
+      bounding_rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      resource_provider_->best_texture_format(), frame->device_color_space);
   {
     ResourceProvider::ScopedWriteLockGL lock(
         resource_provider_, device_background_texture->id(), false);
@@ -1038,7 +1038,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     // RGBA_8888 here is arbitrary and unused.
     Resource tile_resource(tile_quad->resource_id(), tile_quad->texture_size,
                            ResourceFormat::RGBA_8888,
-                           output_surface_->device_color_space());
+                           frame->device_color_space);
     // The projection matrix used by GLRenderer has a flip.  As tile texture
     // inputs are oriented opposite to framebuffer outputs, don't flip via
     // texture coords and let the projection matrix naturallyd o it.
@@ -1144,7 +1144,8 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       // This function allocates a texture, which should contribute to the
       // amount of memory used by render surfaces:
       // LayerTreeHost::CalculateMemoryForRenderSurfaces.
-      params->background_texture = GetBackdropTexture(params->background_rect);
+      params->background_texture =
+          GetBackdropTexture(params->frame, params->background_rect);
 
       if (ShouldApplyBackgroundFilters(quad) && params->background_texture) {
         // Apply the background filters to R, so that it is applied in the
@@ -2398,7 +2399,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
 
   if (lut_texture_location != -1) {
     unsigned int lut_texture = color_lut_cache_.GetLUT(
-        quad->video_color_space, output_surface_->device_color_space(), 32);
+        quad->video_color_space, frame->device_color_space, 32);
     gl_->ActiveTexture(GL_TEXTURE5);
     gl_->BindTexture(GL_TEXTURE_2D, lut_texture);
     gl_->Uniform1i(lut_texture_location, 5);
@@ -2890,14 +2891,16 @@ void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   TRACE_EVENT0("cc,benchmark", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!
 
+  gfx::Size surface_size = surface_size_for_swap_buffers();
+
   OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(latency_info);
-  output_frame.size = surface_size_for_swap_buffers_;
+  output_frame.size = surface_size;
   if (use_partial_swap_) {
     // If supported, we can save significant bandwidth by only swapping the
     // damaged/scissored region (clamped to the viewport).
-    swap_buffer_rect_.Intersect(gfx::Rect(surface_size_for_swap_buffers_));
-    int flipped_y_pos_of_rect_bottom = surface_size_for_swap_buffers_.height() -
+    swap_buffer_rect_.Intersect(gfx::Rect(surface_size));
+    int flipped_y_pos_of_rect_bottom = surface_size.height() -
                                        swap_buffer_rect_.y() -
                                        swap_buffer_rect_.height();
     output_frame.sub_buffer_rect =
@@ -2909,7 +2912,7 @@ void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
     // Expand the swap rect to the full surface unless it's empty, and empty
     // swap is allowed.
     if (!swap_buffer_rect_.IsEmpty() || !allow_empty_swap_) {
-      swap_buffer_rect_ = gfx::Rect(surface_size_for_swap_buffers_);
+      swap_buffer_rect_ = gfx::Rect(surface_size);
     }
     output_frame.sub_buffer_rect = swap_buffer_rect_;
   }
@@ -3913,7 +3916,7 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 
   *resource = overlay_resource_pool_->AcquireResource(
       gfx::Size(iosurface_width, iosurface_height), ResourceFormat::RGBA_8888,
-      output_surface_->device_color_space());
+      external_frame->device_color_space);
   *new_bounds =
       gfx::RectF(updated_dst_rect.x(), updated_dst_rect.y(),
                  (*resource)->size().width(), (*resource)->size().height());

@@ -15,13 +15,29 @@ namespace cc {
 
 FakeOutputSurface::FakeOutputSurface(
     scoped_refptr<ContextProvider> context_provider)
-    : OutputSurface(std::move(context_provider)) {}
+    : OutputSurface(std::move(context_provider)) {
+  DCHECK(OutputSurface::context_provider());
+}
 
 FakeOutputSurface::FakeOutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(std::move(software_device)) {}
+    : OutputSurface(std::move(software_device)) {
+  DCHECK(OutputSurface::software_device());
+}
 
 FakeOutputSurface::~FakeOutputSurface() = default;
+
+void FakeOutputSurface::Reshape(const gfx::Size& size,
+                                float device_scale_factor,
+                                const gfx::ColorSpace& color_space,
+                                bool has_alpha) {
+  if (context_provider()) {
+    context_provider()->ContextGL()->ResizeCHROMIUM(
+        size.width(), size.height(), device_scale_factor, has_alpha);
+  } else {
+    software_device()->Resize(size, device_scale_factor);
+  }
+}
 
 void FakeOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   last_sent_frame_.reset(new OutputSurfaceFrame(std::move(frame)));

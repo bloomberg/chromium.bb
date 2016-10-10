@@ -45,8 +45,6 @@ SoftwareOutputDeviceOzone::~SoftwareOutputDeviceOzone() {
 
 void SoftwareOutputDeviceOzone::Resize(const gfx::Size& viewport_pixel_size,
                                        float scale_factor) {
-  scale_factor_ = scale_factor;
-
   if (viewport_pixel_size_ == viewport_pixel_size)
     return;
 

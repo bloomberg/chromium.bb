@@ -85,6 +85,15 @@ void GpuBrowserCompositorOutputSurface::BindFramebuffer() {
   context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void GpuBrowserCompositorOutputSurface::Reshape(
+    const gfx::Size& size,
+    float device_scale_factor,
+    const gfx::ColorSpace& color_space,
+    bool has_alpha) {
+  context_provider()->ContextGL()->ResizeCHROMIUM(
+      size.width(), size.height(), device_scale_factor, has_alpha);
+}
+
 void GpuBrowserCompositorOutputSurface::SwapBuffers(
     cc::OutputSurfaceFrame frame) {
   GetCommandBufferProxy()->SetLatencyInfo(frame.latency_info);

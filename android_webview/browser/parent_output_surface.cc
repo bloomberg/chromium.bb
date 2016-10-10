@@ -38,10 +38,7 @@ void ParentOutputSurface::BindFramebuffer() {
 void ParentOutputSurface::Reshape(const gfx::Size& size,
                                   float scale_factor,
                                   const gfx::ColorSpace& color_space,
-                                  bool has_alpha) {
-  DCHECK_EQ(1.f, scale_factor);
-  surface_size_ = size;
-}
+                                  bool has_alpha) {}
 
 void ParentOutputSurface::SwapBuffers(cc::OutputSurfaceFrame frame) {
   context_provider_->ContextGL()->ShallowFlushCHROMIUM();

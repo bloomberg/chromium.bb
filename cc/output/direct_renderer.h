@@ -81,6 +81,7 @@ class CC_EXPORT DirectRenderer {
 
     gfx::Rect root_damage_rect;
     gfx::Size device_viewport_size;
+    gfx::ColorSpace device_color_space;
 
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
@@ -168,6 +169,10 @@ class CC_EXPORT DirectRenderer {
       DrawingFrame* frame,
       std::unique_ptr<CopyOutputRequest> request) = 0;
 
+  gfx::Size surface_size_for_swap_buffers() const {
+    return reshape_surface_size_;
+  }
+
   const RendererSettings* const settings_;
   OutputSurface* const output_surface_;
   ResourceProvider* const resource_provider_;
@@ -190,9 +195,6 @@ class CC_EXPORT DirectRenderer {
 
   bool visible_ = false;
 
-  // The size of the surface produced by DrawFrame() for SwapBuffers() to use.
-  gfx::Size surface_size_for_swap_buffers_;
-
   // For use in coordinate conversion, this stores the output rect, viewport
   // rect (= unflipped version of glViewport rect), the size of target
   // framebuffer, and the current window space viewport. During a draw, this
@@ -206,6 +208,12 @@ class CC_EXPORT DirectRenderer {
  private:
   bool initialized_ = false;
   gfx::Size enlarge_pass_texture_amount_;
+
+  // Cached values given to Reshape().
+  gfx::Size reshape_surface_size_;
+  float reshape_device_scale_factor_ = 0.f;
+  gfx::ColorSpace reshape_device_color_space_;
+  bool reshape_has_alpha_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DirectRenderer);
 };

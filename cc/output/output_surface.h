@@ -98,10 +98,6 @@ class CC_EXPORT OutputSurface {
   // OutputSurfaces.
   virtual void BindFramebuffer() = 0;
 
-  const gfx::ColorSpace& device_color_space() const {
-    return device_color_space_;
-  }
-
   // Get the class capable of informing cc of hardware overlay capability.
   virtual OverlayCandidateValidator* GetOverlayCandidateValidator() const = 0;
 
@@ -115,9 +111,9 @@ class CC_EXPORT OutputSurface {
   virtual bool SurfaceIsSuspendForRecycle() const = 0;
 
   virtual void Reshape(const gfx::Size& size,
-                       float scale_factor,
+                       float device_scale_factor,
                        const gfx::ColorSpace& color_space,
-                       bool alpha);
+                       bool has_alpha) = 0;
 
   virtual bool HasExternalStencilTest() const = 0;
   virtual void ApplyExternalStencil() = 0;
@@ -145,11 +141,6 @@ class CC_EXPORT OutputSurface {
   scoped_refptr<ContextProvider> context_provider_;
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
   std::unique_ptr<SoftwareOutputDevice> software_device_;
-  gfx::Size surface_size_;
-  float device_scale_factor_ = -1;
-  gfx::ColorSpace device_color_space_;
-  bool has_alpha_ = true;
-  gfx::ColorSpace color_space_;
   base::ThreadChecker thread_checker_;
 
  private:

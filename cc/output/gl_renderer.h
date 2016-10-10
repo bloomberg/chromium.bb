@@ -170,6 +170,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       const gfx::QuadF* clip_region,
       bool use_aa);
   std::unique_ptr<ScopedResource> GetBackdropTexture(
+      DrawingFrame* frame,
       const gfx::Rect& bounding_rect);
 
   static bool ShouldApplyBackgroundFilters(const RenderPassDrawQuad* quad);

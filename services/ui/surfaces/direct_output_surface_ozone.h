@@ -57,12 +57,12 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
+  void Reshape(const gfx::Size& size,
+               float device_scale_factor,
+               const gfx::ColorSpace& color_space,
+               bool has_alpha) override;
   void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-  void Reshape(const gfx::Size& size,
-               float scale_factor,
-               const gfx::ColorSpace& color_space,
-               bool alpha) override;
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;

@@ -42,9 +42,9 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   void BindFramebuffer() override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   void Reshape(const gfx::Size& size,
-               float scale_factor,
+               float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool alpha) override;
+               bool has_alpha) override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
 

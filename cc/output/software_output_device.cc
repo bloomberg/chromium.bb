@@ -10,15 +10,11 @@
 
 namespace cc {
 
-SoftwareOutputDevice::SoftwareOutputDevice() : scale_factor_(1.f) {
-}
-
-SoftwareOutputDevice::~SoftwareOutputDevice() {}
+SoftwareOutputDevice::SoftwareOutputDevice() = default;
+SoftwareOutputDevice::~SoftwareOutputDevice() = default;
 
 void SoftwareOutputDevice::Resize(const gfx::Size& viewport_pixel_size,
                                   float scale_factor) {
-  scale_factor_ = scale_factor;
-
   if (viewport_pixel_size_ == viewport_pixel_size)
     return;
 

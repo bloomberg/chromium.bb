@@ -263,6 +263,14 @@ class AndroidOutputSurface : public cc::OutputSurface {
     context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
+  void Reshape(const gfx::Size& size,
+               float device_scale_factor,
+               const gfx::ColorSpace& color_space,
+               bool has_alpha) override {
+    context_provider()->ContextGL()->ResizeCHROMIUM(
+        size.width(), size.height(), device_scale_factor, has_alpha);
+  }
+
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
     return overlay_candidate_validator_.get();
   }

@@ -60,6 +60,7 @@ class OffscreenBrowserCompositorOutputSurface
   void SetSurfaceSuspendedForRecycle(bool suspended) override {};
 #endif
 
+  gfx::Size reshape_size_;
   uint32_t fbo_ = 0;
   bool reflector_changed_ = false;
   std::unique_ptr<ReflectorTexture> reflector_texture_;

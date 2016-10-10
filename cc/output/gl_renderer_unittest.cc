@@ -1030,28 +1030,13 @@ class DiscardCheckingGLES2Interface : public TestGLES2Interface {
   int discarded_ = 0;
 };
 
-class NonReshapableOutputSurface : public FakeOutputSurface {
- public:
-  explicit NonReshapableOutputSurface(std::unique_ptr<TestGLES2Interface> gl)
-      : FakeOutputSurface(TestContextProvider::Create(std::move(gl))) {
-    surface_size_ = gfx::Size(500, 500);
-  }
-  void Reshape(const gfx::Size& size,
-               float scale_factor,
-               const gfx::ColorSpace& color_space,
-               bool has_alpha) override {}
-  void set_fixed_size(const gfx::Size& size) { surface_size_ = size; }
-};
-
 TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   auto gl_owned = base::MakeUnique<DiscardCheckingGLES2Interface>();
   auto* gl = gl_owned.get();
 
   FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<NonReshapableOutputSurface> output_surface(
-      new NonReshapableOutputSurface(std::move(gl_owned)));
+  auto output_surface = FakeOutputSurface::Create3d(std::move(gl_owned));
   CHECK(output_surface->BindToClient(&output_surface_client));
-  output_surface->set_fixed_size(gfx::Size(100, 100));
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -1470,9 +1455,7 @@ class MockOutputSurface : public OutputSurface {
  public:
   MockOutputSurface()
       : OutputSurface(TestContextProvider::Create(
-            base::MakeUnique<StrictMock<OutputSurfaceMockContext>>())) {
-    surface_size_ = gfx::Size(100, 100);
-  }
+            base::MakeUnique<StrictMock<OutputSurfaceMockContext>>())) {}
   virtual ~MockOutputSurface() {}
 
   MOCK_METHOD0(EnsureBackbuffer, void());

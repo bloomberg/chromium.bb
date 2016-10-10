@@ -57,7 +57,7 @@ class SoftwareDevice : public cc::SoftwareOutputDevice {
  public:
   SoftwareDevice(SkCanvas** canvas) : canvas_(canvas) {}
 
-  void Resize(const gfx::Size& pixel_size, float scale_factor) override {
+  void Resize(const gfx::Size& pixel_size, float device_scale_factor) override {
     // Intentional no-op: canvas size is controlled by the embedder.
   }
   SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override {
@@ -88,9 +88,7 @@ class SynchronousCompositorFrameSink::SoftwareOutputSurface
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha) override {
-    surface_size_ = size;
-  }
+               bool has_alpha) override {}
   uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
     return nullptr;

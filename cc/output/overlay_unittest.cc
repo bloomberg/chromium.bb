@@ -152,8 +152,6 @@ class OverlayOutputSurface : public OutputSurface {
   explicit OverlayOutputSurface(
       scoped_refptr<TestContextProvider> context_provider)
       : OutputSurface(std::move(context_provider)) {
-    surface_size_ = kDisplaySize;
-    device_scale_factor_ = 1;
     is_displayed_as_overlay_plane_ = true;
   }
 
@@ -163,11 +161,15 @@ class OverlayOutputSurface : public OutputSurface {
   void BindFramebuffer() override {
     bind_framebuffer_count_ += 1;
   }
+  void Reshape(const gfx::Size& size,
+               float device_scale_factor,
+               const gfx::ColorSpace& color_space,
+               bool has_alpha) override {}
+  void SwapBuffers(OutputSurfaceFrame frame) override {}
   uint32_t GetFramebufferCopyTextureFormat() override {
     // TestContextProvider has no real framebuffer, just use RGB.
     return GL_RGB;
   }
-  void SwapBuffers(OutputSurfaceFrame frame) override {}
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
   OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
@@ -177,15 +179,12 @@ class OverlayOutputSurface : public OutputSurface {
     return is_displayed_as_overlay_plane_;
   }
   unsigned GetOverlayTextureId() const override { return 10000; }
-  void set_is_displayed_as_overlay_plane(bool value) {
-    is_displayed_as_overlay_plane_ = value;
-  }
   bool SurfaceIsSuspendForRecycle() const override { return false; }
 
   void OnSwapBuffersComplete() { client_->DidSwapBuffersComplete(); }
 
-  void SetScaleFactor(float scale_factor) {
-    device_scale_factor_ = scale_factor;
+  void set_is_displayed_as_overlay_plane(bool value) {
+    is_displayed_as_overlay_plane_ = value;
   }
 
   void SetOverlayCandidateValidator(OverlayCandidateValidator* validator) {

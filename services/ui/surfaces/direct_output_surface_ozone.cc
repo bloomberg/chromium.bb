@@ -83,6 +83,22 @@ void DirectOutputSurfaceOzone::BindFramebuffer() {
   buffer_queue_->BindFramebuffer();
 }
 
+// We call this on every frame that a value changes, but changing the size once
+// we've allocated backing NativePixmapOzone instances will cause a DCHECK
+// because Chrome never Reshape(s) after the first one from (0,0). NB: this
+// implies that screen size changes need to be plumbed differently. In
+// particular, we must create the native window in the size that the hardware
+// reports.
+void DirectOutputSurfaceOzone::Reshape(const gfx::Size& size,
+                                       float device_scale_factor,
+                                       const gfx::ColorSpace& color_space,
+                                       bool has_alpha) {
+  reshape_size_ = size;
+  context_provider()->ContextGL()->ResizeCHROMIUM(
+      size.width(), size.height(), device_scale_factor, has_alpha);
+  buffer_queue_->Reshape(size, device_scale_factor, color_space);
+}
+
 void DirectOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {
   DCHECK(buffer_queue_);
 
@@ -111,20 +127,6 @@ void DirectOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {
 
 uint32_t DirectOutputSurfaceOzone::GetFramebufferCopyTextureFormat() {
   return buffer_queue_->internal_format();
-}
-
-// We call this on every frame but changing the size once we've allocated
-// backing NativePixmapOzone instances will cause a DCHECK because
-// Chrome never Reshape(s) after the first one from (0,0). NB: this implies
-// that screen size changes need to be plumbed differently. In particular, we
-// must create the native window in the size that the hardware reports.
-void DirectOutputSurfaceOzone::Reshape(const gfx::Size& size,
-                                       float scale_factor,
-                                       const gfx::ColorSpace& color_space,
-                                       bool alpha) {
-  reshape_size_ = size;
-  OutputSurface::Reshape(size, scale_factor, color_space, alpha);
-  buffer_queue_->Reshape(size, scale_factor, color_space);
 }
 
 cc::OverlayCandidateValidator*

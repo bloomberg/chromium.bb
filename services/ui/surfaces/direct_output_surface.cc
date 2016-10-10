@@ -49,6 +49,14 @@ void DirectOutputSurface::BindFramebuffer() {
   context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void DirectOutputSurface::Reshape(const gfx::Size& size,
+                                  float device_scale_factor,
+                                  const gfx::ColorSpace& color_space,
+                                  bool has_alpha) {
+  context_provider()->ContextGL()->ResizeCHROMIUM(
+      size.width(), size.height(), device_scale_factor, has_alpha);
+}
+
 void DirectOutputSurface::SwapBuffers(cc::OutputSurfaceFrame frame) {
   DCHECK(context_provider_);
   if (frame.sub_buffer_rect == gfx::Rect(frame.size)) {

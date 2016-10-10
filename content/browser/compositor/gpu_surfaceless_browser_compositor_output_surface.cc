@@ -91,14 +91,14 @@ GLenum GpuSurfacelessBrowserCompositorOutputSurface::
 
 void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
     const gfx::Size& size,
-    float scale_factor,
+    float device_scale_factor,
     const gfx::ColorSpace& color_space,
-    bool alpha) {
+    bool has_alpha) {
   reshape_size_ = size;
-  GpuBrowserCompositorOutputSurface::Reshape(size, scale_factor, color_space,
-                                             alpha);
+  GpuBrowserCompositorOutputSurface::Reshape(size, device_scale_factor,
+                                             color_space, has_alpha);
   DCHECK(buffer_queue_);
-  buffer_queue_->Reshape(size, scale_factor, color_space);
+  buffer_queue_->Reshape(size, device_scale_factor, color_space);
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(

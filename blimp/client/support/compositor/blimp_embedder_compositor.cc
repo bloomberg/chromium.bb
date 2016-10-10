@@ -54,6 +54,13 @@ class DisplayOutputSurface : public cc::OutputSurface {
   void BindFramebuffer() override {
     context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
   }
+  void Reshape(const gfx::Size& size,
+               float device_scale_factor,
+               const gfx::ColorSpace& color_space,
+               bool has_alpha) override {
+    context_provider()->ContextGL()->ResizeCHROMIUM(
+        size.width(), size.height(), device_scale_factor, has_alpha);
+  }
   void SwapBuffers(cc::OutputSurfaceFrame frame) override {
     // See cc::OutputSurface::SwapBuffers() comment for details.
     context_provider_->ContextSupport()->Swap();
