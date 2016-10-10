@@ -4,22 +4,19 @@
 
 package org.chromium.chrome.browser.crash;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import static org.chromium.chrome.browser.crash.LogcatExtractionCallable.BEGIN_MICRODUMP;
 import static org.chromium.chrome.browser.crash.LogcatExtractionCallable.END_MICRODUMP;
 import static org.chromium.chrome.browser.crash.LogcatExtractionCallable.SNIPPED_MICRODUMP;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-import android.text.TextUtils;
-
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -129,16 +126,8 @@ public class LogcatExtractionCallableUnitTest {
 
     @Test
     public void testLogcatEmpty() {
-        final String original = "";
-        List<String> expected = new LinkedList<>();
-        List<String> logcat = null;
-        try {
-            logcat = LogcatExtractionCallable.extractLogcatFromReader(
-                    new BufferedReader(new StringReader(original)), MAX_LINES);
-        } catch (Exception e) {
-            fail(e.toString());
-        }
-        assertArrayEquals(expected.toArray(), logcat.toArray());
+        final List<String> original = new LinkedList<>();
+        assertLogcatLists(original, original);
     }
 
     @Test
@@ -224,16 +213,9 @@ public class LogcatExtractionCallableUnitTest {
     }
 
     private void assertLogcatLists(List<String> expected, List<String> original) {
-        List<String> actualLogcat = null;
-        String combinedLogcat = TextUtils.join("\n", original);
-        try {
-            //simulate a file reader to test whether the extraction process
-            //successfully strips microdump from logcat
-            actualLogcat = LogcatExtractionCallable.extractLogcatFromReader(
-                    new BufferedReader(new StringReader(combinedLogcat)), MAX_LINES);
-        } catch (Exception e) {
-            fail(e.toString());
-        }
+        // trimLogcat() expects a modifiable list as input.
+        LinkedList<String> rawLogcat = new LinkedList<String>(original);
+        List<String> actualLogcat = LogcatExtractionCallable.trimLogcat(rawLogcat, MAX_LINES);
         assertArrayEquals(expected.toArray(), actualLogcat.toArray());
     }
 }

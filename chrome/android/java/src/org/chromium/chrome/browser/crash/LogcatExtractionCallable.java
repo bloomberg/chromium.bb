@@ -235,28 +235,41 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
     protected List<String> getLogcat() throws IOException, InterruptedException {
         // Grab the last lines of the logcat output, with a generous buffer to compensate for any
         // microdumps that might be in the logcat output, since microdumps are stripped in the
-        // extraction code.
-        Process p = Runtime.getRuntime().exec("logcat -d | tail -n " + (LOGCAT_SIZE * 4));
+        // extraction code. Note that the repeated check of the process exit value is to account for
+        // the fact that the process might not finish immediately.  And, it's not appropriate to
+        // call p.waitFor(), because this call will block *forever* if the process's output buffer
+        // fills up.
+        Process p = Runtime.getRuntime().exec("logcat -d");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        LinkedList<String> rawLogcat = new LinkedList<>();
         Integer exitValue = null;
-        while (exitValue == null) {
-            try {
-                exitValue = p.exitValue();
-            } catch (IllegalThreadStateException itse) {
-                Thread.sleep(HALF_SECOND);
+        try {
+            while (exitValue == null) {
+                String logLn;
+                while ((logLn = reader.readLine()) != null) {
+                    rawLogcat.add(logLn);
+                    if (rawLogcat.size() > LOGCAT_SIZE * 4) {
+                        rawLogcat.removeFirst();
+                    }
+                }
+
+                try {
+                    exitValue = p.exitValue();
+                } catch (IllegalThreadStateException itse) {
+                    Thread.sleep(HALF_SECOND);
+                }
             }
+        } finally {
+            reader.close();
         }
+
         if (exitValue != 0) {
             String msg = "Logcat failed: " + exitValue;
             Log.w(TAG, msg);
             throw new IOException(msg);
         }
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        try {
-            return extractLogcatFromReader(reader, LOGCAT_SIZE);
-        } finally {
-            reader.close();
-        }
+        return trimLogcat(rawLogcat, LOGCAT_SIZE);
     }
 
     /**
@@ -265,22 +278,14 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
      * microdump if a microdump is present, or just the final lines of the logcat if no microdump is
      * present.
      *
-     * @param reader A buffered reader from which lines of initial logcat is read.
+     * @param rawLogcat The last lines of the raw logcat file, with sufficient history to allow a
+     *     sufficient history even after trimming.
      * @param maxLines The maximum number of lines logcat extracts from minidump.
      *
      * @return Logcat up to specified length as a list of strings.
-     * @throws IOException if the buffered reader encounters an I/O error.
      */
     @VisibleForTesting
-    protected static List<String> extractLogcatFromReader(
-            BufferedReader reader, int maxLines) throws IOException {
-        // Slurp all of the lines.
-        List<String> rawLogcat = new LinkedList<>();
-        String logLn;
-        while ((logLn = reader.readLine()) != null) {
-            rawLogcat.add(logLn);
-        }
-
+    protected static List<String> trimLogcat(List<String> rawLogcat, int maxLines) {
         // Trim off the last microdump, and anything after it.
         for (int i = rawLogcat.size() - 1; i >= 0; i--) {
             if (rawLogcat.get(i).contains(BEGIN_MICRODUMP)) {
