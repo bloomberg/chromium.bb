@@ -977,6 +977,17 @@ def ParseIssueNumberArgument(arg):
   return fail_result
 
 
+class GerritIssueNotExists(Exception):
+  def __init__(self, issue, url):
+    self.issue = issue
+    self.url = url
+    super(GerritIssueNotExists, self).__init__()
+
+  def __str__(self):
+    return 'issue %s at %s does not exist or you have no access to it' % (
+        self.issue, self.url)
+
+
 class Changelist(object):
   """Changelist works with one changelist in local branch.
 
@@ -2258,8 +2269,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       * 'unsent'   - no reviewers added
       * 'waiting'  - waiting for review
       * 'reply'    - waiting for owner to reply to review
-      * 'not lgtm' - Code-Review -2 from at least one approved reviewer
-      * 'lgtm'     - Code-Review +2 from at least one approved reviewer
+      * 'not lgtm' - Code-Review disaproval from at least one valid reviewer
+      * 'lgtm'     - Code-Review approval from at least one valid reviewer
       * 'commit'   - in the commit queue
       * 'closed'   - abandoned
     """
@@ -2268,7 +2279,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     try:
       data = self._GetChangeDetail(['DETAILED_LABELS', 'CURRENT_REVISION'])
-    except httplib.HTTPException:
+    except (httplib.HTTPException, GerritIssueNotExists):
       return 'error'
 
     if data['status'] in ('ABANDONED', 'MERGED'):
@@ -2343,9 +2354,12 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def _GetChangeDetail(self, options=None, issue=None):
     options = options or []
     issue = issue or self.GetIssue()
-    assert issue, 'issue required to query Gerrit'
-    return gerrit_util.GetChangeDetail(self._GetGerritHost(), str(issue),
+    assert issue, 'issue is required to query Gerrit'
+    data = gerrit_util.GetChangeDetail(self._GetGerritHost(), str(issue),
                                        options)
+    if not data:
+      raise GerritIssueNotExists(issue, self.GetCodereviewServer())
+    return data
 
   def CMDLand(self, force, bypass_hooks, verbose):
     if git_common.is_dirty_git_tree('land'):
@@ -2400,7 +2414,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       self._gerrit_host = parsed_issue_arg.hostname
       self._gerrit_server = 'https://%s' % self._gerrit_host
 
-    detail = self._GetChangeDetail(['ALL_REVISIONS'])
+    try:
+      detail = self._GetChangeDetail(['ALL_REVISIONS'])
+    except GerritIssueNotExists as e:
+      DieWithError(str(e))
 
     if not parsed_issue_arg.patchset:
       # Use current revision by default.

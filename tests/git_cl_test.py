@@ -137,6 +137,11 @@ class MockChangelistWithBranchAndIssue():
   def GetIssue(self):
     return self.issue
 
+
+class SystemExitMock(Exception):
+  pass
+
+
 class TestGitClBasic(unittest.TestCase):
   def _test_ParseIssueUrl(self, func, url, issue, patchset, hostname, fail):
     parsed = urlparse.urlparse(url)
@@ -271,6 +276,8 @@ class TestGitCl(TestCase):
     self.mock(git_cl.auth, 'get_authenticator_for_host', AuthenticatorMock)
     self.mock(git_cl.gerrit_util.GceAuthenticator, 'is_gce',
               classmethod(lambda _: False))
+    self.mock(git_cl, 'DieWithError',
+              lambda msg: self._mocked_call(['DieWithError', msg]))
     # It's important to reset settings to not have inter-tests interference.
     git_cl.settings = None
 
@@ -706,23 +713,21 @@ class TestGitCl(TestCase):
   def test_reviewer_send_mail_no_rev(self):
     # Fails without a reviewer.
     stdout = StringIO.StringIO()
-    stderr = StringIO.StringIO()
-    try:
-      self.calls = self._upload_no_rev_calls(None, None)
-      def RunEditor(desc, _, **kwargs):
-        return desc
-      self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
-      self.mock(sys, 'stdout', stdout)
-      self.mock(sys, 'stderr', stderr)
+    self.calls = self._upload_no_rev_calls(None, None) + [
+        ((['DieWithError', 'Must specify reviewers to send email.'],),
+          SystemExitMock())
+    ]
+
+    def RunEditor(desc, _, **kwargs):
+      return desc
+    self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
+    self.mock(sys, 'stdout', stdout)
+    with self.assertRaises(SystemExitMock):
       git_cl.main(['upload', '--send-mail'])
-      self.fail()
-    except SystemExit:
-      self.assertEqual(
-          'Using 50% similarity for rename/copy detection. Override with '
-          '--similarity.\n',
-          stdout.getvalue())
-      self.assertEqual(
-          'Must specify reviewers to send email.\n', stderr.getvalue())
+    self.assertEqual(
+        'Using 50% similarity for rename/copy detection. Override with '
+        '--similarity.\n',
+        stdout.getvalue())
 
   def test_bug_on_cmd(self):
     self._run_reviewer_test(
@@ -1399,10 +1404,6 @@ class TestGitCl(TestCase):
 
   def test_gerrit_patch_conflict(self):
     self._patch_common(is_gerrit=True)
-    self.mock(git_cl, 'DieWithError',
-              lambda msg: self._mocked_call(['DieWithError', msg]))
-    class SystemExitMock(Exception):
-      pass
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
@@ -1413,6 +1414,22 @@ class TestGitCl(TestCase):
     with self.assertRaises(SystemExitMock):
       git_cl.main(['patch',
                    'https://chromium-review.googlesource.com/#/c/123456/1'])
+
+  def test_gerrit_patch_not_exists(self):
+    url = 'https://chromium-review.googlesource.com'
+    self.mock(git_cl.gerrit_util, 'GetChangeDetail', lambda _, __, ___: None)
+    self.calls = [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
+      ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
+      ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+      ((['git', 'config', 'gerrit.host'],), 'true'),
+      ((['DieWithError', 'issue 123456 at ' + url + ' does not exist '
+                         'or you have no access to it'],), SystemExitMock()),
+    ]
+    with self.assertRaises(SystemExitMock):
+      self.assertEqual(1, git_cl.main(['patch', url + '/#/c/123456/1']))
 
   def _checkout_calls(self):
     return [
