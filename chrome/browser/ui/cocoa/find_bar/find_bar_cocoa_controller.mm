@@ -267,6 +267,10 @@ const float kRightEdgeOffset = 25;
           FindBarController::kClearResultsInFindBox);
     }
     return YES;
+  } else if (command == @selector(cancelOperation:)) {
+    // Pressing ESC.
+    [closeButton_ performClick:nil];
+    return YES;
   } else if (command == @selector(pageUp:) ||
              command == @selector(pageUpAndModifySelection:) ||
              command == @selector(scrollPageUp:) ||

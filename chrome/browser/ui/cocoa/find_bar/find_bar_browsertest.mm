@@ -5,12 +5,17 @@
 #include "base/mac/foundation_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_text_field.h"
+#import "chrome/browser/ui/cocoa/run_loop_testing.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "ui/base/test/ui_controls.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {
 
@@ -45,4 +50,37 @@ IN_PROC_BROWSER_TEST_F(FindBarBrowserTest, FocusOnTabSwitch) {
   EXPECT_FALSE(FindBarHasFocus(browser()));
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   EXPECT_FALSE(FindBarHasFocus(browser()));
+}
+
+IN_PROC_BROWSER_TEST_F(FindBarBrowserTest, EscapeKey) {
+  // Enter fullscreen.
+  std::unique_ptr<FullscreenNotificationObserver> waiter(
+      new FullscreenNotificationObserver());
+  browser()
+      ->exclusive_access_manager()
+      ->fullscreen_controller()
+      ->ToggleBrowserFullscreenMode();
+  waiter->Wait();
+
+  NSWindow* window = browser()->window()->GetNativeWindow();
+  BrowserWindowController* bwc =
+      [BrowserWindowController browserWindowControllerForWindow:window];
+  EXPECT_TRUE([bwc isInAppKitFullscreen]);
+
+  // Show and focus on the find bar.
+  browser()->GetFindBarController()->Show();
+  browser()->GetFindBarController()->find_bar()->SetFocusAndSelection();
+  EXPECT_TRUE(FindBarHasFocus(browser()));
+
+  // Simulate a key press with the ESC key.
+  base::RunLoop run_loop;
+  ui_controls::EnableUIControls();
+  ui_controls::SendKeyPressNotifyWhenDone(window, ui::VKEY_ESCAPE, false, false,
+                                          false, false, run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Check that the browser is still in fullscreen and that the find bar has
+  // lost focus.
+  EXPECT_FALSE(FindBarHasFocus(browser()));
+  EXPECT_TRUE([bwc isInAppKitFullscreen]);
 }
