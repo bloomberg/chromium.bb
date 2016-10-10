@@ -518,10 +518,6 @@ void WebSettingsImpl::setAutoplayExperimentMode(const WebString& mode) {
   m_settings->setAutoplayExperimentMode(mode);
 }
 
-void WebSettingsImpl::setCaretBrowsingEnabled(bool enabled) {
-  m_settings->setCaretBrowsingEnabled(enabled);
-}
-
 void WebSettingsImpl::setValidationMessageTimerMagnification(int newValue) {
   m_settings->setValidationMessageTimerMagnification(newValue);
 }

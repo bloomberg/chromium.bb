@@ -94,7 +94,6 @@ WebPreferences::WebPreferences()
       databases_enabled(false),
       application_cache_enabled(false),
       tabs_to_links(true),
-      caret_browsing_enabled(false),
       history_entry_requires_user_gesture(false),
       hyperlink_auditing_enabled(true),
       allow_universal_access_from_file_urls(false),

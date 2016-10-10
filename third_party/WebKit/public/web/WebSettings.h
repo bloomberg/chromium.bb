@@ -148,7 +148,6 @@ class WebSettings {
   virtual void setAutoplayExperimentMode(const WebString&) = 0;
   virtual void setAutoZoomFocusedNodeToLegibleScale(bool) = 0;
   virtual void setBrowserSideNavigationEnabled(bool) = 0;
-  virtual void setCaretBrowsingEnabled(bool) = 0;
   virtual void setClobberUserAgentInitialScaleQuirk(bool) = 0;
   virtual void setCookieEnabled(bool) = 0;
   virtual void setNavigateOnDragDrop(bool) = 0;

@@ -167,11 +167,9 @@ void FrameCaret::invalidateCaretRect(bool forceInvalidation) {
       m_caretVisibility == m_previousCaretVisibility)
     return;
 
-  LayoutViewItem view = m_frame->document()->layoutViewItem();
-  if (m_previousCaretNode &&
-      (shouldRepaintCaret(*m_previousCaretNode) || shouldRepaintCaret(view)))
+  if (m_previousCaretNode && shouldRepaintCaret(*m_previousCaretNode))
     invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
-  if (newNode && (shouldRepaintCaret(*newNode) || shouldRepaintCaret(view)))
+  if (newNode && shouldRepaintCaret(*newNode))
     invalidateLocalCaretRect(newNode, newRect);
   m_previousCaretNode = newNode;
   m_previousCaretRect = newRect;
@@ -248,9 +246,6 @@ void FrameCaret::documentDetached() {
 
 bool FrameCaret::shouldBlinkCaret() const {
   if (m_caretVisibility != CaretVisibility::Visible || !isActive())
-    return false;
-
-  if (m_frame->settings() && m_frame->settings()->caretBrowsingEnabled())
     return false;
 
   Element* root = rootEditableElementOf(caretPosition().position());

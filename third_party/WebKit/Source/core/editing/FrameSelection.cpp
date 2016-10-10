@@ -1137,15 +1137,6 @@ void FrameSelection::setFocusedNodeIfNeeded() {
   if (isNone() || !isFocused())
     return;
 
-  bool caretBrowsing =
-      m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
-  if (caretBrowsing) {
-    if (Element* anchor = enclosingAnchorElement(base())) {
-      m_frame->page()->focusController().setFocusedElement(anchor, m_frame);
-      return;
-    }
-  }
-
   if (Element* target = rootEditableElement()) {
     // Walk up the DOM tree to search for a node to focus.
     document().updateStyleAndLayoutTreeIgnorePendingStylesheets();
@@ -1163,8 +1154,6 @@ void FrameSelection::setFocusedNodeIfNeeded() {
     document().clearFocusedElement();
   }
 
-  if (caretBrowsing)
-    m_frame->page()->focusController().setFocusedElement(0, m_frame);
 }
 
 static String extractSelectedText(const FrameSelection& selection,
@@ -1307,9 +1296,7 @@ void FrameSelection::setSelectionFromNone() {
   // entire WebView is editable or designMode is on for this document).
 
   Document* document = m_frame->document();
-  bool caretBrowsing =
-      m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
-  if (!isNone() || !(blink::hasEditableStyle(*document) || caretBrowsing))
+  if (!isNone() || !(blink::hasEditableStyle(*document)))
     return;
 
   Element* documentElement = document->documentElement();

@@ -873,9 +873,7 @@ void SpellChecker::respondToChangedSelection(
         HTMLTextFormControlElement::startOfWord(newStart),
         HTMLTextFormControlElement::endOfWord(newStart));
   } else {
-    const bool caretBrowsing =
-        frame().settings() && frame().settings()->caretBrowsingEnabled();
-    if (newSelection.isContentEditable() || caretBrowsing) {
+    if (newSelection.isContentEditable()) {
       const VisiblePosition newStart(newSelection.visibleStart());
       newAdjacentWords =
           createVisibleSelection(startOfWord(newStart, LeftWordIfOnBoundary),

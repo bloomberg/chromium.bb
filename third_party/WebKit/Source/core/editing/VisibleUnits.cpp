@@ -3312,11 +3312,7 @@ static bool isVisuallyEquivalentCandidateAlgorithm(
       return hasEditableStyle(*anchorNode) && atEditingBoundary(position);
     }
   } else {
-    LocalFrame* frame = anchorNode->document().frame();
-    bool caretBrowsing =
-        frame->settings() && frame->settings()->caretBrowsingEnabled();
-    return (caretBrowsing || hasEditableStyle(*anchorNode)) &&
-           atEditingBoundary(position);
+    return hasEditableStyle(*anchorNode) && atEditingBoundary(position);
   }
 
   return false;

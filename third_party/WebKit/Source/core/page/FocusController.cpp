@@ -753,23 +753,6 @@ Element* findFocusableElementAcrossFocusScopes(WebFocusType type,
              : findFocusableElementAcrossFocusScopesBackward(scope);
 }
 
-inline Element* adjustToElement(Node* node, WebFocusType type) {
-  DCHECK(type == WebFocusTypeForward || type == WebFocusTypeBackward);
-  if (!node)
-    return nullptr;
-  if (node->isElementNode())
-    return toElement(node);
-  // The returned element is used as an *exclusive* start element. Thus, we
-  // should return the result of ElementTraversal::previous(*node),
-  // instead of ElementTraversal::next(*node), if type == WebFocusTypeForward,
-  // and vice-versa.  The caller will call ElementTraversal::{next/previous} for
-  // the returned value and get the {next|previous} element of the |node|.
-
-  // TODO(yuzus) Use ScopedFocusNavigation traversal here.
-  return (type == WebFocusTypeForward) ? ElementTraversal::previous(*node)
-                                       : ElementTraversal::next(*node);
-}
-
 }  // anonymous namespace
 
 FocusController::FocusController(Page* page)
@@ -1003,14 +986,6 @@ bool FocusController::advanceFocusInDocumentOrder(
   if (!current && !initialFocus)
     current = document->sequentialFocusNavigationStartingPoint(type);
 
-  // FIXME: Not quite correct when it comes to focus transitions
-  // leaving/entering the WebView itself.
-  bool caretBrowsing =
-      frame->settings() && frame->settings()->caretBrowsingEnabled();
-
-  if (caretBrowsing && !current)
-    current = adjustToElement(frame->selection().start().anchorNode(), type);
-
   document->updateStyleAndLayoutIgnorePendingStylesheets();
   ScopedFocusNavigation scope =
       current ? ScopedFocusNavigation::createFor(*current)
@@ -1090,19 +1065,6 @@ bool FocusController::advanceFocusInDocumentOrder(
 
   setFocusedFrame(newDocument.frame());
 
-  if (caretBrowsing) {
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    // In the long term, we should change FrameSelection::setSelection to take a
-    // parameter that does not require clean layout, so that modifying selection
-    // no longer performs synchronous layout by itself.
-    newDocument.updateStyleAndLayoutIgnorePendingStylesheets();
-
-    Position position = firstPositionInOrBeforeNode(element);
-    VisibleSelection newSelection = createVisibleSelection(position, position);
-    frame->selection().setSelection(newSelection);
-  }
-
   element->focus(
       FocusParams(SelectionBehaviorOnFocus::Reset, type, sourceCapabilities));
   return true;
@@ -1142,10 +1104,6 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame,
   if (selection.isNone())
     return;
 
-  bool caretBrowsing = oldFocusedFrame->settings()->caretBrowsingEnabled();
-  if (caretBrowsing)
-    return;
-
   Node* selectionStartNode = selection.selection().start().anchorNode();
   if (selectionStartNode == newFocusedElement ||
       selectionStartNode->isDescendantOf(newFocusedElement))
@@ -1180,7 +1138,6 @@ bool FocusController::setFocusedElement(Element* element,
   if (element && oldFocusedElement == element)
     return true;
 
-  // FIXME: Might want to disable this check for caretBrowsing
   if (oldFocusedElement && isRootEditableElement(*oldFocusedElement) &&
       !relinquishesEditingFocus(*oldFocusedElement))
     return false;

@@ -974,7 +974,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::enableDatabase(prefs.databases_enabled);
   settings->setOfflineWebApplicationCacheEnabled(
       prefs.application_cache_enabled);
-  settings->setCaretBrowsingEnabled(prefs.caret_browsing_enabled);
   settings->setHistoryEntryRequiresUserGesture(
       prefs.history_entry_requires_user_gesture);
   settings->setHyperlinkAuditingEnabled(prefs.hyperlink_auditing_enabled);

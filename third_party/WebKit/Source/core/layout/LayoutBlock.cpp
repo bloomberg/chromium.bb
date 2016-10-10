@@ -1825,15 +1825,10 @@ inline bool LayoutBlock::isInlineBoxWrapperActuallyChild() const {
          editingIgnoresContent(node());
 }
 
-static inline bool caretBrowsingEnabled(const LocalFrame* frame) {
-  Settings* settings = frame->settings();
-  return settings && settings->caretBrowsingEnabled();
-}
-
 bool LayoutBlock::hasCursorCaret() const {
   LocalFrame* frame = this->frame();
   return frame->selection().caretLayoutObject() == this &&
-         (frame->selection().hasEditableStyle() || caretBrowsingEnabled(frame));
+         frame->selection().hasEditableStyle();
 }
 
 bool LayoutBlock::hasDragCaret() const {

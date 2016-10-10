@@ -35,7 +35,6 @@ void ExportLayoutTestSpecificPreferences(
   to->experimental_webgl_enabled = from.experimental_webgl_enabled;
   // experimentalCSSRegionsEnabled is deprecated and ignored.
   to->hyperlink_auditing_enabled = from.hyperlink_auditing_enabled;
-  to->caret_browsing_enabled = from.caret_browsing_enabled;
   to->allow_running_insecure_content = from.allow_running_of_insecure_content;
   to->should_respect_image_orientation = from.should_respect_image_orientation;
   to->allow_file_access_from_file_urls = from.allow_file_access_from_file_urls;

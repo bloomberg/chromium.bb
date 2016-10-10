@@ -642,10 +642,7 @@ bool SelectionController::handleMouseReleaseEvent(
 
     VisibleSelectionInFlatTree newSelection;
     Node* node = event.innerNode();
-    bool caretBrowsing =
-        m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
-    if (node && node->layoutObject() &&
-        (caretBrowsing || hasEditableStyle(*node))) {
+    if (node && node->layoutObject() && hasEditableStyle(*node)) {
       const VisiblePositionInFlatTree pos =
           visiblePositionOfHitTestResult(event.hitTestResult());
       newSelection = createVisibleSelection(pos);

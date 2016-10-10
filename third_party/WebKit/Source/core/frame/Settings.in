@@ -57,7 +57,6 @@ defaultFixedFontSize type=int, initial=0, invalidate=Style
 
 editingBehaviorType type=EditingBehaviorType, initial=editingBehaviorTypeForPlatform()
 
-caretBrowsingEnabled initial=false
 localStorageEnabled initial=false
 allowUniversalAccessFromFileURLs initial=true
 allowFileAccessFromFileURLs initial=true

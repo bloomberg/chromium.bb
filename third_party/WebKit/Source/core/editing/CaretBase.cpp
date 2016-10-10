@@ -168,22 +168,10 @@ bool CaretBase::shouldRepaintCaret(Node& node) const {
          (node.parentNode() && hasEditableStyle(*node.parentNode()));
 }
 
-bool CaretBase::shouldRepaintCaret(const LayoutViewItem view) const {
-  DCHECK(view);
-  if (FrameView* frameView = view.frameView()) {
-    LocalFrame& frame =
-        frameView->frame();  // The frame where the selection started
-    return frame.settings() && frame.settings()->caretBrowsingEnabled();
-  }
-  return false;
-}
-
 void CaretBase::invalidateCaretRect(Node* node) {
-  if (LayoutViewItem view = node->document().layoutViewItem()) {
-    node->document().updateStyleAndLayoutTree();
-    if (hasEditableStyle(*node) || shouldRepaintCaret(view))
-      invalidateLocalCaretRect(node, localCaretRectWithoutUpdate());
-  }
+  node->document().updateStyleAndLayoutTree();
+  if (hasEditableStyle(*node))
+    invalidateLocalCaretRect(node, localCaretRectWithoutUpdate());
 }
 
 void CaretBase::paintCaret(Node* node,

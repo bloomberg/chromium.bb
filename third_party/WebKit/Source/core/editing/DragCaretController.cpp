@@ -44,10 +44,7 @@ bool DragCaretController::hasCaretIn(const LayoutBlock& layoutBlock) const {
     return false;
   if (layoutBlock != CaretBase::caretLayoutObject(node))
     return false;
-  if (rootEditableElementOf(m_position.position()))
-    return true;
-  Settings* settings = node->ownerDocument()->frame()->settings();
-  return settings && settings->caretBrowsingEnabled();
+  return rootEditableElementOf(m_position.position());
 }
 
 bool DragCaretController::isContentRichlyEditable() const {
