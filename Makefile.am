@@ -54,4 +54,4 @@ distwin64-dir :
 
 # .dockerignore
 .dockerignore : .gitignore
-	sed -e 's|^\([^/#]\)|# \1|' -e 's|^/||' $< >$@
+	sed -e 's|^\([^/#]\)|# \1|' -e 's|^/||' -e 's|\+|\\+|g' $< >$@
