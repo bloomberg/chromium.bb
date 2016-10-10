@@ -23,29 +23,6 @@ EOF
 }
 forward_decls qw/av1_common_forward_decls/;
 
-# x86inc.asm had specific constraints. break it out so it's easy to disable.
-# zero all the variables to avoid tricky else conditions.
-$mmx_x86inc = $sse_x86inc = $sse2_x86inc = $ssse3_x86inc = $avx_x86inc =
-  $avx2_x86inc = '';
-$mmx_x86_64_x86inc = $sse_x86_64_x86inc = $sse2_x86_64_x86inc =
-  $ssse3_x86_64_x86inc = $avx_x86_64_x86inc = $avx2_x86_64_x86inc = '';
-if (aom_config("CONFIG_USE_X86INC") eq "yes") {
-  $mmx_x86inc = 'mmx';
-  $sse_x86inc = 'sse';
-  $sse2_x86inc = 'sse2';
-  $ssse3_x86inc = 'ssse3';
-  $avx_x86inc = 'avx';
-  $avx2_x86inc = 'avx2';
-  if ($opts{arch} eq "x86_64") {
-    $mmx_x86_64_x86inc = 'mmx';
-    $sse_x86_64_x86inc = 'sse';
-    $sse2_x86_64_x86inc = 'sse2';
-    $ssse3_x86_64_x86inc = 'ssse3';
-    $avx_x86_64_x86inc = 'avx';
-    $avx2_x86_64_x86inc = 'avx2';
-  }
-}
-
 # functions that are 64 bit only.
 $mmx_x86_64 = $sse2_x86_64 = $ssse3_x86_64 = $avx_x86_64 = $avx2_x86_64 = '';
 if ($opts{arch} eq "x86_64") {
@@ -183,10 +160,10 @@ if (aom_config("CONFIG_AOM_QM") eq "yes") {
     specialize qw/av1_fdct8x8_quant/;
   } else {
     add_proto qw/int64_t av1_block_error/, "const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz";
-    specialize qw/av1_block_error avx2 msa/, "$sse2_x86inc";
+    specialize qw/av1_block_error avx2 msa sse2/;
 
     add_proto qw/int64_t av1_block_error_fp/, "const int16_t *coeff, const int16_t *dqcoeff, int block_size";
-    specialize qw/av1_block_error_fp neon/, "$sse2_x86inc";
+    specialize qw/av1_block_error_fp neon sse2/;
 
     add_proto qw/void av1_quantize_fp/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan, const qm_val_t * qm_ptr, const qm_val_t *iqm_ptr";
 
@@ -211,16 +188,16 @@ if (aom_config("CONFIG_AOM_QM") eq "yes") {
     specialize qw/av1_fdct8x8_quant/;
   } else {
     add_proto qw/int64_t av1_block_error/, "const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz";
-    specialize qw/av1_block_error avx2 msa/, "$sse2_x86inc";
+    specialize qw/av1_block_error sse2 avx2 msa/;
 
     add_proto qw/int64_t av1_block_error_fp/, "const int16_t *coeff, const int16_t *dqcoeff, int block_size";
-    specialize qw/av1_block_error_fp neon/, "$sse2_x86inc";
+    specialize qw/av1_block_error_fp neon sse2/;
 
     add_proto qw/void av1_quantize_fp/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
-    specialize qw/av1_quantize_fp neon sse2/, "$ssse3_x86_64_x86inc";
+    specialize qw/av1_quantize_fp neon sse2/, "$ssse3_x86_64";
 
     add_proto qw/void av1_quantize_fp_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
-    specialize qw/av1_quantize_fp_32x32/, "$ssse3_x86_64_x86inc";
+    specialize qw/av1_quantize_fp_32x32/, "$ssse3_x86_64";
 
     add_proto qw/void av1_fdct8x8_quant/, "const int16_t *input, int stride, tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
     specialize qw/av1_fdct8x8_quant sse2 ssse3 neon/;
@@ -242,7 +219,7 @@ if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   specialize qw/av1_fht16x16 sse2/;
 
   add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
-  specialize qw/av1_fwht4x4/, "$sse2_x86inc";
+  specialize qw/av1_fwht4x4 sse2/;
   if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
     add_proto qw/void av1_fdct4x4/, "const int16_t *input, tran_low_t *output, int stride";
     specialize qw/av1_fdct4x4/;
@@ -357,7 +334,7 @@ if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   specialize qw/av1_fht16x16 sse2 msa/;
 
   add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
-  specialize qw/av1_fwht4x4 msa/, "$sse2_x86inc";
+  specialize qw/av1_fwht4x4 msa sse2/;
   if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
     add_proto qw/void av1_fdct4x4/, "const int16_t *input, tran_low_t *output, int stride";
     specialize qw/av1_fdct4x4/;

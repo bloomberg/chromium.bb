@@ -909,14 +909,12 @@ using std::tr1::make_tuple;
                       filter_x_stride, filter_y, filter_y_stride, w, h, bd); \
   }
 #if HAVE_SSE2 && ARCH_X86_64
-#if CONFIG_USE_X86INC
 WRAP(convolve_copy_sse2, 8)
 WRAP(convolve_avg_sse2, 8)
 WRAP(convolve_copy_sse2, 10)
 WRAP(convolve_avg_sse2, 10)
 WRAP(convolve_copy_sse2, 12)
 WRAP(convolve_avg_sse2, 12)
-#endif  // CONFIG_USE_X86INC
 WRAP(convolve8_horiz_sse2, 8)
 WRAP(convolve8_avg_horiz_sse2, 8)
 WRAP(convolve8_vert_sse2, 8)
@@ -1039,11 +1037,7 @@ INSTANTIATE_TEST_CASE_P(
 #if HAVE_SSE2 && ARCH_X86_64
 #if CONFIG_AOM_HIGHBITDEPTH
 const ConvolveFunctions convolve8_sse2(
-#if CONFIG_USE_X86INC
     wrap_convolve_copy_sse2_8, wrap_convolve_avg_sse2_8,
-#else
-    wrap_convolve_copy_c_8, wrap_convolve_avg_c_8,
-#endif  // CONFIG_USE_X86INC
     wrap_convolve8_horiz_sse2_8, wrap_convolve8_avg_horiz_sse2_8,
     wrap_convolve8_vert_sse2_8, wrap_convolve8_avg_vert_sse2_8,
     wrap_convolve8_sse2_8, wrap_convolve8_avg_sse2_8,
@@ -1051,11 +1045,7 @@ const ConvolveFunctions convolve8_sse2(
     wrap_convolve8_vert_sse2_8, wrap_convolve8_avg_vert_sse2_8,
     wrap_convolve8_sse2_8, wrap_convolve8_avg_sse2_8, 8);
 const ConvolveFunctions convolve10_sse2(
-#if CONFIG_USE_X86INC
     wrap_convolve_copy_sse2_10, wrap_convolve_avg_sse2_10,
-#else
-    wrap_convolve_copy_c_10, wrap_convolve_avg_c_10,
-#endif  // CONFIG_USE_X86INC
     wrap_convolve8_horiz_sse2_10, wrap_convolve8_avg_horiz_sse2_10,
     wrap_convolve8_vert_sse2_10, wrap_convolve8_avg_vert_sse2_10,
     wrap_convolve8_sse2_10, wrap_convolve8_avg_sse2_10,
@@ -1063,11 +1053,7 @@ const ConvolveFunctions convolve10_sse2(
     wrap_convolve8_vert_sse2_10, wrap_convolve8_avg_vert_sse2_10,
     wrap_convolve8_sse2_10, wrap_convolve8_avg_sse2_10, 10);
 const ConvolveFunctions convolve12_sse2(
-#if CONFIG_USE_X86INC
     wrap_convolve_copy_sse2_12, wrap_convolve_avg_sse2_12,
-#else
-    wrap_convolve_copy_c_12, wrap_convolve_avg_c_12,
-#endif  // CONFIG_USE_X86INC
     wrap_convolve8_horiz_sse2_12, wrap_convolve8_avg_horiz_sse2_12,
     wrap_convolve8_vert_sse2_12, wrap_convolve8_avg_vert_sse2_12,
     wrap_convolve8_sse2_12, wrap_convolve8_avg_sse2_12,
@@ -1110,11 +1096,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(64, 64, &convolve12_sse2)));
 #else
 const ConvolveFunctions convolve8_sse2(
-#if CONFIG_USE_X86INC
     aom_convolve_copy_sse2, aom_convolve_avg_sse2,
-#else
-    aom_convolve_copy_c, aom_convolve_avg_c,
-#endif  // CONFIG_USE_X86INC
     aom_convolve8_horiz_sse2, aom_convolve8_avg_horiz_sse2,
     aom_convolve8_vert_sse2, aom_convolve8_avg_vert_sse2, aom_convolve8_sse2,
     aom_convolve8_avg_sse2, aom_scaled_horiz_c, aom_scaled_avg_horiz_c,

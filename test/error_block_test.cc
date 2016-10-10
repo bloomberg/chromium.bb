@@ -158,7 +158,6 @@ TEST_P(ErrorBlockTest, ExtremeValues) {
 
 using std::tr1::make_tuple;
 
-#if CONFIG_USE_X86INC
 int64_t wrap_av1_highbd_block_error_8bit_c(const tran_low_t *coeff,
                                            const tran_low_t *dqcoeff,
                                            intptr_t block_size, int64_t *ssz,
@@ -203,7 +202,5 @@ INSTANTIATE_TEST_CASE_P(AVX, ErrorBlockTest,
                             &wrap_av1_highbd_block_error_8bit_avx,
                             &wrap_av1_highbd_block_error_8bit_c, AOM_BITS_8)));
 #endif  // HAVE_AVX
-
-#endif  // CONFIG_USE_X86INC
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 }  // namespace

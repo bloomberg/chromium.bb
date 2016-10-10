@@ -226,7 +226,7 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_idct4x4_1_add_sse2, TX_4X4, 1)));
 #endif
 
-#if HAVE_SSSE3 && CONFIG_USE_X86INC && ARCH_X86_64 && \
+#if HAVE_SSSE3 && ARCH_X86_64 && \
     !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     SSSE3_64, PartialIDctTest,

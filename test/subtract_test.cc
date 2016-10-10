@@ -89,7 +89,7 @@ TEST_P(AV1SubtractBlockTest, SimpleSubtract) {
 INSTANTIATE_TEST_CASE_P(C, AV1SubtractBlockTest,
                         ::testing::Values(aom_subtract_block_c));
 
-#if HAVE_SSE2 && CONFIG_USE_X86INC
+#if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(SSE2, AV1SubtractBlockTest,
                         ::testing::Values(aom_subtract_block_sse2));
 #endif
