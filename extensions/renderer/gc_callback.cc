@@ -46,7 +46,8 @@ void GCCallback::RunCallback() {
   fallback_.Reset();
   v8::Isolate* isolate = context_->isolate();
   v8::HandleScope handle_scope(isolate);
-  context_->CallFunction(v8::Local<v8::Function>::New(isolate, callback_));
+  context_->SafeCallFunction(v8::Local<v8::Function>::New(isolate, callback_),
+                             0, nullptr);
   delete this;
 }
 

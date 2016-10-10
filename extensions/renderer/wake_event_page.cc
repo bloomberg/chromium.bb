@@ -84,8 +84,8 @@ class WakeEventPage::WakeEventPageNativeHandler
     v8::Local<v8::Value> args[] = {
         v8::Boolean::New(isolate, success),
     };
-    context()->CallFunction(v8::Local<v8::Function>::New(isolate, callback),
-                            arraysize(args), args);
+    context()->SafeCallFunction(v8::Local<v8::Function>::New(isolate, callback),
+                                arraysize(args), args);
   }
 
   MakeRequestCallback make_request_;
