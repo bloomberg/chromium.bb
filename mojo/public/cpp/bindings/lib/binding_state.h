@@ -92,18 +92,21 @@ class MOJO_CPP_BINDINGS_EXPORT SimpleBindingState {
   internal::Router* router_ = nullptr;
 };
 
-template <typename Interface, bool use_multiplex_router>
+template <typename Interface, bool use_multiplex_router, typename ImplRefTraits>
 class BindingState;
 
 // Uses a single-threaded, dedicated router. If |Interface| doesn't have any
 // methods to pass associated interface pointers or requests, there won't be
 // multiple interfaces running on the underlying message pipe. In that case, we
 // can use this specialization to reduce cost.
-template <typename Interface>
-class BindingState<Interface, false> : public SimpleBindingState {
+template <typename Interface, typename ImplRefTraits>
+class BindingState<Interface, false, ImplRefTraits>
+    : public SimpleBindingState {
  public:
-  explicit BindingState(Interface* impl) : impl_(impl) {
-    stub_.set_sink(impl_);
+  using ImplPointerType = typename ImplRefTraits::PointerType;
+
+  explicit BindingState(ImplPointerType impl) {
+    stub_.set_sink(std::move(impl));
   }
 
   ~BindingState() { Close(); }
@@ -124,11 +127,10 @@ class BindingState<Interface, false> : public SimpleBindingState {
     return std::move(request);
   }
 
-  Interface* impl() { return impl_; }
+  Interface* impl() { return ImplRefTraits::GetRawPointer(&stub_.sink()); }
 
  private:
-  typename Interface::Stub_ stub_;
-  Interface* impl_;
+  typename Interface::template Stub_<ImplRefTraits> stub_;
 
   DISALLOW_COPY_AND_ASSIGN(BindingState);
 };
@@ -195,11 +197,14 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexedBindingState {
 
 // Uses a multiplexing router. If |Interface| has methods to pass associated
 // interface pointers or requests, this specialization should be used.
-template <typename Interface>
-class BindingState<Interface, true> : public MultiplexedBindingState {
+template <typename Interface, typename ImplRefTraits>
+class BindingState<Interface, true, ImplRefTraits>
+    : public MultiplexedBindingState {
  public:
-  explicit BindingState(Interface* impl) : impl_(impl) {
-    stub_.set_sink(impl_);
+  using ImplPointerType = typename ImplRefTraits::PointerType;
+
+  explicit BindingState(ImplPointerType impl) {
+    stub_.set_sink(std::move(impl));
   }
 
   ~BindingState() { Close(); }
@@ -222,11 +227,10 @@ class BindingState<Interface, true> : public MultiplexedBindingState {
     return request;
   }
 
-  Interface* impl() { return impl_; }
+  Interface* impl() { return ImplRefTraits::GetRawPointer(&stub_.sink()); }
 
  private:
-  typename Interface::Stub_ stub_;
-  Interface* impl_;
+  typename Interface::template Stub_<ImplRefTraits> stub_;
 
   DISALLOW_COPY_AND_ASSIGN(BindingState);
 };

@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/binding_state.h"
+#include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -66,21 +67,24 @@ class MessageReceiver;
 // single thread for the purposes of task scheduling. Please note that incoming
 // synchrounous method calls may not be run from this task runner, when they
 // reenter outgoing synchrounous calls on the same thread.
-template <typename Interface>
+template <typename Interface,
+          typename ImplRefTraits = RawPtrImplRefTraits<Interface>>
 class Binding {
  public:
+  using ImplPointerType = typename ImplRefTraits::PointerType;
+
   // Constructs an incomplete binding that will use the implementation |impl|.
   // The binding may be completed with a subsequent call to the |Bind| method.
   // Does not take ownership of |impl|, which must outlive the binding.
-  explicit Binding(Interface* impl) : internal_state_(impl) {}
+  explicit Binding(ImplPointerType impl) : internal_state_(std::move(impl)) {}
 
   // Constructs a completed binding of message pipe |handle| to implementation
   // |impl|. Does not take ownership of |impl|, which must outlive the binding.
-  Binding(Interface* impl,
+  Binding(ImplPointerType impl,
           ScopedMessagePipeHandle handle,
           scoped_refptr<base::SingleThreadTaskRunner> runner =
               base::ThreadTaskRunnerHandle::Get())
-      : Binding(impl) {
+      : Binding(std::move(impl)) {
     Bind(std::move(handle), std::move(runner));
   }
 
@@ -89,22 +93,22 @@ class Binding {
   // pass |ptr| on to the client of the service. Does not take ownership of any
   // of the parameters. |impl| must outlive the binding. |ptr| only needs to
   // last until the constructor returns.
-  Binding(Interface* impl,
+  Binding(ImplPointerType impl,
           InterfacePtr<Interface>* ptr,
           scoped_refptr<base::SingleThreadTaskRunner> runner =
               base::ThreadTaskRunnerHandle::Get())
-      : Binding(impl) {
+      : Binding(std::move(impl)) {
     Bind(ptr, std::move(runner));
   }
 
   // Constructs a completed binding of |impl| to the message pipe endpoint in
   // |request|, taking ownership of the endpoint. Does not take ownership of
   // |impl|, which must outlive the binding.
-  Binding(Interface* impl,
+  Binding(ImplPointerType impl,
           InterfaceRequest<Interface> request,
           scoped_refptr<base::SingleThreadTaskRunner> runner =
               base::ThreadTaskRunnerHandle::Get())
-      : Binding(impl) {
+      : Binding(std::move(impl)) {
     Bind(request.PassMessagePipe(), std::move(runner));
   }
 
@@ -271,7 +275,7 @@ class Binding {
   void EnableTestingMode() { internal_state_.EnableTestingMode(); }
 
  private:
-  internal::BindingState<Interface, true> internal_state_;
+  internal::BindingState<Interface, true, ImplRefTraits> internal_state_;
 
   DISALLOW_COPY_AND_ASSIGN(Binding);
 };

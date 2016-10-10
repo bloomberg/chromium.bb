@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -314,8 +315,7 @@ TEST_F(BindingTest, ErrorHandleNotRunWhilePaused) {
 
 class PingServiceImpl : public test::PingService {
  public:
-  explicit PingServiceImpl(test::PingServiceRequest request)
-      : binding_(this, std::move(request)) {}
+  PingServiceImpl() {}
   ~PingServiceImpl() override {}
 
   // test::PingService:
@@ -325,14 +325,11 @@ class PingServiceImpl : public test::PingService {
     callback.Run();
   }
 
-  mojo::Binding<test::PingService>& binding() { return binding_; }
-
   void set_ping_handler(const base::Closure& handler) {
     ping_handler_ = handler;
   }
 
  private:
-  mojo::Binding<test::PingService> binding_;
   base::Closure ping_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
@@ -362,7 +359,8 @@ class CallbackFilter : public MessageReceiver {
 // are always notified before a message is dispatched.
 TEST_F(BindingTest, MessageFilter) {
   test::PingServicePtr ptr;
-  PingServiceImpl impl(GetProxy(&ptr));
+  PingServiceImpl impl;
+  mojo::Binding<test::PingService> binding(&impl, GetProxy(&ptr));
 
   int status = 0;
   auto handler_helper = [] (int* status, int expected_status, int new_status) {
@@ -373,8 +371,8 @@ TEST_F(BindingTest, MessageFilter) {
     return base::Bind(handler_helper, &status, expected_status, new_status);
   };
 
-  impl.binding().AddFilter(CallbackFilter::Wrap(create_handler(0, 1)));
-  impl.binding().AddFilter(CallbackFilter::Wrap(create_handler(1, 2)));
+  binding.AddFilter(CallbackFilter::Wrap(create_handler(0, 1)));
+  binding.AddFilter(CallbackFilter::Wrap(create_handler(1, 2)));
   impl.set_ping_handler(create_handler(2, 3));
 
   for (int i = 0; i < 10; ++i) {
@@ -443,6 +441,47 @@ TEST_F(BindingTest, ConnectionErrorWithReason) {
   ptr.ResetWithReason(1234u, "hello");
 
   run_loop.Run();
+}
+
+template <typename T>
+struct WeakPtrImplRefTraits {
+  using PointerType = base::WeakPtr<T>;
+
+  static bool IsNull(const base::WeakPtr<T>& ptr) { return !ptr; }
+  static T* GetRawPointer(base::WeakPtr<T>* ptr) { return ptr->get(); }
+};
+
+template <typename T>
+using WeakBinding = Binding<T, WeakPtrImplRefTraits<T>>;
+
+TEST_F(BindingTest, CustomImplPointerType) {
+  PingServiceImpl impl;
+  base::WeakPtrFactory<test::PingService> weak_factory(&impl);
+
+  test::PingServicePtr proxy;
+  WeakBinding<test::PingService> binding(weak_factory.GetWeakPtr(),
+                                         GetProxy(&proxy));
+
+  {
+    // Ensure the binding is functioning.
+    base::RunLoop run_loop;
+    proxy->Ping(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  {
+    // Attempt to dispatch another message after the WeakPtr is invalidated.
+    base::Closure assert_not_reached = base::Bind([] { NOTREACHED(); });
+    impl.set_ping_handler(assert_not_reached);
+    proxy->Ping(assert_not_reached);
+
+    // The binding will close its end of the pipe which will trigger a
+    // connection error on |proxy|.
+    base::RunLoop run_loop;
+    proxy.set_connection_error_handler(run_loop.QuitClosure());
+    weak_factory.InvalidateWeakPtrs();
+    run_loop.Run();
+  }
 }
 
 // StrongBindingTest -----------------------------------------------------------

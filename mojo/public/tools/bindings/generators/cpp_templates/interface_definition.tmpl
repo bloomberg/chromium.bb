@@ -295,15 +295,13 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
 {%-   endif -%}
 {%- endfor %}
 
-{{class_name}}Stub::{{class_name}}Stub()
-    : sink_(nullptr) {
-}
+{#--- StubDispatch definition #}
 
-{{class_name}}Stub::~{{interface.name}}Stub() {}
-
-{#--- Stub definition #}
-
-bool {{class_name}}Stub::Accept(mojo::Message* message) {
+// static
+bool {{class_name}}StubDispatch::Accept(
+    {{interface.name}}* impl,
+    mojo::internal::SerializationContext* context,
+    mojo::Message* message) {
 {%- if interface.methods %}
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
@@ -314,13 +312,13 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
               message->mutable_payload());
 
 {%-       set desc = class_name~"::"~method.name %}
-      {{alloc_params(method.param_struct, "params", "message",
-          "&serialization_context_", desc)|indent(4)}}
-      // A null |sink_| means no implementation was bound.
-      assert(sink_);
+      {{alloc_params(method.param_struct, "params", "message", "context", desc)|
+          indent(4)}}
+      // A null |impl| means no implementation was bound.
+      assert(impl);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");
       mojo::internal::MessageDispatchContext context(message);
-      sink_->{{method.name}}({{pass_params(method.parameters)}});
+      impl->{{method.name}}({{pass_params(method.parameters)}});
       return true;
 {%-     else %}
       break;
@@ -332,8 +330,12 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
   return false;
 }
 
-bool {{class_name}}Stub::AcceptWithResponder(
-    mojo::Message* message, mojo::MessageReceiverWithStatus* responder) {
+// static
+bool {{class_name}}StubDispatch::AcceptWithResponder(
+    {{interface.name}}* impl,
+    mojo::internal::SerializationContext* context,
+    mojo::Message* message,
+    mojo::MessageReceiverWithStatus* responder) {
 {%- if interface.methods %}
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
@@ -344,20 +346,18 @@ bool {{class_name}}Stub::AcceptWithResponder(
               message->mutable_payload());
 
 {%-       set desc = class_name~"::"~method.name %}
-      {{alloc_params(method.param_struct, "params", "message",
-          "&serialization_context_", desc)|
-              indent(4)}}
+      {{alloc_params(method.param_struct, "params", "message", "context", desc)|
+          indent(4)}}
       {{class_name}}::{{method.name}}Callback callback =
           {{class_name}}_{{method.name}}_ProxyToResponder::CreateCallback(
               message->request_id(),
-              message->has_flag(mojo::Message::kFlagIsSync),
-              responder,
-              serialization_context_.group_controller);
-      // A null |sink_| means no implementation was bound.
-      assert(sink_);
+              message->has_flag(mojo::Message::kFlagIsSync), responder,
+              context->group_controller);
+      // A null |impl| means no implementation was bound.
+      assert(impl);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");
       mojo::internal::MessageDispatchContext context(message);
-      sink_->{{method.name}}(
+      impl->{{method.name}}(
 {%- if method.parameters -%}{{pass_params(method.parameters)}}, {% endif -%}callback);
       return true;
 {%-     else %}

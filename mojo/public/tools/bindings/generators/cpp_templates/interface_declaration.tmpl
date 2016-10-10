@@ -1,5 +1,7 @@
 {%- import "interface_macros.tmpl" as interface_macros %}
 class {{interface.name}}Proxy;
+
+template <typename ImplRefTraits>
 class {{interface.name}}Stub;
 
 class {{interface.name}}RequestValidator;
@@ -16,7 +18,9 @@ class {{export_attribute}} {{interface.name}}
   static const bool HasSyncMethods_ = {% if interface|has_sync_methods %}true{% else %}false{% endif %};
 
   using Proxy_ = {{interface.name}}Proxy;
-  using Stub_ = {{interface.name}}Stub;
+
+  template <typename ImplRefTraits>
+  using Stub_ = {{interface.name}}Stub<ImplRefTraits>;
 
   using RequestValidator_ = {{interface.name}}RequestValidator;
 {%- if interface|has_callbacks %}

@@ -310,7 +310,7 @@ class SimpleMessageReceiver : public mojo::MessageReceiverWithResponder {
     // the system. It receives the incoming message.
     ServiceImpl impl;
 
-    ServiceStub stub;
+    ServiceStub<> stub;
     stub.set_sink(&impl);
     return stub.Accept(message);
   }
