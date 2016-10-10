@@ -1154,6 +1154,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Menu option to open a new window." name="IDS_NEW_WINDOW">
         New window…
       </message>
+      <message desc="Message that is spoken (for accessibility) whenever the user selects an account from a list displayed in the application." name="IDS_LOG_IN_ACCOUNT_DESCRIPTION" formatter_data="android_java">
+        Signed in as <ph name="EMAIL_ADDRESS">%1$s<ex>test@gmail.com</ex></ph>.
+      </message>
       <message desc="Label for the Feedback button displayed in the Android Help screen. Pressing this button causes the Feedback screen to be shown." name="IDS_ACTIONBAR_FEEDBACK" formatter_data="android_java">
         Feedback
       </message>

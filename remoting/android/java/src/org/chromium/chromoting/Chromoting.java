@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.content.ContextCompat;
@@ -604,6 +605,10 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
 
     @Override
     public void onAccountSelected(String accountName) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            String logInAnnouncement = getString(R.string.log_in_account_description, accountName);
+            mAccountSwitcher.getView().announceForAccessibility(logInAnnouncement);
+        }
         mAccount = accountName;
         JniInterface.setAccountForLogging(accountName);
 
