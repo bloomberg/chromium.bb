@@ -90,7 +90,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   // For the time being, enable wasm serialization when wasm is enabled,
   // since the whole wasm space is experimental. We have the flexibility
   // to decouple the two.
-  if (command_line.HasSwitch(switches::kEnableWasm))
+  if (base::FeatureList::IsEnabled(features::kWebAssembly))
     WebRuntimeFeatures::enableWebAssemblySerialization(true);
 
   if (command_line.HasSwitch(switches::kDisableSharedWorkers))

@@ -17,6 +17,7 @@
 #include "base/feature_list.h"
 #include "base/sys_info.h"
 #include "content/child/site_isolation_stats_gatherer.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -86,8 +87,8 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfHasSwitch(switches::kDisableJavaScriptHarmonyShipping,
                        "--noharmony-shipping");
   SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
-  SetV8FlagIfHasSwitch(switches::kEnableAsmWasm, "--validate-asm");
-  SetV8FlagIfHasSwitch(switches::kEnableWasm, "--expose-wasm");
+  SetV8FlagIfFeature(features::kAsmJsToWebAssembly, "--validate-asm");
+  SetV8FlagIfFeature(features::kWebAssembly, "--expose-wasm");
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

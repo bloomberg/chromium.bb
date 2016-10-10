@@ -1,1 +1,1 @@
-Tests that depend on --enable-wasm
+Tests that depend on --enable-features=WebAssembly

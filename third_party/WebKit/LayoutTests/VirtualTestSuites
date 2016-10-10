@@ -292,7 +292,7 @@
   {
     "prefix": "enable_wasm",
     "base": "http/tests/wasm",
-    "args": ["--enable-wasm"]
+    "args": ["--enable-features=WebAssembly"]
   },
   {
     "prefix": "mojo-service-worker",
