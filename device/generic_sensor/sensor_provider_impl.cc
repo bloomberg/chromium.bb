@@ -21,18 +21,18 @@ uint64_t GetBufferOffset(mojom::SensorType type) {
 }
 
 void RunCallback(mojom::SensorInitParamsPtr init_params,
-                 SensorImpl* sensor,
+                 mojom::SensorClientRequest client,
                  const SensorProviderImpl::GetSensorCallback& callback) {
-  callback.Run(std::move(init_params), sensor->GetClient());
+  callback.Run(std::move(init_params), std::move(client));
 }
 
 void NotifySensorCreated(
     mojom::SensorInitParamsPtr init_params,
-    SensorImpl* sensor,
+    mojom::SensorClientRequest client,
     const SensorProviderImpl::GetSensorCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(RunCallback, base::Passed(&init_params), sensor, callback));
+      FROM_HERE, base::Bind(RunCallback, base::Passed(&init_params),
+                            base::Passed(&client), callback));
 }
 
 }  // namespace
@@ -96,7 +96,8 @@ void SensorProviderImpl::SensorCreated(
   init_params->mode = sensor->GetReportingMode();
   init_params->default_configuration = sensor->GetDefaultConfiguration();
 
-  NotifySensorCreated(std::move(init_params), sensor_impl.get(), callback);
+  NotifySensorCreated(std::move(init_params), sensor_impl->GetClient(),
+                      callback);
 
   mojo::MakeStrongBinding(std::move(sensor_impl), std::move(sensor_request));
 }
