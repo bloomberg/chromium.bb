@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_DEVICE_SENSORS_DEVICE_ORIENTATION_HARDWARE_BUFFER_H_
-#define CONTENT_COMMON_DEVICE_SENSORS_DEVICE_ORIENTATION_HARDWARE_BUFFER_H_
+#ifndef DEVICE_SENSORS_PUBLIC_CPP_DEVICE_ORIENTATION_HARDWARE_BUFFER_H_
+#define DEVICE_SENSORS_PUBLIC_CPP_DEVICE_ORIENTATION_HARDWARE_BUFFER_H_
 
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h"
@@ -15,4 +15,4 @@ typedef device::SharedMemorySeqLockBuffer<blink::WebDeviceOrientationData>
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_DEVICE_SENSORS_DEVICE_ORIENTATION_HARDWARE_BUFFER_H_
+#endif  // DEVICE_SENSORS_PUBLIC_CPP_DEVICE_ORIENTATION_HARDWARE_BUFFER_H_

@@ -10,9 +10,9 @@
 #include "content/browser/device_sensors/data_fetcher_shared_memory_base.h"
 
 #if !defined(OS_ANDROID)
-#include "content/common/device_sensors/device_light_hardware_buffer.h"
-#include "content/common/device_sensors/device_motion_hardware_buffer.h"
-#include "content/common/device_sensors/device_orientation_hardware_buffer.h"
+#include "device/sensors/public/cpp/device_light_hardware_buffer.h"
+#include "device/sensors/public/cpp/device_motion_hardware_buffer.h"
+#include "device/sensors/public/cpp/device_orientation_hardware_buffer.h"
 #endif
 
 #if defined(OS_MACOSX)

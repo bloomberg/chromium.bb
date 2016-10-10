@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_DEVICE_SENSORS_DEVICE_LIGHT_HARDWARE_BUFFER_H_
-#define CONTENT_COMMON_DEVICE_SENSORS_DEVICE_LIGHT_HARDWARE_BUFFER_H_
+#ifndef DEVICE_SENSORS_PUBLIC_CPP_DEVICE_LIGHT_HARDWARE_BUFFER_H_
+#define DEVICE_SENSORS_PUBLIC_CPP_DEVICE_LIGHT_HARDWARE_BUFFER_H_
 
-#include "content/common/device_sensors/device_light_data.h"
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
+#include "device/sensors/public/cpp/device_light_data.h"
 
 namespace content {
 
@@ -15,4 +15,4 @@ typedef device::SharedMemorySeqLockBuffer<DeviceLightData>
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_DEVICE_SENSORS_DEVICE_LIGHT_HARDWARE_BUFFER_H_
+#endif  // DEVICE_SENSORS_PUBLIC_CPP_DEVICE_LIGHT_HARDWARE_BUFFER_H_

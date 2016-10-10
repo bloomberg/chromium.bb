@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/common/device_sensors/device_light_data.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"
 #include "content/renderer/shared_memory_seqlock_reader.h"
+#include "device/sensors/public/cpp/device_light_data.h"
 #include "device/sensors/public/interfaces/light.mojom.h"
 
 namespace blink {
