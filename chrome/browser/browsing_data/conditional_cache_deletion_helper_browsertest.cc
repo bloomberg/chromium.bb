@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -49,6 +49,11 @@ class ConditionalCacheDeletionHelperBrowserTest : public InProcessBrowserTest {
     done_callback_ = base::Bind(
         &ConditionalCacheDeletionHelperBrowserTest::DoneCallback,
         base::Unretained(this));
+
+    // UI and IO thread synchronization.
+    waitable_event_ = base::MakeUnique<base::WaitableEvent>(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
 
     // Get the storage partition.
     partition_ = content::BrowserContext::GetDefaultStoragePartition(
@@ -92,8 +97,7 @@ class ConditionalCacheDeletionHelperBrowserTest : public InProcessBrowserTest {
 
   void WaitForTasksOnIOThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    io_thread_loop_.reset(new base::RunLoop());
-    io_thread_loop_->Run();
+    waitable_event_->Wait();
   }
 
   void SetNumberOfWaitedTasks(int count) {
@@ -120,11 +124,7 @@ class ConditionalCacheDeletionHelperBrowserTest : public InProcessBrowserTest {
     if (--remaining_tasks_ > 0)
       return;
 
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&base::RunLoop::Quit,
-                   base::Unretained(io_thread_loop_.get())));
+    waitable_event_->Signal();
   }
 
   // Cache operation shorthands. -----------------------------------------------
@@ -195,7 +195,7 @@ class ConditionalCacheDeletionHelperBrowserTest : public InProcessBrowserTest {
 
   base::Callback<void(int)> done_callback_;
 
-  std::unique_ptr<base::RunLoop> io_thread_loop_;
+  std::unique_ptr<base::WaitableEvent> waitable_event_;
   int remaining_tasks_;
 
   std::vector<std::string> remaining_keys_;
