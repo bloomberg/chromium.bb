@@ -166,20 +166,11 @@ class PrefTransformerInterface {
 
 // A base class to provide functionality common to the other *PreferenceFunction
 // classes.
-class PreferenceFunction : public ChromeSyncExtensionFunction {
+class PreferenceFunction : public UIThreadExtensionFunction {
  protected:
   enum PermissionType { PERMISSION_TYPE_READ, PERMISSION_TYPE_WRITE };
 
   ~PreferenceFunction() override;
-
-  // Given an |extension_pref_key|, provides its |browser_pref_key| from the
-  // static map in preference_api.cc. Returns true if the corresponding
-  // browser pref exists and the extension has the API permission needed to
-  // modify that pref. Sets |error_| if the extension doesn't have the needed
-  // permission.
-  bool ValidateBrowserPref(const std::string& extension_pref_key,
-                           PermissionType permission_type,
-                           std::string* browser_pref_key);
 };
 
 class GetPreferenceFunction : public PreferenceFunction {
@@ -190,7 +181,7 @@ class GetPreferenceFunction : public PreferenceFunction {
   ~GetPreferenceFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class SetPreferenceFunction : public PreferenceFunction {
@@ -201,7 +192,7 @@ class SetPreferenceFunction : public PreferenceFunction {
   ~SetPreferenceFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class ClearPreferenceFunction : public PreferenceFunction {
@@ -213,7 +204,7 @@ class ClearPreferenceFunction : public PreferenceFunction {
   ~ClearPreferenceFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions
