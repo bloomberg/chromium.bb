@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -29,6 +30,7 @@ public class VideoTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     @DisableIf.Build(sdk_is_less_than = 19, message = "crbug.com/582067")
+    @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)  // https://crbug.com/654411
     @Feature({"Media", "Media-Video", "Main"})
     @LargeTest
     @RetryOnFailure
