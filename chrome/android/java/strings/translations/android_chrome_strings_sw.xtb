@@ -105,6 +105,7 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="213279576345780926">Umefunga <ph name="TAB_TITLE" /></translation>
 <translation id="2138201775715568214">Inatafuta kurasa za Wavuti Kila Mahali zilizo karibu</translation>
 <translation id="2139186145475833000">Ongeza kwenye skrini ya kwanza</translation>
+<translation id="2146738493024040262">Fungua Programu Inayofunguka Papo Hapo</translation>
 <translation id="2148716181193084225">Leo</translation>
 <translation id="2154710561487035718">Nakili UR:</translation>
 <translation id="219985413780390209">Jilinde na ulinde vifaa vyako dhidi ya tovuti hatari</translation>
@@ -184,8 +185,8 @@ Unaweza kudhibiti Wavuti Kila Mahali katika Mipangilio ya Chrome.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Pata usaidizi<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Fungua kwenye kichupo fiche</translation>
 <translation id="3090193911106258841">Inafikia vifaa vya kuingiza sauti na video</translation>
-<translation id="3117051980354074377">Ili upate alamisho kutoka kwenye vifaa vyako vingine, ingia katika Chrome.</translation>
 <translation id="3137521801621304719">Ondoka kwenye hali fiche</translation>
+<translation id="3148434565183091099">Ingia katika Chrome ili upate alamisho zako kwenye vifaa vyako vyote.</translation>
 <translation id="3149891296864842641">Chaguo la usafirishaji</translation>
 <translation id="3177909033752230686">Lugha ya Ukurasa:</translation>
 <translation id="3190152372525844641">Washa ruhusa za Chrome katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
@@ -220,6 +221,7 @@ Unaweza kudhibiti Wavuti Kila Mahali katika Mipangilio ya Chrome.
 <translation id="3518985090088779359">Kubali na uendelee</translation>
 <translation id="3522247891732774234">Kuna toleo jipya. Chaguo zaidi</translation>
 <translation id="3527085408025491307">Folda</translation>
+<translation id="3542235761944717775">KB <ph name="KILOBYTES" /> zinapatikana</translation>
 <translation id="3549644494707163724">Simba kwa njia fiche data yote iliyosawazishwa kwa kaulisiri yako binafsi ya usawazishaji</translation>
 <translation id="3590487821116122040">Hifadhi ya tovuti ambayo Chrome haidhani ni muhimu (k.m. tovuti ambazo hazina mipangilio iliyohifadhiwa au ambazo hutembelei sana)</translation>
 <translation id="360480449234699036">Pata maelezo kuhusu mada kwenye tovuti bila kuondoka kwenye ukurasa. Gusa ili Kutafuta inatuma neno na muktadha wake uliopo kwenye Tafuta na Google, kurejesha ufafanuzi, picha, matokeo ya utafutaji, na maelezo mengine.
@@ -297,7 +299,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="4532845899244822526">Chagua folda</translation>
 <translation id="4543661749405994812">Nakili anwani ya barua pepe</translation>
 <translation id="4572422548854449519">Ingia katika akaunti zinazodhibitiwa</translation>
-<translation id="4576023202210315647">Hifadhi kichupo katika Chrome</translation>
 <translation id="4581964774250883625">Unavinjari katika hali fiche.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Dakika # iliyopita}other{Dakika # zilizopita}}</translation>
 <translation id="4605958867780575332">Kipengee kilichoondolewa: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7208788139759694678">Kiokoa Data kimezimwa</translation>
 <translation id="7243308994586599757">Chaguo zinapatikana karibu na sehemu ya chini ya skrini</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> hutumia mahali ulipo ili kuonyesha matokeo ya utafutaji wa karibu</translation>
-<translation id="7327835590071894791">Kichupo chako sasa kiko chini chini.</translation>
 <translation id="7347770551817603360">Maudhui ya nje ya mtandao</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Shiriki kipengee 1 kilichochaguliwa}other{Shiriki vipengee # vilivyochaguliwa}}</translation>
 <translation id="7366340029385295517">Inatuma kwenye <ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 Huenda Akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vile mambo uliyotafuta na shughuli kutoka huduma nyingine za Google katika <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ilisasishwa <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Tafadhali subiri...</translation>
-<translation id="7501135638693251872">Alamisho zote</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Inafuta data ya kuvinjari</translation>
 <translation id="756809126120519699">Data ya Chrome imefutwa</translation>
@@ -639,12 +638,14 @@ Huenda Akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="8518901949365209398">Tovuti hii hutumia usanidi dhaifu wa usalama (sahihi za SHA-1), kwa hivyo huenda muunganisho wako usiwe wa faragha.</translation>
 <translation id="8523928698583292556">Futa manenosiri yaliyohifadhiwa</translation>
 <translation id="8525306231823319788">Skrini nzima</translation>
+<translation id="85415543246899402">MB <ph name="MEGABYTES" /> zimetumika</translation>
 <translation id="854522910157234410">Fungua ukurasa huu</translation>
 <translation id="8562452229998620586">Manenosiri yaliyohifadhiwa yataonekana hapa.</translation>
 <translation id="856481929701340285">Omba tovuti ya eneo-kazi</translation>
 <translation id="857943718398505171">Imeruhusiwa (inapendekezwa)</translation>
 <translation id="8583805026567836021">Inafuta data ya akaunti</translation>
 <translation id="8617240290563765734">Ungependa kufungua URL iliyopendekezwa na kubainishwa katika maudhui yaliyopakuliwa?</translation>
+<translation id="8618653050765576793">KB <ph name="KILOBYTES" /> zimetumika</translation>
 <translation id="862875433388403934">Maudhui (filamu, muziki, n.k.) yaliyopakuliwa katika programu nyingine huenda yasichezeke tena hadi programu hizo zipate upya leseni kulingana na kitambulisho kipya cha kifaa.
 
 Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyopakuliwa.</translation>

@@ -215,13 +215,11 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7164397146364144019">Saate aidata muuta Chrome'i turvalisemaks ja lihtsamalt kasutatavaks, kui teavitate Google'it automaatselt võimalike turvaintsidentide üksikasjadest.</translation>
 <translation id="7177347454226092725">See kustutab sellest seadmest jäädavalt teie sirvimisandmed. Hiljem oma andmete toomiseks logige Chrome'i sisse kasutajana $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> on Chrome'i lisatud.</translation>
-<translation id="7191567847629796517">Google Chrome OS ei toeta rakenduse <ph name="SCHEME" /> linkide käsitlemiseks välisrakenduste käivitamist. Taotletud link on <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">Google Chrome kuvatakse selles keeles.</translation>
 <translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>
 <translation id="7242029209006116544">Logite sisse hallatud kontoga ja annate selle administraatorile üle oma Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed Google'i kontode juhtpaneeli kaudu kustutada, kuid te ei saa neid seostada teise kontoga. Võite olemasolevate Chrome'i andmete eraldi hoidmiseks luua aga uue profiili. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Arvuti ei saa varsti enam Google Chrome'i värskendusi, kuna Windows XP ja Windows Vista tugi lõpeb.</translation>
 <translation id="7339898014177206373">Uus aken</translation>
-<translation id="7393806081343982361">Google Chrome on teie vaikebrauser. Jee!</translation>
 <translation id="7398801000654795464">Olite Chrome'i sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
 <translation id="7400722733683201933">Google Chrome'i kohta</translation>
 <translation id="7408085963519505752">Chrome OS-i tingimused</translation>
@@ -256,7 +254,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8129812357326543296">Teave &amp;Google Chrome'i kohta</translation>
 <translation id="8183957050892517584">Chrome salvestab turvaliselt teie isiklikud andmed, et te ei peaks neid uuesti sisestama.</translation>
 <translation id="8211929904040702368">See kustutab sellest seadmest jäädavalt vähemalt <ph name="TOTAL_COUNT" /> üksust. Hiljem oma andmete toomiseks logige Chrome'i sisse kasutajana $2.</translation>
-<translation id="8227755444512189073">Google Chrome peab käivitama välise rakenduse <ph name="SCHEME" /> linkide haldamiseks. Küsitud link on <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome kasutab kaamerat ja mikrofoni.</translation>
 <translation id="8286862437124483331">Google Chrome proovib kuvada paroole. Selle lubamiseks sisestage Windowsi parool.</translation>
 <translation id="8290100596633877290">Tohoh! Google Chrome jooksis kokku. Kas soovite kohe taaskäivitada?</translation>

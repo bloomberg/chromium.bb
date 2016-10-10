@@ -553,6 +553,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="6307969636681130414">Naciśnięty</translation>
 <translation id="6324551002951139333">Wykryto błąd gramatyczny</translation>
 <translation id="6348657800373377022">Pole złożone</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{punktor}few{# punktory}many{# punktorów}other{# punktora}}</translation>
 <translation id="6355910664415701303">Brak poprzedniego elementu listy.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Poprzedni nagłówek</translation>
@@ -581,6 +582,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6697092096875747123">Poprzednie pole złożone</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{wykrzyknik}few{# wykrzykniki}many{# wykrzykników}other{# wykrzyknika}}</translation>
 <translation id="6710213216561001401">Wstecz</translation>
 <translation id="6714813999819678458">Poprzedni nagłówek poziomu 2</translation>
 <translation id="6716505898850596801">Klawisze modyfikujące</translation>

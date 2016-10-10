@@ -211,13 +211,11 @@
 <translation id="7164397146364144019">‏אתה יכול לעזור לשפר את הבטיחות של Chrome ולהקל את השימוש בו על ידי דיווח אוטומטי על פרטים של בעיות אבטחה אפשריות ל-Google.</translation>
 <translation id="7177347454226092725">‏הפעולה תמחק לצמיתות את נתוני הגלישה מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chrome בתור $2.</translation>
 <translation id="7185038942300673794">‏<ph name="EXTENSION_NAME" /> נוסף ל-‏Chrome.</translation>
-<translation id="7191567847629796517">‏Google Chrome OS אינו תומך בהפעלת יישום חיצוני כדי לטפל בקישורי <ph name="SCHEME" />. הקישור המבוקש הוא <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">‏Google Chrome מוצג בשפה זו.</translation>
 <translation id="7196020411877309443">למה אני רואה את הדף הזה?</translation>
 <translation id="7242029209006116544">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Google Chrome. הנתונים שלך ב-Chrome, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">‏בקרוב מחשב זה יפסיק לקבל עדכונים ל-Google Chrome בשל הפסקת התמיכה במערכות ההפעלה Windows XP ו-Windows Vista.</translation>
 <translation id="7339898014177206373">חלון חדש</translation>
-<translation id="7393806081343982361">‏Google Chrome הוא דפדפן ברירת המחדל שלך. נהדר!</translation>
 <translation id="7398801000654795464">‏היית מחובר ל-Chrome כ-<ph name="USER_EMAIL_ADDRESS" />. השתמש באותו חשבון כדי להיכנס שוב.</translation>
 <translation id="7400722733683201933">‏אודות Google Chrome</translation>
 <translation id="7408085963519505752">‏תנאים עבור מערכת ההפעלה של Chrome</translation>
@@ -252,7 +250,6 @@
 <translation id="8129812357326543296">‏מידע על Google Chrome&amp;</translation>
 <translation id="8183957050892517584">‏Chrome יאחסן את הפרטים האישיים שלך באופן מאובטח כדי שלא תידרש להקליד אותם שוב.</translation>
 <translation id="8211929904040702368">‏הפעולה תמחק לצמיתות מהמכשיר הזה <ph name="TOTAL_COUNT" /> פריטים לפחות. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chrome בתור $2.</translation>
-<translation id="8227755444512189073">‏Google Chrome חייב לבצע יישום חיצוני על מנת לנהל <ph name="SCHEME" /> קישורים הקישור המבוקש הוא <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">‏Google Chrome משתמש במצלמה ובמיקרופון שלך.</translation>
 <translation id="8286862437124483331">‏Google Chrome מנסה להציג סיסמאות. הקלד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>
 <translation id="8290100596633877290">‏וואו! Google Chrome קרס. להפעיל מחדש עכשיו?</translation>

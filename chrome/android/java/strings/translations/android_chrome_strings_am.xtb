@@ -105,6 +105,7 @@
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> ተዘግቷል</translation>
 <translation id="2138201775715568214">በአቅራቢያ ያሉ አካላዊ ድረ-ገጾችን በመፈለግ ላይ</translation>
 <translation id="2139186145475833000">ወደ መነሻ ማያ ገጽ አክል</translation>
+<translation id="2146738493024040262">ቅጽበታዊ መተግበሪያን ክፈት</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
 <translation id="2154710561487035718">URL ቅዳ</translation>
 <translation id="219985413780390209">እርስዎን እና መሣሪያዎን ከአደገኛ ጣቢያዎች ይጠብቃል</translation>
@@ -184,8 +185,8 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />እገዛ ያግኙ<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">ማንነትን በማያሳውቅ ትር ክፈት</translation>
 <translation id="3090193911106258841">የኦዲዮ እና የቪዲዮ ግብዓትን በመድረስ ላይ</translation>
-<translation id="3117051980354074377">ዕልባቶችዎን ከሌሎች መሣሪያዎችዎ ለማግኘት ወደ Chrome ይግቡ።</translation>
 <translation id="3137521801621304719">ከማንነት የማያሳውቅ ሁነታ ይውጡ</translation>
+<translation id="3148434565183091099">የእርስዎን ዕልባቶች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ Chrome ይግቡ።</translation>
 <translation id="3149891296864842641">የመላኪያ አማራጭ</translation>
 <translation id="3177909033752230686">የገጽ ቋንቋ፦</translation>
 <translation id="3190152372525844641">በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ፍቃዶችን ለChrome ያብሩ።</translation>
@@ -220,6 +221,7 @@
 <translation id="3518985090088779359">ተቀበል እና ቀጥል</translation>
 <translation id="3522247891732774234">ዝማኔ ይገኛል። ተጨማሪ አማራጮች</translation>
 <translation id="3527085408025491307">አቃፊ</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> ኪባ ይገኛል</translation>
 <translation id="3549644494707163724">ሁሉም የተመሳሰለ ውሂብ ከእራስዎ የተመሳሰለ ይለፍ ሐረግ ጋር ያመስጥሩ</translation>
 <translation id="3590487821116122040">Chrome አላስፈላጊ ነው የሚያስበው የጣቢያ ማከማቻ (ለምሳሌ፦ ምንም የተቀመጡ ቅንብሮች የሌላቸው ጣቢያዎች ወይም እርስዎ ብዙ ጊዜ የማይጎበኟቸው)</translation>
 <translation id="360480449234699036">ገጹን ትተው ሳይሄዱ በድር ጣቢያዎች ላይ ስላሉ ርዕሶች ይወቁ። ለመፈለግ ይንኩ አንድ ቃል እና በዙሪያው ያለውን አውድ ወደ Google ፍለጋ ይልክና ትርጓሜዎችን፣ ስዕሎችን የፍለጋ ውጤቶችን እና ሌሎች ዝርዝሮችን ይመልሳል።
@@ -297,7 +299,6 @@
 <translation id="4532845899244822526">አቃፊ ይምረጡ</translation>
 <translation id="4543661749405994812">የኢሜይል አድራሻ ቅዳ</translation>
 <translation id="4572422548854449519">ወደ የሚተዳደር መለያ ይግቡ</translation>
-<translation id="4576023202210315647">በChrome ውስጥ ትርን አቆይ</translation>
 <translation id="4581964774250883625">ማንነት ወደማያሳውቅ ሁነታ ሄደዋል።</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{ከ# ደቂቃ በፊት}one{ከ# ደቂቃዎች በፊት}other{ከ# ደቂቃዎች በፊት}}</translation>
 <translation id="4605958867780575332">ንጥል ተወግዷል፦ <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@
 <translation id="7208788139759694678">ውሂብ ቆጣቢ ተሰናክሏል</translation>
 <translation id="7243308994586599757">አማራጮች ከማያ ገጹ ግርጌ አጠገብ ይገኛሉ</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> አካባቢያዊ የፍለጋ ውጤቶችን ለማሳየት የእርስዎን አካባቢ ይጠቀማል</translation>
-<translation id="7327835590071894791">የእርስዎ ትር አሁን በበስተጀርባ ላይ ነው።</translation>
 <translation id="7347770551817603360">የመስመር ውጭ ይዘት</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 የተመረጠ ንጥል አጋራ}one{# የተመረጡ ንጥሎችን አጋራ}other{# የተመረጡ ንጥሎችን አጋራ}}</translation>
 <translation id="7366340029385295517">ወደ <ph name="SCREEN_NAME" /> በመውሰድ ላይ</translation>
@@ -551,7 +551,6 @@
 የእርስዎ Google መለያ በ<ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ላይ እንደ ፍለጋዎች እና የሌሎች Google አገልግሎቶች እንቅስቃሴ ያሉ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖሩት ይችላል።</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (የተዘመነው በ<ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">እባክዎ ይጠብቁ…</translation>
-<translation id="7501135638693251872">ሁሉም ዕልባቶች</translation>
 <translation id="7521387064766892559">ጃቫስክሪፕት</translation>
 <translation id="7562080006725997899">የአሰሳ ውሂብን በማጽዳት ላይ</translation>
 <translation id="756809126120519699">የChrome ውሂብ ጸድቷል</translation>
@@ -639,12 +638,14 @@
 <translation id="8518901949365209398">ይህ ጣቢያ ደካማ የደህንነት ውቅረት (SHA-1 ፊርማዎች) እየተጠቀም ነው፣ ስለዚህ የእርስዎ ግንኙነት የግል ላይሆን ይችላል።</translation>
 <translation id="8523928698583292556">የተከማቸ የይለፍ ቃል ሰርዝ</translation>
 <translation id="8525306231823319788">ሙሉ ማያ ገጽ</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> ሜባ ጥቅም ላይ ውሏል</translation>
 <translation id="854522910157234410">ይህን ገጽ ክፈት</translation>
 <translation id="8562452229998620586">የተቀመጡ ይለፍ ቃላት እዚህ ይመጣሉ።</translation>
 <translation id="856481929701340285">የዴስክቶፕ ጣቢያን ይጠይቁ</translation>
 <translation id="857943718398505171">ተፈቅዷል (የሚመከር)</translation>
 <translation id="8583805026567836021">የመለያ ውሂብን በማጽዳት ላይ</translation>
 <translation id="8617240290563765734">በወረደው ይዘት ላይ የተጠቆመው ዩአርኤል ይከፈት?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> ኪባ ጥቅም ላይ ውሏል</translation>
 <translation id="862875433388403934">ይዘቶችን (ፊልሞች፣ ሙዚቃ፣ ወዘተ.) የሚያወርዱ መተግበሪያዎች በአዲስ መሣሪያ ምስክርነት ላይ ተመስርተው ፍቃዶችን ዳግም እስኪያገኙ ድረስ በእነሱ የወረዱ ይዘቶችን መልሶ ማጫወት ላይቻል ይችላል።
 
 አዲስ ፍቃዶችን ለማግኘት ከበይነመሩቡ ጋር ይገናኙና የወረዱት ይዘቶችዎን ያጫውቱ።</translation>

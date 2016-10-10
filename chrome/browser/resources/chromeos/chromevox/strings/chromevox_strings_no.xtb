@@ -553,6 +553,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="6307969636681130414">Trykket på</translation>
 <translation id="6324551002951139333">En grammatisk feil er oppdaget</translation>
 <translation id="6348657800373377022">Kombinasjonsboks</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{punkttegn}other{# punkttegn}}</translation>
 <translation id="6355910664415701303">Det finnes ingen tidligere listeelementer.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Forrige overskrift</translation>
@@ -581,6 +582,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6697092096875747123">Forrige kombinasjonsfelt</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{utropstegn}other{# utropstegn}}</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6714813999819678458">Forrige overskrift på nivå 2</translation>
 <translation id="6716505898850596801">Modifikatortaster</translation>

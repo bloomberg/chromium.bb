@@ -105,6 +105,7 @@
 <translation id="213279576345780926">已关闭<ph name="TAB_TITLE" /></translation>
 <translation id="2138201775715568214">正在查找附近的“实物网”网页</translation>
 <translation id="2139186145475833000">添加到主屏幕</translation>
+<translation id="2146738493024040262">打开免安装应用</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="219985413780390209">保护您和您的设备不受危险网站的侵害</translation>
@@ -184,8 +185,8 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="3090193911106258841">正在存取音频和视频输入</translation>
-<translation id="3117051980354074377">要在您的其他设备上访问您的书签，请登录 Chrome。</translation>
 <translation id="3137521801621304719">退出隐身模式</translation>
+<translation id="3148434565183091099">要将您的书签同步到您所有的设备上，请登录 Chrome。</translation>
 <translation id="3149891296864842641">送货方式</translation>
 <translation id="3177909033752230686">网页语言：</translation>
 <translation id="3190152372525844641">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这些权限。</translation>
@@ -220,6 +221,7 @@
 <translation id="3518985090088779359">接受并继续</translation>
 <translation id="3522247891732774234">有更新。更多选项</translation>
 <translation id="3527085408025491307">文件夹</translation>
+<translation id="3542235761944717775">可用空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="3549644494707163724">使用您自己的同步密码加密所有已同步数据</translation>
 <translation id="3590487821116122040">Chrome 认为不重要的网站（例如未保存任何设置的网站或您不常访问的网站）存储的数据</translation>
 <translation id="360480449234699036">无需离开所在页面，即可了解网站上的主题。“触摸搜索”功能会将被触摸的字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片、搜索结果及其他详细信息。
@@ -297,7 +299,6 @@
 <translation id="4532845899244822526">选择文件夹</translation>
 <translation id="4543661749405994812">复制电子邮件地址</translation>
 <translation id="4572422548854449519">请登录受管理的帐户</translation>
-<translation id="4576023202210315647">将标签页保存在 Chrome 中</translation>
 <translation id="4581964774250883625">您已进入隐身模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分钟前}other{# 分钟前}}</translation>
 <translation id="4605958867780575332">以下项已移除：<ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@
 <translation id="7208788139759694678">流量节省程序已停用</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
-<translation id="7327835590071894791">您的标签页现已在后台。</translation>
 <translation id="7347770551817603360">离线内容</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 个所选项}other{分享 # 个所选项}}</translation>
 <translation id="7366340029385295517">正在投射至<ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@
 不过，您的 Google 帐户在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录（例如，在其他 Google 服务中的搜索记录和活动记录）。</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
 <translation id="7498271377022651285">请稍候…</translation>
-<translation id="7501135638693251872">所有书签</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">正在清除浏览数据</translation>
 <translation id="756809126120519699">已清除 Chrome 数据</translation>
@@ -639,12 +638,14 @@
 <translation id="8518901949365209398">此网站使用了安全系数较低的安全配置（SHA-1 签名），因此您的连接可能不具有私密性。</translation>
 <translation id="8523928698583292556">删除存储的密码</translation>
 <translation id="8525306231823319788">全屏</translation>
+<translation id="85415543246899402">已用空间：<ph name="MEGABYTES" /> MB</translation>
 <translation id="854522910157234410">打开此网页</translation>
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
 <translation id="856481929701340285">请求切换到桌面版网站</translation>
 <translation id="857943718398505171">已允许（推荐）</translation>
 <translation id="8583805026567836021">清除帐户数据</translation>
 <translation id="8617240290563765734">要打开下载的内容中指定的建议网址吗？</translation>
+<translation id="8618653050765576793">已用空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="862875433388403934">其他应用中下载的内容（例如电影、音乐等）将无法再播放，除非这些应用根据新的设备凭据重新获得许可。
 
 要获得新的许可，请连接到互联网并播放您下载的内容。</translation>

@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Адресная строка и строка поиска</translation>
 <translation id="2826760142808435982">Соединение зашифровано и проверено с помощью <ph name="CIPHER" />. В качестве механизма обмена ключами используется <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Очистить форму</translation>
-<translation id="2837049386027881519">Пришлось повторно установить подключение с использованием более старой версии протокола TLS или SSL. Обычно это значит, что на сервере установлено очень старое программное обеспечение, которое может быть ненадежным.</translation>
 <translation id="284702764277384724">Возможно, сертификат сервера <ph name="HOST_NAME" /> фальсифицирован.</translation>
 <translation id="2889159643044928134">Не обновлять</translation>
 <translation id="2900469785430194048">Chrome не хватает памяти для показа этой страницы.</translation>
@@ -215,6 +214,7 @@
 <translation id="3254409185687681395">Добавить страницу в закладки</translation>
 <translation id="3270847123878663523">&amp;Отменить изменение порядка</translation>
 <translation id="3286538390144397061">Перезапустить сейчас</translation>
+<translation id="3303855915957856445">Ничего не найдено</translation>
 <translation id="3305707030755673451">Данные были зашифрованы с помощью кодовой фразы <ph name="TIME" />. Введите ее, чтобы начать синхронизацию.</translation>
 <translation id="333371639341676808">Предотвратить создание дополнительных диалоговых окон на этой странице.</translation>
 <translation id="3338095232262050444">Надежный</translation>
@@ -326,6 +326,7 @@
 <translation id="4394049700291259645">Отключить</translation>
 <translation id="4395129973926795186">С <ph name="START_DATE" /> по <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">Результаты поиска</translation>
+<translation id="4432688616882109544">Ваш сертификат отклонен сайтом <ph name="HOST_NAME" /> или не был выдан.</translation>
 <translation id="443673843213245140">Прокси-сервер отключен, но при этом его конфигурация задана явным образом.</translation>
 <translation id="4458874409874303848">Сайт заблокирован</translation>
 <translation id="4461847750548395463">Система безопасного поиска Google заблокировала этот сайт.</translation>
@@ -368,8 +369,8 @@
 <translation id="495170559598752135">Действия</translation>
 <translation id="4958444002117714549">Развернуть список</translation>
 <translation id="4962322354953122629">Сервер не может подтвердить связь с доменом <ph name="DOMAIN" />. Chrome не считает его сертификат безопасности надежным. Возможно, проблема связана с настройками сервера или действиями злоумышленников, которые пытаются перехватить соединение. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="4986920000862467124">Все просмотрено</translation>
 <translation id="498957508165411911">Выполнить перевод (<ph name="ORIGINAL_LANGUAGE" /> &gt; <ph name="TARGET_LANGUAGE" />)?</translation>
+<translation id="4989809363548539747">Плагин не поддерживается</translation>
 <translation id="5002932099480077015">Chrome будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
 <translation id="5019198164206649151">Данные в хранилище повреждены</translation>
 <translation id="5023310440958281426">Проверьте правила, установленные администратором</translation>
@@ -523,8 +524,10 @@
 <translation id="6970216967273061347">Район</translation>
 <translation id="6973656660372572881">Указаны как фиксированные прокси-серверы, так и URL PAC-скриптов.</translation>
 <translation id="6989763994942163495">Показать дополнительные настройки</translation>
+<translation id="7000990526846637657">Данные из истории не найдены</translation>
 <translation id="7009986207543992532">Вы пытаетесь обратиться к серверу в домене <ph name="DOMAIN" />, но он предоставил сертификат с подозрительно долгим сроком действия. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">История просмотра также может храниться в вашем аккаунте Google: <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7087282848513945231">Графство</translation>
 <translation id="7088615885725309056">Раньше</translation>
@@ -607,6 +610,7 @@
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7805768142964895445">Состояние</translation>
 <translation id="7813600968533626083">Удалить подсказку из Chrome?</translation>
+<translation id="7815407501681723534"><ph name="SEARCH_RESULTS" /> по запросу "<ph name="SEARCH_STRING" />" (<ph name="NUMBER_OF_RESULTS" />)</translation>
 <translation id="785549533363645510">Тем не менее ваши действия будут видны системному администратору и интернет-провайдеру, а также доступны веб-сайтам, которые вы посещаете.</translation>
 <translation id="7887683347370398519">Проверьте CVC-код и повторите попытку</translation>
 <translation id="7894616681410591072">Администратор (<ph name="NAME" />) должен разрешить вам просмотр этой страницы.</translation>

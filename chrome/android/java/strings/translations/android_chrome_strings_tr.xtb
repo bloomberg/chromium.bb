@@ -105,6 +105,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> kapatıldı</translation>
 <translation id="2138201775715568214">Yakınlardaki Fiziksel Web sayfaları aranıyor</translation>
 <translation id="2139186145475833000">Ana ekrana ekle</translation>
+<translation id="2146738493024040262">Hazır Uygulamayı aç</translation>
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2154710561487035718">URL'yi Kopyala</translation>
 <translation id="219985413780390209">Kendinizi ve cihazınızı tehlikeli sitelerden koruyun</translation>
@@ -184,8 +185,8 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
 <translation id="3090193911106258841">Ses ve video girişlerine erişiliyor</translation>
-<translation id="3117051980354074377">Diğer cihazlarınızdaki yer işaretlerinizi almak için Chrome'da oturum açın.</translation>
 <translation id="3137521801621304719">Gizli moddan çık</translation>
+<translation id="3148434565183091099">Yer işaretlerinizi tüm cihazlarınızda almak için Chrome'da oturum açın.</translation>
 <translation id="3149891296864842641">Gönderim seçeneği</translation>
 <translation id="3177909033752230686">Sayfanın Dili:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda Chrome için izinleri açın.</translation>
@@ -220,6 +221,7 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="3518985090088779359">Kabul et ve devam et</translation>
 <translation id="3522247891732774234">Güncelleme mevcut. Diğer seçenekler</translation>
 <translation id="3527085408025491307">Klasör</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> KB kullanılabilir</translation>
 <translation id="3549644494707163724">Senkronize edilen tüm verileri kendi senkronizasyon parolanızla şifreleyin</translation>
 <translation id="3590487821116122040">Chrome'un önemli olmadığını düşündüğü site depolama alanı (ör. kayıtlı ayarları bulunmayan veya sık ziyaret etmediğiniz siteler)</translation>
 <translation id="360480449234699036">Sayfadan ayrılmadan web siteleriyle ilgili konuları öğrenin. Ara'ya dokunduğunuzda bir kelime ve içinde bulunduğu bağlamı oluşturan metin Google Arama'ya gönderilerek ilgili tanımlar, resimler, arama sonuçları ve diğer ayrıntılar sonuç olarak döndürülür.
@@ -297,7 +299,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4532845899244822526">Klasör seçin</translation>
 <translation id="4543661749405994812">E-posta adresini kopyala</translation>
 <translation id="4572422548854449519">Yönetilen hesapta oturum açın</translation>
-<translation id="4576023202210315647">Sekmeyi Chrome'da sakla</translation>
 <translation id="4581964774250883625">Gizli moda geçtiniz.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# dakika önce}other{# dakika önce}}</translation>
 <translation id="4605958867780575332">Öğe kaldırıldı: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7208788139759694678">Veri Tasarrufu devre dışı bırakıldı</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />, yerel arama sonuçlarını göstermek için konumunuzu kullanır</translation>
-<translation id="7327835590071894791">Sekmeniz şimdi arka planda.</translation>
 <translation id="7347770551817603360">Çevrimdışı içerik</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 seçili öğeyi paylaş}other{# seçili öğeyi paylaş}}</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" /> ekranına yayınlanıyor</translation>
@@ -551,7 +551,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesabınızla ilişkili başka biçimlerde tarama geçmişi <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> adresinde bulunabilir.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> güncellendi)</translation>
 <translation id="7498271377022651285">Lütfen bekleyin…</translation>
-<translation id="7501135638693251872">Tüm yer işaretleri</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Göz atma verileri temizleniyor</translation>
 <translation id="756809126120519699">Chrome verileri temizlendi</translation>
@@ -639,12 +638,14 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8518901949365209398">Bu site düşük bir güvenlik yapılandırması (SHA-1 imzaları) kullandığından bağlantınız gizli olmayabilir.</translation>
 <translation id="8523928698583292556">Kayıtlı şifreyi sil</translation>
 <translation id="8525306231823319788">Tam ekran</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> MB kullanıldı</translation>
 <translation id="854522910157234410">Şu sayfayı aç:</translation>
 <translation id="8562452229998620586">Kayıtlı şifreleriniz burada görünür.</translation>
 <translation id="856481929701340285">Masaüstü sitesi iste</translation>
 <translation id="857943718398505171">İzin verildi (önerilir)</translation>
 <translation id="8583805026567836021">Hesap verileri temizleniyor</translation>
 <translation id="8617240290563765734">İndirilen öğede belirtilen URL önerisi açılsın mı?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> KB kullanıldı</translation>
 <translation id="862875433388403934">Diğer uygulamalarda indirilen içerikler (film, müzik vb.), ilgili uygulamalar cihazın yeni kimlik bilgilerine dayanarak yeniden lisans alana kadar oynatılmayabilir.
 
 Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği oynatın.</translation>

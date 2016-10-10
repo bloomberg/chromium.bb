@@ -105,6 +105,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="213279576345780926">La scheda <ph name="TAB_TITLE" /> è stata chiusa</translation>
 <translation id="2138201775715568214">Ricerca di pagine Physical Web nelle vicinanze in corso</translation>
 <translation id="2139186145475833000">Aggiungi a schermata Home</translation>
+<translation id="2146738493024040262">Apri l'app istantanea</translation>
 <translation id="2148716181193084225">Oggi</translation>
 <translation id="2154710561487035718">Copia URL</translation>
 <translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
@@ -184,8 +185,8 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Apri in scheda in incognito</translation>
 <translation id="3090193911106258841">Accesso all'input audio e video in corso</translation>
-<translation id="3117051980354074377">Accedi a Chrome per trovare i tuoi preferiti degli altri dispositivi.</translation>
 <translation id="3137521801621304719">Esci dalla modalità di navigazione in incognito</translation>
+<translation id="3148434565183091099">Accedi a Chrome per trovare i tuoi preferiti su tutti i dispositivi.</translation>
 <translation id="3149891296864842641">Opzione di spedizione</translation>
 <translation id="3177909033752230686">Lingua della pagina:</translation>
 <translation id="3190152372525844641">Abilita le autorizzazioni per Chrome in <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
@@ -220,6 +221,7 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="3518985090088779359">Accetta e continua</translation>
 <translation id="3522247891732774234">Aggiornamento disponibile. Altre opzioni</translation>
 <translation id="3527085408025491307">Cartella</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> kB disponibili</translation>
 <translation id="3549644494707163724">Crittografa tutti i dati sincronizzati con la tua passphrase di sincronizzazione</translation>
 <translation id="3590487821116122040">Memoria utilizzata da siti che Chrome non ritiene importanti (ad esempio siti senza impostazioni salvate o che non visiti spesso)</translation>
 <translation id="360480449234699036">Scopri gli argomenti dei siti web senza lasciare la pagina. La funzione Tocca per cercare consente di inviare una parola e il relativo contesto alla Ricerca Google; vengono restituiti risultati di ricerca, immagini, definizioni e altri dettagli.
@@ -297,7 +299,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4532845899244822526">Scegli cartella</translation>
 <translation id="4543661749405994812">Copia indirizzo email</translation>
 <translation id="4572422548854449519">Accedi all'account gestito</translation>
-<translation id="4576023202210315647">Salva scheda in Chrome</translation>
 <translation id="4581964774250883625">Sei passato alla navigazione in incognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuto fa}other{# minuti fa}}</translation>
 <translation id="4605958867780575332">Elemento rimosso: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7208788139759694678">Funzione Risparmio dati disattivata</translation>
 <translation id="7243308994586599757">Opzioni disponibili nella parte inferiore dello schermo</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utilizza la tua posizione per mostrare i risultati della ricerca locale.</translation>
-<translation id="7327835590071894791">La scheda è ora in secondo piano.</translation>
 <translation id="7347770551817603360">Contenuto offline</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Condividi 1 elemento selezionato}other{Condividi # elementi selezionati}}</translation>
 <translation id="7366340029385295517">Trasmissione su <ph name="SCREEN_NAME" /> in corso</translation>
@@ -551,7 +551,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, ad esempio ricerche e attività, di altri servizi Google alla pagina <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ultimo aggiornamento: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Attendi…</translation>
-<translation id="7501135638693251872">Tutti i Preferiti</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Cancellazione dei dati di navigazione in corso</translation>
 <translation id="756809126120519699">Dati di Chrome cancellati</translation>
@@ -639,12 +638,14 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8518901949365209398">Questo sito utilizza una configurazione di sicurezza poco efficace (firme basate sull'algoritmo SHA-1), pertanto la tua connessione potrebbe non risultare privata.</translation>
 <translation id="8523928698583292556">Elimina la password memorizzata</translation>
 <translation id="8525306231823319788">Schermo intero</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> MB utilizzati</translation>
 <translation id="854522910157234410">Apri questa pagina</translation>
 <translation id="8562452229998620586">Le password salvate verranno visualizzate qui.</translation>
 <translation id="856481929701340285">Richiedi sito desktop</translation>
 <translation id="857943718398505171">Consentita (opzione consigliata)</translation>
 <translation id="8583805026567836021">Cancellazione dati dell'account</translation>
 <translation id="8617240290563765734">Aprire l'URL consigliato specificato nei contenuti scaricati?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> kB utilizzati</translation>
 <translation id="862875433388403934">I contenuti (film, musica e così via) scaricati in altre applicazioni potrebbero non essere riproducibili finché tali applicazioni non riacquistano le licenze in base a nuove credenziali del dispositivo.
 
 Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaricati.</translation>

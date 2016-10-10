@@ -214,13 +214,11 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="7164397146364144019">Olası güvenlik olaylarının ayrıntılarını Google'a otomatik olarak bildirerek Chrome'un daha güvenli ve kullanımı kolay bir hale gelmesine yardımcı olabilirsiniz.</translation>
 <translation id="7177347454226092725">Bu işlem tarama verilerinizi bu cihazdan kalıcı olarak silecektir. Verilerinizi daha sonra geri almak için Chrome'da $2 olarak oturum açın.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> Chrome'a eklendi.</translation>
-<translation id="7191567847629796517">Google Chrome OS, <ph name="SCHEME" /> bağlantılarını işlemek için harici bir uygulamanın başlatılmasını desteklemiyor. İstenen bağlantı: <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">Google Chrome bu dilde görüntüleniyor.</translation>
 <translation id="7196020411877309443">Neden bunu görüyorum?</translation>
 <translation id="7242029209006116544">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Google Chrome profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chrome verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chrome verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz.<ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Windows XP ve Windows Vista artık desteklenmeyeceğinden, bu bilgisayar yakında Google Chrome güncellemeleri almayı durduracaktır.</translation>
 <translation id="7339898014177206373">Yeni pencere</translation>
-<translation id="7393806081343982361">Google Chrome varsayılan tarayıcınız oldu. Yaşasın!</translation>
 <translation id="7398801000654795464">Chrome'da <ph name="USER_EMAIL_ADDRESS" /> olarak oturum açtınız. Tekrar oturum açmak için lütfen aynı hesabı kullanın.</translation>
 <translation id="7400722733683201933">Google Chrome hakkında</translation>
 <translation id="7408085963519505752">Chrome OS Şartları</translation>
@@ -255,7 +253,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="8129812357326543296">&amp;Google Chrome hakkında</translation>
 <translation id="8183957050892517584">Chrome, kişisel bilgilerinizi güvenli şekilde depoladığından bu bilgileri tekrar yazmak zorunda kalmazsınız.</translation>
 <translation id="8211929904040702368">Bu işlem, en az <ph name="TOTAL_COUNT" /> öğeyi bu cihazdan kalıcı olarak silecektir. Verilerinizi daha sonra geri almak için Chrome'da $2 olarak oturum açın.</translation>
-<translation id="8227755444512189073">Google Chrome'un <ph name="SCHEME" /> bağlantılarını işleyebilmek için harici bir uygulama başlatması gerekiyor. İstenen bağlantı <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome kameranızı ve mikrofonunuzu kullanıyor.</translation>
 <translation id="8286862437124483331">Google Chrome şifreleri göstermeye çalışıyor. Buna izin vermek için Windows şifrenizi yazın.</translation>
 <translation id="8290100596633877290">Hata! Google Chrome kilitlendi. Şimdi yeniden başlatılsın mı?</translation>

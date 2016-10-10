@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">Chromium, verilerinizi senkronize edemedi. Lütfen Senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="1174473354587728743">Bilgisayarı paylaşıyor musunuz? Artık Chromium'u tam olarak istediğiniz gibi kurabilirsiniz.</translation>
 <translation id="1185134272377778587">Chromium hakkında</translation>
-<translation id="1221340462641866827">Chromium OS, <ph name="SCHEME" /> bağlantılarını kullanmak için harici uygulama başlatmayı desteklemiyor. İstenen bağlantı: <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Sistemde çakışan bir Chromium yüklemesi bulundu. Lütfen yüklemeyi kaldırıp tekrar deneyin.</translation>
 <translation id="1298199220304005244">Chromium OS'u kullanma konusunda yardım alın</translation>
 <translation id="1396446129537741364">Chromium, şifreleri göstermeye çalışıyor.</translation>
@@ -64,7 +63,6 @@
 <translation id="2886012850691518054">İsteğe Bağlı: Kullanıcı istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak göndererek Chromium'u iyileştirmemize yardımcı olun.</translation>
 <translation id="2905536371227304018">Chromium OS bu dilde görüntüleniyor.</translation>
 <translation id="2910007522516064972">&amp;Chromium hakkında</translation>
-<translation id="2966088006374919794">Chromium'un, <ph name="SCHEME" /> bağlantılarını kullanabilmek için harici bir uygulamayı başlatması gerekiyor. İstenen bağlantı: <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Chromium'a ekleniyor ...</translation>
 <translation id="3046695367536568084">Uygulamaları kullanmak için Chromium'da oturum açmış olmanız gerekir. Oturum açmanız, Chromium'un uygulamalarınızı, yer işaretlerinizi, geçmişinizi, şifrelerinizi ve diğer ayarlarınızı tüm cihazlarınızda senkronize etmesine olanak sağlar.</translation>
 <translation id="3068515742935458733">Kilitlenme raporlarını ve <ph name="UMA_LINK" /> bilgilerini Google'a göndererek, Chromium'u daha iyi hale getirmeye yardımcı olun</translation>
@@ -99,7 +97,6 @@
 <translation id="4050175100176540509">Son sürümde güvenlikle ilgili önemli iyileştirmeler ve yeni özellikler mevcuttur.</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />'u seçin</translation>
 <translation id="4077262827416206768">Lütfen tüm Chromium pencerelerini kapatın ve bu değişikliğin geçerli olması için Chromium'u yeniden başlatın.</translation>
-<translation id="4182290826692170034">Chromium, varsayılan tarayıcınız oldu. Yaşasın!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Uyarı:<ph name="END_BOLD" />, Chromium uzantıların göz atma geçmişinizi kaydetmesini engelleyemez. Gizli modda bu uzantıyı devre dışı bırakmak için, bu seçeneğin onay işaretini kaldırın.</translation>
 <translation id="421369550622382712">Chromium'a özgü harika uygulamaları, oyunları, uzantıları ve temaları keşfedin.</translation>
 <translation id="4222580632002216401">Chromium'da oturum açtınız! Senkronizasyon, yöneticiniz tarafından devre dışı bırakıldı.</translation>

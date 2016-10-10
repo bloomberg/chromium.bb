@@ -105,6 +105,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> geschlossen</translation>
 <translation id="2138201775715568214">Nach Physical Web-Seiten zu Objekten in der Nähe wird gesucht.</translation>
 <translation id="2139186145475833000">Zum Startbildschirm hinzu</translation>
+<translation id="2146738493024040262">Instant-App öffnen</translation>
 <translation id="2148716181193084225">Heute</translation>
 <translation id="2154710561487035718">URL kopieren</translation>
 <translation id="219985413780390209">Mich und mein Gerät vor schädlichen Websites schützen</translation>
@@ -184,8 +185,8 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
 <translation id="3090193911106258841">Zugriff auf Audio- und Video-Eingang</translation>
-<translation id="3117051980354074377">Melden Sie sich in Chrome an, um Lesezeichen von Ihren anderen Geräten abzurufen.</translation>
 <translation id="3137521801621304719">Inkognitomodus deaktivieren</translation>
+<translation id="3148434565183091099">Melden Sie sich in Chrome an, um Ihre Lesezeichen auf allen Ihren Geräten zu haben.</translation>
 <translation id="3149891296864842641">Versandoption</translation>
 <translation id="3177909033752230686">Sprache der Seite:</translation>
 <translation id="3190152372525844641">Berechtigungen für Chrome in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren</translation>
@@ -220,6 +221,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3518985090088779359">Akzeptieren &amp; weiter</translation>
 <translation id="3522247891732774234">Update verfügbar. Weitere Optionen</translation>
 <translation id="3527085408025491307">Ordner</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> KB verfügbar</translation>
 <translation id="3549644494707163724">Alle synchronisierten Daten mit Ihrer eigenen Synchronisierungspassphrase verschlüsseln</translation>
 <translation id="3590487821116122040">Websitespeicher, den Chrome nicht für wichtig hält, wie etwa Websites ohne gespeicherte Einstellungen oder solche, die nicht oft besucht werden</translation>
 <translation id="360480449234699036">Erfahren Sie mehr über Themen auf einer Website, ohne die Seite verlassen zu müssen. Mit der Option "Zum Suchen tippen" werden ein Wort sowie dessen Kontext an die Google-Suche gesendet. Daraufhin erhalten Sie Definitionen, Bilder, Suchergebnisse und andere Details.
@@ -297,7 +299,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4532845899244822526">Ordner auswählen</translation>
 <translation id="4543661749405994812">E-Mail-Adresse kopieren</translation>
 <translation id="4572422548854449519">In verwaltetem Konto anmelden</translation>
-<translation id="4576023202210315647">Tab in Chrome speichern</translation>
 <translation id="4581964774250883625">Sie befinden sich jetzt im Inkognitomodus.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Vor # Minute}other{Vor # Minuten}}</translation>
 <translation id="4605958867780575332">Element entfernt: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7208788139759694678">Datensparmodus deaktiviert</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> zeigt Ihnen lokale Suchergebnisse basierend auf Ihrem Standort.</translation>
-<translation id="7327835590071894791">Ihr Tab ist jetzt im Hintergrund.</translation>
 <translation id="7347770551817603360">Offline-Inhalt</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 ausgewähltes Element teilen}other{# ausgewählte Elemente teilen}}</translation>
 <translation id="7366340029385295517">Übertragung an <ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> weitere Arten von Browserverlaufsdaten wie Suchanfragen oder Aktivitäten anderer Google-Dienste für Ihr Google-Konto.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualisiert <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Bitte warten...</translation>
-<translation id="7501135638693251872">Alle Lesezeichen</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Browserdaten werden gelöscht</translation>
 <translation id="756809126120519699">Gelöschte Chrome-Daten</translation>
@@ -639,12 +638,14 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8518901949365209398">Diese Website verwendet eine schwache Sicherheitskonfiguration (SHA-1-Signaturen). Daher ist Ihre Verbindung möglicherweise nicht geschützt.</translation>
 <translation id="8523928698583292556">Gespeichertes Passwort löschen</translation>
 <translation id="8525306231823319788">Vollbildmodus</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> MB belegt</translation>
 <translation id="854522910157234410">Diese Seite öffnen</translation>
 <translation id="8562452229998620586">Gespeicherte Passwörter erscheinen hier.</translation>
 <translation id="856481929701340285">Desktop-Version anfordern</translation>
 <translation id="857943718398505171">Zugelassen (empfohlen)</translation>
 <translation id="8583805026567836021">Kontodaten werden gelöscht</translation>
 <translation id="8617240290563765734">Soll die im heruntergeladenen Inhalt angegebene URL geöffnet werden?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> KB belegt</translation>
 <translation id="862875433388403934">In anderen Anwendungen heruntergeladene Inhalte wie Filme und Musik können möglicherweise erst wieder abgespielt werden, nachdem Lizenzen basierend auf neuen Anmeldedaten für die betreffenden Anwendungen erworben wurden.
 
 Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spielen Sie die heruntergeladenen Inhalte ab.</translation>

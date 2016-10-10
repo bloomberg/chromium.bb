@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">Chromium ei saanud teie andmeid sünkroonida. Värskendage oma sünkroonimisparooli.</translation>
 <translation id="1174473354587728743">Kas jagage arvutit? Saate nüüd seadistada Chromiumi just nii, nagu teile meeldib.</translation>
 <translation id="1185134272377778587">Teave Chromiumi kohta</translation>
-<translation id="1221340462641866827">Chromium OS ei toeta rakenduse <ph name="SCHEME" /> linkide käsitlemiseks välisrakenduste käivitamist. Taotletud link on <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Süsteemist tuvastati Chromiumi konfliktne install. Desinstallige see ja proovige uuesti.</translation>
 <translation id="1298199220304005244">Hangi abi Chromium OS-i kasutamise kohta</translation>
 <translation id="1396446129537741364">Chromium püüab paroole kuvada.</translation>
@@ -64,7 +63,6 @@
 <translation id="2886012850691518054">Valikuline: aidake muuta Chromiumi paremaks, saates Google'ile automaatselt kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="2905536371227304018">Chromium OS kuvatakse selles keeles.</translation>
 <translation id="2910007522516064972">Teave &amp;Chromiumi kohta</translation>
-<translation id="2966088006374919794">Chromium peab rakenduse <ph name="SCHEME" /> linkide käsitlemiseks käivitama välisrakenduse. Taotletud link on <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Chromiumi lisamine ...</translation>
 <translation id="3046695367536568084">Rakenduste kasutamiseks peate olema Chromiumi sisse logitud. See võimaldab Chromiumil sünkroonida teie rakendusi, järjehoidjaid, ajalugu, paroole ja muid seadeid erinevates seadmetes.</translation>
 <translation id="3068515742935458733">Aidake Chromiumi täiustada, saates Google'ile krahhiaruandeid ja lingi <ph name="UMA_LINK" /></translation>
@@ -101,7 +99,6 @@
 <translation id="4050175100176540509">Uusimas versioonis on saadaval olulised turvatäiendused ja uued funktsioonid.</translation>
 <translation id="407254336480250557">Valige <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Muudatuse rakendamiseks sulgege kõik Chromiumi aknad ja taaskäivitage Chromium.</translation>
-<translation id="4182290826692170034">Chromium on teie vaikebrauser. Jee!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Hoiatus:<ph name="END_BOLD" /> Chromium ei saa takistada rakendusi teie sirvimisajalugu talletamast. Kui soovite laienduse inkognitorežiimis keelata, siis tühistage see valik.</translation>
 <translation id="421369550622382712">Avastage Chromiumi jaoks suurepäraseid rakendusi, mänge, laiendusi ja teemasid.</translation>
 <translation id="4222580632002216401">Olete nüüd Chromiumi sisse logitud. Administraator on sünkroonimise keelanud.</translation>

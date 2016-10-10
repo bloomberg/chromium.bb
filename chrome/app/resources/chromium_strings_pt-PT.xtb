@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">O Chromium não conseguiu sincronizar os dados. Atualize a frase de acesso da Sincronização.</translation>
 <translation id="1174473354587728743">Partilha um computador? Agora pode configurar o Chromium exatamente como pretende.</translation>
 <translation id="1185134272377778587">Acerca do Chromium</translation>
-<translation id="1221340462641866827">O SO Chromium não suporta a abertura de uma aplicação externa para processar links de <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Foi encontrada uma instalação do Chromium em conflito no sistema. Desinstale-a e tente novamente.</translation>
 <translation id="1298199220304005244">Obter ajuda para utilizar o SO Chromium</translation>
 <translation id="1396446129537741364">O Chromium está a tentar mostrar palavras-passe.</translation>
@@ -13,7 +12,7 @@
 <translation id="1414495520565016063">Tem sessão iniciada no Chromium!</translation>
 <translation id="1444754455097148408">Licenças de código aberto do Chromium</translation>
 <translation id="1480489203462860648">Experimente, já está instalado</translation>
-<translation id="1502360822835740515">Definir o Chromium como o navegador predefinido</translation>
+<translation id="1502360822835740515">Tornar o Chromium o navegador predefinido</translation>
 <translation id="151962892725702025">O SO Chromium não conseguiu sincronizar os dados porque a sincronização não está disponível para o seu domínio.</translation>
 <translation id="1559451348202814456">O Chromium pode não funcionar corretamente, uma vez que já não é suportado no Mac OS X 10.6, no Mac OS X 10.7 ou no Mac OS X 10.8.</translation>
 <translation id="1644918877723739397">O Chromium armazena esta informação nas <ph name="SAVED_PASSWORD_LINK" /> e lembra-a da próxima vez que precisar.</translation>
@@ -64,7 +63,6 @@
 <translation id="2886012850691518054">Opcional: ajude a melhorar o Chromium enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="2905536371227304018">O SO Chromium é apresentado neste idioma.</translation>
 <translation id="2910007522516064972">Acerca do &amp;Chromium</translation>
-<translation id="2966088006374919794">O Chromium precisa de iniciar uma aplicação externa para processar links de <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">A adicionar ao Chromium...</translation>
 <translation id="3046695367536568084">É obrigatório ter sessão iniciada no Chromium para utilizar aplicações. Deste modo, o Chromium pode sincronizar as aplicações, os marcadores, o histórico, as palavras-passe e outras definições entre dispositivos.</translation>
 <translation id="3068515742935458733">Ajudar a melhorar o Chromium ao enviar relatórios de falhas e <ph name="UMA_LINK" /> à Google</translation>
@@ -101,7 +99,6 @@
 <translation id="4050175100176540509">Estão disponíveis na versão mais recente melhorias de segurança importantes e novas funcionalidades.</translation>
 <translation id="407254336480250557">Selecione o <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Feche todas as janelas do Chromium e reinicie o Chromium para que esta alteração seja aplicada.</translation>
-<translation id="4182290826692170034">O Chromium é o seu navegador predefinido. Viva!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Aviso:<ph name="END_BOLD" /> o Chromium não consegue impedir que as extensões gravem o seu histórico de navegação. Para desativar esta extensão no modo de navegação anónima, desmarque esta opção.</translation>
 <translation id="421369550622382712">Descubra aplicações, jogos, extensões e temas fantásticos para o Chromium.</translation>
 <translation id="4222580632002216401">Tem agora sessão iniciada no Chromium! A sincronização foi desativada pelo seu administrador.</translation>

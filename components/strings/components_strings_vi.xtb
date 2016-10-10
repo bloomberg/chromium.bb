@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Thanh địa chỉ và tìm kiếm</translation>
 <translation id="2826760142808435982">Kết nối được mã hóa và xác thực bằng <ph name="CIPHER" /> đồng thời sử dụng <ph name="KX" /> làm cơ chế trao đổi chính.</translation>
 <translation id="2835170189407361413">Xóa biểu mẫu</translation>
-<translation id="2837049386027881519">Phải thử lại kết nối bằng phiên bản giao thức TLS hoặc SSL cũ hơn. Điều này thường có nghĩa là máy chủ đang sử dụng phần mềm rất cũ và có thể gặp các vấn đề bảo mật khác.</translation>
 <translation id="284702764277384724">Có vẻ như chứng chỉ máy chủ tại <ph name="HOST_NAME" /> là giả mạo.</translation>
 <translation id="2889159643044928134">Không tải lại</translation>
 <translation id="2900469785430194048">Google Chrome đã hết bộ nhớ khi cố gắng hiển thị trang web này.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Đánh dấu trang này</translation>
 <translation id="3270847123878663523">&amp;Hoàn tác sắp xếp lại</translation>
 <translation id="3286538390144397061">Khởi động lại Ngay bây giờ</translation>
+<translation id="3303855915957856445">Không tìm thấy kết quả tìm kiếm nào</translation>
 <translation id="3305707030755673451">Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng bộ hóa của bạn vào <ph name="TIME" />. Nhập cụm mật khẩu đó để bắt đầu đồng bộ hóa.</translation>
 <translation id="333371639341676808">Ngăn không cho trang này tạo hộp thoại bổ sung.</translation>
 <translation id="3338095232262050444">Bảo mật</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Vô hiệu hóa</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> đến <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">kết quả tìm kiếm</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> không chấp nhận chứng chỉ đăng nhập của bạn hoặc có thể bạn chưa cung cấp chứng chỉ đăng nhập.</translation>
 <translation id="443673843213245140">Đã tắt sử dụng proxy nhưng cấu hình proxy rõ ràng được chỉ định.</translation>
 <translation id="4458874409874303848">Trang web an toàn</translation>
 <translation id="4461847750548395463">Bạn thấy thông báo này vì Trang web an toàn của Google được bật.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Tác vụ</translation>
 <translation id="4958444002117714549">Mở rộng danh sách</translation>
 <translation id="4962322354953122629">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được Chrome tin tưởng. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Đã đọc tất cả</translation>
 <translation id="498957508165411911">Dịch từ <ph name="ORIGINAL_LANGUAGE" /> sang <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Plugin này không được hỗ trợ</translation>
 <translation id="5002932099480077015">Nếu được bật, Chrome sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền vào biểu mẫu nhanh hơn.</translation>
 <translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
 <translation id="5023310440958281426">Kiểm tra chính sách của quản trị viên của bạn</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">Quận</translation>
 <translation id="6973656660372572881">Cả hai máy chủ proxy cố định và URL tập lệnh .pac đều được chỉ định.</translation>
 <translation id="6989763994942163495">Hiển thị cài đặt nâng cao...</translation>
+<translation id="7000990526846637657">Không tìm thấy mục nhập lịch sử nào</translation>
 <translation id="7009986207543992532">Bạn đã cố gắng truy cập <ph name="DOMAIN" /> nhưng máy chủ đã xuất trình chứng chỉ có thời gian có hiệu lực quá dài để có thể tin cậy. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Tài khoản Google của bạn có thể có các biểu mẫu lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
 <translation id="7087282848513945231">Hạt</translation>
 <translation id="7088615885725309056">Cũ hơn</translation>
@@ -608,6 +611,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7805768142964895445">Trạng thái</translation>
 <translation id="7813600968533626083">Xóa đề xuất biểu mẫu khỏi Chrome?</translation>
+<translation id="7815407501681723534">Đã tìm thấy <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> cho '<ph name="SEARCH_STRING" />'</translation>
 <translation id="785549533363645510">Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ không ẩn thao tác duyệt của bạn với chủ lao động, nhà cung cấp dịch vụ internet hoặc các trang web bạn truy cập.</translation>
 <translation id="7887683347370398519">Kiểm tra CVC của bạn và thử lại</translation>
 <translation id="7894616681410591072">Rất tiếc! Bạn cần sự cho phép của <ph name="NAME" /> để truy cập trang này.</translation>

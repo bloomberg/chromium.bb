@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Adreso ir paieškos juosta</translation>
 <translation id="2826760142808435982">Ryšys užšifruotas ir tapatybė nustatyta naudojant <ph name="CIPHER" />. <ph name="KX" /> naudojamas kaip pagrindinis mainų mechanizmas.</translation>
 <translation id="2835170189407361413">Valyti formą</translation>
-<translation id="2837049386027881519">Buvo bandyta prisijungti iš naujo naudojant senesnės versijos TLS arba SSL protokolą. Tai paprastai reiškia, kad serveryje naudojama labai sena programinė įranga ir jame gali būti kitų saugumo problemų.</translation>
 <translation id="284702764277384724">Panašu, kad <ph name="HOST_NAME" /> serverio sertifikatas yra suklastotas.</translation>
 <translation id="2889159643044928134">Neįkelti iš naujo</translation>
 <translation id="2900469785430194048">„Google Chrome“ trūksta atminties šiam tinklalapiui pateikti.</translation>
@@ -217,6 +216,7 @@
 <translation id="3254409185687681395">Įtraukti šį puslapį į žymes</translation>
 <translation id="3270847123878663523">&amp;Anuliuoti pertvarkymą</translation>
 <translation id="3286538390144397061">Paleisti iš naujo dabar</translation>
+<translation id="3303855915957856445">Nerasta jokių paieškos rezultatų</translation>
 <translation id="3305707030755673451"><ph name="TIME" /> duomenys buvo užšifruoti naudojant sinchronizavimo slaptafrazę. Įveskite ją, kad pradėtumėte sinchronizuoti.</translation>
 <translation id="333371639341676808">Neleiskite šiam puslapiui kurti papildomų dialogo langų.</translation>
 <translation id="3338095232262050444">Saugi</translation>
@@ -328,6 +328,7 @@
 <translation id="4394049700291259645">Neleisti</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" />–<ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">paieškos rezultatai</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> nepriėmė jūsų prisijungimo sertifikato arba prisijungimo sertifikatas nebuvo pateiktas.</translation>
 <translation id="443673843213245140">Įgaliotojo serverio naudojimas neleidžiamas, bet nurodyta aiški įgaliotojo serverio konfigūracija.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Matote šį pranešimą, nes „Google SafeSites“ yra įgalinta.</translation>
@@ -370,8 +371,8 @@
 <translation id="495170559598752135">Veiksmai</translation>
 <translation id="4958444002117714549">Išskleisti sąrašą</translation>
 <translation id="4962322354953122629">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; „Chrome“ negali pasitikėti jo saugos sertifikatu. Taip galėjo būti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užpuoliko. <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Viskas perskaityta</translation>
 <translation id="498957508165411911">Versti iš <ph name="ORIGINAL_LANGUAGE" /> į <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Šis papildinys nepalaikomas</translation>
 <translation id="5002932099480077015">Jei šis nustatymas įgalintas, „Chrome“ saugos kortelės kopiją šiame įrenginyje, kad būtų galima greičiau užpildyti formas.</translation>
 <translation id="5019198164206649151">Bloga atsarginio atminties įrenginio būsena</translation>
 <translation id="5023310440958281426">Patikrinkite savo administratoriaus politiką</translation>
@@ -525,8 +526,10 @@
 <translation id="6970216967273061347">Rajonas</translation>
 <translation id="6973656660372572881">Nurodyti fiksuoti įgaliotieji serveriai ir .pac scenarijaus URL.</translation>
 <translation id="6989763994942163495">Rodyti išplėstinius nustatymus...</translation>
+<translation id="7000990526846637657">Nerasta jokių istorijos įrašų</translation>
 <translation id="7009986207543992532">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė sertifikatą, kurio galiojimo laikotarpis per ilgas, kad juo būtų galima pasitikėti. <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali būti pateikta kitų formų jūsų „Google“ paskyros naršymo istorija</translation>
 <translation id="7029809446516969842">Slaptažodžiai</translation>
 <translation id="7087282848513945231">Apygarda</translation>
 <translation id="7088615885725309056">Ankstesnė</translation>
@@ -609,6 +612,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="7805768142964895445">Būsena</translation>
 <translation id="7813600968533626083">Pašalinti formos pasiūlymą iš „Chrome“?</translation>
+<translation id="7815407501681723534">Pagal terminą „<ph name="SEARCH_STRING" />“ surasta tiek <ph name="SEARCH_RESULTS" />: <ph name="NUMBER_OF_RESULTS" /></translation>
 <translation id="785549533363645510">Tačiau nesate nematomi. Įjungus inkognito režimą, naršymo veiksmai vis tiek matomi darbdaviui, interneto paslaugų teikėjui ar svetainėms, kuriose lankotės.</translation>
 <translation id="7887683347370398519">Patikrinkite kortelės saugos kodą (CVC) ir bandykite dar kartą</translation>
 <translation id="7894616681410591072">Oi, jums reikia <ph name="NAME" /> leidimo, kad galėtumėte pasiekti šį puslapį.</translation>

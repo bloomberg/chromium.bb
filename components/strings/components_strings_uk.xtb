@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Адресний і пошуковий рядок</translation>
 <translation id="2826760142808435982">З’єднання зашифровано й автентифіковано з використанням шифру <ph name="CIPHER" /> і використовує механізм обміну ключами <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Очистити форму</translation>
-<translation id="2837049386027881519">Потрібно повторити спробу з'єднання за допомогою старішої версії протоколу TLS або SSL. Переважно це означає, що сервер використовує дуже застаріле програмне забезпечення та може мати й інші проблеми безпеки.</translation>
 <translation id="284702764277384724">Схоже, сертифікат сервера на хості <ph name="HOST_NAME" /> підроблено.</translation>
 <translation id="2889159643044928134">Не оновлювати</translation>
 <translation id="2900469785430194048">Недостатньо пам’яті Google Chrome, щоб показати цю веб-сторінку.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Додати цю сторінку до закладок</translation>
 <translation id="3270847123878663523">&amp;Відмінити перевпорядкування</translation>
 <translation id="3286538390144397061">Перезапустити зараз</translation>
+<translation id="3303855915957856445">Немає результатів</translation>
 <translation id="3305707030755673451">Ваші дані було зашифровано <ph name="TIME" /> за допомогою парольної фрази для синхронізації. Введіть її, щоб почати синхронізацію.</translation>
 <translation id="333371639341676808">Заборонити створення додаткових діалогових вікон цією сторінкою.</translation>
 <translation id="3338095232262050444">Надійне</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Вимкнути</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> – <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">результати пошуку</translation>
+<translation id="4432688616882109544">Хост <ph name="HOST_NAME" /> не прийняв ваш сертифікат входу або ви не надали цей сертифікат.</translation>
 <translation id="443673843213245140">Використання проксі-сервера вимкнено, але чітко вказано налаштування проксі-сервера.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Ви бачите це повідомлення, оскільки ввімкнено Google SafeSites.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Дії</translation>
 <translation id="4958444002117714549">Розгорнути список</translation>
 <translation id="4962322354953122629">Не вдалося підтвердити, що це сервер <ph name="DOMAIN" />. Chrome вважає його сертифікат безпеки ненадійним. Імовірні причини: сервер налаштовано неправильно або хтось намагається перехопити ваше з’єднання. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Усе прочитано</translation>
 <translation id="498957508165411911">Перекласти цю мовну пару: <ph name="ORIGINAL_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Цей плагін не підтримується</translation>
 <translation id="5002932099480077015">Коли цю функцію ввімкнено, Chrome зберігає копію даних вашої картки на пристрої, щоб ви могли швидше заповнювати форми.</translation>
 <translation id="5019198164206649151">Резервний носій пошкоджено</translation>
 <translation id="5023310440958281426">Перегляньте правила свого адміністратора</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">Район або округ</translation>
 <translation id="6973656660372572881">Указано фіксовані проксі-сервери та URL-адреса сценарію .pac.</translation>
 <translation id="6989763994942163495">Показати розширені налаштування...</translation>
+<translation id="7000990526846637657">Немає записів в історії</translation>
 <translation id="7009986207543992532">Ви намагалися зв’язатися з доменом <ph name="DOMAIN" />, але сервер надав сертифікат із задовгим терміном дії. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду</translation>
 <translation id="7029809446516969842">Паролі</translation>
 <translation id="7087282848513945231">Округ або графство</translation>
 <translation id="7088615885725309056">Давніше</translation>
@@ -608,6 +611,7 @@
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7805768142964895445">Статус</translation>
 <translation id="7813600968533626083">Видалити дані для автозаповнення форм із Chrome?</translation>
+<translation id="7815407501681723534">Знайдено результатів за запитом "<ph name="SEARCH_STRING" />": <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /></translation>
 <translation id="785549533363645510">Навіть у режимі анонімного перегляду ваш роботодавець, постачальник послуг Інтернету чи веб-сайти, які ви відвідуєте, можуть бачити, що ви переглядаєте.</translation>
 <translation id="7887683347370398519">Перевірте код CVC й повторіть спробу</translation>
 <translation id="7894616681410591072">Щоб отримати доступ до цієї сторінки, <ph name="NAME" /> має надати вам дозвіл.</translation>

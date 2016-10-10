@@ -105,6 +105,7 @@
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> を閉じました</translation>
 <translation id="2138201775715568214">近くのフィジカル ウェブページを探しています</translation>
 <translation id="2139186145475833000">ホーム画面に追加</translation>
+<translation id="2146738493024040262">プレビュー アプリを開く</translation>
 <translation id="2148716181193084225">今日</translation>
 <translation id="2154710561487035718">URL をコピー</translation>
 <translation id="219985413780390209">危険なサイトからユーザーとデバイスを保護する</translation>
@@ -184,8 +185,8 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">シークレット タブで開く</translation>
 <translation id="3090193911106258841">音声 / ビデオ入力にアクセスしています</translation>
-<translation id="3117051980354074377">他の端末と同じブックマークを使用するには Chrome にログインします。</translation>
 <translation id="3137521801621304719">シークレット モードを終了</translation>
+<translation id="3148434565183091099">お使いのどの端末でも同じブックマークを使用するには、Chrome にログインします。</translation>
 <translation id="3149891296864842641">配送オプション</translation>
 <translation id="3177909033752230686">ページの言語:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
@@ -220,6 +221,7 @@
 <translation id="3518985090088779359">同意して続行</translation>
 <translation id="3522247891732774234">アップデートが見つかりました。その他のオプション</translation>
 <translation id="3527085408025491307">フォルダ</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> KB の空き</translation>
 <translation id="3549644494707163724">同期パスフレーズで同期データをすべて暗号化する</translation>
 <translation id="3590487821116122040">Chrome で重要度が低いと判断されるサイトのストレージ（設定を保存していないサイトやアクセス頻度の少ないサイトなど）</translation>
 <translation id="360480449234699036">ウェブサイト上のトピックについてページを移動せずに調べられます。[タップして検索] を使用すると、単語とその周囲のコンテキストが Google 検索に送信され、定義、画像、検索結果などの情報が返されます。
@@ -297,7 +299,6 @@
 <translation id="4532845899244822526">フォルダの選択</translation>
 <translation id="4543661749405994812">メールアドレスをコピー</translation>
 <translation id="4572422548854449519">管理対象アカウントにログイン</translation>
-<translation id="4576023202210315647">Chrome にタブを保存</translation>
 <translation id="4581964774250883625">シークレット モードです。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分前}other{# 分前}}</translation>
 <translation id="4605958867780575332">削除したアイテム: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@
 <translation id="7208788139759694678">データセーバーは無効です</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> では地域の検索結果を表示するためにユーザーの位置情報が使用されます</translation>
-<translation id="7327835590071894791">タブをバックグラウンドに保存しました。</translation>
 <translation id="7347770551817603360">オフライン コンテンツ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 件の選択されたアイテムを共有します}other{# 件の選択されたアイテムを共有します}}</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" />にキャストしています</translation>
@@ -551,7 +551,6 @@
 他の Google サービスでの検索や操作など、Google アカウントの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（<ph name="TIME_SINCE_UPDATE" />に更新）</translation>
 <translation id="7498271377022651285">お待ちください…</translation>
-<translation id="7501135638693251872">すべてのブックマーク</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
@@ -639,12 +638,14 @@
 <translation id="8518901949365209398">このサイトのセキュリティは弱いため（SHA-1 署名）、接続時にプライバシーが保護されない可能性があります。</translation>
 <translation id="8523928698583292556">保存したパスワードを削除</translation>
 <translation id="8525306231823319788">全画面表示</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> MB を使用中</translation>
 <translation id="854522910157234410">このページを開く</translation>
 <translation id="8562452229998620586">保存したパスワードはこちらに表示されます。</translation>
 <translation id="856481929701340285">PC版サイトを見る</translation>
 <translation id="857943718398505171">許可（推奨）</translation>
 <translation id="8583805026567836021">アカウント データをクリア中</translation>
 <translation id="8617240290563765734">ダウンロード コンテンツに指定されている URL を開きますか？</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> KB を使用中</translation>
 <translation id="862875433388403934">他のアプリケーションでダウンロードしたコンテンツ（映画、音楽など）は再生できなくなっている可能性があります。再生するには、該当のアプリケーションで新しいデバイス認証情報に基づくライセンスを再取得する必要があります。
 
 新しいライセンスを取得するには、インターネットに接続し、ダウンロードしたコンテンツを再生してください。</translation>

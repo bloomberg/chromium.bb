@@ -105,6 +105,7 @@
 <translation id="213279576345780926">已關閉的「<ph name="TAB_TITLE" />」</translation>
 <translation id="2138201775715568214">正在尋找附近的實體化網路網頁</translation>
 <translation id="2139186145475833000">加到主畫面</translation>
+<translation id="2146738493024040262">開啟免安裝應用程式</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="219985413780390209">保護您和您的裝置不受危險網站攻擊</translation>
@@ -184,8 +185,8 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="3090193911106258841">正在存取音訊和視訊輸入</translation>
-<translation id="3117051980354074377">如要存取您在其他裝置上建立的書籤，請登入 Chrome。</translation>
 <translation id="3137521801621304719">離開無痕模式</translation>
+<translation id="3148434565183091099">如要在所有裝置上使用您的書籤，請登入 Chrome。</translation>
 <translation id="3149891296864842641">運送方式</translation>
 <translation id="3177909033752230686">網頁語言：</translation>
 <translation id="3190152372525844641">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這些權限。</translation>
@@ -220,6 +221,7 @@
 <translation id="3518985090088779359">接受並繼續</translation>
 <translation id="3522247891732774234">有可用的更新。更多選項</translation>
 <translation id="3527085408025491307">資料夾</translation>
+<translation id="3542235761944717775">可用空間：<ph name="KILOBYTES" /> KB</translation>
 <translation id="3549644494707163724">使用您的通關密語對所有已同步處理的資料進行加密</translation>
 <translation id="3590487821116122040">Chrome 認定為不重要的網站 (例如未儲存任何設定的網站，或是您不常造訪的網站) 所儲存的資料</translation>
 <translation id="360480449234699036">不需離開網頁即可瞭解網站上的主題。「輕觸搜尋」可將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片、搜尋結果和其他詳細資料。
@@ -297,7 +299,6 @@
 <translation id="4532845899244822526">選擇資料夾</translation>
 <translation id="4543661749405994812">複製電子郵件地址</translation>
 <translation id="4572422548854449519">登入受管理的帳戶</translation>
-<translation id="4576023202210315647">將分頁保留在 Chrome 中</translation>
 <translation id="4581964774250883625">您已啟用無痕模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分鐘前}other{# 分鐘前}}</translation>
 <translation id="4605958867780575332">已移除項目：<ph name="ITEM_TITLE" /></translation>
@@ -326,7 +327,7 @@
 <translation id="4923459931733593730">付款</translation>
 <translation id="4941291666397027948">* 代表必填欄位</translation>
 <translation id="4943872375798546930">沒有結果</translation>
-<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共用您的畫面。</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共用你的畫面。</translation>
 <translation id="4961700429721424617">您即將登出由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶。系統會將您的 Chrome 資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
 <translation id="497421865427891073">往前</translation>
 <translation id="4988526792673242964">頁數</translation>
@@ -532,7 +533,6 @@
 <translation id="7208788139759694678">已停用 Data Saver</translation>
 <translation id="7243308994586599757">選項在接近畫面底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 會使用您的位置資訊來顯示當地搜尋結果</translation>
-<translation id="7327835590071894791">您的分頁現已傳送到背景了。</translation>
 <translation id="7347770551817603360">離線內容</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個選取的項目}other{分享 # 個選取的項目}}</translation>
 <translation id="7366340029385295517">正在投放到 <ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@
 您的 Google 帳戶仍可能保留了其他類型的瀏覽紀錄，例如其他 Google 服務中的搜尋和活動紀錄 (可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 查詢)。</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (上次更新時間：<ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">請稍候…</translation>
-<translation id="7501135638693251872">所有書籤</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
@@ -639,12 +638,14 @@
 <translation id="8518901949365209398">這個網站使用的安全性設定強度不足 (SHA-1 簽名)，因此您的連線可能不是私人連線。</translation>
 <translation id="8523928698583292556">刪除已儲存的密碼</translation>
 <translation id="8525306231823319788">全螢幕</translation>
+<translation id="85415543246899402">儲存空間使用量：<ph name="MEGABYTES" /> MB</translation>
 <translation id="854522910157234410">開啟以下網頁</translation>
 <translation id="8562452229998620586">已儲存的密碼會顯示在這裡。</translation>
 <translation id="856481929701340285">切換為電腦版網站</translation>
 <translation id="857943718398505171">已允許 (建議)</translation>
 <translation id="8583805026567836021">正在清除帳戶資料</translation>
 <translation id="8617240290563765734">開啟這項下載內容中指定的建議網址？</translation>
+<translation id="8618653050765576793">儲存空間使用量：<ph name="KILOBYTES" /> KB</translation>
 <translation id="862875433388403934">其他應用程式必須以新的裝置憑證重新取得授權，才能順利播放已下載的內容 (例如電影、音樂等)。
 
 如要取得新授權，請先連線至網際網路，然後再播放您已下載的內容。</translation>

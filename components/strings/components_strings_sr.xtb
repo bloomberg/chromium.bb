@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Трака за адресу и претрагу</translation>
 <translation id="2826760142808435982">Веза је шифрована и њена аутентичност је потврђена помоћу <ph name="CIPHER" /> и користи <ph name="KX" /> као механизам за размену шифара.</translation>
 <translation id="2835170189407361413">Обриши образац</translation>
-<translation id="2837049386027881519">Успостављање везе је морало да буде поновљено помоћу старије верзије TLS или SSL протокола. Ово обично значи да сервер користи веома стар софтвер и може да има других безбедносних проблема.</translation>
 <translation id="284702764277384724">Изгледа да је сертификат сервера на хосту <ph name="HOST_NAME" /> фалсификат.</translation>
 <translation id="2889159643044928134">Не учитавај поново</translation>
 <translation id="2900469785430194048">Google Chrome-у је понестало меморије док је покушавао да прикаже ову веб-страницу.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Обележите ову страницу</translation>
 <translation id="3270847123878663523">&amp;Опозови промену редоследа</translation>
 <translation id="3286538390144397061">Поново покрени одмах</translation>
+<translation id="3303855915957856445">Нису пронађени резултати претраге</translation>
 <translation id="3305707030755673451">Подаци су шифровани помоћу приступне фразе за синхронизацију <ph name="TIME" />. Унесите је да бисте започели синхронизацију.</translation>
 <translation id="333371639341676808">Спречите ову страницу да прави додатне дијалоге.</translation>
 <translation id="3338095232262050444">Безбедан</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Онемогући</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> – <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">резултати претраге</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> није прихватио сертификат за пријављивање или сертификат за пријављивање није приложен.</translation>
 <translation id="443673843213245140">Коришћење проксија је онемогућено, али је наведена експлицитна конфигурација проксија.</translation>
 <translation id="4458874409874303848">Безбедни сајтови</translation>
 <translation id="4461847750548395463">Ову поруку видите јер су Google безбедни сајтови омогућени.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Радње</translation>
 <translation id="4958444002117714549">Прошири листу</translation>
 <translation id="4962322354953122629">Овај сервер не може да докаже да је <ph name="DOMAIN" />; Chrome нема поверења у његов безбедносни сертификат. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу. <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Све је прочитано</translation>
 <translation id="498957508165411911">Желите ли да преведете са језика <ph name="ORIGINAL_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Ова додатна компонента није подржана</translation>
 <translation id="5002932099480077015">Ако је ова опција омогућена, Chrome ће складиштити копију картице на овом уређају ради бржег попуњавања образаца.</translation>
 <translation id="5019198164206649151">Складиште тока података је у лошем стању</translation>
 <translation id="5023310440958281426">Проверите смернице администратора</translation>
@@ -523,8 +524,10 @@
 <translation id="6970216967273061347">Дистрикт</translation>
 <translation id="6973656660372572881">Наведени су и фиксни прокси сервери и URL адреса .pac скрипте.</translation>
 <translation id="6989763994942163495">Прикажи напредна подешавања...</translation>
+<translation id="7000990526846637657">Није пронађен ниједан унос у историји</translation>
 <translation id="7009986207543992532">Покушали сте да посетите <ph name="DOMAIN" />, али је сервер послао сертификат са периодом важења који је предугачак да би био поуздан. <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Google налог има друге облике историје прегледања на <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Лозинке</translation>
 <translation id="7087282848513945231">Округ</translation>
 <translation id="7088615885725309056">Старије</translation>
@@ -607,6 +610,7 @@
 <translation id="780301667611848630">Не, хвала</translation>
 <translation id="7805768142964895445">Статус</translation>
 <translation id="7813600968533626083">Желите ли да уклоните предлог из Chrome-а?</translation>
+<translation id="7815407501681723534">Пронашли смо <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> за „<ph name="SEARCH_STRING" />“</translation>
 <translation id="785549533363645510">Али, нисте невидљиви. Преласком у режим без архивирања нећете сакрити прегледање од послодавца, интернет провајдера или веб-сајтова које посећујете.</translation>
 <translation id="7887683347370398519">Проверите CVC и покушајте поново</translation>
 <translation id="7894616681410591072">Упс! Потребна вам је дозвола корисника <ph name="NAME" /> да бисте приступили овој страници.</translation>

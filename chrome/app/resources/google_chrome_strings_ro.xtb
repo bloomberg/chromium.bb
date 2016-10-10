@@ -211,13 +211,11 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7164397146364144019">Puteți contribui la un produs Chrome mai sigur și mai ușor de folosit raportând automat la Google detaliile eventualelor incidente privind securitatea.</translation>
 <translation id="7177347454226092725">Astfel, vor fi șterse definitiv datele de navigare de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chrome ca $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> a fost adăugată la Chrome.</translation>
-<translation id="7191567847629796517">Sistemul de operare Google Chrome nu acceptă lansarea unei aplicații externe pentru gestionarea linkurilor <ph name="SCHEME" />. Linkul solicitat este <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">Google Chrome este afișat în această limbă.</translation>
 <translation id="7196020411877309443">De ce văd acest lucru?</translation>
 <translation id="7242029209006116544">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chrome existente. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">În curând, acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Windows XP și Windows Vista nu vor mai fi acceptate.</translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
-<translation id="7393806081343982361">Google Chrome este browserul prestabilit. Ura!</translation>
 <translation id="7398801000654795464">Ați fost conectat(ă) la Chrome ca <ph name="USER_EMAIL_ADDRESS" />. Utilizați același cont pentru a vă conecta din nou.</translation>
 <translation id="7400722733683201933">Despre Google Chrome</translation>
 <translation id="7408085963519505752">Termeni și condiții pentru sistemul de operare Chrome</translation>
@@ -252,7 +250,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="8129812357326543296">Despre &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome va stoca în siguranță detaliile personale, pentru a nu fi necesar să le introduci din nou.</translation>
 <translation id="8211929904040702368">Astfel, vor fi șterse definitiv cel puțin <ph name="TOTAL_COUNT" /> elemente de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chrome ca $2.</translation>
-<translation id="8227755444512189073">Google Chrome necesită lansarea unei aplicații externe pentru a gestiona linkuri <ph name="SCHEME" />. Linkul solicitat este <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome utilizează camera foto și microfonul.</translation>
 <translation id="8286862437124483331">Google Chrome încearcă să afișeze parolele. Pentru a permite acest lucru, introduceți parola pentru Windows.</translation>
 <translation id="8290100596633877290">Hopa! Google Chrome s-a blocat. Repornești acum?</translation>

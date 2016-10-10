@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Barra de direcciones y de búsqueda </translation>
 <translation id="2826760142808435982">La conexión se ha encriptado y autenticado con <ph name="CIPHER" />, y utiliza <ph name="KX" /> como el mecanismo de intercambio clave.</translation>
 <translation id="2835170189407361413">Eliminar formulario</translation>
-<translation id="2837049386027881519">Se ha vuelto a recuperar la conexión con una versión anterior del protocolo SSL o TLS. Este error suele indicar que el servidor utiliza un software demasiado obsoleto y que es posible que se produzcan otros problemas de seguridad.</translation>
 <translation id="284702764277384724">Parece que el certificado de servidor de la página <ph name="HOST_NAME" /> es falso.</translation>
 <translation id="2889159643044928134">No volver a cargar</translation>
 <translation id="2900469785430194048">Google Chrome se ha quedado sin memoria al intentar mostrar esta página web.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Añadir esta página a marcadores</translation>
 <translation id="3270847123878663523">&amp;Deshacer reorganización</translation>
 <translation id="3286538390144397061">Reiniciar ahora</translation>
+<translation id="3303855915957856445">No se han encontrado resultados de búsqueda</translation>
 <translation id="3305707030755673451">Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name="TIME" />. Introdúcela para iniciar la sincronización.</translation>
 <translation id="333371639341676808">Evita que esta página cree cuadros de diálogo adicionales.</translation>
 <translation id="3338095232262050444">Es seguro</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Inhabilitar</translation>
 <translation id="4395129973926795186">Del <ph name="START_DATE" /> al <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">resultados de la búsqueda</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> no ha aceptado el certificado de inicio de sesión o es posible que no se haya proporcionado ninguno.</translation>
 <translation id="443673843213245140">Se ha inhabilitado el uso de un servidor proxy, pero se han especificado ajustes de proxy explícitos.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Este mensaje aparece porque se ha habilitado Google SafeSites.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4958444002117714549">Expandir lista</translation>
 <translation id="4962322354953122629">Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; Chrome no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="4986920000862467124">Todo leído</translation>
 <translation id="498957508165411911">¿Traducir del <ph name="ORIGINAL_LANGUAGE" /> al <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Este complemento no es compatible</translation>
 <translation id="5002932099480077015">Si se habilita esta opción, Chrome guardará una copia de tu tarjeta en este dispositivo para rellenar la información más rápido.</translation>
 <translation id="5019198164206649151">El almacén secundario está en mal estado.</translation>
 <translation id="5023310440958281426">Consulta las políticas del administrador</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Se especifican tanto servidores proxy fijos como una URL de secuencia de comandos .pac.</translation>
 <translation id="6989763994942163495">Mostrar configuración avanzada...</translation>
+<translation id="7000990526846637657">No se han encontrado entradas de historial</translation>
 <translation id="7009986207543992532">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor ha presentado un certificado cuyo período de validez es demasiado largo para que se considere de confianza. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Es posible que tu cuenta de Google tenga otras formas del historial de navegación en la página <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="7087282848513945231">Condado</translation>
 <translation id="7088615885725309056">Más antiguos</translation>
@@ -608,6 +611,7 @@
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7805768142964895445">Estado</translation>
 <translation id="7813600968533626083">¿Eliminar sugerencia de formulario de Chrome?</translation>
+<translation id="7815407501681723534">Se han encontrado <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> de <ph name="SEARCH_STRING" /></translation>
 <translation id="785549533363645510">Ten en cuenta que tus acciones no serán totalmente invisibles. El uso del modo incógnito no te permite ocultar tu actividad de navegación a tu empresa, a tu proveedor de servicios de Internet o a los sitios web que visites.</translation>
 <translation id="7887683347370398519">Comprueba el código CVC y vuelve a intentarlo</translation>
 <translation id="7894616681410591072">¡Vaya! Necesitas permiso de <ph name="NAME" /> para acceder a esta página.</translation>

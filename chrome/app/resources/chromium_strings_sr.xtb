@@ -7,7 +7,6 @@
 <translation id="1115445892567829615">Chromium не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
 <translation id="1174473354587728743">Делите рачунар? Сада можете да подесите Chromium баш онако како вама одговара.</translation>
 <translation id="1185134272377778587">О Chromium-у</translation>
-<translation id="1221340462641866827">Chromium ОС не подржава покретање спољне апликације за обраду <ph name="SCHEME" /> веза. Захтевана веза је <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">У систему је пронађена некомпатибилна инсталација Chromium-а. Деинсталирајте је и покушајте поново.</translation>
 <translation id="1298199220304005244">Пронађи помоћ за коришћење Chromium ОС-а</translation>
 <translation id="1396446129537741364">Chromium покушава да прикаже лозинке.</translation>
@@ -66,7 +65,6 @@
 <translation id="2886012850691518054">Опционално: Помозите да побољшамо Chromium тако што ћете Google-у аутоматски слати статистику коришћења и извештаје о отказивању.</translation>
 <translation id="2905536371227304018">Chromium ОС се приказује на овом језику.</translation>
 <translation id="2910007522516064972">О &amp;Chromium-у</translation>
-<translation id="2966088006374919794">Chromium мора да покрене спољну апликацију ради обраде <ph name="SCHEME" /> веза. Захтевана веза је <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Додавање у Chromium...</translation>
 <translation id="3046695367536568084">Треба да будете пријављени у Chromium да бисте користили апликације. То омогућава Chromium-у да синхронизује апликације, обележиваче, историју, лозинке и друга подешавања на свим уређајима.</translation>
 <translation id="3068515742935458733">Помозите нам да побољшамо Chromium тако што ћете Google-у слати извештаје о отказивању и <ph name="UMA_LINK" /></translation>
@@ -103,7 +101,6 @@
 <translation id="4050175100176540509">Важна безбедносна побољшања и нове функције су доступни у најновијој верзији.</translation>
 <translation id="407254336480250557">Изаберите <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Затворите све Chromium прозоре и рестартујте Chromium да би ова промена ступила на снагу.</translation>
-<translation id="4182290826692170034">Chromium је подразумевани прегледач. Јупи!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Упозорење:<ph name="END_BOLD" /> Chromium не може да спречи додатке да снимају историју прегледања. Да бисте онемогућили овај додатак у режиму без архивирања, опозовите избор ове опције.</translation>
 <translation id="421369550622382712">Откријте одличне апликације, игре, додатке и теме за Chromium.</translation>
 <translation id="4222580632002216401">Сада сте пријављени у Chromium! Администратор је онемогућио синхронизацију.</translation>

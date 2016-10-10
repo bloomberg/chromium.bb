@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">Chromium không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
 <translation id="1174473354587728743">Bạn muốn chia sẻ máy tính? Giờ đây, bạn có thể thiết lập Chromium theo cách mình muốn.</translation>
 <translation id="1185134272377778587">Giới thiệu về Chromium</translation>
-<translation id="1221340462641866827">Chromium OS không hỗ trợ chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME" />. Liên kết được yêu cầu là <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Đã tìm thấy bản cài đặt Chromium xung đột trên hệ thống. Vui lòng gỡ cài đặt và thử lại.</translation>
 <translation id="1298199220304005244">Nhận trợ giúp về cách sử dụng Chromium OS</translation>
 <translation id="1396446129537741364">Chromium đang cố gắng hiển thị mật khẩu.</translation>
@@ -64,7 +63,6 @@
 <translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="2905536371227304018">Chromium OS được hiển thị bằng ngôn ngữ này.</translation>
 <translation id="2910007522516064972">Giới thiệu về &amp;Chromium</translation>
-<translation id="2966088006374919794">Chromium cần chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME" />. Liên kết được yêu cầu là <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Đang thêm vào Chromium...</translation>
 <translation id="3046695367536568084">Bạn cần đăng nhập vào Chromium để sử dụng ứng dụng. Điều này cho phép Chromium đồng bộ hóa ứng dụng, dấu trang, lịch sử, mật khẩu và cài đặt khác trên các thiết bị.</translation>
 <translation id="3068515742935458733">Giúp cải thiện Chromium bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK" /> tới Google</translation>
@@ -101,7 +99,6 @@
 <translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
 <translation id="407254336480250557">Chọn <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Hãy đóng tất cả cửa sổ Chromium và chạy lại Chromium để thay đổi này có hiệu lực.</translation>
-<translation id="4182290826692170034">Chromium là trình duyệt mặc định của bạn. Tuyệt vời!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Cảnh báo:<ph name="END_BOLD" /> Chromium không thể ngăn các tiện ích ghi lại lịch sử duyệt web của bạn. Để tắt tiện ích này trong chế độ ẩn danh, hãy bỏ chọn tùy chọn này.</translation>
 <translation id="421369550622382712">Khám phá các ứng dụng, trò chơi, tiện ích và chủ đề tuyệt vời cho Chromium.</translation>
 <translation id="4222580632002216401">Bạn hiện đã đăng nhập vào Chromium! Quản trị viên của bạn đã tắt tính năng Đồng bộ hóa.</translation>

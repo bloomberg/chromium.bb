@@ -105,6 +105,7 @@
 <translation id="213279576345780926">Затворихте „<ph name="TAB_TITLE" />“</translation>
 <translation id="2138201775715568214">Търсят се намиращи се в близост страници във Физическата мрежа</translation>
 <translation id="2139186145475833000">Добавяне към началния екран</translation>
+<translation id="2146738493024040262">Отваряне на мигновеното приложение</translation>
 <translation id="2148716181193084225">Днес</translation>
 <translation id="2154710561487035718">Копиране на URL адреса</translation>
 <translation id="219985413780390209">Защита от опасни сайтове за вас и устройството ви</translation>
@@ -184,8 +185,8 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Отваряне в раздел „инкогнито“</translation>
 <translation id="3090193911106258841">Осъществява се достъп до аудио- и видеовхода</translation>
-<translation id="3117051980354074377">Влезте в Chrome, за да получите отметките си от другите си устройства.</translation>
 <translation id="3137521801621304719">Напускане на режима „инкогнито“</translation>
+<translation id="3148434565183091099">Влезте в Chrome, за да получите отметките си на всичките си устройства.</translation>
 <translation id="3149891296864842641">Опция за доставка</translation>
 <translation id="3177909033752230686">Език на страницата:</translation>
 <translation id="3190152372525844641">Включете разрешенията за Chrome от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
@@ -220,6 +221,7 @@
 <translation id="3518985090088779359">Приемам! Напред</translation>
 <translation id="3522247891732774234">Налице е актуализация. Още опции</translation>
 <translation id="3527085408025491307">Папка</translation>
+<translation id="3542235761944717775">Свободно място: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="3549644494707163724">Всички синхронизирани данни да се шифроват със собствения ви пропуск за синхронизиране</translation>
 <translation id="3590487821116122040">Съхранявани данни от сайтове, които Chrome не счита за важни (напр. рядко посещавани или сайтове без запазени настройки)</translation>
 <translation id="360480449234699036">Научавайте за темите в уебсайтовете, без да напускате страницата. Функцията за търсене с докосване изпраща до Google Търсене определени думи и заобикалящия ги текст и така извежда определения, снимки, резултати и други подробности.
@@ -297,7 +299,6 @@
 <translation id="4532845899244822526">Избиране на папка</translation>
 <translation id="4543661749405994812">Копиране на имейл адреса</translation>
 <translation id="4572422548854449519">Вход в управляван профил</translation>
-<translation id="4576023202210315647">Запазване на раздела в Chrome</translation>
 <translation id="4581964774250883625">Преминахте в режим „инкогнито“.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{преди # минута}other{преди # минути}}</translation>
 <translation id="4605958867780575332">Елементът бе премахнат: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@
 <translation id="7208788139759694678">Деактивирахте Икономия на данни</translation>
 <translation id="7243308994586599757">Опциите са в долната част на екрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> използва местоположението ви, за да показва резултати от местното търсене</translation>
-<translation id="7327835590071894791">Разделът вече е на заден план.</translation>
 <translation id="7347770551817603360">Офлайн съдържание</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Споделяне на 1 избран елемент}other{Споделяне на # избрани елемента}}</translation>
 <translation id="7366340029385295517">Предава се към „<ph name="SCREEN_NAME" />“</translation>
@@ -551,7 +551,6 @@
 Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> – например търсения и активност от други наши услуги.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Актуализирано: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Моля, изчакайте...</translation>
-<translation id="7501135638693251872">Всички отметки</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7562080006725997899">Данните за сърфирането се изчистват</translation>
 <translation id="756809126120519699">Данните в Chrome са изчистени</translation>
@@ -639,12 +638,14 @@
 <translation id="8518901949365209398">Този сайт използва слаба защитна конфигурация (подписи, шифровани чрез SHA-1), поради което връзката ви може да не е частна.</translation>
 <translation id="8523928698583292556">Изтриване на съхранената парола</translation>
 <translation id="8525306231823319788">На цял екран</translation>
+<translation id="85415543246899402">Използвано място: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="854522910157234410">Отваряне на тази страница</translation>
 <translation id="8562452229998620586">Запазените пароли ще се покажат тук.</translation>
 <translation id="856481929701340285">Заявка за настолния сайт</translation>
 <translation id="857943718398505171">Разрешено (препоръчително)</translation>
 <translation id="8583805026567836021">Данните от профила се изчистват</translation>
 <translation id="8617240290563765734">Да се отвори ли предложеният URL адрес, посочен в изтегленото съдържание?</translation>
+<translation id="8618653050765576793">Използвано място: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="862875433388403934">Възможно е изтегленото в други приложения съдържание (филми, музика и др.) да не се възпроизвежда повече, докато те не придобият отново лицензи въз основа на нови идентификационни данни на устройството.
 
 За да получите нови лицензи, свържете се с интернет и пуснете изтегленото съдържание.</translation>

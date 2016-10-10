@@ -553,6 +553,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="6307969636681130414">Nospiests</translation>
 <translation id="6324551002951139333">Konstatēta gramatiska kļūda</translation>
 <translation id="6348657800373377022">Kombinētais lodziņš</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{aizzīme}zero{# aizzīmju}one{# aizzīme}other{# aizzīmes}}</translation>
 <translation id="6355910664415701303">Iepriekš nav neviena saraksta vienuma.</translation>
 <translation id="6364795331201459219">6. līmeņa virsraksts</translation>
 <translation id="6368143427468974988">Iepriekšējais virsraksts</translation>
@@ -581,6 +582,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="6659594942844771486">Cilne</translation>
 <translation id="667999046851023355">Dokuments</translation>
 <translation id="6697092096875747123">Iepriekšējais kombinētais lodziņš</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{izsaukuma zīme}zero{# izsaukuma zīmju}one{# izsaukuma zīme}other{# izsaukuma zīmes}}</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
 <translation id="6714813999819678458">Iepriekšējais 2. līmeņa virsraksts</translation>
 <translation id="6716505898850596801">Modificētājtaustiņi</translation>

@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">Chromium no pudo sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
 <translation id="1174473354587728743">¿Compartes una computadora? Ahora puedes configurar Chromium como a ti te gusta.</translation>
 <translation id="1185134272377778587">Acerca de Chromium</translation>
-<translation id="1221340462641866827">Chromium OS no admite la inicialización de una aplicación externa para utilizar vínculos <ph name="SCHEME" />. El vínculo solicitado es <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Se encontró una instalación conflictiva de Chromium en el sistema. Desinstálala y vuelve a intentarlo.</translation>
 <translation id="1298199220304005244">Obtener ayuda para usar Chromium OS</translation>
 <translation id="1396446129537741364">Chromium está intentando mostrar contraseñas.</translation>
@@ -64,7 +63,6 @@
 <translation id="2886012850691518054">Opcional: Ayúdanos a mejorar Chromium enviando estadísticas de uso e informes de errores a Google de manera automática.</translation>
 <translation id="2905536371227304018">El SO Chromium se muestra en este idioma.</translation>
 <translation id="2910007522516064972">Acerca de &amp;Chromium</translation>
-<translation id="2966088006374919794">Chromium necesita iniciar una aplicación externa para utilizar vínculos <ph name="SCHEME" />. El vínculo solicitado es <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Agregar a Chromium...</translation>
 <translation id="3046695367536568084">Para usar las aplicaciones, debes acceder a Chromium. De este modo, Chromium puede sincronizar las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración en los dispositivos.</translation>
 <translation id="3068515742935458733">Envía a Google informes de fallos y <ph name="UMA_LINK" /> para ayudar a mejorar Chromium.</translation>
@@ -99,7 +97,6 @@
 <translation id="4050175100176540509">La última versión proporciona importantes mejoras de seguridad y nuevas funciones.</translation>
 <translation id="407254336480250557">Selecciona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Cierra todas las ventanas de Chromium y el vuelve a iniciarlo para que este cambio se aplique.</translation>
-<translation id="4182290826692170034">Chromium es tu navegador predeterminado.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Advertencia:<ph name="END_BOLD" /> Chromium no puede evitar que las extensiones registren tu historial de búsqueda. Para desactivar esta extensión en modo incógnito, desmarca la casilla de esta opción.</translation>
 <translation id="421369550622382712">Descubre aplicaciones, juegos, extensiones y temas increíbles para Chromium.</translation>
 <translation id="4222580632002216401">Accediste a Chromium. El administrador inhabilitó la sincronización.</translation>

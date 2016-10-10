@@ -553,6 +553,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="6307969636681130414">ಒತ್ತಿದ</translation>
 <translation id="6324551002951139333">ವ್ಯಾಕರಣ ತಪ್ಪು ಕಂಡುಬಂದಿದೆ</translation>
 <translation id="6348657800373377022">ಕಾಂಬೊ ಬಾಕ್ಸ್</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{ಬುಲೆಟ್}one{# ಬುಲೆಟ್‌ಗಳು}other{# ಬುಲೆಟ್‌ಗಳು}}</translation>
 <translation id="6355910664415701303">ಮುಂದಿನ ಯಾವುದೇ ಪಟ್ಟಿ ಐಟಂಯಿಲ್ಲ.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">ಹಿಂದಿನ ಶಿರೋನಾಮೆ</translation>
@@ -581,6 +582,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="6659594942844771486">ಟ್ಯಾಬ್</translation>
 <translation id="667999046851023355">ಡಾಕ್ಯುಮೆಂಟ್</translation>
 <translation id="6697092096875747123">ಹಿಂದಿನ ಕಾಂಬೊ ಬಾಕ್ಸ್</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{ಆಶ್ಚರ್ಯಸೂಚಕ }one{# ಆಶ್ಚರ್ಯಸೂಚಕಗಳು}other{# ಆಶ್ಚರ್ಯಸೂಚಕಗಳು}}</translation>
 <translation id="6710213216561001401">ಹಿಂದೆ</translation>
 <translation id="6714813999819678458">ಹಿಂದಿನ ಹಂತದ 2 ಶಿರೋನಾಮೆ</translation>
 <translation id="6716505898850596801">ಮಾರ್ಪಡಿಸುವ ಕೀಗಳು</translation>

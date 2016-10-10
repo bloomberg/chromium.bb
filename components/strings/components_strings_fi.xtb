@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Osoite- ja hakupalkki</translation>
 <translation id="2826760142808435982">Yhteys on salattu ja todennettu <ph name="CIPHER" />:n avulla ja se käyttää menetelmää <ph name="KX" /> avainvaihtomekanismina.</translation>
 <translation id="2835170189407361413">Tyhjennä lomake</translation>
-<translation id="2837049386027881519">Yhteyden muodostamista täytyi yrittää uudelleen TLS- tai SSL-protokollan vanhemmalla versiolla. Yleensä tämä johtuu siitä, että palvelin käyttää vanhentunutta ohjelmistoa. Palvelimen suojaus ei välttämättä ole ajan tasalla.</translation>
 <translation id="284702764277384724">Sivustolla <ph name="HOST_NAME" /> oleva palvelimen varmenne vaikuttaa väärennökseltä.</translation>
 <translation id="2889159643044928134">Älä päivitä</translation>
 <translation id="2900469785430194048">Google Chromen muisti loppui verkkosivua näytettäessä.</translation>
@@ -217,6 +216,7 @@
 <translation id="3254409185687681395">Luo kirjanmerkki tälle sivulle</translation>
 <translation id="3270847123878663523">K&amp;umoa uudelleenjärjestely</translation>
 <translation id="3286538390144397061">Käynnistä uudelleen</translation>
+<translation id="3303855915957856445">Ei hakutuloksia</translation>
 <translation id="3305707030755673451">Tietosi salattiin synkronoinnin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi antamalla tunnuslause.</translation>
 <translation id="333371639341676808">Estä tätä sivua luomasta muita viestejä.</translation>
 <translation id="3338095232262050444">Turvallinen</translation>
@@ -328,6 +328,7 @@
 <translation id="4394049700291259645">Poista käytöstä</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" />–<ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">hakutulokset</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> ei hyväksynyt kirjautumisvarmennettasi, tai varmennetta ei annettu.</translation>
 <translation id="443673843213245140">Välityspalvelinta ei saa käyttää, mutta erilliset välityspalvelimen asetukset on määritetty.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Tämä viesti näytetään, koska Google SafeSites on käytössä.</translation>
@@ -370,8 +371,8 @@
 <translation id="495170559598752135">Toiminnot</translation>
 <translation id="4958444002117714549">Laajenna luettelo</translation>
 <translation id="4962322354953122629">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />, sillä Chrome ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai hyökkäyksestä, jonka tavoitteena on verkkoyhteytesi sieppaaminen. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="4986920000862467124">Kaikki luettu</translation>
 <translation id="498957508165411911">Käännetäänkö kielestä <ph name="ORIGINAL_LANGUAGE" /> kielelle <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Tätä laajennusta ei tueta.</translation>
 <translation id="5002932099480077015">Kun tämä vaihtoehto on käytössä, Chrome nopeuttaa lomakkeiden täyttämistä tallentamalla kortin tiedot tälle laittelle.</translation>
 <translation id="5019198164206649151">Tallennustila on virheellisessä tilassa</translation>
 <translation id="5023310440958281426">Tarkista järjestelmänvalvojan käytännöt</translation>
@@ -525,8 +526,10 @@
 <translation id="6970216967273061347">Alue</translation>
 <translation id="6973656660372572881">Sekä kiinteät välityspalvelimet että .pac-URL-osoite on määritetty.</translation>
 <translation id="6989763994942163495">Näytä lisäasetukset...</translation>
+<translation id="7000990526846637657">Historiamerkintöjä ei löytynyt</translation>
 <translation id="7009986207543992532">Yritit muodostaa yhteyden verkkotunnukseen <ph name="DOMAIN" />, mutta palvelimen esittämän varmenteen voimassaoloaika on epäilyttävän pitkä. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7029809446516969842">Salasanat</translation>
 <translation id="7087282848513945231">Kunta</translation>
 <translation id="7088615885725309056">Vanhempi</translation>
@@ -609,6 +612,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="7805768142964895445">Tila</translation>
 <translation id="7813600968533626083">Poistetaanko lomake-ehdotus Chromen tiedoista?</translation>
+<translation id="7815407501681723534">Haku <ph name="SEARCH_STRING" /> tuotti <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" />.</translation>
 <translation id="785549533363645510">Et ole kuitenkaan näkymätön. Incognito-tilan käyttäminen ei kätke selaamistasi työnantajaltasi, internetpalveluntarjoajaltasi tai käyttämiltäsi sivustoilta.</translation>
 <translation id="7887683347370398519">Tarkista CVC ja yritä uudelleen.</translation>
 <translation id="7894616681410591072">Hups! Tarvitset ylläpitäjän <ph name="NAME" /> luvan tälle sivulle siirtymiseen.</translation>

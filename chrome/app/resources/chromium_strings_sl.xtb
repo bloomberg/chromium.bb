@@ -7,7 +7,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1115445892567829615">Chromium ni mogel sinhronizirati podatkov. Posodobite sinhronizacijsko geslo.</translation>
 <translation id="1174473354587728743">Imate računalnik v skupni rabi? Zdaj lahko nastavite Chromium po svojih željah.</translation>
 <translation id="1185134272377778587">O Chromiumu</translation>
-<translation id="1221340462641866827">Chromium OS ne podpira zagona zunanjega programa za obdelavo povezav <ph name="SCHEME" />. Zahtevana povezava je <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">V sistemu je bila odkrita namestitev Chromiuma v sporu. Odstranite jo in poskusite znova.</translation>
 <translation id="1298199220304005244">Pomoč pri uporabi sistema Chromium OS</translation>
 <translation id="1396446129537741364">Chromium poskuša prikazati gesla.</translation>
@@ -66,7 +65,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2886012850691518054">Izbirno: Pomagajte izboljšati Chromium, tako da Googlu samodejno pošiljate statistične podatke o uporabi in poročila o zrušitvah.</translation>
 <translation id="2905536371227304018">Chromium OS je v tem jeziku.</translation>
 <translation id="2910007522516064972">O &amp;Chromiumu</translation>
-<translation id="2966088006374919794">Chromium mora zagnati zunanji program za obdelavo povezav <ph name="SCHEME" />. Zahtevana povezava je <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Dodajanje v Chromium ...</translation>
 <translation id="3046695367536568084">Če želite uporabljati aplikacije, morate biti prijavljeni v Chromium. Ko se prijavite, lahko Chromium sinhronizira aplikacije, zaznamke, zgodovino in druge nastavitve v različnih napravah.</translation>
 <translation id="3068515742935458733">Pomagajte izboljšati Chromium – Googlu pošiljajte poročila o zrušitvah in ta dokument: <ph name="UMA_LINK" />.</translation>
@@ -103,7 +101,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4050175100176540509">V najnovejši različici so na voljo pomembne varnostne izboljšave in nove funkcije.</translation>
 <translation id="407254336480250557">Izberite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Zaprite vsa okna Chromiuma in ga zaženite znova, da bo ta sprememba začela veljati.</translation>
-<translation id="4182290826692170034">Chromium je privzeti brskalnik. Hura!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Opozorilo:<ph name="END_BOLD" /> Chromium razširitvam ne more preprečiti beleženja zgodovine brskanja. Če želite onemogočiti to razširitev v načinu brez beleženja zgodovine, počistite to možnost.</translation>
 <translation id="421369550622382712">Odkrijte zanimive aplikacije, igre, razširitve in teme za Chromium.</translation>
 <translation id="4222580632002216401">Zdaj ste prijavljeni v Chromium. Sinhronizacijo je onemogočil skrbnik.</translation>

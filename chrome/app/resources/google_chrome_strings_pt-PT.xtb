@@ -211,13 +211,11 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7164397146364144019">Pode contribuir para tornar o Chrome mais seguro e fácil de utilizar ao comunicar automaticamente os detalhes de possíveis incidentes de segurança à Google.</translation>
 <translation id="7177347454226092725">Esta ação elimina permanentemente os seus dados de navegação deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chrome como $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> foi adicionado ao Chrome.</translation>
-<translation id="7191567847629796517">O SO Google Chrome não suporta iniciar uma aplicação externa para processar links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">O Google Chrome é apresentado neste idioma.</translation>
 <translation id="7196020411877309443">Por que motivo estou a ver esta caixa de diálogo?</translation>
 <translation id="7242029209006116544">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. Opcionalmente, pode criar um perfil novo para manter os seus dados atuais do Chrome em separado. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Em breve, este computador deixará de receber atualizações do Google Chrome, uma vez que o Windows XP e o Windows Vista já não serão suportados.</translation>
 <translation id="7339898014177206373">Nova janela</translation>
-<translation id="7393806081343982361">O Google Chrome é o seu navegador predefinido. Viva!</translation>
 <translation id="7398801000654795464">Iniciou sessão no Chrome com a conta <ph name="USER_EMAIL_ADDRESS" />. Utilize a mesma conta para iniciar sessão novamente.</translation>
 <translation id="7400722733683201933">Acerca do Google Chrome</translation>
 <translation id="7408085963519505752">Termos do SO Chrome</translation>
@@ -252,7 +250,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="8129812357326543296">Acerca do &amp;Google Chrome</translation>
 <translation id="8183957050892517584">O Chrome armazena os seus detalhes pessoais em segurança para que não tenha de os introduzir novamente.</translation>
 <translation id="8211929904040702368">Esta ação elimina permanentemente, no mínimo, <ph name="TOTAL_COUNT" /> itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chrome como $2.</translation>
-<translation id="8227755444512189073">O Google Chrome precisa de executar uma aplicação externa para processar links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">O Google Chrome está a utilizar a câmara e o microfone.</translation>
 <translation id="8286862437124483331">O Google Chrome está a tentar mostrar palavras-passe. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
 <translation id="8290100596633877290">Ups! O Google Chrome falhou. Reiniciar agora?</translation>

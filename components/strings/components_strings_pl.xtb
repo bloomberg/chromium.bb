@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Pasek adresu i wyszukiwania</translation>
 <translation id="2826760142808435982">Połączenie jest szyfrowane i uwierzytelniane algorytmem <ph name="CIPHER" />, a mechanizm wymiany kluczy to <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Wyczyść formularz</translation>
-<translation id="2837049386027881519">Konieczne było ponowienie próby połączenia przy użyciu starszej wersji protokołu TLS lub SSL. To zwykle oznacza, że serwer używa bardzo starego oprogramowania i może zawierać inne luki w zabezpieczeniach.</translation>
 <translation id="284702764277384724">Certyfikat serwera <ph name="HOST_NAME" /> wydaje się sfałszowany.</translation>
 <translation id="2889159643044928134">Nie ładuj ponownie</translation>
 <translation id="2900469785430194048">Podczas próby wyświetlenia tej strony w Google Chrome zabrakło pamięci.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Dodaj stronę do zakładek</translation>
 <translation id="3270847123878663523">&amp;Cofnij zmianę kolejności</translation>
 <translation id="3286538390144397061">Uruchom ponownie teraz</translation>
+<translation id="3303855915957856445">Brak wyników wyszukiwania</translation>
 <translation id="3305707030755673451">Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph name="TIME" />. Wpisz je, by rozpocząć synchronizację.</translation>
 <translation id="333371639341676808">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie.</translation>
 <translation id="3338095232262050444">Bezpieczna</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Wyłącz</translation>
 <translation id="4395129973926795186">Od <ph name="START_DATE" /> do <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">wyniki wyszukiwania</translation>
+<translation id="4432688616882109544">Serwer <ph name="HOST_NAME" /> nie zaakceptował lub nie otrzymał Twojego certyfikatu logowania.</translation>
 <translation id="443673843213245140">Korzystanie z serwera proxy jest wyłączone, ale podano konfigurację proxy.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Ten komunikat pojawia się, ponieważ włączony jest filtr Google SafeSites.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Czynności</translation>
 <translation id="4958444002117714549">Rozwiń listę</translation>
 <translation id="4962322354953122629">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat nie jest zaufany w Chrome. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Wszystko przeczytane</translation>
 <translation id="498957508165411911">Przetłumaczyć z języka: <ph name="ORIGINAL_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Ta wtyczka nie jest obsługiwana</translation>
 <translation id="5002932099480077015">Jeśli włączysz tę opcję, Chrome zapisze kopię Twojej karty na tym urządzeniu, by umożliwić Ci szybsze wypełnianie formularzy.</translation>
 <translation id="5019198164206649151">Nieprawidłowy stan magazynu wspomagającego</translation>
 <translation id="5023310440958281426">Sprawdź zasady administratora</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">Okręg</translation>
 <translation id="6973656660372572881">Określono zarówno stałe serwery proxy, jak i URL skryptu PAC.</translation>
 <translation id="6989763994942163495">Pokaż ustawienia zaawansowane...</translation>
+<translation id="7000990526846637657">Brak wpisów historii</translation>
 <translation id="7009986207543992532">Próbujesz połączyć się z <ph name="DOMAIN" />, ale serwer przedstawił certyfikat, którego okres ważności jest za długi, by był wiarygodny. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Hasła</translation>
 <translation id="7087282848513945231">Hrabstwo</translation>
 <translation id="7088615885725309056">Starsze</translation>
@@ -608,6 +611,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="780301667611848630">Nie, dziękuję</translation>
 <translation id="7805768142964895445">Stan</translation>
 <translation id="7813600968533626083">Usunąć tę podpowiedź do formularza z Chrome?</translation>
+<translation id="7815407501681723534">Znalezione <ph name="SEARCH_RESULTS" /> dla zapytania „<ph name="SEARCH_STRING" />”: <ph name="NUMBER_OF_RESULTS" /></translation>
 <translation id="785549533363645510">To jednak nie znaczy, że Cię nie widać. Nawet gdy przejdziesz w tryb incognito, Twój pracodawca, dostawca usług internetowych czy webmasterzy stron, na które wchodzisz, mogą dowiedzieć się, co przeglądasz.</translation>
 <translation id="7887683347370398519">Sprawdź kod CVC i spróbuj ponownie</translation>
 <translation id="7894616681410591072">Ups! Jeśli chcesz wejść na tę stronę, <ph name="NAME" /> musi wyrazić na to zgodę.</translation>

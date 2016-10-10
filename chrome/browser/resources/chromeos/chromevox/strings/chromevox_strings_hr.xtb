@@ -553,6 +553,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="6307969636681130414">Pritisnut</translation>
 <translation id="6324551002951139333">Otkrivena je gramatička pogreška</translation>
 <translation id="6348657800373377022">Kombinirani okvir</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{znak uspravnog nabrajanja}one{# znak uspravnog nabrajanja}few{# znaka uspravnog nabrajanja}other{# znakova uspravnog nabrajanja}}</translation>
 <translation id="6355910664415701303">Nema prethodne stavke popisa.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Prethodni naslov</translation>
@@ -581,6 +582,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6697092096875747123">Prethodni kombinirani okvir</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{uskličnik}one{# uskličnik}few{# uskličnika}other{# uskličnika}}</translation>
 <translation id="6710213216561001401">Prethodno</translation>
 <translation id="6714813999819678458">Prethodni naslov razine 2</translation>
 <translation id="6716505898850596801">Modifikatorske tipke</translation>

@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">पत्ता आणि शोध बार</translation>
 <translation id="2826760142808435982">कनेक्शन <ph name="CIPHER" /> वापरून आणि की विनिमय तंत्र म्हणून <ph name="KX" /> वापर कूटबद्ध आणि प्रमाणीकृत केले आहे.</translation>
 <translation id="2835170189407361413">फॉर्म क्लिअर करा</translation>
-<translation id="2837049386027881519">TLS किंवा SSL प्रोटॉकॉलची जुनी आवृत्ती वापरून कनेक्शन पुनर्प्रयत्न केला. असे विशेषकरून तेव्हाच होते जेव्हा सर्व्हर खूपच जुने सॉफ्टवेअर वापरत आहे आणि इतर सुरक्षितता समस्या येत असू शकतात.</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> वरील सर्व्हर प्रमाणपत्र खोटे असल्याचे दिसते.</translation>
 <translation id="2889159643044928134">रीलोड करु नका</translation>
 <translation id="2900469785430194048">हे वेबपृष्ठ प्रदर्शित करण्याचा प्रयत्न करताना Google Chrome ची मेमरी संपली आहे.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">या पृष्ठास बुकमार्क करा</translation>
 <translation id="3270847123878663523">&amp;पुनर्क्रमित करा पूर्ववत करा</translation>
 <translation id="3286538390144397061">त्वरित रीस्टार्ट करा</translation>
+<translation id="3303855915957856445">कोणतेही शोध परिणाम आढळले नाहीत</translation>
 <translation id="3305707030755673451">आपला डेटा आपल्या संकालन सांकेतिक वाक्यांशासह <ph name="TIME" /> वाजता कूटबद्ध केला होता. संकालन सुरु करण्यासाठी तो प्रविष्ट करा.</translation>
 <translation id="333371639341676808">अतिरिक्त संवाद तयार करण्यापासून या पृष्ठाला प्रतिबंधित करा.</translation>
 <translation id="3338095232262050444">सुरक्षित</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">अक्षम करा</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> ते <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">शोध परिणाम</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> ने आपले लॉग इन प्रमाणपत्र स्वीकारले नाही किंवा कदाचित प्रदान केले गेले नसावे.</translation>
 <translation id="443673843213245140">प्रॉक्सीचा वापर अक्षम करण्‍यात आला आहे पण एक सुस्पष्‍ट प्रॉक्सी कॉन्‍फिगरेशन निर्दिष्‍ट करण्‍यात आले आहे.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">आपल्याला हा संदेश दिसत आहे कारण Google SafeSites सक्षम केलेली आहे.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">क्रिया</translation>
 <translation id="4958444002117714549">सूची विस्तृत करा</translation>
 <translation id="4962322354953122629">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; याचे सुरक्षा प्रमाणपत्र Chrome द्वारे विश्वसनीय नाही; हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">सर्व वाचले</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" /> मधून <ph name="TARGET_LANGUAGE" /> मध्ये भाषांतरित करायचे?</translation>
+<translation id="4989809363548539747">हे प्लगिन समर्थित नाही</translation>
 <translation id="5002932099480077015">सक्षम केल्‍यास, Chrome जलदपणे फॉर्म भरण्‍यासाठी आपल्‍या कार्डची एक प्रत या डिव्‍हाइसवर संग्रहित करेल.</translation>
 <translation id="5019198164206649151">समर्थन संचयन खराब स्थितीत</translation>
 <translation id="5023310440958281426">आपल्या प्रशासकाची धोरणे तपासा</translation>
@@ -525,8 +526,10 @@
 <translation id="6970216967273061347">‍जिल्‍हा</translation>
 <translation id="6973656660372572881">निश्चित प्रॉक्सी सर्व्हर आणि .pac स्क्रिप्ट URL निर्दिष्‍ट करण्‍यात आले आहेत.</translation>
 <translation id="6989763994942163495">प्रगत सेटिंग्ज दर्शवा...</translation>
+<translation id="7000990526846637657">कोणत्याही इतिहास प्रविष्टी सापडल्या नाहीत</translation>
 <translation id="7009986207543992532">आपण <ph name="DOMAIN" /> येथे पोहोचण्याचा प्रयत्न केला, परंतु सर्व्हरने असे प्रमाणपत्र सादर केले ज्याचा वैधता कालावधी विश्वासार्हतेसाठी खूप मोठा आहे. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">आपल्या Google खात्यात <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> वर ब्राउझिंग इतिहासाची अन्य स्वरूपे असू शकतात</translation>
 <translation id="7029809446516969842">संकेतशब्द</translation>
 <translation id="7087282848513945231">परगणा</translation>
 <translation id="7088615885725309056">थोडा जुना</translation>
@@ -609,6 +612,7 @@
 <translation id="780301667611848630">नाही, धन्यवाद</translation>
 <translation id="7805768142964895445">स्थिती</translation>
 <translation id="7813600968533626083">Chrome मधून सूचना फॉर्म काढायचा?</translation>
+<translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' साठी <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> सापडले</translation>
 <translation id="785549533363645510">तथापि, आपण अदृश्य नाही. गुप्त झाल्याने आपले ब्राउझिंग आपला नियोक्ता, आपला इंटरनेट सेवा प्रदाता, किंवा आपण भेट देता त्या वेबसाइटपासून लपत नाही.</translation>
 <translation id="7887683347370398519">आपले CVC तपासा आणि पुन्हा प्रयत्न करा</translation>
 <translation id="7894616681410591072">अरेरे, या पृष्ठावर प्रवेश करण्यासाठी <ph name="NAME" /> द्वारे आपल्याला परवानगी आवश्यक आहे.</translation>

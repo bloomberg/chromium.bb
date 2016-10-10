@@ -553,6 +553,7 @@
 <translation id="6307969636681130414">已按下</translation>
 <translation id="6324551002951139333">检测到语法错误</translation>
 <translation id="6348657800373377022">组合框</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{1 个项目符号}other{# 个项目符号}}</translation>
 <translation id="6355910664415701303">不存在上一个列表项。</translation>
 <translation id="6364795331201459219">6级标题标记</translation>
 <translation id="6368143427468974988">上一个标题</translation>
@@ -581,6 +582,7 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">文档</translation>
 <translation id="6697092096875747123">上一个组合框</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{1 个感叹号}other{# 个感叹号}}</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6714813999819678458">上一个2级标题</translation>
 <translation id="6716505898850596801">辅助键</translation>

@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">Chromium无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="1174473354587728743">与其他人共用计算机？现在，您可以随心所欲地设置Chromium。</translation>
 <translation id="1185134272377778587">关于 Chromium</translation>
-<translation id="1221340462641866827">Chromium 操作系统不支持启动外部应用处理 <ph name="SCHEME" /> 链接。请求的链接是 <ph name="PROTOLINK" />。</translation>
 <translation id="1293235220023151515">系统上已安装存在冲突的Chromium。请先将其卸载，然后重试。</translation>
 <translation id="1298199220304005244">获取 Chromium 操作系统使用帮助</translation>
 <translation id="1396446129537741364">Chromium 正尝试显示密码。</translation>
@@ -64,7 +63,6 @@
 <translation id="2886012850691518054">可选：将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 Chromium。</translation>
 <translation id="2905536371227304018">Chromium 操作系统目前以这种语言显示。</translation>
 <translation id="2910007522516064972">关于 Chromium(&amp;C)</translation>
-<translation id="2966088006374919794">Chromium 必须启动外部应用才能处理 <ph name="SCHEME" /> 链接。请求的链接是 <ph name="PROTOLINK" />。</translation>
 <translation id="3032787606318309379">正在添加到 Chromium...</translation>
 <translation id="3046695367536568084">您需要先登录Chromium，再使用各项应用。这样，Chromium就可以在各个设备上同步您的应用、书签、历史记录、密码和其他设置。</translation>
 <translation id="3068515742935458733">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Chromium。</translation>
@@ -101,7 +99,6 @@
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="407254336480250557">选择 <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">请关闭所有 Chromium 窗口，然后重新启动 Chromium，以便让此更改生效。</translation>
-<translation id="4182290826692170034">太棒了！Chromium 已设为您的默认浏览器。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />警告<ph name="END_BOLD" />：Chromium 无法阻止扩展程序记录您的浏览记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
 <translation id="421369550622382712">在这里，您可以找到适用于 Chromium 的精彩应用、游戏、扩展程序和主题背景。</translation>
 <translation id="4222580632002216401">您现在已登录 Chromium！不过，管理员已停用同步功能。</translation>

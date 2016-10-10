@@ -105,6 +105,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="213279576345780926">L'onglet "<ph name="TAB_TITLE" />" a été fermé.</translation>
 <translation id="2138201775715568214">Recherche de pages Web physique à proximité</translation>
 <translation id="2139186145475833000">Ajouter à l'écran d'accueil</translation>
+<translation id="2146738493024040262">Ouvrir l'appli instantanée</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="219985413780390209">Assurer votre protection et celle de votre appareil contre les sites dangereux</translation>
@@ -184,8 +185,8 @@ Vous pouvez contrôler les paramètres du Web physique dans les paramètres de C
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Ouvrir dans un onglet de nav. privée</translation>
 <translation id="3090193911106258841">Accès à l'entrée audio et vidéo en cours…</translation>
-<translation id="3117051980354074377">Connectez-vous à Chrome pour accéder à vos favoris sur vos autres appareils.</translation>
 <translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
+<translation id="3148434565183091099">Connectez-vous à Chrome pour synchroniser vos favoris sur tous vos appareils.</translation>
 <translation id="3149891296864842641">Option d'expédition</translation>
 <translation id="3177909033752230686">Langue de la page :</translation>
 <translation id="3190152372525844641">Activer les autorisations pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
@@ -220,6 +221,7 @@ Vous pouvez contrôler les paramètres du Web physique dans les paramètres de C
 <translation id="3518985090088779359">Accepter et continuer</translation>
 <translation id="3522247891732774234">Mise à jour disponible. Plus d'options</translation>
 <translation id="3527085408025491307">Dossier</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> Ko disponibles</translation>
 <translation id="3549644494707163724">Chiffrer toutes les données synchronisées avec votre propre phrase secrète de synchronisation</translation>
 <translation id="3590487821116122040">Données de site stockées, que Chrome ne considère pas comme importantes (par exemple, pour des sites sans paramètres enregistrés ou que vous ne consultez pas souvent)</translation>
 <translation id="360480449234699036">Découvrez les thèmes abordés sur les sites Web sans quitter la page. La fonctionnalité Appuyer pour rechercher envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des images, des résultats de recherche et d'autres informations.
@@ -297,7 +299,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4532845899244822526">Sélectionner un dossier</translation>
 <translation id="4543661749405994812">Copier l'adresse e-mail</translation>
 <translation id="4572422548854449519">Se connecter à un compte géré</translation>
-<translation id="4576023202210315647">Conserver l'onglet dans Chrome</translation>
 <translation id="4581964774250883625">Vous êtes passé en mode navigation privée</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Il y a # minute}one{Il y a # minute}other{Il y a # minutes}}</translation>
 <translation id="4605958867780575332">Élément supprimé : <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7208788139759694678">Économiseur de données désactivé</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
-<translation id="7327835590071894791">L'onglet est maintenant affiché en arrière-plan.</translation>
 <translation id="7347770551817603360">Contenu hors connexion</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partager 1 élément sélectionné}one{Partager # élément sélectionné}other{Partager # éléments sélectionnés}}</translation>
 <translation id="7366340029385295517">Diffusion sur "<ph name="SCREEN_NAME" />" en cours…</translation>
@@ -551,7 +551,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> concernant, par exemple, vos recherches ou vos activités via d'autres services Google.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Dernière mise à jour <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Veuillez patienter…</translation>
-<translation id="7501135638693251872">Tous les favoris</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Effacement des données de navigation en cours</translation>
 <translation id="756809126120519699">Données de Chrome effacées</translation>
@@ -639,12 +638,14 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="8518901949365209398">Ce site utilise une configuration de sécurité faible (signatures SHA-1). Il est donc possible que votre connexion ne soit pas privée.</translation>
 <translation id="8523928698583292556">Supprimer le mot de passe enregistré</translation>
 <translation id="8525306231823319788">Plein écran</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> Mo utilisés</translation>
 <translation id="854522910157234410">Ouvrir cette page</translation>
 <translation id="8562452229998620586">Les mots de passe enregistrés s'affichent ici.</translation>
 <translation id="856481929701340285">Voir version ordinateur</translation>
 <translation id="857943718398505171">Autorisée (recommandé)</translation>
 <translation id="8583805026567836021">Suppression des données du compte</translation>
 <translation id="8617240290563765734">Ouvrir l'URL suggérée indiquée dans le contenu téléchargé ?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> Ko utilisés</translation>
 <translation id="862875433388403934">Il se peut que le contenu (films, musique, etc.) téléchargé dans d'autres applications ne soit plus lisible tant que ces applications n'ont pas obtenu de nouvelles licences sur la base d'un nouvel identifiant d'appareil.
 
 Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le contenu que vous avez téléchargé.</translation>

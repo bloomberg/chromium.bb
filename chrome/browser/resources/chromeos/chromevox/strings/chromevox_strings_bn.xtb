@@ -553,6 +553,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6307969636681130414">টেপা হয়েছে</translation>
 <translation id="6324551002951139333">ব্যকরণগত ত্রুটি সনাক্ত হয়েছে</translation>
 <translation id="6348657800373377022">কম্বো বাক্স</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{বুলেট চিহ্ন}one{#টি বুলেট চিহ্ন}other{#টি বুলেট চিহ্ন}}</translation>
 <translation id="6355910664415701303">কোনো পূর্ববর্তী তালিকা আইটেম নেই৷</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">পূর্ববর্তী শিরোনাম</translation>
@@ -581,6 +582,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6659594942844771486">ট্যাব</translation>
 <translation id="667999046851023355">দস্তাবেজ</translation>
 <translation id="6697092096875747123">পূর্ববর্তী কম্বো বাক্স</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{বিস্মযসূচক চিহ্ন}one{#টি বিস্ময়সূচক চিহ্ন}other{#টি বিস্ময়সূচক চিহ্ন}}</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
 <translation id="6714813999819678458">পূর্ববর্তী স্তর ২ শিরোনাম</translation>
 <translation id="6716505898850596801">সংশোধক কীগুলি</translation>

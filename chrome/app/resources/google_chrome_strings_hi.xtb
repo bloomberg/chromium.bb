@@ -213,13 +213,11 @@
 <translation id="7164397146364144019">आप Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करके Chrome को अधिक सुरक्षित और आसान बनाने में सहायता कर सकते हैं.</translation>
 <translation id="7177347454226092725">इससे इस डिवाइस से आपका ब्राउज़िंग डेटा स्थायी रूप से हट जाएगा. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> को Chrome में जोड़ दिया गया है.</translation>
-<translation id="7191567847629796517">Google Chrome OS <ph name="SCHEME" /> लिंक प्रबंधित करने के लिए बाहरी ऐप्‍लिकेशन लॉन्‍च करने का समर्थन नहीं करता. अनुरोधित लिंक <ph name="PROTOLINK" /> है.</translation>
 <translation id="7193750696137290001">Google Chrome इस भाषा में दिखाया जा रहा है.</translation>
 <translation id="7196020411877309443">मैं यह क्यों देख रहा/रही हूं?</translation>
 <translation id="7242029209006116544">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि Windows XP और Windows Vista अब समर्थित नहीं रहेंगे.</translation>
 <translation id="7339898014177206373">नई विंडो</translation>
-<translation id="7393806081343982361">Google Chrome आपका डिफ़ॉल्ट ब्राउज़र है. क्या बात है!</translation>
 <translation id="7398801000654795464">आप Chrome में <ph name="USER_EMAIL_ADDRESS" /> के रूप में प्रवेश थे. पुन: प्रवेश करने के लिए कृपया उसी खाते का उपयोग करें.</translation>
 <translation id="7400722733683201933">Google Chrome के बारे में</translation>
 <translation id="7408085963519505752">Chrome OS शर्तें</translation>
@@ -254,7 +252,6 @@
 <translation id="8129812357326543296">&amp;Google Chrome के बारे में</translation>
 <translation id="8183957050892517584">Chrome आपके व्यक्तिगत विवरण को सुरक्षित रूप से संग्रहीत करेगा, इसलिए आपको इन्हें पुनः लिखने की आवश्यकता नहीं है.</translation>
 <translation id="8211929904040702368">इससे इस डिवाइस से कम से कम <ph name="TOTAL_COUNT" /> आइटम स्थायी रूप से हट जाएंगे. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.</translation>
-<translation id="8227755444512189073"><ph name="SCHEME" /> लिंक प्रबंधित करने के लिए Google Chrome को एक बाहरी ऐप्स  लॉन्च करने की आवश्यकता होती है. अनुरोध की गई लिंक <ph name="PROTOLINK" /> है</translation>
 <translation id="8255190535488645436">Google Chrome आपके कैमरे और माइक्रोफ़ोन का उपयोग कर रहा है.</translation>
 <translation id="8286862437124483331">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है. इसकी अनुमति देने के लिए अपना Windows पासवर्ड लिखें.</translation>
 <translation id="8290100596633877290">रुकिए! Google Chrome क्रैश हो गया है. अभी पुन: लॉन्च करें?</translation>

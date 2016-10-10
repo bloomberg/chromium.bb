@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Address bar at bar sa paghahanap</translation>
 <translation id="2826760142808435982">Ine-encrypt at pinapatotoo ang koneksyon gamit ang <ph name="CIPHER" /> at ginagamit ang <ph name="KX" /> bilang key exchange mechanism.</translation>
 <translation id="2835170189407361413">I-clear ang form</translation>
-<translation id="2837049386027881519">Kinailangang subukang muli ang koneksyon gamit ang mas lumang bersyon ng protocol ng TLS o SSL. Kadasalan ay nangangahulugan ito na ang server ay gumagamit ng napakalumang software at maaaring may iba pang mga isyu sa seguridad.</translation>
 <translation id="284702764277384724">Mukhang peke ang certificate ng server sa <ph name="HOST_NAME" />.</translation>
 <translation id="2889159643044928134">Huwag I-reload</translation>
 <translation id="2900469785430194048">Naubusan ng memory ang Google Chrome habang sinusubukang ipakita ang webpage na ito.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">I-bookmark ang page na ito</translation>
 <translation id="3270847123878663523">&amp;I-undo ang Pagbabago sa Ayos</translation>
 <translation id="3286538390144397061">I-restart Ngayon</translation>
+<translation id="3303855915957856445">Walang nakitang resulta ng paghahanap</translation>
 <translation id="3305707030755673451">Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name="TIME" />. Ilagay ito upang simulan ang pag-sync.</translation>
 <translation id="333371639341676808">Iwasan ang pahinang ito mula sa paglikha ng karagdagang mga dialog.</translation>
 <translation id="3338095232262050444">Secure</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Huwag paganahin</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> hanggang <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">mga resulta ng paghahanap</translation>
+<translation id="4432688616882109544">Hindi tinanggap ng <ph name="HOST_NAME" /> ang iyong certificate sa pag-log in o maaaring walang ibinigay.</translation>
 <translation id="443673843213245140">Hindi pinagana ang paggamit ng isang proxy ngunit tinutukoy ang isang tahasang configuration ng proxy.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Nakikita mo ang mensaheng ito dahil naka-enable ang Google SafeSites.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Mga Pagkilos</translation>
 <translation id="4958444002117714549">Palawakin ang listahan</translation>
 <translation id="4962322354953122629">Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng Chrome ang certificate na panseguridad nito. Maaaring sanhi ito ng maling pag-configure o ng isang nang-aatake na humahadlang sa iyong koneksyon. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto nang higit pa<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Nabasa na Lahat</translation>
 <translation id="498957508165411911">I-translate mula <ph name="ORIGINAL_LANGUAGE" /> patungong <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Hindi sinusuportahan ang plugin na ito</translation>
 <translation id="5002932099480077015">Kung naka-enable, mag-iimbak ang Chrome ng kopya ng iyong card sa device na ito para sa mas mabilis na pagsagot sa form.</translation>
 <translation id="5019198164206649151">Hindi maganda ang katayuan ng backing store</translation>
 <translation id="5023310440958281426">Suriin ang mga patakaran ng iyong administrator</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Tinukoy ang parehong mga hindi nababagong proxy server at isang .pac script URL.</translation>
 <translation id="6989763994942163495">Ipakita ang mga advanced na setting...</translation>
+<translation id="7000990526846637657">Walang nakitang mga entry sa history</translation>
 <translation id="7009986207543992532">Tinangka mong makakonekta sa <ph name="DOMAIN" />, ngunit ang server ay nagpakita ng certificate na masyadong matagal ang panahon ng pagkabisa, dahilan upang hindi maging katiwa-katiwala ito. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto nang higit pa<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Ang iyong Google Account ay maaaring may iba pang mga form ng history ng pagba-browse sa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Mga Password</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7088615885725309056">Mas Nauna</translation>
@@ -608,6 +611,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7805768142964895445">Katayuan</translation>
 <translation id="7813600968533626083">Alisin ang suhestyon sa Chrome?</translation>
+<translation id="7815407501681723534">Nakakita ng <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> para sa '<ph name="SEARCH_STRING" />'</translation>
 <translation id="785549533363645510">Gayunpaman, hindi ka invisible. Kahit mag-incognito ka, hindi matatago ang iyong pagba-browse mula sa iyong employer, sa iyong internet service provider o sa mga website na binibisita mo.</translation>
 <translation id="7887683347370398519">Tingnan ang iyong CVC at subukang muli</translation>
 <translation id="7894616681410591072">Oops! Kailangan mo ng pahintulot mula kay <ph name="NAME" /> upang ma-access ang page na ito.</translation>

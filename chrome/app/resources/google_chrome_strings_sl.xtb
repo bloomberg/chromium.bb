@@ -219,13 +219,11 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="7164397146364144019">S samodejnim poročanjem podrobnosti o morebitnih varnostnih dogodkih Googlu lahko pomagate narediti Chrome varnejši in preprostejši za uporabo.</translation>
 <translation id="7177347454226092725">S tem bodo iz te naprave trajno izbrisani podatki brskanja. Če želite pozneje prenesti podatke, se v Chrome prijavite kot $2.</translation>
 <translation id="7185038942300673794">Razširitev <ph name="EXTENSION_NAME" /> je dodana v Chrome.</translation>
-<translation id="7191567847629796517">Google Chrome OS ne podpira zagona zunanje aplikacije za obravnavo povezav <ph name="SCHEME" />. Zahtevana povezava je <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">Google Chrome je v tem jeziku.</translation>
 <translation id="7196020411877309443">Zakaj je to prikazano?</translation>
 <translation id="7242029209006116544">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Google Chromu. Vaši podatki v Chromu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME" />. Te podatke boste lahko izbrisali z nadzorno ploščo za Google Račune, vendar jih ne boste mogli povezati z drugim računom. Če želite, lahko ustvarite nov profil, da bodo obstoječi podatki v Chromu ostali ločeni. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Ta računalnik kmalu ne bo več prejemal posodobitev za Google Chrome, ker sistema Windows XP in Windows Vista ne bosta več podprta.</translation>
 <translation id="7339898014177206373">Novo okno</translation>
-<translation id="7393806081343982361">Google Chrome je privzeti brskalnik. Hura!</translation>
 <translation id="7398801000654795464">V Chrome ste bili prijavljeni kot <ph name="USER_EMAIL_ADDRESS" />. Pri vnovični prijavi uporabite isti račun.</translation>
 <translation id="7400722733683201933">O brskalniku Google Chrome</translation>
 <translation id="7408085963519505752">Pogoji za Chrome OS</translation>
@@ -260,7 +258,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="8129812357326543296">O &amp;Google Chromu</translation>
 <translation id="8183957050892517584">Chrome bo varno shranil vaše osebne podatke, tako da vam jih ne bo treba več vnesti.</translation>
 <translation id="8211929904040702368">S tem bo iz te naprave izbrisanih vsaj toliko elementov: <ph name="TOTAL_COUNT" />. Če želite pozneje prenesti podatke, se v Chrome prijavite kot $2.</translation>
-<translation id="8227755444512189073">Google Chrome mora zagnati zunanjo aplikacijo, da bo lahko obravnaval povezave <ph name="SCHEME" />. Zahtevana povezava je <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome uporablja vašo kamero in mikrofon.</translation>
 <translation id="8286862437124483331">Google Chrome poskuša prikazati gesla. Če želite omogočiti to, vnesite geslo za Windows.</translation>
 <translation id="8290100596633877290">Opa! Google Chrome se je zrušil. Ga želite znova zagnati?</translation>

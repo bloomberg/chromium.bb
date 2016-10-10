@@ -105,6 +105,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="213279576345780926">Lukkede <ph name="TAB_TITLE" /></translation>
 <translation id="2138201775715568214">Leder efter Fysisk web-sider i nærheden</translation>
 <translation id="2139186145475833000">Føj til startskærm</translation>
+<translation id="2146738493024040262">Åbn instant app</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="219985413780390209">Beskyt dig selv og din enhed mod farlige websites</translation>
@@ -184,8 +185,8 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
 <translation id="3090193911106258841">Åbner lyd- og videoinput</translation>
-<translation id="3117051980354074377">Log ind på Chrome for at se dine bogmærker på dine andre enheder.</translation>
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
+<translation id="3148434565183091099">Log ind på Chrome for at se dine bogmærker på alle dine enheder.</translation>
 <translation id="3149891296864842641">Forsendelsesmuligheder</translation>
 <translation id="3177909033752230686">Sidens sprog:</translation>
 <translation id="3190152372525844641">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />Indstillinger for Android<ph name="END_LINK" />.</translation>
@@ -220,6 +221,7 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="3518985090088779359">Acceptér og fortsæt</translation>
 <translation id="3522247891732774234">Tilgængelig opdatering. Flere muligheder</translation>
 <translation id="3527085408025491307">Mappe</translation>
+<translation id="3542235761944717775">Der er <ph name="KILOBYTES" /> kB til rådighed</translation>
 <translation id="3549644494707163724">Krypter alle synkroniserede data med din egen adgangssætning til synkronisering</translation>
 <translation id="3590487821116122040">Websitelagerplads, som ikke er vigtig ifølge Chrome (f.eks. websites uden gemte indstillinger eller websites, du ikke besøger så ofte)</translation>
 <translation id="360480449234699036">Få oplysninger om emner på websites uden at forlade siden. "Tryk for at søge" sender et ord og ordets kontekst til Google Søgning og giver dig definitioner, billeder, søgeresultater og andre oplysninger.
@@ -297,7 +299,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4532845899244822526">Vælg mappe</translation>
 <translation id="4543661749405994812">Kopiér e-mailadresse</translation>
 <translation id="4572422548854449519">Log ind på administreret konto</translation>
-<translation id="4576023202210315647">Gem fanen i Chrome</translation>
 <translation id="4581964774250883625">Du er inkognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{For # minut siden}one{For # minut siden}other{For # minutter siden}}</translation>
 <translation id="4605958867780575332">Element fjernet: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7208788139759694678">Datasparefunktionen er deaktiveret</translation>
 <translation id="7243308994586599757">Du finder indstillingerne nederst på skærmen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> anvender din placering til at vise lokale søgeresultater</translation>
-<translation id="7327835590071894791">Fanen er nu i baggrunden.</translation>
 <translation id="7347770551817603360">Offlineindhold</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Del 1 valgt element}one{Del # valgt element}other{Del # valgte elementer}}</translation>
 <translation id="7366340029385295517">Caster til <ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og aktivitet fra andre Google-tjenester, på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Opdateret <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Vent…</translation>
-<translation id="7501135638693251872">Alle bogmærker</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Browserdata ryddes</translation>
 <translation id="756809126120519699">Chrome-dataene blev ryddet</translation>
@@ -639,12 +638,14 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="8518901949365209398">Dette website benytter en svag sikkerhedskonfiguration (SHA-1-signaturer), så din forbindelse er muligvis ikke privat.</translation>
 <translation id="8523928698583292556">Slet den gemte adgangskode</translation>
 <translation id="8525306231823319788">Fuld skærm</translation>
+<translation id="85415543246899402">Der er brugt <ph name="MEGABYTES" /> MB</translation>
 <translation id="854522910157234410">Åbn denne side</translation>
 <translation id="8562452229998620586">Dine gemte adgangskoder vises her.</translation>
 <translation id="856481929701340285">Vis computerversion</translation>
 <translation id="857943718398505171">Tilladt (anbefales)</translation>
 <translation id="8583805026567836021">Kontodataene ryddes</translation>
 <translation id="8617240290563765734">Vil du åbne den foreslåede webadresse, som er angivet i det downloadede indhold?</translation>
+<translation id="8618653050765576793">Der er brugt <ph name="KILOBYTES" /> kB</translation>
 <translation id="862875433388403934">Indhold (film, musik m.m.), der er downloadet i andre applikationer, kan muligvis ikke længere afspilles, før disse applikationer får nye licenser, der er baseret på nye loginoplysninger for enheden.
 
 Du kan få nye licenser ved at oprette forbindelse til internettet og afspille det indhold, du har downloadet.</translation>

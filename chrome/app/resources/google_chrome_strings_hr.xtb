@@ -211,13 +211,11 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7164397146364144019">Možete pomoći da Chrome bude sigurniji i jednostavniji za upotrebu tako što ćete omogućiti da se Googleu automatski prijavljuju pojedinosti o mogućim sigurnosnim incidentima.</translation>
 <translation id="7177347454226092725">Time će se trajno izbrisati podaci o pregledavanju s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.</translation>
 <translation id="7185038942300673794">Proširenje "<ph name="EXTENSION_NAME" />" dodano je u Chrome.</translation>
-<translation id="7191567847629796517">OS Google Chrome ne podržava pokretanje vanjskih aplikacija za rad s <ph name="SCHEME" /> vezama. Zatražena je veza <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">Google Chrome prikazuje se na tom jeziku.</translation>
 <translation id="7196020411877309443">Zašto vidim ovo?</translation>
 <translation id="7242029209006116544">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Google Chrome. Vaši podaci u sustavu Chrome, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. Ako želite, možete izraditi novi profil kako biste zadržali postojeće podatke u sustavu Chrome zasebno. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Ovo računalo uskoro će prestati primati ažuriranja za Google Chrome jer sustavi Windows XP i Windows Vista više neće biti podržani.</translation>
 <translation id="7339898014177206373">Novi prozor</translation>
-<translation id="7393806081343982361">Google Chrome vaš je zadani preglednik. To!</translation>
 <translation id="7398801000654795464">Bili ste prijavljeni na Chrome kao <ph name="USER_EMAIL_ADDRESS" />. Prijavite se ponovo istim računom.</translation>
 <translation id="7400722733683201933">O programu Google Chrome</translation>
 <translation id="7408085963519505752">Uvjeti za OS Chrome</translation>
@@ -252,7 +250,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="8129812357326543296">O programu Google Chrome</translation>
 <translation id="8183957050892517584">Chrome će pohraniti vaše osobne podatke na siguran način tako da ih ne morate ponovo upisivati.</translation>
 <translation id="8211929904040702368">Time će se trajno izbrisati najmanje <ph name="TOTAL_COUNT" /> stav. s ovog uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao $2.</translation>
-<translation id="8227755444512189073">Google Chrome treba pokrenuti vanjsku aplikaciju da bi mogao koristiti veze <ph name="SCHEME" />. Zatražena je veza <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome upotrebljava vašu kameru i mikrofon.</translation>
 <translation id="8286862437124483331">Google Chrome pokušava prikazati zaporke. Upišite svoju zaporku za Windows da biste to dopustili.</translation>
 <translation id="8290100596633877290">Opa! Google Chrome je pao. Ponovo pokrenuti sada?</translation>

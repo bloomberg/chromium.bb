@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Adres ve arama çubuğu</translation>
 <translation id="2826760142808435982">Bağlantı <ph name="CIPHER" /> kullanılarak şifrelenmiş ve kimliği doğrulanmıştır. Anahtar değişim mekanizması olarak <ph name="KX" /> kullanılır.</translation>
 <translation id="2835170189407361413">Formu temizle</translation>
-<translation id="2837049386027881519">Bağlantı, TLS veya SSL protokolünün eski bir sürümü kullanılarak tekrar denendi. Bu genellikle sunucunun çok eski bir yazılım kullandığı ve başka güvenlik sorunları olabileceği anlamına gelir.</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> ana makinesindeki sunucu sertifikası sahte görünüyor.</translation>
 <translation id="2889159643044928134">Yeniden Yükleme</translation>
 <translation id="2900469785430194048">Bu web sayfası görüntülenmeye çalışılırken Google Chrome'da bellek kalmadı.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Bu sayfaya yer işareti koy</translation>
 <translation id="3270847123878663523">Sıralama Değişikliğini &amp;Geri Al</translation>
 <translation id="3286538390144397061">Şimdi yeniden başlat</translation>
+<translation id="3303855915957856445">Arama sonucu bulunamadı</translation>
 <translation id="3305707030755673451">Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak için senkronizasyon parolanızı girin.</translation>
 <translation id="333371639341676808">Bu sayfanın ek iletişim kutusu oluşturmasına izin verme.</translation>
 <translation id="3338095232262050444">Güvenli</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Devre dışı bırak</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> - <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">arama sonuçları</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> giriş sertifikanızı kabul etmedi veya giriş sertifikası sağlanmamış olabilir.</translation>
 <translation id="443673843213245140">Proxy kullanımı devre dışı, ancak açık bir proxy yapılandırması belirtildi.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Google SafeSites etkinleştirilmiş olduğu için bu iletiyi görüyorsunuz.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">İşlemler</translation>
 <translation id="4958444002117714549">Listeyi genişlet</translation>
 <translation id="4962322354953122629">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Chrome, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi edinin<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Tümü Okundu</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" /> dilinden <ph name="TARGET_LANGUAGE" /> diline çevrilsin mi?</translation>
+<translation id="4989809363548539747">Bu eklenti desteklenmiyor</translation>
 <translation id="5002932099480077015">Bu seçenek etkinleştirildiğinde Chrome, formları daha hızlı doldurmak için kartınızın bir kopyasını bu cihazda saklar.</translation>
 <translation id="5019198164206649151">Yedekleme deposu kötü durumda</translation>
 <translation id="5023310440958281426">Yöneticinizin politikalarını inceleyin.</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">Bölge</translation>
 <translation id="6973656660372572881">Hem sabit proxy sunucular hem de bir .pac komut dosyası URL'si belirtildi.</translation>
 <translation id="6989763994942163495">Gelişmiş ayarları göster...</translation>
+<translation id="7000990526846637657">Geçmiş girişi bulunamadı</translation>
 <translation id="7009986207543992532"><ph name="DOMAIN" /> alan adına erişmeyi denediniz ancak sunucu, geçerlilik dönemi güvenilir olmayacak kadar uzun olan bir sertifika sundu. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi edinin<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> adresinde Google Hesabınıza ilişkin başka biçimlerde tarama geçmişi olabilir.</translation>
 <translation id="7029809446516969842">Şifreler</translation>
 <translation id="7087282848513945231">İlçe</translation>
 <translation id="7088615885725309056">Daha eski</translation>
@@ -608,6 +611,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7805768142964895445">Durum</translation>
 <translation id="7813600968533626083">Form önerisi Chrome'dan kaldırılsın mı?</translation>
+<translation id="7815407501681723534">"<ph name="SEARCH_STRING" />" için <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> bulundu.</translation>
 <translation id="785549533363645510">Ancak görünmez olmazsınız. Gizli moda geçmek göz atma etkinliğinizi işvereninizden, İnternet servis sağlayıcınızdan veya ziyaret ettiğiniz web sitelerinden gizlemez.</translation>
 <translation id="7887683347370398519">CVC'nizi kontrol edin ve tekrar deneyin</translation>
 <translation id="7894616681410591072">Hata! Bu sayfaya erişmeniz için <ph name="NAME" /> size izin vermelidir.</translation>

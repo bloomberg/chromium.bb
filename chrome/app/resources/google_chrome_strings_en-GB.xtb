@@ -219,13 +219,11 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7164397146364144019">You can help make Chrome safer and easier to use by automatically reporting details of possible security incidents to Google.</translation>
 <translation id="7177347454226092725">This will permanently delete your browsing data from this device. To retrieve your data later, sign in to Chrome as $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> has been added to Chrome.</translation>
-<translation id="7191567847629796517">Google Chrome OS does not support launching an external application to handle <ph name="SCHEME" /> links. The link requested is <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">Google Chrome is displayed in this language.</translation>
 <translation id="7196020411877309443">Why am I seeing this?</translation>
 <translation id="7242029209006116544">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chrome data separate. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">This computer will soon stop receiving Google Chrome updates because Windows XP and Windows Vista will no longer be supported.</translation>
 <translation id="7339898014177206373">New window</translation>
-<translation id="7393806081343982361">Google Chrome is your default browser. Yeah!</translation>
 <translation id="7398801000654795464">You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
 <translation id="7400722733683201933">About Google Chrome</translation>
 <translation id="7408085963519505752">Chrome OS terms</translation>
@@ -260,7 +258,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8129812357326543296">About &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome will securely store your personal details so that you don't need to type them again.</translation>
 <translation id="8211929904040702368">This will permanently delete at least <ph name="TOTAL_COUNT" /> items from this device. To retrieve your data later, sign in to Chrome as $2.</translation>
-<translation id="8227755444512189073">Google Chrome needs to launch an external application to handle <ph name="SCHEME" /> links. The link requested is <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome is using your camera and microphone.</translation>
 <translation id="8286862437124483331">Google Chrome is trying to show passwords. Type your Windows password to allow this.</translation>
 <translation id="8290100596633877290">Whoa! Google Chrome has crashed. Relaunch now?</translation>

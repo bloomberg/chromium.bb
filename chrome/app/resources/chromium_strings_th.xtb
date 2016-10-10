@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">Chromium ไม่สามารถซิงค์ข้อมูลของคุณ โปรดอัปเดตข้อความรหัสผ่านการซิงค์</translation>
 <translation id="1174473354587728743">หากต้องการแชร์คอมพิวเตอร์ ตอนนี้คุณสามารถตั้งค่า Chromium ในแบบที่คุณชอบได้แล้ว</translation>
 <translation id="1185134272377778587">เกี่ยวกับ Chromium</translation>
-<translation id="1221340462641866827">Chromium OS ไม่สนับสนุนการเปิดแอปพลิเคชันภายนอกเพื่อจัดการกับลิงก์ <ph name="SCHEME" /> ลิงก์ที่ร้องขอคือ <ph name="PROTOLINK" /></translation>
 <translation id="1293235220023151515">พบว่าการติดตั้ง Chromium ในระบบขัดแย้งกัน โปรดถอนการติดตั้งและลองอีกครั้ง</translation>
 <translation id="1298199220304005244">รับความช่วยเหลือเกี่ยวกับการใช้ Chromium OS</translation>
 <translation id="1396446129537741364">Chromium กำลังพยายามแสดงรหัสผ่าน</translation>
@@ -64,7 +63,6 @@
 <translation id="2886012850691518054">ตัวเลือก: ช่วยปรับปรุง Chromium ให้ดีขึ้นโดยการส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="2905536371227304018">ระบบปฏิบัติการ Chromium แสดงในภาษานี้</translation>
 <translation id="2910007522516064972">เกี่ยวกับ &amp;Chromium</translation>
-<translation id="2966088006374919794">Chromium จำเป็นต้องเปิดแอปพลิเคชันภายนอกเพื่อจัดการกับลิงก์ <ph name="SCHEME" /> ลิงก์ที่ร้องขอคือ <ph name="PROTOLINK" /></translation>
 <translation id="3032787606318309379">กำลังเพิ่มลงใน Chromium...</translation>
 <translation id="3046695367536568084">คุณจะต้องลงชื่อเข้าใช้ Chromium เพื่อใช้แอป ซึ่งจะช่วยให้ Chromium สามารถซิงค์แอป บุ๊กมาร์ก ประวัติ รหัสผ่าน และการตั้งค่าอื่นๆ ระหว่างอุปกรณ์ได้</translation>
 <translation id="3068515742935458733">ช่วยทำให้ Chromium ดียิ่งขึ้นโดยการส่งรายงานข้อขัดข้องและ <ph name="UMA_LINK" /> ไปยัง Google</translation>
@@ -101,7 +99,6 @@
 <translation id="4050175100176540509">การปรับปรุงด้านความปลอดภัยที่สำคัญและคุณลักษณะใหม่ๆ พร้อมให้บริการในเวอร์ชันล่าสุด</translation>
 <translation id="407254336480250557">เลือก <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">โปรดปิดหน้าต่าง Chromium ทั้งหมดและเปิด Chromium อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
-<translation id="4182290826692170034">Chromium เป็นเบราว์เซอร์เริ่มต้นของคุณ ไชโย!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />คำเตือน:<ph name="END_BOLD" /> Chromium ไม่สามารถป้องกันส่วนขยายจาการบันทึกประวัติการเรียกดูได้ หากคุณต้องการปิดใช้งานส่วนขยายนี้ในโหมดไม่ระบุตัวตน ให้ยกเลิกการเลือกตัวเลือกนี้</translation>
 <translation id="421369550622382712">พบกับแอป เกม ส่วนขยาย และธีมเด็ดๆ สำหรับ Chromium</translation>
 <translation id="4222580632002216401">ขณะนี้คุณลงชื่อเข้าใช้ Chromium แล้ว! การซิงค์ถูกปิดใช้งานโดยผู้ดูแลระบบของคุณ</translation>

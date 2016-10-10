@@ -211,13 +211,11 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7164397146364144019">Az esetleges biztonsági események adatainak automatikus jelentésével segítséget nyújthat a Google-nak a Chrome használatának biztonságosabbá és egyszerűbbé tételéhez.</translation>
 <translation id="7177347454226092725">Ezzel az eszközön lévő összes böngészési adat véglegesen törlődik. Az adatok későbbi lekéréséhez jelentkezzen be a Chrome-ba mint $2.</translation>
 <translation id="7185038942300673794">A(z) <ph name="EXTENSION_NAME" /> hozzá lett adva a Chrome-hoz.</translation>
-<translation id="7191567847629796517">A Google Chrome OS nem támogatja külső alkalmazás indítását a(z) <ph name="SCHEME" /> linkek kezelésére. A kért link: <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">A Google Chrome ezen a nyelven jelenik meg.</translation>
 <translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>
 <translation id="7242029209006116544">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Google Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. Létrehozhat egy új profilt is meglévő Chrome-adatainak külön tárolásához. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Ez a számítógép hamarosan nem fog több Google Chrome-frissítést kapni, mert a böngésző nem fogja támogatni a Windows XP és Windows Vista rendszereket.</translation>
 <translation id="7339898014177206373">Új ablak</translation>
-<translation id="7393806081343982361">A Google Chrome az alapértelmezett böngésző. Hurrá!</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" /> néven volt bejelentkezve a Chrome-ba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
 <translation id="7400722733683201933">A Google Chrome névjegye</translation>
 <translation id="7408085963519505752">Chrome OS – Szerződési Feltételek</translation>
@@ -252,7 +250,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="8129812357326543296">A &amp;Google Chrome névjegye</translation>
 <translation id="8183957050892517584">A Chrome biztonságosan tárolja a személyes adatait, így nem kell újra begépelnie őket.</translation>
 <translation id="8211929904040702368">Ezzel véglegesen töröl legalább <ph name="TOTAL_COUNT" /> elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chrome-ba mint $2.</translation>
-<translation id="8227755444512189073">A Google Chrome-nak el kell indítania egy külső alkalmazást a(z) <ph name="SCHEME" /> linkekhez. A kért link: <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">A Google Chrome használja a kamerát és a mikrofont.</translation>
 <translation id="8286862437124483331">A Google Chrome megkísérli megjeleníteni a jelszavakat. Ennek engedélyezéséhez írja be Windows-jelszavát.</translation>
 <translation id="8290100596633877290">Hmm. A Google Chrome összeomlott. Újraindítja most?</translation>

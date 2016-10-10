@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Cím- és keresősáv</translation>
 <translation id="2826760142808435982">A kapcsolat <ph name="KX" /> algoritmust használ kulcscserélő mechanizmusként, kódolása pedig <ph name="CIPHER" /> használatával történt.</translation>
 <translation id="2835170189407361413">Űrlap törlése</translation>
-<translation id="2837049386027881519">A kapcsolat felépítését újra meg kellett próbálni egy régebbi verziójú TLS- vagy SSL-protokoll használatával. Ez általában azt jelenti, hogy a szerver nagyon régi szoftvert használ, és lehetnek vele más biztonsági problémák is.</translation>
 <translation id="284702764277384724">A(z) <ph name="HOST_NAME" /> szervertanúsítványa hamisítványnak tűnik.</translation>
 <translation id="2889159643044928134">Ne töltse újra</translation>
 <translation id="2900469785430194048">Elfogyott a memória, miközben a Google Chrome megpróbálta megjeleníteni ezt a weboldalt.</translation>
@@ -214,6 +213,7 @@
 <translation id="3254409185687681395">Könyvjelző hozzáadása ehhez az oldalhoz</translation>
 <translation id="3270847123878663523">&amp;Átrendezés visszavonása</translation>
 <translation id="3286538390144397061">Újraindítás most</translation>
+<translation id="3303855915957856445">Nincs találat</translation>
 <translation id="3305707030755673451">Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a következő időpontban: <ph name="TIME" />. Adja meg a jelszót a szinkronizálás megkezdéséhez.</translation>
 <translation id="333371639341676808">Ez az oldal ne nyisson meg további párbeszédablakokat.</translation>
 <translation id="3338095232262050444">Biztonságos</translation>
@@ -325,6 +325,7 @@
 <translation id="4394049700291259645">Kikapcsolás</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" />–<ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">keresési találat</translation>
+<translation id="4432688616882109544">A(z) <ph name="HOST_NAME" /> nem fogadta el az Ön bejelentkezési tanúsítványát, vagy nem talált ilyet.</translation>
 <translation id="443673843213245140">A proxy használata le van tiltva, de kifejezett proxykonfiguráció van megadva.</translation>
 <translation id="4458874409874303848">Biztonságos webhelyek</translation>
 <translation id="4461847750548395463">Azért látja ezt az üzenetet, mert a Google Biztonságos webhelyek szolgáltatás be van kapcsolva.</translation>
@@ -367,8 +368,8 @@
 <translation id="495170559598752135">Műveletek</translation>
 <translation id="4958444002117714549">Lista részletes nézete</translation>
 <translation id="4962322354953122629">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa a Chrome szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy támadó térítette el az Ön kapcsolódását. <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Minden elolvasva</translation>
 <translation id="498957508165411911">Lefordítja <ph name="ORIGINAL_LANGUAGE" /> nyelvről <ph name="TARGET_LANGUAGE" /> nyelvre?</translation>
+<translation id="4989809363548539747">Ez a beépülő modul nem támogatott</translation>
 <translation id="5002932099480077015">Ha engedélyezi, a Chrome megőrzi a kártya másolatát ezen az eszközön a gyorsabb űrlapkitöltés érdekében.</translation>
 <translation id="5019198164206649151">A háttértároló állapota nem megfelelő</translation>
 <translation id="5023310440958281426">Ellenőrizze rendszergazdai házirendjeit</translation>
@@ -522,8 +523,10 @@
 <translation id="6970216967273061347">Kerület</translation>
 <translation id="6973656660372572881">Mindkét fix proxyszerver és egy .Pac típusú szkript URL-címe meg van adva.</translation>
 <translation id="6989763994942163495">Speciális beállítások megjelenítése...</translation>
+<translation id="7000990526846637657">Nincsenek előzménybejegyzések</translation>
 <translation id="7009986207543992532">Ön megpróbálta elérni a(z) <ph name="DOMAIN" /> domaint, de a szerver olyan tanúsítványt mutatott be, amelynek érvényességi ideje túl hosszú ahhoz, hogy megbízható legyen. <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Előfordulhat, hogy a böngészési előzmények más formái megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> címen</translation>
 <translation id="7029809446516969842">Jelszavak</translation>
 <translation id="7087282848513945231">Megye</translation>
 <translation id="7088615885725309056">Régebbi</translation>
@@ -606,6 +609,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7805768142964895445">Állapot</translation>
 <translation id="7813600968533626083">Eltávolítja a javaslatot a Chrome-ból?</translation>
+<translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> található a(z) „<ph name="SEARCH_STRING" />” kifejezésre</translation>
 <translation id="785549533363645510">Azonban Ön nem teljesen láthatatlan. Az inkognitómód használata nem rejti el böngészési műveleteit munkáltatója, az internetszolgáltatója és a felkeresett webhelyek elől.</translation>
 <translation id="7887683347370398519">Ellenőrizze a CVC-t, majd próbálja újra</translation>
 <translation id="7894616681410591072">Hoppá! <ph name="NAME" /> engedélyére van szüksége ahhoz, hogy elérhesse ezt az oldalt.</translation>

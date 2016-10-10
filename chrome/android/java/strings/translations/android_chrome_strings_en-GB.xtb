@@ -105,6 +105,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="213279576345780926">Closed <ph name="TAB_TITLE" /></translation>
 <translation id="2138201775715568214">Looking for nearby Physical Web pages</translation>
 <translation id="2139186145475833000">Add to Home screen</translation>
+<translation id="2146738493024040262">Open Instant App</translation>
 <translation id="2148716181193084225">Today</translation>
 <translation id="2154710561487035718">Copy URL</translation>
 <translation id="219985413780390209">Protect you and your device from dangerous sites</translation>
@@ -184,8 +185,8 @@ You can control the Physical Web in Chrome Settings.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Open in incognito tab</translation>
 <translation id="3090193911106258841">Accessing audio and video input</translation>
-<translation id="3117051980354074377">To get your bookmarks your other devices, sign in to Chrome.</translation>
 <translation id="3137521801621304719">Leave incognito mode</translation>
+<translation id="3148434565183091099">To get your bookmarks on all your devices, sign in to Chrome.</translation>
 <translation id="3149891296864842641">Delivery option</translation>
 <translation id="3177909033752230686">Page language:</translation>
 <translation id="3190152372525844641">Turn on permissions for Chrome in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
@@ -220,6 +221,7 @@ You can control the Physical Web in Chrome Settings.
 <translation id="3518985090088779359">Accept &amp; continue</translation>
 <translation id="3522247891732774234">Update available. More options</translation>
 <translation id="3527085408025491307">Folder</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> KB available</translation>
 <translation id="3549644494707163724">Encrypt all synced data with your own sync passphrase</translation>
 <translation id="3590487821116122040">Site storage Chrome doesn't think is important (e.g. sites with no saved settings or that you don't visit often)</translation>
 <translation id="360480449234699036">Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
@@ -297,7 +299,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4532845899244822526">Choose folder</translation>
 <translation id="4543661749405994812">Copy email address</translation>
 <translation id="4572422548854449519">Sign in to managed account</translation>
-<translation id="4576023202210315647">Keep tab in Chrome</translation>
 <translation id="4581964774250883625">You’ve gone incognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minute ago}other{# minutes ago}}</translation>
 <translation id="4605958867780575332">Item removed: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7208788139759694678">Data Saver disabled</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uses your location to show local search results</translation>
-<translation id="7327835590071894791">Your tab is now in the background.</translation>
 <translation id="7347770551817603360">Offline content</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Share 1 selected item}other{Share # selected items}}</translation>
 <translation id="7366340029385295517">Casting to <ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@ For example, some websites may respond to this request by showing you ads that a
 Your Google account may have other forms of browsing history like searches and activity from other Google services at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Updated <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Please wait…</translation>
-<translation id="7501135638693251872">All bookmarks</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Clear browsing data</translation>
 <translation id="756809126120519699">Cleared Chrome data</translation>
@@ -639,12 +638,14 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8518901949365209398">This site uses a weak security configuration (SHA-1 signatures), so your connection may not be private.</translation>
 <translation id="8523928698583292556">Delete stored password</translation>
 <translation id="8525306231823319788">Full screen</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> MB used</translation>
 <translation id="854522910157234410">Open this page:</translation>
 <translation id="8562452229998620586">Your saved passwords will appear here.</translation>
 <translation id="856481929701340285">Request desktop site</translation>
 <translation id="857943718398505171">Allowed (recommended)</translation>
 <translation id="8583805026567836021">Clearing account data</translation>
 <translation id="8617240290563765734">Open the suggested URL specified in the downloaded content?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> KB used</translation>
 <translation id="862875433388403934">Content (films, music, etc.) downloaded in other applications may no longer be playable until those applications re-acquire licences based on a new device credential. To obtain new licences, connect to the Internet and play your downloaded content.</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
 <translation id="8639651215196239211">All downloads</translation>

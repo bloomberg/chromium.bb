@@ -212,13 +212,11 @@
 <translation id="7164397146364144019">您可以选择自动向 Google 报告可能出现的安全事件详情，以帮助我们提高 Chrome 的安全性和易用性。</translation>
 <translation id="7177347454226092725">这会将您的浏览数据从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chrome。</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" />已添加到 Chrome 浏览器。</translation>
-<translation id="7191567847629796517">Google Chrome操作系统不支持启动外部应用来处理<ph name="SCHEME" />链接。请求的链接是<ph name="PROTOLINK" />。</translation>
 <translation id="7193750696137290001">Google Chrome 目前以这种语言显示。</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
 <translation id="7242029209006116544">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。您可以选择创建新的个人资料来单独存储现有的 Chrome 数据。<ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">此计算机很快就不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 将不再受支持。</translation>
 <translation id="7339898014177206373">打开新的窗口</translation>
-<translation id="7393806081343982361">太棒了！Google Chrome 已设为您的默认浏览器。</translation>
 <translation id="7398801000654795464">您之前登录 Chrome 时使用的帐户为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐户再次登录。</translation>
 <translation id="7400722733683201933">关于Google Chrome</translation>
 <translation id="7408085963519505752">Chrome操作系统条款</translation>
@@ -253,7 +251,6 @@
 <translation id="8129812357326543296">关于 Google Chrome(&amp;G)</translation>
 <translation id="8183957050892517584">Chrome 将妥善存储您的个人详细信息，这样您日后就不必重复输入了。</translation>
 <translation id="8211929904040702368">这会将至少 <ph name="TOTAL_COUNT" /> 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chrome。</translation>
-<translation id="8227755444512189073">Google Chrome 浏览器必须启动外部应用才能处理 <ph name="SCHEME" /> 链接。请求的链接是 <ph name="PROTOLINK" />。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的摄像头和麦克风。</translation>
 <translation id="8286862437124483331">Google Chrome正在尝试显示密码，请输入您的Windows密码以允许此操作。</translation>
 <translation id="8290100596633877290">哎呀！Google Chrome 浏览器崩溃了。是否立即重新启动？</translation>

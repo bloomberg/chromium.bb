@@ -105,6 +105,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> suljettiin</translation>
 <translation id="2138201775715568214">Etsitään lähistöllä olevia Fyysisen webin sivuja</translation>
 <translation id="2139186145475833000">Lisää aloitusnäyttöön</translation>
+<translation id="2146738493024040262">Avaa Instant-sovellus</translation>
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="2154710561487035718">Kopioi URL-osoite</translation>
 <translation id="219985413780390209">Suojaa itseäsi ja laitettasi vaarallisilta sivustoilta</translation>
@@ -184,8 +185,8 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Tutustu ohjeisiin<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdessä</translation>
 <translation id="3090193911106258841">Ääni- ja videotuloa käytetään</translation>
-<translation id="3117051980354074377">Käytä kirjanmerkkejä muilta laitteiltasi kirjautumalla Chromeen.</translation>
 <translation id="3137521801621304719">Poistu incognito-tilasta</translation>
+<translation id="3148434565183091099">Kirjaudu sisään Chromeen, niin voit käyttää kirjanmerkkejäsi kaikilla laitteilla.</translation>
 <translation id="3149891296864842641">Toimitustapa</translation>
 <translation id="3177909033752230686">Sivun kieli:</translation>
 <translation id="3190152372525844641">Ota käyttöoikeudet käyttöön Chromelle <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />.</translation>
@@ -220,6 +221,7 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.
 <translation id="3518985090088779359">Hyväksy ja jatka</translation>
 <translation id="3522247891732774234">Päivitys on saatavilla. Näytä lisäasetukset.</translation>
 <translation id="3527085408025491307">Kansio</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> kt käytettävissä</translation>
 <translation id="3549644494707163724">Salaa kaikki synkronoidut tiedot oman synkronoinnin tunnuslauseesi avulla</translation>
 <translation id="3590487821116122040">Tallennetut sivustotiedot, joita Chrome ei pidä tärkeinä (esim. sivustot, joilla ei ole tallennettuja asetuksia tai joilla et käy usein).</translation>
 <translation id="360480449234699036">Lue lisätietoja verkkosivujen aiheista poistumatta sivulta. Koskettamalla hakeminen lähettää sanan ja sen asiayhteyden Google-hakuun ja palauttaa määritelmiä, kuvia, hakutuloksia ja muita tietoja.
@@ -297,7 +299,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4532845899244822526">Valitse kansio</translation>
 <translation id="4543661749405994812">Kopioi sähköpostiosoite</translation>
 <translation id="4572422548854449519">Kirjaudu hallinnoidulle tilille</translation>
-<translation id="4576023202210315647">Säilytä välilehti Chromessa</translation>
 <translation id="4581964774250883625">Olet siirtynyt incognito-tilaan.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuutti sitten}other{# minuuttia sitten}}</translation>
 <translation id="4605958867780575332">Kohde poistettiin: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7208788139759694678">Data Saver on poistettu käytöstä.</translation>
 <translation id="7243308994586599757">Asetukset löytyvät näytön alalaidasta.</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> käyttää sijaintiasi paikallisten hakutulosten näyttämiseen.</translation>
-<translation id="7327835590071894791">Välilehti on nyt taustalla.</translation>
 <translation id="7347770551817603360">Offline-sisältö</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Jaa 1 valittu kohde}other{Jaa # valittua kohdetta}}</translation>
 <translation id="7366340029385295517">Suoratoistetaan näytöllä <ph name="SCREEN_NAME" />.</translation>
@@ -551,7 +551,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toimintaa muista Google-palveluista, osoitteessa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (päivitettiin <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Odota…</translation>
-<translation id="7501135638693251872">Kaikki kirjanmerkit</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Selaustietoja poistetaan</translation>
 <translation id="756809126120519699">Chrome-tiedot tyhjennetty</translation>
@@ -639,12 +638,14 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="8518901949365209398">Sivusto käyttää heikkoa suojausta (SHA-1-allekirjoitukset), joten yhteytesi ei välttämättä ole täysin turvallinen.</translation>
 <translation id="8523928698583292556">Poista tallennettu salasana</translation>
 <translation id="8525306231823319788">Koko näyttö</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> Mt käytössä</translation>
 <translation id="854522910157234410">Avaa tämä sivu</translation>
 <translation id="8562452229998620586">Tässä näytetään tallennetut salasanasi.</translation>
 <translation id="856481929701340285">Käytä tietokoneversiota</translation>
 <translation id="857943718398505171">Sallittu (suositus)</translation>
 <translation id="8583805026567836021">Poistetaan tilin tietoja</translation>
 <translation id="8617240290563765734">Avataanko ladatussa sisällössä määritetty ehdotettu URL-osoite?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> kt käytössä</translation>
 <translation id="862875433388403934">Muissa sov. ladattua sisältöä (esim. elokuvia, musiikkia) ei ehkä voi toistaa ennen käyttöoik. myöntämistä sovellukselle uudell. uusien laitteen kirjautumistiet. perust.
 
 Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisältö.</translation>

@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">የአድራሻ እና ፍለጋ አሞሌ</translation>
 <translation id="2826760142808435982">ግንኙነቱ የተመሰጠረ እና <ph name="CIPHER" />ን በመጠቀም የተረጋገጠ ነው፣ እና <ph name="KX" />ን እንደ የቁልፍ መቀያየሪያ ስልት ይጠቀምበታል።</translation>
 <translation id="2835170189407361413">ቅጽ አጽዳ</translation>
-<translation id="2837049386027881519">ግንኙነቱ የቆየ የቲ ኤል ኤስ ወይም ኤስ ኤስ ኤል ፕሮቶኮል ስሪትን በመጠቀም እንደገና መሞከር ነበረበት። ይሄ በተለምዶ አገልጋዩ በጣም የቆየ ሶፍትዌር እየተጠቀመ መሆኑንና ሌሎች የደህንነት ችግሮች ሊኖሩበት ይችላል ማለት ነው።</translation>
 <translation id="284702764277384724">በ<ph name="HOST_NAME" /> ላይ የነበረው የአገልጋይ እውቅና ማረጋገጫ የተጨበረበረ ይመስላል።</translation>
 <translation id="2889159643044928134">ዳግም አትጫን</translation>
 <translation id="2900469785430194048">Google Chrome ይህን ድረ-ገጽ ለማሳየት በሚሞክርበት ጊዜ ማኅደረ ትውስታ አልቆበታል።</translation>
@@ -215,6 +214,7 @@
 <translation id="3254409185687681395">ለእዚህ ገጽ ዕልባት አብጅ</translation>
 <translation id="3270847123878663523">&amp;ዳግም ደርድርን ቀልብስ</translation>
 <translation id="3286538390144397061">አሁን ዳግም አስጀምር</translation>
+<translation id="3303855915957856445">ምንም የፍለጋ ውጤቶች አልተገኙም</translation>
 <translation id="3305707030755673451">የእርስዎ ውሂብ <ph name="TIME" /> ላይ በእርስዎ የስምረት የይለፍ ቃል ተመስጥሯል። ስምረትን ለመጀመር ያስገቡት።</translation>
 <translation id="333371639341676808">ይህ ገጽ ተጨማሪ ማገናኛዎችን እንዳይፈጥር አግድ።</translation>
 <translation id="3338095232262050444">ደህንነቱ የተጠበቀ ነው</translation>
@@ -326,6 +326,7 @@
 <translation id="4394049700291259645">አሰናክል</translation>
 <translation id="4395129973926795186">ከ<ph name="START_DATE" /> እስከ <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">የፍለጋ ውጤቶች</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> የመግቢያ እውቅና ማረጋገጫዎን አልተቀበለም፣ ወይም ገና አልተሰጠዎት ይሆናል።</translation>
 <translation id="443673843213245140">የተኪ መጠቀም ተሰናክሏል ግን ግልጽ የሆነ የተኪ ውቅር ተገልጿል።</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Google SafeSites ስለነቃ ይህን መልእክት እየተመለከቱ ነው።</translation>
@@ -368,8 +369,8 @@
 <translation id="495170559598752135">እርምጃዎች</translation>
 <translation id="4958444002117714549">ዝርዝሩን ዘርጋ</translation>
 <translation id="4962322354953122629">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ማረጋገጥ አልቻለም፤ የዕውቅና ማረጋገጫው በChrome የታመነ አይደለም። ይህ በተሳሳተ ውቅረት ወይም የእርስዎን ግንኙነት በሚጠልፍ አጥቂ ምክንያት የተፈጠረ ሊሆን ይችላል። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" />።</translation>
-<translation id="4986920000862467124">ሁሉንም ያንብቡ</translation>
 <translation id="498957508165411911">ከ<ph name="ORIGINAL_LANGUAGE" /> ወደ <ph name="TARGET_LANGUAGE" /> ይተርጎም?</translation>
+<translation id="4989809363548539747">ይህ ተሰኪ አይደገፍም</translation>
 <translation id="5002932099480077015">የነቃ እንደሆነ Chrome ለበለጠ ፈጣን ቅጽ አሞላል ሲባል በዚህ መሳሪያ ላይ ያለው የካርድዎን ቅጂ ያከማቻል።</translation>
 <translation id="5019198164206649151">የመጠባበቂያ ማከማቻ በመጥፎ ሁኔታ ላይ</translation>
 <translation id="5023310440958281426">የአስተዳዳሪዎ መመሪያዎችን ያረጋግጡ</translation>
@@ -525,8 +526,10 @@ nil</translation>
 <translation id="6970216967273061347">ወረዳ</translation>
 <translation id="6973656660372572881">ሁለቱም ቋሚ ተኪ አገልጋዮች እና የ.pac ስክሪፕት ዩአርኤል ተገልጸዋል።</translation>
 <translation id="6989763994942163495">የላቁ ቅንብሮችን አሳይ...</translation>
+<translation id="7000990526846637657">ምንም የታሪክ ግቤቶች አልተገኙም</translation>
 <translation id="7009986207543992532">ወደ <ph name="DOMAIN" /> ለመድረስ ሞክረዋል፣ ነገር ግን አገልጋዩ የሚሠራበት ክፍለ ጊዜ የታመነ እንዳይሆን ከልክ በላይ ረዥም ጊዜ የሆነ የዕውቅና ማረጋገጫን አቅርቧል። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" />።</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">የእርስዎ Google መለያ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖረው ይችላል</translation>
 <translation id="7029809446516969842">የይለፍ ቃላት</translation>
 <translation id="7087282848513945231">አውራጃ</translation>
 <translation id="7088615885725309056">የቆየ</translation>
@@ -609,6 +612,7 @@ nil</translation>
 <translation id="780301667611848630">አይ፣ አመሰግናለሁ</translation>
 <translation id="7805768142964895445">ሁኔታ</translation>
 <translation id="7813600968533626083">የአስተያየት ጥቆማ ከChrome ይወገድ?</translation>
+<translation id="7815407501681723534">ለ«<ph name="SEARCH_STRING" />» <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> ተገኝተዋል።</translation>
 <translation id="785549533363645510">ሆኖም ግን የማይታዩ አይደሉም። ማንነት የማያሳውቅ ሁነታ መጠቀም የእርስዎን አሰሳ፣ የበይነመረብ አገልግሎት አቅራቢ ወይም የሚጎበኟቸው ድር ጣቢያዎች ከአሰሪዎ አይደብቃቸውም።</translation>
 <translation id="7887683347370398519">የእርስዎን CVC ይፈትሹ እና እንደገና ይሞክሩ</translation>
 <translation id="7894616681410591072">ውይ! ይህን ገጽ ለመድረስ ከ<ph name="NAME" /> ፍቃድ ማግኘት አለብዎት።</translation>

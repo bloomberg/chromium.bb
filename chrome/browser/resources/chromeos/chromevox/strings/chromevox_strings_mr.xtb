@@ -553,6 +553,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="6307969636681130414">दाबलेले</translation>
 <translation id="6324551002951139333">व्‍याकरण चूक आढळली</translation>
 <translation id="6348657800373377022">काँबो बॉक्स</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{बुलेट}one{# बुलेट}other{# बुलेट}}</translation>
 <translation id="6355910664415701303">मागील सूची आयटम नाही.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">मागील मथळा</translation>
@@ -581,6 +582,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="6659594942844771486">टॅब</translation>
 <translation id="667999046851023355">दस्तऐवज</translation>
 <translation id="6697092096875747123">मागील कॉम्बो बॉक्स</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{उद्गार चिन्ह}one{# उद्गार चिन्ह}other{# उद्गार चिन्हेे}}</translation>
 <translation id="6710213216561001401">मागील</translation>
 <translation id="6714813999819678458">मागील स्तर 2 शीर्षक</translation>
 <translation id="6716505898850596801">सुधारणा की</translation>

@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Adress- och sökfält</translation>
 <translation id="2826760142808435982">Anslutningen är krypterad och verifieras med <ph name="CIPHER" /> och använder <ph name="KX" /> som nyckelutbytesmekanism.</translation>
 <translation id="2835170189407361413">Rensa formuläret</translation>
-<translation id="2837049386027881519">Anslutningen var tvungen att återupprättas via en äldre version av TLS- eller SSL-protokollet. Detta innebär vanligtvis att servern använder mycket gammal programvara och kanske har andra säkerhetsproblem.</translation>
 <translation id="284702764277384724">Servercertifikatet på <ph name="HOST_NAME" /> verkar vara falskt.</translation>
 <translation id="2889159643044928134">Läs inte in sidan igen</translation>
 <translation id="2900469785430194048">Minnet tog slut när den här webbsidan skulle visas i Google Chrome.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Bokmärk sidan</translation>
 <translation id="3270847123878663523">&amp;Ångra Ändra ordning</translation>
 <translation id="3286538390144397061">Starta om nu</translation>
+<translation id="3303855915957856445">Inga sökresultat hittades</translation>
 <translation id="3305707030755673451">Din data krypterades med din lösenfras för synkronisering den <ph name="TIME" />. Ange den om du vill starta synkroniseringen.</translation>
 <translation id="333371639341676808">Förhindra att den här sidan öppnar ytterligare dialogrutor.</translation>
 <translation id="3338095232262050444">Säkert</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Inaktivera</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> till <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">sökresultat</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> godkände inte inloggningscertifikatet eller så har inget inloggningscertifikat angetts.</translation>
 <translation id="443673843213245140">Användning av proxy är inaktiverad men en explicit proxykonfiguration har angetts.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Det här meddelandet visas eftersom Google SafeSites är aktiverat.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Åtgärder</translation>
 <translation id="4958444002117714549">Expandera lista</translation>
 <translation id="4962322354953122629">Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom Chrome inte litar på dess säkerhetscertifikat. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Alla lästa</translation>
 <translation id="498957508165411911">Vill du översätta från <ph name="ORIGINAL_LANGUAGE" /> till <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Det här pluginprogrammet stöds inte</translation>
 <translation id="5002932099480077015">Om alternativet är aktiverat sparar Chrome en kopia av kortet på enheten så att det går snabbare att fylla i formulär.</translation>
 <translation id="5019198164206649151">Säkerhetskopian har dålig status</translation>
 <translation id="5023310440958281426">Kontrollera administratörsprinciperna</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både fasta proxyservrar och en webbadress för PAC-skript anges.</translation>
 <translation id="6989763994942163495">Visa avancerade inställningar ...</translation>
+<translation id="7000990526846637657">Inga historikposter hittades</translation>
 <translation id="7009986207543992532">Du försökte öppna <ph name="DOMAIN" />, men servern angav ett certifikat vars giltighetstid är för lång för att det ska vara trovärdigt. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Andra former av webbhistorik för Google-kontot kan finnas på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="7087282848513945231">Grevskap</translation>
 <translation id="7088615885725309056">Äldre</translation>
@@ -608,6 +611,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Vill du ta bort formulärförslaget från Chrome?</translation>
+<translation id="7815407501681723534">Hittade <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> för <ph name="SEARCH_STRING" /></translation>
 <translation id="785549533363645510">Men du är inte osynlig. Inkognitoläget döljer inte webbhistoriken för din arbetsgivare, internetleverantören eller webbplatserna du besöker.</translation>
 <translation id="7887683347370398519">Kontrollera CVC-koden och försök igen</translation>
 <translation id="7894616681410591072">Du behöver tillstånd från <ph name="NAME" /> om du vill komma åt den här sidan.</translation>

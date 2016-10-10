@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">Chromium не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
 <translation id="1174473354587728743">Пользуетесь компьютером вместе с коллегой или другом? Теперь каждый из вас сможет настроить Chromium по своему вкусу.</translation>
 <translation id="1185134272377778587">О Chromium</translation>
-<translation id="1221340462641866827">Chromium OS не поддерживает внешних приложений для обработки ссылок <ph name="SCHEME" />. Запрашиваемая ссылка: <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">В системе установлена конфликтующая версия Chromium. Удалите ее и повторите попытку.</translation>
 <translation id="1298199220304005244">Помощь по использованию Chromium OS</translation>
 <translation id="1396446129537741364">Вводимые пароли будут отображаться в Chromium.</translation>
@@ -64,7 +63,6 @@
 <translation id="2886012850691518054">(Необязательно) Помогите сделать Chromium лучше, автоматически отправляя статистику использования и отчеты об ошибках в Google.</translation>
 <translation id="2905536371227304018">Chromium OS отображается на этом языке.</translation>
 <translation id="2910007522516064972">О &amp;Chromium</translation>
-<translation id="2966088006374919794">Chromium требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME" />. Запрашиваемая ссылка: <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Добавление в Chromium...</translation>
 <translation id="3046695367536568084">Для работы с приложениями необходимо выполнить вход в Chromium. Это обеспечит синхронизацию приложений, закладок, истории, паролей и настроек, сохраненных на всех ваших устройствах.</translation>
 <translation id="3068515742935458733">Помочь улучшить Chromium, отправляя в Google отчеты о сбоях и <ph name="UMA_LINK" /></translation>
@@ -99,7 +97,6 @@
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
 <translation id="407254336480250557">Выберите <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Закройте все окна Chromium и перезапустите программу, чтобы изменения вступили в силу.</translation>
-<translation id="4182290826692170034">Chromium стал браузером по умолчанию. Ура!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Внимание!<ph name="END_BOLD" /> Chromium не может запретить расширениям записывать историю браузера. Чтобы отключить это расширение в режиме инкогнито, снимите этот флажок.</translation>
 <translation id="421369550622382712">Широкий выбор приложений, игр, расширений и тем для Chromium.</translation>
 <translation id="4222580632002216401">Добро пожаловать в Chromium! Синхронизация отключена администратором.</translation>
@@ -119,7 +116,7 @@
 <translation id="4621240073146040695">Чтобы завершить обновление, перезапустите Chromium.</translation>
 <translation id="4677944499843243528">Скорее всего, профиль используется другим процессом Chromium (<ph name="PROCESS_ID" />) на другом компьютере (<ph name="HOST_NAME" />). Во избежание сбоев профиль был заблокирован. Если вы уверены, что профиль не используется другими процессами, разблокируйте его и перезапустите Chromium.</translation>
 <translation id="469338717132742108">Справка Chromium OS</translation>
-<translation id="4714956846925717402">Сделайте Chromium ещё быстрее</translation>
+<translation id="4714956846925717402">Открывайте Chromium ещё быстрее</translation>
 <translation id="4743926867934016338">Принимаю</translation>
 <translation id="4888717733111232871">Разрешить в Chromium передачу входящего трафика по протоколу mDNS</translation>
 <translation id="4943838377383847465">Chromium работает в фоновом режиме</translation>

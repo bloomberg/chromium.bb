@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">網址與搜尋列</translation>
 <translation id="2826760142808435982">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="KX" /> 金鑰交換機制。</translation>
 <translation id="2835170189407361413">清除表單</translation>
-<translation id="2837049386027881519">必須使用較舊版的 TLS 或 SSL 通訊協定重試連線。這通常表示伺服器所使用的軟體非常老舊，而且可能產生其他安全問題。</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> 疑似使用偽造的伺服器憑證。</translation>
 <translation id="2889159643044928134">不要重新載入</translation>
 <translation id="2900469785430194048">Google Chrome 嘗試顯示這個網頁時用盡了記憶體。</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">把此頁加入書籤</translation>
 <translation id="3270847123878663523">復原重新排序(&amp;U)</translation>
 <translation id="3286538390144397061">立即重新啟動</translation>
+<translation id="3303855915957856445">找不到相符的搜尋結果</translation>
 <translation id="3305707030755673451">您已在 <ph name="TIME" />使用同步通關密語對資料進行加密，請輸入通關密語開始進行同步。</translation>
 <translation id="333371639341676808">防止此網頁產生其他對話方塊。</translation>
 <translation id="3338095232262050444">安全</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">停用</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> 至 <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">搜尋結果</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> 不接受你的登入憑證，或是你可能未提供登入憑證。</translation>
 <translation id="443673843213245140">雖然已停用 Proxy，不過已指定明確 Proxy 設定。</translation>
 <translation id="4458874409874303848">安全網站</translation>
 <translation id="4461847750548395463">Chrome 顯示這則訊息是因為 Google 安全網站已經啟用。</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">動作</translation>
 <translation id="4958444002117714549">展開清單</translation>
 <translation id="4962322354953122629">這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；Chrome 不信任伺服器的安全性憑證。這可能是因為設定錯誤，或是有攻擊者攔截你的連線。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="4986920000862467124">全都讀過了</translation>
 <translation id="498957508165411911">將網頁內容由<ph name="ORIGINAL_LANGUAGE" />翻譯成<ph name="TARGET_LANGUAGE" />？</translation>
+<translation id="4989809363548539747">這是不支援的外掛程式</translation>
 <translation id="5002932099480077015">啟用後，Chrome 會將您的信用卡複本儲存在這個裝置上，以加快表單填寫速度。</translation>
 <translation id="5019198164206649151">備份儲存狀態不佳</translation>
 <translation id="5023310440958281426">請查看您的管理員政策</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">區</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="6989763994942163495">顯示進階設定...</translation>
+<translation id="7000990526846637657">找不到任何紀錄項目</translation>
 <translation id="7009986207543992532">你嘗試連上 <ph name="DOMAIN" />，但伺服器提供的憑證有效期限太長，因此難以信任。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">中國銀聯</translation>
+<translation id="7012372675181957985">你仍可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 存取 Google 帳戶中保存的各種瀏覽紀錄</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7087282848513945231">郡</translation>
 <translation id="7088615885725309056">較舊記錄</translation>
@@ -608,6 +611,7 @@
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7805768142964895445">狀態</translation>
 <translation id="7813600968533626083">要從 Chrome 中移除建議嗎？</translation>
+<translation id="7815407501681723534">找到 <ph name="NUMBER_OF_RESULTS" /> 個與「<ph name="SEARCH_STRING" />」相符的<ph name="SEARCH_RESULTS" /></translation>
 <translation id="785549533363645510">不過，這並不意味著您可以完全隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可能會記錄您的瀏覽行為。</translation>
 <translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
 <translation id="7894616681410591072">注意：您需要取得 <ph name="NAME" /> 的授權才能存取這個網頁。</translation>

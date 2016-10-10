@@ -105,6 +105,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="213279576345780926">Đã đóng <ph name="TAB_TITLE" /></translation>
 <translation id="2138201775715568214">Đang tìm kiếm các trang Web trong cuộc sống lân cận</translation>
 <translation id="2139186145475833000">Thêm vào Màn hình chính</translation>
+<translation id="2146738493024040262">Mở ứng dụng tức thì</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2154710561487035718">Sao chép URL</translation>
 <translation id="219985413780390209">Bảo vệ bạn và thiết bị của bạn khỏi các trang web nguy hiểm</translation>
@@ -184,8 +185,8 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
 <translation id="3090193911106258841">Đang truy cập thiết bị đầu vào video và âm thanh</translation>
-<translation id="3117051980354074377">Để nhận dấu trang trên các thiết bị khác của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="3137521801621304719">Thoát chế độ ẩn danh</translation>
+<translation id="3148434565183091099">Để nhận dấu trang trên tất cả các thiết bị của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="3149891296864842641">Tùy chọn giao hàng</translation>
 <translation id="3177909033752230686">Ngôn ngữ trang:</translation>
 <translation id="3190152372525844641">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
@@ -220,6 +221,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="3518985090088779359">Chấp nhận và tiếp tục</translation>
 <translation id="3522247891732774234">Bản cập nhật có sẵn. Tùy chọn khác</translation>
 <translation id="3527085408025491307">Thư mục</translation>
+<translation id="3542235761944717775">Còn <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549644494707163724">Mã hóa tất cả dữ liệu đã đồng bộ hóa bằng cụm mật khẩu đồng bộ hóa của riêng bạn</translation>
 <translation id="3590487821116122040">Bộ nhớ trang web mà Chrome cho rằng không quan trọng (ví dụ: những trang web không có cài đặt đã lưu nào hoặc trang web mà bạn không truy cập thường xuyên)</translation>
 <translation id="360480449234699036">Tìm hiểu về các chủ đề trên trang web mà không rời khỏi trang. Chạm để Tìm kiếm gửi một từ và ngữ cảnh xung quanh từ đó tới Google Tìm kiếm, trả về định nghĩa, hình ảnh, kết quả tìm kiếm và các chi tiết khác.
@@ -297,7 +299,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4532845899244822526">Chọn thư mục</translation>
 <translation id="4543661749405994812">Sao chép địa chỉ email</translation>
 <translation id="4572422548854449519">Đăng nhập vào tài khoản được quản lý</translation>
-<translation id="4576023202210315647">Lưu tab trong Chrome</translation>
 <translation id="4581964774250883625">Bạn đã chuyển sang chế độ ẩn danh.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# phút trước}other{# phút trước}}</translation>
 <translation id="4605958867780575332">Đã xóa mục: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7208788139759694678">Đã tắt Trình tiết kiệm dữ liệu</translation>
 <translation id="7243308994586599757">Có các tùy chọn ở gần cuối màn hình</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> sử dụng vị trí của bạn để hiển thị kết quả tìm kiếm địa phương</translation>
-<translation id="7327835590071894791">Hiện tab của bạn đã ở trong nền.</translation>
 <translation id="7347770551817603360">Nội dung ngoại tuyến</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Chia sẻ 1 mục đã chọn}other{Chia sẻ # mục đã chọn}}</translation>
 <translation id="7366340029385295517">Đang truyền tới <ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác, chẳng hạn như tìm kiếm và hoạt động từ các dịch vụ khác của Google tại <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Đã cập nhật <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Vui lòng đợi…</translation>
-<translation id="7501135638693251872">Tất cả dấu trang</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Xóa dữ liệu duyệt web</translation>
 <translation id="756809126120519699">Đã xóa dữ liệu Chrome</translation>
@@ -639,12 +638,14 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8518901949365209398">Trang web này sử dụng cấu hình bảo mật yếu (chữ ký SHA-1), vì vậy kết nối của bạn có thể không được đảm bảo là riêng tư.</translation>
 <translation id="8523928698583292556">Xóa mật khẩu đã lưu trữ</translation>
 <translation id="8525306231823319788">Toàn màn hình</translation>
+<translation id="85415543246899402">Đã sử dụng <ph name="MEGABYTES" /> MB</translation>
 <translation id="854522910157234410">Mở trang này</translation>
 <translation id="8562452229998620586">Mật khẩu đã lưu của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="856481929701340285">Yêu cầu trang web cho máy tính</translation>
 <translation id="857943718398505171">Được phép (được đề xuất)</translation>
 <translation id="8583805026567836021">Xóa dữ liệu tài khoản</translation>
 <translation id="8617240290563765734">Mở URL đề xuất được chỉ định trong nội dung được tải xuống?</translation>
+<translation id="8618653050765576793">Đã sử dụng <ph name="KILOBYTES" /> KB</translation>
 <translation id="862875433388403934">Nội dung (phim, nhạc, v.v.) được tải xuống trong các ứng dụng khác có thể không còn phát được cho tới khi ứng dụng đó nhận lại giấy phép dựa theo thông tin đăng nhập thiết bị mới.
 
 Để nhận được giấy phép mới, hãy kết nối Internet và phát nội dung đã tải xuống của bạn.</translation>

@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">סרגל חיפוש וכתובות</translation>
 <translation id="2826760142808435982">החיבור מוצפן ומאומת באמצעות <ph name="CIPHER" /> ומשתמש ב-<ph name="KX" /> כמנגנון להחלפת מפתחות.</translation>
 <translation id="2835170189407361413">נקה טופס</translation>
-<translation id="2837049386027881519">‏היה צורך לנסות שוב את החיבור באמצעות גרסה ישנה יותר של פרוטוקול TLS או SSL. לרוב, פירוש הדבר הוא שהשרת משתמש בתוכנה ישנה מאוד וייתכן שיש לו בעיות אבטחה אחרות.</translation>
 <translation id="284702764277384724">אישור השרת ב-<ph name="HOST_NAME" /> נראה מזויף.</translation>
 <translation id="2889159643044928134">אל תטען מחדש</translation>
 <translation id="2900469785430194048">‏אזל הזיכרון הזמין ל-Google Chrome בניסיון להציג את דף האינטרנט הזה.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">הוסף את הדף לסימניות</translation>
 <translation id="3270847123878663523">&amp;ביטול של שינוי סדר</translation>
 <translation id="3286538390144397061">הפעל מחדש כעת</translation>
+<translation id="3303855915957856445">לא נמצאו תוצאות חיפוש</translation>
 <translation id="3305707030755673451">הנתונים שלך הוצפנו ב-<ph name="TIME" /> באמצעות ביטוי הסיסמה לסינכרון. הזן אותו כדי להתחיל בסינכרון.</translation>
 <translation id="333371639341676808">מנע מדף זה ליצור דיאלוגים נוספים.</translation>
 <translation id="3338095232262050444">מאובטח</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">השבת</translation>
 <translation id="4395129973926795186">מ-<ph name="START_DATE" /> עד <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">תוצאות חיפוש</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> לא אישר את אישור ההתחברות שלך, או שלא סופק אישור התחברות.</translation>
 <translation id="443673843213245140">‏השימוש בשרת Proxy הושבת, אך צויינה תצורת שרת Proxy מפורשת.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">‏אתה רואה את ההודעה הזו מפני ששירות Google SafeSites מופעל.</translation>
@@ -373,8 +374,8 @@ Del</translation>
 <translation id="495170559598752135">פעולות</translation>
 <translation id="4958444002117714549">הרחב רשימה</translation>
 <translation id="4962322354953122629">‏השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; Chrome אינו סומך על אישור האבטחה שלו. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">הכל נקרא</translation>
 <translation id="498957508165411911">האם לתרגם מ<ph name="ORIGINAL_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">הפלאגין הזה אינו נתמך</translation>
 <translation id="5002932099480077015">‏אם האפשרות הזו תופעל, Chrome יאחסן עותק של הכרטיס שלך במכשיר הזה למילוי מהיר יותר של טפסים.</translation>
 <translation id="5019198164206649151">האחסון המשמש כגיבוי אינו תקין</translation>
 <translation id="5023310440958281426">בדוק את תקנון מנהל המערכת שלך</translation>
@@ -529,8 +530,10 @@ Del</translation>
 <translation id="6970216967273061347">מחוז</translation>
 <translation id="6973656660372572881">‏צוינו שרתי Proxy קבועים וכתובת אתר של הסקריפט מסוג ‎.Pac</translation>
 <translation id="6989763994942163495">הצג הגדרות מתקדמות...</translation>
+<translation id="7000990526846637657">לא נמצאו רשומות היסטוריה</translation>
 <translation id="7009986207543992532">ניסית להגיע אל <ph name="DOMAIN" />, אבל השרת הציג אישור עם תקופת תוקף ארוכה באופן מחשיד. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">‏ייתכן שלחשבון Google שלך יש סוגים אחרים של היסטוריית גלישה שזמינים בכתובת <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">סיסמאות</translation>
 <translation id="7087282848513945231">מחוז (בבריטניה ובאירלנד)</translation>
 <translation id="7088615885725309056">ישן יותר</translation>
@@ -613,6 +616,7 @@ Del</translation>
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7805768142964895445">סטטוס</translation>
 <translation id="7813600968533626083">‏האם להסיר מ-Chrome הצעות בשביל טפסים?</translation>
+<translation id="7815407501681723534">נמצאו <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> בנושא '<ph name="SEARCH_STRING" />'</translation>
 <translation id="785549533363645510">עם זאת, אינך בלתי נראה. המעבר למצב גלישה בסתר לא מסתיר את הגלישה שלך מהמעסיק, מספק האינטרנט או מהאתרים שאליהם אתה נכנס.</translation>
 <translation id="7887683347370398519">‏בדוק את ה-CVC ונסה שוב</translation>
 <translation id="7894616681410591072">אופס! אתה צריך אישור מ<ph name="NAME" /> כדי לגשת לדף הזה.</translation>

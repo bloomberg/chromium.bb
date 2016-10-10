@@ -105,6 +105,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="213279576345780926">Pestanya <ph name="TAB_TITLE" /> tancada</translation>
 <translation id="2138201775715568214">S'estan cercant pàgines del Web físic a prop</translation>
 <translation id="2139186145475833000">Afegeix a pantalla d'inici</translation>
+<translation id="2146738493024040262">Obre l'aplicació instantània</translation>
 <translation id="2148716181193084225">Avui</translation>
 <translation id="2154710561487035718">Copia l'URL</translation>
 <translation id="219985413780390209">Protegeix-me a mi i el meu dispositiu de llocs perillosos</translation>
@@ -184,8 +185,8 @@ Podeu controlar el Web físic a la configuració de Chrome.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obteniu ajuda<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Obre en una pestanya d'incògnit</translation>
 <translation id="3090193911106258841">S'està accedint a l'entrada d'àudio i de vídeo</translation>
-<translation id="3117051980354074377">Inicieu la sessió a Chrome per accedir a les adreces d'interès des dels altres dispositius que tingueu.</translation>
 <translation id="3137521801621304719">Surt del mode d'incògnit</translation>
+<translation id="3148434565183091099">Inicieu la sessió a Chrome per accedir a les adreces d'interès des de tots els dispositius.</translation>
 <translation id="3149891296864842641">Opció d'enviament</translation>
 <translation id="3177909033752230686">Idioma de la pàgina:</translation>
 <translation id="3190152372525844641">Activeu els permisos per a Chrome a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
@@ -220,6 +221,7 @@ Podeu controlar el Web físic a la configuració de Chrome.
 <translation id="3518985090088779359">Accepta i continua</translation>
 <translation id="3522247891732774234">Hi ha una actualització disponible. Més opcions</translation>
 <translation id="3527085408025491307">Carpeta</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> kB disponibles</translation>
 <translation id="3549644494707163724">Encripta totes les dades sincronitzades amb la teva frase de contrasenya de sincronització</translation>
 <translation id="3590487821116122040">Emmagatzematge del lloc web que Chrome no considera important (com ara els llocs web sense configuració desada o aquells que no visiteu sovint)</translation>
 <translation id="360480449234699036">Consulteu més informació sobre els temes en altres llocs web sense sortir de la pàgina. La funció Toca per cercar envia una paraula i el seu context a la Cerca de Google i ofereix com a resultat definicions, imatges, resultats de la cerca i altres detalls.
@@ -297,7 +299,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4532845899244822526">Trieu la carpeta</translation>
 <translation id="4543661749405994812">Copia l'adreça electrònica</translation>
 <translation id="4572422548854449519">Inicia la sessió al compte gestionat</translation>
-<translation id="4576023202210315647">Deseu la pestanya a Chrome</translation>
 <translation id="4581964774250883625">Heu passat al mode d'incògnit.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{fa # minut}other{fa # minuts}}</translation>
 <translation id="4605958867780575332">S'ha suprimit l'element: <ph name="ITEM_TITLE" /></translation>
@@ -471,7 +472,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="654446541061731451">Trieu una pestanya per compartir-la.</translation>
 <translation id="6545017243486555795">Esborra totes les dades</translation>
 <translation id="6550675742724504774">Opcions</translation>
-<translation id="656628257199996201">Tradueix sempre: <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="656628257199996201">Tradueix sempre de: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Edita la targeta de crèdit</translation>
 <translation id="6573431926118603307">Les pestanyes que tingueu obertes a Chrome als altres dispositius es mostraran aquí.</translation>
 <translation id="6575643671698722332">El restabliment ha fallat. Assegureu-vos que el dispositiu estigui en línia i torneu-ho a provar.</translation>
@@ -532,7 +533,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7208788139759694678">Economitzador de dades està desactivat</translation>
 <translation id="7243308994586599757">Opcions disponibles a la part inferior de la pantalla</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utilitza la vostra ubicació per mostrar resultats de cerca locals</translation>
-<translation id="7327835590071894791">La vostra pestanya ara està oberta en segon pla.</translation>
 <translation id="7347770551817603360">Contingut sense connexió</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Comparteix 1 element seleccionat}other{Comparteix # elements seleccionats}}</translation>
 <translation id="7366340029385295517">S'està emetent a <ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 És possible que el vostre compte de Google tingui altres formes de l'historial de navegació a <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />, com ara les cerques i l'activitat d'altres serveis de Google.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (última actualització: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Espereu...</translation>
-<translation id="7501135638693251872">Totes adreces d'interès</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">S'estan esborrant les dades de navegació</translation>
 <translation id="756809126120519699">S'han esborrat les dades de Chrome</translation>
@@ -639,12 +638,14 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8518901949365209398">Aquest lloc fa servir una configuració de seguretat dèbil (signatures SHA-1), de manera que és possible que la vostra connexió no sigui privada.</translation>
 <translation id="8523928698583292556">Suprimeix la contrasenya emmagatzemada</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> MB en ús</translation>
 <translation id="854522910157234410">Obre aquesta pàgina</translation>
 <translation id="8562452229998620586">Les contrasenyes desades apareixeran aquí.</translation>
 <translation id="856481929701340285">Mostra com a ordinador</translation>
 <translation id="857943718398505171">Permès (recomanat)</translation>
 <translation id="8583805026567836021">S'estan esborrant les dades del compte</translation>
 <translation id="8617240290563765734">Voleu obrir l'URL suggerit que s'especifica al contingut que s'ha baixat?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> kB en ús</translation>
 <translation id="862875433388403934">És possible que el contingut (pel·lícules, música, etc.) que hàgiu baixat en altres aplicacions ja no es pugui reproduir fins que aquestes aplicacions no tornin a adquirir llicències basades en les credencials del dispositiu nou.
 
 Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingut que tingueu baixat.</translation>

@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Adreses un meklēšanas josla</translation>
 <translation id="2826760142808435982">Savienojums ir šifrēts un autentificēts, izmantojot <ph name="CIPHER" />, un tajā tiek izmantots <ph name="KX" /> kā atslēgu apmaiņas mehānisms.</translation>
 <translation id="2835170189407361413">Notīrīt veidlapu</translation>
-<translation id="2837049386027881519">Savienojums bija jāizveido vēlreiz, izmantojot vecāku TLS vai SSL protokola versiju. Parasti tas nozīmē, ka servera programmatūra ir novecojusi un ir iespējamas citas ar drošību saistītas problēmas.</translation>
 <translation id="284702764277384724">Šķiet, ka servera sertifikāts vietnē <ph name="HOST_NAME" /> ir viltojums.</translation>
 <translation id="2889159643044928134">Neielādēt atkārtoti</translation>
 <translation id="2900469785430194048">Mēģinot parādīt šo tīmekļa lapu, pārlūka Google Chrome atmiņā nepietika vietas.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Grāmatot šo lapu</translation>
 <translation id="3270847123878663523">&amp;Pārkārtošanas atsaukšana</translation>
 <translation id="3286538390144397061">Restartēt tūlīt</translation>
+<translation id="3303855915957856445">Netika atrasts neviens meklēšanas rezultāts.</translation>
 <translation id="3305707030755673451">Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šādā datumā: <ph name="TIME" />. Lai sāktu sinhronizāciju, ievadiet ieejas frāzi.</translation>
 <translation id="333371639341676808">Neļaujiet šai lapai veidot papildu dialogus.</translation>
 <translation id="3338095232262050444">Droši</translation>
@@ -326,6 +326,7 @@
 <translation id="4394049700291259645">Atspējot</translation>
 <translation id="4395129973926795186">(<ph name="START_DATE" />–<ph name="END_DATE" />)</translation>
 <translation id="4406896451731180161">meklēšanas rezultāti</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> nepieņēma jūsu pieteikšanās sertifikātu, vai arī pieteikšanās sertifikāts netika iesniegts.</translation>
 <translation id="443673843213245140">Starpniekservera lietošana ir atspējota, bet ir norādīta atklāta starpniekservera konfigurācija.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Šis ziņojums tiek rādīts, jo ir iespējota funkcija Google SafeSites.</translation>
@@ -368,8 +369,8 @@
 <translation id="495170559598752135">Darbības</translation>
 <translation id="4958444002117714549">Izvērst sarakstu</translation>
 <translation id="4962322354953122629">Šis serveris nevarēja pierādīt, ka tas ir domēns <ph name="DOMAIN" />; tā drošības sertifikāts nav uzticams pārlūkā Chrome. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Viss izlasīts</translation>
 <translation id="498957508165411911">Vai tulkot no <ph name="ORIGINAL_LANGUAGE" /> valodas <ph name="TARGET_LANGUAGE" /> valodā?</translation>
+<translation id="4989809363548539747">Šis spraudnis netiek atbalstīts</translation>
 <translation id="5002932099480077015">Iespējojot šo opciju, Chrome saglabās jūsu kartes informāciju šajā ierīcē, lai jūs varētu ātrāk aizpildīt veidlapas.</translation>
 <translation id="5019198164206649151">Dublējumu krātuve nav labā stāvoklī.</translation>
 <translation id="5023310440958281426">Administratora politiku pārbaude</translation>
@@ -523,8 +524,10 @@
 <translation id="6970216967273061347">Rajons</translation>
 <translation id="6973656660372572881">Ir norādīti gan fiksēti starpniekserveri, gan .pac skripta URL.</translation>
 <translation id="6989763994942163495">Rādīt papildu iestatījumus...</translation>
+<translation id="7000990526846637657">Netika atrasts neviens vēstures ieraksts.</translation>
 <translation id="7009986207543992532">Jūs mēģinājāt sasniegt domēnu <ph name="DOMAIN" />, taču serveris uzrādīja sertifikātu, kura derīguma periods ir pārāk ilgs, lai būtu uzticams. <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Jūsu Google kontam var būt cita veida pārlūkošanas vēstures dati vietnē <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7029809446516969842">Paroles</translation>
 <translation id="7087282848513945231">Grāfiste</translation>
 <translation id="7088615885725309056">Vecāka</translation>
@@ -607,6 +610,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="780301667611848630">Nē, paldies</translation>
 <translation id="7805768142964895445">Statuss</translation>
 <translation id="7813600968533626083">Vai noņemt veidlapas ieteikumu no pārlūka Chrome?</translation>
+<translation id="7815407501681723534">Meklējot pēc virknes “<ph name="SEARCH_STRING" />”, tika atrasti <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /></translation>
 <translation id="785549533363645510">Tomēr jūs neesat neredzams. Pārlūkojot inkognito režīmā, jūsu pārlūkošanas darbības netiek slēptas no jūsu darba devēja, interneta pakalpojumu sniedzēja vai apmeklētajām vietnēm.</translation>
 <translation id="7887683347370398519">Pārbaudiet CVC kodu un mēģiniet vēlreiz.</translation>
 <translation id="7894616681410591072">Lai apmeklētu šo lapu, jums ir jāsaņem atļauja no lietotāja <ph name="NAME" />.</translation>

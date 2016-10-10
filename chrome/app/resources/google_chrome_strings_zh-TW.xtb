@@ -213,13 +213,11 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7164397146364144019">您可以自動將疑似安全性事件的詳細資料傳送給 Google，協助我們讓 Chrome 變得更安全、更好用。</translation>
 <translation id="7177347454226092725">這會將您的瀏覽資料從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。</translation>
 <translation id="7185038942300673794">已將 <ph name="EXTENSION_NAME" /> 加到 Chrome。</translation>
-<translation id="7191567847629796517">Google Chrome 作業系統不支援啟用外部應用程式以處理 <ph name="SCHEME" /> 連結。所要求的連結為 <ph name="PROTOLINK" />。</translation>
 <translation id="7193750696137290001">Google Chrome 的介面文字已設為這種語言。</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>
 <translation id="7242029209006116544">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。如要另行保留現有的 Chromium 資料，您可以選擇建立新的設定檔。<ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Google Chrome 將停止支援 Windows XP 和 Windows Vista，因此這部電腦很快就不會再收到 Google Chrome 更新。</translation>
 <translation id="7339898014177206373">新視窗</translation>
-<translation id="7393806081343982361">太好了！Google Chrome 現已成為您的預設瀏覽器。</translation>
 <translation id="7398801000654795464">您使用了 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入 Chrome，請使用相同帳戶重新登入。</translation>
 <translation id="7400722733683201933">關於 Google Chrome</translation>
 <translation id="7408085963519505752">Chrome 作業系統條款</translation>
@@ -254,7 +252,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8129812357326543296">關於 Google Chrome(&amp;G)</translation>
 <translation id="8183957050892517584">Chrome 會妥善保存您的個人詳細資料，讓您不必重複輸入相同的資料。</translation>
 <translation id="8211929904040702368">這會將至少 <ph name="TOTAL_COUNT" /> 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。</translation>
-<translation id="8227755444512189073">Google Chrome 需要啟動外部應用程式以處理 <ph name="SCHEME" /> 連結。所要求的連結為 <ph name="PROTOLINK" />。 </translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的攝影機和麥克風。</translation>
 <translation id="8286862437124483331">Google Chrome 現在會嘗試顯示密碼。如果您同意的話，請輸入您的 Windows 密碼。</translation>
 <translation id="8290100596633877290">真糟糕！Google Chrome 當掉了，要立即重新啟動嗎？</translation>

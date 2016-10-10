@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Bara de adrese și de căutare</translation>
 <translation id="2826760142808435982">Conexiunea este criptată și autentificată utilizând <ph name="CIPHER" /> și folosește <ph name="KX" /> ca mecanism de schimb al cheii.</translation>
 <translation id="2835170189407361413">Golește formularul</translation>
-<translation id="2837049386027881519">A fost necesar să se încerce din nou realizarea conexiunii, utilizând o versiune mai veche a protocolului TSL sau SSL. În mod obișnuit, acest lucru înseamnă că serverul utilizează un software foarte vechi și că poate avea și alte probleme de securitate.</translation>
 <translation id="284702764277384724">Se pare că certificatul de server pentru <ph name="HOST_NAME" /> este un fals.</translation>
 <translation id="2889159643044928134">Nu reîncărca</translation>
 <translation id="2900469785430194048">Google Chrome nu a avut suficientă memorie la afișarea paginii web.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Marcați această pagină</translation>
 <translation id="3270847123878663523">&amp;Anulați reordonarea</translation>
 <translation id="3286538390144397061">Repornește acum</translation>
+<translation id="3303855915957856445">Nu s-au găsit rezultate de căutare</translation>
 <translation id="3305707030755673451">Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TIME" />. Introdu-o pentru a începe sincronizarea.</translation>
 <translation id="333371639341676808">Împiedică această pagină să creeze alte casete de dialog.</translation>
 <translation id="3338095232262050444">Securizat</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Dezactivează</translation>
 <translation id="4395129973926795186">Între <ph name="START_DATE" /> și <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">rezultate ale căutării</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> nu a acceptat certificatul de conectare sau un astfel de certificat nu a fost oferit.</translation>
 <translation id="443673843213245140">Utilizarea unui proxy este dezactivată, dar o configurare proxy este specificată în mod explicit.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Ai primit acest mesaj deoarece este activat filtrul Google SafeSites.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Acțiuni</translation>
 <translation id="4958444002117714549">Extindeți lista</translation>
 <translation id="4962322354953122629">Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Chrome nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Tot conținutul este citit</translation>
 <translation id="498957508165411911">Se traduce din <ph name="ORIGINAL_LANGUAGE" /> în <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Acest plugin nu este acceptat</translation>
 <translation id="5002932099480077015">Dacă este activată, Chrome va stoca o copie a cardului pe acest dispozitiv, pentru completarea mai rapidă a formularelor.</translation>
 <translation id="5019198164206649151">Depozit de fundal în stare nevalidă</translation>
 <translation id="5023310440958281426">Consultați politicile administratorului</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">Județ</translation>
 <translation id="6973656660372572881">Sunt specificate atât servere proxy fixe, cât și o adresă URL pentru scripturi .pac.</translation>
 <translation id="6989763994942163495">Afișează setările avansate...</translation>
+<translation id="7000990526846637657">Nu s-au găsit intrări în istoric</translation>
 <translation id="7009986207543992532">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat a cărui perioadă de valabilitate este prea mare pentru a fi de încredere. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Parole</translation>
 <translation id="7087282848513945231">Comitat</translation>
 <translation id="7088615885725309056">Mai vechi</translation>
@@ -608,6 +611,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="780301667611848630">Nu, mulțumesc</translation>
 <translation id="7805768142964895445">Stare</translation>
 <translation id="7813600968533626083">Elimini sugestia pentru formular din Chrome?</translation>
+<translation id="7815407501681723534">S-au găsit <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> pentru „<ph name="SEARCH_STRING" />”</translation>
 <translation id="785549533363645510">Cu toate acestea, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
 <translation id="7887683347370398519">Verifică codul CVC și încearcă din nou</translation>
 <translation id="7894616681410591072">Hopa! Este nevoie ca <ph name="NAME" /> să îți acorde permisiunea de a accesa această pagină.</translation>

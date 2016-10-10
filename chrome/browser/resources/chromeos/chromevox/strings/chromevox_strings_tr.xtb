@@ -553,6 +553,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="6307969636681130414">Basıldı</translation>
 <translation id="6324551002951139333">Dil bilgisi hatası algılandı</translation>
 <translation id="6348657800373377022">Birleşik giriş kutusu</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{madde işareti}other{# madde işareti}}</translation>
 <translation id="6355910664415701303">Önceki liste öğesi yok.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Önceki başlık</translation>
@@ -581,6 +582,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="6659594942844771486">Sekme</translation>
 <translation id="667999046851023355">Doküman</translation>
 <translation id="6697092096875747123">Önceki birleşik kutu</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{ünlem}other{# ünlem}}</translation>
 <translation id="6710213216561001401">Önceki</translation>
 <translation id="6714813999819678458">Önceki 2. düzey başlık</translation>
 <translation id="6716505898850596801">Değiştirici tuşlar</translation>

@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Adresse- og søkefelt</translation>
 <translation id="2826760142808435982">Tilkoblingen er kryptert ved hjelp av <ph name="CIPHER" />, og bruker <ph name="KX" /> som mekanisme for nøkkelutveksling.</translation>
 <translation id="2835170189407361413">Slett skjemaet</translation>
-<translation id="2837049386027881519">Tilkoblingen måtte måtte prøves på nytt ved hjelp av en eldre versjon av TLS- eller SSL-protokollen. Dette betyr vanligvis at tjeneren bruker veldig gammel programvare og kan ha andre sikkerhetsproblemer.</translation>
 <translation id="284702764277384724">Tjenersertifikatet på <ph name="HOST_NAME" /> ser ut til å være forfalsket.</translation>
 <translation id="2889159643044928134">Ikke last inn på nytt</translation>
 <translation id="2900469785430194048">Google Chrome gikk tom for minne under forsøket på å vise denne nettsiden.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Legg til bokmerke for denne siden</translation>
 <translation id="3270847123878663523">&amp;Angre omorganiseringen</translation>
 <translation id="3286538390144397061">Start på nytt nå</translation>
+<translation id="3303855915957856445">Søket ga ingen treff</translation>
 <translation id="3305707030755673451">Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME" />. Skriv den inn for å starte synkroniseringen.</translation>
 <translation id="333371639341676808">Hindre denne siden i å opprette flere dialogbokser.</translation>
 <translation id="3338095232262050444">Sikker</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Slå av</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> til <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">søkeresultater</translation>
+<translation id="4432688616882109544">Enten godtok ikke <ph name="HOST_NAME" /> påloggingssertifikatet ditt, eller så ble det ikke oppgitt.</translation>
 <translation id="443673843213245140">Bruk av mellomtjener er deaktivert, men det er angitt en uttrykkelig mellomtjenerkonfigurasjon.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Du ser denne meldingen fordi Google SafeSites er slått på.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4958444002117714549">Utvid liste</translation>
 <translation id="4962322354953122629">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />, ettersom skkerhetssertifikatet ikke er regnet som pålitelig av Chrome. Dette kan skyldes en feilkonfigurasjon eller at en angriper avskjærer tilkoblingen din. <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Alt er lest</translation>
 <translation id="498957508165411911">Vil du oversette fra <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Dette programtillegget støttes ikke</translation>
 <translation id="5002932099480077015">Hvis du slår på dette alternativet, lagrer Chrome en kopi av kortet ditt på denne enheten, slik at det blir raskere å fylle ut skjemaer i fremtiden.</translation>
 <translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>
 <translation id="5023310440958281426">Kontrollér retningslinjene til administratoren din</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">Område</translation>
 <translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>
 <translation id="6989763994942163495">Vis avanserte innstillinger</translation>
+<translation id="7000990526846637657">Fant ingen loggoppføringer</translation>
 <translation id="7009986207543992532">Du prøvde å gå til <ph name="DOMAIN" />, men tjeneren presenterte et sertifikat hvor gyldighetsperioden er oppgitt som for lang til å være pålitelig. <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Google-kontoen din kan ha andre typer nettlesingslogger på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="7087282848513945231">Fylke</translation>
 <translation id="7088615885725309056">Eldre</translation>
@@ -608,6 +611,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="780301667611848630">Nei takk</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Vil du fjerne skjemaforslaget fra Chrome?</translation>
+<translation id="7815407501681723534">Fant <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for «<ph name="SEARCH_STRING" />»</translation>
 <translation id="785549533363645510">Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arbeidsgiveren din, Internett-leverandøren eller nettstedene du besøker.</translation>
 <translation id="7887683347370398519">Kontrollér CVC-koden din, og prøv igjen.</translation>
 <translation id="7894616681410591072">Beklager, du må ha tillatelse fra <ph name="NAME" /> for å få tilgang til denne siden.</translation>
@@ -703,7 +707,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="9038649477754266430">Bruk en prediksjonstjeneste for å laste inn sider raskere</translation>
 <translation id="9039213469156557790">Denne siden inneholder i tillegg andre ressurser som ikke er sikre. Disse ressursene er synlige for andre mens de sendes frem og tilbake, og eventuelle angripere kan modifisere dem for å endre på atferden til siden.</translation>
 <translation id="9050666287014529139">Passordfrase</translation>
-<translation id="9065203028668620118">Rediger</translation>
+<translation id="9065203028668620118">Endre</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" />-siden fungerer ikke</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9137013805542155359">Vis original</translation>

@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Adresse og søgelinje</translation>
 <translation id="2826760142808435982">Forbindelsen er krypteret og godkendt ved hjælp af <ph name="CIPHER" />, og den anvender <ph name="KX" /> som primær udvekslingsmekanisme.</translation>
 <translation id="2835170189407361413">Ryd formular</translation>
-<translation id="2837049386027881519">Forbindelsen skulle prøves igen ved hjælp af en ældre version af TLS- eller SSL-protokollen. Det betyder typisk, at serveren bruger meget gammel software og kan have andre sikkerhedsproblemer.</translation>
 <translation id="284702764277384724">Serverens certifikat på <ph name="HOST_NAME" /> lader til at være en forfalskning.</translation>
 <translation id="2889159643044928134">Genindlæs ikke siden</translation>
 <translation id="2900469785430194048">Google Chrome løb tør for hukommelse, da websiden skulle vises.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Tilføj denne side som bogmærke</translation>
 <translation id="3270847123878663523">&amp;Fortryd omarrangering</translation>
 <translation id="3286538390144397061">Genstart nu</translation>
+<translation id="3303855915957856445">Der blev ikke fundet nogen søgeresultater</translation>
 <translation id="3305707030755673451">Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name="TIME" />. Indtast adgangssætningen for at starte synkroniseringen.</translation>
 <translation id="333371639341676808">Undgå, at denne side laver nye dialogbokse.</translation>
 <translation id="3338095232262050444">Sikker</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Deaktiver</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> til <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">søgeresultater</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> accepterede ikke dit logincertifikat, eller der er ikke angivet et.</translation>
 <translation id="443673843213245140">Brug af en proxy er deaktiveret, men en eksplicit proxykonfiguration er angivet.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Denne meddelelse vises, fordi Google SafeSites er aktiveret.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4958444002117714549">Udvid liste</translation>
 <translation id="4962322354953122629">Denne server kunne ikke bevise, at den tilhører <ph name="DOMAIN" />, da Chrome ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Intet ulæst</translation>
 <translation id="498957508165411911">Vil du oversætte fra <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Dette plugin understøttes ikke</translation>
 <translation id="5002932099480077015">Hvis denne indstilling er slået til, gemmer Chrome en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
 <translation id="5019198164206649151">Sikkerhedskopien er fejlbehæftet</translation>
 <translation id="5023310440958281426">Læs din administrators politikker</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både faste proxyservere og en webadresse for .pac-script angives.</translation>
 <translation id="6989763994942163495">Vis avancerede indstillinger...</translation>
+<translation id="7000990526846637657">Der blev ikke fundet nogen poster i historikken</translation>
 <translation id="7009986207543992532">Du forsøgte at få forbindelse til <ph name="DOMAIN" />, men serveren præsenterede et certifikat, hvis gyldighedsperiode er for lang til at være pålidelig. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7029809446516969842">Adgangskoder</translation>
 <translation id="7087282848513945231">Amt/region</translation>
 <translation id="7088615885725309056">Ældre</translation>
@@ -608,6 +611,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Vil du fjerne formularforslaget fra Chrome?</translation>
+<translation id="7815407501681723534">Der blev fundet <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for "<ph name="SEARCH_STRING" />"</translation>
 <translation id="785549533363645510">Du er dog ikke usynlig. Inkognitotilstand skjuler ikke din browserhistorik over for din arbejdsgiver, din internetudbyder eller de websites, du besøger.</translation>
 <translation id="7887683347370398519">Kontrollér, om din kontrolkode er korrekt, og prøv igen.</translation>
 <translation id="7894616681410591072">Ups! Du skal have tilladelse fra <ph name="NAME" /> for at få adgang til dette website.</translation>

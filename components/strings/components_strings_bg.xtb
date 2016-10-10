@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Лента за адреси и за търсене</translation>
 <translation id="2826760142808435982">Връзката е шифрована и удостоверена посредством <ph name="CIPHER" /> и използва <ph name="KX" /> като механизъм за обмен на ключове.</translation>
 <translation id="2835170189407361413">Изчистване на формуляра</translation>
-<translation id="2837049386027881519">Връзката трябваше да се изпробва отново посредством по-стара версия на TLS или SSL протокола. Това обикновено означава, че сървърът използва много стар софтуер и може да има други проблеми със сигурността.</translation>
 <translation id="284702764277384724">Изглежда, че сертификатът на сървъра на адрес <ph name="HOST_NAME" /> е подправен.</translation>
 <translation id="2889159643044928134">Без презареждане</translation>
 <translation id="2900469785430194048">Паметта на Google Chrome се изчерпа, докато браузърът опитваше да покаже тази уеб страница.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Запазване на отметка към тази страница</translation>
 <translation id="3270847123878663523">&amp;Отмяна на пренареждането</translation>
 <translation id="3286538390144397061">Рестартиране сега</translation>
+<translation id="3303855915957856445">Няма намерени резултати от търсенето</translation>
 <translation id="3305707030755673451">На <ph name="TIME" /> данните ви бяха шифровани с пропуска ви за синхронизиране. Въведете го, за да стартирате синхронизирането.</translation>
 <translation id="333371639341676808">Да не се показват допълнителни диалогови прозорци от тази страница.</translation>
 <translation id="3338095232262050444">Има защита</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Деактивиране</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> до <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">резултата от търсенето</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> не прие сертификата ви за вход или е възможно да не е предоставен такъв.</translation>
 <translation id="443673843213245140">Използването на прокси сървър е деактивирано, но е посочена изрична негова конфигурация.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Виждате това съобщение, защото филтърът Google SafeSites е активиран.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Действия</translation>
 <translation id="4958444002117714549">Разгъване на списъка</translation>
 <translation id="4962322354953122629">Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Сертификатът му за сигурност не се счита за надежден от Chrome. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от извършител на атака. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Всичко е прочетено</translation>
 <translation id="498957508165411911">Да се преведе ли от <ph name="ORIGINAL_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Тази приставка не се поддържа</translation>
 <translation id="5002932099480077015">Ако настройката е активирана, копие на картата ви ще се съхранява в Chrome на това устройство с цел по-бързо попълване на формуляри.</translation>
 <translation id="5019198164206649151">Допълнителното хранилище е в лошо състояние</translation>
 <translation id="5023310440958281426">Проверете правилата на администратора</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">Окръг</translation>
 <translation id="6973656660372572881">Посочени са както фиксирани прокси сървъри, така и URL адрес на скрипт във формат .pac.</translation>
 <translation id="6989763994942163495">Показване на разширените настройки...</translation>
+<translation id="7000990526846637657">Няма намерени записи в историята</translation>
 <translation id="7009986207543992532">Опитахте да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предостави сертификат, чийто период на валидност е твърде дълъг, за да е надежден. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7087282848513945231">Окръг</translation>
 <translation id="7088615885725309056">По-стара</translation>
@@ -608,6 +611,7 @@
 <translation id="780301667611848630">Не, благодаря</translation>
 <translation id="7805768142964895445">Състояние</translation>
 <translation id="7813600968533626083">Предложението за формуляри да се премахне ли от Chrome?</translation>
+<translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> за „<ph name="SEARCH_STRING" />“</translation>
 <translation id="785549533363645510">Сърфирането ви обаче не е невидимо. При преминаване в режим „инкогнито“ то не се скрива от работодателя ви и от доставчика ви на интернет услуги, нито от уебсайтовете, които посещавате.</translation>
 <translation id="7887683347370398519">Прегледайте кода за проверка и опитайте отново</translation>
 <translation id="7894616681410591072">Ами сега! За достъп до тази страница ви е необходимо разрешение от <ph name="NAME" />.</translation>

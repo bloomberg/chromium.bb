@@ -215,13 +215,11 @@
 <translation id="7164397146364144019">‏يمكنك المساعدة في جعل Chrome أكثر أمانًا وأسهل استخدامًا بإبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة.</translation>
 <translation id="7177347454226092725">‏سيؤدي هذا إلى حذف بيانات التصفح من هذا الجهاز نهائيًا. ولاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome باعتبارك ($2).</translation>
 <translation id="7185038942300673794">‏تمت إضافة <ph name="EXTENSION_NAME" /> إلى Chrome.</translation>
-<translation id="7191567847629796517">‏لا يدعم نظام تشغيل Google Chrome إطلاق تطبيق خارجي للتعامل مع روابط <ph name="SCHEME" />. الرابط المطلوب هو <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">‏يتم عرض Google Chrome بهذه اللغة.</translation>
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>
 <translation id="7242029209006116544">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME" />. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. ويُمكنك اختيار إنشاء ملف شخصي جديد للإبقاء على بياناتك الحالية في Chrome بشكل مستقل. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">‏سيتوقف هذا الكمبيوتر قريبًا عن استلام تحديثات Google Chrome لأن أنظمة Windows XP وWindows Vista لن تصبح مدعومة بعد الآن.</translation>
 <translation id="7339898014177206373">نافذة جديدة</translation>
-<translation id="7393806081343982361">‏Google Chrome هو متصفحك الافتراضي. رائع!</translation>
 <translation id="7398801000654795464">‏تم تسجيل دخولك إلى Chrome باعتبارك <ph name="USER_EMAIL_ADDRESS" />. الرجاء استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
 <translation id="7400722733683201933">‏معلومات عن Google Chrome</translation>
 <translation id="7408085963519505752">‏بنود نظام التشغيل Chrome</translation>
@@ -256,7 +254,6 @@
 <translation id="8129812357326543296">‏&amp;حول Google Chrome</translation>
 <translation id="8183957050892517584">‏سيخزّن Chrome معلوماتك الشخصية بشكلٍ آمن لكي لا تُضطر إلى كتابتها مرة أخرى.</translation>
 <translation id="8211929904040702368">‏سيؤدي هذا إلى حذف <ph name="TOTAL_COUNT" /> من العناصر على الأقل من هذا الجهاز نهائيًا. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome باعتبارك ($2).</translation>
-<translation id="8227755444512189073">تقتضي معالجة روابط <ph name="SCHEME" /> تشغيل تطبيق خارجيّ. والرّابط المطلوب هو <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">‏يستخدم Google Chrome الكاميرا والميكروفون.</translation>
 <translation id="8286862437124483331">‏يحاول Google Chrome عرض كلمات المرور. اكتب كلمة مرور Windows للسماح بذلك.</translation>
 <translation id="8290100596633877290">‏للأسف! تعطل Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>

@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Adres- en zoekbalk</translation>
 <translation id="2826760142808435982">De verbinding is gecodeerd en geverifieerd met <ph name="CIPHER" /> en gebruikt <ph name="KX" /> als mechanisme voor sleuteluitwisseling.</translation>
 <translation id="2835170189407361413">Formulier leegmaken</translation>
-<translation id="2837049386027881519">Er moest opnieuw worden geprobeerd verbinding te maken met een oudere versie van het TLS- of SSL-protocol. Dit betekent meestal dat de server zeer oude software gebruikt en mogelijk andere beveiligingsproblemen heeft.</translation>
 <translation id="284702764277384724">Het servercertificaat op <ph name="HOST_NAME" /> lijkt vals te zijn.</translation>
 <translation id="2889159643044928134">Niet opnieuw laden</translation>
 <translation id="2900469785430194048">Google Chrome beschikt over onvoldoende geheugen om deze webpagina weer te geven.</translation>
@@ -213,6 +212,7 @@
 <translation id="3254409185687681395">Bladwijzer instellen voor deze pagina</translation>
 <translation id="3270847123878663523">&amp;Volgorde wijzigen ongedaan maken</translation>
 <translation id="3286538390144397061">Nu herstarten</translation>
+<translation id="3303855915957856445">Geen zoekresultaten gevonden</translation>
 <translation id="3305707030755673451">Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor synchronisatie. Geef deze op om de synchronisatie te starten.</translation>
 <translation id="333371639341676808">Voorkom dat deze pagina extra dialoogvensters weergeeft.</translation>
 <translation id="3338095232262050444">Veilig</translation>
@@ -323,6 +323,7 @@
 <translation id="4394049700291259645">Uitschakelen</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> tot <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">zoekresultaten</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> heeft je inlogcertificaat niet geaccepteerd of er is geen inlogcertificaat geleverd.</translation>
 <translation id="443673843213245140">Het gebruik van een proxy is uitgeschakeld, maar er is wel een expliciete proxyconfiguratie opgegeven.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Dit bericht wordt weergegeven omdat Google SafeSites is ingeschakeld.</translation>
@@ -365,8 +366,8 @@
 <translation id="495170559598752135">Acties</translation>
 <translation id="4958444002117714549">Lijst uitvouwen</translation>
 <translation id="4962322354953122629">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door Chrome. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Alles gelezen</translation>
 <translation id="498957508165411911">Vertalen uit het <ph name="ORIGINAL_LANGUAGE" /> naar het <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Deze plug-in wordt niet ondersteund</translation>
 <translation id="5002932099480077015">Indien ingeschakeld, slaat Chrome een kopie van je kaart op dit apparaat op zodat formulieren sneller kunnen worden ingevuld.</translation>
 <translation id="5019198164206649151">Backend-opslag in slechte staat</translation>
 <translation id="5023310440958281426">Neem het beleid van je beheerder door</translation>
@@ -519,8 +520,10 @@
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Zowel vaste proxyservers als een pac-script-URL worden gespecificeerd.</translation>
 <translation id="6989763994942163495">Geavanceerde instellingen weergeven...</translation>
+<translation id="7000990526846637657">Geen geschiedenisitems gevonden</translation>
 <translation id="7009986207543992532">Je probeert <ph name="DOMAIN" /> te bereiken, maar de server heeft een certificaat geretourneerd waarvan de geldigheidsperiode te lang is om betrouwbaar te zijn. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Voor je Google-account kunnen andere vormen van browsegeschiedenis beschikbaar zijn via <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7088615885725309056">Ouder</translation>
@@ -603,6 +606,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="780301667611848630">Nee, bedankt</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Formuliersuggestie verwijderen uit Chrome?</translation>
+<translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> gevonden voor '<ph name="SEARCH_STRING" />'</translation>
 <translation id="785549533363645510">Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiedenis niet verborgen voor je werkgever, je internetprovider of de websites die je bezoekt.</translation>
 <translation id="7887683347370398519">Controleer je CVC-code en probeer het opnieuw</translation>
 <translation id="7894616681410591072">Je hebt toestemming van <ph name="NAME" /> nodig om deze pagina te openen.</translation>

@@ -105,6 +105,7 @@
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> 닫음</translation>
 <translation id="2138201775715568214">주변 피지컬 웹페이지 검색 중</translation>
 <translation id="2139186145475833000">홈 화면에 추가</translation>
+<translation id="2146738493024040262">빠른 실행 앱 열기</translation>
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2154710561487035718">URL 복사</translation>
 <translation id="219985413780390209">위험 사이트로부터 사용자와 기기를 보호합니다.</translation>
@@ -184,8 +185,8 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
 <translation id="3090193911106258841">오디오 및 비디오 입력 장치에 액세스</translation>
-<translation id="3117051980354074377">다른 기기에서 북마크를 가져오려면 Chrome에 로그인하세요.</translation>
 <translation id="3137521801621304719">시크릿 모드 나가기</translation>
+<translation id="3148434565183091099">어느 기기에서나 내 북마크를 사용하려면 Chrome에 로그인하세요.</translation>
 <translation id="3149891296864842641">배송 옵션</translation>
 <translation id="3177909033752230686">페이지 언어:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 Chrome 관련 권한을 설정합니다.</translation>
@@ -220,6 +221,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="3518985090088779359">동의하고 계속</translation>
 <translation id="3522247891732774234">업데이트할 수 있습니다. 옵션 더보기</translation>
 <translation id="3527085408025491307">폴더</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" />KB 사용 가능</translation>
 <translation id="3549644494707163724">나만의 동기화 암호로 모든 동기화 데이터 암호화</translation>
 <translation id="3590487821116122040">Chrome에서 중요하다고 간주하지 않는 사이트 저장공간(예: 저장된 설정이 없거나 사용자가 자주 방문하지 않는 사이트)</translation>
 <translation id="360480449234699036">페이지에 남아 웹사이트의 주제에 대해 알아보세요. 터치하여 검색 기능은 Google 검색에 단어와 관련 컨텍스트를 전송하여 정의, 사진, 검색결과, 기타 자세한 사항을 반환합니다.
@@ -297,7 +299,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="4532845899244822526">폴더 선택</translation>
 <translation id="4543661749405994812">이메일 주소 복사</translation>
 <translation id="4572422548854449519">관리 계정에 로그인</translation>
-<translation id="4576023202210315647">Chrome에서 탭을 유지합니다.</translation>
 <translation id="4581964774250883625">시크릿 모드로 전환되었습니다.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{#분 전}other{#분 전}}</translation>
 <translation id="4605958867780575332"><ph name="ITEM_TITLE" /> 삭제됨</translation>
@@ -532,7 +533,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="7208788139759694678">데이터 절약 모드 사용 안함</translation>
 <translation id="7243308994586599757">화면 하단에서 옵션 선택 가능</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />이(가) 사용자 위치 정보를 사용하여 지역 검색결과 표시</translation>
-<translation id="7327835590071894791">이제 탭이 백그라운드에 표시됩니다.</translation>
 <translation id="7347770551817603360">오프라인 콘텐츠</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{선택한 1개 항목 공유}other{선택한 #개 항목 공유}}</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" />(으)로 전송 중</translation>
@@ -551,7 +551,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />에서 검색이나 기타 Google 서비스에서의 활동 등 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />(<ph name="TIME_SINCE_UPDATE" />에 업데이트됨)</translation>
 <translation id="7498271377022651285">잠시 기다려 주세요…</translation>
-<translation id="7501135638693251872">모든 북마크</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
 <translation id="7562080006725997899">인터넷 사용 기록 삭제</translation>
 <translation id="756809126120519699">Chrome 데이터 삭제됨</translation>
@@ -639,12 +638,14 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="8518901949365209398">이 사이트는 취약한 보안 설정(SHA-1 서명)을 사용하기 때문에 연결이 비공개로 설정되지 않을 수 있습니다.</translation>
 <translation id="8523928698583292556">저장된 암호 삭제</translation>
 <translation id="8525306231823319788">전체화면</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" />MB 사용</translation>
 <translation id="854522910157234410">페이지 열기</translation>
 <translation id="8562452229998620586">저장한 비밀번호가 여기에 표시됩니다.</translation>
 <translation id="856481929701340285">데스크톱 버전으로 보기</translation>
 <translation id="857943718398505171">허용(권장)</translation>
 <translation id="8583805026567836021">계정 데이터 지우기</translation>
 <translation id="8617240290563765734">다운로드한 콘텐츠에 지정된 추천 URL을 여시겠습니까?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" />KB 사용</translation>
 <translation id="862875433388403934">다른 애플리케이션에서 다운로드한 콘텐츠(영화, 음악 등)는 해당 애플리케이션이 새로운 기기 사용자 인증 정보를 기반으로 라이선스를 다시 취득해야 재생할 수 있습니다.
 
 새로운 라이선스를 취득하려면 인터넷에 연결하고 다운로드한 콘텐츠를 재생하세요.</translation>

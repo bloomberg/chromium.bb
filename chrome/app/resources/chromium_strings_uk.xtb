@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">Chromium не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
 <translation id="1174473354587728743">Користуєтеся комп’ютером спільно з іншими? Тепер ви можете налаштувати Chromium на свій смак.</translation>
 <translation id="1185134272377778587">Про Chromium</translation>
-<translation id="1221340462641866827">ОС Chromium не підтримує запуск зовнішньої програми обробки посилань типу <ph name="SCHEME" />. Потрібний тип посилання: <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">У системі знайдено конфліктуючу встановлену версію Chromium. Видаліть її та повторіть спробу.</translation>
 <translation id="1298199220304005244">Отримати довідку щодо користування ОС Chromium</translation>
 <translation id="1396446129537741364">Chromium намагається показати паролі.</translation>
@@ -64,7 +63,6 @@
 <translation id="2886012850691518054">Додатково: допоможіть покращити Chromium,  автоматично надсилаючи статистику використання та звіти про аварійне завершення роботи в Google.</translation>
 <translation id="2905536371227304018">Для ОС Chromium вибрано цю мову.</translation>
 <translation id="2910007522516064972">Про &amp;Chromium</translation>
-<translation id="2966088006374919794">Chromium потребує запуску зовнішньої програми обробки посилань типу <ph name="SCHEME" />. Потрібний тип посилання: <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Додавання в Chromium...</translation>
 <translation id="3046695367536568084">Щоб користуватися додатками, потрібно ввійти в Chromium. Це дозволяє веб-переглядачу Chromium синхронізувати ваші додатки, закладки, історію, паролі й інші налаштування на різних пристроях.</translation>
 <translation id="3068515742935458733">Допоможіть покращити Chromium, надсилаючи звіти про аварійне завершення роботи та <ph name="UMA_LINK" /> в Google</translation>
@@ -101,7 +99,6 @@
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="407254336480250557">Виберіть <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Щоб зміна почала діяти, закрийте всі вікна Chromium і перезапустіть його.</translation>
-<translation id="4182290826692170034">Chromium установлено веб-переглядачем за умовчанням.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Застереження:<ph name="END_BOLD" /> Chromium не може заборонити розширенням реєструвати вашу історію веб-перегляду. Щоб вимкнути це розширення в режимі анонімного перегляду, зніміть прапорець поруч із цим параметром.</translation>
 <translation id="421369550622382712">Знаходьте чудові додатки, ігри, розширення й теми для Chromium.</translation>
 <translation id="4222580632002216401">Ви ввійшли в Chromium. Проте ваш адміністратор вимкнув синхронізацію.</translation>

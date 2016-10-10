@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Bar alamat dan carian</translation>
 <translation id="2826760142808435982">Sambungan disulitkan dan disahkan menggunakan <ph name="CIPHER" /> dan menggunakan <ph name="KX" /> sebagai mekanisme pertukaran kunci.</translation>
 <translation id="2835170189407361413">Kosongkan borang</translation>
-<translation id="2837049386027881519">Sambungan perlu dicuba semula menggunakan versi protokol TLS atau SSL yang lebih lama. Biasanya, perkara ini bermaksud bahawa pelayan menggunakan perisian yang sangat lama dan mungkin mempunyai isu keselamatan yang lain.</translation>
 <translation id="284702764277384724">Sijil pelayan di <ph name="HOST_NAME" /> nampaknya palsu.</translation>
 <translation id="2889159643044928134">Jangan Muat Semula</translation>
 <translation id="2900469785430194048">Google Chrome kehabisan memori semasa cuba memaparkan halaman web ini.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Tanda halaman ini</translation>
 <translation id="3270847123878663523">&amp;Buat asal Susun semula</translation>
 <translation id="3286538390144397061">Mulakan Semula Sekarang</translation>
+<translation id="3303855915957856445">Tiada hasil carian ditemui</translation>
 <translation id="3305707030755673451">Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />. Masukkannya untuk memulakan penyegerakan.</translation>
 <translation id="333371639341676808">Halang halaman ini daripada mencipta dialog tambahan.</translation>
 <translation id="3338095232262050444">Selamat</translation>
@@ -328,6 +328,7 @@
 <translation id="4394049700291259645">Lumpuhkan</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> hingga <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">hasil carian</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> tidak menerima sijil log masuk anda atau sijil log masuk mungkin tidak diberikan.</translation>
 <translation id="443673843213245140">Penggunaan proksi dilumpuhkan tetapi konfigurasi proksi yang jelas dinyatakan.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Anda melihat mesej ini kerana Google SafeSites didayakan.</translation>
@@ -370,8 +371,8 @@
 <translation id="495170559598752135">Tindakan</translation>
 <translation id="4958444002117714549">Kembangkan senarai</translation>
 <translation id="4962322354953122629">Pelayan ini tidak dapat membuktikan bahawa itu <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh Chrome. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintas sambungan anda. <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">Semua Telah Dibaca</translation>
 <translation id="498957508165411911">Terjemahkan daripada <ph name="ORIGINAL_LANGUAGE" /> kepada <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">Pemalam ini tidak disokong</translation>
 <translation id="5002932099480077015">Jika didayakan, Chrome akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
 <translation id="5019198164206649151">Simpanan penyandaran dalam keadaan buruk</translation>
 <translation id="5023310440958281426">Semak dasar pentadbir anda</translation>
@@ -525,8 +526,10 @@
 <translation id="6970216967273061347">Daerah</translation>
 <translation id="6973656660372572881">Pelayan proksi tetap dan juga URL skrip .pac tidak ditetapkan.</translation>
 <translation id="6989763994942163495">Paparkan tetapan lanjutan...</translation>
+<translation id="7000990526846637657">Tiada masukan sejarah ditemui</translation>
 <translation id="7009986207543992532">Anda cuba mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil yang tempoh sahnya terlalu panjang untuk dipercayai. <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Kata laluan</translation>
 <translation id="7087282848513945231">Daerah</translation>
 <translation id="7088615885725309056">Lebih lama</translation>
@@ -609,6 +612,7 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="780301667611848630">Tidak, terima kasih</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Alih keluar cadangan borang daripada Chrome?</translation>
+<translation id="7815407501681723534">Menemui <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> untuk '<ph name="SEARCH_STRING" />'</translation>
 <translation id="785549533363645510">Walau bagaimanapun, anda tidak halimunan. Apabila anda menggunakan mod inkognito, penyemakan imbas anda tidak akan disembunyikan daripada majikan anda, penyedia perkhidmatan Internet anda atau tapak web yang anda lawati.</translation>
 <translation id="7887683347370398519">Semak CVC anda dan cuba lagi</translation>
 <translation id="7894616681410591072">Op! Anda memerlukan kebenaran daripada <ph name="NAME" /> untuk mengakses halaman ini.</translation>

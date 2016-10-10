@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">نوار جستجو و آدرس</translation>
 <translation id="2826760142808435982">اتصال با استفاده از <ph name="CIPHER" /> رمزگذاری و راستی‌آزمایی شده است و از <ph name="KX" /> به عنوان مکانیسم تبادل کلید استفاده می‌کند.</translation>
 <translation id="2835170189407361413">پاک کردن فرم</translation>
-<translation id="2837049386027881519">‏با استفاده از نسخه قدیمی پروتکل TLS یا SSL باید دوباره سعی کنید اتصال را برقرار کنید. یعنی سرور از نرم‌افزار خیلی قدیمی استفاده می‌کند و ممکن است مسائل امنیتی دیگری داشته باشد.</translation>
 <translation id="284702764277384724">به نظر می‌رسد که گواهی سرور در <ph name="HOST_NAME" /> جعلی باشد.</translation>
 <translation id="2889159643044928134">تازه‌سازی نشود</translation>
 <translation id="2900469785430194048">‏Google Chrome هنگام تلاش برای نمایش این صفحه با کمبود حافظه روبرو شد.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">نشانک گذاری این صفحه</translation>
 <translation id="3270847123878663523">&amp;واگرد ترتیب‌بندی مجدد</translation>
 <translation id="3286538390144397061">راه‌اندازی مجدد اکنون</translation>
+<translation id="3303855915957856445">هیچ نتیجه‌ای برای جستجو یافت نشد</translation>
 <translation id="3305707030755673451">داده‌های شما در تاریخ <ph name="TIME" /> با عبارت عبور همگام‌سازی‌تان رمزگذاری شد. برای شروع همگام‌سازی آن را وارد کنید.</translation>
 <translation id="333371639341676808">از ایجاد کادرهای گفتگوی دیگر توسط این صفحه جلوگیری شود.</translation>
 <translation id="3338095232262050444">ایمن</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">غیر فعال کردن</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> تا <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">نتایج جستجو</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> گواهی ورود به سیستمتان را نپذیرفت یا ممکن است گواهی‌ای ارائه نشده باشد.</translation>
 <translation id="443673843213245140">استفاده از پروکسی غیرفعال است اما یک پیکربندی خاص برای پروکسی تعیین شده است.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">‏این پیام را به این دلیل می‌بینید که Google SafeSites فعال است.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">عملکردها</translation>
 <translation id="4958444002117714549">بزرگ کردن فهرست</translation>
 <translation id="4962322354953122629">‏این سرور نتوانست ثابت کند <ph name="DOMAIN" /> است؛ گواهینامه امنیتی آن مورداعتماد Chrome نیست. ممکن است پیکربندی اشتباهی علت آن باشد یا مهاجمی اتصالتان را قطع کرده باشد. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">همه خوانده شده‌اند</translation>
 <translation id="498957508165411911">از <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود؟</translation>
+<translation id="4989809363548539747">این افزایه پشتیبانی نمی‌شود</translation>
 <translation id="5002932099480077015">‏اگر فعال شود، Chrome یک کپی از کارت شما را برای پرکردن سریع‌تر فرم در این دستگاه ذخیره می‌کند.</translation>
 <translation id="5019198164206649151">پشتیبان‌گیری ذخیره در وضعیت نادرست است</translation>
 <translation id="5023310440958281426">خط‌مشی‌های سرپرست سیستمتان را بررسی کنید</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">حوزه</translation>
 <translation id="6973656660372572881">‏هم سرورهای پروکسی ثابت و هم آدرس اسکریپت pac. مشخص شده‌اند.</translation>
 <translation id="6989763994942163495">نمایش تنظیمات پیشرفته ...</translation>
+<translation id="7000990526846637657">هیچ ورودی سابقه‌ای پیدا نشد</translation>
 <translation id="7009986207543992532">سعی کردید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما سرور گواهینامه‌ای ارائه کرد که دوره اعتبار بیش از اندازه طولانی آن قابل‌اعتماد نیست. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">‏ممکن است «حساب Google» شما سابقه مروری به شکل دیگری در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> داشته باشد</translation>
 <translation id="7029809446516969842">گذرواژه‌ها</translation>
 <translation id="7087282848513945231">شهرستان</translation>
 <translation id="7088615885725309056">قدیمی تر</translation>
@@ -608,6 +611,7 @@
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7805768142964895445">وضعیت</translation>
 <translation id="7813600968533626083">‏پیشنهاد فرم از Chrome پاک شود؟</translation>
+<translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /><ph name="SEARCH_RESULTS" /> برای «<ph name="SEARCH_STRING" />» پیدا شد</translation>
 <translation id="785549533363645510">اما، شما نامرئی نیستید. با استفاده از حالت ناشناس، مرورتان از چشمان کارفرمای شما، ارائه‌دهنده خدمات اینترنت یا وب‌‌سایت‌هایی که بازدید می‌کنید پنهان نمی‌ماند.</translation>
 <translation id="7887683347370398519">‏CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="7894616681410591072">وای! برای دسترسی به این صفحه باید از <ph name="NAME" /> اجازه بگیرید.</translation>

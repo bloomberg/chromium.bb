@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">Chromium kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
 <translation id="1174473354587728743">Deler du computer med andre? Nu kan du konfigurere Chromium, præcist som du vil.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
-<translation id="1221340462641866827">Chromium OS understøtter ikke start af en ekstern applikation til at håndtere <ph name="SCHEME" />-links. Det link, der er anmodet om, er <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Der er registreret en modstridende installation af Chromium i dit system. Du skal afinstallere denne og prøve igen.</translation>
 <translation id="1298199220304005244">Få hjælp til at bruge Chromium OS</translation>
 <translation id="1396446129537741364">Chromium forsøger at vise adgangskoder.</translation>
@@ -64,7 +63,6 @@
 <translation id="2886012850691518054">Valgfrit: Hjælp med at gøre Chromium bedre ved automatisk at sende forbrugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="2905536371227304018">Chromium OS vises på dette sprog.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
-<translation id="2966088006374919794">Chromium skal starte en ekstern applikation for at håndtere <ph name="SCHEME" />-links. Det link, der er anmodet om, er <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Føjer til Chromium...</translation>
 <translation id="3046695367536568084">Du skal være logget ind på Chromium, før du kan bruge apps. Det gør det muligt for Chromium at synkronisere dine apps, bogmærker, historik, adgangskoder og andre indstillinger på alle enheder.</translation>
 <translation id="3068515742935458733">Hjælp med at gøre Chromium bedre ved at sende fejlrapporter og <ph name="UMA_LINK" /> til Google</translation>
@@ -101,7 +99,6 @@
 <translation id="4050175100176540509">Vigtige sikkerhedsforbedringer og nye funktioner er tilgængelige i den seneste version.</translation>
 <translation id="407254336480250557">Vælg <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Luk alle Chromium-vinduer, og genstart Chromium, før denne ændring kan træde i kraft.</translation>
-<translation id="4182290826692170034">Chromium er din standardbrowser. Juhu!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Advarsel!<ph name="END_BOLD" /> Chromium kan ikke forhindre udvidelser i at registrere din browserhistorik. Fjern markeringen for at deaktivere denne udvidelse i inkognitotilstand.</translation>
 <translation id="421369550622382712">Find fantastiske apps, spil, udvidelser og temaer til Chromium.</translation>
 <translation id="4222580632002216401">Du er nu logget ind på Chromium. Synkronisering er deaktiveret af din administrator.</translation>

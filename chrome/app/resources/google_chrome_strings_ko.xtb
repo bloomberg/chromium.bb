@@ -219,13 +219,11 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7164397146364144019">Google에 발생할 수 있는 보안 문제에 대한 세부정보를 자동으로 보고하도록 설정하면 Chrome을 더 안전하고 편리하게 사용할 수 있습니다.</translation>
 <translation id="7177347454226092725">인터넷 사용 기록이 이 기기에서 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" />이(가) Chrome에 추가되었습니다.</translation>
-<translation id="7191567847629796517">Chrome OS는 외부 애플리케이션 실행을 통한 <ph name="SCHEME" /> 링크 처리를 지원하지 않습니다. 요청된 링크는 <ph name="PROTOLINK" />입니다.</translation>
 <translation id="7193750696137290001">Chrome이 이 언어로 표시됩니다.</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
 <translation id="7242029209006116544">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chrome 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Windows XP 및 Windows Vista가 더 이상 지원되지 않을 예정이므로 곧 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
 <translation id="7339898014177206373">새 창</translation>
-<translation id="7393806081343982361">Chrome이 기본 브라우저입니다.</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" />(으)로 Chrome에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
 <translation id="7400722733683201933">Chrome 정보</translation>
 <translation id="7408085963519505752">Chrome OS 이용약관</translation>
@@ -260,7 +258,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8129812357326543296">Chrome 정보(&amp;G)</translation>
 <translation id="8183957050892517584">Chrome은 개인정보를 안전하게 저장하므로 정보를 다시 입력할 필요가 없습니다.</translation>
 <translation id="8211929904040702368"><ph name="TOTAL_COUNT" />개 이상의 항목이 이 기기에서 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.</translation>
-<translation id="8227755444512189073"><ph name="SCHEME" />SCHEME링크 처리를 위해 Chrome에서 외부 응용 프로그램을 실행해야 합니다. 요청 링크는PROTOLINK입니다 <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Chrome에서 카메라와 마이크를 사용 중입니다.</translation>
 <translation id="8286862437124483331">Chrome에서 비밀번호를 표시하려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
 <translation id="8290100596633877290">Chrome이 다운되었습니다. 다시 시작하시겠습니까?</translation>

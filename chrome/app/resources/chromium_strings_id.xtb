@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">Chromium tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="1174473354587728743">Berbagi komputer? Kini Anda dapat menyiapkan Chromium seperti yang Anda inginkan.</translation>
 <translation id="1185134272377778587">Tentang Chromium</translation>
-<translation id="1221340462641866827">OS Chromium tidak mendukung peluncuran aplikasi eksternal untuk menangani tautan <ph name="SCHEME" />. Tautan yang diminta adalah <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Terjadi konflik pemasangan Chromium pada sistem. Copot pemasangan dan coba lagi.</translation>
 <translation id="1298199220304005244">Dapatkan bantuan tentang penggunaan Chromium OS</translation>
 <translation id="1396446129537741364">Chromium mencoba menampilkan sandi.</translation>
@@ -64,7 +63,6 @@
 <translation id="2886012850691518054">Opsional: Bantu menjadikan Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google.</translation>
 <translation id="2905536371227304018">Chromium OS ditampilkan dalam bahasa ini.</translation>
 <translation id="2910007522516064972">Tentang &amp;Chromium</translation>
-<translation id="2966088006374919794">Chromium harus meluncurkan aplikasi eksternal untuk menangani tautan <ph name="SCHEME" />. Tautan yang diminta adalah <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Menambahkan Chromium...</translation>
 <translation id="3046695367536568084">Anda harus masuk ke Chromium untuk menggunakan aplikasi. Ini memungkinkan Chromium menyinkronkan aplikasi, bookmark, riwayat, sandi, dan setelan lainnya antar perangkat.</translation>
 <translation id="3068515742935458733">Bantu Chromium menjadi lebih baik dengan mengirim laporan kerusakan dan <ph name="UMA_LINK" /> ke Google</translation>
@@ -94,14 +92,13 @@
 <translation id="378917192836375108">Chromium memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Sayangnya, setelan Mozilla Firefox Anda tidak tersedia sewaktu browser berjalan. Untuk mengimpor setelan ke Chromium, simpan pekerjaan dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>
-<translation id="3852700440713538496">Beri pin Chromium di bilah tugas</translation>
+<translation id="3852700440713538496">Sematkan Chromium di bilah tugas</translation>
 <translation id="3883381313049582448">Gunakan sandi yang dibuat oleh Chromium</translation>
 <translation id="3889543394854987837">Klik nama Anda untuk membuka Chromium dan mulai menjelajah.</translation>
 <translation id="390894725198123737">Di Mac, sandi disimpan pada Keychain Anda dan diakses atau disinkronkan oleh pengguna Chromium lain yang membagikan akun OS X ini.</translation>
 <translation id="4050175100176540509">Peningkatan keamanan dan fitur baru yang penting tersedia di versi terbaru.</translation>
 <translation id="407254336480250557">Pilih <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Tutup semua jendela Chromium dan luncurkan ulang Chromium agar perubahan ini diterapkan.</translation>
-<translation id="4182290826692170034">Chromium adalah browser default Anda. Hore!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Peringatan:<ph name="END_BOLD" /> Chromium tidak dapat mencegah ekstensi merekam riwayat penjelajahan Anda. Untuk menonaktifkan ekstensi ini dalam mode penyamaran, jangan pilih opsi ini.</translation>
 <translation id="421369550622382712">Temukan aplikasi, game, ekstensi, dan tema yang hebat untuk Chromium.</translation>
 <translation id="4222580632002216401">Sekarang Anda telah masuk ke Chromium! Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>

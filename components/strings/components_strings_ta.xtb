@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">முகவரி மற்றும் தேடல் பட்டி</translation>
 <translation id="2826760142808435982">இந்த இணைப்பு <ph name="CIPHER" /> ஐப் பயன்படுத்தி குறியாக்கப்பட்டது, அங்கீகரிக்கப்பட்டது, ஒரு முக்கிய பரிமாற்ற செயல்முறையாக <ph name="KX" /> ஐப் பயன்படுத்துகிறது.</translation>
 <translation id="2835170189407361413">படிவத்தை அழி</translation>
-<translation id="2837049386027881519">TLS அல்லது SSL நெறிமுறையின் பழைய பதிப்பினைப் பயன்படுத்தி, இணைப்பை மீண்டும் முயற்சிக்க வேண்டும். இது பொதுவாக, சேவையகம் மிகப்பழைய மென்பொருளைப் பயன்படுத்துகிறது மற்றும் பிற பாதுகாப்புச் சிக்கல்கள் இருக்கலாமென்று பொருளாகும்.</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> இல் உள்ள சேவையகச் சான்றிதழ் போலியானது போல் தெரிகிறது.</translation>
 <translation id="2889159643044928134">மீண்டும் ஏற்ற வேண்டாம்</translation>
 <translation id="2900469785430194048">நினைவகப் பற்றாக்குறையினால், Google Chrome இந்த இணையப்பக்கத்தைக் காட்டவில்லை.</translation>
@@ -213,6 +212,7 @@
 <translation id="3254409185687681395">இந்தப் பக்கத்தை புக்மார்க் செய்க</translation>
 <translation id="3270847123878663523">&amp;மறுவரிசைப்படுத்தலைச் செயல்தவிர்</translation>
 <translation id="3286538390144397061">இப்போது மறுதொடக்கம் செய்க</translation>
+<translation id="3303855915957856445">தேடல் முடிவுகள் எதுவுமில்லை</translation>
 <translation id="3305707030755673451"><ph name="TIME" /> அன்று உங்கள் தரவு உங்கள் ஒத்திசைவு கடவுச்சொற்றொடரைக் கொண்டு முறைமையாக்கப்பட்டது. ஒத்திசைவைத் தொடங்க, அதை உள்ளிடவும்.</translation>
 <translation id="333371639341676808">இந்த பக்கம் கூடுதல் உரையாடல்களை உருவாக்குவதைத் தடு.</translation>
 <translation id="3338095232262050444">பாதுகாப்பானது</translation>
@@ -324,6 +324,7 @@
 <translation id="4394049700291259645">முடக்கு</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> முதல் <ph name="END_DATE" /> வரை</translation>
 <translation id="4406896451731180161">தேடல் முடிவுகள்</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> உங்கள் உள்நுழைவுச் சான்றிதழை ஏற்கவில்லை அல்லது சான்றிதழ் வழங்கப்படாமல் இருக்கக்கூடும்.</translation>
 <translation id="443673843213245140">ப்ராக்ஸி பயன்பாடு முடக்கப்பட்டுள்ளது. ஆனால் வெளிப்படையான ப்ராக்ஸி உள்ளமைவு குறிப்பிடப்பட்டுள்ளது.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Google SafeSites இயக்கப்பட்டுள்ளதால் இந்தச் செய்தியைப் பார்க்கிறீர்கள்.</translation>
@@ -366,8 +367,8 @@
 <translation id="495170559598752135">செயல்கள்</translation>
 <translation id="4958444002117714549">பட்டியலை விரி</translation>
 <translation id="4962322354953122629"><ph name="DOMAIN" /> என இந்தச் சேவையகத்தால் நிரூபிக்க முடியவில்லை. இதன் பாதுகாப்புச் சான்றிதழை Chrome நம்பவில்லை. இது தவறான உள்ளமைவால் ஏற்பட்டிருக்கலாம் அல்லது உங்கள் இணைப்பில் தீங்கிழைப்பவர் குறுக்கிட்டிருக்கலாம். <ph name="BEGIN_LEARN_MORE_LINK" />மேலும் அறிக<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">அனைத்தையும் படித்துவிட்டீர்கள்</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" /> இலிருந்து <ph name="TARGET_LANGUAGE" /> க்கு மொழிபெயர்க்கவா?</translation>
+<translation id="4989809363548539747">இந்தச் செருகுநிரல் ஆதரிக்கப்படவில்லை</translation>
 <translation id="5002932099480077015">இயக்கப்பட்டால், விரைவாகப் படிவத்தை நிரப்ப உங்கள் கார்டின் நகலை இச்சாதனத்தில் Chrome சேமித்து வைக்கும்.</translation>
 <translation id="5019198164206649151">தவறான நிலையில் மீட்பு சேமிப்பு உள்ளது</translation>
 <translation id="5023310440958281426">உங்கள் நிர்வாகியின் கொள்கைகளைச் சரிபார்க்கவும்</translation>
@@ -520,8 +521,10 @@
 <translation id="6970216967273061347">மாவட்டம்</translation>
 <translation id="6973656660372572881">நிலையான ப்ராக்ஸி சேவையகங்களும் .pac ஸ்கிரிப்ட் URL ஆகிய இரண்டும் குறிப்பிடப்பட்டுள்ளது.</translation>
 <translation id="6989763994942163495">மேம்பட்ட அமைப்புகளைக் காண்பி...</translation>
+<translation id="7000990526846637657">வரலாறு உள்ளீடுகள் எதுவுமில்லை</translation>
 <translation id="7009986207543992532"><ph name="DOMAIN" />க்குச் செல்ல முயன்றீர்கள், ஆனால் நீண்ட செல்லுபடிக் காலத்தைக் கொண்ட சான்றிதழை சேவையகம் வழங்கியுள்ளது, இதுபோன்ற சான்றிதழ்கள் நம்பத்தக்கவையல்ல. <ph name="BEGIN_LEARN_MORE_LINK" />மேலும் அறிக<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">சீனா UnionPay</translation>
+<translation id="7012372675181957985">உங்கள் Google கணக்கு <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> என்ற தளத்தில் உலாவல் வரலாறு தொடர்பான பிற தகவல்களைக் கொண்டிருக்கக்கூடும்</translation>
 <translation id="7029809446516969842">கடவுச்சொற்கள்</translation>
 <translation id="7087282848513945231">மாகாணம்</translation>
 <translation id="7088615885725309056">பழையவை</translation>
@@ -604,6 +607,7 @@
 <translation id="780301667611848630">தேவையில்லை</translation>
 <translation id="7805768142964895445">நிலை</translation>
 <translation id="7813600968533626083">Chrome இலிருந்து படிவப் பரிந்துரையை அகற்றவா?</translation>
+<translation id="7815407501681723534">'<ph name="SEARCH_STRING" />'க்கு <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> உள்ளன</translation>
 <translation id="785549533363645510">இருப்பினும், நீங்கள் மறைந்திருக்கமாட்டீர்கள். மறைநிலைக்குச் செல்வது பணிக்கமர்த்தும் நிறுவனம், இணையச் சேவை வழங்குநர் அல்லது நீங்கள் செல்லும் இணையதளங்களிடம் உங்கள் உலாவலை மறைக்காது.</translation>
 <translation id="7887683347370398519">CVCஐச் சோதித்து, மீண்டும் முயற்சிக்கவும்</translation>
 <translation id="7894616681410591072">அச்சசோ! இந்தப் பக்கத்தை அணுக, <ph name="NAME" /> இடம் அனுமதி கேட்க வேண்டும்.</translation>

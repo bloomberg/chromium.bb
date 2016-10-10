@@ -553,6 +553,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="6307969636681130414">Premuto</translation>
 <translation id="6324551002951139333">Errore grammaticale rilevato</translation>
 <translation id="6348657800373377022">Casella combinata</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{punto elenco}other{# punti elenco}}</translation>
 <translation id="6355910664415701303">Nessuna voce elenco precedente.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Intestazione precedente</translation>
@@ -581,6 +582,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="6659594942844771486">TAB</translation>
 <translation id="667999046851023355">Documento</translation>
 <translation id="6697092096875747123">Casella combinata precedente</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{punto esclamativo}other{# punti esclamativi}}</translation>
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="6714813999819678458">Intestazione livello 2 precedente</translation>
 <translation id="6716505898850596801">Tasti di modifica</translation>

@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Address and search bar</translation>
 <translation id="2826760142808435982">The connection is encrypted and authenticated using <ph name="CIPHER" /> and uses <ph name="KX" /> as the key exchange mechanism.</translation>
 <translation id="2835170189407361413">Clear form</translation>
-<translation id="2837049386027881519">The connection had to be retried using an older version of the TLS or SSL protocol. This typically means that the server is using very old software and may have other security issues.</translation>
 <translation id="284702764277384724">The server certificate at <ph name="HOST_NAME" /> appears to be a forgery.</translation>
 <translation id="2889159643044928134">Don't reload</translation>
 <translation id="2900469785430194048">Google Chrome ran out of memory while trying to display this web page.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Bookmark this page</translation>
 <translation id="3270847123878663523">&amp;Undo Reorder</translation>
 <translation id="3286538390144397061">Restart Now</translation>
+<translation id="3303855915957856445">No search results found</translation>
 <translation id="3305707030755673451">Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter it to start sync.</translation>
 <translation id="333371639341676808">Prevent this page from creating additional dialogues.</translation>
 <translation id="3338095232262050444">Secure</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">Disable</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> to <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">search results</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> didn’t accept your login certificate, or one may not have been provided.</translation>
 <translation id="443673843213245140">Use of a proxy is disabled but an explicit proxy configuration is specified.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">You're seeing this message because Google SafeSites is enabled.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">Actions</translation>
 <translation id="4958444002117714549">Expand list</translation>
 <translation id="4962322354953122629">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chrome. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">All Read</translation>
 <translation id="498957508165411911">Translate from <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="4989809363548539747">This plug-in is not supported</translation>
 <translation id="5002932099480077015">If enabled, Chrome will store a copy of your card on this device for faster form filling.</translation>
 <translation id="5019198164206649151">Backing store in bad state</translation>
 <translation id="5023310440958281426">Check your administrator's policies</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Both fixed proxy servers and a .pac script URL are specified.</translation>
 <translation id="6989763994942163495">+ Show advanced settings</translation>
+<translation id="7000990526846637657">No history entries found</translation>
 <translation id="7009986207543992532">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate whose validity period is too long to be trustworthy. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7088615885725309056">Older</translation>
@@ -608,6 +611,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="780301667611848630">No, thank you</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Remove form suggestion from Chrome?</translation>
+<translation id="7815407501681723534">Found <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for '<ph name="SEARCH_STRING" />'</translation>
 <translation id="785549533363645510">However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites that you visit.</translation>
 <translation id="7887683347370398519">Check your CVC and try again</translation>
 <translation id="7894616681410591072">Oops! You need permission from <ph name="NAME" /> to access this page.</translation>

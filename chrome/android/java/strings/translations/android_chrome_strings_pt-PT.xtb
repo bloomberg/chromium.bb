@@ -105,6 +105,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> fechado</translation>
 <translation id="2138201775715568214">A procurar páginas da Web física próximas</translation>
 <translation id="2139186145475833000">Adicionar ao ecrã principal</translation>
+<translation id="2146738493024040262">Abrir aplicação instantânea</translation>
 <translation id="2148716181193084225">Hoje</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="219985413780390209">Proteja-se e ao seu dispositivo contra sites perigosos</translation>
@@ -184,8 +185,8 @@ Pode controlar a Web física nas Definições do Chrome.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Abrir no separador anónimo</translation>
 <translation id="3090193911106258841">A aceder à entrada de áudio e de vídeo</translation>
-<translation id="3117051980354074377">Para obter os marcadores dos seus outros dispositivos, inicie sessão no Chrome.</translation>
 <translation id="3137521801621304719">Sair do modo de navegação anónima</translation>
+<translation id="3148434565183091099">Para obter os seus marcadores em todos os dispositivos, inicie sessão no Chrome.</translation>
 <translation id="3149891296864842641">Opção de envio</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3190152372525844641">Ative as autorizações para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
@@ -220,6 +221,7 @@ Pode controlar a Web física nas Definições do Chrome.
 <translation id="3518985090088779359">Aceitar e continuar</translation>
 <translation id="3522247891732774234">Atualização disponível. Mais opções</translation>
 <translation id="3527085408025491307">Pasta</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> KB disponível(eis)</translation>
 <translation id="3549644494707163724">Encriptar todos os dados sincronizados com a sua própria frase de acesso de sincronização</translation>
 <translation id="3590487821116122040">Armazenamento do site que o Chrome não considera importante (por exemplo, sites sem definições guardadas ou aos quais não acede com frequência)</translation>
 <translation id="360480449234699036">Saiba mais acerca dos tópicos nos Websites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o respetivo contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
@@ -297,7 +299,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4532845899244822526">Escolher pasta</translation>
 <translation id="4543661749405994812">Copiar endereço de email</translation>
 <translation id="4572422548854449519">Iniciar sessão na conta gerida</translation>
-<translation id="4576023202210315647">Manter o separador no Chrome</translation>
 <translation id="4581964774250883625">Entrou no modo de navegação anónima.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Há # minuto}other{Há # minutos}}</translation>
 <translation id="4605958867780575332">Item removido: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7208788139759694678">Poupança de dados desativada</translation>
 <translation id="7243308994586599757">Opções disponíveis junto à parte inferior do ecrã</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utiliza a sua localização para mostrar resultados da pesquisa locais</translation>
-<translation id="7327835590071894791">O separador está agora em segundo plano.</translation>
 <translation id="7347770551817603360">Conteúdo offline</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partilhar 1 item selecionado}other{Partilhar # itens selecionados}}</translation>
 <translation id="7366340029385295517">A transmitir para <ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 A sua Conta Google pode ter outras formas do histórico de navegação, como pesquisas e atividade de outros serviços Google, em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizado há <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Aguarde…</translation>
-<translation id="7501135638693251872">Todos os marcadores</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">A limpar dados de navegação</translation>
 <translation id="756809126120519699">Dados do Chrome limpos</translation>
@@ -639,12 +638,14 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8518901949365209398">Este site utiliza uma configuração de segurança fraca (assinaturas SHA-1), pelo que a sua ligação pode não ser privada.</translation>
 <translation id="8523928698583292556">Eliminar palavra-passe armazenada</translation>
 <translation id="8525306231823319788">Ecrã inteiro</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> MB utilizado(s)</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8562452229998620586">As palavras-passe guardadas aparecem aqui.</translation>
 <translation id="856481929701340285">Pedir site p/ computador</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8583805026567836021">A limpar os dados da conta</translation>
 <translation id="8617240290563765734">Pretende abrir o URL sugerido que é especificado no conteúdo transferido?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> KB utilizado(s)</translation>
 <translation id="862875433388403934">É possível que os conteúdos (filmes, música, etc.) transferidos noutras aplicações deixem de ser reproduzíveis enquanto essas aplicações não voltarem a obter licenças com base numa nova credencial de dispositivo.
 
 Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transferido.</translation>

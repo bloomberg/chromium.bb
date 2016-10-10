@@ -552,6 +552,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="6307969636681130414">Imebonyezwa</translation>
 <translation id="6324551002951139333">Kosa la sarufi limegunduliwa</translation>
 <translation id="6348657800373377022">Kikasha cha Combo</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{kitone}other{vitone #}}</translation>
 <translation id="6355910664415701303">Hakuna kipengee cha orodha kilichotangulia.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Kichwa kilichotangulia</translation>
@@ -580,6 +581,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="6659594942844771486">Kichupo</translation>
 <translation id="667999046851023355">Hati</translation>
 <translation id="6697092096875747123">Kikasha mseto kilichotangulia</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{alama ya mshangao}other{alama # za mshangao}}</translation>
 <translation id="6710213216561001401">Iliyotangulia</translation>
 <translation id="6714813999819678458">Kichwa cha ngazi ya 2 kilichotangulia</translation>
 <translation id="6716505898850596801">Vitufe vya kurekebisha</translation>

@@ -105,6 +105,7 @@
 <translation id="213279576345780926">Zaprt zavihek: <ph name="TAB_TITLE" /></translation>
 <translation id="2138201775715568214">Iskanje strani za Fizični splet v bližini</translation>
 <translation id="2139186145475833000">Dodajanje na začetni zaslon</translation>
+<translation id="2146738493024040262">Odpri aplikacijo brez nameščanja</translation>
 <translation id="2148716181193084225">Danes</translation>
 <translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="219985413780390209">Zaščitite sebe in napravo pred nevarnimi spletnimi mesti</translation>
@@ -184,8 +185,8 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Odpri v zavihku brez beleženja zgodovine</translation>
 <translation id="3090193911106258841">Dostopanje do zvočnih vhodov in videovhodov</translation>
-<translation id="3117051980354074377">Če želite dostopati do zaznamkov v drugih napravah, se prijavite v Chrome.</translation>
 <translation id="3137521801621304719">Izklop načina brez beleženja zgodovine</translation>
+<translation id="3148434565183091099">Če želite dostopati do zaznamkov v vseh napravah, se prijavite v Chrome.</translation>
 <translation id="3149891296864842641">Možnost pošiljanja</translation>
 <translation id="3177909033752230686">Jezik strani:</translation>
 <translation id="3190152372525844641">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenja za Chrome.</translation>
@@ -220,6 +221,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="3518985090088779359">Sprejmi in nadaljuj</translation>
 <translation id="3522247891732774234">Posodobitev je na voljo. Več možnosti.</translation>
 <translation id="3527085408025491307">Mapa</translation>
+<translation id="3542235761944717775">Na voljo: <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549644494707163724">Šifrirajte vse sinhronizirane podatke s svojim geslom</translation>
 <translation id="3590487821116122040">Shranjeni podatki spletnega mesta, ki se Chromu ne zdijo pomembni (npr. spletna mesta, za katera nimate shranjenih nastavitev ali ki jih ne obiskujete pogosto).</translation>
 <translation id="360480449234699036">Več informacij o temah na spletnih mestih, ne da bi zapustili stran. Možnost »Dotaknite se za iskanje« pošlje besedo in njeno sobesedilo Iskanju Google in vrne definicije, slike, rezultate iskanja in druge podrobnosti.
@@ -297,7 +299,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="4532845899244822526">Izbira mape</translation>
 <translation id="4543661749405994812">Kopiraj e-poštni naslov</translation>
 <translation id="4572422548854449519">Prijava v upravljani račun</translation>
-<translation id="4576023202210315647">Ohrani zavihek v Chromu</translation>
 <translation id="4581964774250883625">Zdaj se vaše brskanje ne shranjuje v zgodovino.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Pred # minuto}one{Pred # minuto}two{Pred # minutama}few{Pred # minutami}other{Pred # minutami}}</translation>
 <translation id="4605958867780575332">Odstranjen element: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7208788139759694678">Varčevanje s podatki je onemogočeno</translation>
 <translation id="7243308994586599757">Možnosti so na voljo pri dnu zaslona</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uporablja vašo lokacijo za prikaz lokalnih rezultatov iskanja</translation>
-<translation id="7327835590071894791">Zavihek je zdaj v ozadju.</translation>
 <translation id="7347770551817603360">Vsebina brez povezave</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Delitev 1 izbranega elementa z drugimi}one{Delitev # izbranega elementa z drugimi}two{Delitev # izbranih elementov z drugimi}few{Delitev # izbranih elementov z drugimi}other{Delitev # izbranih elementov z drugimi}}</translation>
 <translation id="7366340029385295517">Predvajanje na zaslonu <ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in dejavnosti iz drugih Googlovih storitev, na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Posodobljeno: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Počakajte …</translation>
-<translation id="7501135638693251872">Vsi zaznamki</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Brisanje podatkov brskanja</translation>
 <translation id="756809126120519699">Chromovi podatki so izbrisani.</translation>
@@ -639,12 +638,14 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="8518901949365209398">To spletno mesto uporablja šibko varnostno konfiguracijo (podpise SHA-1), zato vaša povezava morda ni zasebna.</translation>
 <translation id="8523928698583292556">Izbris shranjenega gesla</translation>
 <translation id="8525306231823319788">Celozaslonsko</translation>
+<translation id="85415543246899402">Uporabljeno: <ph name="MEGABYTES" /> MB</translation>
 <translation id="854522910157234410">Odpri to stran</translation>
 <translation id="8562452229998620586">Shranjena gesla bodo prikazana tukaj.</translation>
 <translation id="856481929701340285">Zah. za namiz. sp. mesto</translation>
 <translation id="857943718398505171">Dovoljeno (priporočeno)</translation>
 <translation id="8583805026567836021">Brisanje podatkov računa</translation>
 <translation id="8617240290563765734">Želite odpreti predlagani URL, naveden v preneseni vsebini?</translation>
+<translation id="8618653050765576793">Uporabljeno: <ph name="KILOBYTES" /> KB</translation>
 <translation id="862875433388403934">Prenesene vsebine (filmov, glasbe ipd.) morda ne bo mogoče več predvajati v drugih aplikacijah, dokler te znova ne pridobijo licenc na podlagi nove poverilnice naprave.
 
 Nove licence dobite tako, da se povežete v internet in predvajate preneseno vsebino.</translation>

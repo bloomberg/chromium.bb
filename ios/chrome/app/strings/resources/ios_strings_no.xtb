@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
-<translation id="1047726139967079566">Legg til bokmerke for denne siden</translation>
+<translation id="1047726139967079566">Legg til bokmerke for denne siden...</translation>
 <translation id="1172898394251786223">Neste felt</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
 <translation id="2467815441875554965">Kontekstbasert søk</translation>
@@ -34,5 +34,6 @@
 <translation id="7456847797759667638">Åpne sted</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7484580869648358686">Advarsel: Det er noe som ikke stemmer!</translation>
+<translation id="7588950540487816470">Fysisk nett</translation>
 <translation id="7961015016161918242">Aldri</translation>
 </translationbundle>

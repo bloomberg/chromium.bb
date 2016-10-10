@@ -219,13 +219,11 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7164397146364144019">Automatickým hlášením podrobností o možných bezpečnostních incidentech do Googlu můžete pomoci zrychlit prohlížeč Chrome a usnadnit jeho používání.</translation>
 <translation id="7177347454226092725">Tímto z tohoto zařízení trvale smažete své údaje o prohlížení. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.</translation>
 <translation id="7185038942300673794">Do prohlížeče Chrome bylo přidáno rozšíření <ph name="EXTENSION_NAME" />.</translation>
-<translation id="7191567847629796517">Chrome OS nepodporuje spouštění externích aplikací pro práci s odkazy typu <ph name="SCHEME" />. Požadovaný odkaz je <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">Google Chrome se zobrazuje v tomto jazyce.</translation>
 <translation id="7196020411877309443">Proč je zobrazeno toto dialogové okno?</translation>
 <translation id="7242029209006116544">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem Google Chrome. Vaše údaje prohlížeče Chrome, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME" />. Tyto údaje budete moci smazat pomocí Hlavního panelu v Účtech Google, ale nebudete je moci přidružit k jinému účtu. Pokud chcete uchovat existující údaje Chrome odděleně, můžete vytvořit nový profil. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Google Chrome se v tomto počítači již brzy přestane aktualizovat, protože systémy Windows XP a Windows Vista již nejsou podporovány.</translation>
 <translation id="7339898014177206373">Nové okno</translation>
-<translation id="7393806081343982361">Vaším výchozím prohlížečem je Google Chrome. Paráda!</translation>
 <translation id="7398801000654795464">K prohlížeči Chrome jste byli přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />. Přihlaste se prosím znovu pomocí stejného účtu.</translation>
 <translation id="7400722733683201933">O aplikaci Google Chrome</translation>
 <translation id="7408085963519505752">Smluvní podmínky systému Chrome OS</translation>
@@ -260,7 +258,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="8129812357326543296">O aplikaci &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome vaše osobní údaje bezpečně uloží, abyste je nemuseli zadávat znovu.</translation>
 <translation id="8211929904040702368">Touto akcí z tohoto zařízení trvale smažete minimálně následující počet položek: <ph name="TOTAL_COUNT" />. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.</translation>
-<translation id="8227755444512189073">Aplikace Chrome potřebuje spustit externí aplikaci pro práci s odkazy <ph name="SCHEME" />. Požadovaný odkaz je <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome používá vaši kameru a mikrofon.</translation>
 <translation id="8286862437124483331">Aplikace Google Chrome se pokouší zobrazit hesla. Tato akce vyžaduje zadání hesla systému Windows.</translation>
 <translation id="8290100596633877290">Ouha! Prohlížeč Google Chrome spadl. Restartovat?</translation>

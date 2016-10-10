@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">地址和搜索栏</translation>
 <translation id="2826760142808435982">该连接使用 <ph name="CIPHER" /> 进行加密和身份验证，并使用 <ph name="KX" /> 作为密钥交换机制。</translation>
 <translation id="2835170189407361413">清除表单</translation>
-<translation id="2837049386027881519">此连接必须使用较旧版本的 TLS 或 SSL 协议重试，这通常意味着该服务器使用的软件版本过低或者可能存在其他安全问题。</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> 上的服务器证书似乎是伪造的。</translation>
 <translation id="2889159643044928134">不重新加载</translation>
 <translation id="2900469785430194048">Google Chrome 在尝试显示此网页时内存不足。</translation>
@@ -214,6 +213,7 @@
 <translation id="3254409185687681395">为此页添加书签</translation>
 <translation id="3270847123878663523">撤消顺序调整(&amp;U)</translation>
 <translation id="3286538390144397061">立即重新启动</translation>
+<translation id="3303855915957856445">未找到任何搜索结果</translation>
 <translation id="3305707030755673451">您的数据已于 <ph name="TIME" />使用您的同步密码加密。输入该密码即可开始同步。</translation>
 <translation id="333371639341676808">禁止此页再显示对话框。</translation>
 <translation id="3338095232262050444">安全</translation>
@@ -324,6 +324,7 @@
 <translation id="4394049700291259645">停用</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" />至 <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">搜索结果</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> 不接受您的登录证书，或者您可能没有提供登录证书。</translation>
 <translation id="443673843213245140">已停用代理，但是指定了明确的代理配置。</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">您之所以看到这条消息，是因为 Google SafeSites 处于启用状态。</translation>
@@ -366,8 +367,8 @@
 <translation id="495170559598752135">操作</translation>
 <translation id="4958444002117714549">展开列表</translation>
 <translation id="4962322354953122629">此服务器无法证明其所在网域是 <ph name="DOMAIN" />；Chrome 不信任服务器的安全证书。出现此问题的原因可能是配置有误，或是有攻击者拦截您的连接。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
-<translation id="4986920000862467124">全部已读</translation>
 <translation id="498957508165411911">是否将<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="TARGET_LANGUAGE" />？</translation>
+<translation id="4989809363548539747">该插件不受支持</translation>
 <translation id="5002932099480077015">如果您选中此项，Chrome 会将您的卡的副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="5019198164206649151">后备存储状态不佳</translation>
 <translation id="5023310440958281426">请查看管理员制定的政策</translation>
@@ -520,8 +521,10 @@
 <translation id="6970216967273061347">区</translation>
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
 <translation id="6989763994942163495">显示高级设置...</translation>
+<translation id="7000990526846637657">未找到任何记录条目</translation>
 <translation id="7009986207543992532">您尝试连接到 <ph name="DOMAIN" />，但服务器提供的证书有效期过长，因此难以信任。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="7012363358306927923">中国银联</translation>
+<translation id="7012372675181957985">您的 Google 帐户在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7087282848513945231">县/郡</translation>
 <translation id="7088615885725309056">往前</translation>
@@ -604,6 +607,7 @@
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7805768142964895445">状态</translation>
 <translation id="7813600968533626083">从 Chrome 中移除表单建议？</translation>
+<translation id="7815407501681723534">找到了 <ph name="NUMBER_OF_RESULTS" /> 个与“<ph name="SEARCH_STRING" />”相符的<ph name="SEARCH_RESULTS" /></translation>
 <translation id="785549533363645510">但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="7887683347370398519">请检查您的银行卡验证码 (CVC)，然后重试</translation>
 <translation id="7894616681410591072">糟糕！您必须先征得<ph name="NAME" />的同意，然后才能访问此网页。</translation>

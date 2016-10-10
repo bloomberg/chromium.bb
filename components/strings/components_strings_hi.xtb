@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">पता और खोज बार</translation>
 <translation id="2826760142808435982">कनेक्शन को <ph name="CIPHER" /> का उपयोग करके एन्क्रिप्ट और प्रमाणित किया गया है और यह कुंजी विनिमय तकनीक के रूप में <ph name="KX" /> का उपयोग करता है.</translation>
 <translation id="2835170189407361413">फ़ॉर्म साफ़ करें</translation>
-<translation id="2837049386027881519">TLS या SSL प्रोटोकॉल के किसी पुराने वर्शन का उपयोग करके कनेक्शन का फिर से प्रयास किया जाना चाहिए था. आमतौर पर इसका अर्थ है कि सर्वर बहुत पुराने सॉफ़्टवेयर का उपयोग कर रहा है और उसमें अन्य सुरक्षा समस्याएं हो सकती हैं.</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> पर सर्वर प्रमाणपत्र फर्जी दिखाई देता है.</translation>
 <translation id="2889159643044928134">पुन: लोड ना करें</translation>
 <translation id="2900469785430194048">यह वेबपृष्ठ दिखाते समय Google Chrome में जगह नहीं बची.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">इस पृष्ठ को बुकमार्क करें</translation>
 <translation id="3270847123878663523">&amp;पुन: क्रमित करना वापस लाएं</translation>
 <translation id="3286538390144397061">अभी फिर से प्रारंभ करें</translation>
+<translation id="3303855915957856445">कोई खोज परिणाम नहीं मिला</translation>
 <translation id="3305707030755673451">आपका डेटा आपके समन्वयन पासफ़्रेज़ के साथ <ph name="TIME" /> को एन्क्रिप्ट किया गया था. समन्वयन शुरू करने के लिए इसे डालें.</translation>
 <translation id="333371639341676808">इस पृष्ठ को अतिरिक्त ब्लॉग बनाने से रोकें.</translation>
 <translation id="3338095232262050444">सुरक्षित</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">अक्षम करें</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> से <ph name="END_DATE" /> तक</translation>
 <translation id="4406896451731180161">खोज परिणाम</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> ने आपका लॉगिन प्रमाणपत्र स्वीकार नहीं किया है या हो सकता है कि प्रमाणपत्र उपलब्ध नहीं कराया गया हो.</translation>
 <translation id="443673843213245140">प्रॉक्‍सी का उपयोग अक्षम है लेकिन कोई स्‍पष्ट प्रॉक्‍सी कॉन्फ़िगरेशन निर्दिष्ट किया गया है.</translation>
 <translation id="4458874409874303848">सुरक्षित साइट</translation>
 <translation id="4461847750548395463">आपको यह संदेश इसलिए दिखाई दे रहा है क्योंकि Google सुरक्षित साइट सक्षम है.</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">क्रियाएं</translation>
 <translation id="4958444002117714549">सूची विस्तृत करें</translation>
 <translation id="4962322354953122629">यह सर्वर प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र Chrome द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी हमलावर द्वारा आपके कनेक्शन में बाधा डालने के कारण हो सकता है. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="4986920000862467124">सभी पढ़ी गई</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" /> से <ph name="TARGET_LANGUAGE" /> में अनुवाद करें?</translation>
+<translation id="4989809363548539747">यह प्लग इन समर्थित नहीं है</translation>
 <translation id="5002932099480077015">यदि सक्षम किया हुआ हो, तो Chrome फ़ॉर्म को तेज़ी से भरने के लिए इस डिवाइस पर आपके कार्ड की एक प्रति संग्रहीत करेगा.</translation>
 <translation id="5019198164206649151">बैकिंग संग्रह खराब स्थिति में है</translation>
 <translation id="5023310440958281426">अपने व्यवस्थापक की नीतियां देखें</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">जिला</translation>
 <translation id="6973656660372572881">फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और .pac स्‍क्रिप्‍ट URL दोनों ही निर्दिष्ट हैं.</translation>
 <translation id="6989763994942163495">अतिरिक्त सेटिंग दिखाएं...</translation>
+<translation id="7000990526846637657">कोई इतिहास प्रविष्टि नहीं मिली</translation>
 <translation id="7009986207543992532">आपने <ph name="DOMAIN" /> पर पहुंचने का प्रयास किया, लेकिन सर्वर ने ऐसा प्रमाणपत्र प्रस्तुत किया जिसकी सत्यापन अवधि इतनी लंबी है कि वह विश्वसनीय नहीं लगती है. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">आपके Google खाते में <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> पर ब्राउज़िंग इतिहास के अन्य रूप उपलब्ध हो सकते हैं</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7087282848513945231">काउंटी</translation>
 <translation id="7088615885725309056">इससे पुराने</translation>
@@ -606,6 +609,7 @@
 <translation id="780301667611848630">जी नहीं, रहने दें </translation>
 <translation id="7805768142964895445">स्थिति</translation>
 <translation id="7813600968533626083">Chrome से फ़ॉर्म सुझाव को निकालें?</translation>
+<translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' के लिए <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> मिले</translation>
 <translation id="785549533363645510">हालांकि, आप अदृश्य नहीं हैं. गुप्त मोड में रहने से आपकी ब्राउज़िंग आपके नियोक्ता, आपके इंटरनेट सेवा प्रदाता या आपके द्वारा देखी जाने वाली वेबसाइट से छिपती नहीं है.</translation>
 <translation id="7887683347370398519">अपना CVC जांचें और पुन: प्रयास करें</translation>
 <translation id="7894616681410591072">ओह! आपको यह पृष्ठ एक्सेस करने के लिए <ph name="NAME" /> से अनुमति लेनी होगी.</translation>

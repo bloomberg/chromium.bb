@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">ที่อยู่และแถบค้นหา</translation>
 <translation id="2826760142808435982">การเชื่อมต่อถูกเข้ารหัสและรับรองความถูกต้องโดยใช้ <ph name="CIPHER" /> และใช้ <ph name="KX" /> เป็นกลไกการแลกเปลี่ยนคีย์</translation>
 <translation id="2835170189407361413">ล้างฟอร์ม</translation>
-<translation id="2837049386027881519">การเชื่อมต่อจำเป็นต้องลองใหม่ด้วยการใช้โปรโตคอล TLS หรือ SSL รุ่นเก่ากว่านี้ ซึ่งโดยทั่วไปหมายความว่าเซิร์ฟเวอร์นี้กำลังใช้ซอฟต์แวร์รุ่นเก่ามากและอาจมีปัญหาด้านความปลอดภัยอื่นๆ</translation>
 <translation id="284702764277384724">ใบรับรองเซิร์ฟเวอร์ที่ <ph name="HOST_NAME" /> ดูเหมือนเป็นของปลอม</translation>
 <translation id="2889159643044928134">อย่าโหลดซ้ำ</translation>
 <translation id="2900469785430194048">Google Chrome หน่วยความจำเต็มเมื่อพยายามแสดงหน้าเว็บนี้</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">บุ๊กมาร์กหน้านี้</translation>
 <translation id="3270847123878663523">&amp;เลิกทำการจัดลำดับใหม่</translation>
 <translation id="3286538390144397061">รีสตาร์ทเดี๋ยวนี้</translation>
+<translation id="3303855915957856445">ไม่พบผลการค้นหา</translation>
 <translation id="3305707030755673451">ข้อมูลของคุณได้รับการเข้ารหัสด้วยรหัสผ่านการซิงค์เมื่อวันที่ <ph name="TIME" /> โปรดป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="333371639341676808">ป้องกันหน้านี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
 <translation id="3338095232262050444">ปลอดภัย</translation>
@@ -327,6 +327,7 @@
 <translation id="4394049700291259645">ปิดการใช้งาน</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> ถึง <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">ผลการค้นหา</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> ไม่ยอมรับใบรับรองการเข้าสู่ระบบหรือไม่ได้ให้ใบรับรองไว้</translation>
 <translation id="443673843213245140">การใช้พร็อกซีถูกปิดใช้งาน แต่มีการระบุการกำหนดค่าพร็อกซีอย่างชัดเจน</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">คุณเห็นข้อความนี้เนื่องจากมีการเปิดใช้ Google SafeSites</translation>
@@ -369,8 +370,8 @@
 <translation id="495170559598752135">การทำงาน</translation>
 <translation id="4958444002117714549">ขยายรายการ</translation>
 <translation id="4962322354953122629">เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะ Chrome ไม่เชื่อถือใบรับรองความปลอดภัยของเซิร์ฟเวอร์นี้ สาเหตุอาจเกิดจากการกำหนดค่าผิดหรือผู้โจมตีขัดขวางการเชื่อมต่อของคุณ <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="4986920000862467124">อ่านทั้งหมดแล้ว</translation>
 <translation id="498957508165411911">แปลจาก <ph name="ORIGINAL_LANGUAGE" /> เป็น <ph name="TARGET_LANGUAGE" /> หรือไม่</translation>
+<translation id="4989809363548539747">ไม่รองรับปลั๊กอินนี้</translation>
 <translation id="5002932099480077015">หากเปิดใช้ Chrome จะเก็บสำเนาการ์ดของคุณในอุปกรณ์นี้เพื่อให้การกรอกฟอร์มทำได้เร็วขึ้น</translation>
 <translation id="5019198164206649151">ไม่สามารถจัดเก็บเนื่องจากระบบแบ็คเอนด์อยู่ในสถานะไม่ดี</translation>
 <translation id="5023310440958281426">ตรวจสอบนโยบายของผู้ดูแลระบบของคุณ</translation>
@@ -524,8 +525,10 @@
 <translation id="6970216967273061347">เขต</translation>
 <translation id="6973656660372572881">มีการระบุทั้งพร็อกซีเซิร์ฟเวอร์แบบคงที่และ URL สคริปต์ .pac ไว้</translation>
 <translation id="6989763994942163495">แสดงการตั้งค่าขั้นสูง...</translation>
+<translation id="7000990526846637657">ไม่พบข้อมูลประวัติการเข้าชม</translation>
 <translation id="7009986207543992532">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่มีระยะเวลาการใช้งานได้นานเกินกว่าจะเชื่อถือได้ <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
 <translation id="7087282848513945231">อำเภอ</translation>
 <translation id="7088615885725309056">เก่ากว่า</translation>
@@ -608,6 +611,7 @@
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="7805768142964895445">สถานะ</translation>
 <translation id="7813600968533626083">นำคำแนะนำสำหรับแบบฟอร์มออกจาก Chrome ไหม</translation>
+<translation id="7815407501681723534">พบ<ph name="SEARCH_RESULTS" /> <ph name="NUMBER_OF_RESULTS" /> รายการสำหรับ "<ph name="SEARCH_STRING" />"</translation>
 <translation id="785549533363645510">อย่างไรก็ตาม ระบบยังมองเห็นคุณ การเข้าสู่โหมดไม่ระบุตัวตนไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้างของคุณ ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="7887683347370398519">ตรวจสอบ CVC และลองอีกครั้ง</translation>
 <translation id="7894616681410591072">อ๊ะ! คุณต้องได้รับอนุญาตจาก <ph name="NAME" /> เพื่อเข้าถึงหน้านี้</translation>

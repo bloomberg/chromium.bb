@@ -553,6 +553,7 @@
 <translation id="6307969636681130414">Pritisnjeno</translation>
 <translation id="6324551002951139333">Zaznana je bila slovnična napaka</translation>
 <translation id="6348657800373377022">Kombinirano polje</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{točka}one{# točka}two{# točki}few{# točke}other{# točk}}</translation>
 <translation id="6355910664415701303">Ni prejšnjega elementa seznama.</translation>
 <translation id="6364795331201459219">n6</translation>
 <translation id="6368143427468974988">Prejšnji naslov</translation>
@@ -581,6 +582,7 @@
 <translation id="6659594942844771486">Tabulator</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6697092096875747123">Prejšnje kombinirano polje</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{klicaj}one{# klicaj}two{# klicaja}few{# klicaji}other{# klicajev}}</translation>
 <translation id="6710213216561001401">Nazaj</translation>
 <translation id="6714813999819678458">Prejšnji naslov na ravni 2</translation>
 <translation id="6716505898850596801">Modifikacijske tipke</translation>

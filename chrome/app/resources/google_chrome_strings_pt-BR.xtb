@@ -212,13 +212,11 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="7164397146364144019">Você pode ajudar a tornar o Google Chrome mais seguro e mais fácil de usar, informando automaticamente ao Google detalhes sobre possíveis incidentes de segurança.</translation>
 <translation id="7177347454226092725">Essa ação excluirá permanentemente seus dados de navegação deste dispositivo. Para recuperar os dados mais tarde, faça login no Chrome como $2.</translation>
 <translation id="7185038942300673794">A extensão <ph name="EXTENSION_NAME" /> foi adicionada ao Google Chrome.</translation>
-<translation id="7191567847629796517">O Google Chrome OS não suporta a inicialização de um aplicativo externo para lidar com links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">O Google Chrome é exibido neste idioma.</translation>
 <translation id="7196020411877309443">Por que estou vendo este aviso?</translation>
 <translation id="7242029209006116544">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. Você tem a opção de criar um novo perfil para manter seus dados existentes do Google Chrome separados. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Este computador em breve parará de receber atualizações do Google Chrome porque o Windows XP e Windows Vista não serão mais compatíveis.</translation>
 <translation id="7339898014177206373">Nova janela</translation>
-<translation id="7393806081343982361">O Google Chrome é o navegador padrão. Eba!</translation>
 <translation id="7398801000654795464">Você estava conectado ao Google Chrome como <ph name="USER_EMAIL_ADDRESS" />. Use a mesma conta para fazer login novamente.</translation>
 <translation id="7400722733683201933">Sobre o Google Chrome</translation>
 <translation id="7408085963519505752">Termos do Chrome OS</translation>
@@ -253,7 +251,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="8129812357326543296">Sobre o Google Chrome</translation>
 <translation id="8183957050892517584">O Chrome armazenará seus dados pessoais com segurança para que não seja necessário digitá-los novamente.</translation>
 <translation id="8211929904040702368">Essa ação excluirá permanentemente pelo menos <ph name="TOTAL_COUNT" /> itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como $2.</translation>
-<translation id="8227755444512189073">O Google Chrome precisa iniciar um aplicativo externo para lidar com  os links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">O Google Chrome está usando sua câmera e seu microfone.</translation>
 <translation id="8286862437124483331">O Google Chrome está tentando mostrar senhas. Digite sua senha do Windows para permitir isso.</translation>
 <translation id="8290100596633877290">Nossa! Houve uma falha no Google Chrome. Reiniciar agora?</translation>

@@ -28,7 +28,7 @@
 <translation id="1653828314016431939">OK - jetzt neu starten</translation>
 <translation id="1682634494516646069">Google Chrome kann im folgenden Datenverzeichnis weder lesen noch schreiben: <ph name="USER_DATA_DIRECTORY" />.</translation>
 <translation id="1698376642261615901">Google Chrome ist ein Webbrowser, der Webseiten und Apps in Sekundenschnelle lädt und dabei äußerst stabil und nutzerfreundlich ist. Dank des integrierten Malware- und Phishing-Schutzes können Sie bedenkenlos im Internet surfen.</translation>
-<translation id="1718131156967340976">Wählen Sie <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
+<translation id="1718131156967340976">Wählen Sie <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> aus</translation>
 <translation id="174539241580958092">Google Chrome konnte Ihre Daten aufgrund eines Fehlers bei der Anmeldung nicht synchronisieren.</translation>
 <translation id="1759301979429102118">Mithilfe von Angaben aus Ihren Kontakten können Sie Formulare in Chrome schneller ausfüllen.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -211,13 +211,11 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7164397146364144019">Helfen Sie mit, Chrome sicherer und nutzerfreundlicher zu machen, indem Sie Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden.</translation>
 <translation id="7177347454226092725">Dadurch werden Ihre Browserdaten dauerhaft von diesem Gerät gelöscht. Wenn Sie Ihre Daten später abrufen möchten, melden Sie sich als $2 in Chrome an.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> wurde zu Chrome hinzugefügt.</translation>
-<translation id="7191567847629796517">Google Chrome OS unterstützt keine externe Anwendung zur Verarbeitung von <ph name="SCHEME" />-Links. Der angeforderte Link ist <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">Google Chrome wird in dieser Sprache angezeigt.</translation>
 <translation id="7196020411877309443">Warum wird diese Meldung angezeigt?</translation>
 <translation id="7242029209006116544">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Google Chrome-Profil. Ihre Chrome-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. Wenn Sie Ihre bestehenden Chrome-Daten getrennt verwenden möchten, können Sie ein neues Profil erstellen. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Dieser Computer erhält demnächst keine Google Chrome-Updates mehr, da Windows XP und Windows Vista nicht mehr unterstützt werden.</translation>
 <translation id="7339898014177206373">Neues Fenster</translation>
-<translation id="7393806081343982361">Google Chrome ist Ihr Standardbrowser. Super!</translation>
 <translation id="7398801000654795464">Sie waren in Chrome als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Melden Sie sich bitte wieder mit demselben Konto an.</translation>
 <translation id="7400722733683201933">Über Google Chrome</translation>
 <translation id="7408085963519505752">Chrome OS-Nutzungsbedingungen</translation>
@@ -252,7 +250,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="8129812357326543296">Über &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Ihre personenbezogenen Daten werden von Chrome sicher gespeichert. Dadurch brauchen Sie sie nicht noch einmal einzugeben.</translation>
 <translation id="8211929904040702368">Dadurch werden mindestens <ph name="TOTAL_COUNT" /> Elemente dauerhaft von diesem Gerät gelöscht. Wenn Sie Ihre Daten später abrufen möchten, melden Sie sich als $2 in Chrome an.</translation>
-<translation id="8227755444512189073">Google Chrome muss zum Verarbeiten von <ph name="SCHEME" />-Links eine externe App starten. Der angeforderte Link lautet <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome verwendet Ihre Kamera und Ihr Mikrofon.</translation>
 <translation id="8286862437124483331">Google Chrome möchte Passwörter anzeigen. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="8290100596633877290">Google Chrome ist abgestürzt. Jetzt neu starten?</translation>

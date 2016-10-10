@@ -172,7 +172,6 @@
 <translation id="2824775600643448204">Adress- und Suchleiste</translation>
 <translation id="2826760142808435982">Die Verbindung ist mit <ph name="CIPHER" /> verschlüsselt und authentifiziert und verwendet <ph name="KX" /> als Mechanismus für den Schlüsselaustausch.</translation>
 <translation id="2835170189407361413">Formular leeren</translation>
-<translation id="2837049386027881519">Das Herstellen der Verbindung musste mit einer älteren Version des TLS- oder SSL-Protokolls wiederholt werden. Normalerweise bedeutet dies, dass der Server sehr alte Software verwendet und möglicherweise andere Sicherheitsprobleme bestehen.</translation>
 <translation id="284702764277384724">Das Serverzertifikat bei <ph name="HOST_NAME" /> ist anscheinend eine Fälschung.</translation>
 <translation id="2889159643044928134">Nicht neu laden</translation>
 <translation id="2900469785430194048">Beim Versuch, diese Webseite aufzurufen, hat Google Chrome das Arbeitsspeicherlimit erreicht.</translation>
@@ -216,6 +215,7 @@
 <translation id="3254409185687681395">Lesezeichen für diese Seite erstellen</translation>
 <translation id="3270847123878663523">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="3286538390144397061">Jetzt neu starten</translation>
+<translation id="3303855915957856445">Keine Suchergebnisse gefunden</translation>
 <translation id="3305707030755673451">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="333371639341676808">Diese Seite am Erstellen zusätzlicher Dialoge hindern</translation>
 <translation id="3338095232262050444">Sicher</translation>
@@ -326,6 +326,7 @@
 <translation id="4394049700291259645">Deaktivieren</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> bis <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">Suchergebnisse</translation>
+<translation id="4432688616882109544"><ph name="HOST_NAME" /> hat Ihr Anmeldezertifikat nicht akzeptiert oder es wurde keines bereitgestellt.</translation>
 <translation id="443673843213245140">Die Proxy-Nutzung ist deaktiviert, es ist jedoch eine explizite Proxy-Konfiguration festgelegt.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Diese Nachricht wird Ihnen angezeigt, weil Google SafeSites aktiviert ist.</translation>
@@ -368,8 +369,8 @@
 <translation id="495170559598752135">Aktionen</translation>
 <translation id="4958444002117714549">Liste einblenden</translation>
 <translation id="4962322354953122629">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird von Chrome nicht als vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="4986920000862467124">Alles gelesen</translation>
 <translation id="498957508165411911">Übersetzen (<ph name="ORIGINAL_LANGUAGE" /> &gt; <ph name="TARGET_LANGUAGE" />)?</translation>
+<translation id="4989809363548539747">Dieses Plug-in wird nicht unterstützt</translation>
 <translation id="5002932099480077015">Wenn diese Funktion aktiviert ist, speichert Chrome eine Kopie Ihrer Karte auf diesem Gerät, um ein Ausfüllen von Formularen zu beschleunigen.</translation>
 <translation id="5019198164206649151">Sicherungsspeicher ist fehlerhaft.</translation>
 <translation id="5023310440958281426">Informieren Sie sich über die von Ihrem Administrator festgelegten Richtlinien.</translation>
@@ -523,8 +524,10 @@
 <translation id="6970216967273061347">Bezirk</translation>
 <translation id="6973656660372572881">Sowohl feste Proxyserver als auch eine PAC-Skript-URL sind festgelegt.</translation>
 <translation id="6989763994942163495">Erweiterte Einstellungen anzeigen</translation>
+<translation id="7000990526846637657">Keine Verlaufseinträge gefunden</translation>
 <translation id="7009986207543992532">Sie haben versucht, <ph name="DOMAIN" /> aufzurufen. Der Server hat jedoch ein Zertifikat präsentiert, dessen Gültigkeitsdauer zu lang ist, um vertrauenswürdig zu sein.<ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7012372675181957985">Möglicherweise sind in Ihrem Google-Konto noch andere Formen des Browserverlaufs unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> vorhanden</translation>
 <translation id="7029809446516969842">Passwörter</translation>
 <translation id="7087282848513945231">Landkreis</translation>
 <translation id="7088615885725309056">Älter</translation>
@@ -607,6 +610,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Vorschlag für das Formular aus Chrome entfernen?</translation>
+<translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> für "<ph name="SEARCH_STRING" />" gefunden</translation>
 <translation id="785549533363645510">Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber, Ihrem Internetanbieter oder den von Ihnen besuchten Websites erfasst werden.</translation>
 <translation id="7887683347370398519">Prüfen Sie Ihren CVC und versuchen Sie es dann erneut.</translation>
 <translation id="7894616681410591072">Hoppla. Sie benötigen die Genehmigung von <ph name="NAME" />, um diese Seite zu öffnen.</translation>

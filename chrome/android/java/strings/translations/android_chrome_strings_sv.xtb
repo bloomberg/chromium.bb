@@ -105,6 +105,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> har stängts</translation>
 <translation id="2138201775715568214">Söker efter Physical Web-sidor i närheten</translation>
 <translation id="2139186145475833000">Lägg till på startskärmen</translation>
+<translation id="2146738493024040262">Öppna snabbappen</translation>
 <translation id="2148716181193084225">Idag</translation>
 <translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="219985413780390209">Skydda dig själv och enheten från farliga webbplatser</translation>
@@ -184,8 +185,8 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
 <translation id="3090193911106258841">Får åtkomst till ljud- och videoindata</translation>
-<translation id="3117051980354074377">Logga in i Chrome om du vill ha samma bokmärken tillgängliga på alla enheter.</translation>
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
+<translation id="3148434565183091099">Logga in i Chrome om du vill få tillgång till samma bokmärken på alla enheter.</translation>
 <translation id="3149891296864842641">Fraktalternativ</translation>
 <translation id="3177909033752230686">Sidans språk:</translation>
 <translation id="3190152372525844641">Aktivera behörigheter för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
@@ -220,6 +221,7 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="3518985090088779359">Godkänn och fortsätt</translation>
 <translation id="3522247891732774234">Det finns en tillgänglig uppdatering. Fler alternativ</translation>
 <translation id="3527085408025491307">Mapp</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> kB tillgängligt</translation>
 <translation id="3549644494707163724">Kryptera alla synkroniserade data med en egen lösenfras</translation>
 <translation id="3590487821116122040">Webbplatslagring som Chrome bedömer som oviktig (t.ex. webbplatser utan sparade inställningar eller som du inte besöker ofta)</translation>
 <translation id="360480449234699036">Läs om olika ämnen på webbplatser utan att lämna sidan. När du trycker på Sök skickas ett ord och dess sammanhang till Google Sök och definitioner, bilder, sökresultat och annan information visas.
@@ -297,7 +299,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4532845899244822526">Välj mapp</translation>
 <translation id="4543661749405994812">Kopiera e-postadress</translation>
 <translation id="4572422548854449519">Logga in på hanterat konto</translation>
-<translation id="4576023202210315647">Spara fliken i Chrome</translation>
 <translation id="4581964774250883625">Du surfar inkognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{för # minut sedan}other{för # minuter sedan}}</translation>
 <translation id="4605958867780575332">Borttaget objekt: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7208788139759694678">Databesparing har inaktiverats</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> använder din platsinformation för att visa lokala sökresultat</translation>
-<translation id="7327835590071894791">Fliken är nu i bakgrunden.</translation>
 <translation id="7347770551817603360">Offlineinnehåll</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Dela 1 markerat objekt}other{Dela # markerade objekt}}</translation>
 <translation id="7366340029385295517">Castar till <ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />, t.ex. sökningar och aktivitet på andra tjänster från Google.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (uppdaterades <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Vänta …</translation>
-<translation id="7501135638693251872">Alla bokmärken</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Tar bort webbinformation</translation>
 <translation id="756809126120519699">Data i Chrome har rensats</translation>
@@ -639,12 +638,14 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8518901949365209398">Den här webbplatsen använder en svag säkerhetskonfiguration (signaturer med SHA-1), så anslutningen kanske inte är privat.</translation>
 <translation id="8523928698583292556">Radera sparat lösenord</translation>
 <translation id="8525306231823319788">Helskärm</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> MB används</translation>
 <translation id="854522910157234410">Öppna sidan</translation>
 <translation id="8562452229998620586">Sparade lösenord visas här.</translation>
 <translation id="856481929701340285">Begär skrivbordsversion</translation>
 <translation id="857943718398505171">Tillåten (rekommenderas)</translation>
 <translation id="8583805026567836021">Rensar kontouppgifter</translation>
 <translation id="8617240290563765734">Vill du öppna den föreslagna webbadressen i det nedladdade innehållet?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> kB används</translation>
 <translation id="862875433388403934">Det kan hända att det inte går att spela upp innehåll (t.ex. filmer och musik) som har hämtats i andra appar förrän dessa appar får nya licenser som baseras på nya användaruppgifter för enheten.
 
 Du hämtar nya licenser genom att ansluta till internet och spela upp det nedladdade innehållet.</translation>

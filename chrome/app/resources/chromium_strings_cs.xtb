@@ -7,7 +7,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1115445892567829615">Prohlížeč Chromium vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="1174473354587728743">Sdílíte počítač s dalšími uživateli? Nyní si Chromium můžete nastavit podle svých představ.</translation>
 <translation id="1185134272377778587">O prohlížeči Chromium</translation>
-<translation id="1221340462641866827">Chromium OS nepodporuje spouštění externích aplikací pro práci s odkazy typu <ph name="SCHEME" />. Požadovaný odkaz je <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">V systému byla nalezena konfliktní instalace prohlížeče Chromium. Odinstalujte ji prosím a zkuste to znovu.</translation>
 <translation id="1298199220304005244">Pomoc s používáním operačního systému Chromium OS</translation>
 <translation id="1396446129537741364">Chromium se pokouší zobrazit hesla.</translation>
@@ -66,7 +65,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2886012850691518054">Volitelné: Pomozte Chromium zlepšit – posílejte automaticky společnosti Google statistiky využití a zprávy o selhání aplikace.</translation>
 <translation id="2905536371227304018">Chromium OS se zobrazuje v tomto jazyce.</translation>
 <translation id="2910007522516064972">O prohlížeči &amp;Chromium</translation>
-<translation id="2966088006374919794">Chromium potřebuje spustit externí aplikaci pro práci s odkazy typu <ph name="SCHEME" />. Požadovaný odkaz je <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Přidávání do prohlížeče Chromium...</translation>
 <translation id="3046695367536568084">Chcete-li používat aplikace, musíte být do prohlížeče Chromium přihlášeni. Přihlášení umožňuje prohlížeči Chromium synchronizovat vaše aplikace, záložky, historii, hesla a další nastavení mezi zařízeními.</translation>
 <translation id="3068515742935458733">Pomozte aplikaci Chromium zlepšovat tím, že budete společnosti Google zasílat zprávy o selhání a <ph name="UMA_LINK" />.</translation>
@@ -103,7 +101,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4050175100176540509">V nejnovější verzi jsou k dispozici důležitá vylepšení zabezpečení a nové funkce.</translation>
 <translation id="407254336480250557">Vyberte <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />.</translation>
 <translation id="4077262827416206768">Aby se změny projevily, zavřete prosím všechna okna prohlížeče Chromium a spusťte jej znovu.</translation>
-<translation id="4182290826692170034">Vaším výchozím prohlížečem je Chromium. Paráda!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Upozornění:<ph name="END_BOLD" /> Chromium nemůže rozšířením zabránit v zaznamenávání vaší historie procházení. Chcete-li toto rozšíření v anonymním režimu deaktivovat, zrušte výběr této možnosti.</translation>
 <translation id="421369550622382712">Objevte skvělé aplikace, hry, rozšíření a motivy prohlížeče Chromium.</translation>
 <translation id="4222580632002216401">Nyní jste v prohlížeči Chromium přihlášeni. Synchronizace je ale deaktivována správcem.</translation>

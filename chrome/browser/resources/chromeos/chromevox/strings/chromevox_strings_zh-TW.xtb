@@ -553,6 +553,7 @@
 <translation id="6307969636681130414">已按下</translation>
 <translation id="6324551002951139333">偵測到文法錯誤</translation>
 <translation id="6348657800373377022">下拉式方塊</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{項目符號}other{# 個項目符號}}</translation>
 <translation id="6355910664415701303">沒有上一個清單項目。</translation>
 <translation id="6364795331201459219">第 6 階</translation>
 <translation id="6368143427468974988">上一個標題</translation>
@@ -581,6 +582,7 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">文件</translation>
 <translation id="6697092096875747123">上一個下拉式方塊</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{驚嘆號}other{# 個驚嘆號}}</translation>
 <translation id="6710213216561001401">返回</translation>
 <translation id="6714813999819678458">上一個第 2 階標題</translation>
 <translation id="6716505898850596801">輔助鍵</translation>

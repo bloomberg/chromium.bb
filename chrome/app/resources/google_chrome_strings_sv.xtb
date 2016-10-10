@@ -219,13 +219,11 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7164397146364144019">Du kan bidra till att göra Chrome säkrare och enklare att använda genom att rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt.</translation>
 <translation id="7177347454226092725">All webbinformation raderas permanent från enheten. Logga in i Chrome som $2 om du vill kunna återställa data senare.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> har lagts till i Chrome.</translation>
-<translation id="7191567847629796517">Google Chrome OS stöder inte att ett externt program startas för att hantera <ph name="SCHEME" />-länkar. Den länk som efterfrågas är <ph name="PROTOLINK" />.</translation>
 <translation id="7193750696137290001">Google Chrome visas på det här språket.</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>
 <translation id="7242029209006116544">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. Du kan skapa en ny profil om du vill hålla dina befintliga Chrome-uppgifter separata. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Den här datorn slutar snart ta emot uppdateringar för Google Chrome eftersom stödet för Windows XP och Windows Vista kommer att upphöra.</translation>
 <translation id="7339898014177206373">Nytt fönster</translation>
-<translation id="7393806081343982361">Google Chrome är din standardwebbläsare.</translation>
 <translation id="7398801000654795464">Du var inloggad i Chrome som <ph name="USER_EMAIL_ADDRESS" />. Använd samma konto när du loggar in igen.</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="7408085963519505752">Villkor för Chrome OS</translation>
@@ -260,7 +258,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome sparar dina personliga uppgifter på ett säkert sätt så att du inte behöver ange dem på nytt.</translation>
 <translation id="8211929904040702368">Det här innebär att minst <ph name="TOTAL_COUNT" /> objekt raderas från enheten. Logga in i Chrome som $2 om du vill kunna återställa data senare.</translation>
-<translation id="8227755444512189073">Google Chrome måste starta ett externt program för att hantera <ph name="SCHEME" />-länkar. Den begärda länken är <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome använder din kamera och mikrofon.</translation>
 <translation id="8286862437124483331">Skriv ditt Windows-lösenord om du vill tillåta att lösenord visas i Google Chrome.</translation>
 <translation id="8290100596633877290">Hoppsan! Google Chrome har kraschat. Vill du starta om nu?</translation>

@@ -553,6 +553,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6307969636681130414">दबाया गया</translation>
 <translation id="6324551002951139333">व्याकरण की गलती का पता चला</translation>
 <translation id="6348657800373377022">कॉम्बो बॉक्स</translation>
+<translation id="6350358010104919766">{COUNT,plural, =1{बुलेट}one{# बुलेट}other{# बुलेट}}</translation>
 <translation id="6355910664415701303">कोई पिछला सूची आइटम नहीं.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">पिछला शीर्षक</translation>
@@ -581,6 +582,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6659594942844771486">टैब</translation>
 <translation id="667999046851023355">दस्तावेज़</translation>
 <translation id="6697092096875747123">पिछला कॉम्बो बॉक्स</translation>
+<translation id="6702609185760332517">{COUNT,plural, =1{विस्मयादिबोधक}one{# विस्मयादिबोधक}other{# विस्मयादिबोधक}}</translation>
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="6714813999819678458">पिछले स्‍तर 2 का शीर्षक</translation>
 <translation id="6716505898850596801">संशोधक कुंजियां</translation>

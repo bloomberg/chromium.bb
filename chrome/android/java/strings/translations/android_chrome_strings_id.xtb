@@ -105,6 +105,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="213279576345780926">Menutup <ph name="TAB_TITLE" /></translation>
 <translation id="2138201775715568214">Mencari laman Web Fisik di sekitar</translation>
 <translation id="2139186145475833000">Tambahkan ke Layar utama</translation>
+<translation id="2146738493024040262">Buka Aplikasi Instan</translation>
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2154710561487035718">Salin URL</translation>
 <translation id="219985413780390209">Lindungi Anda dan perangkat Anda dari situs berbahaya</translation>
@@ -184,8 +185,8 @@ Anda dapat mengontrol Web Fisik di Setelan Chrome.
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Buka di tab penyamaran</translation>
 <translation id="3090193911106258841">Mengakses masukan audio dan video</translation>
-<translation id="3117051980354074377">Untuk mendapatkan bookmark dari perangkat lainnya, masuk ke Chrome.</translation>
 <translation id="3137521801621304719">Tutup mode penyamaran</translation>
+<translation id="3148434565183091099">Untuk mendapatkan bookmark di semua perangkat Anda, masuk ke Chrome.</translation>
 <translation id="3149891296864842641">Opsi pengiriman</translation>
 <translation id="3177909033752230686">Bahasa Laman:</translation>
 <translation id="3190152372525844641">Aktifkan izin untuk Chrome di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
@@ -220,6 +221,7 @@ Anda dapat mengontrol Web Fisik di Setelan Chrome.
 <translation id="3518985090088779359">Terima &amp; lanjutkan</translation>
 <translation id="3522247891732774234">Pembaruan tersedia. Opsi lainnya</translation>
 <translation id="3527085408025491307">Folder</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> KB tersedia</translation>
 <translation id="3549644494707163724">Enkripsikan data yang disinkronkan dengan frasa sandi sinkronisasi Anda</translation>
 <translation id="3590487821116122040">Penyimpanan situs yang dianggap tidak penting oleh Chrome (misalnya situs yang tidak memiliki setelan penyimpanan atau situs yang tidak sering Anda kunjungi)</translation>
 <translation id="360480449234699036">Pelajari tentang topik di situs web tanpa meninggalkan laman. Sentuh untuk Menelusuri mengirimkan kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, serta detail lainnya.
@@ -297,7 +299,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4532845899244822526">Pilih folder</translation>
 <translation id="4543661749405994812">Salin alamat email</translation>
 <translation id="4572422548854449519">Masuk ke akun yang dikelola</translation>
-<translation id="4576023202210315647">Simpan tab di Chrome</translation>
 <translation id="4581964774250883625">Anda masuk mode penyamaran.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# menit yang lalu}other{# menit yang lalu}}</translation>
 <translation id="4605958867780575332">Item yang dihapus: <ph name="ITEM_TITLE" /></translation>
@@ -532,7 +533,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7208788139759694678">Penghemat Data dinonaktifkan</translation>
 <translation id="7243308994586599757">Opsi terdapat di dekat bagian bawah layar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> menggunakan lokasi Anda untuk menampilkan hasil penelusuran lokal</translation>
-<translation id="7327835590071894791">Tab Anda kini berjalan di latar belakang.</translation>
 <translation id="7347770551817603360">Konten offline</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Bagikan 1 item yang dipilih}other{Bagikan # item yang dipilih}}</translation>
 <translation id="7366340029385295517">Mentransmisikan ke <ph name="SCREEN_NAME" /></translation>
@@ -551,7 +551,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penelusuran dan aktivitas dari layanan Google lainnya di <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Diperbarui <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Harap tunggu...</translation>
-<translation id="7501135638693251872">Semua bookmark</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7562080006725997899">Menghapus data penjelajahan</translation>
 <translation id="756809126120519699">Data Chrome telah dihapus</translation>
@@ -639,12 +638,14 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="8518901949365209398">Situs ini menggunakan konfigurasi keamanan yang lemah (tanda tangan SHA-1), sehingga sambungan Anda mungkin bukan sambungan pribadi.</translation>
 <translation id="8523928698583292556">Hapus sandi tersimpan</translation>
 <translation id="8525306231823319788">Layar penuh</translation>
+<translation id="85415543246899402"><ph name="MEGABYTES" /> MB digunakan</translation>
 <translation id="854522910157234410">Buka laman ini</translation>
 <translation id="8562452229998620586">Sandi yang disimpan akan muncul di sini.</translation>
 <translation id="856481929701340285">Ubah situs desktop</translation>
 <translation id="857943718398505171">Diizinkan (disarankan)</translation>
 <translation id="8583805026567836021">Menghapus data akun</translation>
 <translation id="8617240290563765734">Buka URL yang disarankan yang ditentukan di konten unduhan?</translation>
+<translation id="8618653050765576793"><ph name="KILOBYTES" /> KB digunakan</translation>
 <translation id="862875433388403934">Konten (film, musik, dsb.) yang diunduh di aplikasi lain mungkin tidak dapat diputar lagi hingga aplikasi tersebut mendapatkan kembali lisensi berdasarkan kredensial perangkat yang baru.
 
 Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diunduh.</translation>
@@ -676,7 +677,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="8959122750345127698">Navigasi tidak dapat dijangkau: <ph name="URL" /></translation>
 <translation id="8979340629087822094">kemarin</translation>
 <translation id="8981454092730389528">Kontrol Aktivitas Google</translation>
-<translation id="8986494364107987395">Otomatis kirim statistik pemakaian dan laporan kemacetan sistem ke Google</translation>
+<translation id="8986494364107987395">Kirim statistik penggunaan dan laporan kerusakan ke Google secara otomatis</translation>
 <translation id="8998729206196772491">Anda akan masuk dengan akun yang dikelola oleh <ph name="MANAGED_DOMAIN" /> dan memberikan kontrol data Chrome kepada administrator. Data akan terikat dengan akun ini secara permanen. Bila Anda keluar dari Chrome, data akan dihapus dari perangkat ini, namun data tetap tersimpan di Akun Google.</translation>
 <translation id="9019902583201351841">Dikelola oleh orang tua Anda</translation>
 <translation id="9038649477754266430">Gunakan layanan prediksi agar laman dimuat dengan lebih cepat</translation>
