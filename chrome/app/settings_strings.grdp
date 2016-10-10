@@ -1469,6 +1469,9 @@
   <message name="IDS_SETTINGS_SPELLING_PREF" desc="The documentation string of the 'Use Spelling' preference">
     Use a web service to help resolve spelling errors
   </message>
+  <message name="IDS_SETTINGS_SPELLING_DESCRIPTION" desc="Description of using a web serviced to help resolve spelling errors. It is important to convey that what the user types will be sent to Google.">
+    Smarter spell-checking by sending what you type in the browser to Google
+  </message>
   <message name="IDS_SETTINGS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
     Automatically send usage statistics and crash reports to Google
   </message>
