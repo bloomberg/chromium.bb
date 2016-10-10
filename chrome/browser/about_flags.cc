@@ -1329,6 +1329,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_READER_MODE_HEURISTICS_DESCRIPTION, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
 #endif  // OS_ANDROID
+#if defined(OS_ANDROID)
+    {"enable-chrome-home", IDS_FLAGS_CHROME_HOME_NAME,
+     IDS_FLAGS_CHROME_HOME_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kChromeHomeFeature)},
+#endif  // OS_ANDROID
     {"num-raster-threads", IDS_FLAGS_NUM_RASTER_THREADS_NAME,
      IDS_FLAGS_NUM_RASTER_THREADS_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kNumRasterThreadsChoices)},

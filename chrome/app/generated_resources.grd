@@ -14200,6 +14200,16 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
       </if>
 
+      <!-- Chrome home flags -->
+      <if expr="is_android">
+        <message name="IDS_FLAGS_CHROME_HOME_NAME" desc="The name of the Chrome Home experiment in about:flags." translateable="false">
+          Chrome Home
+        </message>
+        <message name="IDS_FLAGS_CHROME_HOME_DESCRIPTION" desc="Description of the Chrome Home experiment in about:flags." translateable="false">
+          Enables Chrome Home on Android.
+        </message>
+      </if>
+
       <!-- Prefetch search results experiment flags -->
       <message name="IDS_FLAGS_PREFETCH_SEARCH_RESULTS_NAME" desc="An about::flags experiment title to prefetch search results">
         Prefetch search results

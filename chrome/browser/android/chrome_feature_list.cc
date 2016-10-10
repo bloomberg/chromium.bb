@@ -37,6 +37,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kSimplifiedFullscreenUI,
     &features::kWebPayments,
     &kAndroidPayIntegrationV1,
+    &kChromeHomeFeature,
     &kDownloadsUiFeature,
     &kImportantSitesInCBD,
     &ntp_snippets::kContentSuggestionsFeature,
@@ -61,6 +62,9 @@ const base::Feature* kFeaturesExposedToJava[] = {
 
 const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kChromeHomeFeature{"ChromeHome",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownloadsUiFeature{"DownloadsUi",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

@@ -44,6 +44,7 @@ public class ChromePreferenceManager {
     private static final String HERB_FLAVOR_KEY = "herb_flavor";
     private static final String INSTANT_APPS_KEY = "applink.app_link_enabled";
     private static final String WEBAPK_RUNTIME_KEY = "webapk.runtime_enabled";
+    private static final String CHROME_HOME_ENABLED_KEY = "chrome_home_enabled";
 
     private static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
@@ -387,6 +388,24 @@ public class ChromePreferenceManager {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
         ed.putBoolean(NTP_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
         ed.apply();
+    }
+
+    /**
+     * Set whether or not Chrome Home is enabled.
+     * @param isEnabled If Chrome Home is enabled.
+     */
+    public void setChromeHomeEnabled(boolean isEnabled) {
+        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        ed.putBoolean(CHROME_HOME_ENABLED_KEY, isEnabled);
+        ed.apply();
+    }
+
+    /**
+     * Get whether or not Chrome Home is enabled.
+     * @return True if Chrome Home is enabled.
+     */
+    public boolean isChromeHomeEnabled() {
+        return mSharedPreferences.getBoolean(CHROME_HOME_ENABLED_KEY, false);
     }
 
     /**
