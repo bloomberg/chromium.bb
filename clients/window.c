@@ -63,6 +63,7 @@ typedef void *EGLContext;
 #endif /* no HAVE_CAIRO_EGL */
 
 #include <xkbcommon/xkbcommon.h>
+#include <xkbcommon/xkbcommon-compose.h>
 #include <wayland-cursor.h>
 
 #include <linux/input.h>
@@ -372,6 +373,8 @@ struct input {
 	struct {
 		struct xkb_keymap *keymap;
 		struct xkb_state *state;
+		struct xkb_compose_table *compose_table;
+		struct xkb_compose_state *compose_state;
 		xkb_mod_mask_t control_mask;
 		xkb_mod_mask_t alt_mask;
 		xkb_mod_mask_t shift_mask;
@@ -2979,6 +2982,9 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 	struct input *input = data;
 	struct xkb_keymap *keymap;
 	struct xkb_state *state;
+	struct xkb_compose_table *compose_table;
+	struct xkb_compose_state *compose_state;
+	char *locale;
 	char *map_str;
 
 	if (!data) {
@@ -2997,6 +3003,7 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 		return;
 	}
 
+	/* Set up XKB keymap */
 	keymap = xkb_keymap_new_from_string(input->display->xkb_context,
 					    map_str,
 					    XKB_KEYMAP_FORMAT_TEXT_V1,
@@ -3009,11 +3016,43 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 		return;
 	}
 
+	/* Set up XKB state */
 	state = xkb_state_new(keymap);
 	if (!state) {
 		fprintf(stderr, "failed to create XKB state\n");
 		xkb_keymap_unref(keymap);
 		return;
+	}
+
+	/* Look up the preferred locale, falling back to "C" as default */
+	if (!(locale = getenv("LC_ALL")))
+		if (!(locale = getenv("LC_CTYPE")))
+			if (!(locale = getenv("LANG")))
+				locale = "C";
+
+	/* Set up XKB compose table */
+	compose_table =
+		xkb_compose_table_new_from_locale(input->display->xkb_context,
+						  locale,
+						  XKB_COMPOSE_COMPILE_NO_FLAGS);
+	if (compose_table) {
+		/* Set up XKB compose state */
+		compose_state = xkb_compose_state_new(compose_table,
+					      XKB_COMPOSE_STATE_NO_FLAGS);
+		if (compose_state) {
+			xkb_compose_state_unref(input->xkb.compose_state);
+			xkb_compose_table_unref(input->xkb.compose_table);
+			input->xkb.compose_state = compose_state;
+			input->xkb.compose_table = compose_table;
+		} else {
+			fprintf(stderr, "could not create XKB compose state.  "
+				"Disabiling compose.\n");
+			xkb_compose_table_unref(compose_table);
+			compose_table = NULL;
+		}
+	} else {
+		fprintf(stderr, "could not create XKB compose table for locale '%s'.  "
+			"Disabiling compose\n", locale);
 	}
 
 	xkb_keymap_unref(input->xkb.keymap);
@@ -3054,6 +3093,30 @@ keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 
 	input->display->serial = serial;
 	input_remove_keyboard_focus(input);
+}
+
+/* Translate symbols appropriately if a compose sequence is being entered */
+static xkb_keysym_t
+process_key_press(xkb_keysym_t sym, struct input *input)
+{
+	if (sym == XKB_KEY_NoSymbol)
+		return sym;
+	if (xkb_compose_state_feed(input->xkb.compose_state,
+				   sym) != XKB_COMPOSE_FEED_ACCEPTED)
+		return sym;
+
+	switch (xkb_compose_state_get_status(input->xkb.compose_state)) {
+	case XKB_COMPOSE_COMPOSING:
+		return XKB_KEY_NoSymbol;
+	case XKB_COMPOSE_COMPOSED:
+		return xkb_compose_state_get_one_sym(input->xkb.compose_state);
+	case XKB_COMPOSE_CANCELLED:
+		return XKB_KEY_NoSymbol;
+	case XKB_COMPOSE_NOTHING:
+		return sym;
+	default:
+		return sym;
+	}
 }
 
 static void
@@ -3101,6 +3164,9 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		   state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		window_close(window);
 	} else if (window->key_handler) {
+		if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
+			sym = process_key_press(sym, input);
+
 		(*window->key_handler)(window, input, time, key,
 				       sym, state, window->user_data);
 	}
