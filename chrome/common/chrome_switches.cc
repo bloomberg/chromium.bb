@@ -920,6 +920,9 @@ const char kSSLKeyLogFile[]               = "ssl-key-log-file";
 // Starts the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";
 
+// Starts the stack sampling profiler in the child process.
+const char kStartStackProfiler[]            = "start-stack-profiler";
+
 // Sets the supervised user ID for any loaded or newly created profile to the
 // given value. Pass an empty string to mark the profile as non-supervised.
 // Used for testing.

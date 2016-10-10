@@ -5,39 +5,66 @@
 #ifndef CHROME_COMMON_STACK_SAMPLING_CONFIGURATION_H_
 #define CHROME_COMMON_STACK_SAMPLING_CONFIGURATION_H_
 
+#include <string>
+
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/profiler/stack_sampling_profiler.h"
 
-// Chooses a configuration for the stack sampling profiler for browser process
-// startup. This must live outside of ChromeBrowserMainParts so it can be
-// friended by ChromeMetricsServiceAccessor.
+namespace base {
+class CommandLine;
+}  // namespace base
+
+// StackSamplingConfiguration chooses a configuration for the enable state of
+// the stack sampling profiler across all processes. This configuration is
+// determined once at browser process startup. Configurations for child
+// processes are communicated via command line arguments.
 class StackSamplingConfiguration {
  public:
   StackSamplingConfiguration();
 
-  // Get the stack sampling params to use for this session.
-  base::StackSamplingProfiler::SamplingParams GetSamplingParams() const;
+  // Get the stack sampling params to use for this process.
+  base::StackSamplingProfiler::SamplingParams
+      GetSamplingParamsForCurrentProcess() const;
 
-  // Returns true if the profiler should be started at all.
-  bool IsProfilerEnabled() const;
+  // Returns true if the profiler should be started for the current process.
+  bool IsProfilerEnabledForCurrentProcess() const;
 
   // Get the synthetic field trial configuration. Returns true if a synthetic
-  // field trial should be registered.
+  // field trial should be registered. This should only be called from the
+  // browser process.
   bool GetSyntheticFieldTrial(std::string* trial_name,
                               std::string* group_name) const;
 
+  // Add a command line switch that instructs the child process to run the
+  // profiler. This should only be called from the browser process.
+  void AppendCommandLineSwitchForChildProcess(
+      const std::string& process_type,
+      base::CommandLine* command_line) const;
+
+  // Returns the StackSamplingConfiguration for the process.
+  static StackSamplingConfiguration* Get();
+
  private:
   enum ProfileConfiguration {
+    // Chrome-wide configurations set in the browser process.
     PROFILE_DISABLED,
     PROFILE_CONTROL,
-    PROFILE_NO_SAMPLES,  // Run the profiler thread, but don't collect profiles.
-    PROFILE_5HZ,
-    PROFILE_10HZ,
-    PROFILE_100HZ
+    PROFILE_BROWSER_PROCESS,
+    PROFILE_GPU_PROCESS,
+    PROFILE_BROWSER_AND_GPU_PROCESS,
+
+    // Configuration set in the child processes, which receive their enable
+    // state on the command line from the browser process.
+    PROFILE_FROM_COMMAND_LINE
   };
 
+  // Generates sampling profiler configurations for all processes.
   static ProfileConfiguration GenerateConfiguration();
 
+  // In the browser process this represents the configuration to use across all
+  // Chrome processes. In the child processes it is always
+  // PROFILE_FROM_COMMAND_LINE.
   const ProfileConfiguration configuration_;
 
   DISALLOW_COPY_AND_ASSIGN(StackSamplingConfiguration);

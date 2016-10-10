@@ -120,6 +120,7 @@
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
+#include "chrome/common/stack_sampling_configuration.h"
 #include "chrome/common/variations/variations_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -764,7 +765,8 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       browser_field_trials_(parameters.command_line),
       sampling_profiler_(
           base::PlatformThread::CurrentId(),
-          sampling_profiler_config_.GetSamplingParams(),
+          StackSamplingConfiguration::Get()->
+              GetSamplingParamsForCurrentProcess(),
           metrics::CallStackProfileMetricsProvider::GetProfilerCallback(
               metrics::CallStackProfileParams(
                   metrics::CallStackProfileParams::BROWSER_PROCESS,
@@ -774,7 +776,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       profile_(NULL),
       run_message_loop_(true),
       local_state_(NULL) {
-  if (sampling_profiler_config_.IsProfilerEnabled())
+  if (StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     sampling_profiler_.Start();
 
   // If we're running tests (ui_task is non-null).
@@ -942,8 +944,8 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
   // Register a synthetic field trial for the sampling profiler configuration
   // that was already chosen.
   std::string trial_name, group_name;
-  if (sampling_profiler_config_.GetSyntheticFieldTrial(&trial_name,
-                                                       &group_name)) {
+  if (StackSamplingConfiguration::Get()->GetSyntheticFieldTrial(&trial_name,
+                                                                &group_name)) {
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(trial_name,
                                                               group_name);
   }

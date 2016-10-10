@@ -4,11 +4,18 @@
 
 #include "chrome/common/stack_sampling_configuration.h"
 
+#include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/rand_util.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
+#include "content/public/common/content_switches.h"
 
 namespace {
+
+base::LazyInstance<StackSamplingConfiguration>::Leaky g_configuration =
+    LAZY_INSTANCE_INITIALIZER;
 
 // The profiler is currently only implemented for Windows x64, and only runs on
 // trunk, canary, and dev.
@@ -23,6 +30,15 @@ bool IsProfilerSupported() {
 #endif
 }
 
+// Returns true if the current execution is taking place in the browser process.
+bool IsBrowserProcess() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+  return process_type.empty();
+}
+
 }  // namespace
 
 StackSamplingConfiguration::StackSamplingConfiguration()
@@ -30,54 +46,41 @@ StackSamplingConfiguration::StackSamplingConfiguration()
 }
 
 base::StackSamplingProfiler::SamplingParams
-StackSamplingConfiguration::GetSamplingParams() const {
+StackSamplingConfiguration::GetSamplingParamsForCurrentProcess() const {
   base::StackSamplingProfiler::SamplingParams params;
   params.bursts = 1;
-  const base::TimeDelta duration = base::TimeDelta::FromSeconds(30);
+  params.initial_delay = base::TimeDelta::FromMilliseconds(0);
+  params.sampling_interval = base::TimeDelta::FromMilliseconds(0);
+  params.samples_per_burst = 0;
 
-  switch (configuration_) {
-    case PROFILE_DISABLED:
-    case PROFILE_CONTROL:
-      params.initial_delay = base::TimeDelta::FromMilliseconds(0);
-      params.sampling_interval = base::TimeDelta::FromMilliseconds(0);
-      params.samples_per_burst = 0;
-      break;
-
-    case PROFILE_NO_SAMPLES:
-      params.initial_delay = duration;
-      params.sampling_interval = base::TimeDelta::FromMilliseconds(0);
-      params.samples_per_burst = 0;
-      break;
-
-    case PROFILE_5HZ:
-      params.initial_delay = base::TimeDelta::FromMilliseconds(0);
-      params.sampling_interval = base::TimeDelta::FromMilliseconds(200);
-      params.samples_per_burst = duration / params.sampling_interval;
-      break;
-
-    case PROFILE_10HZ:
-      params.initial_delay = base::TimeDelta::FromMilliseconds(0);
-      params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
-      params.samples_per_burst = duration / params.sampling_interval;
-      break;
-
-    case PROFILE_100HZ:
-      params.initial_delay = base::TimeDelta::FromMilliseconds(0);
-      params.sampling_interval = base::TimeDelta::FromMilliseconds(10);
-      params.samples_per_burst = duration / params.sampling_interval;
-      break;
+  if (IsProfilerEnabledForCurrentProcess()) {
+    const base::TimeDelta duration = base::TimeDelta::FromSeconds(30);
+    params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
+    params.samples_per_burst = duration / params.sampling_interval;
   }
+
   return params;
 }
 
-bool StackSamplingConfiguration::IsProfilerEnabled() const {
-  return (configuration_ != PROFILE_DISABLED &&
-          configuration_ != PROFILE_CONTROL);
+bool StackSamplingConfiguration::IsProfilerEnabledForCurrentProcess() const {
+  if (IsBrowserProcess()) {
+    return configuration_ == PROFILE_BROWSER_PROCESS ||
+        configuration_ == PROFILE_BROWSER_AND_GPU_PROCESS;
+  }
+
+  DCHECK_EQ(PROFILE_FROM_COMMAND_LINE, configuration_);
+  // This is a child process. The |kStartStackProfiler| switch passed by the
+  // browser process determines whether the profiler is enabled for the process.
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kStartStackProfiler);
 }
 
 bool StackSamplingConfiguration::GetSyntheticFieldTrial(
     std::string* trial_name,
     std::string* group_name) const {
+  DCHECK(IsBrowserProcess());
+
   if (!IsProfilerSupported())
     return false;
 
@@ -92,36 +95,56 @@ bool StackSamplingConfiguration::GetSyntheticFieldTrial(
       *group_name = "Control";
       break;
 
-    case PROFILE_NO_SAMPLES:
-      *group_name = "NoSamples";
+    case PROFILE_BROWSER_PROCESS:
+      *group_name = "BrowserProcess";
       break;
 
-    case PROFILE_5HZ:
-      *group_name = "5Hz";
+    case PROFILE_GPU_PROCESS:
+      *group_name = "GpuProcess";
       break;
 
-    case PROFILE_10HZ:
-      *group_name = "10Hz";
+    case PROFILE_BROWSER_AND_GPU_PROCESS:
+      *group_name = "BrowserAndGpuProcess";
       break;
 
-    case PROFILE_100HZ:
-      *group_name = "100Hz";
+    case PROFILE_FROM_COMMAND_LINE:
+      NOTREACHED();
       break;
   }
 
   return !group_name->empty();
 }
 
+void StackSamplingConfiguration::AppendCommandLineSwitchForChildProcess(
+    const std::string& process_type,
+    base::CommandLine* command_line) const {
+  DCHECK(IsBrowserProcess());
+
+  if (process_type == switches::kGpuProcess &&
+      (configuration_ == PROFILE_GPU_PROCESS ||
+       configuration_ == PROFILE_BROWSER_AND_GPU_PROCESS)) {
+    command_line->AppendSwitch(switches::kStartStackProfiler);
+  }
+}
+
+// static
+StackSamplingConfiguration* StackSamplingConfiguration::Get() {
+  return g_configuration.Pointer();
+}
+
 // static
 StackSamplingConfiguration::ProfileConfiguration
 StackSamplingConfiguration::GenerateConfiguration() {
+  if (!IsBrowserProcess())
+    return PROFILE_FROM_COMMAND_LINE;
+
   if (!IsProfilerSupported())
     return PROFILE_DISABLED;
 
-  // Enable the profiler in the intended ultimate production configuration for
+  // Enable the profiler in the ultimate production configuration for
   // development/waterfall builds.
   if (chrome::GetChannel() == version_info::Channel::UNKNOWN)
-    return PROFILE_10HZ;
+    return PROFILE_BROWSER_AND_GPU_PROCESS;
 
   // Enable according to the variations below in canary and dev.
   if (chrome::GetChannel() == version_info::Channel::CANARY ||
@@ -133,7 +156,9 @@ StackSamplingConfiguration::GenerateConfiguration() {
 
     // Generate a configuration according to the associated weights.
     const Variation variations[] = {
-      { PROFILE_10HZ, 100},
+      { PROFILE_BROWSER_PROCESS, 100},
+      { PROFILE_GPU_PROCESS, 0},
+      { PROFILE_BROWSER_AND_GPU_PROCESS, 0},
       { PROFILE_CONTROL, 0},
       { PROFILE_DISABLED, 0}
     };

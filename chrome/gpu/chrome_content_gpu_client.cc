@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "chrome/common/stack_sampling_configuration.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/connector.h"
@@ -40,16 +41,6 @@ void CreateGpuArcVideoService(
 }
 #endif
 
-// Returns appropriate parameters for stack sampling on startup.
-base::StackSamplingProfiler::SamplingParams GetStartupSamplingParams() {
-  base::StackSamplingProfiler::SamplingParams params;
-  params.initial_delay = base::TimeDelta::FromMilliseconds(0);
-  params.bursts = 1;
-  params.samples_per_burst = 300;
-  params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
-  return params;
-}
-
 base::LazyInstance<metrics::ChildCallStackProfileCollector>::Leaky
     g_call_stack_profile_collector = LAZY_INSTANCE_INITIALIZER;
 
@@ -58,13 +49,15 @@ base::LazyInstance<metrics::ChildCallStackProfileCollector>::Leaky
 ChromeContentGpuClient::ChromeContentGpuClient()
     : stack_sampling_profiler_(
         base::PlatformThread::CurrentId(),
-        GetStartupSamplingParams(),
+        StackSamplingConfiguration::Get()->GetSamplingParamsForCurrentProcess(),
         g_call_stack_profile_collector.Get().GetProfilerCallback(
             metrics::CallStackProfileParams(
                 metrics::CallStackProfileParams::GPU_PROCESS,
                 metrics::CallStackProfileParams::GPU_MAIN_THREAD,
                 metrics::CallStackProfileParams::PROCESS_STARTUP,
                 metrics::CallStackProfileParams::MAY_SHUFFLE))) {
+  if (StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
+    stack_sampling_profiler_.Start();
 }
 
 ChromeContentGpuClient::~ChromeContentGpuClient() {}

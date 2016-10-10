@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -155,9 +156,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Vector of additional ChromeBrowserMainExtraParts.
   // Parts are deleted in the inverse order they are added.
   std::vector<ChromeBrowserMainExtraParts*> chrome_extra_parts_;
-
-  // The configuration to use for the stack sampling profiler below.
-  StackSamplingConfiguration sampling_profiler_config_;
 
   // A profiler that periodically samples stack traces. Used to sample startup
   // behavior.

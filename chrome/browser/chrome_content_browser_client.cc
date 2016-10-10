@@ -108,6 +108,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/secure_origin_whitelist.h"
+#include "chrome/common/stack_sampling_configuration.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -1764,6 +1765,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   // is initialized correctly.
   if (command_line->HasSwitch(switches::kEnableBenchmarking))
     DCHECK(command_line->HasSwitch(switches::kEnableStatsTable));
+
+  StackSamplingConfiguration::Get()->AppendCommandLineSwitchForChildProcess(
+      process_type,
+      command_line);
 }
 
 std::string ChromeContentBrowserClient::GetApplicationLocale() {

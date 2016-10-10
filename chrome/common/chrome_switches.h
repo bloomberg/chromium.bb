@@ -254,6 +254,7 @@ extern const char kSpeculativeResourcePrefetchingEnabled[];
 extern const char kSpeculativeResourcePrefetchingLearning[];
 extern const char kSSLKeyLogFile[];
 extern const char kStartMaximized[];
+extern const char kStartStackProfiler[];
 extern const char kSupervisedUserId[];
 extern const char kSupervisedUserSafeSites[];
 extern const char kSupervisedUserSyncToken[];
