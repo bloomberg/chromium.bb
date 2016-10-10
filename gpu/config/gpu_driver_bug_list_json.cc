@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.04",
+  "version": "9.05",
   "entries": [
     {
       "id": 1,
@@ -1786,11 +1786,14 @@ LONG_STRING_CONST(
             "type" : "chromeos"
           },
           "vendor_id": "0x8086",
-          "device_id": ["0x1602", "0x1606", "0x160a", "0x160b", "0x160d",
-                        "0x160e", "0x1612", "0x1616", "0x161a", "0x161b",
-                        "0x161d", "0x161e", "0x1622", "0x1626", "0x162a",
-                        "0x162b", "0x162d", "0x162e", "0x22b0", "0x22b1",
-                        "0x22b2", "0x22b3"]
+          "driver_vendor": "Mesa",
+          "gl_vendor": "Intel.*",
+          "gl_renderer": ".*Intel.*(Braswell|Broadwell|Skylake).*",
+          "gl_type": "gles",
+          "gl_version": {
+            "op": ">=",
+            "value": "3.1"
+          }
         }
       ],
       "features": [
