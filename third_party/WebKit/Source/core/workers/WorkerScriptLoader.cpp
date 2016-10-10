@@ -33,7 +33,6 @@
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/HTTPNames.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/network/ResourceResponse.h"
@@ -145,8 +144,7 @@ void WorkerScriptLoader::didReceiveResponse(
   m_responseEncoding = response.textEncodingName();
   m_appCacheID = response.appCacheID();
 
-  if (RuntimeEnabledFeatures::referrerPolicyHeaderEnabled())
-    m_referrerPolicy = response.httpHeaderField(HTTPNames::Referrer_Policy);
+  m_referrerPolicy = response.httpHeaderField(HTTPNames::Referrer_Policy);
   processContentSecurityPolicy(response);
   m_originTrialTokens = OriginTrialContext::parseHeaderValue(
       response.httpHeaderField(HTTPNames::Origin_Trial));

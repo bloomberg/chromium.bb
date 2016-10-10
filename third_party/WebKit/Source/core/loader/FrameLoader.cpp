@@ -85,7 +85,6 @@
 #include "core/svg/graphics/SVGImage.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/PluginScriptForbiddenScope.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/network/HTTPParsers.h"
@@ -579,8 +578,7 @@ void FrameLoader::didBeginDocument() {
         m_documentLoader->response().httpHeaderField(HTTPNames::Origin_Trial));
   }
 
-  if (m_documentLoader &&
-      RuntimeEnabledFeatures::referrerPolicyHeaderEnabled()) {
+  if (m_documentLoader) {
     String referrerPolicyHeader = m_documentLoader->response().httpHeaderField(
         HTTPNames::Referrer_Policy);
     if (!referrerPolicyHeader.isNull()) {

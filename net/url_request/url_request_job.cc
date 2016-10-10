@@ -956,12 +956,8 @@ RedirectInfo URLRequestJob::ComputeRedirectInfo(const GURL& location,
         request_->first_party_for_cookies();
   }
 
-  if (request_->context()->enable_referrer_policy_header()) {
-    redirect_info.new_referrer_policy =
-        ProcessReferrerPolicyHeaderOnRedirect(request_);
-  } else {
-    redirect_info.new_referrer_policy = request_->referrer_policy();
-  }
+  redirect_info.new_referrer_policy =
+      ProcessReferrerPolicyHeaderOnRedirect(request_);
 
   // Alter the referrer if redirecting cross-origin (especially HTTP->HTTPS).
   redirect_info.new_referrer =

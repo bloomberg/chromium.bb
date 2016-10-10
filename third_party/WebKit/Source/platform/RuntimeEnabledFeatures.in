@@ -183,7 +183,6 @@ PresentationReceiver status=test
 PushMessaging status=stable
 QuotaPromise status=experimental
 ReducedReferrerGranularity
-ReferrerPolicyHeader status=experimental
 ReloadwithoutSubResourceCacheRevalidation
 RemotePlayback status=experimental
 RenderingPipelineThrottling status=stable

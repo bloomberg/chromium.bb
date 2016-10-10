@@ -1031,11 +1031,6 @@ void ProfileIOData::Init(
 
   main_request_context_->set_enable_brotli(io_thread_globals->enable_brotli);
 
-  // TODO(estark): Remove this once the Referrer-Policy header is no
-  // longer an experimental feature. https://crbug.com/619228
-  main_request_context_->set_enable_referrer_policy_header(
-      command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures));
-
   std::unique_ptr<ChromeNetworkDelegate> network_delegate(
       new ChromeNetworkDelegate(
 #if defined(ENABLE_EXTENSIONS)

@@ -53,8 +53,4 @@ LayoutTestURLRequestContextGetter::GetProxyService() {
   return net::ProxyService::CreateDirect();
 }
 
-bool LayoutTestURLRequestContextGetter::ShouldEnableReferrerPolicyHeader() {
-  return true;
-}
-
 }  // namespace content
