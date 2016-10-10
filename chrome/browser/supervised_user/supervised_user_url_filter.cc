@@ -20,7 +20,6 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/supervised_user/experimental/supervised_user_async_url_checker.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
@@ -54,6 +53,19 @@ struct HashHostnameHash {
     return value.hash();
   }
 };
+
+SupervisedUserURLFilter::FilteringBehavior
+GetBehaviorFromSafeSearchClassification(
+    SafeSearchURLChecker::Classification classification) {
+  switch (classification) {
+    case SafeSearchURLChecker::Classification::SAFE:
+      return SupervisedUserURLFilter::ALLOW;
+    case SafeSearchURLChecker::Classification::UNSAFE:
+      return SupervisedUserURLFilter::BLOCK;
+  }
+  NOTREACHED();
+  return SupervisedUserURLFilter::BLOCK;
+}
 
 }  // namespace
 
@@ -512,7 +524,7 @@ void SupervisedUserURLFilter::SetManualURLs(
 
 void SupervisedUserURLFilter::InitAsyncURLChecker(
     net::URLRequestContextGetter* context) {
-  async_url_checker_.reset(new SupervisedUserAsyncURLChecker(context));
+  async_url_checker_.reset(new SafeSearchURLChecker(context));
 }
 
 void SupervisedUserURLFilter::ClearAsyncURLChecker() {
@@ -601,9 +613,12 @@ void SupervisedUserURLFilter::SetContents(std::unique_ptr<Contents> contents) {
 void SupervisedUserURLFilter::CheckCallback(
     const FilteringBehaviorCallback& callback,
     const GURL& url,
-    FilteringBehavior behavior,
+    SafeSearchURLChecker::Classification classification,
     bool uncertain) const {
   DCHECK(default_behavior_ != BLOCK);
+
+  FilteringBehavior behavior =
+      GetBehaviorFromSafeSearchClassification(classification);
 
   callback.Run(behavior, supervised_user_error_page::ASYNC_CHECKER, uncertain);
   FOR_EACH_OBSERVER(

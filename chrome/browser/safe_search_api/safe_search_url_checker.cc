@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/supervised_user/experimental/supervised_user_async_url_checker.h"
+#include "chrome/browser/safe_search_api/safe_search_url_checker.h"
 
 #include <string>
 #include <utility>
@@ -87,7 +87,7 @@ bool ParseResponse(const std::string& response, bool* is_porn) {
 
 }  // namespace
 
-struct SupervisedUserAsyncURLChecker::Check {
+struct SafeSearchURLChecker::Check {
   Check(const GURL& url,
         std::unique_ptr<net::URLFetcher> fetcher,
         const CheckCallback& callback);
@@ -99,54 +99,48 @@ struct SupervisedUserAsyncURLChecker::Check {
   base::TimeTicks start_time;
 };
 
-SupervisedUserAsyncURLChecker::Check::Check(
-    const GURL& url,
-    std::unique_ptr<net::URLFetcher> fetcher,
-    const CheckCallback& callback)
+SafeSearchURLChecker::Check::Check(const GURL& url,
+                                   std::unique_ptr<net::URLFetcher> fetcher,
+                                   const CheckCallback& callback)
     : url(url),
       fetcher(std::move(fetcher)),
       callbacks(1, callback),
       start_time(base::TimeTicks::Now()) {}
 
-SupervisedUserAsyncURLChecker::Check::~Check() {}
+SafeSearchURLChecker::Check::~Check() {}
 
-SupervisedUserAsyncURLChecker::CheckResult::CheckResult(
-    SupervisedUserURLFilter::FilteringBehavior behavior,
-    bool uncertain)
-    : behavior(behavior),
+SafeSearchURLChecker::CheckResult::CheckResult(Classification classification,
+                                               bool uncertain)
+    : classification(classification),
       uncertain(uncertain),
       timestamp(base::TimeTicks::Now()) {}
 
-SupervisedUserAsyncURLChecker::SupervisedUserAsyncURLChecker(
-    URLRequestContextGetter* context)
-    : SupervisedUserAsyncURLChecker(context, kDefaultCacheSize) {}
+SafeSearchURLChecker::SafeSearchURLChecker(URLRequestContextGetter* context)
+    : SafeSearchURLChecker(context, kDefaultCacheSize) {}
 
-SupervisedUserAsyncURLChecker::SupervisedUserAsyncURLChecker(
-    URLRequestContextGetter* context,
-    size_t cache_size)
+SafeSearchURLChecker::SafeSearchURLChecker(URLRequestContextGetter* context,
+                                           size_t cache_size)
     : context_(context),
       cache_(cache_size),
       cache_timeout_(
           base::TimeDelta::FromSeconds(kDefaultCacheTimeoutSeconds)) {}
 
-SupervisedUserAsyncURLChecker::~SupervisedUserAsyncURLChecker() {}
+SafeSearchURLChecker::~SafeSearchURLChecker() {}
 
-bool SupervisedUserAsyncURLChecker::CheckURL(const GURL& url,
-                                             const CheckCallback& callback) {
+bool SafeSearchURLChecker::CheckURL(const GURL& url,
+                                    const CheckCallback& callback) {
   // TODO(treib): Hack: For now, allow all Google URLs to save QPS. If we ever
   // remove this, we should find a way to allow at least the NTP.
-  if (google_util::IsGoogleDomainUrl(url,
-                                     google_util::ALLOW_SUBDOMAIN,
+  if (google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
                                      google_util::ALLOW_NON_STANDARD_PORTS)) {
-    callback.Run(url, SupervisedUserURLFilter::ALLOW, false);
+    callback.Run(url, Classification::SAFE, false);
     return true;
   }
   // TODO(treib): Hack: For now, allow all YouTube URLs since YouTube has its
   // own Safety Mode anyway.
-  if (google_util::IsYoutubeDomainUrl(url,
-                                      google_util::ALLOW_SUBDOMAIN,
+  if (google_util::IsYoutubeDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
                                       google_util::ALLOW_NON_STANDARD_PORTS)) {
-    callback.Run(url, SupervisedUserURLFilter::ALLOW, false);
+    callback.Run(url, Classification::SAFE, false);
     return true;
   }
 
@@ -156,10 +150,9 @@ bool SupervisedUserAsyncURLChecker::CheckURL(const GURL& url,
     base::TimeDelta age = base::TimeTicks::Now() - result.timestamp;
     if (age < cache_timeout_) {
       DVLOG(1) << "Cache hit! " << url.spec() << " is "
-               << (result.behavior == SupervisedUserURLFilter::BLOCK ? "NOT"
-                                                                     : "")
+               << (result.classification == Classification::UNSAFE ? "NOT" : "")
                << " safe; certain: " << !result.uncertain;
-      callback.Run(url, result.behavior, result.uncertain);
+      callback.Run(url, result.classification, result.uncertain);
       return true;
     }
     DVLOG(1) << "Outdated cache entry for " << url.spec() << ", purging";
@@ -184,8 +177,7 @@ bool SupervisedUserAsyncURLChecker::CheckURL(const GURL& url,
   return false;
 }
 
-void SupervisedUserAsyncURLChecker::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void SafeSearchURLChecker::OnURLFetchComplete(const net::URLFetcher* source) {
   ScopedVector<Check>::iterator it = checks_in_progress_.begin();
   while (it != checks_in_progress_.end()) {
     if (source == (*it)->fetcher.get())
@@ -199,7 +191,7 @@ void SupervisedUserAsyncURLChecker::OnURLFetchComplete(
   if (!status.is_success()) {
     DLOG(WARNING) << "URL request failed! Letting through...";
     for (size_t i = 0; i < check->callbacks.size(); i++)
-      check->callbacks[i].Run(check->url, SupervisedUserURLFilter::ALLOW, true);
+      check->callbacks[i].Run(check->url, Classification::SAFE, true);
     checks_in_progress_.erase(it);
     return;
   }
@@ -208,15 +200,16 @@ void SupervisedUserAsyncURLChecker::OnURLFetchComplete(
   source->GetResponseAsString(&response_body);
   bool is_porn = false;
   bool uncertain = !ParseResponse(response_body, &is_porn);
-  SupervisedUserURLFilter::FilteringBehavior behavior =
-      is_porn ? SupervisedUserURLFilter::BLOCK : SupervisedUserURLFilter::ALLOW;
+  Classification classification =
+      is_porn ? Classification::UNSAFE : Classification::SAFE;
 
+  // TODO(msramek): Consider moving this to SupervisedUserResourceThrottle.
   UMA_HISTOGRAM_TIMES("ManagedUsers.SafeSitesDelay",
                       base::TimeTicks::Now() - check->start_time);
 
-  cache_.Put(check->url, CheckResult(behavior, uncertain));
+  cache_.Put(check->url, CheckResult(classification, uncertain));
 
   for (size_t i = 0; i < check->callbacks.size(); i++)
-    check->callbacks[i].Run(check->url, behavior, uncertain);
+    check->callbacks[i].Run(check->url, classification, uncertain);
   checks_in_progress_.erase(it);
 }

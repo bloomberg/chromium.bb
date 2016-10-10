@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/supervised_user/experimental/supervised_user_async_url_checker.h"
+#include "chrome/browser/safe_search_api/safe_search_url_checker.h"
 
 #include <stddef.h>
 
@@ -23,24 +23,25 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using Classification = SafeSearchURLChecker::Classification;
 using testing::_;
 
 namespace {
 
 const size_t kCacheSize = 2;
 
-const int kSupervisedUserAsyncURLCheckerURLFetcherID = 0;
+const int kSafeSearchURLCheckerURLFetcherID = 0;
 
 const char* kURLs[] = {
-  "http://www.randomsite1.com",
-  "http://www.randomsite2.com",
-  "http://www.randomsite3.com",
-  "http://www.randomsite4.com",
-  "http://www.randomsite5.com",
-  "http://www.randomsite6.com",
-  "http://www.randomsite7.com",
-  "http://www.randomsite8.com",
-  "http://www.randomsite9.com",
+    "http://www.randomsite1.com",
+    "http://www.randomsite2.com",
+    "http://www.randomsite3.com",
+    "http://www.randomsite4.com",
+    "http://www.randomsite5.com",
+    "http://www.randomsite6.com",
+    "http://www.randomsite7.com",
+    "http://www.randomsite8.com",
+    "http://www.randomsite9.com",
 };
 
 std::string BuildResponse(bool is_porn) {
@@ -59,9 +60,9 @@ std::string BuildResponse(bool is_porn) {
 
 }  // namespace
 
-class SupervisedUserAsyncURLCheckerTest : public testing::Test {
+class SafeSearchURLCheckerTest : public testing::Test {
  public:
-  SupervisedUserAsyncURLCheckerTest()
+  SafeSearchURLCheckerTest()
       : next_url_(0),
         request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
@@ -69,7 +70,7 @@ class SupervisedUserAsyncURLCheckerTest : public testing::Test {
 
   MOCK_METHOD3(OnCheckDone,
                void(const GURL& url,
-                    SupervisedUserURLFilter::FilteringBehavior behavior,
+                    Classification classification,
                     bool uncertain));
 
  protected:
@@ -80,15 +81,14 @@ class SupervisedUserAsyncURLCheckerTest : public testing::Test {
 
   // Returns true if the result was returned synchronously (cache hit).
   bool CheckURL(const GURL& url) {
-    return checker_.CheckURL(
-        url,
-        base::Bind(&SupervisedUserAsyncURLCheckerTest::OnCheckDone,
-                   base::Unretained(this)));
+    return checker_.CheckURL(url,
+                             base::Bind(&SafeSearchURLCheckerTest::OnCheckDone,
+                                        base::Unretained(this)));
   }
 
   net::TestURLFetcher* GetURLFetcher() {
-    net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(
-        kSupervisedUserAsyncURLCheckerURLFetcherID);
+    net::TestURLFetcher* url_fetcher =
+        url_fetcher_factory_.GetFetcherByID(kSafeSearchURLCheckerURLFetcherID);
     EXPECT_TRUE(url_fetcher);
     return url_fetcher;
   }
@@ -105,45 +105,43 @@ class SupervisedUserAsyncURLCheckerTest : public testing::Test {
     SendResponse(net::OK, BuildResponse(is_porn));
   }
 
-  void SendFailedResponse() {
-    SendResponse(net::ERR_ABORTED, std::string());
-  }
+  void SendFailedResponse() { SendResponse(net::ERR_ABORTED, std::string()); }
 
   size_t next_url_;
   base::MessageLoop message_loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   net::TestURLFetcherFactory url_fetcher_factory_;
-  SupervisedUserAsyncURLChecker checker_;
+  SafeSearchURLChecker checker_;
 };
 
-TEST_F(SupervisedUserAsyncURLCheckerTest, Simple) {
+TEST_F(SafeSearchURLCheckerTest, Simple) {
   {
     GURL url(GetNewURL());
     ASSERT_FALSE(CheckURL(url));
-    EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
+    EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false));
     SendValidResponse(false);
   }
   {
     GURL url(GetNewURL());
     ASSERT_FALSE(CheckURL(url));
-    EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::BLOCK, false));
+    EXPECT_CALL(*this, OnCheckDone(url, Classification::UNSAFE, false));
     SendValidResponse(true);
   }
   {
     GURL url(GetNewURL());
     ASSERT_FALSE(CheckURL(url));
-    EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, true));
+    EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, true));
     SendFailedResponse();
   }
 }
 
-TEST_F(SupervisedUserAsyncURLCheckerTest, Equivalence) {
+TEST_F(SafeSearchURLCheckerTest, Equivalence) {
   // Leading "www." in the response should be ignored.
   {
     GURL url("http://example.com");
     GURL url_response("http://www.example.com");
     ASSERT_FALSE(CheckURL(url));
-    EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
+    EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false));
     SendValidResponse(false);
   }
   // Scheme should be ignored.
@@ -151,7 +149,7 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Equivalence) {
     GURL url("http://www.example2.com");
     GURL url_response("https://www.example2.com");
     ASSERT_FALSE(CheckURL(url));
-    EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
+    EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false));
     SendValidResponse(false);
   }
   // Both at the same time should work as well.
@@ -159,12 +157,12 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Equivalence) {
     GURL url("http://example3.com");
     GURL url_response("https://www.example3.com");
     ASSERT_FALSE(CheckURL(url));
-    EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
+    EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false));
     SendValidResponse(false);
   }
 }
 
-TEST_F(SupervisedUserAsyncURLCheckerTest, Cache) {
+TEST_F(SafeSearchURLCheckerTest, Cache) {
   // One more URL than fit in the cache.
   ASSERT_EQ(2u, kCacheSize);
   GURL url1(GetNewURL());
@@ -173,51 +171,50 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Cache) {
 
   // Populate the cache.
   ASSERT_FALSE(CheckURL(url1));
-  EXPECT_CALL(*this, OnCheckDone(url1, SupervisedUserURLFilter::ALLOW, false));
+  EXPECT_CALL(*this, OnCheckDone(url1, Classification::SAFE, false));
   SendValidResponse(false);
   ASSERT_FALSE(CheckURL(url2));
-  EXPECT_CALL(*this, OnCheckDone(url2, SupervisedUserURLFilter::ALLOW, false));
+  EXPECT_CALL(*this, OnCheckDone(url2, Classification::SAFE, false));
   SendValidResponse(false);
 
   // Now we should get results synchronously.
-  EXPECT_CALL(*this, OnCheckDone(url2, SupervisedUserURLFilter::ALLOW, false));
+  EXPECT_CALL(*this, OnCheckDone(url2, Classification::SAFE, false));
   ASSERT_TRUE(CheckURL(url2));
-  EXPECT_CALL(*this, OnCheckDone(url1, SupervisedUserURLFilter::ALLOW, false));
+  EXPECT_CALL(*this, OnCheckDone(url1, Classification::SAFE, false));
   ASSERT_TRUE(CheckURL(url1));
 
   // Now |url2| is the LRU and should be evicted on the next check.
   ASSERT_FALSE(CheckURL(url3));
-  EXPECT_CALL(*this, OnCheckDone(url3, SupervisedUserURLFilter::ALLOW, false));
+  EXPECT_CALL(*this, OnCheckDone(url3, Classification::SAFE, false));
   SendValidResponse(false);
 
   ASSERT_FALSE(CheckURL(url2));
-  EXPECT_CALL(*this, OnCheckDone(url2, SupervisedUserURLFilter::ALLOW, false));
+  EXPECT_CALL(*this, OnCheckDone(url2, Classification::SAFE, false));
   SendValidResponse(false);
 }
 
-TEST_F(SupervisedUserAsyncURLCheckerTest, CoalesceRequestsToSameURL) {
+TEST_F(SafeSearchURLCheckerTest, CoalesceRequestsToSameURL) {
   GURL url(GetNewURL());
   // Start two checks for the same URL.
   ASSERT_FALSE(CheckURL(url));
   ASSERT_FALSE(CheckURL(url));
   // A single response should answer both checks.
-  EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false))
-      .Times(2);
+  EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false)).Times(2);
   SendValidResponse(false);
 }
 
-TEST_F(SupervisedUserAsyncURLCheckerTest, CacheTimeout) {
+TEST_F(SafeSearchURLCheckerTest, CacheTimeout) {
   GURL url(GetNewURL());
 
   checker_.SetCacheTimeoutForTesting(base::TimeDelta::FromSeconds(0));
 
   ASSERT_FALSE(CheckURL(url));
-  EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
+  EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false));
   SendValidResponse(false);
 
   // Since the cache timeout is zero, the cache entry should be invalidated
   // immediately.
   ASSERT_FALSE(CheckURL(url));
-  EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::BLOCK, false));
+  EXPECT_CALL(*this, OnCheckDone(url, Classification::UNSAFE, false));
   SendValidResponse(true);
 }
