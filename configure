@@ -257,7 +257,7 @@ EXPERIMENT_LIST="
     ext_compound
     supertx
     ans
-    rans
+    ec_multisymbol
     daala_ec
     parallel_deblocking
     cb4x4
@@ -428,9 +428,10 @@ post_process_cmdline() {
     done
 
     # Fix up experiment dependencies
-    enabled ec_adapt && ! enabled rans && soft_enable daala_ec
-    enabled ec_adapt && ! enabled daala_ec && soft_enable rans
-    enabled rans && enable_feature ans
+    enabled ec_adapt && enable_feature ec_multisymbol
+    enabled ec_multisymbol && ! enabled ans && soft_enable daala_ec
+    enabled ec_multisymbol && ! enabled daala_ec && soft_enable ans
+    enabled daala_ec && enable_feature ec_multisymbol
 }
 
 

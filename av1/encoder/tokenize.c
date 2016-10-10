@@ -318,17 +318,17 @@ static void set_entropy_context_b(int plane, int block, int blk_row,
 }
 
 static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
                              aom_cdf_prob (*token_cdf)[ENTROPY_TOKENS],
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
                              int32_t extra, uint8_t token,
                              uint8_t skip_eob_node, unsigned int *counts) {
   (*t)->token = token;
   (*t)->extra = extra;
   (*t)->context_tree = context_tree;
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   (*t)->token_cdf = token_cdf;
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
   (*t)->skip_eob_node = skip_eob_node;
   (*t)++;
   ++counts[token];
@@ -402,7 +402,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
       td->rd_counts.coef_counts[tx_size][type][ref];
   aom_prob(*const coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       cpi->common.fc->coef_probs[tx_size][type][ref];
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   aom_cdf_prob(*const coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       cpi->common.fc->coef_cdfs[tx_size][type][ref];
 #endif
@@ -426,7 +426,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 
     while (!v) {
       add_token(&t, coef_probs[band[c]][pt],
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
                 &coef_cdfs[band[c]][pt],
 #endif
                 0, ZERO_TOKEN, skip_eob, counts[band[c]][pt]);
@@ -442,7 +442,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
     av1_get_token_extra(v, &token, &extra);
 
     add_token(&t, coef_probs[band[c]][pt],
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
               &coef_cdfs[band[c]][pt],
 #endif
               extra, (uint8_t)token, (uint8_t)skip_eob, counts[band[c]][pt]);
@@ -454,7 +454,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   }
   if (c < seg_eob) {
     add_token(&t, coef_probs[band[c]][pt],
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
               NULL,
 #endif
               0, EOB_TOKEN, 0, counts[band[c]][pt]);

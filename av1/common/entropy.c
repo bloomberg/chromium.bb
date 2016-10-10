@@ -15,9 +15,6 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/entropymode.h"
 #include "av1/common/scan.h"
-#if CONFIG_RANS
-#include "aom_dsp/ans.h"
-#endif  // CONFIG_RANS
 #include "aom_mem/aom_mem.h"
 #include "aom/aom_integer.h"
 
@@ -389,7 +386,7 @@ const aom_prob av1_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES] = {
   { 255, 243, 245, 255, 237, 255, 252, 254 },
   { 255, 246, 247, 255, 239, 255, 253, 255 },
 };
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
 // Model obtained from a 2-sided zero-centered distribution derived
 // from a Pareto distribution. The cdf of the distribution is:
 // cdf(x) = 0.5 + 0.5 * sgn(x) * [1 - {alpha/(alpha + |x|)} ^ beta]
@@ -661,7 +658,7 @@ const aom_cdf_prob
       { 32512, 238, 11, 1, 1, 1, 1, 1, 1, 1 },
       { 32640, 117, 4, 1, 1, 1, 1, 1, 1, 1 },
     };
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
 
 static const av1_coeff_probs_model default_coef_probs_4x4[PLANE_TYPES] = {
   {     // Y plane
@@ -1336,7 +1333,7 @@ void av1_model_to_full_probs(const aom_prob *model, aom_prob *full) {
   extend_to_full_distribution(&full[UNCONSTRAINED_NODES], model[PIVOT_NODE]);
 }
 
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
 static void build_token_cdfs(const aom_prob *pdf_model,
                              aom_cdf_prob cdf[ENTROPY_TOKENS]) {
   int i, sum = 0;
@@ -1357,16 +1354,16 @@ void av1_coef_pareto_cdfs(FRAME_CONTEXT *fc) {
             build_token_cdfs(fc->coef_probs[t][i][j][k][l],
                              fc->coef_cdfs[t][i][j][k][l]);
 }
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
 
 void av1_default_coef_probs(AV1_COMMON *cm) {
   av1_copy(cm->fc->coef_probs[TX_4X4], default_coef_probs_4x4);
   av1_copy(cm->fc->coef_probs[TX_8X8], default_coef_probs_8x8);
   av1_copy(cm->fc->coef_probs[TX_16X16], default_coef_probs_16x16);
   av1_copy(cm->fc->coef_probs[TX_32X32], default_coef_probs_32x32);
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   av1_coef_pareto_cdfs(cm->fc);
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
 }
 
 #define COEF_COUNT_SAT 24
@@ -1438,7 +1435,7 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
 
   for (t = 0; t <= TX_32X32; t++)
     adapt_coef_probs(cm, t, count_sat, update_factor);
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   av1_coef_pareto_cdfs(cm->fc);
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
 }

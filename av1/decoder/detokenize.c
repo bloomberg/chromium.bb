@@ -68,11 +68,11 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   aom_prob(*coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       fc->coef_probs[tx_size][type][ref];
   const aom_prob *prob;
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   aom_cdf_prob(*coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       fc->coef_cdfs[tx_size][type][ref];
   aom_cdf_prob(*cdf)[ENTROPY_TOKENS];
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
   unsigned int(*coef_counts)[COEFF_CONTEXTS][UNCONSTRAINED_NODES + 1];
   unsigned int(*eob_branch_count)[COEFF_CONTEXTS];
   uint8_t token_cache[32 * 32];
@@ -147,7 +147,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
       prob = coef_probs[band][ctx];
     }
 
-#if CONFIG_RANS || CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
     cdf = &coef_cdfs[band][ctx];
     token = ONE_TOKEN +
             aom_read_symbol(r, *cdf, CATEGORY6_TOKEN - ONE_TOKEN + 1, ACCT_STR);
@@ -194,7 +194,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
         break;
       }
     }
-#else  // CONFIG_RANS
+#else  // CONFIG_EC_MULTISYMBOL
     if (!aom_read(r, prob[ONE_CONTEXT_NODE], ACCT_STR)) {
       INCREMENT_COUNT(ONE_TOKEN);
       token = ONE_TOKEN;
@@ -245,7 +245,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
         }
       }
     }
-#endif  // CONFIG_RANS
+#endif  // CONFIG_EC_MULTISYMBOL
 #if CONFIG_AOM_QM
     dqv = ((iqmatrix[scan[c]] * (int)dqv) + (1 << (AOM_QM_BITS - 1))) >>
           AOM_QM_BITS;

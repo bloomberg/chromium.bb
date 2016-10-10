@@ -235,7 +235,7 @@ static INLINE int aom_read_tree_(aom_reader *r, const aom_tree_index *tree,
 static INLINE int aom_read_symbol_(aom_reader *r, aom_cdf_prob *cdf,
                                    int nsymbs ACCT_STR_PARAM) {
   int ret;
-#if CONFIG_RANS
+#if CONFIG_ANS
   (void)nsymbs;
   ret = rans_read(r, cdf);
 #elif CONFIG_DAALA_EC
@@ -247,7 +247,7 @@ static INLINE int aom_read_symbol_(aom_reader *r, aom_cdf_prob *cdf,
   assert(0 && "Unsupported bitreader operation");
   ret = -1;
 #endif
-#if ((CONFIG_RANS || CONFIG_DAALA_EC) && CONFIG_EC_ADAPT)
+#if CONFIG_EC_ADAPT
   update_cdf(cdf, ret, nsymbs);
 #endif
 
