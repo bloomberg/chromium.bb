@@ -42,6 +42,7 @@ namespace blink {
 // from top.
 enum BoxSide { BSTop, BSRight, BSBottom, BSLeft };
 
+// See core/dom/stylerecalc.md for an explanation on what each state means
 enum StyleRecalcChange {
   NoChange,
   NoInherit,
