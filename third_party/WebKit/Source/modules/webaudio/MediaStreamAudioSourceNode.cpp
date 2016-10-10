@@ -28,6 +28,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "modules/webaudio/MediaStreamAudioSourceOptions.h"
 #include "wtf/Locker.h"
 #include <memory>
 
@@ -169,6 +170,13 @@ MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(
   context.notifySourceNodeStartedProcessing(node);
 
   return node;
+}
+
+MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(
+    BaseAudioContext* context,
+    const MediaStreamAudioSourceOptions& options,
+    ExceptionState& exceptionState) {
+  return create(*context, *options.mediaStream(), exceptionState);
 }
 
 DEFINE_TRACE(MediaStreamAudioSourceNode) {

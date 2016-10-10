@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: MediaStreamAudioSource</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context = new AudioContext();
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("new MediaStreamAudioSourceNode()", function () {
+          node = new MediaStreamAudioSourceNode();
+        }).throw("TypeError");
+        success = Should("new MediaStreamAudioSourceNode(1)", function () {
+          node = new MediaStreamAudioSourceNode(1) && success;
+        }).throw("TypeError");
+        success = Should("new MediaStreamAudioSourceNode(context, 42)",
+          function () {
+            node = new MediaStreamAudioSourceNode(context, 42) && success;
+          }).throw("TypeError");
+
+        Should("Invalid constructors", success)
+          .summarize(
+            "correctly threw errors",
+            "did not throw errors in all cases");
+
+        taskDone();
+      });
+
+      audit.defineTask("constructor options", function (taskDone) {
+        var node;
+        var success = true;
+
+        var options = {
+          mediaStream: new MediaStream()
+        };
+
+        // We throw because the mediaStream has no tracks. But otherwise the
+        // constructor worked.
+        success = Should("node = new MediaStreamAudioSourceNode(, " + JSON.stringify(
+            options) + ")",
+          function () {
+            node = new MediaStreamAudioSourceNode(context, options);
+          }).throw("InvalidStateError") && success;
+
+        Should("new MediaStreamAudioSourceNode(c, options)", success)
+          .summarize(
+            "constructed with correct attributes",
+            "was not constructed correctly");
+
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

@@ -37,6 +37,7 @@
 namespace blink {
 
 class BaseAudioContext;
+class MediaStreamAudioSourceOptions;
 
 class MediaStreamAudioSourceHandler final : public AudioHandler {
  public:
@@ -88,6 +89,11 @@ class MediaStreamAudioSourceNode final : public AudioSourceNode,
   static MediaStreamAudioSourceNode* create(BaseAudioContext&,
                                             MediaStream&,
                                             ExceptionState&);
+  static MediaStreamAudioSourceNode* create(
+      BaseAudioContext*,
+      const MediaStreamAudioSourceOptions&,
+      ExceptionState&);
+
   DECLARE_VIRTUAL_TRACE();
   MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
 
