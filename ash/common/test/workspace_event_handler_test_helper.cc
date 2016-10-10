@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/wm/workspace/workspace_event_handler_test_helper.h"
+#include "ash/common/test/workspace_event_handler_test_helper.h"
 
 namespace ash {
 

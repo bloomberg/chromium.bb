@@ -7,7 +7,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/frame/custom_frame_view_ash.h"
-#include "ash/common/wm/workspace/workspace_event_handler_test_helper.h"
+#include "ash/common/test/workspace_event_handler_test_helper.h"
 #include "ash/common/wm/workspace_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"

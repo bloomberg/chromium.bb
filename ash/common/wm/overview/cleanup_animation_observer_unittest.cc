@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
-
 #include "ash/common/wm/overview/cleanup_animation_observer.h"
+
+#include <vector>
 
 #include "ash/common/wm/overview/window_selector_delegate.h"
 #include "ash/common/wm_lookup.h"

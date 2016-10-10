@@ -67,6 +67,26 @@ std::unique_ptr<WindowOwner> AshTest::CreateChildWindow(WmWindow* parent,
   return window_owner;
 }
 
+// static
+std::unique_ptr<views::Widget> AshTest::CreateTestWidget(
+    const gfx::Rect& bounds,
+    views::WidgetDelegate* delegate,
+    int container_id) {
+  std::unique_ptr<views::Widget> widget(new views::Widget);
+  views::Widget::InitParams params;
+  params.delegate = delegate;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = bounds;
+  WmShell::Get()
+      ->GetPrimaryRootWindow()
+      ->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(widget.get(), container_id,
+                                              &params);
+  widget->Init(params);
+  widget->Show();
+  return widget;
+}
+
 display::Display AshTest::GetSecondaryDisplay() {
   return test_impl_->GetSecondaryDisplay();
 }

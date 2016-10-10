@@ -1182,19 +1182,30 @@ test("ash_unittests") {
     "ash_touch_exploration_manager_chromeos_unittest.cc",
     "aura/pointer_watcher_adapter_unittest.cc",
     "autoclick/autoclick_unittest.cc",
-    "common/accelerators/accelerator_table_unittest.cc",
+
+    # TODO: convert to use AshTest http://crbug.com/654489.
     "common/frame/caption_buttons/frame_caption_button_container_view_unittest.cc",
     "common/frame/custom_frame_view_ash_unittest.cc",
     "common/frame/default_header_painter_unittest.cc",
+
+    # TODO: convert to use AshTest http://crbug.com/654491.
     "common/material_design/material_design_controller_unittest.cc",
+
+    # TODO: convert to use AshTest http://crbug.com/654492.
     "common/metrics/pointer_metrics_recorder_unittest.cc",
+
+    # TODO: convert to use AshTest http://crbug.com/654493.
     "common/popup_message_unittest.cc",
+
+    # TODO: convert to use AshTest http://crbug.com/654494.
     "common/shelf/shelf_background_animator_unittest.cc",
     "common/shelf/shelf_button_pressed_metric_tracker_unittest.cc",
     "common/shelf/shelf_locking_manager_unittest.cc",
     "common/shelf/shelf_model_unittest.cc",
     "common/shelf/shelf_tooltip_manager_unittest.cc",
     "common/shelf/shelf_window_watcher_unittest.cc",
+
+    # TODO: convert to use AshTest http://crbug.com/654495.
     "common/system/chromeos/ime_menu/ime_menu_tray_unittest.cc",
     "common/system/chromeos/media_security/multi_profile_media_tray_item_unittest.cc",
     "common/system/chromeos/palette/mock_palette_tool_delegate.cc",
@@ -1216,12 +1227,12 @@ test("ash_unittests") {
     "common/system/tray/tray_details_view_unittest.cc",
     "common/system/update/tray_update_unittest.cc",
     "common/system/user/tray_user_unittest.cc",
+
+    # TODO: convert to use AshTest http://crbug.com/654517.
     "common/wallpaper/wallpaper_controller_unittest.cc",
-    "common/wm/container_finder_unittest.cc",
+
+    # TODO: convert to use AshTest http://crbug.com/654524.
     "common/wm/overview/cleanup_animation_observer_unittest.cc",
-    "common/wm/workspace/workspace_event_handler_test_helper.cc",
-    "common/wm/workspace/workspace_event_handler_test_helper.h",
-    "common/wm_window_user_data_unittest.cc",
     "dip_unittest.cc",
     "display/cursor_window_controller_unittest.cc",
     "display/display_change_observer_chromeos_unittest.cc",

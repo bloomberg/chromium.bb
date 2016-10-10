@@ -20,6 +20,10 @@ namespace display {
 class Display;
 }
 
+namespace views {
+class WidgetDelegate;
+}
+
 namespace ash {
 
 class AshTestImpl;
@@ -88,6 +92,13 @@ class AshTest : public testing::Test {
       WmWindow* parent,
       const gfx::Rect& bounds = gfx::Rect(),
       int shell_window_id = kShellWindowId_Invalid);
+
+  // Creates and shows a widget. See ash/common/shell_window_ids.h for values
+  // for |container_id|.
+  static std::unique_ptr<views::Widget> CreateTestWidget(
+      const gfx::Rect& bounds,
+      views::WidgetDelegate* delegate = nullptr,
+      int container_id = kShellWindowId_DefaultContainer);
 
   // Returns the Display for the secondary display. It's assumed there are two
   // displays.
