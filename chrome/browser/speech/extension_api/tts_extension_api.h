@@ -27,38 +27,38 @@ class TtsSpeakFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("tts.speak", TTS_SPEAK)
 };
 
-class TtsStopSpeakingFunction : public ChromeSyncExtensionFunction {
+class TtsStopSpeakingFunction : public UIThreadExtensionFunction {
  private:
   ~TtsStopSpeakingFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tts.stop", TTS_STOP)
 };
 
-class TtsPauseFunction : public ChromeSyncExtensionFunction {
+class TtsPauseFunction : public UIThreadExtensionFunction {
  private:
   ~TtsPauseFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tts.pause", TTS_PAUSE)
 };
 
-class TtsResumeFunction : public ChromeSyncExtensionFunction {
+class TtsResumeFunction : public UIThreadExtensionFunction {
  private:
   ~TtsResumeFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tts.resume", TTS_RESUME)
 };
 
-class TtsIsSpeakingFunction : public ChromeSyncExtensionFunction {
+class TtsIsSpeakingFunction : public UIThreadExtensionFunction {
  private:
   ~TtsIsSpeakingFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tts.isSpeaking", TTS_ISSPEAKING)
 };
 
-class TtsGetVoicesFunction : public ChromeSyncExtensionFunction {
+class TtsGetVoicesFunction : public UIThreadExtensionFunction {
  private:
   ~TtsGetVoicesFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("tts.getVoices", TTS_GETVOICES)
 };
 

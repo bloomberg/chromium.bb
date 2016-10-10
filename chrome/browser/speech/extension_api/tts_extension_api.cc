@@ -295,30 +295,29 @@ bool TtsSpeakFunction::RunAsync() {
   return true;
 }
 
-bool TtsStopSpeakingFunction::RunSync() {
+ExtensionFunction::ResponseAction TtsStopSpeakingFunction::Run() {
   TtsController::GetInstance()->Stop();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool TtsPauseFunction::RunSync() {
+ExtensionFunction::ResponseAction TtsPauseFunction::Run() {
   TtsController::GetInstance()->Pause();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool TtsResumeFunction::RunSync() {
+ExtensionFunction::ResponseAction TtsResumeFunction::Run() {
   TtsController::GetInstance()->Resume();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool TtsIsSpeakingFunction::RunSync() {
-  SetResult(base::MakeUnique<base::FundamentalValue>(
-      TtsController::GetInstance()->IsSpeaking()));
-  return true;
+ExtensionFunction::ResponseAction TtsIsSpeakingFunction::Run() {
+  return RespondNow(OneArgument(base::MakeUnique<base::FundamentalValue>(
+      TtsController::GetInstance()->IsSpeaking())));
 }
 
-bool TtsGetVoicesFunction::RunSync() {
+ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
   std::vector<VoiceData> voices;
-  TtsController::GetInstance()->GetVoices(GetProfile(), &voices);
+  TtsController::GetInstance()->GetVoices(browser_context(), &voices);
 
   std::unique_ptr<base::ListValue> result_voices(new base::ListValue());
   for (size_t i = 0; i < voices.size(); ++i) {
@@ -347,8 +346,7 @@ bool TtsGetVoicesFunction::RunSync() {
     result_voices->Append(std::move(result_voice));
   }
 
-  SetResult(std::move(result_voices));
-  return true;
+  return RespondNow(OneArgument(std::move(result_voices)));
 }
 
 TtsAPI::TtsAPI(content::BrowserContext* context) {
