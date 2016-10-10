@@ -459,8 +459,10 @@ public class ExternalNavigationHandler {
             // user has explicitly chosen Chrome over other intent handlers, so stay in Chrome
             // unless there was a new intent handler after redirection or Chrome cannot handle it
             // any more.
+            // Custom tabs are an exception to this rule, since at no point, the user sees an intent
+            // picker and "picking Chrome" is handled inside the support library.
             if (params.getRedirectHandler() != null && incomingIntentRedirect) {
-                if (!isExternalProtocol
+                if (!isExternalProtocol && !params.getRedirectHandler().isFromCustomTabIntent()
                         && !params.getRedirectHandler().hasNewResolver(intent)) {
                     return OverrideUrlLoadingResult.NO_OVERRIDE;
                 }

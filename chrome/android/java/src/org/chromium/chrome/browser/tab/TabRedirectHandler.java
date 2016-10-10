@@ -81,8 +81,8 @@ public class TabRedirectHandler {
         if (mIsCustomTabIntent) {
             boolean sendToExternalApps = IntentUtils.safeGetBooleanExtra(intent,
                     CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, false);
-            checkIsToChrome = sendToExternalApps
-                    && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_EXTERNAL_LINK_HANDLING);
+            checkIsToChrome = !(sendToExternalApps
+                    && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_EXTERNAL_LINK_HANDLING));
         }
 
         if (checkIsToChrome) mIsInitialIntentHeadingToChrome = isIntentToChrome(mContext, intent);
