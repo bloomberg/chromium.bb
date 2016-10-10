@@ -348,7 +348,7 @@ class LayoutGrid final : public LayoutBlock {
   size_t m_autoRepeatColumns{0};
   size_t m_autoRepeatRows{0};
 
-  bool m_hasAnyOrthogonalChild;
+  Vector<LayoutBox*> m_orthogonalChildren;
 
   std::unique_ptr<OrderedTrackIndexSet> m_autoRepeatEmptyColumns{nullptr};
   std::unique_ptr<OrderedTrackIndexSet> m_autoRepeatEmptyRows{nullptr};
