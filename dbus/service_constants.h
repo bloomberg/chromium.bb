@@ -54,6 +54,17 @@ const char kSignalBurnFinishedName[] = "burn_finished";
 const char kSignalBurnUpdateName[] = "burn_progress_update";
 }  // namespace imageburn
 
+namespace imageloader {
+const char kImageLoaderServiceInterface[] = "org.chromium.ImageLoaderInterface";
+const char kImageLoaderServiceName[] = "org.chromium.ImageLoader";
+const char kImageLoaderServicePath[] = "/org/chromium/ImageLoader";
+// Methods
+const char kRegisterComponent[] = "RegisterComponent";
+const char kGetComponentVersion[] = "GetComponentVersion";
+// Constants
+const char kBadResult[] = "";
+}  // namespace imageloader
+
 namespace speech_synthesis {
 const char kSpeechSynthesizerInterface[] =
     "org.chromium.SpeechSynthesizerInterface";
