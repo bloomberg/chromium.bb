@@ -992,8 +992,8 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest,
 // TODO(lukasza): https://crbug.com/650694: Add a "Get" flavour of the test once
 // the download works both for GET and POST requests.
 
-// Disabled on Windows. See http://crbug.com/653856.
-#if defined(OS_WIN)
+// Disabled on Windows and Mac. See http://crbug.com/653856.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_DownloadViaPost DISABLED_DownloadViaPost
 #else
 #define MAYBE_DownloadViaPost DownloadViaPost
