@@ -1191,14 +1191,8 @@ public class BidirectionalStreamTest extends CronetTestBase {
             assertTrue(metrics.getSentBytesCount() > 0);
             assertTrue(metrics.getReceivedBytesCount() > 0);
         } else if (failureStep == ResponseStep.ON_STREAM_READY) {
-            // onStreamReady() happens before response headers are received, so
-            // there is no connect timing metrics.
             assertNotNull(metrics.getRequestStart());
             MetricsTestUtil.assertAfter(metrics.getRequestStart(), startTime);
-            MetricsTestUtil.checkNoConnectTiming(metrics);
-            // metrics.getResponseStart() can be null or non null
-            // TODO(xunjieli): It's weird to have a null response start but a
-            // non-null response end.
             assertNotNull(metrics.getRequestEnd());
             MetricsTestUtil.assertAfter(endTime, metrics.getRequestEnd());
             // Entire request should take more than 0 ms
@@ -1213,14 +1207,9 @@ public class BidirectionalStreamTest extends CronetTestBase {
         mTestFramework.mCronetEngine.removeRequestFinishedListener(requestFinishedListener);
     }
 
-    /*
-    Disabled temporarily due to http://crbug.com/653654
-
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
-    */
-    @DisabledTest
     public void testFailures() throws Exception {
         throwOrCancel(FailureType.CANCEL_SYNC, ResponseStep.ON_STREAM_READY, false);
         throwOrCancel(FailureType.CANCEL_ASYNC, ResponseStep.ON_STREAM_READY, false);
