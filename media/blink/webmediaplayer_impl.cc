@@ -777,6 +777,9 @@ void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
 
+  // TODO(sandersd): Move this check into GetCurrentFrameFromCompositor() when
+  // we have other ways to check if decoder owns video frame.
+  // See http://crbug.com/595716 and http://crbug.com/602708
   if (cdm_)
     return;
 
@@ -848,10 +851,16 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl:copyVideoTextureToPlatformTexture");
 
-  scoped_refptr<VideoFrame> video_frame = GetCurrentFrameFromCompositor();
+  // TODO(sandersd): Move this check into GetCurrentFrameFromCompositor() when
+  // we have other ways to check if decoder owns video frame.
+  // See http://crbug.com/595716 and http://crbug.com/602708
+  if (cdm_)
+    return false;
 
+  scoped_refptr<VideoFrame> video_frame = GetCurrentFrameFromCompositor();
   if (!video_frame.get() || !video_frame->HasTextures()) {
     return false;
   }
@@ -1570,7 +1579,11 @@ static void GetCurrentFrameAndSignal(
 
 scoped_refptr<VideoFrame>
 WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl::GetCurrentFrameFromCompositor");
+
+  // Needed when the |main_task_runner_| and |compositor_task_runner_| are the
+  // same to avoid deadlock in the Wait() below.
   if (compositor_task_runner_->BelongsToCurrentThread())
     return compositor_->GetCurrentFrameAndUpdateIfStale();
 
@@ -1589,11 +1602,14 @@ WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
 }
 
 void WebMediaPlayerImpl::UpdatePlayState() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
 #if defined(OS_ANDROID)  // WMPI_CAST
   bool is_remote = isRemote();
 #else
   bool is_remote = false;
 #endif
+
   bool is_suspended = pipeline_controller_.IsSuspended();
   bool is_backgrounded =
       IsBackgroundedSuspendEnabled() && delegate_ && delegate_->IsHidden();
@@ -1646,6 +1662,8 @@ void WebMediaPlayerImpl::SetMemoryReportingState(
 }
 
 void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
   // Do not change the state after an error has occurred.
   // TODO(sandersd): Update PipelineController to remove the need for this.
   if (IsNetworkStateError(network_state_))
