@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 
@@ -27,6 +28,8 @@ const char kInlineInstallSupportedError[] =
     "redirected to the Chrome Web Store.";
 const char kInitiatedFromPopupError[] =
     "Inline installs can not be initiated from pop-up windows.";
+const char kInitiatedFromFullscreenError[] =
+    "Inline installs can not be initiated from fullscreen.";
 
 WebstoreInlineInstaller::WebstoreInlineInstaller(
     content::WebContents* web_contents,
@@ -136,6 +139,12 @@ bool WebstoreInlineInstaller::CheckInlineInstallPermitted(
   DCHECK(browser);
   if (browser->is_type_popup()) {
     *error = kInitiatedFromPopupError;
+    return false;
+  }
+  FullscreenController* controller =
+      browser->exclusive_access_manager()->fullscreen_controller();
+  if (controller->IsFullscreenForBrowser() || controller->IsTabFullscreen()) {
+    *error = kInitiatedFromFullscreenError;
     return false;
   }
   // The store may not support inline installs for this item, in which case
