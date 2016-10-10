@@ -36,8 +36,13 @@ TEST_F(EGLTest, GetDisplay) {
   EGLDisplay display2 = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   EXPECT_EQ(display1, display2);
 
+#if defined(USE_OZONE)
+  EGLNativeDisplayType invalid_display_type =
+      static_cast<EGLNativeDisplayType>(0x1);
+#else
   EGLNativeDisplayType invalid_display_type =
       reinterpret_cast<EGLNativeDisplayType>(0x1);
+#endif
   EXPECT_NE(invalid_display_type, EGL_DEFAULT_DISPLAY);
   EXPECT_EQ(EGL_NO_DISPLAY, eglGetDisplay(invalid_display_type));
   EXPECT_EQ(EGL_SUCCESS, eglGetError());
