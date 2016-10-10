@@ -117,6 +117,7 @@ const char kUseRtpMux[] = "googUseRtpMUX";
 const char kEnableDtlsSrtp[] = "DtlsSrtpKeyAgreement";
 const char kEnableRtpDataChannels[] = "RtpDataChannels";
 // Google-specific constraint keys.
+// TODO(hta): These need to be made standard or deleted. crbug.com/605673
 const char kEnableDscp[] = "googDscp";
 const char kEnableIPv6[] = "googIPv6";
 const char kEnableVideoSuspendBelowMinBitrate[] = "googSuspendBelowMinBitrate";

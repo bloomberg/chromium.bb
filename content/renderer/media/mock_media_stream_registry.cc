@@ -55,7 +55,9 @@ void MockMediaStreamRegistry::Init(const std::string& stream_url) {
   test_stream_.setExtraData(new MediaStream());
 }
 
-void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
+void MockMediaStreamRegistry::AddVideoTrack(
+    const std::string& track_id,
+    const blink::WebMediaConstraints& constraints) {
   blink::WebMediaStreamSource blink_source;
   blink_source.initialize("mock video source id",
                           blink::WebMediaStreamSource::TypeVideo,
@@ -66,14 +68,18 @@ void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
   blink_source.setExtraData(native_source);
   blink::WebMediaStreamTrack blink_track;
   blink_track.initialize(base::UTF8ToUTF16(track_id), blink_source);
-  blink::WebMediaConstraints constraints;
-  constraints.initialize();
 
   MediaStreamVideoTrack* native_track = new MediaStreamVideoTrack(
       native_source, constraints, MediaStreamVideoSource::ConstraintsCallback(),
       true /* enabled */);
   blink_track.setTrackData(native_track);
   test_stream_.addTrack(blink_track);
+}
+
+void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
+  blink::WebMediaConstraints constraints;
+  constraints.initialize();
+  AddVideoTrack(track_id, constraints);
 }
 
 void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {

@@ -206,6 +206,7 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
     const blink::WebMediaStreamTrack& track,
     PeerConnectionDependencyFactory* factory)
     : weak_factory_(this) {
+  DCHECK(MediaStreamVideoTrack::GetVideoTrack(track));
   const blink::WebMediaConstraints& constraints =
       MediaStreamVideoTrack::GetVideoTrack(track)->constraints();
 
@@ -310,6 +311,11 @@ void MediaStreamVideoWebRtcSink::OnEnabledChanged(bool enabled) {
 void MediaStreamVideoWebRtcSink::RequestRefreshFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
   content::RequestRefreshFrameFromVideoTrack(connected_track());
+}
+
+rtc::Optional<bool> MediaStreamVideoWebRtcSink::SourceNeedsDenoisingForTesting()
+    const {
+  return video_source_->needs_denoising();
 }
 
 }  // namespace content

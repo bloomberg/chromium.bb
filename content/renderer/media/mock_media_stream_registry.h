@@ -9,6 +9,10 @@
 
 #include "content/renderer/media/media_stream_registry_interface.h"
 
+namespace blink {
+class WebMediaConstraints;
+}
+
 namespace content {
 
 // This class encapsulates creation of a Blink MediaStream having inside the
@@ -19,6 +23,8 @@ class MockMediaStreamRegistry final : public MediaStreamRegistryInterface {
   MockMediaStreamRegistry();
 
   void Init(const std::string& stream_url);
+  void AddVideoTrack(const std::string& track_id,
+                     const blink::WebMediaConstraints& constraints);
   void AddVideoTrack(const std::string& track_id);
   void AddAudioTrack(const std::string& track_id);
   blink::WebMediaStream GetMediaStream(const std::string& url) override;

@@ -20,10 +20,15 @@ namespace content {
 
 namespace {
 
-const char* const kLegalVideoConstraints[] = {
-    "width",      "height",   "aspectRatio", "frameRate",
-    "facingMode", "deviceId", "groupId",     "mediaStreamSource",
-};
+const char* const kLegalVideoConstraints[] = {"width",
+                                              "height",
+                                              "aspectRatio",
+                                              "frameRate",
+                                              "facingMode",
+                                              "deviceId",
+                                              "groupId",
+                                              "mediaStreamSource",
+                                              "googNoiseReduction"};
 
 // Returns true if |constraint| has mandatory constraints.
 bool HasMandatoryConstraints(const blink::WebMediaConstraints& constraints) {

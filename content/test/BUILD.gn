@@ -1512,6 +1512,7 @@ test("content_unittests") {
       "../renderer/media/video_track_recorder_unittest.cc",
       "../renderer/media/webrtc/media_stream_remote_video_source_unittest.cc",
       "../renderer/media/webrtc/media_stream_track_metrics_unittest.cc",
+      "../renderer/media/webrtc/media_stream_video_webrtc_sink_unittest.cc",
       "../renderer/media/webrtc/peer_connection_dependency_factory_unittest.cc",
       "../renderer/media/webrtc/processed_local_audio_source_unittest.cc",
       "../renderer/media/webrtc/stun_field_trial_unittest.cc",
