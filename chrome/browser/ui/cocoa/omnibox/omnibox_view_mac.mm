@@ -604,7 +604,9 @@ void OmniboxViewMac::ApplyTextAttributes(
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
       scheme.is_nonempty() &&
-      (security_level != security_state::SecurityStateModel::NONE)) {
+      (security_level != security_state::SecurityStateModel::NONE) &&
+      (security_level !=
+       security_state::SecurityStateModel::HTTP_SHOW_WARNING)) {
     if (security_level == security_state::SecurityStateModel::DANGEROUS) {
       // Add a strikethrough through the scheme.
       [attributedString addAttribute:NSStrikethroughStyleAttributeName

@@ -417,6 +417,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_resume_pending_(false),
       displayed_insecure_content_(false),
       displayed_content_with_cert_errors_(false),
+      displayed_password_field_on_http_(false),
+      displayed_credit_card_field_on_http_(false),
       has_accessed_initial_document_(false),
       theme_color_(SK_ColorTRANSPARENT),
       last_sent_theme_color_(SK_ColorTRANSPARENT),
@@ -2547,6 +2549,14 @@ bool WebContentsImpl::DisplayedContentWithCertErrors() const {
   return displayed_content_with_cert_errors_;
 }
 
+bool WebContentsImpl::DisplayedPasswordFieldOnHttp() const {
+  return displayed_password_field_on_http_;
+}
+
+bool WebContentsImpl::DisplayedCreditCardFieldOnHttp() const {
+  return displayed_credit_card_field_on_http_;
+}
+
 WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
   if (!delegate_)
     return NULL;
@@ -3428,6 +3438,8 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     // displayed insecure content.
     displayed_insecure_content_ = false;
     displayed_content_with_cert_errors_ = false;
+    displayed_password_field_on_http_ = false;
+    displayed_credit_card_field_on_http_ = false;
     SSLManager::NotifySSLInternalStateChanged(
         GetController().GetBrowserContext());
   }
@@ -3857,6 +3869,18 @@ void WebContentsImpl::SuspendMediaSession() {
 
 void WebContentsImpl::StopMediaSession() {
   MediaSession::Get(this)->Stop(MediaSession::SuspendType::UI);
+}
+
+void WebContentsImpl::OnPasswordInputShownOnHttp() {
+  displayed_password_field_on_http_ = true;
+  SSLManager::NotifySSLInternalStateChanged(
+      GetController().GetBrowserContext());
+}
+
+void WebContentsImpl::OnCreditCardInputShownOnHttp() {
+  displayed_credit_card_field_on_http_ = true;
+  SSLManager::NotifySSLInternalStateChanged(
+      GetController().GetBrowserContext());
 }
 
 void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {

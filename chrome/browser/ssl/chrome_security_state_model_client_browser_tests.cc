@@ -24,6 +24,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_state/switches.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -300,6 +301,38 @@ class ChromeSecurityStateModelClientTest : public CertVerifierBrowserTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeSecurityStateModelClientTest);
+};
+
+GURL GetURLWithNonLocalHostname(net::EmbeddedTestServer* server,
+                                const std::string& path) {
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("example.test");
+  return server->GetURL(path).ReplaceComponents(replace_host);
+}
+
+class ChromeSecurityStateModelClientTestWithPasswordCcSwitch
+    : public ChromeSecurityStateModelClientTest {
+ public:
+  ChromeSecurityStateModelClientTestWithPasswordCcSwitch()
+      : ChromeSecurityStateModelClientTest() {}
+
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(https_server_.Start());
+    host_resolver()->AddRule("*", embedded_test_server()->GetURL("/").host());
+    SetUpMockCertVerifierForHttpsServer(0, net::OK);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ChromeSecurityStateModelClientTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpWithPasswordsOrCcWithChip);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      ChromeSecurityStateModelClientTestWithPasswordCcSwitch);
 };
 
 class SecurityStyleChangedTest : public InProcessBrowserTest {
@@ -902,6 +935,191 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
       visible_security_state_sensitive_inputs.displayed_password_field_on_http);
   EXPECT_TRUE(visible_security_state_sensitive_inputs
                   .displayed_credit_card_field_on_http);
+}
+
+// Tests that when a visible password field is detected on an HTTP page
+// load, and when the command-line flag is set, the security level is
+// downgraded to HTTP_SHOW_WARNING.
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+                       PasswordSecurityLevelDowngraded) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(contents);
+  ASSERT_TRUE(model_client);
+
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithNonLocalHostname(embedded_test_server(),
+                                            "/password/simple_password.html"));
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
+            security_info.security_level);
+
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->GetSSL().content_status &
+              content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+// Tests that when an invisible password field is present on an HTTP page
+// load, and when the command-line flag is set, the security level is
+// downgraded to HTTP_SHOW_WARNING.
+//
+// TODO(estark): this will eventually be refined so that the warning
+// will not show up for invisible password
+// inputs. https://codereview.chromium.org/2378503002/
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+                       PasswordSecurityLevelDowngradedForInvisibleInput) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(contents);
+  ASSERT_TRUE(model_client);
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithNonLocalHostname(embedded_test_server(),
+                                 "/password/invisible_password.html"));
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
+            security_info.security_level);
+
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->GetSSL().content_status &
+              content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+// Tests that when a visible password field is detected inside an iframe
+// on an HTTP page load, and when the command-line flag is set, the
+// security level is downgraded to HTTP_SHOW_WARNING.
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+                       PasswordSecurityLevelDowngradedFromIframe) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(contents);
+  ASSERT_TRUE(model_client);
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithNonLocalHostname(embedded_test_server(),
+                                 "/password/simple_password_in_iframe.html"));
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
+            security_info.security_level);
+
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->GetSSL().content_status &
+              content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+// Tests that when a visible password field is detected inside an iframe
+// on an HTTP page load, and when the command-line flag is set, the
+// security level is downgraded to HTTP_SHOW_WARNING, even if the iframe
+// itself was loaded over HTTPS.
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+                       PasswordSecurityLevelDowngradedFromHttpsIframe) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(contents);
+  ASSERT_TRUE(model_client);
+
+  // Navigate to an HTTP URL, which loads an iframe using the host and port of
+  // |https_server_|.
+  std::string replacement_path;
+  GetFilePathWithHostAndPortReplacement(
+      "/password/simple_password_in_https_iframe.html",
+      https_server_.host_port_pair(), &replacement_path);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithNonLocalHostname(embedded_test_server(), replacement_path));
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
+            security_info.security_level);
+
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->GetSSL().content_status &
+              content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+// Tests that when a visible password field is detected on an HTTP page
+// load, and when the command-line flag is *not* set, the security level is
+// *not* downgraded to HTTP_SHOW_WARNING.
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
+                       PasswordSecurityLevelNotDowngradedWithoutSwitch) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  host_resolver()->AddRule("*", embedded_test_server()->GetURL("/").host());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(contents);
+  ASSERT_TRUE(model_client);
+
+  ui_test_utils::NavigateToURL(
+      browser(), GetURLWithNonLocalHostname(embedded_test_server(),
+                                            "/password/simple_password.html"));
+  // The security level should not be HTTP_SHOW_WARNING, because the
+  // command-line switch was not set.
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SecurityStateModel::NONE,
+            security_info.security_level);
+
+  // The appropriate SSLStatus flags should be set, however.
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->GetSSL().content_status &
+              content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+// Tests that when a visible password field is detected on an HTTPS page
+// load, and when the command-line flag is set, the security level is
+// *not* downgraded to HTTP_SHOW_WARNING.
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+                       PasswordSecurityLevelNotDowngradedOnHttps) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(contents);
+  ASSERT_TRUE(model_client);
+
+  GURL url = GetURLWithNonLocalHostname(&https_server_,
+                                        "/password/simple_password.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  // The security level should not be HTTP_SHOW_WARNING, because the page was
+  // HTTPS instead of HTTP.
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SecurityStateModel::SECURE,
+            security_info.security_level);
+
+  // The SSLStatus flags should only be set if the top-level page load was HTTP,
+  // which it was not in this case.
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_FALSE(entry->GetSSL().content_status &
+               content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
 }
 
 // Tests that the SecurityStateModel for a WebContents is up to date

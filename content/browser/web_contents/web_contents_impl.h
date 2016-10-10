@@ -419,6 +419,8 @@ class CONTENT_EXPORT WebContentsImpl
   void ResumeMediaSession() override;
   void SuspendMediaSession() override;
   void StopMediaSession() override;
+  void OnPasswordInputShownOnHttp() override;
+  void OnCreditCardInputShownOnHttp() override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
@@ -438,6 +440,12 @@ class CONTENT_EXPORT WebContentsImpl
   // Returns true if this page has displayed content loaded over HTTPS
   // with certificate errors.
   bool DisplayedContentWithCertErrors() const;
+
+  // Returns true if this page is HTTP and has displayed a password field.
+  bool DisplayedPasswordFieldOnHttp() const;
+
+  // Returns true if this page is HTTP and has displayed a credit card field.
+  bool DisplayedCreditCardFieldOnHttp() const;
 
   // Implementation of PageNavigator.
   WebContents* OpenURL(const OpenURLParams& params) override;
@@ -1249,6 +1257,12 @@ class CONTENT_EXPORT WebContentsImpl
   // True if this page displayed subresources loaded with HTTPS
   // certificate errors.
   bool displayed_content_with_cert_errors_;
+
+  // True if this page displayed a password input field on HTTP.
+  bool displayed_password_field_on_http_;
+
+  // True if this page displayed a credit card input field on HTTP.
+  bool displayed_credit_card_field_on_http_;
 
   // Whether the initial empty page has been accessed by another page, making it
   // unsafe to show the pending URL. Usually false unless another window tries

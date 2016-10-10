@@ -720,8 +720,10 @@ SkColor LocationBarViewMac::GetLocationBarIconColor() const {
   security_state::SecurityStateModel::SecurityLevel security_level =
       GetToolbarModel()->GetSecurityLevel(false);
 
-  if (security_level == security_state::SecurityStateModel::NONE)
+  if (security_level == security_state::SecurityStateModel::NONE ||
+      security_level == security_state::SecurityStateModel::HTTP_SHOW_WARNING) {
     return gfx::kChromeIconGrey;
+  }
 
   NSColor* srgb_color =
       OmniboxViewMac::GetSecureTextColor(security_level, in_dark_mode);

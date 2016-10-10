@@ -720,6 +720,18 @@ class WebContents : public PageNavigator,
   // Requests to stop the current media session.
   virtual void StopMediaSession() = 0;
 
+  // Called when the WebContents has displayed a password field on an
+  // HTTP page. This method modifies the appropriate NavigationEntry's
+  // SSLStatus to record the sensitive input field, so that embedders
+  // can adjust the UI if desired.
+  virtual void OnPasswordInputShownOnHttp() = 0;
+
+  // Called when the WebContents has displayed a credit card field on an
+  // HTTP page. This method modifies the appropriate NavigationEntry's
+  // SSLStatus to record the sensitive input field, so that embedders
+  // can adjust the UI if desired.
+  virtual void OnCreditCardInputShownOnHttp() = 0;
+
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       const base::android::JavaRef<jobject>& jweb_contents_android);

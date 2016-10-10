@@ -353,6 +353,24 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
 
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(controller_->delegate()->GetWebContents());
+
+  // For sensitive inputs (password, credit card) on HTTP, do not clear
+  // the |content_status| flag when the WebContents no longer has the
+  // flag set. This is different from how DISPLAYED_INSECURE_CONTENT and
+  // DISPLAYED_CONTENT_WITH_CERT_ERRORS are handled below. For sensitive
+  // inputs on HTTP, once the NavigationEntry has been marked as having
+  // displayed a sensitive input, it stays that way, even if the
+  // sensitive input is subsequently removed from the page.
+  if (web_contents_impl->DisplayedPasswordFieldOnHttp()) {
+    entry->GetSSL().content_status |=
+        SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP;
+  }
+
+  if (web_contents_impl->DisplayedCreditCardFieldOnHttp()) {
+    entry->GetSSL().content_status |=
+        SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP;
+  }
+
   if (entry->GetSSL().security_style == SECURITY_STYLE_UNAUTHENTICATED)
     return;
 
@@ -361,12 +379,14 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
     entry->GetSSL().content_status &= ~SSLStatus::DISPLAYED_INSECURE_CONTENT;
   if (web_contents_impl->DisplayedInsecureContent())
     entry->GetSSL().content_status |= SSLStatus::DISPLAYED_INSECURE_CONTENT;
-  if (!web_contents_impl->DisplayedContentWithCertErrors())
+  if (!web_contents_impl->DisplayedContentWithCertErrors()) {
     entry->GetSSL().content_status &=
         ~SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
-  if (web_contents_impl->DisplayedContentWithCertErrors())
+  }
+  if (web_contents_impl->DisplayedContentWithCertErrors()) {
     entry->GetSSL().content_status |=
         SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
+  }
 
   SiteInstance* site_instance = entry->site_instance();
   // Note that |site_instance| can be NULL here because NavigationEntries don't

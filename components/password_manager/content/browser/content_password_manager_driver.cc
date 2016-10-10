@@ -22,10 +22,23 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/origin_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/shell/public/cpp/interface_provider.h"
 
 namespace password_manager {
+
+namespace {
+
+void MaybeNotifyPasswordInputShownOnHttp(content::RenderFrameHost* rfh) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+  if (!content::IsOriginSecure(web_contents->GetVisibleURL())) {
+    web_contents->OnPasswordInputShownOnHttp();
+  }
+}
+
+}  // namespace
 
 ContentPasswordManagerDriver::ContentPasswordManagerDriver(
     content::RenderFrameHost* render_frame_host,
@@ -156,6 +169,7 @@ void ContentPasswordManagerDriver::PasswordFormsParsed(
 
 void ContentPasswordManagerDriver::OnPasswordFormsParsedNoRenderCheck(
     const std::vector<autofill::PasswordForm>& forms) {
+  MaybeNotifyPasswordInputShownOnHttp(render_frame_host_);
   GetPasswordManager()->OnPasswordFormsParsed(this, forms);
   GetPasswordGenerationManager()->CheckIfFormClassifierShouldRun();
 }
