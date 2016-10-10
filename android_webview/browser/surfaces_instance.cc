@@ -119,6 +119,8 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   quad_state->quad_to_target_transform = transform;
   quad_state->quad_layer_bounds = frame_size;
   quad_state->visible_quad_layer_rect = gfx::Rect(frame_size);
+  quad_state->clip_rect = clip;
+  quad_state->is_clipped = true;
   quad_state->opacity = 1.f;
 
   cc::SurfaceDrawQuad* surface_quad =
