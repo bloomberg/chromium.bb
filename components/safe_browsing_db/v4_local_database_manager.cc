@@ -272,7 +272,7 @@ void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
 // End: SafeBrowsingDatabaseManager implementation
 //
 
-void V4LocalDatabaseManager::DatabaseReady(
+void V4LocalDatabaseManager::DatabaseReadyForChecks(
     std::unique_ptr<V4Database> v4_database) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -281,14 +281,29 @@ void V4LocalDatabaseManager::DatabaseReady(
   if (enabled_) {
     v4_database_ = std::move(v4_database);
 
-    // The database is in place. Start fetching updates now.
-    v4_update_protocol_manager_->ScheduleNextUpdate(
-        v4_database_->GetStoreStateMap());
+    // The consistency of the stores read from the disk needs to verified. Post
+    // that task on the task runner. It calls |DatabaseReadyForUpdates|
+    // callback with the stores to reset, if any, and then we can schedule the
+    // database updates.
+    v4_database_->VerifyChecksum(
+        base::Bind(&V4LocalDatabaseManager::DatabaseReadyForUpdates,
+                   base::Unretained(this)));
 
     ProcessQueuedChecks();
   } else {
     // Schedule the deletion of v4_database off IO thread.
     V4Database::Destroy(std::move(v4_database));
+  }
+}
+
+void V4LocalDatabaseManager::DatabaseReadyForUpdates(
+    const std::vector<ListIdentifier>& stores_to_reset) {
+  if (enabled_) {
+    v4_database_->ResetStores(stores_to_reset);
+
+    // The database is ready to process updates. Schedule them now.
+    v4_update_protocol_manager_->ScheduleNextUpdate(
+        v4_database_->GetStoreStateMap());
   }
 }
 
@@ -456,7 +471,7 @@ void V4LocalDatabaseManager::SetupDatabase() {
   // operation. Instead, do that on the task_runner and when the new database
   // has been created, swap it out on the IO thread.
   NewDatabaseReadyCallback db_ready_callback = base::Bind(
-      &V4LocalDatabaseManager::DatabaseReady, base::Unretained(this));
+      &V4LocalDatabaseManager::DatabaseReadyForChecks, base::Unretained(this));
   V4Database::Create(task_runner_, base_path_, list_infos_, db_ready_callback);
 }
 

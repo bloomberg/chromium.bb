@@ -134,8 +134,15 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   ~V4LocalDatabaseManager() override;
 
   // Called when all the stores managed by the database have been read from
-  // disk after startup and the database is ready for use.
-  void DatabaseReady(std::unique_ptr<V4Database> v4_database);
+  // disk after startup and the database is ready for checking resource
+  // reputation.
+  void DatabaseReadyForChecks(std::unique_ptr<V4Database> v4_database);
+
+  // Called when all the stores managed by the database have been verified for
+  // checksum correctness after startup and the database is ready for applying
+  // updates.
+  void DatabaseReadyForUpdates(
+      const std::vector<ListIdentifier>& stores_to_reset);
 
   // Called when the database has been updated and schedules the next update.
   void DatabaseUpdated();

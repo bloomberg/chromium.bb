@@ -69,7 +69,7 @@ void V4Database::CreateOnTaskRunner(
       new V4Database(db_task_runner, std::move(store_map)));
 
   // Database is done loading, pass it to the new_db_callback on the caller's
-  // thread.
+  // thread. This would unblock resource loads.
   callback_task_runner->PostTask(
       FROM_HERE, base::Bind(new_db_callback, base::Passed(&v4_database)));
 }
@@ -81,11 +81,11 @@ V4Database::V4Database(
       store_map_(std::move(store_map)),
       pending_store_updates_(0) {
   DCHECK(db_task_runner->RunsTasksOnCurrentThread());
-  // TODO(vakh): Implement skeleton
 }
 
 // static
 void V4Database::Destroy(std::unique_ptr<V4Database> v4_database) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   V4Database* v4_database_raw = v4_database.release();
   if (v4_database_raw) {
     v4_database_raw->db_task_runner_->DeleteSoon(FROM_HERE, v4_database_raw);
@@ -152,17 +152,6 @@ void V4Database::UpdatedStoreReady(ListIdentifier identifier,
   }
 }
 
-bool V4Database::ResetDatabase() {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
-  bool reset_success = true;
-  for (const auto& store_map_iter : *store_map_) {
-    if (!store_map_iter.second->Reset()) {
-      reset_success = false;
-    }
-  }
-  return reset_success;
-}
-
 std::unique_ptr<StoreStateMap> V4Database::GetStoreStateMap() {
   std::unique_ptr<StoreStateMap> store_state_map =
       base::MakeUnique<StoreStateMap>();
@@ -187,6 +176,40 @@ void V4Database::GetStoresMatchingFullHash(
       matched_store_and_hash_prefixes->emplace_back(identifier, hash_prefix);
     }
   }
+}
+
+void V4Database::ResetStores(
+    const std::vector<ListIdentifier>& stores_to_reset) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (const ListIdentifier& identifier : stores_to_reset) {
+    store_map_->at(identifier)->Reset();
+  }
+}
+
+void V4Database::VerifyChecksum(
+    DatabaseReadyForUpdatesCallback db_ready_for_updates_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(vakh): Consider using PostTaskAndReply instead.
+  const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner =
+      base::ThreadTaskRunnerHandle::Get();
+  db_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&V4Database::VerifyChecksumOnTaskRunner,
+                            base::Unretained(this), callback_task_runner,
+                            db_ready_for_updates_callback));
+}
+
+void V4Database::VerifyChecksumOnTaskRunner(
+    const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
+    DatabaseReadyForUpdatesCallback db_ready_for_updates_callback) {
+  std::vector<ListIdentifier> stores_to_reset;
+  for (const auto& store_map_iter : *store_map_) {
+    if (!store_map_iter.second->VerifyChecksum()) {
+      stores_to_reset.push_back(store_map_iter.first);
+    }
+  }
+
+  callback_task_runner->PostTask(
+      FROM_HERE, base::Bind(db_ready_for_updates_callback, stores_to_reset));
 }
 
 ListInfo::ListInfo(const bool fetch_updates,

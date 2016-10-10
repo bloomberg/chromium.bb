@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -798,6 +799,52 @@ TEST_F(V4StoreTest, TestMergeUpdatesFailsChecksum) {
   EXPECT_EQ(CHECKSUM_MISMATCH_FAILURE,
             V4Store(task_runner_, store_path_)
                 .MergeUpdate(prefix_map_old, HashPrefixMap(), nullptr, "aawc"));
+}
+
+TEST_F(V4StoreTest, TestChecksumErrorOnStartup) {
+  // First the case of checksum not matching after reading from disk.
+  ListUpdateResponse list_update_response;
+  list_update_response.set_new_client_state("test_client_state");
+  list_update_response.set_platform_type(LINUX_PLATFORM);
+  list_update_response.set_response_type(ListUpdateResponse::FULL_UPDATE);
+  list_update_response.mutable_checksum()->set_sha256(
+      std::string(crypto::kSHA256Length, 0));
+  WriteFileFormatProtoToFile(0x600D71FE, 9, &list_update_response);
+  V4Store store(task_runner_, store_path_);
+  EXPECT_TRUE(store.expected_checksum_.empty());
+
+  EXPECT_EQ(READ_SUCCESS, store.ReadFromDisk());
+  EXPECT_TRUE(!store.expected_checksum_.empty());
+  EXPECT_EQ("test_client_state", store.state());
+
+  EXPECT_FALSE(store.VerifyChecksum());
+
+  // Now the case of checksum matching after reading from disk.
+  // Proof of checksum mismatch using python:
+  // >>> import hashlib
+  // >>> m = hashlib.sha256()
+  // >>> m.update("abcde")
+  // >>> import base64
+  // >>> encoded = base64.b64encode(m.digest())
+  // >>> encoded
+  // 'NrvlDtloQdEEQ7y2cNZVTwo0t2G+Z+ycSorSwMRMpCw='
+  std::string expected_checksum;
+  base::Base64Decode("NrvlDtloQdEEQ7y2cNZVTwo0t2G+Z+ycSorSwMRMpCw=",
+                     &expected_checksum);
+  ThreatEntrySet* additions = list_update_response.add_additions();
+  additions->set_compression_type(RAW);
+  additions->mutable_raw_hashes()->set_prefix_size(5);
+  additions->mutable_raw_hashes()->set_raw_hashes("abcde");
+  list_update_response.mutable_checksum()->set_sha256(expected_checksum);
+  WriteFileFormatProtoToFile(0x600D71FE, 9, &list_update_response);
+  V4Store another_store(task_runner_, store_path_);
+  EXPECT_TRUE(another_store.expected_checksum_.empty());
+
+  EXPECT_EQ(READ_SUCCESS, another_store.ReadFromDisk());
+  EXPECT_TRUE(!another_store.expected_checksum_.empty());
+  EXPECT_EQ("test_client_state", another_store.state());
+
+  EXPECT_TRUE(another_store.VerifyChecksum());
 }
 
 }  // namespace safe_browsing

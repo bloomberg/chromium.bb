@@ -19,15 +19,11 @@ class FakeV4Store : public V4Store {
  public:
   FakeV4Store(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
               const base::FilePath& store_path,
-              const bool reset_succeeds,
               const bool hash_prefix_matches)
       : V4Store(
             task_runner,
             base::FilePath(store_path.value() + FILE_PATH_LITERAL(".fake"))),
-        hash_prefix_should_match_(hash_prefix_matches),
-        reset_succeeds_(reset_succeeds) {}
-
-  bool Reset() override { return reset_succeeds_; }
+        hash_prefix_should_match_(hash_prefix_matches) {}
 
   HashPrefix GetMatchingHashPrefix(const FullHash& full_hash) override {
     return hash_prefix_should_match_ ? full_hash : HashPrefix();
@@ -39,30 +35,24 @@ class FakeV4Store : public V4Store {
 
  private:
   bool hash_prefix_should_match_;
-  bool reset_succeeds_;
 };
 
-// This factory creates a "fake" store. It allows the caller to specify that the
-// first store should fail on Reset() i.e. return false. All subsequent stores
-// always return true. This is used to test the Reset() method in V4Database.
+// This factory creates a "fake" store. It allows the caller to specify whether
+// the store has a hash prefix matching a full hash. This is used to test the
+// |GetStoresMatchingFullHash()| method in |V4Database|.
 class FakeV4StoreFactory : public V4StoreFactory {
  public:
-  FakeV4StoreFactory(bool next_store_reset_fails, bool hash_prefix_matches)
-      : hash_prefix_should_match_(hash_prefix_matches),
-        next_store_reset_fails_(next_store_reset_fails) {}
+  FakeV4StoreFactory(bool hash_prefix_matches)
+      : hash_prefix_should_match_(hash_prefix_matches) {}
 
   V4Store* CreateV4Store(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const base::FilePath& store_path) override {
-    bool reset_succeeds = !next_store_reset_fails_;
-    next_store_reset_fails_ = false;
-    return new FakeV4Store(task_runner, store_path, reset_succeeds,
-                           hash_prefix_should_match_);
+    return new FakeV4Store(task_runner, store_path, hash_prefix_should_match_);
   }
 
  private:
   bool hash_prefix_should_match_;
-  bool next_store_reset_fails_;
 };
 
 class V4DatabaseTest : public PlatformTest {
@@ -81,6 +71,7 @@ class V4DatabaseTest : public PlatformTest {
 
     created_but_not_called_back_ = false;
     created_and_called_back_ = false;
+    verify_checksum_called_back_ = false;
 
     callback_db_updated_ =
         base::Bind(&V4DatabaseTest::DatabaseUpdated, base::Unretained(this));
@@ -97,10 +88,8 @@ class V4DatabaseTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
-  void RegisterFactory(bool fails_first_reset,
-                       bool hash_prefix_matches = true) {
-    factory_.reset(
-        new FakeV4StoreFactory(fails_first_reset, hash_prefix_matches));
+  void RegisterFactory(bool hash_prefix_matches = true) {
+    factory_.reset(new FakeV4StoreFactory(hash_prefix_matches));
     V4Database::RegisterStoreFactoryForTest(factory_.get());
   }
 
@@ -136,8 +125,6 @@ class V4DatabaseTest : public PlatformTest {
       const auto& expected_store_path = expected_store_paths_[i];
       EXPECT_EQ(expected_store_path, store->store_path());
     }
-
-    EXPECT_EQ(expected_resets_successfully_, v4_database->ResetDatabase());
 
     EXPECT_FALSE(created_and_called_back_);
     created_and_called_back_ = true;
@@ -195,6 +182,11 @@ class V4DatabaseTest : public PlatformTest {
     }
   }
 
+  void VerifyChecksumCallback(const std::vector<ListIdentifier>& stores) {
+    EXPECT_FALSE(verify_checksum_called_back_);
+    verify_checksum_called_back_ = true;
+  }
+
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<V4Database> v4_database_;
   base::FilePath database_dirname_;
@@ -202,10 +194,10 @@ class V4DatabaseTest : public PlatformTest {
   content::TestBrowserThreadBundle thread_bundle_;
   bool created_but_not_called_back_;
   bool created_and_called_back_;
+  bool verify_checksum_called_back_;
   ListInfos list_infos_;
   std::vector<ListIdentifier> expected_identifiers_;
   std::vector<base::FilePath> expected_store_paths_;
-  bool expected_resets_successfully_;
   std::unique_ptr<FakeV4StoreFactory> factory_;
   DatabaseUpdatedCallback callback_db_updated_;
   NewDatabaseReadyCallback callback_db_ready_;
@@ -216,22 +208,7 @@ class V4DatabaseTest : public PlatformTest {
 
 // Test to set up the database with fake stores.
 TEST_F(V4DatabaseTest, TestSetupDatabaseWithFakeStores) {
-  expected_resets_successfully_ = true;
-  RegisterFactory(!expected_resets_successfully_);
-
-  V4Database::Create(task_runner_, database_dirname_, list_infos_,
-                     callback_db_ready_);
-  created_but_not_called_back_ = true;
-  task_runner_->RunPendingTasks();
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(true, created_and_called_back_);
-}
-
-// Test to set up the database with fake stores that fail to reset.
-TEST_F(V4DatabaseTest, TestSetupDatabaseWithFakeStoresFailsReset) {
-  expected_resets_successfully_ = false;
-  RegisterFactory(!expected_resets_successfully_);
+  RegisterFactory();
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
@@ -244,8 +221,7 @@ TEST_F(V4DatabaseTest, TestSetupDatabaseWithFakeStoresFailsReset) {
 
 // Test to check database updates as expected.
 TEST_F(V4DatabaseTest, TestApplyUpdateWithNewStates) {
-  expected_resets_successfully_ = true;
-  RegisterFactory(!expected_resets_successfully_);
+  RegisterFactory();
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
@@ -275,8 +251,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithNewStates) {
 
 // Test to ensure no state updates leads to no store updates.
 TEST_F(V4DatabaseTest, TestApplyUpdateWithNoNewState) {
-  expected_resets_successfully_ = true;
-  RegisterFactory(!expected_resets_successfully_);
+  RegisterFactory();
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
@@ -306,8 +281,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithNoNewState) {
 
 // Test to ensure no updates leads to no store updates.
 TEST_F(V4DatabaseTest, TestApplyUpdateWithEmptyUpdate) {
-  expected_resets_successfully_ = true;
-  RegisterFactory(!expected_resets_successfully_);
+  RegisterFactory();
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
@@ -338,8 +312,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithEmptyUpdate) {
 
 // Test to ensure invalid update leads to no store changes.
 TEST_F(V4DatabaseTest, TestApplyUpdateWithInvalidUpdate) {
-  expected_resets_successfully_ = true;
-  RegisterFactory(!expected_resets_successfully_);
+  RegisterFactory();
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
@@ -369,8 +342,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithInvalidUpdate) {
 // Test to ensure the case that all stores match a given full hash.
 TEST_F(V4DatabaseTest, TestAllStoresMatchFullHash) {
   bool hash_prefix_matches = true;
-  expected_resets_successfully_ = true;
-  RegisterFactory(!expected_resets_successfully_, hash_prefix_matches);
+  RegisterFactory(hash_prefix_matches);
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
@@ -395,8 +367,7 @@ TEST_F(V4DatabaseTest, TestAllStoresMatchFullHash) {
 // Test to ensure the case that no stores match a given full hash.
 TEST_F(V4DatabaseTest, TestNoStoreMatchesFullHash) {
   bool hash_prefix_matches = false;
-  expected_resets_successfully_ = true;
-  RegisterFactory(!expected_resets_successfully_, hash_prefix_matches);
+  RegisterFactory(hash_prefix_matches);
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
@@ -417,8 +388,7 @@ TEST_F(V4DatabaseTest, TestNoStoreMatchesFullHash) {
 TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHash) {
   // Setup stores to not match the full hash.
   bool hash_prefix_matches = false;
-  expected_resets_successfully_ = true;
-  RegisterFactory(!expected_resets_successfully_, hash_prefix_matches);
+  RegisterFactory(hash_prefix_matches);
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
@@ -447,8 +417,7 @@ TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHash) {
 TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHashBecauseOfStoresToMatch) {
   // Setup all stores to match the full hash.
   bool hash_prefix_matches = true;
-  expected_resets_successfully_ = true;
-  RegisterFactory(!expected_resets_successfully_, hash_prefix_matches);
+  RegisterFactory(hash_prefix_matches);
 
   V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
@@ -465,6 +434,32 @@ TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHashBecauseOfStoresToMatch) {
   EXPECT_EQ(1u, store_and_hash_prefixes.size());
   EXPECT_EQ(store_and_hash_prefixes.begin()->list_id, linux_malware_id_);
   EXPECT_FALSE(store_and_hash_prefixes.begin()->hash_prefix.empty());
+}
+
+TEST_F(V4DatabaseTest, VerifyChecksumCalledAsync) {
+  bool hash_prefix_matches = true;
+  RegisterFactory(hash_prefix_matches);
+
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
+                     callback_db_ready_);
+  created_but_not_called_back_ = true;
+  task_runner_->RunPendingTasks();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(true, created_and_called_back_);
+
+  // verify_checksum_called_back_ set to false in the constructor.
+  EXPECT_FALSE(verify_checksum_called_back_);
+  // Now call VerifyChecksum and pass the callback that sets
+  // verify_checksum_called_back_ to true.
+  v4_database_->VerifyChecksum(base::Bind(
+      &V4DatabaseTest::VerifyChecksumCallback, base::Unretained(this)));
+  // verify_checksum_called_back_ should still be false since the checksum
+  // verification is async.
+  EXPECT_FALSE(verify_checksum_called_back_);
+  task_runner_->RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(verify_checksum_called_back_);
 }
 
 }  // namespace safe_browsing

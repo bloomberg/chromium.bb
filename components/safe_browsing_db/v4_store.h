@@ -180,8 +180,16 @@ class V4Store {
   // of the hash prefixes.
   void Initialize();
 
-  // Reset internal state and delete the backing file.
-  virtual bool Reset();
+  // Reset internal state.
+  void Reset();
+
+  // Scheduled after reading the store file from disk on startup. When run, it
+  // ensures that the checksum of the hash prefixes in lexicographical sorted
+  // order matches the expected value in |expected_checksum_|. Returns true if
+  // it matches; false otherwise. Checksum verification can take a long time,
+  // so it is performed outside of the hotpath of loading SafeBrowsing database,
+  // which blocks resource loads.
+  bool VerifyChecksum();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestReadFromEmptyFile);
@@ -246,6 +254,7 @@ class V4Store {
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestAdditionsWithRiceEncodingSucceeds);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestRemovalsWithRiceEncodingSucceeds);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestMergeUpdatesFailsChecksum);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestChecksumErrorOnStartup);
   friend class V4StoreTest;
 
   // If |prefix_size| is within expected range, and |raw_hashes_length| is a
@@ -293,8 +302,9 @@ class V4Store {
   // Merges the prefix map from the old store (|old_hash_prefix_map|) and the
   // update (additions_map) to populate the prefix map for the current store.
   // The indices in the |raw_removals| list, which may be NULL, are not merged.
-  // The SHA256 checksum of the final list of hash prefixes, in lexographically
-  // sorted order, must match |expected_checksum| (if it's not empty).
+  // The SHA256 checksum of the final list of hash prefixes, in
+  // lexicographically sorted order, must match |expected_checksum| (if it's not
+  // empty).
   ApplyUpdateResult MergeUpdate(const HashPrefixMap& old_hash_prefix_map,
                                 const HashPrefixMap& additions_map,
                                 const ::google::protobuf::RepeatedField<
@@ -344,6 +354,10 @@ class V4Store {
   // Writes the FULL_UPDATE |response| to disk as a V4StoreFileFormat proto.
   StoreWriteResult WriteToDisk(
       std::unique_ptr<ListUpdateResponse> response) const;
+
+  // The checksum value as read from the disk, until it is verified. Once
+  // verified, it is cleared.
+  std::string expected_checksum_;
 
   // The state of the store as returned by the PVer4 server in the last applied
   // update response.
