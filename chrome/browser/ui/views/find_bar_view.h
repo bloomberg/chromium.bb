@@ -70,7 +70,6 @@ class FindBarView : public DropdownBarView,
   void SetFocusAndSelection(bool select_all) override;
 
   // DropdownBarView:
-  void OnPaintBackground(gfx::Canvas* canvas) override;
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
 

@@ -27,7 +27,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -160,11 +159,6 @@ FindBarView::FindBarView(FindBarHost* host)
 
   EnableCanvasFlippingForRTLUI(true);
 
-  // The background color is not used since there's no arrow.
-  SetBorder(base::MakeUnique<views::BubbleBorder>(
-      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
-      gfx::kPlaceholderColor));
-
   match_count_text_->SetEventTargeter(
       base::MakeUnique<views::ViewTargeter>(this));
   AddChildViewAt(match_count_text_, 1);
@@ -258,16 +252,6 @@ void FindBarView::SetFocusAndSelection(bool select_all) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // FindBarView, views::View overrides:
-
-void FindBarView::OnPaintBackground(gfx::Canvas* canvas) {
-  // Draw within the lines.
-  canvas->Save();
-  gfx::Rect bounds = GetLocalBounds();
-  bounds.Inset(border()->GetInsets());
-  canvas->ClipRect(bounds);
-  views::View::OnPaintBackground(canvas);
-  canvas->Restore();
-}
 
 void FindBarView::Layout() {
   views::View::Layout();
@@ -427,9 +411,13 @@ const char* FindBarView::GetClassName() const {
 void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SkColor bg_color = theme->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultBackground);
-  set_background(views::Background::CreateSolidBackground(bg_color));
-  match_count_text_->SetBackgroundColor(bg_color);
+  auto border = base::MakeUnique<views::BubbleBorder>(
+      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
+      bg_color);
+  set_background(new views::BubbleBackground(border.get()));
+  SetBorder(std::move(border));
 
+  match_count_text_->SetBackgroundColor(bg_color);
   SkColor text_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldDefaultColor);
   match_count_text_->SetEnabledColor(SkColorSetA(text_color, 0x69));
