@@ -882,10 +882,7 @@ TilePriority PictureLayerTiling::ComputePriorityForTile(
                                                : TilePriority::EVENTUALLY;
   switch (priority_rect_type) {
     case VISIBLE_RECT:
-      return TilePriority(resolution_, priority_bin, 0);
     case PENDING_VISIBLE_RECT:
-      if (priority_bin < TilePriority::SOON)
-        priority_bin = TilePriority::SOON;
       return TilePriority(resolution_, priority_bin, 0);
     case SKEWPORT_RECT:
     case SOON_BORDER_RECT:

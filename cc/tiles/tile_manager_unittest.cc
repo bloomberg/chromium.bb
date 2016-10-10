@@ -552,7 +552,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
             actual_required_for_activation_tiles);
 }
 
-TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
+TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeSoon) {
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
   gfx::Size layer_bounds(1000, 1000);
@@ -581,12 +581,11 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
       SMOOTHNESS_TAKES_PRIORITY, RasterTilePriorityQueue::Type::ALL));
   EXPECT_FALSE(queue->IsEmpty());
 
-  // Get all the tiles that are NOW or SOON and make sure they are ready to
-  // draw.
+  // Get all the tiles that are NOW and make sure they are ready to draw.
   std::vector<Tile*> all_tiles;
   while (!queue->IsEmpty()) {
     PrioritizedTile prioritized_tile = queue->Top();
-    if (prioritized_tile.priority().priority_bin >= TilePriority::EVENTUALLY)
+    if (prioritized_tile.priority().priority_bin >= TilePriority::SOON)
       break;
 
     all_tiles.push_back(prioritized_tile.tile());

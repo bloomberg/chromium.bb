@@ -145,14 +145,16 @@ RasterTilePriorityQueueAll::GetNextQueues() const {
 
   switch (tree_priority_) {
     case SMOOTHNESS_TAKES_PRIORITY: {
-      // If we're down to eventually bin tiles on the active tree and there
-      // is a pending tree, process the entire pending tree to allow tiles
-      // required for activation to be initialized when memory policy only
-      // allows prepaint. The eventually bin tiles on the active tree are
-      // lowest priority since that work is likely to be thrown away when
-      // we activate.
-      if (active_priority.priority_bin == TilePriority::EVENTUALLY)
+      // If we're down to soon bin tiles on the active tree and there
+      // is a pending tree, process the now tiles in the pending tree to allow
+      // tiles required for activation to be initialized when memory policy only
+      // allows prepaint. The soon/eventually bin tiles on the active tree are
+      // lowest priority since that work is likely to be thrown away when we
+      // activate.
+      if (active_priority.priority_bin >= TilePriority::SOON &&
+          pending_priority.priority_bin == TilePriority::NOW) {
         return pending_queues_;
+      }
       return active_queues_;
     }
     case NEW_CONTENT_TAKES_PRIORITY: {
