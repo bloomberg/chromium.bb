@@ -13,6 +13,7 @@
 #include "wtf/Vector.h"
 #include <memory>
 #include <v8-inspector.h>
+#include <v8-profiler.h>
 #include <v8.h>
 
 namespace blink {
@@ -103,6 +104,7 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient {
       const v8::FunctionCallbackInfo<v8::Value>&);
 
   std::unique_ptr<v8_inspector::V8Inspector> m_v8Inspector;
+  std::unique_ptr<v8::TracingCpuProfiler> m_v8TracingCpuProfiler;
   Vector<std::unique_ptr<Timer<ThreadDebugger>>> m_timers;
   Vector<v8_inspector::V8InspectorClient::TimerCallback> m_timerCallbacks;
   Vector<void*> m_timerData;
