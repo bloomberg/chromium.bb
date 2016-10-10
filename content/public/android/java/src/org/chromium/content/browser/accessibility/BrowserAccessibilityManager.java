@@ -816,18 +816,24 @@ public class BrowserAccessibilityManager {
             int virtualViewId, boolean canScrollForward, boolean canScrollBackward,
             boolean canScrollUp, boolean canScrollDown, boolean canScrollLeft,
             boolean canScrollRight, boolean clickable, boolean editableText, boolean enabled,
-            boolean focusable, boolean focused, boolean isCollapsed, boolean isExpanded) {
+            boolean focusable, boolean focused, boolean isCollapsed, boolean isExpanded,
+            boolean hasNonEmptyValue) {
         node.addAction(AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
         node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
         node.addAction(AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
         node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
 
         if (editableText && enabled) {
+            // TODO: don't support actions that modify it if it's read-only (but
+            // SET_SELECTION and COPY are okay).
             node.addAction(ACTION_SET_TEXT);
-            node.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
-            node.addAction(AccessibilityNodeInfo.ACTION_CUT);
-            node.addAction(AccessibilityNodeInfo.ACTION_COPY);
             node.addAction(AccessibilityNodeInfo.ACTION_PASTE);
+
+            if (hasNonEmptyValue) {
+                node.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
+                node.addAction(AccessibilityNodeInfo.ACTION_CUT);
+                node.addAction(AccessibilityNodeInfo.ACTION_COPY);
+            }
         }
 
         if (canScrollForward) {

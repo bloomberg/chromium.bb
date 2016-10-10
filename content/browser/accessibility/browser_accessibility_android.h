@@ -51,6 +51,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool CanOpenPopup() const;
 
   bool HasFocusableChild() const;
+  bool HasNonEmptyValue() const;
 
   const char* GetClassName() const;
   base::string16 GetText() const override;

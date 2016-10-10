@@ -1343,6 +1343,10 @@ bool BrowserAccessibilityAndroid::HasFocusableChild() const {
   return false;
 }
 
+bool BrowserAccessibilityAndroid::HasNonEmptyValue() const {
+  return IsEditableText() && !GetValue().empty();
+}
+
 bool BrowserAccessibilityAndroid::HasOnlyTextChildren() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!

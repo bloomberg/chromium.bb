@@ -114,7 +114,8 @@ public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibil
             int virtualViewId, boolean canScrollForward, boolean canScrollBackward,
             boolean canScrollUp, boolean canScrollDown, boolean canScrollLeft,
             boolean canScrollRight, boolean clickable, boolean editableText, boolean enabled,
-            boolean focusable, boolean focused, boolean isCollapsed, boolean isExpanded) {
+            boolean focusable, boolean focused, boolean isCollapsed, boolean isExpanded,
+            boolean hasNonEmptyValue) {
         node.addAction(AccessibilityAction.ACTION_NEXT_HTML_ELEMENT);
         node.addAction(AccessibilityAction.ACTION_PREVIOUS_HTML_ELEMENT);
         node.addAction(AccessibilityAction.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
@@ -122,7 +123,13 @@ public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibil
 
         if (editableText && enabled) {
             node.addAction(AccessibilityAction.ACTION_SET_TEXT);
-            node.addAction(AccessibilityAction.ACTION_SET_SELECTION);
+            node.addAction(AccessibilityAction.ACTION_PASTE);
+
+            if (hasNonEmptyValue) {
+                node.addAction(AccessibilityAction.ACTION_SET_SELECTION);
+                node.addAction(AccessibilityAction.ACTION_CUT);
+                node.addAction(AccessibilityAction.ACTION_COPY);
+            }
         }
 
         if (canScrollForward) {
