@@ -470,12 +470,7 @@ void BrowserAccessibilityManager::ActivateFindInPageResult(
     return;
 
   // If an ancestor of this node is a leaf node, fire the notification on that.
-  BrowserAccessibility* ancestor = node->GetParent();
-  while (ancestor && ancestor != GetRoot()) {
-    if (ancestor->PlatformIsLeaf())
-      node = ancestor;
-    ancestor = ancestor->GetParent();
-  }
+  node = node->GetClosestPlatformObject();
 
   // The "scrolled to anchor" notification is a great way to get a
   // screen reader to jump directly to a specific location in a document.

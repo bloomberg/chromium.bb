@@ -223,14 +223,9 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   }
 
   // Sometimes we get events on nodes in our internal accessibility tree
-  // that aren't exposed on Android. Walk up the ancestors and update |node|
-  // to point to the highest ancestor that's a leaf node.
-  BrowserAccessibility* parent = node->GetParent();
-  while (parent) {
-    if (parent->PlatformIsLeaf())
-      node = parent;
-    parent = parent->GetParent();
-  }
+  // that aren't exposed on Android. Update |node| to point to the highest
+  // ancestor that's a leaf node.
+  node = node->GetClosestPlatformObject();
 
   // Always send AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED to notify
   // the Android system that the accessibility hierarchy rooted at this
