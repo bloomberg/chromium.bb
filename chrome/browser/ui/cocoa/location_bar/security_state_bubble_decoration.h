@@ -68,6 +68,7 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
   bool OnMousePressed(NSRect frame, NSPoint location) override;
   bool AcceptsMousePress() override;
   NSPoint GetBubblePointInFrame(NSRect frame) override;
+  NSString* GetToolTip() override;
 
   // BubbleDecoration:
   NSColor* GetBackgroundBorderColor() override;

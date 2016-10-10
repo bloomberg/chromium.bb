@@ -11,9 +11,11 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_palette.h"
@@ -288,6 +290,11 @@ NSPoint SecurityStateBubbleDecoration::GetBubblePointInFrame(NSRect frame) {
   NSRect image_rect = GetImageRectInFrame(frame);
   return NSMakePoint(NSMidX(image_rect),
                      NSMaxY(image_rect) - kPageInfoBubblePointYOffset);
+}
+
+NSString* SecurityStateBubbleDecoration::GetToolTip() {
+  return [NSString stringWithFormat:@"%@. %@", full_label_.get(),
+                   l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON)];
 }
 
 //////////////////////////////////////////////////////////////////
