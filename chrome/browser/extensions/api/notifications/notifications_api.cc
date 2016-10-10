@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -49,9 +50,15 @@
 #include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 
+using message_center::NotifierId;
+
 namespace extensions {
 
 namespace notifications = api::notifications;
+
+const base::Feature kAllowFullscreenAppNotificationsFeature{
+  "FSNotificationsApp", base::FEATURE_DISABLED_BY_DEFAULT
+};
 
 namespace {
 
@@ -198,9 +205,24 @@ class NotificationsApiDelegate : public NotificationDelegate {
         api_function_->GetProfile())->GetAppWindowsForApp(extension_id_);
     for (const auto& window : windows) {
       // Window must be fullscreen and visible
-      if (window->IsFullscreen() && window->GetBaseWindow()->IsActive())
-        return true;
+      if (window->IsFullscreen() && window->GetBaseWindow()->IsActive()) {
+        bool enabled = base::FeatureList::IsEnabled(
+            kAllowFullscreenAppNotificationsFeature);
+        if (enabled) {
+          UMA_HISTOGRAM_ENUMERATION("Notifications.Display_Fullscreen.Shown",
+                                    NotifierId::APPLICATION,
+                                    NotifierId::SIZE);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(
+              "Notifications.Display_Fullscreen.Suppressed",
+              NotifierId::APPLICATION,
+              NotifierId::SIZE);
+
+        }
+        return enabled;
+      }
     }
+
     return false;
   }
 

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "url/gurl.h"
@@ -14,6 +15,12 @@
 namespace content {
 class BrowserContext;
 }
+
+namespace features {
+
+extern const base::Feature kAllowFullscreenWebNotificationsFeature;
+
+} // namespace features
 
 // Base class for the PersistentNotificationDelegate and the
 // NotificationObjectProxy. All common functionality for displaying web

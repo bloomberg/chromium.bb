@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/web_notification_delegate.h"
 
+#include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,6 +14,18 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/message_center/notifier_settings.h"
+
+using message_center::NotifierId;
+
+namespace features {
+
+const base::Feature kAllowFullscreenWebNotificationsFeature{
+  "FSNotificationsWeb", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
+} // namespace features
+
 
 WebNotificationDelegate::WebNotificationDelegate(
     content::BrowserContext* browser_context,
@@ -59,7 +73,19 @@ bool WebNotificationDelegate::ShouldDisplayOverFullscreen() const {
     if (active_contents->GetURL().GetOrigin() == origin_ &&
         browser->exclusive_access_manager()->context()->IsFullscreen() &&
         browser->window()->IsActive()) {
-      return true;
+      bool enabled = base::FeatureList::IsEnabled(
+          features::kAllowFullscreenWebNotificationsFeature);
+      if (enabled) {
+        UMA_HISTOGRAM_ENUMERATION("Notifications.Display_Fullscreen.Shown",
+                                  NotifierId::WEB_PAGE,
+                                  NotifierId::SIZE);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Notifications.Display_Fullscreen.Suppressed",
+            NotifierId::WEB_PAGE,
+            NotifierId::SIZE);
+      }
+      return enabled;
     }
   }
 #endif

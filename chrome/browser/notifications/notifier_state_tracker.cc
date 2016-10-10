@@ -104,6 +104,9 @@ bool NotifierStateTracker::IsNotifierEnabled(
 #else
       return false;
 #endif
+    default:
+      NOTREACHED();
+      break;
   }
 
   NOTREACHED();

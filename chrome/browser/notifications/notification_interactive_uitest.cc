@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "build/build_config.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_test_util.h"
+#include "chrome/browser/notifications/web_notification_delegate.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,6 +33,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -231,11 +234,26 @@ class NotificationsTest : public InProcessBrowserTest {
     return browser->tab_strip_model()->GetActiveWebContents();
   }
 
+ protected:
+  void EnableFullscreenNotifications() {
+    feature_list_.InitWithFeatures({
+      features::kPreferHtmlOverPlugins,
+      features::kAllowFullscreenWebNotificationsFeature}, {});
+  }
+
+  void DisableFullscreenNotifications() {
+    feature_list_.InitWithFeatures(
+        {features::kPreferHtmlOverPlugins},
+        {features::kAllowFullscreenWebNotificationsFeature});
+  }
+
  private:
   void DropOriginPreference(const GURL& origin);
   std::string RequestAndRespondToPermission(
       Browser* browser,
       PermissionRequestManager::AutoResponseType bubble_response);
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 int NotificationsTest::GetNotificationCount() {
@@ -891,6 +909,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationDoubleClose) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayNormal) {
+  EnableFullscreenNotifications();
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Creates a simple notification.
@@ -914,6 +933,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
 #if defined(OS_MACOSX)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
+  EnableFullscreenNotifications();
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Creates a simple notification.
@@ -946,10 +966,49 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
       (*notifications.rbegin())->delegate()->ShouldDisplayOverFullscreen());
 }
 
+IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreenOff) {
+#if defined(OS_MACOSX)
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+#endif
+  DisableFullscreenNotifications();
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Creates a simple notification.
+  AllowAllOrigins();
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
+
+  std::string result = CreateSimpleNotification(browser(), true);
+  EXPECT_NE("-1", result);
+
+  // Set the page fullscreen
+  browser()->exclusive_access_manager()->fullscreen_controller()->
+      ToggleBrowserFullscreenMode();
+
+  {
+    FullscreenStateWaiter fs_state(browser(), true);
+    fs_state.Wait();
+  }
+
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+      browser()->window()->GetNativeWindow()));
+
+  ASSERT_TRUE(browser()->window()->IsActive());
+
+  ASSERT_EQ(1, GetNotificationCount());
+  message_center::NotificationList::Notifications notifications =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
+
+  // When the experiment flag is off, then ShouldDisplayOverFullscreen should
+  // return false.
+  EXPECT_FALSE(
+      (*notifications.rbegin())->delegate()->ShouldDisplayOverFullscreen());
+}
+
 // The Fake OSX fullscreen window doesn't like drawing a second fullscreen
 // window when another is visible.
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
+  EnableFullscreenNotifications();
   ASSERT_TRUE(embedded_test_server()->Start());
   AllowAllOrigins();
 
@@ -993,3 +1052,37 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
       (*notifications.rbegin())->delegate()->ShouldDisplayOverFullscreen());
 }
 #endif
+
+// Verify that a notification is actually displayed when the webpage that
+// creates it is fullscreen with the fullscreen notification flag turned on.
+IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayPopupNotification) {
+#if defined(OS_MACOSX)
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+#endif
+  EnableFullscreenNotifications();
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Creates a simple notification.
+  AllowAllOrigins();
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
+
+  // Set the page fullscreen
+  browser()->exclusive_access_manager()->fullscreen_controller()->
+      ToggleBrowserFullscreenMode();
+
+  {
+    FullscreenStateWaiter fs_state(browser(), true);
+    fs_state.Wait();
+  }
+
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+      browser()->window()->GetNativeWindow()));
+
+  std::string result = CreateSimpleNotification(browser(), true);
+  EXPECT_NE("-1", result);
+
+  ASSERT_EQ(1, GetNotificationCount());
+  message_center::NotificationList::PopupNotifications notifications =
+      message_center::MessageCenter::Get()->GetPopupNotifications();
+  ASSERT_EQ(1u, notifications.size());
+}

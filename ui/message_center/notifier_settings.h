@@ -42,11 +42,14 @@ MESSAGE_CENTER_EXPORT NotifierSettingsDelegate* ShowSettings(
 
 // The struct to distinguish the notifiers.
 struct MESSAGE_CENTER_EXPORT NotifierId {
-  enum NotifierType {
-    APPLICATION,
-    ARC_APPLICATION,
-    WEB_PAGE,
-    SYSTEM_COMPONENT,
+  // This enum is being used for histogram reporting and the elements should not
+  // be re-ordered.
+  enum NotifierType : int {
+    APPLICATION = 0,
+    ARC_APPLICATION = 1,
+    WEB_PAGE = 2,
+    SYSTEM_COMPONENT = 3,
+    SIZE,
   };
 
   // Constructor for non WEB_PAGE type.

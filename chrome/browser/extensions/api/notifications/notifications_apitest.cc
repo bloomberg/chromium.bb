@@ -5,6 +5,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -167,6 +169,21 @@ class NotificationsApiTest : public ExtensionApiTest {
         browser()->profile(), extension, extensions::LAUNCH_CONTAINER_NONE,
         WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
   }
+
+  void EnableFullscreenNotifications() {
+    feature_list_.InitWithFeatures({
+      features::kPreferHtmlOverPlugins,
+      extensions::kAllowFullscreenAppNotificationsFeature}, {});
+  }
+
+  void DisableFullscreenNotifications() {
+    feature_list_.InitWithFeatures(
+        {features::kPreferHtmlOverPlugins},
+        {extensions::kAllowFullscreenAppNotificationsFeature});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 }  // namespace
@@ -366,6 +383,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestRequireInteraction) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayNormal) {
+  EnableFullscreenNotifications();
   ExtensionTestMessageListener notification_created_listener("created", false);
   const Extension* extension = LoadAppWithWindowState(
       "notifications/api/basic_app", WindowState::NORMAL);
@@ -389,6 +407,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayFullscreen) {
 #if defined(OS_MACOSX)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
+  EnableFullscreenNotifications();
   ExtensionTestMessageListener notification_created_listener("created", false);
   const Extension* extension = LoadAppWithWindowState(
       "notifications/api/basic_app", WindowState::FULLSCREEN);
@@ -413,6 +432,35 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayFullscreen) {
   ASSERT_TRUE(notification->delegate()->ShouldDisplayOverFullscreen());
 }
 
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayFullscreenOff) {
+#if defined(OS_MACOSX)
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+#endif
+  DisableFullscreenNotifications();
+  ExtensionTestMessageListener notification_created_listener("created", false);
+  const Extension* extension = LoadAppWithWindowState(
+      "notifications/api/basic_app", WindowState::FULLSCREEN);
+  ASSERT_TRUE(extension) << message_;
+  ASSERT_TRUE(notification_created_listener.WaitUntilSatisfied());
+
+  // We start by making sure the window is actually focused.
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+      GetFirstAppWindow(extension->id())->GetNativeWindow()));
+
+  ASSERT_TRUE(GetFirstAppWindow(extension->id())->IsFullscreen())
+      << "Not Fullscreen";
+  ASSERT_TRUE(GetFirstAppWindow(extension->id())->GetBaseWindow()->IsActive())
+      << "Not Active";
+
+  const message_center::NotificationList::Notifications& notifications =
+      g_browser_process->message_center()->GetVisibleNotifications();
+  ASSERT_EQ(1u, notifications.size());
+  message_center::Notification* notification = *(notifications.begin());
+  // When the experiment flag is off, then ShouldDisplayOverFullscreen should
+  // return false.
+  ASSERT_FALSE(notification->delegate()->ShouldDisplayOverFullscreen());
+}
+
 // The Fake OSX fullscreen window doesn't like drawing a second fullscreen
 // window when another is visible.
 #if !defined(OS_MACOSX)
@@ -420,6 +468,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayMultiFullscreen) {
   // Start a fullscreen app, and then start another fullscreen app on top of the
   // first. Notifications from the first should not be displayed because it is
   // not the app actually displaying on the screen.
+  EnableFullscreenNotifications();
   ExtensionTestMessageListener notification_created_listener("created", false);
   const Extension* extension1 = LoadAppWithWindowState(
       "notifications/api/basic_app", WindowState::FULLSCREEN);
@@ -446,3 +495,31 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayMultiFullscreen) {
   ASSERT_FALSE(notification->delegate()->ShouldDisplayOverFullscreen());
 }
 #endif
+
+// Verify that a notification is actually displayed when the app window that
+// creates it is fullscreen with the fullscreen notification flag turned on.
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest,
+                       TestShouldDisplayPopupNotification) {
+#if defined(OS_MACOSX)
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+#endif
+  EnableFullscreenNotifications();
+  ExtensionTestMessageListener notification_created_listener("created", false);
+  const Extension* extension = LoadAppWithWindowState(
+      "notifications/api/basic_app", WindowState::FULLSCREEN);
+  ASSERT_TRUE(extension) << message_;
+  ASSERT_TRUE(notification_created_listener.WaitUntilSatisfied());
+
+  // We start by making sure the window is actually focused.
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+      GetFirstAppWindow(extension->id())->GetNativeWindow()));
+
+  ASSERT_TRUE(GetFirstAppWindow(extension->id())->IsFullscreen())
+      << "Not Fullscreen";
+  ASSERT_TRUE(GetFirstAppWindow(extension->id())->GetBaseWindow()->IsActive())
+      << "Not Active";
+
+  const message_center::NotificationList::PopupNotifications notifications =
+      g_browser_process->message_center()->GetPopupNotifications();
+  ASSERT_EQ(1u, notifications.size());
+}
