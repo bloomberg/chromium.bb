@@ -27,7 +27,9 @@
 
 #include "core/loader/EmptyClients.h"
 
+#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/forms/ColorChooser.h"
 #include "core/html/forms/DateTimeChooser.h"
@@ -106,6 +108,14 @@ DateTimeChooser* EmptyChromeClient::openDateTimeChooser(
 void EmptyChromeClient::openTextDataListChooser(HTMLInputElement&) {}
 
 void EmptyChromeClient::openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) {}
+
+void EmptyChromeClient::attachRootGraphicsLayer(GraphicsLayer* layer,
+                                                LocalFrame* localRoot) {
+  Page* page = localRoot ? localRoot->page() : nullptr;
+  if (!page)
+    return;
+  page->frameHost().visualViewport().attachToLayerTree(layer);
+}
 
 String EmptyChromeClient::acceptLanguages() {
   return String();

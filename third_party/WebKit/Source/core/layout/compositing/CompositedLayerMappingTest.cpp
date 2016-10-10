@@ -15,10 +15,15 @@
 
 namespace blink {
 
-class CompositedLayerMappingTest : public RenderingTest {
+typedef bool TestParamRootLayerScrolling;
+class CompositedLayerMappingTest
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
+      private ScopedRootLayerScrollingForTest,
+      public RenderingTest {
  public:
   CompositedLayerMappingTest()
-      : RenderingTest(SingleChildFrameLoaderClient::create()) {}
+      : ScopedRootLayerScrollingForTest(GetParam()),
+        RenderingTest(SingleChildFrameLoaderClient::create()) {}
 
  protected:
   IntRect recomputeInterestRect(const GraphicsLayer* graphicsLayer) {
@@ -67,7 +72,9 @@ class CompositedLayerMappingTest : public RenderingTest {
     EXPECT_EQ(expected.height(), actualRect.height()); \
   } while (false)
 
-TEST_F(CompositedLayerMappingTest, SimpleInterestRect) {
+INSTANTIATE_TEST_CASE_P(All, CompositedLayerMappingTest, ::testing::Bool());
+
+TEST_P(CompositedLayerMappingTest, SimpleInterestRect) {
   setBodyInnerHTML(
       "<div id='target' style='width: 200px; height: 200px; will-change: "
       "transform'></div>");
@@ -81,7 +88,7 @@ TEST_F(CompositedLayerMappingTest, SimpleInterestRect) {
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, TallLayerInterestRect) {
+TEST_P(CompositedLayerMappingTest, TallLayerInterestRect) {
   setBodyInnerHTML(
       "<div id='target' style='width: 200px; height: 10000px; will-change: "
       "transform'></div>");
@@ -97,7 +104,7 @@ TEST_F(CompositedLayerMappingTest, TallLayerInterestRect) {
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, TallLayerWholeDocumentInterestRect) {
+TEST_P(CompositedLayerMappingTest, TallLayerWholeDocumentInterestRect) {
   setBodyInnerHTML(
       "<div id='target' style='width: 200px; height: 10000px; will-change: "
       "transform'></div>");
@@ -119,15 +126,15 @@ TEST_F(CompositedLayerMappingTest, TallLayerWholeDocumentInterestRect) {
                           paintLayer->graphicsLayerBacking(), IntRect()));
 }
 
-TEST_F(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument) {
+TEST_P(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument) {
   setBodyInnerHTML(
       "<style>html,body { margin: 0px } html { -webkit-writing-mode: "
       "vertical-rl}</style> <div id='target' style='width: 10000px; height: "
       "200px;'></div>");
 
   document().view()->updateAllLifecyclePhases();
-  document().view()->setScrollOffset(ScrollOffset(-5000, 0),
-                                     ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(-5000, 0), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
 
   PaintLayer* paintLayer = document().layoutViewItem().layer();
@@ -136,11 +143,12 @@ TEST_F(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument) {
   // A scroll by -5000px is equivalent to a scroll by (10000 - 5000 - 800)px =
   // 4200px in non-RTL mode. Expanding the resulting rect by 4000px in each
   // direction yields this result.
-  EXPECT_RECT_EQ(IntRect(200, 0, 8800, 600),
-                 recomputeInterestRect(paintLayer->graphicsLayerBacking()));
+  EXPECT_RECT_EQ(
+      IntRect(200, 0, 8800, 600),
+      recomputeInterestRect(paintLayer->graphicsLayerBackingForScrolling()));
 }
 
-TEST_F(CompositedLayerMappingTest, RotatedInterestRect) {
+TEST_P(CompositedLayerMappingTest, RotatedInterestRect) {
   setBodyInnerHTML(
       "<div id='target' style='width: 200px; height: 200px; will-change: "
       "transform; transform: rotateZ(45deg)'></div>");
@@ -154,7 +162,7 @@ TEST_F(CompositedLayerMappingTest, RotatedInterestRect) {
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, RotatedInterestRectNear90Degrees) {
+TEST_P(CompositedLayerMappingTest, RotatedInterestRectNear90Degrees) {
   setBodyInnerHTML(
       "<div id='target' style='width: 10000px; height: 200px; will-change: "
       "transform; transform: rotateY(89.9999deg)'></div>");
@@ -172,7 +180,7 @@ TEST_F(CompositedLayerMappingTest, RotatedInterestRectNear90Degrees) {
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, 3D90DegRotatedTallInterestRect) {
+TEST_P(CompositedLayerMappingTest, 3D90DegRotatedTallInterestRect) {
   // It's rotated 90 degrees about the X axis, which means its visual content
   // rect is empty, and so the interest rect is the default (0, 0, 4000, 4000)
   // intersected with the layer bounds.
@@ -189,7 +197,7 @@ TEST_F(CompositedLayerMappingTest, 3D90DegRotatedTallInterestRect) {
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, 3D45DegRotatedTallInterestRect) {
+TEST_P(CompositedLayerMappingTest, 3D45DegRotatedTallInterestRect) {
   setBodyInnerHTML(
       "<div id='target' style='width: 200px; height: 10000px; will-change: "
       "transform; transform: rotateY(45deg)'></div>");
@@ -203,7 +211,7 @@ TEST_F(CompositedLayerMappingTest, 3D45DegRotatedTallInterestRect) {
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, RotatedTallInterestRect) {
+TEST_P(CompositedLayerMappingTest, RotatedTallInterestRect) {
   setBodyInnerHTML(
       "<div id='target' style='width: 200px; height: 10000px; will-change: "
       "transform; transform: rotateZ(45deg)'></div>");
@@ -217,7 +225,7 @@ TEST_F(CompositedLayerMappingTest, RotatedTallInterestRect) {
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, WideLayerInterestRect) {
+TEST_P(CompositedLayerMappingTest, WideLayerInterestRect) {
   setBodyInnerHTML(
       "<div id='target' style='width: 10000px; height: 200px; will-change: "
       "transform'></div>");
@@ -234,7 +242,7 @@ TEST_F(CompositedLayerMappingTest, WideLayerInterestRect) {
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, FixedPositionInterestRect) {
+TEST_P(CompositedLayerMappingTest, FixedPositionInterestRect) {
   setBodyInnerHTML(
       "<div id='target' style='width: 300px; height: 400px; will-change: "
       "transform; position: fixed; top: 100px; left: 200px;'></div>");
@@ -248,7 +256,7 @@ TEST_F(CompositedLayerMappingTest, FixedPositionInterestRect) {
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, LayerOffscreenInterestRect) {
+TEST_P(CompositedLayerMappingTest, LayerOffscreenInterestRect) {
   setBodyInnerHTML(
       "<div id='target' style='width: 200px; height: 200px; will-change: "
       "transform; position: absolute; top: 9000px; left: 0px;'>"
@@ -264,7 +272,7 @@ TEST_F(CompositedLayerMappingTest, LayerOffscreenInterestRect) {
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, ScrollingLayerInterestRect) {
+TEST_P(CompositedLayerMappingTest, ScrollingLayerInterestRect) {
   setBodyInnerHTML(
       "<style>div::-webkit-scrollbar{ width: 5px; }</style>"
       "<div id='target' style='width: 200px; height: 200px; will-change: "
@@ -283,7 +291,7 @@ TEST_F(CompositedLayerMappingTest, ScrollingLayerInterestRect) {
       recomputeInterestRect(paintLayer->graphicsLayerBackingForScrolling()));
 }
 
-TEST_F(CompositedLayerMappingTest, ClippedBigLayer) {
+TEST_P(CompositedLayerMappingTest, ClippedBigLayer) {
   setBodyInnerHTML(
       "<div style='width: 1px; height: 1px; overflow: hidden'>"
       "<div id='target' style='width: 10000px; height: 10000px; will-change: "
@@ -299,7 +307,7 @@ TEST_F(CompositedLayerMappingTest, ClippedBigLayer) {
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, ClippingMaskLayer) {
+TEST_P(CompositedLayerMappingTest, ClippingMaskLayer) {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
 
@@ -338,7 +346,7 @@ TEST_F(CompositedLayerMappingTest, ClippingMaskLayer) {
   EXPECT_FALSE(graphicsLayer->contentsClippingMaskLayer());
 }
 
-TEST_F(CompositedLayerMappingTest, ScrollContentsFlattenForScroller) {
+TEST_P(CompositedLayerMappingTest, ScrollContentsFlattenForScroller) {
   setBodyInnerHTML(
       "<style>div::-webkit-scrollbar{ width: 5px; }</style>"
       "<div id='scroller' style='width: 100px; height: 100px; overflow: "
@@ -362,7 +370,7 @@ TEST_F(CompositedLayerMappingTest, ScrollContentsFlattenForScroller) {
       *compositedLayerMapping->scrollingContentsLayer()));
 }
 
-TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintEmpty) {
+TEST_P(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintEmpty) {
   IntSize layerSize(1000, 1000);
   // Both empty means there is nothing to do.
   EXPECT_FALSE(
@@ -376,7 +384,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintEmpty) {
                                                   IntRect(), layerSize));
 }
 
-TEST_F(CompositedLayerMappingTest,
+TEST_P(CompositedLayerMappingTest,
        InterestRectChangedEnoughToRepaintNotBigEnough) {
   IntSize layerSize(1000, 1000);
   IntRect previousInterestRect(100, 100, 100, 100);
@@ -388,7 +396,7 @@ TEST_F(CompositedLayerMappingTest,
       previousInterestRect, IntRect(1, 1, 200, 200), layerSize));
 }
 
-TEST_F(CompositedLayerMappingTest,
+TEST_P(CompositedLayerMappingTest,
        InterestRectChangedEnoughToRepaintNotBigEnoughButNewAreaTouchesEdge) {
   IntSize layerSize(500, 500);
   IntRect previousInterestRect(100, 100, 100, 100);
@@ -408,7 +416,7 @@ TEST_F(CompositedLayerMappingTest,
 
 // Verifies that having a current viewport that touches a layer edge does not
 // force re-recording.
-TEST_F(CompositedLayerMappingTest,
+TEST_P(CompositedLayerMappingTest,
        InterestRectChangedEnoughToRepaintCurrentViewportTouchesEdge) {
   IntSize layerSize(500, 500);
   IntRect newInterestRect(100, 100, 300, 300);
@@ -426,7 +434,7 @@ TEST_F(CompositedLayerMappingTest,
                                                   newInterestRect, layerSize));
 }
 
-TEST_F(CompositedLayerMappingTest,
+TEST_P(CompositedLayerMappingTest,
        InterestRectChangedEnoughToRepaintScrollScenarios) {
   IntSize layerSize(1000, 1000);
   IntRect previousInterestRect(100, 100, 100, 100);
@@ -445,7 +453,7 @@ TEST_F(CompositedLayerMappingTest,
                                                  newInterestRect, layerSize));
 }
 
-TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
+TEST_P(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
     return;
 
@@ -504,7 +512,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
                  previousInterestRect(rootScrollingLayer));
 }
 
-TEST_F(CompositedLayerMappingTest, InterestRectChangeOnShrunkenViewport) {
+TEST_P(CompositedLayerMappingTest, InterestRectChangeOnShrunkenViewport) {
   setBodyInnerHTML(
       "<style>"
       "  ::-webkit-scrollbar { width: 0; height: 0; }"
@@ -527,7 +535,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnShrunkenViewport) {
                  previousInterestRect(rootScrollingLayer));
 }
 
-TEST_F(CompositedLayerMappingTest, InterestRectChangeOnScroll) {
+TEST_P(CompositedLayerMappingTest, InterestRectChangeOnScroll) {
   document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
 
   setBodyInnerHTML(
@@ -589,7 +597,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnScroll) {
                  previousInterestRect(scrollingLayer));
 }
 
-TEST_F(CompositedLayerMappingTest,
+TEST_P(CompositedLayerMappingTest,
        InterestRectShouldChangeOnPaintInvalidation) {
   document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
 
@@ -628,7 +636,7 @@ TEST_F(CompositedLayerMappingTest,
                  previousInterestRect(scrollingLayer));
 }
 
-TEST_F(CompositedLayerMappingTest,
+TEST_P(CompositedLayerMappingTest,
        InterestRectOfSquashingLayerWithNegativeOverflow) {
   setBodyInnerHTML(
       "<style>body { margin: 0; font-size: 16px; }</style>"
@@ -660,7 +668,7 @@ TEST_F(CompositedLayerMappingTest,
                      groupedMapping->squashingLayer(), IntRect()));
 }
 
-TEST_F(CompositedLayerMappingTest,
+TEST_P(CompositedLayerMappingTest,
        InterestRectOfSquashingLayerWithAncestorClip) {
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
@@ -687,7 +695,7 @@ TEST_F(CompositedLayerMappingTest,
                      groupedMapping->squashingLayer(), IntRect()));
 }
 
-TEST_F(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv) {
+TEST_P(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv) {
   document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
@@ -702,8 +710,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv) {
       "will-change: transform}</style><div id=target></div>");
 
   // Scroll 8000 pixels down to move the iframe into view.
-  document().view()->setScrollOffset(ScrollOffset(0.0, 8000.0),
-                                     ProgrammaticScroll);
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0.0, 8000.0), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
 
   Element* target = frameDocument.getElementById("target");
@@ -715,7 +723,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv) {
           target->layoutObject()->enclosingLayer()->graphicsLayerBacking()));
 }
 
-TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe) {
+TEST_P(CompositedLayerMappingTest, InterestRectOfScrolledIframe) {
   document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
   document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
   setBodyInnerHTML(
@@ -733,19 +741,20 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe) {
   document().view()->updateAllLifecyclePhases();
 
   // Scroll 7500 pixels down to bring the scrollable area to the bottom.
-  frameDocument.view()->setScrollOffset(ScrollOffset(0.0, 7500.0),
-                                        ProgrammaticScroll);
+  frameDocument.view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0.0, 7500.0), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
 
   ASSERT_TRUE(frameDocument.view()->layoutViewItem().hasLayer());
-  EXPECT_RECT_EQ(IntRect(0, 3500, 500, 4500),
-                 recomputeInterestRect(frameDocument.view()
-                                           ->layoutViewItem()
-                                           .enclosingLayer()
-                                           ->graphicsLayerBacking()));
+  EXPECT_RECT_EQ(
+      IntRect(0, 3500, 500, 4500),
+      recomputeInterestRect(frameDocument.view()
+                                ->layoutViewItem()
+                                .enclosingLayer()
+                                ->graphicsLayerBackingForScrolling()));
 }
 
-TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
+TEST_P(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
   document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
   document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
   // Set a 10px border in order to have a contentBoxOffset for the iframe
@@ -766,20 +775,21 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
 
   // Scroll 3000 pixels down to bring the scrollable area to somewhere in the
   // middle.
-  frameDocument.view()->setScrollOffset(ScrollOffset(0.0, 3000.0),
-                                        ProgrammaticScroll);
+  frameDocument.view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0.0, 3000.0), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
 
   ASSERT_TRUE(frameDocument.view()->layoutViewItem().hasLayer());
   // The width is 485 pixels due to the size of the scrollbar.
-  EXPECT_RECT_EQ(IntRect(0, 0, 500, 7500),
-                 recomputeInterestRect(frameDocument.view()
-                                           ->layoutViewItem()
-                                           .enclosingLayer()
-                                           ->graphicsLayerBacking()));
+  EXPECT_RECT_EQ(
+      IntRect(0, 0, 500, 7500),
+      recomputeInterestRect(frameDocument.view()
+                                ->layoutViewItem()
+                                .enclosingLayer()
+                                ->graphicsLayerBackingForScrolling()));
 }
 
-TEST_F(CompositedLayerMappingTest, PromoteOpaqueFixedPosition) {
+TEST_P(CompositedLayerMappingTest, PromoteOpaqueFixedPosition) {
   const bool preferCompositing =
       document().frame()->settings()->preferCompositingToLCDTextEnabled();
   document().frame()->settings()->setPreferCompositingToLCDTextEnabled(false);
@@ -820,7 +830,7 @@ TEST_F(CompositedLayerMappingTest, PromoteOpaqueFixedPosition) {
       preferCompositing);
 }
 
-TEST_F(CompositedLayerMappingTest,
+TEST_P(CompositedLayerMappingTest,
        ScrollingContentsAndForegroundLayerPaintingPhase) {
   document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
   setBodyInnerHTML(
@@ -865,7 +875,7 @@ TEST_F(CompositedLayerMappingTest,
   EXPECT_FALSE(mapping->foregroundLayer());
 }
 
-TEST_F(CompositedLayerMappingTest,
+TEST_P(CompositedLayerMappingTest,
        BackgroundPaintedIntoGraphicsLayerIfNotCompositedScrolling) {
   document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
   setBodyInnerHTML(
@@ -890,7 +900,7 @@ TEST_F(CompositedLayerMappingTest,
 
 // Make sure that clipping layers are removed or their masking bit turned off
 // when they're an ancestor of the root scroller element.
-TEST_F(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped) {
+TEST_P(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped) {
   NonThrowableExceptionState nonThrow;
 
   TopDocumentRootScrollerController& rootScrollerController =
