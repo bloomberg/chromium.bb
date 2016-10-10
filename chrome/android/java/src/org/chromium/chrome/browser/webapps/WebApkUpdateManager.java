@@ -11,6 +11,7 @@ import android.os.Bundle;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
@@ -27,6 +28,8 @@ import java.util.concurrent.TimeUnit;
  * an update request to the WebAPK Server when an update is needed.
  */
 public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
+    private static final String TAG = "WebApkUpdateManager";
+
     /** Number of milliseconds between checks for whether the WebAPK's Web Manifest has changed. */
     private static final long FULL_CHECK_UPDATE_INTERVAL = TimeUnit.DAYS.toMillis(3L);
 
@@ -100,7 +103,9 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
     @Override
     public void onUpgradeNeededCheckFinished(boolean needsUpgrade,
             ManifestUpgradeDetector.FetchedManifestData data) {
-        if (needsUpgrade || mForceUpgrade) {
+        needsUpgrade = (needsUpgrade || mForceUpgrade);
+        Log.v(TAG, "WebAPK upgrade needed: " + needsUpgrade);
+        if (needsUpgrade) {
             updateAsync(data);
         }
         if (mUpgradeDetector != null) {
