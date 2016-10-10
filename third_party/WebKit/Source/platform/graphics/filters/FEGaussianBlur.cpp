@@ -31,11 +31,30 @@
 
 #include "SkBlurImageFilter.h"
 
-static inline float gaussianKernelFactor() {
-  return 3 / 4.f * sqrtf(twoPiFloat);
+namespace blink {
+
+namespace {
+
+inline unsigned approximateBoxWidth(float s) {
+  return static_cast<unsigned>(
+      floorf(s * (3 / 4.f * sqrtf(twoPiFloat)) + 0.5f));
 }
 
-namespace blink {
+IntSize calculateKernelSize(const FloatSize& std) {
+  DCHECK(std.width() >= 0 && std.height() >= 0);
+  IntSize kernelSize;
+  if (std.width()) {
+    int size = std::max<unsigned>(2, approximateBoxWidth(std.width()));
+    kernelSize.setWidth(size);
+  }
+  if (std.height()) {
+    int size = std::max<unsigned>(2, approximateBoxWidth(std.height()));
+    kernelSize.setHeight(size);
+  }
+  return kernelSize;
+}
+
+}
 
 FEGaussianBlur::FEGaussianBlur(Filter* filter, float x, float y)
     : FilterEffect(filter), m_stdX(x), m_stdY(y) {}
@@ -44,47 +63,21 @@ FEGaussianBlur* FEGaussianBlur::create(Filter* filter, float x, float y) {
   return new FEGaussianBlur(filter, x, y);
 }
 
-IntSize FEGaussianBlur::calculateUnscaledKernelSize(const FloatPoint& std) {
-  ASSERT(std.x() >= 0 && std.y() >= 0);
-
-  IntSize kernelSize;
-  // Limit the kernel size to 1000. A bigger radius won't make a big difference
-  // for the result image but inflates the absolute paint rect too much. This is
-  // compatible with Firefox' behavior.
-  if (std.x()) {
-    int size = std::max<unsigned>(
-        2,
-        static_cast<unsigned>(floorf(std.x() * gaussianKernelFactor() + 0.5f)));
-    kernelSize.setWidth(size);
-  }
-
-  if (std.y()) {
-    int size = std::max<unsigned>(
-        2,
-        static_cast<unsigned>(floorf(std.y() * gaussianKernelFactor() + 0.5f)));
-    kernelSize.setHeight(size);
-  }
-
-  return kernelSize;
-}
-
-IntSize FEGaussianBlur::calculateKernelSize(const Filter* filter,
-                                            const FloatPoint& std) {
-  FloatPoint stdError(filter->applyHorizontalScale(std.x()),
-                      filter->applyVerticalScale(std.y()));
-  return calculateUnscaledKernelSize(stdError);
-}
-
-FloatRect FEGaussianBlur::mapEffect(const FloatRect& rect) const {
-  IntSize kernelSize =
-      calculateKernelSize(getFilter(), FloatPoint(m_stdX, m_stdY));
-
+FloatRect FEGaussianBlur::mapEffect(const FloatSize& stdDeviation,
+                                    const FloatRect& rect) {
+  IntSize kernelSize = calculateKernelSize(stdDeviation);
   // We take the half kernel size and multiply it by three, because we run box
   // blur three times.
   FloatRect result = rect;
   result.inflateX(3.0f * kernelSize.width() * 0.5f);
   result.inflateY(3.0f * kernelSize.height() * 0.5f);
   return result;
+}
+
+FloatRect FEGaussianBlur::mapEffect(const FloatRect& rect) const {
+  FloatSize stdError(getFilter()->applyHorizontalScale(m_stdX),
+                     getFilter()->applyVerticalScale(m_stdY));
+  return mapEffect(stdError, rect);
 }
 
 sk_sp<SkImageFilter> FEGaussianBlur::createImageFilter() {

@@ -54,23 +54,23 @@ FEDropShadow* FEDropShadow::create(Filter* filter,
                           shadowOpacity);
 }
 
+FloatRect FEDropShadow::mapEffect(const FloatSize& stdDeviation,
+                                  const FloatPoint& offset,
+                                  const FloatRect& rect) {
+  FloatRect offsetRect = rect;
+  offsetRect.moveBy(offset);
+  FloatRect blurredRect = FEGaussianBlur::mapEffect(stdDeviation, offsetRect);
+  return unionRect(blurredRect, rect);
+}
+
 FloatRect FEDropShadow::mapEffect(const FloatRect& rect) const {
   const Filter* filter = this->getFilter();
   DCHECK(filter);
-
-  FloatRect offsetRect = rect;
-  offsetRect.move(filter->applyHorizontalScale(m_dx),
-                  filter->applyVerticalScale(m_dy));
-
-  IntSize kernelSize =
-      FEGaussianBlur::calculateKernelSize(filter, FloatPoint(m_stdX, m_stdY));
-
-  // We take the half kernel size and multiply it by three, because we run box
-  // blur three times.
-  FloatRect result = unionRect(rect, offsetRect);
-  result.inflateX(3.0f * kernelSize.width() * 0.5f);
-  result.inflateY(3.0f * kernelSize.height() * 0.5f);
-  return result;
+  FloatPoint offset(filter->applyHorizontalScale(m_dx),
+                    filter->applyVerticalScale(m_dy));
+  FloatSize stdError(filter->applyHorizontalScale(m_stdX),
+                     filter->applyVerticalScale(m_stdY));
+  return mapEffect(stdError, offset, rect);
 }
 
 sk_sp<SkImageFilter> FEDropShadow::createImageFilter() {

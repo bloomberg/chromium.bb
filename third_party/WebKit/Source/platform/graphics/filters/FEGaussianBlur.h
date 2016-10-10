@@ -31,8 +31,9 @@ class PLATFORM_EXPORT FEGaussianBlur final : public FilterEffect {
  public:
   static FEGaussianBlur* create(Filter*, float, float);
 
-  static IntSize calculateKernelSize(const Filter*, const FloatPoint& std);
-  static IntSize calculateUnscaledKernelSize(const FloatPoint& std);
+  // Compute which destination area will be affected when applying a gaussian
+  // blur effect with |stdDeviation| to an area |rect|.
+  static FloatRect mapEffect(const FloatSize& stdDeviation, const FloatRect&);
 
   TextStream& externalRepresentation(TextStream&, int indention) const override;
 

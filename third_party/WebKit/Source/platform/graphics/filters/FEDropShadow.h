@@ -31,6 +31,12 @@ class PLATFORM_EXPORT FEDropShadow final : public FilterEffect {
   static FEDropShadow*
   create(Filter*, float, float, float, float, const Color&, float);
 
+  // Compute which destination area will be affected when applying a drop
+  // shadow effect with |stdDeviation| and |offset| to an area |rect|.
+  static FloatRect mapEffect(const FloatSize& stdDeviation,
+                             const FloatPoint& offset,
+                             const FloatRect&);
+
   void setShadowColor(const Color& color) { m_shadowColor = color; }
   void setShadowOpacity(float opacity) { m_shadowOpacity = opacity; }
 
