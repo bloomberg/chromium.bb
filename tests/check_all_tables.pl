@@ -23,7 +23,7 @@ my $timeout = 120; # seconds
 my $tablesdir = (split(',', $ENV{LOUIS_TABLEPATH}))[0];
 
 # get all the tables from the tables directory
-my @tables = glob("$tablesdir/*.{utb,ctb}");
+my @tables = glob("$tablesdir/*.{utb,ctb,tbl}");
 
 
 foreach my $table (@tables) {
