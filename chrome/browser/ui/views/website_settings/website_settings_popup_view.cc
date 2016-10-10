@@ -247,7 +247,7 @@ PopupHeaderView::PopupHeaderView(
   layout->StartRow(0, label_column_status);
   details_label_ =
       new views::StyledLabel(base::string16(), styled_label_listener);
-  layout->AddView(details_label_, 1, 1, views::GridLayout::LEADING,
+  layout->AddView(details_label_, 1, 1, views::GridLayout::FILL,
                   views::GridLayout::LEADING);
 
   layout->StartRow(0, label_column_status);
@@ -255,7 +255,7 @@ PopupHeaderView::PopupHeaderView(
   reset_decisions_label_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
   layout->AddView(reset_decisions_label_container_, 1, 1,
-                  views::GridLayout::LEADING, views::GridLayout::LEADING);
+                  views::GridLayout::FILL, views::GridLayout::LEADING);
 
   layout->AddPaddingRow(1, kHeaderPaddingBottom);
 }
@@ -297,9 +297,6 @@ void PopupHeaderView::SetDetails(const base::string16& details_text,
   } else {
     details_label_->SetText(details_text);
   }
-
-  // Fit the styled label to occupy available width.
-  details_label_->SizeToFit(0);
 }
 
 void PopupHeaderView::AddResetDecisionsLabel() {
@@ -323,15 +320,11 @@ void PopupHeaderView::AddResetDecisionsLabel() {
   link_style.disable_line_wrapping = false;
 
   reset_decisions_label_->AddStyleRange(link_range, link_style);
-  // Fit the styled label to occupy available width.
-  reset_decisions_label_->SizeToFit(0);
   reset_decisions_label_container_->AddChildView(reset_decisions_label_);
 
   // Now that it contains a label, the container needs padding at the top.
   reset_decisions_label_container_->SetBorder(
       views::Border::CreateEmptyBorder(8, 0, 0, 0));
-
-  InvalidateLayout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
