@@ -292,7 +292,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   bool m_hasBreakableChar : 1;
   // Whether or not we have a hard break (e.g., <pre> with '\n').
   bool m_hasBreak : 1;
-  // Whether or not we have a variable width tab character (e.g., <pre> with '\t').
+  // Whether or not we have a variable width tab character (e.g., <pre> with
+  // '\t').
   bool m_hasTab : 1;
   bool m_hasBreakableStart : 1;
   bool m_hasBreakableEnd : 1;
