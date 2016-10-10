@@ -238,7 +238,8 @@ template("linux_package") {
     packaging_files_binaries += [ "$root_out_dir/nacl_irt_arm.nexe" ]
   }
 
-  if (is_chrome_branded) {
+  # The widevine BUILD.gn only produces shared libraries for x86 and x64
+  if (is_chrome_branded && (current_cpu == "x86" || current_cpu == "x64")) {
     packaging_files_binaries += [
       "$root_out_dir/$widevine_cdm_path/libwidevinecdmadapter.so",
       "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
