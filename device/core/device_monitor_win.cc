@@ -106,14 +106,19 @@ class DeviceMonitorMessageWindow {
                      WPARAM wparam,
                      LPARAM lparam,
                      LRESULT* result) {
-    if (message == WM_DEVICECHANGE) {
-      DeviceMonitorWin* device_monitor = nullptr;
+    if (message == WM_DEVICECHANGE &&
+        (wparam == DBT_DEVICEARRIVAL || wparam == DBT_DEVICEREMOVECOMPLETE)) {
+      DEV_BROADCAST_HDR* hdr = reinterpret_cast<DEV_BROADCAST_HDR*>(lparam);
+      if (hdr->dbch_devicetype != DBT_DEVTYP_DEVICEINTERFACE)
+        return false;
+
       DEV_BROADCAST_DEVICEINTERFACE* db =
-          reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE*>(lparam);
+          reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE*>(hdr);
+
+      DeviceMonitorWin* device_monitor = nullptr;
       const auto& map_entry = device_monitors_.find(db->dbcc_classguid);
-      if (map_entry != device_monitors_.end()) {
+      if (map_entry != device_monitors_.end())
         device_monitor = map_entry->second.get();
-      }
 
       std::string device_path(base::SysWideToUTF8(db->dbcc_name));
       DCHECK(base::IsStringASCII(device_path));
@@ -130,8 +135,6 @@ class DeviceMonitorMessageWindow {
         }
         all_device_monitor_.NotifyDeviceRemoved(db->dbcc_classguid,
                                                 device_path);
-      } else {
-        return false;
       }
       *result = NULL;
       return true;
