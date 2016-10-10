@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+</head>
+<body>
+    <script>
+      src = '../resources/get-embedding-csp-header.php';
+      new_src = '../resources/get-embedding-csp-header-and-respond.php';
+      function generateRedirect(url) { 
+        return '/security/resources/redir.php?url=' + url; 
+      }
+  
+      async_test(t => {
+        var i = document.createElement('iframe');
+        i.src = src;
+
+        window.addEventListener('message', t.step_func(e => {
+          if (e.source != i.contentWindow)
+              return;
+          assert_equals(src, e.data['src']);
+          assert_equals(null, e.data['embedding_csp']);
+          t.done();
+        }));
+
+        document.body.appendChild(i);
+      }, "Embedding_CSP is not sent if csp attribute is not set on <iframe>.");
+
+      async_test(t => {
+        var i = document.createElement('iframe');
+        i.csp = 'value';
+        i.src = src;
+
+        window.addEventListener('message', t.step_func(e => {
+          if (e.source != i.contentWindow)
+              return;
+          assert_equals(src, e.data['src']);
+          assert_equals('value', e.data['embedding_csp']);
+          t.done();
+        }));
+
+        document.body.appendChild(i);
+      }, "<iframe csp> sends an Embedding-CSP request header.");
+
+      async_test(t => {
+        var i = document.createElement('iframe');
+        i.csp = 'value';
+        i.src = src;
+        document.body.appendChild(i);
+
+        i.contentWindow.location = new_src;
+        window.addEventListener('message', t.step_func(e => {
+          if (e.source != i.contentWindow || new_src != e.data['src'])
+              return;
+          assert_equals('value', e.data['embedding_csp']);
+          t.done();
+        }));
+      }, "Set Embedding-CSP Header on change of window's location.");
+
+      async_test(t => {
+        var i = document.createElement('iframe');
+        i.csp = 'value';
+        i.src = src;
+        document.body.appendChild(i);
+
+        i.csp = 'value 2';
+        i.src = new_src;
+        window.addEventListener('message', t.step_func(e => {
+          if (e.source != i.contentWindow || new_src != e.data['src'])
+              return;
+          assert_equals('value 2', e.data['embedding_csp']);
+          t.done();
+        }));
+      }, "Set Embedding-CSP Header on change of src attribute on iframe.");
+
+
+      async_test(t => {
+        var i = document.createElement('iframe');
+        i.csp = 'value';
+        redirect_url = 'http://localhost:8000/security/contentSecurityPolicy/resources/get-embedding-csp-header.php';
+        i.src = generateRedirect(redirect_url);
+        document.body.appendChild(i);
+
+        window.addEventListener('message', t.step_func(e => {
+          if (e.source != i.contentWindow) {
+            return;
+          }
+          assert_equals(src, e.data['src']);
+          assert_equals('value', e.data['embedding_csp']);
+          t.done();
+        }));
+      }, "Set Embedding-CSP Header on redirect in <iframe>.");
+
+      async_test(t => {
+        var i = document.createElement('iframe');
+        i.csp = 'value';
+        redirect_url = 'http://localhost:8000/security/contentSecurityPolicy/resources/get-embedding-csp-header.php';
+        i.src = generateRedirect(redirect_url);
+        document.body.appendChild(i);
+
+        redirect_url = 'http://localhost:8000/security/contentSecurityPolicy/resources/get-embedding-csp-header-and-respond.php';
+        new_redirect = generateRedirect(redirect_url);
+        i.csp = 'value 2';
+        i.src = new_redirect;
+        window.addEventListener('message', t.step_func(e => {
+          if (e.source != i.contentWindow || new_src != e.data['src'])
+              return;
+          assert_equals('value 2', e.data['embedding_csp']);
+          t.done();
+        }));
+      }, "Set Embedding-CSP Header on change of csp attribte and redirect.");
+    </script>
+</body>
+</html>

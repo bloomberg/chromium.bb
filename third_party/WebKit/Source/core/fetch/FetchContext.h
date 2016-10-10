@@ -152,7 +152,7 @@ class CORE_EXPORT FetchContext
   virtual void addConsoleMessage(const String&,
                                  LogMessageType = LogErrorMessage) const;
   virtual SecurityOrigin* getSecurityOrigin() const { return nullptr; }
-  virtual void upgradeInsecureRequest(ResourceRequest&);
+  virtual void modifyRequestForCSP(ResourceRequest&);
   virtual void addClientHintsIfNecessary(FetchRequest&);
   virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);
   virtual void populateRequestData(ResourceRequest&);

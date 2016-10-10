@@ -159,10 +159,16 @@ class CORE_EXPORT FrameLoader final {
 
   WebInsecureRequestPolicy getInsecureRequestPolicy() const;
   SecurityContext::InsecureNavigationsSet* insecureNavigationsToUpgrade() const;
-  void upgradeInsecureRequest(ResourceRequest&, Document*) const;
+  void modifyRequestForCSP(ResourceRequest&, Document*) const;
 
   Frame* opener();
   void setOpener(LocalFrame*);
+
+  const AtomicString& requiredCSP() const { return m_requiredCSP; }
+  void setRequiredCSP(const AtomicString& requiredCSP) {
+    m_requiredCSP = requiredCSP;
+  }
+  void recordLatestRequiredCSP();
 
   void detach();
 
@@ -254,10 +260,13 @@ class CORE_EXPORT FrameLoader final {
 
   void detachDocumentLoader(Member<DocumentLoader>&);
 
+  void upgradeInsecureRequest(ResourceRequest&, Document*) const;
+
   std::unique_ptr<TracedValue> toTracedValue() const;
   void takeObjectSnapshot() const;
 
   Member<LocalFrame> m_frame;
+  AtomicString m_requiredCSP;
 
   // FIXME: These should be std::unique_ptr<T> to reduce build times and
   // simplify header dependencies unless performance testing proves otherwise.

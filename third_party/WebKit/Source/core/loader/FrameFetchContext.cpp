@@ -837,9 +837,11 @@ SecurityOrigin* FrameFetchContext::getSecurityOrigin() const {
   return m_document ? m_document->getSecurityOrigin() : nullptr;
 }
 
-void FrameFetchContext::upgradeInsecureRequest(
-    ResourceRequest& resourceRequest) {
-  frame()->loader().upgradeInsecureRequest(resourceRequest, m_document);
+void FrameFetchContext::modifyRequestForCSP(ResourceRequest& resourceRequest) {
+  // Record the latest requiredCSP value that will be used when sending this
+  // request.
+  frame()->loader().recordLatestRequiredCSP();
+  frame()->loader().modifyRequestForCSP(resourceRequest, m_document);
 }
 
 void FrameFetchContext::addClientHintsIfNecessary(FetchRequest& fetchRequest) {

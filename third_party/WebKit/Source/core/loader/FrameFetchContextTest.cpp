@@ -37,6 +37,7 @@
 #include "core/frame/FrameOwner.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
@@ -163,9 +164,9 @@ class FrameFetchContextDisplayedCertificateErrorsTest
   KURL mainResourceUrl;
 };
 
-class FrameFetchContextUpgradeTest : public FrameFetchContextTest {
+class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
  public:
-  FrameFetchContextUpgradeTest()
+  FrameFetchContextModifyRequestTest()
       : exampleOrigin(SecurityOrigin::create(
             KURL(ParsedURLString, "https://example.test/"))),
         secureOrigin(SecurityOrigin::create(
@@ -189,7 +190,7 @@ class FrameFetchContextUpgradeTest : public FrameFetchContextTest {
     fetchRequest.mutableResourceRequest().setRequestContext(requestContext);
     fetchRequest.mutableResourceRequest().setFrameType(frameType);
 
-    fetchContext->upgradeInsecureRequest(fetchRequest.mutableResourceRequest());
+    fetchContext->modifyRequestForCSP(fetchRequest.mutableResourceRequest());
 
     EXPECT_EQ(expectedURL.getString(),
               fetchRequest.resourceRequest().url().getString());
@@ -202,9 +203,9 @@ class FrameFetchContextUpgradeTest : public FrameFetchContextTest {
     EXPECT_EQ(expectedURL.path(), fetchRequest.resourceRequest().url().path());
   }
 
-  void expectHTTPSHeader(const char* input,
-                         WebURLRequest::FrameType frameType,
-                         bool shouldPrefer) {
+  void expectUpgradeInsecureRequestHeader(const char* input,
+                                          WebURLRequest::FrameType frameType,
+                                          bool shouldPrefer) {
     KURL inputURL(ParsedURLString, input);
 
     FetchRequest fetchRequest =
@@ -213,27 +214,57 @@ class FrameFetchContextUpgradeTest : public FrameFetchContextTest {
         WebURLRequest::RequestContextScript);
     fetchRequest.mutableResourceRequest().setFrameType(frameType);
 
-    fetchContext->upgradeInsecureRequest(fetchRequest.mutableResourceRequest());
+    fetchContext->modifyRequestForCSP(fetchRequest.mutableResourceRequest());
 
     EXPECT_EQ(shouldPrefer ? String("1") : String(),
               fetchRequest.resourceRequest().httpHeaderField(
                   HTTPNames::Upgrade_Insecure_Requests));
 
-    // Calling upgradeInsecureRequest more than once shouldn't affect the
+    // Calling modifyRequestForCSP more than once shouldn't affect the
     // header.
     if (shouldPrefer) {
-      fetchContext->upgradeInsecureRequest(
-          fetchRequest.mutableResourceRequest());
+      fetchContext->modifyRequestForCSP(fetchRequest.mutableResourceRequest());
       EXPECT_EQ("1", fetchRequest.resourceRequest().httpHeaderField(
                          HTTPNames::Upgrade_Insecure_Requests));
     }
+  }
+
+  void expectSetEmbeddingCSPRequestHeader(
+      const char* input,
+      WebURLRequest::FrameType frameType,
+      const AtomicString& expectedEmbeddingCSP) {
+    KURL inputURL(ParsedURLString, input);
+
+    FetchRequest fetchRequest =
+        FetchRequest(ResourceRequest(inputURL), FetchInitiatorInfo());
+    fetchRequest.mutableResourceRequest().setRequestContext(
+        WebURLRequest::RequestContextScript);
+    fetchRequest.mutableResourceRequest().setFrameType(frameType);
+
+    fetchContext->modifyRequestForCSP(fetchRequest.mutableResourceRequest());
+
+    EXPECT_EQ(expectedEmbeddingCSP,
+              fetchRequest.resourceRequest().httpHeaderField(
+                  HTTPNames::Embedding_CSP));
+  }
+
+  void setFrameOwnerBasedOnFrameType(WebURLRequest::FrameType frameType,
+                                     HTMLIFrameElement* iframe,
+                                     const AtomicString& potentialValue) {
+    if (frameType != WebURLRequest::FrameTypeNested) {
+      document->frame()->setOwner(nullptr);
+      return;
+    }
+
+    iframe->setAttribute(HTMLNames::cspAttr, potentialValue);
+    document->frame()->setOwner(iframe);
   }
 
   RefPtr<SecurityOrigin> exampleOrigin;
   RefPtr<SecurityOrigin> secureOrigin;
 };
 
-TEST_F(FrameFetchContextUpgradeTest, UpgradeInsecureResourceRequests) {
+TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
   struct TestCase {
     const char* original;
     const char* upgraded;
@@ -291,7 +322,8 @@ TEST_F(FrameFetchContextUpgradeTest, UpgradeInsecureResourceRequests) {
   }
 }
 
-TEST_F(FrameFetchContextUpgradeTest, DoNotUpgradeInsecureResourceRequests) {
+TEST_F(FrameFetchContextModifyRequestTest,
+       DoNotUpgradeInsecureResourceRequests) {
   FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
   document->setSecurityOrigin(secureOrigin);
   document->setInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
@@ -317,7 +349,7 @@ TEST_F(FrameFetchContextUpgradeTest, DoNotUpgradeInsecureResourceRequests) {
                 "ftp://example.test:1212/image.png");
 }
 
-TEST_F(FrameFetchContextUpgradeTest, SendHTTPSHeader) {
+TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
   struct TestCase {
     const char* toRequest;
     WebURLRequest::FrameType frameType;
@@ -340,20 +372,53 @@ TEST_F(FrameFetchContextUpgradeTest, SendHTTPSHeader) {
   // the tests both before and after providing a document to the context.
   for (const auto& test : tests) {
     document->setInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
-    expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
+    expectUpgradeInsecureRequestHeader(test.toRequest, test.frameType,
+                                       test.shouldPrefer);
 
     document->setInsecureRequestPolicy(kUpgradeInsecureRequests);
-    expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
+    expectUpgradeInsecureRequestHeader(test.toRequest, test.frameType,
+                                       test.shouldPrefer);
   }
 
   FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
 
   for (const auto& test : tests) {
     document->setInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
-    expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
+    expectUpgradeInsecureRequestHeader(test.toRequest, test.frameType,
+                                       test.shouldPrefer);
 
     document->setInsecureRequestPolicy(kUpgradeInsecureRequests);
-    expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
+    expectUpgradeInsecureRequestHeader(test.toRequest, test.frameType,
+                                       test.shouldPrefer);
+  }
+}
+
+TEST_F(FrameFetchContextModifyRequestTest, SendEmbeddingCSPHeader) {
+  struct TestCase {
+    const char* toRequest;
+    WebURLRequest::FrameType frameType;
+  } tests[] = {
+      {"https://example.test/page.html", WebURLRequest::FrameTypeAuxiliary},
+      {"https://example.test/page.html", WebURLRequest::FrameTypeNested},
+      {"https://example.test/page.html", WebURLRequest::FrameTypeNone},
+      {"https://example.test/page.html", WebURLRequest::FrameTypeTopLevel}};
+
+  HTMLIFrameElement* iframe = HTMLIFrameElement::create(*document);
+  const AtomicString& requiredCSP = AtomicString("default-src 'none'");
+  const AtomicString& anotherRequiredCSP = AtomicString("default-src 'self'");
+
+  for (const auto& test : tests) {
+    setFrameOwnerBasedOnFrameType(test.frameType, iframe, requiredCSP);
+    expectSetEmbeddingCSPRequestHeader(
+        test.toRequest, test.frameType,
+        test.frameType == WebURLRequest::FrameTypeNested ? requiredCSP
+                                                         : nullAtom);
+
+    setFrameOwnerBasedOnFrameType(test.frameType, iframe, anotherRequiredCSP);
+    expectSetEmbeddingCSPRequestHeader(
+        test.toRequest, test.frameType,
+        test.frameType == WebURLRequest::FrameTypeNested ? anotherRequiredCSP
+                                                         : nullAtom);
   }
 }
 

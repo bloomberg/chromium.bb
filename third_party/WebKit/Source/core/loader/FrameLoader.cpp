@@ -1611,7 +1611,11 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
       m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel
                              : WebURLRequest::FrameTypeNested);
   ResourceRequest& request = frameLoadRequest.resourceRequest();
-  upgradeInsecureRequest(request, nullptr);
+
+  // Record the latest requiredCSP value that will be used when sending this
+  // request.
+  recordLatestRequiredCSP();
+  modifyRequestForCSP(request, nullptr);
   if (!shouldContinueForNavigationPolicy(
           request, frameLoadRequest.substituteData(), nullptr,
           frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(),
@@ -1823,8 +1827,15 @@ FrameLoader::insecureNavigationsToUpgrade() const {
   return toLocalFrame(parentFrame)->document()->insecureNavigationsToUpgrade();
 }
 
-void FrameLoader::upgradeInsecureRequest(ResourceRequest& resourceRequest,
-                                         Document* document) const {
+void FrameLoader::modifyRequestForCSP(ResourceRequest& resourceRequest,
+                                      Document* document) const {
+  if (RuntimeEnabledFeatures::embedderCSPEnforcementEnabled() &&
+      !requiredCSP().isEmpty()) {
+    // TODO(amalika): Strengthen this DCHECK that requiredCSP has proper format
+    DCHECK(requiredCSP().getString().containsOnlyASCII());
+    resourceRequest.setHTTPHeaderField(HTTPNames::Embedding_CSP, requiredCSP());
+  }
+
   // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
   // requests, as described in
   // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
@@ -1837,6 +1848,11 @@ void FrameLoader::upgradeInsecureRequest(ResourceRequest& resourceRequest,
     resourceRequest.addHTTPHeaderField("Upgrade-Insecure-Requests", "1");
   }
 
+  upgradeInsecureRequest(resourceRequest, document);
+}
+
+void FrameLoader::upgradeInsecureRequest(ResourceRequest& resourceRequest,
+                                         Document* document) const {
   KURL url = resourceRequest.url();
 
   // If we don't yet have an |m_document| (because we're loading an iframe, for
@@ -1867,6 +1883,10 @@ void FrameLoader::upgradeInsecureRequest(ResourceRequest& resourceRequest,
       resourceRequest.setURL(url);
     }
   }
+}
+
+void FrameLoader::recordLatestRequiredCSP() {
+  m_requiredCSP = m_frame->owner() ? m_frame->owner()->csp() : nullAtom;
 }
 
 std::unique_ptr<TracedValue> FrameLoader::toTracedValue() const {
