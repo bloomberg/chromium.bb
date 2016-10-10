@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
@@ -34,11 +35,26 @@
         margin-top: -4px;
       }
     </style>
+    <!-- Confirm Delete dialog -->
+    <dialog is="cr-dialog" id="confirmDeleteDialog">
+      <div class="title">$i18n{siteSettingsCookieRemoveDialogTitle}</div>
+      <div class="body">[[confirmationDeleteMsg_]]</div>
+      <div class="button-container">
+        <paper-button class="cancel-button" on-tap="onCloseDialog_">
+          $i18n{cancel}
+        </paper-button>
+        <paper-button class="action-button" on-tap="onConfirmDelete_">
+          $i18n{siteSettingsCookiesClearAll}
+        </paper-button>
+      </div>
+    </dialog>
+
     <div class="layout horizontal">
       <div class="flex site-header">$i18n{siteSettingsCookieHeader}</div>
       <div class="secondary-action"
           hidden$="[[!isRemoveButtonVisible_(sites, renderedItemCount)]]">
-        <paper-button on-tap="onDeleteMultipleSites_" class="secondary-button">
+        <paper-button on-tap="onConfirmDeleteMultipleSites_"
+            class="secondary-button">
           [[computeRemoveLabel_(filterString_)]]
         </paper-button>
       </div>
@@ -58,7 +74,7 @@
             <div class="flex middle">[[item.site]]</div>
             <div class="site">[[item.localData]]</div>
           </div>
-          <paper-icon-button on-tap="onDeleteSite_"
+          <paper-icon-button on-tap="onConfirmDeleteSite_"
               icon="cr:delete"></paper-icon-button>
         </div>
       </template>

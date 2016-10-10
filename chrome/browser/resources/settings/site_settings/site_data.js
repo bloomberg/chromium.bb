@@ -23,23 +23,33 @@ Polymer({
      * The cookie tree with the details needed to display individual sites and
      * their contained data.
      * @type {!settings.CookieTreeNode}
+     * @private
      */
     treeNodes_: Object,
 
     /**
      * Keeps track of how many outstanding requests for more data there are.
+     * @private
      */
     requests_: Number,
 
     /**
      * The current filter applied to the cookie data list.
+     * @private
      */
     filterString_: {
       type: String,
       value: '',
-    }
+    },
+
+    /** @private */
+    confirmationDeleteMsg_: String,
+
+    /** @private */
+    idToDelete_: String,
   },
 
+  /** @override */
   ready: function() {
     this.addWebUIListener('onTreeItemRemoved',
         this.onTreeItemRemoved_.bind(this));
@@ -134,19 +144,59 @@ Polymer({
   /**
    * Called when a single item has been removed (not during delete all).
    * @param {!CookieRemovePacket} args The details about what to remove.
+   * @private
    */
   onTreeItemRemoved_: function(args) {
     this.treeNodes_.removeByParentId(args.id, args.start, args.count);
     this.sites = this.treeNodes_.getSummaryList();
   },
 
+  /** @private */
+  onCloseDialog_: function() {
+    this.$.confirmDeleteDialog.close();
+  },
+
   /**
-   * Deletes all site data for a given site.
+   * Shows a dialog to confirm the deletion of a site.
    * @param {!{model: !{item: CookieDataSummaryItem}}} event
    * @private
    */
-  onDeleteSite_: function(event) {
-    this.browserProxy.removeCookie(event.model.item.id);
+  onConfirmDeleteSite_: function(event) {
+    this.idToDelete_ = event.model.item.id;
+    this.confirmationDeleteMsg_ = loadTimeData.getStringF(
+        'siteSettingsCookieRemoveConfirmation', event.model.item.site);
+    this.$.confirmDeleteDialog.showModal();
+  },
+
+  /**
+   * Shows a dialog to confirm the deletion of multiple sites.
+   * @private
+   */
+  onConfirmDeleteMultipleSites_: function() {
+    this.idToDelete_ = '';  // Delete all.
+    this.confirmationDeleteMsg_ = loadTimeData.getString(
+        'siteSettingsCookieRemoveMultipleConfirmation');
+    this.$.confirmDeleteDialog.showModal();
+  },
+
+  /**
+   * Called when deletion for a single/multiple sites has been confirmed.
+   * @private
+   */
+  onConfirmDelete_: function() {
+    if (this.idToDelete_ != '')
+      this.onDeleteSite_();
+    else
+      this.onDeleteMultipleSites_();
+    this.$.confirmDeleteDialog.close();
+  },
+
+  /**
+   * Deletes all site data for a given site.
+   * @private
+   */
+  onDeleteSite_: function() {
+    this.browserProxy.removeCookie(this.idToDelete_);
   },
 
   /**

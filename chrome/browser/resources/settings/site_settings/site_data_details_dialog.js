@@ -33,6 +33,13 @@ Polymer({
     entries_: Array,
 
     /**
+     * The cookie nodes to show in the dialog.
+     * @type {!Array<CookieDataForDisplay>}
+     * @private
+     */
+    cookieNodes_: Object,
+
+    /**
      * The index of the last selected item.
      */
      lastSelectedIndex_: Number,
@@ -118,16 +125,9 @@ Polymer({
    * @private
    */
   populateItem_: function(id, site) {
-    // Out with the old...
-    var root = this.$.content;
-    while (root.lastChild) {
-      root.removeChild(root.lastChild);
-    }
-
-    // In with the new...
     var node = site.fetchNodeById(id, true);
     if (node)
-      site.addCookieData(root, node);
+      this.cookieNodes_ = site.getCookieData(node);
   },
 
   /**
@@ -172,7 +172,7 @@ Polymer({
     // of '1 cookie', '1 cookie', ... etc, it is better to show the title of the
     // cookie to differentiate them.
     if (item.data.type == 'cookie')
-      return item.title;
+      return loadTimeData.getStringF('siteSettingsCookie', item.title);
 
     return getCookieDataCategoryText(item.data.type, item.data.totalUsage);
   },

@@ -303,22 +303,22 @@
 
       /* A row with two lines of text. Often the lower line will be .secondary.
        */
-      .settings-box.two-line {
+      .two-line {
         min-height: var(--settings-row-two-line-min-height);
       }
 
       /*
-       * A settings box with a single start-aligned column, generally but not
-       * necessarily used in combination with two-line.
+       * A single start-aligned column, generally but not necessarily used in
+       * combination with two-line.
        */
-      .settings-box.single-column {
+      .single-column {
         align-items: flex-start;
         flex-direction: column;
         justify-content: center;
       }
 
-      /* The lower line of text in a .settings-box.two-line. */
-      .settings-box .secondary {
+      /* The lower line of text in a two-line row. */
+      .secondary {
         @apply(--settings-secondary);
       }
 
@@ -329,20 +329,15 @@
         flex: auto;
       }
 
-      .settings-box .middle.two-line {
+      .settings-box .middle.two-line,
+      .settings-box .start.two-line {
         display: flex;
-        min-height: var(--settings-row-two-line-min-height);
       }
 
       /* The start (left in LTR) part (horizontally) of a row. */
       .settings-box .start {
         align-items: center;
         flex: auto;
-      }
-
-      .settings-box .start.two-line {
-        display: flex;
-        min-height: var(--settings-row-two-line-min-height);
       }
 
       /* The secondary-action wraps a clickable sub-area of a .settings-box.

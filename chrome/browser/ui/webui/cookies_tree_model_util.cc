@@ -90,6 +90,7 @@ std::string CookiesTreeModelUtil::GetTreeNodeId(const CookieTreeNode* node) {
 
 bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     const CookieTreeNode& node,
+    bool include_quota_nodes,
     base::DictionaryValue* dict) {
   // Use node's address as an id for WebUI to look it up.
   dict->SetString(kKeyId, GetTreeNodeId(&node));
@@ -216,6 +217,9 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       break;
     }
     case CookieTreeNode::DetailedInfo::TYPE_QUOTA: {
+      if (!include_quota_nodes)
+        return false;
+
       dict->SetString(kKeyType, "quota");
       dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
@@ -325,11 +329,12 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
 void CookiesTreeModelUtil::GetChildNodeList(const CookieTreeNode* parent,
                                             int start,
                                             int count,
+                                            bool include_quota_nodes,
                                             base::ListValue* nodes) {
   for (int i = 0; i < count; ++i) {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     const CookieTreeNode* child = parent->GetChild(start + i);
-    if (GetCookieTreeNodeDictionary(*child, dict.get()))
+    if (GetCookieTreeNodeDictionary(*child, include_quota_nodes, dict.get()))
       nodes->Append(std::move(dict));
   }
 }

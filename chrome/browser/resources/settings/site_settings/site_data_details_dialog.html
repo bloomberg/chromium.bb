@@ -40,7 +40,14 @@
           </div>
         </div>
 
-        <div id="content"></div>
+        <div class="vertical-list">
+          <template is="dom-repeat" items="[[cookieNodes_]]">
+            <div class="list-item single-column two-line">
+              <div>[[item.label]]</div>
+              <div class="secondary">[[item.content]]</div>
+            </div>
+          </template>
+        </div>
 
         <div class="button-container">
           <paper-button class="cancel-button" on-tap="onCancelTap_">

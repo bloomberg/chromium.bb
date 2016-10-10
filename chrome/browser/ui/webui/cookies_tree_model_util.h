@@ -32,6 +32,7 @@ class CookiesTreeModelUtil {
   void GetChildNodeList(const CookieTreeNode* parent,
                         int start,
                         int count,
+                        bool include_quota_nodes,
                         base::ListValue* nodes);
 
   // Gets tree node from |path| under |root|. |path| is comma separated list of
@@ -48,6 +49,7 @@ class CookiesTreeModelUtil {
   // a CookieTreeNode to an ID and creates a new ID if |node| is not in the
   // maps. Returns false if the |node| does not need to be shown.
   bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
+                                   bool include_quota_nodes,
                                    base::DictionaryValue* dict);
 
   // IDMap to create unique ID and look up the object for an ID.

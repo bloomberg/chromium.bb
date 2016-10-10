@@ -24,6 +24,7 @@ Polymer({
 
     /**
      * The amount of data stored for the origin.
+     * @private
      */
     storedData_: {
       type: String,
@@ -32,14 +33,19 @@ Polymer({
 
     /**
      * The type of storage for the origin.
+     * @private
      */
     storageType_: Number,
+
+    /** @private */
+    confirmationDeleteMsg_: String,
   },
 
   listeners: {
-    'usage-deleted': 'onUsageDeleted',
+    'usage-deleted': 'onUsageDeleted_',
   },
 
+  /** @override */
   ready: function() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
   },
@@ -60,6 +66,7 @@ Polymer({
 
   /**
    * Handler for when the origin changes.
+   * @private
    */
   onSiteChanged_: function() {
     // originForDisplay may be initially undefined if the user follows a direct
@@ -71,8 +78,25 @@ Polymer({
     }
   },
 
+  /** @private */
+  onCloseDialog_: function() {
+    this.$.confirmDeleteDialog.close();
+  },
+
+  /**
+   * Confirms the deletion of storage for a site.
+   * @private
+   */
+  onConfirmClearStorage_: function() {
+    this.confirmationDeleteMsg_ = loadTimeData.getStringF(
+        'siteSettingsSiteRemoveConfirmation',
+        this.toUrl(this.site.origin).href);
+    this.$.confirmDeleteDialog.showModal();
+  },
+
   /**
    * Clears all data stored for the current origin.
+   * @private
    */
   onClearStorage_: function() {
     this.$.usageApi.clearUsage(
@@ -81,8 +105,10 @@ Polymer({
 
   /**
    * Called when usage has been deleted for an origin.
+   * @param {!{detail: !{origin: string}}} event
+   * @private
    */
-  onUsageDeleted: function(event) {
+  onUsageDeleted_: function(event) {
     if (event.detail.origin == this.toUrl(this.site.origin).href) {
       this.storedData_ = '';
       this.navigateBackIfNoData_();
@@ -91,6 +117,7 @@ Polymer({
 
   /**
    * Resets all permissions and clears all data stored for the current origin.
+   * @private
    */
   onClearAndReset_: function() {
     Array.prototype.forEach.call(
@@ -105,6 +132,7 @@ Polymer({
 
   /**
    * Navigate back if the UI is empty (everything been cleared).
+   * @private
    */
   navigateBackIfNoData_: function() {
     if (this.storedData_ == '' && !this.permissionShowing_())
@@ -113,6 +141,7 @@ Polymer({
 
   /**
    * Returns true if one or more permission is showing.
+   * @private
    */
   permissionShowing_: function() {
     return Array.prototype.some.call(

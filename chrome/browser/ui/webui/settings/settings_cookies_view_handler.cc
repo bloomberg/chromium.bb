@@ -88,7 +88,11 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
   CookieTreeNode* parent_node = tree_model->AsNode(parent);
 
   std::unique_ptr<base::ListValue> children(new base::ListValue);
-  model_util_->GetChildNodeList(parent_node, start, count, children.get());
+  // Passing false for |include_quota_nodes| since they don't reflect reality
+  // until bug http://crbug.com/642955 is fixed and local/session storage is
+  // counted against the total.
+  model_util_->GetChildNodeList(
+      parent_node, start, count, /*include_quota_nodes=*/false, children.get());
 
   base::DictionaryValue args;
   if (parent == tree_model->GetRoot())
@@ -221,8 +225,11 @@ void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
   AllowJavascript();
 
   std::unique_ptr<base::ListValue> children(new base::ListValue);
-  model_util_->GetChildNodeList(parent, 0, parent->child_count(),
-                                children.get());
+  // Passing false for |include_quota_nodes| since they don't reflect reality
+  // until bug http://crbug.com/642955 is fixed and local/session storage is
+  // counted against the total.
+  model_util_->GetChildNodeList(parent, /*start=*/0, parent->child_count(),
+      /*include_quota_nodes=*/false, children.get());
 
   base::DictionaryValue args;
   if (parent == cookies_tree_model_->GetRoot())

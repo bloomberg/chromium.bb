@@ -12,6 +12,12 @@
 var CookieDetails;
 
 /**
+ * @typedef {{content: string,
+ *            label: string}}
+ */
+var CookieDataForDisplay;
+
+/**
  * @typedef {{title: string,
  *            id: string,
  *            data: CookieDetails}}
@@ -166,6 +172,9 @@ cr.define('settings', function() {
         var id = siteEntry.data_.id;
         var description = '';
 
+        if (siteEntry.children_.length == 0)
+          continue;
+
         for (var j = 0; j < siteEntry.children_.length; ++j) {
           var descriptionNode = siteEntry.children_[j];
           if (j > 0)
@@ -221,11 +230,12 @@ cr.define('settings', function() {
     },
 
     /**
-     * Add cookie data to a given HTML node.
-     * @param {HTMLElement} root The node to add the data to.
-     * @param {!settings.CookieTreeNode} item The data to add.
+     * Get cookie data for a given HTML node.
+     * @return {!Array<CookieDataForDisplay>}
      */
-    addCookieData: function(root, item) {
+    getCookieData: function(item) {
+      /** @type {!Array<CookieDataForDisplay>} */
+      var out = [];
       var fields = cookieInfo[item.data_.type];
       for (var field of fields) {
         // Iterate through the keys found in |cookieInfo| for the given |type|
@@ -233,16 +243,14 @@ cr.define('settings', function() {
         // (in the order determined by |cookieInfo|).
         var key = field[0];
         if (item.data_[key].length > 0) {
-          var label = loadTimeData.getString(field[1]);
-
-          var header = document.createElement('div');
-          header.appendChild(document.createTextNode(label));
-          var content = document.createElement('div');
-          content.appendChild(document.createTextNode(item.data_[key]));
-          root.appendChild(header);
-          root.appendChild(content);
+          var entry = /** @type {CookieDataForDisplay} */({
+            label: loadTimeData.getString(field[1]),
+            content: item.data_[key],
+          });
+          out.push(entry);
         }
       }
+      return out;
     },
   };
 
