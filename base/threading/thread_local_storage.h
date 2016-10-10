@@ -22,9 +22,12 @@ namespace base {
 
 namespace internal {
 
-// WARNING: You should *NOT* be using this class directly.
-// PlatformThreadLocalStorage is low-level abstraction to the OS's TLS
-// interface, you should instead be using ThreadLocalStorage::StaticSlot/Slot.
+// WARNING: You should *NOT* use this class directly.
+// PlatformThreadLocalStorage is a low-level abstraction of the OS's TLS
+// interface. Instead, you should use one of the following:
+// * ThreadLocalBoolean (from thread_local.h) for booleans.
+// * ThreadLocalPointer (from thread_local.h) for pointers.
+// * ThreadLocalStorage::StaticSlot/Slot for more direct control of the slot.
 class BASE_EXPORT PlatformThreadLocalStorage {
  public:
 
