@@ -5,6 +5,7 @@
 source_set("unittests") {
   testonly = true
   sources = [
+    "wm/workspace/workspace_layout_manager_unittest.cc",
     "wm_window_unittest.cc",
   ]
   deps = [
