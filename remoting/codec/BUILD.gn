@@ -3,21 +3,17 @@
 # found in the LICENSE file.
 
 source_set("codec") {
+  deps = [
+    ":decoder",
+    ":encoder",
+  ]
+}
+
+source_set("encoder") {
   sources = [
-    "audio_decoder.cc",
-    "audio_decoder.h",
-    "audio_decoder_opus.cc",
-    "audio_decoder_opus.h",
     "audio_encoder.h",
     "audio_encoder_opus.cc",
     "audio_encoder_opus.h",
-    "scoped_vpx_codec.cc",
-    "scoped_vpx_codec.h",
-    "video_decoder.h",
-    "video_decoder_verbatim.cc",
-    "video_decoder_verbatim.h",
-    "video_decoder_vpx.cc",
-    "video_decoder_vpx.h",
     "video_encoder.cc",
     "video_encoder.h",
     "video_encoder_helper.cc",
@@ -33,6 +29,7 @@ source_set("codec") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
+    ":vpx_codec",
     "//base/third_party/dynamic_annotations",
     "//media",
     "//media:shared_memory_support",
@@ -44,10 +41,6 @@ source_set("codec") {
   ]
 
   if (is_nacl) {
-    deps -= [
-      "//media",
-      "//media:shared_memory_support",
-    ]
     sources -= [
       "audio_encoder.h",
       "audio_encoder_opus.cc",
@@ -63,7 +56,70 @@ source_set("codec") {
       "webrtc_video_encoder_vpx.cc",
       "webrtc_video_encoder_vpx.h",
     ]
+    deps -= [
+      "//media",
+      "//media:shared_memory_support",
+    ]
   }
+
+  # Opus depends on //media, which is not a supported include for iOS.
+  # Removing Opus for iOS builds.
+  if (is_ios) {
+    sources -= [
+      "audio_encoder_opus.cc",
+      "audio_encoder_opus.h",
+    ]
+    deps -= [
+      "//media",
+      "//media:shared_memory_support",
+    ]
+  }
+}
+
+source_set("decoder") {
+  sources = [
+    "audio_decoder.cc",
+    "audio_decoder.h",
+    "audio_decoder_opus.cc",
+    "audio_decoder_opus.h",
+    "video_decoder.h",
+    "video_decoder_verbatim.cc",
+    "video_decoder_verbatim.h",
+    "video_decoder_vpx.cc",
+    "video_decoder_vpx.h",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  deps = [
+    ":vpx_codec",
+    "//base/third_party/dynamic_annotations",
+    "//remoting/proto",
+    "//third_party/libvpx",
+    "//third_party/libyuv",
+    "//third_party/opus",
+    "//third_party/webrtc/modules/desktop_capture:primitives",
+  ]
+}
+
+source_set("vpx_codec") {
+  sources = [
+    "scoped_vpx_codec.cc",
+    "scoped_vpx_codec.h",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  public_deps = [
+    "//third_party/libvpx",
+  ]
+
+  deps = [
+    "//base/third_party/dynamic_annotations",
+    "//remoting/proto",
+    "//third_party/libyuv",
+    "//third_party/webrtc/modules/desktop_capture:primitives",
+  ]
 }
 
 source_set("unit_tests") {
