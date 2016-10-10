@@ -1381,7 +1381,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Gets the service id for any simulated backbuffer fbo.
   GLuint GetBackbufferServiceId() const;
 
-  // Helper for glGetBooleanv, glGetFloatv and glGetIntegerv
+  // Helper for glGetBooleanv, glGetFloatv and glGetIntegerv.  Returns
+  // false if pname is unhandled.
   bool GetHelper(GLenum pname, GLint* params, GLsizei* num_written);
 
   // Helper for glGetVertexAttrib
@@ -1559,20 +1560,23 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   GLenum AdjustGetPname(GLenum pname);
 
   // Wrapper for DoGetBooleanv.
-  void DoGetBooleanv(GLenum pname, GLboolean* params);
+  void DoGetBooleanv(GLenum pname, GLboolean* params, GLsizei params_size);
 
   // Wrapper for DoGetFloatv.
-  void DoGetFloatv(GLenum pname, GLfloat* params);
+  void DoGetFloatv(GLenum pname, GLfloat* params, GLsizei params_size);
 
   // Wrapper for glGetFramebufferAttachmentParameteriv.
-  void DoGetFramebufferAttachmentParameteriv(
-      GLenum target, GLenum attachment, GLenum pname, GLint* params);
+  void DoGetFramebufferAttachmentParameteriv(GLenum target,
+                                             GLenum attachment,
+                                             GLenum pname,
+                                             GLint* params,
+                                             GLsizei params_size);
 
   // Wrapper for glGetInteger64v.
-  void DoGetInteger64v(GLenum pname, GLint64* params);
+  void DoGetInteger64v(GLenum pname, GLint64* params, GLsizei params_size);
 
   // Wrapper for glGetIntegerv.
-  void DoGetIntegerv(GLenum pname, GLint* params);
+  void DoGetIntegerv(GLenum pname, GLint* params, GLsizei params_size);
 
   // Helper for DoGetIntegeri_v and DoGetInteger64i_v.
   template <typename TYPE>
@@ -1580,37 +1584,60 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       const char* function_name, GLenum target, GLuint index, TYPE* data);
 
   // Wrapper for glGetIntegeri_v.
-  void DoGetIntegeri_v(GLenum target, GLuint index, GLint* data);
+  void DoGetIntegeri_v(GLenum target,
+                       GLuint index,
+                       GLint* params,
+                       GLsizei params_size);
 
   // Wrapper for glGetInteger64i_v.
-  void DoGetInteger64i_v(GLenum target, GLuint index, GLint64* data);
+  void DoGetInteger64i_v(GLenum target,
+                         GLuint index,
+                         GLint64* params,
+                         GLsizei params_size);
 
   // Gets the max value in a range in a buffer.
   GLuint DoGetMaxValueInBufferCHROMIUM(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
 
   // Wrapper for glGetBufferParameteri64v.
-  void DoGetBufferParameteri64v(
-      GLenum target, GLenum pname, GLint64* params);
+  void DoGetBufferParameteri64v(GLenum target,
+                                GLenum pname,
+                                GLint64* params,
+                                GLsizei params_size);
 
   // Wrapper for glGetBufferParameteriv.
-  void DoGetBufferParameteriv(
-      GLenum target, GLenum pname, GLint* params);
+  void DoGetBufferParameteriv(GLenum target,
+                              GLenum pname,
+                              GLint* params,
+                              GLsizei params_size);
 
   // Wrapper for glGetProgramiv.
-  void DoGetProgramiv(
-      GLuint program_id, GLenum pname, GLint* params);
+  void DoGetProgramiv(GLuint program_id,
+                      GLenum pname,
+                      GLint* params,
+                      GLsizei params_size);
 
   // Wrapper for glRenderbufferParameteriv.
-  void DoGetRenderbufferParameteriv(
-      GLenum target, GLenum pname, GLint* params);
+  void DoGetRenderbufferParameteriv(GLenum target,
+                                    GLenum pname,
+                                    GLint* params,
+                                    GLsizei params_size);
 
   // Wrappers for glGetSamplerParameter.
-  void DoGetSamplerParameterfv(GLuint client_id, GLenum pname, GLfloat* params);
-  void DoGetSamplerParameteriv(GLuint client_id, GLenum pname, GLint* params);
+  void DoGetSamplerParameterfv(GLuint client_id,
+                               GLenum pname,
+                               GLfloat* params,
+                               GLsizei params_size);
+  void DoGetSamplerParameteriv(GLuint client_id,
+                               GLenum pname,
+                               GLint* params,
+                               GLsizei params_size);
 
   // Wrapper for glGetShaderiv
-  void DoGetShaderiv(GLuint shader, GLenum pname, GLint* params);
+  void DoGetShaderiv(GLuint shader,
+                     GLenum pname,
+                     GLint* params,
+                     GLsizei params_size);
 
   // Helper for DoGetTexParameter{f|i}v.
   void GetTexParameterImpl(
@@ -1618,16 +1645,34 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       const char* function_name);
 
   // Wrappers for glGetTexParameter.
-  void DoGetTexParameterfv(GLenum target, GLenum pname, GLfloat* params);
-  void DoGetTexParameteriv(GLenum target, GLenum pname, GLint* params);
+  void DoGetTexParameterfv(GLenum target,
+                           GLenum pname,
+                           GLfloat* params,
+                           GLsizei params_size);
+  void DoGetTexParameteriv(GLenum target,
+                           GLenum pname,
+                           GLint* params,
+                           GLsizei params_size);
 
   // Wrappers for glGetVertexAttrib.
   template <typename T>
   void DoGetVertexAttribImpl(GLuint index, GLenum pname, T* params);
-  void DoGetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params);
-  void DoGetVertexAttribiv(GLuint index, GLenum pname, GLint* params);
-  void DoGetVertexAttribIiv(GLuint index, GLenum pname, GLint* params);
-  void DoGetVertexAttribIuiv(GLuint index, GLenum pname, GLuint* params);
+  void DoGetVertexAttribfv(GLuint index,
+                           GLenum pname,
+                           GLfloat* params,
+                           GLsizei params_size);
+  void DoGetVertexAttribiv(GLuint index,
+                           GLenum pname,
+                           GLint* params,
+                           GLsizei params_size);
+  void DoGetVertexAttribIiv(GLuint index,
+                            GLenum pname,
+                            GLint* params,
+                            GLsizei params_size);
+  void DoGetVertexAttribIuiv(GLuint index,
+                             GLenum pname,
+                             GLuint* params,
+                             GLsizei params_size);
 
   // Wrappers for glIsXXX functions.
   bool DoIsEnabled(GLenum cap);
@@ -3488,76 +3533,82 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
     shader_precision->precision = precision;
   });
   DoGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
-                &caps.max_combined_texture_image_units);
-  DoGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &caps.max_cube_map_texture_size);
+                &caps.max_combined_texture_image_units, 1);
+  DoGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &caps.max_cube_map_texture_size,
+                1);
   DoGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS,
-                &caps.max_fragment_uniform_vectors);
-  DoGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &caps.max_renderbuffer_size);
-  DoGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &caps.max_texture_image_units);
-  DoGetIntegerv(GL_MAX_TEXTURE_SIZE, &caps.max_texture_size);
-  DoGetIntegerv(GL_MAX_VARYING_VECTORS, &caps.max_varying_vectors);
-  DoGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &caps.max_vertex_attribs);
+                &caps.max_fragment_uniform_vectors, 1);
+  DoGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &caps.max_renderbuffer_size, 1);
+  DoGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &caps.max_texture_image_units, 1);
+  DoGetIntegerv(GL_MAX_TEXTURE_SIZE, &caps.max_texture_size, 1);
+  DoGetIntegerv(GL_MAX_VARYING_VECTORS, &caps.max_varying_vectors, 1);
+  DoGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &caps.max_vertex_attribs, 1);
   DoGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,
-                &caps.max_vertex_texture_image_units);
-  DoGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS,
-                &caps.max_vertex_uniform_vectors);
+                &caps.max_vertex_texture_image_units, 1);
+  DoGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &caps.max_vertex_uniform_vectors,
+                1);
   DoGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS,
-                &caps.num_compressed_texture_formats);
-  DoGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &caps.num_shader_binary_formats);
+                &caps.num_compressed_texture_formats, 1);
+  DoGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &caps.num_shader_binary_formats,
+                1);
   DoGetIntegerv(GL_BIND_GENERATES_RESOURCE_CHROMIUM,
-                &caps.bind_generates_resource_chromium);
+                &caps.bind_generates_resource_chromium, 1);
   if (unsafe_es3_apis_enabled()) {
     // TODO(zmo): Note that some parameter values could be more than 32-bit,
     // but for now we clamp them to 32-bit max.
-    DoGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &caps.max_3d_texture_size);
-    DoGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &caps.max_array_texture_layers);
-    DoGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &caps.max_color_attachments);
+    DoGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &caps.max_3d_texture_size, 1);
+    DoGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &caps.max_array_texture_layers,
+                  1);
+    DoGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &caps.max_color_attachments, 1);
     DoGetInteger64v(GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS,
-                    &caps.max_combined_fragment_uniform_components);
+                    &caps.max_combined_fragment_uniform_components, 1);
     DoGetIntegerv(GL_MAX_COMBINED_UNIFORM_BLOCKS,
-                  &caps.max_combined_uniform_blocks);
+                  &caps.max_combined_uniform_blocks, 1);
     DoGetInteger64v(GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS,
-                    &caps.max_combined_vertex_uniform_components);
-    DoGetIntegerv(GL_MAX_DRAW_BUFFERS, &caps.max_draw_buffers);
-    DoGetInteger64v(GL_MAX_ELEMENT_INDEX, &caps.max_element_index);
-    DoGetIntegerv(GL_MAX_ELEMENTS_INDICES, &caps.max_elements_indices);
-    DoGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &caps.max_elements_vertices);
+                    &caps.max_combined_vertex_uniform_components, 1);
+    DoGetIntegerv(GL_MAX_DRAW_BUFFERS, &caps.max_draw_buffers, 1);
+    DoGetInteger64v(GL_MAX_ELEMENT_INDEX, &caps.max_element_index, 1);
+    DoGetIntegerv(GL_MAX_ELEMENTS_INDICES, &caps.max_elements_indices, 1);
+    DoGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &caps.max_elements_vertices, 1);
     DoGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS,
-                  &caps.max_fragment_input_components);
+                  &caps.max_fragment_input_components, 1);
     DoGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS,
-                  &caps.max_fragment_uniform_blocks);
+                  &caps.max_fragment_uniform_blocks, 1);
     DoGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,
-                  &caps.max_fragment_uniform_components);
-    DoGetIntegerv(GL_MAX_PROGRAM_TEXEL_OFFSET,
-                  &caps.max_program_texel_offset);
-    DoGetInteger64v(GL_MAX_SERVER_WAIT_TIMEOUT, &caps.max_server_wait_timeout);
+                  &caps.max_fragment_uniform_components, 1);
+    DoGetIntegerv(GL_MAX_PROGRAM_TEXEL_OFFSET, &caps.max_program_texel_offset,
+                  1);
+    DoGetInteger64v(GL_MAX_SERVER_WAIT_TIMEOUT, &caps.max_server_wait_timeout,
+                    1);
     // Work around Linux NVIDIA driver bug where GL_TIMEOUT_IGNORED is
     // returned.
     if (caps.max_server_wait_timeout < 0)
       caps.max_server_wait_timeout = 0;
-    DoGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &caps.max_texture_lod_bias);
+    DoGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &caps.max_texture_lod_bias, 1);
     DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS,
-                  &caps.max_transform_feedback_interleaved_components);
+                  &caps.max_transform_feedback_interleaved_components, 1);
     DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS,
-                  &caps.max_transform_feedback_separate_attribs);
+                  &caps.max_transform_feedback_separate_attribs, 1);
     DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS,
-                  &caps.max_transform_feedback_separate_components);
-    DoGetInteger64v(GL_MAX_UNIFORM_BLOCK_SIZE, &caps.max_uniform_block_size);
+                  &caps.max_transform_feedback_separate_components, 1);
+    DoGetInteger64v(GL_MAX_UNIFORM_BLOCK_SIZE, &caps.max_uniform_block_size, 1);
     DoGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS,
-                  &caps.max_uniform_buffer_bindings);
-    DoGetIntegerv(GL_MAX_VARYING_COMPONENTS, &caps.max_varying_components);
+                  &caps.max_uniform_buffer_bindings, 1);
+    DoGetIntegerv(GL_MAX_VARYING_COMPONENTS, &caps.max_varying_components, 1);
     DoGetIntegerv(GL_MAX_VERTEX_OUTPUT_COMPONENTS,
-                  &caps.max_vertex_output_components);
-    DoGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS,
-                  &caps.max_vertex_uniform_blocks);
+                  &caps.max_vertex_output_components, 1);
+    DoGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS, &caps.max_vertex_uniform_blocks,
+                  1);
     DoGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS,
-                  &caps.max_vertex_uniform_components);
-    DoGetIntegerv(GL_MIN_PROGRAM_TEXEL_OFFSET, &caps.min_program_texel_offset);
-    DoGetIntegerv(GL_NUM_EXTENSIONS, &caps.num_extensions);
+                  &caps.max_vertex_uniform_components, 1);
+    DoGetIntegerv(GL_MIN_PROGRAM_TEXEL_OFFSET, &caps.min_program_texel_offset,
+                  1);
+    DoGetIntegerv(GL_NUM_EXTENSIONS, &caps.num_extensions, 1);
+    // TODO(vmiura): Remove GL_NUM_PROGRAM_BINARY_FORMATS.
     DoGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS,
-                  &caps.num_program_binary_formats);
+                  &caps.num_program_binary_formats, 1);
     DoGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT,
-                  &caps.uniform_buffer_offset_alignment);
+                  &caps.uniform_buffer_offset_alignment, 1);
     // TODO(zmo): once we switch to MANGLE, we should query version numbers.
     caps.major_version = 3;
     caps.minor_version = 0;
@@ -3565,7 +3616,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   if (feature_info_->feature_flags().multisampled_render_to_texture ||
       feature_info_->feature_flags().chromium_framebuffer_multisample ||
       unsafe_es3_apis_enabled()) {
-    DoGetIntegerv(GL_MAX_SAMPLES, &caps.max_samples);
+    DoGetIntegerv(GL_MAX_SAMPLES, &caps.max_samples, 1);
   }
 
   caps.egl_image_external =
@@ -6131,7 +6182,8 @@ bool GLES2DecoderImpl::GetHelper(
       case GL_MAX_VARYING_COMPONENTS: {
         if (gl_version_info().is_es) {
           // We can just delegate this query to the driver.
-          return false;
+          *num_written = 1;
+          break;
         }
 
         // GL_MAX_VARYING_COMPONENTS is deprecated in the desktop
@@ -6178,15 +6230,15 @@ bool GLES2DecoderImpl::GetHelper(
   }
   switch (pname) {
     case GL_MAX_VIEWPORT_DIMS:
+      *num_written = 2;
       if (offscreen_target_frame_buffer_.get()) {
-        *num_written = 2;
         if (params) {
           params[0] = renderbuffer_manager()->max_renderbuffer_size();
           params[1] = renderbuffer_manager()->max_renderbuffer_size();
         }
         return true;
       }
-      return false;
+      break;
     case GL_MAX_SAMPLES:
       *num_written = 1;
       if (params) {
@@ -6532,31 +6584,131 @@ bool GLES2DecoderImpl::GetHelper(
         params[0] = group_->max_dual_source_draw_buffers();
       }
       return true;
+
+    case GL_MAJOR_VERSION:
+      *num_written = 1;
+      if (params) {
+        // TODO(zmo): once we switch to MANGLE, we should query version numbers.
+        params[0] = 3;
+      }
+      return true;
+    case GL_MINOR_VERSION:
+      // TODO(zmo): once we switch to MANGLE, we should query version numbers.
+      *num_written = 1;
+      if (params) {
+        params[0] = 0;
+      }
+      return true;
+
+    case GL_NUM_EXTENSIONS:
+      // TODO(vmiura): Should the command buffer support this?
+      *num_written = 1;
+      if (params) {
+        params[0] = 0;
+      }
+      return true;
+    case GL_GPU_DISJOINT_EXT:
+      // TODO(vmiura): Should the command buffer support this?
+      *num_written = 1;
+      if (params) {
+        params[0] = 0;
+      }
+      return true;
+    case GL_TIMESTAMP_EXT:
+      // TODO(vmiura): Should the command buffer support this?
+      *num_written = 1;
+      if (params) {
+        params[0] = 0;
+      }
+      return true;
+    case GL_TEXTURE_BINDING_2D_ARRAY:
+      *num_written = 1;
+      if (params) {
+        TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
+        if (unit.bound_texture_2d_array.get()) {
+          *params = unit.bound_texture_2d_array->client_id();
+        } else {
+          *params = 0;
+        }
+      }
+      return true;
+    case GL_TEXTURE_BINDING_3D:
+      *num_written = 1;
+      if (params) {
+        TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
+        if (unit.bound_texture_3d.get()) {
+          *params = unit.bound_texture_3d->client_id();
+        } else {
+          *params = 0;
+        }
+      }
+      return true;
+    case GL_SAMPLER_BINDING:
+      *num_written = 1;
+      if (params) {
+        // TODO(vmiura): Need to implement this for ES3 clients.  WebGL 2 tracks
+        // this on the client side.
+        *params = 0;
+      }
+      return true;
+    case GL_TRANSFORM_FEEDBACK_BINDING:
+      *num_written = 1;
+      if (params) {
+        // TODO(vmiura): Need to implement this for ES3 clients.  WebGL 2 tracks
+        // this on the client side.
+        *params = 0;
+      }
+      return true;
+    case GL_NUM_PROGRAM_BINARY_FORMATS:
+      *num_written = 1;
+      if (params) {
+        *params = 0;
+      }
+      return true;
+    case GL_PROGRAM_BINARY_FORMATS:
+      *num_written = 0;
+      return true;
+
     default:
-      if (pname >= GL_DRAW_BUFFER0_ARB &&
-          pname < GL_DRAW_BUFFER0_ARB + group_->max_draw_buffers()) {
+      if (pname >= GL_DRAW_BUFFER0_ARB && pname <= GL_DRAW_BUFFER15_ARB) {
         *num_written = 1;
         if (params) {
-          Framebuffer* framebuffer =
-              GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
-          if (framebuffer) {
-            params[0] = framebuffer->GetDrawBuffer(pname);
-          } else {  // backbuffer
-            if (pname == GL_DRAW_BUFFER0_ARB)
-              params[0] = back_buffer_draw_buffer_;
-            else
-              params[0] = GL_NONE;
+          if (pname < GL_DRAW_BUFFER0_ARB + group_->max_draw_buffers()) {
+            Framebuffer* framebuffer =
+                GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
+            if (framebuffer) {
+              *params = framebuffer->GetDrawBuffer(pname);
+            } else {  // backbuffer
+              if (pname == GL_DRAW_BUFFER0_ARB)
+                *params = back_buffer_draw_buffer_;
+              else
+                *params = GL_NONE;
+            }
+          } else {
+            *params = GL_NONE;
           }
         }
         return true;
       }
+
       *num_written = util_.GLGetNumValuesReturned(pname);
+      if (*num_written)
+        break;
+
       return false;
   }
+
+  if (params) {
+    DCHECK(*num_written);
+    pname = AdjustGetPname(pname);
+    glGetIntegerv(pname, params);
+  }
+  return true;
 }
 
 bool GLES2DecoderImpl::GetNumValuesReturnedForGLGet(
     GLenum pname, GLsizei* num_values) {
+  *num_values = 0;
   if (state_.GetStateAsGLint(pname, NULL, num_values)) {
     return true;
   }
@@ -6575,45 +6727,52 @@ GLenum GLES2DecoderImpl::AdjustGetPname(GLenum pname) {
   return pname;
 }
 
-void GLES2DecoderImpl::DoGetBooleanv(GLenum pname, GLboolean* params) {
+void GLES2DecoderImpl::DoGetBooleanv(GLenum pname,
+                                     GLboolean* params,
+                                     GLsizei params_size) {
   DCHECK(params);
-  GLsizei num_written = 0;
-  if (GetNumValuesReturnedForGLGet(pname, &num_written)) {
-    std::unique_ptr<GLint[]> values(new GLint[num_written]);
-    if (!state_.GetStateAsGLint(pname, values.get(), &num_written)) {
-      GetHelper(pname, values.get(), &num_written);
-    }
-    for (GLsizei ii = 0; ii < num_written; ++ii) {
-      params[ii] = static_cast<GLboolean>(values[ii]);
-    }
-  } else {
-    pname = AdjustGetPname(pname);
-    glGetBooleanv(pname, params);
+  std::unique_ptr<GLint[]> values(new GLint[params_size]);
+  DoGetIntegerv(pname, values.get(), params_size);
+  for (GLsizei ii = 0; ii < params_size; ++ii) {
+    params[ii] = static_cast<GLboolean>(values[ii]);
   }
 }
 
-void GLES2DecoderImpl::DoGetFloatv(GLenum pname, GLfloat* params) {
+void GLES2DecoderImpl::DoGetFloatv(GLenum pname,
+                                   GLfloat* params,
+                                   GLsizei params_size) {
   DCHECK(params);
   GLsizei num_written = 0;
-  if (!state_.GetStateAsGLfloat(pname, params, &num_written)) {
-    if (GetHelper(pname, NULL, &num_written)) {
-      std::unique_ptr<GLint[]> values(new GLint[num_written]);
-      GetHelper(pname, values.get(), &num_written);
-      for (GLsizei ii = 0; ii < num_written; ++ii) {
-        params[ii] = static_cast<GLfloat>(values[ii]);
-      }
-    } else {
+  if (state_.GetStateAsGLfloat(pname, params, &num_written)) {
+    DCHECK_EQ(num_written, params_size);
+    return;
+  }
+
+  switch (pname) {
+    case GL_ALIASED_POINT_SIZE_RANGE:
+    case GL_ALIASED_LINE_WIDTH_RANGE:
+    case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT:
+      DCHECK_EQ(params_size, util_.GLGetNumValuesReturned(pname));
       pname = AdjustGetPname(pname);
       glGetFloatv(pname, params);
-    }
+      return;
+  }
+
+  std::unique_ptr<GLint[]> values(new GLint[params_size]);
+  DoGetIntegerv(pname, values.get(), params_size);
+  for (GLsizei ii = 0; ii < params_size; ++ii) {
+    params[ii] = static_cast<GLfloat>(values[ii]);
   }
 }
 
-void GLES2DecoderImpl::DoGetInteger64v(GLenum pname, GLint64* params) {
+void GLES2DecoderImpl::DoGetInteger64v(GLenum pname,
+                                       GLint64* params,
+                                       GLsizei params_size) {
   DCHECK(params);
   if (unsafe_es3_apis_enabled()) {
     switch (pname) {
       case GL_MAX_ELEMENT_INDEX: {
+        DCHECK_EQ(params_size, 1);
         if (gl_version_info().IsAtLeastGLES(3, 0) ||
             gl_version_info().IsAtLeastGL(4, 3)) {
           glGetInteger64v(GL_MAX_ELEMENT_INDEX, params);
@@ -6628,18 +6787,25 @@ void GLES2DecoderImpl::DoGetInteger64v(GLenum pname, GLint64* params) {
       }
     }
   }
-  pname = AdjustGetPname(pname);
-  glGetInteger64v(pname, params);
+
+  std::unique_ptr<GLint[]> values(new GLint[params_size]);
+  DoGetIntegerv(pname, values.get(), params_size);
+  for (GLsizei ii = 0; ii < params_size; ++ii) {
+    params[ii] = static_cast<GLint64>(values[ii]);
+  }
 }
 
-void GLES2DecoderImpl::DoGetIntegerv(GLenum pname, GLint* params) {
+void GLES2DecoderImpl::DoGetIntegerv(GLenum pname,
+                                     GLint* params,
+                                     GLsizei params_size) {
   DCHECK(params);
-  GLsizei num_written;
-  if (!state_.GetStateAsGLint(pname, params, &num_written) &&
-      !GetHelper(pname, params, &num_written)) {
-    pname = AdjustGetPname(pname);
-    glGetIntegerv(pname, params);
+  GLsizei num_written = 0;
+  if (state_.GetStateAsGLint(pname, params, &num_written) ||
+      GetHelper(pname, params, &num_written)) {
+    DCHECK_EQ(num_written, params_size);
+    return;
   }
+  NOTREACHED() << "Unhandled enum " << pname;
 }
 
 template <typename TYPE>
@@ -6693,18 +6859,24 @@ void GLES2DecoderImpl::GetIndexedIntegerImpl(
   }
 }
 
-void GLES2DecoderImpl::DoGetIntegeri_v(
-    GLenum target, GLuint index, GLint* data) {
-  GetIndexedIntegerImpl<GLint>("glGetIntegeri_v", target, index, data);
+void GLES2DecoderImpl::DoGetIntegeri_v(GLenum target,
+                                       GLuint index,
+                                       GLint* params,
+                                       GLsizei params_size) {
+  GetIndexedIntegerImpl<GLint>("glGetIntegeri_v", target, index, params);
 }
 
-void GLES2DecoderImpl::DoGetInteger64i_v(
-    GLenum target, GLuint index, GLint64* data) {
-  GetIndexedIntegerImpl<GLint64>("glGetInteger64i_v", target, index, data);
+void GLES2DecoderImpl::DoGetInteger64i_v(GLenum target,
+                                         GLuint index,
+                                         GLint64* params,
+                                         GLsizei params_size) {
+  GetIndexedIntegerImpl<GLint64>("glGetInteger64i_v", target, index, params);
 }
 
-void GLES2DecoderImpl::DoGetProgramiv(
-    GLuint program_id, GLenum pname, GLint* params) {
+void GLES2DecoderImpl::DoGetProgramiv(GLuint program_id,
+                                      GLenum pname,
+                                      GLint* params,
+                                      GLsizei params_size) {
   Program* program = GetProgramInfoNotShader(program_id, "glGetProgramiv");
   if (!program) {
     return;
@@ -6712,15 +6884,19 @@ void GLES2DecoderImpl::DoGetProgramiv(
   program->GetProgramiv(pname, params);
 }
 
-void GLES2DecoderImpl::DoGetBufferParameteri64v(
-    GLenum target, GLenum pname, GLint64* params) {
+void GLES2DecoderImpl::DoGetBufferParameteri64v(GLenum target,
+                                                GLenum pname,
+                                                GLint64* params,
+                                                GLsizei params_size) {
   // Just delegate it. Some validation is actually done before this.
   buffer_manager()->ValidateAndDoGetBufferParameteri64v(
       &state_, target, pname, params);
 }
 
-void GLES2DecoderImpl::DoGetBufferParameteriv(
-    GLenum target, GLenum pname, GLint* params) {
+void GLES2DecoderImpl::DoGetBufferParameteriv(GLenum target,
+                                              GLenum pname,
+                                              GLint* params,
+                                              GLsizei params_size) {
   // Just delegate it. Some validation is actually done before this.
   buffer_manager()->ValidateAndDoGetBufferParameteriv(
       &state_, target, pname, params);
@@ -7467,7 +7643,11 @@ void GLES2DecoderImpl::DoFramebufferTextureLayer(
 }
 
 void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
-    GLenum target, GLenum attachment, GLenum pname, GLint* params) {
+    GLenum target,
+    GLenum attachment,
+    GLenum pname,
+    GLint* params,
+    GLsizei params_size) {
   const char kFunctionName[] = "glGetFramebufferAttachmentParameteriv";
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   if (!framebuffer) {
@@ -7551,8 +7731,10 @@ void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
   LOCAL_PEEK_GL_ERROR(kFunctionName);
 }
 
-void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
-    GLenum target, GLenum pname, GLint* params) {
+void GLES2DecoderImpl::DoGetRenderbufferParameteriv(GLenum target,
+                                                    GLenum pname,
+                                                    GLint* params,
+                                                    GLsizei params_size) {
   Renderbuffer* renderbuffer =
       GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
   if (!renderbuffer) {
@@ -9830,8 +10012,10 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   shader->RequestCompile(translator, source_type);
 }
 
-void GLES2DecoderImpl::DoGetShaderiv(
-    GLuint shader_id, GLenum pname, GLint* params) {
+void GLES2DecoderImpl::DoGetShaderiv(GLuint shader_id,
+                                     GLenum pname,
+                                     GLint* params,
+                                     GLsizei params_size) {
   Shader* shader = GetShaderInfoNotProgram(shader_id, "glGetShaderiv");
   if (!shader) {
     return;
@@ -10095,8 +10279,10 @@ void GLES2DecoderImpl::GetVertexAttribHelper(
   }
 }
 
-void GLES2DecoderImpl::DoGetSamplerParameterfv(
-    GLuint client_id, GLenum pname, GLfloat* params) {
+void GLES2DecoderImpl::DoGetSamplerParameterfv(GLuint client_id,
+                                               GLenum pname,
+                                               GLfloat* params,
+                                               GLsizei params_size) {
   Sampler* sampler = GetSampler(client_id);
   if (!sampler) {
     LOCAL_SET_GL_ERROR(
@@ -10106,8 +10292,10 @@ void GLES2DecoderImpl::DoGetSamplerParameterfv(
   glGetSamplerParameterfv(sampler->service_id(), pname, params);
 }
 
-void GLES2DecoderImpl::DoGetSamplerParameteriv(
-    GLuint client_id, GLenum pname, GLint* params) {
+void GLES2DecoderImpl::DoGetSamplerParameteriv(GLuint client_id,
+                                               GLenum pname,
+                                               GLint* params,
+                                               GLsizei params_size) {
   Sampler* sampler = GetSampler(client_id);
   if (!sampler) {
     LOCAL_SET_GL_ERROR(
@@ -10176,13 +10364,17 @@ void GLES2DecoderImpl::GetTexParameterImpl(
   }
 }
 
-void GLES2DecoderImpl::DoGetTexParameterfv(
-    GLenum target, GLenum pname, GLfloat* params) {
+void GLES2DecoderImpl::DoGetTexParameterfv(GLenum target,
+                                           GLenum pname,
+                                           GLfloat* params,
+                                           GLsizei params_size) {
   GetTexParameterImpl(target, pname, params, nullptr, "glGetTexParameterfv");
 }
 
-void GLES2DecoderImpl::DoGetTexParameteriv(
-    GLenum target, GLenum pname, GLint* params) {
+void GLES2DecoderImpl::DoGetTexParameteriv(GLenum target,
+                                           GLenum pname,
+                                           GLint* params,
+                                           GLsizei params_size) {
   GetTexParameterImpl(target, pname, nullptr, params, "glGetTexParameteriv");
 }
 
@@ -10208,23 +10400,31 @@ void GLES2DecoderImpl::DoGetVertexAttribImpl(
   }
 }
 
-void GLES2DecoderImpl::DoGetVertexAttribfv(
-    GLuint index, GLenum pname, GLfloat* params) {
+void GLES2DecoderImpl::DoGetVertexAttribfv(GLuint index,
+                                           GLenum pname,
+                                           GLfloat* params,
+                                           GLsizei params_size) {
   DoGetVertexAttribImpl<GLfloat>(index, pname, params);
 }
 
-void GLES2DecoderImpl::DoGetVertexAttribiv(
-    GLuint index, GLenum pname, GLint* params) {
+void GLES2DecoderImpl::DoGetVertexAttribiv(GLuint index,
+                                           GLenum pname,
+                                           GLint* params,
+                                           GLsizei params_size) {
   DoGetVertexAttribImpl<GLint>(index, pname, params);
 }
 
-void GLES2DecoderImpl::DoGetVertexAttribIiv(
-    GLuint index, GLenum pname, GLint* params) {
+void GLES2DecoderImpl::DoGetVertexAttribIiv(GLuint index,
+                                            GLenum pname,
+                                            GLint* params,
+                                            GLsizei params_size) {
   DoGetVertexAttribImpl<GLint>(index, pname, params);
 }
 
-void GLES2DecoderImpl::DoGetVertexAttribIuiv(
-    GLuint index, GLenum pname, GLuint* params) {
+void GLES2DecoderImpl::DoGetVertexAttribIuiv(GLuint index,
+                                             GLenum pname,
+                                             GLuint* params,
+                                             GLsizei params_size) {
   DoGetVertexAttribImpl<GLuint>(index, pname, params);
 }
 
@@ -10910,9 +11110,9 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
     // format and type are acceptable enums but not guaranteed to be supported
     // for this framebuffer.  Have to ask gl if they are valid.
     GLint preferred_format = 0;
-    DoGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &preferred_format);
+    DoGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &preferred_format, 1);
     GLint preferred_type = 0;
-    DoGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &preferred_type);
+    DoGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &preferred_type, 1);
     if (format == static_cast<GLenum>(preferred_format) &&
         type == static_cast<GLenum>(preferred_type)) {
       format_type_acceptable = true;

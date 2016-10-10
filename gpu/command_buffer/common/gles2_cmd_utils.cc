@@ -212,6 +212,54 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_COPY_WRITE_BUFFER_BINDING:
       return 1;
+    case GL_MAX_3D_TEXTURE_SIZE:
+      return 1;
+    case GL_MAX_ARRAY_TEXTURE_LAYERS:
+      return 1;
+    case GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS:
+      return 1;
+    case GL_MAX_COMBINED_UNIFORM_BLOCKS:
+      return 1;
+    case GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS:
+      return 1;
+    case GL_MAX_ELEMENT_INDEX:
+      return 1;
+    case GL_MAX_ELEMENTS_INDICES:
+      return 1;
+    case GL_MAX_ELEMENTS_VERTICES:
+      return 1;
+    case GL_MAX_FRAGMENT_INPUT_COMPONENTS:
+      return 1;
+    case GL_MAX_FRAGMENT_UNIFORM_BLOCKS:
+      return 1;
+    case GL_MAX_FRAGMENT_UNIFORM_COMPONENTS:
+      return 1;
+    case GL_MAX_PROGRAM_TEXEL_OFFSET:
+      return 1;
+    case GL_MAX_SERVER_WAIT_TIMEOUT:
+      return 1;
+    case GL_MAX_TEXTURE_LOD_BIAS:
+      return 1;
+    case GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS:
+      return 1;
+    case GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS:
+      return 1;
+    case GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS:
+      return 1;
+    case GL_MAX_UNIFORM_BLOCK_SIZE:
+      return 1;
+    case GL_MAX_UNIFORM_BUFFER_BINDINGS:
+      return 1;
+    case GL_MAX_VARYING_COMPONENTS:
+      return 1;
+    case GL_MAX_VERTEX_OUTPUT_COMPONENTS:
+      return 1;
+    case GL_MAX_VERTEX_UNIFORM_BLOCKS:
+      return 1;
+    case GL_MAX_VERTEX_UNIFORM_COMPONENTS:
+      return 1;
+    case GL_MIN_PROGRAM_TEXEL_OFFSET:
+      return 1;
     case GL_PIXEL_PACK_BUFFER_BINDING:
       return 1;
     case GL_PIXEL_UNPACK_BUFFER_BINDING:
@@ -229,6 +277,8 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     case GL_UNIFORM_BUFFER_SIZE:
       return 1;
     case GL_UNIFORM_BUFFER_START:
+      return 1;
+    case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT:
       return 1;
 
     // -- glGetBooleanv, glGetFloatv, glGetIntergerv with

@@ -1699,7 +1699,10 @@ error::Error GLES2DecoderImpl::HandleGetBooleanv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetBooleanv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetBooleanv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLboolean* params = result ? result->GetData() : NULL;
@@ -1715,7 +1718,7 @@ error::Error GLES2DecoderImpl::HandleGetBooleanv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetBooleanv(pname, params);
+  DoGetBooleanv(pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetBooleanv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -1735,7 +1738,10 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteri64v(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetBufferParameteri64v::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetBufferParameteri64v", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint64* params = result ? result->GetData() : NULL;
@@ -1755,7 +1761,7 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteri64v(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetBufferParameteri64v(target, pname, params);
+  DoGetBufferParameteri64v(target, pname, params, num_values);
   result->SetNumResults(num_values);
   return error::kNoError;
 }
@@ -1768,7 +1774,10 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetBufferParameteriv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetBufferParameteriv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1787,7 +1796,7 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetBufferParameteriv(target, pname, params);
+  DoGetBufferParameteriv(target, pname, params, num_values);
   result->SetNumResults(num_values);
   return error::kNoError;
 }
@@ -1812,7 +1821,10 @@ error::Error GLES2DecoderImpl::HandleGetFloatv(uint32_t immediate_data_size,
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetFloatv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetFloatv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLfloat* params = result ? result->GetData() : NULL;
@@ -1828,7 +1840,7 @@ error::Error GLES2DecoderImpl::HandleGetFloatv(uint32_t immediate_data_size,
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetFloatv(pname, params);
+  DoGetFloatv(pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetFloatv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -1848,7 +1860,11 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetFramebufferAttachmentParameteriv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetFramebufferAttachmentParameteriv",
+                                    pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -1875,7 +1891,8 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetFramebufferAttachmentParameteriv(target, attachment, pname, params);
+  DoGetFramebufferAttachmentParameteriv(target, attachment, pname, params,
+                                        num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetFramebufferAttachmentParameteriv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -1893,7 +1910,10 @@ error::Error GLES2DecoderImpl::HandleGetInteger64v(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetInteger64v::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetInteger64v", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint64* params = result ? result->GetData() : NULL;
@@ -1909,7 +1929,7 @@ error::Error GLES2DecoderImpl::HandleGetInteger64v(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetInteger64v(pname, params);
+  DoGetInteger64v(pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetInteger64v");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -1928,7 +1948,10 @@ error::Error GLES2DecoderImpl::HandleGetIntegeri_v(
   GLuint index = static_cast<GLuint>(c.index);
   typedef cmds::GetIntegeri_v::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetIntegeri_v", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(c.data_shm_id, c.data_shm_offset,
                                               Result::ComputeSize(num_values));
   GLint* data = result ? result->GetData() : NULL;
@@ -1943,7 +1966,7 @@ error::Error GLES2DecoderImpl::HandleGetIntegeri_v(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetIntegeri_v(pname, index, data);
+  DoGetIntegeri_v(pname, index, data, num_values);
   result->SetNumResults(num_values);
   return error::kNoError;
 }
@@ -1958,7 +1981,10 @@ error::Error GLES2DecoderImpl::HandleGetInteger64i_v(
   GLuint index = static_cast<GLuint>(c.index);
   typedef cmds::GetInteger64i_v::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetInteger64i_v", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(c.data_shm_id, c.data_shm_offset,
                                               Result::ComputeSize(num_values));
   GLint64* data = result ? result->GetData() : NULL;
@@ -1973,7 +1999,7 @@ error::Error GLES2DecoderImpl::HandleGetInteger64i_v(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetInteger64i_v(pname, index, data);
+  DoGetInteger64i_v(pname, index, data, num_values);
   result->SetNumResults(num_values);
   return error::kNoError;
 }
@@ -1985,7 +2011,10 @@ error::Error GLES2DecoderImpl::HandleGetIntegerv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetIntegerv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetIntegerv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -2001,7 +2030,7 @@ error::Error GLES2DecoderImpl::HandleGetIntegerv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetIntegerv(pname, params);
+  DoGetIntegerv(pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetIntegerv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2018,7 +2047,10 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetProgramiv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetProgramiv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -2034,7 +2066,7 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetProgramiv(program, pname, params);
+  DoGetProgramiv(program, pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetProgramiv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2052,7 +2084,11 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetRenderbufferParameteriv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetRenderbufferParameteriv", pname,
+                                    "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -2074,7 +2110,7 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetRenderbufferParameteriv(target, pname, params);
+  DoGetRenderbufferParameteriv(target, pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetRenderbufferParameteriv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2094,7 +2130,10 @@ error::Error GLES2DecoderImpl::HandleGetSamplerParameterfv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetSamplerParameterfv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetSamplerParameterfv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLfloat* params = result ? result->GetData() : NULL;
@@ -2110,7 +2149,7 @@ error::Error GLES2DecoderImpl::HandleGetSamplerParameterfv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetSamplerParameterfv(sampler, pname, params);
+  DoGetSamplerParameterfv(sampler, pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetSamplerParameterfv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2130,7 +2169,10 @@ error::Error GLES2DecoderImpl::HandleGetSamplerParameteriv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetSamplerParameteriv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetSamplerParameteriv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -2146,7 +2188,7 @@ error::Error GLES2DecoderImpl::HandleGetSamplerParameteriv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetSamplerParameteriv(sampler, pname, params);
+  DoGetSamplerParameteriv(sampler, pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetSamplerParameteriv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2163,7 +2205,10 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetShaderiv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetShaderiv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -2179,7 +2224,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetShaderiv(shader, pname, params);
+  DoGetShaderiv(shader, pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetShaderiv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2197,7 +2242,10 @@ error::Error GLES2DecoderImpl::HandleGetSynciv(uint32_t immediate_data_size,
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetSynciv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetSynciv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.values_shm_id, c.values_shm_offset, Result::ComputeSize(num_values));
   GLint* values = result ? result->GetData() : NULL;
@@ -2235,7 +2283,10 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetTexParameterfv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetTexParameterfv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLfloat* params = result ? result->GetData() : NULL;
@@ -2255,7 +2306,7 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetTexParameterfv(target, pname, params);
+  DoGetTexParameterfv(target, pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetTexParameterfv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2272,7 +2323,10 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetTexParameteriv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetTexParameteriv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -2292,7 +2346,7 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetTexParameteriv(target, pname, params);
+  DoGetTexParameteriv(target, pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetTexParameteriv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2309,7 +2363,10 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribfv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetVertexAttribfv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetVertexAttribfv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLfloat* params = result ? result->GetData() : NULL;
@@ -2325,7 +2382,7 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribfv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetVertexAttribfv(index, pname, params);
+  DoGetVertexAttribfv(index, pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetVertexAttribfv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2342,7 +2399,10 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetVertexAttribiv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetVertexAttribiv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -2358,7 +2418,7 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetVertexAttribiv(index, pname, params);
+  DoGetVertexAttribiv(index, pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetVertexAttribiv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2377,7 +2437,10 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribIiv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetVertexAttribIiv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetVertexAttribIiv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
@@ -2393,7 +2456,7 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribIiv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetVertexAttribIiv(index, pname, params);
+  DoGetVertexAttribIiv(index, pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetVertexAttribIiv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -2412,7 +2475,10 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribIuiv(
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetVertexAttribIuiv::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetVertexAttribIuiv", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLuint* params = result ? result->GetData() : NULL;
@@ -2428,7 +2494,7 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribIuiv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  DoGetVertexAttribIuiv(index, pname, params);
+  DoGetVertexAttribIuiv(index, pname, params, num_values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetVertexAttribIuiv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);

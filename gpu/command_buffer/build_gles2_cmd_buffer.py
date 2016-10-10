@@ -3032,7 +3032,7 @@ _FUNCTION_INFO = {
     'type': 'GETn',
     'result': ['SizedResult<GLboolean>'],
     'decoder_func': 'DoGetBooleanv',
-    'gl_test_func': 'glGetBooleanv',
+    'gl_test_func': 'glGetIntegerv',
   },
   'GetBufferParameteri64v': {
     'type': 'GETn',
@@ -3060,7 +3060,7 @@ _FUNCTION_INFO = {
     'type': 'GETn',
     'result': ['SizedResult<GLfloat>'],
     'decoder_func': 'DoGetFloatv',
-    'gl_test_func': 'glGetFloatv',
+    'gl_test_func': 'glGetIntegerv',
   },
   'GetFramebufferAttachmentParameteriv': {
     'type': 'GETn',
@@ -3078,6 +3078,7 @@ _FUNCTION_INFO = {
     'result': ['SizedResult<GLint64>'],
     'client_test': False,
     'decoder_func': 'DoGetInteger64v',
+    'gl_test_func': 'glGetIntegerv',
     'unsafe': True
   },
   'GetIntegerv': {
@@ -4823,6 +4824,10 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
         args.append("nullptr")
       else:
         args.append(arg.name)
+
+    if func.GetInfo('type') == 'GETn' and func.name != 'GetSynciv':
+      args.append('num_values')
+
     f.write("  %s(%s);\n" %
                (func.GetGLFunctionName(), ", ".join(args)))
 
@@ -6700,7 +6705,10 @@ class GETnHandler(TypeHandler):
 
     code = """  typedef cmds::%(func_name)s::Result Result;
   GLsizei num_values = 0;
-  GetNumValuesReturnedForGLGet(pname, &num_values);
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":%(func_name)s", pname, "pname");
+    return error::kNoError;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.%(last_arg_name)s_shm_id, c.%(last_arg_name)s_shm_offset,
       Result::ComputeSize(num_values));
