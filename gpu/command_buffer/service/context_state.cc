@@ -602,6 +602,9 @@ void ContextState::RemoveBoundBuffer(Buffer* buffer) {
   if (bound_transform_feedback_buffer.get() == buffer) {
     bound_transform_feedback_buffer = nullptr;
   }
+  if (bound_transform_feedback.get()) {
+    bound_transform_feedback->RemoveBoundBuffer(buffer);
+  }
   if (bound_uniform_buffer.get() == buffer) {
     bound_uniform_buffer = nullptr;
   }

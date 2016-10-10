@@ -26,6 +26,8 @@ TransformFeedback::TransformFeedback(TransformFeedbackManager* manager,
 
 TransformFeedback::~TransformFeedback() {
   if (!manager_->lost_context()) {
+    if (active_)
+      glEndTransformFeedback();
     glDeleteTransformFeedbacks(1, &service_id_);
   }
 }
