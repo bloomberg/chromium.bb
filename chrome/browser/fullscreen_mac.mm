@@ -9,10 +9,6 @@
 #include "base/command_line.h"
 
 bool IsFullScreenMode() {
-  // Check if the main display has been captured (by games in particular).
-  if (CGDisplayIsCaptured(CGMainDisplayID()))
-    return true;
-
   NSApplicationPresentationOptions options =
       [NSApp currentSystemPresentationOptions];
 
