@@ -27,6 +27,8 @@
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/wifi/wifi_service.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
@@ -78,6 +80,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
                                request_url,
                                CreateMetricsHelper(web_contents, request_url)),
       login_url_(login_url),
+      ssl_info_(ssl_info),
       callback_(callback) {
   DCHECK(login_url_.is_valid());
 
@@ -239,6 +242,11 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
       NOTREACHED() << "Command " << cmd
                    << " isn't handled by the captive portal interstitial.";
   }
+}
+
+void CaptivePortalBlockingPage::OverrideEntry(content::NavigationEntry* entry) {
+  entry->GetSSL() = content::SSLStatus(
+      content::SECURITY_STYLE_AUTHENTICATION_BROKEN, ssl_info_.cert, ssl_info_);
 }
 
 void CaptivePortalBlockingPage::OnProceed() {

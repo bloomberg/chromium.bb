@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -163,6 +164,15 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   EXPECT_EQ(expect_login_url == EXPECT_LOGIN_URL_NO,
             IsInterstitialDisplayingText(contents->GetInterstitialPage(),
                                          kGenericLoginURLText));
+
+  // Check that a red/dangerous lock icon is showing on the interstitial.
+  ChromeSecurityStateModelClient* security_model =
+      ChromeSecurityStateModelClient::FromWebContents(contents);
+  ASSERT_TRUE(security_model);
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  security_model->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SecurityStateModel::DANGEROUS,
+            security_info.security_level);
 }
 
 void CaptivePortalBlockingPageTest::TestInterstitial(
