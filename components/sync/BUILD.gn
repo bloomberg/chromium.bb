@@ -537,7 +537,6 @@ static_library("sync") {
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
-    "//components/sync/engine_impl/attachments/proto",
     "//components/sync/protocol",
   ]
   deps = [
@@ -551,6 +550,7 @@ static_library("sync") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/signin/core/browser",
+    "//components/sync/engine_impl/attachments/proto",
     "//components/version_info",
     "//crypto",
     "//google_apis",
@@ -918,6 +918,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/signin/core/browser:test_support",
     "//components/sync",
+    "//components/sync/engine_impl/attachments/proto",
     "//components/syncable_prefs",
     "//components/syncable_prefs:test_support",
     "//components/version_info",

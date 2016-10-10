@@ -6,7 +6,10 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
   # This should only get compiled into the sync component.
-  visibility = [ "//components/sync" ]
+  visibility = [
+    "//components/sync",
+    "//components/sync:unit_tests",
+  ]
 
   sources = [
     "attachment_store.proto",
