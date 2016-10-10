@@ -15,7 +15,6 @@ namespace android {
 extern const base::Feature kAndroidPayIntegrationV1;
 extern const base::Feature kDownloadsUiFeature;
 extern const base::Feature kImportantSitesInCBD;
-extern const base::Feature kNTPMaterialDesign;
 extern const base::Feature kNTPOfflinePagesFeature;
 extern const base::Feature kNTPFakeOmniboxTextFeature;
 extern const base::Feature kPhysicalWebFeature;

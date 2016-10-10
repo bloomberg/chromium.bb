@@ -279,7 +279,7 @@ public class NewTabPageView extends FrameLayout
         void removeContextMenuCloseCallback(Callback<Menu> callback);
 
         /**
-         * Makes the {@link Activity} close any open context menu.
+         * Makes the activity close any open context menu.
          */
         void closeContextMenu();
 
@@ -361,7 +361,7 @@ public class NewTabPageView extends FrameLayout
             stub.setLayoutResource(R.layout.new_tab_page_scroll_view);
             mScrollView = (NewTabPageScrollView) stub.inflate();
             mScrollView.setBackgroundColor(
-                    NtpStyleUtils.getBackgroundColorResource(getResources(), false));
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.ntp_bg));
             mScrollView.enableBottomShadow(SHADOW_COLOR);
             mNewTabPageLayout = (NewTabPageLayout) findViewById(R.id.ntp_content);
         }
@@ -394,7 +394,8 @@ public class NewTabPageView extends FrameLayout
             mRecyclerView.scrollToPosition(scrollPosition);
 
             if (CardsVariationParameters.isScrollBelowTheFoldEnabled()) {
-                int searchBoxHeight = NtpStyleUtils.getSearchBoxHeight(getResources());
+                int searchBoxHeight =
+                        getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height);
                 mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
                         mNewTabPageAdapter.getFirstHeaderPosition(), searchBoxHeight);
             }

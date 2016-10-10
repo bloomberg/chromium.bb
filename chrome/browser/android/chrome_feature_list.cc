@@ -42,7 +42,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &ntp_snippets::kContentSuggestionsFeature,
     &ntp_snippets::kSaveToOfflineFeature,
     &kNTPFakeOmniboxTextFeature,
-    &kNTPMaterialDesign,
     &kNTPOfflinePagesFeature,
     &kPhysicalWebFeature,
     &kPhysicalWebIgnoreOtherClientsFeature,
@@ -68,9 +67,6 @@ const base::Feature kDownloadsUiFeature{"DownloadsUi",
 
 const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNTPMaterialDesign{"NTPMaterialDesign",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

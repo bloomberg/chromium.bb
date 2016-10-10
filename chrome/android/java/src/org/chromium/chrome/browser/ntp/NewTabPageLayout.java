@@ -37,9 +37,9 @@ public class NewTabPageLayout extends LinearLayout {
     private final int mPeekingCardHeight;
     private final int mTabStripHeight;
     private final int mFieldTrialLayoutAdjustment;
+    private final int mSearchboxShadowWidth;
 
     private int mParentViewportHeight;
-    private int mSearchboxViewShadowWidth;
 
     private boolean mCardsUiEnabled;
     private View mTopSpacer; // Spacer above search logo.
@@ -74,6 +74,7 @@ public class NewTabPageLayout extends LinearLayout {
         mTabStripHeight = res.getDimensionPixelSize(R.dimen.tab_strip_height);
         mFieldTrialLayoutAdjustment = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 CardsVariationParameters.getFirstCardOffsetDp(), res.getDisplayMetrics());
+        mSearchboxShadowWidth = res.getDimensionPixelOffset(R.dimen.ntp_search_box_shadow_width);
     }
 
     @Override
@@ -88,7 +89,6 @@ public class NewTabPageLayout extends LinearLayout {
         mSearchProviderLogoView = (LogoView) findViewById(R.id.search_provider_logo);
         mSearchBoxView = findViewById(R.id.search_box);
         mMostVisitedLayout = (MostVisitedLayout) findViewById(R.id.most_visited_layout);
-        setSearchBoxStyle();
     }
 
     /**
@@ -223,7 +223,7 @@ public class NewTabPageLayout extends LinearLayout {
         // Make the search box and logo as wide as the most visited items.
         if (mMostVisitedLayout.getVisibility() != GONE) {
             final int width = mMostVisitedLayout.getMeasuredWidth() - mMostVisitedLayoutBleed;
-            measureExactly(mSearchBoxView, width + mSearchboxViewShadowWidth,
+            measureExactly(mSearchBoxView, width + mSearchboxShadowWidth,
                     mSearchBoxView.getMeasuredHeight());
             measureExactly(
                     mSearchProviderLogoView, width, mSearchProviderLogoView.getMeasuredHeight());
@@ -248,35 +248,6 @@ public class NewTabPageLayout extends LinearLayout {
         }
         top += ((MarginLayoutParams) mMostVisitedLayout.getLayoutParams()).topMargin;
         return top;
-    }
-
-    /**
-     * Set the search box style, adding a shadow if required.
-     */
-    private void setSearchBoxStyle() {
-        if (!NtpStyleUtils.shouldUseMaterialDesign()) return;
-
-        Resources resources = getContext().getResources();
-
-        // Adjust the margins to account for the bigger size due to the shadow.
-        MarginLayoutParams layoutParams = (MarginLayoutParams) mSearchBoxView.getLayoutParams();
-        layoutParams.setMargins(
-                resources.getDimensionPixelSize(R.dimen.ntp_search_box_material_margin_left),
-                resources.getDimensionPixelSize(R.dimen.ntp_search_box_material_margin_top),
-                resources.getDimensionPixelSize(R.dimen.ntp_search_box_material_margin_right),
-                resources.getDimensionPixelSize(R.dimen.ntp_search_box_material_margin_bottom));
-        layoutParams.height = resources
-                .getDimensionPixelSize(R.dimen.ntp_search_box_material_height);
-        // Width will be adjusted in onMeasure();
-        mSearchboxViewShadowWidth = resources
-                .getDimensionPixelOffset(R.dimen.ntp_search_box_material_extra_width);
-
-        mSearchBoxView.setBackgroundResource(R.drawable.textbox);
-        mSearchBoxView.setPadding(
-                resources.getDimensionPixelSize(R.dimen.ntp_search_box_material_padding_left),
-                resources.getDimensionPixelSize(R.dimen.ntp_search_box_material_padding_top),
-                resources.getDimensionPixelSize(R.dimen.ntp_search_box_material_padding_right),
-                resources.getDimensionPixelSize(R.dimen.ntp_search_box_material_padding_bottom));
     }
 
     /**

@@ -690,7 +690,7 @@ public class NewTabPage
         mProfile = tab.getProfile();
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
-        mBackgroundColor = NtpStyleUtils.getBackgroundColorResource(activity.getResources(), false);
+        mBackgroundColor = ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg);
         mThemeColor = ApiCompatibilityUtils.getColor(
                 activity.getResources(), R.color.default_primary_color);
         TemplateUrlService.getInstance().addObserver(this);
@@ -997,9 +997,7 @@ public class NewTabPage
 
     @Override
     public int getThemeColor() {
-        return isLocationBarShownInNTP()
-                ? NtpStyleUtils.getBackgroundColorResource(mActivity.getResources(), false)
-                : mThemeColor;
+        return isLocationBarShownInNTP() ? mBackgroundColor : mThemeColor;
     }
 
     @Override
