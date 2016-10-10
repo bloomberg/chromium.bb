@@ -1388,7 +1388,7 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
   // MediaPlayer within a Mojo media renderer.  http://crbug.com/580626
   if (data_source_) {
     const GURL url_after_redirects = data_source_->GetUrlAfterRedirects();
-    if (MediaCodecUtil::IsHLSPath(url_after_redirects)) {
+    if (MediaCodecUtil::IsHLSURL(url_after_redirects)) {
       client_->requestReload(url_after_redirects);
       // |this| may be destructed, do nothing after this.
       return;
