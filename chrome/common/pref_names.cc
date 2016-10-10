@@ -881,6 +881,14 @@ const char kAllowScreenLock[] = "allow_screen_lock";
 // or dismissed HaTS (happiness-tracking) survey.
 const char kHatsLastInteractionTimestamp[] = "hats_last_interaction_timestamp";
 
+// An int64 pref. This is the timestamp that indicates the end of the most
+// recent survey cycle.
+const char kHatsSurveyCycleEndTimestamp[] = "hats_survey_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for HaTS in the current
+// survey cycle.
+const char kHatsDeviceIsSelected[] = "hats_device_is_selected";
+
 // A boolean pref. Indicates if we've already shown a notification to inform the
 // current user about the quick unlock feature.
 const char kQuickUnlockFeatureNotificationShown[] =

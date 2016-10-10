@@ -332,6 +332,11 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterInt64Pref(prefs::kHatsLastInteractionTimestamp,
                               base::Time().ToInternalValue());
 
+  registry->RegisterInt64Pref(prefs::kHatsSurveyCycleEndTimestamp,
+                              base::Time().ToInternalValue());
+
+  registry->RegisterBooleanPref(prefs::kHatsDeviceIsSelected, false);
+
   registry->RegisterBooleanPref(prefs::kQuickUnlockFeatureNotificationShown,
                                 false);
 
