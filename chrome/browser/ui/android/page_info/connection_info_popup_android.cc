@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/connection_info_popup_android.h"
+#include "chrome/browser/ui/android/page_info/connection_info_popup_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
