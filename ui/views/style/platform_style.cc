@@ -53,17 +53,6 @@ gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
 }
 
 // static
-std::unique_ptr<FocusableBorder> PlatformStyle::CreateComboboxBorder() {
-  return base::MakeUnique<FocusableBorder>();
-}
-
-// static
-std::unique_ptr<Background> PlatformStyle::CreateComboboxBackground(
-    int shoulder_width) {
-  return nullptr;
-}
-
-// static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
   return base::MakeUnique<NativeScrollBar>(is_horizontal);
 }

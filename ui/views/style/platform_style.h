@@ -62,13 +62,6 @@ class VIEWS_EXPORT PlatformStyle {
   static gfx::ImageSkia CreateComboboxArrow(bool is_enabled,
                                             Combobox::Style style);
 
-  // Creates the appropriate border for a focusable Combobox.
-  static std::unique_ptr<FocusableBorder> CreateComboboxBorder();
-
-  // Creates the appropriate background for a Combobox.
-  static std::unique_ptr<Background> CreateComboboxBackground(
-      int shoulder_width);
-
   // Creates the default scrollbar for the given orientation.
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
 

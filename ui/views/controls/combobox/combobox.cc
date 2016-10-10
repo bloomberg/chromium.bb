@@ -409,12 +409,6 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
 #endif
 
   UpdateBorder();
-  if (UseMd()) {
-    // set_background() takes ownership but takes a raw pointer.
-    std::unique_ptr<Background> b =
-        PlatformStyle::CreateComboboxBackground(GetArrowContainerWidth());
-    set_background(b.release());
-  }
 
   // Initialize the button images.
   Button::ButtonState button_states[] = {
@@ -767,8 +761,7 @@ void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
 }
 
 void Combobox::UpdateBorder() {
-  std::unique_ptr<FocusableBorder> border(
-      PlatformStyle::CreateComboboxBorder());
+  std::unique_ptr<FocusableBorder> border(new FocusableBorder());
   if (style_ == STYLE_ACTION)
     border->SetInsets(5, 10, 5, 10);
   if (invalid_)
