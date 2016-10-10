@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.graphics.Rect;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 
 /**
@@ -44,11 +45,14 @@ public class ImpressionTracker implements ViewTreeObserver.OnPreDrawListener {
 
     @Override
     public boolean onPreDraw() {
-        Rect rect = new Rect(0, 0, mView.getWidth(), mView.getHeight());
-        mView.getParent().getChildVisibleRect(mView, rect, null);
-        // Track impression if at least one third of the view is visible.
-        if (rect.height() >= mView.getHeight() / 3) {
-            mListener.onImpression();
+        ViewParent parent = mView.getParent();
+        if (parent != null) {
+            Rect rect = new Rect(0, 0, mView.getWidth(), mView.getHeight());
+            parent.getChildVisibleRect(mView, rect, null);
+            // Track impression if at least one third of the view is visible.
+            if (rect.height() >= mView.getHeight() / 3) {
+                mListener.onImpression();
+            }
         }
         // Proceed with the current drawing pass.
         return true;
