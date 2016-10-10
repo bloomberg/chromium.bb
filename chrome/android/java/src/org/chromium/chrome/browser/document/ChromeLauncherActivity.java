@@ -199,7 +199,7 @@ public class ChromeLauncherActivity extends Activity
 
         // Check if we should launch an Instant App to handle the intent.
         if (InstantAppsHandler.getInstance().handleIncomingIntent(
-                this, intent, mIsCustomTabIntent)) {
+                this, intent, mIsCustomTabIntent && !mIsHerbIntent)) {
             finish();
             return;
         }
