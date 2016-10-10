@@ -194,8 +194,12 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
     // If the new location has higher priority than the location of an existing
     // extension, let the update process overwrite the existing extension.
   } else {
-    if (ExtensionPrefs::Get(context_)->IsExternalExtensionUninstalled(id))
+    // Skip the installation if the extension was removed by the user and it's
+    // not specified to be force-installed through the policy.
+    if (!Manifest::IsPolicyLocation(location) &&
+        ExtensionPrefs::Get(context_)->IsExternalExtensionUninstalled(id)) {
       return false;
+    }
 
     if (extension) {
       LOG(DFATAL) << "Trying to add extension " << id

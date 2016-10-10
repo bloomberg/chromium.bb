@@ -1234,6 +1234,17 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
       Extension::NO_FLAGS,
       false));
 
+  // Installation of the same extension through the policy should be successful.
+  ASSERT_TRUE(service()->pending_extension_manager()->AddFromExternalUpdateUrl(
+      good_crx,
+      std::string(),
+      GURL("http:://fake.update/url"),
+      Manifest::EXTERNAL_POLICY_DOWNLOAD,
+      Extension::NO_FLAGS,
+      false));
+  EXPECT_TRUE(service()->pending_extension_manager()->IsIdPending(good_crx));
+  EXPECT_TRUE(service()->pending_extension_manager()->Remove(good_crx));
+
   ASSERT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
 }
 
