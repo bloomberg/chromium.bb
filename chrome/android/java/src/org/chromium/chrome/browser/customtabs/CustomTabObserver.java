@@ -35,6 +35,8 @@ class CustomTabObserver extends EmptyTabObserver {
     private long mIntentReceivedTimestamp;
     private long mPageLoadStartedTimestamp;
 
+    private boolean mScreenshotTakenForCurrentNavigation;
+
     private static final int STATE_RESET = 0;
     private static final int STATE_WAITING_LOAD_START = 1;
     private static final int STATE_WAITING_LOAD_FINISH = 2;
@@ -85,12 +87,15 @@ class CustomTabObserver extends EmptyTabObserver {
             if (mCustomTabsConnection != null) {
                 mCustomTabsConnection.notifyNavigationEvent(
                         mSession, CustomTabsCallback.NAVIGATION_ABORTED);
+                mCustomTabsConnection.sendNavigationInfo(
+                        mSession, tab.getUrl(), tab.getTitle(), null);
             }
             mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
         }
         if (mCustomTabsConnection != null) {
             mCustomTabsConnection.notifyNavigationEvent(
                     mSession, CustomTabsCallback.NAVIGATION_STARTED);
+            mScreenshotTakenForCurrentNavigation = false;
         }
     }
 
@@ -100,6 +105,11 @@ class CustomTabObserver extends EmptyTabObserver {
             mCustomTabsConnection.notifyNavigationEvent(
                     mSession, CustomTabsCallback.TAB_SHOWN);
         }
+    }
+
+    @Override
+    public void onHidden(Tab tab) {
+        if (!mScreenshotTakenForCurrentNavigation) captureNavigationInfo(tab);
     }
 
     @Override
@@ -168,5 +178,6 @@ class CustomTabObserver extends EmptyTabObserver {
         };
         tab.getWebContents().getContentBitmapAsync(
                 Bitmap.Config.ARGB_8888, mScaleForNavigationInfo, new Rect(), callback);
+        mScreenshotTakenForCurrentNavigation = true;
     }
 }
