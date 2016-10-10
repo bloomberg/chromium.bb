@@ -17,7 +17,6 @@ namespace {
 const char kCustomTraceConfigString[] =
   "{"
     "\"enable_argument_filter\":true,"
-    "\"enable_sampling\":true,"
     "\"enable_systrace\":true,"
     "\"excluded_categories\":[\"excluded\",\"exc_pattern*\"],"
     "\"included_categories\":[\"included\","
@@ -38,7 +37,6 @@ const char kCustomTraceConfigString[] =
 const char kCustomTraceConfigStringDevToolsStyle[] =
   "{"
     "\"enableArgumentFilter\":true,"
-    "\"enableSampling\":true,"
     "\"enableSystrace\":true,"
     "\"excludedCategories\":[\"excluded\",\"exc_pattern*\"],"
     "\"includedCategories\":[\"included\","

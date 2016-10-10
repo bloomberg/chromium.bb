@@ -592,7 +592,6 @@ v8::Local<v8::FunctionTemplate> V8DOMConfiguration::domClassTemplate(
   if (!result.IsEmpty())
     return result;
 
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
   result = v8::FunctionTemplate::New(
       isolate, V8ObjectConstructor::isValidConstructorMode);
   configureDOMClassTemplate(isolate, world, result);

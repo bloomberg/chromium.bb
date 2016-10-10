@@ -94,11 +94,6 @@ bool GetTracingOptions(const std::string& data64,
   if (enable_systrace)
     trace_config->EnableSystrace();
 
-  bool enable_sampling;
-  options_ok &= options->GetBoolean("useSampling", &enable_sampling);
-  if (enable_sampling)
-    trace_config->EnableSampling();
-
   if (!options_ok) {
     LOG(ERROR) << "Malformed options";
     return false;

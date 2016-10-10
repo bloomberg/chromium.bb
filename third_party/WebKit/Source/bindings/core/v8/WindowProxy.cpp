@@ -219,7 +219,6 @@ bool WindowProxy::initializeIfNeeded() {
 
 bool WindowProxy::initialize() {
   TRACE_EVENT0("v8", "WindowProxy::initialize");
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "InitializeWindow");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Binding.InitializeWindowProxy");
 
   ScriptForbiddenScope::AllowUserAgentScript allowScript;

@@ -67,9 +67,6 @@ class ParkThreadsScope final {
 
   bool parkThreads() {
     TRACE_EVENT0("blink_gc", "ThreadHeap::ParkThreadsScope");
-    const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
-    if (m_state->isMainThread())
-      TRACE_EVENT_SET_SAMPLING_STATE("blink_gc", "BlinkGCWaiting");
 
     // TODO(haraken): In an unlikely coincidence that two threads decide
     // to collect garbage at the same time, avoid doing two GCs in
@@ -85,8 +82,6 @@ class ParkThreadsScope final {
                                  50));
     timeToStopThreadsHistogram.count(timeForStoppingThreads);
 
-    if (m_state->isMainThread())
-      TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
     return m_shouldResumeThreads;
   }
 

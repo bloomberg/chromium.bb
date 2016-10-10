@@ -954,8 +954,6 @@ component("base") {
     "trace_event/trace_log.cc",
     "trace_event/trace_log.h",
     "trace_event/trace_log_constants.cc",
-    "trace_event/trace_sampling_thread.cc",
-    "trace_event/trace_sampling_thread.h",
     "trace_event/tracing_agent.cc",
     "trace_event/tracing_agent.h",
     "tracked_objects.cc",

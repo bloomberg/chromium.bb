@@ -988,7 +988,6 @@ void FrameView::layout() {
     return;
 
   TRACE_EVENT0("blink,benchmark", "FrameView::layout");
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "Layout");
 
   if (m_autoSizeInfo)
     m_autoSizeInfo->autoSizeIfNeeded();

@@ -1828,7 +1828,6 @@ void Document::updateStyleAndLayoutTree() {
 
   TRACE_EVENT_BEGIN1("blink,devtools.timeline", "UpdateLayoutTree", "beginData",
                      InspectorRecalculateStylesEvent::data(frame()));
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "UpdateLayoutTree");
 
   unsigned startElementCount = styleEngine().styleForElementCount();
 

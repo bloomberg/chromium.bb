@@ -93,7 +93,6 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
     trace_log_ = base::trace_event::TraceLog::GetInstance();
     base::trace_event::TraceConfig trace_config(
         "video", base::trace_event::RECORD_UNTIL_FULL);
-    trace_config.EnableSampling();
     trace_log_->SetEnabled(trace_config,
                            base::trace_event::TraceLog::RECORDING_MODE);
     // Check that we are indeed recording.

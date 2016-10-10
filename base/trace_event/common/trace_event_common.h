@@ -258,16 +258,6 @@
       TRACE_EVENT_PHASE_INSTANT, category_group, name, timestamp,        \
       TRACE_EVENT_FLAG_NONE | scope)
 
-// Syntactic sugars for the sampling tracing in the main thread.
-#define TRACE_EVENT_SCOPED_SAMPLING_STATE(category, name) \
-  TRACE_EVENT_SCOPED_SAMPLING_STATE_FOR_BUCKET(0, category, name)
-#define TRACE_EVENT_GET_SAMPLING_STATE() \
-  TRACE_EVENT_GET_SAMPLING_STATE_FOR_BUCKET(0)
-#define TRACE_EVENT_SET_SAMPLING_STATE(category, name) \
-  TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(0, category, name)
-#define TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(category_and_name) \
-  TRACE_EVENT_SET_NONCONST_SAMPLING_STATE_FOR_BUCKET(0, category_and_name)
-
 // Records a single BEGIN event called "name" immediately, with 0, 1 or 2
 // associated arguments. If the category is not enabled, then this
 // does nothing.

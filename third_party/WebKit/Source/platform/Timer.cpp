@@ -127,7 +127,6 @@ void TimerBase::runInternal() {
       << "Timer posted by " << m_location.function_name() << " "
       << m_location.file_name() << " was run on a different thread";
 #endif
-  TRACE_EVENT_SET_SAMPLING_STATE("blink", "BlinkInternal");
 
   if (m_repeatInterval) {
     double now = timerMonotonicallyIncreasingTime();
@@ -142,7 +141,6 @@ void TimerBase::runInternal() {
     m_nextFireTime = 0;
   }
   fired();
-  TRACE_EVENT_SET_SAMPLING_STATE("blink", "Sleeping");
 }
 
 bool TimerBase::Comparator::operator()(const TimerBase* a,

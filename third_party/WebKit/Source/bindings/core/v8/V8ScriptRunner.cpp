@@ -461,7 +461,6 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(
   TRACE_EVENT2(
       "v8,devtools.timeline", "v8.compile", "fileName", fileName.utf8(), "data",
       InspectorCompileScriptEvent::data(fileName, scriptStartPosition));
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Compile");
 
   ASSERT(!streamer || resource);
   ASSERT(!resource || resource->cacheHandler() == cacheHandler);
@@ -502,7 +501,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(
   ASSERT(!script.IsEmpty());
   ScopedFrameBlamer frameBlamer(
       context->isDocument() ? toDocument(context)->frame() : nullptr);
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
   TRACE_EVENT1("v8", "v8.run", "fileName",
                TRACE_STR_COPY(*v8::String::Utf8Value(
                    script->GetUnboundScript()->GetScriptName())));
@@ -546,7 +544,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::compileAndRunInternalScript(
     return v8::MaybeLocal<v8::Value>();
 
   TRACE_EVENT0("v8", "v8.run");
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
@@ -558,7 +555,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledInternalScript(
     v8::Isolate* isolate,
     v8::Local<v8::Script> script) {
   TRACE_EVENT0("v8", "v8.run");
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
@@ -573,7 +569,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callAsConstructor(
     int argc,
     v8::Local<v8::Value> argv[]) {
   TRACE_EVENT0("v8", "v8.callAsConstructor");
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
   int depth = v8::MicrotasksScope::GetCurrentDepth(isolate);
   if (depth >= kMaxRecursionDepth)
@@ -619,7 +614,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
   ScopedFrameBlamer frameBlamer(
       context->isDocument() ? toDocument(context)->frame() : nullptr);
   TRACE_EVENT0("v8", "v8.callFunction");
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
   int depth = v8::MicrotasksScope::GetCurrentDepth(isolate);
   if (depth >= kMaxRecursionDepth)
@@ -657,7 +651,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callInternalFunction(
     v8::Local<v8::Value> args[],
     v8::Isolate* isolate) {
   TRACE_EVENT0("v8", "v8.callFunction");
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Value> result =
@@ -670,7 +663,6 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(
     v8::Isolate* isolate,
     v8::Local<v8::ObjectTemplate> objectTemplate) {
   TRACE_EVENT0("v8", "v8.newInstance");
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
@@ -686,7 +678,6 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(
     int argc,
     v8::Local<v8::Value> argv[]) {
   TRACE_EVENT0("v8", "v8.newInstance");
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
@@ -703,7 +694,6 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObjectInDocument(
     int argc,
     v8::Local<v8::Value> argv[]) {
   TRACE_EVENT0("v8", "v8.newInstance");
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
   if (ScriptForbiddenScope::isScriptForbidden()) {
     throwScriptForbiddenException(isolate);
     return v8::MaybeLocal<v8::Object>();
