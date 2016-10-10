@@ -21,11 +21,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:22b1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             },
             {
-              "gpu": "1002:9830",
+              "gpu": "1002:9874",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
@@ -52,11 +52,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:22b1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             },
             {
-              "gpu": "1002:9830",
+              "gpu": "1002:9874",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
@@ -82,11 +82,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:22b1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             },
             {
-              "gpu": "1002:9830",
+              "gpu": "1002:9874",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
@@ -113,11 +113,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:22b1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             },
             {
-              "gpu": "1002:9830",
+              "gpu": "1002:9874",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
@@ -143,11 +143,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:22b1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             },
             {
-              "gpu": "1002:9830",
+              "gpu": "1002:9874",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
@@ -174,11 +174,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:22b1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             },
             {
-              "gpu": "1002:9830",
+              "gpu": "1002:9874",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
@@ -204,11 +204,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:22b1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             },
             {
-              "gpu": "1002:9830",
+              "gpu": "1002:9874",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
@@ -235,11 +235,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:22b1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             },
             {
-              "gpu": "1002:9830",
+              "gpu": "1002:9874",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
@@ -265,11 +265,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:22b1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             },
             {
-              "gpu": "1002:9830",
+              "gpu": "1002:9874",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
@@ -296,11 +296,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:22b1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             },
             {
-              "gpu": "1002:9830",
+              "gpu": "1002:9874",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }

@@ -210,8 +210,8 @@ def get_fyi_waterfall_config():
   waterfall = add_tester(
     waterfall, 'Win 10 Low-End Perf Tests',
     'win-low-end-2-core', 'win',
-    swarming=[{'gpu': '8086:22b1', 'os': 'Windows-10-10240'},
-    {'gpu': '1002:9830', 'os': 'Windows-10-10586'}])
+    swarming=[{'gpu': '8086:22b1', 'os': 'Windows-10-10586'},
+    {'gpu': '1002:9874', 'os': 'Windows-10-10586'}])
   return waterfall
 
 def get_waterfall_config():
