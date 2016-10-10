@@ -70,12 +70,6 @@ source_set("signin") {
   ]
 }
 
-# Temporary target to allow upstreaming authentication_service*.{cc,h}
-# without breaking downstream repository when rolling the CL. Will be
-# removed once downstream code no longer use it.
-group("authentication_service") {
-}
-
 source_set("test_support") {
   testonly = true
   sources = [
@@ -96,13 +90,6 @@ source_set("test_support") {
     "//base",
     "//ios/public/provider/chrome/browser",
   ]
-}
-
-# Temporary target to allow upstreaming authentication_service*.{cc,h}
-# without breaking downstream repository when rolling the CL. Will be
-# removed once downstream code no longer use it.
-group("authentication_service_test_support") {
-  testonly = true
 }
 
 source_set("unit_tests") {
