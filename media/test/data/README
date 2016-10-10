@@ -76,7 +76,8 @@ bear-640x360-av_enc-av.webm - bear-640x360.webm with audio & video encrypted usi
 bear-320x240-av_enc-v.webm - bear-320x240.webm with video track encrypted using key ID [1] and key [2].
 bear-320x240-av_enc-a.webm - bear-320x240.webm with audio track encrypted using key ID [1] and key [2].
 bear-320x240-v_enc-v.webm - bear-320x240-video-only.webm encrypted using key ID [1] and key [2].
-bear-320x240-v-vp9_enc-v.webm - bear-vp9.webm VP9 video only encrypted using key ID [1] and key [2].
+bear-320x240-v-vp9_fullsample_enc-v.webm - bear-vp9.webm VP9 video only encrypted using key ID [1] and key [2] with full sample encryption.
+bear-320x240-v-vp9_subsample_enc-v.webm - bear-vp9.webm VP9 video only encrypted using key ID [1] and key [2] with subsample encryption [4].
 bear-320x240-opus-a_enc-a.webm - bear-opus.webm encrypted using key ID [1] and key[2].
 bear-320x240-opus-av_enc-av.webm - bear-vp9-opus.webm with audio & video encrypted using key ID [1] and key[2].
 bear-320x240-opus-av_enc-v.webm - bear-vp9-opus.webm with video track encrypted using key ID [1] and key[2].
@@ -95,6 +96,7 @@ frame_size_change-av_enc-v.webm - third_party/WebKit/LayoutTests/media/resources
 [3] KeyIds and Keys are created by left rotating key ID [1] and key [2] using
     std::rotate for every new crypto period. This is only for testing. The
     actual key rotation algorithm is often much more complicated.
+[4] http://www.webmproject.org/docs/webm-encryption/#46-subsample-encrypted-block-format
 
 // Container Tests (additional containers derived from bear.ogv)
 bear.ac3    -- created using "avconv -i bear.ogv -f ac3 -b 192k bear.ac3".

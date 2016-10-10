@@ -468,8 +468,14 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-v.webm", kWebMVorbisAudioVP8Video);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Video_WebM) {
-  TestSimplePlayback("bear-320x240-v-vp9_enc-v.webm", kWebMVP9VideoOnly);
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Video_WebM_Fullsample) {
+  TestSimplePlayback("bear-320x240-v-vp9_fullsample_enc-v.webm",
+                     kWebMVP9VideoOnly);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Video_WebM_Subsample) {
+  TestSimplePlayback("bear-320x240-v-vp9_subsample_enc-v.webm",
+                     kWebMVP9VideoOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM_Opus) {
