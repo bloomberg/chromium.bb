@@ -59,7 +59,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         builds = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
         if options.trigger_jobs:
-            self.trigger_jobs_for_missing_builds(builds)
+            if self.trigger_jobs_for_missing_builds(builds):
+                _log.info('Please re-run webkit-patch rebaseline-cl once all pending try jobs have finished.')
+                return
         if not builds:
             # TODO(qyearsley): Also check that there are *finished* builds.
             # The current behavior would still proceed if there are queued
@@ -114,10 +116,11 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         return GitCL(self._tool)
 
     def trigger_jobs_for_missing_builds(self, builds):
+        """Returns True if jobs were triggered; False otherwise."""
         builders_with_builds = {b.builder_name for b in builds}
         builders_without_builds = set(self._try_bots()) - builders_with_builds
         if not builders_without_builds:
-            return
+            return False
 
         _log.info('Triggering try jobs for:')
         for builder in sorted(builders_without_builds):
@@ -129,6 +132,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         # even when there are builders under different master names.
         for builder in sorted(builders_without_builds):
             self.git_cl().run(['try', '-b', builder])
+        return True
 
     def _test_prefix_list(self, issue_number, only_changed_tests):
         """Returns a collection of test, builder and file extensions to get new baselines for.

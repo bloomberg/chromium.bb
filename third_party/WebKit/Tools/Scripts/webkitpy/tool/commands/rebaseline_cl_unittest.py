@@ -141,20 +141,14 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
     def test_execute_with_trigger_jobs_option(self):
         self.command.execute(self.command_options(issue=11112222, trigger_jobs=True), [], self.tool)
-        # A message is printed showing that some try jobs are triggered.
         self.assertLog([
             'INFO: Triggering try jobs for:\n',
             'INFO:   MOCK Try Linux\n',
-            'INFO: Tests to rebaseline:\n',
-            'INFO:   svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win (5000)\n',
-            'INFO:   fast/dom/prototype-inheritance.html: MOCK Try Win (5000)\n',
-            'INFO:   fast/dom/prototype-taco.html: MOCK Try Win (5000)\n',
-            'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
-            'INFO: Rebaselining fast/dom/prototype-taco.html\n',
-            'INFO: Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n',
+            'INFO: Please re-run webkit-patch rebaseline-cl once all pending try jobs have finished.\n',
         ])
-        # The first executive call, before the rebaseline calls, is triggering try jobs.
-        self.assertEqual(self.tool.executive.calls[0], ['git', 'cl', 'try', '-b', 'MOCK Try Linux'])
+        self.assertEqual(
+            self.tool.executive.calls,
+            [['git', 'cl', 'try', '-b', 'MOCK Try Linux']])
 
     def test_rebaseline_calls(self):
         """Tests the list of commands that are invoked when rebaseline is called."""
