@@ -539,8 +539,6 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&,
   GridPosition position;
 
   if (value.isCustomIdentValue()) {
-    // We translate <custom-ident> to <string> during parsing as it
-    // makes handling it more simple.
     position.setNamedGridArea(toCSSCustomIdentValue(value).value());
     return position;
   }

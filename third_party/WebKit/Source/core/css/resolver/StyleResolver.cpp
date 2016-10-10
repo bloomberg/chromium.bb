@@ -1217,10 +1217,6 @@ void StyleResolver::collectPseudoRulesForElement(
   }
 }
 
-// -------------------------------------------------------------------------------------
-// this is mostly boring stuff on how to apply a certain rule to the
-// Computedstyle...
-
 bool StyleResolver::applyAnimatedProperties(StyleResolverState& state,
                                             const Element* animatingElement) {
   Element* element = state.element();

@@ -3604,8 +3604,7 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     }
     case CSSPropertyZIndex:
       return consumeZIndex(m_range);
-    case CSSPropertyTextShadow:  // CSS2 property, dropped in CSS2.1, back in
-                                 // CSS3, so treat as CSS3
+    case CSSPropertyTextShadow:
     case CSSPropertyBoxShadow:
       return consumeShadow(m_range, m_context.mode(),
                            property == CSSPropertyBoxShadow);
@@ -4305,8 +4304,8 @@ bool CSSPropertyParser::consumeColumns(bool important) {
 bool CSSPropertyParser::consumeShorthandGreedily(
     const StylePropertyShorthand& shorthand,
     bool important) {
-  ASSERT(shorthand.length() <=
-         6);  // Existing shorthands have at most 6 longhands.
+  // Existing shorthands have at most 6 longhands.
+  DCHECK_LE(shorthand.length(), 6u);
   const CSSValue* longhands[6] = {nullptr, nullptr, nullptr,
                                   nullptr, nullptr, nullptr};
   const CSSPropertyID* shorthandProperties = shorthand.properties();
