@@ -120,8 +120,9 @@ public class EmptyTabObserver implements TabObserver {
     public void onBackgroundColorChanged(Tab tab, int color) { }
 
     @Override
-    public void webContentsCreated(Tab tab, WebContents sourceWebContents, long openerRenderFrameId,
-            String frameName, String targetUrl, WebContents newWebContents) { }
+    public void webContentsCreated(Tab tab, WebContents sourceWebContents,
+            long openerRenderProcessId, long openerRenderFrameId, String frameName,
+            String targetUrl, WebContents newWebContents) {}
 
     @Override
     public void onReparentingFinished(Tab tab) { }

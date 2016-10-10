@@ -228,7 +228,8 @@ void WebContentsDelegateAndroid::WebContentsCreated(
     jnew_contents = new_contents->GetJavaWebContents();
 
   Java_WebContentsDelegateAndroid_webContentsCreated(
-      env, obj, jsource_contents, opener_render_frame_id,
+      env, obj, jsource_contents, opener_render_process_id,
+      opener_render_frame_id,
       base::android::ConvertUTF8ToJavaString(env, frame_name),
       base::android::ConvertUTF8ToJavaString(env, target_url.spec()),
       jnew_contents);

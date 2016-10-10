@@ -293,15 +293,17 @@ public interface TabObserver {
 
     /**
      * Called when a {@link WebContents} object has been created.
-     * @param tab                 The notifying {@link Tab}.
-     * @param sourceWebContents   The {@link WebContents} that triggered the creation.
-     * @param openerRenderFrameId The opener render frame id.
-     * @param frameName           The name of the frame.
-     * @param targetUrl           The target url.
-     * @param newWebContents      The newly created {@link WebContents}.
+     * @param tab                    The notifying {@link Tab}.
+     * @param sourceWebContents      The {@link WebContents} that triggered the creation.
+     * @param openerRenderProcessId  The opener render process id.
+     * @param openerRenderFrameId    The opener render frame id.
+     * @param frameName              The name of the frame.
+     * @param targetUrl              The target url.
+     * @param newWebContents         The newly created {@link WebContents}.
      */
-    public void webContentsCreated(Tab tab, WebContents sourceWebContents, long openerRenderFrameId,
-            String frameName, String targetUrl, WebContents newWebContents);
+    public void webContentsCreated(Tab tab, WebContents sourceWebContents,
+            long openerRenderProcessId, long openerRenderFrameId, String frameName,
+            String targetUrl, WebContents newWebContents);
 
     /**
      * Called when the tab reparenting process has finished.

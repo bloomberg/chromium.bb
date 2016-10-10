@@ -93,9 +93,9 @@ public class WebContentsDelegateAndroid {
     }
 
     @CalledByNative
-    public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
-            String frameName, String targetUrl, WebContents newWebContents) {
-    }
+    public void webContentsCreated(WebContents sourceWebContents, long openerRenderProcessId,
+            long openerRenderFrameId, String frameName, String targetUrl,
+            WebContents newWebContents) {}
 
     @CalledByNative
     public boolean shouldCreateWebContents(String targetUrl) {
