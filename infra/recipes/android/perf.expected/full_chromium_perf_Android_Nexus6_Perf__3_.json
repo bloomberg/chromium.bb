@@ -555,6 +555,8 @@
       "{\"steps\": {}, \"version\": 2}",
       "--blacklist-file",
       "[SLAVE_BUILD]/src/out/bad_devices.json",
+      "--num-retries",
+      "0",
       "--collect-chartjson-data",
       "--max-battery-temp",
       "350",

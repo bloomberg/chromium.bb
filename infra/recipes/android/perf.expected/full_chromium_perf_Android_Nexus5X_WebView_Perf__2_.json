@@ -583,6 +583,8 @@
       "{\"steps\": {\"dromaeo.cssqueryjquery\": {\"cmd\": \"/path/to/run_benchmark\", \"device_affinity\": 6}, \"dromaeo.cssqueryjquery.release\": {\"cmd\": \"/path/to/run_benchmark\", \"device_affinity\": 4, \"perf_dashboard_id\": \"dromaeo.cssqueryjquery\"}}, \"version\": 2}",
       "--blacklist-file",
       "[SLAVE_BUILD]/src/out/bad_devices.json",
+      "--num-retries",
+      "0",
       "--collect-chartjson-data",
       "--max-battery-temp",
       "350",

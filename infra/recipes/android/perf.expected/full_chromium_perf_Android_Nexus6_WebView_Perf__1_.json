@@ -583,6 +583,8 @@
       "{\"steps\": {\"blink_perf.all.exact\": {\"cmd\": \"/usr/bin/python /path/to/run_benchmark --a=1 -v --b=2\", \"device_affinity\": 1, \"perf_dashboard_id\": \"blink_perf.all\"}, \"blink_perf.all.release\": {\"cmd\": \"/usr/bin/python /path/to/run_benchmark --a=1 -v --b=2\", \"device_affinity\": 0, \"perf_dashboard_id\": \"blink_perf.all\"}, \"blink_perf.dom\": {\"cmd\": \"/path/to/run_benchmark -v --upload-results blink_perf.dom\", \"device_affinity\": 1, \"perf_dashboard_id\": \"blink_perf.dom\"}}, \"version\": 2}",
       "--blacklist-file",
       "[SLAVE_BUILD]/src/out/bad_devices.json",
+      "--num-retries",
+      "0",
       "--collect-chartjson-data",
       "--max-battery-temp",
       "350",
