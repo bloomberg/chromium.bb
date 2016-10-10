@@ -24,12 +24,59 @@ Polymer({
     searchTerm: {
       type: String,
     },
+
+    /** @private */
+    canAddPrinter_: Boolean,
   },
+
+  /**
+   * @type {function()}
+   * @private
+   */
+  networksChangedListener_: function() {},
 
   /** @override */
   ready: function() {
     this.updateCupsPrintersList_();
+    this.refreshNetworks_();
+  },
+
+  /** @override */
+  attached: function() {
     this.addWebUIListener('on-add-cups-printer', this.onAddPrinter_.bind(this));
+    this.networksChangedListener_ = this.refreshNetworks_.bind(this);
+    chrome.networkingPrivate.onNetworksChanged.addListener(
+        this.networksChangedListener_);
+  },
+
+  /** @override */
+  detached: function() {
+    chrome.networkingPrivate.onNetworksChanged.removeListener(
+        this.networksChangedListener_);
+  },
+
+  /**
+   * Callback function when networks change.
+   * @private
+   */
+  refreshNetworks_: function() {
+    chrome.networkingPrivate.getNetworks(
+        {'networkType': chrome.networkingPrivate.NetworkType.ALL,
+         'configured': true},
+        this.onNetworksReceived_.bind(this));
+  },
+
+  /**
+   * Callback function when configured networks are received.
+   * @param {!Array<!chrome.networkingPrivate.NetworkStateProperties>} states
+   *     A list of network state information for each network.
+   * @private
+   */
+  onNetworksReceived_: function(states) {
+    this.canAddPrinter_ = states.some(function(entry) {
+      return entry.hasOwnProperty('ConnectionState') &&
+             entry.ConnectionState == 'Connected';
+    });
   },
 
   /**

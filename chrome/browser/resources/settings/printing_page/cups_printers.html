@@ -16,6 +16,15 @@
         text-decoration: underline;
       }
 
+      .settings-box .start {
+        color: var(--paper-grey-500);
+      }
+
+      .settings-box .start .secondary {
+        color: var(--paper-grey-800);
+        font-size: 12px;
+      }
+
       #message {
         display: flex;
         justify-content: center;
@@ -45,9 +54,16 @@
     </style>
 
     <div class="settings-box first">
-      <a is="action-link" on-tap="onAddPrinterTap_" actionable>
+      <a is="action-link" on-tap="onAddPrinterTap_" actionable
+          hidden="[[!canAddPrinter_]]">
         $i18n{addCupsPrinter}
       </a>
+      <div class="start" hidden="[[canAddPrinter_]]">
+        <span>$i18n{addCupsPrinter}</span>
+        <div class="secondary">
+          $i18n{requireNetworkMessage}
+        </div>
+      </div>
     </div>
 
     <settings-cups-add-printer-dialog id="addPrinterDialog">
