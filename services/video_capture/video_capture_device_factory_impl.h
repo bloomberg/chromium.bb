@@ -16,7 +16,8 @@ namespace video_capture {
 
 class VideoCaptureDeviceFactoryImpl : public mojom::VideoCaptureDeviceFactory {
  public:
-  VideoCaptureDeviceFactoryImpl();
+  VideoCaptureDeviceFactoryImpl(const media::VideoCaptureJpegDecoderFactoryCB&
+                                    jpeg_decoder_factory_callback);
   ~VideoCaptureDeviceFactoryImpl() override;
 
   void AddMojoDevice(std::unique_ptr<VideoCaptureDeviceProxyImpl> device,
@@ -75,6 +76,7 @@ class VideoCaptureDeviceFactoryImpl : public mojom::VideoCaptureDeviceFactory {
   };
 
   std::vector<DeviceEntry> devices_;
+  media::VideoCaptureJpegDecoderFactoryCB jpeg_decoder_factory_callback_;
 };
 
 }  // namespace video_capture

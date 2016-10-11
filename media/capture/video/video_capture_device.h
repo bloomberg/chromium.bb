@@ -59,10 +59,11 @@ class CAPTURE_EXPORT VideoCaptureDevice {
       virtual size_t mapped_size() const = 0;
       virtual void* data(int plane) = 0;
       void* data() { return data(0); }
-      virtual ClientBuffer AsClientBuffer(int plane) = 0;
 #if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
       virtual base::FileDescriptor AsPlatformFile() = 0;
 #endif
+      virtual bool IsBackedByVideoFrame() const = 0;
+      virtual scoped_refptr<VideoFrame> GetVideoFrame() = 0;
     };
 
     virtual ~Client() {}
@@ -109,6 +110,8 @@ class CAPTURE_EXPORT VideoCaptureDevice {
     // additional copies in the browser process.
     // See OnIncomingCapturedData for details of |reference_time| and
     // |timestamp|.
+    // TODO(chfremer): Consider removing one of the two in order to simplify the
+    // interface.
     virtual void OnIncomingCapturedBuffer(
         std::unique_ptr<Buffer> buffer,
         const VideoCaptureFormat& frame_format,

@@ -4,7 +4,7 @@
 
 #include "base/run_loop.h"
 #include "services/video_capture/fake_device_descriptor_test.h"
-#include "services/video_capture/mock_video_capture_device_client.h"
+#include "services/video_capture/mock_video_frame_receiver.h"
 
 using testing::_;
 using testing::InvokeWithoutArgs;
@@ -78,16 +78,16 @@ TEST_F(FakeDeviceDescriptorTest, CanUseSecondRequestedProxy) {
   arbitrary_requested_format.pixel_storage = media::PIXEL_STORAGE_CPU;
 
   base::RunLoop wait_loop_2;
-  mojom::VideoCaptureDeviceClientPtr client_proxy;
-  MockVideoCaptureDeviceClient client(mojo::GetProxy(&client_proxy));
-  EXPECT_CALL(client, OnFrameAvailablePtr(_))
+  mojom::VideoFrameReceiverPtr receiver_proxy;
+  MockVideoFrameReceiver receiver(mojo::GetProxy(&receiver_proxy));
+  EXPECT_CALL(receiver, OnIncomingCapturedVideoFramePtr(_))
       .WillRepeatedly(
           InvokeWithoutArgs([&wait_loop_2]() { wait_loop_2.Quit(); }));
 
   device_proxy_2->Start(arbitrary_requested_format,
                         media::RESOLUTION_POLICY_FIXED_RESOLUTION,
                         media::PowerLineFrequency::FREQUENCY_DEFAULT,
-                        std::move(client_proxy));
+                        std::move(receiver_proxy));
   wait_loop_2.Run();
 }
 

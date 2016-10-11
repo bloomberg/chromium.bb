@@ -7,8 +7,10 @@ module video_capture.mojom;
 import "media/mojo/interfaces/media_types.mojom";
 
 // Callback interface for receiving data and messages from a started
-// VideoCaptureDevice.
-interface VideoCaptureDeviceClient {
-  OnFrameAvailable(media.mojom.VideoFrame frame);
-  OnError(string error);
+// VideoCaptureDeviceProxy.
+interface VideoFrameReceiver {
+  OnIncomingCapturedVideoFrame(media.mojom.VideoFrame frame);
+  OnError();
+  OnLog(string message);
+  OnBufferDestroyed(int32 buffer_id_to_drop);
 };

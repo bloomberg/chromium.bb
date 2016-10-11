@@ -442,12 +442,17 @@ class StubClient : public media::VideoCaptureDevice::Client {
       return buffer_handle_->mapped_size();
     }
     void* data(int plane) override { return buffer_handle_->data(plane); }
-    ClientBuffer AsClientBuffer(int plane) override { return nullptr; }
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     base::FileDescriptor AsPlatformFile() override {
       return base::FileDescriptor();
     }
 #endif
+    bool IsBackedByVideoFrame() const override {
+      return buffer_handle_->IsBackedByVideoFrame();
+    }
+    scoped_refptr<media::VideoFrame> GetVideoFrame() override {
+      return buffer_handle_->GetVideoFrame();
+    }
 
    private:
     ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }

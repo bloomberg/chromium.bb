@@ -47,12 +47,13 @@ class MockBuffer : public VideoCaptureDevice::Client::Buffer {
   gfx::Size dimensions() const override { return gfx::Size(); }
   size_t mapped_size() const override { return mapped_size_; }
   void* data(int plane) override { return data_; }
-  ClientBuffer AsClientBuffer(int plane) override { return nullptr; }
 #if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
   base::FileDescriptor AsPlatformFile() override {
     return base::FileDescriptor();
   }
 #endif
+  bool IsBackedByVideoFrame() const override { return false; };
+  scoped_refptr<VideoFrame> GetVideoFrame() override { return nullptr; }
 
  private:
   const int id_;

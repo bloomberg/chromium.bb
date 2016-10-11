@@ -44,14 +44,17 @@ class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
   gfx::Size dimensions() const override { return buffer_handle_->dimensions(); }
   size_t mapped_size() const override { return buffer_handle_->mapped_size(); }
   void* data(int plane) override { return buffer_handle_->data(plane); }
-  ClientBuffer AsClientBuffer(int plane) override {
-    return buffer_handle_->AsClientBuffer(plane);
-  }
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   base::FileDescriptor AsPlatformFile() override {
     return buffer_handle_->AsPlatformFile();
   }
 #endif
+  bool IsBackedByVideoFrame() const override {
+    return buffer_handle_->IsBackedByVideoFrame();
+  }
+  scoped_refptr<VideoFrame> GetVideoFrame() override {
+    return buffer_handle_->GetVideoFrame();
+  }
 
  private:
   ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
@@ -279,13 +282,19 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
   DCHECK_EQ(media::PIXEL_FORMAT_I420, frame_format.pixel_format);
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, frame_format.pixel_storage);
 
-  scoped_refptr<VideoFrame> frame = VideoFrame::WrapExternalSharedMemory(
-      media::PIXEL_FORMAT_I420, frame_format.frame_size,
-      gfx::Rect(frame_format.frame_size), frame_format.frame_size,
-      reinterpret_cast<uint8_t*>(buffer->data()),
-      VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
-                                 frame_format.frame_size),
-      base::SharedMemory::NULLHandle(), 0u, timestamp);
+  scoped_refptr<VideoFrame> frame;
+  if (buffer->IsBackedByVideoFrame()) {
+    frame = buffer->GetVideoFrame();
+    frame->set_timestamp(timestamp);
+  } else {
+    frame = VideoFrame::WrapExternalSharedMemory(
+        media::PIXEL_FORMAT_I420, frame_format.frame_size,
+        gfx::Rect(frame_format.frame_size), frame_format.frame_size,
+        reinterpret_cast<uint8_t*>(buffer->data()),
+        VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
+                                   frame_format.frame_size),
+        base::SharedMemory::NULLHandle(), 0u, timestamp);
+  }
   if (!frame)
     return;
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,

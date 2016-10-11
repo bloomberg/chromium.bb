@@ -62,7 +62,10 @@ void VideoCaptureDeviceFactoryImpl::DeviceEntry::OnConnectionErrorOrClose() {
   Unbind();
 }
 
-VideoCaptureDeviceFactoryImpl::VideoCaptureDeviceFactoryImpl() = default;
+VideoCaptureDeviceFactoryImpl::VideoCaptureDeviceFactoryImpl(
+    const media::VideoCaptureJpegDecoderFactoryCB&
+        jpeg_decoder_factory_callback)
+    : jpeg_decoder_factory_callback_(jpeg_decoder_factory_callback) {}
 
 VideoCaptureDeviceFactoryImpl::~VideoCaptureDeviceFactoryImpl() = default;
 
@@ -75,9 +78,9 @@ void VideoCaptureDeviceFactoryImpl::AddMojoDevice(
 void VideoCaptureDeviceFactoryImpl::AddMediaDevice(
     std::unique_ptr<media::VideoCaptureDevice> device,
     mojom::VideoCaptureDeviceDescriptorPtr descriptor) {
-  AddMojoDevice(
-      base::MakeUnique<VideoCaptureDeviceProxyImpl>(std::move(device)),
-      std::move(descriptor));
+  AddMojoDevice(base::MakeUnique<VideoCaptureDeviceProxyImpl>(
+                    std::move(device), jpeg_decoder_factory_callback_),
+                std::move(descriptor));
 }
 
 void VideoCaptureDeviceFactoryImpl::AddMockDevice(

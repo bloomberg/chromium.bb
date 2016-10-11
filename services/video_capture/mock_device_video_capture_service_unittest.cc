@@ -23,7 +23,7 @@ TEST_F(MockDeviceVideoCaptureServiceTest,
   device_proxy_->Start(requested_format_,
                        media::RESOLUTION_POLICY_FIXED_RESOLUTION,
                        media::PowerLineFrequency::FREQUENCY_DEFAULT,
-                       std::move(mock_client_proxy_));
+                       std::move(mock_receiver_proxy_));
   device_proxy_.reset();
 
   wait_loop.Run();
@@ -42,8 +42,8 @@ TEST_F(MockDeviceVideoCaptureServiceTest,
   device_proxy_->Start(requested_format_,
                        media::RESOLUTION_POLICY_FIXED_RESOLUTION,
                        media::PowerLineFrequency::FREQUENCY_DEFAULT,
-                       std::move(mock_client_proxy_));
-  mock_client_.reset();
+                       std::move(mock_receiver_proxy_));
+  mock_receiver_.reset();
 
   wait_loop.Run();
 }

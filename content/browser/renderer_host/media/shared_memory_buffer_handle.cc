@@ -27,15 +27,18 @@ void* SharedMemoryBufferHandle::data(int plane) {
   return tracker_->shared_memory_.memory();
 }
 
-ClientBuffer SharedMemoryBufferHandle::AsClientBuffer(int plane) {
-  NOTREACHED();
-  return nullptr;
-}
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 base::FileDescriptor SharedMemoryBufferHandle::AsPlatformFile() {
   return tracker_->shared_memory_.handle();
 }
 #endif
+
+bool SharedMemoryBufferHandle::IsBackedByVideoFrame() const {
+  return false;
+}
+
+scoped_refptr<media::VideoFrame> SharedMemoryBufferHandle::GetVideoFrame() {
+  return scoped_refptr<media::VideoFrame>();
+}
 
 }  // namespace content

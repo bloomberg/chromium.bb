@@ -4,8 +4,8 @@
 
 module video_capture.mojom;
 
-import "services/video_capture/public/interfaces/video_capture_device_client.mojom";
 import "services/video_capture/public/interfaces/video_capture_format.mojom";
+import "services/video_capture/public/interfaces/video_frame_receiver.mojom";
 
 enum ResolutionChangePolicy {
   FIXED_RESOLUTION,
@@ -26,5 +26,5 @@ interface VideoCaptureDeviceProxy {
   Start(VideoCaptureFormat requested_format,
         ResolutionChangePolicy resolution_change_policy,
         PowerLineFrequency power_line_frequency,
-        VideoCaptureDeviceClient client);
+        VideoFrameReceiver receiver);
 };

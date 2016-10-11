@@ -5,6 +5,7 @@
 #include "services/video_capture/video_capture_service.h"
 
 #include "media/capture/video/fake_video_capture_device.h"
+#include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "services/video_capture/video_capture_device_factory_impl.h"
 
 namespace {
@@ -12,7 +13,14 @@ static const char kFakeDeviceDisplayName[] = "Fake Video Capture Device";
 static const char kFakeDeviceId[] = "FakeDeviceId";
 static const char kFakeModelId[] = "FakeModelId";
 static const float kFakeCaptureDefaultFrameRate = 20.0f;
+
+// TODO(chfremer): Replace with an actual decoder factory.
+// https://crbug.com/584797
+std::unique_ptr<media::VideoCaptureJpegDecoder> CreateJpegDecoder() {
+  return nullptr;
 }
+
+}  // anonymous namespace
 
 namespace video_capture {
 
@@ -55,6 +63,7 @@ void VideoCaptureService::AddDeviceToMockFactory(
     mojom::MockVideoCaptureDevicePtr device,
     mojom::VideoCaptureDeviceDescriptorPtr descriptor,
     const AddDeviceToMockFactoryCallback& callback) {
+  LazyInitializeMockDeviceFactory();
   mock_device_factory_->AddMockDevice(std::move(device), std::move(descriptor));
   callback.Run();
 }
@@ -62,13 +71,15 @@ void VideoCaptureService::AddDeviceToMockFactory(
 void VideoCaptureService::LazyInitializeDeviceFactory() {
   if (device_factory_)
     return;
-  device_factory_ = base::MakeUnique<VideoCaptureDeviceFactoryImpl>();
+  device_factory_ = base::MakeUnique<VideoCaptureDeviceFactoryImpl>(
+      base::Bind(CreateJpegDecoder));
 }
 
 void VideoCaptureService::LazyInitializeFakeDeviceFactory() {
   if (fake_device_factory_)
     return;
-  fake_device_factory_ = base::MakeUnique<VideoCaptureDeviceFactoryImpl>();
+  fake_device_factory_ = base::MakeUnique<VideoCaptureDeviceFactoryImpl>(
+      base::Bind(CreateJpegDecoder));
   auto fake_device_descriptor = mojom::VideoCaptureDeviceDescriptor::New();
   fake_device_descriptor->display_name = kFakeDeviceDisplayName;
   fake_device_descriptor->device_id = kFakeDeviceId;
@@ -86,7 +97,8 @@ void VideoCaptureService::LazyInitializeFakeDeviceFactory() {
 void VideoCaptureService::LazyInitializeMockDeviceFactory() {
   if (mock_device_factory_)
     return;
-  mock_device_factory_ = base::MakeUnique<VideoCaptureDeviceFactoryImpl>();
+  mock_device_factory_ = base::MakeUnique<VideoCaptureDeviceFactoryImpl>(
+      base::Bind(CreateJpegDecoder));
 }
 
 }  // namespace video_capture

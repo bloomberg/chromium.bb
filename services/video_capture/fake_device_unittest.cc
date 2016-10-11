@@ -5,7 +5,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "services/video_capture/fake_device_test.h"
-#include "services/video_capture/mock_video_capture_device_client.h"
+#include "services/video_capture/mock_video_frame_receiver.h"
 #include "services/video_capture/public/interfaces/video_capture_device_factory.mojom.h"
 #include "services/video_capture/video_capture_service_test.h"
 
@@ -24,9 +24,9 @@ TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
   base::RunLoop wait_loop;
   const int kNumFramesToWaitFor = 3;
   int num_frames_arrived = 0;
-  mojom::VideoCaptureDeviceClientPtr client_proxy;
-  MockVideoCaptureDeviceClient client(mojo::GetProxy(&client_proxy));
-  EXPECT_CALL(client, OnFrameAvailablePtr(_))
+  mojom::VideoFrameReceiverPtr receiver_proxy;
+  MockVideoFrameReceiver receiver(mojo::GetProxy(&receiver_proxy));
+  EXPECT_CALL(receiver, OnIncomingCapturedVideoFramePtr(_))
       .WillRepeatedly(InvokeWithoutArgs(
           [&wait_loop, &kNumFramesToWaitFor, &num_frames_arrived]() {
             num_frames_arrived += 1;
@@ -38,7 +38,7 @@ TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
   fake_device_proxy_->Start(arbitrary_requested_format,
                             media::RESOLUTION_POLICY_FIXED_RESOLUTION,
                             media::PowerLineFrequency::FREQUENCY_DEFAULT,
-                            std::move(client_proxy));
+                            std::move(receiver_proxy));
   wait_loop.Run();
 }
 

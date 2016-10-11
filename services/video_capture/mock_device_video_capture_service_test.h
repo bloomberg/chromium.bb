@@ -7,8 +7,8 @@
 
 #include "services/shell/public/cpp/service_test.h"
 #include "services/video_capture/mock_device_descriptor_receiver.h"
-#include "services/video_capture/mock_video_capture_device_client.h"
 #include "services/video_capture/mock_video_capture_device_impl.h"
+#include "services/video_capture/mock_video_frame_receiver.h"
 #include "services/video_capture/public/interfaces/video_capture_service.mojom.h"
 
 namespace video_capture {
@@ -27,10 +27,10 @@ class MockDeviceVideoCaptureServiceTest : public shell::test::ServiceTest {
   MockDeviceDescriptorReceiver descriptor_receiver_;
 
   std::unique_ptr<MockVideoCaptureDeviceImpl> mock_device_;
-  std::unique_ptr<MockVideoCaptureDeviceClient> mock_client_;
+  std::unique_ptr<MockVideoFrameReceiver> mock_receiver_;
   mojom::MockVideoCaptureDevicePtr mock_device_proxy_;
   mojom::VideoCaptureDeviceProxyPtr device_proxy_;
-  mojom::VideoCaptureDeviceClientPtr mock_client_proxy_;
+  mojom::VideoFrameReceiverPtr mock_receiver_proxy_;
   media::VideoCaptureFormat requested_format_;
 };
 

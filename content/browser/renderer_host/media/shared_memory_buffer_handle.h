@@ -24,10 +24,11 @@ class SharedMemoryBufferHandle : public media::VideoCaptureBufferHandle {
   gfx::Size dimensions() const override;
   size_t mapped_size() const override;
   void* data(int plane) override;
-  ClientBuffer AsClientBuffer(int plane) override;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   base::FileDescriptor AsPlatformFile() override;
 #endif
+  bool IsBackedByVideoFrame() const override;
+  scoped_refptr<media::VideoFrame> GetVideoFrame() override;
 
  private:
   SharedMemoryBufferTracker* const tracker_;
