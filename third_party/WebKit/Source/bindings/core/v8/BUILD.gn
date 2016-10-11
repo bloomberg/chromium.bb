@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 import("//third_party/WebKit/Source/core/core.gni")
@@ -301,5 +302,16 @@ source_set("testing") {
     "//skia",
     "//third_party/WebKit/Source/wtf",
     "//v8",
+  ]
+}
+
+fuzzer_test("v8_serialized_script_value_fuzzer") {
+  sources = [
+    "serialization/SerializedScriptValueFuzzer.cpp",
+  ]
+  seed_corpus = "serialization/fuzz_corpus"
+  deps = [
+    "//third_party/WebKit/Source/core",
+    "//third_party/WebKit/Source/platform:blink_fuzzer_test_support",
   ]
 }
