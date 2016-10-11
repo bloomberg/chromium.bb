@@ -6,13 +6,14 @@
 
 #include "base/time/time.h"
 #include "content/public/renderer/render_thread.h"
+#include "device/sensors/public/cpp/device_sensors_consts.h"
 #include "third_party/WebKit/public/platform/WebDeviceLightListener.h"
 
 namespace {
 // Default rate for firing of DeviceLight events.
-const int kDefaultLightPumpFrequencyHz = 5;
 const int kDefaultLightPumpDelayMicroseconds =
-    base::Time::kMicrosecondsPerSecond / kDefaultLightPumpFrequencyHz;
+    base::Time::kMicrosecondsPerSecond /
+    device::kDefaultAmbientLightFrequencyHz;
 }  // namespace
 
 namespace content {

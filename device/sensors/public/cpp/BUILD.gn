@@ -8,6 +8,9 @@ source_set("cpp") {
     "device_light_hardware_buffer.h",
     "device_motion_hardware_buffer.h",
     "device_orientation_hardware_buffer.h",
+    "device_sensors_consts.h",
+    "device_util_mac.cc",
+    "device_util_mac.h",
   ]
 
   public_deps = [
