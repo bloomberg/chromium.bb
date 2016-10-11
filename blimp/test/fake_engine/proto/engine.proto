@@ -1,0 +1,33 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+// TODO(xyzzyz): Update proto service/message definitions once we have
+// determined the final Engine/Service interface.
+
+package blimp;
+
+option optimize_for = LITE_RUNTIME;
+
+message CheckHealthRequest {}
+message CheckHealthResponse {
+  enum Status {
+    UNKNOWN = 0;
+    OK = 1;
+    NOT_OK = 2;
+  }
+
+  Status status = 1;
+}
+
+message ShutDownRequest {}
+message ShutDownResponse {}
+
+service Engine {
+  // Returns health status of the Engine.
+  rpc CheckHealth (CheckHealthRequest) returns (CheckHealthResponse) {}
+  // Makes the Engine shut down itself.
+  rpc ShutDown(ShutDownRequest) returns (ShutDownResponse) {}
+}

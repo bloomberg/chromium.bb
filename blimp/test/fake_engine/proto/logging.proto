@@ -1,0 +1,22 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+// TODO(xyzzyz): Update proto service/message definitions once we have
+// determined the final Engine/Service interface.
+
+package blimp;
+
+option optimize_for = LITE_RUNTIME;
+
+message LogRequest {
+  string message = 1;
+}
+message LogResponse {}
+
+service Logging {
+  // Sends a log message from the Engine to the Rendering Server.
+  rpc Log (LogRequest) returns (LogResponse) {}
+}

@@ -41,7 +41,10 @@ group("blimp_tests") {
   ]
 
   if (is_linux) {
-    deps += [ ":blimp_browsertests" ]
+    deps += [
+      ":blimp_browsertests",
+      "//blimp/test/fake_engine:fake_engine_app_tests",
+    ]
   }
 }
 
