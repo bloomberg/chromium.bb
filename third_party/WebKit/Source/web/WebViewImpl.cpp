@@ -3763,10 +3763,6 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
   }
 }
 
-void WebViewImpl::audioStateChanged(bool isAudioPlaying) {
-  m_scheduler->audioStateChanged(isAudioPlaying);
-}
-
 WebHitTestResult WebViewImpl::hitTestResultAt(const WebPoint& point) {
   return coreHitTestResultAt(point);
 }

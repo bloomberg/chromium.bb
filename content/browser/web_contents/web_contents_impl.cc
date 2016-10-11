@@ -1280,7 +1280,8 @@ void WebContentsImpl::SetAudioMuted(bool mute) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidUpdateAudioMutingState(mute));
 
-  OnAudioStateChanged(!mute && audio_stream_monitor_.IsCurrentlyAudible());
+  // Notification for UI updates in response to the changed muting state.
+  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 
 bool WebContentsImpl::IsConnectedToBluetoothDevice() const {
@@ -1338,14 +1339,6 @@ void WebContentsImpl::NotifyNavigationStateChanged(
 
   if (GetOuterWebContents())
     GetOuterWebContents()->NotifyNavigationStateChanged(changed_flags);
-}
-
-void WebContentsImpl::OnAudioStateChanged(bool is_audio_playing) {
-  SendPageMessage(
-      new PageMsg_AudioStateChanged(MSG_ROUTING_NONE, is_audio_playing));
-
-  // Notification for UI updates in response to the changed muting state.
-  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 
 base::TimeTicks WebContentsImpl::GetLastActiveTime() const {

@@ -151,7 +151,7 @@ void AudioStreamMonitor::Poll() {
   }
 
   if (is_audible_ != was_audible)
-    web_contents_->OnAudioStateChanged(is_audible_);
+    web_contents_->NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 
 void AudioStreamMonitor::MaybeToggle() {
