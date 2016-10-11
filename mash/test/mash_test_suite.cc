@@ -37,6 +37,7 @@ void MashTestSuite::Initialize() {
 }
 
 void MashTestSuite::Shutdown() {
+  ui::TerminateContextFactoryForTests();
   env_.reset();
   ui::ResourceBundle::CleanupSharedInstance();
   base::TestSuite::Shutdown();

@@ -934,19 +934,11 @@ class WorkspaceLayoutManagerBackdropTest : public AshTest {
 // Check that creating the BackDrop without destroying it does not lead into
 // a crash.
 TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropCrashTest) {
-  // TODO: Triggers crash in mash: http://crbug.com/652871.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   ShowTopWindowBackdrop(true);
 }
 
 // Verify basic assumptions about the backdrop.
 TEST_F(WorkspaceLayoutManagerBackdropTest, BasicBackdropTests) {
-  // TODO: Triggers crash in mash: http://crbug.com/652871.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   // Create a backdrop and see that there is one window (the backdrop) and
   // that the size is the same as the default container as well as that it is
   // not visible.
@@ -979,10 +971,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BasicBackdropTests) {
 
 // Verify that the backdrop gets properly created and placed.
 TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
-  // TODO: Triggers crash in mash: http://crbug.com/652871.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   std::unique_ptr<WindowOwner> window1_owner(
       CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
   WmWindow* window1 = window1_owner->window();
@@ -1037,10 +1025,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
 // Tests that when hidding the shelf, that the backdrop resizes to fill the
 // entire workspace area.
 TEST_F(WorkspaceLayoutManagerBackdropTest, ShelfVisibilityChangesBounds) {
-  // TODO: Triggers crash in mash: http://crbug.com/652871.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
   ShowTopWindowBackdrop(true);

@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/window.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
@@ -17,6 +18,11 @@ namespace views {
 
 namespace {
 static uint32_t accelerated_widget_count = 1;
+
+bool IsUsingTestContext() {
+  return aura::Env::GetInstance()->context_factory()->DoesCreateTestContexts();
+}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,16 +31,21 @@ static uint32_t accelerated_widget_count = 1;
 WindowTreeHostMus::WindowTreeHostMus(NativeWidgetMus* native_widget,
                                      ui::Window* window)
     : native_widget_(native_widget) {
-// We need accelerated widget numbers to be different for each
-// window and fit in the smallest sizeof(AcceleratedWidget) uint32_t
-// has this property.
+  gfx::AcceleratedWidget accelerated_widget;
+  if (IsUsingTestContext()) {
+    accelerated_widget = gfx::kNullAcceleratedWidget;
+  } else {
+    // We need accelerated widget numbers to be different for each
+    // window and fit in the smallest sizeof(AcceleratedWidget) uint32_t
+    // has this property.
 #if defined(OS_WIN) || defined(OS_ANDROID)
-  gfx::AcceleratedWidget accelerated_widget =
-      reinterpret_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
+    accelerated_widget =
+        reinterpret_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
 #else
-  gfx::AcceleratedWidget accelerated_widget =
-      static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
+    accelerated_widget =
+        static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
 #endif
+  }
   // TODO(markdittmer): Use correct device-scale-factor from |window|.
   OnAcceleratedWidgetAvailable(accelerated_widget, 1.f);
 
