@@ -91,8 +91,6 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   }
   gpu_preferences.disable_gpu_shader_disk_cache =
       command_line->HasSwitch(switches::kDisableGpuShaderDiskCache);
-  gpu_preferences.enable_share_group_async_texture_upload =
-      command_line->HasSwitch(switches::kEnableShareGroupAsyncTextureUpload);
   gpu_preferences.enable_threaded_texture_mailboxes =
       command_line->HasSwitch(switches::kEnableThreadedTextureMailboxes);
   gpu_preferences.gl_shader_interm_output =

@@ -110,9 +110,6 @@ struct GPU_EXPORT GpuPreferences {
   // Disables the GPU shader on disk cache.
   bool disable_gpu_shader_disk_cache = false;
 
-  // Allows async texture uploads (off main thread) via GL context sharing.
-  bool enable_share_group_async_texture_upload = false;
-
   // Simulates shared textures when share groups are not available.
   // Not available everywhere.
   bool enable_threaded_texture_mailboxes = false;

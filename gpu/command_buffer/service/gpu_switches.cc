@@ -50,10 +50,6 @@ const char kGpuProgramCacheSizeKb[]         = "gpu-program-cache-size-kb";
 // Disables the GPU shader on disk cache.
 const char kDisableGpuShaderDiskCache[]     = "disable-gpu-shader-disk-cache";
 
-// Allows async texture uploads (off main thread) via GL context sharing.
-const char kEnableShareGroupAsyncTextureUpload[] =
-    "enable-share-group-async-texture-upload";
-
 // Simulates shared textures when share groups are not available. Not available
 // everywhere.
 const char kEnableThreadedTextureMailboxes[] =

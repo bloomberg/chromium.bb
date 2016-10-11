@@ -146,7 +146,6 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kRemoteDebuggingPort,
     ::switches::kRendererStartupDialog,
     ::switches::kRootLayerScrolls,
-    ::switches::kEnableShareGroupAsyncTextureUpload,
 #if defined(USE_X11) || defined(USE_OZONE)
     ::switches::kTouchCalibration,
 #endif
