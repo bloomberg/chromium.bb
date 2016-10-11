@@ -2040,6 +2040,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_DISABLE_WINRT_MIDI_API_DESCRIPTION, kOsWin,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableWinrtMidiApi)},
 #endif  // OS_WIN
+    {"saveas-menu-text-experiment", IDS_FLAGS_SAVEAS_MENU_LABEL_EXPERIMENT_NAME,
+     IDS_FLAGS_SAVEAS_MENU_LABEL_EXPERIMENT_DESCRIPTION, kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kEnableSaveAsMenuLabelExperiment)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

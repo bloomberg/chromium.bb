@@ -451,6 +451,9 @@ const char kEnableQuic[] = "enable-quic";
 // This only has an effect if the QUIC protocol is enabled.
 const char kEnableQuicPortSelection[] = "enable-quic-port-selection";
 
+// Switches 'Save as...' context and app menu labels to 'Download...'.
+const char kEnableSaveAsMenuLabelExperiment[] = "saveas-menu-label";
+
 // Enable settings in a separate browser window per profile
 // (see SettingsWindowEnabled() below).
 const char kEnableSettingsWindow[]           = "enable-settings-window";

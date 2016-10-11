@@ -181,7 +181,14 @@ void ToolsMenuModel::Build(Browser* browser) {
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(USE_ASH)
   show_create_shortcuts = false;
 #endif
-  AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSaveAsMenuLabelExperiment) ||
+      base::FieldTrialList::FindFullName("SaveAsMenuText") == "download") {
+    AddItemWithStringId(IDC_SAVE_PAGE, IDS_DOWNLOAD_PAGE);
+  } else {
+    AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
+  }
+
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
     int string_id = IDS_ADD_TO_DESKTOP;
 #if defined(OS_MACOSX)
