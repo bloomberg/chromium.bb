@@ -4670,10 +4670,6 @@ def CMDtry(parser, args):
   # TODO(tandrii): if this even used?
   group.add_option(
       '-n', '--name', help='Try job name; default to current branch name')
-  # TODO(tandrii): get rid of this.
-  group.add_option(
-      '--use-rietveld', action='store_true', default=False,
-      help='DEPRECATED, NOT SUPPORTED.')
   group.add_option(
       '--buildbucket-host', default='cr-buildbucket.appspot.com',
       help='Host of buildbucket. The default host is %default.')
@@ -4681,9 +4677,6 @@ def CMDtry(parser, args):
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
-
-  if options.use_rietveld:
-    parser.error('--use-rietveld is not longer supported.')
 
   # Make sure that all properties are prop=value pairs.
   bad_params = [x for x in options.properties if '=' not in x]
@@ -4812,35 +4805,16 @@ def CMDtry(parser, args):
         '\nWARNING Mismatch between local config and server. Did a previous '
         'upload fail?\ngit-cl try always uses latest patchset from rietveld. '
         'Continuing using\npatchset %s.\n' % patchset)
-  if not options.use_rietveld:
-    try:
-      trigger_try_jobs(auth_config, cl, options, masters, 'git_cl_try')
-    except BuildbucketResponseException as ex:
-      print('ERROR: %s' % ex)
-      return 1
-    except Exception as e:
-      stacktrace = (''.join(traceback.format_stack()) + traceback.format_exc())
-      print('ERROR: Exception when trying to trigger try jobs: %s\n%s' %
-            (e, stacktrace))
-      return 1
-  else:
-    try:
-      cl.RpcServer().trigger_distributed_try_jobs(
-          cl.GetIssue(), patchset, options.name, options.clobber,
-          options.revision, masters)
-    except urllib2.HTTPError as e:
-      if e.code == 404:
-        print('404 from rietveld; '
-              'did you mean to use "git try" instead of "git cl try"?')
-        return 1
-    print('Tried jobs on:')
-
-    for (master, builders) in sorted(masters.iteritems()):
-      if master:
-        print('Master: %s' % master)
-      length = max(len(builder) for builder in builders)
-      for builder in sorted(builders):
-        print('  %*s: %s' % (length, builder, ','.join(builders[builder])))
+  try:
+    trigger_try_jobs(auth_config, cl, options, masters, 'git_cl_try')
+  except BuildbucketResponseException as ex:
+    print('ERROR: %s' % ex)
+    return 1
+  except Exception as e:
+    stacktrace = (''.join(traceback.format_stack()) + traceback.format_exc())
+    print('ERROR: Exception when trying to trigger try jobs: %s\n%s' %
+          (e, stacktrace))
+    return 1
   return 0
 
 
