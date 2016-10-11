@@ -10,29 +10,32 @@
 #include <signal.h>
 
 #include <list>
+#include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_libevent.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/platform_thread.h"
 
 namespace remoting {
 namespace {
 
-class SignalListener : public base::MessagePumpLibevent::Watcher {
+int g_read_fd = 0;
+int g_write_fd = 0;
+
+class SignalListener {
  public:
   SignalListener();
 
   void AddSignalHandler(int signal, const SignalHandler& handler);
 
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override {}
+  void OnFileCanReadWithoutBlocking();
 
-  // WatchFileDescriptor needs a controller through which the operation can be
-  // canceled. We don't use it, but this is as good a place as any to store it.
-  base::MessagePumpLibevent::FileDescriptorWatcher controller;
+  // Throughout the lifetime of this, OnFileCanReadWithoutBlocking() is called
+  // whenever data is available in |g_read_fd|.
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> controller;
 
  private:
   typedef std::pair<int, SignalHandler> SignalAndHandler;
@@ -48,9 +51,9 @@ void SignalListener::AddSignalHandler(int signal,
   signal_handlers_.push_back(SignalAndHandler(signal, handler));
 }
 
-void SignalListener::OnFileCanReadWithoutBlocking(int fd) {
+void SignalListener::OnFileCanReadWithoutBlocking() {
   char buffer;
-  int result = HANDLE_EINTR(read(fd, &buffer, sizeof(buffer)));
+  int result = HANDLE_EINTR(read(g_read_fd, &buffer, sizeof(buffer)));
   if (result > 0) {
     for (SignalHandlers::const_iterator i = signal_handlers_.begin();
          i != signal_handlers_.end();
@@ -63,7 +66,6 @@ void SignalListener::OnFileCanReadWithoutBlocking(int fd) {
 }
 
 SignalListener* g_signal_listener = nullptr;
-int g_write_fd = 0;
 
 void GlobalSignalHandler(int signal) {
   char byte = signal;
@@ -91,20 +93,13 @@ bool RegisterSignalHandler(int signal_number, const SignalHandler& handler) {
       LOG(ERROR) << "Could not create signal pipe: " << errno;
       return false;
     }
-    base::MessageLoopForIO* message_loop = base::MessageLoopForIO::current();
-    result =
-        message_loop->WatchFileDescriptor(pipe_fd[0],
-                                          true,
-                                          base::MessageLoopForIO::WATCH_READ,
-                                          &g_signal_listener->controller,
-                                          g_signal_listener);
-    if (!result) {
-      LOG(ERROR) << "Failed to create signal detector task.";
-      close(pipe_fd[0]);
-      close(pipe_fd[1]);
-      return false;
-    }
+
+    g_read_fd = pipe_fd[0];
     g_write_fd = pipe_fd[1];
+
+    g_signal_listener->controller = base::FileDescriptorWatcher::WatchReadable(
+        g_read_fd, base::Bind(&SignalListener::OnFileCanReadWithoutBlocking,
+                              base::Unretained(g_signal_listener)));
   }
   if (signal(signal_number, GlobalSignalHandler) == SIG_ERR) {
     LOG(ERROR) << "signal() failed: " << errno;
