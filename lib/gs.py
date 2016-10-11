@@ -548,7 +548,7 @@ class GSContext(object):
         return osutils.ReadFile(path)
       except Exception as e:
         if getattr(e, 'errno', None) == errno.ENOENT:
-          raise GSNoSuchKey('%s: file does not exist' % path)
+          raise GSNoSuchKey('Cat Error: file %s does not exist' % path)
         else:
           raise GSContextException(str(e))
     elif self.dry_run:
@@ -637,10 +637,6 @@ class GSContext(object):
 
     error = e.result.error
     if error:
-      # TODO: Do not log warning for GSContextPreconditionFailed and
-      # GSNoSuchKey after crbug.com/642986 is resolved.
-      logging.warning('GS_ERROR: %s (Temp log for crbug.com/642986)', error)
-
       # gsutil usually prints PreconditionException when a precondition fails.
       # It may also print "ResumableUploadAbortException: 412 Precondition
       # Failed", so the logic needs to be a little more general.
@@ -655,6 +651,8 @@ class GSContext(object):
           'NotFoundException:' in error or
           'One or more URLs matched no objects' in error):
         raise GSNoSuchKey(e)
+
+      logging.warning('GS_ERROR: %s ', error)
 
       # TODO: Below is a list of known flaky errors that we should
       # retry. The list needs to be extended.
@@ -848,12 +846,18 @@ class GSContext(object):
           return int(m.group(1))
         else:
           return None
-      except GSNoSuchKey:
+      except GSNoSuchKey as e:
         # If the source was a local file, the error is a quirk of gsutil 4.5
         # and should be ignored. If the source was remote, there might
         # legitimately be no such file. See crbug.com/393419.
         if os.path.isfile(src_path):
           return None
+
+        # Temp log for crbug.com/642986, should be removed when the bug
+        # is fixed.
+        logging.warning('Copy Error: src %s dest %s: %s '
+                        '(Temp log for crbug.com/642986)',
+                        src_path, dest_path, e)
         raise
 
   def CreateWithContents(self, gs_uri, contents, **kwargs):
@@ -1086,7 +1090,7 @@ class GSContext(object):
       # Example line:
       # No URLs matched gs://bucket/file
       if e.result.error.startswith('No URLs matched'):
-        raise GSNoSuchKey(path)
+        raise GSNoSuchKey('Stat Error: No URLs matched %s.' % path)
 
       # No idea what this is, so just choke.
       raise
