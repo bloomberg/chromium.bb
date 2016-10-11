@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.media.ui;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_HAS_CAMERA;
+
 import android.os.Environment;
 import android.support.v7.widget.SwitchCompat;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -11,6 +13,7 @@ import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -157,6 +160,7 @@ public class MediaPermissionsTest extends ChromeActivityTestCaseBase<ChromeActiv
     @MediumTest
     @CommandLineFlags.Add("enable-features=DisplayPersistenceToggleInPermissionPrompts")
     @Feature({"MediaPermissions"})
+    @Restriction(RESTRICTION_TYPE_HAS_CAMERA)
     @RetryOnFailure
     public void testCameraPersistenceOn() throws Exception {
         testMediaPermissionsPlumbing("Camera count:", "initiate_getCamera()", 1, true, false);
@@ -169,6 +173,7 @@ public class MediaPermissionsTest extends ChromeActivityTestCaseBase<ChromeActiv
      */
     @MediumTest
     @CommandLineFlags.Add("enable-features=DisplayPersistenceToggleInPermissionPrompts")
+    @Restriction(RESTRICTION_TYPE_HAS_CAMERA)
     @Feature({"MediaPermissions"})
     public void testCameraPersistenceOff() throws Exception {
         testMediaPermissionsPlumbing("Camera count:", "initiate_getCamera()", 1, true, true);
