@@ -40,7 +40,7 @@ AvxVideoReader *aom_video_reader_open(const char *filename) {
 
   if (mem_get_le16(header + 4) != 0) return NULL;  // Wrong IVF version
 
-  reader = calloc(1, sizeof(*reader));
+  reader = (AvxVideoReader *)calloc(1, sizeof(*reader));
   if (!reader) return NULL;  // Can't allocate AvxVideoReader
 
   reader->file = file;

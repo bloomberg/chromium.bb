@@ -76,7 +76,7 @@ int ivf_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
     }
 
     if (frame_size > *buffer_size) {
-      uint8_t *new_buffer = realloc(*buffer, 2 * frame_size);
+      uint8_t *new_buffer = (uint8_t *)realloc(*buffer, 2 * frame_size);
 
       if (new_buffer) {
         *buffer = new_buffer;
