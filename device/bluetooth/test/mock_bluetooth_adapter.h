@@ -106,6 +106,8 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   // convenience as far testing is concerned and it's possible to write test
   // cases without using these functions.
   void AddMockDevice(std::unique_ptr<MockBluetoothDevice> mock_device);
+  std::unique_ptr<MockBluetoothDevice> RemoveMockDevice(
+      const std::string& address);
   BluetoothAdapter::ConstDeviceList GetConstMockDevices();
   BluetoothAdapter::DeviceList GetMockDevices();
 

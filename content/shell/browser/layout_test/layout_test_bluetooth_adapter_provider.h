@@ -176,6 +176,24 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetDeviceEventAdapter();
 
+  // |DevicesRemovedAdapter|
+  // Inherits from |PoweredAdapter|
+  // Internal Structure:
+  //  - Connected Heart Rate Device
+  //    - IsGattConnected: Returns true.
+  //    - UUIDs:
+  //      - Heart Rate UUID (0x180d)
+  // Mock Functions:
+  //  - StartDiscoverySessionWithFilter: Performs the following steps the first
+  //    time is called:
+  //     1. Post a task to add New Glucose Device (Contains a single
+  //        Glucose UUID (0x1808) and no services).
+  //     2. Post a task to remove Connected Heart Rate Device.
+  //     3. Post a task to remove New Glucose Device.
+  //    Successive calls just return a discovery session.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetDevicesRemovedAdapter();
+
   // |MissingServiceHeartRateAdapter|
   // Inherits from |EmptyAdapter|
   // Internal Structure:

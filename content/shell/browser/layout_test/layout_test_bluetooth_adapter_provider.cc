@@ -198,6 +198,8 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetSecondDiscoveryFindsHeartRateAdapter();
   if (fake_adapter_name == "DeviceEventAdapter")
     return GetDeviceEventAdapter();
+  if (fake_adapter_name == "DevicesRemovedAdapter")
+    return GetDevicesRemovedAdapter();
   if (fake_adapter_name == "DelayedServicesDiscoveryAdapter")
     return GetDelayedServicesDiscoveryAdapter();
   if (fake_adapter_name.empty())
@@ -365,6 +367,13 @@ static void AddDevice(scoped_refptr<NiceMockBluetoothAdapter> adapter,
                     DeviceAdded(adapter.get(), new_device_ptr));
 }
 
+static void RemoveDevice(scoped_refptr<NiceMockBluetoothAdapter> adapter,
+                         const std::string& device_address) {
+  std::unique_ptr<MockBluetoothDevice> removed_device =
+      adapter->RemoveMockDevice(device_address);
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter->GetObservers(),
+                    DeviceRemoved(adapter.get(), removed_device.get()));
+}
 // static
 scoped_refptr<NiceMockBluetoothAdapter>
 LayoutTestBluetoothAdapterProvider::GetSecondDiscoveryFindsHeartRateAdapter() {
@@ -456,6 +465,56 @@ LayoutTestBluetoothAdapterProvider::GetDeviceEventAdapter() {
                   FROM_HERE, base::Bind(&NotifyServicesDiscovered,
                                         base::RetainedRef(adapter_ptr),
                                         discovery_generic_access_ptr));
+            }
+            return GetDiscoverySession();
+          }));
+
+  return adapter;
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetDevicesRemovedAdapter() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetPoweredAdapter());
+  NiceMockBluetoothAdapter* adapter_ptr = adapter.get();
+
+  // Add ConnectedHeartRateDevice.
+  std::unique_ptr<NiceMockBluetoothDevice> connected_hr(GetBaseDevice(
+      adapter.get(), "Connected Heart Rate Device",
+      {BluetoothUUID(kHeartRateServiceUUID)}, makeMACAddress(0x0)));
+  connected_hr->SetConnected(true);
+  std::string connected_hr_address = connected_hr->GetAddress();
+  adapter->AddMockDevice(std::move(connected_hr));
+
+  ON_CALL(*adapter, StartDiscoverySessionWithFilterRaw(_, _, _))
+      .WillByDefault(RunCallbackWithResult<1 /* success_callback */>(
+          [adapter_ptr, connected_hr_address]() {
+            if (adapter_ptr->GetDevices().size() == 1) {
+              // Post task to add NewGlucoseDevice.
+              std::unique_ptr<NiceMockBluetoothDevice> glucose_device(
+                  GetBaseDevice(adapter_ptr, "New Glucose Device",
+                                {BluetoothUUID(kGlucoseServiceUUID)},
+                                makeMACAddress(0x4)));
+
+              std::string glucose_address = glucose_device->GetAddress();
+
+              base::ThreadTaskRunnerHandle::Get()->PostTask(
+                  FROM_HERE,
+                  base::Bind(&AddDevice, make_scoped_refptr(adapter_ptr),
+                             base::Passed(&glucose_device)));
+
+              // Post task to remove ConnectedHeartRateDevice.
+              base::ThreadTaskRunnerHandle::Get()->PostTask(
+                  FROM_HERE,
+                  base::Bind(&RemoveDevice, make_scoped_refptr(adapter_ptr),
+                             connected_hr_address));
+
+              // Post task to remove NewGlucoseDevice.
+              base::ThreadTaskRunnerHandle::Get()->PostTask(
+                  FROM_HERE,
+                  base::Bind(&RemoveDevice, make_scoped_refptr(adapter_ptr),
+                             glucose_address));
+
             }
             return GetDiscoverySession();
           }));
