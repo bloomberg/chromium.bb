@@ -50,7 +50,7 @@ ALWAYS_INLINE int32_t saturatedAddition(int32_t a, int32_t b) {
 
   // Can only overflow if the signed bit of the two values match. If the
   // signed bit of the result and one of the values differ it overflowed.
-
+  // The branch compiles to a CMOVNS instruction on x86.
   if (~(ua ^ ub) & (result ^ ua) & (1 << 31))
     return std::numeric_limits<int>::max() + (ua >> 31);
 
@@ -64,7 +64,7 @@ ALWAYS_INLINE int32_t saturatedSubtraction(int32_t a, int32_t b) {
 
   // Can only overflow if the signed bit of the two input values differ. If
   // the signed bit of the result and the first value differ it overflowed.
-
+  // The branch compiles to a CMOVNS instruction on x86.
   if ((ua ^ ub) & (result ^ ua) & (1 << 31))
     return std::numeric_limits<int>::max() + (ua >> 31);
 
