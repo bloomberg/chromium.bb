@@ -399,8 +399,14 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
       webkit_event.type = blink::WebInputEvent::MouseUp;
       webkit_event.clickCount = event.GetClickCount();
       break;
-    case ET_MOUSE_ENTERED:
     case ET_MOUSE_EXITED:
+// TODO(chaopeng) this fix only for chromeos now, should convert ET_MOUSE_EXITED
+// to MouseLeave when crbug.com/450631 fixed.
+#if defined(OS_CHROMEOS)
+      webkit_event.type = blink::WebInputEvent::MouseLeave;
+      break;
+#endif
+    case ET_MOUSE_ENTERED:
     case ET_MOUSE_MOVED:
     case ET_MOUSE_DRAGGED:
       webkit_event.type = blink::WebInputEvent::MouseMove;

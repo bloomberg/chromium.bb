@@ -3273,6 +3273,13 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
                                          active_tree_->device_scale_factor());
 }
 
+void LayerTreeHostImpl::MouseLeave() {
+  for (auto& pair : scrollbar_animation_controllers_)
+    pair.second->DidMouseMoveOffScrollbar();
+
+  scroll_layer_id_when_mouse_over_scrollbar_ = Layer::INVALID_ID;
+}
+
 void LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl) {
   int new_id = Layer::INVALID_ID;
   if (layer_impl && layer_impl->ToScrollbarLayer())
