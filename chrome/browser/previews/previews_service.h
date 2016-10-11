@@ -8,9 +8,16 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace previews {
+class PreviewsIOData;
 class PreviewsUIService;
 }
 
@@ -21,9 +28,14 @@ class PreviewsService : public KeyedService {
   PreviewsService();
   ~PreviewsService() override;
 
-  // The previews UI thread service.
-  void set_previews_ui_service(
-      std::unique_ptr<previews::PreviewsUIService> previews_ui_service);
+  // Initializes the UI Service. |previews_io_data| is the main previews IO
+  // object, and cannot be null. |io_task_runner| is the IO thread task runner.
+  // |profile_path| is the path to user data on disc.
+  void Initialize(
+      previews::PreviewsIOData* previews_io_data,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const base::FilePath& profile_path);
+
   previews::PreviewsUIService* previews_ui_service() {
     return previews_ui_service_.get();
   }

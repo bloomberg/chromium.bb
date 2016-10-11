@@ -65,22 +65,26 @@ class PreviewsBlackList {
   // passed in a null store, resets all history in the in-memory black list.
   void ClearBlackList(base::Time begin_time, base::Time end_time);
 
+  // Returns a new PreviewsBlackListItem representing |host_name|. Adds the new
+  // item to |black_list_item_map|.
+  static PreviewsBlackListItem* GetOrCreateBlackListItem(
+      BlackListItemMap* black_list_item_map,
+      const std::string& host_name);
+
+  // Returns the PreviewsBlackListItem representing |host_name| in
+  // |black_list_item_map|. If there is no item for |host_name|, returns null.
+  static PreviewsBlackListItem* GetBlackListItem(
+      const BlackListItemMap& black_list_item_map,
+      const std::string& host_name);
+
  private:
   // Synchronous version of AddPreviewNavigation method.
   void AddPreviewNavigationSync(const GURL& host_name,
                                 bool opt_out,
                                 PreviewsType type);
 
-  // Returns the PreviewsBlackListItem representing |host_name|. If there is no
-  // item for |host_name|, returns null.
-  PreviewsBlackListItem* GetBlackListItem(const std::string& host_name) const;
-
   // Synchronous version of ClearBlackList method.
   void ClearBlackListSync(base::Time begin_time, base::Time end_time);
-
-  // Returns a new PreviewsBlackListItem representing |host_name|. Adds the new
-  // item to the in-memory map.
-  PreviewsBlackListItem* CreateBlackListItem(const std::string& host_name);
 
   // Callback passed to the backing store when loading black list information.
   // Moves the returned map into the in-memory black list and runs any
@@ -92,10 +96,6 @@ class PreviewsBlackList {
   // Enqueues a task to run when when loading black list information has
   // completed. Maintains the order that tasks were called in.
   void QueuePendingTask(base::Closure callback);
-
-  // Evicts one entry from the in-memory black list based on recency of a hosts
-  // most recent opt out time.
-  void EvictOldestOptOut();
 
   // Map maintaining the in-memory black list.
   std::unique_ptr<BlackListItemMap> black_list_item_map_;

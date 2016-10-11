@@ -15,6 +15,31 @@
 
 namespace previews {
 
+namespace {
+
+void EvictOldestOptOut(BlackListItemMap* black_list_item_map) {
+  // TODO(ryansturm): Add UMA. crbug.com/647717
+  base::Optional<base::Time> oldest_opt_out;
+  BlackListItemMap::iterator item_to_delete = black_list_item_map->end();
+  for (BlackListItemMap::iterator iter = black_list_item_map->begin();
+       iter != black_list_item_map->end(); ++iter) {
+    if (!iter->second->most_recent_opt_out_time()) {
+      // If there is no opt out time, this is a good choice to evict.
+      item_to_delete = iter;
+      break;
+    }
+    if (!oldest_opt_out ||
+        iter->second->most_recent_opt_out_time().value() <
+            oldest_opt_out.value()) {
+      oldest_opt_out = iter->second->most_recent_opt_out_time().value();
+      item_to_delete = iter;
+    }
+  }
+  black_list_item_map->erase(item_to_delete);
+}
+
+}  // namespace
+
 PreviewsBlackList::PreviewsBlackList(
     std::unique_ptr<PreviewsOptOutStore> opt_out_store,
     std::unique_ptr<base::Clock> clock)
@@ -56,10 +81,8 @@ void PreviewsBlackList::AddPreviewNavigationSync(const GURL& url,
   DCHECK(loaded_);
   std::string host_name = url.host();
   base::Time now = clock_->Now();
-  PreviewsBlackListItem* item = GetBlackListItem(host_name);
-  if (!item) {
-    item = CreateBlackListItem(host_name);
-  }
+  PreviewsBlackListItem* item =
+      GetOrCreateBlackListItem(black_list_item_map_.get(), host_name);
   item->AddPreviewNavigation(opt_out, now);
   DCHECK_LE(black_list_item_map_->size(),
             params::MaxInMemoryHostsInBlackList());
@@ -74,7 +97,8 @@ bool PreviewsBlackList::IsLoadedAndAllowed(const GURL& url,
   DCHECK(url.has_host());
   if (!loaded_)
     return false;
-  PreviewsBlackListItem* black_list_item = GetBlackListItem(url.host());
+  PreviewsBlackListItem* black_list_item =
+      GetBlackListItem(*black_list_item_map_, url.host());
   return !black_list_item || !black_list_item->IsBlackListed(clock_->Now());
 }
 
@@ -131,52 +155,33 @@ void PreviewsBlackList::LoadBlackListDone(
   }
 }
 
+// static
 PreviewsBlackListItem* PreviewsBlackList::GetBlackListItem(
-    const std::string& host_name) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(loaded_);
-  BlackListItemMap::iterator iter = black_list_item_map_->find(host_name);
-  if (iter != black_list_item_map_->end())
+    const BlackListItemMap& black_list_item_map,
+    const std::string& host_name) {
+  BlackListItemMap::const_iterator iter = black_list_item_map.find(host_name);
+  if (iter != black_list_item_map.end())
     return iter->second.get();
   return nullptr;
 }
 
-PreviewsBlackListItem* PreviewsBlackList::CreateBlackListItem(
+// static
+PreviewsBlackListItem* PreviewsBlackList::GetOrCreateBlackListItem(
+    BlackListItemMap* black_list_item_map,
     const std::string& host_name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(loaded_);
-  DCHECK(!GetBlackListItem(host_name));
-  if (black_list_item_map_->size() >= params::MaxInMemoryHostsInBlackList())
-    EvictOldestOptOut();
-  DCHECK_LT(black_list_item_map_->size(),
-            params::MaxInMemoryHostsInBlackList());
-  PreviewsBlackListItem* black_list_item = new PreviewsBlackListItem(
+  PreviewsBlackListItem* black_list_item =
+      GetBlackListItem(*black_list_item_map, host_name);
+  if (black_list_item)
+    return black_list_item;
+  if (black_list_item_map->size() >= params::MaxInMemoryHostsInBlackList())
+    EvictOldestOptOut(black_list_item_map);
+  DCHECK_LT(black_list_item_map->size(), params::MaxInMemoryHostsInBlackList());
+  black_list_item = new PreviewsBlackListItem(
       params::MaxStoredHistoryLengthForBlackList(),
       params::BlackListOptOutThreshold(), params::BlackListDuration());
-  black_list_item_map_->operator[](host_name) =
+  black_list_item_map->operator[](host_name) =
       base::WrapUnique(black_list_item);
   return black_list_item;
-}
-
-void PreviewsBlackList::EvictOldestOptOut() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(loaded_);
-  // TODO(ryansturm): Add UMA. crbug.com/647717
-  BlackListItemMap::iterator item_to_delete = black_list_item_map_->end();
-  base::Time oldest_opt_out = clock_->Now();
-  for (BlackListItemMap::iterator iter = black_list_item_map_->begin();
-       iter != black_list_item_map_->end(); ++iter) {
-    if (!iter->second->most_recent_opt_out_time()) {
-      // If there is no opt out time, this is a good choice to evict.
-      item_to_delete = iter;
-      break;
-    }
-    if (iter->second->most_recent_opt_out_time().value() < oldest_opt_out) {
-      oldest_opt_out = iter->second->most_recent_opt_out_time().value();
-      item_to_delete = iter;
-    }
-  }
-  black_list_item_map_->erase(item_to_delete);
 }
 
 }  // namespace previews

@@ -53,7 +53,6 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_io_data.h"
-#include "components/previews/core/previews_ui_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
@@ -210,10 +209,9 @@ void ProfileImplIOData::Handle::Init(
   io_data_->previews_io_data_ = base::MakeUnique<previews::PreviewsIOData>(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-  PreviewsServiceFactory::GetForProfile(profile_)->set_previews_ui_service(
-      base::MakeUnique<previews::PreviewsUIService>(
-          io_data_->previews_io_data_.get(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO), nullptr));
+  PreviewsServiceFactory::GetForProfile(profile_)->Initialize(
+      io_data_->previews_io_data_.get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO), profile_path);
 }
 
 content::ResourceContext*

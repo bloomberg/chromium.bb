@@ -16,6 +16,8 @@ static_library("core") {
     "previews_io_data.cc",
     "previews_io_data.h",
     "previews_opt_out_store.h",
+    "previews_opt_out_store_sql.cc",
+    "previews_opt_out_store_sql.h",
     "previews_ui_service.cc",
     "previews_ui_service.h",
   ]
@@ -25,6 +27,7 @@ static_library("core") {
     "//components/data_reduction_proxy/core/common",
     "//components/variations",
     "//net",
+    "//sql",
     "//url:url",
   ]
 }
