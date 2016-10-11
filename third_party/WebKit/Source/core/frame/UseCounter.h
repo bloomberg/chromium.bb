@@ -1343,6 +1343,8 @@ class CORE_EXPORT UseCounter {
     VRDeprecatedFieldOfView = 1621,
     VideoInCanvas = 1622,
     HiddenAutoplayedVideoInCanvas = 1623,
+    OffscreenCanvas = 1624,
+
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
     // Also, run update_use_counter_feature_enum.py in

@@ -17,5 +17,5 @@ partial interface HTMLCanvasElement
     // (and is not undefined or null). The binding must ignore this.
     // Related spec issue: https://github.com/whatwg/html/issues/595
     [RaisesException] RenderingContext? getContext(DOMString contextId, [PermissiveDictionaryConversion] optional CanvasContextCreationAttributes attributes);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] OffscreenCanvas transferControlToOffscreen();
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, MeasureAs=OffscreenCanvas] OffscreenCanvas transferControlToOffscreen();
 };

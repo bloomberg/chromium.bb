@@ -6,6 +6,7 @@
     Constructor([EnforceRange] unsigned long width, [EnforceRange] unsigned long height),
     Exposed=(Window,Worker),
     RuntimeEnabled=ExperimentalCanvasFeatures,
+    MeasureAs=OffscreenCanvas,
 ] interface OffscreenCanvas {
     [RaisesException=Setter, EnforceRange] attribute unsigned long width;
     [RaisesException=Setter, EnforceRange] attribute unsigned long height;

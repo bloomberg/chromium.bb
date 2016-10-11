@@ -312,8 +312,9 @@ def interface_context(interface, interfaces):
         includes.add('bindings/core/v8/V8ObjectConstructor.h')
         includes.add('core/frame/LocalDOMWindow.h')
     elif 'Measure' in extended_attributes or 'MeasureAs' in extended_attributes:
-        raise Exception('[Measure] or [MeasureAs] specified for interface without a constructor: '
-                        '%s' % interface.name)
+        if not interface.is_partial:
+            raise Exception('[Measure] or [MeasureAs] specified for interface without a constructor: '
+                            '%s' % interface.name)
 
     # [Unscopable] attributes and methods
     unscopables = []
