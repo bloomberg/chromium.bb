@@ -4880,10 +4880,12 @@ def CMDtry_results(parser, args):
                    cl.GetIssue())
 
     if patchset != cl.GetPatchset():
-      print('WARNING: Mismatch between local config and server. Did a previous '
-            'upload fail?\n'
-            'By default, git cl try uses latest patchset from codereview.\n'
-            'Continuing using patchset %s.\n' % patchset)
+      print('Warning: Codereview server has newer patchsets (%s) than most '
+            'recent upload from local checkout (%s). Did a previous upload '
+            'fail?\n'
+            'By default, git cl try uses latest patchset from codereview, '
+            'continuing to use patchset %s.\n' %
+            (patchset, cl.GetPatchset(), patchset))
   try:
     jobs = fetch_try_jobs(auth_config, cl, options.buildbucket_host, patchset)
   except BuildbucketResponseException as ex:

@@ -1987,14 +1987,18 @@ class TestGitCl(TestCase):
     self.calls = [(('write_json', 'output.json', expected_output), '')]
     git_cl.write_try_results_json('output.json', self.BUILDBUCKET_BUILDS_MAP)
 
-  def _setup_fetch_try_jobs_rietveld(self, *request_results):
+  def _setup_fetch_try_jobs(self, most_recent_patchset=20001):
     out = StringIO.StringIO()
     self.mock(sys, 'stdout', out)
-    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda *args: 20001)
+    self.mock(git_cl.Changelist, 'GetMostRecentPatchset',
+              lambda *args: most_recent_patchset)
     self.mock(git_cl.auth, 'get_authenticator_for_host', lambda host, _cfg:
               self._mocked_call(['get_authenticator_for_host', host]))
     self.mock(git_cl, '_buildbucket_retry', lambda *_, **__:
               self._mocked_call(['_buildbucket_retry']))
+
+  def _setup_fetch_try_jobs_rietveld(self, *request_results):
+    self._setup_fetch_try_jobs(most_recent_patchset=20001)
     self.calls += [
       ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
       ((['git', 'config', 'branch.feature.rietveldissue'],), '1'),
@@ -2009,7 +2013,11 @@ class TestGitCl(TestCase):
 
   def test_fetch_try_jobs_none_rietveld(self):
     self._setup_fetch_try_jobs_rietveld({})
+    # Simulate that user isn't logged in.
+    self.mock(AuthenticatorMock, 'has_cached_credentials', lambda _: False)
     self.assertEqual(0, git_cl.main(['try-results']))
+    self.assertRegexpMatches(sys.stdout.getvalue(),
+                             'Warning: Some results might be missing')
     self.assertRegexpMatches(sys.stdout.getvalue(), 'No try jobs')
 
   def test_fetch_try_jobs_some_rietveld(self):
@@ -2017,7 +2025,44 @@ class TestGitCl(TestCase):
       'builds': self.BUILDBUCKET_BUILDS_MAP.values(),
     })
     self.assertEqual(0, git_cl.main(['try-results']))
-    self.assertRegexpMatches(sys.stdout.getvalue(), 'Failures:')
+    self.assertRegexpMatches(sys.stdout.getvalue(), '^Failures:')
+    self.assertRegexpMatches(sys.stdout.getvalue(), 'Started:')
+    self.assertRegexpMatches(sys.stdout.getvalue(), '2 try jobs')
+
+  def _setup_fetch_try_jobs_gerrit(self, *request_results):
+    self._setup_fetch_try_jobs(most_recent_patchset=13)
+    self.calls += [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+      ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
+      ((['git', 'config', 'branch.feature.gerritissue'],), '1'),
+      # Simulate that Gerrit has more patchsets than local.
+      ((['git', 'config', 'branch.feature.gerritpatchset'],), '12'),
+      ((['git', 'config', 'branch.feature.gerritserver'],),
+       'https://x-review.googlesource.com'),
+      ((['get_authenticator_for_host', 'x-review.googlesource.com'],),
+       AuthenticatorMock()),
+    ] + [((['_buildbucket_retry'],), r) for r in request_results]
+
+  def test_fetch_try_jobs_none_gerrit(self):
+    self._setup_fetch_try_jobs_gerrit({})
+    self.assertEqual(0, git_cl.main(['try-results']))
+    self.assertRegexpMatches(
+        sys.stdout.getvalue(),
+        r'Warning: Codereview server has newer patchsets \(13\)')
+    self.assertRegexpMatches(sys.stdout.getvalue(), 'No try jobs')
+
+  def test_fetch_try_jobs_some_gerrit(self):
+    self._setup_fetch_try_jobs_gerrit({
+      'builds': self.BUILDBUCKET_BUILDS_MAP.values(),
+    })
+    # Explicit --patchset means actual local patchset doesn't matter.
+    self.calls.remove(
+        ((['git', 'config', 'branch.feature.gerritpatchset'],), '12'))
+    self.assertEqual(0, git_cl.main(['try-results', '--patchset', '5']))
+
+    # ... and doesn't result in warning.
+    self.assertNotRegexpMatches(sys.stdout.getvalue(), 'Warning')
+    self.assertRegexpMatches(sys.stdout.getvalue(), '^Failures:')
     self.assertRegexpMatches(sys.stdout.getvalue(), 'Started:')
     self.assertRegexpMatches(sys.stdout.getvalue(), '2 try jobs')
 
