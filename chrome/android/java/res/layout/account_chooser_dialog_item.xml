@@ -31,7 +31,6 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:fontFamily="sans-serif"
-            android:textColor="@color/default_text_color"
             android:textSize="@dimen/account_chooser_dialog_title_main_text_size"/>
         <TextView
             android:id="@+id/secondary_name"

@@ -69,8 +69,6 @@ class FilterAdapter extends BaseAdapter
             labelView.setBackground(null);
             iconDrawable = TintedDrawable.constructTintedDrawable(
                     resources, iconId, R.color.descriptive_text_color);
-            labelView.setTextColor(
-                    ApiCompatibilityUtils.getColor(resources, R.color.default_text_color));
         }
 
         labelView.setCompoundDrawablesWithIntrinsicBounds(iconDrawable, null, null, null);

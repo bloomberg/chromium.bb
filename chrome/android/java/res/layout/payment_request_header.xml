@@ -38,14 +38,13 @@
             android:orientation="vertical">
 
             <TextView
+                style="@style/PaymentsUiSectionDefaultText"
                 android:id="@+id/page_title"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:textColor="@color/default_text_color"
-                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView

@@ -16,8 +16,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif-medium"
         android:text="@string/tab_switcher_callout_header"
-        android:textSize="@dimen/infobar_big_icon_message_size"
-        android:textColor="@color/default_text_color" />
+        android:textSize="@dimen/infobar_big_icon_message_size" />
 
     <TextView
         android:id="@+id/description_view"

@@ -38,7 +38,6 @@
                 android:layout_alignParentEnd="true"
                 android:layout_toEndOf="@+id/icon_view"
                 android:singleLine="true"
-                android:textColor="@color/default_text_color"
                 android:textSize="16sp" />
 
         <TextView

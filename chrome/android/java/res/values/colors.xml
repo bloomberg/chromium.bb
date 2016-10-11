@@ -5,7 +5,7 @@
 
 <resources>
     <!-- Common colors -->
-    <color name="default_text_color">#333</color>
+    <color name="default_text_color">#000000</color>
     <color name="default_primary_color">#f2f2f2</color>
     <color name="light_normal_color">#5A5A5A</color>
     <color name="light_active_color">#4285F4</color>

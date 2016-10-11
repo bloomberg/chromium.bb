@@ -28,7 +28,6 @@
         android:layout_weight="1"
         android:minHeight="56dp"
         android:gravity="center_vertical"
-        android:textColor="@color/default_text_color"
         android:textSize="@dimen/fre_normal_text_size"/>
 
     <ImageView

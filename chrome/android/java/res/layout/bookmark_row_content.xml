@@ -31,7 +31,6 @@
             android:singleLine="true"
             android:gravity="center_vertical"
             android:textAlignment="viewStart"
-            android:textColor="@color/default_text_color"
             android:textSize="16sp" />
 
         <org.chromium.chrome.browser.widget.TintedImageButton

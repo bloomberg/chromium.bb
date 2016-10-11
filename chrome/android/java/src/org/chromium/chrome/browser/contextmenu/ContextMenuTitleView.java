@@ -9,9 +9,6 @@ import android.text.TextUtils;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
-
 /**
  * Context menu title text view that is restricted height and scrollable.
  */
@@ -41,8 +38,6 @@ public class ContextMenuTitleView extends ScrollView {
             title = sb.toString();
         }
         titleView.setText(title);
-        titleView.setTextColor(ApiCompatibilityUtils.getColor(getResources(),
-                R.color.default_text_color));
         titleView.setPadding(0, 0, 0, padding);
         addView(titleView);
     }

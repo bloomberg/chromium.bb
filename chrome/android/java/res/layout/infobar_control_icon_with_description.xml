@@ -27,8 +27,7 @@
             android:id="@+id/control_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/infobar_text_size"
-            android:textColor="@color/default_text_color" />
+            android:textSize="@dimen/infobar_text_size" />
 
         <TextView
             android:id="@+id/control_secondary_message"
