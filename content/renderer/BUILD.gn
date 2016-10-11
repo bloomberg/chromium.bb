@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
+import("//ppapi/features/features.gni")
 import("//third_party/webrtc/build/webrtc.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
@@ -437,6 +438,7 @@ target(link_target_type, "renderer") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/js",
     "//net",
+    "//ppapi/features",
     "//sandbox",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
@@ -448,7 +450,7 @@ target(link_target_type, "renderer") {
     "//third_party/icu",
     "//third_party/libjingle",
     "//third_party/libyuv",
-    "//third_party/widevine/cdm:version_h",
+    "//third_party/widevine/cdm:headers",
     "//ui/accessibility",
     "//ui/base",
     "//ui/base/ime",

@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 #include "media/base/key_system_properties.h"
+#include "ppapi/features/features.h"
 
 namespace cdm {
 
@@ -56,7 +57,7 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
   media::EmeFeatureSupport GetPersistentStateSupport() const override;
   media::EmeFeatureSupport GetDistinctiveIdentifierSupport() const override;
 
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
   std::string GetPepperType() const override;
 #endif
 

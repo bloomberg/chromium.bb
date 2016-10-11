@@ -8,23 +8,6 @@ import("//testing/test.gni")
 component("blink") {
   output_name = "media_blink"
 
-  deps = [
-    "//base",
-    "//cc",
-    "//cc/blink",
-    "//gpu",
-    "//media",
-    "//media:shared_memory_support",
-    "//net",
-    "//skia",
-    "//third_party/WebKit/public:blink",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//url",
-  ]
-
-  defines = [ "MEDIA_BLINK_IMPLEMENTATION" ]
-
   sources = [
     "active_loader.cc",
     "active_loader.h",
@@ -81,6 +64,24 @@ component("blink") {
     "webmediasource_impl.h",
     "websourcebuffer_impl.cc",
     "websourcebuffer_impl.h",
+  ]
+
+  defines = [ "MEDIA_BLINK_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//cc",
+    "//cc/blink",
+    "//gpu",
+    "//media",
+    "//media:shared_memory_support",
+    "//net",
+    "//ppapi/features",
+    "//skia",
+    "//third_party/WebKit/public:blink",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//url",
   ]
 
   if (media_use_ffmpeg || !is_android) {

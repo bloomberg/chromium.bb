@@ -5,7 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_CDM_PEPPER_CDM_WRAPPER_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_CDM_PEPPER_CDM_WRAPPER_IMPL_H_
 
-#if !defined(ENABLE_PEPPER_CDMS)
+#include "ppapi/features/features.h"
+
+#if !BUILDFLAG(ENABLE_PEPPER_CDMS)
 #error This file should only be included when ENABLE_PEPPER_CDMS is defined
 #endif
 

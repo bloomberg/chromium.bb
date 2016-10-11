@@ -19,6 +19,7 @@
 #include "media/base/key_system_names.h"
 #include "media/base/key_system_properties.h"
 #include "media/base/media.h"
+#include "ppapi/features/features.h"
 #include "media/base/media_client.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
@@ -173,7 +174,7 @@ class KeySystemsImpl : public KeySystems {
 
   bool UseAesDecryptor(const std::string& key_system) const;
 
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
   std::string GetPepperType(const std::string& key_system) const;
 #endif
 
@@ -405,7 +406,7 @@ void KeySystemsImpl::AddSupportedKeySystems(
     // 1) AES decryptor, and
     // 2) External Clear Key key system on Android, only enabled for testing.
     bool can_block = properties->UseAesDecryptor();
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
     DCHECK_EQ(properties->UseAesDecryptor(),
               properties->GetPepperType().empty());
     if (!properties->GetPepperType().empty())
@@ -506,7 +507,7 @@ bool KeySystemsImpl::UseAesDecryptor(const std::string& key_system) const {
   return key_system_iter->second->UseAesDecryptor();
 }
 
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
 std::string KeySystemsImpl::GetPepperType(const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -705,7 +706,7 @@ bool CanUseAesDecryptor(const std::string& key_system) {
   return KeySystemsImpl::GetInstance()->UseAesDecryptor(key_system);
 }
 
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
 std::string GetPepperType(const std::string& key_system) {
   return KeySystemsImpl::GetInstance()->GetPepperType(key_system);
 }

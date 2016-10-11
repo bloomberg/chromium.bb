@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include "chrome/renderer/plugins/plugin_uma.h"
+#include "ppapi/features/features.h"
 
 class PluginUMATest : public testing::Test {
  public:
@@ -103,7 +104,7 @@ TEST_F(PluginUMATest, ShockwaveFlash) {
 }
 
 TEST_F(PluginUMATest, WidevineCdm) {
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
   ExpectPluginType(PluginUMAReporter::WIDEVINE_CDM,
 #else
   ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,

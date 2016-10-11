@@ -44,6 +44,6 @@ source_set("renderer") {
     "//ipc",
     "//media",
     "//services/shell/public/cpp",
-    "//third_party/widevine/cdm:version_h",
+    "//third_party/widevine/cdm:headers",
   ]
 }
