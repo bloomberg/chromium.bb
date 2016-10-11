@@ -121,6 +121,18 @@ crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.htm
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 
+# Skip this test because it causes the next text to fail though the test itself passes.
+crbug.com/648785 paint/invalidation/fixed-right-bottom-in-page-scale.html [ Skip ]
+
+# JVV skia change to circles
+crbug.com/653991 virtual/gpu-rasterization/fast/images/color-profile-mask-image-svg.html    [ NeedsManualRebaseline ]
+crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation-css.html            [ NeedsManualRebaseline ]
+crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation-image-document.html [ NeedsManualRebaseline ]
+crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation.html                [ NeedsManualRebaseline ]
+
+# ====== Paint team owned tests to here ======
+
+
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
 
@@ -215,8 +227,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-separate-position.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-siblings.html [ Skip ]
 # ====== LayoutNG-only failures until here ======
-
-# ====== Paint team owned tests to here ======
 
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
@@ -841,13 +851,6 @@ crbug.com/613672 [ Mac ] virtual/scalefactor150/fast/events/synthetic-events/tap
 # We should send PointerLeave events for stylus devices.
 crbug.com/583413 imported/wpt/pointerevents/pointerevent_pointerleave_pen-manual.html  [ Failure ]
 
-# JVV skia change to circles
-crbug.com/653991 virtual/gpu-rasterization/fast/images/color-profile-mask-image-svg.html    [ NeedsManualRebaseline ]
-crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation-css.html            [ NeedsManualRebaseline ]
-crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation-image-document.html [ NeedsManualRebaseline ]
-crbug.com/653991 virtual/gpu-rasterization/fast/images/exif-orientation.html                [ NeedsManualRebaseline ]
-
-
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0276.html
@@ -1190,9 +1193,6 @@ crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failu
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
 crbug.com/399507 [ Mac Linux Win10 ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
-
-# Skip this test because it causes the next text to fail though the test itself passes.
-crbug.com/648785 paint/invalidation/fixed-right-bottom-in-page-scale.html [ Skip ]
 
 crbug.com/637245 [ Mac10.11 Retina ] fast/html/details-add-summary-5-and-click.html [ Pass Failure ]
 crbug.com/637245 [ Mac10.11 Retina ] fast/html/details-add-summary-8-and-click.html [ Pass Failure ]
