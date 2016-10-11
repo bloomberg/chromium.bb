@@ -38,6 +38,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 #include "content/public/browser/browser_thread.h"
@@ -629,18 +630,17 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
                             base::Unretained(this)));
   // ClientSideDetectionService will need to be refresh the models
   // renderers have if extended-reporting changes.
-  registrar->Add(prefs::kSafeBrowsingExtendedReportingEnabled,
-                 base::Bind(&SafeBrowsingService::RefreshState,
-                            base::Unretained(this)));
+  registrar->Add(
+      GetExtendedReportingPrefName(),
+      base::Bind(&SafeBrowsingService::RefreshState, base::Unretained(this)));
   prefs_map_[pref_service] = registrar;
   RefreshState();
 
   // Record the current pref state.
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.General",
                         pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
-  UMA_HISTOGRAM_BOOLEAN(
-      "SafeBrowsing.Pref.Extended",
-      pref_service->GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled));
+  // Extended Reporting metrics are handled together elsewhere.
+  RecordExtendedReportingMetrics(*pref_service);
 }
 
 void SafeBrowsingService::RemovePrefService(PrefService* pref_service) {

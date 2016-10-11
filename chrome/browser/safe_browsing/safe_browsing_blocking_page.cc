@@ -34,6 +34,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -406,7 +407,7 @@ void SafeBrowsingBlockingPage::FinishThreatDetails(int64_t delay_ms,
     return;  // Not all interstitials have threat details (eg., incognito mode).
 
   const bool enabled =
-      IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled) &&
+      IsExtendedReportingEnabled(*profile()->GetPrefs()) &&
       IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
   if (!enabled)
     return;
@@ -690,7 +691,7 @@ void SafeBrowsingBlockingPage::PopulateExtendedReportingOption(
                                  base::UTF8ToUTF16(privacy_link)));
   load_time_data->SetBoolean(
       security_interstitials::kBoxChecked,
-      IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled));
+      IsExtendedReportingEnabled(*profile()->GetPrefs()));
 }
 
 void SafeBrowsingBlockingPage::PopulateMalwareLoadTimeData(

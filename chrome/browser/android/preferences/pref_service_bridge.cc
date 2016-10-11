@@ -55,6 +55,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/strings/grit/components_locale_settings.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -315,15 +316,14 @@ static jboolean GetSearchSuggestManaged(JNIEnv* env,
 static jboolean GetSafeBrowsingExtendedReportingEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(
-      prefs::kSafeBrowsingExtendedReportingEnabled);
+  return safe_browsing::IsExtendedReportingEnabled(*GetPrefService());
 }
 
 static void SetSafeBrowsingExtendedReportingEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean enabled) {
-  GetPrefService()->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled,
+  GetPrefService()->SetBoolean(safe_browsing::GetExtendedReportingPrefName(),
                                enabled);
 }
 
@@ -331,7 +331,7 @@ static jboolean GetSafeBrowsingExtendedReportingManaged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return GetPrefService()->IsManagedPreference(
-      prefs::kSafeBrowsingExtendedReportingEnabled);
+      safe_browsing::GetExtendedReportingPrefName());
 }
 
 static jboolean GetSafeBrowsingEnabled(JNIEnv* env,

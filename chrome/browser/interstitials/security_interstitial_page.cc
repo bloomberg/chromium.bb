@@ -70,10 +70,12 @@ void SecurityInterstitialPage::Show() {
   AfterShow();
 }
 
+Profile* SecurityInterstitialPage::profile() {
+  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+}
+
 bool SecurityInterstitialPage::IsPrefEnabled(const char* pref) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return profile->GetPrefs()->GetBoolean(pref);
+  return profile()->GetPrefs()->GetBoolean(pref);
 }
 
 ChromeControllerClient* SecurityInterstitialPage::controller() {

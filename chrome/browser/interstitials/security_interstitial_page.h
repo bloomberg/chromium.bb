@@ -26,6 +26,7 @@ class MetricsHelper;
 }
 
 class ChromeControllerClient;
+class Profile;
 
 class SecurityInterstitialPage : public content::InterstitialPageDelegate {
  public:
@@ -62,6 +63,9 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   content::InterstitialPage* interstitial_page() const;
   content::WebContents* web_contents() const;
   GURL request_url() const;
+
+  // Returns a pointer to the Profile associated with |web_contents_|.
+  Profile* profile();
 
   // Returns the boolean value of the given |pref| from the PrefService of the
   // Profile associated with |web_contents_|.

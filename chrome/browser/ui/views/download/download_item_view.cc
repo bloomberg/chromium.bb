@@ -40,6 +40,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/download_danger_type.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -571,20 +572,20 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
   // WARNING: all end states after this point delete |this|.
   DCHECK_EQ(discard_button_, sender);
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download", warning_duration);
+  Profile* profile = shelf_->browser()->profile();
   if (!model_.IsMalicious() && model_.ShouldAllowDownloadFeedback() &&
-      !shelf_->browser()->profile()->IsOffTheRecord()) {
-    if (!shelf_->browser()->profile()->GetPrefs()->HasPrefPath(
-            prefs::kSafeBrowsingExtendedReportingEnabled)) {
+      !profile->IsOffTheRecord()) {
+    if (!profile->GetPrefs()->HasPrefPath(
+            safe_browsing::GetExtendedReportingPrefName())) {
       // Show dialog, because the dialog hasn't been shown before.
       DownloadFeedbackDialogView::Show(
-          shelf_->get_parent()->GetNativeWindow(), shelf_->browser()->profile(),
+          shelf_->get_parent()->GetNativeWindow(), profile,
           shelf_->GetNavigator(),
           base::Bind(&DownloadItemView::PossiblySubmitDownloadToFeedbackService,
                      weak_ptr_factory_.GetWeakPtr()));
     } else {
       PossiblySubmitDownloadToFeedbackService(
-          shelf_->browser()->profile()->GetPrefs()->GetBoolean(
-              prefs::kSafeBrowsingExtendedReportingEnabled));
+          safe_browsing::IsExtendedReportingEnabled(*profile->GetPrefs()));
     }
     return;
   }
