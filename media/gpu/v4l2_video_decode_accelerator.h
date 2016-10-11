@@ -264,6 +264,10 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Handle the various device queues.
   void Enqueue();
   void Dequeue();
+  // Dequeue one input buffer. Return true if success.
+  bool DequeueInputBuffer();
+  // Dequeue one output buffer. Return true if success.
+  bool DequeueOutputBuffer();
 
   // Return true if there is a resolution change event pending.
   bool DequeueResolutionChangeEvent();

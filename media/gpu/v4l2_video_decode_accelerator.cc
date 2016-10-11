@@ -1292,93 +1292,109 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
   DCHECK_NE(decoder_state_, kUninitialized);
   TRACE_EVENT0("Video Decoder", "V4L2VDA::Dequeue");
 
-  // Dequeue completed input (VIDEO_OUTPUT) buffers, and recycle to the free
-  // list.
   while (input_buffer_queued_count_ > 0) {
-    DCHECK(input_streamon_);
-    struct v4l2_buffer dqbuf;
-    struct v4l2_plane planes[1];
-    memset(&dqbuf, 0, sizeof(dqbuf));
-    memset(planes, 0, sizeof(planes));
-    dqbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-    dqbuf.memory = V4L2_MEMORY_MMAP;
-    dqbuf.m.planes = planes;
-    dqbuf.length = 1;
-    if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
-      if (errno == EAGAIN) {
-        // EAGAIN if we're just out of buffers to dequeue.
-        break;
-      }
-      PLOGF(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-      return;
-    }
-    InputRecord& input_record = input_buffer_map_[dqbuf.index];
-    DCHECK(input_record.at_device);
-    free_input_buffers_.push_back(dqbuf.index);
-    input_record.at_device = false;
-    input_record.bytes_used = 0;
-    input_record.input_id = -1;
-    input_buffer_queued_count_--;
+    if (!DequeueInputBuffer())
+      break;
   }
-
-  // Dequeue completed output (VIDEO_CAPTURE) buffers, and queue to the
-  // completed queue.
   while (output_buffer_queued_count_ > 0) {
-    DCHECK(output_streamon_);
-    struct v4l2_buffer dqbuf;
-    std::unique_ptr<struct v4l2_plane[]> planes(
-        new v4l2_plane[output_planes_count_]);
-    memset(&dqbuf, 0, sizeof(dqbuf));
-    memset(planes.get(), 0, sizeof(struct v4l2_plane) * output_planes_count_);
-    dqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-    dqbuf.memory = V4L2_MEMORY_MMAP;
-    dqbuf.m.planes = planes.get();
-    dqbuf.length = output_planes_count_;
-    if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
-      if (errno == EAGAIN) {
-        // EAGAIN if we're just out of buffers to dequeue.
-        break;
-      }
-      PLOGF(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-      return;
+    if (!DequeueOutputBuffer())
+      break;
+  }
+  NotifyFlushDoneIfNeeded();
+}
+
+bool V4L2VideoDecodeAccelerator::DequeueInputBuffer() {
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_GT(input_buffer_queued_count_, 0);
+  DCHECK(input_streamon_);
+
+  // Dequeue a completed input (VIDEO_OUTPUT) buffer, and recycle to the free
+  // list.
+  struct v4l2_buffer dqbuf;
+  struct v4l2_plane planes[1];
+  memset(&dqbuf, 0, sizeof(dqbuf));
+  memset(planes, 0, sizeof(planes));
+  dqbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  dqbuf.memory = V4L2_MEMORY_MMAP;
+  dqbuf.m.planes = planes;
+  dqbuf.length = 1;
+  if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
+    if (errno == EAGAIN) {
+      // EAGAIN if we're just out of buffers to dequeue.
+      return false;
     }
-    OutputRecord& output_record = output_buffer_map_[dqbuf.index];
-    DCHECK_EQ(output_record.state, kAtDevice);
-    DCHECK_NE(output_record.picture_id, -1);
-    output_buffer_queued_count_--;
-    if (dqbuf.m.planes[0].bytesused == 0) {
-      // This is an empty output buffer returned as part of a flush.
-      output_record.state = kFree;
-      free_output_buffers_.push_back(dqbuf.index);
-    } else {
-      int32_t bitstream_buffer_id = dqbuf.timestamp.tv_sec;
-      DCHECK_GE(bitstream_buffer_id, 0);
-      DVLOGF(3) << "Dequeue output buffer: dqbuf index=" << dqbuf.index
-                << " bitstream input_id=" << bitstream_buffer_id;
-      if (image_processor_device_) {
-        if (!ProcessFrame(bitstream_buffer_id, dqbuf.index)) {
-          DLOGF(ERROR) << "Processing frame failed";
-          NOTIFY_ERROR(PLATFORM_FAILURE);
-          return;
-        }
-      } else {
-        output_record.state = kAtClient;
-        decoder_frames_at_client_++;
-        // TODO(hubbe): Insert correct color space. http://crbug.com/647725
-        const Picture picture(output_record.picture_id, bitstream_buffer_id,
-                              gfx::Rect(visible_size_), gfx::ColorSpace(),
-                              false);
-        pending_picture_ready_.push(
-            PictureRecord(output_record.cleared, picture));
-        SendPictureReady();
-        output_record.cleared = true;
+    PLOGF(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return false;
+  }
+  InputRecord& input_record = input_buffer_map_[dqbuf.index];
+  DCHECK(input_record.at_device);
+  free_input_buffers_.push_back(dqbuf.index);
+  input_record.at_device = false;
+  input_record.bytes_used = 0;
+  input_record.input_id = -1;
+  input_buffer_queued_count_--;
+
+  return true;
+}
+
+bool V4L2VideoDecodeAccelerator::DequeueOutputBuffer() {
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_GT(output_buffer_queued_count_, 0);
+  DCHECK(output_streamon_);
+
+  // Dequeue a completed output (VIDEO_CAPTURE) buffer, and queue to the
+  // completed queue.
+  struct v4l2_buffer dqbuf;
+  std::unique_ptr<struct v4l2_plane[]> planes(
+      new v4l2_plane[output_planes_count_]);
+  memset(&dqbuf, 0, sizeof(dqbuf));
+  memset(planes.get(), 0, sizeof(struct v4l2_plane) * output_planes_count_);
+  dqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  dqbuf.memory = V4L2_MEMORY_MMAP;
+  dqbuf.m.planes = planes.get();
+  dqbuf.length = output_planes_count_;
+  if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
+    if (errno == EAGAIN) {
+      // EAGAIN if we're just out of buffers to dequeue.
+      return false;
+    }
+    PLOGF(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return false;
+  }
+  OutputRecord& output_record = output_buffer_map_[dqbuf.index];
+  DCHECK_EQ(output_record.state, kAtDevice);
+  DCHECK_NE(output_record.picture_id, -1);
+  output_buffer_queued_count_--;
+  if (dqbuf.m.planes[0].bytesused == 0) {
+    // This is an empty output buffer returned as part of a flush.
+    output_record.state = kFree;
+    free_output_buffers_.push_back(dqbuf.index);
+  } else {
+    int32_t bitstream_buffer_id = dqbuf.timestamp.tv_sec;
+    DCHECK_GE(bitstream_buffer_id, 0);
+    DVLOGF(3) << "Dequeue output buffer: dqbuf index=" << dqbuf.index
+              << " bitstream input_id=" << bitstream_buffer_id;
+    if (image_processor_device_) {
+      if (!ProcessFrame(bitstream_buffer_id, dqbuf.index)) {
+        DLOGF(ERROR) << "Processing frame failed";
+        NOTIFY_ERROR(PLATFORM_FAILURE);
+        return false;
       }
+    } else {
+      output_record.state = kAtClient;
+      decoder_frames_at_client_++;
+      // TODO(hubbe): Insert correct color space. http://crbug.com/647725
+      const Picture picture(output_record.picture_id, bitstream_buffer_id,
+                            gfx::Rect(visible_size_), gfx::ColorSpace(), false);
+      pending_picture_ready_.push(
+          PictureRecord(output_record.cleared, picture));
+      SendPictureReady();
+      output_record.cleared = true;
     }
   }
-
-  NotifyFlushDoneIfNeeded();
+  return true;
 }
 
 bool V4L2VideoDecodeAccelerator::EnqueueInputRecord() {
