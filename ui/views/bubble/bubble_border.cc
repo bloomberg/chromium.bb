@@ -74,6 +74,23 @@ bool UseMd() {
   return ui::MaterialDesignController::IsSecondaryUiMaterial();
 }
 
+// Utility functions for getting alignment points on the edge of a rectangle.
+gfx::Point CenterTop(const gfx::Rect& rect) {
+  return gfx::Point(rect.CenterPoint().x(), rect.y());
+}
+
+gfx::Point CenterBottom(const gfx::Rect& rect) {
+  return gfx::Point(rect.CenterPoint().x(), rect.bottom());
+}
+
+gfx::Point LeftCenter(const gfx::Rect& rect) {
+  return gfx::Point(rect.x(), rect.CenterPoint().y());
+}
+
+gfx::Point RightCenter(const gfx::Rect& rect) {
+  return gfx::Point(rect.right(), rect.CenterPoint().y());
+}
+
 // Bubble border and arrow image resource ids. They don't use the IMAGE_GRID
 // macro because there is no center image.
 const int kNoShadowImages[] = {
@@ -188,20 +205,29 @@ void BubbleBorder::set_paint_arrow(ArrowPaintType value) {
 
 gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
                                   const gfx::Size& contents_size) const {
-  if (UseMd() && (arrow_ == TOP_RIGHT || arrow_ == TOP_LEFT)) {
-    // In MD, there are no arrows, so positioning logic is significantly
-    // simpler.
-    // TODO(estade): handle more anchor positions.
+  // In MD, there are no arrows, so positioning logic is significantly simpler.
+  // TODO(estade): handle more anchor positions.
+  if (UseMd() &&
+      (arrow_ == TOP_RIGHT || arrow_ == TOP_LEFT || arrow_ == BOTTOM_CENTER ||
+       arrow_ == LEFT_CENTER || arrow_ == RIGHT_CENTER)) {
     gfx::Rect contents_bounds(contents_size);
     if (arrow_ == TOP_RIGHT) {
       contents_bounds +=
           anchor_rect.bottom_right() - contents_bounds.top_right();
-    }
-    if (arrow_ == TOP_LEFT) {
+    } else if (arrow_ == TOP_LEFT) {
       contents_bounds +=
           anchor_rect.bottom_left() - contents_bounds.origin();
+    } else if (arrow_ == BOTTOM_CENTER) {
+      contents_bounds += CenterTop(anchor_rect) - CenterBottom(contents_bounds);
+    } else if (arrow_ == LEFT_CENTER) {
+      contents_bounds += RightCenter(anchor_rect) - LeftCenter(contents_bounds);
+    } else if (arrow_ == RIGHT_CENTER) {
+      contents_bounds += LeftCenter(anchor_rect) - RightCenter(contents_bounds);
     }
     contents_bounds.Inset(-GetInsets());
+    // |arrow_offset_| is used to adjust bubbles that would normally be
+    // partially offscreen.
+    contents_bounds += gfx::Vector2d(-arrow_offset_, 0);
     return contents_bounds;
   }
 
@@ -288,6 +314,8 @@ bool BubbleBorder::GetArrowPath(const gfx::Rect& view_bounds,
 }
 
 void BubbleBorder::SetBorderInteriorThickness(int border_interior_thickness) {
+  // TODO(estade): remove this function.
+  DCHECK(!UseMd());
   images_->border_interior_thickness = border_interior_thickness;
   if (!has_arrow(arrow_) || arrow_paint_type_ != PAINT_NORMAL)
     images_->border_thickness = border_interior_thickness;

@@ -112,6 +112,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   };
 
   // The way the arrow should be painted.
+  // TODO(estade): Harmony doesn't use this enum; remove it.
   enum ArrowPaintType {
     // Fully render the arrow.
     PAINT_NORMAL,

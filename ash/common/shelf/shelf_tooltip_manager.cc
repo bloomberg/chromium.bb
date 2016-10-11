@@ -7,6 +7,7 @@
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
@@ -15,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/insets.h"
@@ -60,12 +62,6 @@ class ShelfTooltipManager::ShelfTooltipBubble
                      views::BubbleBorder::Arrow arrow,
                      const base::string16& text)
       : views::BubbleDialogDelegateView(anchor, arrow) {
-    gfx::Insets insets(kArrowTopBottomOffset, kArrowLeftRightOffset);
-    // Adjust the anchor location for asymmetrical borders of shelf item.
-    if (anchor->border())
-      insets += anchor->border()->GetInsets();
-
-    set_anchor_view_insets(insets);
     set_close_on_deactivate(false);
     set_can_activate(false);
     set_accept_events(false);
@@ -82,12 +78,24 @@ class ShelfTooltipManager::ShelfTooltipBubble
     set_color(background_color);
     label->SetBackgroundColor(background_color);
     AddChildView(label);
-    views::BubbleDialogDelegateView::CreateBubble(this);
     // The bubble border has its own background so the background created by the
     // BubbleDialogDelegateView is redundant and would cause extra opacity.
     set_background(nullptr);
-    SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
-    SetBorderInteriorThickness(kBorderInteriorThickness);
+
+    gfx::Insets insets(kArrowTopBottomOffset, kArrowLeftRightOffset);
+    // Adjust the anchor location for asymmetrical borders of shelf item.
+    if (anchor->border())
+      insets += anchor->border()->GetInsets();
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+      insets += gfx::Insets(-kBubblePaddingHorizontalBottom);
+    set_anchor_view_insets(insets);
+
+    views::BubbleDialogDelegateView::CreateBubble(this);
+    if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      // These must both be called after CreateBubble.
+      SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
+      SetBorderInteriorThickness(kBorderInteriorThickness);
+    }
   }
 
  private:

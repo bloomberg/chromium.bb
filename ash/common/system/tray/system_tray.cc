@@ -566,7 +566,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     // they are shown in a bubble by themselves.
     init_params.arrow_paint_type = views::BubbleBorder::PAINT_NORMAL;
     if (items.size() == 1 && items[0]->ShouldHideArrow())
-      init_params.arrow_paint_type = views::BubbleBorder::PAINT_TRANSPARENT;
+      init_params.arrow_paint_type = views::BubbleBorder::PAINT_NONE;
     SystemTrayBubble* bubble = new SystemTrayBubble(this, items, bubble_type);
 
     system_bubble_.reset(new SystemBubbleWrapper(bubble));
