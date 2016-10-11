@@ -575,6 +575,9 @@ mojom("mojo_bindings") {
     "//components/leveldb/public/interfaces",
     "//content/public/common:interfaces",
     "//device/sensors/public/interfaces",
+
+    # TODO(mcasas): remove the following dep after https://crbug.com/653994
+    "//gpu/ipc/common:interfaces",
     "//ipc:mojom",
     "//services/shell/public/interfaces",
     "//services/ui/public/interfaces",

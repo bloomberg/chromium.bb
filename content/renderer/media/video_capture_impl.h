@@ -19,6 +19,7 @@
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "media/base/video_capture_types.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -45,7 +46,8 @@ namespace content {
 // This is an internal class used by VideoCaptureImplManager only. Do not access
 // this directly.
 class CONTENT_EXPORT VideoCaptureImpl
-    : public VideoCaptureMessageFilter::Delegate {
+    : public VideoCaptureMessageFilter::Delegate,
+      public mojom::VideoCaptureObserver {
  public:
   VideoCaptureImpl(
       media::VideoCaptureSessionId session_id,
@@ -109,13 +111,13 @@ class CONTENT_EXPORT VideoCaptureImpl
     VideoCaptureStateUpdateCB state_update_cb;
     VideoCaptureDeliverFrameCB deliver_frame_cb;
   };
-  typedef std::map<int, ClientInfo> ClientInfoMap;
+  using ClientInfoMap = std::map<int, ClientInfo>;
 
-  typedef base::Callback<void(const gpu::SyncToken& sync_token,
-                              double consumer_resource_utilization)>
-      BufferFinishedCallback;
+  using BufferFinishedCallback =
+      base::Callback<void(const gpu::SyncToken& sync_token,
+                          double consumer_resource_utilization)>;
 
-  // VideoCaptureMessageFilter::Delegate interface.
+  // VideoCaptureMessageFilter::Delegate interface implementation.
   void OnBufferCreated(base::SharedMemoryHandle handle,
                        int length,
                        int buffer_id) override;
@@ -127,8 +129,10 @@ class CONTENT_EXPORT VideoCaptureImpl
                         media::VideoFrame::StorageType storage_type,
                         const gfx::Size& coded_size,
                         const gfx::Rect& visible_rect) override;
-  void OnStateChanged(VideoCaptureState state) override;
   void OnDelegateAdded(int32_t device_id) override;
+
+  // mojom::VideoCaptureObserver implementation.
+  void OnStateChanged(mojom::VideoCaptureState state) override;
 
   // Sends an IPC message to browser process when all clients are done with the
   // buffer.
@@ -168,6 +172,8 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   mojom::VideoCaptureHostAssociatedPtr video_capture_host_;
   mojom::VideoCaptureHost* video_capture_host_for_testing_;
+
+  mojo::Binding<mojom::VideoCaptureObserver> observer_binding_;
 
   // Buffers available for sending to the client.
   typedef std::map<int32_t, scoped_refptr<ClientBuffer>> ClientBufferMap;

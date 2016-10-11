@@ -48,10 +48,6 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
                                   const gfx::Size& coded_size,
                                   const gfx::Rect& visible_rect) = 0;
 
-    // Called when state of a video capture device has changed in the browser
-    // process.
-    virtual void OnStateChanged(VideoCaptureState state) = 0;
-
     // Called when the delegate has been added to filter's delegate list.
     // |device_id| is the device id for the delegate.
     virtual void OnDelegateAdded(int32_t device_id) = 0;
@@ -97,9 +93,6 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
 
   // Receive a filled buffer from browser process.
   void OnBufferReceived(const VideoCaptureMsg_BufferReady_Params& params);
-
-  // State of browser process' video capture device has changed.
-  void OnDeviceStateChanged(int device_id, VideoCaptureState state);
 
   // Finds the delegate associated with |device_id|, NULL if not found.
   Delegate* find_delegate(int device_id) const;

@@ -64,7 +64,8 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
  private:
   void Start(int32_t device_id,
              int32_t session_id,
-             const media::VideoCaptureParams& params) override {
+             const media::VideoCaptureParams& params,
+             mojom::VideoCaptureObserverPtr observer) override {
     // For every Start(), expect a corresponding Stop() call.
     EXPECT_CALL(*this, Stop(_));
   }
@@ -80,6 +81,8 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
   }
 
   MOCK_METHOD1(RequestRefreshFrame, void(int32_t));
+  MOCK_METHOD4(ReleaseBuffer,
+               void(int32_t, int32_t, const gpu::SyncToken&, double));
   MOCK_METHOD3(GetDeviceSupportedFormats,
                void(int32_t,
                     int32_t,

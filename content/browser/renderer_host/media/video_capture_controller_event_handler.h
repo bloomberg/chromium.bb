@@ -22,6 +22,7 @@ typedef int VideoCaptureControllerID;
 // VideoCaptureControllerEventHandler is the interface for
 // VideoCaptureController to notify clients about the events such as
 // BufferReady, FrameInfo, Error, etc.
+// TODO(mcasas): https://crbug.com/654176 merge back into VideoCaptureController
 class CONTENT_EXPORT VideoCaptureControllerEventHandler {
  public:
   // An Error has occurred in the VideoCaptureDevice.

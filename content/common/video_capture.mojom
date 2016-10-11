@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "gpu/ipc/common/sync_token.mojom";
 import "services/video_capture/public/interfaces/video_capture_device_proxy.mojom";
 import "services/video_capture/public/interfaces/video_capture_format.mojom";
 
@@ -13,12 +14,30 @@ struct VideoCaptureParams {
   video_capture.mojom.PowerLineFrequency power_line_frequency;
 };
 
-interface VideoCaptureHost {
-  // TODO(mcasas): Migrate the rest of the messages, https://crbug.com/651897.
+enum VideoCaptureState {
+  STARTED,
+  PAUSED,
+  RESUMED,
+  STOPPED,
+  FAILED,
+  ENDED,
+};
 
+// Interface for notifications from Browser/Host back to Renderer/Client. This
+// interface is used between VideoCaptureHost.Start() and Stop().
+interface VideoCaptureObserver {
+  // Gets notigied about a VideoCaptureState update.
+  OnStateChanged(VideoCaptureState state);
+
+// TODO(mcasas): Migrate the rest of the messages, https://crbug.com/651897.
+};
+
+interface VideoCaptureHost {
   // Start the |session_id| session with |params|. The video capture will be
   // identified as |device_id|, a new id picked by the renderer process.
-  Start(int32 device_id, int32 session_id, VideoCaptureParams params);
+  // |observer| will be used for notifications.
+  Start(int32 device_id, int32 session_id, VideoCaptureParams params,
+        VideoCaptureObserver observer);
 
   // Closes the video capture specified by |device_id|.
   Stop(int32 device_id);
@@ -32,6 +51,11 @@ interface VideoCaptureHost {
   // Requests that the video capturer send a frame "soon" (e.g., to resolve
   // picture loss or quality issues).
   RequestRefreshFrame(int32 device_id);
+
+  // Indicates that a renderer has finished using a previously shared buffer.
+  ReleaseBuffer(int32 device_id, int32 buffer_id,
+                gpu.mojom.SyncToken sync_token,
+                double consumer_resource_utilization);
 
   // Get the formats supported by a device referenced by |session_id|.
   GetDeviceSupportedFormats(int32 device_id, int32 session_id)

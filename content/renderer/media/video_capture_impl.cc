@@ -59,6 +59,7 @@ VideoCaptureImpl::VideoCaptureImpl(
       device_id_(0),
       session_id_(session_id),
       video_capture_host_for_testing_(nullptr),
+      observer_binding_(this),
       state_(VIDEO_CAPTURE_STATE_STOPPED),
       io_task_runner_(std::move(io_task_runner)),
       weak_factory_(this) {
@@ -99,7 +100,7 @@ void VideoCaptureImpl::StartCapture(
   } else if (clients_pending_on_filter_.count(client_id) ||
              clients_pending_on_restart_.count(client_id) ||
              clients_.count(client_id)) {
-    LOG(FATAL) << "This client has already started.";
+    DLOG(FATAL) << __func__ << " This client has already started.";
   } else if (!device_id_) {
     clients_pending_on_filter_[client_id] = client_info;
   } else {
@@ -114,19 +115,17 @@ void VideoCaptureImpl::StartCapture(
                 params.resolution_change_policy);
     } else if (state_ == VIDEO_CAPTURE_STATE_STOPPING) {
       clients_pending_on_restart_[client_id] = client_info;
-      DVLOG(1) << "StartCapture: Got new resolution "
-               << params.requested_format.frame_size.ToString()
-               << " during stopping.";
+      DVLOG(1) << __func__ << " Got new resolution while stopping: "
+               << params.requested_format.frame_size.ToString();
     } else {
       clients_[client_id] = client_info;
       if (state_ == VIDEO_CAPTURE_STATE_STARTED)
         return;
       params_ = params;
-      if (params_.requested_format.frame_rate >
-          media::limits::kMaxFramesPerSecond) {
-        params_.requested_format.frame_rate =
-            media::limits::kMaxFramesPerSecond;
-      }
+      params_.requested_format.frame_rate =
+          std::min(params_.requested_format.frame_rate,
+                   static_cast<float>(media::limits::kMaxFramesPerSecond));
+
       DVLOG(1) << "StartCapture: starting with first resolution "
                << params_.requested_format.frame_size.ToString();
       StartCaptureInternal();
@@ -222,15 +221,14 @@ void VideoCaptureImpl::OnBufferReceived(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  // Crash in debug builds since the host should not have provided a buffer
-  // with an unsupported pixel format or storage type.
   DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
-  DCHECK(storage_type == media::VideoFrame::STORAGE_SHMEM);
+  DCHECK_EQ(media::VideoFrame::STORAGE_SHMEM, storage_type);
+
   if (state_ != VIDEO_CAPTURE_STATE_STARTED ||
       pixel_format != media::PIXEL_FORMAT_I420 ||
       storage_type != media::VideoFrame::STORAGE_SHMEM) {
-    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id,
-                                             gpu::SyncToken(), -1.0));
+    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
+                                         gpu::SyncToken(), -1.0);
     return;
   }
 
@@ -270,8 +268,8 @@ void VideoCaptureImpl::OnBufferReceived(
           buffer->buffer_size(), buffer->buffer()->handle(),
           0 /* shared_memory_offset */, timestamp);
   if (!frame) {
-    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id,
-                                             gpu::SyncToken(), -1.0));
+    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
+                                         gpu::SyncToken(), -1.0);
     return;
   }
 
@@ -291,59 +289,6 @@ void VideoCaptureImpl::OnBufferReceived(
     client.second.deliver_frame_cb.Run(frame, reference_time);
 }
 
-void VideoCaptureImpl::OnClientBufferFinished(
-    int buffer_id,
-    const scoped_refptr<ClientBuffer>& /* ignored_buffer */,
-    const gpu::SyncToken& release_sync_token,
-    double consumer_resource_utilization) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id,
-                                           release_sync_token,
-                                           consumer_resource_utilization));
-}
-
-void VideoCaptureImpl::OnStateChanged(VideoCaptureState state) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-  switch (state) {
-    case VIDEO_CAPTURE_STATE_STARTED:
-      // Camera has started in the browser process. Since we have already
-      // told all clients that we have started there's nothing to do.
-      break;
-    case VIDEO_CAPTURE_STATE_STOPPED:
-      state_ = VIDEO_CAPTURE_STATE_STOPPED;
-      DVLOG(1) << "OnStateChanged: stopped!, device_id = " << device_id_;
-      client_buffers_.clear();
-      weak_factory_.InvalidateWeakPtrs();
-      if (!clients_.empty() || !clients_pending_on_restart_.empty())
-        RestartCapture();
-      break;
-    case VIDEO_CAPTURE_STATE_PAUSED:
-    case VIDEO_CAPTURE_STATE_RESUMED:
-      for (const auto& client : clients_)
-        client.second.state_update_cb.Run(state);
-      break;
-    case VIDEO_CAPTURE_STATE_ERROR:
-      DVLOG(1) << "OnStateChanged: error!, device_id = " << device_id_;
-      for (const auto& client : clients_)
-        client.second.state_update_cb.Run(VIDEO_CAPTURE_STATE_ERROR);
-      clients_.clear();
-      state_ = VIDEO_CAPTURE_STATE_ERROR;
-      break;
-    case VIDEO_CAPTURE_STATE_ENDED:
-      DVLOG(1) << "OnStateChanged: ended!, device_id = " << device_id_;
-      for (const auto& client : clients_) {
-        // We'll only notify the client that the stream has stopped.
-        client.second.state_update_cb.Run(VIDEO_CAPTURE_STATE_STOPPED);
-      }
-      clients_.clear();
-      state_ = VIDEO_CAPTURE_STATE_ENDED;
-      break;
-    default:
-      break;
-  }
-}
-
 void VideoCaptureImpl::OnDelegateAdded(int32_t device_id) {
   DVLOG(1) << __func__ << " " << device_id;
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -357,6 +302,56 @@ void VideoCaptureImpl::OnDelegateAdded(int32_t device_id) {
     StartCapture(client_id, client_info.params, client_info.state_update_cb,
                  client_info.deliver_frame_cb);
   }
+}
+
+void VideoCaptureImpl::OnStateChanged(mojom::VideoCaptureState state) {
+  DVLOG(1) << __func__ << " state: " << state;
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  switch (state) {
+    case mojom::VideoCaptureState::STARTED:
+      // Capture has started in the browser process. Since we have already
+      // told all clients that we have started there's nothing to do.
+      break;
+    case mojom::VideoCaptureState::STOPPED:
+      state_ = VIDEO_CAPTURE_STATE_STOPPED;
+      client_buffers_.clear();
+      weak_factory_.InvalidateWeakPtrs();
+      if (!clients_.empty() || !clients_pending_on_restart_.empty())
+        RestartCapture();
+      break;
+    case mojom::VideoCaptureState::PAUSED:
+      for (const auto& client : clients_)
+        client.second.state_update_cb.Run(VIDEO_CAPTURE_STATE_PAUSED);
+      break;
+    case mojom::VideoCaptureState::RESUMED:
+      for (const auto& client : clients_)
+        client.second.state_update_cb.Run(VIDEO_CAPTURE_STATE_RESUMED);
+      break;
+    case mojom::VideoCaptureState::FAILED:
+      for (const auto& client : clients_)
+        client.second.state_update_cb.Run(VIDEO_CAPTURE_STATE_ERROR);
+      clients_.clear();
+      state_ = VIDEO_CAPTURE_STATE_ERROR;
+      break;
+    case mojom::VideoCaptureState::ENDED:
+      // We'll only notify the client that the stream has stopped.
+      for (const auto& client : clients_)
+        client.second.state_update_cb.Run(VIDEO_CAPTURE_STATE_STOPPED);
+      clients_.clear();
+      state_ = VIDEO_CAPTURE_STATE_ENDED;
+      break;
+  }
+}
+
+void VideoCaptureImpl::OnClientBufferFinished(
+    int buffer_id,
+    const scoped_refptr<ClientBuffer>& /* ignored_buffer */,
+    const gpu::SyncToken& release_sync_token,
+    double consumer_resource_utilization) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  GetVideoCaptureHost()->ReleaseBuffer(
+      device_id_, buffer_id, release_sync_token, consumer_resource_utilization);
 }
 
 void VideoCaptureImpl::StopDevice() {
@@ -384,8 +379,7 @@ void VideoCaptureImpl::RestartCapture() {
         height, client.second.params.requested_format.frame_size.height());
   }
   params_.requested_format.frame_size.SetSize(width, height);
-  DVLOG(1) << "RestartCapture, "
-           << params_.requested_format.frame_size.ToString();
+  DVLOG(1) << __func__ << " " << params_.requested_format.frame_size.ToString();
   StartCaptureInternal();
 }
 
@@ -393,7 +387,8 @@ void VideoCaptureImpl::StartCaptureInternal() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(device_id_);
 
-  GetVideoCaptureHost()->Start(device_id_, session_id_, params_);
+  GetVideoCaptureHost()->Start(device_id_, session_id_, params_,
+                               observer_binding_.CreateInterfacePtrAndBind());
   state_ = VIDEO_CAPTURE_STATE_STARTED;
 }
 

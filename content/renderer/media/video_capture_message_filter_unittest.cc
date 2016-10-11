@@ -45,7 +45,6 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
                     media::VideoFrame::StorageType storage_type,
                     const gfx::Size& coded_size,
                     const gfx::Rect& visible_rect));
-  MOCK_METHOD1(OnStateChanged, void(VideoCaptureState state));
 
   void OnDelegateAdded(int32_t device_id) override {
     ASSERT_TRUE(device_id != 0);
@@ -80,13 +79,6 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   MockVideoCaptureDelegate delegate;
   filter->AddDelegate(&delegate);
   ASSERT_EQ(1, delegate.device_id());
-
-  // VideoCaptureMsg_StateChanged
-  EXPECT_CALL(delegate, OnStateChanged(VIDEO_CAPTURE_STATE_STARTED));
-  filter->OnMessageReceived(
-      VideoCaptureMsg_StateChanged(delegate.device_id(),
-                                   VIDEO_CAPTURE_STATE_STARTED));
-  Mock::VerifyAndClearExpectations(&delegate);
 
   // VideoCaptureMsg_NewBuffer
 #if defined(OS_WIN)
@@ -156,29 +148,9 @@ TEST(VideoCaptureMessageFilterTest, Delegates) {
   ASSERT_EQ(1, delegate1.device_id());
   ASSERT_EQ(2, delegate2.device_id());
 
-  // Send an IPC message. Make sure the correct delegate gets called.
-  EXPECT_CALL(delegate1, OnStateChanged(VIDEO_CAPTURE_STATE_STARTED));
-  filter->OnMessageReceived(
-      VideoCaptureMsg_StateChanged(delegate1.device_id(),
-                                   VIDEO_CAPTURE_STATE_STARTED));
-  Mock::VerifyAndClearExpectations(&delegate1);
-
-  EXPECT_CALL(delegate2, OnStateChanged(VIDEO_CAPTURE_STATE_STARTED));
-  filter->OnMessageReceived(
-      VideoCaptureMsg_StateChanged(delegate2.device_id(),
-                                   VIDEO_CAPTURE_STATE_STARTED));
-  Mock::VerifyAndClearExpectations(&delegate2);
-
   // Remove the delegates. Make sure they won't get called.
   filter->RemoveDelegate(&delegate1);
-  filter->OnMessageReceived(
-      VideoCaptureMsg_StateChanged(delegate1.device_id(),
-                                   VIDEO_CAPTURE_STATE_ENDED));
-
   filter->RemoveDelegate(&delegate2);
-  filter->OnMessageReceived(
-      VideoCaptureMsg_StateChanged(delegate2.device_id(),
-                                   VIDEO_CAPTURE_STATE_ENDED));
 }
 
 }  // namespace content

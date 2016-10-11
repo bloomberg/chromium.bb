@@ -46,6 +46,11 @@ void VideoCaptureHost::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
+bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message) {
+  NOTREACHED() << __func__ << " should not be receiving messages";
+  return true;
+}
+
 void VideoCaptureHost::OnError(VideoCaptureControllerID controller_id) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -109,8 +114,11 @@ void VideoCaptureHost::DoError(VideoCaptureControllerID controller_id) {
   if (controllers_.find(controller_id) == controllers_.end())
     return;
 
-  Send(new VideoCaptureMsg_StateChanged(controller_id,
-                                        VIDEO_CAPTURE_STATE_ERROR));
+  if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
+    device_id_to_observer_map_[controller_id]->OnStateChanged(
+        mojom::VideoCaptureState::FAILED);
+  }
+
   DeleteVideoCaptureController(controller_id, true);
 }
 
@@ -120,51 +128,30 @@ void VideoCaptureHost::DoEnded(VideoCaptureControllerID controller_id) {
   if (controllers_.find(controller_id) == controllers_.end())
     return;
 
-  Send(new VideoCaptureMsg_StateChanged(controller_id,
-                                        VIDEO_CAPTURE_STATE_ENDED));
-  DeleteVideoCaptureController(controller_id, false);
-}
-
-bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(VideoCaptureHost, message)
-    IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_BufferReady,
-                        OnRendererFinishedWithBuffer)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
-void VideoCaptureHost::OnRendererFinishedWithBuffer(
-    int device_id,
-    int buffer_id,
-    const gpu::SyncToken& sync_token,
-    double consumer_resource_utilization) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  VideoCaptureControllerID controller_id(device_id);
-  auto it = controllers_.find(controller_id);
-  if (it != controllers_.end()) {
-    const base::WeakPtr<VideoCaptureController>& controller = it->second;
-    if (controller) {
-      controller->ReturnBuffer(controller_id, this, buffer_id, sync_token,
-                               consumer_resource_utilization);
-    }
+  if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
+    device_id_to_observer_map_[controller_id]->OnStateChanged(
+        mojom::VideoCaptureState::ENDED);
   }
+
+  DeleteVideoCaptureController(controller_id, false);
 }
 
 void VideoCaptureHost::Start(int32_t device_id,
                              int32_t session_id,
-                             const media::VideoCaptureParams& params) {
+                             const media::VideoCaptureParams& params,
+                             mojom::VideoCaptureObserverPtr observer) {
   DVLOG(1) << __func__ << " session_id=" << session_id
            << ", device_id=" << device_id << ", format="
            << media::VideoCaptureFormat::ToString(params.requested_format);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(!base::ContainsKey(device_id_to_observer_map_, device_id));
+  device_id_to_observer_map_[device_id] = std::move(observer);
+
   const VideoCaptureControllerID controller_id(device_id);
   if (controllers_.find(controller_id) != controllers_.end()) {
-    Send(new VideoCaptureMsg_StateChanged(device_id,
-                                          VIDEO_CAPTURE_STATE_ERROR));
+    device_id_to_observer_map_[device_id]->OnStateChanged(
+        mojom::VideoCaptureState::STARTED);
     return;
   }
 
@@ -184,8 +171,12 @@ void VideoCaptureHost::Stop(int32_t device_id) {
 
   VideoCaptureControllerID controller_id(device_id);
 
-  Send(new VideoCaptureMsg_StateChanged(device_id,
-                                        VIDEO_CAPTURE_STATE_STOPPED));
+  if (base::ContainsKey(device_id_to_observer_map_, device_id)) {
+    device_id_to_observer_map_[device_id]->OnStateChanged(
+        mojom::VideoCaptureState::STOPPED);
+  }
+  device_id_to_observer_map_.erase(controller_id);
+
   DeleteVideoCaptureController(controller_id, false);
 }
 
@@ -200,7 +191,10 @@ void VideoCaptureHost::Pause(int32_t device_id) {
 
   media_stream_manager_->video_capture_manager()->PauseCaptureForClient(
       it->second.get(), controller_id, this);
-  Send(new VideoCaptureMsg_StateChanged(device_id, VIDEO_CAPTURE_STATE_PAUSED));
+  if (base::ContainsKey(device_id_to_observer_map_, device_id)) {
+    device_id_to_observer_map_[device_id]->OnStateChanged(
+        mojom::VideoCaptureState::PAUSED);
+  }
 }
 
 void VideoCaptureHost::Resume(int32_t device_id,
@@ -216,8 +210,10 @@ void VideoCaptureHost::Resume(int32_t device_id,
 
   media_stream_manager_->video_capture_manager()->ResumeCaptureForClient(
       session_id, params, it->second.get(), controller_id, this);
-  Send(new VideoCaptureMsg_StateChanged(device_id,
-                                        VIDEO_CAPTURE_STATE_RESUMED));
+  if (base::ContainsKey(device_id_to_observer_map_, device_id)) {
+    device_id_to_observer_map_[device_id]->OnStateChanged(
+        mojom::VideoCaptureState::RESUMED);
+  }
 }
 
 void VideoCaptureHost::RequestRefreshFrame(int32_t device_id) {
@@ -232,6 +228,24 @@ void VideoCaptureHost::RequestRefreshFrame(int32_t device_id) {
   if (VideoCaptureController* controller = it->second.get()) {
     media_stream_manager_->video_capture_manager()
         ->RequestRefreshFrameForClient(controller);
+  }
+}
+
+void VideoCaptureHost::ReleaseBuffer(int32_t device_id,
+                                     int32_t buffer_id,
+                                     const gpu::SyncToken& sync_token,
+                                     double consumer_resource_utilization) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  VideoCaptureControllerID controller_id(device_id);
+  auto it = controllers_.find(controller_id);
+  if (it == controllers_.end())
+    return;
+
+  const base::WeakPtr<VideoCaptureController>& controller = it->second;
+  if (controller) {
+    controller->ReturnBuffer(controller_id, this, buffer_id, sync_token,
+                             consumer_resource_utilization);
   }
 }
 
@@ -278,10 +292,17 @@ void VideoCaptureHost::OnControllerAdded(
   }
 
   if (!controller) {
-    Send(new VideoCaptureMsg_StateChanged(device_id,
-                                          VIDEO_CAPTURE_STATE_ERROR));
+    if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
+      device_id_to_observer_map_[device_id]->OnStateChanged(
+          mojom::VideoCaptureState::FAILED);
+    }
     controllers_.erase(controller_id);
     return;
+  }
+
+  if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
+    device_id_to_observer_map_[device_id]->OnStateChanged(
+        mojom::VideoCaptureState::STARTED);
   }
 
   DCHECK(!it->second);

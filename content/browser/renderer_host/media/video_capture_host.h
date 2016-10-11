@@ -13,21 +13,21 @@
 //   Renderer                             VideoCaptureHost
 //      |                                        |
 //      |  --------- StartCapture -------->      |
-//      | < VideoCaptureMsg_StateChanged         |
-//      |        (VIDEO_CAPTURE_STATE_STARTED)   |
+//      | <------ VideoCaptureObserver   ------  |
+//      |         ::StateChanged(STARTED)        |
 //      | < VideoCaptureMsg_NewBuffer(1)         |
 //      | < VideoCaptureMsg_NewBuffer(2)         |
 //      | < VideoCaptureMsg_NewBuffer(3)         |
 //      |                                        |
 //      | < VideoCaptureMsg_BufferReady(1)       |
 //      | < VideoCaptureMsg_BufferReady(2)       |
-//      | VideoCaptureHostMsg_BufferReady(1) >   |
+//      | -------- ReleaseBuffer(1) --------->   |
 //      | < VideoCaptureMsg_BufferReady(3)       |
-//      | VideoCaptureHostMsg_BufferReady(2) >   |
+//      | -------- ReleaseBuffer(2) --------->   |
 //      | < VideoCaptureMsg_BufferReady(1)       |
-//      | VideoCaptureHostMsg_BufferReady(3) >   |
+//      | -------- ReleaseBuffer(3) --------->   |
 //      | < VideoCaptureMsg_BufferReady(2)       |
-//      | VideoCaptureHostMsg_BufferReady(1) >   |
+//      | -------- ReleaseBuffer(1) --------->   |
 //      |             ...                        |
 //      | < VideoCaptureMsg_BufferReady(3)       |
 //      |                                        |
@@ -35,7 +35,7 @@
 //      | < VideoCaptureMsg_FreeBuffer(1)        |  Buffers are re-allocated
 //      | < VideoCaptureMsg_NewBuffer(4)         |  with a larger size, as
 //      | < VideoCaptureMsg_BufferReady(4)       |  needed.
-//      | VideoCaptureHostMsg_BufferReady(2) >   |
+//      | -------- ReleaseBuffer(2) --------->   |
 //      | < VideoCaptureMsg_FreeBuffer(2)        |
 //      | < VideoCaptureMsg_NewBuffer(5)         |
 //      | < VideoCaptureMsg_BufferReady(5)       |
@@ -43,9 +43,9 @@
 //      |                                        |
 //      | < VideoCaptureMsg_BufferReady          |
 //      |  --------- StopCapture --------->      |
-//      | VideoCaptureHostMsg_BufferReady >      |
-//      | < VideoCaptureMsg_StateChanged         |
-//      |         (VIDEO_CAPTURE_STATE_STOPPED)  |
+//      | -------- ReleaseBuffer(n) --------->   |
+//      | <------ VideoCaptureObserver   ------  |
+//      |         ::StateChanged(STOPPED)        |
 //      v                                        v
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_HOST_H_
@@ -105,22 +105,21 @@ class CONTENT_EXPORT VideoCaptureHost
 
   ~VideoCaptureHost() override;
 
-  // IPC message handlers.
-  void OnRendererFinishedWithBuffer(int device_id,
-                                    int buffer_id,
-                                    const gpu::SyncToken& sync_token,
-                                    double consumer_resource_utilization);
-
   // mojom::VideoCaptureHost implementation
   void Start(int32_t device_id,
              int32_t session_id,
-             const media::VideoCaptureParams& params) override;
+             const media::VideoCaptureParams& params,
+             mojom::VideoCaptureObserverPtr observer) override;
   void Stop(int32_t device_id) override;
   void Pause(int32_t device_id) override;
   void Resume(int32_t device_id,
               int32_t session_id,
               const media::VideoCaptureParams& params) override;
   void RequestRefreshFrame(int32_t device_id) override;
+  void ReleaseBuffer(int32_t device_id,
+                     int32_t buffer_id,
+                     const gpu::SyncToken& sync_token,
+                     double consumer_resource_utilization) override;
   void GetDeviceSupportedFormats(
       int32_t device_id,
       int32_t session_id,
@@ -146,6 +145,10 @@ class CONTENT_EXPORT VideoCaptureHost
   // the process of starting.
   std::map<VideoCaptureControllerID, base::WeakPtr<VideoCaptureController>>
       controllers_;
+
+  // VideoCaptureObservers map, each one is used and should be valid between
+  // Start() and the corresponding Stop().
+  std::map<int32_t, mojom::VideoCaptureObserverPtr> device_id_to_observer_map_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHost);
 };

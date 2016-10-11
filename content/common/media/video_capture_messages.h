@@ -9,14 +9,11 @@
 #include "ipc/ipc_message_macros.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START VideoCaptureMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(content::VideoCaptureState,
-                          content::VIDEO_CAPTURE_STATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::StorageType,
                           media::VideoFrame::STORAGE_LAST)
 
@@ -33,12 +30,6 @@ IPC_STRUCT_END()
 
 // TODO(nick): device_id in these messages is basically just a route_id. We
 // should shift to IPC_MESSAGE_ROUTED and use MessageRouter in the filter impls.
-
-// Notify the renderer process about the state update such as
-// Start/Pause/Stop.
-IPC_MESSAGE_CONTROL2(VideoCaptureMsg_StateChanged,
-                     int /* device id */,
-                     content::VideoCaptureState /* new state */)
 
 // Tell the renderer process that a new buffer is allocated for video capture.
 IPC_MESSAGE_CONTROL4(VideoCaptureMsg_NewBuffer,
@@ -57,11 +48,3 @@ IPC_MESSAGE_CONTROL2(VideoCaptureMsg_FreeBuffer,
 // send the associated VideoFrame constituent parts as IPC parameters.
 IPC_MESSAGE_CONTROL1(VideoCaptureMsg_BufferReady,
                      VideoCaptureMsg_BufferReady_Params)
-
-// Tell the browser process that the renderer has finished reading from
-// a buffer previously delivered by VideoCaptureMsg_BufferReady.
-IPC_MESSAGE_CONTROL4(VideoCaptureHostMsg_BufferReady,
-                     int /* device_id */,
-                     int /* buffer_id */,
-                     gpu::SyncToken /* sync_token */,
-                     double /* consumer_resource_utilization */)
