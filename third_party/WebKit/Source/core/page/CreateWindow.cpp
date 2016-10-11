@@ -163,6 +163,10 @@ static Frame* createWindowHelper(LocalFrame& openerFrame,
   }
 
   if (window) {
+    // JS can run inside reuseExistingWindow (via onblur), which can detach
+    // the target window.
+    if (!window->client())
+      return nullptr;
     if (request.getShouldSetOpener() == MaybeSetOpener)
       window->client()->setOpener(&openerFrame);
     return window;
