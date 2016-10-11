@@ -1493,16 +1493,17 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     }
   }
 
-  std::unique_ptr<NotesVector> notes2(new NotesVector);
-  notes2->swap(notes);
   std::unique_ptr<ClientsVector> clients2(new ClientsVector);
   clients2->swap(clients);
+  std::unique_ptr<NotesVector> notes2(new NotesVector);
+  notes2->swap(notes);
+
+  // |clients| must be deleted first because |clients| use |notes2|.
+  g_env->GetRenderingTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&Delete<ClientsVector>, base::Passed(&clients2)));
 
   g_env->GetRenderingTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&Delete<NotesVector>, base::Passed(&notes2)));
-
-  g_env->GetRenderingTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&Delete<ClientsVector>, base::Passed(&clients2)));
 
   WaitUntilIdle();
 };
