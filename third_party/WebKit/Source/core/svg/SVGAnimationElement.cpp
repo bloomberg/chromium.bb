@@ -518,11 +518,7 @@ void SVGAnimationElement::currentValuesForValuesAnimation(
 void SVGAnimationElement::startedActiveInterval() {
   m_animationValid = false;
 
-  if (!isValid())
-    return;
-  if (!targetElement())
-    return;
-  if (!hasValidAttributeType())
+  if (!isValid() || !hasValidTarget())
     return;
 
   // These validations are appropriate for all animation modes.

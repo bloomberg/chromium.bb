@@ -34,10 +34,30 @@
 
 namespace blink {
 
-using namespace SVGNames;
+namespace {
+
+bool targetCanHaveMotionTransform(const SVGElement& target) {
+  // We don't have a special attribute name to verify the animation type. Check
+  // the element name instead.
+  if (!target.isSVGGraphicsElement())
+    return false;
+  // Spec: SVG 1.1 section 19.2.15
+  // FIXME: svgTag is missing. Needs to be checked, if transforming <svg> could
+  // cause problems.
+  return isSVGGElement(target) || isSVGDefsElement(target) ||
+         isSVGUseElement(target) || isSVGImageElement(target) ||
+         isSVGSwitchElement(target) || isSVGPathElement(target) ||
+         isSVGRectElement(target) || isSVGCircleElement(target) ||
+         isSVGEllipseElement(target) || isSVGLineElement(target) ||
+         isSVGPolylineElement(target) || isSVGPolygonElement(target) ||
+         isSVGTextElement(target) || isSVGClipPathElement(target) ||
+         isSVGMaskElement(target) || isSVGAElement(target) ||
+         isSVGForeignObjectElement(target);
+}
+}
 
 inline SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
-    : SVGAnimationElement(animateMotionTag, document),
+    : SVGAnimationElement(SVGNames::animateMotionTag, document),
       m_hasToPointAtEndOfDuration(false) {
   setCalcMode(CalcModePaced);
 }
@@ -46,34 +66,9 @@ DEFINE_NODE_FACTORY(SVGAnimateMotionElement)
 
 SVGAnimateMotionElement::~SVGAnimateMotionElement() {}
 
-bool SVGAnimateMotionElement::hasValidAttributeType() {
-  SVGElement* targetElement = this->targetElement();
-  if (!targetElement)
-    return false;
-
-  // We don't have a special attribute name to verify the animation type. Check
-  // the element name instead.
-  if (!targetElement->isSVGGraphicsElement())
-    return false;
-  // Spec: SVG 1.1 section 19.2.15
-  // FIXME: svgTag is missing. Needs to be checked, if transforming <svg> could
-  // cause problems.
-  return (
-      isSVGGElement(*targetElement) || isSVGDefsElement(*targetElement) ||
-      isSVGUseElement(*targetElement) || isSVGImageElement(*targetElement) ||
-      isSVGSwitchElement(*targetElement) || isSVGPathElement(*targetElement) ||
-      isSVGRectElement(*targetElement) || isSVGCircleElement(*targetElement) ||
-      isSVGEllipseElement(*targetElement) || isSVGLineElement(*targetElement) ||
-      isSVGPolylineElement(*targetElement) ||
-      isSVGPolygonElement(*targetElement) || isSVGTextElement(*targetElement) ||
-      isSVGClipPathElement(*targetElement) ||
-      isSVGMaskElement(*targetElement) || isSVGAElement(*targetElement) ||
-      isSVGForeignObjectElement(*targetElement));
-}
-
-bool SVGAnimateMotionElement::hasValidAttributeName() {
-  // AnimateMotion does not use attributeName so it is always valid.
-  return true;
+bool SVGAnimateMotionElement::hasValidTarget() {
+  return SVGAnimationElement::hasValidTarget() &&
+         targetCanHaveMotionTransform(*targetElement());
 }
 
 void SVGAnimateMotionElement::parseAttribute(const QualifiedName& name,
@@ -151,10 +146,8 @@ static bool parsePoint(const String& string, FloatPoint& point) {
 }
 
 void SVGAnimateMotionElement::resetAnimatedType() {
-  if (!hasValidAttributeType())
-    return;
   SVGElement* targetElement = this->targetElement();
-  if (!targetElement)
+  if (!targetElement || !targetCanHaveMotionTransform(*targetElement))
     return;
   if (AffineTransform* transform = targetElement->animateMotionTransform())
     transform->makeIdentity();

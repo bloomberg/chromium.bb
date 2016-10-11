@@ -325,10 +325,6 @@ void SVGSMILElement::removedFrom(ContainerNode* rootParent) {
   SVGElement::removedFrom(rootParent);
 }
 
-bool SVGSMILElement::hasValidAttributeName() {
-  return attributeName() != anyQName();
-}
-
 SMILTime SVGSMILElement::parseOffsetValue(const String& data) {
   bool ok;
   double result = 0;
@@ -1322,11 +1318,14 @@ void SVGSMILElement::dispatchPendingEvent(const AtomicString& eventType) {
   }
 }
 
-void SVGSMILElement::schedule() {
-  ASSERT(!m_isScheduled);
+bool SVGSMILElement::hasValidTarget() {
+  return targetElement() && targetElement()->inActiveDocument();
+}
 
-  if (!m_timeContainer || !m_targetElement || !hasValidAttributeName() ||
-      !hasValidAttributeType() || !m_targetElement->inActiveDocument())
+void SVGSMILElement::schedule() {
+  DCHECK(!m_isScheduled);
+
+  if (!m_timeContainer || !hasValidTarget())
     return;
 
   m_timeContainer->schedule(this, m_targetElement, m_attributeName);
@@ -1337,8 +1336,8 @@ void SVGSMILElement::unscheduleIfScheduled() {
   if (!m_isScheduled)
     return;
 
-  ASSERT(m_timeContainer);
-  ASSERT(m_targetElement);
+  DCHECK(m_timeContainer);
+  DCHECK(m_targetElement);
   m_timeContainer->unschedule(this, m_targetElement, m_attributeName);
   m_isScheduled = false;
 }

@@ -55,8 +55,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void removedFrom(ContainerNode*) override;
 
-  virtual bool hasValidAttributeType() = 0;
-  virtual bool hasValidAttributeName();
+  virtual bool hasValidTarget();
   virtual void animationAttributeChanged() = 0;
 
   SMILTimeContainer* timeContainer() const { return m_timeContainer.get(); }

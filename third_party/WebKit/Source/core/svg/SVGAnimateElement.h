@@ -105,7 +105,9 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   bool hasInvalidCSSAttributeType() const {
     return m_hasInvalidCSSAttributeType;
   }
-  bool hasValidAttributeType() override;
+  bool hasValidTarget() final;
+  bool hasValidAttributeName() const;
+  virtual bool hasValidAttributeType();
 
   SVGPropertyBase* adjustForInheritance(SVGPropertyBase*,
                                         AnimatedPropertyValueType) const;

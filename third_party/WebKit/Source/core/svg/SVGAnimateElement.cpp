@@ -129,11 +129,18 @@ AnimatedPropertyType SVGAnimateElement::animatedPropertyType() {
   return m_animator.type();
 }
 
-bool SVGAnimateElement::hasValidAttributeType() {
-  SVGElement* targetElement = this->targetElement();
-  if (!targetElement)
-    return false;
+bool SVGAnimateElement::hasValidTarget() {
+  return SVGAnimationElement::hasValidTarget() && hasValidAttributeName() &&
+         hasValidAttributeType();
+}
 
+bool SVGAnimateElement::hasValidAttributeName() const {
+  return attributeName() != anyQName();
+}
+
+bool SVGAnimateElement::hasValidAttributeType() {
+  if (!targetElement())
+    return false;
   return animatedPropertyType() != AnimatedUnknown &&
          !hasInvalidCSSAttributeType();
 }
@@ -141,9 +148,7 @@ bool SVGAnimateElement::hasValidAttributeType() {
 SVGAnimateElement::ShouldApplyAnimationType
 SVGAnimateElement::shouldApplyAnimation(SVGElement* targetElement,
                                         const QualifiedName& attributeName) {
-  if (!hasValidAttributeType() || attributeName == anyQName() ||
-      !targetElement || !targetElement->inActiveDocument() ||
-      !targetElement->parentNode())
+  if (!hasValidTarget() || !targetElement->parentNode())
     return DontApplyAnimation;
 
   // Always animate CSS properties using the ApplyCSSAnimation code path,

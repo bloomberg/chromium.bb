@@ -38,8 +38,7 @@ class SVGAnimateMotionElement final : public SVGAnimationElement {
  private:
   explicit SVGAnimateMotionElement(Document&);
 
-  bool hasValidAttributeType() override;
-  bool hasValidAttributeName() override;
+  bool hasValidTarget() override;
 
   void parseAttribute(const QualifiedName&,
                       const AtomicString&,
