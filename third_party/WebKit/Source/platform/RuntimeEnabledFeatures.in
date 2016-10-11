@@ -69,7 +69,7 @@ CSSPaintAPI status=experimental, depends_on=CSSTypedOM, depends_on=Worklet
 CSSSnapSize status=experimental
 CSSStickyPosition status=experimental
 CSSTouchActionPanDirections status=stable
-CSSTouchActionPinchZoom status=experimental
+CSSTouchActionPinchZoom status=stable
 CSSTypedOM status=experimental
 CSSVariables2 status=experimental
 CSSViewport status=experimental
