@@ -166,6 +166,8 @@ BEGIN_INTERFACE(URLLoaderInterface, PPB_URLLoader_1_0,
   METHOD1(URLLoaderInterface, PP_Resource, GetResponseInfo, PP_Resource)
   METHOD4(URLLoaderInterface, int32_t, ReadResponseBody, PP_Resource, void*,
           int32_t, PP_CompletionCallback)
+  METHOD2(URLLoaderInterface, int32_t, FinishStreamingToFile, PP_Resource,
+          PP_CompletionCallback)
   METHOD1(URLLoaderInterface, void, Close, PP_Resource)
 END_INTERFACE(URLLoaderInterface, PPB_URLLoader_1_0)
 
@@ -175,6 +177,8 @@ BEGIN_INTERFACE(URLRequestInfoInterface, PPB_URLRequestInfo_1_0,
   METHOD1(URLRequestInfoInterface, PP_Resource, Create, PP_Instance)
   METHOD3(URLRequestInfoInterface, PP_Bool, SetProperty, PP_Resource,
           PP_URLRequestProperty, PP_Var)
+  METHOD3(URLRequestInfoInterface, PP_Bool, AppendDataToBody, PP_Resource,
+          const void*, uint32_t)
 END_INTERFACE(URLRequestInfoInterface, PPB_URLRequestInfo_1_0)
 
 /* Chrome M14 required */
@@ -182,6 +186,8 @@ BEGIN_INTERFACE(URLResponseInfoInterface, PPB_URLResponseInfo_1_0,
                 PPB_URLRESPONSEINFO_INTERFACE_1_0)
   METHOD2(URLResponseInfoInterface, PP_Var, GetProperty, PP_Resource,
           PP_URLResponseProperty)
+  METHOD1(URLResponseInfoInterface, PP_Resource, GetBodyAsFileRef,
+          PP_Resource)
 END_INTERFACE(URLResponseInfoInterface, PPB_URLResponseInfo_1_0)
 
 /* Chrome M31 required */

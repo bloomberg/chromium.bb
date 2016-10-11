@@ -76,7 +76,7 @@ class FakeURLLoaderResource : public FakeResource {
 
   FakeResourceManager* manager;  // Weak reference.
   FakeURLLoaderServer* server;
-  FakeURLLoaderEntity* entity;   // Weak reference.
+  FakeURLLoaderEntity* entity;  // Weak reference.
   PP_Resource response;
   off_t read_offset;
   off_t read_end;
@@ -188,16 +188,14 @@ void HandlePartial(FakeURLLoaderResource* loader,
 }  // namespace
 
 FakeURLLoaderEntity::FakeURLLoaderEntity(const std::string& body)
-    : body_(body), size_(body_.size()), repeat_(false) {
-}
+    : body_(body), size_(body_.size()), repeat_(false) {}
 
 // Rather than specifying the entire file, specify a string to repeat, and the
 // full length. This lets us test extremely large files without having to store
 // them in memory.
 FakeURLLoaderEntity::FakeURLLoaderEntity(const std::string& to_repeat,
                                          off_t size)
-    : body_(to_repeat), size_(size), repeat_(true) {
-}
+    : body_(to_repeat), size_(size), repeat_(true) {}
 
 size_t FakeURLLoaderEntity::Read(void* buffer, size_t count, off_t offset) {
   off_t max_read_count =
@@ -242,8 +240,7 @@ FakeURLLoaderServer::FakeURLLoaderServer()
     : max_read_size_(0),
       send_content_length_(false),
       allow_partial_(false),
-      allow_head_(true) {
-}
+      allow_head_(true) {}
 
 void FakeURLLoaderServer::Clear() {
   entity_map_.clear();
@@ -324,8 +321,7 @@ int FakeURLLoaderServer::GetError(const std::string& url) {
 
 FakeURLLoaderInterface::FakeURLLoaderInterface(
     FakeCoreInterface* core_interface)
-    : core_interface_(core_interface) {
-}
+    : core_interface_(core_interface) {}
 
 PP_Resource FakeURLLoaderInterface::Create(PP_Instance instance) {
   FakeInstanceResource* instance_resource =
@@ -339,8 +335,7 @@ PP_Resource FakeURLLoaderInterface::Create(PP_Instance instance) {
       new FakeURLLoaderServer(*instance_resource->server_template);
 
   return CREATE_RESOURCE(core_interface_->resource_manager(),
-                         FakeURLLoaderResource,
-                         loader_resource);
+                         FakeURLLoaderResource, loader_resource);
 }
 
 int32_t FakeURLLoaderInterface::Open(PP_Resource loader,
@@ -362,8 +357,7 @@ int32_t FakeURLLoaderInterface::Open(PP_Resource loader,
       new FakeURLResponseInfoResource;
   loader_resource->response =
       CREATE_RESOURCE(core_interface_->resource_manager(),
-                      FakeURLResponseInfoResource,
-                      response_resource);
+                      FakeURLResponseInfoResource, response_resource);
 
   loader_resource->entity = NULL;
   loader_resource->read_offset = 0;
@@ -447,6 +441,14 @@ int32_t FakeURLLoaderInterface::ReadResponseBody(
   return RunCompletionCallback(&callback, bytes_read);
 }
 
+int32_t FakeURLLoaderInterface::FinishStreamingToFile(
+    PP_Resource loader,
+    PP_CompletionCallback callback) {
+  // FinishStreamingToFile to be supported for classes
+  // that extends FakeURLLoaderInterface.
+  return PP_ERROR_NOTSUPPORTED;
+}
+
 void FakeURLLoaderInterface::Close(PP_Resource loader) {
   FakeURLLoaderResource* loader_resource =
       core_interface_->resource_manager()->Get<FakeURLLoaderResource>(loader);
@@ -464,8 +466,7 @@ void FakeURLLoaderInterface::Close(PP_Resource loader) {
 FakeURLRequestInfoInterface::FakeURLRequestInfoInterface(
     FakeCoreInterface* core_interface,
     FakeVarInterface* var_interface)
-    : core_interface_(core_interface), var_interface_(var_interface) {
-}
+    : core_interface_(core_interface), var_interface_(var_interface) {}
 
 PP_Resource FakeURLRequestInfoInterface::Create(PP_Instance instance) {
   FakeInstanceResource* instance_resource =
@@ -547,11 +548,17 @@ PP_Bool FakeURLRequestInfoInterface::SetProperty(PP_Resource request,
   }
 }
 
+PP_Bool FakeURLRequestInfoInterface::AppendDataToBody(PP_Resource request,
+                                                      const void* data,
+                                                      uint32_t len) {
+  // AppendDataToBody to be supported.
+  return PP_FALSE;
+}
+
 FakeURLResponseInfoInterface::FakeURLResponseInfoInterface(
     FakeCoreInterface* core_interface,
     FakeVarInterface* var_interface)
-    : core_interface_(core_interface), var_interface_(var_interface) {
-}
+    : core_interface_(core_interface), var_interface_(var_interface) {}
 
 PP_Var FakeURLResponseInfoInterface::GetProperty(
     PP_Resource response,
@@ -581,6 +588,12 @@ PP_Var FakeURLResponseInfoInterface::GetProperty(
   }
 }
 
+PP_Resource FakeURLResponseInfoInterface::GetBodyAsFileRef(
+    PP_Resource response) {
+  // GetBodyAsFileRef to be supported.
+  return PP_ERROR_NOTSUPPORTED;
+}
+
 FakePepperInterfaceURLLoader::FakePepperInterfaceURLLoader()
     : core_interface_(&resource_manager_),
       var_interface_(&var_manager_),
@@ -590,8 +603,7 @@ FakePepperInterfaceURLLoader::FakePepperInterfaceURLLoader()
   FakeInstanceResource* instance_resource = new FakeInstanceResource;
   instance_resource->server_template = &server_template_;
   instance_ = CREATE_RESOURCE(core_interface_.resource_manager(),
-                              FakeInstanceResource,
-                              instance_resource);
+                              FakeInstanceResource, instance_resource);
 }
 
 FakePepperInterfaceURLLoader::~FakePepperInterfaceURLLoader() {

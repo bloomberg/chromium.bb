@@ -120,7 +120,9 @@ int32_t FakeHtml5FsNode::SetLength(int64_t length) {
   return PP_OK;
 }
 
-void FakeHtml5FsNode::GetInfo(PP_FileInfo* out_info) { *out_info = info_; }
+void FakeHtml5FsNode::GetInfo(PP_FileInfo* out_info) {
+  *out_info = info_;
+}
 
 bool FakeHtml5FsNode::IsRegular() const {
   return info_.type == PP_FILETYPE_REGULAR;
@@ -244,8 +246,7 @@ bool FakeHtml5FsFilesystem::GetDirectoryEntries(
     return false;
 
   for (NodeMap::const_iterator iter = node_map_.begin();
-       iter != node_map_.end();
-       ++iter) {
+       iter != node_map_.end(); ++iter) {
     const Path& node_path = iter->first;
     if (node_path.find(path) == std::string::npos)
       continue;
@@ -290,8 +291,7 @@ FakeFileIoInterface::FakeFileIoInterface(FakeCoreInterface* core_interface)
 
 PP_Resource FakeFileIoInterface::Create(PP_Resource) {
   return CREATE_RESOURCE(core_interface_->resource_manager(),
-                         FakeFileIoResource,
-                         new FakeFileIoResource);
+                         FakeFileIoResource, new FakeFileIoResource);
 }
 
 int32_t FakeFileIoInterface::Open(PP_Resource file_io,
@@ -485,8 +485,7 @@ PP_Resource FakeFileRefInterface::Create(PP_Resource file_system,
     file_ref_resource->path.erase(path_len - 1);
 
   return CREATE_RESOURCE(core_interface_->resource_manager(),
-                         FakeFileRefResource,
-                         file_ref_resource);
+                         FakeFileRefResource, file_ref_resource);
 }
 
 PP_Var FakeFileRefInterface::GetName(PP_Resource file_ref) {
@@ -611,9 +610,9 @@ int32_t FakeFileRefInterface::ReadDirectoryEntries(
     FakeFileRefResource* file_ref_resource = new FakeFileRefResource;
     file_ref_resource->filesystem = directory_ref_resource->filesystem;
     file_ref_resource->path = fake_dir_entry.path;
-    PP_Resource file_ref = CREATE_RESOURCE(core_interface_->resource_manager(),
-                                           FakeFileRefResource,
-                                           file_ref_resource);
+    PP_Resource file_ref =
+        CREATE_RESOURCE(core_interface_->resource_manager(),
+                        FakeFileRefResource, file_ref_resource);
 
     dir_entries[i].file_ref = file_ref;
     dir_entries[i].file_type = fake_dir_entry.node->file_type();
@@ -678,8 +677,7 @@ PP_Resource FakeFileSystemInterface::Create(PP_Instance instance,
       *instance_resource->filesystem_template, filesystem_type);
 
   return CREATE_RESOURCE(core_interface_->resource_manager(),
-                         FakeFileSystemResource,
-                         file_system_resource);
+                         FakeFileSystemResource, file_system_resource);
 }
 
 int32_t FakeFileSystemInterface::Open(PP_Resource file_system,
@@ -721,8 +719,7 @@ void FakePepperInterfaceHtml5Fs::Init() {
   instance_resource->filesystem_template = &filesystem_template_;
 
   instance_ = CREATE_RESOURCE(core_interface_.resource_manager(),
-                              FakeInstanceResource,
-                              instance_resource);
+                              FakeInstanceResource, instance_resource);
 }
 
 FakePepperInterfaceHtml5Fs::~FakePepperInterfaceHtml5Fs() {

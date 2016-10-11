@@ -48,8 +48,7 @@ class FakeURLLoaderServer {
   bool SetBlobEntity(const std::string& url,
                      const std::string& body,
                      FakeURLLoaderEntity** out_entity);
-  bool AddError(const std::string& url,
-                int http_status_code);
+  bool AddError(const std::string& url, int http_status_code);
   FakeURLLoaderEntity* GetEntity(const std::string& url);
   // Returns 0 if the url is not in the error map.
   int GetError(const std::string& url);
@@ -100,6 +99,9 @@ class FakeURLLoaderInterface : public nacl_io::URLLoaderInterface {
                                    void* buffer,
                                    int32_t bytes_to_read,
                                    PP_CompletionCallback callback);
+  virtual int32_t FinishStreamingToFile(PP_Resource loader,
+                                        PP_CompletionCallback callback);
+
   virtual void Close(PP_Resource loader);
 
  private:
@@ -117,10 +119,13 @@ class FakeURLRequestInfoInterface : public nacl_io::URLRequestInfoInterface {
   virtual PP_Bool SetProperty(PP_Resource request,
                               PP_URLRequestProperty property,
                               PP_Var value);
+  virtual PP_Bool AppendDataToBody(PP_Resource request,
+                                   const void* data,
+                                   uint32_t len);
 
  private:
   FakeCoreInterface* core_interface_;  // Weak reference.
-  FakeVarInterface* var_interface_;  // Weak reference.
+  FakeVarInterface* var_interface_;    // Weak reference.
 
   DISALLOW_COPY_AND_ASSIGN(FakeURLRequestInfoInterface);
 };
@@ -132,10 +137,11 @@ class FakeURLResponseInfoInterface : public nacl_io::URLResponseInfoInterface {
 
   virtual PP_Var GetProperty(PP_Resource response,
                              PP_URLResponseProperty property);
+  virtual PP_Resource GetBodyAsFileRef(PP_Resource response);
 
  private:
   FakeCoreInterface* core_interface_;  // Weak reference.
-  FakeVarInterface* var_interface_;  // Weak reference.
+  FakeVarInterface* var_interface_;    // Weak reference.
 
   DISALLOW_COPY_AND_ASSIGN(FakeURLResponseInfoInterface);
 };
