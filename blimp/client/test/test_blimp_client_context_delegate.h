@@ -29,8 +29,10 @@ class TestBlimpClientContextDelegate : public BlimpClientContextDelegate {
   MOCK_METHOD2(OnAssignmentConnectionAttempted,
                void(AssignmentRequestResult, const Assignment&));
   std::unique_ptr<IdentityProvider> CreateIdentityProvider() override;
-  void OnAuthenticationError(
-      BlimpClientContextDelegate::AuthError error) override {}
+  MOCK_METHOD1(OnAuthenticationError, void(const GoogleServiceAuthError&));
+  MOCK_METHOD0(OnConnected, void());
+  MOCK_METHOD1(OnEngineDisconnected, void(int));
+  MOCK_METHOD1(OnNetworkDisconnected, void(int));
 
   FakeOAuth2TokenService* GetTokenService();
 

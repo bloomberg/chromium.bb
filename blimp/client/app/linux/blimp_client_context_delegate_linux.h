@@ -23,8 +23,10 @@ class BlimpClientContextDelegateLinux : public BlimpClientContextDelegate {
   void OnAssignmentConnectionAttempted(AssignmentRequestResult result,
                                        const Assignment& assignment) override;
   std::unique_ptr<IdentityProvider> CreateIdentityProvider() override;
-  void OnAuthenticationError(
-      BlimpClientContextDelegate::AuthError error) override;
+  void OnAuthenticationError(const GoogleServiceAuthError& error) override;
+  void OnConnected() override;
+  void OnEngineDisconnected(int result) override;
+  void OnNetworkDisconnected(int result) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlimpClientContextDelegateLinux);

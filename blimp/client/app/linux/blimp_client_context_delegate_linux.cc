@@ -5,6 +5,7 @@
 #include "base/memory/ptr_util.h"
 #include "blimp/client/app/linux/blimp_client_context_delegate_linux.h"
 #include "blimp/client/support/session/blimp_default_identity_provider.h"
+#include "net/base/net_errors.h"
 
 namespace blimp {
 namespace client {
@@ -20,7 +21,7 @@ void BlimpClientContextDelegateLinux::OnAssignmentConnectionAttempted(
     AssignmentRequestResult result,
     const Assignment& assignment) {
   // TODO(xingliu): Update this to use the new error strings and logging helper
-  // methods.
+  // methods, and access the string from grd files. https://crbug.com/630687
   switch (result) {
     case AssignmentRequestResult::ASSIGNMENT_REQUEST_RESULT_OK:
       VLOG(0) << "Assignment request success";
@@ -69,17 +70,20 @@ BlimpClientContextDelegateLinux::CreateIdentityProvider() {
 }
 
 void BlimpClientContextDelegateLinux::OnAuthenticationError(
-    BlimpClientContextDelegate::AuthError error) {
-  // TODO(xingliu): Update this to use the new error strings and logging helper
-  // methods.
-  switch (error) {
-    case BlimpClientContextDelegate::AuthError::NOT_SIGNED_IN:
-      LOG(WARNING) << "Error: Not signed in";
-      break;
-    case BlimpClientContextDelegate::AuthError::OAUTH_TOKEN_FAIL:
-      LOG(WARNING) << "Error: OAuth token failure";
-      break;
-  }
+    const GoogleServiceAuthError& error) {
+  LOG(WARNING) << "GoogleAuth error : " << error.ToString();
+}
+
+void BlimpClientContextDelegateLinux::OnConnected() {
+  VLOG(1) << "Connected.";
+}
+
+void BlimpClientContextDelegateLinux::OnEngineDisconnected(int result) {
+  LOG(WARNING) << "Disconnected from the engine, reason: " << result;
+}
+
+void BlimpClientContextDelegateLinux::OnNetworkDisconnected(int result) {
+  LOG(WARNING) << "Disconnected, reason: " << net::ErrorToShortString(result);
 }
 
 }  // namespace client

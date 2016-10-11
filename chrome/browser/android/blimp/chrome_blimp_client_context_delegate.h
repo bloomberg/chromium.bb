@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 
 class IdentityProvider;
@@ -38,10 +39,18 @@ class ChromeBlimpClientContextDelegate
       blimp::client::AssignmentRequestResult result,
       const blimp::client::Assignment& assignment) override;
   std::unique_ptr<IdentityProvider> CreateIdentityProvider() override;
-  void OnAuthenticationError(
-      BlimpClientContextDelegate::AuthError error) override;
+  void OnAuthenticationError(const GoogleServiceAuthError& error) override;
+  void OnConnected() override;
+  void OnEngineDisconnected(int result) override;
+  void OnNetworkDisconnected(int result) override;
+
+ protected:
+  // Show an alert message in the embedder.
+  virtual void ShowMessage(const base::string16& msg, bool short_message);
 
  private:
+  void OnDisconnected(const base::string16& reason);
+
   // The profile this delegate is used for.
   Profile* profile_;
 

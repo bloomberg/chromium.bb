@@ -44,7 +44,8 @@ class TabControlFeature;
 class BlimpClientContextImpl
     : public BlimpClientContext,
       public BlimpSettingsDelegate,
-      public BlobImageSerializationProcessor::ErrorDelegate {
+      public BlobImageSerializationProcessor::ErrorDelegate,
+      public NetworkEventObserver {
  public:
   // The |io_thread_task_runner| must be the task runner to use for IO
   // operations.
@@ -98,6 +99,10 @@ class BlimpClientContextImpl
 
   // BlobImageSerializationProcessor::ErrorDelegate implementation.
   void OnImageDecodeError() override;
+
+  // NetworkEventObserver implementation.
+  void OnConnected() override;
+  void OnDisconnected(int result) override;
 
   // Provides functionality from the embedder.
   BlimpClientContextDelegate* delegate_ = nullptr;

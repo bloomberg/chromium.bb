@@ -25,6 +25,9 @@ class ChromeBlimpClientContextDelegateAndroid
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
 
  private:
+  // ChromeBlimpClientContextDelegate implementation.
+  void ShowMessage(const base::string16& message, bool short_message) override;
+
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBlimpClientContextDelegateAndroid);

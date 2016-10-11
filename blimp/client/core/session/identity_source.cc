@@ -56,8 +56,7 @@ void IdentitySource::Connect() {
   // User must sign in first to get an OAuth2 token.
   const std::string& account_id = identity_provider_->GetActiveAccountId();
   if (account_id.empty()) {
-    delegate_->OnAuthenticationError(
-        BlimpClientContextDelegate::AuthError::NOT_SIGNED_IN);
+    VLOG(1) << "User is not signed in before connection to Blimp engine.";
     return;
   }
 
@@ -116,9 +115,10 @@ void IdentitySource::OnGetTokenFailure(
   is_fetching_token_ = false;
   retry_times_ = 0;
   VLOG(1) << "OAuth2 token error: " << error.state();
+
+  // Propagate the error.
   DCHECK(delegate_);
-  delegate_->OnAuthenticationError(
-      BlimpClientContextDelegate::AuthError::OAUTH_TOKEN_FAIL);
+  delegate_->OnAuthenticationError(error);
 }
 
 void IdentitySource::OnRefreshTokenAvailable(const std::string& account_id) {

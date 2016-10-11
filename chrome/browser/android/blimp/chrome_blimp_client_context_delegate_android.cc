@@ -5,6 +5,7 @@
 #include "chrome/browser/android/blimp/chrome_blimp_client_context_delegate_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/blimp/chrome_blimp_client_context_delegate.h"
@@ -43,4 +44,14 @@ ChromeBlimpClientContextDelegateAndroid::
     ~ChromeBlimpClientContextDelegateAndroid() {
   Java_ChromeBlimpClientContextDelegate_clearNativePtr(
       base::android::AttachCurrentThread(), java_obj_);
+}
+
+void ChromeBlimpClientContextDelegateAndroid::ShowMessage(
+    const base::string16& message,
+    bool short_message) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> jmessage(
+      base::android::ConvertUTF16ToJavaString(env, message));
+  Java_ChromeBlimpClientContextDelegate_showMessage(env, java_obj_, jmessage,
+                                                    short_message);
 }

@@ -9,6 +9,7 @@
 #include "blimp/client/public/session/assignment.h"
 
 class IdentityProvider;
+class GoogleServiceAuthError;
 
 namespace blimp {
 namespace client {
@@ -18,12 +19,6 @@ class BlimpContents;
 // functionality it needs from its embedder.
 class BlimpClientContextDelegate {
  public:
-  // Authentication error propagated to the embedder.
-  enum AuthError {
-    NOT_SIGNED_IN = 0,
-    OAUTH_TOKEN_FAIL,
-  };
-
   virtual ~BlimpClientContextDelegate() = default;
 
   // Attaches any required base::SupportsUserData::Data to the BlimpContents.
@@ -43,8 +38,18 @@ class BlimpClientContextDelegate {
   virtual std::unique_ptr<IdentityProvider> CreateIdentityProvider() = 0;
 
   // Propagate authentication error to the embedder.
-  virtual void OnAuthenticationError(
-      BlimpClientContextDelegate::AuthError error) = 0;
+  virtual void OnAuthenticationError(const GoogleServiceAuthError& error) = 0;
+
+  // Called when the client connected to the engine.
+  virtual void OnConnected() = 0;
+
+  // Called when the client is disconnected from the engine.
+  // See EndConnectionMessage::Reason.
+  virtual void OnEngineDisconnected(int result) = 0;
+
+  // Called when the network is disconnected.
+  // See /net/base/net_errors.h.
+  virtual void OnNetworkDisconnected(int result) = 0;
 
  protected:
   BlimpClientContextDelegate() = default;

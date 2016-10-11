@@ -5,6 +5,8 @@
 #include "chrome/browser/android/blimp/chrome_blimp_client_context_delegate.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/contents/blimp_contents.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "net/base/net_errors.h"
 
 ChromeBlimpClientContextDelegate::ChromeBlimpClientContextDelegate(
     Profile* profile)
@@ -35,7 +38,16 @@ void ChromeBlimpClientContextDelegate::AttachBlimpContentsHelpers(
 
 void ChromeBlimpClientContextDelegate::OnAssignmentConnectionAttempted(
     blimp::client::AssignmentRequestResult result,
-    const blimp::client::Assignment& assignment) {}
+    const blimp::client::Assignment& assignment) {
+  if (result == blimp::client::ASSIGNMENT_REQUEST_RESULT_OK)
+    return;
+
+  // TODO(xingliu): All strings shown in the UI should be accessed through grd
+  // files. https://crbug.com/630687
+  std::stringstream ss;
+  ss << "Blimp: Assignment failed, reason: " << result << ".";
+  ShowMessage(base::UTF8ToUTF16(ss.str()), false);
+}
 
 std::unique_ptr<IdentityProvider>
 ChromeBlimpClientContextDelegate::CreateIdentityProvider() {
@@ -46,19 +58,30 @@ ChromeBlimpClientContextDelegate::CreateIdentityProvider() {
 }
 
 void ChromeBlimpClientContextDelegate::OnAuthenticationError(
-    BlimpClientContextDelegate::AuthError error) {
-  switch (error) {
-    case AuthError::NOT_SIGNED_IN:
-      // User need to signed in first, on Android it's handled in Java layer
-      // before the connection.
-      VLOG(1) << "User is not signed in before connection to Blimp.";
-      break;
-    case AuthError::OAUTH_TOKEN_FAIL:
-      // TODO(xingliu): Alert the user in UI.
-      // There is an known issue that ongoing request can be cancelled when
-      // Android layer updates the refresh token.
-      break;
-    default:
-      LOG(WARNING) << "Unknown Blimp error.";
-  }
+    const GoogleServiceAuthError& error) {
+  LOG(ERROR) << "GoogleAuth error : " << error.ToString();
+  ShowMessage(base::UTF8ToUTF16("Blimp: Failed to get OAuth2 token."), false);
+}
+
+void ChromeBlimpClientContextDelegate::OnConnected() {
+  ShowMessage(base::UTF8ToUTF16("Blimp: Connected."), true);
+}
+
+void ChromeBlimpClientContextDelegate::OnEngineDisconnected(int result) {
+  OnDisconnected(base::UTF8ToUTF16(base::IntToString(result)));
+}
+
+void ChromeBlimpClientContextDelegate::OnNetworkDisconnected(int result) {
+  OnDisconnected(base::UTF8ToUTF16(net::ErrorToShortString(result)));
+}
+
+void ChromeBlimpClientContextDelegate::ShowMessage(
+    const base::string16& message,
+    bool short_message) {}
+
+void ChromeBlimpClientContextDelegate::OnDisconnected(
+    const base::string16& reason) {
+  std::stringstream ss;
+  ss << "Blimp: Disconnected(" << reason << ").";
+  ShowMessage(base::UTF8ToUTF16(ss.str()), false);
 }

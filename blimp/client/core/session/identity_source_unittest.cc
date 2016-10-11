@@ -14,6 +14,9 @@
 #include "blimp/client/test/test_blimp_client_context_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+using ::testing::Return;
+
 namespace blimp {
 namespace client {
 namespace {
@@ -219,6 +222,36 @@ TEST_F(IdentitySourceTest, TestConnectRetry) {
   DCHECK_EQ(auth.Token(), mock_access_token);
   DCHECK_EQ(auth.TokenCallbackCount(), 1);
   DCHECK_EQ(auth.CallbackToken(), mock_access_token);
+}
+
+TEST_F(IdentitySourceTest, TestConnectFailDelegateCallback) {
+  TestBlimpClientContextDelegate mock_blimp_delegate;
+  MockIdentitySource auth(
+      &mock_blimp_delegate,
+      base::Bind(&MockIdentitySource::MockTokenCall, base::Unretained(&auth)));
+  FakeOAuth2TokenService* token_service = mock_blimp_delegate.GetTokenService();
+  FakeIdentityProvider* id_provider =
+      static_cast<FakeIdentityProvider*>(auth.GetIdentityProvider());
+
+  std::string account = "mock_account";
+  std::string mock_access_token = "mock_token";
+  id_provider->LogIn(account);
+
+  // Prepare refresh token.
+  FakeOAuth2TokenServiceDelegate* mock_token_service_delegate =
+      token_service->GetFakeOAuth2TokenServiceDelegate();
+  mock_token_service_delegate->UpdateCredentials(account, "mock_refresh_token");
+
+  // Expect delegate to show error message on non REQUEST_CANCELED errors.
+  auth.Connect();
+  GoogleServiceAuthError error(
+      GoogleServiceAuthError::State::CONNECTION_FAILED);
+
+  EXPECT_CALL(mock_blimp_delegate, OnAuthenticationError(error))
+      .WillOnce(Return());
+  token_service->IssueErrorForAllPendingRequestsForAccount(account, error);
+
+  DCHECK_EQ(auth.Failed(), 1);
 }
 
 }  // namespace

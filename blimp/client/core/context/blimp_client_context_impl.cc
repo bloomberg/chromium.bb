@@ -108,6 +108,8 @@ BlimpClientContextImpl::BlimpClientContextImpl(
   RegisterFeatures();
   InitializeSettings();
 
+  connection_status_.AddObserver(this);
+
   // Initialize must only be posted after the features have been
   // registered.
   io_thread_task_runner_->PostTask(
@@ -119,6 +121,7 @@ BlimpClientContextImpl::BlimpClientContextImpl(
 
 BlimpClientContextImpl::~BlimpClientContextImpl() {
   io_thread_task_runner_->DeleteSoon(FROM_HERE, net_components_.release());
+  connection_status_.RemoveObserver(this);
 }
 
 void BlimpClientContextImpl::SetDelegate(BlimpClientContextDelegate* delegate) {
@@ -252,6 +255,22 @@ void BlimpClientContextImpl::CreateIdentitySource() {
 void BlimpClientContextImpl::OnImageDecodeError() {
   // Currently we just drop the connection on image decoding error.
   DropConnection();
+}
+
+void BlimpClientContextImpl::OnConnected() {
+  if (delegate_) {
+    delegate_->OnConnected();
+  }
+}
+
+void BlimpClientContextImpl::OnDisconnected(int result) {
+  if (delegate_) {
+    if (result >= 0) {
+      delegate_->OnEngineDisconnected(result);
+    } else {
+      delegate_->OnNetworkDisconnected(result);
+    }
+  }
 }
 
 }  // namespace client
