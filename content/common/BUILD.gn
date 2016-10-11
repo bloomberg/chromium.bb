@@ -563,6 +563,7 @@ mojom("mojo_bindings") {
     "renderer.mojom",
     "service_worker/embedded_worker.mojom",
     "service_worker/embedded_worker_setup.mojom",
+    "service_worker/fetch_event_dispatcher.mojom",
     "storage_partition_service.mojom",
     "url_loader.mojom",
     "url_loader_factory.mojom",
@@ -579,6 +580,7 @@ mojom("mojo_bindings") {
     # TODO(mcasas): remove the following dep after https://crbug.com/653994
     "//gpu/ipc/common:interfaces",
     "//ipc:mojom",
+    "//mojo/common:common_custom_types",
     "//services/shell/public/interfaces",
     "//services/ui/public/interfaces",
     "//services/video_capture/public/interfaces",
