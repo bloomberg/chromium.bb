@@ -311,6 +311,7 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
                                   Role.group,
                                   Role.image,
                                   Role.staticText,
+                                  Role.svgRoot,
                                   Role.tableHeaderContainer])(node));
 };
 
