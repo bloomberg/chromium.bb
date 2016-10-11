@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <set>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -1112,6 +1113,7 @@ class CacheStorageMigrationTest : public CacheStorageManagerTest {
   const std::string cache1_;
   const std::string cache2_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(CacheStorageMigrationTest);
 };
 
@@ -1227,6 +1229,7 @@ class MigratedLegacyCacheDirectoryNameTest : public CacheStorageManagerTest {
   const std::string legacy_cache_name_;
   const GURL stored_url_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MigratedLegacyCacheDirectoryNameTest);
 };
 
@@ -1340,6 +1343,7 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
   int64_t callback_quota_usage_ = 0;
   std::set<GURL> callback_origins_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(CacheStorageQuotaClientTest);
 };
 

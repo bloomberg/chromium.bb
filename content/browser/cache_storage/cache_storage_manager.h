@@ -6,7 +6,9 @@
 #define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -146,7 +148,7 @@ class CONTENT_EXPORT CacheStorageManager {
       const GURL& origin);
 
   // Migrate from old origin-based path to storage identifier-based path.
-  // TODO(jsbell); Remove method and all calls after a few releases.
+  // TODO(jsbell): Remove method and all calls after a few releases.
   void MigrateOrigin(const GURL& origin);
   static void MigrateOriginOnTaskRunner(const base::FilePath& old_path,
                                         const base::FilePath& new_path);

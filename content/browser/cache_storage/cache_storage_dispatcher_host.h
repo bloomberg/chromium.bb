@@ -8,6 +8,10 @@
 #include <stdint.h>
 
 #include <list>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "content/browser/cache_storage/cache_storage.h"

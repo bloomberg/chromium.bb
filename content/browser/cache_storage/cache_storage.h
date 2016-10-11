@@ -8,7 +8,9 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -30,8 +32,8 @@ class BlobStorageContext;
 }
 
 namespace content {
-class CacheStorageScheduler;
 class CacheStorageCacheHandle;
+class CacheStorageScheduler;
 
 // TODO(jkarlin): Constrain the total bytes used per origin.
 

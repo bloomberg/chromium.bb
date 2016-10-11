@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -62,7 +63,7 @@ std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
 // A disk_cache::Backend wrapper that can delay operations.
 class DelayableBackend : public disk_cache::Backend {
  public:
-  DelayableBackend(std::unique_ptr<disk_cache::Backend> backend)
+  explicit DelayableBackend(std::unique_ptr<disk_cache::Backend> backend)
       : backend_(std::move(backend)), delay_doom_(false) {}
 
   // disk_cache::Backend overrides

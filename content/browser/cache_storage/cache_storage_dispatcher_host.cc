@@ -399,9 +399,8 @@ void CacheStorageDispatcherHost::OnCacheStorageKeysCallback(
   }
 
   std::vector<base::string16> string16s;
-  for (size_t i = 0, max = strings.size(); i < max; ++i) {
+  for (size_t i = 0, max = strings.size(); i < max; ++i)
     string16s.push_back(base::UTF8ToUTF16(strings[i]));
-  }
   Send(new CacheStorageMsg_CacheStorageKeysSuccess(thread_id, request_id,
                                                    string16s));
 }

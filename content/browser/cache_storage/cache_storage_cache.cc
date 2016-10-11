@@ -5,6 +5,9 @@
 #include "content/browser/cache_storage/cache_storage_cache.h"
 
 #include <stddef.h>
+#include <algorithm>
+#include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 

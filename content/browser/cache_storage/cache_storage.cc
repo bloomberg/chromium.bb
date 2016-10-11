@@ -127,12 +127,12 @@ class CacheStorage::CacheLoader {
   // the cache if necessary.
   virtual void NotifyCacheCreated(
       const std::string& cache_name,
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle) {};
+      std::unique_ptr<CacheStorageCacheHandle> cache_handle) {}
 
   // Notification that the cache for |cache_handle| has been doomed. If the
   // loader is holding a handle to the cache, it should drop it now.
   virtual void NotifyCacheDoomed(
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle) {};
+      std::unique_ptr<CacheStorageCacheHandle> cache_handle) {}
 
  protected:
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
@@ -946,10 +946,11 @@ void CacheStorage::DropCacheHandleRef(CacheStorageCache* cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto iter = cache_handle_counts_.find(cache);
   DCHECK(iter != cache_handle_counts_.end());
-  DCHECK(iter->second >= 1);
+  DCHECK_GE(iter->second, 1U);
 
   iter->second -= 1;
   if (iter->second == 0) {
+    cache_handle_counts_.erase(iter);
     auto doomed_caches_iter = doomed_caches_.find(cache);
     if (doomed_caches_iter != doomed_caches_.end()) {
       // The last reference to a doomed cache is gone, perform clean up.
@@ -962,7 +963,6 @@ void CacheStorage::DropCacheHandleRef(CacheStorageCache* cache) {
     DCHECK(cache_map_iter != cache_map_.end());
 
     cache_map_iter->second.reset();
-    cache_handle_counts_.erase(iter);
   }
 }
 
