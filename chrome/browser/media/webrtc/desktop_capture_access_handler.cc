@@ -62,6 +62,15 @@ base::string16 GetApplicationTitle(content::WebContents* web_contents,
   return base::UTF8ToUTF16(title);
 }
 
+// Returns whether an on-screen notification should appear after desktop capture
+// is approved for |extension|.  Component extensions do not display a
+// notification.
+bool ShouldDisplayNotification(const extensions::Extension* extension) {
+  return !(extension &&
+           (extension->location() == extensions::Manifest::COMPONENT ||
+            extension->location() == extensions::Manifest::EXTERNAL_COMPONENT));
+}
+
 base::string16 GetStopSharingUIString(
     const base::string16& application_title,
     const base::string16& registered_extension_name,
@@ -147,6 +156,13 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<content::MediaStreamUI> ui;
 
+  DVLOG(2) << __FUNCTION__ << ": media_id " << media_id.ToString()
+           << ", capture_audio " << capture_audio << ", mute_system_audio "
+           << mute_system_audio << ", display_notification "
+           << display_notification << ", application_title "
+           << application_title << ", extension_name "
+           << registered_extension_name;
+
   // Add selected desktop source to the list.
   devices->push_back(content::MediaStreamDevice(
       content::MEDIA_DESKTOP_VIDEO_CAPTURE, media_id.ToString(), "Screen"));
@@ -230,10 +246,6 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
   loopback_audio_supported = true;
 #endif
 
-  bool component_extension = false;
-  component_extension =
-      extension && extension->location() == extensions::Manifest::COMPONENT;
-
   bool screen_capture_enabled =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableUserMediaScreenCapturing) ||
@@ -274,12 +286,10 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
 #endif
     web_contents = NULL;
 
-    bool whitelisted_extension =
-        IsExtensionWhitelistedForScreenCapture(extension);
-
-    // For whitelisted or component extensions, bypass message box.
-    bool user_approved = false;
-    if (!whitelisted_extension && !component_extension) {
+    // Some extensions do not require user approval, because they provide their
+    // own user approval UI.
+    bool is_approved = IsDefaultApproved(extension);
+    if (!is_approved) {
       base::string16 application_name =
           base::UTF8ToUTF16(request.security_origin.spec());
       if (extension)
@@ -294,10 +304,10 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
           l10n_util::GetStringFUTF16(
               IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TITLE, application_name),
           confirmation_text);
-      user_approved = (result == chrome::MESSAGE_BOX_RESULT_YES);
+      is_approved = (result == chrome::MESSAGE_BOX_RESULT_YES);
     }
 
-    if (user_approved || component_extension || whitelisted_extension) {
+    if (is_approved) {
       content::DesktopMediaID screen_id;
 #if defined(OS_CHROMEOS)
       screen_id = content::DesktopMediaID::RegisterAuraWindow(
@@ -312,9 +322,8 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
           (request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE &&
            loopback_audio_supported);
 
-      // Unless we're being invoked from a component extension, register to
-      // display the notification for stream capture.
-      bool display_notification = !component_extension;
+      // Determine if the extension is required to display a notification.
+      const bool display_notification = ShouldDisplayNotification(extension);
 
       ui = GetDevicesForDesktopCapture(&devices, screen_id, capture_audio, true,
                                        display_notification, application_title,
@@ -329,6 +338,14 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
   }
 
   callback.Run(devices, result, std::move(ui));
+}
+
+bool DesktopCaptureAccessHandler::IsDefaultApproved(
+    const extensions::Extension* extension) {
+  return extension &&
+         (extension->location() == extensions::Manifest::COMPONENT ||
+          extension->location() == extensions::Manifest::EXTERNAL_COMPONENT ||
+          IsExtensionWhitelistedForScreenCapture(extension));
 }
 
 bool DesktopCaptureAccessHandler::SupportsStreamType(
@@ -425,11 +442,13 @@ void DesktopCaptureAccessHandler::HandleRequest(
       (check_audio_permission ? audio_permitted : true) && audio_requested &&
       audio_supported;
 
+  // Determine if the extension is required to display a notification.
+  const bool display_notification = ShouldDisplayNotification(extension);
+
   ui = GetDevicesForDesktopCapture(&devices, media_id, capture_audio, false,
-                                   true,
+                                   display_notification,
                                    GetApplicationTitle(web_contents, extension),
                                    base::UTF8ToUTF16(original_extension_name));
   UpdateExtensionTrusted(request, extension);
   callback.Run(devices, content::MEDIA_DEVICE_OK, std::move(ui));
 }
-

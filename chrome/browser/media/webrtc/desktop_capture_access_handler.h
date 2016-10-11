@@ -10,6 +10,10 @@
 #include "chrome/browser/media/capture_access_handler_base.h"
 #include "chrome/browser/media/media_access_handler.h"
 
+namespace extensions {
+class Extension;
+}
+
 // MediaAccessHandler for DesktopCapture API.
 class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase {
  public:
@@ -36,6 +40,10 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase {
       const content::MediaResponseCallback& callback,
       const extensions::Extension* extension);
 
+  // Returns whether desktop capture is always approved for |extension|.
+  // Currently component extensions and some whitelisted extensions are default
+  // approved.
+  static bool IsDefaultApproved(const extensions::Extension* extension);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_DESKTOP_CAPTURE_ACCESS_HANDLER_H_
