@@ -13603,6 +13603,18 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   } else {
     GLenum final_internal_format = TextureManager::AdjustTexInternalFormat(
         feature_info_.get(), internal_format);
+    if (workarounds().init_two_cube_map_levels_before_copyteximage &&
+        texture->target() == GL_TEXTURE_CUBE_MAP &&
+        target != GL_TEXTURE_CUBE_MAP_POSITIVE_X) {
+      for (int i = 0; i < 2; ++i) {
+        TextureManager::DoTexImageArguments args = {
+          target, i, final_internal_format, 1, 1, 1, border,
+          format, type, nullptr, 1, 0,
+          TextureManager::DoTexImageArguments::kTexImage2D };
+        texture_manager()->WorkaroundCopyTexImageCubeMap(&texture_state_,
+            &state_, &framebuffer_state_, texture_ref, func_name, args);
+      }
+    }
 
     // The service id and target of the texture attached to READ_FRAMEBUFFER.
     GLuint source_texture_service_id = 0;
@@ -13658,7 +13670,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 
       glDeleteTextures(1, &temp_texture);
     } else {
-      if (workarounds().do_teximage_before_copyteximage_to_cube_map &&
+      if (workarounds().init_one_cube_map_level_before_copyteximage &&
           texture->target() == GL_TEXTURE_CUBE_MAP &&
           target != GL_TEXTURE_CUBE_MAP_POSITIVE_X) {
         TextureManager::DoTexImageArguments args = {

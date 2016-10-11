@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.06",
+  "version": "9.07",
   "entries": [
     {
       "id": 1,
@@ -2008,14 +2008,18 @@ LONG_STRING_CONST(
     },
     {
       "id": 189,
-      "description": "Do TexImage2D first before CopyTexImage2D for cube map texture on Intel Mac",
+      "description": "Do TexImage2D first before CopyTexImage2D for cube map texture on Intel Mac 10.11",
       "cr_bugs": [648197],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<=",
+          "value": "10.11"
+        }
       },
       "vendor_id": "0x8086",
       "features": [
-        "do_teximage_before_copyteximage_to_cube_map"
+        "init_one_cube_map_level_before_copyteximage"
       ]
     },
     {
@@ -2078,6 +2082,22 @@ LONG_STRING_CONST(
       },
       "features": [
         "decode_encode_srgb_for_generatemipmap"
+      ]
+    },
+    {
+      "id": 193,
+      "description": "Init first two levels before CopyTexImage2D for cube map texture on Intel Mac 10.12",
+      "cr_bugs": [648197],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": ">=",
+          "value": "10.12"
+        }
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "init_two_cube_map_levels_before_copyteximage"
       ]
     }
   ]

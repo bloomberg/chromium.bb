@@ -81,8 +81,6 @@
          disable_multisampling_color_mask_usage)             \
   GPU_OP(DISABLE_WEBGL_RGB_MULTISAMPLING_USAGE,              \
          disable_webgl_rgb_multisampling_usage)              \
-  GPU_OP(DO_TEXIMAGE_BEFORE_COPYTEXIMAGE_TO_CUBE_MAP,        \
-         do_teximage_before_copyteximage_to_cube_map)        \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \
          etc1_power_of_two_only)                             \
   GPU_OP(EMULATE_ABS_INT_FUNCTION,                           \
@@ -107,8 +105,12 @@
          ignore_egl_sync_failures)                           \
   GPU_OP(INIT_GL_POSITION_IN_VERTEX_SHADER,                  \
          init_gl_position_in_vertex_shader)                  \
+  GPU_OP(INIT_ONE_CUBE_MAP_LEVEL_BEFORE_COPYTEXIMAGE,        \
+         init_one_cube_map_level_before_copyteximage)        \
   GPU_OP(INIT_TEXTURE_MAX_ANISOTROPY,                        \
          init_texture_max_anisotropy)                        \
+  GPU_OP(INIT_TWO_CUBE_MAP_LEVELS_BEFORE_COPYTEXIMAGE,       \
+         init_two_cube_map_levels_before_copyteximage)       \
   GPU_OP(INIT_VERTEX_ATTRIBUTES,                             \
          init_vertex_attributes)                             \
   GPU_OP(MAX_COPY_TEXTURE_CHROMIUM_SIZE_1048576,             \
