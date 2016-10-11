@@ -9,6 +9,26 @@ from webkitpy.layout_tests.models import testharness_results
 
 class TestHarnessResultCheckerTest(unittest.TestCase):
 
+    # TODO(qyearsley): Reformat this unit test and split up test methods to improve readability.
+
+    def is_all_pass_testharness_result(self):
+        test_data = [
+            {
+                'content': 'This is a testharness.js-based test.\nCONSOLE WARNING: This is a warning.\nTest ran to completion.',
+                'result': False
+            },
+            {
+                'content': 'This is a testharness.js-based test.\n PASS: foo bar \n Harness: the test ran to completion.',
+                'result': True
+            },
+            {
+                'content': 'This is a testharness.js-based test.\n PASS: foo bar \nFAIL  \n Harness: the test ran to completion.',
+                'result': False
+            },
+        ]
+        for data in test_data:
+            self.assertEqual(data['result'], testharness_results.is_all_pass_testharness_result(data['content']))
+
     def test_is_testharness_output(self):
         test_data = [
             {

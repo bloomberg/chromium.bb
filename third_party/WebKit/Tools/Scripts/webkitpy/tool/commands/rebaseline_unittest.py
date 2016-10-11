@@ -281,6 +281,39 @@ class TestRebaselineTest(BaseTestCase):
         self.command._rebaseline_test("MOCK Trusty", "userscripts/another-test.html", "txt", self.WEB_PREFIX)
         self.assertItemsEqual(self.tool.web.urls_fetched, [self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
 
+    def test_rebaseline_all_pass_testharness_result_removes_baseline(self):
+        self.tool.web.urls = {
+            ('https://storage.googleapis.com/chromium-layout-test-archives'
+             '/MOCK_Win7/results/layout-test-results/failures/unexpected'
+             '/text-actual.txt'): 'This is a testharness.js-based test.\n PASS: foo \n Harness: the test ran to completion.'
+        }
+        self._write(
+            '/test.checkout/LayoutTests/platform/test-win-win7/failures/unexpected/text-expected.txt',
+            'original baseline')
+        oc = OutputCapture()
+        oc.capture_output()
+        self.command.execute(self.options(builder='MOCK Win7', test="failures/unexpected/text.html"), [], self.tool)
+        out, _, _ = oc.restore_output()
+        self.assertEqual('{"remove-lines": [{"test": "failures/unexpected/text.html", "builder": "MOCK Win7"}]}\n', out)
+        self.assertFalse(self.tool.filesystem.exists(
+            '/test.checkout/LayoutTests/platform/test-win-win7/failures/unexpected/text-expected.txt'))
+
+    def test_rebaseline_test_non_all_pass_testharness_result(self):
+        self.tool.web.urls = {
+            ('https://storage.googleapis.com/chromium-layout-test-archives/MOCK_Win7'
+             '/results/layout-test-results/failures/unexpected/text-actual.txt'):
+            ('This is some other baseline content, not an all-pass testharness.js result.')}
+        self._write(
+            '/test.checkout/LayoutTests/platform/test-win-win7/failures/unexpected/text-expected.txt',
+            'original baseline')
+        oc = OutputCapture()
+        oc.capture_output()
+        self.command.execute(self.options(builder='MOCK Win7', test="failures/unexpected/text.html"), [], self.tool)
+        out, _, _ = oc.restore_output()
+        self.assertEqual('{"remove-lines": [{"test": "failures/unexpected/text.html", "builder": "MOCK Win7"}]}\n', out)
+        self.assertTrue(self.tool.filesystem.exists(
+            '/test.checkout/LayoutTests/platform/test-win-win7/failures/unexpected/text-expected.txt'))
+
     def test_rebaseline_test_with_results_directory(self):
         self._write("userscripts/another-test.html", "test data")
         self._write(

@@ -10,6 +10,13 @@ TESTHARNESSREPORT_HEADER = 'This is a testharness.js-based test.'
 TESTHARNESSREPORT_FOOTER = 'Harness: the test ran to completion.'
 
 
+def is_all_pass_testharness_result(content_text):
+    """Returns whether |content_text| is a testharness result that only contains PASS lines."""
+    return (is_testharness_output(content_text) and
+            is_testharness_output_passing(content_text) and
+            not is_testharness_output_with_console_errors_or_warnings(content_text))
+
+
 def is_testharness_output(content_text):
     """Returns whether the content_text in parameter is a testharness output."""
 

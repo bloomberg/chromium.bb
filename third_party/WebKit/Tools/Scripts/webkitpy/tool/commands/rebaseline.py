@@ -36,6 +36,7 @@ import traceback
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.system.executive import ScriptError
+from webkitpy.layout_tests.models.testharness_results import is_all_pass_testharness_result
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, BASELINE_SUFFIX_LIST, SKIP
 from webkitpy.layout_tests.port import factory
 from webkitpy.tool.commands.command import Command
@@ -222,6 +223,13 @@ class RebaselineTest(BaseInternalRebaselineCommand):
             return
 
         filesystem = self._tool.filesystem
+        if is_all_pass_testharness_result(data):
+            _log.debug("The new baseline is a passing testharness result with "
+                       "no console warnings or errors, so it will not be saved.")
+            if filesystem.exists(target_baseline):
+                filesystem.remove(target_baseline)
+            return
+
         filesystem.maybe_make_directory(filesystem.dirname(target_baseline))
         filesystem.write_binary_file(target_baseline, data)
 
