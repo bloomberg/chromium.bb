@@ -25,9 +25,9 @@
 #ifndef ChildNodeList_h
 #define ChildNodeList_h
 
+#include "core/dom/CollectionIndexCache.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/NodeList.h"
-#include "core/html/CollectionIndexCache.h"
 
 namespace blink {
 
