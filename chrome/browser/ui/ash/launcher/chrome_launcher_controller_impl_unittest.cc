@@ -240,10 +240,6 @@ class TestLauncherControllerHelper : public LauncherControllerHelper {
     return false;
   }
 
-  void SetCurrentUser(Profile* profile) override {
-    // We can ignore this for now.
-  }
-
   ArcAppListPrefs* GetArcAppListPrefs() const override { return nullptr; }
 
  private:
@@ -293,7 +289,7 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   }
   bool IsDraggable() override { return false; }
   bool CanPin() const override {
-    return GetPinnableForAppID(app_id(), launcher_controller()->GetProfile()) ==
+    return GetPinnableForAppID(app_id(), launcher_controller()->profile()) ==
            AppListControllerDelegate::PIN_EDITABLE;
   }
   bool ShouldShowTooltip() override { return false; }
@@ -503,6 +499,8 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     AddAppListLauncherItem();
     launcher_controller_.reset(
         new ChromeLauncherControllerImpl(profile(), model_.get()));
+    // TODO(crbug.com/654622): Some tests break with a non-null static instance.
+    ChromeLauncherControllerImpl::set_instance_for_test(nullptr);
     launcher_controller_->Init();
   }
 
@@ -517,8 +515,8 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     launcher_controller_.reset();
     model_.reset(new ash::ShelfModel);
     AddAppListLauncherItem();
-    launcher_controller_.reset(
-        ChromeLauncherControllerImpl::CreateInstance(profile(), model_.get()));
+    launcher_controller_ =
+        base::MakeUnique<ChromeLauncherControllerImpl>(profile(), model_.get());
     launcher_controller_->Init();
   }
 
@@ -547,7 +545,8 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   }
 
   void SetLauncherControllerHelper(LauncherControllerHelper* helper) {
-    launcher_controller_->SetLauncherControllerHelperForTest(helper);
+    launcher_controller_->SetLauncherControllerHelperForTest(
+        base::WrapUnique<LauncherControllerHelper>(helper));
   }
 
   void InsertPrefValue(base::ListValue* pref_value,
@@ -3420,8 +3419,8 @@ TEST_F(ChromeLauncherControllerImplTest, PersistLauncherItemPositions) {
   model_.reset(new ash::ShelfModel);
 
   AddAppListLauncherItem();
-  launcher_controller_.reset(
-      ChromeLauncherControllerImpl::CreateInstance(profile(), model_.get()));
+  launcher_controller_ =
+      base::MakeUnique<ChromeLauncherControllerImpl>(profile(), model_.get());
   helper = new TestLauncherControllerHelper(profile());
   helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
   helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
@@ -3466,8 +3465,8 @@ TEST_F(ChromeLauncherControllerImplTest, PersistPinned) {
   model_.reset(new ash::ShelfModel);
 
   AddAppListLauncherItem();
-  launcher_controller_.reset(
-      ChromeLauncherControllerImpl::CreateInstance(profile(), model_.get()));
+  launcher_controller_ =
+      base::MakeUnique<ChromeLauncherControllerImpl>(profile(), model_.get());
   helper = new TestLauncherControllerHelper(profile());
   helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
   SetLauncherControllerHelper(helper);
@@ -3933,7 +3932,7 @@ TEST_F(ChromeLauncherControllerOrientationTest, CurrentWithLandscapeDisplay) {
 TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
   InitLauncherController();
-  ChromeLauncherController::set_instance(launcher_controller_.get());
+  ChromeLauncherController::set_instance_for_test(launcher_controller_.get());
   arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
 
   ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();

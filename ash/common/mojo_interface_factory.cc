@@ -4,6 +4,7 @@
 
 #include "ash/common/mojo_interface_factory.h"
 
+#include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
@@ -12,6 +13,11 @@
 namespace ash {
 
 namespace {
+
+void BindShelfControllerRequestOnMainThread(
+    mojom::ShelfControllerRequest request) {
+  WmShell::Get()->shelf_controller()->BindRequest(std::move(request));
+}
 
 void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
   WmShell::Get()->system_tray_controller()->BindRequest(std::move(request));
@@ -24,6 +30,8 @@ namespace mojo_interface_factory {
 void RegisterInterfaces(
     shell::InterfaceRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+  registry->AddInterface(base::Bind(&BindShelfControllerRequestOnMainThread),
+                         main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindSystemTrayRequestOnMainThread),
                          main_thread_task_runner);
 }

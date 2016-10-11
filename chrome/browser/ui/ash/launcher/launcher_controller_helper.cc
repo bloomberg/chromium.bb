@@ -164,10 +164,6 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
   return true;
 }
 
-void LauncherControllerHelper::SetCurrentUser(Profile* profile) {
-  profile_ = profile;
-}
-
 void LauncherControllerHelper::LaunchApp(const std::string& app_id,
                                          ash::LaunchSource source,
                                          int event_flags) {

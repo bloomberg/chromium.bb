@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 #include "chrome/browser/ui/views/ash/tab_scrubber.h"
 #include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 #include "chrome/browser/ui/views/frame/immersive_handler_factory_mus.h"
@@ -55,8 +56,13 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
-  if (chrome::IsRunningInMash())
-    chrome::InitializeMash();
+  if (chrome::IsRunningInMash()) {
+    DCHECK(!ash::Shell::HasInstance());
+    DCHECK(!ChromeLauncherController::instance());
+    chrome_launcher_controller_mus_ =
+        base::MakeUnique<ChromeLauncherControllerMus>();
+    chrome_launcher_controller_mus_->Init();
+  }
 
   if (!ash::Shell::HasInstance())
     return;

@@ -15,6 +15,7 @@
         "metrics::mojom::CallStackProfileCollector"
       ],
       "ash": [
+        "ash::mojom::ShelfController",
         "ash::mojom::SystemTray",
         "ash::mojom::SystemTrayClient"
       ],

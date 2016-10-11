@@ -39,10 +39,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   void CreateStatusAreaWidget(WmWindow* status_container);
 
-  // Returns if shelf alignment option is enabled, and the user is able to
-  // adjust the alignment (guest and supervised mode users cannot for example).
-  static bool ShelfAlignmentAllowed();
-
   void OnShelfAlignmentChanged();
 
   // DEPRECATED: Prefer WmShelf::GetAlignment().

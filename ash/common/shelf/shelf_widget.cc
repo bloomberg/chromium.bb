@@ -17,7 +17,6 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/status_area_layout_manager.h"
 #include "ash/common/system/status_area_widget.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
@@ -376,33 +375,6 @@ void ShelfWidget::HideShelfBehindBlackBar(bool hide, int animation_time_ms) {
 
 bool ShelfWidget::IsShelfHiddenBehindBlackBar() const {
   return delegate_view_->opaque_foreground()->GetTargetOpacity() != 0.0f;
-}
-
-// static
-bool ShelfWidget::ShelfAlignmentAllowed() {
-  if (WmShell::Get()->system_tray_delegate()->IsUserSupervised())
-    return false;
-
-  LoginStatus login_status =
-      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
-
-  switch (login_status) {
-    case LoginStatus::LOCKED:
-    // Shelf alignment changes can be requested while being locked, but will
-    // be applied upon unlock.
-    case LoginStatus::USER:
-    case LoginStatus::OWNER:
-      return true;
-    case LoginStatus::PUBLIC:
-    case LoginStatus::SUPERVISED:
-    case LoginStatus::GUEST:
-    case LoginStatus::KIOSK_APP:
-    case LoginStatus::NOT_LOGGED_IN:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 ShelfAlignment ShelfWidget::GetAlignment() const {

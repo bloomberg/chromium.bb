@@ -15,6 +15,7 @@
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
+#include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_window_watcher.h"
@@ -76,7 +77,7 @@ void WmShell::Initialize(const scoped_refptr<base::SequencedWorkerPool>& pool) {
   toast_manager_.reset(new ToastManager);
 
   // Create the app list item in the shelf data model.
-  AppListShelfItemDelegate::CreateAppListItemAndDelegate(shelf_model_.get());
+  AppListShelfItemDelegate::CreateAppListItemAndDelegate(shelf_model());
 
   // Install the custom factory early on so that views::FocusManagers for Tray,
   // Shelf, and WallPaper could be created by the factory.
@@ -96,12 +97,16 @@ void WmShell::Shutdown() {
   shelf_window_watcher_.reset();
   // ShelfItemDelegate subclasses it owns have complex cleanup to run (e.g. ARC
   // shelf items in Chrome) so explicitly shutdown early.
-  shelf_model_->DestroyItemDelegates();
+  shelf_model()->DestroyItemDelegates();
   // Must be destroyed before FocusClient.
   shelf_delegate_.reset();
 
   // Balances the Install() in Initialize().
   views::FocusManagerFactory::Install(nullptr);
+}
+
+ShelfModel* WmShell::shelf_model() {
+  return shelf_controller_->model();
 }
 
 void WmShell::ShowContextMenu(const gfx::Point& location_in_screen,
@@ -141,8 +146,8 @@ void WmShell::CreateShelfDelegate() {
   // about multi-profile login state.
   DCHECK(GetSessionStateDelegate());
   DCHECK_GT(GetSessionStateDelegate()->NumberOfLoggedInUsers(), 0);
-  shelf_delegate_.reset(delegate_->CreateShelfDelegate(shelf_model_.get()));
-  shelf_window_watcher_.reset(new ShelfWindowWatcher(shelf_model_.get()));
+  shelf_delegate_.reset(delegate_->CreateShelfDelegate(shelf_model()));
+  shelf_window_watcher_.reset(new ShelfWindowWatcher(shelf_model()));
 }
 
 void WmShell::OnMaximizeModeStarted() {
@@ -224,15 +229,16 @@ void WmShell::SetPaletteDelegateForTesting(
 
 WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
     : delegate_(std::move(shell_delegate)),
-      focus_cycler_(new FocusCycler),
+      focus_cycler_(base::MakeUnique<FocusCycler>()),
       immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
-      shelf_model_(new ShelfModel),  // Must create before ShelfDelegate.
-      system_tray_controller_(
-          new SystemTrayController(delegate_->GetShellConnector())),
-      system_tray_notifier_(new SystemTrayNotifier),
+      shelf_controller_(base::MakeUnique<ShelfController>()),
+      system_tray_controller_(base::MakeUnique<SystemTrayController>(
+          delegate_->GetShellConnector())),
+      system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),
       wallpaper_delegate_(delegate_->CreateWallpaperDelegate()),
-      window_cycle_controller_(new WindowCycleController),
-      window_selector_controller_(new WindowSelectorController) {
+      window_cycle_controller_(base::MakeUnique<WindowCycleController>()),
+      window_selector_controller_(
+          base::MakeUnique<WindowSelectorController>()) {
 #if defined(OS_CHROMEOS)
   brightness_control_delegate_.reset(new system::BrightnessControllerChromeos);
   keyboard_brightness_control_delegate_.reset(new KeyboardBrightnessController);

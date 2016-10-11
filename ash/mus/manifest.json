@@ -4,6 +4,11 @@
   "display_name": "Ash Window Manager and Shell",
   "capabilities": {
     "provided": {
+      "ash": [
+        "ash::mojom::ShelfController",
+        "ash::mojom::SystemTray",
+        "ash::mojom::WallpaperController"
+      ],
       "mus:window_manager" : [ "ui::mojom::AcceleratorRegistrar" ]
     },
     "required": {

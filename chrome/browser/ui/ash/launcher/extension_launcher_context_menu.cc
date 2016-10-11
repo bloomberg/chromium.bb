@@ -39,7 +39,7 @@ ExtensionLauncherContextMenu::~ExtensionLauncherContextMenu() {}
 
 void ExtensionLauncherContextMenu::Init() {
   extension_items_.reset(new extensions::ContextMenuMatcher(
-      controller()->GetProfile(), this, this,
+      controller()->profile(), this, this,
       base::Bind(MenuItemHasLauncherContext)));
   if (item().type == ash::TYPE_APP_SHORTCUT ||
       item().type == ash::TYPE_WINDOWED_APP) {
@@ -76,7 +76,7 @@ void ExtensionLauncherContextMenu::Init() {
     }
   } else if (item().type == ash::TYPE_BROWSER_SHORTCUT) {
     AddItemWithStringId(MENU_NEW_WINDOW, IDS_APP_LIST_NEW_WINDOW);
-    if (!controller()->GetProfile()->IsGuestSession()) {
+    if (!controller()->profile()->IsGuestSession()) {
       AddItemWithStringId(MENU_NEW_INCOGNITO_WINDOW,
                           IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
@@ -169,12 +169,12 @@ bool ExtensionLauncherContextMenu::IsCommandIdEnabled(int command_id) const {
     case MENU_NEW_WINDOW:
       // "Normal" windows are not allowed when incognito is enforced.
       return IncognitoModePrefs::GetAvailability(
-                 controller()->GetProfile()->GetPrefs()) !=
+                 controller()->profile()->GetPrefs()) !=
              IncognitoModePrefs::FORCED;
     case MENU_NEW_INCOGNITO_WINDOW:
       // Incognito windows are not allowed when incognito is disabled.
       return IncognitoModePrefs::GetAvailability(
-                 controller()->GetProfile()->GetPrefs()) !=
+                 controller()->profile()->GetPrefs()) !=
              IncognitoModePrefs::DISABLED;
     default:
       if (command_id < MENU_ITEM_COUNT)
@@ -213,11 +213,10 @@ void ExtensionLauncherContextMenu::ExecuteCommand(int command_id,
                                   extensions::LAUNCH_TYPE_FULLSCREEN);
       break;
     case MENU_NEW_WINDOW:
-      chrome::NewEmptyWindow(controller()->GetProfile());
+      chrome::NewEmptyWindow(controller()->profile());
       break;
     case MENU_NEW_INCOGNITO_WINDOW:
-      chrome::NewEmptyWindow(
-          controller()->GetProfile()->GetOffTheRecordProfile());
+      chrome::NewEmptyWindow(controller()->profile()->GetOffTheRecordProfile());
       break;
     default:
       if (extension_items_) {

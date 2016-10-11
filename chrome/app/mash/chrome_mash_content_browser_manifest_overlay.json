@@ -8,13 +8,7 @@
 {
   "capabilities": {
     "required": {
-      "service:ash": {
-        "interfaces": [
-          "ash::mojom::ShelfController",
-          "ash::mojom::SystemTray",
-          "ash::mojom::WallpaperController"
-        ]
-      },
+      "service:ash": { "classes": [ "ash" ] },
       "service:accessibility_autoclick": {
         "interfaces": [ "ash::autoclick::mojom::AutoclickController" ]
       },

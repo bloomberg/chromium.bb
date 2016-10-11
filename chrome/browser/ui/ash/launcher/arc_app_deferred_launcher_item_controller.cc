@@ -35,7 +35,7 @@ ArcAppDeferredLauncherItemController::ItemSelected(const ui::Event& event) {
 
 base::string16 ArcAppDeferredLauncherItemController::GetTitle() {
   ArcAppListPrefs* arc_prefs =
-      ArcAppListPrefs::Get(launcher_controller()->GetProfile());
+      ArcAppListPrefs::Get(launcher_controller()->profile());
   DCHECK(arc_prefs);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = arc_prefs->GetApp(
       ArcAppWindowLauncherController::GetArcAppIdFromShelfAppId(app_id()));

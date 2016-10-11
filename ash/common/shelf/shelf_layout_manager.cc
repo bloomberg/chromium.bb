@@ -11,7 +11,6 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager_observer.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -511,20 +510,12 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
       target_bounds, true /* animate */, true /* change_work_area */,
       delay_background_change ? update_shelf_observer_ : NULL);
 
-  // The delegate must be notified after |state_| is updated so that it can
-  // query the new target bounds.
-  ShelfDelegate* shelf_delegate = WmShell::Get()->shelf_delegate();
-  DCHECK(shelf_delegate);
-  if (old_state.visibility_state != state_.visibility_state)
-    shelf_delegate->OnShelfVisibilityStateChanged(wm_shelf_);
-
   // OnAutoHideStateChanged Should be emitted when:
   //  - firstly state changed to auto-hide from other state
   //  - or, auto_hide_state has changed
   if ((old_state.visibility_state != state_.visibility_state &&
        state_.visibility_state == SHELF_AUTO_HIDE) ||
       old_state.auto_hide_state != state_.auto_hide_state) {
-    shelf_delegate->OnShelfAutoHideStateChanged(wm_shelf_);
     FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                       OnAutoHideStateChanged(state_.auto_hide_state));
   }

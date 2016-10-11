@@ -5,23 +5,29 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_item_types.h"
+#include "ash/public/interfaces/shelf.mojom.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/ui/app_icon_loader.h"
+#include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 #include "extensions/common/constants.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 class AccountId;
 class ArcAppDeferredLauncherController;
 class Browser;
 class BrowserShortcutLauncherItemController;
 class GURL;
+class LauncherControllerHelper;
 class LauncherItemController;
 
 namespace ash {
@@ -45,9 +51,9 @@ typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 
 // ChromeLauncherController manages the launcher items needed for content
 // windows. Launcher items have a type, an optional app id, and a controller.
-// There are different kinds of launcher item controllers, all extending the
-// LauncherItemController class.
-class ChromeLauncherController {
+// Implements mojom::ShelfObserver and is a client of mojom::ShelfController.
+class ChromeLauncherController : public ash::mojom::ShelfObserver,
+                                 public AppIconLoaderDelegate {
  public:
   // Used to update the state of non plaform apps, as web contents change.
   enum AppState {
@@ -57,15 +63,20 @@ class ChromeLauncherController {
     APP_STATE_REMOVED
   };
 
-  // Set the ChromeLauncherController singleton.
-  static void set_instance(ChromeLauncherController* instance) {
+  // Returns the single ChromeLauncherController instance.
+  static ChromeLauncherController* instance() { return instance_; }
+  // TODO(crbug.com/654622): Remove this when tests are fixed.
+  static void set_instance_for_test(ChromeLauncherController* instance) {
     instance_ = instance;
   }
 
-  // Returns the single ChromeLauncherController instance.
-  static ChromeLauncherController* instance() { return instance_; }
+  Profile* profile() const { return profile_; }
 
-  virtual ~ChromeLauncherController();
+  LauncherControllerHelper* launcher_controller_helper() {
+    return launcher_controller_helper_.get();
+  }
+
+  ~ChromeLauncherController() override;
 
   // Initializes this ChromeLauncherController.
   virtual void Init() = 0;
@@ -129,9 +140,9 @@ class ChromeLauncherController {
 
   // Opens a new instance of the application identified by |app_id|.
   // Used by the app-list, and by pinned-app shelf items.
-  virtual void LaunchApp(const std::string& app_id,
-                         ash::LaunchSource source,
-                         int event_flags) = 0;
+  void LaunchApp(const std::string& app_id,
+                 ash::LaunchSource source,
+                 int event_flags);
 
   // If |app_id| is running, reactivates the app's most recently active window,
   // otherwise launches and activates the app.
@@ -154,10 +165,6 @@ class ChromeLauncherController {
   // Updates the launch type of the app for the specified id to |launch_type|.
   virtual void SetLaunchType(ash::ShelfID id,
                              extensions::LaunchType launch_type) = 0;
-
-  // Accessor to the currently loaded profile. Note that in multi profile use
-  // cases this might change over time.
-  virtual Profile* GetProfile() = 0;
 
   // Notify the controller that the state of an non platform app's tabs
   // have changed,
@@ -244,13 +251,69 @@ class ChromeLauncherController {
   // Controller to launch Arc apps in deferred mode.
   virtual ArcAppDeferredLauncherController* GetArcDeferredLauncher() = 0;
 
+  AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
+
+  // Sets the shelf auto-hide and/or alignment behavior from prefs.
+  void SetShelfAutoHideBehaviorFromPrefs();
+  void SetShelfAlignmentFromPrefs();
+  void SetShelfBehaviorsFromPrefs();
+
+  // Sets LauncherControllerHelper or AppIconLoader for test, taking ownership.
+  void SetLauncherControllerHelperForTest(
+      std::unique_ptr<LauncherControllerHelper> helper);
+  void SetAppIconLoadersForTest(
+      std::vector<std::unique_ptr<AppIconLoader>>& loaders);
+
+  void SetProfileForTest(Profile* profile);
+
  protected:
   ChromeLauncherController();
 
+  // Connects or reconnects to the mojom::ShelfController interface in ash.
+  // Returns true if connected and returns false in unit tests.
+  bool ConnectToShelfController();
+
+  // Accessor for subclasses to interact with the shelf controller.
+  ash::mojom::ShelfControllerPtr& shelf_controller() {
+    return shelf_controller_;
+  }
+
+  // Attach to a specific profile.
+  virtual void AttachProfile(Profile* profile_to_attach);
+
+  // ash::mojom::ShelfObserver:
+  void OnShelfCreated(int64_t display_id) override;
+  void OnAlignmentChanged(ash::ShelfAlignment alignment,
+                          int64_t display_id) override;
+  void OnAutoHideBehaviorChanged(ash::ShelfAutoHideBehavior auto_hide,
+                                 int64_t display_id) override;
+
  private:
+  // AppIconLoaderDelegate:
+  void OnAppImageUpdated(const std::string& app_id,
+                         const gfx::ImageSkia& image) override;
+
   static ChromeLauncherController* instance_;
 
+  // The currently loaded profile used for prefs and loading extensions. This is
+  // NOT necessarily the profile new windows are created with. Note that in
+  // multi-profile use cases this might change over time.
+  Profile* profile_ = nullptr;
+
+  // Ash's mojom::ShelfController used to change shelf state.
+  ash::mojom::ShelfControllerPtr shelf_controller_;
+
+  // The binding this instance uses to implment mojom::ShelfObserver
+  mojo::AssociatedBinding<ash::mojom::ShelfObserver> observer_binding_;
+
+  // Used to get app info for tabs.
+  std::unique_ptr<LauncherControllerHelper> launcher_controller_helper_;
+
+  // An observer that manages the shelf title and icon for settings windows.
   SettingsWindowObserver settings_window_observer_;
+
+  // Used to load the images for app items.
+  std::vector<std::unique_ptr<AppIconLoader>> app_icon_loaders_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };

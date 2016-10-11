@@ -439,7 +439,7 @@ void PanelLayoutManager::SetChildBounds(WmWindow* child,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PanelLayoutManager, WmShellObserver implementation:
+// PanelLayoutManager, ShellObserver implementation:
 
 void PanelLayoutManager::OnOverviewModeEnded() {
   Relayout();

@@ -140,8 +140,8 @@ AppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
 }
 
 base::string16 AppWindowLauncherItemController::GetTitle() {
-  return LauncherControllerHelper::GetAppTitle(
-      launcher_controller()->GetProfile(), app_id());
+  return LauncherControllerHelper::GetAppTitle(launcher_controller()->profile(),
+                                               app_id());
 }
 
 bool AppWindowLauncherItemController::IsDraggable() {
@@ -150,7 +150,7 @@ bool AppWindowLauncherItemController::IsDraggable() {
 }
 
 bool AppWindowLauncherItemController::CanPin() const {
-  return GetPinnableForAppID(app_id(), launcher_controller()->GetProfile()) ==
+  return GetPinnableForAppID(app_id(), launcher_controller()->profile()) ==
          AppListControllerDelegate::PIN_EDITABLE;
 }
 

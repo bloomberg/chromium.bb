@@ -13,9 +13,6 @@ namespace chrome {
 // on windows. It provides the HWND to the remote window.
 void OpenAsh(gfx::AcceleratedWidget remote_window);
 
-// Initializes Mash settings and connections specific to Chrome.
-void InitializeMash();
-
 // Closes the Ash window and destroys the Ash Shell.
 void CloseAsh();
 

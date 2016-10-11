@@ -134,7 +134,7 @@ void AppListServiceAsh::ShowAndSwitchToState(
 
 base::FilePath AppListServiceAsh::GetProfilePath(
     const base::FilePath& user_data_dir) {
-  return ChromeLauncherController::instance()->GetProfile()->GetPath();
+  return ChromeLauncherController::instance()->profile()->GetPath();
 }
 
 void AppListServiceAsh::ShowForProfile(Profile* /*default_profile*/) {
@@ -184,7 +184,7 @@ gfx::NativeWindow AppListServiceAsh::GetAppListWindow() {
 }
 
 Profile* AppListServiceAsh::GetCurrentAppListProfile() {
-  return ChromeLauncherController::instance()->GetProfile();
+  return ChromeLauncherController::instance()->profile();
 }
 
 AppListControllerDelegate* AppListServiceAsh::GetControllerDelegate() {

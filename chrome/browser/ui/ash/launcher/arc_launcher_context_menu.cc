@@ -22,7 +22,7 @@ ArcLauncherContextMenu::~ArcLauncherContextMenu() {}
 
 void ArcLauncherContextMenu::Init() {
   const ArcAppListPrefs* arc_list_prefs =
-      ArcAppListPrefs::Get(controller()->GetProfile());
+      ArcAppListPrefs::Get(controller()->profile());
   DCHECK(arc_list_prefs);
 
   const std::string app_id = controller()->GetAppIDForShelfID(item().id);

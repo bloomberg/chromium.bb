@@ -86,7 +86,7 @@ AppShortcutLauncherItemController::AppShortcutLauncherItemController(
   // To detect V1 applications we use their domain and match them against the
   // used URL. This will also work with applications like Google Drive.
   const Extension* extension =
-      GetExtensionForAppID(app_id, controller->GetProfile());
+      GetExtensionForAppID(app_id, controller->profile());
   // Some unit tests have no real extension.
   if (extension) {
     set_refocus_url(GURL(
@@ -186,7 +186,7 @@ AppShortcutLauncherItemController::GetRunningApplications() {
   }
 
   const Extension* extension =
-      GetExtensionForAppID(app_id(), launcher_controller()->GetProfile());
+      GetExtensionForAppID(app_id(), launcher_controller()->profile());
 
   // It is possible to come here While an extension gets loaded.
   if (!extension)
@@ -218,8 +218,8 @@ AppShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
 }
 
 base::string16 AppShortcutLauncherItemController::GetTitle() {
-  return LauncherControllerHelper::GetAppTitle(
-      launcher_controller()->GetProfile(), app_id());
+  return LauncherControllerHelper::GetAppTitle(launcher_controller()->profile(),
+                                               app_id());
 }
 
 ash::ShelfMenuModel* AppShortcutLauncherItemController::CreateApplicationMenu(
@@ -232,7 +232,7 @@ bool AppShortcutLauncherItemController::IsDraggable() {
 }
 
 bool AppShortcutLauncherItemController::CanPin() const {
-  return GetPinnableForAppID(app_id(), launcher_controller()->GetProfile()) ==
+  return GetPinnableForAppID(app_id(), launcher_controller()->profile()) ==
          AppListControllerDelegate::PIN_EDITABLE;
 }
 
@@ -250,7 +250,7 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
   }
 
   const Extension* extension =
-      GetExtensionForAppID(app_id(), launcher_controller()->GetProfile());
+      GetExtensionForAppID(app_id(), launcher_controller()->profile());
 
   // We may get here while the extension is loading (and NULL).
   if (!extension)
@@ -373,7 +373,7 @@ bool AppShortcutLauncherItemController::AdvanceToNextApp() {
 
 bool AppShortcutLauncherItemController::IsV2App() {
   const Extension* extension =
-      GetExtensionForAppID(app_id(), launcher_controller()->GetProfile());
+      GetExtensionForAppID(app_id(), launcher_controller()->profile());
   return extension && extension->is_platform_app();
 }
 

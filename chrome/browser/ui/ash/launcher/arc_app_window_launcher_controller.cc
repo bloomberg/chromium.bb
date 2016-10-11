@@ -259,8 +259,8 @@ ArcAppWindowLauncherController::ArcAppWindowLauncherController(
     ChromeLauncherController* owner,
     ash::ShelfDelegate* shelf_delegate)
     : AppWindowLauncherController(owner), shelf_delegate_(shelf_delegate) {
-  if (arc::ArcAuthService::IsAllowedForProfile(owner->GetProfile())) {
-    observed_profile_ = owner->GetProfile();
+  if (arc::ArcAuthService::IsAllowedForProfile(owner->profile())) {
+    observed_profile_ = owner->profile();
     StartObserving(observed_profile_);
   }
 }
@@ -350,7 +350,7 @@ void ArcAppWindowLauncherController::OnWindowVisibilityChanged(
   // the window is registered in multi-user manager and this manager may
   // consider this new window as hidden for current profile. Multi-user manager
   // uses OnWindowVisibilityChanging event to update window state.
-  if (visible && observed_profile_ == owner()->GetProfile())
+  if (visible && observed_profile_ == owner()->profile())
     AttachControllerToWindowIfNeeded(window);
 }
 
@@ -475,7 +475,7 @@ void ArcAppWindowLauncherController::OnTaskCreated(
   task_id_to_app_window_info_[task_id] =
       base::MakeUnique<AppWindowInfo>(shelf_app_id);
   // Don't create shelf icon for non-primary user.
-  if (observed_profile_ != owner()->GetProfile())
+  if (observed_profile_ != owner()->profile())
     return;
 
   AttachControllerToWindowsIfNeeded();
@@ -510,7 +510,7 @@ void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
 }
 
 void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
-  if (observed_profile_ != owner()->GetProfile()) {
+  if (observed_profile_ != owner()->profile()) {
     active_task_id_ = task_id;
     return;
   }

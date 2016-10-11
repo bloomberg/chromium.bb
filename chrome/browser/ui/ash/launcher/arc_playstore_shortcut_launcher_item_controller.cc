@@ -25,7 +25,7 @@ ash::ShelfItemDelegate::PerformedAction
 ArcPlaystoreShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
   ArcAppListPrefs* arc_app_prefs =
-      ArcAppListPrefs::Get(controller()->GetProfile());
+      ArcAppListPrefs::Get(controller()->profile());
   DCHECK(auth_service);
   DCHECK(arc_app_prefs);
   DCHECK(auth_service->IsAllowed());
@@ -36,10 +36,10 @@ ArcPlaystoreShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   // Deferred launcher.
   if (arc_app_prefs->IsRegistered(arc::kPlayStoreAppId) && arc_was_enabled) {
     // Known apps can be launched directly or deferred.
-    arc::LaunchApp(controller()->GetProfile(), arc::kPlayStoreAppId, true);
+    arc::LaunchApp(controller()->profile(), arc::kPlayStoreAppId, true);
   } else {
     // Launch Play Store once its app appears.
-    playstore_launcher_.reset(new ArcAppLauncher(controller()->GetProfile(),
+    playstore_launcher_.reset(new ArcAppLauncher(controller()->profile(),
                                                  arc::kPlayStoreAppId, true));
   }
 

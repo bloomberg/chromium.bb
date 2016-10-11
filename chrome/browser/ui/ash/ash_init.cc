@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
@@ -95,11 +94,6 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
     g_browser_process->platform_part()->RegisterKeepAlive();
   }
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
-}
-
-void InitializeMash() {
-  DCHECK(!ash::Shell::HasInstance());
-  ChromeLauncherControllerMus::CreateInstance()->Init();
 }
 
 void CloseAsh() {

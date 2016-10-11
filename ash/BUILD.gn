@@ -152,6 +152,8 @@ component("ash") {
     "common/shelf/shelf_button_pressed_metric_tracker.h",
     "common/shelf/shelf_constants.cc",
     "common/shelf/shelf_constants.h",
+    "common/shelf/shelf_controller.cc",
+    "common/shelf/shelf_controller.h",
     "common/shelf/shelf_delegate.h",
     "common/shelf/shelf_item_delegate.h",
     "common/shelf/shelf_item_types.cc",

@@ -58,8 +58,8 @@ void AppListControllerDelegateAsh::UnpinApp(const std::string& app_id) {
 
 AppListControllerDelegate::Pinnable AppListControllerDelegateAsh::GetPinnable(
     const std::string& app_id) {
-  return GetPinnableForAppID(
-      app_id, ChromeLauncherController::instance()->GetProfile());
+  return GetPinnableForAppID(app_id,
+                             ChromeLauncherController::instance()->profile());
 }
 
 void AppListControllerDelegateAsh::OnShowChildDialog() {

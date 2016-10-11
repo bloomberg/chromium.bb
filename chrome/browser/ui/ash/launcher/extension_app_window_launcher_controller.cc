@@ -53,7 +53,7 @@ std::string GetAppShelfId(AppWindow* app_window) {
 ExtensionAppWindowLauncherController::ExtensionAppWindowLauncherController(
     ChromeLauncherController* owner)
     : AppWindowLauncherController(owner) {
-  AppWindowRegistry* registry = AppWindowRegistry::Get(owner->GetProfile());
+  AppWindowRegistry* registry = AppWindowRegistry::Get(owner->profile());
   registry_.insert(registry);
   registry->AddObserver(this);
 }

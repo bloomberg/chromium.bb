@@ -250,18 +250,6 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
   void set_is_app_pinned(bool is_pinned) { is_app_pinned_ = is_pinned; }
 
   // ShelfDelegate overrides:
-  void OnShelfCreated(WmShelf* shelf) override {}
-
-  void OnShelfDestroyed(WmShelf* shelf) override {}
-
-  void OnShelfAlignmentChanged(WmShelf* shelf) override {}
-
-  void OnShelfAutoHideBehaviorChanged(WmShelf* shelf) override {}
-
-  void OnShelfAutoHideStateChanged(WmShelf* shelf) override {}
-
-  void OnShelfVisibilityStateChanged(WmShelf* shelf) override {}
-
   ShelfID GetShelfIDForAppID(const std::string& app_id) override {
     ShelfID id = 0;
     EXPECT_TRUE(base::StringToInt(app_id, &id));

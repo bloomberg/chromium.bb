@@ -175,7 +175,7 @@ app_list::AppListPresenter* ShellDelegateMus::GetAppListPresenter() {
 }
 
 ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
-  return new ShelfDelegateMus(WmShell::Get()->shelf_model());
+  return new ShelfDelegateMus();
 }
 
 SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {

@@ -5,6 +5,7 @@ include_rules = [
   "+ash/public",
   "+ash/resources",
   "+ash/shared",
+  "+mojo/public/cpp",
   "+ui",
   "-ui/aura",
 ]

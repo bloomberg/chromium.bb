@@ -434,8 +434,7 @@ app_list::AppListPresenter* ChromeShellDelegate::GetAppListPresenter() {
 ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
     ash::ShelfModel* model) {
   if (!shelf_delegate_) {
-    shelf_delegate_ =
-        ChromeLauncherControllerImpl::CreateInstance(nullptr, model);
+    shelf_delegate_ = new ChromeLauncherControllerImpl(nullptr, model);
     shelf_delegate_->Init();
   }
   return shelf_delegate_;

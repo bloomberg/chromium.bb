@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
+class ChromeLauncherControllerMus;
 class ImmersiveContextMus;
 class ImmersiveHandlerFactoryMus;
 class SystemTrayClient;
@@ -25,6 +26,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   void PostMainMessageLoopRun() override;
 
  private:
+  std::unique_ptr<ChromeLauncherControllerMus> chrome_launcher_controller_mus_;
   std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory_;
   std::unique_ptr<ImmersiveContextMus> immersive_context_;
   std::unique_ptr<SystemTrayClient> system_tray_client_;

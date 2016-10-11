@@ -89,18 +89,6 @@ void TestShelfDelegate::OnWindowHierarchyChanging(
     RemoveShelfItemForWindow(params.target);
 }
 
-void TestShelfDelegate::OnShelfCreated(WmShelf* shelf) {}
-
-void TestShelfDelegate::OnShelfDestroyed(WmShelf* shelf) {}
-
-void TestShelfDelegate::OnShelfAlignmentChanged(WmShelf* shelf) {}
-
-void TestShelfDelegate::OnShelfAutoHideBehaviorChanged(WmShelf* shelf) {}
-
-void TestShelfDelegate::OnShelfAutoHideStateChanged(WmShelf* shelf) {}
-
-void TestShelfDelegate::OnShelfVisibilityStateChanged(WmShelf* shelf) {}
-
 ShelfID TestShelfDelegate::GetShelfIDForAppID(const std::string& app_id) {
   for (auto const& iter : shelf_id_to_app_id_map_) {
     if (iter.second == app_id)

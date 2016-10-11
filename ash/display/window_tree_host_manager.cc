@@ -332,15 +332,13 @@ aura::Window* WindowTreeHostManager::GetPrimaryRootWindow() {
 
 aura::Window* WindowTreeHostManager::GetRootWindowForDisplayId(int64_t id) {
   AshWindowTreeHost* host = GetAshWindowTreeHostForDisplayId(id);
-  CHECK(host);
-  return GetWindow(host);
+  return host ? GetWindow(host) : nullptr;
 }
 
 AshWindowTreeHost* WindowTreeHostManager::GetAshWindowTreeHostForDisplayId(
     int64_t display_id) {
-  CHECK_EQ(1u, window_tree_hosts_.count(display_id)) << "display id = "
-                                                     << display_id;
-  return window_tree_hosts_[display_id];
+  const auto host = window_tree_hosts_.find(display_id);
+  return host == window_tree_hosts_.end() ? nullptr : host->second;
 }
 
 void WindowTreeHostManager::CloseChildWindows() {

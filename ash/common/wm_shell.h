@@ -60,6 +60,7 @@ class NewWindowDelegate;
 class PaletteDelegate;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionStateDelegate;
+class ShelfController;
 class ShelfDelegate;
 class ShelfModel;
 class ShelfWindowWatcher;
@@ -146,9 +147,11 @@ class ASH_EXPORT WmShell {
 
   PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
 
+  ShelfController* shelf_controller() { return shelf_controller_.get(); }
+
   ShelfDelegate* shelf_delegate() { return shelf_delegate_.get(); }
 
-  ShelfModel* shelf_model() { return shelf_model_.get(); }
+  ShelfModel* shelf_model();
 
   SystemTrayController* system_tray_controller() {
     return system_tray_controller_.get();
@@ -473,8 +476,8 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<NewWindowDelegate> new_window_delegate_;
   std::unique_ptr<PaletteDelegate> palette_delegate_;
+  std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
-  std::unique_ptr<ShelfModel> shelf_model_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<SystemTrayController> system_tray_controller_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;

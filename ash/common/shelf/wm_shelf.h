@@ -39,6 +39,10 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // widget may not exist, or the shelf may not be visible.
   static WmShelf* ForWindow(WmWindow* window);
 
+  // Returns if shelf alignment options are enabled, and the user is able to
+  // adjust the alignment (eg. not allowed in guest and supervised user modes).
+  static bool CanChangeShelfAlignment();
+
   virtual void CreateShelfWidget(WmWindow* root);
   void ShutdownShelfWidget();
   void DestroyShelfWidget();

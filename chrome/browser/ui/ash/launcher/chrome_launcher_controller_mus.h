@@ -5,19 +5,18 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_MUS_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_MUS_H_
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
-class ChromeMashShelfController;
+class ChromeShelfItemDelegate;
 
 class ChromeLauncherControllerMus : public ChromeLauncherController {
  public:
-  // Create a ChromeLauncherControllerMus instance and set it as the
-  // ChromeLauncherController singleton.
-  static ChromeLauncherController* CreateInstance();
-
+  ChromeLauncherControllerMus();
   ~ChromeLauncherControllerMus() override;
 
   // ChromeLauncherController:
@@ -40,9 +39,6 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   void Close(ash::ShelfID id) override;
   bool IsOpen(ash::ShelfID id) override;
   bool IsPlatformApp(ash::ShelfID id) override;
-  void LaunchApp(const std::string& app_id,
-                 ash::LaunchSource source,
-                 int event_flags) override;
   void ActivateApp(const std::string& app_id,
                    ash::LaunchSource source,
                    int event_flags) override;
@@ -52,7 +48,6 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   bool IsWindowedAppInLauncher(const std::string& app_id) override;
   void SetLaunchType(ash::ShelfID id,
                      extensions::LaunchType launch_type) override;
-  Profile* GetProfile() override;
   void UpdateAppState(content::WebContents* contents,
                       AppState app_state) override;
   ash::ShelfID GetShelfIDForWebContents(
@@ -85,10 +80,16 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   void OnUserProfileReadyToSwitch(Profile* profile) override;
   ArcAppDeferredLauncherController* GetArcDeferredLauncher() override;
 
- private:
-  ChromeLauncherControllerMus();
+  // AppIconLoaderDelegate:
+  void OnAppImageUpdated(const std::string& app_id,
+                         const gfx::ImageSkia& image) override;
 
-  std::unique_ptr<ChromeMashShelfController> shelf_controller_;
+ private:
+  // Pin the items set in the current profile's preferences.
+  void PinAppsFromPrefs();
+
+  std::map<std::string, std::unique_ptr<ChromeShelfItemDelegate>>
+      app_id_to_item_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerMus);
 };

@@ -142,7 +142,7 @@ bool BrowserShortcutLauncherItemController::IsOpen() const {
 
 bool BrowserShortcutLauncherItemController::IsVisible() const {
   Browser* last_browser =
-      chrome::FindTabbedBrowser(launcher_controller()->GetProfile(), true);
+      chrome::FindTabbedBrowser(launcher_controller()->profile(), true);
 
   if (!last_browser) {
     return false;
@@ -159,10 +159,10 @@ void BrowserShortcutLauncherItemController::Launch(ash::LaunchSource source,
 ash::ShelfItemDelegate::PerformedAction
 BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   Browser* last_browser =
-      chrome::FindTabbedBrowser(launcher_controller()->GetProfile(), true);
+      chrome::FindTabbedBrowser(launcher_controller()->profile(), true);
 
   if (!last_browser) {
-    chrome::NewEmptyWindow(launcher_controller()->GetProfile());
+    chrome::NewEmptyWindow(launcher_controller()->profile());
     return kNewWindowCreated;
   }
 
@@ -219,7 +219,7 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
 ash::ShelfItemDelegate::PerformedAction
 BrowserShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
   if (event.flags() & ui::EF_CONTROL_DOWN) {
-    chrome::NewEmptyWindow(launcher_controller()->GetProfile());
+    chrome::NewEmptyWindow(launcher_controller()->profile());
     return kNewWindowCreated;
   }
 
@@ -294,7 +294,7 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
   }
   // If there are no suitable browsers we create a new one.
   if (items.empty()) {
-    chrome::NewEmptyWindow(launcher_controller()->GetProfile());
+    chrome::NewEmptyWindow(launcher_controller()->profile());
     return kNewWindowCreated;
   }
   Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
@@ -317,9 +317,8 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
       browser = (++i == items.end()) ? items[0] : *i;
     } else {
       browser =
-          chrome::FindTabbedBrowser(launcher_controller()->GetProfile(), true);
-      if (!browser ||
-          !IsBrowserRepresentedInBrowserList(browser))
+          chrome::FindTabbedBrowser(launcher_controller()->profile(), true);
+      if (!browser || !IsBrowserRepresentedInBrowserList(browser))
         browser = items[0];
     }
   }

@@ -50,12 +50,6 @@ class TestShelfDelegate : public ShelfDelegate, public aura::WindowObserver {
   void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
 
   // ShelfDelegate implementation.
-  void OnShelfCreated(WmShelf* shelf) override;
-  void OnShelfDestroyed(WmShelf* shelf) override;
-  void OnShelfAlignmentChanged(WmShelf* shelf) override;
-  void OnShelfAutoHideBehaviorChanged(WmShelf* shelf) override;
-  void OnShelfAutoHideStateChanged(WmShelf* shelf) override;
-  void OnShelfVisibilityStateChanged(WmShelf* shelf) override;
   ShelfID GetShelfIDForAppID(const std::string& app_id) override;
   ShelfID GetShelfIDForAppIDAndLaunchID(const std::string& app_id,
                                         const std::string& launch_id) override;
