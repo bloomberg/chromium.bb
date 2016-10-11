@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import("//testing/test.gni")
 
 component("browser") {
   output_name = "storage_browser"
@@ -213,5 +214,23 @@ executable("dump_file_system") {
     "//build/config/sanitizers:deps",
     "//build/win:default_exe_manifest",
     "//storage/common",
+  ]
+}
+
+test("storage_unittests") {
+  sources = [
+    # Do NOT add storage/ tests here until this target is added to the build
+    # bots. http://crbug.com/653751
+
+    # If the sources list is empty, the win_clang builder fails.
+    # This file will be removed when the real tests are moved over from
+    # content_unittests to this target.
+    "crbug653751_unittest.cc",
+  ]
+
+  deps = [
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gtest",
   ]
 }
