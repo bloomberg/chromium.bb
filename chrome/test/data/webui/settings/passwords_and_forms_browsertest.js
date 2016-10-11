@@ -327,11 +327,8 @@ PasswordsAndFormsBrowserTest.prototype = {
   },
 };
 
-/**
- * This test will validate that the section is loaded with data.
- * TODO(dbeam/hcarmona): fix these tests.
- */
-TEST_F('PasswordsAndFormsBrowserTest', 'DISABLED_uiTests', function() {
+/** This test will validate that the section is loaded with data. */
+TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
   var self = this;
 
   suite('PasswordsAndForms', function() {

@@ -42,24 +42,26 @@ SettingsPasswordSectionBrowserTest.prototype = {
   /**
    * Helper method that validates a that elements in the password list match
    * the expected data.
-   * @param {!Array<!Element>} nodes The nodes that will be checked.
+   * @param {!Element} listElement The iron-list element that will be checked.
    * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList The
    *     expected data.
    * @private
    */
-  validatePasswordList: function(nodes, passwordList) {
-    assertEquals(passwordList.length, nodes.length);
-    for (var index = 0; index < passwordList.length; ++index) {
-      var node = nodes[index];
-      var passwordInfo = passwordList[index];
+  validatePasswordList: function(listElement, passwordList) {
+    assertEquals(passwordList.length, listElement.items.length);
+    if (passwordList.length > 0) {
+      // The first child is a template, skip and get the real 'first child'.
+      var node = Polymer.dom(listElement).children[1];
+      assert(node);
+      var passwordInfo = passwordList[0];
       assertEquals(passwordInfo.loginPair.originUrl,
-                   node.querySelector('#originUrl').textContent);
+          node.querySelector('#originUrl').textContent);
       assertEquals(passwordInfo.linkUrl,
-                   node.querySelector('#originUrl').href);
+          node.querySelector('#originUrl').href);
       assertEquals(passwordInfo.loginPair.username,
-                   node.querySelector('#username').textContent);
+          node.querySelector('#username').textContent);
       assertEquals(passwordInfo.numCharactersInPassword,
-                   node.querySelector('#password').value.length);
+          node.querySelector('#password').value.length);
     }
   },
 
@@ -94,18 +96,6 @@ SettingsPasswordSectionBrowserTest.prototype = {
     assertEquals('TEMPLATE', template.tagName);
     // The template is at the end of the list of children and should be skipped.
     return Array.prototype.slice.call(element.children, 0, -1);
-  },
-
-  /**
-   * Skips over the template and returns all visible children of an iron-list.
-   * @param {!Element} ironList
-   * @return {!Array<!Element>}
-   * @private
-   */
-  getIronListChildren_: function(ironList) {
-    return Polymer.dom(ironList).children.filter(function(child, i) {
-      return i != 0 && !child.hidden;
-    });
   },
 
   /**
@@ -176,11 +166,8 @@ SettingsPasswordSectionBrowserTest.prototype = {
   },
 };
 
-/**
- * This test will validate that the section is loaded with data.
- * TODO(dbeam/hcarmona): fix these tests.
- */
-TEST_F('SettingsPasswordSectionBrowserTest', 'DISABLED_uiTests', function() {
+/** This test will validate that the section is loaded with data. */
+TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
   var self = this;
 
   suite('PasswordsSection', function() {
@@ -189,9 +176,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'DISABLED_uiTests', function() {
 
       var passwordsSection = self.createPasswordsSection_([], []);
 
-      self.validatePasswordList(
-          self.getIronListChildren_(passwordsSection.$.passwordList),
-          []);
+      self.validatePasswordList(passwordsSection.$.passwordList, []);
 
       assertFalse(passwordsSection.$.noPasswordsLabel.hidden);
       assertTrue(passwordsSection.$.savedPasswordsHeading.hidden);
@@ -215,9 +200,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'DISABLED_uiTests', function() {
       // then other expectations will also fail.
       assertEquals(passwordList, passwordsSection.$.passwordList.items);
 
-      self.validatePasswordList(
-          self.getIronListChildren_(passwordsSection.$.passwordList),
-          passwordList);
+      self.validatePasswordList(passwordsSection.$.passwordList, passwordList);
 
       assertTrue(passwordsSection.$.noPasswordsLabel.hidden);
       assertFalse(passwordsSection.$.savedPasswordsHeading.hidden);
@@ -233,9 +216,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'DISABLED_uiTests', function() {
 
       var passwordsSection = self.createPasswordsSection_(passwordList, []);
 
-      self.validatePasswordList(
-          self.getIronListChildren_(passwordsSection.$.passwordList),
-          passwordList);
+      self.validatePasswordList(passwordsSection.$.passwordList, passwordList);
       // Simulate 'longwebsite.com' being removed from the list.
       passwordsSection.splice('savedPasswords', 1, 1);
       self.flushPasswordSection_(passwordsSection);
@@ -244,9 +225,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'DISABLED_uiTests', function() {
                                        'longwebsite.com'));
       assertFalse(self.listContainsUrl(passwordList, 'longwebsite.com'));
 
-      self.validatePasswordList(
-          self.getIronListChildren_(passwordsSection.$.passwordList),
-          passwordList);
+      self.validatePasswordList(passwordsSection.$.passwordList, passwordList);
     });
 
     // Test verifies that pressing the 'remove' button will trigger a remove
@@ -263,38 +242,26 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'DISABLED_uiTests', function() {
 
       var passwordsSection = self.createPasswordsSection_(passwordList, []);
 
-      var passwords =
-          self.getIronListChildren_(passwordsSection.$.passwordList);
-
-      // The index of the button currently being checked.
-      var index = 0;
-
-      var clickRemoveButton = function() {
-        MockInteractions.tap(passwords[index].querySelector('#passwordMenu'));
-        MockInteractions.tap(passwordsSection.$.menuRemovePassword);
-      };
+      // The first child is a template, skip and get the real 'first child'.
+      var firstNode = Polymer.dom(passwordsSection.$.passwordList).children[1];
+      assert(firstNode);
+      var firstPassword = passwordList[0];
 
       // Listen for the remove event. If this event isn't received, the test
       // will time out and fail.
       passwordsSection.addEventListener('remove-saved-password',
                                         function(event) {
         // Verify that the event matches the expected value.
-        assertTrue(index < passwordList.length);
-        assertEquals(passwordList[index].loginPair.originUrl,
+        assertEquals(firstPassword.loginPair.originUrl,
                      event.detail.originUrl);
-        assertEquals(passwordList[index].loginPair.username,
+        assertEquals(firstPassword.loginPair.username,
                      event.detail.username);
-
-        if (++index < passwordList.length) {
-          // Click 'remove' on all passwords, one by one.
-          window.setTimeout(clickRemoveButton, 0);
-        } else {
-          done();
-        }
+        done();
       });
 
-      // Start removing.
-      clickRemoveButton();
+      // Click the remove button on the first password.
+      MockInteractions.tap(firstNode.querySelector('#passwordMenu'));
+      MockInteractions.tap(passwordsSection.$.menuRemovePassword);
     });
 
     test('verifyFilterPasswords', function() {
@@ -311,16 +278,14 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'DISABLED_uiTests', function() {
       passwordsSection.filter = 'show';
       Polymer.dom.flush();
 
-      var expectedPasswordList = [
+      var expectedList = [
         FakeDataMaker.passwordEntry('one.com', 'show', 5),
         FakeDataMaker.passwordEntry('two.com', 'shower', 3),
         FakeDataMaker.passwordEntry('three.com/show', 'four', 1),
         FakeDataMaker.passwordEntry('six-show.com', 'one', 6),
       ];
 
-      self.validatePasswordList(
-          self.getIronListChildren_(passwordsSection.$.passwordList),
-          expectedPasswordList);
+      self.validatePasswordList(passwordsSection.$.passwordList, expectedList);
     });
 
     test('verifyFilterPasswordExceptions', function() {
