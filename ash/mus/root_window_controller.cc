@@ -54,9 +54,9 @@ RootWindowController::RootWindowController(WindowManager* window_manager,
       root_(root),
       window_count_(0),
       display_(display),
-      wm_root_window_controller_(
-          base::MakeUnique<WmRootWindowControllerMus>(window_manager_->shell(),
-                                                      this)) {
+      wm_shelf_(base::MakeUnique<WmShelfMus>()) {
+  wm_root_window_controller_ = base::MakeUnique<WmRootWindowControllerMus>(
+      window_manager_->shell(), this);
   wm_root_window_controller_->CreateContainers();
   wm_root_window_controller_->CreateLayoutManagers();
   CreateLayoutManagers();
@@ -183,9 +183,6 @@ void RootWindowController::CreateLayoutManagers() {
       GetWindowByShellWindowId(kShellWindowId_LockScreenContainer);
   layout_managers_[lock_screen_container->mus_window()].reset(
       new ScreenlockLayout(lock_screen_container->mus_window()));
-
-  // Creating the shelf also creates the status area and both layout managers.
-  wm_shelf_.reset(new WmShelfMus(wm_root_window_controller_->GetWindow()));
 }
 
 }  // namespace mus

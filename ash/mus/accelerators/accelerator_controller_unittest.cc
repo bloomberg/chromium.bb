@@ -14,6 +14,7 @@
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/volume_control_delegate.h"
+#include "ash/common/test/ash_test.h"
 #include "ash/common/test/test_volume_control_delegate.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_positioning_utils.h"
@@ -550,20 +551,24 @@ TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftSnapRight) {
 }
 
 TEST_F(AcceleratorControllerTest, WindowDockLeftMinimizeWindowWithRestore) {
-  mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
-  WmWindow* window1 =
-      mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
+  WindowOwner window_owner(
+      mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
+  WindowOwner window1_owner(
+      mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
+  WmWindow* window1 = window1_owner.window();
 
   wm::WindowState* window1_state = window1->GetWindowState();
   window1_state->Activate();
 
-  WmWindow* window2 =
-      mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
+  WindowOwner window2_owner(
+      mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
+  WmWindow* window2 = window2_owner.window();
 
   wm::WindowState* window2_state = window2->GetWindowState();
 
-  WmWindow* window3 =
-      mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
+  WindowOwner window3_owner(
+      mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
+  WmWindow* window3 = window3_owner.window();
 
   wm::WindowState* window3_state = window3->GetWindowState();
   window3_state->Activate();
@@ -626,8 +631,9 @@ TEST_F(AcceleratorControllerTest, WindowPanelDockLeftDockRightRestore) {
 */
 
 TEST_F(AcceleratorControllerTest, CenterWindowAccelerator) {
-  WmWindow* window =
-      mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
+  WindowOwner window_owner(
+      mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
+  WmWindow* window = window_owner.window();
   wm::WindowState* window_state = window->GetWindowState();
   window_state->Activate();
 

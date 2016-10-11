@@ -9,15 +9,12 @@
 #include "base/macros.h"
 
 namespace ash {
-
-class WmWindow;
-
 namespace mus {
 
 // WmShelf implementation for mus.
 class WmShelfMus : public WmShelf {
  public:
-  explicit WmShelfMus(WmWindow* root_window);
+  WmShelfMus();
   ~WmShelfMus() override;
 
   // WmShelf:

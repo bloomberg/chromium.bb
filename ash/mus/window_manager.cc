@@ -80,6 +80,9 @@ void WindowManager::Init(
                               this, pointer_watcher_event_router_.get()));
   shell_->Initialize(blocking_pool);
   lookup_.reset(new WmLookupMus);
+
+  // TODO: this should be called when logged in. See http://crbug.com/654606.
+  shell_->CreateShelf();
 }
 
 void WindowManager::SetScreenLocked(bool is_locked) {
@@ -157,6 +160,9 @@ RootWindowController* WindowManager::CreateRootWindowController(
   RootWindowController* root_window_controller =
       root_window_controller_ptr.get();
   root_window_controllers_.insert(std::move(root_window_controller_ptr));
+
+  // TODO: this should be called when logged in. See http://crbug.com/654606.
+  root_window_controller->wm_root_window_controller()->CreateShelf();
 
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
                     OnRootWindowControllerAdded(root_window_controller));

@@ -520,7 +520,6 @@ void RootWindowController::InitLayoutManagers() {
   aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
   WmWindow* wm_shelf_container = WmWindowAura::Get(shelf_container);
   WmWindow* wm_status_container = WmWindowAura::Get(status_container);
-  wm_shelf_aura_->CreateShelfWidget(WmWindowAura::Get(GetRootWindow()));
 
   wm_root_window_controller_->CreateLayoutManagers();
 

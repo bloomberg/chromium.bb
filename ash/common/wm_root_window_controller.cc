@@ -468,6 +468,8 @@ void WmRootWindowController::CreateContainers() {
 }
 
 void WmRootWindowController::CreateLayoutManagers() {
+  GetShelf()->CreateShelfWidget(GetWindow());
+
   root_window_layout_manager_ = new wm::RootWindowLayoutManager(root_);
   root_->SetLayoutManager(base::WrapUnique(root_window_layout_manager_));
 

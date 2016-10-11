@@ -12,14 +12,7 @@
 namespace ash {
 namespace mus {
 
-WmShelfMus::WmShelfMus(WmWindow* root_window) {
-  DCHECK(root_window);
-  WmShell::Get()->CreateShelfDelegate();
-  CreateShelfWidget(root_window);
-  InitializeShelf();
-  WmShell::Get()->NotifyShelfCreatedForRootWindow(root_window);
-  shelf_widget()->PostCreateShelf();
-}
+WmShelfMus::WmShelfMus() {}
 
 WmShelfMus::~WmShelfMus() {}
 
