@@ -583,7 +583,9 @@ TEST_F(MessageCenterViewTest, CloseButtonEnablity) {
   EXPECT_EQ(0u, GetMessageCenter()->GetVisibleNotifications().size());
   EXPECT_FALSE(close_button->enabled());
 
-  Notification normal_notification(
+#if defined(OS_CHROMEOS)
+  // Non-pinned version of notification #1
+  Notification normal_notification1(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
       base::UTF8ToUTF16("title2"),
       base::UTF8ToUTF16("message\nwhich\nis\nvertically\nlong\n."),
@@ -591,25 +593,52 @@ TEST_F(MessageCenterViewTest, CloseButtonEnablity) {
       NotifierId(NotifierId::APPLICATION, "extension_id"),
       message_center::RichNotificationData(), NULL);
 
-#if defined(OS_CHROMEOS)
-  Notification pinned_notification(
+  // Pinned version of notification #1
+  Notification pinned_notification1(
+      NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
+      base::UTF8ToUTF16("title2"),
+      base::UTF8ToUTF16("message\nwhich\nis\nvertically\nlong\n."),
+      gfx::Image(), base::UTF8ToUTF16("display source"), GURL(),
+      NotifierId(NotifierId::APPLICATION, "extension_id"),
+      message_center::RichNotificationData(), NULL);
+  pinned_notification1.set_pinned(true);
+
+  // Pinned notification #2
+  Notification pinned_notification2(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId2),
       base::UTF8ToUTF16("title2"),
       base::UTF8ToUTF16("message\nwhich\nis\nvertically\nlong\n."),
       gfx::Image(), base::UTF8ToUTF16("display source"), GURL(),
       NotifierId(NotifierId::APPLICATION, "extension_id"),
       message_center::RichNotificationData(), NULL);
-  pinned_notification.set_pinned(true);
+  pinned_notification2.set_pinned(true);
 
   AddNotification(
-      std::unique_ptr<Notification>(new Notification(normal_notification)));
+      std::unique_ptr<Notification>(new Notification(normal_notification1)));
 
   // There should be 1 non-pinned notification.
   EXPECT_EQ(1u, GetMessageCenter()->GetVisibleNotifications().size());
   EXPECT_TRUE(close_button->enabled());
 
+  UpdateNotification(
+      kNotificationId1,
+      std::unique_ptr<Notification>(new Notification(pinned_notification1)));
+
+  // There should be 1 pinned notification.
+  EXPECT_EQ(1u, GetMessageCenter()->GetVisibleNotifications().size());
+  EXPECT_FALSE(close_button->enabled());
+
+  // Adds 1 pinned notification.
   AddNotification(
-      std::unique_ptr<Notification>(new Notification(pinned_notification)));
+      std::unique_ptr<Notification>(new Notification(pinned_notification2)));
+
+  // There should be 1 pinned notification.
+  EXPECT_EQ(2u, GetMessageCenter()->GetVisibleNotifications().size());
+  EXPECT_FALSE(close_button->enabled());
+
+  UpdateNotification(
+      kNotificationId1,
+      std::unique_ptr<Notification>(new Notification(normal_notification1)));
 
   // There should be 1 normal notification and 1 pinned notification.
   EXPECT_EQ(2u, GetMessageCenter()->GetVisibleNotifications().size());
@@ -628,7 +657,7 @@ TEST_F(MessageCenterViewTest, CloseButtonEnablity) {
   EXPECT_FALSE(close_button->enabled());
 
   AddNotification(
-      std::unique_ptr<Notification>(new Notification(pinned_notification)));
+      std::unique_ptr<Notification>(new Notification(pinned_notification2)));
 
   // There should be 1 pinned notification.
   EXPECT_EQ(1u, GetMessageCenter()->GetVisibleNotifications().size());

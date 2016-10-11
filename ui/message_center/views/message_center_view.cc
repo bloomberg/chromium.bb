@@ -398,9 +398,15 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
     if ((*iter)->id() == id) {
       int old_width = view->width();
       int old_height = view->height();
+      bool old_pinned = view->IsPinned();
       message_list_view_->UpdateNotification(view, **iter);
-      if (view->GetHeightForWidth(old_width) != old_height)
+      if (view->GetHeightForWidth(old_width) != old_height) {
         Update(true /* animate */);
+      } else if (view->IsPinned() != old_pinned) {
+        // Animate flag is false, since the pinned flag transition doesn't need
+        // animation.
+        Update(false /* animate */);
+      }
       break;
     }
   }
