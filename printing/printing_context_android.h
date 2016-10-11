@@ -52,7 +52,7 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
   Result DocumentDone() override;
   void Cancel() override;
   void ReleaseContext() override;
-  gfx::NativeDrawingContext context() const override;
+  skia::NativeDrawingContext context() const override;
 
   // Registers JNI bindings for RegisterContext.
   static bool RegisterPrintingContext(JNIEnv* env);

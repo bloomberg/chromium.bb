@@ -105,7 +105,7 @@ CGContextRef GetBitmapContext(const SkCanvas& canvas) {
 
 ScopedPlatformPaint::ScopedPlatformPaint(SkCanvas* canvas) :
     canvas_(canvas),
-    platform_surface_(nullptr) {
+    native_drawing_context_(nullptr) {
   // TODO(tomhudson) we're assuming non-null canvas?
   PlatformDevice* platform_device = GetPlatformDevice(canvas->getTopDevice(true));
   if (platform_device) {
@@ -113,7 +113,7 @@ ScopedPlatformPaint::ScopedPlatformPaint(SkCanvas* canvas) :
     SkMatrix ctm;
     SkIRect clip_bounds;
     canvas->temporary_internal_describeTopLayer(&ctm, &clip_bounds);
-    platform_surface_ = platform_device->BeginPlatformPaint(ctm, clip_bounds);
+    native_drawing_context_ = platform_device->BeginPlatformPaint(ctm, clip_bounds);
   }
 }
 

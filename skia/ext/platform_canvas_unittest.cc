@@ -137,7 +137,7 @@ bool VerifyCanvasColor(const SkCanvas& canvas, uint32_t canvas_color) {
 #if defined(OS_WIN)
 void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
   skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
-  HDC dc = scoped_platform_paint.GetPlatformSurface();
+  HDC dc = scoped_platform_paint.GetNativeDrawingContext();
 
   RECT inner_rc;
   inner_rc.left = x;
@@ -149,7 +149,7 @@ void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
 #elif defined(OS_MACOSX)
 void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
   skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
-  CGContextRef context = scoped_platform_paint.GetPlatformSurface();
+  CGContextRef context = scoped_platform_paint.GetNativeDrawingContext();
 
   CGRect inner_rc = CGRectMake(x, y, w, h);
   // RGBA opaque black
@@ -161,7 +161,7 @@ void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
 #elif defined(USE_CAIRO)
 void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
   skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
-  cairo_t* context = scoped_platform_paint.GetPlatformSurface();
+  cairo_t* context = scoped_platform_paint.GetNativeDrawingContext();
 
   cairo_rectangle(context, x, y, w, h);
   cairo_set_source_rgb(context, 0.0, 0.0, 0.0);

@@ -76,7 +76,7 @@ void ScrollCanvas(SkCanvas* canvas,
   // through to the software implementation.
   if (skia::SupportsPlatformPaint(canvas)) {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas);
-    HDC hdc = scoped_platform_paint.GetPlatformSurface();
+    HDC hdc = scoped_platform_paint.GetNativeDrawingContext();
 
     RECT damaged_rect;
     RECT r = in_clip.ToRECT();

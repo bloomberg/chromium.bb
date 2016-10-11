@@ -12,7 +12,7 @@
 #include <vector>
 #endif
 
-#include "skia/ext/platform_surface.h"
+#include "skia/ext/native_drawing_context.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
@@ -65,8 +65,8 @@ class SK_API PlatformDevice {
   // The DC that corresponds to the bitmap, used for GDI operations drawing
   // into the bitmap. This is possibly heavyweight, so it should be existant
   // only during one pass of rendering.
-  virtual PlatformSurface BeginPlatformPaint(const SkMatrix& transform,
-                                             const SkIRect& clip_bounds);
+  virtual NativeDrawingContext BeginPlatformPaint(const SkMatrix& transform,
+                                                  const SkIRect& clip_bounds);
 
   friend class ScopedPlatformPaint;
 };

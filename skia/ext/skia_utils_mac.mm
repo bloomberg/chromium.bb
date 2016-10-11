@@ -193,7 +193,7 @@ SkBitmap CGImageToSkBitmap(CGImageRef image) {
   sk_sp<SkCanvas> canvas(skia::CreatePlatformCanvas(
       nullptr, width, height, false, RETURN_NULL_ON_FAILURE));
   ScopedPlatformPaint p(canvas.get());
-  CGContextRef context = p.GetPlatformSurface();
+  CGContextRef context = p.GetNativeDrawingContext();
 
   // We need to invert the y-axis of the canvas so that Core Graphics drawing
   // happens right-side up. Skia has an upper-left origin and CG has a lower-

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "printing/print_settings.h"
+#include "skia/ext/native_drawing_context.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -111,7 +112,7 @@ class PRINTING_EXPORT PrintingContext {
   virtual void ReleaseContext() = 0;
 
   // Returns the native context used to print.
-  virtual gfx::NativeDrawingContext context() const = 0;
+  virtual skia::NativeDrawingContext context() const = 0;
 
   // Creates an instance of this object. Implementers of this interface should
   // implement this method to create an object of their implementation.

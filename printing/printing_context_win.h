@@ -41,7 +41,7 @@ class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
   Result DocumentDone() override;
   void Cancel() override;
   void ReleaseContext() override;
-  gfx::NativeDrawingContext context() const override;
+  skia::NativeDrawingContext context() const override;
 
  protected:
   static HWND GetRootWindow(gfx::NativeView view);

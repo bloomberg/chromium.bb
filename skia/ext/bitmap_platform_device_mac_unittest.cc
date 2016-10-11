@@ -36,7 +36,7 @@ TEST_F(BitmapPlatformDeviceMacTest, ClipRectTransformWithTranslate) {
   canvas->setMatrix(transform);
 
   ScopedPlatformPaint p(canvas.get());
-  CGContextRef context = p.GetPlatformSurface();
+  CGContextRef context = p.GetNativeDrawingContext();
 
   SkRect clip_rect = skia::CGRectToSkRect(CGContextGetClipBoundingBox(context));
   transform.mapRect(&clip_rect);
@@ -54,7 +54,7 @@ TEST_F(BitmapPlatformDeviceMacTest, ClipRectTransformWithScale) {
   canvas->setMatrix(transform);
 
   ScopedPlatformPaint p(canvas.get());
-  CGContextRef context = p.GetPlatformSurface();
+  CGContextRef context = p.GetNativeDrawingContext();
 
   SkRect clip_rect = skia::CGRectToSkRect(CGContextGetClipBoundingBox(context));
   transform.mapRect(&clip_rect);

@@ -11,7 +11,7 @@
 // The platform-specific device will include the necessary platform headers
 // to get the surface type.
 #include "build/build_config.h"
-#include "skia/ext/platform_surface.h"
+#include "skia/ext/native_drawing_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -130,22 +130,24 @@ SK_API bool GetWritablePixels(SkCanvas* canvas, SkPixmap* pixmap);
 
 // Returns true if native platform routines can be used to draw on the
 // given canvas. If this function returns false,
-// ScopedPlatformPaint::GetPlatformSurface() should return NULL.
+// ScopedPlatformPaint::GetNativeDrawingContext() should return NULL.
 SK_API bool SupportsPlatformPaint(const SkCanvas* canvas);
 
 // This object guards calls to platform drawing routines. The surface
-// returned from GetPlatformSurface() can be used with the native platform
+// returned from GetNativeDrawingContext() can be used with the native platform
 // routines.
 class SK_API ScopedPlatformPaint {
  public:
   explicit ScopedPlatformPaint(SkCanvas* canvas);
 
-  // Returns the PlatformSurface to use for native platform drawing calls.
-  PlatformSurface GetPlatformSurface() { return platform_surface_; }
+  // Returns the NativeDrawingContext to use for native platform drawing calls.
+  NativeDrawingContext GetNativeDrawingContext() {
+    return native_drawing_context_;
+  }
 
  private:
   SkCanvas* canvas_;
-  PlatformSurface platform_surface_;
+  NativeDrawingContext native_drawing_context_;
 
   // Disallow copy and assign
   ScopedPlatformPaint(const ScopedPlatformPaint&);

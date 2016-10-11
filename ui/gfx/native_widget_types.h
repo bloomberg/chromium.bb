@@ -137,11 +137,9 @@ typedef jobject NativeEvent;
 
 #if defined(OS_WIN)
 typedef HFONT NativeFont;
-typedef HDC NativeDrawingContext;
 typedef IAccessible* NativeViewAccessible;
 #elif defined(OS_IOS)
 typedef UIFont* NativeFont;
-typedef CGContext* NativeDrawingContext;
 #ifdef __OBJC__
 typedef id NativeViewAccessible;
 #else
@@ -149,7 +147,6 @@ typedef void* NativeViewAccessible;
 #endif  // __OBJC__
 #elif defined(OS_MACOSX)
 typedef NSFont* NativeFont;
-typedef CGContext* NativeDrawingContext;
 #ifdef __OBJC__
 typedef id NativeViewAccessible;
 #else
@@ -157,11 +154,6 @@ typedef void* NativeViewAccessible;
 #endif  // __OBJC__
 #else  // Android, Linux, Chrome OS, etc.
 // Linux doesn't have a native font type.
-#if defined(USE_CAIRO)
-typedef cairo_t* NativeDrawingContext;
-#else
-typedef void* NativeDrawingContext;
-#endif  // defined(USE_CAIRO)
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
 typedef AtkObject* NativeViewAccessible;
 #else

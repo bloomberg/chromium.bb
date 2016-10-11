@@ -38,7 +38,7 @@ class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
   Result DocumentDone() override;
   void Cancel() override;
   void ReleaseContext() override;
-  gfx::NativeDrawingContext context() const override;
+  skia::NativeDrawingContext context() const override;
 
  private:
   // Initializes PrintSettings from |print_info_|. This must be called

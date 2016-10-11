@@ -56,7 +56,7 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   Result DocumentDone() override;
   void Cancel() override;
   void ReleaseContext() override;
-  gfx::NativeDrawingContext context() const override;
+  skia::NativeDrawingContext context() const override;
 
  private:
   base::string16 document_name_;

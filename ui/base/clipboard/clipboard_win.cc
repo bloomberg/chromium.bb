@@ -617,7 +617,7 @@ SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
                      false);
   {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
-    HDC dc = scoped_platform_paint.GetPlatformSurface();
+    HDC dc = scoped_platform_paint.GetNativeDrawingContext();
     ::SetDIBitsToDevice(dc, 0, 0, bitmap->bmiHeader.biWidth,
                         bitmap->bmiHeader.biHeight, 0, 0, 0,
                         bitmap->bmiHeader.biHeight, bitmap_bits, bitmap,

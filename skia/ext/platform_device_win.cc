@@ -11,8 +11,9 @@
 
 namespace skia {
 
-PlatformSurface PlatformDevice::BeginPlatformPaint(const SkMatrix& transform,
-                                                   const SkIRect& clip_bounds) {
+NativeDrawingContext PlatformDevice::BeginPlatformPaint(
+    const SkMatrix& transform,
+    const SkIRect& clip_bounds) {
   return 0;
 }
 

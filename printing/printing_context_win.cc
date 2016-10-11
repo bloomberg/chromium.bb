@@ -323,7 +323,7 @@ void PrintingContextWin::ReleaseContext() {
   }
 }
 
-gfx::NativeDrawingContext PrintingContextWin::context() const {
+skia::NativeDrawingContext PrintingContextWin::context() const {
   return context_;
 }
 

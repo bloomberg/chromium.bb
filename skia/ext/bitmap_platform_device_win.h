@@ -47,8 +47,8 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice,
   // PlatformDevice override
   // Retrieves the bitmap DC, which is the memory DC for our bitmap data. The
   // bitmap DC may be lazily created.
-  PlatformSurface BeginPlatformPaint(const SkMatrix& transform,
-                                     const SkIRect& clip_bounds) override;
+  NativeDrawingContext BeginPlatformPaint(const SkMatrix& transform,
+                                          const SkIRect& clip_bounds) override;
 
   // Private constructor.
   BitmapPlatformDevice(HBITMAP hbitmap, const SkBitmap& bitmap);

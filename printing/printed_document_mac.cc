@@ -14,7 +14,8 @@
 namespace printing {
 
 void PrintedDocument::RenderPrintedPage(
-    const PrintedPage& page, gfx::NativeDrawingContext context) const {
+    const PrintedPage& page,
+    skia::NativeDrawingContext context) const {
 #ifndef NDEBUG
   {
     // Make sure the page is from our list.

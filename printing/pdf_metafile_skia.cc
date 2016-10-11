@@ -228,20 +228,20 @@ unsigned int PdfMetafileSkia::GetPageCount() const {
   return base::checked_cast<unsigned int>(data_->pages_.size());
 }
 
-gfx::NativeDrawingContext PdfMetafileSkia::context() const {
+skia::NativeDrawingContext PdfMetafileSkia::context() const {
   NOTREACHED();
   return nullptr;
 }
 
 
 #if defined(OS_WIN)
-bool PdfMetafileSkia::Playback(gfx::NativeDrawingContext hdc,
+bool PdfMetafileSkia::Playback(skia::NativeDrawingContext hdc,
                                const RECT* rect) const {
   NOTREACHED();
   return false;
 }
 
-bool PdfMetafileSkia::SafePlayback(gfx::NativeDrawingContext hdc) const {
+bool PdfMetafileSkia::SafePlayback(skia::NativeDrawingContext hdc) const {
   NOTREACHED();
   return false;
 }
