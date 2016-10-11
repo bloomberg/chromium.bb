@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -87,8 +88,9 @@ public class ChromeApplication extends ContentApplication {
 
     private PrintingController mPrintingController;
 
-    public ChromeApplication() {
-        super();
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
     }
 

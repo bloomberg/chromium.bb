@@ -6,6 +6,7 @@ package org.chromium.net;
 
 import android.test.AndroidTestCase;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 
 import java.lang.annotation.ElementType;
@@ -30,7 +31,8 @@ public class CronetTestBase extends AndroidTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, getContext());
+        ContextUtils.initApplicationContext(getContext().getApplicationContext());
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         CronetTestFramework.prepareTestStorage(getContext());
     }
 

@@ -17,13 +17,14 @@ public class ComponentsBrowserTestsApplication extends BaseChromiumApplication {
     static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "components_shell";
 
     @Override
-    public void onCreate() {
-        super.onCreate();
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
-        initializeApplicationParameters(this);
     }
 
-    public static void initializeApplicationParameters(Context context) {
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
     }
 }
