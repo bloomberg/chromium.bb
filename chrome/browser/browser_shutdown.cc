@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -294,30 +295,33 @@ void ReadLastShutdownFile(ShutdownType type,
   if (type == NOT_VALID || shutdown_ms == 0 || num_procs == 0)
     return;
 
-  const char time_fmt[] = "Shutdown.%s.time";
-  const char time_per_fmt[] = "Shutdown.%s.time_per_process";
-  std::string time;
-  std::string time_per;
   if (type == WINDOW_CLOSE) {
-    time = base::StringPrintf(time_fmt, "window_close");
-    time_per = base::StringPrintf(time_per_fmt, "window_close");
+    // TODO(manzagop): turn down recording in M57 (once trendlines overlap).
+    UMA_HISTOGRAM_TIMES("Shutdown.window_close.time",
+                        TimeDelta::FromMilliseconds(shutdown_ms));
+    UMA_HISTOGRAM_MEDIUM_TIMES("Shutdown.window_close.time2",
+                               TimeDelta::FromMilliseconds(shutdown_ms));
+    UMA_HISTOGRAM_TIMES("Shutdown.window_close.time_per_process",
+                        TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
   } else if (type == BROWSER_EXIT) {
-    time = base::StringPrintf(time_fmt, "browser_exit");
-    time_per = base::StringPrintf(time_per_fmt, "browser_exit");
+    // TODO(manzagop): turn down recording in M57 (once trendlines overlap).
+    UMA_HISTOGRAM_TIMES("Shutdown.browser_exit.time",
+                        TimeDelta::FromMilliseconds(shutdown_ms));
+    UMA_HISTOGRAM_MEDIUM_TIMES("Shutdown.browser_exit.time2",
+                               TimeDelta::FromMilliseconds(shutdown_ms));
+    UMA_HISTOGRAM_TIMES("Shutdown.browser_exit.time_per_process",
+                        TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
   } else if (type == END_SESSION) {
-    time = base::StringPrintf(time_fmt, "end_session");
-    time_per = base::StringPrintf(time_per_fmt, "end_session");
+    // TODO(manzagop): turn down recording in M57 (once trendlines overlap).
+    UMA_HISTOGRAM_TIMES("Shutdown.end_session.time",
+                        TimeDelta::FromMilliseconds(shutdown_ms));
+    UMA_HISTOGRAM_MEDIUM_TIMES("Shutdown.end_session.time2",
+                               TimeDelta::FromMilliseconds(shutdown_ms));
+    UMA_HISTOGRAM_TIMES("Shutdown.end_session.time_per_process",
+                        TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
   } else {
     NOTREACHED();
   }
-
-  if (time.empty())
-    return;
-
-  // TODO(erikkay): change these to UMA histograms after a bit more testing.
-  UMA_HISTOGRAM_TIMES(time.c_str(), TimeDelta::FromMilliseconds(shutdown_ms));
-  UMA_HISTOGRAM_TIMES(time_per.c_str(),
-                      TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
   UMA_HISTOGRAM_COUNTS_100("Shutdown.renderers.total", num_procs);
   UMA_HISTOGRAM_COUNTS_100("Shutdown.renderers.slow", num_procs_slow);
 }
