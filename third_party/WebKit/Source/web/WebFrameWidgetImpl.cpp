@@ -351,8 +351,8 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
         break;
       case WebInputEvent::MouseDown:
         eventType = EventTypeNames::mousedown;
-        gestureIndicator = wrapUnique(
-            new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+        gestureIndicator = wrapUnique(new UserGestureIndicator(
+            UserGestureToken::create(UserGestureToken::NewGesture)));
         m_mouseCaptureGestureToken = gestureIndicator->currentToken();
         break;
       case WebInputEvent::MouseUp:
@@ -525,7 +525,8 @@ bool WebFrameWidgetImpl::setComposition(
   if (m_suppressNextKeypressEvent && !inputMethodController.hasComposition())
     return text.isEmpty();
 
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+  UserGestureIndicator gestureIndicator(
+      UserGestureToken::create(UserGestureToken::NewGesture));
 
   // When the range of composition underlines overlap with the range between
   // selectionStart and selectionEnd, WebKit somehow won't paint the selection
@@ -542,7 +543,8 @@ bool WebFrameWidgetImpl::setComposition(
 // This code needs to be refactored  (http://crbug.com/629721).
 bool WebFrameWidgetImpl::commitText(const WebString& text,
                                     int relativeCaretPosition) {
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+  UserGestureIndicator gestureIndicator(
+      UserGestureToken::create(UserGestureToken::NewGesture));
   LocalFrame* focused = focusedLocalFrameAvailableForIme();
   if (!focused)
     return false;

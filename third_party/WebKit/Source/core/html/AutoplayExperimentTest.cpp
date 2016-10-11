@@ -134,7 +134,7 @@ class AutoplayExperimentTest : public ::testing::Test {
   }
 
   void startPlaybackWithUserGesture() {
-    UserGestureIndicator indicator(DefinitelyProcessingUserGesture);
+    UserGestureIndicator indicator(UserGestureToken::create());
     EXPECT_TRUE(UserGestureIndicator::processingUserGesture());
     startPlayback();
   }

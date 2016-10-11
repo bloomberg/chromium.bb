@@ -137,7 +137,7 @@ void ThreadDebugger::promiseRejectionRevoked(v8::Local<v8::Context> context,
 
 void ThreadDebugger::beginUserGesture() {
   m_userGestureIndicator =
-      wrapUnique(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+      wrapUnique(new UserGestureIndicator(UserGestureToken::create()));
 }
 
 void ThreadDebugger::endUserGesture() {

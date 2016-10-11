@@ -139,7 +139,7 @@ WebInputEventResult GestureManager::handleGestureTap(
   uint64_t preDispatchDomTreeVersion = m_frame->document()->domTreeVersion();
   uint64_t preDispatchStyleVersion = m_frame->document()->styleVersion();
 
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
+  UserGestureIndicator gestureIndicator(UserGestureToken::create());
 
   HitTestResult currentHitTest = targetedEvent.hitTestResult();
 

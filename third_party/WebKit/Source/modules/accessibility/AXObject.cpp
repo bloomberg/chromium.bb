@@ -1347,7 +1347,8 @@ bool AXObject::press() const {
   Element* actionElem = actionElement();
   if (!actionElem)
     return false;
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+  UserGestureIndicator gestureIndicator(
+      UserGestureToken::create(UserGestureToken::NewGesture));
   actionElem->accessKeyAction(true);
   return true;
 }

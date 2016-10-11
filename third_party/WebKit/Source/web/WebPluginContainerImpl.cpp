@@ -476,9 +476,9 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url,
   String script = decodeURLEscapeSequences(
       kurl.getString().substring(strlen("javascript:")));
 
-  UserGestureIndicator gestureIndicator(popupsAllowed
-                                            ? DefinitelyProcessingNewUserGesture
-                                            : PossiblyProcessingUserGesture);
+  UserGestureIndicator gestureIndicator(
+      popupsAllowed ? UserGestureToken::create(UserGestureToken::NewGesture)
+                    : nullptr);
   v8::HandleScope handleScope(toIsolate(frame));
   v8::Local<v8::Value> result =
       frame->script().executeScriptInMainWorldAndReturnValue(

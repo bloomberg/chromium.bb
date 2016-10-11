@@ -41,8 +41,8 @@ WebScopedUserGesture::WebScopedUserGesture(const WebUserGestureToken& token) {
 }
 
 WebScopedUserGesture::WebScopedUserGesture() {
-  m_indicator.reset(
-      new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+  m_indicator.reset(new UserGestureIndicator(
+      UserGestureToken::create(UserGestureToken::NewGesture)));
 }
 
 WebScopedUserGesture::~WebScopedUserGesture() {}

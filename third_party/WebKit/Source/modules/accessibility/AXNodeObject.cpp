@@ -2154,12 +2154,14 @@ void AXNodeObject::setFocused(bool on) {
 }
 
 void AXNodeObject::increment() {
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+  UserGestureIndicator gestureIndicator(
+      UserGestureToken::create(UserGestureToken::NewGesture));
   alterSliderValue(true);
 }
 
 void AXNodeObject::decrement() {
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+  UserGestureIndicator gestureIndicator(
+      UserGestureToken::create(UserGestureToken::NewGesture));
   alterSliderValue(false);
 }
 

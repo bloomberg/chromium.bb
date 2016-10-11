@@ -524,21 +524,19 @@ WebInputEventResult TouchEventManager::handleTouchEvent(
 
   std::unique_ptr<UserGestureIndicator> gestureIndicator;
   if (isTap || isSameOrigin) {
-    UserGestureUtilizedCallback* callback = 0;
+    gestureIndicator = wrapUnique(
+        new UserGestureIndicator(m_touchSequenceUserGestureToken
+                                     ? m_touchSequenceUserGestureToken.release()
+                                     : UserGestureToken::create()));
+
+    m_touchSequenceUserGestureToken = UserGestureIndicator::currentToken();
     // These are cases we'd like to migrate to not hold a user gesture.
     if (event.type() == PlatformEvent::TouchStart ||
         event.type() == PlatformEvent::TouchMove ||
         (event.type() == PlatformEvent::TouchEnd && m_touchScrollStarted)) {
       // Collect metrics in userGestureUtilized().
-      callback = this;
+      m_touchSequenceUserGestureToken->setUserGestureUtilizedCallback(this);
     }
-    if (m_touchSequenceUserGestureToken)
-      gestureIndicator = wrapUnique(new UserGestureIndicator(
-          m_touchSequenceUserGestureToken.release(), callback));
-    else
-      gestureIndicator = wrapUnique(
-          new UserGestureIndicator(DefinitelyProcessingUserGesture, callback));
-    m_touchSequenceUserGestureToken = UserGestureIndicator::currentToken();
   }
 
   return dispatchTouchEvents(event, touchInfos, allTouchesReleased);

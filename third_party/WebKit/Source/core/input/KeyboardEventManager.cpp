@@ -104,7 +104,7 @@ WebInputEventResult KeyboardEventManager::keyEvent(
   if (!node)
     return WebInputEventResult::NotHandled;
 
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
+  UserGestureIndicator gestureIndicator(UserGestureToken::create());
 
   // In IE, access keys are special, they are handled after default keydown
   // processing, but cannot be canceled - this is hard to match.  On Mac OS X,

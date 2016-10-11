@@ -132,7 +132,7 @@ void DevToolsHost::evaluateScript(const String& expression) {
   if (!scriptState)
     return;
   ScriptState::Scope scope(scriptState);
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+  UserGestureIndicator gestureIndicator(UserGestureToken::create());
   v8::MicrotasksScope microtasks(scriptState->isolate(),
                                  v8::MicrotasksScope::kRunMicrotasks);
   v8::Local<v8::String> source =

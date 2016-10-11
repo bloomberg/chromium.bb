@@ -39,11 +39,11 @@ bool WebUserGestureToken::hasGestures() const {
 }
 
 void WebUserGestureToken::setOutOfProcess() {
-  m_token->setOutOfProcess();
+  m_token->setTimeoutPolicy(UserGestureToken::OutOfProcess);
 }
 
 void WebUserGestureToken::setJavascriptPrompt() {
-  m_token->setJavascriptPrompt();
+  m_token->setTimeoutPolicy(UserGestureToken::HasPaused);
 }
 
 WebUserGestureToken::WebUserGestureToken(PassRefPtr<UserGestureToken> token) {

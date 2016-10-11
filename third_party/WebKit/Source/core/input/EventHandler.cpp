@@ -572,7 +572,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(
       WebPointerProperties::Button::NoButton)
     return WebInputEventResult::HandledSuppressed;
 
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
+  UserGestureIndicator gestureIndicator(UserGestureToken::create());
   m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken =
       UserGestureIndicator::currentToken();
 
@@ -899,14 +899,17 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(
 
   std::unique_ptr<UserGestureIndicator> gestureIndicator;
 
-  if (m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken)
+  if (m_frame->localFrameRoot()
+          ->eventHandler()
+          .m_lastMouseDownUserGestureToken) {
     gestureIndicator = wrapUnique(new UserGestureIndicator(
         m_frame->localFrameRoot()
             ->eventHandler()
             .m_lastMouseDownUserGestureToken.release()));
-  else
+  } else {
     gestureIndicator =
-        wrapUnique(new UserGestureIndicator(DefinitelyProcessingUserGesture));
+        wrapUnique(new UserGestureIndicator(UserGestureToken::create()));
+  }
 
   if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled()) {
     if (Page* page = m_frame->page())

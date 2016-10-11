@@ -139,7 +139,7 @@ TEST_F(HTMLVideoElementTest, setBufferingStrategy_UserPause) {
   EXPECT_CALL(*player, setBufferingStrategy(
                            WebMediaPlayer::BufferingStrategy::Aggressive));
   {
-    UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
+    UserGestureIndicator gesture(UserGestureToken::create());
     m_video->pause();
   }
   ::testing::Mock::VerifyAndClearExpectations(player);

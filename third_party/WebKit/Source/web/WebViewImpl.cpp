@@ -2294,8 +2294,8 @@ WebInputEventResult WebViewImpl::handleInputEvent(
         break;
       case WebInputEvent::MouseDown:
         eventType = EventTypeNames::mousedown;
-        gestureIndicator = wrapUnique(
-            new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+        gestureIndicator = wrapUnique(new UserGestureIndicator(
+            UserGestureToken::create(UserGestureToken::NewGesture)));
         m_mouseCaptureGestureToken = gestureIndicator->currentToken();
         break;
       case WebInputEvent::MouseUp:
@@ -2468,7 +2468,8 @@ bool WebViewImpl::setComposition(
   if (m_suppressNextKeypressEvent && !inputMethodController.hasComposition())
     return text.isEmpty();
 
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+  UserGestureIndicator gestureIndicator(
+      UserGestureToken::create(UserGestureToken::NewGesture));
 
   // When the range of composition underlines overlap with the range between
   // selectionStart and selectionEnd, WebKit somehow won't paint the selection
@@ -2499,7 +2500,8 @@ bool WebViewImpl::finishComposingText(
 }
 
 bool WebViewImpl::commitText(const WebString& text, int relativeCaretPosition) {
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+  UserGestureIndicator gestureIndicator(
+      UserGestureToken::create(UserGestureToken::NewGesture));
 
   LocalFrame* focused = focusedLocalFrameAvailableForIme();
   if (!focused)
@@ -3873,7 +3875,8 @@ void WebViewImpl::dragTargetDrop(const WebDragData& webDragData,
   DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
                     static_cast<DragOperation>(m_operationsAllowed));
 
-  UserGestureIndicator gesture(DefinitelyProcessingNewUserGesture);
+  UserGestureIndicator gesture(
+      UserGestureToken::create(UserGestureToken::NewGesture));
   m_page->dragController().performDrag(&dragData);
 
   m_dragOperation = WebDragOperationNone;
@@ -4669,8 +4672,8 @@ void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event) {
   switch (event.type) {
     case WebInputEvent::MouseDown:
       eventType = EventTypeNames::mousedown;
-      gestureIndicator = wrapUnique(
-          new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+      gestureIndicator = wrapUnique(new UserGestureIndicator(
+          UserGestureToken::create(UserGestureToken::NewGesture)));
       m_pointerLockGestureToken = gestureIndicator->currentToken();
       break;
     case WebInputEvent::MouseUp:

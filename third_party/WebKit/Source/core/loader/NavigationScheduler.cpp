@@ -78,11 +78,8 @@ enum ScheduledNavigationType {
 // If the current frame has a provisional document loader, a scheduled
 // navigation might abort that load. Log those occurrences until
 // crbug.com/557430 is resolved.
-void maybeLogScheduledNavigationClobber(
-    ScheduledNavigationType type,
-    LocalFrame* frame,
-    const FrameLoadRequest& request,
-    UserGestureIndicator* gestureIndicator) {
+void maybeLogScheduledNavigationClobber(ScheduledNavigationType type,
+                                        LocalFrame* frame) {
   if (!frame->loader().provisionalDocumentLoader())
     return;
   // Include enumeration values userGesture variants.
@@ -90,8 +87,10 @@ void maybeLogScheduledNavigationClobber(
                       ("Navigation.Scheduled.MaybeCausedAbort",
                        ScheduledNavigationType::ScheduledLastEntry * 2));
 
-  UserGestureToken* gestureToken = gestureIndicator->currentToken();
-  int value = gestureToken->hasGestures() ? type + ScheduledLastEntry : type;
+  UserGestureToken* gestureToken = UserGestureIndicator::currentToken();
+  int value = gestureToken && gestureToken->hasGestures()
+                  ? type + ScheduledLastEntry
+                  : type;
   scheduledNavigationClobberHistogram.count(value);
 
   DEFINE_STATIC_LOCAL(
@@ -120,9 +119,8 @@ class ScheduledNavigation
       : m_delay(delay),
         m_originDocument(originDocument),
         m_replacesCurrentItem(replacesCurrentItem),
-        m_isLocationChange(isLocationChange),
-        m_wasUserGesture(UserGestureIndicator::processingUserGesture()) {
-    if (m_wasUserGesture)
+        m_isLocationChange(isLocationChange) {
+    if (UserGestureIndicator::processingUserGesture())
       m_userGestureToken = UserGestureIndicator::currentToken();
   }
   virtual ~ScheduledNavigation() {}
@@ -136,23 +134,19 @@ class ScheduledNavigation
   bool replacesCurrentItem() const { return m_replacesCurrentItem; }
   bool isLocationChange() const { return m_isLocationChange; }
   std::unique_ptr<UserGestureIndicator> createUserGestureIndicator() {
-    if (m_wasUserGesture && m_userGestureToken)
-      return wrapUnique(new UserGestureIndicator(m_userGestureToken));
-    return wrapUnique(
-        new UserGestureIndicator(DefinitelyNotProcessingUserGesture));
+    return wrapUnique(new UserGestureIndicator(m_userGestureToken));
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_originDocument); }
 
  protected:
-  void clearUserGesture() { m_wasUserGesture = false; }
+  void clearUserGesture() { m_userGestureToken.clear(); }
 
  private:
   double m_delay;
   Member<Document> m_originDocument;
   bool m_replacesCurrentItem;
   bool m_isLocationChange;
-  bool m_wasUserGesture;
   RefPtr<UserGestureToken> m_userGestureToken;
 };
 
@@ -186,8 +180,7 @@ class ScheduledURLNavigation : public ScheduledNavigation {
     ScheduledNavigationType type =
         isLocationChange() ? ScheduledNavigationType::ScheduledLocationChange
                            : ScheduledNavigationType::ScheduledURLNavigation;
-    maybeLogScheduledNavigationClobber(type, frame, request,
-                                       gestureIndicator.get());
+    maybeLogScheduledNavigationClobber(type, frame);
     frame->loader().load(request);
   }
 
@@ -223,8 +216,7 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
           WebCachePolicy::ValidatingCacheData);
     request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
     maybeLogScheduledNavigationClobber(
-        ScheduledNavigationType::ScheduledRedirect, frame, request,
-        gestureIndicator.get());
+        ScheduledNavigationType::ScheduledRedirect, frame);
     frame->loader().load(request);
   }
 
@@ -276,7 +268,7 @@ class ScheduledReload final : public ScheduledNavigation {
     FrameLoadRequest request = FrameLoadRequest(nullptr, resourceRequest);
     request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
     maybeLogScheduledNavigationClobber(ScheduledNavigationType::ScheduledReload,
-                                       frame, request, gestureIndicator.get());
+                                       frame);
     frame->loader().load(request, FrameLoadTypeReload);
   }
 
@@ -300,8 +292,7 @@ class ScheduledPageBlock final : public ScheduledURLNavigation {
     request.setReplacesCurrentItem(true);
     request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
     maybeLogScheduledNavigationClobber(
-        ScheduledNavigationType::ScheduledPageBlock, frame, request,
-        gestureIndicator.get());
+        ScheduledNavigationType::ScheduledPageBlock, frame);
     frame->loader().load(request);
   }
 
@@ -326,8 +317,7 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
         m_submission->createFrameLoadRequest(originDocument());
     frameRequest.setReplacesCurrentItem(replacesCurrentItem());
     maybeLogScheduledNavigationClobber(
-        ScheduledNavigationType::ScheduledFormSubmission, frame, frameRequest,
-        gestureIndicator.get());
+        ScheduledNavigationType::ScheduledFormSubmission, frame);
     frame->loader().load(frameRequest);
   }
 

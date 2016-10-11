@@ -33,25 +33,6 @@
 
 namespace blink {
 
-enum ProcessingUserGestureState {
-  DefinitelyProcessingNewUserGesture,
-  DefinitelyProcessingUserGesture,
-  PossiblyProcessingUserGesture,
-  DefinitelyNotProcessingUserGesture
-};
-
-class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
-  WTF_MAKE_NONCOPYABLE(UserGestureToken);
-
- public:
-  UserGestureToken() {}
-  virtual ~UserGestureToken() {}
-  virtual bool hasGestures() const = 0;
-  virtual void setOutOfProcess() = 0;
-  virtual void setJavascriptPrompt() = 0;
-  virtual void setPauseInDebugger() = 0;
-};
-
 // Callback to be invoked when the state of a UserGestureIndicator is
 // used (only during the scope of a UserGestureIndicator, does
 // not flow with the UserGestureToken).  It's the responsibility of the
@@ -66,6 +47,49 @@ class PLATFORM_EXPORT UserGestureUtilizedCallback {
  public:
   virtual ~UserGestureUtilizedCallback() = default;
   virtual void userGestureUtilized() = 0;
+};
+
+// A UserGestureToken represents a user gesture. It can be referenced and saved
+// for later (see, e.g., DOMTimer, which propagates user gestures to the timer
+// fire in certain situations). Passing it to a UserGestureIndicator will cause
+// it to be considered as currently being processed.
+class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
+  WTF_MAKE_NONCOPYABLE(UserGestureToken);
+
+ public:
+  enum Status { NewGesture, PossiblyExistingGesture };
+  enum TimeoutPolicy { Default, OutOfProcess, HasPaused };
+
+  static PassRefPtr<UserGestureToken> create(
+      Status status = PossiblyExistingGesture) {
+    return adoptRef(new UserGestureToken(status));
+  }
+
+  ~UserGestureToken() {}
+  bool hasGestures();
+  void transferGestureTo(UserGestureToken*);
+  bool consumeGesture();
+  void setTimeoutPolicy(TimeoutPolicy);
+
+  // If this UserGestureToken is wrapped in a UserGestureIndicator, and the
+  // UserGestureIndicator is the lowest on the callstack (and therefore this
+  // UserGestureToken is UserGestureIndicator::s_rootToken), then the callback
+  // provided here will be called when this UserGestureToken is utilized.
+  // Calling setUserGestureUtilizedCallback() on a UserGestureToken that is not
+  // UserGestureIndicator::s_rootToken would be unsafe and never result in a
+  // callback, so it will fail a CHECK() instead.
+  void setUserGestureUtilizedCallback(UserGestureUtilizedCallback*);
+  void userGestureUtilized();
+
+ private:
+  UserGestureToken(Status);
+
+  bool hasTimedOut() const;
+
+  size_t m_consumableGestures;
+  double m_timestamp;
+  TimeoutPolicy m_timeoutPolicy;
+  UserGestureUtilizedCallback* m_usageCallback;
 };
 
 class PLATFORM_EXPORT UserGestureIndicator final {
@@ -99,19 +123,14 @@ class PLATFORM_EXPORT UserGestureIndicator final {
   // Returns whether a user gesture has occurred since page load.
   static bool processedUserGestureSinceLoad();
 
-  explicit UserGestureIndicator(ProcessingUserGestureState,
-                                UserGestureUtilizedCallback* = 0);
-  explicit UserGestureIndicator(PassRefPtr<UserGestureToken>,
-                                UserGestureUtilizedCallback* = 0);
+  explicit UserGestureIndicator(PassRefPtr<UserGestureToken>);
   ~UserGestureIndicator();
 
  private:
-  static ProcessingUserGestureState s_state;
-  static UserGestureIndicator* s_topmostIndicator;
   static bool s_processedUserGestureSinceLoad;
-  ProcessingUserGestureState m_previousState;
+  static UserGestureToken* s_rootToken;
+
   RefPtr<UserGestureToken> m_token;
-  UserGestureUtilizedCallback* m_usageCallback;
 };
 
 }  // namespace blink

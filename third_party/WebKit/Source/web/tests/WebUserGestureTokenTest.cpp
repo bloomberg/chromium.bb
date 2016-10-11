@@ -49,7 +49,8 @@ TEST(WebUserGestureTokenTest, Basic) {
   }
 
   {
-    UserGestureIndicator indicator(DefinitelyProcessingNewUserGesture);
+    UserGestureIndicator indicator(
+        UserGestureToken::create(UserGestureToken::NewGesture));
     EXPECT_TRUE(WebUserGestureIndicator::isProcessingUserGesture());
     token = WebUserGestureIndicator::currentUserGestureToken();
     EXPECT_TRUE(UserGestureIndicator::processedUserGestureSinceLoad());

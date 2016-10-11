@@ -1860,7 +1860,8 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url) {
 
   String script = decodeURLEscapeSequences(
       url.getString().substring(strlen("javascript:")));
-  UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+  UserGestureIndicator gestureIndicator(
+      UserGestureToken::create(UserGestureToken::NewGesture));
   v8::HandleScope handleScope(toIsolate(frame()));
   v8::Local<v8::Value> result =
       frame()->script().executeScriptInMainWorldAndReturnValue(
