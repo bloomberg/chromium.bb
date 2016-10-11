@@ -425,6 +425,26 @@ LRESULT InputMethodWin::OnImeEndComposition(HWND window_handle,
 
   composing_window_handle_ = NULL;
 
+  // This is a hack fix for MS Korean IME issue (crbug.com/647150).
+  // Messages received when hitting Space key during composition:
+  //   1. WM_IME_ENDCOMPOSITION (we usually clear composition for this MSG)
+  //   2. WM_IME_COMPOSITION with GCS_RESULTSTR (we usually commit composition)
+  // (Which is in the reversed order compared to MS Japanese and Chinese IME.)
+  // Hack fix:
+  //   * Discard WM_IME_ENDCOMPOSITION message if it's followed by a
+  //     WM_IME_COMPOSITION message with GCS_RESULTSTR.
+  // This works because we don't require WM_IME_ENDCOMPOSITION after committing
+  // composition (it doesn't do anything if there is no on-going composition).
+  // Also see Firefox's implementation:
+  // https://dxr.mozilla.org/mozilla-beta/source/widget/windows/IMMHandler.cpp#800
+  // TODO(crbug.com/654865): Further investigations and clean-ups required.
+  MSG compositionMsg;
+  if (::PeekMessage(&compositionMsg, window_handle, WM_IME_STARTCOMPOSITION,
+                    WM_IME_COMPOSITION, PM_NOREMOVE) &&
+      compositionMsg.message == WM_IME_COMPOSITION &&
+      (compositionMsg.lParam & GCS_RESULTSTR))
+    return 0;
+
   if (!IsTextInputTypeNone() && GetTextInputClient()->HasCompositionText())
     GetTextInputClient()->ClearCompositionText();
 
