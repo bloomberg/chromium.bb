@@ -191,8 +191,10 @@ CommandHandler.onCommand = function(command) {
   if (!ChromeVoxState.instance.currentRange_)
     return true;
 
-  // Next/compat commands hereafter.
-  if (ChromeVoxState.instance.mode == ChromeVoxMode.CLASSIC) return true;
+  // Next/classic compat commands hereafter.
+  if (ChromeVoxState.instance.mode == ChromeVoxMode.CLASSIC ||
+      ChromeVoxState.instance.mode == ChromeVoxMode.NEXT_COMPAT)
+    return true;
 
   var current = ChromeVoxState.instance.currentRange_;
   var dir = Dir.FORWARD;

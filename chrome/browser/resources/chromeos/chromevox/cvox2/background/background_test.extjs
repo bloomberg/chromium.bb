@@ -534,22 +534,22 @@ TEST_F('BackgroundTest', 'ModeSwitching', function() {
     bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
     assertEquals('force_next', bk.mode);
 
-    // Verify force next -> compat switching.
+    // Verify force next -> classic compat switching.
     localStorage['useNext'] = false;
     fakeWebRoot.docUrl = 'chrome://foobar';
     bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
-    assertEquals('compat', bk.mode);
+    assertEquals('classic_compat', bk.mode);
 
-    // Compat -> classic.
+    // Classic compat -> classic.
     fakeWebRoot.docUrl = 'http://google.com';
     bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
     assertEquals('classic', bk.mode);
 
-    // Ensure we switch to compat if our current range has focused
+    // Ensure we switch to classic compat if our current range has focused
     // state set and is not in web content.
     assertTrue(root.parent.state.focused);
     bk.setCurrentRange(cursors.Range.fromNode(root.parent));
-    assertEquals('compat', bk.mode);
+    assertEquals('classic_compat', bk.mode);
 
     // And back to classic.
     bk.setCurrentRange(cursors.Range.fromNode(root));
@@ -560,6 +560,17 @@ TEST_F('BackgroundTest', 'ModeSwitching', function() {
     fakeSubRoot.docUrl = 'http://chromevox.com';
     bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
     assertEquals('next', bk.mode);
+
+    // Next compat switching.
+    localStorage['useNext'] = true;
+    fakeWebRoot.docUrl = 'http://docs.google.com/#123123';
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('next_compat', bk.mode);
+
+    // And, back to force next.
+    fakeWebRoot.docUrl = 'http://google.com/';
+    bk.setCurrentRange(cursors.Range.fromNode(fakeWebRoot));
+    assertEquals('force_next', bk.mode);
   }.bind(this));
 });
 

@@ -55,7 +55,7 @@ Background = function() {
 
   /**
    * A list of site substring patterns to blacklist ChromeVox Classic,
-   * putting ChromeVox into Compat mode.
+   * putting ChromeVox into classic Compat mode.
    * @type {!Set<string>}
    * @private
    */
@@ -68,6 +68,15 @@ Background = function() {
    */
   this.classicBlacklistRegExp_ = Background.globsToRegExp_(
       chrome.runtime.getManifest()['content_scripts'][0]['exclude_globs']);
+
+  /**
+   * Regular expression for whitelisting Next compat.
+   * @type {RegExp}
+   * @private
+   */
+  this.NextCompatRegExp_ = Background.globsToRegExp_([
+    '*docs.google.com*'
+  ]);
 
   /**
    * @type {cursors.Range}
@@ -98,7 +107,8 @@ Background = function() {
   Object.defineProperty(cvox.ChromeVox, 'earcons', {
     get: (function() {
       if (this.mode === ChromeVoxMode.FORCE_NEXT ||
-          this.mode === ChromeVoxMode.NEXT) {
+          this.mode === ChromeVoxMode.NEXT ||
+          this.mode === ChromeVoxMode.NEXT_COMPAT) {
         return this.nextEarcons_;
       } else {
         return this.classicEarcons_;
@@ -110,7 +120,7 @@ Background = function() {
     Object.defineProperty(cvox.ChromeVox, 'modKeyStr', {
       get: function() {
         return (this.mode == ChromeVoxMode.CLASSIC ||
-            this.mode == ChromeVoxMode.COMPAT) ?
+            this.mode == ChromeVoxMode.CLASSIC_COMPAT) ?
                 'Search+Shift' : 'Search';
       }.bind(this)
     });
@@ -203,8 +213,7 @@ Background.prototype = {
    * @override
    */
   getMode: function() {
-    if (localStorage['useNext'] == 'true')
-      return ChromeVoxMode.FORCE_NEXT;
+    var useNext = localStorage['useNext'] !== 'false';
 
     var target;
     if (!this.getCurrentRange()) {
@@ -216,23 +225,29 @@ Background.prototype = {
     }
 
     if (!target)
-      return ChromeVoxMode.CLASSIC;
-
-    var root = target.root;
-    if (root && this.isWhitelistedForCompat_(root.docUrl))
-      return ChromeVoxMode.COMPAT;
+      return useNext ? ChromeVoxMode.FORCE_NEXT : ChromeVoxMode.CLASSIC;
 
     // Closure complains, but clearly, |target| is not null.
     var topLevelRoot =
         AutomationUtil.getTopLevelRoot(/** @type {!AutomationNode} */(target));
     if (!topLevelRoot)
-      return ChromeVoxMode.COMPAT;
-    if (this.isWhitelistedForCompat_(topLevelRoot.docUrl))
-      return ChromeVoxMode.COMPAT;
-    else if (this.isWhitelistedForNext_(topLevelRoot.docUrl))
+      return useNext ? ChromeVoxMode.FORCE_NEXT :
+          ChromeVoxMode.CLASSIC_COMPAT;
+
+    var nextSite = this.isWhitelistedForNext_(topLevelRoot.docUrl);
+    var nextCompat = this.NextCompatRegExp_.test(topLevelRoot.docUrl);
+    var classicCompat =
+        this.isWhitelistedForClassicCompat_(topLevelRoot.docUrl);
+    if (nextCompat && useNext)
+      return ChromeVoxMode.NEXT_COMPAT;
+    else if (classicCompat && !useNext)
+      return ChromeVoxMode.CLASSIC_COMPAT;
+    else if (nextSite)
       return ChromeVoxMode.NEXT;
-    else
+    else if (!useNext)
       return ChromeVoxMode.CLASSIC;
+    else
+      return ChromeVoxMode.FORCE_NEXT;
   },
 
   /**
@@ -248,32 +263,43 @@ Background.prototype = {
     FindHandler.onModeChanged(newMode, oldMode);
     Notifications.onModeChange(newMode, oldMode);
 
-    if (newMode == ChromeVoxMode.CLASSIC)
+    // The below logic handles transition between the classic engine
+    // (content script) and next engine (no content script) as well as
+    // misc states that are not handled above.
+
+    // Classic modes do not use the new focus highlight.
+    if (newMode == ChromeVoxMode.CLASSIC ||
+        newMode == ChromeVoxMode.NEXT_COMPAT)
       chrome.accessibilityPrivate.setFocusRing([]);
 
+    // Switch on/off content scripts.
     // note that |this.currentRange_| can *change* because the request is
     // async. Save it to ensure we're looking at the currentRange at this moment
     // in time.
     var cur = this.currentRange_;
     chrome.tabs.query({active: true,
                        lastFocusedWindow: true}, function(tabs) {
-      if (newMode === ChromeVoxMode.CLASSIC) {
+      if (newMode == ChromeVoxMode.CLASSIC) {
         // Generally, we don't want to inject classic content scripts as it is
         // done by the extension system at document load. The exception is when
         // we toggle classic on manually as part of a user command.
-        if (oldMode == ChromeVoxMode.FORCE_NEXT)
+        // Note that classic -> next_compat is ignored here because classic
+        // should have already enabled content scripts.
+        if (oldMode == ChromeVoxMode.FORCE_NEXT) {
           cvox.ChromeVox.injectChromeVoxIntoTabs(tabs);
+        }
       } else if (newMode === ChromeVoxMode.FORCE_NEXT) {
-        // Disable ChromeVox everywhere.
-        this.disableClassicChromeVox_();
-      } else {
+        // Disable ChromeVox everywhere except for things whitelisted
+        // for next compat.
+        this.disableClassicChromeVox_({forNextCompat: true});
+      } else if (newMode != ChromeVoxMode.NEXT_COMPAT) {
         // If we're focused in the desktop tree, do nothing.
         if (cur && !cur.isWebRange())
           return;
 
-        // If we're entering compat mode or next mode for just one tab,
+        // If we're entering classic compat mode or next mode for just one tab,
         // disable Classic for that tab only.
-        this.disableClassicChromeVox_(tabs);
+        this.disableClassicChromeVox_({tabs: tabs});
       }
     }.bind(this));
 
@@ -531,7 +557,7 @@ Background.prototype = {
    * @param {string} url
    * @return {boolean}
    */
-  isWhitelistedForCompat_: function(url) {
+  isWhitelistedForClassicCompat_: function(url) {
     return this.isBlacklistedForClassic_(url) || (this.getCurrentRange() &&
         !this.getCurrentRange().isWebRange() &&
         this.getCurrentRange().start.node.state.focused);
@@ -562,17 +588,27 @@ Background.prototype = {
 
   /**
    * Disables classic ChromeVox in current web content.
-   * @param {Array<Tab>=} opt_tabs The tabs where ChromeVox scripts should
-   *     be disabled. If null, will disable ChromeVox everywhere.
+   * @param {{tabs: (Array<Tab>|undefined),
+   *          forNextCompat: (boolean|undefined)}} params
+   * tabs: The tabs where ChromeVox scripts should be disabled. If null, will
+   *     disable ChromeVox everywhere.
+   * forNextCompat: filters out tabs that have been listed for next compat (i.e.
+   *     should retain content script).
    */
-  disableClassicChromeVox_: function(opt_tabs) {
+  disableClassicChromeVox_: function(params) {
     var disableChromeVoxCommand = {
       message: 'SYSTEM_COMMAND',
       command: 'killChromeVox'
     };
 
-    if (opt_tabs) {
-      for (var i = 0, tab; tab = opt_tabs[i]; i++)
+    if (params.forNextCompat) {
+      var reStr = this.NextCompatRegExp_.toString();
+      disableChromeVoxCommand['excludeUrlRegExp'] =
+          reStr.substring(1, reStr.length - 1);
+    }
+
+    if (params.tabs) {
+      for (var i = 0, tab; tab = params.tabs[i]; i++)
         chrome.tabs.sendMessage(tab.id, disableChromeVoxCommand);
     } else {
       // Send to all ChromeVox clients.
@@ -629,7 +665,7 @@ Background.prototype = {
             target: 'next',
             isClassicEnabled: isClassicEnabled
           });
-        } else if (action == 'enableCompatForUrl') {
+        } else if (action == 'enableClassicCompatForUrl') {
           var url = msg['url'];
           this.classicBlacklist_.add(url);
           if (this.currentRange_ && this.currentRange_.start.node)

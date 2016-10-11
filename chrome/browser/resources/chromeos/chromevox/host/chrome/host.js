@@ -127,6 +127,10 @@ cvox.ChromeHost.prototype.init = function() {
       cvox.ChromeVoxUserCommands.commands[cmd](msg);
     } else if (message == 'SYSTEM_COMMAND') {
       if (cmd == 'killChromeVox') {
+        var reStr = msg['excludeUrlRegExp'];
+        if (reStr && new RegExp(reStr).test(location.href)) {
+          return;
+        }
         this.killChromeVox();
       }
     }

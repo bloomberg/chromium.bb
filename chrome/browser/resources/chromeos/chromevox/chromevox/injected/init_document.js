@@ -99,7 +99,7 @@ cvox.ChromeVox.initDocument = function() {
     url = url.substring(0, url.indexOf('#')) || url;
     cvox.ExtensionBridge.send({
       target: 'next',
-      action: 'enableCompatForUrl',
+      action: 'enableClassicCompatForUrl',
       url: url
     });
     return;
