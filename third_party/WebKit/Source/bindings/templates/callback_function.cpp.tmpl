@@ -35,6 +35,9 @@ bool {{cpp_class}}::call({{argument_declarations | join(', ')}})
     if (m_callback.isEmpty())
         return false;
 
+    // TODO(bashi): Make sure that using TrackExceptionState is OK.
+    // crbug.com/653769
+    TrackExceptionState exceptionState;
     ScriptState::Scope scope(scriptState);
 
     {% for argument in arguments %}

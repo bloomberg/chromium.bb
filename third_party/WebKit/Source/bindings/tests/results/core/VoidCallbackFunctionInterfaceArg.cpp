@@ -8,6 +8,7 @@
 
 #include "VoidCallbackFunctionInterfaceArg.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -28,7 +29,7 @@ DEFINE_TRACE(VoidCallbackFunctionInterfaceArg)
 {
 }
 
-bool VoidCallbackFunctionInterfaceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, HTMLDivElement* divElement)
+bool VoidCallbackFunctionInterfaceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, HTMLDivElement* divElement)
 {
     if (!scriptState->contextIsValid())
         return false;
@@ -41,6 +42,9 @@ bool VoidCallbackFunctionInterfaceArg::call(ScriptState* scriptState, ScriptWrap
     if (m_callback.isEmpty())
         return false;
 
+    // TODO(bashi): Make sure that using TrackExceptionState is OK.
+    // crbug.com/653769
+    TrackExceptionState exceptionState;
     ScriptState::Scope scope(scriptState);
 
     v8::Local<v8::Value> divElementArgument = toV8(divElement, scriptState->context()->Global(), scriptState->isolate());

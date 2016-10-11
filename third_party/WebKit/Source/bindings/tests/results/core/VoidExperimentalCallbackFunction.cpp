@@ -8,6 +8,7 @@
 
 #include "VoidExperimentalCallbackFunction.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -27,7 +28,7 @@ DEFINE_TRACE(VoidExperimentalCallbackFunction)
 {
 }
 
-bool VoidExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState)
+bool VoidExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable)
 {
     if (!scriptState->contextIsValid())
         return false;
@@ -40,6 +41,9 @@ bool VoidExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrap
     if (m_callback.isEmpty())
         return false;
 
+    // TODO(bashi): Make sure that using TrackExceptionState is OK.
+    // crbug.com/653769
+    TrackExceptionState exceptionState;
     ScriptState::Scope scope(scriptState);
 
     v8::Local<v8::Value> thisValue = toV8(scriptWrappable, scriptState->context()->Global(), scriptState->isolate());

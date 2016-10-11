@@ -8,6 +8,7 @@
 
 #include "StringSequenceCallbackFunctionLongSequenceArg.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -27,7 +28,7 @@ DEFINE_TRACE(StringSequenceCallbackFunctionLongSequenceArg)
 {
 }
 
-bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, const Vector<int>& arg, Vector<String>& returnValue)
+bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, const Vector<int>& arg, Vector<String>& returnValue)
 {
     if (!scriptState->contextIsValid())
         return false;
@@ -40,6 +41,9 @@ bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptState* scriptStat
     if (m_callback.isEmpty())
         return false;
 
+    // TODO(bashi): Make sure that using TrackExceptionState is OK.
+    // crbug.com/653769
+    TrackExceptionState exceptionState;
     ScriptState::Scope scope(scriptState);
 
     v8::Local<v8::Value> argArgument = toV8(arg, scriptState->context()->Global(), scriptState->isolate());

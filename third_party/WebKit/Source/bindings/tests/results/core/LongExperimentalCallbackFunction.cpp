@@ -8,6 +8,7 @@
 
 #include "LongExperimentalCallbackFunction.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -27,7 +28,7 @@ DEFINE_TRACE(LongExperimentalCallbackFunction)
 {
 }
 
-bool LongExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, int num1, int num2, int& returnValue)
+bool LongExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue)
 {
     if (!scriptState->contextIsValid())
         return false;
@@ -40,6 +41,9 @@ bool LongExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrap
     if (m_callback.isEmpty())
         return false;
 
+    // TODO(bashi): Make sure that using TrackExceptionState is OK.
+    // crbug.com/653769
+    TrackExceptionState exceptionState;
     ScriptState::Scope scope(scriptState);
 
     v8::Local<v8::Value> num1Argument = v8::Integer::New(scriptState->isolate(), num1);

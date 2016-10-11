@@ -9,7 +9,6 @@
 #ifndef StringSequenceCallbackFunctionLongSequenceArg_h
 #define StringSequenceCallbackFunctionLongSequenceArg_h
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -30,7 +29,7 @@ public:
 
     DECLARE_TRACE();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, const Vector<int>& arg, Vector<String>& returnValue);
+    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, const Vector<int>& arg, Vector<String>& returnValue);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {

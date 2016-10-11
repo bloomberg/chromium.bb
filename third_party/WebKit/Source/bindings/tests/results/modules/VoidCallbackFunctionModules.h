@@ -9,7 +9,6 @@
 #ifndef VoidCallbackFunctionModules_h
 #define VoidCallbackFunctionModules_h
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
@@ -30,7 +29,7 @@ public:
 
     DECLARE_TRACE();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState);
+    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {

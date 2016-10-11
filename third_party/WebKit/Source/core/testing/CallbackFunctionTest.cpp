@@ -24,8 +24,8 @@ String CallbackFunctionTest::testCallback(ScriptState* scriptState,
   ScriptWrappable* scriptWrappable;
   String returnValue;
 
-  if (callback->call(scriptState, scriptWrappable = nullptr, exceptionState,
-                     message1, message2, returnValue)) {
+  if (callback->call(scriptState, scriptWrappable = nullptr, message1, message2,
+                     returnValue)) {
     return String("SUCCESS: ") + returnValue;
   }
   return String("Error!");
@@ -38,8 +38,7 @@ void CallbackFunctionTest::testInterfaceCallback(
     ExceptionState& exceptionState) {
   ScriptWrappable* scriptWrappable;
 
-  callback->call(scriptState, scriptWrappable = nullptr, exceptionState,
-                 divElement);
+  callback->call(scriptState, scriptWrappable = nullptr, divElement);
   return;
 }
 
@@ -47,7 +46,7 @@ void CallbackFunctionTest::testReceiverObjectCallback(
     ScriptState* scriptState,
     TestReceiverObjectCallback* callback,
     ExceptionState& exceptionState) {
-  callback->call(scriptState, this, exceptionState);
+  callback->call(scriptState, this);
   return;
 }
 
@@ -57,8 +56,7 @@ Vector<String> CallbackFunctionTest::testSequenceCallback(
     const Vector<int>& numbers,
     ExceptionState& exceptionState) {
   Vector<String> returnValue;
-  if (callback->call(scriptState, nullptr, exceptionState, numbers,
-                     returnValue)) {
+  if (callback->call(scriptState, nullptr, numbers, returnValue)) {
     return returnValue;
   }
   return Vector<String>();

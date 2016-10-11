@@ -11,12 +11,12 @@ from v8_globals import includes  # pylint: disable=W0403
 import v8_utilities  # pylint: disable=W0403
 
 CALLBACK_FUNCTION_H_INCLUDES = frozenset([
-    'bindings/core/v8/ExceptionState.h',
     'bindings/core/v8/ScopedPersistent.h',
     'platform/heap/Handle.h',
     'wtf/text/WTFString.h',
 ])
 CALLBACK_FUNCTION_CPP_INCLUDES = frozenset([
+    'bindings/core/v8/ExceptionState.h',
     'bindings/core/v8/ScriptState.h',
     'bindings/core/v8/ToV8.h',
     'bindings/core/v8/V8Binding.h',
@@ -69,7 +69,6 @@ def arguments_context(arguments, return_cpp_type):
     argument_declarations = [
         'ScriptState* scriptState',
         'ScriptWrappable* scriptWrappable',
-        'ExceptionState& exceptionState',
     ]
     argument_declarations.extend(
         '%s %s' % (argument.idl_type.callback_cpp_type, argument.name)

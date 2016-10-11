@@ -102,11 +102,8 @@ void IDBObserver::onChange(int32_t id,
                            const WebVector<int32_t>& observationIndex) {
   auto it = m_observerIds.find(id);
   DCHECK(it != m_observerIds.end());
-  // TODO(bashi): Make sure that using TrackExceptionState is OK.
-  // crbug.com/653769
-  TrackExceptionState exceptionState;
   m_callback->call(
-      m_scriptState.get(), this, exceptionState,
+      m_scriptState.get(), this,
       IDBObserverChanges::create(it->value, observations, observationIndex));
 }
 
