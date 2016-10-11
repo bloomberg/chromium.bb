@@ -779,7 +779,7 @@ nodist_weston_keyboard_SOURCES =				\
 weston_keyboard_LDADD = libtoytoolkit.la
 weston_keyboard_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
-weston_simple_im_SOURCES = clients/weston-simple-im.c
+weston_simple_im_SOURCES = clients/simple-im.c
 nodist_weston_simple_im_SOURCES =		\
 	protocol/input-method-unstable-v1-protocol.c		\
 	protocol/input-method-unstable-v1-client-protocol.h
