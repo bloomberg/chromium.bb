@@ -11,6 +11,6 @@ OMAHA_HISTORY = 'https://omahaproxy.appspot.com/history.json'
 OMAHA_DEV_HISTORY = '%s?channel=dev&os=win&json=1' % OMAHA_HISTORY
 SVN_URL = 'http://src.chromium.org/chrome'
 VIEWVC_URL = 'http://src.chromium.org/viewvc/chrome'
-EXTENSIONS_SAMPLES = ('http://src.chromium.org/viewvc/chrome/trunk/src/chrome/'
+EXTENSIONS_SAMPLES = ('https://chromium.googlesource.com/chromium/src/+/master/chrome/'
                       'common/extensions/docs/examples')
 CODEREVIEW_SERVER = 'https://codereview.chromium.org'
