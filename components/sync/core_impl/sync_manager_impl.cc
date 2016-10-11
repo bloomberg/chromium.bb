@@ -26,7 +26,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/base_node.h"
 #include "components/sync/core/configure_reason.h"
-#include "components/sync/core/http_post_provider_factory.h"
 #include "components/sync/core/internal_components_factory.h"
 #include "components/sync/core/read_node.h"
 #include "components/sync/core/read_transaction.h"
@@ -34,9 +33,10 @@
 #include "components/sync/core/write_transaction.h"
 #include "components/sync/core_impl/model_type_connector_proxy.h"
 #include "components/sync/core_impl/syncapi_internal.h"
-#include "components/sync/core_impl/syncapi_server_connection_manager.h"
+#include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
+#include "components/sync/engine_impl/net/sync_server_connection_manager.h"
 #include "components/sync/engine_impl/sync_scheduler.h"
 #include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/protocol/proto_value_conversions.h"
@@ -281,7 +281,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
     args->saved_nigori_state.reset();
   }
 
-  connection_manager_.reset(new SyncAPIServerConnectionManager(
+  connection_manager_.reset(new SyncServerConnectionManager(
       args->service_url.host() + args->service_url.path(),
       args->service_url.EffectiveIntPort(),
       args->service_url.SchemeIsCryptographic(), args->post_factory.release(),

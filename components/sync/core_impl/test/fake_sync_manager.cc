@@ -16,9 +16,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/weak_handle.h"
-#include "components/sync/core/http_post_provider_factory.h"
 #include "components/sync/core/internal_components_factory.h"
 #include "components/sync/core/test/fake_model_type_connector.h"
+#include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/test/fake_sync_encryption_handler.h"
 

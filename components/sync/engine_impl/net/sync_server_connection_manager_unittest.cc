@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core_impl/syncapi_server_connection_manager.h"
+#include "components/sync/engine_impl/net/sync_server_connection_manager.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -12,8 +12,8 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/sync/base/cancelation_signal.h"
-#include "components/sync/core/http_post_provider_factory.h"
-#include "components/sync/core/http_post_provider_interface.h"
+#include "components/sync/engine/net/http_post_provider_factory.h"
+#include "components/sync/engine/net/http_post_provider_interface.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,11 +68,11 @@ class BlockingHttpPostFactory : public HttpPostProviderFactory {
 }  // namespace
 
 // Ask the ServerConnectionManager to stop before it is created.
-TEST(SyncAPIServerConnectionManagerTest, VeryEarlyAbortPost) {
+TEST(SyncServerConnectionManagerTest, VeryEarlyAbortPost) {
   CancelationSignal signal;
   signal.Signal();
-  SyncAPIServerConnectionManager server("server", 0, true,
-                                        new BlockingHttpPostFactory(), &signal);
+  SyncServerConnectionManager server("server", 0, true,
+                                     new BlockingHttpPostFactory(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
 
@@ -84,10 +84,10 @@ TEST(SyncAPIServerConnectionManagerTest, VeryEarlyAbortPost) {
 }
 
 // Ask the ServerConnectionManager to stop before its first request is made.
-TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
+TEST(SyncServerConnectionManagerTest, EarlyAbortPost) {
   CancelationSignal signal;
-  SyncAPIServerConnectionManager server("server", 0, true,
-                                        new BlockingHttpPostFactory(), &signal);
+  SyncServerConnectionManager server("server", 0, true,
+                                     new BlockingHttpPostFactory(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
 
@@ -100,10 +100,10 @@ TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
 }
 
 // Ask the ServerConnectionManager to stop during a request.
-TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
+TEST(SyncServerConnectionManagerTest, AbortPost) {
   CancelationSignal signal;
-  SyncAPIServerConnectionManager server("server", 0, true,
-                                        new BlockingHttpPostFactory(), &signal);
+  SyncServerConnectionManager server("server", 0, true,
+                                     new BlockingHttpPostFactory(), &signal);
 
   ServerConnectionManager::PostBufferParams params;
 
@@ -173,9 +173,9 @@ class FailingHttpPostFactory : public HttpPostProviderFactory {
 // Fail request with TIMED_OUT error. Make sure server status is
 // CONNECTION_UNAVAILABLE and therefore request will be retried after network
 // change.
-TEST(SyncAPIServerConnectionManagerTest, FailPostWithTimedOut) {
+TEST(SyncServerConnectionManagerTest, FailPostWithTimedOut) {
   CancelationSignal signal;
-  SyncAPIServerConnectionManager server(
+  SyncServerConnectionManager server(
       "server", 0, true, new FailingHttpPostFactory(net::ERR_TIMED_OUT),
       &signal);
 

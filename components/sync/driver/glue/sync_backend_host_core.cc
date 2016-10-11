@@ -15,7 +15,6 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
-#include "components/sync/core/http_post_provider_factory.h"
 #include "components/sync/core/internal_components_factory.h"
 #include "components/sync/core/sync_manager.h"
 #include "components/sync/core/sync_manager_factory.h"
@@ -26,6 +25,7 @@
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/cycle/update_counters.h"
 #include "components/sync/engine/events/protocol_event.h"
+#include "components/sync/engine/net/http_post_provider_factory.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.

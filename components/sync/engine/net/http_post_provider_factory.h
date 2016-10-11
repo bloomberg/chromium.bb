@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_HTTP_POST_PROVIDER_FACTORY_H_
-#define COMPONENTS_SYNC_CORE_HTTP_POST_PROVIDER_FACTORY_H_
+#ifndef COMPONENTS_SYNC_ENGINE_NET_HTTP_POST_PROVIDER_FACTORY_H_
+#define COMPONENTS_SYNC_ENGINE_NET_HTTP_POST_PROVIDER_FACTORY_H_
 
 #include <string>
 
@@ -43,4 +43,4 @@ class HttpPostProviderFactory {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_HTTP_POST_PROVIDER_FACTORY_H_
+#endif  // COMPONENTS_SYNC_ENGINE_NET_HTTP_POST_PROVIDER_FACTORY_H_

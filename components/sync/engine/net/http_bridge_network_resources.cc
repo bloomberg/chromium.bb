@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/http_bridge_network_resources.h"
+#include "components/sync/engine/net/http_bridge_network_resources.h"
 
 #include "base/memory/ptr_util.h"
 #include "components/sync/base/cancelation_signal.h"
-#include "components/sync/core/http_bridge.h"
-#include "components/sync/core/http_post_provider_factory.h"
+#include "components/sync/engine/net/http_bridge.h"
+#include "components/sync/engine/net/http_post_provider_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace syncer {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_HTTP_BRIDGE_H_
-#define COMPONENTS_SYNC_CORE_HTTP_BRIDGE_H_
+#ifndef COMPONENTS_SYNC_ENGINE_NET_HTTP_BRIDGE_H_
+#define COMPONENTS_SYNC_ENGINE_NET_HTTP_BRIDGE_H_
 
 #include <stdint.h>
 
@@ -18,9 +18,9 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "components/sync/base/cancelation_observer.h"
-#include "components/sync/core/http_post_provider_factory.h"
-#include "components/sync/core/http_post_provider_interface.h"
-#include "components/sync/core/network_time_update_callback.h"
+#include "components/sync/engine/net/http_post_provider_factory.h"
+#include "components/sync/engine/net/http_post_provider_interface.h"
+#include "components/sync/engine/net/network_time_update_callback.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -230,4 +230,4 @@ class HttpBridgeFactory : public HttpPostProviderFactory,
 
 }  //  namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_HTTP_BRIDGE_H_
+#endif  // COMPONENTS_SYNC_ENGINE_NET_HTTP_BRIDGE_H_

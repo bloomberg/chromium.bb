@@ -13,7 +13,7 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/network_resources.h"
+#include "components/sync/engine/net/network_resources.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/fake_server.h"

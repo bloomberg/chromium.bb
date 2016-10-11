@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_HTTP_BRIDGE_NETWORK_RESOURCES_H_
-#define COMPONENTS_SYNC_CORE_HTTP_BRIDGE_NETWORK_RESOURCES_H_
+#ifndef COMPONENTS_SYNC_ENGINE_NET_HTTP_BRIDGE_NETWORK_RESOURCES_H_
+#define COMPONENTS_SYNC_ENGINE_NET_HTTP_BRIDGE_NETWORK_RESOURCES_H_
 
 #include <memory>
 
-#include "components/sync/core/network_resources.h"
-#include "components/sync/core/network_time_update_callback.h"
+#include "components/sync/engine/net/network_resources.h"
+#include "components/sync/engine/net/network_time_update_callback.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -33,4 +33,4 @@ class HttpBridgeNetworkResources : public NetworkResources {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_HTTP_BRIDGE_NETWORK_RESOURCES_H_
+#endif  // COMPONENTS_SYNC_ENGINE_NET_HTTP_BRIDGE_NETWORK_RESOURCES_H_

@@ -19,7 +19,6 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/base_transaction.h"
-#include "components/sync/core/http_bridge.h"
 #include "components/sync/core/internal_components_factory.h"
 #include "components/sync/core/internal_components_factory_impl.h"
 #include "components/sync/core/sync_manager_factory.h"
@@ -29,6 +28,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_frontend.h"
 #include "components/sync/engine/events/protocol_event.h"
+#include "components/sync/engine/net/http_bridge.h"
 #include "components/sync/engine/sync_string_conversions.h"
 
 // Helper macros to log with the syncer thread name; useful when there

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "components/sync/core/http_post_provider_factory.h"
-#include "components/sync/core/http_post_provider_interface.h"
+#include "components/sync/engine/net/http_post_provider_factory.h"
+#include "components/sync/engine/net/http_post_provider_interface.h"
 
 namespace browser_sync {
 

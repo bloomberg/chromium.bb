@@ -93,12 +93,6 @@ static_library("sync") {
     "core/data_type_debug_info_listener.h",
     "core/delete_journal.cc",
     "core/delete_journal.h",
-    "core/http_bridge.cc",
-    "core/http_bridge.h",
-    "core/http_bridge_network_resources.cc",
-    "core/http_bridge_network_resources.h",
-    "core/http_post_provider_factory.h",
-    "core/http_post_provider_interface.h",
     "core/internal_components_factory.h",
     "core/internal_components_factory_impl.cc",
     "core/internal_components_factory_impl.h",
@@ -112,7 +106,6 @@ static_library("sync") {
     "core/model_type_store_backend.h",
     "core/model_type_store_impl.cc",
     "core/model_type_store_impl.h",
-    "core/network_resources.h",
     "core/non_blocking_sync_common.cc",
     "core/non_blocking_sync_common.h",
     "core/processor_entity_tracker.cc",
@@ -160,8 +153,6 @@ static_library("sync") {
     "core_impl/sync_manager_impl.h",
     "core_impl/syncapi_internal.cc",
     "core_impl/syncapi_internal.h",
-    "core_impl/syncapi_server_connection_manager.cc",
-    "core_impl/syncapi_server_connection_manager.h",
     "device_info/device_count_metrics_provider.cc",
     "device_info/device_count_metrics_provider.h",
     "device_info/device_info.cc",
@@ -311,6 +302,13 @@ static_library("sync") {
     "engine/events/protocol_event.h",
     "engine/model_safe_worker.cc",
     "engine/model_safe_worker.h",
+    "engine/net/http_bridge.cc",
+    "engine/net/http_bridge.h",
+    "engine/net/http_bridge_network_resources.cc",
+    "engine/net/http_bridge_network_resources.h",
+    "engine/net/http_post_provider_factory.h",
+    "engine/net/http_post_provider_interface.h",
+    "engine/net/network_resources.h",
     "engine/passive_model_worker.cc",
     "engine/passive_model_worker.h",
     "engine/polling_constants.cc",
@@ -376,6 +374,8 @@ static_library("sync") {
     "engine_impl/model_type_worker.h",
     "engine_impl/net/server_connection_manager.cc",
     "engine_impl/net/server_connection_manager.h",
+    "engine_impl/net/sync_server_connection_manager.cc",
+    "engine_impl/net/sync_server_connection_manager.h",
     "engine_impl/net/url_translator.cc",
     "engine_impl/net/url_translator.h",
     "engine_impl/non_blocking_type_commit_contribution.cc",
@@ -803,7 +803,6 @@ source_set("unit_tests") {
     "base/weak_handle_unittest.cc",
     "core/change_record_unittest.cc",
     "core/data_batch_impl_unittest.cc",
-    "core/http_bridge_unittest.cc",
     "core/model_type_store_backend_unittest.cc",
     "core/model_type_store_impl_unittest.cc",
     "core/processor_entity_tracker_unittest.cc",
@@ -817,7 +816,6 @@ source_set("unit_tests") {
     "core_impl/protocol_event_buffer_unittest.cc",
     "core_impl/sync_encryption_handler_impl_unittest.cc",
     "core_impl/sync_manager_impl_unittest.cc",
-    "core_impl/syncapi_server_connection_manager_unittest.cc",
     "device_info/device_count_metrics_provider_unittest.cc",
     "device_info/device_info_data_type_controller_unittest.cc",
     "device_info/device_info_service_unittest.cc",
@@ -849,6 +847,7 @@ source_set("unit_tests") {
     "engine/attachments/on_disk_attachment_store_unittest.cc",
     "engine/cycle/sync_cycle_snapshot_unittest.cc",
     "engine/model_safe_worker_unittest.cc",
+    "engine/net/http_bridge_unittest.cc",
     "engine_impl/apply_control_data_updates_unittest.cc",
     "engine_impl/attachments/attachment_downloader_impl_unittest.cc",
     "engine_impl/attachments/attachment_uploader_impl_unittest.cc",
@@ -860,6 +859,7 @@ source_set("unit_tests") {
     "engine_impl/get_updates_processor_unittest.cc",
     "engine_impl/model_type_registry_unittest.cc",
     "engine_impl/model_type_worker_unittest.cc",
+    "engine_impl/net/sync_server_connection_manager_unittest.cc",
     "engine_impl/sync_scheduler_impl_unittest.cc",
     "engine_impl/syncer_proto_util_unittest.cc",
     "engine_impl/syncer_unittest.cc",
@@ -941,7 +941,7 @@ source_set("unit_tests") {
   }
 
   if (is_ios) {
-    sources -= [ "core/http_bridge_unittest.cc" ]
+    sources -= [ "engine/net/http_bridge_unittest.cc" ]
   }
 
   if (enable_configuration_policy) {

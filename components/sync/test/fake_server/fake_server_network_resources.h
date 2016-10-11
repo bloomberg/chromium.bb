@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "components/sync/core/network_resources.h"
-#include "components/sync/core/network_time_update_callback.h"
+#include "components/sync/engine/net/network_resources.h"
+#include "components/sync/engine/net/network_time_update_callback.h"
 
 namespace net {
 class URLRequestContextGetter;

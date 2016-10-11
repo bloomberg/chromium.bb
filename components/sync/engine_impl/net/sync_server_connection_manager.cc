@@ -2,34 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core_impl/syncapi_server_connection_manager.h"
+#include "components/sync/engine_impl/net/sync_server_connection_manager.h"
 
 #include <stdint.h>
 
-#include "components/sync/core/http_post_provider_factory.h"
-#include "components/sync/core/http_post_provider_interface.h"
+#include "components/sync/engine/net/http_post_provider_factory.h"
+#include "components/sync/engine/net/http_post_provider_interface.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 
 namespace syncer {
 
-SyncAPIBridgedConnection::SyncAPIBridgedConnection(
-    ServerConnectionManager* scm,
-    HttpPostProviderFactory* factory)
+SyncBridgedConnection::SyncBridgedConnection(ServerConnectionManager* scm,
+                                             HttpPostProviderFactory* factory)
     : Connection(scm), factory_(factory) {
   post_provider_ = factory_->Create();
 }
 
-SyncAPIBridgedConnection::~SyncAPIBridgedConnection() {
+SyncBridgedConnection::~SyncBridgedConnection() {
   DCHECK(post_provider_);
   factory_->Destroy(post_provider_);
   post_provider_ = NULL;
 }
 
-bool SyncAPIBridgedConnection::Init(const char* path,
-                                    const std::string& auth_token,
-                                    const std::string& payload,
-                                    HttpResponse* response) {
+bool SyncBridgedConnection::Init(const char* path,
+                                 const std::string& auth_token,
+                                 const std::string& payload,
+                                 HttpResponse* response) {
   std::string sync_server;
   int sync_server_port = 0;
   bool use_ssl = false;
@@ -77,12 +76,12 @@ bool SyncAPIBridgedConnection::Init(const char* path,
   return true;
 }
 
-void SyncAPIBridgedConnection::Abort() {
+void SyncBridgedConnection::Abort() {
   DCHECK(post_provider_);
   post_provider_->Abort();
 }
 
-SyncAPIServerConnectionManager::SyncAPIServerConnectionManager(
+SyncServerConnectionManager::SyncServerConnectionManager(
     const std::string& server,
     int port,
     bool use_ssl,
@@ -93,11 +92,11 @@ SyncAPIServerConnectionManager::SyncAPIServerConnectionManager(
   DCHECK(post_provider_factory_.get());
 }
 
-SyncAPIServerConnectionManager::~SyncAPIServerConnectionManager() {}
+SyncServerConnectionManager::~SyncServerConnectionManager() {}
 
 ServerConnectionManager::Connection*
-SyncAPIServerConnectionManager::MakeConnection() {
-  return new SyncAPIBridgedConnection(this, post_provider_factory_.get());
+SyncServerConnectionManager::MakeConnection() {
+  return new SyncBridgedConnection(this, post_provider_factory_.get());
 }
 
 }  // namespace syncer
