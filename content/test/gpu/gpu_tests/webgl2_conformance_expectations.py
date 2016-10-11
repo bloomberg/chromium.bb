@@ -55,8 +55,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=654187)
 
     # All platforms.
-    self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
-        bug=644740)
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
     # Windows only.
@@ -163,6 +161,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', 'intel'], bug=628395)
 
     # Mac only.
+    self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
+        ['mac'], bug=644740)
 
     # Fixed on OSX 10.11
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
