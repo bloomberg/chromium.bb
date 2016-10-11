@@ -57,16 +57,6 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
   command = base::CommandLine((base::FilePath("/usr/bin/printenv")));
   commands.push_back(std::make_pair("env", command));
 
-  command = base::CommandLine(base::FilePath("/usr/bin/setxkbmap"));
-  command.AppendArg("-print");
-  command.AppendArg("-query");
-  commands.push_back(std::make_pair("setxkbmap", command));
-
-  command = base::CommandLine(base::FilePath("/usr/bin/xinput"));
-  command.AppendArg("list");
-  command.AppendArg("--long");
-  commands.push_back(std::make_pair("xinput", command));
-
 #if defined(USE_X11)
   command = base::CommandLine(base::FilePath("/usr/bin/xrandr"));
   command.AppendArg("--verbose");
