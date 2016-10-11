@@ -256,6 +256,10 @@ bool WEBPImageDecoder::updateDemuxer() {
   }
 
   ASSERT(isDecodedSizeAvailable());
+
+  size_t frameCount = WebPDemuxGetI(m_demux, WEBP_FF_FRAME_COUNT);
+  updateAggressivePurging(frameCount);
+
   return true;
 }
 
@@ -486,6 +490,9 @@ void WEBPImageDecoder::decode(size_t index) {
     // We need more data to continue decoding.
     if (m_frameBufferCache[*i].getStatus() != ImageFrame::FrameComplete)
       break;
+
+    if (m_purgeAggressively)
+      clearCacheExceptFrame(*i);
   }
 
   // It is also a fatal error if all data is received and we have decoded all
