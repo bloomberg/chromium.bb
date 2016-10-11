@@ -15,7 +15,7 @@
   <div id="main-frame-error" class="interstitial-wrapper">
     <div id="main-content">
       <div class="icon"
-          jseval="updateIconClass(this.classList, iconClass)"></div>
+          jseval="updateIconClass(this.classList, iconClass)" alt=""></div>
       <div id="main-message">
         <h1 jsselect="heading" jsvalues=".innerHTML:msg"></h1>
         <p jsselect="summary" jsvalues=".innerHTML:msg"></p>
@@ -26,7 +26,7 @@
             <li jsselect="suggestionsSummaryList" jsvalues=".innerHTML:summary"></li>
           </ul>
         </div>
-        <div class="error-code" jscontent="errorCode"></div>
+        <div class="error-code" jscontent="errorCode" aria-hidden="true"></div>
         <div id="diagnose-frame" class="hidden"></div>
       </div>
     </div>

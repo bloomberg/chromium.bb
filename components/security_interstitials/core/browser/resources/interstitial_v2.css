@@ -89,11 +89,11 @@ button:hover {
 }
 
 .error-code {
-  color: #696969;
+  color: #646464;
   display: inline;
   font-size: .86667em;
   margin-top: 15px;
-  opacity: .5;
+  opacity: 1;
   text-transform: uppercase;
 }
 
