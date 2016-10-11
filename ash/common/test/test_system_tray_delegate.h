@@ -37,10 +37,6 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   // consider using SetInitialLoginStatus() instead.
   void SetLoginStatus(LoginStatus login_status);
 
-  void set_should_show_display_notification(bool should_show) {
-    should_show_display_notification_ = should_show;
-  }
-
   // Updates the session length limit so that the limit will come from now in
   // |new_limit|.
   void SetSessionLengthLimitForTest(const base::TimeDelta& new_limit);
@@ -58,7 +54,6 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   LoginStatus GetUserLoginStatus() const override;
   bool IsUserSupervised() const override;
   void GetSystemUpdateInfo(UpdateInfo* info) const override;
-  bool ShouldShowDisplayNotification() override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
   void SignOut() override;
@@ -66,7 +61,6 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   void GetAvailableIMEList(IMEInfoList* list) override;
 
  private:
-  bool should_show_display_notification_;
   LoginStatus login_status_;
   base::TimeDelta session_length_limit_;
   bool session_length_limit_set_;

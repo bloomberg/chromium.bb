@@ -44,10 +44,6 @@ bool DefaultSystemTrayDelegate::ShouldShowSettings() {
   return true;
 }
 
-bool DefaultSystemTrayDelegate::ShouldShowDisplayNotification() {
-  return false;
-}
-
 void DefaultSystemTrayDelegate::ToggleBluetooth() {
   bluetooth_enabled_ = !bluetooth_enabled_;
 }

@@ -34,6 +34,7 @@
 #include "ui/wm/core/cursor_manager.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/screen_layout_observer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -136,6 +137,12 @@ void AshTestHelper::SetUp(bool start_session,
     GetTestSessionStateDelegate()->SetActiveUserSessionStarted(true);
     GetTestSessionStateDelegate()->SetHasActiveUser(true);
   }
+
+#if defined(OS_CHROMEOS)
+  // Tests that change the display configuration generally don't care about the
+  // notifications and the popup UI can interfere with things like cursors.
+  shell->screen_layout_observer()->set_show_notifications_for_testing(false);
+#endif
 
   test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
       .DisableChangeDisplayUponHostResize();

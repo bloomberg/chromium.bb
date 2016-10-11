@@ -90,7 +90,6 @@ class SystemTrayDelegateChromeOS
   void GetSystemUpdateInfo(ash::UpdateInfo* info) const override;
   bool ShouldShowSettings() override;
   void ShowSetTimeDialog() override;
-  bool ShouldShowDisplayNotification() override;
   void ShowEnterpriseInfo() override;
   void ShowUserLogin() override;
   void SignOut() override;

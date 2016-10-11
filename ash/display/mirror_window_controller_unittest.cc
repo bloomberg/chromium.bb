@@ -241,6 +241,8 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
 
   // Check mirrored cursor's location.
   test::MirrorWindowTestApi test_api;
+  // The hot point location depends on the specific cursor.
+  EXPECT_EQ(ui::kCursorNull, test_api.GetCurrentCursorType());
   // Rotated hot point must be (25-7, 7).
   EXPECT_EQ("18,7", test_api.GetCursorHotPoint().ToString());
   // New coordinates are not (200,200) because (200,200) is not the center of

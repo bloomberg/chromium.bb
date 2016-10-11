@@ -300,11 +300,8 @@ void ScreenLayoutObserver::OnDisplayConfigurationChanged() {
   DisplayInfoMap old_info;
   UpdateDisplayInfo(&old_info);
 
-  if (!WmShell::Get()
-           ->system_tray_delegate()
-           ->ShouldShowDisplayNotification()) {
+  if (!show_notifications_for_testing)
     return;
-  }
 
   base::string16 message;
   base::string16 additional_message;

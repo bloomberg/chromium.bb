@@ -14,6 +14,7 @@
 #include "ash/content/shell_content_state.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
+#include "ash/system/chromeos/screen_layout_observer.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_environment_content.h"
 #include "ash/test/ash_test_helper.h"
@@ -420,8 +421,9 @@ TEST_F(ScreenOrientationControllerTest, RotationLockPreventsRotation) {
 // triggered by the accelerometer.
 TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
   EnableMaximizeMode(true);
-  test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
-  tray_delegate->set_should_show_display_notification(true);
+  Shell::GetInstance()
+      ->screen_layout_observer()
+      ->set_show_notifications_for_testing(true);
   test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
 

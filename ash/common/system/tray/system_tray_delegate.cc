@@ -82,10 +82,6 @@ bool SystemTrayDelegate::ShouldShowSettings() {
 
 void SystemTrayDelegate::ShowSetTimeDialog() {}
 
-bool SystemTrayDelegate::ShouldShowDisplayNotification() {
-  return false;
-}
-
 void SystemTrayDelegate::ShowEnterpriseInfo() {}
 
 void SystemTrayDelegate::ShowUserLogin() {}

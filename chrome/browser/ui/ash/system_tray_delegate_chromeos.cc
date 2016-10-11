@@ -77,12 +77,10 @@
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/ash/vpn_delegate_chromeos.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -102,7 +100,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/browser/web_contents.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -399,27 +396,6 @@ bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
 void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {
   // TODO(mash): Refactor out GetNativeWindow and move to SystemTrayClient.
   SetTimeDialog::ShowDialog(GetNativeWindow());
-}
-
-bool SystemTrayDelegateChromeOS::ShouldShowDisplayNotification() {
-  // Packaged app is not counted as 'last active', so if a browser opening the
-  // display settings is in background of a packaged app, it will return true.
-  // TODO(mukai): fix this.
-  Browser* active_browser = chrome::FindLastActive();
-  if (!active_browser)
-    return true;
-
-  content::WebContents* active_contents =
-      active_browser->tab_strip_model()->GetActiveWebContents();
-  if (!active_contents)
-    return true;
-
-  GURL visible_url = active_contents->GetLastCommittedURL();
-  return !chrome::IsSettingsSubPage(
-             visible_url, SystemTrayClient::kDisplaySettingsSubPageName) &&
-         !chrome::IsSettingsSubPage(
-             visible_url,
-             SystemTrayClient::kDisplayOverscanSettingsSubPageName);
 }
 
 void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {

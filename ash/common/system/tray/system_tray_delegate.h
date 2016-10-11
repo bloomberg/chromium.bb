@@ -153,10 +153,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Shows the dialog to set system time, date, and timezone.
   virtual void ShowSetTimeDialog();
 
-  // Returns true if the notification for the display configuration change
-  // should appear.
-  virtual bool ShouldShowDisplayNotification();
-
   // Shows information about enterprise enrolled devices.
   virtual void ShowEnterpriseInfo();
 

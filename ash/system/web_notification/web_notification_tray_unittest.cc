@@ -40,6 +40,10 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/screen_layout_observer.h"
+#endif
+
 namespace ash {
 
 namespace {
@@ -269,10 +273,9 @@ TEST_P(WebNotificationTrayTest, PopupShownOnBothDisplays) {
   if (!SupportsMultipleDisplays())
     return;
 
-  // Enables to appear the notification for display changes.
-  test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
-  tray_delegate->set_should_show_display_notification(true);
-
+  Shell::GetInstance()
+      ->screen_layout_observer()
+      ->set_show_notifications_for_testing(true);
   UpdateDisplay("400x400,200x200");
   // UpdateDisplay() creates the display notifications, so popup is visible.
   EXPECT_TRUE(GetTray()->IsPopupVisible());

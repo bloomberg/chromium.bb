@@ -105,8 +105,9 @@ ScreenLayoutObserverTest::GetDisplayNotification() const {
 }
 
 TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
-  test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
-  tray_delegate->set_should_show_display_notification(true);
+  Shell::GetInstance()
+      ->screen_layout_observer()
+      ->set_show_notifications_for_testing(true);
 
   UpdateDisplay("400x400");
   display::Display::SetInternalDisplayId(display_manager()->first_display_id());
@@ -212,8 +213,9 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
 // Verify that notification shows up when display is switched from dock mode to
 // extend mode.
 TEST_F(ScreenLayoutObserverTest, DisplayConfigurationChangedTwice) {
-  test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
-  tray_delegate->set_should_show_display_notification(true);
+  Shell::GetInstance()
+      ->screen_layout_observer()
+      ->set_show_notifications_for_testing(true);
   UpdateDisplay("400x400,200x200");
   EXPECT_EQ(l10n_util::GetStringUTF16(
                 IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL),
@@ -238,10 +240,11 @@ TEST_F(ScreenLayoutObserverTest, DisplayConfigurationChangedTwice) {
 TEST_F(ScreenLayoutObserverTest, UpdateAfterSuppressDisplayNotification) {
   UpdateDisplay("400x400,200x200");
 
-  test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
-  tray_delegate->set_should_show_display_notification(true);
+  Shell::GetInstance()
+      ->screen_layout_observer()
+      ->set_show_notifications_for_testing(true);
 
-  // rotate the second.
+  // Rotate the second.
   UpdateDisplay("400x400,200x200/r");
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetSecondDisplayName(),
@@ -253,8 +256,9 @@ TEST_F(ScreenLayoutObserverTest, UpdateAfterSuppressDisplayNotification) {
 // Verify that no notification is shown when overscan of a screen is changed.
 TEST_F(ScreenLayoutObserverTest, OverscanDisplay) {
   UpdateDisplay("400x400, 300x300");
-  test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
-  tray_delegate->set_should_show_display_notification(true);
+  Shell::GetInstance()
+      ->screen_layout_observer()
+      ->set_show_notifications_for_testing(true);
   display::Display::SetInternalDisplayId(display_manager()->first_display_id());
 
   // /o creates the default overscan.

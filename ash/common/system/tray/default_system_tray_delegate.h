@@ -24,7 +24,6 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   bool IsUserSupervised() const override;
   void GetSystemUpdateInfo(UpdateInfo* info) const override;
   bool ShouldShowSettings() override;
-  bool ShouldShowDisplayNotification() override;
   void ToggleBluetooth() override;
   bool IsBluetoothDiscovering() override;
   bool GetBluetoothAvailable() override;

@@ -32,6 +32,7 @@ using chromeos::LoginState;
 
 namespace {
 
+const char kDisplaySettingsSubPageName[] = "display";
 const char kPaletteSettingsSubPageName[] = "stylus-overlay";
 
 SystemTrayClient* g_instance = nullptr;
@@ -42,11 +43,6 @@ void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
 }
 
 }  // namespace
-
-// static
-const char SystemTrayClient::kDisplaySettingsSubPageName[] = "display";
-const char SystemTrayClient::kDisplayOverscanSettingsSubPageName[] =
-    "displayOverscan";
 
 SystemTrayClient::SystemTrayClient() {
   // If this observes clock setting changes before ash comes up the IPCs will

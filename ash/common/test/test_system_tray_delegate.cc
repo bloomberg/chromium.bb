@@ -23,9 +23,7 @@ LoginStatus g_initial_status = LoginStatus::USER;
 }  // namespace
 
 TestSystemTrayDelegate::TestSystemTrayDelegate()
-    : should_show_display_notification_(false),
-      login_status_(g_initial_status),
-      session_length_limit_set_(false) {}
+    : login_status_(g_initial_status), session_length_limit_set_(false) {}
 
 TestSystemTrayDelegate::~TestSystemTrayDelegate() {}
 
@@ -89,10 +87,6 @@ void TestSystemTrayDelegate::GetSystemUpdateInfo(UpdateInfo* info) const {
   info->severity = UpdateInfo::UPDATE_NONE;
   info->update_required = g_system_update_required;
   info->factory_reset_required = false;
-}
-
-bool TestSystemTrayDelegate::ShouldShowDisplayNotification() {
-  return should_show_display_notification_;
 }
 
 bool TestSystemTrayDelegate::GetSessionStartTime(
