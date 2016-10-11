@@ -90,7 +90,6 @@ shell::Connector* RootWindowController::GetConnector() {
 
 ui::Window* RootWindowController::NewTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
-  // TODO(sky): panels need a different frame, http:://crbug.com/614362.
   const bool provide_non_client_frame =
       GetWindowType(*properties) == ui::mojom::WindowType::WINDOW ||
       GetWindowType(*properties) == ui::mojom::WindowType::PANEL;

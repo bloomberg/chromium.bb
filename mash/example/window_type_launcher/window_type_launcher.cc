@@ -82,7 +82,10 @@ class WindowDelegateView : public views::WidgetDelegateView {
   }
 
   // WidgetDelegateView:
-  bool CanMaximize() const override { return true; }
+  bool CanMaximize() const override {
+    // Panels can't be maximized.
+    return (traits_ & PANEL) == 0;
+  }
   bool CanMinimize() const override { return true; }
   bool CanResize() const override { return (traits_ & RESIZABLE) != 0; }
   base::string16 GetWindowTitle() const override {
