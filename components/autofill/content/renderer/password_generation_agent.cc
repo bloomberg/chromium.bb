@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/form_classifier.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
@@ -19,6 +18,7 @@
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -418,9 +418,8 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
     password_generation::LogPasswordGenerationEvent(
         password_generation::GENERATION_AVAILABLE);
     possible_account_creation_forms_.clear();
-    Send(new AutofillHostMsg_GenerationAvailableForForm(
-        routing_id(),
-        *generation_form_data_->form));
+    GetPasswordManagerClient()->GenerationAvailableForForm(
+        *generation_form_data_->form);
     return;
   }
 }
@@ -512,30 +511,26 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
 void PasswordGenerationAgent::ShowGenerationPopup() {
   if (!render_frame())
     return;
-  Send(new AutofillHostMsg_ShowPasswordGenerationPopup(
-      routing_id(),
+  GetPasswordManagerClient()->ShowPasswordGenerationPopup(
       render_frame()->GetRenderView()->ElementBoundsInWindow(
           generation_element_),
-      generation_element_.maxLength(),
-      generation_element_.nameForAutofill(),
-      is_manually_triggered_,
-      *generation_form_data_->form));
+      generation_element_.maxLength(), generation_element_.nameForAutofill(),
+      is_manually_triggered_, *generation_form_data_->form);
   generation_popup_shown_ = true;
 }
 
 void PasswordGenerationAgent::ShowEditingPopup() {
   if (!render_frame())
     return;
-  Send(new AutofillHostMsg_ShowPasswordEditingPopup(
-           routing_id(),
-           render_frame()->GetRenderView()->ElementBoundsInWindow(
-               generation_element_),
-           *generation_form_data_->form));
+  GetPasswordManagerClient()->ShowPasswordEditingPopup(
+      render_frame()->GetRenderView()->ElementBoundsInWindow(
+          generation_element_),
+      *generation_form_data_->form);
   editing_popup_shown_ = true;
 }
 
 void PasswordGenerationAgent::HidePopup() {
-  Send(new AutofillHostMsg_HidePasswordGenerationPopup(routing_id()));
+  GetPasswordManagerClient()->HidePasswordGenerationPopup();
 }
 
 void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
@@ -580,6 +575,16 @@ const mojom::PasswordManagerDriverPtr&
 PasswordGenerationAgent::GetPasswordManagerDriver() {
   DCHECK(password_agent_);
   return password_agent_->GetPasswordManagerDriver();
+}
+
+const mojom::PasswordManagerClientAssociatedPtr&
+PasswordGenerationAgent::GetPasswordManagerClient() {
+  if (!password_manager_client_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &password_manager_client_);
+  }
+
+  return password_manager_client_;
 }
 
 }  // namespace autofill

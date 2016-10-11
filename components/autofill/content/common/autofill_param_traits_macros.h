@@ -8,8 +8,40 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_PARAM_TRAITS_MACROS_H_
 #define COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_PARAM_TRAITS_MACROS_H_
 
+#include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "ipc/ipc_message_macros.h"
+#include "url/ipc/url_param_traits.h"
+#include "url/origin.h"
+
+IPC_ENUM_TRAITS_MAX_VALUE(autofill::FormFieldData::CheckStatus,
+                          autofill::FormFieldData::CheckStatus::CHECKED)
+
+IPC_ENUM_TRAITS_MAX_VALUE(autofill::FormFieldData::RoleAttribute,
+                          autofill::FormFieldData::ROLE_ATTRIBUTE_OTHER)
+
+IPC_ENUM_TRAITS_MAX_VALUE(base::i18n::TextDirection,
+                          base::i18n::TEXT_DIRECTION_NUM_DIRECTIONS - 1)
+
+IPC_STRUCT_TRAITS_BEGIN(autofill::FormFieldData)
+  IPC_STRUCT_TRAITS_MEMBER(label)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(value)
+  IPC_STRUCT_TRAITS_MEMBER(form_control_type)
+  IPC_STRUCT_TRAITS_MEMBER(autocomplete_attribute)
+  IPC_STRUCT_TRAITS_MEMBER(placeholder)
+  IPC_STRUCT_TRAITS_MEMBER(role)
+  IPC_STRUCT_TRAITS_MEMBER(max_length)
+  IPC_STRUCT_TRAITS_MEMBER(is_autofilled)
+  IPC_STRUCT_TRAITS_MEMBER(check_status)
+  IPC_STRUCT_TRAITS_MEMBER(is_focusable)
+  IPC_STRUCT_TRAITS_MEMBER(should_autocomplete)
+  IPC_STRUCT_TRAITS_MEMBER(text_direction)
+  IPC_STRUCT_TRAITS_MEMBER(option_values)
+  IPC_STRUCT_TRAITS_MEMBER(option_contents)
+  IPC_STRUCT_TRAITS_MEMBER(css_classes)
+  IPC_STRUCT_TRAITS_MEMBER(properties_mask)
+IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(autofill::PasswordForm::Type,
                           autofill::PasswordForm::TYPE_LAST)

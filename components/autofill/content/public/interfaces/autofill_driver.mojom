@@ -110,3 +110,32 @@ interface PasswordManagerDriver {
   SaveGenerationFieldDetectedByClassifier(
       PasswordForm password_form, mojo.common.mojom.String16 generation_field);
 };
+
+// There is one instance of this interface per web contents in the browser
+// process.
+interface PasswordManagerClient {
+  // Instructs the browser that generation is available for this particular
+  // form. This is used for UMA stats.
+  GenerationAvailableForForm(PasswordForm password_form);
+
+  // Instructs the browser to show the password generation popup at the
+  // specified location. This location should be specified in the renderers
+  // coordinate system. Form is the form associated with the password field.
+  // The popup will be anchored at |bounds|. The generated password
+  // will be no longer than |max_length|. |generation_element| should contain a
+  // name of a password field at which generation popup is attached.
+  // |is_manually_triggered| informs whether it is automatically or manually
+  // triggered generation.
+  ShowPasswordGenerationPopup(
+      gfx.mojom.RectF bounds, int32 max_length,
+      mojo.common.mojom.String16 generation_element, bool is_manually_triggered,
+      PasswordForm password_form);
+
+  // Instructs the browser to show the popup for editing a generated password.
+  // The location should be specified in the renderers coordinate system. Form
+  // is the form associated with the password field.
+  ShowPasswordEditingPopup(gfx.mojom.RectF bounds, PasswordForm password_form);
+
+  // Instructs the browser to hide any password generation popups.
+  HidePasswordGenerationPopup();
+};

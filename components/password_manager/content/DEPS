@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/autofill/content/common",
   "+components/autofill/core/common",
   "+content/public/common",
   "+mojo/common",

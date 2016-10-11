@@ -5,20 +5,13 @@
 static_library("common") {
   sources = [
     "autofill_message_generator.cc",
-    "autofill_message_generator.h",
-    "autofill_messages.h",
     "autofill_param_traits_macros.h",
   ]
 
   deps = [
-    "//base",
     "//components/autofill/core/common",
-    "//content/public/common",
     "//ipc",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/gfx/ipc",
-    "//ui/gfx/ipc/geometry",
     "//url",
+    "//url/ipc:url_ipc",
   ]
 }

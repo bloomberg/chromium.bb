@@ -39,6 +39,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/web_contents_tester.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -372,8 +373,11 @@ TEST_F(ChromePasswordManagerClientTest,
 }
 
 TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
+  std::unique_ptr<WebContents> test_web_contents(
+      content::WebContentsTester::CreateTestWebContents(
+          web_contents()->GetBrowserContext(), nullptr));
   std::unique_ptr<MockChromePasswordManagerClient> client(
-      new MockChromePasswordManagerClient(web_contents()));
+      new MockChromePasswordManagerClient(test_web_contents.get()));
   // Functionality disabled if there is SSL errors.
   EXPECT_CALL(*client, DidLastPageLoadEncounterSSLErrors())
       .WillRepeatedly(Return(true));

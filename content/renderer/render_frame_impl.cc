@@ -2476,13 +2476,19 @@ AssociatedInterfaceProvider*
 RenderFrameImpl::GetRemoteAssociatedInterfaces() {
   if (!remote_associated_interfaces_) {
     ChildThreadImpl* thread = ChildThreadImpl::current();
-    mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
-    thread->GetRemoteRouteProvider()->GetRoute(
-        routing_id_,
-        mojo::GetProxy(&remote_interfaces,
-                       thread->channel()->GetAssociatedGroup()));
-    remote_associated_interfaces_.reset(new AssociatedInterfaceProviderImpl(
-        std::move(remote_interfaces)));
+    if (thread) {
+      mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
+      thread->GetRemoteRouteProvider()->GetRoute(
+          routing_id_, mojo::GetProxy(&remote_interfaces,
+                                      thread->channel()->GetAssociatedGroup()));
+      remote_associated_interfaces_.reset(
+          new AssociatedInterfaceProviderImpl(std::move(remote_interfaces)));
+    } else {
+      // In some tests the thread may be null,
+      // so set up a self-contained interface provider instead.
+      remote_associated_interfaces_.reset(
+          new AssociatedInterfaceProviderImpl());
+    }
   }
   return remote_associated_interfaces_.get();
 }

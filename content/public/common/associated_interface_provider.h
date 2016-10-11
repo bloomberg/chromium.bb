@@ -49,6 +49,11 @@ class AssociatedInterfaceProvider {
         mojo::GetProxy(proxy, GetAssociatedGroup());
     GetInterface(Interface::Name_, request.PassHandle());
   }
+
+  virtual void OverrideBinderForTesting(
+      const std::string& name,
+      const base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>&
+          binder) = 0;
 };
 
 }  // namespace content

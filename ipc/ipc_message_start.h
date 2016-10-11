@@ -31,7 +31,6 @@ enum IPCMessageStart {
   DOMStorageMsgStart,
   IndexedDBMsgStart,
   SpeechRecognitionMsgStart,
-  AutofillMsgStart,
   SafeBrowsingMsgStart,
   P2PMsgStart,
   ResourceMsgStart,

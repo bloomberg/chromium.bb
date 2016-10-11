@@ -97,6 +97,8 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
 
   const mojom::PasswordManagerDriverPtr& GetPasswordManagerDriver();
 
+  const mojom::PasswordManagerClientAssociatedPtr& GetPasswordManagerClient();
+
   // Helper function that will try and populate |password_elements_| and
   // |possible_account_creation_form_|.
   void FindPossibleGenerationForm();
@@ -181,6 +183,8 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Unowned pointer. Used to notify PassowrdAutofillAgent when values
   // in password fields are updated.
   PasswordAutofillAgent* password_agent_;
+
+  mojom::PasswordManagerClientAssociatedPtr password_manager_client_;
 
   mojo::Binding<mojom::PasswordGenerationAgent> binding_;
 
