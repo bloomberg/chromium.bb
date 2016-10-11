@@ -55,8 +55,7 @@ unittestBindings.exportTests([
     }
     test.runWithUserGesture(increment);
     test.runWithoutUserGesture(increment);
-    test.runWithNativesEnabled(increment);
-    test.assertEq(3, counter);
+    test.assertEq(2, counter);
     test.assertFalse(test.isProcessingUserGesture());
     test.assertTrue(!!test.getApiFeatures());
     test.assertEq(0, test.getApiDefinitions().length);

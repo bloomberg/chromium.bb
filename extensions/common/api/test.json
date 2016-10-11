@@ -138,18 +138,6 @@
         ]
       },
       {
-        "name": "runWithNativesEnabled",
-        "type": "function",
-        "nocompile": true,
-        "description": "Runs the given function with access to native methods enabled.",
-        "parameters": [
-          {
-            "type": "function",
-            "name": "callback"
-          }
-        ]
-      },
-      {
         "name": "getModuleSystem",
         "type": "function",
         "nocompile": true,
