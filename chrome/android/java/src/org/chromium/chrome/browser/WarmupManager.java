@@ -61,8 +61,8 @@ public final class WarmupManager {
     }
 
     private WarmupManager() {
-        mDnsRequestsInFlight = new HashSet<String>();
-        mPendingPreconnectWithProfile = new HashMap<String, Profile>();
+        mDnsRequestsInFlight = new HashSet<>();
+        mPendingPreconnectWithProfile = new HashMap<>();
     }
 
     /**
@@ -117,14 +117,19 @@ public final class WarmupManager {
     }
 
     /**
-     * @return Whether the view hierarchy has been prebuilt with a given toolbar ID. If there is no
-     * match, clears the inflated view.
+     * @return Whether a pre-built view hierarchy exists for the given toolbarContainerId.
      */
-    public boolean hasBuiltOrClearViewHierarchyWithToolbar(int toolbarContainerId) {
+    public boolean hasViewHierarchyWithToolbar(int toolbarContainerId) {
         ThreadUtils.assertOnUiThread();
-        boolean match = mMainView != null && mToolbarContainerId == toolbarContainerId;
-        if (!match) mMainView = null;
-        return match;
+        return mMainView != null && mToolbarContainerId == toolbarContainerId;
+    }
+
+    /**
+     * Clears the inflated view hierarchy.
+     */
+    public void clearViewHierarchy() {
+        ThreadUtils.assertOnUiThread();
+        mMainView = null;
     }
 
     /**

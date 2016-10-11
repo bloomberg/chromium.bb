@@ -337,13 +337,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         setLowEndTheme();
         int controlContainerLayoutId = getControlContainerLayoutId();
         WarmupManager warmupManager = WarmupManager.getInstance();
-        if (warmupManager.hasBuiltOrClearViewHierarchyWithToolbar(controlContainerLayoutId)) {
+        if (warmupManager.hasViewHierarchyWithToolbar(controlContainerLayoutId)) {
             View placeHolderView = new View(this);
             setContentView(placeHolderView);
             ViewGroup contentParent = (ViewGroup) placeHolderView.getParent();
-            WarmupManager.getInstance().transferViewHierarchyTo(contentParent);
+            warmupManager.transferViewHierarchyTo(contentParent);
             contentParent.removeView(placeHolderView);
         } else {
+            warmupManager.clearViewHierarchy();
+
             // Allow disk access for the content view and toolbar container setup.
             // On certain android devices this setup sequence results in disk writes outside
             // of our control, so we have to disable StrictMode to work. See crbug.com/639352.
