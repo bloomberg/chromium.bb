@@ -236,6 +236,7 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromPrerenderStopLoading) {
   EXPECT_FALSE(loader()->IsLoaded());
   EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_CANCELED,
             callback_load_status());
+  EXPECT_FALSE(test_adapter()->IsActive());
 }
 
 TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoContent) {

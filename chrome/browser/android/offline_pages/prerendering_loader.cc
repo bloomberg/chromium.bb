@@ -184,26 +184,30 @@ void PrerenderingLoader::HandleLoadingStopped() {
 
   Offliner::RequestStatus request_status;
 
-  if (IsLoaded()) {
-    // If page already loaded, then prerender is telling us that it is
-    // canceling (and we should stop using the loaded WebContents).
-    request_status = Offliner::RequestStatus::PRERENDERING_CANCELED;
-  } else if (adapter_->IsActive()) {
-    // Get the available FinalStatus to better identify the outcome.
-    prerender::FinalStatus final_status = adapter_->GetFinalStatus();
-    DVLOG(1) << "Load failed: " << final_status;
-    request_status = ClassifyFinalStatus(final_status);
+  if (adapter_->IsActive()) {
+    if (IsLoaded()) {
+      // If page already loaded, then prerender is telling us that it is
+      // canceling (and we should stop using the loaded WebContents).
+      request_status = Offliner::RequestStatus::PRERENDERING_CANCELED;
+    } else {
+      // Otherwise, get the available FinalStatus to classify the outcome.
+      prerender::FinalStatus final_status = adapter_->GetFinalStatus();
+      DVLOG(1) << "Load failed: " << final_status;
+      request_status = ClassifyFinalStatus(final_status);
 
-    // Loss of network connection can show up as unsupported scheme per
-    // a redirect to a special data URL is used to navigate to error page.
-    // Capture the current connectivity here in case we can leverage that
-    // to differentiate how to treat it.
-    if (final_status == prerender::FINAL_STATUS_UNSUPPORTED_SCHEME) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "OfflinePages.Background.UnsupportedScheme.ConnectionType",
-          net::NetworkChangeNotifier::GetConnectionType(),
-          net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
+      // Loss of network connection can show up as unsupported scheme per
+      // a redirect to a special data URL is used to navigate to error page.
+      // Capture the current connectivity here in case we can leverage that
+      // to differentiate how to treat it.
+      if (final_status == prerender::FINAL_STATUS_UNSUPPORTED_SCHEME) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "OfflinePages.Background.UnsupportedScheme.ConnectionType",
+            net::NetworkChangeNotifier::GetConnectionType(),
+            net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
+      }
     }
+
+    // Now clean up the active prerendering operation detail.
     adapter_->DestroyActive();
   } else {
     // No access to FinalStatus so classify as retryable failure.
