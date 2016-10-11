@@ -244,4 +244,6 @@ AOM_NO_UNSIGNED_OVERFLOW_CHECK void MD5Transform(UWORD32 buf[4],
   buf[3] += d;
 }
 
+#undef AOM_NO_UNSIGNED_OVERFLOW_CHECK
+
 #endif
