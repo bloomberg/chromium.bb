@@ -459,6 +459,7 @@ _arm_external_boards = frozenset([
 ])
 
 _x86_internal_release_boards = frozenset([
+    'amd64-generic-cheets',
     'amd64-generic-goofy',
     'asuka',
     'auron',
@@ -607,6 +608,7 @@ _cheets_boards = frozenset([
 ])
 
 _cheets_x86_boards = _cheets_boards | frozenset([
+    'amd64-generic-cheets',
     'auron_paine',
     'auron_yuna',
     'banon',
@@ -671,6 +673,7 @@ _no_unittest_boards = frozenset((
 ))
 
 _cheets_vmtest_boards = frozenset([
+    'amd64-generic-cheets',
     'cyan',
 ])
 
@@ -680,6 +683,7 @@ _no_vmtest_boards = (_arm_boards | _brillo_boards |
 # List of boards that run VMTests but only the smoke tests, not the AU tests
 # until b/31341543 has been fixed.
 _smoke_only_vmtest_boards = frozenset([
+    'amd64-generic-cheets',
     'cyan',
 ])
 

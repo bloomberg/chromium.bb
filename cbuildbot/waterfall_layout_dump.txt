@@ -238,6 +238,11 @@ x86-generic-incremental (baremetal)
 x86-generic-paladin (baremetal)
 
 == chromiumos.tryserver ==
+amd64-generic-cheets-compile-only-pre-cq (baremetal)
+amd64-generic-cheets-no-vmtest-pre-cq (baremetal)
+amd64-generic-cheets-payloads (baremetal)
+amd64-generic-cheets-pre-cq (baremetal)
+amd64-generic-cheets-unittest-stress (baremetal)
 amd64-generic-compile-only-pre-cq (baremetal)
 amd64-generic-goofy-compile-only-pre-cq (baremetal)
 amd64-generic-goofy-no-vmtest-pre-cq (baremetal)
