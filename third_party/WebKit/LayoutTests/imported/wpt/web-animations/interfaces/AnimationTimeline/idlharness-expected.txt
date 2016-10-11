@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS Web Animations API: DocumentTimeline tests 
 PASS DocumentTimeline interface: existence and properties of interface object 
-PASS DocumentTimeline interface object length 
+FAIL DocumentTimeline interface object length assert_equals: wrong value for DocumentTimeline.length expected 1 but got 0
 PASS DocumentTimeline interface object name 
 FAIL DocumentTimeline interface: existence and properties of interface prototype object assert_equals: class string of DocumentTimeline.prototype expected "[object DocumentTimelinePrototype]" but got "[object DocumentTimeline]"
 PASS DocumentTimeline interface: existence and properties of interface prototype object's "constructor" property 

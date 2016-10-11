@@ -7,7 +7,6 @@
 <meta name="help" content="https://dom.spec.whatwg.org/#element">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
-<script src="../resources/custom-elements-helpers.js"></script>
 <script src="./resources/reactions.js"></script>
 </head>
 <body>
@@ -26,12 +25,12 @@ testAttributeAdder(function (element, name, value) {
     element.setAttributeNS(null, name, value);
 }, 'setAttributeNS on Element');
 
-testAttributeRemover(function (element, name) {
-    element.removeAttribute(name);
+testAttributeRemover(function (element, name, value) {
+    element.removeAttribute(name, value);
 }, 'removeAttribute on Element');
 
-testAttributeRemover(function (element, name) {
-    element.removeAttributeNS(null, name);
+testAttributeRemover(function (element, name, value) {
+    element.removeAttributeNS(null, name, value);
 }, 'removeAttributeNS on Element');
 
 testAttributeAdder(function (element, name, value) {
@@ -46,7 +45,7 @@ testAttributeAdder(function (element, name, value) {
     element.setAttributeNodeNS(attr);
 }, 'setAttributeNodeNS on Element');
 
-testAttributeRemover(function (element, name) {
+testAttributeRemover(function (element, name, value) {
     var attr = element.getAttributeNode(name);
     if (attr)
         element.removeAttributeNode(element.getAttributeNode(name));

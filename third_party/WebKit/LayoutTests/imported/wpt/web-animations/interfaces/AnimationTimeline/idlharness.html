@@ -12,10 +12,7 @@ interface AnimationTimeline {
 };
 </script>
 <script type="text/plain" id="DocumentTimeline-IDL">
-dictionary DocumentTimelineOptions {
-  DOMHighResTimeStamp originTime = 0;
-};
-[Constructor (optional DocumentTimelineOptions options)]
+[Constructor (DOMHighResTimeStamp originTime)]
 interface DocumentTimeline : AnimationTimeline {
 };
 </script>
