@@ -3759,7 +3759,7 @@ void MinidumpMiscInfo::Print() {
       printf("  xstate_data.enabled_features = 0x%" PRIx64 "\n",
              misc_info_.xstate_data.enabled_features);
       for (size_t i = 0; i < MD_MAXIMUM_XSTATE_FEATURES; i++) {
-        if (misc_info_.xstate_data.enabled_features & (1 << i)) {
+        if ((misc_info_.xstate_data.enabled_features >> i) & 1) {
           printf("  xstate_data.features[%02zu]     = { %d, %d }\n", i,
                  misc_info_.xstate_data.features[i].offset,
                  misc_info_.xstate_data.features[i].size);
