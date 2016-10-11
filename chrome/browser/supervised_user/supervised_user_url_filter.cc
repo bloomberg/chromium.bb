@@ -93,8 +93,10 @@ const char* kFilteredSchemes[] = {
 };
 
 #if defined(ENABLE_EXTENSIONS)
-const char kCrxDownloadUrl[] =
-    "https://clients2.googleusercontent.com/crx/blobs/";
+const char* kCrxDownloadUrls[] = {
+    "https://clients2.googleusercontent.com/crx/blobs/",
+    "https://chrome.google.com/webstore/download/"
+};
 #endif
 
 // This class encapsulates all the state that is required during construction of
@@ -354,14 +356,16 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   if (extension_urls::GetWebstoreUpdateUrl() == Normalize(effective_url))
     return ALLOW;
 
-  // The actual CRX files are downloaded from another URL. Allow that too.
-  GURL crx_download_url(kCrxDownloadUrl);
-  if (effective_url.SchemeIs(url::kHttpsScheme) &&
-      crx_download_url.host_piece() == effective_url.host_piece() &&
-      base::StartsWith(effective_url.path_piece(),
-                       crx_download_url.path_piece(),
-                       base::CompareCase::SENSITIVE)) {
-    return ALLOW;
+  // The actual CRX files are downloaded from other URLs. Allow them too.
+  for (const char* crx_download_url_str : kCrxDownloadUrls) {
+    GURL crx_download_url(crx_download_url_str);
+    if (effective_url.SchemeIs(url::kHttpsScheme) &&
+        crx_download_url.host_piece() == effective_url.host_piece() &&
+        base::StartsWith(effective_url.path_piece(),
+                         crx_download_url.path_piece(),
+                         base::CompareCase::SENSITIVE)) {
+      return ALLOW;
+    }
   }
 #endif
 

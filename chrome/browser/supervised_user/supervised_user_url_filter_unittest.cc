@@ -513,8 +513,9 @@ TEST_F(SupervisedUserURLFilterTest, WhitelistsHostnameHashes) {
 TEST_F(SupervisedUserURLFilterTest, ChromeWebstoreDownloadsAreAlwaysAllowed) {
   // When installing an extension from Chrome Webstore, it tries to download the
   // crx file from "https://clients2.google.com/service/update2/", which
-  // redirects to "https://clients2.googleusercontent.com/crx/blobs/".
-  // Both URLs should be whitelisted regardless from the default filtering
+  // redirects to "https://clients2.googleusercontent.com/crx/blobs/"
+  // or "https://chrome.google.com/webstore/download/".
+  // All URLs should be whitelisted regardless from the default filtering
   // behavior.
   GURL crx_download_url1(
       "https://clients2.google.com/service/update2/"
@@ -526,12 +527,19 @@ TEST_F(SupervisedUserURLFilterTest, ChromeWebstoreDownloadsAreAlwaysAllowed) {
       "QgAAAC6zw0qH2DJtnXe8Z7rUJP1iCQF099oik9f2ErAYeFAX7_"
       "CIyrNH5qBru1lUSBNvzmjILCGwUjcIBaJqxgegSNy2melYqfodngLxKtHsGBehAMZSmuWSg6"
       "FupAcPS3Ih6NSVCOB9KNh6Mw/extension_2_0.crx");
+  GURL crx_download_url3(
+      "https://chrome.google.com/webstore/download/"
+      "QgAAAC6zw0qH2DJtnXe8Z7rUJP1iCQF099oik9f2ErAYeFAX7_"
+      "CIyrNH5qBru1lUSBNvzmjILCGwUjcIBaJqxgegSNy2melYqfodngLxKtHsGBehAMZSmuWSg6"
+      "FupAcPS3Ih6NSVCOB9KNh6Mw/extension_2_0.crx");
 
   filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             filter_->GetFilteringBehaviorForURL(crx_download_url1));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             filter_->GetFilteringBehaviorForURL(crx_download_url2));
+  EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
+            filter_->GetFilteringBehaviorForURL(crx_download_url3));
 
   // Set explicit host rules to block those website, and make sure the
   // update URLs still work.
@@ -544,6 +552,8 @@ TEST_F(SupervisedUserURLFilterTest, ChromeWebstoreDownloadsAreAlwaysAllowed) {
             filter_->GetFilteringBehaviorForURL(crx_download_url1));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             filter_->GetFilteringBehaviorForURL(crx_download_url2));
+  EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
+            filter_->GetFilteringBehaviorForURL(crx_download_url3));
 }
 #endif
 
