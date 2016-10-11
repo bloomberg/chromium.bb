@@ -30,7 +30,13 @@ class Scheduler {
   // This may overwrite any previous scheduled task with a new one for
   // these conditions. That is, only one set of triggering conditions
   // is scheduled at a time.
-  virtual void Schedule(const TriggerConditions& trigger_condition) = 0;
+  virtual void Schedule(const TriggerConditions& trigger_conditions) = 0;
+
+  // Schedules the triggering of a task in case Chromium is killed,
+  // so we can continue processing background download requests.  This will
+  // not overwrite existing tasks.
+  virtual void BackupSchedule(const TriggerConditions& trigger_conditions,
+                              long delay_in_seconds) = 0;
 
   // Unschedules the currently scheduled task, if any.
   virtual void Unschedule() = 0;

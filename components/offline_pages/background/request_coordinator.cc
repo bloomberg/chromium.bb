@@ -28,6 +28,7 @@ const bool kUserRequest = true;
 const int kMinDurationSeconds = 1;
 const int kMaxDurationSeconds = 7 * 24 * 60 * 60;  // 7 days
 const int kDurationBuckets = 50;
+const int kDisabledTaskRecheckSeconds = 5;
 
 // TODO(dougarnett): Move to util location and share with model impl.
 std::string AddHistogramSuffix(const ClientId& client_id,
@@ -500,8 +501,15 @@ void RequestCoordinator::RequestNotPicked(
   // Clear the outstanding "safety" task in the scheduler.
   scheduler_->Unschedule();
 
-  if (non_user_requested_tasks_remaining)
+  // If disabled tasks remain, post a new safety task for 5 sec from now.
+  if (disabled_requests_.size() > 0) {
+    scheduler_->BackupSchedule(GetTriggerConditions(kUserRequest),
+                               kDisabledTaskRecheckSeconds);
+  } else if (non_user_requested_tasks_remaining) {
+    // If we don't have any of those, check for non-user-requested tasks.
     scheduler_->Schedule(GetTriggerConditions(!kUserRequest));
+  }
+
   // Let the scheduler know we are done processing.
   scheduler_callback_.Run(true);
 }
@@ -624,9 +632,13 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
 
 void RequestCoordinator::EnableForOffliner(int64_t request_id) {
     disabled_requests_.erase(request_id);
+    // If we are not busy, start processing right away.
+    StartProcessingIfConnected();
 }
 
-void RequestCoordinator::MarkRequestCompleted(int64_t request_id) {}
+void RequestCoordinator::MarkRequestCompleted(int64_t request_id) {
+  // TODO: Remove the request, but send out SUCCEEDED instead of removed.
+}
 
 const Scheduler::TriggerConditions RequestCoordinator::GetTriggerConditions(
     const bool user_requested) {

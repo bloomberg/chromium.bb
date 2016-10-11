@@ -22,6 +22,8 @@ class BackgroundSchedulerBridge : public Scheduler {
  public:
   // Scheduler implementation.
   void Schedule(const TriggerConditions& trigger_conditions) override;
+  void BackupSchedule(const TriggerConditions& trigger_conditions,
+                      long delay_in_seconds) override;
   void Unschedule() override;
 
  private:
@@ -38,4 +40,3 @@ bool RegisterBackgroundSchedulerBridge(JNIEnv* env);
 }  // namespace offline_pages
 
 #endif  // CHROME_BROWSER_ANDROID_OFFLINE_PAGES_BACKGROUND_SCHEDULER_BRIDGE_H_
-

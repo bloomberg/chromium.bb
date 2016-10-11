@@ -51,13 +51,23 @@ class SchedulerStub : public Scheduler {
  public:
   SchedulerStub()
       : schedule_called_(false),
+        backup_schedule_called_(false),
         unschedule_called_(false),
+        schedule_delay_(0L),
         conditions_(false, 0, false) {}
 
   void Schedule(const TriggerConditions& trigger_conditions) override {
     schedule_called_ = true;
     conditions_ = trigger_conditions;
   }
+
+  void BackupSchedule(const TriggerConditions& trigger_conditions,
+                      long delay_in_seconds) override {
+    backup_schedule_called_ = true;
+    schedule_delay_ = delay_in_seconds;
+    conditions_ = trigger_conditions;
+  }
+
 
   // Unschedules the currently scheduled task, if any.
   void Unschedule() override {
@@ -66,13 +76,17 @@ class SchedulerStub : public Scheduler {
 
   bool schedule_called() const { return schedule_called_; }
 
+  bool backup_schedule_called() const { return backup_schedule_called_;}
+
   bool unschedule_called() const { return unschedule_called_; }
 
   TriggerConditions const* conditions() const { return &conditions_; }
 
  private:
   bool schedule_called_;
+  bool backup_schedule_called_;
   bool unschedule_called_;
+  long schedule_delay_;
   TriggerConditions conditions_;
 };
 
@@ -282,7 +296,13 @@ class RequestCoordinatorTest
 
   void ScheduleForTest() { coordinator_->ScheduleAsNeeded(); }
 
-  void CallRequestNotPicked(bool non_user_requested_tasks_remaining) {
+  void CallRequestNotPicked(bool non_user_requested_tasks_remaining,
+                            bool disabled_tasks_remaining) {
+    if (disabled_tasks_remaining)
+      coordinator_->disabled_requests_.insert(kRequestId1);
+    else
+      coordinator_->disabled_requests_.clear();
+
     coordinator_->RequestNotPicked(non_user_requested_tasks_remaining);
   }
 
@@ -687,6 +707,31 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
 
 // If one item completes, and there are no more user requeted items left,
 // we should make a scheduler entry for a non-user requested item.
+TEST_F(RequestCoordinatorTest, RequestNotPickedDisabledItemsRemain) {
+  // Call start processing just to set up a scheduler callback.
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  base::Callback<void(bool)> callback = base::Bind(
+      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  coordinator()->StartProcessing(device_conditions, callback);
+  EXPECT_TRUE(is_starting());
+
+  // Call RequestNotPicked, simulating a request on the disabled list.
+  CallRequestNotPicked(false, true);
+  PumpLoop();
+
+  EXPECT_FALSE(is_starting());
+
+  // The scheduler should have been called to schedule the disabled task for
+  // 5 minutes from now.
+  SchedulerStub* scheduler_stub =
+      reinterpret_cast<SchedulerStub*>(coordinator()->scheduler());
+  EXPECT_TRUE(scheduler_stub->backup_schedule_called());
+  EXPECT_TRUE(scheduler_stub->unschedule_called());
+}
+
+// If one item completes, and there are no more user requeted items left,
+// we should make a scheduler entry for a non-user requested item.
 TEST_F(RequestCoordinatorTest, RequestNotPickedNonUserRequestedItemsRemain) {
   // Call start processing just to set up a scheduler callback.
   DeviceConditions device_conditions(false, 75,
@@ -697,8 +742,8 @@ TEST_F(RequestCoordinatorTest, RequestNotPickedNonUserRequestedItemsRemain) {
   EXPECT_TRUE(is_starting());
 
   // Call RequestNotPicked, and make sure we pick schedule a task for non user
-  // requested conditions.
-  CallRequestNotPicked(true);
+  // requested conditions, with no tasks on the disabled list.
+  CallRequestNotPicked(true, false);
   PumpLoop();
 
   EXPECT_FALSE(is_starting());

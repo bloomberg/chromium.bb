@@ -65,6 +65,17 @@ void BackgroundSchedulerBridge::Schedule(
   Java_BackgroundSchedulerBridge_schedule(env, j_conditions);
 }
 
+void BackgroundSchedulerBridge::BackupSchedule(
+    const TriggerConditions& trigger_conditions, long delay_in_seconds) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_conditions =
+      CreateTriggerConditions(env, trigger_conditions.require_power_connected,
+                              trigger_conditions.minimum_battery_percentage,
+                              trigger_conditions.require_unmetered_network);
+  Java_BackgroundSchedulerBridge_backupSchedule(
+      env, j_conditions, delay_in_seconds);
+}
+
 void BackgroundSchedulerBridge::Unschedule() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BackgroundSchedulerBridge_unschedule(env);
