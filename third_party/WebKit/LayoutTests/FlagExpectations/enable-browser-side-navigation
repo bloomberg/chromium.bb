@@ -95,7 +95,7 @@ crbug.com/638900 http/tests/loading/doc-write-sync-third-party-script-reload.htm
 
 # https://crbug.com/640631: Failing due to difference in WebFrameClient
 # callback sequence on renderer-initiated failed navigations.
-crbug.com/640631 http/tests/loading/bad-scheme-subframe.html [ Timeout ]
+crbug.com/640631 http/tests/loading/bad-scheme-subframe.html [ Timeout Failure ]
 crbug.com/640631 http/tests/loading/bad-server-subframe.html [ Failure ]
 crbug.com/640631 http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
 
@@ -127,7 +127,8 @@ crbug.com/648608 http/tests/cookies/same-site/popup-same-site.html [ Failure ]
 # Untriaged navigation
 Bug(none) fast/dom/Document/open-with-pending-load.html [ Failure ]
 Bug(none) fast/dom/HTMLAnchorElement/anchor-no-multiple-windows.html [ Failure ]
-Bug(none) http/tests/loading/pdf-commit-load-callbacks.html [ Crash ]
+Bug(none) http/tests/loading/pdf-commit-load-callbacks.html [ Crash Failure ]
+Bug(none) http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
 Bug(none) http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
 Bug(none) http/tests/navigation/response204.html [ Timeout ]
 Bug(none) http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
@@ -154,4 +155,6 @@ Bug(none) http/tests/inspector/service-workers/service-worker-manager.html [ Tim
 Bug(none) http/tests/inspector/service-workers/service-workers-redundant.html [ Timeout ]
 Bug(none) http/tests/inspector/service-workers/user-agent-override.html [ Failure ]
 Bug(none) http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
+Bug(none) virtual/mojo-service-worker/http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
 Bug(none) http/tests/serviceworker/chromium/sandboxed-iframe-navigator-serviceworker.html [ Failure ]
+Bug(none) virtual/mojo-service-worker/http/tests/serviceworker/chromium/sandboxed-iframe-navigator-serviceworker.html [ Failure ]
