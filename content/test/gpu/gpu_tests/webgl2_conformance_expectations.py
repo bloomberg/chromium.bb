@@ -571,6 +571,48 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
         ['linux', 'intel'], bug=635528)
 
+    # Linux Intel with ANGLE only
+    self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
+        ['linux', 'intel', 'opengl'], bug=1492) # ANGLE bug id
+    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
+        ['linux', 'intel', 'opengl'], bug=634525)
+
+    # The Intel Mesa driver only supports sRGB encoding in ES 3.x, see
+    # https://patchwork.freedesktop.org/patch/76903
+    # So these tests fail on core profile.
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+
     # Linux Intel without ANGLE only
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux', 'intel', 'no_angle'], bug=598902)
