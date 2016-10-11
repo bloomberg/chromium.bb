@@ -239,7 +239,7 @@ def Sync(gclient, cwd, reset=False):
     cwd: Directory to sync.
     reset: Reset to pristine version of the source code.
   """
-  cmd = [gclient, 'sync', '--verbose', '--nohooks', '--transitive',
+  cmd = [gclient, 'sync', '--verbose', '--nohooks',
          '--with_branch_heads', '--with_tags']
 
   if reset:
