@@ -46,31 +46,40 @@
       audit.defineTask("required options", function (taskDone) {
         var success = true;
 
-        success = Should("new AudioBuffer(context, {})", function () {
-          var buffer = new AudioBuffer(context, {});
-        }).throw("NotFoundError");
+        var buffer;
 
-        success = Should("new AudioBuffer(context, {numberOfChannels: 1}",
+        // The length attribute is required; all others are optional.
+        success = Should("buffer = new AudioBuffer(context, {})", function () {
+          var buffer = new AudioBuffer(context, {});
+        }).throw("TypeError");
+
+        success = Should("buffer = new AudioBuffer(context, {numberOfChannels: 1}",
           function () {
-            var buffer = new AudioBuffer(context, {
+            buffer = new AudioBuffer(context, {
               numberOfChannels: 1
             });
-          }).throw("NotFoundError") && success;
+          }).throw("TypeError") && success;
 
-        // The sampleRate isn't required, but numberOfChannels and length are.
+        // Length is required, but others are optional.
         success = Should(
-          "new AudioBuffer(context, {numberOfChannels: 1, length: 1}",
+          "buffer = new AudioBuffer(context, {length: 21}",
           function () {
-            var buffer = new AudioBuffer(context, {
-              numberOfChannels: 1,
-              length: 1
+            buffer = new AudioBuffer(context, {
+              length: 21
             });
           }).notThrow() && success;
+        // Verify the buffer has the correct values.
+        success = Should("buffer.numberOfChannels", buffer.numberOfChannels)
+          .beEqualTo(1) && success;
+        success = Should("buffer.length", buffer.length)
+          .beEqualTo(21) && success;
+        success = Should("buffer.sampleRate", buffer.sampleRate)
+          .beEqualTo(context.sampleRate) && success;
 
         success = Should(
-          "new AudioBuffer(context, {numberOfChannels: 1, length: 1, sampleRate: 48000}",
+          "buffer = new AudioBuffer(context, {numberOfChannels: 1, length: 1, sampleRate: 48000}",
           function () {
-            var buffer = new AudioBuffer(context, {
+            buffer = new AudioBuffer(context, {
               numberOfChannels: 1,
               length: 1,
               sampleRate: 48000

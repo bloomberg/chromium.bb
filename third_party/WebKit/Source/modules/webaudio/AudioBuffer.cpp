@@ -116,12 +116,6 @@ AudioBuffer* AudioBuffer::create(BaseAudioContext* context,
     return nullptr;
   }
 
-  if (!options.hasLength()) {
-    exceptionState.throwDOMException(NotFoundError,
-                                     "AudioBufferOptions: length is required.");
-    return nullptr;
-  }
-
   numberOfChannels = options.numberOfChannels();
   numberOfFrames = options.length();
 

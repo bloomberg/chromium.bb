@@ -4,7 +4,7 @@
 
 // See https://webaudio.github.io/web-audio-api/#audiobufferoptions
 dictionary AudioBufferOptions {
-    unsigned long numberOfChannels;
-    unsigned long length;
+    unsigned long numberOfChannels = 1;
+    required unsigned long length;
     float sampleRate;
 };
