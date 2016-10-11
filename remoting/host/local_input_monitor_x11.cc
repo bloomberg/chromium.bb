@@ -14,11 +14,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_libevent.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/client_session_control.h"
@@ -45,9 +44,7 @@ class LocalInputMonitorX11 : public base::NonThreadSafe,
 
  private:
   // The actual implementation resides in LocalInputMonitorX11::Core class.
-  class Core
-      : public base::RefCountedThreadSafe<Core>,
-        public base::MessagePumpLibevent::Watcher {
+  class Core : public base::RefCountedThreadSafe<Core> {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
@@ -58,14 +55,13 @@ class LocalInputMonitorX11 : public base::NonThreadSafe,
 
    private:
     friend class base::RefCountedThreadSafe<Core>;
-    ~Core() override;
+    ~Core();
 
     void StartOnInputThread();
     void StopOnInputThread();
 
-    // base::MessagePumpLibevent::Watcher interface.
-    void OnFileCanReadWithoutBlocking(int fd) override;
-    void OnFileCanWriteWithoutBlocking(int fd) override;
+    // Called when there are pending X events.
+    void OnPendingXEvents();
 
     // Processes key and mouse events.
     void ProcessXEvent(xEvent* event);
@@ -82,8 +78,8 @@ class LocalInputMonitorX11 : public base::NonThreadSafe,
     // disconnect requests.
     base::WeakPtr<ClientSessionControl> client_session_control_;
 
-    // Used to receive base::MessagePumpLibevent::Watcher events.
-    base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+    // Controls watching X events.
+    std::unique_ptr<base::FileDescriptorWatcher::Controller> controller_;
 
     // True when Alt is pressed.
     bool alt_pressed_;
@@ -212,19 +208,11 @@ void LocalInputMonitorX11::Core::StartOnInputThread() {
     return;
   }
 
-  // Register OnFileCanReadWithoutBlocking() to be called every time there is
+  // Register OnPendingXEvents() to be called every time there is
   // something to read from |x_record_display_|.
-  base::MessageLoopForIO* message_loop = base::MessageLoopForIO::current();
-  int result =
-      message_loop->WatchFileDescriptor(ConnectionNumber(x_record_display_),
-                                        true,
-                                        base::MessageLoopForIO::WATCH_READ,
-                                        &controller_,
-                                        this);
-  if (!result) {
-    LOG(ERROR) << "Failed to create X record task.";
-    return;
-  }
+  controller_ = base::FileDescriptorWatcher::WatchReadable(
+      ConnectionNumber(x_record_display_),
+      base::Bind(&Core::OnPendingXEvents, base::Unretained(this)));
 
   // Fetch pending events if any.
   while (XPending(x_record_display_)) {
@@ -243,7 +231,7 @@ void LocalInputMonitorX11::Core::StopOnInputThread() {
     XFlush(display_);
   }
 
-  controller_.StopWatchingFileDescriptor();
+  controller_.reset();
 
   if (x_record_range_[0]) {
     XFree(x_record_range_[0]);
@@ -267,7 +255,7 @@ void LocalInputMonitorX11::Core::StopOnInputThread() {
   }
 }
 
-void LocalInputMonitorX11::Core::OnFileCanReadWithoutBlocking(int fd) {
+void LocalInputMonitorX11::Core::OnPendingXEvents() {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
 
   // Fetch pending events if any.
@@ -275,10 +263,6 @@ void LocalInputMonitorX11::Core::OnFileCanReadWithoutBlocking(int fd) {
     XEvent ev;
     XNextEvent(x_record_display_, &ev);
   }
-}
-
-void LocalInputMonitorX11::Core::OnFileCanWriteWithoutBlocking(int fd) {
-  NOTREACHED();
 }
 
 void LocalInputMonitorX11::Core::ProcessXEvent(xEvent* event) {
