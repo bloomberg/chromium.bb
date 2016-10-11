@@ -48,9 +48,6 @@ const char kEnableExperimentalExtensionApis[] =
 const char kEnableExtensionActionRedesign[] =
     "enable-extension-action-redesign";
 
-// Enables the mojo implementation of the serial API.
-const char kEnableMojoSerialService[] = "enable-mojo-serial-service";
-
 // Enables extensions to hide bookmarks UI elements.
 const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
 

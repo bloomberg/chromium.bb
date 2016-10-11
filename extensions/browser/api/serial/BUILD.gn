@@ -10,8 +10,6 @@ source_set("serial") {
     "serial_connection.h",
     "serial_event_dispatcher.cc",
     "serial_event_dispatcher.h",
-    "serial_service_factory.cc",
-    "serial_service_factory.h",
   ]
 
   deps = [

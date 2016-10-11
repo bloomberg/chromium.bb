@@ -4,8 +4,6 @@
 
 module device.serial;
 
-import "data_stream.mojom";
-
 struct DeviceInfo {
   string path;
   uint16 vendor_id;
@@ -84,29 +82,4 @@ struct DeviceControlSignals {
   bool cts;
   bool ri;
   bool dsr;
-};
-
-interface SerialService {
-  GetDevices() => (array<DeviceInfo> devices);
-
-  // Creates a |Connection| to |path| with options specified by |options|,
-  // returning it via |connection|. Sending and receiving data over this
-  // connection is handled by |sink| and |source|, respectively. This will fail
-  // and |connection| will not be usable if |path| does not specify a valid
-  // serial device or there is an error connecting to or configuring the
-  // connection.
-  Connect(string path,
-          ConnectionOptions? options,
-          Connection& connection,
-          DataSink& sink,
-          DataSource& source,
-          DataSourceClient source_client);
-};
-
-interface Connection {
-  GetInfo() => (ConnectionInfo? info);
-  SetOptions(ConnectionOptions options) => (bool success);
-  SetControlSignals(HostControlSignals signals) => (bool success);
-  GetControlSignals() => (DeviceControlSignals? signals);
-  Flush() => (bool success);
 };

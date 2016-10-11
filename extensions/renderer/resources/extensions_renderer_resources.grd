@@ -12,10 +12,6 @@
       <include name="IDR_APP_VIEW_JS" file="guest_view/app_view/app_view.js" type="BINDATA" />
       <include name="IDR_ASYNC_WAITER_JS" file="async_waiter.js" type="BINDATA" />
       <include name="IDR_BROWSER_TEST_ENVIRONMENT_SPECIFIC_BINDINGS_JS" file="browser_test_environment_specific_bindings.js" type="BINDATA" />
-      <include name="IDR_DATA_RECEIVER_JS" file="data_receiver.js" type="BINDATA" />
-      <include name="IDR_DATA_SENDER_JS" file="data_sender.js" type="BINDATA" />
-      <include name="IDR_DATA_STREAM_MOJOM_JS" file="${mojom_root}\device\serial\data_stream.mojom.js" use_base_dir="false" type="BINDATA" />
-      <include name="IDR_DATA_STREAM_SERIALIZATION_MOJOM_JS" file="${mojom_root}\device\serial\data_stream_serialization.mojom.js" use_base_dir="false" type="BINDATA" />
       <include name="IDR_ENTRY_ID_MANAGER" file="entry_id_manager.js" type="BINDATA" />
       <include name="IDR_EVENT_BINDINGS_JS" file="event.js" type="BINDATA" />
       <include name="IDR_EXTENSION_OPTIONS_JS" file="guest_view/extension_options/extension_options.js" type="BINDATA"/>
@@ -46,13 +42,7 @@
       <include name="IDR_MIME_HANDLER_MOJOM_JS" file="${mojom_root}\extensions\common\api\mime_handler.mojom.js" use_base_dir="false" type="BINDATA" />
       <include name="IDR_SCHEMA_UTILS_JS" file="schema_utils.js" type="BINDATA" />
       <include name="IDR_SEND_REQUEST_JS" file="send_request.js" type="BINDATA" />
-      <include name="IDR_SERIAL_CUSTOM_BINDINGS_JS" file="serial_custom_bindings.js" type="BINDATA" />
-      <include name="IDR_SERIAL_MOJOM_JS" file="${mojom_root}\device\serial\serial.mojom.js" use_base_dir="false" type="BINDATA" />
-      <include name="IDR_SERIAL_SERIALIZATION_MOJOM_JS" file="${mojom_root}\device\serial\serial_serialization.mojom.js" use_base_dir="false" type="BINDATA" />
-      <include name="IDR_SERIAL_SERVICE_JS" file="serial_service.js" type="BINDATA" />
       <include name="IDR_SET_ICON_JS" file="set_icon.js" type="BINDATA" />
-      <include name="IDR_STASH_CLIENT_JS" file="stash_client.js" type="BINDATA" />
-      <include name="IDR_STASH_MOJOM_JS" file="${mojom_root}\extensions\common\mojo\stash.mojom.js" use_base_dir="false" type="BINDATA" />
       <include name="IDR_TEST_CUSTOM_BINDINGS_JS" file="test_custom_bindings.js" type="BINDATA" />
       <include name="IDR_UNCAUGHT_EXCEPTION_HANDLER_JS" file="uncaught_exception_handler.js" type="BINDATA" />
       <include name="IDR_UTILS_JS" file="utils.js" type="BINDATA" />

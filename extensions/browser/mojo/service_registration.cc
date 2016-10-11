@@ -11,7 +11,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
-#include "extensions/browser/api/serial/serial_service_factory.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/mojo/keep_alive_impl.h"
@@ -29,6 +28,7 @@
 namespace extensions {
 namespace {
 
+#if defined(ENABLE_WIFI_DISPLAY)
 bool ExtensionHasPermission(const Extension* extension,
                             content::RenderProcessHost* render_process_host,
                             const std::string& permission_name) {
@@ -40,6 +40,7 @@ bool ExtensionHasPermission(const Extension* extension,
       ->IsAvailable(permission_name, extension, context, extension->url())
       .is_available();
 }
+#endif
 
 }  // namespace
 
@@ -49,13 +50,6 @@ void RegisterServicesForFrame(content::RenderFrameHost* render_frame_host,
 
   shell::InterfaceRegistry* registry =
       render_frame_host->GetInterfaceRegistry();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMojoSerialService)) {
-    if (ExtensionHasPermission(extension, render_frame_host->GetProcess(),
-                               "serial")) {
-      registry->AddInterface(base::Bind(&BindToSerialServiceRequest));
-    }
-  }
   registry->AddInterface(base::Bind(
       KeepAliveImpl::Create,
       render_frame_host->GetProcess()->GetBrowserContext(), extension));

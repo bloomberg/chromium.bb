@@ -10,16 +10,13 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/serial/serial_device_enumerator.h"
-#include "device/serial/serial_service_impl.h"
 #include "device/serial/test_serial_io_handler.h"
 #include "extensions/browser/api/serial/serial_api.h"
 #include "extensions/browser/api/serial/serial_connection.h"
-#include "extensions/browser/api/serial/serial_service_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/serial.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -104,25 +101,17 @@ class FakeSerialConnectFunction : public api::SerialConnectFunction {
   ~FakeSerialConnectFunction() override {}
 };
 
-class SerialApiTest : public ExtensionApiTest,
-                      public testing::WithParamInterface<bool> {
+class SerialApiTest : public ExtensionApiTest {
  public:
   SerialApiTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    if (GetParam())
-      command_line->AppendSwitch(switches::kEnableMojoSerialService);
   }
 
   void TearDownOnMainThread() override {
-    SetSerialServiceFactoryForTest(nullptr);
     ExtensionApiTest::TearDownOnMainThread();
   }
-
- protected:
-  base::Callback<void(mojo::InterfaceRequest<device::serial::SerialService>)>
-      serial_service_factory_;
 };
 
 ExtensionFunction* FakeSerialGetDevicesFunctionFactory() {
@@ -131,27 +120,6 @@ ExtensionFunction* FakeSerialGetDevicesFunctionFactory() {
 
 ExtensionFunction* FakeSerialConnectFunctionFactory() {
   return new FakeSerialConnectFunction();
-}
-
-void CreateTestSerialServiceOnFileThread(
-    mojo::InterfaceRequest<device::serial::SerialService> request) {
-  auto io_handler_factory = base::Bind(&FakeEchoSerialIoHandler::Create);
-  auto* connection_factory = new device::SerialConnectionFactory(
-      io_handler_factory, content::BrowserThread::GetTaskRunnerForThread(
-                              content::BrowserThread::IO));
-  std::unique_ptr<device::SerialDeviceEnumerator> device_enumerator(
-      new FakeSerialDeviceEnumerator);
-  mojo::MakeStrongBinding(base::MakeUnique<device::SerialServiceImpl>(
-                              connection_factory, std::move(device_enumerator)),
-                          std::move(request));
-}
-
-void CreateTestSerialService(
-    mojo::InterfaceRequest<device::serial::SerialService> request) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&CreateTestSerialServiceOnFileThread, base::Passed(&request)));
 }
 
 }  // namespace
@@ -176,32 +144,25 @@ void CreateTestSerialService(
 // chrome/test/data/extensions/api_test/serial/api/serial_arduino_test.ino.
 //
 #define SIMULATE_SERIAL_PORTS (1)
-IN_PROC_BROWSER_TEST_P(SerialApiTest, SerialFakeHardware) {
+IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialFakeHardware) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
 
 #if SIMULATE_SERIAL_PORTS
-  if (GetParam()) {
-    serial_service_factory_ = base::Bind(&CreateTestSerialService);
-    SetSerialServiceFactoryForTest(&serial_service_factory_);
-  } else {
-    ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
-        "serial.getDevices", FakeSerialGetDevicesFunctionFactory));
-    ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
-        "serial.connect", FakeSerialConnectFunctionFactory));
-  }
+  ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
+      "serial.getDevices", FakeSerialGetDevicesFunctionFactory));
+  ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
+      "serial.connect", FakeSerialConnectFunctionFactory));
 #endif
 
   ASSERT_TRUE(RunExtensionTest("serial/api")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(SerialApiTest, SerialRealHardware) {
+IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialRealHardware) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
 
   ASSERT_TRUE(RunExtensionTest("serial/real_hardware")) << message_;
 }
-
-INSTANTIATE_TEST_CASE_P(SerialApiTest, SerialApiTest, testing::Bool());
 
 }  // namespace extensions

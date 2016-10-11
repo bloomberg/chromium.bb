@@ -19,7 +19,6 @@ if (enable_extensions) {
   mojom("mojo") {
     sources = [
       "mojo/keep_alive.mojom",
-      "mojo/stash.mojom",
     ]
     if (proprietary_codecs && enable_wifi_display) {
       sources += [ "mojo/wifi_display_session_service.mojom" ]

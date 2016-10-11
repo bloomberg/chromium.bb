@@ -397,7 +397,6 @@ source_set("unit_tests") {
     "load_monitoring_extension_host_queue_unittest.cc",
     "management_policy_unittest.cc",
     "mojo/keep_alive_impl_unittest.cc",
-    "mojo/stash_backend_unittest.cc",
     "process_manager_unittest.cc",
     "process_map_unittest.cc",
     "quota_service_unittest.cc",

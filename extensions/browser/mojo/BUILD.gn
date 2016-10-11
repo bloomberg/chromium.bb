@@ -8,8 +8,6 @@ source_set("mojo") {
     "keep_alive_impl.h",
     "service_registration.cc",
     "service_registration.h",
-    "stash_backend.cc",
-    "stash_backend.h",
   ]
 
   deps = [
