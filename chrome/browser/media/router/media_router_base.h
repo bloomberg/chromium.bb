@@ -37,6 +37,8 @@ class MediaRouterBase : public MediaRouter {
                            PresentationConnectionStateChangedCallback);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            PresentationConnectionStateChangedCallbackRemoved);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterBaseTest, CreatePresentationIds);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterBaseTest, NotifyCallbacks);
 
   MediaRouterBase();
 

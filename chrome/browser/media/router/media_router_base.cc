@@ -82,6 +82,9 @@ std::string MediaRouterBase::CreatePresentationId() {
 void MediaRouterBase::NotifyPresentationConnectionStateChange(
     const MediaRoute::Id& route_id,
     content::PresentationConnectionState state) {
+  // We should call NotifyPresentationConnectionClose() for the CLOSED state.
+  DCHECK_NE(state, content::PRESENTATION_CONNECTION_STATE_CLOSED);
+
   auto* callbacks = presentation_connection_state_callbacks_.get(route_id);
   if (!callbacks)
     return;

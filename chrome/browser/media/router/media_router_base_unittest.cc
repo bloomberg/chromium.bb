@@ -1,0 +1,105 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/bind.h"
+#include "chrome/browser/media/router/mock_media_router.h"
+#include "chrome/browser/media/router/test_helper.h"
+#include "content/public/browser/presentation_session.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+
+namespace media_router {
+
+// MockMediaRouter inherits from MediaRouterBase but overrides some of its
+// methods with mock methods, so we must override them again.
+class MockMediaRouterBase : public MockMediaRouter {
+ public:
+  MockMediaRouterBase() {}
+  ~MockMediaRouterBase() override {}
+
+  std::unique_ptr<PresentationConnectionStateSubscription>
+  AddPresentationConnectionStateChangedCallback(
+      const MediaRoute::Id& route_id,
+      const content::PresentationConnectionStateChangedCallback& callback)
+      override {
+    return MediaRouterBase::AddPresentationConnectionStateChangedCallback(
+        route_id, callback);
+  }
+
+  void OnIncognitoProfileShutdown() override {
+    MediaRouterBase::OnIncognitoProfileShutdown();
+  }
+};
+
+TEST(MediaRouterBaseTest, CreatePresentationIds) {
+  std::string id1 = MediaRouterBase::CreatePresentationId();
+  std::string id2 = MediaRouterBase::CreatePresentationId();
+  EXPECT_NE(id1, "");
+  EXPECT_NE(id2, "");
+  EXPECT_NE(id1, id2);
+}
+
+TEST(MediaRouterBaseTest, NotifyCallbacks) {
+  content::TestBrowserThreadBundle thread_bundle_;
+  MockMediaRouterBase router;
+  router.Initialize();
+
+  MediaRoute::Id route_id1("id1");
+  MediaRoute::Id route_id2("id2");
+  MockPresentationConnectionStateChangedCallback callback1;
+  MockPresentationConnectionStateChangedCallback callback2;
+  std::unique_ptr<PresentationConnectionStateSubscription> subscription1 =
+      router.AddPresentationConnectionStateChangedCallback(
+          route_id1,
+          base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
+                     base::Unretained(&callback1)));
+  std::unique_ptr<PresentationConnectionStateSubscription> subscription2 =
+      router.AddPresentationConnectionStateChangedCallback(
+          route_id2,
+          base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
+                     base::Unretained(&callback2)));
+
+  content::PresentationConnectionStateChangeInfo change_info_connected(
+      content::PRESENTATION_CONNECTION_STATE_CONNECTED);
+  content::PresentationConnectionStateChangeInfo change_info_terminated(
+      content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+  content::PresentationConnectionStateChangeInfo change_info_closed(
+      content::PRESENTATION_CONNECTION_STATE_CLOSED);
+  change_info_closed.close_reason =
+      content::PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY;
+  change_info_closed.message = "Test message";
+
+  EXPECT_CALL(callback1, Run(StateChangeInfoEquals(change_info_connected)));
+  router.NotifyPresentationConnectionStateChange(
+      route_id1, content::PRESENTATION_CONNECTION_STATE_CONNECTED);
+
+  EXPECT_CALL(callback2, Run(StateChangeInfoEquals(change_info_connected)));
+  router.NotifyPresentationConnectionStateChange(
+      route_id2, content::PRESENTATION_CONNECTION_STATE_CONNECTED);
+
+  EXPECT_CALL(callback1, Run(StateChangeInfoEquals(change_info_closed)));
+  router.NotifyPresentationConnectionClose(
+      route_id1, change_info_closed.close_reason, change_info_closed.message);
+
+  // After removing a subscription, the corresponding callback should no longer
+  // be called.
+  subscription1.reset();
+  router.NotifyPresentationConnectionStateChange(
+      route_id1, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+
+  EXPECT_CALL(callback2, Run(StateChangeInfoEquals(change_info_terminated)));
+  router.NotifyPresentationConnectionStateChange(
+      route_id2, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+
+  subscription2.reset();
+  router.NotifyPresentationConnectionStateChange(
+      route_id2, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+
+  router.Shutdown();
+}
+
+}  // namespace media_router

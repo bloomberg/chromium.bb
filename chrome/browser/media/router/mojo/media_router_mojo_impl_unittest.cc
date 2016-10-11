@@ -1101,7 +1101,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
         content::PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY;
     closed_info.message = "Foo";
 
-    EXPECT_CALL(callback, Run(StateChageInfoEquals(closed_info)))
+    EXPECT_CALL(callback, Run(StateChangeInfoEquals(closed_info)))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     media_router_proxy_->OnPresentationConnectionClosed(
         route_id, PresentationConnectionCloseReason::WENT_AWAY, "Foo");
@@ -1113,7 +1113,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
       content::PRESENTATION_CONNECTION_STATE_TERMINATED);
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(callback, Run(StateChageInfoEquals(terminated_info)))
+    EXPECT_CALL(callback, Run(StateChangeInfoEquals(terminated_info)))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     media_router_proxy_->OnPresentationConnectionStateChanged(
         route_id, PresentationConnectionState::TERMINATED);

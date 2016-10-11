@@ -77,7 +77,7 @@ MATCHER_P(IssueTitleEquals, title, "") {
   return arg.title() == title;
 }
 
-MATCHER_P(StateChageInfoEquals, other, "") {
+MATCHER_P(StateChangeInfoEquals, other, "") {
   return arg.state == other.state && arg.close_reason == other.close_reason &&
          arg.message == other.message;
 }

@@ -12,7 +12,7 @@
 
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
-#include "chrome/browser/media/router/media_router.h"
+#include "chrome/browser/media/router/media_router_base.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,7 +20,7 @@
 namespace media_router {
 
 // Media Router mock class. Used for testing purposes.
-class MockMediaRouter : public MediaRouter {
+class MockMediaRouter : public MediaRouterBase {
  public:
   MockMediaRouter();
   ~MockMediaRouter() override;
