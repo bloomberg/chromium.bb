@@ -78,7 +78,9 @@
           showPages_.basic, hasExpandedSection_, inSearchMode_)]]">
         <div id="toggleSpacer"></div>
         <h2 id="toggleContainer">
-          <paper-button id="advancedToggle" on-tap="toggleAdvancedPage_">
+          <paper-button id="advancedToggle" on-tap="toggleAdvancedPage_" toggles
+              active="[[advancedToggleExpanded_]]"
+              aria-active-attribute="aria-expanded">
             <span>$i18n{advancedPageTitle}</span>
             <iron-icon icon="[[arrowState_(advancedToggleExpanded_)]]">
             </iron-icon>
