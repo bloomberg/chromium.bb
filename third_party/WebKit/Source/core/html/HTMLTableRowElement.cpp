@@ -75,6 +75,10 @@ int HTMLTableRowElement::rowIndex() const {
 }
 
 int HTMLTableRowElement::sectionRowIndex() const {
+  ContainerNode* maybeTable = parentNode();
+  if (!(maybeTable && (isHTMLTableSectionElement(maybeTable) ||
+                       isHTMLTableElement(maybeTable))))
+    return -1;
   int rIndex = 0;
   const Node* n = this;
   do {
