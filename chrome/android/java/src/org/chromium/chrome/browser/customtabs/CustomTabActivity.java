@@ -126,17 +126,19 @@ public class CustomTabActivity extends ChromeActivity {
 
     private static class CustomTabCreator extends ChromeTabCreator {
         private final boolean mSupportsUrlBarHiding;
+        private final boolean mIsOpenedByChrome;
 
         public CustomTabCreator(
                 ChromeActivity activity, WindowAndroid nativeWindow, boolean incognito,
-                boolean supportsUrlBarHiding) {
+                boolean supportsUrlBarHiding, boolean isOpenedByChrome) {
             super(activity, nativeWindow, incognito);
             mSupportsUrlBarHiding = supportsUrlBarHiding;
+            mIsOpenedByChrome = isOpenedByChrome;
         }
 
         @Override
         public TabDelegateFactory createDefaultTabDelegateFactory() {
-            return new CustomTabDelegateFactory(mSupportsUrlBarHiding);
+            return new CustomTabDelegateFactory(mSupportsUrlBarHiding, mIsOpenedByChrome);
         }
     }
 
@@ -276,10 +278,12 @@ public class CustomTabActivity extends ChromeActivity {
         setTabCreators(
                 new CustomTabCreator(
                         this, getWindowAndroid(), false,
-                        mIntentDataProvider.shouldEnableUrlBarHiding()),
+                        mIntentDataProvider.shouldEnableUrlBarHiding(),
+                        mIntentDataProvider.isOpenedByChrome()),
                 new CustomTabCreator(
                         this, getWindowAndroid(), true,
-                        mIntentDataProvider.shouldEnableUrlBarHiding()));
+                        mIntentDataProvider.shouldEnableUrlBarHiding(),
+                        mIntentDataProvider.isOpenedByChrome()));
 
         getToolbarManager().setCloseButtonDrawable(mIntentDataProvider.getCloseButtonDrawable());
         getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()
@@ -457,9 +461,12 @@ public class CustomTabActivity extends ChromeActivity {
             webContents = WarmupManager.getInstance().takeSpareWebContents(false, false);
         }
         if (webContents == null) webContents = WebContentsFactory.createWebContents(false, false);
-        tab.initialize(webContents, getTabContentManager(),
-                new CustomTabDelegateFactory(mIntentDataProvider.shouldEnableUrlBarHiding()), false,
-                false);
+        tab.initialize(
+                webContents, getTabContentManager(),
+                new CustomTabDelegateFactory(
+                        mIntentDataProvider.shouldEnableUrlBarHiding(),
+                        mIntentDataProvider.isOpenedByChrome()),
+                false, false);
         initializeMainTab(tab);
         return tab;
     }

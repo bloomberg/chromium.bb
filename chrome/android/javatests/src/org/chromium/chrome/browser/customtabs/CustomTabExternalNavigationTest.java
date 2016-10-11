@@ -71,9 +71,13 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
                 getInstrumentation().getTargetContext(), mTestServer.getURL(TEST_PATH)));
         Tab tab = getActivity().getActivityTab();
         TabDelegateFactory delegateFactory = tab.getDelegateFactory();
-        assert delegateFactory instanceof CustomTabDelegateFactory;
-        mUrlHandler = ((CustomTabDelegateFactory) delegateFactory).getExternalNavigationHandler();
-        mNavigationDelegate = ((CustomTabDelegateFactory) delegateFactory)
+        assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
+        CustomTabDelegateFactory customTabDelegateFactory =
+                ((CustomTabDelegateFactory) delegateFactory);
+        mUrlHandler = customTabDelegateFactory.getExternalNavigationHandler();
+        assertTrue(customTabDelegateFactory.getExternalNavigationDelegate()
+                instanceof CustomTabNavigationDelegate);
+        mNavigationDelegate = (CustomTabNavigationDelegate) customTabDelegateFactory
                 .getExternalNavigationDelegate();
     }
 
