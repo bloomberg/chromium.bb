@@ -2,31 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/bridge/wm_window_mus.h"
-#include "ash/mus/test/wm_test_base.h"
+#include "ash/mus/root_window_controller.h"
+
+#include "ash/common/test/ash_test.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 
 namespace ash {
 
-class RootWindowControllerTest : public mus::WmTestBase {
- public:
-  RootWindowControllerTest() {}
-  ~RootWindowControllerTest() override {}
-
-  WmWindow* CreateFullscreenTestWindow() {
-    return mus::WmWindowMus::Get(mus::WmTestBase::CreateFullscreenTestWindow());
-  }
-
-  WmWindow* GetPrimaryRootWindow() {
-    return mus::WmWindowMus::Get(mus::WmTestBase::GetPrimaryRootWindow());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RootWindowControllerTest);
-};
+using RootWindowControllerTest = AshTest;
 
 TEST_F(RootWindowControllerTest, CreateFullscreenWindow) {
-  WmWindow* window = CreateFullscreenTestWindow();
-  WmWindow* root_window = GetPrimaryRootWindow();
+  std::unique_ptr<WindowOwner> window_owner = CreateToplevelTestWindow();
+  WmWindow* window = window_owner->window();
+  window->SetFullscreen();
+  WmWindow* root_window = WmShell::Get()->GetPrimaryRootWindow();
   EXPECT_EQ(root_window->GetBounds(), window->GetBounds());
 }
 
