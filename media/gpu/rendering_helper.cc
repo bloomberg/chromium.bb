@@ -21,6 +21,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_context.h"
@@ -340,7 +341,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
                         : base::TimeDelta();
 
   render_as_thumbnails_ = params.render_as_thumbnails;
-  message_loop_ = base::MessageLoop::current();
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   gl_surface_ = gl::init::CreateViewGLSurface(window_);
 #if defined(USE_OZONE)
@@ -539,7 +540,7 @@ void RenderingHelper::WarmUpRendering(int warm_up_iterations) {
 }
 
 void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
-  CHECK_EQ(base::MessageLoop::current(), message_loop_);
+  CHECK(task_runner_->BelongsToCurrentThread());
 
   render_task_.Cancel();
 
@@ -560,8 +561,8 @@ void RenderingHelper::CreateTexture(uint32_t texture_target,
                                     uint32_t* texture_id,
                                     const gfx::Size& size,
                                     base::WaitableEvent* done) {
-  if (base::MessageLoop::current() != message_loop_) {
-    message_loop_->task_runner()->PostTask(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&RenderingHelper::CreateTexture, base::Unretained(this),
                    texture_target, texture_id, size, done));
@@ -596,7 +597,7 @@ static inline void GLSetViewPort(const gfx::Rect& area) {
 
 void RenderingHelper::RenderThumbnail(uint32_t texture_target,
                                       uint32_t texture_id) {
-  CHECK_EQ(base::MessageLoop::current(), message_loop_);
+  CHECK(task_runner_->BelongsToCurrentThread());
   const int width = thumbnail_size_.width();
   const int height = thumbnail_size_.height();
   const int thumbnails_in_row = thumbnails_fbo_size_.width() / width;
@@ -622,7 +623,7 @@ void RenderingHelper::RenderThumbnail(uint32_t texture_target,
 void RenderingHelper::QueueVideoFrame(
     size_t window_id,
     scoped_refptr<VideoFrameTexture> video_frame) {
-  CHECK_EQ(base::MessageLoop::current(), message_loop_);
+  CHECK(task_runner_->BelongsToCurrentThread());
   RenderedVideo* video = &videos_[window_id];
   DCHECK(!video->is_flushing);
 
@@ -636,7 +637,7 @@ void RenderingHelper::QueueVideoFrame(
   // Schedules the first RenderContent() if need.
   if (scheduled_render_time_.is_null()) {
     scheduled_render_time_ = base::TimeTicks::Now();
-    message_loop_->task_runner()->PostTask(FROM_HERE, render_task_.callback());
+    task_runner_->PostTask(FROM_HERE, render_task_.callback());
   }
 }
 
@@ -656,7 +657,7 @@ void RenderingHelper::RenderTexture(uint32_t texture_target,
 }
 
 void RenderingHelper::DeleteTexture(uint32_t texture_id) {
-  CHECK_EQ(base::MessageLoop::current(), message_loop_);
+  CHECK(task_runner_->BelongsToCurrentThread());
   glDeleteTextures(1, &texture_id);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
@@ -671,7 +672,7 @@ void* RenderingHelper::GetGLDisplay() {
 
 void RenderingHelper::Clear() {
   videos_.clear();
-  message_loop_ = NULL;
+  task_runner_ = nullptr;
   gl_context_ = NULL;
   gl_surface_ = NULL;
 
@@ -721,7 +722,7 @@ void RenderingHelper::Flush(size_t window_id) {
 }
 
 void RenderingHelper::RenderContent() {
-  CHECK_EQ(base::MessageLoop::current(), message_loop_);
+  CHECK(task_runner_->BelongsToCurrentThread());
 
   // Update the VSync params.
   //
@@ -886,7 +887,7 @@ void RenderingHelper::ScheduleNextRenderContent() {
     DropOneFrameForAllVideos();
   }
 
-  message_loop_->task_runner()->PostDelayedTask(
-      FROM_HERE, render_task_.callback(), target - now);
+  task_runner_->PostDelayedTask(FROM_HERE, render_task_.callback(),
+                                target - now);
 }
 }  // namespace media
