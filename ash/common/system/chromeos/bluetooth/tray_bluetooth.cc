@@ -19,12 +19,15 @@
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "device/bluetooth/bluetooth_common.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -63,6 +66,39 @@ void RemoveObsoleteBluetoothDevicesFromList(
         return;
     }
   }
+}
+
+// Returns corresponding device type icons for given Bluetooth device types.
+const gfx::VectorIcon& GetBluetoothDeviceIcon(
+    device::BluetoothDeviceType device_type) {
+  switch (device_type) {
+    case device::BluetoothDeviceType::COMPUTER:
+      return ash::kSystemMenuComputerIcon;
+    case device::BluetoothDeviceType::PHONE:
+      return ash::kSystemMenuPhoneIcon;
+    case device::BluetoothDeviceType::AUDIO:
+    case device::BluetoothDeviceType::CAR_AUDIO:
+      return ash::kSystemMenuHeadsetIcon;
+    case device::BluetoothDeviceType::VIDEO:
+      return ash::kSystemMenuVideocamIcon;
+    case device::BluetoothDeviceType::JOYSTICK:
+    case device::BluetoothDeviceType::GAMEPAD:
+      return ash::kSystemMenuGamepadIcon;
+    case device::BluetoothDeviceType::KEYBOARD:
+    case device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO:
+      return ash::kSystemMenuKeyboardIcon;
+    case device::BluetoothDeviceType::TABLET:
+      return ash::kSystemMenuTabletIcon;
+    case device::BluetoothDeviceType::MOUSE:
+      return ash::kSystemMenuMouseIcon;
+    case device::BluetoothDeviceType::MODEM:
+    case device::BluetoothDeviceType::PERIPHERAL:
+      return ash::kSystemMenuBluetoothIcon;
+    case device::BluetoothDeviceType::UNKNOWN:
+      LOG(WARNING) << "Unknown device type icon for Bluetooth was requested.";
+      break;
+  }
+  return ash::kSystemMenuBluetoothIcon;
 }
 
 }  // namespace
@@ -230,10 +266,12 @@ class BluetoothDetailedView : public TrayDetailsView {
   }
 
   void UpdateHeaderEntry() {
-    if (toggle_bluetooth_) {
-      toggle_bluetooth_->SetToggled(
-          !WmShell::Get()->system_tray_delegate()->GetBluetoothEnabled());
-    }
+    bool is_bluetooth_enabled =
+        WmShell::Get()->system_tray_delegate()->GetBluetoothEnabled();
+    if (toggle_)
+      toggle_->SetIsOn(is_bluetooth_enabled, false);
+    else if (toggle_bluetooth_)
+      toggle_bluetooth_->SetToggled(!is_bluetooth_enabled);
   }
 
   void UpdateDeviceScrollList() {
@@ -279,12 +317,24 @@ class BluetoothDetailedView : public TrayDetailsView {
                                          bool checked,
                                          bool enabled) {
     for (size_t i = 0; i < list.size(); ++i) {
-      HoverHighlightView* container =
-          AddScrollListItem(list[i].display_name, highlight, checked, enabled);
+      HoverHighlightView* container = nullptr;
+      if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+        gfx::ImageSkia icon_image = CreateVectorIcon(
+            GetBluetoothDeviceIcon(list[i].device_type), kMenuIconColor);
+        container = AddScrollListItemWithIcon(list[i].display_name, highlight,
+                                              checked, enabled, icon_image);
+
+      } else {
+        container = AddScrollListItem(list[i].display_name, highlight, checked,
+                                      enabled);
+      }
       device_map_[container] = list[i].address;
     }
   }
 
+  // TODO(fukino): Remove this code when material design is enabled by default,
+  // since AddScrollListItem should be used only in the old design.
+  // See crbug.com/614453".
   HoverHighlightView* AddScrollListItem(const base::string16& text,
                                         bool highlight,
                                         bool checked,
@@ -293,6 +343,25 @@ class BluetoothDetailedView : public TrayDetailsView {
     views::Label* label =
         container->AddCheckableLabel(text, highlight, checked);
     label->SetEnabled(enabled);
+    scroll_content()->AddChildView(container);
+    return container;
+  }
+
+  HoverHighlightView* AddScrollListItemWithIcon(const base::string16& text,
+                                                bool highlight,
+                                                bool checked,
+                                                bool enabled,
+                                                const gfx::ImageSkia& image) {
+    HoverHighlightView* container = new HoverHighlightView(this);
+    const int padding = (kMenuButtonSize - image.width()) / 2;
+    container->AddIconAndLabelCustomSize(
+        image, text, highlight,
+        image.width() + kMenuSeparatorVerticalPadding * 2, padding, padding);
+    gfx::ImageSkia check_mark =
+        CreateVectorIcon(gfx::VectorIconId::CHECK_CIRCLE, gfx::kGoogleGreen700);
+    container->AddRightIcon(check_mark, check_mark.width());
+    container->SetRightIconVisible(checked);
+    container->text_label()->SetEnabled(enabled);
     scroll_content()->AddChildView(container);
     return container;
   }
@@ -389,9 +458,10 @@ class BluetoothDetailedView : public TrayDetailsView {
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override {
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      // TODO(fukino): Make the toggle button functional.
       if (sender == toggle_)
-        toggle_->SetIsOn(toggle_->is_on(), true);
+        WmShell::Get()->system_tray_delegate()->ToggleBluetooth();
+      else
+        NOTREACHED();
       return;
     }
 

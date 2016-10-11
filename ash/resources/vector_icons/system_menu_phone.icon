@@ -1,0 +1,22 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+CANVAS_DIMENSIONS, 40,
+MOVE_TO, 27, 4,
+H_LINE_TO, 13,
+R_CUBIC_TO, -1.71f, 0, -3, 1.31f, -3, 3,
+R_V_LINE_TO, 26,
+R_CUBIC_TO, 0, 1.69f, 1.29f, 3, 3, 3,
+R_H_LINE_TO, 14,
+R_CUBIC_TO, 1.71f, 0, 3, -1.31f, 3, -3,
+V_LINE_TO, 7,
+R_CUBIC_TO, 0, -1.69f, -1.29f, -2.98f, -3, -3,
+CLOSE,
+R_MOVE_TO, 0, 26,
+H_LINE_TO, 13,
+V_LINE_TO, 10,
+R_H_LINE_TO, 14,
+R_V_LINE_TO, 20,
+CLOSE,
+END

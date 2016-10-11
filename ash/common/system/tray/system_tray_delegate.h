@@ -25,6 +25,10 @@ class TimeDelta;
 class TimeTicks;
 }
 
+namespace device {
+enum class BluetoothDeviceType;
+}
+
 namespace ash {
 struct IMEInfo;
 struct IMEPropertyInfo;
@@ -55,6 +59,7 @@ struct ASH_EXPORT NetworkIconInfo {
 
 struct ASH_EXPORT BluetoothDeviceInfo {
   BluetoothDeviceInfo();
+  BluetoothDeviceInfo(const BluetoothDeviceInfo& other);
   ~BluetoothDeviceInfo();
 
   std::string address;
@@ -62,6 +67,7 @@ struct ASH_EXPORT BluetoothDeviceInfo {
   bool connected;
   bool connecting;
   bool paired;
+  device::BluetoothDeviceType device_type;
 };
 
 using BluetoothDeviceList = std::vector<BluetoothDeviceInfo>;

@@ -20,6 +20,9 @@ NetworkIconInfo::~NetworkIconInfo() {}
 BluetoothDeviceInfo::BluetoothDeviceInfo()
     : connected(false), connecting(false), paired(false) {}
 
+BluetoothDeviceInfo::BluetoothDeviceInfo(const BluetoothDeviceInfo& other) =
+    default;
+
 BluetoothDeviceInfo::~BluetoothDeviceInfo() {}
 
 UpdateInfo::UpdateInfo()

@@ -511,6 +511,7 @@ void SystemTrayDelegateChromeOS::GetAvailableBluetoothDevices(
     info.connected = device->IsConnected();
     info.connecting = device->IsConnecting();
     info.paired = device->IsPaired();
+    info.device_type = device->GetDeviceType();
     list->push_back(info);
   }
 }
