@@ -6,7 +6,6 @@
 import os
 import StringIO
 import sys
-import threading
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -81,62 +80,6 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
     self.checkstdout('\n________ running \'boo foo bar\' in \'bleh\'\n'
         'ahah\naccb\nallo\naddb\n'
         '________ running \'boo foo bar\' in \'bleh\'\nahah\naccb\nallo\naddb')
-
-  def _checkKillTimeout(self, output_block_for=0, kill_raises=False):
-    cv = threading.Condition()
-    order = []
-
-    output = list(reversed('output'))
-    def kid_stdout_read(_):
-      if output:
-        return output.pop()
-      else:
-        with cv:
-          cv.wait(timeout=output_block_for)
-          order.append('unblock')
-        return ''
-    def kid_kill():
-      with cv:
-        order.append('killed')
-        cv.notify()
-      if kill_raises:
-        raise OSError('somethign went wrong')
-
-    kid = self.ProcessIdMock('')
-    kid.stdout.read = kid_stdout_read
-    kid.kill = kid_kill  # pylint: disable=W0201
-    cwd = 'bleh'
-    args = ['ar', 'gs']
-    gclient_utils.sys.stdout.write(
-        '\n________ running \'ar gs\' in \'bleh\'\noutput')
-    os.getcwd()
-    subprocess2.Popen(
-        args, cwd=cwd,
-        stdout=subprocess2.PIPE,
-        stderr=subprocess2.STDOUT,
-        bufsize=0).AndReturn(kid)
-    self.mox.ReplayAll()
-
-    # This test relies on the testing machine's ability to process 1 char
-    # of output in <0.01 seconds set in kill_timeout.
-    gclient_utils.CheckCallAndFilterAndHeader(
-        args, cwd=cwd, always=True, kill_timeout=0.01)
-    self.checkstdout(
-        '\n________ running \'ar gs\' in \'bleh\'\noutput\n'
-        '________ running \'ar gs\' in \'bleh\'\noutput')
-    return order
-
-  def testKillTimeout(self):
-    order = self._checkKillTimeout(output_block_for=1.0)
-    self.assertEquals(order, ['killed', 'unblock'])
-
-  def testKillRaise(self):
-    order = self._checkKillTimeout(output_block_for=1.0, kill_raises=True)
-    self.assertEquals(order, ['killed', 'unblock'])
-
-  def testNoKill(self):
-    order = self._checkKillTimeout(output_block_for=0.0)
-    self.assertEquals(order, ['unblock'])
 
 
 class SplitUrlRevisionTestCase(GclientUtilBase):
@@ -260,12 +203,6 @@ class GClientUtilsTest(trial_dir.TestCase):
 
 if __name__ == '__main__':
   import unittest
-  import logging
-  level = logging.DEBUG if '-v' in sys.argv else logging.FATAL
-  logging.basicConfig(
-      level=level,
-      format='%(asctime).19s %(levelname)s %(filename)s:'
-             '%(lineno)s %(message)s')
   unittest.main()
 
 # vim: ts=2:sw=2:tw=80:et:
