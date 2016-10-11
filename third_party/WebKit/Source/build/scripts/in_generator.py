@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import os.path
 import shlex
 import shutil
@@ -86,9 +87,15 @@ class Maker(object):
             exit(1)
 
         parser = optparse.OptionParser()
+
         parser.add_option("--gperf", default="gperf")
+        parser.add_option("--developer_dir",
+                          help='Path to Xcode.')
         parser.add_option("--output_dir", default=os.getcwd())
         options, args = parser.parse_args()
+
+        if options.developer_dir:
+            os.environ['DEVELOPER_DIR'] = options.developer_dir
 
         writer = self._writer_class(args)
         writer.set_gperf_path(options.gperf)

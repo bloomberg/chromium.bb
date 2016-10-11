@@ -911,6 +911,10 @@ if (is_win) {
         rebase_path(output_path, root_out_dir),
       ]
 
+      if (!use_system_xcode) {
+        args += [ hermetic_xcode_path ]
+      }
+
       outputs = [
         "$output_path/KeystoneRegistration.framework",
       ]

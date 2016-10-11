@@ -719,6 +719,12 @@ action("make_core_generated_css_tokenizer_codepoints") {
     "--output_dir",
     rel_blink_core_gen_dir,
   ]
+  if (is_mac && !use_system_xcode) {
+    args += [
+      "--developer_dir",
+      hermetic_xcode_path,
+    ]
+  }
 
   deps = make_core_generated_deps
 }
@@ -742,6 +748,12 @@ action("make_core_generated_css_primitive_value_unit_trie") {
     "--output_dir",
     rel_blink_core_gen_dir,
   ]
+  if (is_mac && !use_system_xcode) {
+    args += [
+      "--developer_dir",
+      hermetic_xcode_path,
+    ]
+  }
 
   deps = make_core_generated_deps
 }
@@ -767,6 +779,12 @@ action("make_core_generated_html_element_lookup_trie") {
     "--output_dir",
     rel_blink_core_gen_dir,
   ]
+  if (is_mac && !use_system_xcode) {
+    args += [
+      "--developer_dir",
+      hermetic_xcode_path,
+    ]
+  }
 
   deps = make_core_generated_deps
 }
@@ -790,6 +808,12 @@ action("make_core_generated_origin_trials") {
     "--output_dir",
     "$rel_blink_core_gen_dir/origin_trials",
   ]
+  if (is_mac && !use_system_xcode) {
+    args += [
+      "--developer_dir",
+      hermetic_xcode_path,
+    ]
+  }
 }
 
 action_foreach("make_core_generated_bison") {
@@ -806,7 +830,7 @@ action_foreach("make_core_generated_bison") {
     rel_blink_core_gen_dir,
     bison_exe,
   ]
-  if (!use_system_xcode) {
+  if (is_mac && !use_system_xcode) {
     args += [ hermetic_xcode_path ]
   }
 
