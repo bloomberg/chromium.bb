@@ -72,14 +72,21 @@ void NTPSnippetsDatabase::LoadSnippets(const SnippetsCallback& callback) {
 
 void NTPSnippetsDatabase::SaveSnippet(const NTPSnippet& snippet) {
   std::unique_ptr<KeyEntryVector> entries_to_save(new KeyEntryVector());
+  // OnDatabaseLoaded relies on the detail that the primary snippet id goes
+  // first in the protocol representation.
+  DCHECK_EQ(snippet.ToProto().ids(0), snippet.id());
   entries_to_save->emplace_back(snippet.id(), snippet.ToProto());
   SaveSnippetsImpl(std::move(entries_to_save));
 }
 
 void NTPSnippetsDatabase::SaveSnippets(const NTPSnippet::PtrVector& snippets) {
   std::unique_ptr<KeyEntryVector> entries_to_save(new KeyEntryVector());
-  for (const std::unique_ptr<NTPSnippet>& snippet : snippets)
+  for (const std::unique_ptr<NTPSnippet>& snippet : snippets) {
+    // OnDatabaseLoaded relies on the detail that the primary snippet id goes
+    // first in the protocol representation.
+    DCHECK_EQ(snippet->ToProto().ids(0), snippet->id());
     entries_to_save->emplace_back(snippet->id(), snippet->ToProto());
+  }
   SaveSnippetsImpl(std::move(entries_to_save));
 }
 
@@ -176,8 +183,13 @@ void NTPSnippetsDatabase::OnDatabaseLoaded(
     if (snippet) {
       snippets.emplace_back(std::move(snippet));
     } else {
-      LOG(WARNING) << "Invalid proto from DB " << proto.id();
-      keys_to_remove->emplace_back(proto.id());
+      if (proto.ids_size() > 0) {
+        LOG(WARNING) << "Invalid proto from DB " << proto.ids(0);
+        keys_to_remove->emplace_back(proto.ids(0));
+      } else {
+        LOG(WARNING)
+            << "Loaded proto without ID from the DB. Cannot clean this up.";
+      }
     }
   }
 

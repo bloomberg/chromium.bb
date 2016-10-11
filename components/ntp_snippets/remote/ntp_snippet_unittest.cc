@@ -4,13 +4,20 @@
 
 #include "components/ntp_snippets/remote/ntp_snippet.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/values.h"
+#include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ntp_snippets {
 namespace {
+
+using ::testing::ElementsAre;
+using ::testing::IsNull;
+using ::testing::Not;
 
 std::unique_ptr<NTPSnippet> SnippetFromContentSuggestionJSON(
     const std::string& json) {
@@ -102,7 +109,7 @@ TEST(NTPSnippetTest, TestMultipleSources) {
   ASSERT_THAT(snippet, testing::NotNull());
 
   // Expect the first source to be chosen.
-  EXPECT_EQ(snippet->sources().size(), 2u);
+  EXPECT_EQ(snippet->ToProto().sources_size(), 2);
   EXPECT_EQ(snippet->id(), "http://url.com");
   EXPECT_EQ(snippet->best_source().url, GURL("http://source1.com"));
   EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 1"));
@@ -124,7 +131,7 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources1) {
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
   ASSERT_THAT(snippet, testing::NotNull());
 
-  EXPECT_EQ(snippet->sources().size(), 2u);
+  EXPECT_EQ(snippet->ToProto().sources_size(), 2);
   EXPECT_EQ(snippet->id(), "http://url.com");
   EXPECT_EQ(snippet->best_source().url, GURL("http://source2.com"));
   EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 2"));
@@ -146,7 +153,7 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources2) {
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
   ASSERT_THAT(snippet, testing::NotNull());
 
-  EXPECT_EQ(snippet->sources().size(), 2u);
+  EXPECT_EQ(snippet->ToProto().sources_size(), 2);
   EXPECT_EQ(snippet->id(), "http://url.com");
   EXPECT_EQ(snippet->best_source().url, GURL("http://source1.com"));
   EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 1"));
@@ -225,8 +232,11 @@ TEST(NTPSnippetTest, TestMultipleCompleteSources1) {
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
   ASSERT_THAT(snippet, testing::NotNull());
 
-  EXPECT_EQ(snippet->sources().size(), 3u);
+  EXPECT_EQ(snippet->ToProto().sources_size(), 3);
   EXPECT_EQ(snippet->id(), "http://url.com");
+  EXPECT_THAT(snippet->GetAllIDs(),
+              ElementsAre("http://url.com", "http://source1.com",
+                          "http://source2.com", "http://source3.com"));
   EXPECT_EQ(snippet->best_source().url, GURL("http://source1.com"));
   EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 1"));
   EXPECT_EQ(snippet->best_source().amp_url, GURL("http://source1.amp.com"));
@@ -244,7 +254,7 @@ TEST(NTPSnippetTest, TestMultipleCompleteSources2) {
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
   ASSERT_THAT(snippet, testing::NotNull());
 
-  EXPECT_EQ(snippet->sources().size(), 3u);
+  EXPECT_EQ(snippet->ToProto().sources_size(), 3);
   EXPECT_EQ(snippet->id(), "http://url.com");
   EXPECT_EQ(snippet->best_source().url, GURL("http://source2.com"));
   EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 2"));
@@ -257,11 +267,67 @@ TEST(NTPSnippetTest, TestMultipleCompleteSources3) {
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
   ASSERT_THAT(snippet, testing::NotNull());
 
-  EXPECT_EQ(snippet->sources().size(), 3u);
+  EXPECT_EQ(snippet->ToProto().sources_size(), 3);
   EXPECT_EQ(snippet->id(), "http://url.com");
   EXPECT_EQ(snippet->best_source().url, GURL("http://source1.com"));
   EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 1"));
   EXPECT_EQ(snippet->best_source().amp_url, GURL("http://source1.amp.com"));
+}
+
+TEST(NTPSnippetTest, ShouldSupportMultipleIdsFromContentSuggestionsServer) {
+  const std::string kJsonStr =
+      "{"
+      "  \"ids\" : [\"http://localhost/foobar\", \"012345\"],"
+      "  \"title\" : \"Foo Barred from Baz\","
+      "  \"snippet\" : \"...\","
+      "  \"fullPageUrl\" : \"http://localhost/foobar\","
+      "  \"creationTime\" : \"2016-06-30T11:01:37.000Z\","
+      "  \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
+      "  \"attribution\" : \"Foo News\","
+      "  \"imageUrl\" : \"http://localhost/foobar.jpg\","
+      "  \"ampUrl\" : \"http://localhost/amp\","
+      "  \"faviconUrl\" : \"http://localhost/favicon.ico\" "
+      "}";
+  auto snippet = SnippetFromContentSuggestionJSON(kJsonStr);
+  ASSERT_THAT(snippet, testing::NotNull());
+
+  EXPECT_EQ(snippet->id(), "http://localhost/foobar");
+  EXPECT_THAT(snippet->GetAllIDs(),
+              ElementsAre("http://localhost/foobar", "012345"));
+}
+
+TEST(NTPSnippetTest, CreateFromProtoToProtoRoundtrip) {
+  SnippetProto proto;
+  proto.add_ids("foo");
+  proto.add_ids("bar");
+  proto.set_title("a suggestion title");
+  proto.set_snippet("the snippet describing the suggestion.");
+  proto.set_salient_image_url("http://google.com/logo/");
+  proto.set_publish_date(1476095492);
+  proto.set_expiry_date(1476354691);
+  proto.set_score(0.1f);
+  proto.set_dismissed(false);
+  proto.set_remote_category_id(1);
+  auto source_1 = proto.add_sources();
+  source_1->set_url("http://cool-suggestions.com/");
+  source_1->set_publisher_name("Great Suggestions Inc.");
+  auto amp_source = proto.add_sources();
+  amp_source->set_url("http://foo/");
+  amp_source->set_amp_url("http://cdn.ampproject.org/c/foo/");
+
+  std::unique_ptr<NTPSnippet> snippet = NTPSnippet::CreateFromProto(proto);
+  ASSERT_THAT(snippet, Not(IsNull()));
+  // The snippet database relies on the fact that the first id in the protocol
+  // buffer is considered the unique id.
+  EXPECT_EQ(snippet->id(), "foo");
+  // Unfortunately, we only have MessageLite protocol buffers in Chrome, so
+  // comparing via DebugString() or MessageDifferencer is not working.
+  // So we either need to compare field-by-field (maintenenance heavy) or
+  // compare the binary version (unusable diagnostic). Deciding for the latter.
+  std::string proto_serialized, round_tripped_serialized;
+  proto.SerializeToString(&proto_serialized);
+  snippet->ToProto().SerializeToString(&round_tripped_serialized);
+  EXPECT_EQ(proto_serialized, round_tripped_serialized);
 }
 
 }  // namespace

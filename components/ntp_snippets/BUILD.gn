@@ -139,6 +139,7 @@ source_set("unit_tests") {
     "//components/bookmarks/test",
     "//components/image_fetcher",
     "//components/leveldb_proto:test_support",
+    "//components/ntp_snippets/remote/proto",
     "//components/offline_pages",
     "//components/offline_pages:test_support",
     "//components/sessions",

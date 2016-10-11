@@ -987,7 +987,6 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSource) {
   ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
   const NTPSnippet& snippet =
       *service->GetSnippetsForTesting(articles_category()).front();
-  EXPECT_EQ(snippet.sources().size(), 1u);
   EXPECT_EQ(snippet.id(), kSnippetUrl);
   EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
   EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 1"));

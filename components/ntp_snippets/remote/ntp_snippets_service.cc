@@ -105,23 +105,6 @@ base::TimeDelta GetFetchingInterval(bool is_wifi,
   return base::TimeDelta::FromSecondsD(value_hours * 3600.0);
 }
 
-std::set<std::string> GetAllIDs(const NTPSnippet::PtrVector& snippets) {
-  std::set<std::string> ids;
-  for (const std::unique_ptr<NTPSnippet>& snippet : snippets) {
-    ids.insert(snippet->id());
-    for (const SnippetSource& source : snippet->sources())
-      ids.insert(source.url.spec());
-  }
-  return ids;
-}
-
-std::set<std::string> GetSnippetIDSet(const NTPSnippet::PtrVector& snippets) {
-  std::set<std::string> ids;
-  for (const std::unique_ptr<NTPSnippet>& snippet : snippets)
-    ids.insert(snippet->id());
-  return ids;
-}
-
 std::unique_ptr<std::vector<std::string>> GetSnippetIDVector(
     const NTPSnippet::PtrVector& snippets) {
   auto result = base::MakeUnique<std::vector<std::string>>();
@@ -131,34 +114,42 @@ std::unique_ptr<std::vector<std::string>> GetSnippetIDVector(
   return result;
 }
 
-bool IsSnippetInSet(const std::unique_ptr<NTPSnippet>& snippet,
-                    const std::set<std::string>& ids,
-                    bool match_all_ids) {
-  if (ids.count(snippet->id()))
-    return true;
-  if (!match_all_ids)
-    return false;
-  for (const SnippetSource& source : snippet->sources()) {
-    if (ids.count(source.url.spec()))
-      return true;
+bool HasIntersection(const std::vector<std::string>& a,
+                     const std::set<std::string>& b) {
+  for (const std::string& item : a) {
+    if (base::ContainsValue(b, item)) return true;
   }
   return false;
 }
 
-void EraseMatchingSnippets(NTPSnippet::PtrVector* snippets,
-                           const std::set<std::string>& matching_ids,
-                           bool match_all_ids) {
+void EraseByPrimaryID(NTPSnippet::PtrVector* snippets,
+                      const std::vector<std::string>& ids) {
+  std::set<std::string> ids_lookup(ids.begin(), ids.end());
   snippets->erase(
       std::remove_if(snippets->begin(), snippets->end(),
-                     [&matching_ids, match_all_ids](
-                         const std::unique_ptr<NTPSnippet>& snippet) {
-                       return IsSnippetInSet(snippet, matching_ids,
-                                             match_all_ids);
+                     [&ids_lookup](const std::unique_ptr<NTPSnippet>& snippet) {
+                       return base::ContainsValue(ids_lookup, snippet->id());
                      }),
       snippets->end());
 }
 
-void Compact(NTPSnippet::PtrVector* snippets) {
+void EraseMatchingSnippets(NTPSnippet::PtrVector* snippets,
+                           const NTPSnippet::PtrVector& compare_against) {
+  std::set<std::string> compare_against_ids;
+  for (const std::unique_ptr<NTPSnippet>& snippet : compare_against) {
+    const std::vector<std::string>& snippet_ids = snippet->GetAllIDs();
+    compare_against_ids.insert(snippet_ids.begin(), snippet_ids.end());
+  }
+  snippets->erase(
+      std::remove_if(
+          snippets->begin(), snippets->end(),
+          [&compare_against_ids](const std::unique_ptr<NTPSnippet>& snippet) {
+            return HasIntersection(snippet->GetAllIDs(), compare_against_ids);
+          }),
+      snippets->end());
+}
+
+void RemoveNullPointers(NTPSnippet::PtrVector* snippets) {
   snippets->erase(
       std::remove_if(
           snippets->begin(), snippets->end(),
@@ -609,7 +600,6 @@ void NTPSnippetsService::OnFetchFinished(
 void NTPSnippetsService::ArchiveSnippets(Category category,
                                          NTPSnippet::PtrVector* to_archive) {
   CategoryContent* content = &categories_[category];
-
   database_->DeleteSnippets(GetSnippetIDVector(*to_archive));
   // Do not delete the thumbnail images as they are still handy on open NTPs.
 
@@ -617,7 +607,7 @@ void NTPSnippetsService::ArchiveSnippets(Category category,
   content->archived.insert(content->archived.begin(),
                            std::make_move_iterator(to_archive->begin()),
                            std::make_move_iterator(to_archive->end()));
-  Compact(to_archive);
+  RemoveNullPointers(to_archive);
 
   // If there are more archived snippets than we want to keep, delete the
   // oldest ones by their fetch time (which are always in the back).
@@ -637,8 +627,7 @@ void NTPSnippetsService::ReplaceSnippets(Category category,
   CategoryContent* content = &categories_[category];
 
   // Remove new snippets that have been dismissed.
-  EraseMatchingSnippets(&new_snippets, GetAllIDs(content->dismissed),
-                        /*match_all_ids=*/true);
+  EraseMatchingSnippets(&new_snippets, content->dismissed);
 
   // Fill in default publish/expiry dates where required.
   for (std::unique_ptr<NTPSnippet>& snippet : new_snippets) {
@@ -675,11 +664,13 @@ void NTPSnippetsService::ReplaceSnippets(Category category,
   if (new_snippets.empty())
     return;
 
-  // Remove current snippets that have been fetched again. We do not need to
-  // archive those as they will be in the new current set.
-  EraseMatchingSnippets(&content->snippets, GetSnippetIDSet(new_snippets),
-                        /*match_all_ids=*/false);
-
+  // It's entirely possible that the newly fetched snippets contain articles
+  // that have been present before.
+  // Since archival removes snippets from the database (indexed by
+  // snippet->id()), we need to make sure to only archive snippets that don't
+  // appear with the same ID in the new suggestions (it's fine for additional
+  // IDs though).
+  EraseByPrimaryID(&content->snippets, *GetSnippetIDVector(new_snippets));
   ArchiveSnippets(category, &content->snippets);
 
   // Save new articles to the DB.
@@ -703,7 +694,7 @@ void NTPSnippetsService::ClearExpiredDismissedSnippets() {
       if (snippet->expiry_date() <= now)
         to_delete.emplace_back(std::move(snippet));
     }
-    Compact(&content->dismissed);
+    RemoveNullPointers(&content->dismissed);
 
     // Delete the removed article suggestions from the DB.
     database_->DeleteSnippets(GetSnippetIDVector(to_delete));

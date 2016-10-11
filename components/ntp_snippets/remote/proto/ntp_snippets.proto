@@ -15,7 +15,7 @@ message SnippetSourceProto {
 }
 
 message SnippetProto {
-  optional string id = 1;
+  repeated string ids = 1;
   optional string title = 2;
   optional string snippet = 3;
   optional string salient_image_url = 4;

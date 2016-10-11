@@ -40,9 +40,10 @@ class NTPSnippet {
 
   // Creates a new snippet with the given |id|.
   // Public for testing only - create snippets using the Create* methods below.
-  // TODO(treib): Make this private and add a CreateSnippetForTest?
+  // TODO(treib): Make this private and add a CreateSnippetForTest. The
+  // constructor can then also take the vector of ids as the handling of unique
+  // ids is then completely encapsulated inside the class.
   NTPSnippet(const std::string& id, int remote_category_id);
-
   ~NTPSnippet();
 
   // Creates an NTPSnippet from a dictionary, as returned by Chrome Reader.
@@ -66,9 +67,11 @@ class NTPSnippet {
   // Creates a protocol buffer corresponding to this snippet, for persisting.
   SnippetProto ToProto() const;
 
-  // A unique ID for identifying the snippet. If initialized by
-  // CreateFromChromeReaderDictionary() the relevant key is 'url'.
-  const std::string& id() const { return id_; }
+  // Returns all ids of the snippet.
+  const std::vector<std::string>& GetAllIDs() const { return ids_; }
+
+  // The unique, primary ID for identifying the snippet.
+  const std::string& id() const { return ids_.front(); }
 
   // Title of the snippet.
   const std::string& title() const { return title_; }
@@ -101,16 +104,15 @@ class NTPSnippet {
     expiry_date_ = expiry_date;
   }
 
-  size_t source_index() const { return best_source_index_; }
-  void set_source_index(size_t index) { best_source_index_ = index; }
-
   // We should never construct an NTPSnippet object if we don't have any sources
   // so this should never fail
   const SnippetSource& best_source() const {
     return sources_[best_source_index_];
   }
 
-  const std::vector<SnippetSource>& sources() const { return sources_; }
+  // Adds a source to the snippet.
+  // TODO(tschumann): Remove this from the NTPSnippet interface
+  // (NTPSnippetsDatabaseTest is currently using it and should be changed).
   void add_source(const SnippetSource& source) { sources_.push_back(source); }
 
   // If this snippet has all the data we need to show a full card to the user
@@ -136,9 +138,12 @@ class NTPSnippet {
   static std::string TimeToJsonString(const base::Time& time);
 
  private:
-  void FindBestSource();
+  void InitBestSource();
+  void AddIDs(const std::vector<std::string>& ids);
+  const std::vector<SnippetSource>& sources() const { return sources_; }
 
-  std::string id_;
+  // The first ID in the vector is the primary id.
+  std::vector<std::string> ids_;
   std::string title_;
   GURL salient_image_url_;
   std::string snippet_;

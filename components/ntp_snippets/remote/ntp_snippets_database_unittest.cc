@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,6 +26,20 @@ using testing::Mock;
 using testing::_;
 
 namespace ntp_snippets {
+
+namespace {
+
+std::vector<SnippetSource> ExtractSources(const NTPSnippet& snippet) {
+  std::vector<SnippetSource> result;
+  SnippetProto proto = snippet.ToProto();
+  for (const auto& source : proto.sources()) {
+    result.emplace_back(GURL(source.url()), source.publisher_name(),
+                        source.has_amp_url() ? GURL(source.amp_url()) : GURL());
+  }
+  return result;
+}
+
+}  // namespace
 
 bool operator==(const SnippetSource& lhs, const SnippetSource& rhs) {
   return lhs.url == rhs.url && lhs.publisher_name == rhs.publisher_name &&
@@ -37,9 +52,8 @@ bool operator==(const NTPSnippet& lhs, const NTPSnippet& rhs) {
          lhs.salient_image_url() == rhs.salient_image_url() &&
          lhs.publish_date() == rhs.publish_date() &&
          lhs.expiry_date() == rhs.expiry_date() &&
-         lhs.source_index() == rhs.source_index() &&
-         lhs.sources() == rhs.sources() && lhs.score() == rhs.score() &&
-         lhs.is_dismissed() == rhs.is_dismissed();
+         ExtractSources(lhs) == ExtractSources(rhs) &&
+         lhs.score() == rhs.score() && lhs.is_dismissed() == rhs.is_dismissed();
 }
 
 namespace {
@@ -339,7 +353,7 @@ void LoadExpectedImage(NTPSnippetsDatabase* db,
   run_loop.Run();
 }
 
-} // namespace
+}  // namespace
 
 TEST_F(NTPSnippetsDatabaseTest, ShouldGarbageCollectImages) {
   CreateDatabase();

@@ -46,7 +46,7 @@ static_assert(
     "kArticlesRemoteId has a wrong value?!");
 
 NTPSnippet::NTPSnippet(const std::string& id, int remote_category_id)
-    : id_(id),
+    : ids_(1, id),
       score_(0),
       is_dismissed_(false),
       remote_category_id_(remote_category_id),
@@ -91,6 +91,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
     return nullptr;
   }
 
+  std::vector<std::string> additional_ids;
   for (const auto& value : *corpus_infos_list) {
     const base::DictionaryValue* dict_value = nullptr;
     if (!value->GetAsDictionary(&dict_value)) {
@@ -108,16 +109,15 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
       DLOG(WARNING) << "Invalid article url " << corpus_id_str;
       continue;
     }
-
     const base::DictionaryValue* publisher_data = nullptr;
     std::string site_title;
     if (dict_value->GetDictionary("publisherData", &publisher_data)) {
       if (!publisher_data->GetString("sourceName", &site_title)) {
         // It's possible but not desirable to have no publisher data.
-        DLOG(WARNING) << "No publisher name for article " << corpus_id.spec();
+        DLOG(WARNING) << "No publisher name for article " << corpus_id_str;
       }
     } else {
-      DLOG(WARNING) << "No publisher data for article " << corpus_id.spec();
+      DLOG(WARNING) << "No publisher data for article " << corpus_id_str;
     }
 
     std::string amp_url_str;
@@ -131,14 +131,19 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
     SnippetSource source(corpus_id, site_title,
                          amp_url.is_valid() ? amp_url : GURL());
     snippet->add_source(source);
+    // We use the raw string so that we can compare it against other primary
+    // IDs. Parsing the ID as a URL might add a trailing slash (and we don't do
+    // this for the primary ID).
+    additional_ids.push_back(corpus_id_str);
   }
+  snippet->AddIDs(additional_ids);
 
   if (snippet->sources_.empty()) {
     DLOG(WARNING) << "No sources found for article " << id;
     return nullptr;
   }
 
-  snippet->FindBestSource();
+  snippet->InitBestSource();
 
   double score;
   if (dict.GetDouble("score", &score))
@@ -152,13 +157,20 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
     const base::DictionaryValue& dict,
     int remote_category_id) {
   const base::ListValue* ids;
-  std::string id;
-  if (!(dict.GetList("ids", &ids) &&
-        ids->GetString(0, &id))) {  // TODO(sfiera): multiple IDs
-    return nullptr;
+  if (!dict.GetList("ids", &ids)) return nullptr;
+  std::vector<std::string> parsed_ids;
+  for (const auto& value : *ids) {
+    std::string id;
+    if (!value->GetAsString(&id)) return nullptr;
+    parsed_ids.push_back(id);
   }
 
-  auto snippet = base::MakeUnique<NTPSnippet>(id, remote_category_id);
+  if (parsed_ids.empty()) return nullptr;
+  auto snippet =
+      base::MakeUnique<NTPSnippet>(parsed_ids.front(), remote_category_id);
+  parsed_ids.erase(parsed_ids.begin(), parsed_ids.begin() + 1);
+  snippet->AddIDs(parsed_ids);
+
   snippet->sources_.emplace_back(GURL(), std::string(), GURL());
   auto* source = &snippet->sources_.back();
   snippet->best_source_index_ = 0;
@@ -184,15 +196,16 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
 std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
     const SnippetProto& proto) {
   // Need at least the id.
-  if (!proto.has_id() || proto.id().empty())
+  if (proto.ids_size() == 0 || proto.ids(0).empty())
     return nullptr;
 
   int remote_category_id = proto.has_remote_category_id()
                                ? proto.remote_category_id()
                                : kArticlesRemoteId;
 
-  std::unique_ptr<NTPSnippet> snippet(
-      new NTPSnippet(proto.id(), remote_category_id));
+  auto snippet = base::MakeUnique<NTPSnippet>(proto.ids(0), remote_category_id);
+  snippet->AddIDs(
+      std::vector<std::string>(proto.ids().begin() + 1, proto.ids().end()));
 
   snippet->set_title(proto.title());
   snippet->set_snippet(proto.snippet());
@@ -227,15 +240,16 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
     return nullptr;
   }
 
-  snippet->FindBestSource();
+  snippet->InitBestSource();
 
   return snippet;
 }
 
 SnippetProto NTPSnippet::ToProto() const {
   SnippetProto result;
-
-  result.set_id(id_);
+  for (const std::string& id : ids_) {
+    result.add_ids(id);
+  }
   if (!title_.empty())
     result.set_title(title_);
   if (!snippet_.empty())
@@ -262,6 +276,10 @@ SnippetProto NTPSnippet::ToProto() const {
   return result;
 }
 
+void NTPSnippet::AddIDs(const std::vector<std::string>& ids) {
+  ids_.insert(ids_.end(), ids.begin(), ids.end());
+}
+
 // static
 base::Time NTPSnippet::TimeFromJsonString(const std::string& timestamp_str) {
   int64_t timestamp;
@@ -278,7 +296,7 @@ std::string NTPSnippet::TimeToJsonString(const base::Time& time) {
   return base::Int64ToString((time - base::Time::UnixEpoch()).InSeconds());
 }
 
-void NTPSnippet::FindBestSource() {
+void NTPSnippet::InitBestSource() {
   // The same article can be hosted by multiple sources, e.g. nytimes.com,
   // cnn.com, etc. We need to parse the list of sources for this article and
   // find the best match. In order of preference:
