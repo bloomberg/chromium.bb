@@ -22,6 +22,7 @@ show_help(){
 Advanced options:
   ${toggle_libs}                  libraries
   ${toggle_examples}              examples
+  ${toggle_analyzer}              analyzer
   ${toggle_docs}                  documentation
   ${toggle_unit_tests}            unit tests
   ${toggle_decode_perf_tests}     build decoder perf tests with unit tests
@@ -381,6 +382,7 @@ CMDLINE_SELECT="
 
     libs
     examples
+    analyzer
     docs
     libc
     as
@@ -499,6 +501,9 @@ post_process_cmdline() {
     fi
 
 }
+
+# Enable accounting if building the analyzer
+enabled analyzer && soft_enable accounting
 
 
 process_targets() {
