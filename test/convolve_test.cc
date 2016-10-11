@@ -1096,12 +1096,11 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(64, 64, &convolve12_sse2)));
 #else
 const ConvolveFunctions convolve8_sse2(
-    aom_convolve_copy_sse2, aom_convolve_avg_sse2,
-    aom_convolve8_horiz_sse2, aom_convolve8_avg_horiz_sse2,
-    aom_convolve8_vert_sse2, aom_convolve8_avg_vert_sse2, aom_convolve8_sse2,
-    aom_convolve8_avg_sse2, aom_scaled_horiz_c, aom_scaled_avg_horiz_c,
-    aom_scaled_vert_c, aom_scaled_avg_vert_c, aom_scaled_2d_c,
-    aom_scaled_avg_2d_c, 0);
+    aom_convolve_copy_sse2, aom_convolve_avg_sse2, aom_convolve8_horiz_sse2,
+    aom_convolve8_avg_horiz_sse2, aom_convolve8_vert_sse2,
+    aom_convolve8_avg_vert_sse2, aom_convolve8_sse2, aom_convolve8_avg_sse2,
+    aom_scaled_horiz_c, aom_scaled_avg_horiz_c, aom_scaled_vert_c,
+    aom_scaled_avg_vert_c, aom_scaled_2d_c, aom_scaled_avg_2d_c, 0);
 
 INSTANTIATE_TEST_CASE_P(SSE2, ConvolveTest,
                         ::testing::Values(make_tuple(4, 4, &convolve8_sse2),
