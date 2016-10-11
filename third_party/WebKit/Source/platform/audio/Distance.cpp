@@ -28,6 +28,7 @@
 
 #include "platform/audio/Distance.h"
 #include "wtf/Assertions.h"
+#include "wtf/MathExtras.h"
 #include <math.h>
 #include <algorithm>
 
@@ -64,17 +65,18 @@ double DistanceEffect::linearGain(double distance) {
   // We want a gain that decreases linearly from m_refDistance to
   // m_maxDistance. The gain is 1 at m_refDistance.
   return (1.0 -
-          m_rolloffFactor * (distance - m_refDistance) /
+          clampTo(m_rolloffFactor, 0.0, 1.0) * (distance - m_refDistance) /
               (m_maxDistance - m_refDistance));
 }
 
 double DistanceEffect::inverseGain(double distance) {
   return m_refDistance /
-         (m_refDistance + m_rolloffFactor * (distance - m_refDistance));
+         (m_refDistance +
+          clampTo(m_rolloffFactor, 0.0) * (distance - m_refDistance));
 }
 
 double DistanceEffect::exponentialGain(double distance) {
-  return pow(distance / m_refDistance, -m_rolloffFactor);
+  return pow(distance / m_refDistance, -clampTo(m_rolloffFactor, 0.0));
 }
 
 }  // namespace blink
