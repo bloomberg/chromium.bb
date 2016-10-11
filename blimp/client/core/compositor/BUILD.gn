@@ -41,7 +41,6 @@ source_set("compositor") {
 
   public_deps = [
     "//base",
-    "//blimp/client/core/input",
     "//blimp/common",
     "//blimp/common/proto",
     "//cc",

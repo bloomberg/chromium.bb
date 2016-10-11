@@ -25,16 +25,11 @@ class MockBlimpCompositorClient : public BlimpCompositorClient {
   MockBlimpCompositorClient() = default;
   ~MockBlimpCompositorClient() override = default;
 
-  void SendWebGestureEvent(
-      const blink::WebGestureEvent& gesture_event) override {
-    MockableSendWebGestureEvent();
-  }
   void SendCompositorMessage(
       const cc::proto::CompositorMessage& message) override {
     MockableSendCompositorMessage();
   }
 
-  MOCK_METHOD0(MockableSendWebGestureEvent, void());
   MOCK_METHOD0(MockableSendCompositorMessage, void());
 
  private:
@@ -50,10 +45,6 @@ class BlimpCompositorForTesting : public BlimpCompositor {
 
   void SendProto(const cc::proto::CompositorMessage& proto) {
     SendCompositorProto(proto);
-  }
-
-  void SendGestureEvent(const blink::WebGestureEvent& gesture_event) {
-    SendWebGestureEvent(gesture_event);
   }
 
   cc::LayerTreeHost* host() const { return host_.get(); }
@@ -98,10 +89,8 @@ TEST_F(BlimpCompositorTest, ToggleVisibilityWithHost) {
 
 TEST_F(BlimpCompositorTest, MessagesHaveCorrectId) {
   EXPECT_CALL(compositor_client_, MockableSendCompositorMessage()).Times(1);
-  EXPECT_CALL(compositor_client_, MockableSendWebGestureEvent()).Times(1);
 
   compositor_->SendProto(cc::proto::CompositorMessage());
-  compositor_->SendGestureEvent(blink::WebGestureEvent());
 }
 
 }  // namespace client

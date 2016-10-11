@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
+#include "blimp/client/core/input/blimp_input_manager.h"
 #include "blimp/client/core/render_widget/blimp_document_manager.h"
 #include "blimp/client/core/render_widget/mock_render_widget_feature.h"
 #include "blimp/client/test/compositor/mock_compositor_dependencies.h"
@@ -77,13 +78,15 @@ TEST_F(BlimpDocumentTest, ForwardMessagesToManager) {
 
   // When sending messages to the engine, ensure the messages are forwarded
   // to the document manager.
-  BlimpCompositorClient* client = static_cast<BlimpCompositorClient*>(&doc);
-
+  BlimpCompositorClient* compositor_client =
+      static_cast<BlimpCompositorClient*>(&doc);
   cc::proto::CompositorMessage fake_message;
-  client->SendCompositorMessage(fake_message);
+  compositor_client->SendCompositorMessage(fake_message);
 
+  BlimpInputManagerClient* input_manager_client =
+      static_cast<BlimpInputManagerClient*>(&doc);
   blink::WebGestureEvent fake_gesture;
-  client->SendWebGestureEvent(fake_gesture);
+  input_manager_client->SendWebGestureEvent(fake_gesture);
 }
 
 }  // namespace

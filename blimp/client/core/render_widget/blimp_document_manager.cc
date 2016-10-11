@@ -40,7 +40,7 @@ void BlimpDocumentManager::SetVisible(bool visible) {
 
 bool BlimpDocumentManager::OnTouchEvent(const ui::MotionEvent& motion_event) {
   if (active_document_)
-    return active_document_->GetCompositor()->OnTouchEvent(motion_event);
+    return active_document_->OnTouchEvent(motion_event);
   return false;
 }
 

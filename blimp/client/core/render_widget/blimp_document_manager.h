@@ -12,6 +12,7 @@
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "ui/events/gesture_detection/motion_event.h"
 
 namespace blimp {
 namespace client {

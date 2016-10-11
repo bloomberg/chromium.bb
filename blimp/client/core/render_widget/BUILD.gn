@@ -26,6 +26,7 @@ source_set("render_widget") {
   public_deps = [
     "//base",
     "//blimp/client/core/compositor",
+    "//blimp/client/core/input",
     "//blimp/net",
   ]
 }

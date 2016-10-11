@@ -35,7 +35,6 @@ class MockBlimpCompositor : public BlimpCompositor {
       : BlimpCompositor(compositor_dependencies, client) {}
 
   MOCK_METHOD1(SetVisible, void(bool));
-  MOCK_METHOD1(OnTouchEvent, bool(const ui::MotionEvent& motion_event));
 
   void OnCompositorMessageReceived(
       std::unique_ptr<cc::proto::CompositorMessage> message) override {
@@ -47,18 +46,19 @@ class MockBlimpCompositor : public BlimpCompositor {
 
 class MockBlimpDocument : public BlimpDocument {
  public:
-  explicit MockBlimpDocument(const int render_widget_id,
+  explicit MockBlimpDocument(const int document_id,
                              BlimpCompositorDependencies* compositor_deps,
                              BlimpDocumentManager* document_manager)
-      : BlimpDocument(render_widget_id, compositor_deps, document_manager) {
-    SetCompositorForTest(
-        base::MakeUnique<MockBlimpCompositor>(compositor_deps, this));
-  }
+      : BlimpDocument(
+            document_id,
+            base::MakeUnique<MockBlimpCompositor>(compositor_deps, this),
+            compositor_deps,
+            document_manager) {}
 
   using BlimpDocument::GetCompositor;
 
   MOCK_METHOD1(SetVisible, void(bool));
-  MOCK_METHOD1(OnTouchEvent, bool(const ui::MotionEvent& motion_event));
+  MOCK_METHOD1(OnTouchEvent, bool(const ui::MotionEvent&));
 };
 
 class BlimpDocumentManagerForTesting : public BlimpDocumentManager {
@@ -74,9 +74,9 @@ class BlimpDocumentManagerForTesting : public BlimpDocumentManager {
   using BlimpDocumentManager::GetDocument;
 
   std::unique_ptr<BlimpDocument> CreateBlimpDocument(
-      int render_widget_id,
+      int document_id,
       BlimpCompositorDependencies* compositor_dependencies) override {
-    return base::MakeUnique<MockBlimpDocument>(render_widget_id,
+    return base::MakeUnique<MockBlimpDocument>(document_id,
                                                compositor_dependencies, this);
   }
 };
@@ -183,7 +183,7 @@ TEST_F(BlimpDocumentManagerTest, ForwardsViewEventsToCorrectCompositor) {
   SetUpDocuments();
 
   EXPECT_CALL(*mock_compositor1_, SetVisible(true));
-  EXPECT_CALL(*mock_compositor1_, OnTouchEvent(_));
+  EXPECT_CALL(*mock_document1_, OnTouchEvent(_));
   EXPECT_CALL(*mock_compositor1_, SetVisible(false));
 
   EXPECT_CALL(*mock_compositor2_, SetVisible(true));

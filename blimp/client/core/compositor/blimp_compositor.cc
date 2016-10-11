@@ -93,12 +93,6 @@ void BlimpCompositor::SetVisible(bool visible) {
     CheckPendingCommitCounts(true /* flush */);
 }
 
-bool BlimpCompositor::OnTouchEvent(const ui::MotionEvent& motion_event) {
-  if (input_manager_)
-    return input_manager_->OnTouchEvent(motion_event);
-  return false;
-}
-
 void BlimpCompositor::NotifyWhenDonePendingCommits(base::Closure callback) {
   if (outstanding_commits_ == 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
@@ -168,6 +162,11 @@ void BlimpCompositor::OnCompositorMessageReceived(
   }
 }
 
+// Returns a reference to the InputHandler owned by layer tree host.
+const base::WeakPtr<cc::InputHandler>& BlimpCompositor::GetInputHandler() {
+  return host_->GetInputHandler();
+}
+
 void BlimpCompositor::OnContextProvidersCreated(
     const scoped_refptr<cc::ContextProvider>& compositor_context_provider,
     const scoped_refptr<cc::ContextProvider>& worker_context_provider) {
@@ -194,11 +193,6 @@ void BlimpCompositor::OnContextProvidersCreated(
       weak_ptr_factory_.GetWeakPtr());
 
   host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
-}
-
-void BlimpCompositor::SendWebGestureEvent(
-    const blink::WebGestureEvent& gesture_event) {
-  client_->SendWebGestureEvent(gesture_event);
 }
 
 void BlimpCompositor::BindToProxyClient(
@@ -319,11 +313,6 @@ void BlimpCompositor::CreateLayerTreeHost() {
 
   host_ = cc::LayerTreeHostInProcess::CreateRemoteClient(
       this /* remote_proto_channel */, compositor_task_runner, &params);
-
-  DCHECK(!input_manager_);
-  input_manager_ = BlimpInputManager::Create(
-      this, base::ThreadTaskRunnerHandle::Get(), compositor_task_runner,
-      host_->GetInputHandler());
 }
 
 void BlimpCompositor::DestroyLayerTreeHost() {
@@ -337,12 +326,6 @@ void BlimpCompositor::DestroyLayerTreeHost() {
 
   // Destroy the old LayerTreeHost state.
   host_.reset();
-
-  // Destroy the old input manager state.
-  // It is important to destroy the LayerTreeHost before destroying the input
-  // manager as it has a reference to the cc::InputHandlerClient owned by the
-  // BlimpInputManager.
-  input_manager_.reset();
 
   // Cancel any outstanding CompositorFrameSink requests.  That way if we get an
   // async callback related to the old request we know to drop it.
