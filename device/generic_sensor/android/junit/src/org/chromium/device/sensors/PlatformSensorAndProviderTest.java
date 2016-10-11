@@ -12,7 +12,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -25,12 +24,6 @@ import android.hardware.SensorManager;
 import android.os.Handler;
 import android.util.SparseArray;
 
-import org.chromium.base.test.util.Feature;
-import org.chromium.device.mojom.ReportingMode;
-import org.chromium.device.mojom.SensorInitParams;
-import org.chromium.device.mojom.SensorType;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,10 +33,13 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.util.Feature;
+import org.chromium.device.mojom.ReportingMode;
+import org.chromium.device.mojom.SensorType;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,11 +55,10 @@ public class PlatformSensorAndProviderTest {
     private SensorManager mSensorManager;
     @Mock
     private PlatformSensorProvider mPlatformSensorProvider;
-    private ByteBuffer mSharedBuffer;
     private final SparseArray<List<Sensor>> mMockSensors = new SparseArray<>();
     private static final long PLATFORM_SENSOR_ANDROID = 123456789L;
     private static final long PLATFORM_SENSOR_TIMESTAMP = 314159265358979L;
-    private static final double MILLISECONDS_IN_NANOSECOND = 0.000001d;
+    private static final double SECONDS_IN_NANOSECOND = 0.000000001d;
 
     /**
      * Class that overrides thread management callbacks for testing purposes.
@@ -95,7 +90,8 @@ public class PlatformSensorAndProviderTest {
         }
 
         @Override
-        protected void sensorReadingChanged() {}
+        protected void updateSensorReading(
+                double timestamp, double value1, double value2, double value3) {}
         @Override
         protected void sensorError() {}
     }
@@ -106,14 +102,12 @@ public class PlatformSensorAndProviderTest {
         // Remove all mock sensors before the test.
         mMockSensors.clear();
         doReturn(mSensorManager).when(mContext).getSystemService(Context.SENSOR_SERVICE);
-        doAnswer(
-                new Answer<List<Sensor>>() {
-                    @Override
-                    public List<Sensor> answer(final InvocationOnMock invocation)
-                            throws Throwable {
-                        return getMockSensors((int) (Integer) (invocation.getArguments())[0]);
-                    }
-                })
+        doAnswer(new Answer<List<Sensor>>() {
+            @Override
+            public List<Sensor> answer(final InvocationOnMock invocation) throws Throwable {
+                return getMockSensors((int) (Integer) (invocation.getArguments())[0]);
+            }
+        })
                 .when(mSensorManager)
                 .getSensorList(anyInt());
         doReturn(mSensorManager).when(mPlatformSensorProvider).getSensorManager();
@@ -263,42 +257,23 @@ public class PlatformSensorAndProviderTest {
     }
 
     /**
-     * Test that PlatformSensor doesn't notify client about sensor reading changes when
-     * sensor reporting mode is ReportingMode.CONTINUOUS.
-     */
-    @Test
-    @Feature({"PlatformSensor"})
-    public void testSensorNotifierIsNotCalled() {
-        TestPlatformSensor sensor = createTestPlatformSensor(
-                50000, Sensor.TYPE_ACCELEROMETER, 3, Sensor.REPORTING_MODE_CONTINUOUS);
-        initPlatformSensor(sensor, SensorInitParams.READ_BUFFER_SIZE);
-        TestPlatformSensor spySensor = spy(sensor);
-        SensorEvent event = createFakeEvent(3);
-        assertNotNull(event);
-        spySensor.onSensorChanged(event);
-        verify(spySensor, never()).sensorReadingChanged();
-    }
-
-    /**
      * Test that shared buffer is correctly populated from SensorEvent.
      */
     @Test
     @Feature({"PlatformSensor"})
-    public void testSensorBufferFromEvent() {
+    public void testSensorReadingFromEvent() {
         TestPlatformSensor sensor = createTestPlatformSensor(
                 50000, Sensor.TYPE_LIGHT, 1, Sensor.REPORTING_MODE_ON_CHANGE);
-        initPlatformSensor(sensor, SensorInitParams.READ_BUFFER_SIZE);
+        initPlatformSensor(sensor);
         TestPlatformSensor spySensor = spy(sensor);
         SensorEvent event = createFakeEvent(1);
         assertNotNull(event);
         spySensor.onSensorChanged(event);
-        verify(spySensor, times(1)).sensorReadingChanged();
-        // Verify that timestamp correctly stored in buffer.
-        assertEquals(MILLISECONDS_IN_NANOSECOND * PLATFORM_SENSOR_TIMESTAMP,
-                mSharedBuffer.getDouble(), MILLISECONDS_IN_NANOSECOND);
-        // Verify illuminance value is correctly stored in buffer and precision is not lost.
-        assertEquals(1.0d + MILLISECONDS_IN_NANOSECOND, mSharedBuffer.getDouble(),
-                MILLISECONDS_IN_NANOSECOND);
+
+        double timestamp = PLATFORM_SENSOR_TIMESTAMP * SECONDS_IN_NANOSECOND;
+
+        verify(spySensor, times(1))
+                .updateSensorReading(timestamp, getFakeReadingValue(1), 0.0, 0.0);
     }
 
     /**
@@ -309,28 +284,11 @@ public class PlatformSensorAndProviderTest {
     public void testSensorInvalidReadingSize() {
         TestPlatformSensor sensor = createTestPlatformSensor(
                 50000, Sensor.TYPE_ACCELEROMETER, 3, Sensor.REPORTING_MODE_CONTINUOUS);
-        initPlatformSensor(sensor, SensorInitParams.READ_BUFFER_SIZE);
+        initPlatformSensor(sensor);
         TestPlatformSensor spySensor = spy(sensor);
         // Accelerometer requires 3 reading values x,y and z, create fake event with 1 reading
         // value.
         SensorEvent event = createFakeEvent(1);
-        assertNotNull(event);
-        spySensor.onSensorChanged(event);
-        verify(spySensor, times(1)).sensorError();
-    }
-
-    /**
-     * Test that PlatformSensor notifies client when there is an error.
-     */
-    @Test
-    @Feature({"PlatformSensor"})
-    public void testSensorInvalidBufferSize() {
-        TestPlatformSensor sensor = createTestPlatformSensor(
-                50000, Sensor.TYPE_ACCELEROMETER, 3, Sensor.REPORTING_MODE_CONTINUOUS);
-        // Create buffer that doesn't have enough capacity to hold sensor reading values.
-        initPlatformSensor(sensor, 2);
-        TestPlatformSensor spySensor = spy(sensor);
-        SensorEvent event = createFakeEvent(3);
         assertNotNull(event);
         spySensor.onSensorChanged(event);
         verify(spySensor, times(1)).sensorError();
@@ -386,7 +344,7 @@ public class PlatformSensorAndProviderTest {
             SensorEvent event = sensorEventConstructor.newInstance(readingValuesNum);
             event.timestamp = PLATFORM_SENSOR_TIMESTAMP;
             for (int i = 0; i < readingValuesNum; ++i) {
-                event.values[i] = (float) (i + 1.0f + MILLISECONDS_IN_NANOSECOND);
+                event.values[i] = getFakeReadingValue(i + 1);
             }
             return event;
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException
@@ -395,10 +353,8 @@ public class PlatformSensorAndProviderTest {
         }
     }
 
-    private void initPlatformSensor(PlatformSensor sensor, long readingSize) {
-        mSharedBuffer = ByteBuffer.allocate((int) readingSize);
-        mSharedBuffer.order(ByteOrder.nativeOrder());
-        sensor.initPlatformSensorAndroid(PLATFORM_SENSOR_ANDROID, mSharedBuffer);
+    private void initPlatformSensor(PlatformSensor sensor) {
+        sensor.initPlatformSensorAndroid(PLATFORM_SENSOR_ANDROID);
     }
 
     private void addMockSensor(long minDelayUsec, int sensorType, int reportingMode) {
@@ -434,5 +390,9 @@ public class PlatformSensorAndProviderTest {
         return new TestPlatformSensor(
                 createMockSensor(minDelayUsec, androidSensorType, reportingMode), readingCount,
                 mPlatformSensorProvider);
+    }
+
+    private float getFakeReadingValue(int valueNum) {
+        return (float) (valueNum + SECONDS_IN_NANOSECOND);
     }
 }

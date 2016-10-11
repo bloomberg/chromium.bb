@@ -13,9 +13,9 @@ namespace device {
 
 namespace {
 
+const uint64_t kReadingBufferSize = sizeof(SensorReadingSharedBuffer);
 const uint64_t kSharedBufferSizeInBytes =
-    mojom::SensorInitParams::kReadBufferSize *
-    static_cast<uint64_t>(mojom::SensorType::LAST);
+    kReadingBufferSize * static_cast<uint64_t>(mojom::SensorType::LAST);
 
 }  // namespace
 
@@ -24,8 +24,6 @@ PlatformSensorProviderBase::~PlatformSensorProviderBase() = default;
 
 void PlatformSensorProviderBase::CreateSensor(
     mojom::SensorType type,
-    uint64_t size,
-    uint64_t offset,
     const CreateSensorCallback& callback) {
   DCHECK(CalledOnValidThread());
 
@@ -34,8 +32,8 @@ void PlatformSensorProviderBase::CreateSensor(
     return;
   }
 
-  mojo::ScopedSharedBufferMapping mapping =
-      shared_buffer_handle_->MapAtOffset(size, offset);
+  mojo::ScopedSharedBufferMapping mapping = shared_buffer_handle_->MapAtOffset(
+      kReadingBufferSize, SensorReadingSharedBuffer::GetOffset(type));
   if (!mapping) {
     callback.Run(nullptr);
     return;
@@ -44,11 +42,13 @@ void PlatformSensorProviderBase::CreateSensor(
   auto it = requests_map_.find(type);
   if (it != requests_map_.end()) {
     it->second.push_back(callback);
-  } else {
+  } else {  // This is the first CreateSensor call.
+    memset(mapping.get(), 0, kReadingBufferSize);
+
     requests_map_[type] = CallbackQueue({callback});
 
     CreateSensorInternal(
-        type, std::move(mapping), size,
+        type, std::move(mapping),
         base::Bind(&PlatformSensorProviderBase::NotifySensorCreated,
                    base::Unretained(this), type));
   }

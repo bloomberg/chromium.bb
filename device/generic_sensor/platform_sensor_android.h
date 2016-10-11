@@ -22,18 +22,22 @@ class PlatformSensorAndroid : public PlatformSensor {
 
   PlatformSensorAndroid(mojom::SensorType type,
                         mojo::ScopedSharedBufferMapping mapping,
-                        uint64_t buffer_size,
                         PlatformSensorProvider* provider,
                         const base::android::JavaRef<jobject>& java_sensor);
 
   mojom::ReportingMode GetReportingMode() override;
   PlatformSensorConfiguration GetDefaultConfiguration() override;
 
-  void NotifyPlatformSensorReadingChanged(
-      JNIEnv*,
-      const base::android::JavaRef<jobject>& caller);
   void NotifyPlatformSensorError(JNIEnv*,
                                  const base::android::JavaRef<jobject>& caller);
+
+  void UpdatePlatformSensorReading(
+      JNIEnv*,
+      const base::android::JavaRef<jobject>& caller,
+      jdouble timestamp,
+      jdouble value1,
+      jdouble value2,
+      jdouble value3);
 
  protected:
   ~PlatformSensorAndroid() override;
@@ -45,10 +49,6 @@ class PlatformSensorAndroid : public PlatformSensor {
  private:
   // Java object org.chromium.device.sensors.PlatformSensor
   base::android::ScopedJavaGlobalRef<jobject> j_object_;
-  // Task runner that is used by mojo objects for the IPC. Android sensor
-  // objects share separate handler thread that processes sensor
-  // events. Notifications from Java side are forwarded to |task_runner_|.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorAndroid);
 };
 

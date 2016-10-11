@@ -33,6 +33,7 @@ function sensor_mocks(mojo) {
         assert_equals(rv.result, core.RESULT_OK, "Failed to map shared buffer");
         this.buffer_array_ = rv.buffer;
         this.buffer_ = new Float64Array(this.buffer_array_);
+        this.resetBuffer();
         bindings.StubBindings(this.stub_).delegate = this;
         bindings.StubBindings(this.stub_).connectionErrorHandler = () => {
           reset();
@@ -120,6 +121,11 @@ function sensor_mocks(mojo) {
         this.resume_called_ = null;
         this.add_configuration_called_ = null;
         this.remove_configuration_called_ = null;
+        this.resetBuffer();
+      }
+
+      // Zeroes shared buffer.
+      resetBuffer() {
         for (let i = 0; i < this.buffer_.length; ++i) {
           this.buffer_[i] = 0;
         }
@@ -176,7 +182,7 @@ function sensor_mocks(mojo) {
     class MockSensorProvider {
       constructor() {
         this.reading_size_in_bytes_ =
-            sensor_provider.SensorInitParams.kReadBufferSize;
+            sensor_provider.SensorInitParams.kReadBufferSizeForTests;
         this.shared_buffer_size_in_bytes_ = this.reading_size_in_bytes_ *
                 sensor.SensorType.LAST;
         let rv =

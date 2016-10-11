@@ -13,8 +13,8 @@ if (!window.testRunner)
 const kDefaultReadingValue = 3.1415;
 
 function update_sensor_reading(buffer) {
-  buffer[0] = window.performance.now();
-  buffer[1] = kDefaultReadingValue;
+  buffer[1] = window.performance.now();
+  buffer[2] = kDefaultReadingValue;
 }
 
 test(() => assert_throws(

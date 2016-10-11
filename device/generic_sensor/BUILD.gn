@@ -27,6 +27,7 @@ source_set("generic_sensor") {
 
   deps = [
     "//base",
+    "//device/generic_sensor/public/cpp",
     "//device/generic_sensor/public/interfaces",
   ]
 

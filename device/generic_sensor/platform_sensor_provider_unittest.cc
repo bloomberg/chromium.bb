@@ -17,20 +17,6 @@ namespace device {
 using mojom::SensorInitParams;
 using mojom::SensorType;
 
-namespace {
-
-uint64_t GetBufferOffset(mojom::SensorType type) {
-  return (static_cast<uint64_t>(SensorType::LAST) -
-          static_cast<uint64_t>(type)) *
-         SensorInitParams::kReadBufferSize;
-}
-
-using CreateSensorCallback =
-    base::Callback<void(scoped_refptr<PlatformSensor>)>;
-;
-
-}  // namespace
-
 class TestSensorCreateCallback {
  public:
   TestSensorCreateCallback()
@@ -44,7 +30,9 @@ class TestSensorCreateCallback {
     return sensor;
   }
 
-  const CreateSensorCallback& callback() const { return callback_; }
+  const PlatformSensorProvider::CreateSensorCallback& callback() const {
+    return callback_;
+  }
 
  private:
   void SetResult(scoped_refptr<PlatformSensor> sensor) {
@@ -52,7 +40,7 @@ class TestSensorCreateCallback {
     run_loop_.Quit();
   }
 
-  const CreateSensorCallback callback_;
+  const PlatformSensorProvider::CreateSensorCallback callback_;
   base::RunLoop run_loop_;
   scoped_refptr<PlatformSensor> sensor_;
 };
@@ -108,8 +96,7 @@ class PlatformSensorProviderTest : public ::testing::Test {
       mojom::SensorType type,
       TestSensorCreateCallback* callback) {
     FakePlatformSensorProvider::GetInstance()->CreateSensor(
-        type, SensorInitParams::kReadBufferSize, GetBufferOffset(type),
-        callback->callback());
+        type, callback->callback());
     return callback->WaitForResult();
   }
 
@@ -171,17 +158,6 @@ TEST_F(PlatformSensorProviderTest, CreateAndGetSensor) {
   EXPECT_TRUE(sensor3);
 
   EXPECT_EQ(sensor1->GetType(), sensor3->GetType());
-
-  // Try to create a sensor with zero buffer and offset.
-  TestSensorCreateCallback callback4;
-  sensor_provider->CreateSensor(SensorType::GYROSCOPE, 0, 0,
-                                callback4.callback());
-  scoped_refptr<PlatformSensor> sensor4 = callback4.WaitForResult();
-  EXPECT_FALSE(sensor4);
-
-  scoped_refptr<PlatformSensor> sensor5 =
-      sensor_provider->GetSensor(SensorType::GYROSCOPE);
-  EXPECT_FALSE(sensor5);
 }
 
 TEST_F(PlatformSensorProviderTest, TestSensorLeaks) {

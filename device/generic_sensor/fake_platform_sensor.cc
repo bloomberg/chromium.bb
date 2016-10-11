@@ -8,7 +8,6 @@ namespace device {
 
 FakePlatformSensor::FakePlatformSensor(mojom::SensorType type,
                                        mojo::ScopedSharedBufferMapping mapping,
-                                       uint64_t buffer_size,
                                        PlatformSensorProvider* provider)
     : PlatformSensor(type, std::move(mapping), provider), started_(false) {}
 

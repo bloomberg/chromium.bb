@@ -14,12 +14,6 @@ namespace device {
 
 namespace {
 
-uint64_t GetBufferOffset(mojom::SensorType type) {
-  return (static_cast<uint64_t>(mojom::SensorType::LAST) -
-          static_cast<uint64_t>(type)) *
-         mojom::SensorInitParams::kReadBufferSize;
-}
-
 void RunCallback(mojom::SensorInitParamsPtr init_params,
                  mojom::SensorClientRequest client,
                  const SensorProviderImpl::GetSensorCallback& callback) {
@@ -68,8 +62,7 @@ void SensorProviderImpl::GetSensor(mojom::SensorType type,
         &SensorProviderImpl::SensorCreated, weak_ptr_factory_.GetWeakPtr(),
         type, base::Passed(&cloned_handle), base::Passed(&sensor_request),
         callback);
-    provider_->CreateSensor(type, mojom::SensorInitParams::kReadBufferSize,
-                            GetBufferOffset(type), cb);
+    provider_->CreateSensor(type, cb);
     return;
   }
 
@@ -92,7 +85,7 @@ void SensorProviderImpl::SensorCreated(
 
   auto init_params = mojom::SensorInitParams::New();
   init_params->memory = std::move(cloned_handle);
-  init_params->buffer_offset = GetBufferOffset(type);
+  init_params->buffer_offset = SensorReadingSharedBuffer::GetOffset(type);
   init_params->mode = sensor->GetReportingMode();
   init_params->default_configuration = sensor->GetDefaultConfiguration();
 

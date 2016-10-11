@@ -25,7 +25,6 @@ class PlatformSensorProviderAndroid : public PlatformSensorProvider {
  protected:
   void CreateSensorInternal(mojom::SensorType type,
                             mojo::ScopedSharedBufferMapping mapping,
-                            uint64_t buffer_size,
                             const CreateSensorCallback& callback) override;
 
  private:
@@ -58,7 +57,6 @@ PlatformSensorProviderAndroid::~PlatformSensorProviderAndroid() = default;
 void PlatformSensorProviderAndroid::CreateSensorInternal(
     mojom::SensorType type,
     mojo::ScopedSharedBufferMapping mapping,
-    uint64_t buffer_size,
     const CreateSensorCallback& callback) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> sensor = Java_PlatformSensorProvider_createSensor(
@@ -68,8 +66,7 @@ void PlatformSensorProviderAndroid::CreateSensorInternal(
     callback.Run(nullptr);
 
   scoped_refptr<PlatformSensorAndroid> concrete_sensor =
-      new PlatformSensorAndroid(type, std::move(mapping), buffer_size, this,
-                                sensor);
+      new PlatformSensorAndroid(type, std::move(mapping), this, sensor);
   callback.Run(concrete_sensor);
 }
 

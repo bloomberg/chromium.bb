@@ -13,7 +13,6 @@ class FakePlatformSensor : public PlatformSensor {
  public:
   FakePlatformSensor(mojom::SensorType type,
                      mojo::ScopedSharedBufferMapping mapping,
-                     uint64_t buffer_size,
                      PlatformSensorProvider* provider);
 
   mojom::ReportingMode GetReportingMode() override;

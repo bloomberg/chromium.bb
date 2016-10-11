@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "device/generic_sensor/public/cpp/sensor_reading.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom.h"
 #include "mojo/public/cpp/system/buffer.h"
 
@@ -56,6 +57,7 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
                  PlatformSensorProvider* provider);
 
   using ConfigMap = std::map<Client*, std::list<PlatformSensorConfiguration>>;
+  using ReadingBuffer = SensorReadingSharedBuffer;
 
   virtual bool UpdateSensorInternal(const ConfigMap& configurations);
   virtual bool StartSensor(
@@ -64,17 +66,24 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
   virtual bool CheckSensorConfiguration(
       const PlatformSensorConfiguration& configuration) = 0;
 
+  // Updates shared buffer with new sensor reading data.
+  // Note: this method is thread-safe.
+  void UpdateSensorReading(const SensorReading& reading, bool notify_clients);
+
   void NotifySensorReadingChanged();
   void NotifySensorError();
-
-  mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
 
   // For testing purposes.
   const ConfigMap& config_map() const { return config_map_; }
 
+  // Task runner that is used by mojo objects for the IPC.
+  // If platfrom sensor events are processed on a different
+  // thread, notifications are forwarded to |task_runner_|.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
  private:
   friend class base::RefCountedThreadSafe<PlatformSensor>;
-
+  const mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
   mojom::SensorType type_;
   base::ObserverList<Client, true> clients_;
   ConfigMap config_map_;

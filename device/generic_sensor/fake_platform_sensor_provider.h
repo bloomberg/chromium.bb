@@ -19,7 +19,6 @@ class FakePlatformSensorProvider : public PlatformSensorProvider {
  protected:
   void CreateSensorInternal(mojom::SensorType type,
                             mojo::ScopedSharedBufferMapping mapping,
-                            uint64_t buffer_size,
                             const CreateSensorCallback& callback) override;
 
  private:

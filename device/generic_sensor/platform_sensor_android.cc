@@ -6,7 +6,6 @@
 
 #include "base/android/context_utils.h"
 #include "base/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "jni/PlatformSensor_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -22,18 +21,14 @@ bool PlatformSensorAndroid::RegisterJNI(JNIEnv* env) {
 PlatformSensorAndroid::PlatformSensorAndroid(
     mojom::SensorType type,
     mojo::ScopedSharedBufferMapping mapping,
-    uint64_t buffer_size,
     PlatformSensorProvider* provider,
     const JavaRef<jobject>& java_sensor)
-    : PlatformSensor(type, std::move(mapping), provider),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+    : PlatformSensor(type, std::move(mapping), provider) {
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(java_sensor);
 
-  jobject byte_buffer =
-      env->NewDirectByteBuffer(shared_buffer_mapping_.get(), buffer_size);
-  Java_PlatformSensor_initPlatformSensorAndroid(
-      env, j_object_.obj(), reinterpret_cast<jlong>(this), byte_buffer);
+  Java_PlatformSensor_initPlatformSensorAndroid(env, j_object_.obj(),
+                                                reinterpret_cast<jlong>(this));
 }
 
 PlatformSensorAndroid::~PlatformSensorAndroid() {
@@ -72,19 +67,28 @@ bool PlatformSensorAndroid::CheckSensorConfiguration(
       env, j_object_.obj(), configuration.frequency());
 }
 
-void PlatformSensorAndroid::NotifyPlatformSensorReadingChanged(
-    JNIEnv*,
-    const JavaRef<jobject>& caller) {
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PlatformSensorAndroid::NotifySensorReadingChanged, this));
-}
-
 void PlatformSensorAndroid::NotifyPlatformSensorError(
     JNIEnv*,
     const JavaRef<jobject>& caller) {
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&PlatformSensorAndroid::NotifySensorError, this));
+}
+
+void PlatformSensorAndroid::UpdatePlatformSensorReading(
+    JNIEnv*,
+    const base::android::JavaRef<jobject>& caller,
+    jdouble timestamp,
+    jdouble value1,
+    jdouble value2,
+    jdouble value3) {
+  SensorReading reading;
+  reading.timestamp = timestamp;
+  reading.values[0] = value1;
+  reading.values[1] = value2;
+  reading.values[2] = value3;
+
+  bool needNotify = (GetReportingMode() == mojom::ReportingMode::ON_CHANGE);
+  UpdateSensorReading(reading, needNotify);
 }
 
 }  // namespace device

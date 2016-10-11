@@ -24,14 +24,14 @@ double AmbientLightSensorReading::illuminance() const {
 
   if (!m_sensorProxy)
     return 0.0;
-  return m_sensorProxy->reading().reading[0];
+  return m_sensorProxy->reading().values[0];
 }
 
 bool AmbientLightSensorReading::isReadingUpdated(
     const SensorProxy::Reading& previous) const {
   if (!m_sensorProxy)
     return false;
-  return previous.reading[0] != illuminance();
+  return previous.values[0] != illuminance();
 }
 
 DEFINE_TRACE(AmbientLightSensorReading) {

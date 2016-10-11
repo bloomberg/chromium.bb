@@ -19,10 +19,10 @@ struct SensorInitParams {
   // Default sensor configuration.
   SensorConfiguration default_configuration;
 
-  // Note: Each sensor's read buffer contains 4 tightly packed 64-bit floating
-  // point fields, its layout is: { double timestamp; double values[3] }.
-  // So it has a fixed size 4*8 = 32 bytes.
-  const uint64 kReadBufferSize = 32;
+  // Each sensor's read buffer contains 4 tightly packed 64-bit floating
+  // point fields (please see sensor_reading.h) and a seqlock, so its size is
+  // 5 * 8 = 40 bytes.
+  const uint64 kReadBufferSizeForTests = 40;
 };
 
 interface SensorProvider {

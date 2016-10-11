@@ -99,8 +99,14 @@ const device::mojom::blink::SensorConfiguration* SensorProxy::defaultConfig()
 
 void SensorProxy::updateInternalReading() {
   DCHECK(isInitialized());
-  Reading* reading = static_cast<Reading*>(m_sharedBuffer.get());
-  m_reading = *reading;
+  int readAttempts = 0;
+  const int kMaxReadAttemptsCount = 10;
+  while (!tryReadFromBuffer()) {
+    if (++readAttempts == kMaxReadAttemptsCount) {
+      handleSensorError();
+      return;
+    }
+  }
 }
 
 void SensorProxy::RaiseError() {
@@ -133,8 +139,9 @@ void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
     handleSensorError(NotFoundError, "Sensor is not present on the platform.");
     return;
   }
+  const size_t kReadBufferSize = sizeof(ReadingBuffer);
 
-  DCHECK_EQ(0u, params->buffer_offset % SensorInitParams::kReadBufferSize);
+  DCHECK_EQ(0u, params->buffer_offset % kReadBufferSize);
 
   m_mode = params->mode;
   m_defaultConfig = std::move(params->default_configuration);
@@ -148,8 +155,8 @@ void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
 
   m_sharedBufferHandle = std::move(params->memory);
   DCHECK(!m_sharedBuffer);
-  m_sharedBuffer = m_sharedBufferHandle->MapAtOffset(
-      SensorInitParams::kReadBufferSize, params->buffer_offset);
+  m_sharedBuffer =
+      m_sharedBufferHandle->MapAtOffset(kReadBufferSize, params->buffer_offset);
 
   if (!m_sharedBuffer) {
     handleSensorError();
@@ -165,6 +172,18 @@ void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
   m_state = Initialized;
   for (Observer* observer : m_observers)
     observer->onSensorInitialized();
+}
+
+bool SensorProxy::tryReadFromBuffer() {
+  DCHECK(isInitialized());
+  ReadingBuffer* buffer = static_cast<ReadingBuffer*>(m_sharedBuffer.get());
+  device::OneWriterSeqLock& seqlock = buffer->seqlock.value();
+  auto version = seqlock.ReadBegin();
+  auto reading = buffer->reading;
+  if (seqlock.ReadRetry(version))
+    return false;
+  m_reading = reading;
+  return true;
 }
 
 }  // namespace blink

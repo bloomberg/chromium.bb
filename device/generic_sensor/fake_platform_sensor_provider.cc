@@ -23,10 +23,9 @@ FakePlatformSensorProvider::~FakePlatformSensorProvider() = default;
 void FakePlatformSensorProvider::CreateSensorInternal(
     mojom::SensorType type,
     mojo::ScopedSharedBufferMapping mapping,
-    uint64_t buffer_size,
     const CreateSensorCallback& callback) {
   scoped_refptr<FakePlatformSensor> sensor =
-      new FakePlatformSensor(type, std::move(mapping), buffer_size, this);
+      new FakePlatformSensor(type, std::move(mapping), this);
   callback.Run(std::move(sensor));
 }
 

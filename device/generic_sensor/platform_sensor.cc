@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "device/generic_sensor/platform_sensor_provider.h"
 #include "device/generic_sensor/public/cpp/platform_sensor_configuration.h"
 
@@ -14,7 +15,8 @@ namespace device {
 PlatformSensor::PlatformSensor(mojom::SensorType type,
                                mojo::ScopedSharedBufferMapping mapping,
                                PlatformSensorProvider* provider)
-    : shared_buffer_mapping_(std::move(mapping)),
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      shared_buffer_mapping_(std::move(mapping)),
       type_(type),
       provider_(provider),
       weak_factory_(this) {}
@@ -78,6 +80,21 @@ void PlatformSensor::RemoveClient(Client* client) {
     config_map_.erase(client_entry);
     UpdateSensorInternal(config_map_);
   }
+}
+
+void PlatformSensor::UpdateSensorReading(const SensorReading& reading,
+                                         bool notify_clients) {
+  ReadingBuffer* buffer =
+      static_cast<ReadingBuffer*>(shared_buffer_mapping_.get());
+  auto& seqlock = buffer->seqlock.value();
+  seqlock.WriteBegin();
+  buffer->reading = reading;
+  seqlock.WriteEnd();
+
+  if (notify_clients)
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PlatformSensor::NotifySensorReadingChanged,
+                              weak_factory_.GetWeakPtr()));
 }
 
 void PlatformSensor::NotifySensorReadingChanged() {
