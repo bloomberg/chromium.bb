@@ -445,7 +445,7 @@ STDMETHODIMP BrowserAccessibilityWin::accHitTest(LONG x_left,
     return S_FALSE;
   }
 
-  BrowserAccessibility* result = BrowserAccessibilityForPoint(point);
+  BrowserAccessibility* result = manager()->CachingAsyncHitTest(point);
   if (result == this) {
     // Point is within this object.
     child->vt = VT_I4;

@@ -185,9 +185,13 @@ class CONTENT_EXPORT BrowserAccessibility {
   int GetWordStartBoundary(int start,
                            ui::TextBoundaryDirection direction) const;
 
-  // Returns the deepest descendant that contains the specified point
-  // (in global screen coordinates).
-  BrowserAccessibility* BrowserAccessibilityForPoint(const gfx::Point& point);
+  // This is an approximate hit test that only uses the information in
+  // the browser process to compute the correct result. It will not return
+  // correct results in many cases of z-index, overflow, and absolute
+  // positioning, so BrowserAccessibilityManager::CachingAsyncHitTest
+  // should be used instead, which falls back on calling ApproximateHitTest
+  // automatically.
+  BrowserAccessibility* ApproximateHitTest(const gfx::Point& screen_point);
 
   // Marks this object for deletion, releases our reference to it, and
   // nulls out the pointer to the underlying AXNode.  May not delete

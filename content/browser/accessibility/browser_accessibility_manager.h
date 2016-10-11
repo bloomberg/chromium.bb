@@ -383,6 +383,16 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // Get a snapshot of the current tree as an AXTreeUpdate.
   ui::AXTreeUpdate SnapshotAXTreeForTesting();
 
+  // Given a point in screen coordinates, trigger an asynchronous hit test
+  // but return the best possible match instantly.
+  //
+  //
+  BrowserAccessibility* CachingAsyncHitTest(const gfx::Point& screen_point);
+
+  // Called in response to a hover event, caches the result for the next
+  // call to CachingAsyncHitTest().
+  void CacheHitTestResult(BrowserAccessibility* hit_test_result);
+
  protected:
   BrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate,
@@ -452,6 +462,14 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // dereferenced, only used for comparison.
   BrowserAccessibility* last_focused_node_;
   BrowserAccessibilityManager* last_focused_manager_;
+
+  // These cache the AX tree ID, node ID, and global screen bounds of the
+  // last object found by an asynchronous hit test. Subsequent hit test
+  // requests that remain within this object's bounds will return the same
+  // object, but will also trigger a new asynchronous hit test request.
+  int last_hover_ax_tree_id_;
+  int last_hover_node_id_;
+  gfx::Rect last_hover_bounds_;
 
   // True if the root's parent is in another accessibility tree and that
   // parent's child is the root. Ensures that the parent node is notified

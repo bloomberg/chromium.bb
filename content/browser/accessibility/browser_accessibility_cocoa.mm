@@ -2853,25 +2853,15 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  BrowserAccessibilityCocoa* hit = self;
-  for (BrowserAccessibilityCocoa* child in [self children]) {
-    if (!child->browserAccessibility_)
-      continue;
-    NSPoint origin = [child origin];
-    NSSize size = [[child size] sizeValue];
-    NSRect rect;
-    rect.origin = origin;
-    rect.size = size;
-    if (NSPointInRect(point, rect)) {
-      hit = child;
-      id childResult = [child accessibilityHitTest:point];
-      if (![childResult accessibilityIsIgnored]) {
-        hit = childResult;
-        break;
-      }
-    }
-  }
-  return NSAccessibilityUnignoredAncestor(hit);
+  BrowserAccessibilityManager* manager = browserAccessibility_->manager();
+  gfx::Point screen_point(point.x, point.y);
+  screen_point += manager->GetViewBounds().OffsetFromOrigin();
+
+  BrowserAccessibility* hit = manager->CachingAsyncHitTest(screen_point);
+  if (!hit)
+    return nil;
+
+  return NSAccessibilityUnignoredAncestor(ToBrowserAccessibilityCocoa(hit));
 }
 
 - (BOOL)isEqual:(id)object {

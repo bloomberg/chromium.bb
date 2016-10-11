@@ -718,7 +718,7 @@ int BrowserAccessibility::GetWordStartBoundary(
   }
 }
 
-BrowserAccessibility* BrowserAccessibility::BrowserAccessibilityForPoint(
+BrowserAccessibility* BrowserAccessibility::ApproximateHitTest(
     const gfx::Point& point) {
   // The best result found that's a child of this object.
   BrowserAccessibility* child_result = NULL;
@@ -738,7 +738,7 @@ BrowserAccessibility* BrowserAccessibility::BrowserAccessibilityForPoint(
       continue;
 
     if (child->GetScreenBoundsRect().Contains(point)) {
-      BrowserAccessibility* result = child->BrowserAccessibilityForPoint(point);
+      BrowserAccessibility* result = child->ApproximateHitTest(point);
       if (result == child && !child_result)
         child_result = result;
       if (result != child && !descendant_result)

@@ -144,10 +144,7 @@ static AtkObject* browser_accessibility_accessible_at_point(
     return NULL;
 
   gfx::Point point(x, y);
-  if (!obj->GetScreenBoundsRect().Contains(point))
-    return NULL;
-
-  BrowserAccessibility* result = obj->BrowserAccessibilityForPoint(point);
+  BrowserAccessibility* result = obj->manager()->CachingAsyncHitTest(point);
   if (!result)
     return NULL;
 
