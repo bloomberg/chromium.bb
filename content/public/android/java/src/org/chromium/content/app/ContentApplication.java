@@ -56,7 +56,15 @@ public abstract class ContentApplication extends BaseChromiumApplication {
             }
         });
 
+        initializeLibraryDependencies();
         mLibraryDependenciesInitialized = true;
+    }
+
+    /**
+     * Initialize all the dependencies that need to be setup before library loading can be
+     * kicked off.
+     */
+    protected void initializeLibraryDependencies() {
     }
 
     /**

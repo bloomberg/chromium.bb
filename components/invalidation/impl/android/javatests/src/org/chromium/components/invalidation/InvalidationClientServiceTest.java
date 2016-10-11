@@ -6,6 +6,7 @@ package org.chromium.components.invalidation;
 
 import android.accounts.Account;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.test.ServiceTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -65,8 +66,9 @@ public class InvalidationClientServiceTest extends
                 return new ComponentName(this, InvalidationClientServiceTest.class);
             }
         });
-        ContextUtils.initApplicationContextForTests(getContext().getApplicationContext());
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        Context appContext = getContext().getApplicationContext();
+        ContextUtils.initApplicationContextForTests(appContext);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, appContext);
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         setupService();
     }

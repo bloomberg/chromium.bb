@@ -43,7 +43,8 @@ public abstract class AwBrowserProcess {
      * Note: it is up to the caller to ensure this is only called once.
      */
     public static void loadLibrary() {
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        Context appContext = ContextUtils.getApplicationContext();
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, appContext);
         try {
             LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW);
             libraryLoader.loadNow();

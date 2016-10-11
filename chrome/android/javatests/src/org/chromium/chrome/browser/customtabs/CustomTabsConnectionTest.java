@@ -47,7 +47,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         mAppContext = getInstrumentation().getTargetContext().getApplicationContext();
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, mAppContext);
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         mCustomTabsConnection = CustomTabsTestUtils.setUpConnection((Application) mAppContext);
         mCustomTabsConnection.resetThrottling(mAppContext, Process.myUid());

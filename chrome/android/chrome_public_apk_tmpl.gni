@@ -92,6 +92,8 @@ template("monochrome_public_apk_tmpl") {
           [ "//chrome/android:monochrome_secondary_abi_lib" ]
     }
 
+    alternative_locale_resource_dep = "//chrome/android:monochrome_locale_paks"
+
     alternative_android_sdk_jar = webview_framework_jar
     app_as_shared_lib = true
     use_chromium_linker = false

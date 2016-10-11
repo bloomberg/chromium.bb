@@ -16,15 +16,18 @@ import org.chromium.base.PathUtils;
 public class ChromiumLinkerTestApplication extends BaseChromiumApplication {
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromium_linker_test";
 
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
+    public ChromiumLinkerTestApplication() {
+        super();
         ContextUtils.initApplicationContext(this);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        initializeApplicationParameters(this);
+    }
+
+    public static void initializeApplicationParameters(Context context) {
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
     }
 }

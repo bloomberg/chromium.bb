@@ -5,12 +5,12 @@
 package org.chromium.blimp;
 
 import android.app.Application;
-import android.content.Context;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.base.ResourceExtractor;
 
 /**
  * The {@link Application} for the Blimp client.
@@ -19,16 +19,16 @@ public class BlimpApplication extends BaseChromiumApplication {
     private static final String COMMAND_LINE_FILE = "blimp-command-line";
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "blimp";
 
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
+    public BlimpApplication() {
+        super();
         ContextUtils.initApplicationContext(this);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        ResourceExtractor.setResourcesToExtract(new ResourceExtractor.ResourceEntry[0]);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
         initCommandLine();
     }
 

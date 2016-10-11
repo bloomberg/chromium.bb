@@ -14,7 +14,6 @@ import android.os.Debug;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 
 import java.io.File;
@@ -332,7 +331,8 @@ public class CronetPerfTestActivity extends Activity {
         // GET or POST to one particular URL using Cronet's asynchronous API
         private class CronetAsyncFetchTask implements Callable<Boolean> {
             // A message-queue for asynchronous tasks to post back to.
-            private final LinkedBlockingQueue<Runnable> mWorkQueue = new LinkedBlockingQueue<>();
+            private final LinkedBlockingQueue<Runnable> mWorkQueue =
+                    new LinkedBlockingQueue<Runnable>();
             private final WorkQueueExecutor mWorkQueueExecutor = new WorkQueueExecutor();
 
             private int mRemainingRequests;
@@ -351,7 +351,6 @@ public class CronetPerfTestActivity extends Activity {
                     if (mUseNetworkThread) {
                         // Post empty task so message loop exit condition is retested.
                         postToWorkQueue(new Runnable() {
-                            @Override
                             public void run() {}
                         });
                     }
@@ -359,7 +358,6 @@ public class CronetPerfTestActivity extends Activity {
                 }
                 mRemainingRequests--;
                 final Runnable completionCallback = new Runnable() {
-                    @Override
                     public void run() {
                         initiateRequest(buffer);
                     }
@@ -383,12 +381,10 @@ public class CronetPerfTestActivity extends Activity {
                     mRemainingBytes = mLength;
                 }
 
-                @Override
                 public long getLength() {
                     return mLength;
                 }
 
-                @Override
                 public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer) {
                     mBuffer.clear();
                     // Don't post more than |mLength|.
@@ -404,7 +400,6 @@ public class CronetPerfTestActivity extends Activity {
                     uploadDataSink.onReadSucceeded(false);
                 }
 
-                @Override
                 public void rewind(UploadDataSink uploadDataSink) {
                     uploadDataSink.onRewindError(new Exception("no rewinding"));
                 }
@@ -501,7 +496,7 @@ public class CronetPerfTestActivity extends Activity {
          */
         public void run() {
             final ExecutorService executor = Executors.newFixedThreadPool(mConcurrency);
-            final List<Callable<Boolean>> tasks = new ArrayList<>(mIterations);
+            final List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>(mIterations);
             startLogging();
             // Prepare list of tasks to run.
             switch (mMode) {
@@ -524,7 +519,7 @@ public class CronetPerfTestActivity extends Activity {
             }
             // Execute tasks.
             boolean success = true;
-            List<Future<Boolean>> futures = new ArrayList<>();
+            List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
             try {
                 startTimer();
                 // If possible execute directly to lessen impact of thread-pool overhead.
@@ -619,9 +614,7 @@ public class CronetPerfTestActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Initializing application context here due to lack of custom CronetPerfTestApplication.
-        ContextUtils.initApplicationContext(getApplicationContext());
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
         mConfig = getIntent().getData();
         // Execute benchmarks on another thread to avoid networking on main thread.
         new BenchmarkTask().execute();

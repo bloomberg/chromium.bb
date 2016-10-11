@@ -24,6 +24,7 @@ template("system_webview_apk_tmpl") {
     _native_lib_file =
         rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
     native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
+    extensions_to_not_compress = ".lpak,.pak,.bin,.dat"
     if (build_apk_secondary_abi && android_64bit_target_cpu) {
       secondary_abi_shared_libraries = [ "//android_webview:libwebviewchromium($android_secondary_abi_toolchain)" ]
     }

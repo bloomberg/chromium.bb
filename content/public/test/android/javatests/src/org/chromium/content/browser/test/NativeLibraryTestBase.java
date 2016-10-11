@@ -39,7 +39,8 @@ public class NativeLibraryTestBase extends InstrumentationTestCase {
     private void handleNativeInitialization(final boolean initBrowserProcess) {
         assertFalse(ThreadUtils.runningOnUiThread());
 
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX,
+                ContextUtils.getApplicationContext());
 
         try {
             ApplicationUtils.waitForLibraryDependencies(getInstrumentation());

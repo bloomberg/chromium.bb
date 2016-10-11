@@ -67,12 +67,24 @@ jinja_template("chrome_sync_shell_android_manifest") {
   ]
 }
 
+locale_pak_resources("chrome_locale_paks") {
+  sources = []
+  foreach(_locale, locales - android_chrome_omitted_locales) {
+    sources += [ "$root_out_dir/locales/$_locale.pak" ]
+  }
+
+  deps = [
+    "//chrome:packed_resources",
+  ]
+}
+
 android_resources("chrome_java_resources") {
   resource_dirs = [
     "java/res",
     "//chrome/android/java/res_chromium",
   ]
   deps = [
+    ":chrome_locale_paks",
     ":chrome_strings_grd",
     "//chrome/app:java_strings_grd",
     "//components/autofill/android:autofill_java_resources",
@@ -456,6 +468,14 @@ android_resources("chrome_public_apk_resources") {
   ]
 }
 
+# TODO(agrieve): Delete once downstream no longer references this target.
+java_group("chrome_public_apk_assets") {
+  deps = [
+    ":chrome_public_non_pak_assets",
+    ":chrome_public_pak_assets",
+  ]
+}
+
 java_group("chrome_public_non_pak_assets") {
   deps = [
     "//chrome/android/webapk/libs/runtime_library:runtime_library_assets",
@@ -472,24 +492,10 @@ android_assets("chrome_public_pak_assets") {
   disable_compression = true
 
   deps = [
-    ":chrome_public_locale_pak_assets",
     "//chrome:packed_resources",
     "//chrome/android/webapk/libs/runtime_library:runtime_library_assets",
     "//third_party/icu:icu_assets",
     "//v8:v8_external_startup_data_assets",
-  ]
-}
-
-# This target is separate from chrome_public_pak_assets because it does not
-# disable compression.
-android_assets("chrome_public_locale_pak_assets") {
-  sources = []
-  foreach(_locale, locales - android_chrome_omitted_locales) {
-    sources += [ "$root_out_dir/locales/$_locale.pak" ]
-  }
-
-  deps = [
-    "//chrome:packed_resources",
   ]
 }
 
@@ -569,21 +575,28 @@ if (current_toolchain == default_toolchain) {
     }
   }
 
-  android_assets("monochrome_pak_assets") {
-    sources = [
-      "$target_gen_dir/monochrome_paks/chrome_100_percent.pak",
-      "$target_gen_dir/monochrome_paks/resources.pak",
-    ]
+  locale_pak_resources("monochrome_locale_paks") {
+    sources = []
     foreach(_locale, locales) {
       sources += [ "$target_gen_dir/monochrome_paks/locales/$_locale.pak" ]
     }
-    disable_compression = true
 
     deps = [
       ":monochrome_paks",
     ]
   }
 }  # current_toolchain == host_toolchain
+
+android_assets("monochrome_pak_assets") {
+  sources = [
+    "$target_gen_dir/monochrome_paks/chrome_100_percent.pak",
+    "$target_gen_dir/monochrome_paks/resources.pak",
+  ]
+  deps = [
+    ":monochrome_paks",
+  ]
+  disable_compression = true
+}
 
 #
 # Only 32-bit //chrome/android/monochrome is needed, beside
@@ -640,11 +653,11 @@ template("chrome_public_apk_tmpl_shared") {
     forward_variables_from(invoker, "*")
 
     native_lib_version_rule = "//build/util:chrome_version_json"
+
     deps += [
       ":chrome_java",
+      ":chrome_public_apk_assets",
       ":chrome_public_apk_resources",
-      ":chrome_public_non_pak_assets",
-      ":chrome_public_pak_assets",
       "//base:base_java",
     ]
   }

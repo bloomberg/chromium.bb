@@ -20,7 +20,6 @@ android_apk("android_webview_apk") {
     ":android_webview_apk_assets",
     ":android_webview_apk_resources",
     "//android_webview:android_webview_java",
-    "//android_webview:locale_pak_assets",
     "//base:base_java",
     "//base:base_java_test_support",
     "//components/policy/android:policy_java_test_support",
@@ -52,6 +51,8 @@ android_apk("android_webview_apk") {
   _native_lib_file =
       rebase_path("$root_gen_dir/CHROME_VERSION.json", root_build_dir)
   native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
+
+  extensions_to_not_compress = ".dat,.bin,.pak,.lpak"
 }
 
 android_resources("android_webview_apk_resources") {

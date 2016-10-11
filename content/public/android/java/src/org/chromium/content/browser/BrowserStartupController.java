@@ -290,7 +290,7 @@ public class BrowserStartupController {
         // Normally Main.java will have kicked this off asynchronously for Chrome. But other
         // ContentView apps like tests also need them so we make sure we've extracted resources
         // here. We can still make it a little async (wait until the library is loaded).
-        ResourceExtractor resourceExtractor = ResourceExtractor.get();
+        ResourceExtractor resourceExtractor = ResourceExtractor.get(mContext);
         resourceExtractor.startExtractingResources();
 
         // This strictmode exception is to cover the case where the browser process is being started
@@ -336,7 +336,7 @@ public class BrowserStartupController {
      * Initialization needed for tests. Mainly used by content browsertests.
      */
     public void initChromiumBrowserProcessForTests() {
-        ResourceExtractor resourceExtractor = ResourceExtractor.get();
+        ResourceExtractor resourceExtractor = ResourceExtractor.get(mContext);
         resourceExtractor.startExtractingResources();
         resourceExtractor.waitForCompletion();
         nativeSetCommandLineFlags(false, null);

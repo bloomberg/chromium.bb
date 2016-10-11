@@ -16,15 +16,18 @@ import org.chromium.base.PathUtils;
 public class ContentBrowserTestsApplication extends BaseChromiumApplication {
     static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content_shell";
 
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
+    public ContentBrowserTestsApplication() {
+        super();
         ContextUtils.initApplicationContext(this);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        initializeApplicationParameters(this);
+    }
+
+    public static void initializeApplicationParameters(Context context) {
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
     }
 }
