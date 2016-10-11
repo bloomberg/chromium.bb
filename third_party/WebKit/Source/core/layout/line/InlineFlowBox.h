@@ -172,6 +172,9 @@ class InlineFlowBox : public InlineBox {
     return isHorizontal() ? boxModelObject().marginRight()
                           : boxModelObject().marginBottom();
   }
+  LayoutUnit marginLogicalWidth() const {
+    return marginLogicalLeft() + marginLogicalRight();
+  }
   int borderLogicalLeft() const {
     if (!includeLogicalLeftEdge())
       return 0;
