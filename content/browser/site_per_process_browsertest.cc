@@ -1565,14 +1565,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Tests OOPIF rendering by checking that the RWH of the iframe generates
 // OnSwapCompositorFrame message.
-#if defined(OS_ANDROID)
-// http://crbug.com/471850
-#define MAYBE_CompositorFrameSwapped DISABLED_CompositorFrameSwapped
-#else
-#define MAYBE_CompositorFrameSwapped CompositorFrameSwapped
-#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_CompositorFrameSwapped) {
+                       CompositorFrameSwapped) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(baz)"));
   NavigateToURL(shell(), main_url);
