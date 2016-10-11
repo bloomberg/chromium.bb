@@ -28,14 +28,7 @@ static const char kImageCaptureHtmlFile[] = "/media/image_capture_test.html";
 // capture resolution preventing the test from timeout https://crbug.com/634811.
 static struct TargetCamera {
   bool use_fake;
-} const kTestParameters[] = {
-#if defined(OS_ANDROID)
-    {true},
-    {false}
-#else
-    {true}
-#endif
-};
+} const kTestParameters[] = {{true}};
 
 }  // namespace
 
