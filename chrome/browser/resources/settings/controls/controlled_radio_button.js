@@ -21,6 +21,10 @@ Polymer({
     },
   },
 
+  listeners: {
+    'focus': 'onFocus_',
+  },
+
   /**
    * @return {boolean} Whether the button is disabled.
    * @private
@@ -48,5 +52,10 @@ Polymer({
     // Disallow <controlled-radio-button on-tap="..."> when controlled.
     e.preventDefault();
     e.stopPropagation();
+  },
+
+  /** Focuses the internal radio button when the row is selected. */
+  onFocus_: function() {
+    this.$.radioButton.focus();
   },
 });
