@@ -172,14 +172,23 @@ public class ResourceExtractor {
         return sInstance;
     }
 
+    private static boolean isPakFileForLanguage(String pakFileName, String language) {
+        if (pakFileName.length() <= language.length() || !pakFileName.startsWith(language)) {
+            return false;
+        }
+        char c = pakFileName.charAt(language.length());
+        return c == '.' || c == '-';
+    }
+
     private static String[] detectFilesToExtract() {
         String language = LocaleUtils.getLanguage(Locale.getDefault());
         // Currenty (Oct 2016), this array can be as big as 4 entries, so using a capacity
         // that allows a bit of growth, but is still in the right ballpark..
         ArrayList<String> activeLocalePakFiles = new ArrayList<String>(6);
-        for (String locale : BuildConfig.COMPRESSED_LOCALES) {
-            if (locale.startsWith(language)) {
-                activeLocalePakFiles.add(locale + ".pak");
+        for (String pakFileName : BuildConfig.COMPRESSED_ASSETS) {
+            if (isPakFileForLanguage(pakFileName, language)
+                    || isPakFileForLanguage(pakFileName, FALLBACK_LOCALE)) {
+                activeLocalePakFiles.add(pakFileName);
             }
         }
         return activeLocalePakFiles.toArray(new String[activeLocalePakFiles.size()]);

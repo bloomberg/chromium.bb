@@ -8,6 +8,7 @@ import org.chromium.base.BuildConfig;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
+import java.io.File;
 import java.util.Arrays;
 
 /**
@@ -16,10 +17,13 @@ import java.util.Arrays;
  */
 @JNINamespace("ui")
 public class ResourceBundle {
+    private static final String ASSET_DIR = "assets";
+
     @CalledByNative
     private static String getLocalePakResourcePath(String locale) {
-        if (Arrays.binarySearch(BuildConfig.UNCOMPRESSED_LOCALES, locale) >= 0) {
-            return "assets/" + locale + ".pak";
+        String fileName = locale + ".pak";
+        if (Arrays.binarySearch(BuildConfig.UNCOMPRESSED_ASSETS, fileName) >= 0) {
+            return new File(ASSET_DIR, fileName).toString();
         }
         return null;
     }
