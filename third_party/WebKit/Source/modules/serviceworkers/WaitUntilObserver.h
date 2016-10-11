@@ -50,6 +50,8 @@ class MODULES_EXPORT WaitUntilObserver final
   // These methods can be called when the lifecycle of ExtendableEvent
   // observed by this WaitUntilObserver should be extended by other reason
   // than ExtendableEvent.waitUntil.
+  // Note: There is no need to call decrementPendingActivity() after the context
+  // is being destroyed.
   void incrementPendingActivity();
   void decrementPendingActivity();
 

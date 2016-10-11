@@ -188,7 +188,6 @@ void RespondWithObserver::contextDestroyed() {
   ContextLifecycleObserver::contextDestroyed();
   if (m_observer) {
     DCHECK_EQ(Pending, m_state);
-    m_observer->decrementPendingActivity();
     m_observer.clear();
   }
   m_state = Done;
