@@ -160,24 +160,6 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 }
 
 - (NSImage*)imageForHoverState:(HoverState)hoverState {
-  int imageID = IDR_CLOSE_1;
-
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    switch (hoverState) {
-      case kHoverStateNone:
-        imageID = IDR_CLOSE_1;
-        break;
-      case kHoverStateMouseOver:
-        imageID = IDR_CLOSE_1_H;
-        break;
-      case kHoverStateMouseDown:
-        imageID = IDR_CLOSE_1_P;
-        break;
-    }
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    return bundle.GetNativeImageNamed(imageID).ToNSImage();
-  }
-
   gfx::VectorIconId vectorIconID;
   SkColor vectorIconColor = gfx::kPlaceholderColor;
   TabView* tabView = [self tabView];

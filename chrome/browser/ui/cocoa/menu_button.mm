@@ -160,12 +160,10 @@
   frame.origin.x -= 2.0;
   frame.size.height -= 19.0 - NSHeight(frame);
 
-  // The button's icon has a different relationship to its bounds in
-  // Material Design, so have to adjust the menu location by that delta.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    frame.origin.x -= [ToolbarController materialDesignButtonInset];
-    frame.origin.y += [ToolbarController materialDesignButtonInset];
-  }
+  // The button's icon has a different relationship to its bounds, so have to
+  // adjust the menu location by that delta.
+  frame.origin.x -= [ToolbarController materialDesignButtonInset];
+  frame.origin.y += [ToolbarController materialDesignButtonInset];
 
   // Make our pop-up button cell and set things up. This is, as of 10.5, the
   // official Apple-recommended hack. Later, perhaps |-[NSMenu

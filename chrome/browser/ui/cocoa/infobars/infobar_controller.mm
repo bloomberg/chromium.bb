@@ -73,16 +73,14 @@
 
   [self addAdditionalControls];
 
-  // With Material Design infobars are drawn a little taller, so have to move
-  // its controls to keep them centered.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    CGFloat heightDelta = InfoBarContainerDelegate::kDefaultBarTargetHeightMd -
-        InfoBarContainerDelegate::kDefaultBarTargetHeight;
-    for (NSView* nextSubview in [infoBarView_ subviews]) {
-      NSRect frame = [nextSubview frame];
-      frame.origin.y += heightDelta / 2;
-      [nextSubview setFrame:frame];
-    }
+  // Infobars are drawn a little taller, so have to move its controls to keep
+  // them centered.
+  CGFloat heightDelta = InfoBarContainerDelegate::kDefaultBarTargetHeightMd -
+                        InfoBarContainerDelegate::kDefaultBarTargetHeight;
+  for (NSView* nextSubview in [infoBarView_ subviews]) {
+    NSRect frame = [nextSubview frame];
+    frame.origin.y += heightDelta / 2;
+    [nextSubview setFrame:frame];
   }
 
   [infoBarView_ setInfobarType:[self delegate]->GetInfoBarType()];

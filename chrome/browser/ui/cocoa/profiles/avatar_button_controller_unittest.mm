@@ -108,15 +108,8 @@ TEST_F(AvatarButtonControllerTest, ProfileButtonWithErrorShown) {
   EXPECT_NSEQ(@"Person 1", [button() title]);
 
   // If the button has an authentication error, it should display an error
-  // icon. If in the MD, the icon size should be 16.
-  int errorWidth =
-      ui::MaterialDesignController::IsModeMaterial()
-          ? 16
-          : ui::ResourceBundle::GetSharedInstance()
-                .GetNativeImageNamed(IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR)
-                .Width();
-
-  EXPECT_EQ(errorWidth, [button() image].size.width);
+  // icon.
+  EXPECT_EQ(16, [button() image].size.width);
 }
 
 TEST_F(AvatarButtonControllerTest, DoubleOpen) {

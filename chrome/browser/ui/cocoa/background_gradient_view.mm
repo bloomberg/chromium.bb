@@ -94,16 +94,10 @@
   // anyway).
   if ([window parentWindow])
     window = [window parentWindow];
-  BOOL isActive = [window isMainWindow];
 
   const ui::ThemeProvider* themeProvider = [window themeProvider];
   if (!themeProvider)
     return [NSColor blackColor];
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return themeProvider->GetNSColor(
-        isActive ? ThemeProperties::COLOR_TOOLBAR_STROKE :
-                   ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE);
-  }
   return themeProvider->GetNSColor(
              ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
 }

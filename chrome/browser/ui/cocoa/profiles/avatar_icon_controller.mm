@@ -40,12 +40,8 @@
     [container setWantsLayer:YES];
     [self setView:container];
 
-    bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
     NSRect frameRect = NSMakeRect(5, 5, profiles::kAvatarIconWidth,
         profiles::kAvatarIconHeight);
-    if (!isModeMaterial) {
-      frameRect.origin = NSZeroPoint;
-    }
     button_.reset([[NSButton alloc] initWithFrame:frameRect]);
     NSButtonCell* cell = [button_ cell];
     [button_ setButtonType:NSMomentaryLightButton];
@@ -80,15 +76,9 @@
         l10n_util::GetNSString(IDS_PROFILES_BUBBLE_ACCESSIBLE_DESCRIPTION)
                            forAttribute:NSAccessibilityDescriptionAttribute];
 
-    if (isModeMaterial) {
-      NSImage* icon = NSImageFromImageSkia(gfx::CreateVectorIcon(
-          gfx::VectorIconId::INCOGNITO, 24, SK_ColorWHITE));
-      [button_ setImage:icon];
-    } else {
-      NSImage* icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          IDR_OTR_ICON).ToNSImage();
-      [button_ setImage:[self compositeImageWithShadow:icon]];
-    }
+    NSImage* icon = NSImageFromImageSkia(
+        gfx::CreateVectorIcon(gfx::VectorIconId::INCOGNITO, 24, SK_ColorWHITE));
+    [button_ setImage:icon];
     [button_ setEnabled:NO];
 
     [[self view] addSubview:button_];

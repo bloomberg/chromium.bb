@@ -276,14 +276,6 @@ const CGFloat kWindowGradientHeight = 24.0;
       themeImageColor = themeProvider->GetNSImageColorNamed(themeImageID);
   }
 
-  // If not Material Design, use a gradient if Incognito and no theme image.
-  NSGradient* gradient = nil;
-  if (!ui::MaterialDesignController::IsModeMaterial() &&
-      !themeImageColor && incognito)
-    gradient = themeProvider->GetNSGradient(
-        active ? ThemeProperties::GRADIENT_FRAME_INCOGNITO :
-                 ThemeProperties::GRADIENT_FRAME_INCOGNITO_INACTIVE);
-
   BOOL themed = NO;
   if (themeImageColor) {
     // Default to replacing any existing pixels with the theme image, but if
@@ -302,12 +294,6 @@ const CGFloat kWindowGradientHeight = 24.0;
 
     [themeImageColor set];
     NSRectFillUsingOperation(dirtyRect, operation);
-    themed = YES;
-  } else if (gradient) {
-    NSPoint startPoint = NSMakePoint(NSMinX(bounds), NSMaxY(bounds));
-    NSPoint endPoint = startPoint;
-    endPoint.y -= kBrowserFrameViewPaintHeight;
-    [gradient drawFromPoint:startPoint toPoint:endPoint options:0];
     themed = YES;
   }
 

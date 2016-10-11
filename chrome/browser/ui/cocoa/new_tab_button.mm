@@ -34,10 +34,6 @@ const CGFloat k20PercentAlpha = 0.2;
 const CGFloat k25PercentAlpha = 0.25;
 
 NSImage* GetMaskImageFromCell(NewTabButtonCell* aCell) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    return bundle.GetNativeImageNamed(IDR_NEWTAB_BUTTON_MASK).ToNSImage();
-  }
   return [aCell imageForState:image_button_cell::kDefaultState view:nil];
 }
 
@@ -250,44 +246,6 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 - (void)setImages {
   const ui::ThemeProvider* theme = [[self window] themeProvider];
   if (!theme) {
-    return;
-  }
-
-  // The old way of doing things.
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    NSImage* mask = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON_MASK).ToNSImage();
-    NSImage* normal = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON).ToNSImage();
-    NSImage* hover = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON_H).ToNSImage();
-    NSImage* pressed = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON_P).ToNSImage();
-
-    NSImage* foreground = ApplyMask(
-        theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND), mask);
-
-    [[self cell] setImage:Overlay(foreground, normal, 1.0)
-                    forButtonState:image_button_cell::kDefaultState];
-    [[self cell] setImage:Overlay(foreground, hover, 1.0)
-                    forButtonState:image_button_cell::kHoverState];
-    [[self cell] setImage:Overlay(foreground, pressed, 1.0)
-                    forButtonState:image_button_cell::kPressedState];
-
-    // IDR_THEME_TAB_BACKGROUND_INACTIVE is only used with the default theme.
-    if (theme->UsingSystemTheme()) {
-      const CGFloat alpha = tabs::kImageNoFocusAlpha;
-      NSImage* background = ApplyMask(
-          theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND_INACTIVE), mask);
-      [[self cell] setImage:Overlay(background, normal, alpha)
-                      forButtonState:
-                          image_button_cell::kDefaultStateBackground];
-      [[self cell] setImage:Overlay(background, hover, alpha)
-                      forButtonState:image_button_cell::kHoverStateBackground];
-    } else {
-      [[self cell] setImage:nil
-                      forButtonState:
-                          image_button_cell::kDefaultStateBackground];
-      [[self cell] setImage:nil
-                      forButtonState:image_button_cell::kHoverStateBackground];
-    }
     return;
   }
 

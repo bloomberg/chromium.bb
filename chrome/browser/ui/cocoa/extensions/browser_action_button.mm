@@ -213,16 +213,6 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
         accessibilitySetOverrideValue:base::SysUTF16ToNSString(
             viewController_->GetAccessibleName([controller currentWebContents]))
         forAttribute:NSAccessibilityDescriptionAttribute];
-    if (!ui::MaterialDesignController::IsModeMaterial()) {
-      [cell setImageID:IDR_BROWSER_ACTION
-        forButtonState:image_button_cell::kDefaultState];
-      [cell setImageID:IDR_BROWSER_ACTION_H
-        forButtonState:image_button_cell::kHoverState];
-      [cell setImageID:IDR_BROWSER_ACTION_P
-        forButtonState:image_button_cell::kPressedState];
-      [cell setImageID:IDR_BROWSER_ACTION
-        forButtonState:image_button_cell::kDisabledState];
-    }
     [self setTitle:@""];
     [self setButtonType:NSMomentaryChangeButton];
     [self setShowsBorderOnlyWhileMouseInside:YES];

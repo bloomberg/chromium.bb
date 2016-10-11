@@ -10,7 +10,7 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -34,13 +34,8 @@ NSImage* FaviconForWebContents(content::WebContents* contents, SkColor color) {
       return image;
   }
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    return NSImageFromImageSkia(gfx::CreateVectorIcon(
-        gfx::VectorIconId::DEFAULT_FAVICON, kVectorIconSize, color));
-  }
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToNSImage();
+  return NSImageFromImageSkia(gfx::CreateVectorIcon(
+      gfx::VectorIconId::DEFAULT_FAVICON, kVectorIconSize, color));
 }
 
 }  // namespace mac

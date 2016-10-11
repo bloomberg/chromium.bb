@@ -20,10 +20,6 @@ namespace {
 
 CGFloat GetPatternVerticalOffsetWithTabStrip(bool tabStripVisible) {
   // Without tab strip, offset an extra pixel (determined by experimentation).
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return tabStripVisible ? 2 : 3;
-  }
-
   return tabStripVisible ? -1 : 0;
 }
 
