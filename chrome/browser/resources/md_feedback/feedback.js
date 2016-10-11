@@ -13,8 +13,8 @@ Feedback.UI = class {
   /**
    * Populates the feedback form with data.
    *
-   * @param {{email: string|undefined,
-   *          url: string|undefined}} data
+   * @param {{email: (string|undefined),
+   *          url: (string|undefined)}} data
    * Parameters in data:
    *   email - user's email, if available.
    *   url - url of the tab the user was on before triggering feedback.
