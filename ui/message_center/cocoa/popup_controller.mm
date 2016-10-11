@@ -31,7 +31,7 @@
 
 // Window Subclass /////////////////////////////////////////////////////////////
 
-@interface MCPopupWindow : NSWindow {
+@interface MCPopupWindow : NSPanel {
   // The cumulative X and Y scrollingDeltas since the -scrollWheel: event began.
   NSPoint totalScrollDelta_;
 }
@@ -98,27 +98,23 @@
 - (id)initWithNotification:(const message_center::Notification*)notification
              messageCenter:(message_center::MessageCenter*)messageCenter
            popupCollection:(MCPopupCollection*)popupCollection {
-  base::scoped_nsobject<MCPopupWindow> window(
-      [[MCPopupWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
-                                       styleMask:NSBorderlessWindowMask
-                                         backing:NSBackingStoreBuffered
-                                           defer:NO]);
+  base::scoped_nsobject<MCPopupWindow> window([[MCPopupWindow alloc]
+      initWithContentRect:ui::kWindowSizeDeterminedLater
+                styleMask:NSNonactivatingPanelMask
+                  backing:NSBackingStoreBuffered
+                    defer:NO]);
   if ((self = [super initWithWindow:window])) {
     messageCenter_ = messageCenter;
     popupCollection_ = popupCollection;
     notificationController_.reset(
         [[MCNotificationController alloc] initWithNotification:notification
                                                  messageCenter:messageCenter_]);
-    isClosing_ = NO;
     bounds_ = [[notificationController_ view] frame];
 
-    [window setReleasedWhenClosed:NO];
-
-    [window setLevel:NSFloatingWindowLevel];
-    [window setExcludedFromWindowsMenu:YES];
+    [window setFloatingPanel:YES];
+    [window setBecomesKeyOnlyIfNeeded:YES];
     [window
         setCollectionBehavior:NSWindowCollectionBehaviorCanJoinAllSpaces |
-                              NSWindowCollectionBehaviorIgnoresCycle |
                               NSWindowCollectionBehaviorFullScreenAuxiliary];
 
     [window setHasShadow:YES];
