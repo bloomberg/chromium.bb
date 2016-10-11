@@ -137,8 +137,6 @@ ChromeAPIPermissions::GetAllPermissions() const {
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kMediaRouterPrivate, "mediaRouterPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
-      {APIPermission::kMetricsPrivate, "metricsPrivate",
-       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kMusicManagerPrivate, "musicManagerPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kPreferencesPrivate, "preferencesPrivate",

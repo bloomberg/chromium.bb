@@ -27,6 +27,8 @@ def _CheckExterns(input_api, output_api):
 
   api_pairs = {
     join(api_root, 'bluetooth.idl'): join(externs_root, 'bluetooth.js'),
+    join(api_root, 'metrics_private.json'):
+        join(externs_root, 'metrics_private.js'),
     # TODO(rdevlin.cronin): Add more!
   }
 

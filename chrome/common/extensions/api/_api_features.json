@@ -582,56 +582,6 @@
     "dependencies": ["permission:mediaPlayerPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "metricsPrivate": [{
-    "dependencies": ["permission:metricsPrivate"],
-    "contexts": ["blessed_extension"],
-    "default_parent": true
-  }, {
-    "channel": "trunk",
-    "contexts": ["webui"],
-    "matches": [
-      "chrome://md-settings/*",
-      "chrome://settings/*",
-      "chrome://settings-frame/*"
-    ]
-  }],
-  "metricsPrivate.getIsCrashReportingEnabled": {
-    "whitelist": [
-      // This function inherits the extension restrictions of metricsPrivate,
-      // but also requires whitelisting. New uses of this function should get
-      // /tools/metrics/OWNERS approval of the usage before adding entries
-      // below. See crbug.com/374199.
-      "2FC374607C2DF285634B67C64A2E356C607091C3",  // Quickoffice
-      "3727DD3E564B6055387425027AD74C58784ACC15",  // Quickoffice internal
-      "12E618C3C6E97495AAECF2AC12DEB082353241C6",  // QO component extension
-      "3727DD3E564B6055387425027AD74C58784ACC15",  // Editor
-      "C41AD9DCD670210295614257EF8C9945AD68D86E",  // Google Now
-      // TODO(michaelpg): Determine whether these three extensions (D5736E4,
-      // D57DE39, 3F65507) require this feature: crbug.com/652433.
-      "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2",  // http://crbug.com/312900.
-      "D57DE394F36DC1C3220E7604C575D29C51A6C495",  // http://crbug.com/319444.
-      "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9",  // http://crbug.com/371562.
-      "D7986543275120831B39EF28D1327552FC343960",  // http://crbug.com/378067
-      "A291B26E088FA6BA53FFD72F0916F06EBA7C585A",  // http://crbug.com/378067
-      "62CCAAD339E6451BBF97C4BBDF758E934A05AD0B",  // Hotword triggering
-      "07BD6A765FFC289FF755D7CAB2893A40EC337FEC",  // http://crbug.com/456214
-      "896B85CC7E913E11C34892C1425A093C0701D386",  // http://crbug.com/456214
-      "11A01C82EF355E674E4F9728A801F5C3CB40D83F",  // http://crbug.com/456214
-      "F410C88469990EE7947450311D24B8AF2ADB2595",  // http://crbug.com/456214
-      "226CF815E39A363090A1E547D53063472B8279FA",  // http://crbug.com/574889
-      "C17CD9E6868D7B9C67926E0EC612EA25C768418F",  // http://crbug.com/504940
-      "A45DABDB47A31CC812E5490AB748C7D05E2D32E9",  // http://crbug.com/504940
-      "BFEE2E3B80BE21A645E63E9346DFC383E7CB3BDA",  // http://crbug.com/504940
-      "63ED55E43214C211F82122ED56407FF1A807F2A3",  // http://crbug.com/504940
-      // TODO (ntang) Remove the following 2 hashes by 12/31/2017.
-      "B620CF4203315F9F2E046EDED22C7571A935958D",  // http://crbug.com/510270
-      "B206D8716769728278D2D300349C6CB7D7DE2EF9",  // http://crbug.com/510270
-      "2B6C6A4A5940017146F3E58B7F90116206E84685",  // http://crbug.com/642141
-      "B6C2EFAB3EC3BF6EF03701408B6B09A67B2D0069",  // http://crbug.com/642141
-      "96FF2FFA5C9173C76D47184B3E86D267B37781DE",  // http://crbug.com/642141
-      "0136FCB13DB29FD5CD442F56E59E53B61F1DF96F"   // http://crbug.com/642141
-    ]
-  },
   "mdns": {
     "dependencies": ["permission:mdns"],
     "contexts": ["blessed_extension"]

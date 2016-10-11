@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/metrics_private/metrics_private_api.h"
+#include "extensions/browser/api/metrics_private/metrics_private_api.h"
 
 #include <limits.h>
 
@@ -12,12 +12,11 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "chrome/common/extensions/api/metrics_private.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/metrics_private/metrics_private_delegate.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/api/metrics_private.h"
 
 namespace extensions {
 
@@ -35,15 +34,16 @@ namespace RecordLongTime = api::metrics_private::RecordLongTime;
 
 namespace {
 
-const size_t kMaxBuckets = 10000; // We don't ever want more than these many
-                                  // buckets; there is no real need for them
-                                  // and would cause crazy memory usage
-} // namespace
+const size_t kMaxBuckets = 10000;  // We don't ever want more than these many
+                                   // buckets; there is no real need for them
+                                   // and would cause crazy memory usage
+}  // namespace
 
 ExtensionFunction::ResponseAction
 MetricsPrivateGetIsCrashReportingEnabledFunction::Run() {
   MetricsPrivateDelegate* delegate =
       ExtensionsAPIClient::Get()->GetMetricsPrivateDelegate();
+
   return RespondNow(OneArgument(base::MakeUnique<base::FundamentalValue>(
       delegate && delegate->IsCrashReportingEnabled())));
 }
@@ -125,8 +125,8 @@ ExtensionFunction::ResponseAction MetricsPrivateRecordValueFunction::Run() {
   // Get the histogram parameters from the metric type object.
   std::string type = api::metrics_private::ToString(params->metric.type);
 
-  base::HistogramType histogram_type(type == "histogram-linear" ?
-      base::LINEAR_HISTOGRAM : base::HISTOGRAM);
+  base::HistogramType histogram_type(
+      type == "histogram-linear" ? base::LINEAR_HISTOGRAM : base::HISTOGRAM);
   RecordValue(params->metric.metric_name, histogram_type, params->metric.min,
               params->metric.max, params->metric.buckets, params->value);
   return RespondNow(NoArguments());
@@ -212,4 +212,4 @@ ExtensionFunction::ResponseAction MetricsPrivateRecordLongTimeFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-} // namespace extensions
+}  // namespace extensions

@@ -32,7 +32,6 @@ def _CheckExterns(input_api, output_api):
     'command_line_private.json': 'command_line_private.js',
     'file_manager_private.idl': 'file_manager_private.js',
     'language_settings_private.idl': 'language_settings_private.js',
-    'metrics_private.json': 'metrics_private.js',
     'passwords_private.idl': 'passwords_private.js',
     'system_private.json': 'system_private.js',
     'users_private.idl': 'users_private.js',
