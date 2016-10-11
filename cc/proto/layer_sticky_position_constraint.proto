@@ -4,6 +4,7 @@
 
 syntax = "proto2";
 
+import "point.proto";
 import "rect.proto";
 import "transform.proto";
 
@@ -23,6 +24,7 @@ message LayerStickyPositionConstraint {
   optional float top_offset = 8;
   optional float bottom_offset = 9;
 
+  optional Point parent_relative_sticky_box_offset = 12;
   optional Rect scroll_container_relative_sticky_box_rect = 10;
   optional Rect scroll_container_relative_containing_block_rect = 11;
 };

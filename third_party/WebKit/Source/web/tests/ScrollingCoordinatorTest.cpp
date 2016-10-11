@@ -34,6 +34,8 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -325,6 +327,112 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
     ASSERT_TRUE(constraint.isFixedPosition);
     ASSERT_TRUE(constraint.isFixedToRightEdge &&
                 constraint.isFixedToBottomEdge);
+  }
+}
+
+TEST_F(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
+  registerMockedHttpURLLoad("sticky-position.html");
+  navigateTo(m_baseURL + "sticky-position.html");
+  forceFullCompositingUpdate();
+
+  // Sticky position should not fall back to main thread scrolling.
+  WebLayer* rootScrollLayer = getRootScrollLayer();
+  EXPECT_FALSE(rootScrollLayer->shouldScrollOnMainThread());
+
+  Document* document = frame()->document();
+  {
+    Element* element = document->getElementById("div-tl");
+    ASSERT_TRUE(element);
+    WebLayer* layer = webLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    WebLayerStickyPositionConstraint constraint =
+        layer->stickyPositionConstraint();
+    ASSERT_TRUE(constraint.isSticky);
+    EXPECT_TRUE(constraint.isAnchoredTop && constraint.isAnchoredLeft &&
+                !constraint.isAnchoredRight && !constraint.isAnchoredBottom);
+    EXPECT_EQ(1.f, constraint.topOffset);
+    EXPECT_EQ(1.f, constraint.leftOffset);
+    EXPECT_EQ(IntRect(100, 100, 10, 10),
+              IntRect(constraint.scrollContainerRelativeStickyBoxRect));
+    EXPECT_EQ(IntRect(100, 100, 200, 200),
+              IntRect(constraint.scrollContainerRelativeContainingBlockRect));
+    EXPECT_EQ(IntPoint(100, 100),
+              IntPoint(constraint.parentRelativeStickyBoxOffset));
+  }
+  {
+    Element* element = document->getElementById("div-tr");
+    ASSERT_TRUE(element);
+    WebLayer* layer = webLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    WebLayerStickyPositionConstraint constraint =
+        layer->stickyPositionConstraint();
+    ASSERT_TRUE(constraint.isSticky);
+    EXPECT_TRUE(constraint.isAnchoredTop && !constraint.isAnchoredLeft &&
+                constraint.isAnchoredRight && !constraint.isAnchoredBottom);
+  }
+  {
+    Element* element = document->getElementById("div-bl");
+    ASSERT_TRUE(element);
+    WebLayer* layer = webLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    WebLayerStickyPositionConstraint constraint =
+        layer->stickyPositionConstraint();
+    ASSERT_TRUE(constraint.isSticky);
+    EXPECT_TRUE(!constraint.isAnchoredTop && constraint.isAnchoredLeft &&
+                !constraint.isAnchoredRight && constraint.isAnchoredBottom);
+  }
+  {
+    Element* element = document->getElementById("div-br");
+    ASSERT_TRUE(element);
+    WebLayer* layer = webLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    WebLayerStickyPositionConstraint constraint =
+        layer->stickyPositionConstraint();
+    ASSERT_TRUE(constraint.isSticky);
+    EXPECT_TRUE(!constraint.isAnchoredTop && !constraint.isAnchoredLeft &&
+                constraint.isAnchoredRight && constraint.isAnchoredBottom);
+  }
+  {
+    Element* element = document->getElementById("span-tl");
+    ASSERT_TRUE(element);
+    WebLayer* layer = webLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    WebLayerStickyPositionConstraint constraint =
+        layer->stickyPositionConstraint();
+    ASSERT_TRUE(constraint.isSticky);
+    EXPECT_TRUE(constraint.isAnchoredTop && constraint.isAnchoredLeft &&
+                !constraint.isAnchoredRight && !constraint.isAnchoredBottom);
+  }
+  {
+    Element* element = document->getElementById("span-tlbr");
+    ASSERT_TRUE(element);
+    WebLayer* layer = webLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    WebLayerStickyPositionConstraint constraint =
+        layer->stickyPositionConstraint();
+    ASSERT_TRUE(constraint.isSticky);
+    EXPECT_TRUE(constraint.isAnchoredTop && constraint.isAnchoredLeft &&
+                constraint.isAnchoredRight && constraint.isAnchoredBottom);
+    EXPECT_EQ(1.f, constraint.topOffset);
+    EXPECT_EQ(1.f, constraint.leftOffset);
+    EXPECT_EQ(1.f, constraint.rightOffset);
+    EXPECT_EQ(1.f, constraint.bottomOffset);
+  }
+  {
+    Element* element = document->getElementById("composited-top");
+    ASSERT_TRUE(element);
+    WebLayer* layer = webLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    WebLayerStickyPositionConstraint constraint =
+        layer->stickyPositionConstraint();
+    ASSERT_TRUE(constraint.isSticky);
+    EXPECT_TRUE(constraint.isAnchoredTop);
+    EXPECT_EQ(IntRect(100, 110, 10, 10),
+              IntRect(constraint.scrollContainerRelativeStickyBoxRect));
+    EXPECT_EQ(IntRect(100, 100, 200, 200),
+              IntRect(constraint.scrollContainerRelativeContainingBlockRect));
+    EXPECT_EQ(IntPoint(0, 10),
+              IntPoint(constraint.parentRelativeStickyBoxOffset));
   }
 }
 

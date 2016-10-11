@@ -26,6 +26,9 @@
 #ifndef WebLayerStickyPositionConstraint_h
 #define WebLayerStickyPositionConstraint_h
 
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebRect.h"
+
 namespace blink {
 
 // TODO(flackr): Combine with WebLayerPositionConstraint.
@@ -46,6 +49,10 @@ struct WebLayerStickyPositionConstraint {
   float rightOffset;
   float topOffset;
   float bottomOffset;
+
+  // This is the layout position of the sticky element before it has been
+  // shifted relative to the enclosing composited layer.
+  WebPoint parentRelativeStickyBoxOffset;
 
   // The layout rectangle of the sticky element before it has been shifted
   // to stick.

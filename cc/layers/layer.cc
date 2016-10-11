@@ -586,7 +586,7 @@ void Layer::SetPosition(const gfx::PointF& position) {
               transform_tree_index());
       sticky_data->main_thread_offset =
           position.OffsetFromOrigin() -
-          sticky_data->constraints.scroll_container_relative_sticky_box_rect
+          sticky_data->constraints.parent_relative_sticky_box_offset
               .OffsetFromOrigin();
     }
     transform_node->needs_local_transform_update = true;

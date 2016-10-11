@@ -304,6 +304,17 @@ void CompositedLayerMapping::updateStickyConstraints(
     const StickyPositionScrollingConstraints& constraints =
         ancestorOverflowLayer->getScrollableArea()->stickyConstraintsMap().get(
             &m_owningLayer);
+
+    // Find the layout offset of the unshifted sticky box within its enclosing
+    // layer.
+    LayoutPoint enclosingLayerOffset;
+    m_owningLayer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf)
+        ->convertToLayerCoords(m_owningLayer.ancestorOverflowLayer(),
+                               enclosingLayerOffset);
+    FloatPoint stickyBoxOffset =
+        constraints.scrollContainerRelativeStickyBoxRect().location();
+    stickyBoxOffset.moveBy(FloatPoint(-enclosingLayerOffset));
+
     webConstraint.isSticky = true;
     webConstraint.isAnchoredLeft =
         constraints.anchorEdges() &
@@ -321,6 +332,8 @@ void CompositedLayerMapping::updateStickyConstraints(
     webConstraint.rightOffset = constraints.rightOffset();
     webConstraint.topOffset = constraints.topOffset();
     webConstraint.bottomOffset = constraints.bottomOffset();
+    webConstraint.parentRelativeStickyBoxOffset =
+        roundedIntPoint(stickyBoxOffset);
     webConstraint.scrollContainerRelativeStickyBoxRect =
         enclosingIntRect(constraints.scrollContainerRelativeStickyBoxRect());
     webConstraint.scrollContainerRelativeContainingBlockRect = enclosingIntRect(

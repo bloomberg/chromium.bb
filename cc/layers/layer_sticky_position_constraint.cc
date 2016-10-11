@@ -30,6 +30,8 @@ LayerStickyPositionConstraint::LayerStickyPositionConstraint(
       right_offset(other.right_offset),
       top_offset(other.top_offset),
       bottom_offset(other.bottom_offset),
+      parent_relative_sticky_box_offset(
+          other.parent_relative_sticky_box_offset),
       scroll_container_relative_sticky_box_rect(
           other.scroll_container_relative_sticky_box_rect),
       scroll_container_relative_containing_block_rect(
@@ -46,6 +48,8 @@ void LayerStickyPositionConstraint::ToProtobuf(
   proto->set_right_offset(right_offset);
   proto->set_top_offset(top_offset);
   proto->set_bottom_offset(bottom_offset);
+  PointToProto(parent_relative_sticky_box_offset,
+               proto->mutable_parent_relative_sticky_box_offset());
   RectToProto(scroll_container_relative_sticky_box_rect,
               proto->mutable_scroll_container_relative_sticky_box_rect());
   RectToProto(scroll_container_relative_containing_block_rect,
@@ -63,6 +67,8 @@ void LayerStickyPositionConstraint::FromProtobuf(
   right_offset = proto.right_offset();
   top_offset = proto.top_offset();
   bottom_offset = proto.bottom_offset();
+  parent_relative_sticky_box_offset =
+      ProtoToPoint(proto.parent_relative_sticky_box_offset());
   scroll_container_relative_sticky_box_rect =
       ProtoToRect(proto.scroll_container_relative_sticky_box_rect());
   scroll_container_relative_containing_block_rect =
@@ -81,6 +87,8 @@ bool LayerStickyPositionConstraint::operator==(
          left_offset == other.left_offset &&
          right_offset == other.right_offset && top_offset == other.top_offset &&
          bottom_offset == other.bottom_offset &&
+         parent_relative_sticky_box_offset ==
+             other.parent_relative_sticky_box_offset &&
          scroll_container_relative_sticky_box_rect ==
              other.scroll_container_relative_sticky_box_rect &&
          scroll_container_relative_containing_block_rect ==

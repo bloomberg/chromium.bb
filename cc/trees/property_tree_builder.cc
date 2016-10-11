@@ -699,7 +699,7 @@ bool AddTransformNodeIfNeeded(
     sticky_data->scroll_ancestor = GetScrollParentId(data_from_ancestor, layer);
     sticky_data->main_thread_offset =
         layer->position().OffsetFromOrigin() -
-        sticky_data->constraints.scroll_container_relative_sticky_box_rect
+        sticky_data->constraints.parent_relative_sticky_box_offset
             .OffsetFromOrigin();
   }
 

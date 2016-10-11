@@ -372,6 +372,8 @@ ToWebLayerStickyPositionConstraint(
   web_constraint.rightOffset = constraint.right_offset;
   web_constraint.topOffset = constraint.top_offset;
   web_constraint.bottomOffset = constraint.bottom_offset;
+  web_constraint.parentRelativeStickyBoxOffset =
+      constraint.parent_relative_sticky_box_offset;
   web_constraint.scrollContainerRelativeStickyBoxRect =
       constraint.scroll_container_relative_sticky_box_rect;
   web_constraint.scrollContainerRelativeContainingBlockRect =
@@ -390,6 +392,8 @@ static cc::LayerStickyPositionConstraint ToStickyPositionConstraint(
   constraint.right_offset = web_constraint.rightOffset;
   constraint.top_offset = web_constraint.topOffset;
   constraint.bottom_offset = web_constraint.bottomOffset;
+  constraint.parent_relative_sticky_box_offset =
+      web_constraint.parentRelativeStickyBoxOffset;
   constraint.scroll_container_relative_sticky_box_rect =
       web_constraint.scrollContainerRelativeStickyBoxRect;
   constraint.scroll_container_relative_containing_block_rect =
