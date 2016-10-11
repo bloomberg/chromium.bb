@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -56,15 +57,13 @@ using bookmarks::BookmarkNode;
 
 namespace {
 
-// History task which runs all pending tasks on the history thread and
-// signals when the tasks have completed.
-class HistoryEmptyTask : public history::HistoryDBTask {
+// History task which signals an event.
+class SignalEventTask : public history::HistoryDBTask {
  public:
-  explicit HistoryEmptyTask(base::WaitableEvent* done) : done_(done) {}
+  explicit SignalEventTask(base::WaitableEvent* done) : done_(done) {}
 
   bool RunOnDBThread(history::HistoryBackend* backend,
                      history::HistoryDatabase* db) override {
-    content::RunAllPendingInMessageLoop();
     done_->Signal();
     return true;
   }
@@ -313,9 +312,10 @@ void WaitForHistoryToProcessPendingTasks() {
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     base::CancelableTaskTracker task_tracker;
-    history_service->ScheduleDBTask(
-        std::unique_ptr<history::HistoryDBTask>(new HistoryEmptyTask(&done)),
-        &task_tracker);
+    // Post a task that signals |done|. Since tasks run in posting order, all
+    // previously posted tasks have run when |done| is signaled.
+    history_service->ScheduleDBTask(base::MakeUnique<SignalEventTask>(&done),
+                                    &task_tracker);
     done.Wait();
   }
   // Wait such that any notifications broadcast from one of the history threads

@@ -48,11 +48,12 @@ void RunThisRunLoop(base::RunLoop* run_loop);
 // Turns on nestable tasks, runs all pending tasks in the message loop,
 // then resets nestable tasks to what they were originally. Prefer this
 // over MessageLoop::RunAllPending for in process browser tests to run
-// all pending tasks.
+// all pending tasks. Can only be called from the UI thread.
 void RunAllPendingInMessageLoop();
 
 // Blocks the current thread until all the pending messages in the loop of the
-// thread |thread_id| have been processed.
+// thread |thread_id| have been processed. Can only be called from the UI
+// thread.
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 
 // Runs until both the blocking pool and the current message loop are empty

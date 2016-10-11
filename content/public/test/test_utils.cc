@@ -45,10 +45,10 @@ namespace {
 // animating page, the potential delay to quitting the RunLoop would be
 // kNumQuitDeferrals * frame_render_time. Some perf tests run slow, such as
 // 200ms/frame.
-static const int kNumQuitDeferrals = 10;
+constexpr int kNumQuitDeferrals = 10;
 
-static void DeferredQuitRunLoop(const base::Closure& quit_task,
-                                int num_quit_deferrals) {
+void DeferredQuitRunLoop(const base::Closure& quit_task,
+                         int num_quit_deferrals) {
   if (num_quit_deferrals <= 0) {
     quit_task.Run();
   } else {
@@ -56,12 +56,6 @@ static void DeferredQuitRunLoop(const base::Closure& quit_task,
         FROM_HERE,
         base::Bind(&DeferredQuitRunLoop, quit_task, num_quit_deferrals - 1));
   }
-}
-
-void RunAllPendingMessageAndSendQuit(BrowserThread::ID thread_id,
-                                     const base::Closure& quit_task) {
-  RunAllPendingInMessageLoop();
-  BrowserThread::PostTask(thread_id, FROM_HERE, quit_task);
 }
 
 // Class used to handle result callbacks for ExecuteScriptAndGetValue.
@@ -139,6 +133,7 @@ void RunThisRunLoop(base::RunLoop* run_loop) {
 }
 
 void RunAllPendingInMessageLoop() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, GetQuitTaskForRunLoop(&run_loop));
@@ -146,20 +141,23 @@ void RunAllPendingInMessageLoop() {
 }
 
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id) {
-  if (BrowserThread::CurrentlyOn(thread_id)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (thread_id == BrowserThread::UI) {
     RunAllPendingInMessageLoop();
     return;
   }
-  BrowserThread::ID current_thread_id;
-  if (!BrowserThread::GetCurrentThreadIdentifier(&current_thread_id)) {
-    NOTREACHED();
-    return;
-  }
 
+  // Post a DeferredQuitRunLoop() task to |thread_id|. Then, run a RunLoop on
+  // this thread. When a few generations of pending tasks have run on
+  // |thread_id|, a task will be posted to this thread to exit the RunLoop.
   base::RunLoop run_loop;
-  BrowserThread::PostTask(thread_id, FROM_HERE,
-      base::Bind(&RunAllPendingMessageAndSendQuit, current_thread_id,
-                 run_loop.QuitClosure()));
+  const base::Closure post_quit_run_loop_to_ui_thread = base::Bind(
+      base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+      base::ThreadTaskRunnerHandle::Get(), FROM_HERE, run_loop.QuitClosure());
+  BrowserThread::PostTask(
+      thread_id, FROM_HERE,
+      base::Bind(&DeferredQuitRunLoop, post_quit_run_loop_to_ui_thread,
+                 kNumQuitDeferrals));
   RunThisRunLoop(&run_loop);
 }
 

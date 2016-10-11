@@ -11,10 +11,10 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "chrome/browser/ui/sync/one_click_signin_links_delegate.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "content/public/test/test_utils.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/views_test_base.h"
@@ -122,7 +122,7 @@ class OneClickSigninDialogViewTest : public views::ViewsTestBase,
 
 TEST_F(OneClickSigninDialogViewTest, ShowDialog) {
   ShowOneClickSigninDialog();
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(OneClickSigninDialogView::IsShowing());
 }
 
@@ -190,7 +190,7 @@ TEST_F(OneClickSigninDialogViewTest, LearnMoreLink) {
 
   // View should still be showing and the OnLearnMoreLinkClicked method
   // of the delegate should have been called with |is_dialog| == true.
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(OneClickSigninDialogView::IsShowing());
   EXPECT_EQ(1, learn_more_click_count_);
 }
