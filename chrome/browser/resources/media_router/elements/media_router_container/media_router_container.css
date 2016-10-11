@@ -119,6 +119,7 @@
 paper-checkbox {
   --paper-checkbox-checked-color: white;
   --paper-checkbox-checkmark-color: var(--paper-blue-700);
+  --paper-checkbox-ink-size: 35px;
   --paper-checkbox-unchecked-color: white;
 }
 
