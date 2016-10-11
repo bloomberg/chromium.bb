@@ -65,6 +65,12 @@ class LayoutTestResultsTest(unittest.TestCase):
                     "expected": "PASS",
                     "actual": "CRASH",
                     "is_unexpected": true
+                },
+                "prototype-newtest.html": {
+                    "expected": "PASS",
+                    "actual": "MISSING",
+                    "is_unexpected": true,
+                    "is_missing_text": true
                 }
             }
         },
@@ -120,3 +126,9 @@ class LayoutTestResultsTest(unittest.TestCase):
                 'fast/dom/prototype-taco.html',
                 'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html'
             ])
+
+    def test_missing_baseline(self):
+        results = LayoutTestResults.results_from_string(self.example_full_results_json)
+        missing_results = results.missing_results()
+        self.assertEqual(len(missing_results), 1)
+        self.assertEqual(missing_results[0].test_name(), "fast/dom/prototype-newtest.html")

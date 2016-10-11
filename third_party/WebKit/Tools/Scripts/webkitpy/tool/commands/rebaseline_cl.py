@@ -11,7 +11,6 @@ with layout test results.
 import logging
 import optparse
 
-from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.web import Web
 from webkitpy.common.net.git_cl import GitCL
@@ -167,26 +166,23 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         try_jobs = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
         if not try_jobs:
             _log.debug('No try job results for builders in: %r.', self._try_bots())
-        builds_to_tests = {}
-        for job in try_jobs:
-            test_results = self._unexpected_mismatch_results(job)
-            build = Build(job.builder_name, job.build_number)
-            builds_to_tests[build] = sorted(r.test_name() for r in test_results)
-        return builds_to_tests
+        return {build: self._tests_to_rebaseline(build) for build in try_jobs}
 
     def _try_bots(self):
         """Returns a collection of try bot builders to fetch results for."""
         return self._tool.builders.all_try_builder_names()
 
-    def _unexpected_mismatch_results(self, try_job):
+    def _tests_to_rebaseline(self, build):
         """Fetches a list of LayoutTestResult objects for unexpected results with new baselines."""
         buildbot = self._tool.buildbot
-        results_url = buildbot.results_url(try_job.builder_name, try_job.build_number)
+        results_url = buildbot.results_url(build.builder_name, build.build_number)
         layout_test_results = buildbot.fetch_layout_test_results(results_url)
         if layout_test_results is None:
             _log.warning('Failed to request layout test results from "%s".', results_url)
             return []
-        return layout_test_results.unexpected_mismatch_results()
+        failure_results = layout_test_results.unexpected_mismatch_results()
+        missing_results = layout_test_results.missing_results()
+        return sorted(r.test_name() for r in failure_results + missing_results)
 
     @staticmethod
     def _log_test_prefix_list(test_prefix_list):

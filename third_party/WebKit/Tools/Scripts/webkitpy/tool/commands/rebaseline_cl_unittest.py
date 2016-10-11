@@ -62,10 +62,10 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         tests = [
             'fast/dom/prototype-taco.html',
             'fast/dom/prototype-inheritance.html',
+            'fast/dom/prototype-newtest.html',
             'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html',
         ]
         for test in tests:
-            # pylint: disable=protected-access
             self._write(port.host.filesystem.join(port.layout_tests_dir(), test), 'contents')
 
     def tearDown(self):
@@ -90,10 +90,12 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.command.execute(self.command_options(issue=11112222), [], self.tool)
         self.assertLog([
             'INFO: Tests to rebaseline:\n',
+            'INFO:   fast/dom/prototype-newtest.html: MOCK Try Win (5000)\n',
             'INFO:   svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win (5000)\n',
             'INFO:   fast/dom/prototype-inheritance.html: MOCK Try Win (5000)\n',
             'INFO:   fast/dom/prototype-taco.html: MOCK Try Win (5000)\n',
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
+            'INFO: Rebaselining fast/dom/prototype-newtest.html\n',
             'INFO: Rebaselining fast/dom/prototype-taco.html\n',
             'INFO: Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n',
         ])
@@ -111,10 +113,12 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.command.execute(self.command_options(), [], self.tool)
         self.assertLog([
             'INFO: Tests to rebaseline:\n',
+            'INFO:   fast/dom/prototype-newtest.html: MOCK Try Win (5000)\n',
             'INFO:   svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win (5000)\n',
             'INFO:   fast/dom/prototype-inheritance.html: MOCK Try Win (5000)\n',
             'INFO:   fast/dom/prototype-taco.html: MOCK Try Win (5000)\n',
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
+            'INFO: Rebaselining fast/dom/prototype-newtest.html\n',
             'INFO: Rebaselining fast/dom/prototype-taco.html\n',
             'INFO: Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n',
         ])
