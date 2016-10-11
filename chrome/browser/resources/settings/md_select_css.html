@@ -26,6 +26,14 @@
         width: 200px;
       }
 
+      /* Mirroring paper-dropdown-menu disabled style. */
+      .md-select[disabled] {
+        border-bottom: 1px dashed var(--secondary-text-color);
+        color: var(--secondary-text-color);
+        opacity: 0.33;
+        pointer-events: none;
+      }
+
       :host-context([dir=rtl]) .md-select {
         background-position-x: 3%;
       }
