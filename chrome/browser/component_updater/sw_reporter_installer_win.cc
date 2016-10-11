@@ -145,6 +145,31 @@ bool ValidateString(const std::string& str,
          });
 }
 
+// Add |behaviour_flag| to |supported_behaviours| if |behaviour_name| is found
+// in the dictionary. Returns false on error.
+bool GetOptionalBehaviour(
+    const base::DictionaryValue* invocation_params,
+    base::StringPiece behaviour_name,
+    SwReporterInvocation::Behaviours behaviour_flag,
+    SwReporterInvocation::Behaviours* supported_behaviours) {
+  DCHECK(invocation_params);
+  DCHECK(supported_behaviours);
+
+  // Parameters enabling behaviours are optional, but if present must be
+  // boolean.
+  const base::Value* value = nullptr;
+  if (invocation_params->Get(behaviour_name, &value)) {
+    bool enable_behaviour = false;
+    if (!value->GetAsBoolean(&enable_behaviour)) {
+      ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
+      return false;
+    }
+    if (enable_behaviour)
+      *supported_behaviours |= behaviour_flag;
+  }
+  return true;
+}
+
 // Reads the command-line params and an UMA histogram suffix from the manifest,
 // and launch the SwReporter with those parameters. If anything goes wrong the
 // SwReporter should not be run at all.
@@ -215,18 +240,16 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
     if (!suffix.empty())
       command_line.AppendSwitchASCII("registry-suffix", suffix);
 
-    // "prompt" is optional, but if present must be a boolean.
     SwReporterInvocation::Behaviours supported_behaviours = 0;
-    const base::Value* prompt_value = nullptr;
-    if (invocation_params->Get("prompt", &prompt_value)) {
-      bool prompt = false;
-      if (!prompt_value->GetAsBoolean(&prompt)) {
-        ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS);
-        return;
-      }
-      if (prompt)
-        supported_behaviours |= SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT;
-    }
+    if (!GetOptionalBehaviour(invocation_params, "prompt",
+                              SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT,
+                              &supported_behaviours))
+      return;
+    if (!GetOptionalBehaviour(
+            invocation_params, "allow-reporter-logs",
+            SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS,
+            &supported_behaviours))
+      return;
 
     auto invocation = SwReporterInvocation::FromCommandLine(command_line);
     invocation.suffix = suffix;

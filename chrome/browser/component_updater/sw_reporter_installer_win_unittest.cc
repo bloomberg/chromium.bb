@@ -192,6 +192,30 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
     histograms_.ExpectTotalCount(kErrorHistogramName, 0);
   }
 
+  // Expects that the SwReporter was launched with the given |expected_suffix|,
+  // |expected_engine|, and |expected_behaviours|, as part of a series of
+  // multiple invocations.
+  void ExpectExperimentalInvocationInSeries(
+      const std::string& expected_suffix,
+      const std::string& expected_engine,
+      SwReporterInvocation::Behaviours expected_behaviours) {
+    SCOPED_TRACE("Invocation with suffix " + expected_suffix);
+    SwReporterInvocation invocation = launched_invocations_.front();
+    launched_invocations_.pop();
+    EXPECT_EQ(MakeTestFilePath(default_path_),
+              invocation.command_line.GetProgram());
+    // There should be one switch added from the manifest, plus registry-suffix
+    // added automatically.
+    EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
+    EXPECT_EQ(expected_engine,
+              invocation.command_line.GetSwitchValueASCII("engine"));
+    EXPECT_EQ(expected_suffix, invocation.command_line.GetSwitchValueASCII(
+                                   kRegistrySuffixSwitch));
+    ASSERT_TRUE(invocation.command_line.GetArgs().empty());
+    EXPECT_EQ(expected_suffix, invocation.suffix);
+    EXPECT_EQ(expected_behaviours, invocation.supported_behaviours);
+  }
+
   void ExpectLaunchError() {
     // The SwReporter should not be launched, and an error should be logged.
     EXPECT_TRUE(launched_invocations_.empty());
@@ -313,74 +337,46 @@ TEST_F(ExperimentalSwReporterInstallerTest, MultipleInvocations) {
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
       "  {"
-      "    \"arguments\": [\"--engine=experimental\", \"random argument\"],"
+      "    \"arguments\": [\"--engine=experimental\"],"
       "    \"suffix\": \"TestSuffix\","
-      "    \"prompt\": false"
+      "    \"prompt\": false,"
+      "    \"allow-reporter-logs\": true"
       "  },"
       "  {"
       "    \"arguments\": [\"--engine=second\"],"
       "    \"suffix\": \"SecondSuffix\","
-      "    \"prompt\": true"
+      "    \"prompt\": true,"
+      "    \"allow-reporter-logs\": false"
       "  },"
       "  {"
       "    \"arguments\": [\"--engine=third\"],"
       "    \"suffix\": \"ThirdSuffix\""
+      "  },"
+      "  {"
+      "    \"arguments\": [\"--engine=fourth\"],"
+      "    \"suffix\": \"FourthSuffix\","
+      "    \"prompt\": true,"
+      "    \"allow-reporter-logs\": true"
       "  }"
+
       "]}";
   traits.ComponentReady(
       default_version_, default_path_,
       base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
 
-  // The SwReporter should be launched three times with the given arguments.
+  // The SwReporter should be launched four times with the given arguments.
   EXPECT_EQ(default_version_, launched_version_);
-  ASSERT_EQ(3U, launched_invocations_.size());
-
-  {
-    SwReporterInvocation invocation = launched_invocations_.front();
-    launched_invocations_.pop();
-    EXPECT_EQ(MakeTestFilePath(default_path_),
-              invocation.command_line.GetProgram());
-    EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
-    EXPECT_EQ("experimental",
-              invocation.command_line.GetSwitchValueASCII("engine"));
-    EXPECT_EQ("TestSuffix", invocation.command_line.GetSwitchValueASCII(
-                                kRegistrySuffixSwitch));
-    ASSERT_EQ(1U, invocation.command_line.GetArgs().size());
-    EXPECT_EQ(L"random argument", invocation.command_line.GetArgs()[0]);
-    EXPECT_EQ("TestSuffix", invocation.suffix);
-    EXPECT_EQ(0U, invocation.supported_behaviours);
-  }
-
-  {
-    SwReporterInvocation invocation = launched_invocations_.front();
-    launched_invocations_.pop();
-    EXPECT_EQ(MakeTestFilePath(default_path_),
-              invocation.command_line.GetProgram());
-    EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
-    EXPECT_EQ("second", invocation.command_line.GetSwitchValueASCII("engine"));
-    EXPECT_EQ("SecondSuffix", invocation.command_line.GetSwitchValueASCII(
-                                  kRegistrySuffixSwitch));
-    ASSERT_TRUE(invocation.command_line.GetArgs().empty());
-    EXPECT_EQ("SecondSuffix", invocation.suffix);
-    EXPECT_EQ(SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT,
-              invocation.supported_behaviours);
-  }
-
-  {
-    SwReporterInvocation invocation = launched_invocations_.front();
-    launched_invocations_.pop();
-    EXPECT_EQ(MakeTestFilePath(default_path_),
-              invocation.command_line.GetProgram());
-    EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
-    EXPECT_EQ("third", invocation.command_line.GetSwitchValueASCII("engine"));
-    EXPECT_EQ("ThirdSuffix", invocation.command_line.GetSwitchValueASCII(
-                                 kRegistrySuffixSwitch));
-    ASSERT_TRUE(invocation.command_line.GetArgs().empty());
-    EXPECT_EQ("ThirdSuffix", invocation.suffix);
-    // A missing "prompt" key means "false".
-    EXPECT_EQ(0U, invocation.supported_behaviours);
-  }
-
+  ASSERT_EQ(4U, launched_invocations_.size());
+  ExpectExperimentalInvocationInSeries(
+      "TestSuffix", "experimental",
+      SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS);
+  ExpectExperimentalInvocationInSeries(
+      "SecondSuffix", "second", SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT);
+  ExpectExperimentalInvocationInSeries("ThirdSuffix", "third", 0U);
+  ExpectExperimentalInvocationInSeries(
+      "FourthSuffix", "fourth",
+      SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS |
+          SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT);
   histograms_.ExpectTotalCount(kErrorHistogramName, 0);
 }
 
