@@ -314,25 +314,28 @@ config("compiler") {
 
   # Linux-specific compiler flags setup.
   # ------------------------------------
+  if (is_android && is_clang) {
+    _rebased_android_toolchain_root =
+        rebase_path(android_toolchain_root, root_build_dir)
+
+    # Let clang find the linker in the NDK.
+    ldflags += [ "--gcc-toolchain=$_rebased_android_toolchain_root" ]
+  }
+
   if (is_posix && use_lld && !is_nacl) {
     ldflags += [ "-fuse-ld=lld" ]
   } else if (use_gold) {
     ldflags += [ "-fuse-ld=gold" ]
     if (is_android) {
-      if (is_clang) {
-        _rebased_android_toolchain_root =
-            rebase_path(android_toolchain_root, root_build_dir)
-
-        # Let clang find the ld.gold in the NDK.
-        ldflags += [ "--gcc-toolchain=$_rebased_android_toolchain_root" ]
-      }
-
       # Use -mstackrealign due to a bug on ia32 Jelly Bean.
       # See crbug.com/521527
       if (current_cpu == "x86") {
         cflags += [ "-mstackrealign" ]
       }
     } else {
+      # On Android, this isn't needed.  gcc in the NDK knows to look next to
+      # it with -fuse-ld=gold, and clang gets a --gcc-toolchain flag passed
+      # above.
       ldflags += [ "-B$gold_path" ]
 
       if (linux_use_bundled_binutils) {
@@ -362,12 +365,6 @@ config("compiler") {
     # Gold is the default linker for the bundled binutils so we explicitly
     # enable the bfd linker when use_gold is not set.
     ldflags += [ "-fuse-ld=bfd" ]
-  } else if (is_android && is_clang &&
-             (current_cpu == "mipsel" || current_cpu == "mips64el")) {
-    # Let clang find the ld.bfd in the NDK.
-    _rebased_android_toolchain_root =
-        rebase_path(android_toolchain_root, root_build_dir)
-    ldflags += [ "--gcc-toolchain=$_rebased_android_toolchain_root" ]
   }
 
   if (is_posix && (use_gold || (use_lld && !is_nacl)) && !using_sanitizer &&
