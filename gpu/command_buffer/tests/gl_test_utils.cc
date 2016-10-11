@@ -161,29 +161,19 @@ GLuint GLTestHelper::SetupUnitQuad(GLint position_location) {
   GLuint vbo = 0;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  static const float vertices[] = {
-      1.0f, 1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
-      1.0f, 1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+  static float vertices[] = {
+      1.0f,  1.0f,
+     -1.0f,  1.0f,
+     -1.0f, -1.0f,
+      1.0f,  1.0f,
+     -1.0f, -1.0f,
+      1.0f, -1.0f,
   };
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
   glEnableVertexAttribArray(position_location);
   glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
   return vbo;
-}
-
-std::vector<GLuint> GLTestHelper::SetupIndexedUnitQuad(
-    GLint position_location) {
-  GLuint array_buffer = SetupUnitQuad(position_location);
-  static const uint8_t indices[] = {0, 1, 2, 3, 4, 5};
-  GLuint index_buffer = 0;
-  glGenBuffers(1, &index_buffer);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6, indices, GL_STATIC_DRAW);
-  std::vector<GLuint> buffers(2);
-  buffers[0] = array_buffer;
-  buffers[1] = index_buffer;
-  return buffers;
 }
 
 GLuint GLTestHelper::SetupColorsForUnitQuad(

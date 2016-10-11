@@ -1488,6 +1488,67 @@ TEST_P(GLES2DecoderTest, LoseContextCHROMIUMInvalidArgs1_0) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
+TEST_P(GLES3DecoderTest, TransformFeedbackStates) {
+  BeginTransformFeedback begin_cmd;
+  begin_cmd.Init(GL_POINTS);
+  EndTransformFeedback end_cmd;
+  end_cmd.Init();
+  PauseTransformFeedback pause_cmd;
+  pause_cmd.Init();
+  ResumeTransformFeedback resume_cmd;
+  resume_cmd.Init();
+
+  // Before Begin: Pause, Resume, and End is invalid.
+  EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(pause_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(resume_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Begin
+  EXPECT_CALL(*gl_, BeginTransformFeedback(GL_POINTS))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Begin again is invalid.
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Before Pause: Resume is invalid.
+  EXPECT_EQ(error::kNoError, ExecuteCmd(resume_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Pause
+  EXPECT_CALL(*gl_, PauseTransformFeedback())
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(pause_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Pause again is invalid.
+  EXPECT_EQ(error::kNoError, ExecuteCmd(pause_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Resume
+  EXPECT_CALL(*gl_, ResumeTransformFeedback())
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(resume_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // End
+  EXPECT_CALL(*gl_, EndTransformFeedback())
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 class GLES2DecoderDoCommandsTest : public GLES2DecoderTest {
  public:
   GLES2DecoderDoCommandsTest() {

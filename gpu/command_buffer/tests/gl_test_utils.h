@@ -10,8 +10,6 @@
 #include <GLES2/gl2.h>
 #include <stdint.h>
 
-#include <vector>
-
 namespace gfx {
 class Size;
 }  // namespace gfx
@@ -48,10 +46,6 @@ class GLTestHelper {
   // Make a unit quad with position only.
   // Returns the created buffer.
   static GLuint SetupUnitQuad(GLint position_location);
-
-  // Returns a vector of size 2. The first is the array buffer object,
-  // the second is the element array buffer object.
-  static std::vector<GLuint> SetupIndexedUnitQuad(GLint position_location);
 
   // Make a 6 vertex colors.
   // Returns the created buffer.
