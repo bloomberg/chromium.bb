@@ -339,6 +339,7 @@ if (enable_extensions) {
       "url_pattern_unittest.cc",
       "user_script_unittest.cc",
       "value_builder_unittest.cc",
+      "value_counter_unittest.cc",
     ]
 
     deps = [
