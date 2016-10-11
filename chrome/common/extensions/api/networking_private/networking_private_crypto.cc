@@ -17,7 +17,6 @@
 #include "components/cast_certificate/cast_cert_validator.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
-#include "crypto/scoped_openssl_types.h"
 #include "net/cert/pem_tokenizer.h"
 
 namespace {
@@ -129,7 +128,7 @@ bool EncryptByteString(const std::vector<uint8_t>& pub_key_der,
   crypto::EnsureOpenSSLInit();
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  crypto::ScopedRSA rsa(
+  bssl::UniquePtr<RSA> rsa(
       RSA_public_key_from_bytes(pub_key_der.data(), pub_key_der.size()));
   if (!rsa || RSA_size(rsa.get()) == 0) {
     LOG(ERROR) << "Failed to parse public key";
@@ -166,17 +165,17 @@ bool DecryptByteString(const std::string& private_key_pem,
     return false;
   }
 
-  crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(private_key->key()));
-  if (!rsa || RSA_size(rsa.get()) == 0) {
+  RSA* rsa = EVP_PKEY_get0_RSA(private_key->key());
+  if (!rsa || RSA_size(rsa) == 0) {
     LOG(ERROR) << "Failed to get RSA key.";
     return false;
   }
 
   uint8_t* output = reinterpret_cast<uint8_t*>(
-      base::WriteInto(decrypted_output, RSA_size(rsa.get()) + 1));
+      base::WriteInto(decrypted_output, RSA_size(rsa) + 1));
   int output_length =
       RSA_private_decrypt(encrypted_data.size(), &encrypted_data[0], output,
-                          rsa.get(), RSA_PKCS1_PADDING);
+                          rsa, RSA_PKCS1_PADDING);
   if (output_length < 0) {
     LOG(ERROR) << "Error during decryption.";
     return false;

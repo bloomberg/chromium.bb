@@ -19,7 +19,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "crypto/scoped_openssl_types.h"
 #include "grit/components_strings.h"
 #include "jni/AwContentsClientBridge_jni.h"
 #include "net/cert/x509_certificate.h"

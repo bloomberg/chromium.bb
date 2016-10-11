@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "crypto/scoped_openssl_types.h"
 #include "jni/SSLClientCertificateRequest_jni.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/cert_database.h"
