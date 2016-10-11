@@ -191,12 +191,13 @@ CountryEntryList GenerateCountryList(
     const autofill::PersonalDataManager& personal_data) {
   autofill::CountryComboboxModel model;
   model.SetCountries(personal_data, base::Callback<bool(const std::string&)>());
-  const std::vector<autofill::AutofillCountry*>& countries = model.countries();
+  const std::vector<std::unique_ptr<autofill::AutofillCountry>>& countries =
+      model.countries();
 
   CountryEntryList list;
 
-  for (size_t i = 0; i < countries.size(); ++i)
-    list.push_back(CountryToCountryEntry(countries[i]));
+  for (const auto& country : countries)
+    list.push_back(CountryToCountryEntry(country.get()));
 
   return list;
 }

@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -36,11 +37,12 @@ void CountryComboboxModel::SetCountries(
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   if (filter.is_null() || filter.Run(default_country_code)) {
-    countries_.push_back(new AutofillCountry(default_country_code, app_locale));
+    countries_.push_back(
+        base::MakeUnique<AutofillCountry>(default_country_code, app_locale));
 #if !defined(OS_ANDROID)
     // The separator item. On Android, there are separators after all items, so
     // this is unnecessary.
-    countries_.push_back(NULL);
+    countries_.push_back(nullptr);
 #endif
   }
 
@@ -60,18 +62,18 @@ void CountryComboboxModel::SetCountries(
       std::back_inserter(filtered_countries));
   available_countries = &filtered_countries;
 
-  std::vector<AutofillCountry*> sorted_countries;
+  CountryVector sorted_countries;
   for (const auto& country_code : *available_countries) {
     if (filter.is_null() || filter.Run(country_code))
-      sorted_countries.push_back(new AutofillCountry(country_code, app_locale));
+      sorted_countries.push_back(
+          base::MakeUnique<AutofillCountry>(country_code, app_locale));
   }
 
   l10n_util::SortStringsUsingMethod(app_locale,
                                     &sorted_countries,
                                     &AutofillCountry::name);
-  countries_.insert(countries_.end(),
-                    sorted_countries.begin(),
-                    sorted_countries.end());
+  std::move(sorted_countries.begin(), sorted_countries.end(),
+            std::back_inserter(countries_));
 }
 
 int CountryComboboxModel::GetItemCount() const {
@@ -79,7 +81,7 @@ int CountryComboboxModel::GetItemCount() const {
 }
 
 base::string16 CountryComboboxModel::GetItemAt(int index) {
-  AutofillCountry* country = countries_[index];
+  AutofillCountry* country = countries_[index].get();
   if (country)
     return countries_[index]->name();
 
@@ -89,7 +91,7 @@ base::string16 CountryComboboxModel::GetItemAt(int index) {
 }
 
 bool CountryComboboxModel::IsItemSeparatorAt(int index) {
-  return !countries_[index];
+  return !countries_[index].get();
 }
 
 std::string CountryComboboxModel::GetDefaultCountryCode() const {

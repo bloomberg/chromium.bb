@@ -4,13 +4,15 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
@@ -387,11 +389,11 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 #endif  // !defined(OS_MACOSX)
 
 TEST_F(L10nUtilTest, SortStringsUsingFunction) {
-  std::vector<StringWrapper*> strings;
-  strings.push_back(new StringWrapper(UTF8ToUTF16("C")));
-  strings.push_back(new StringWrapper(UTF8ToUTF16("d")));
-  strings.push_back(new StringWrapper(UTF8ToUTF16("b")));
-  strings.push_back(new StringWrapper(UTF8ToUTF16("a")));
+  std::vector<std::unique_ptr<StringWrapper>> strings;
+  strings.push_back(base::MakeUnique<StringWrapper>(UTF8ToUTF16("C")));
+  strings.push_back(base::MakeUnique<StringWrapper>(UTF8ToUTF16("d")));
+  strings.push_back(base::MakeUnique<StringWrapper>(UTF8ToUTF16("b")));
+  strings.push_back(base::MakeUnique<StringWrapper>(UTF8ToUTF16("a")));
   l10n_util::SortStringsUsingMethod("en-US",
                                     &strings,
                                     &StringWrapper::string);
@@ -399,7 +401,6 @@ TEST_F(L10nUtilTest, SortStringsUsingFunction) {
   ASSERT_TRUE(UTF8ToUTF16("b") == strings[1]->string());
   ASSERT_TRUE(UTF8ToUTF16("C") == strings[2]->string());
   ASSERT_TRUE(UTF8ToUTF16("d") == strings[3]->string());
-  base::STLDeleteElements(&strings);
 }
 
 /**

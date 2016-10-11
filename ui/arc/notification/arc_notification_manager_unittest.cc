@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -26,24 +27,22 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
   MockMessageCenter() {}
   ~MockMessageCenter() override {
-    base::STLDeleteContainerPointers(visible_notifications_.begin(),
-                                     visible_notifications_.end());
   }
 
   void AddNotification(
       std::unique_ptr<message_center::Notification> notification) override {
-    visible_notifications_.insert(notification.release());
+    visible_notifications_.insert(notification.get());
+    std::string id = notification->id();
+    owned_notifications_[id] = std::move(notification);
   }
 
   void RemoveNotification(const std::string& id, bool by_user) override {
-    for (auto it = visible_notifications_.begin();
-         it != visible_notifications_.end(); it++) {
-      if ((*it)->id() == id) {
-        delete *it;
-        visible_notifications_.erase(it);
-        return;
-      }
-    }
+    auto it = owned_notifications_.find(id);
+    if (it == owned_notifications_.end())
+      return;
+
+    visible_notifications_.erase(it->second.get());
+    owned_notifications_.erase(it);
   }
 
   const message_center::NotificationList::Notifications&
@@ -53,6 +52,8 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
 
  private:
   message_center::NotificationList::Notifications visible_notifications_;
+  std::map<std::string, std::unique_ptr<message_center::Notification>>
+      owned_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
 };

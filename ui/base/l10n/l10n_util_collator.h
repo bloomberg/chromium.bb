@@ -28,11 +28,12 @@ class StringMethodComparatorWithCollator {
       : collator_(collator),
         method_(method) { }
 
-  // Returns true if lhs preceeds rhs.
-  bool operator() (T* lhs_t, T* rhs_t) {
+  // Returns true if lhs precedes rhs.
+  bool operator()(const std::unique_ptr<T>& lhs_t,
+                  const std::unique_ptr<T>& rhs_t) {
     return base::i18n::CompareString16WithCollator(
-               *collator_, (lhs_t->*method_)(), (rhs_t->*method_)()) ==
-           UCOL_LESS;
+               *collator_, (lhs_t.get()->*method_)(),
+               (rhs_t.get()->*method_)()) == UCOL_LESS;
   }
 
  private:
@@ -47,9 +48,10 @@ class StringMethodComparator {
  public:
   explicit StringMethodComparator(Method method) : method_(method) { }
 
-  // Returns true if lhs preceeds rhs.
-  bool operator() (T* lhs_t, T* rhs_t) {
-    return (lhs_t->*method_)() < (rhs_t->*method_)();
+  // Returns true if lhs precedes rhs.
+  bool operator()(const std::unique_ptr<T>& lhs_t,
+                  const std::unique_ptr<T>& rhs_t) {
+    return (lhs_t.get()->*method_)() < (rhs_t.get()->*method_)();
   }
 
  private:
@@ -61,7 +63,7 @@ class StringMethodComparator {
 // found in which case the strings are sorted using the operator <.
 template <class T, class Method>
 void SortStringsUsingMethod(const std::string& locale,
-                            std::vector<T*>* elements,
+                            std::vector<std::unique_ptr<T>>* elements,
                             Method method) {
   UErrorCode error = U_ZERO_ERROR;
   icu::Locale loc(locale.c_str());
