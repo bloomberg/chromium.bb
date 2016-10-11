@@ -145,7 +145,7 @@ void DirectCompositorFrameSink::DisplayDidDrawAndSwap() {
 }
 
 void DirectCompositorFrameSink::DidDrawCallback() {
-  CompositorFrameSink::PostSwapBuffersComplete();
+  client_->DidSwapBuffersComplete();
 }
 
 }  // namespace cc

@@ -40,6 +40,10 @@ void BlimpCompositorFrameSink::ReclaimCompositorResources(
   client_->ReclaimResources(resources);
 }
 
+void BlimpCompositorFrameSink::SwapCompositorFrameAck() {
+  client_->DidSwapBuffersComplete();
+}
+
 bool BlimpCompositorFrameSink::BindToClient(
     cc::CompositorFrameSinkClient* client) {
   bool success = cc::CompositorFrameSink::BindToClient(client);
@@ -75,7 +79,6 @@ void BlimpCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&BlimpCompositorFrameSinkProxy::SwapCompositorFrame,
                             main_thread_proxy_, base::Passed(&frame)));
-  cc::CompositorFrameSink::PostSwapBuffersComplete();
 }
 
 }  // namespace client

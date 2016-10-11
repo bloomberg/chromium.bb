@@ -468,7 +468,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       display_output_surface =
           base::MakeUnique<SoftwareBrowserCompositorOutputSurface>(
               CreateSoftwareOutputDevice(compositor.get()),
-              compositor->vsync_manager(), begin_frame_source.get());
+              compositor->vsync_manager(), begin_frame_source.get(),
+              compositor->task_runner());
     } else {
       DCHECK(context_provider);
       const auto& capabilities = context_provider->ContextCapabilities();

@@ -5,6 +5,7 @@
 #ifndef CC_TEST_PIXEL_TEST_OUTPUT_SURFACE_H_
 #define CC_TEST_PIXEL_TEST_OUTPUT_SURFACE_H_
 
+#include "base/memory/weak_ptr.h"
 #include "cc/output/output_surface.h"
 
 namespace cc {
@@ -40,7 +41,10 @@ class PixelTestOutputSurface : public OutputSurface {
   }
 
  private:
-  bool external_stencil_test_;
+  void SwapBuffersCallback();
+
+  bool external_stencil_test_ = false;
+  base::WeakPtrFactory<PixelTestOutputSurface> weak_ptr_factory_;
 };
 
 }  // namespace cc

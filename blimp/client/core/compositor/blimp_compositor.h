@@ -177,6 +177,10 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // of the count.
   void CheckPendingCommitCounts(bool flush);
 
+  // Acks a submitted CompositorFrame when it has been processed and another
+  // frame should be started.
+  void SubmitCompositorFrameAck();
+
   BlimpCompositorClient* client_;
 
   BlimpCompositorDependencies* compositor_dependencies_;

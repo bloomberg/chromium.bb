@@ -243,8 +243,18 @@ void BlimpCompositor::SwapCompositorFrame(cc::CompositorFrame frame) {
     layer_->AddChild(content_layer);
   }
 
-  surface_factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
-                                          base::Closure());
+  surface_factory_->SubmitCompositorFrame(
+      local_frame_id_, std::move(frame),
+      base::Bind(&BlimpCompositor::SubmitCompositorFrameAck,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BlimpCompositor::SubmitCompositorFrameAck() {
+  DCHECK(surface_factory_);
+  compositor_dependencies_->GetCompositorTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&BlimpCompositorFrameSinkProxyClient::SwapCompositorFrameAck,
+                 proxy_client_));
 }
 
 void BlimpCompositor::UnbindProxyClient() {

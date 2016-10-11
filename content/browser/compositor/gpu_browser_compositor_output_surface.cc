@@ -30,24 +30,17 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
                                      std::move(vsync_manager),
                                      begin_frame_source,
                                      std::move(overlay_candidate_validator)),
-      swap_buffers_completion_callback_(base::Bind(
-          &GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted,
-          base::Unretained(this))),
-      update_vsync_parameters_callback_(base::Bind(
-          &BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu,
-          base::Unretained(this))) {}
+      weak_ptr_factory_(this) {}
 
-GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() {}
+GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() =
+    default;
 
-gpu::CommandBufferProxyImpl*
-GpuBrowserCompositorOutputSurface::GetCommandBufferProxy() {
-  ContextProviderCommandBuffer* provider_command_buffer =
-      static_cast<content::ContextProviderCommandBuffer*>(
-          context_provider_.get());
-  gpu::CommandBufferProxyImpl* command_buffer_proxy =
-      provider_command_buffer->GetCommandBufferProxy();
-  DCHECK(command_buffer_proxy);
-  return command_buffer_proxy;
+void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
+    const std::vector<ui::LatencyInfo>& latency_info,
+    gfx::SwapResult result,
+    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
+  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
+  client_->DidSwapBuffersComplete();
 }
 
 void GpuBrowserCompositorOutputSurface::OnReflectorChanged() {
@@ -64,14 +57,17 @@ bool GpuBrowserCompositorOutputSurface::BindToClient(
   if (!BrowserCompositorOutputSurface::BindToClient(client))
     return false;
 
-  GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
-      swap_buffers_completion_callback_.callback());
-  GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(
-      update_vsync_parameters_callback_.callback());
   if (capabilities_.uses_default_gl_framebuffer) {
     capabilities_.flipped_output_surface =
         context_provider()->ContextCapabilities().flips_vertically;
   }
+
+  GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
+      base::Bind(&GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
+  GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(base::Bind(
+      &GpuBrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu,
+      weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 
@@ -133,17 +129,20 @@ bool GpuBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle() const {
   return false;
 }
 
-void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::SwapResult result,
-    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
-  client_->DidSwapBuffersComplete();
-}
-
 #if defined(OS_MACOSX)
 void GpuBrowserCompositorOutputSurface::SetSurfaceSuspendedForRecycle(
     bool suspended) {}
 #endif
+
+gpu::CommandBufferProxyImpl*
+GpuBrowserCompositorOutputSurface::GetCommandBufferProxy() {
+  ContextProviderCommandBuffer* provider_command_buffer =
+      static_cast<content::ContextProviderCommandBuffer*>(
+          context_provider_.get());
+  gpu::CommandBufferProxyImpl* command_buffer_proxy =
+      provider_command_buffer->GetCommandBufferProxy();
+  DCHECK(command_buffer_proxy);
+  return command_buffer_proxy;
+}
 
 }  // namespace content

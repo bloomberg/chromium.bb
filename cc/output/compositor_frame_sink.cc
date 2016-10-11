@@ -22,15 +22,13 @@ CompositorFrameSink::CompositorFrameSink(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider)
     : context_provider_(std::move(context_provider)),
-      worker_context_provider_(std::move(worker_context_provider)),
-      weak_ptr_factory_(this) {
+      worker_context_provider_(std::move(worker_context_provider)) {
   client_thread_checker_.DetachFromThread();
 }
 
 CompositorFrameSink::CompositorFrameSink(
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
-    : vulkan_context_provider_(vulkan_context_provider),
-      weak_ptr_factory_(this) {
+    : vulkan_context_provider_(vulkan_context_provider) {
   client_thread_checker_.DetachFromThread();
 }
 
@@ -64,12 +62,6 @@ void CompositorFrameSink::DetachFromClient() {
   DetachFromClientInternal();
 }
 
-void CompositorFrameSink::PostSwapBuffersComplete() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&CompositorFrameSink::OnSwapBuffersComplete,
-                            weak_ptr_factory_.GetWeakPtr()));
-}
-
 // We don't post tasks bound to the client directly since they might run
 // after the CompositorFrameSink has been destroyed.
 void CompositorFrameSink::OnSwapBuffersComplete() {
@@ -86,7 +78,6 @@ void CompositorFrameSink::DetachFromClientInternal() {
   }
   context_provider_ = nullptr;
   client_ = nullptr;
-  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void CompositorFrameSink::DidLoseCompositorFrameSink() {

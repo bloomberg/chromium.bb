@@ -319,8 +319,11 @@ class AndroidOutputSurface : public cc::OutputSurface {
 class VulkanOutputSurface : public cc::OutputSurface {
  public:
   explicit VulkanOutputSurface(
-      scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider)
-      : OutputSurface(std::move(vulkan_context_provider)) {}
+      scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : OutputSurface(std::move(vulkan_context_provider)),
+        task_runner_(std::move(task_runner)),
+        weak_ptr_factory_(this) {}
 
   ~VulkanOutputSurface() override { Destroy(); }
 
@@ -345,7 +348,9 @@ class VulkanOutputSurface : public cc::OutputSurface {
 
   void SwapBuffers(cc::CompositorFrame frame) override {
     surface_->SwapBuffers();
-    PostSwapBuffersComplete();
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&VulkanOutputSurface::SwapBuffersCallback,
+                                      weak_ptr_factory_.GetWeakPtr()));
   }
 
   void Destroy() {
@@ -355,14 +360,14 @@ class VulkanOutputSurface : public cc::OutputSurface {
     }
   }
 
-  void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
-                              gfx::SwapResult result) {
-    RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
-    OutputSurface::OnSwapBuffersComplete();
+ private:
+  void OutputSurface::SwapBuffersCallback() {
+    client_->DidSwapBuffersComplete();
   }
 
- private:
   std::unique_ptr<gpu::VulkanSurface> surface_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::WeakPtrFactory<VulkanOutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanOutputSurface);
 };
@@ -649,8 +654,8 @@ void CompositorImpl::CreateVulkanOutputSurface() {
   if (!vulkan_context_provider)
     return;
 
-  auto vulkan_surface =
-      base::MakeUnique<VulkanOutputSurface>(vulkan_context_provider);
+  auto vulkan_surface = base::MakeUnique<VulkanOutputSurface>(
+      vulkan_context_provider, base::ThreadTaskRunnerHandle::Get());
   if (!vulkan_surface->Initialize(window_))
     return;
 

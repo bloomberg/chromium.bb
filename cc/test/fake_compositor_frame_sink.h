@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
@@ -78,6 +79,11 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
   TransferableResourceArray resources_held_by_parent_;
   bool last_swap_rect_valid_ = false;
   gfx::Rect last_swap_rect_;
+
+ private:
+  void SwapBuffersAck();
+
+  base::WeakPtrFactory<FakeCompositorFrameSink> weak_ptr_factory_;
 };
 
 }  // namespace cc

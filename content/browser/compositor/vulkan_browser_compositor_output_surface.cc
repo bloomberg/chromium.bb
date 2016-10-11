@@ -48,13 +48,12 @@ void VulkanBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     gfx::SwapResult result,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
   RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
-  OnSwapBuffersComplete();
+  client_->DidSwapBuffersComplete();
 }
 
 void VulkanBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   surface_->SwapBuffers();
-  PostSwapBuffersComplete();
 }
 
 }  // namespace content

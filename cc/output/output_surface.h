@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
@@ -129,8 +128,6 @@ class CC_EXPORT OutputSurface {
   virtual void SwapBuffers(OutputSurfaceFrame frame) = 0;
 
  protected:
-  void PostSwapBuffersComplete();
-
   // Used internally for the context provider to inform the client about loss,
   // and can be overridden to change behaviour instead of informing the client.
   virtual void DidLoseOutputSurface();
@@ -144,10 +141,6 @@ class CC_EXPORT OutputSurface {
   base::ThreadChecker thread_checker_;
 
  private:
-  void OnSwapBuffersComplete();
-
-  base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };
 

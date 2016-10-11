@@ -123,6 +123,11 @@ class FakeOutputSurface : public OutputSurface {
   OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
   bool last_swap_rect_valid_ = false;
   gfx::Rect last_swap_rect_;
+
+ private:
+  void SwapBuffersCallback();
+
+  base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_;
 };
 
 }  // namespace cc

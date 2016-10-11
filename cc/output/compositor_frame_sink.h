@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
@@ -112,9 +111,6 @@ class CC_EXPORT CompositorFrameSink {
   virtual void OnSwapBuffersComplete();
 
  protected:
-  // This is used by both display and delegating implementations.
-  void PostSwapBuffersComplete();
-
   // Bound to the ContextProvider to hear about when it is lost and inform the
   // |client_|.
   void DidLoseCompositorFrameSink();
@@ -129,8 +125,6 @@ class CC_EXPORT CompositorFrameSink {
 
  private:
   void DetachFromClientInternal();
-
-  base::WeakPtrFactory<CompositorFrameSink> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSink);
 };

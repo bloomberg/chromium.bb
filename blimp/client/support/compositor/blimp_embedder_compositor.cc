@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
 #include "blimp/client/support/compositor/blimp_context_provider.h"
@@ -41,8 +42,11 @@ class SimpleTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
 class DisplayOutputSurface : public cc::OutputSurface {
  public:
   explicit DisplayOutputSurface(
-      scoped_refptr<cc::ContextProvider> context_provider)
-      : cc::OutputSurface(std::move(context_provider)) {}
+      scoped_refptr<cc::ContextProvider> context_provider,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : cc::OutputSurface(std::move(context_provider)),
+        task_runner_(std::move(task_runner)),
+        weak_ptr_factory_(this) {}
 
   ~DisplayOutputSurface() override = default;
 
@@ -62,9 +66,12 @@ class DisplayOutputSurface : public cc::OutputSurface {
         size.width(), size.height(), device_scale_factor, has_alpha);
   }
   void SwapBuffers(cc::OutputSurfaceFrame frame) override {
-    // See cc::OutputSurface::SwapBuffers() comment for details.
     context_provider_->ContextSupport()->Swap();
-    cc::OutputSurface::PostSwapBuffersComplete();
+    // The ack for SwapBuffers must be run asynchronously, that will be
+    // satisfied since we will go through a PostTask here.
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DisplayOutputSurface::SwapBuffersCallback,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
     return nullptr;
@@ -81,6 +88,11 @@ class DisplayOutputSurface : public cc::OutputSurface {
   void ApplyExternalStencil() override {}
 
  private:
+  void SwapBuffersCallback() { client_->DidSwapBuffersComplete(); }
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::WeakPtrFactory<DisplayOutputSurface> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(DisplayOutputSurface);
 };
 
@@ -186,22 +198,22 @@ void BlimpEmbedderCompositor::HandlePendingCompositorFrameSinkRequest() {
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       compositor_dependencies_->GetGpuMemoryBufferManager();
 
+  auto task_runner = base::ThreadTaskRunnerHandle::Get();
   auto display_output_surface =
-      base::MakeUnique<DisplayOutputSurface>(context_provider_);
+      base::MakeUnique<DisplayOutputSurface>(context_provider_, task_runner);
 
-  auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
   std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source(
       new cc::DelayBasedBeginFrameSource(
-          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner)));
+          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner.get())));
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      begin_frame_source.get(), task_runner,
+      begin_frame_source.get(), task_runner.get(),
       display_output_surface->capabilities().max_frames_pending));
 
   display_ = base::MakeUnique<cc::Display>(
       nullptr /*shared_bitmap_manager*/, gpu_memory_buffer_manager,
       host_->GetSettings().renderer_settings, std::move(begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
-      base::MakeUnique<cc::TextureMailboxDeleter>(task_runner));
+      base::MakeUnique<cc::TextureMailboxDeleter>(task_runner.get()));
   display_->SetVisible(true);
   display_->Resize(viewport_size_in_px_);
 

@@ -24,6 +24,10 @@ class BlimpCompositorFrameSinkProxyClient {
   // compositor frame.
   virtual void ReclaimCompositorResources(
       const cc::ReturnedResourceArray& resources) = 0;
+
+  // Called when SwapCompositorFrame has been processed and another frame
+  // should be started.
+  virtual void SwapCompositorFrameAck() = 0;
 };
 
 // This class is meant to bounce CompositorFrames from the compositor thread's

@@ -45,6 +45,7 @@ class BlimpCompositorFrameSink : public cc::CompositorFrameSink,
   // BlimpCompositorFrameSinkProxyClient implementation.
   void ReclaimCompositorResources(
       const cc::ReturnedResourceArray& resources) override;
+  void SwapCompositorFrameAck() override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

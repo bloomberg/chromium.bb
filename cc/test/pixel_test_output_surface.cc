@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -17,15 +19,13 @@ namespace cc {
 PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
     bool flipped_output_surface)
-    : OutputSurface(std::move(context_provider)),
-      external_stencil_test_(false) {
+    : OutputSurface(std::move(context_provider)), weak_ptr_factory_(this) {
   capabilities_.flipped_output_surface = flipped_output_surface;
 }
 
 PixelTestOutputSurface::PixelTestOutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(std::move(software_device)),
-      external_stencil_test_(false) {}
+    : OutputSurface(std::move(software_device)), weak_ptr_factory_(this) {}
 
 PixelTestOutputSurface::~PixelTestOutputSurface() = default;
 
@@ -56,7 +56,13 @@ bool PixelTestOutputSurface::HasExternalStencilTest() const {
 void PixelTestOutputSurface::ApplyExternalStencil() {}
 
 void PixelTestOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
-  PostSwapBuffersComplete();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PixelTestOutputSurface::SwapBuffersCallback,
+                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PixelTestOutputSurface::SwapBuffersCallback() {
+  client_->DidSwapBuffersComplete();
 }
 
 OverlayCandidateValidator*

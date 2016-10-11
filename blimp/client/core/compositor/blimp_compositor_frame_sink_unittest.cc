@@ -52,6 +52,10 @@ class FakeBlimpCompositorFrameSinkProxy : public BlimpCompositorFrameSinkProxy {
   void SwapCompositorFrame(cc::CompositorFrame frame) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     swap_count_++;
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&BlimpCompositorFrameSinkProxyClient::SwapCompositorFrameAck,
+                   proxy_client_));
   }
 
   void UnbindProxyClient() override {

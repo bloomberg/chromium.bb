@@ -109,7 +109,8 @@ std::unique_ptr<content::BrowserCompositorOutputSurface>
 SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
     std::unique_ptr<cc::SoftwareOutputDevice> device) {
   return base::MakeUnique<content::SoftwareBrowserCompositorOutputSurface>(
-      std::move(device), compositor_->vsync_manager(), &begin_frame_source_);
+      std::move(device), compositor_->vsync_manager(), &begin_frame_source_,
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {

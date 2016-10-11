@@ -5,7 +5,7 @@
 #include "cc/test/fake_output_surface.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/test/begin_frame_args_test.h"
@@ -15,13 +15,13 @@ namespace cc {
 
 FakeOutputSurface::FakeOutputSurface(
     scoped_refptr<ContextProvider> context_provider)
-    : OutputSurface(std::move(context_provider)) {
+    : OutputSurface(std::move(context_provider)), weak_ptr_factory_(this) {
   DCHECK(OutputSurface::context_provider());
 }
 
 FakeOutputSurface::FakeOutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(std::move(software_device)) {
+    : OutputSurface(std::move(software_device)), weak_ptr_factory_(this) {
   DCHECK(OutputSurface::software_device());
 }
 
@@ -52,7 +52,13 @@ void FakeOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
     last_swap_rect_valid_ = false;
   }
 
-  PostSwapBuffersComplete();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FakeOutputSurface::SwapBuffersCallback,
+                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FakeOutputSurface::SwapBuffersCallback() {
+  client_->DidSwapBuffersComplete();
 }
 
 void FakeOutputSurface::BindFramebuffer() {

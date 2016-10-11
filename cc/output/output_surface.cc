@@ -20,22 +20,21 @@
 namespace cc {
 
 OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
-    : context_provider_(std::move(context_provider)), weak_ptr_factory_(this) {
+    : context_provider_(std::move(context_provider)) {
   DCHECK(context_provider_);
   thread_checker_.DetachFromThread();
 }
 
 OutputSurface::OutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
-    : software_device_(std::move(software_device)), weak_ptr_factory_(this) {
+    : software_device_(std::move(software_device)) {
   DCHECK(software_device_);
   thread_checker_.DetachFromThread();
 }
 
 OutputSurface::OutputSurface(
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
-    : vulkan_context_provider_(vulkan_context_provider),
-      weak_ptr_factory_(this) {
+    : vulkan_context_provider_(std::move(vulkan_context_provider)) {
   DCHECK(vulkan_context_provider_);
   thread_checker_.DetachFromThread();
 }
@@ -66,18 +65,6 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
         &OutputSurface::DidLoseOutputSurface, base::Unretained(this)));
   }
   return true;
-}
-
-void OutputSurface::PostSwapBuffersComplete() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&OutputSurface::OnSwapBuffersComplete,
-                            weak_ptr_factory_.GetWeakPtr()));
-}
-
-// We don't post tasks bound to the client directly since they might run
-// after the OutputSurface has been destroyed.
-void OutputSurface::OnSwapBuffersComplete() {
-  client_->DidSwapBuffersComplete();
 }
 
 void OutputSurface::DidLoseOutputSurface() {

@@ -110,13 +110,6 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
     }
   }
 
-  void OnGpuSwapBuffersCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::SwapResult result,
-      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override {
-    NOTREACHED();
-  }
-
 #if defined(OS_MACOSX)
   void SetSurfaceSuspendedForRecycle(bool suspended) override {}
 #endif
