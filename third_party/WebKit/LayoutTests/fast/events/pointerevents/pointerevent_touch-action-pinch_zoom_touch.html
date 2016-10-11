@@ -118,7 +118,7 @@
                 return touchScrollInTarget('#target0', 'down').then(function() {
                     return pinchZoomInTarget('#target0', 3.0);
                 }).then(function() {
-                    return touchTapInTarget('#btnComplete');
+                    document.getElementById("btnComplete").click();
                 });
             }
         </script>
