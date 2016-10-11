@@ -44,7 +44,6 @@ class MockResourceClient : public GarbageCollectedFinalized<MockResourceClient>,
   USING_GARBAGE_COLLECTED_MIXIN(MockResourceClient);
 
  public:
-  MockResourceClient() {}
   explicit MockResourceClient(Resource*);
   ~MockResourceClient() override;
 

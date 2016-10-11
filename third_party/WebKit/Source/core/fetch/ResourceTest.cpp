@@ -5,7 +5,6 @@
 #include "core/fetch/Resource.h"
 
 #include "core/fetch/MemoryCache.h"
-#include "core/fetch/MockResourceClients.h"
 #include "core/fetch/RawResource.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceRequest.h"
@@ -53,25 +52,6 @@ void createTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
   return;
 }
 
-class TestProhibitAddRemoveClientResource final : public Resource {
- public:
-  static TestProhibitAddRemoveClientResource* create() {
-    return new TestProhibitAddRemoveClientResource();
-  }
-  void testAddClient(ResourceClient* client) {
-    ProhibitAddRemoveClientInScope prohibitAddRemoveClient(this);
-    addClient(client);
-  }
-  void testRemoveClient(ResourceClient* client) {
-    ProhibitAddRemoveClientInScope prohibitAddRemoveClient(this);
-    removeClient(client);
-  }
-
- private:
-  TestProhibitAddRemoveClientResource()
-      : Resource(ResourceRequest(), Resource::Raw, ResourceLoaderOptions()) {}
-};
-
 }  // anonymous namespace
 
 TEST(ResourceTest, SetCachedMetadata_SendsMetadataToPlatform) {
@@ -108,17 +88,6 @@ TEST(ResourceTest, RevalidateWithFragment) {
   revalidatingResponse.setURL(url);
   revalidatingResponse.setHTTPStatusCode(304);
   resource->responseReceived(revalidatingResponse, nullptr);
-}
-
-TEST(ResourceTest, ProhibitAddRemoveClientInScope) {
-  TestProhibitAddRemoveClientResource* resource =
-      TestProhibitAddRemoveClientResource::create();
-  Persistent<MockResourceClient> client = new MockResourceClient();
-  EXPECT_DEATH(resource->testAddClient(client),
-               "!m_isAddRemoveClientProhibited");
-  resource->addClient(client);
-  EXPECT_DEATH(resource->testRemoveClient(client),
-               "!m_isAddRemoveClientProhibited");
 }
 
 }  // namespace blink
