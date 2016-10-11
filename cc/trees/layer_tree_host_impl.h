@@ -180,7 +180,6 @@ class CC_EXPORT LayerTreeHostImpl
   void MouseDown() override;
   void MouseUp() override;
   void MouseMoveAt(const gfx::Point& viewport_point) override;
-  void MouseLeave() override;
 
   void PinchGestureBegin() override;
   void PinchGestureUpdate(float magnify_delta,

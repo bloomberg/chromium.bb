@@ -405,11 +405,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
       input_handler_->MouseMoveAt(gfx::Point(mouse_event.x, mouse_event.y));
       return DID_NOT_HANDLE;
     }
-    case WebInputEvent::MouseLeave: {
-      CHECK(input_handler_);
-      input_handler_->MouseLeave();
-      return DID_NOT_HANDLE;
-    }
 
     default:
       if (WebInputEvent::isKeyboardEventType(event.type)) {
