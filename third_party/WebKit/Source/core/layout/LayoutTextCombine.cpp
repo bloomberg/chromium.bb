@@ -105,7 +105,7 @@ void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context,
     context.concatCTM(AffineTransform::translation(offsetX, offsetY));
     width = boxRect.width();
   } else {
-    ASSERT(m_scaleX > 0.0f);
+    DCHECK_GE(m_scaleX, 0.0f);
     float centerX = boxRect.x() + cellHeight / 2;
     width = m_combinedTextWidth / m_scaleX;
     float offsetX = (cellHeight - width) / 2;
