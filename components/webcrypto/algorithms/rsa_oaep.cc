@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <openssl/evp.h>
+#include <openssl/mem.h>
+#include <openssl/rsa.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -14,7 +16,6 @@
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
-#include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 
@@ -49,7 +50,7 @@ Status CommonEncryptDecrypt(InitFunc init_func,
   if (!digest)
     return Status::ErrorUnsupported();
 
-  crypto::ScopedEVP_PKEY_CTX ctx(EVP_PKEY_CTX_new(pkey, NULL));
+  bssl::UniquePtr<EVP_PKEY_CTX> ctx(EVP_PKEY_CTX_new(pkey, NULL));
 
   if (!init_func(ctx.get()) ||
       !EVP_PKEY_CTX_set_rsa_padding(ctx.get(), RSA_PKCS1_OAEP_PADDING) ||
@@ -64,7 +65,7 @@ Status CommonEncryptDecrypt(InitFunc init_func,
   if (label.size()) {
     // Make a copy of the label, since the ctx takes ownership of it when
     // calling set0_rsa_oaep_label().
-    crypto::ScopedOpenSSLBytes label_copy;
+    bssl::UniquePtr<uint8_t> label_copy;
     label_copy.reset(static_cast<uint8_t*>(OPENSSL_malloc(label.size())));
     memcpy(label_copy.get(), label.data(), label.size());
 

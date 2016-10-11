@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <openssl/evp.h>
-#include <openssl/sha.h>
+#include <openssl/digest.h>
 #include <stdint.h>
 
 #include <vector>
@@ -15,7 +14,6 @@
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
-#include "crypto/scoped_openssl_types.h"
 
 namespace webcrypto {
 
@@ -29,7 +27,6 @@ class DigestorImpl : public blink::WebCryptoDigestor {
  public:
   explicit DigestorImpl(blink::WebCryptoAlgorithmId algorithm_id)
       : initialized_(false),
-        digest_context_(EVP_MD_CTX_create()),
         algorithm_id_(algorithm_id) {}
 
   bool consume(const unsigned char* data, unsigned int size) override {
@@ -73,9 +70,6 @@ class DigestorImpl : public blink::WebCryptoDigestor {
     if (!digest_algorithm)
       return Status::ErrorUnsupported();
 
-    if (!digest_context_.get())
-      return Status::OperationError();
-
     if (!EVP_DigestInit_ex(digest_context_.get(), digest_algorithm, NULL))
       return Status::OperationError();
 
@@ -102,7 +96,7 @@ class DigestorImpl : public blink::WebCryptoDigestor {
   }
 
   bool initialized_;
-  crypto::ScopedEVP_MD_CTX digest_context_;
+  bssl::ScopedEVP_MD_CTX digest_context_;
   blink::WebCryptoAlgorithmId algorithm_id_;
   unsigned char result_[EVP_MAX_MD_SIZE];
 };

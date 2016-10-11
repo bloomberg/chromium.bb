@@ -12,7 +12,6 @@
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
-#include "crypto/scoped_openssl_types.h"
 
 namespace webcrypto {
 
@@ -75,17 +74,15 @@ Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
                           const EVP_AEAD* aead_alg,
                           std::vector<uint8_t>* buffer) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  EVP_AEAD_CTX ctx;
+  bssl::ScopedEVP_AEAD_CTX ctx;
 
   if (!aead_alg)
     return Status::ErrorUnexpected();
 
-  if (!EVP_AEAD_CTX_init(&ctx, aead_alg, raw_key.data(), raw_key.size(),
+  if (!EVP_AEAD_CTX_init(ctx.get(), aead_alg, raw_key.data(), raw_key.size(),
                          tag_length_bytes, NULL)) {
     return Status::OperationError();
   }
-
-  crypto::ScopedOpenSSL<EVP_AEAD_CTX, EVP_AEAD_CTX_cleanup> ctx_cleanup(&ctx);
 
   size_t len;
   int ok;
@@ -96,7 +93,7 @@ Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
 
     buffer->resize(data.byte_length() - tag_length_bytes);
 
-    ok = EVP_AEAD_CTX_open(&ctx, buffer->data(), &len, buffer->size(),
+    ok = EVP_AEAD_CTX_open(ctx.get(), buffer->data(), &len, buffer->size(),
                            iv.bytes(), iv.byte_length(), data.bytes(),
                            data.byte_length(), additional_data.bytes(),
                            additional_data.byte_length());
@@ -105,7 +102,7 @@ Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
     // the output buffer is too small).
     buffer->resize(data.byte_length() + EVP_AEAD_max_overhead(aead_alg));
 
-    ok = EVP_AEAD_CTX_seal(&ctx, buffer->data(), &len, buffer->size(),
+    ok = EVP_AEAD_CTX_seal(ctx.get(), buffer->data(), &len, buffer->size(),
                            iv.bytes(), iv.byte_length(), data.bytes(),
                            data.byte_length(), additional_data.bytes(),
                            additional_data.byte_length());

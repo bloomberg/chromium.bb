@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <openssl/bn.h>
+#include <openssl/digest.h>
 #include <openssl/ec.h>
 #include <openssl/ec_key.h>
 #include <openssl/ecdsa.h>
 #include <openssl/evp.h>
+#include <openssl/mem.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -19,7 +22,6 @@
 #include "components/webcrypto/generate_key_result.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
-#include "crypto/scoped_openssl_types.h"
 #include "crypto/secure_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
@@ -52,7 +54,7 @@ Status GetEcGroupOrderSize(EVP_PKEY* pkey, size_t* order_size_bytes) {
 
   const EC_GROUP* group = EC_KEY_get0_group(ec);
 
-  crypto::ScopedBIGNUM order(BN_new());
+  bssl::UniquePtr<BIGNUM> order(BN_new());
   if (!EC_GROUP_get_order(group, order.get(), NULL))
     return Status::OperationError();
 
@@ -69,7 +71,7 @@ Status ConvertDerSignatureToWebCryptoSignature(
     std::vector<uint8_t>* signature) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  crypto::ScopedECDSA_SIG ecdsa_sig(
+  bssl::UniquePtr<ECDSA_SIG> ecdsa_sig(
       ECDSA_SIG_from_bytes(signature->data(), signature->size()));
   if (!ecdsa_sig.get())
     return Status::ErrorUnexpected();
@@ -130,7 +132,7 @@ Status ConvertWebCryptoSignatureToDerSignature(
   *incorrect_length = false;
 
   // Construct an ECDSA_SIG from |signature|.
-  crypto::ScopedECDSA_SIG ecdsa_sig(ECDSA_SIG_new());
+  bssl::UniquePtr<ECDSA_SIG> ecdsa_sig(ECDSA_SIG_new());
   if (!ecdsa_sig)
     return Status::OperationError();
 
@@ -180,7 +182,6 @@ class EcdsaImplementation : public EcAlgorithm {
       return Status::ErrorUnexpectedKeyType();
 
     crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-    crypto::ScopedEVP_MD_CTX ctx(EVP_MD_CTX_create());
 
     EVP_PKEY* private_key = NULL;
     const EVP_MD* digest = NULL;
@@ -191,9 +192,9 @@ class EcdsaImplementation : public EcAlgorithm {
     // NOTE: A call to EVP_DigestSignFinal() with a NULL second parameter
     // returns a maximum allocation size, while the call without a NULL returns
     // the real one, which may be smaller.
+    bssl::ScopedEVP_MD_CTX ctx;
     size_t sig_len = 0;
-    if (!ctx.get() ||
-        !EVP_DigestSignInit(ctx.get(), NULL, digest, NULL, private_key) ||
+    if (!EVP_DigestSignInit(ctx.get(), NULL, digest, NULL, private_key) ||
         !EVP_DigestSignUpdate(ctx.get(), data.bytes(), data.byte_length()) ||
         !EVP_DigestSignFinal(ctx.get(), NULL, &sig_len)) {
       return Status::OperationError();
@@ -219,7 +220,6 @@ class EcdsaImplementation : public EcAlgorithm {
       return Status::ErrorUnexpectedKeyType();
 
     crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-    crypto::ScopedEVP_MD_CTX ctx(EVP_MD_CTX_create());
 
     EVP_PKEY* public_key = NULL;
     const EVP_MD* digest = NULL;
@@ -239,6 +239,7 @@ class EcdsaImplementation : public EcAlgorithm {
       return Status::Success();
     }
 
+    bssl::ScopedEVP_MD_CTX ctx;
     if (!EVP_DigestVerifyInit(ctx.get(), NULL, digest, NULL, public_key) ||
         !EVP_DigestVerifyUpdate(ctx.get(), data.bytes(), data.byte_length())) {
       return Status::OperationError();

@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include <openssl/aes.h>
-#include <openssl/evp.h>
+#include <openssl/bn.h>
+#include <openssl/cipher.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -18,7 +19,6 @@
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
-#include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 
 namespace webcrypto {
@@ -50,12 +50,7 @@ Status AesCtrEncrypt128BitCounter(const EVP_CIPHER* cipher,
   DCHECK_EQ(16u, counter.byte_length());
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  crypto::ScopedOpenSSL<EVP_CIPHER_CTX, EVP_CIPHER_CTX_free> context(
-      EVP_CIPHER_CTX_new());
-
-  if (!context.get())
-    return Status::OperationError();
-
+  bssl::ScopedEVP_CIPHER_CTX context;
   if (!EVP_CipherInit_ex(context.get(), cipher, NULL, raw_key.bytes(),
                          counter.bytes(), ENCRYPT)) {
     return Status::OperationError();
@@ -87,14 +82,14 @@ T CeilDiv(T a, T b) {
 
 // Extracts the counter as a BIGNUM. The counter is the rightmost
 // "counter_length_bits" of the block, interpreted as a big-endian number.
-crypto::ScopedBIGNUM GetCounter(const CryptoData& counter_block,
-                                unsigned int counter_length_bits) {
+bssl::UniquePtr<BIGNUM> GetCounter(const CryptoData& counter_block,
+                                   unsigned int counter_length_bits) {
   unsigned int counter_length_remainder_bits = (counter_length_bits % 8);
 
   // If the counter is a multiple of 8 bits then can call BN_bin2bn() directly.
   if (counter_length_remainder_bits == 0) {
     unsigned int byte_length = counter_length_bits / 8;
-    return crypto::ScopedBIGNUM(BN_bin2bn(
+    return bssl::UniquePtr<BIGNUM>(BN_bin2bn(
         counter_block.bytes() + counter_block.byte_length() - byte_length,
         byte_length, NULL));
   }
@@ -107,7 +102,8 @@ crypto::ScopedBIGNUM GetCounter(const CryptoData& counter_block,
       counter_block.bytes() + counter_block.byte_length());
   counter[0] &= ~(0xFF << counter_length_remainder_bits);
 
-  return crypto::ScopedBIGNUM(BN_bin2bn(counter.data(), counter.size(), NULL));
+  return bssl::UniquePtr<BIGNUM>(
+      BN_bin2bn(counter.data(), counter.size(), NULL));
 }
 
 // Returns a counter block with the counter bits all set all zero.
@@ -173,16 +169,16 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
   buffer->resize(output_max_len.ValueOrDie());
 
   // The total number of possible counter values is pow(2, counter_length_bits)
-  crypto::ScopedBIGNUM num_counter_values(BN_new());
+  bssl::UniquePtr<BIGNUM> num_counter_values(BN_new());
   if (!BN_lshift(num_counter_values.get(), BN_value_one(), counter_length_bits))
     return Status::ErrorUnexpected();
 
-  crypto::ScopedBIGNUM current_counter =
+  bssl::UniquePtr<BIGNUM> current_counter =
       GetCounter(counter_block, counter_length_bits);
 
   // The number of AES blocks needed for encryption/decryption. The counter is
   // incremented this many times.
-  crypto::ScopedBIGNUM num_output_blocks(BN_new());
+  bssl::UniquePtr<BIGNUM> num_output_blocks(BN_new());
   if (!BN_set_word(
           num_output_blocks.get(),
           CeilDiv(buffer->size(), static_cast<size_t>(AES_BLOCK_SIZE)))) {
@@ -197,7 +193,7 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
   // This is the number of blocks that can be successfully encrypted without
   // overflowing the counter. Encrypting the subsequent block will need to
   // reset the counter to zero.
-  crypto::ScopedBIGNUM num_blocks_until_reset(BN_new());
+  bssl::UniquePtr<BIGNUM> num_blocks_until_reset(BN_new());
 
   if (!BN_sub(num_blocks_until_reset.get(), num_counter_values.get(),
               current_counter.get())) {

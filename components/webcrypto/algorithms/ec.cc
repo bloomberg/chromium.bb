@@ -4,9 +4,12 @@
 
 #include "components/webcrypto/algorithms/ec.h"
 
+#include <openssl/bn.h>
+#include <openssl/bytestring.h>
 #include <openssl/ec.h>
 #include <openssl/ec_key.h>
 #include <openssl/evp.h>
+#include <openssl/mem.h>
 #include <stddef.h>
 #include <utility>
 
@@ -19,9 +22,7 @@
 #include "components/webcrypto/generate_key_result.h"
 #include "components/webcrypto/jwk.h"
 #include "components/webcrypto/status.h"
-#include "crypto/auto_cbb.h"
 #include "crypto/openssl_util.h"
-#include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 
@@ -141,7 +142,7 @@ Status VerifyEcKeyAfterSpkiOrPkcs8Import(
 
 // Creates an EC_KEY for the given WebCryptoNamedCurve.
 Status CreateEC_KEY(blink::WebCryptoNamedCurve named_curve,
-                    crypto::ScopedEC_KEY* ec) {
+                    bssl::UniquePtr<EC_KEY>* ec) {
   int curve_nid = 0;
   Status status = WebCryptoCurveToNid(named_curve, &curve_nid);
   if (status.IsError())
@@ -171,7 +172,7 @@ Status WritePaddedBIGNUM(const std::string& member_name,
 Status ReadPaddedBIGNUM(const JwkReader& jwk,
                         const std::string& member_name,
                         size_t expected_length,
-                        crypto::ScopedBIGNUM* out) {
+                        bssl::UniquePtr<BIGNUM>* out) {
   std::string bytes;
   Status status = jwk.GetBytes(member_name, &bytes);
   if (status.IsError())
@@ -193,8 +194,8 @@ int GetGroupDegreeInBytes(EC_KEY* ec) {
 
 // Extracts the public key as affine coordinates (x,y).
 Status GetPublicKey(EC_KEY* ec,
-                    crypto::ScopedBIGNUM* x,
-                    crypto::ScopedBIGNUM* y) {
+                    bssl::UniquePtr<BIGNUM>* x,
+                    bssl::UniquePtr<BIGNUM>* y) {
   const EC_GROUP* group = EC_KEY_get0_group(ec);
   const EC_POINT* point = EC_KEY_get0_public_key(ec);
 
@@ -238,7 +239,7 @@ Status EcAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   // Generate an EC key pair.
-  crypto::ScopedEC_KEY ec_private_key;
+  bssl::UniquePtr<EC_KEY> ec_private_key;
   status = CreateEC_KEY(params->namedCurve(), &ec_private_key);
   if (status.IsError())
     return status;
@@ -247,15 +248,15 @@ Status EcAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
     return Status::OperationError();
 
   // Construct an EVP_PKEY for the private key.
-  crypto::ScopedEVP_PKEY private_pkey(EVP_PKEY_new());
+  bssl::UniquePtr<EVP_PKEY> private_pkey(EVP_PKEY_new());
   if (!private_pkey ||
       !EVP_PKEY_set1_EC_KEY(private_pkey.get(), ec_private_key.get())) {
     return Status::OperationError();
   }
 
   // Construct an EVP_PKEY for just the public key.
-  crypto::ScopedEC_KEY ec_public_key;
-  crypto::ScopedEVP_PKEY public_pkey(EVP_PKEY_new());
+  bssl::UniquePtr<EC_KEY> ec_public_key;
+  bssl::UniquePtr<EVP_PKEY> public_pkey(EVP_PKEY_new());
   status = CreateEC_KEY(params->namedCurve(), &ec_public_key);
   if (status.IsError())
     return status;
@@ -343,12 +344,12 @@ Status EcAlgorithm::ImportKeyRaw(const CryptoData& key_data,
       algorithm.ecKeyImportParams();
 
   // Create an EC_KEY.
-  crypto::ScopedEC_KEY ec;
+  bssl::UniquePtr<EC_KEY> ec;
   status = CreateEC_KEY(params->namedCurve(), &ec);
   if (status.IsError())
     return status;
 
-  crypto::ScopedEC_POINT point(EC_POINT_new(EC_KEY_get0_group(ec.get())));
+  bssl::UniquePtr<EC_POINT> point(EC_POINT_new(EC_KEY_get0_group(ec.get())));
   if (!point.get())
     return Status::OperationError();
 
@@ -367,7 +368,7 @@ Status EcAlgorithm::ImportKeyRaw(const CryptoData& key_data,
     return Status::ErrorEcKeyInvalid();
 
   // Wrap the EC_KEY into an EVP_PKEY.
-  crypto::ScopedEVP_PKEY pkey(EVP_PKEY_new());
+  bssl::UniquePtr<EVP_PKEY> pkey(EVP_PKEY_new());
   if (!pkey || !EVP_PKEY_set1_EC_KEY(pkey.get(), ec.get()))
     return Status::OperationError();
 
@@ -389,7 +390,7 @@ Status EcAlgorithm::ImportKeyPkcs8(const CryptoData& key_data,
   if (status.IsError())
     return status;
 
-  crypto::ScopedEVP_PKEY private_key;
+  bssl::UniquePtr<EVP_PKEY> private_key;
   status = ImportUnverifiedPkeyFromPkcs8(key_data, EVP_PKEY_EC, &private_key);
   if (status.IsError())
     return status;
@@ -417,7 +418,7 @@ Status EcAlgorithm::ImportKeySpki(const CryptoData& key_data,
   if (status.IsError())
     return status;
 
-  crypto::ScopedEVP_PKEY public_key;
+  bssl::UniquePtr<EVP_PKEY> public_key;
   status = ImportUnverifiedPkeyFromSpki(key_data, EVP_PKEY_EC, &public_key);
   if (status.IsError())
     return status;
@@ -486,7 +487,7 @@ Status EcAlgorithm::ImportKeyJwk(const CryptoData& key_data,
     return status;
 
   // Create an EC_KEY.
-  crypto::ScopedEC_KEY ec;
+  bssl::UniquePtr<EC_KEY> ec;
   status = CreateEC_KEY(params->namedCurve(), &ec);
   if (status.IsError())
     return status;
@@ -495,12 +496,12 @@ Status EcAlgorithm::ImportKeyJwk(const CryptoData& key_data,
   int degree_bytes = GetGroupDegreeInBytes(ec.get());
 
   // Read the public key's uncompressed affine coordinates.
-  crypto::ScopedBIGNUM x;
+  bssl::UniquePtr<BIGNUM> x;
   status = ReadPaddedBIGNUM(jwk, "x", degree_bytes, &x);
   if (status.IsError())
     return status;
 
-  crypto::ScopedBIGNUM y;
+  bssl::UniquePtr<BIGNUM> y;
   status = ReadPaddedBIGNUM(jwk, "y", degree_bytes, &y);
   if (status.IsError())
     return status;
@@ -513,7 +514,7 @@ Status EcAlgorithm::ImportKeyJwk(const CryptoData& key_data,
 
   // Extract the "d" parameters.
   if (is_private_key) {
-    crypto::ScopedBIGNUM d;
+    bssl::UniquePtr<BIGNUM> d;
     status = ReadPaddedBIGNUM(jwk, "d", degree_bytes, &d);
     if (status.IsError())
       return status;
@@ -527,7 +528,7 @@ Status EcAlgorithm::ImportKeyJwk(const CryptoData& key_data,
     return Status::ErrorEcKeyInvalid();
 
   // Wrap the EC_KEY into an EVP_PKEY.
-  crypto::ScopedEVP_PKEY pkey(EVP_PKEY_new());
+  bssl::UniquePtr<EVP_PKEY> pkey(EVP_PKEY_new());
   if (!pkey || !EVP_PKEY_set1_EC_KEY(pkey.get(), ec.get()))
     return Status::OperationError();
 
@@ -560,7 +561,7 @@ Status EcAlgorithm::ExportKeyRaw(const blink::WebCryptoKey& key,
   // Serialize the public key as an uncompressed point in X9.62 form.
   uint8_t* raw;
   size_t raw_len;
-  crypto::AutoCBB cbb;
+  bssl::ScopedCBB cbb;
   if (!CBB_init(cbb.get(), 0) ||
       !EC_POINT_point2cbb(cbb.get(), EC_KEY_get0_group(ec),
                           EC_KEY_get0_public_key(ec),
@@ -622,8 +623,8 @@ Status EcAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
 
   jwk.SetString("crv", crv);
 
-  crypto::ScopedBIGNUM x;
-  crypto::ScopedBIGNUM y;
+  bssl::UniquePtr<BIGNUM> x;
+  bssl::UniquePtr<BIGNUM> y;
   status = GetPublicKey(ec, &x, &y);
   if (status.IsError())
     return status;

@@ -10,7 +10,6 @@
 
 #include <vector>
 
-#include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
 // Blink keys (blink::WebCryptoKey) have an associated key handle
@@ -53,7 +52,7 @@ blink::WebCryptoKeyHandle* CreateSymmetricKeyHandle(
 // create a copy, since all the callers are passing in vectors that are later
 // thrown away anyway.
 blink::WebCryptoKeyHandle* CreateAsymmetricKeyHandle(
-    crypto::ScopedEVP_PKEY pkey,
+    bssl::UniquePtr<EVP_PKEY> pkey,
     const std::vector<uint8_t>& serialized_key_data);
 
 }  // namespace webcrypto

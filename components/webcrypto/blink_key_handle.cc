@@ -4,6 +4,8 @@
 
 #include "components/webcrypto/blink_key_handle.h"
 
+#include <openssl/evp.h>
+
 #include <utility>
 
 #include "base/logging.h"
@@ -67,7 +69,7 @@ class SymKey : public Key {
 class AsymKey : public Key {
  public:
   // After construction the |pkey| should NOT be mutated.
-  AsymKey(crypto::ScopedEVP_PKEY pkey,
+  AsymKey(bssl::UniquePtr<EVP_PKEY> pkey,
           const std::vector<uint8_t>& serialized_key_data)
       : Key(CryptoData(serialized_key_data)), pkey_(std::move(pkey)) {}
 
@@ -77,7 +79,7 @@ class AsymKey : public Key {
   EVP_PKEY* pkey() { return pkey_.get(); }
 
  private:
-  crypto::ScopedEVP_PKEY pkey_;
+  bssl::UniquePtr<EVP_PKEY> pkey_;
 
   DISALLOW_COPY_AND_ASSIGN(AsymKey);
 };
@@ -110,7 +112,7 @@ blink::WebCryptoKeyHandle* CreateSymmetricKeyHandle(
 }
 
 blink::WebCryptoKeyHandle* CreateAsymmetricKeyHandle(
-    crypto::ScopedEVP_PKEY pkey,
+    bssl::UniquePtr<EVP_PKEY> pkey,
     const std::vector<uint8_t>& serialized_key_data) {
   return new AsymKey(std::move(pkey), serialized_key_data);
 }

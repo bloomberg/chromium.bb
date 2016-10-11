@@ -6,6 +6,7 @@
 
 #include <openssl/bytestring.h>
 #include <openssl/evp.h>
+#include <openssl/mem.h>
 #include <stdint.h>
 #include <utility>
 
@@ -14,9 +15,7 @@
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
 #include "components/webcrypto/status.h"
-#include "crypto/auto_cbb.h"
 #include "crypto/openssl_util.h"
-#include "crypto/scoped_openssl_types.h"
 
 namespace webcrypto {
 
@@ -28,7 +27,7 @@ Status ExportPKeySpki(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
 
   uint8_t* der;
   size_t der_len;
-  crypto::AutoCBB cbb;
+  bssl::ScopedCBB cbb;
   if (!CBB_init(cbb.get(), 0) || !EVP_marshal_public_key(cbb.get(), key) ||
       !CBB_finish(cbb.get(), &der, &der_len)) {
     return Status::ErrorUnexpected();
@@ -46,7 +45,7 @@ Status ExportPKeyPkcs8(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
   //               http://crbug.com/373545
   uint8_t* der;
   size_t der_len;
-  crypto::AutoCBB cbb;
+  bssl::ScopedCBB cbb;
   if (!CBB_init(cbb.get(), 0) || !EVP_marshal_private_key(cbb.get(), key) ||
       !CBB_finish(cbb.get(), &der, &der_len)) {
     return Status::ErrorUnexpected();
@@ -58,7 +57,7 @@ Status ExportPKeyPkcs8(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
 
 }  // namespace
 
-Status CreateWebCryptoPublicKey(crypto::ScopedEVP_PKEY public_key,
+Status CreateWebCryptoPublicKey(bssl::UniquePtr<EVP_PKEY> public_key,
                                 const blink::WebCryptoKeyAlgorithm& algorithm,
                                 bool extractable,
                                 blink::WebCryptoKeyUsageMask usages,
@@ -76,7 +75,7 @@ Status CreateWebCryptoPublicKey(crypto::ScopedEVP_PKEY public_key,
   return Status::Success();
 }
 
-Status CreateWebCryptoPrivateKey(crypto::ScopedEVP_PKEY private_key,
+Status CreateWebCryptoPrivateKey(bssl::UniquePtr<EVP_PKEY> private_key,
                                  const blink::WebCryptoKeyAlgorithm& algorithm,
                                  bool extractable,
                                  blink::WebCryptoKeyUsageMask usages,
@@ -96,12 +95,12 @@ Status CreateWebCryptoPrivateKey(crypto::ScopedEVP_PKEY private_key,
 
 Status ImportUnverifiedPkeyFromSpki(const CryptoData& key_data,
                                     int expected_pkey_id,
-                                    crypto::ScopedEVP_PKEY* out_pkey) {
+                                    bssl::UniquePtr<EVP_PKEY>* out_pkey) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   CBS cbs;
   CBS_init(&cbs, key_data.bytes(), key_data.byte_length());
-  crypto::ScopedEVP_PKEY pkey(EVP_parse_public_key(&cbs));
+  bssl::UniquePtr<EVP_PKEY> pkey(EVP_parse_public_key(&cbs));
   if (!pkey || CBS_len(&cbs) != 0)
     return Status::DataError();
 
@@ -114,12 +113,12 @@ Status ImportUnverifiedPkeyFromSpki(const CryptoData& key_data,
 
 Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
                                      int expected_pkey_id,
-                                     crypto::ScopedEVP_PKEY* out_pkey) {
+                                     bssl::UniquePtr<EVP_PKEY>* out_pkey) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   CBS cbs;
   CBS_init(&cbs, key_data.bytes(), key_data.byte_length());
-  crypto::ScopedEVP_PKEY pkey(EVP_parse_private_key(&cbs));
+  bssl::UniquePtr<EVP_PKEY> pkey(EVP_parse_private_key(&cbs));
   if (!pkey || CBS_len(&cbs) != 0)
     return Status::DataError();
 

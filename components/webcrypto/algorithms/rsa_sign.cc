@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <openssl/digest.h>
+#include <openssl/evp.h>
+#include <openssl/rsa.h>
 #include <stddef.h>
 
 #include "base/numerics/safe_math.h"
@@ -11,7 +14,6 @@
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
 #include "crypto/openssl_util.h"
-#include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 
 namespace webcrypto {
@@ -74,7 +76,7 @@ Status RsaSign(const blink::WebCryptoKey& key,
     return Status::ErrorUnexpectedKeyType();
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  crypto::ScopedEVP_MD_CTX ctx(EVP_MD_CTX_create());
+  bssl::ScopedEVP_MD_CTX ctx;
   EVP_PKEY_CTX* pctx = NULL;  // Owned by |ctx|.
 
   EVP_PKEY* private_key = NULL;
@@ -87,8 +89,7 @@ Status RsaSign(const blink::WebCryptoKey& key,
   // returns a maximum allocation size, while the call without a NULL returns
   // the real one, which may be smaller.
   size_t sig_len = 0;
-  if (!ctx.get() ||
-      !EVP_DigestSignInit(ctx.get(), &pctx, digest, NULL, private_key)) {
+  if (!EVP_DigestSignInit(ctx.get(), &pctx, digest, NULL, private_key)) {
     return Status::OperationError();
   }
 
@@ -119,7 +120,7 @@ Status RsaVerify(const blink::WebCryptoKey& key,
     return Status::ErrorUnexpectedKeyType();
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  crypto::ScopedEVP_MD_CTX ctx(EVP_MD_CTX_create());
+  bssl::ScopedEVP_MD_CTX ctx;
   EVP_PKEY_CTX* pctx = NULL;  // Owned by |ctx|.
 
   EVP_PKEY* public_key = NULL;
