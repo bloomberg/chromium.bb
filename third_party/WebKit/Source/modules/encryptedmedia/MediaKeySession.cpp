@@ -843,15 +843,30 @@ void MediaKeySession::message(MessageType messageType,
 void MediaKeySession::close() {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
 
-  // From https://w3c.github.io/encrypted-media/#session-close:
-  // The following steps are run:
-  // 1. Let the session be the associated MediaKeySession object.
-  // 2. Let promise be the closed attribute of the session.
-  // 3. Resolve promise.
+  // From http://w3c.github.io/encrypted-media/#session-closed
+  // 1. Let session be the associated MediaKeySession object.
+  // 2. If session's session type is "persistent-usage-record", execute the
+  //    following steps in parallel:
+  //    1. Let cdm be the CDM instance represented by session's cdm instance
+  //       value.
+  //    2. Use cdm to store session's record of key usage, if it exists.
+  //    ("persistent-usage-record" not supported by Chrome.)
+
+  // 3. Run the Update Key Statuses algorithm on the session, providing an
+  //    empty sequence.
+  keysStatusesChange(WebVector<WebEncryptedMediaKeyInformation>(), false);
+
+  // 4. Run the Update Expiration algorithm on the session, providing NaN.
+  expirationChanged(std::numeric_limits<double>::quiet_NaN());
+
+  // 5. Let promise be the closed attribute of the session.
+  // 6. Resolve promise.
   m_closedPromise->resolve(ToV8UndefinedGenerator());
 
-  // Once closed, the session can no longer be the target of events from
-  // the CDM so this object can be garbage collected.
+  // After this algorithm has run, event handlers for the events queued by
+  // this algorithm will be executed, but no further events can be queued.
+  // As a result, no messages can be sent by the CDM as a result of closing
+  // the session.
   m_isClosed = true;
 }
 

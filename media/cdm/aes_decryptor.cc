@@ -408,11 +408,6 @@ void AesDecryptor::CloseSession(const std::string& session_id,
   DeleteKeysForSession(session_id);
   promise->resolve();
 
-  // Update key statuses. All keys have been destroyed, so it's an empty set.
-  session_keys_change_cb_.Run(session_id, false, CdmKeysInfo());
-
-  // Update expiration time to NaN. (http://crbug.com/624192)
-
   // Resolve the closed attribute.
   session_closed_cb_.Run(session_id);
 }

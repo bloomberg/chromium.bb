@@ -142,8 +142,10 @@
                     else
                     {
                         // The second keystatuseschange (caused by close())
-                        // should not have any keys.
+                        // should not have any keys, and the expiration time
+                        // should be NaN.
                         assert_equals(mediaKeySession.keyStatuses.size, 0);
+                        assert_true(isNaN(mediaKeySession.expiration));
                         test.done();
                     }
                 }
