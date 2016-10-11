@@ -13,6 +13,10 @@
 #include "content/common/frame_messages.h"
 #include "content/public/browser/message_port_delegate.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/android/app_web_message_port_service_impl.h"
+#endif
+
 namespace content {
 
 // static
@@ -24,6 +28,13 @@ void MessagePortProvider::PostMessageToFrame(
     const std::vector<int>& ports) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+#if defined(OS_ANDROID)
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&content::AppWebMessagePortServiceImpl::RemoveSentPorts,
+                 base::Unretained(AppWebMessagePortServiceImpl::GetInstance()),
+                 ports));
+#endif
   FrameMsg_PostMessage_Params params;
   params.is_data_raw_string = true;
   params.data = data;
@@ -41,68 +52,11 @@ void MessagePortProvider::PostMessageToFrame(
                  web_contents->GetMainFrame()->GetRoutingID(), params));
 }
 
+#if defined(OS_ANDROID)
 // static
-void MessagePortProvider::CreateMessageChannel(MessagePortDelegate* delegate,
-                                               int* port1,
-                                               int* port2) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  *port1 = 0;
-  *port2 = 0;
-  MessagePortService* msp = MessagePortService::GetInstance();
-  msp->Create(MSG_ROUTING_NONE, delegate, port1);
-  msp->Create(MSG_ROUTING_NONE, delegate, port2);
-  // Update the routing number of the message ports to be equal to the message
-  // port numbers.
-  msp->UpdateMessagePort(*port1, delegate, *port1);
-  msp->UpdateMessagePort(*port2, delegate, *port2);
-  msp->Entangle(*port1, *port2);
-  msp->Entangle(*port2, *port1);
+AppWebMessagePortService* MessagePortProvider::GetAppWebMessagePortService() {
+  return AppWebMessagePortServiceImpl::GetInstance();
 }
-
-// static
-void MessagePortProvider::PostMessageToPort(
-    int sender_port_id,
-    const base::string16& message,
-    const std::vector<int>& sent_ports) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  MessagePortService* msp = MessagePortService::GetInstance();
-  msp->PostMessage(sender_port_id, message, sent_ports);
-}
-
-// static
-void MessagePortProvider::ClosePort(int message_port_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  MessagePortService* msp = MessagePortService::GetInstance();
-  msp->ClosePort(message_port_id);
-}
-
-// static
-void MessagePortProvider::HoldMessages(int message_port_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  MessagePortService* msp = MessagePortService::GetInstance();
-  msp->HoldMessages(message_port_id);
-}
-
-// static
-void MessagePortProvider::ReleaseMessages(int message_port_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  MessagePortService* msp = MessagePortService::GetInstance();
-  msp->ReleaseMessages(message_port_id);
-}
-
-// static
-void MessagePortProvider::OnMessagePortDelegateClosing(
-    MessagePortDelegate* delegate) {
-  MessagePortService::GetInstance()->OnMessagePortDelegateClosing(delegate);
-}
-
-// static
-void MessagePortProvider::UpdateMessagePort(int message_port_id,
-                                            MessagePortDelegate* delegate) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  MessagePortService::GetInstance()->UpdateMessagePort(message_port_id,
-                                                       delegate,
-                                                       message_port_id);
-}
+#endif
 
 } // namespace content

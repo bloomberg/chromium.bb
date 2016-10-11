@@ -56,9 +56,12 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
+import org.chromium.content.browser.AppWebMessagePort;
+import org.chromium.content.browser.AppWebMessagePortService;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
+import org.chromium.content.browser.PostMessageSender;
 import org.chromium.content.browser.SmartClipProvider;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.JavaScriptCallback;
@@ -2240,11 +2243,11 @@ public class AwContents implements SmartClipProvider,
      * @param sentPorts The sent message ports, if any. Pass null if there is no
      *                  message ports to pass.
      */
-    public void postMessageToFrame(String frameName, String message, String targetOrigin,
-            AwMessagePort[] sentPorts) {
+    public void postMessageToFrame(
+            String frameName, String message, String targetOrigin, AppWebMessagePort[] sentPorts) {
         if (isDestroyed(WARN)) return;
         if (mPostMessageSender == null) {
-            AwMessagePortService service = mBrowserContext.getMessagePortService();
+            AppWebMessagePortService service = mBrowserContext.getMessagePortService();
             mPostMessageSender = new PostMessageSender(this, service);
             service.addObserver(mPostMessageSender);
         }
@@ -2275,10 +2278,10 @@ public class AwContents implements SmartClipProvider,
     /**
      * Creates a message channel and returns the ports for each end of the channel.
      */
-    public AwMessagePort[] createMessageChannel() {
+    public AppWebMessagePort[] createMessageChannel() {
         if (TRACE) Log.i(TAG, "%s createMessageChannel", this);
         if (isDestroyed(WARN)) return null;
-        AwMessagePort[] ports = mBrowserContext.getMessagePortService().createMessageChannel();
+        AppWebMessagePort[] ports = mBrowserContext.getMessagePortService().createMessageChannel();
         nativeCreateMessageChannel(mNativeAwContents, ports);
         return ports;
     }
@@ -3373,7 +3376,8 @@ public class AwContents implements SmartClipProvider,
     private native void nativePostMessageToFrame(long nativeAwContents, String frameId,
             String message, String targetOrigin, int[] msgPorts);
 
-    private native void nativeCreateMessageChannel(long nativeAwContents, AwMessagePort[] ports);
+    private native void nativeCreateMessageChannel(
+            long nativeAwContents, AppWebMessagePort[] ports);
 
     private native void nativeGrantFileSchemeAccesstoChildProcess(long nativeAwContents);
     private native void nativeResumeLoadingCreatedPopupWebContents(long nativeAwContents);

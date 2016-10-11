@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview;
+package org.chromium.content.browser;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
+
+import org.chromium.base.Log;
 
 /**
  * Represents the MessageChannel MessagePort object. Inspired from
@@ -57,9 +58,9 @@ import android.util.Log;
  * it gets executed with a timeout, depending on timeout value, the printout value
  * changes.
  *
- * To prevent such problems, Android webview implementation limits the transfer of ports
+ * To prevent such problems, this implementation limits the transfer of ports
  * as below:
- * Webview puts a port to a "started" state if:
+ * A port is put to a "started" state if:
  * 1. The port is ever used to post a message, or
  * 2. The port was ever registered a handler to receive a message.
  * A started port cannot be transferred.
@@ -69,14 +70,13 @@ import android.util.Log;
  * transferring data. As a return, it simplifies implementation and prevents hard
  * to debug, racy corner cases while receiving/sending data.
  */
-public class AwMessagePort implements PostMessageSender.PostMessageSenderDelegate {
-
+public class AppWebMessagePort implements PostMessageSender.PostMessageSenderDelegate {
     /**
      * The message callback for receiving messages. Called on UI thread or if
      * provided, on the handler that is provided.
      */
     public abstract static class MessageCallback {
-        public abstract void onMessage(String message, AwMessagePort[] sentPorts);
+        public abstract void onMessage(String message, AppWebMessagePort[] sentPorts);
     }
 
     private static final String TAG = "MessagePort";
@@ -86,11 +86,12 @@ public class AwMessagePort implements PostMessageSender.PostMessageSenderDelegat
     private static final int POST_MESSAGE = 1;
 
     private static class PostMessageFromWeb {
-        public AwMessagePort port;
+        public AppWebMessagePort port;
         public String message;
-        public AwMessagePort[] sentPorts;
+        public AppWebMessagePort[] sentPorts;
 
-        public PostMessageFromWeb(AwMessagePort port, String message, AwMessagePort[] sentPorts) {
+        public PostMessageFromWeb(
+                AppWebMessagePort port, String message, AppWebMessagePort[] sentPorts) {
             this.port = port;
             this.message = message;
             this.sentPorts = sentPorts;
@@ -120,7 +121,7 @@ public class AwMessagePort implements PostMessageSender.PostMessageSenderDelegat
 
     private int mPortId = PENDING;
     private MessageCallback mMessageCallback;
-    private AwMessagePortService mMessagePortService;
+    private AppWebMessagePortService mMessagePortService;
     private boolean mClosed;
     private boolean mTransferred;
     private boolean mStarted;
@@ -129,7 +130,7 @@ public class AwMessagePort implements PostMessageSender.PostMessageSenderDelegat
     private MessageHandler mHandler;
     private final Object mLock = new Object();
 
-    public AwMessagePort(AwMessagePortService messagePortService) {
+    public AppWebMessagePort(AppWebMessagePortService messagePortService) {
         mMessagePortService = messagePortService;
         mPostMessageSender = new PostMessageSender(this, mMessagePortService);
         mMessagePortService.addObserver(mPostMessageSender);
@@ -194,7 +195,7 @@ public class AwMessagePort implements PostMessageSender.PostMessageSenderDelegat
     }
 
     // Only called on IO thread.
-    public void onReceivedMessage(String message, AwMessagePort[] sentPorts) {
+    public void onReceivedMessage(String message, AppWebMessagePort[] sentPorts) {
         synchronized (mLock) {
             PostMessageFromWeb m = new PostMessageFromWeb(this, message, sentPorts);
             Handler handler = mHandler != null ? mHandler : sDefaultHandler;
@@ -212,28 +213,28 @@ public class AwMessagePort implements PostMessageSender.PostMessageSenderDelegat
     }
 
     // This method may be called on a different thread than UI thread.
-    public void onMessage(String message, AwMessagePort[] ports) {
+    public void onMessage(String message, AppWebMessagePort[] ports) {
         synchronized (mLock) {
             if (isClosed()) {
                 Log.w(TAG, "Port [" + mPortId + "] received message in closed state");
                 return;
             }
             if (mMessageCallback == null) {
-                Log.w(TAG, "No handler set for port [" + mPortId + "], dropping message "
-                        + message);
+                Log.w(TAG,
+                        "No handler set for port [" + mPortId + "], dropping message " + message);
                 return;
             }
             mMessageCallback.onMessage(message, ports);
         }
     }
 
-    public void postMessage(String message, AwMessagePort[] sentPorts)
+    public void postMessage(String message, AppWebMessagePort[] sentPorts)
             throws IllegalStateException {
         if (isClosed() || isTransferred()) {
             throw new IllegalStateException("Port is already closed or transferred");
         }
         if (sentPorts != null) {
-            for (AwMessagePort port : sentPorts) {
+            for (AppWebMessagePort port : sentPorts) {
                 if (port.equals(this)) {
                     throw new IllegalStateException("Source port cannot be transferred");
                 }
@@ -259,8 +260,8 @@ public class AwMessagePort implements PostMessageSender.PostMessageSenderDelegat
 
     // Implements PostMessageSender.PostMessageSenderDelegate interface method.
     @Override
-    public void postMessageToWeb(String frameName, String message, String targetOrigin,
-            int[] sentPortIds) {
+    public void postMessageToWeb(
+            String frameName, String message, String targetOrigin, int[] sentPortIds) {
         mMessagePortService.postMessage(mPortId, message, sentPortIds);
     }
 

@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview;
+package org.chromium.content.browser;
 
 import java.util.ArrayDeque;
 
 /**
  * Sanity checks and sends post messages to web. Queues messages if necessary.
  */
-public class PostMessageSender implements AwMessagePortService.MessageChannelObserver {
-
+public class PostMessageSender implements AppWebMessagePortService.MessageChannelObserver {
     /**
      * The interface for message handler.
      */
     public static interface PostMessageSenderDelegate {
-
         /*
          * Posts a message to the destination frame for real. The unique message port
          * id of any transferred port should be known at this time.
          */
-        void postMessageToWeb(String frameName, String message, String targetOrigin,
-                int[] sentPortIds);
+        void postMessageToWeb(
+                String frameName, String message, String targetOrigin, int[] sentPortIds);
 
         /*
          * Whether the post message sender is ready to post messages.
@@ -32,17 +30,18 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
          * Informs that all messages are posted and message queue is empty.
          */
         void onPostMessageQueueEmpty();
-    };
+    }
+    ;
 
     // A struct to store Message parameters that are sent from App to Web.
     private static class PostMessageParams {
         public String frameName;
         public String message;
         public String targetOrigin;
-        public AwMessagePort[] sentPorts;
+        public AppWebMessagePort[] sentPorts;
 
         public PostMessageParams(String frameName, String message, String targetOrigin,
-                AwMessagePort[] sentPorts) {
+                AppWebMessagePort[] sentPorts) {
             this.frameName = frameName;
             this.message = message;
             this.targetOrigin = targetOrigin;
@@ -51,7 +50,7 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
     }
 
     private PostMessageSenderDelegate mDelegate;
-    private AwMessagePortService mService;
+    private AppWebMessagePortService mService;
 
     // If a message that is sent from android webview to web has a pending port (a port that
     // is not internally created yet), this message, and any following messages will be
@@ -59,7 +58,7 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
     // reordering.
     private ArrayDeque<PostMessageParams> mMessageQueue = new ArrayDeque<PostMessageParams>();
 
-    public PostMessageSender(PostMessageSenderDelegate delegate, AwMessagePortService service) {
+    public PostMessageSender(PostMessageSenderDelegate delegate, AppWebMessagePortService service) {
         mDelegate = delegate;
         mService = service;
     }
@@ -71,9 +70,9 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
     }
 
     // Return true if any sent port is pending.
-    private boolean anySentPortIsPending(AwMessagePort[] sentPorts) {
+    private boolean anySentPortIsPending(AppWebMessagePort[] sentPorts) {
         if (sentPorts != null) {
-            for (AwMessagePort port : sentPorts) {
+            for (AppWebMessagePort port : sentPorts) {
                 if (!port.isReady()) {
                     return true;
                 }
@@ -88,7 +87,7 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
     // a pending state.
     // 2. There are already queued messages
     // 3. The message includes a port that is not ready yet.
-    private boolean shouldQueueMessage(AwMessagePort[] sentPorts) {
+    private boolean shouldQueueMessage(AppWebMessagePort[] sentPorts) {
         // if messages to frames are already in queue mode, simply queue it, no need to
         // check ports.
         if (mMessageQueue.size() > 0 || !mDelegate.isPostMessageSenderReady()) {
@@ -100,8 +99,8 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
         return false;
     }
 
-    private void postMessageToWeb(String frameName, String message, String targetOrigin,
-            AwMessagePort[] sentPorts) {
+    private void postMessageToWeb(
+            String frameName, String message, String targetOrigin, AppWebMessagePort[] sentPorts) {
         int[] portIds = null;
         if (sentPorts != null) {
             portIds = new int[sentPorts.length];
@@ -118,10 +117,10 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
      * when message can be sent.
      */
     public void postMessage(String frameName, String message, String targetOrigin,
-            AwMessagePort[] sentPorts) throws IllegalStateException {
+            AppWebMessagePort[] sentPorts) throws IllegalStateException {
         // Sanity check all the ports that are being transferred.
         if (sentPorts != null) {
-            for (AwMessagePort p : sentPorts) {
+            for (AppWebMessagePort p : sentPorts) {
                 if (p.isClosed()) {
                     throw new IllegalStateException("Closed port cannot be transfered");
                 }
@@ -135,8 +134,7 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
             }
         }
         if (shouldQueueMessage(sentPorts)) {
-            mMessageQueue.add(new PostMessageParams(frameName, message, targetOrigin,
-                    sentPorts));
+            mMessageQueue.add(new PostMessageParams(frameName, message, targetOrigin, sentPorts));
         } else {
             postMessageToWeb(frameName, message, targetOrigin, sentPorts);
         }

@@ -4,5 +4,4 @@
 
 // Multiply-included file, hence no include guard.
 
-#include "android_webview/common/aw_message_port_messages.h"
 #include "android_webview/common/render_view_messages.h"

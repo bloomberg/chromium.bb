@@ -60,6 +60,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/common/android/sync_compositor_messages.h"
+#include "content/common/app_web_message_port_messages.h"
 #include "content/common/gin_java_bridge_messages.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/common/media/surface_view_manager_messages_android.h"

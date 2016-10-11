@@ -69,7 +69,7 @@ class WebBluetoothService;
 }
 
 namespace content {
-
+class AppWebMessagePortMessageFilter;
 class AssociatedInterfaceProviderImpl;
 class CrossProcessFrameConnector;
 class FrameTree;
@@ -293,6 +293,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderWidgetHostImpl* GetRenderWidgetHost();
 
   GlobalFrameRoutingId GetGlobalFrameRoutingId();
+
+#if defined(OS_ANDROID)
+  scoped_refptr<AppWebMessagePortMessageFilter>
+  GetAppWebMessagePortMessageFilter(int routing_id);
+#endif
 
   // This function is called when this is a swapped out RenderFrameHost that
   // lives in the same process as the parent frame. The
@@ -960,6 +965,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
 
+#if defined(OS_ANDROID)
+  // The filter for MessagePort messages between an Android apps and web.
+  scoped_refptr<AppWebMessagePortMessageFilter>
+      app_web_message_port_message_filter_;
+#endif
+
   std::unique_ptr<WebBluetoothServiceImpl> web_bluetooth_service_;
 
   // The object managing the accessibility tree for this frame.
@@ -1043,7 +1054,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   std::unique_ptr<AssociatedInterfaceProviderImpl>
       remote_associated_interfaces_;
-
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
 

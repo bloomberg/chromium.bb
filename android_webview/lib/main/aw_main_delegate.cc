@@ -18,7 +18,6 @@
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_locale_manager_impl.h"
 #include "android_webview/native/aw_media_url_interceptor.h"
-#include "android_webview/native/aw_message_port_service_impl.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
 #include "android_webview/native/aw_web_preferences_populater_impl.h"
@@ -260,10 +259,6 @@ content::WebContentsViewDelegate* AwMainDelegate::CreateViewDelegate(
 
 AwWebPreferencesPopulater* AwMainDelegate::CreateWebPreferencesPopulater() {
   return new AwWebPreferencesPopulaterImpl();
-}
-
-AwMessagePortService* AwMainDelegate::CreateAwMessagePortService() {
-  return new AwMessagePortServiceImpl();
 }
 
 AwLocaleManager* AwMainDelegate::CreateAwLocaleManager() {

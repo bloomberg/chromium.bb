@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_MESSAGE_PORT_MESSAGE_FILTER_H_
-#define ANDROID_WEBVIEW_BROWSER_MESSAGE_PORT_MESSAGE_FILTER_H_
+#ifndef CONTENT_BROWSER_ANDROID_APP_WEB_MESSAGE_PORT_MESSAGE_FILTER_H_
+#define CONTENT_BROWSER_ANDROID_APP_WEB_MESSAGE_PORT_MESSAGE_FILTER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/message_port_delegate.h"
 
-namespace android_webview {
+namespace content {
 
 // Filter for Aw specific MessagePort related IPC messages (creating and
 // destroying a MessagePort, sending a message via a MessagePort etc).
-class AwMessagePortMessageFilter : public content::BrowserMessageFilter,
-                                   public content::MessagePortDelegate {
+class AppWebMessagePortMessageFilter : public content::BrowserMessageFilter,
+                                       public content::MessagePortDelegate {
  public:
-  explicit AwMessagePortMessageFilter(int route_id);
+  explicit AppWebMessagePortMessageFilter(int route_id);
 
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -30,15 +30,14 @@ class AwMessagePortMessageFilter : public content::BrowserMessageFilter,
   void SendClosePortMessage(int message_port_id);
 
   // MessagePortDelegate implementation.
-  void SendMessage(
-      int msg_port_route_id,
-      const base::string16& message,
-      const std::vector<int>& sent_message_ports)
-      override;
+  void SendMessage(int msg_port_route_id,
+                   const base::string16& message,
+                   const std::vector<int>& sent_message_ports) override;
   void SendMessagesAreQueued(int route_id) override;
+
  private:
   friend class content::BrowserThread;
-  friend class base::DeleteHelper<AwMessagePortMessageFilter>;
+  friend class base::DeleteHelper<AppWebMessagePortMessageFilter>;
 
   void OnConvertedAppToWebMessage(
       int msg_port_id,
@@ -46,13 +45,13 @@ class AwMessagePortMessageFilter : public content::BrowserMessageFilter,
       const std::vector<int>& sent_message_port_ids);
   void OnClosePortAck(int message_port_id);
 
-  ~AwMessagePortMessageFilter() override;
-
   int route_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(AwMessagePortMessageFilter);
+  ~AppWebMessagePortMessageFilter() override;
+
+  DISALLOW_COPY_AND_ASSIGN(AppWebMessagePortMessageFilter);
 };
 
-}   // namespace android_webview
+}  // namespace content
 
-#endif  // ANDROID_WEBVIEW_BROWSER_MESSAGE_PORT_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_ANDROID_APP_WEB_MESSAGE_PORT_MESSAGE_FILTER_H_

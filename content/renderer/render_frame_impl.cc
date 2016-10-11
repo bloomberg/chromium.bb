@@ -218,6 +218,7 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 
+#include "content/renderer/android/app_web_message_port_client.h"
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/renderer_surface_view_manager.h"
@@ -1225,6 +1226,10 @@ void RenderFrameImpl::Initialize() {
   // We delay calling this until we have the WebFrame so that any observer or
   // embedder can call GetWebFrame on any RenderFrame.
   GetContentClient()->renderer()->RenderFrameCreated(this);
+
+#if defined(OS_ANDROID)
+  new AppWebMessagePortClient(this);
+#endif
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   // render_thread may be NULL in tests.

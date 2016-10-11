@@ -41,6 +41,7 @@ source_set("common") {
     "android/sync_compositor_messages.h",
     "android/sync_compositor_statics.cc",
     "android/sync_compositor_statics.h",
+    "app_web_message_port_messages.h",
     "appcache_interfaces.cc",
     "appcache_interfaces.h",
     "appcache_messages.h",

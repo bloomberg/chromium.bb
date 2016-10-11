@@ -15,7 +15,6 @@ class WebContentsViewDelegate;
 namespace android_webview {
 
 class AwBrowserContext;
-class AwMessagePortService;
 class AwQuotaManagerBridge;
 class AwWebPreferencesPopulater;
 class AwLocaleManager;
@@ -30,7 +29,6 @@ class JniDependencyFactory {
   virtual content::WebContentsViewDelegate* CreateViewDelegate(
       content::WebContents* web_contents) = 0;
   virtual AwWebPreferencesPopulater* CreateWebPreferencesPopulater() = 0;
-  virtual AwMessagePortService* CreateAwMessagePortService() = 0;
   virtual AwLocaleManager* CreateAwLocaleManager() = 0;
 };
 

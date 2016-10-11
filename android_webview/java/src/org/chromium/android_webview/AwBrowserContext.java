@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import org.chromium.content.browser.AppWebMessagePortService;
 import org.chromium.content.browser.ContentViewStatics;
 
 /**
@@ -22,7 +23,7 @@ public class AwBrowserContext {
 
     private AwGeolocationPermissions mGeolocationPermissions;
     private AwFormDatabase mFormDatabase;
-    private AwMessagePortService mMessagePortService;
+    private AppWebMessagePortService mMessagePortService;
     private AwMetricsServiceClient mMetricsServiceClient;
     private AwServiceWorkerController mServiceWorkerController;
     private Context mApplicationContext;
@@ -47,9 +48,9 @@ public class AwBrowserContext {
         return mFormDatabase;
     }
 
-    public AwMessagePortService getMessagePortService() {
+    public AppWebMessagePortService getMessagePortService() {
         if (mMessagePortService == null) {
-            mMessagePortService = new AwMessagePortService();
+            mMessagePortService = new AppWebMessagePortService();
         }
         return mMessagePortService;
     }

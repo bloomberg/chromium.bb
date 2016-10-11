@@ -238,14 +238,6 @@ AwURLRequestContextGetter* AwBrowserContext::GetAwURLRequestContext() {
   return url_request_context_getter_.get();
 }
 
-AwMessagePortService* AwBrowserContext::GetMessagePortService() {
-  if (!message_port_service_.get()) {
-    message_port_service_.reset(
-        native_factory_->CreateAwMessagePortService());
-  }
-  return message_port_service_.get();
-}
-
 // Create user pref service
 void AwBrowserContext::InitUserPrefService() {
   user_prefs::PrefRegistrySyncable* pref_registry =

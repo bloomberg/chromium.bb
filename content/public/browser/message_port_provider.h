@@ -8,13 +8,15 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
-class MessagePortDelegate;
+class AppWebMessagePortService;
 class WebContents;
+class MessagePortDelegate;
 
 // An interface consisting of methods that can be called to use Message ports.
 class CONTENT_EXPORT MessagePortProvider {
@@ -32,44 +34,9 @@ class CONTENT_EXPORT MessagePortProvider {
       const base::string16& data,
       const std::vector<int>& ports);
 
-  // Creates a message channel and provide the ids of the message ports that are
-  // associated with this message channel.
-  // See https://html.spec.whatwg.org/multipage/comms.html#messagechannel
-  // Should be called on IO thread.
-  // The message ports that are created will have their routing id numbers equal
-  // to the message port numbers.
-  static void CreateMessageChannel(MessagePortDelegate* delegate,
-                                   int* port1,
-                                   int* port2);
-
-  // Posts a MessageEvent to a message port associated with a message channel.
-  // Should be called on IO thread.
-  static void PostMessageToPort(
-      int sender_port_id,
-      const base::string16& message,
-      const std::vector<int>& sent_ports);
-
-  // Close the message port. Should be called on IO thread.
-  static void ClosePort(int message_port_id);
-
-  // Queue up all the messages for this message port until ReleaseMessages
-  // is called. Should be called on IO thread.
-  static void HoldMessages(int message_port_id);
-
-  // Release any queued messages as a result of HoldMessages. Should be
-  // called on IO thread.
-  static void ReleaseMessages(int message_port_id);
-
-  // Cleanup the message ports that belong to the closing delegate.
-  // Should be called on IO thread.
-  static void OnMessagePortDelegateClosing(MessagePortDelegate * delegate);
-
-  // Update message port information when the message port is transferred
-  // from a different process. The updated message ports will have their
-  // routing numbers equal to the message port numbers.
-  // Should be called on IO thread.
-  static void UpdateMessagePort(int message_port_id,
-                                MessagePortDelegate* delegate);
+#if defined(OS_ANDROID)
+  static content::AppWebMessagePortService* GetAppWebMessagePortService();
+#endif
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MessagePortProvider);

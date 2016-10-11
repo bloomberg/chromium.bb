@@ -51,7 +51,6 @@ class AwMainDelegate : public content::ContentMainDelegate,
   content::WebContentsViewDelegate* CreateViewDelegate(
       content::WebContents* web_contents) override;
   AwWebPreferencesPopulater* CreateWebPreferencesPopulater() override;
-  AwMessagePortService* CreateAwMessagePortService() override;
   AwLocaleManager* CreateAwLocaleManager() override;
 
   std::unique_ptr<content::BrowserMainRunner> browser_runner_;

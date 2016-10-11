@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "android_webview/browser/aw_download_manager_delegate.h"
-#include "android_webview/browser/aw_message_port_service.h"
 #include "android_webview/browser/aw_ssl_host_state_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -84,7 +83,6 @@ class AwBrowserContext : public content::BrowserContext,
   AwQuotaManagerBridge* GetQuotaManagerBridge();
   AwFormDatabaseService* GetFormDatabaseService();
   AwURLRequestContextGetter* GetAwURLRequestContext();
-  AwMessagePortService* GetMessagePortService();
 
   policy::URLBlacklistManager* GetURLBlacklistManager();
   web_restrictions::WebRestrictionsClient* GetWebRestrictionProvider();
@@ -134,7 +132,6 @@ class AwBrowserContext : public content::BrowserContext,
   scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<AwQuotaManagerBridge> quota_manager_bridge_;
   std::unique_ptr<AwFormDatabaseService> form_database_service_;
-  std::unique_ptr<AwMessagePortService> message_port_service_;
 
   AwDownloadManagerDelegate download_manager_delegate_;
 
