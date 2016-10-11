@@ -415,6 +415,9 @@ void RenderWidgetHostViewMac::BrowserCompositorMacOnLostCompositorResources() {
 
 void RenderWidgetHostViewMac::BrowserCompositorMacSendBeginFrame(
     const cc::BeginFrameArgs& args) {
+  needs_flush_input_ = false;
+  render_widget_host_->FlushInput();
+  UpdateNeedsBeginFramesInternal();
   render_widget_host_->Send(
       new ViewMsg_BeginFrame(render_widget_host_->GetRoutingID(), args));
 }
@@ -451,6 +454,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       allow_pause_for_resize_or_repaint_(true),
       is_guest_view_hack_(is_guest_view_hack),
       fullscreen_parent_host_view_(nullptr),
+      needs_begin_frames_(false),
+      needs_flush_input_(false),
       weak_factory_(this) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
   // goes away.  Since we autorelease it, our caller must put
@@ -1199,7 +1204,18 @@ void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
 }
 
 void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
-  browser_compositor_->SetNeedsBeginFrames(needs_begin_frames);
+  needs_begin_frames_ = needs_begin_frames;
+  UpdateNeedsBeginFramesInternal();
+}
+
+void RenderWidgetHostViewMac::OnSetNeedsFlushInput() {
+  needs_flush_input_ = true;
+  UpdateNeedsBeginFramesInternal();
+}
+
+void RenderWidgetHostViewMac::UpdateNeedsBeginFramesInternal() {
+  browser_compositor_->SetNeedsBeginFrames(needs_begin_frames_ ||
+                                           needs_flush_input_);
 }
 
 void RenderWidgetHostViewMac::KillSelf() {

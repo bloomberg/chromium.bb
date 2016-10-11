@@ -162,6 +162,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void EndFrameSubscription() override;
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   gfx::Rect GetBoundsInRootWindow() override;
+  void OnSetNeedsFlushInput() override;
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      InputEventAckState ack_result) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
@@ -535,6 +536,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Forwards a mouse event to this view's parent window delegate.
   void ForwardMouseEventToParent(ui::MouseEvent* event);
 
+  // Adds/Removes frame observer based on state.
   void UpdateNeedsBeginFramesInternal();
 
   // Returns the RenderViewHostDelegateView instance for this view. Returns
@@ -600,6 +602,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Whether a request for begin frames has been issued.
   bool needs_begin_frames_;
+
+  // Whether a request to flush input has been issued.
+  bool needs_flush_input_;
 
   // Whether or not a frame observer has been added.
   bool added_frame_observer_;

@@ -440,6 +440,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       accept_return_character_(false),
       begin_frame_source_(nullptr),
       needs_begin_frames_(false),
+      needs_flush_input_(false),
       added_frame_observer_(false),
       synthetic_move_sent_(false),
       cursor_visibility_state_in_renderer_(UNKNOWN),
@@ -729,22 +730,31 @@ void RenderWidgetHostViewAura::SetNeedsBeginFrames(bool needs_begin_frames) {
   UpdateNeedsBeginFramesInternal();
 }
 
+void RenderWidgetHostViewAura::OnSetNeedsFlushInput() {
+  needs_flush_input_ = true;
+  UpdateNeedsBeginFramesInternal();
+}
+
 void RenderWidgetHostViewAura::UpdateNeedsBeginFramesInternal() {
   if (!begin_frame_source_)
     return;
 
-  if (added_frame_observer_ == needs_begin_frames_)
+  bool needs_frame = needs_begin_frames_ || needs_flush_input_;
+  if (needs_frame == added_frame_observer_)
     return;
 
-  if (needs_begin_frames_)
+  added_frame_observer_ = needs_frame;
+  if (needs_frame)
     begin_frame_source_->AddObserver(this);
   else
     begin_frame_source_->RemoveObserver(this);
-  added_frame_observer_ = needs_begin_frames_;
 }
 
 void RenderWidgetHostViewAura::OnBeginFrame(
     const cc::BeginFrameArgs& args) {
+  needs_flush_input_ = false;
+  host_->FlushInput();
+  UpdateNeedsBeginFramesInternal();
   host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
   last_begin_frame_args_ = args;
 }
