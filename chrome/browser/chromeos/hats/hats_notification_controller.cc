@@ -152,17 +152,18 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
   if (profile->IsGuestSession())
     return false;
 
-  // Do not show the survey if the current user is not an owner.
-  if (!ProfileHelper::IsOwnerProfile(profile))
+  const bool is_enterprise_enrolled = g_browser_process->platform_part()
+                                          ->browser_policy_connector_chromeos()
+                                          ->IsEnterpriseManaged();
+
+  // Do not show survey if this is a non dogfood enterprise enrolled device.
+  if (is_enterprise_enrolled && !IsGoogleUser(profile->GetProfileUserName()))
     return false;
 
-  // Do not show survey if this is an non google enterprise managed device.
-  if (g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->IsEnterpriseManaged() &&
-      !IsGoogleUser(profile->GetProfileUserName())) {
+  // In an enterprise enrolled device, the user can never be the owner, hence
+  // only check for ownership on a non enrolled device.
+  if (!is_enterprise_enrolled && !ProfileHelper::IsOwnerProfile(profile))
     return false;
-  }
 
   // Call finch helper only after all the profile checks are complete.
   HatsFinchHelper hats_finch_helper(profile);
