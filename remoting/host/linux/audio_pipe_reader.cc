@@ -63,15 +63,6 @@ void AudioPipeReader::RemoveObserver(StreamObserver* observer) {
   observers_->RemoveObserver(observer);
 }
 
-void AudioPipeReader::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK_EQ(fd, pipe_.GetPlatformFile());
-  StartTimer();
-}
-
-void AudioPipeReader::OnFileCanWriteWithoutBlocking(int fd) {
-  NOTREACHED();
-}
-
 void AudioPipeReader::StartOnAudioThread() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -115,7 +106,7 @@ void AudioPipeReader::TryOpenPipe() {
     }
   }
 
-  file_descriptor_watcher_.StopWatchingFileDescriptor();
+  pipe_watch_controller_.reset();
   timer_.Stop();
 
   pipe_ = std::move(new_pipe);
@@ -138,6 +129,8 @@ void AudioPipeReader::TryOpenPipe() {
 
 void AudioPipeReader::StartTimer() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(pipe_watch_controller_);
+  pipe_watch_controller_.reset();
   started_time_ = base::TimeTicks::Now();
   last_capture_position_ = 0;
   timer_.Start(FROM_HERE, capture_period_, this, &AudioPipeReader::DoCapture);
@@ -202,9 +195,10 @@ void AudioPipeReader::DoCapture() {
 
 void AudioPipeReader::WaitForPipeReadable() {
   timer_.Stop();
-  base::MessageLoopForIO::current()->WatchFileDescriptor(
-      pipe_.GetPlatformFile(), false, base::MessageLoopForIO::WATCH_READ,
-      &file_descriptor_watcher_, this);
+  DCHECK(!pipe_watch_controller_);
+  pipe_watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
+      pipe_.GetPlatformFile(),
+      base::Bind(&AudioPipeReader::StartTimer, base::Unretained(this)));
 }
 
 // static
