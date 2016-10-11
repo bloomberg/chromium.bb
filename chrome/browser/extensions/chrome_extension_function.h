@@ -112,31 +112,4 @@ class ChromeAsyncExtensionFunction : public ChromeUIThreadExtensionFunction {
   ResponseAction Run() final;
 };
 
-// A chrome specific analog to SyncExtensionFunction. This has access to a
-// chrome Profile.
-//
-// DEPRECATED: Please consider inherting UIThreadExtensionFunction or
-// SyncExtensionFunction directly. Then if you need access to Chrome details,
-// you can construct a ChromeExtensionFunctionDetails object within your
-// function implementation.
-class ChromeSyncExtensionFunction : public ChromeUIThreadExtensionFunction {
- public:
-  ChromeSyncExtensionFunction();
-
- protected:
-  ~ChromeSyncExtensionFunction() override;
-
-  // Deprecated, see SyncExtensionFunction::RunSync.
-  virtual bool RunSync() = 0;
-
-  // ValidationFailure override to match RunSync().
-  static bool ValidationFailure(ChromeSyncExtensionFunction* function);
-
- private:
-  // If you're hitting a compile error here due to "final" - great! You're doing
-  // the right thing, you just need to extend ChromeUIThreadExtensionFunction
-  // instead of ChromeSyncExtensionFunction.
-  ResponseAction Run() final;
-};
-
 #endif  // CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_FUNCTION_H_

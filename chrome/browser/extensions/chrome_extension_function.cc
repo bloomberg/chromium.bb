@@ -95,22 +95,3 @@ bool ChromeAsyncExtensionFunction::ValidationFailure(
     ChromeAsyncExtensionFunction* function) {
   return false;
 }
-
-ChromeSyncExtensionFunction::ChromeSyncExtensionFunction() {
-}
-
-ChromeSyncExtensionFunction::~ChromeSyncExtensionFunction() {}
-
-ExtensionFunction::ResponseAction ChromeSyncExtensionFunction::Run() {
-  if (!RunSync()) {
-    DCHECK(!results_);
-    return RespondNow(Error(error_));
-  }
-  return RespondNow(ArgumentList(std::move(results_)));
-}
-
-// static
-bool ChromeSyncExtensionFunction::ValidationFailure(
-    ChromeSyncExtensionFunction* function) {
-  return false;
-}
