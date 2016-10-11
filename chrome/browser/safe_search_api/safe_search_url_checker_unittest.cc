@@ -135,33 +135,6 @@ TEST_F(SafeSearchURLCheckerTest, Simple) {
   }
 }
 
-TEST_F(SafeSearchURLCheckerTest, Equivalence) {
-  // Leading "www." in the response should be ignored.
-  {
-    GURL url("http://example.com");
-    GURL url_response("http://www.example.com");
-    ASSERT_FALSE(CheckURL(url));
-    EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false));
-    SendValidResponse(false);
-  }
-  // Scheme should be ignored.
-  {
-    GURL url("http://www.example2.com");
-    GURL url_response("https://www.example2.com");
-    ASSERT_FALSE(CheckURL(url));
-    EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false));
-    SendValidResponse(false);
-  }
-  // Both at the same time should work as well.
-  {
-    GURL url("http://example3.com");
-    GURL url_response("https://www.example3.com");
-    ASSERT_FALSE(CheckURL(url));
-    EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false));
-    SendValidResponse(false);
-  }
-}
-
 TEST_F(SafeSearchURLCheckerTest, Cache) {
   // One more URL than fit in the cache.
   ASSERT_EQ(2u, kCacheSize);
