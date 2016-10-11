@@ -12,20 +12,25 @@ namespace offline_pages {
 
 // static
 void OfflinePageInfoBarDelegate::Create(
-    const base::Closure& confirm_continuation,
+    const base::Callback<void(Action)>& confirm_continuation,
+    const std::string& downloads_label,
     const std::string& page_name,
     content::WebContents* web_contents) {
   InfoBarService::FromWebContents(web_contents)
-      ->AddInfoBar(DownloadOverwriteInfoBar::CreateInfoBar(base::WrapUnique(
-          new OfflinePageInfoBarDelegate(confirm_continuation, page_name))));
+      ->AddInfoBar(DownloadOverwriteInfoBar::CreateInfoBar(
+          base::WrapUnique(new OfflinePageInfoBarDelegate(
+              confirm_continuation, downloads_label, page_name))));
 }
 
 OfflinePageInfoBarDelegate::~OfflinePageInfoBarDelegate() {}
 
 OfflinePageInfoBarDelegate::OfflinePageInfoBarDelegate(
-    const base::Closure& confirm_continuation,
+    const base::Callback<void(Action)>& confirm_continuation,
+    const std::string& downloads_label,
     const std::string& page_name)
-    : confirm_continuation_(confirm_continuation), page_name_(page_name) {}
+    : confirm_continuation_(confirm_continuation),
+      downloads_label_(downloads_label),
+      page_name_(page_name) {}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 OfflinePageInfoBarDelegate::GetIdentifier() const {
@@ -41,12 +46,12 @@ bool OfflinePageInfoBarDelegate::EqualsDelegate(
 
 bool OfflinePageInfoBarDelegate::OverwriteExistingFile() {
   // TODO(dewittj): Downloads UI intends to remove this functionality.
-  confirm_continuation_.Run();
+  confirm_continuation_.Run(Action::OVERWRITE);
   return true;
 }
 
 bool OfflinePageInfoBarDelegate::CreateNewFile() {
-  confirm_continuation_.Run();
+  confirm_continuation_.Run(Action::CREATE_NEW);
   return true;
 }
 
@@ -55,9 +60,7 @@ std::string OfflinePageInfoBarDelegate::GetFileName() const {
 }
 
 std::string OfflinePageInfoBarDelegate::GetDirName() const {
-  // TODO(dewittj): When the downloads infobar can link to download home, use
-  // that link.
-  return std::string();
+  return downloads_label_;
 }
 
 std::string OfflinePageInfoBarDelegate::GetDirFullPath() const {

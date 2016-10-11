@@ -56,6 +56,7 @@ void SavePageCallback(const DownloadUIItem& item,
     notification_bridge.NotifyDownloadFailed(item);
 }
 
+// TODO(dewittj): Move to Download UI Adapter.
 content::WebContents* GetWebContentsFromJavaTab(
     const ScopedJavaGlobalRef<jobject>& j_tab_ref) {
   JNIEnv* env = AttachCurrentThread();
@@ -64,6 +65,20 @@ content::WebContents* GetWebContentsFromJavaTab(
     return nullptr;
 
   return tab->web_contents();
+}
+
+// TODO(dewittj): Move to Download UI Adapter.
+OfflinePageModel* GetOfflinePageModelFromJavaTab(
+    const ScopedJavaGlobalRef<jobject>& j_tab_ref) {
+  content::WebContents* web_contents = GetWebContentsFromJavaTab(j_tab_ref);
+  if (!web_contents)
+    return nullptr;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext())
+          ->GetOriginalProfile();
+
+  return OfflinePageModelFactory::GetForBrowserContext(profile);
 }
 
 void SavePageIfNavigatedToURL(const GURL& query_url,
@@ -120,12 +135,56 @@ void SavePageIfNavigatedToURL(const GURL& query_url,
   item.guid = client_id.id;
   item.url = url;
 
-  OfflinePageNotificationBridge bridge;
-  bridge.NotifyDownloadProgress(item);
+  notification_bridge.NotifyDownloadProgress(item);
 
   notification_bridge.ShowDownloadingToast();
   offline_page_model->SavePage(url, client_id, 0l, std::move(archiver),
                                base::Bind(&SavePageCallback, item));
+}
+
+void OnDeletePagesForInfoBar(const GURL& query_url,
+                             const ScopedJavaGlobalRef<jobject>& j_tab_ref,
+                             DeletePageResult result) {
+  SavePageIfNavigatedToURL(query_url, j_tab_ref);
+}
+
+void DeletePagesForOverwrite(const GURL& query_url,
+                             const ScopedJavaGlobalRef<jobject>& j_tab_ref,
+                             const MultipleOfflinePageItemResult& pages) {
+  OfflinePageModel* model = GetOfflinePageModelFromJavaTab(j_tab_ref);
+  if (!model)
+    return;
+
+  std::vector<int64_t> offline_ids;
+  for (auto& page : pages) {
+    if (page.client_id.name_space == kDownloadNamespace ||
+        page.client_id.name_space == kAsyncNamespace) {
+      offline_ids.emplace_back(page.offline_id);
+    }
+  }
+
+  model->DeletePagesByOfflineId(
+      offline_ids, base::Bind(&OnDeletePagesForInfoBar, query_url, j_tab_ref));
+}
+
+void OnInfoBarAction(const GURL& query_url,
+                     const ScopedJavaGlobalRef<jobject>& j_tab_ref,
+                     OfflinePageInfoBarDelegate::Action action) {
+  switch (action) {
+    case OfflinePageInfoBarDelegate::Action::CREATE_NEW:
+      SavePageIfNavigatedToURL(query_url, j_tab_ref);
+      break;
+    case OfflinePageInfoBarDelegate::Action::OVERWRITE:
+      OfflinePageModel* offline_page_model =
+          GetOfflinePageModelFromJavaTab(j_tab_ref);
+      if (!offline_page_model)
+        return;
+
+      offline_page_model->GetPagesByOnlineURL(
+          query_url,
+          base::Bind(&DeletePagesForOverwrite, query_url, j_tab_ref));
+      break;
+  }
 }
 
 void RequestQueueDuplicateCheckDone(
@@ -148,6 +207,7 @@ void RequestQueueDuplicateCheckDone(
 
 void ModelDuplicateCheckDone(const GURL& query_url,
                              const ScopedJavaGlobalRef<jobject>& j_tab_ref,
+                             const std::string& downloads_label,
                              bool has_duplicates) {
   content::WebContents* web_contents = GetWebContentsFromJavaTab(j_tab_ref);
   if (!web_contents)
@@ -155,7 +215,7 @@ void ModelDuplicateCheckDone(const GURL& query_url,
 
   if (has_duplicates) {
     OfflinePageInfoBarDelegate::Create(
-        base::Bind(&SavePageIfNavigatedToURL, query_url, j_tab_ref),
+        base::Bind(&OnInfoBarAction, query_url, j_tab_ref), downloads_label,
         query_url.spec(), web_contents);
     return;
   }
@@ -321,7 +381,9 @@ jlong OfflinePageDownloadBridge::GetOfflineIdByGuid(
 void OfflinePageDownloadBridge::StartDownload(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& j_tab) {
+    const JavaParamRef<jobject>& j_tab,
+    const JavaParamRef<jstring>& j_downloads_label) {
+  std::string downloads_label = ConvertJavaStringToUTF8(env, j_downloads_label);
   TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);
   if (!tab)
     return;
@@ -336,7 +398,7 @@ void OfflinePageDownloadBridge::StartDownload(
 
   OfflinePageUtils::CheckExistenceOfPagesWithURL(
       tab->GetProfile()->GetOriginalProfile(), kDownloadNamespace, url,
-      base::Bind(&ModelDuplicateCheckDone, url, j_tab_ref));
+      base::Bind(&ModelDuplicateCheckDone, url, j_tab_ref, downloads_label));
 }
 
 void OfflinePageDownloadBridge::CancelDownload(
