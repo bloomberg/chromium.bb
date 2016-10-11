@@ -500,7 +500,7 @@ main(int argc, char *argv[])
 	wl_display_roundtrip(simple_im.display);
 	if (simple_im.input_method == NULL) {
 		fprintf(stderr, "No input_method global\n");
-		exit(1);
+		return -1;
 	}
 
 	simple_im.xkb_context = xkb_context_new(0);
@@ -517,7 +517,7 @@ main(int argc, char *argv[])
 
 	if (ret == -1) {
 		fprintf(stderr, "Dispatch error: %m\n");
-		exit(1);
+		return -1;
 	}
 
 	return 0;
