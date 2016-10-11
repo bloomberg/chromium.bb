@@ -880,7 +880,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState) {
 
   // Block images, tables and horizontal rules cannot be made inline with
   // content at mergeDestination.  If there is any
-  // (!isStartOfParagraphDeprecated(mergeDestination)), don't merge, just move
+  // (!isStartOfParagraph(mergeDestination)), don't merge, just move
   // the caret to just before the selection we deleted. See
   // https://bugs.webkit.org/show_bug.cgi?id=25439
   if (isRenderedAsNonInlineTableImageOrHR(
