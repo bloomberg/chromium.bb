@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -49,9 +50,10 @@ std::string BuildGetFamilyProfileResponse(
   base::DictionaryValue dict;
   base::DictionaryValue* family_dict = new base::DictionaryValue;
   family_dict->SetStringWithoutPathExpansion("familyId", family.id);
-  base::DictionaryValue* profile_dict = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> profile_dict =
+      base::MakeUnique<base::DictionaryValue>();
   profile_dict->SetStringWithoutPathExpansion("name", family.name);
-  family_dict->SetWithoutPathExpansion("profile", profile_dict);
+  family_dict->SetWithoutPathExpansion("profile", std::move(profile_dict));
   dict.SetWithoutPathExpansion("family", family_dict);
   std::string result;
   base::JSONWriter::Write(dict, &result);

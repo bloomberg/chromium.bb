@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -427,7 +428,8 @@ SyncMergeResult SupervisedUserSyncService::MergeDataAndStartSyncing(
     DCHECK_EQ(SUPERVISED_USERS, sync_data.GetDataType());
     const ManagedUserSpecifics& supervised_user =
         sync_data.GetSpecifics().managed_user();
-    base::DictionaryValue* value = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> value =
+        base::MakeUnique<base::DictionaryValue>();
     value->SetString(kName, supervised_user.name());
     value->SetBoolean(kAcknowledged, supervised_user.acknowledged());
     value->SetString(kMasterKey, supervised_user.master_key());
@@ -441,7 +443,7 @@ SyncMergeResult SupervisedUserSyncService::MergeDataAndStartSyncing(
       num_items_modified++;
     else
       num_items_added++;
-    dict->SetWithoutPathExpansion(supervised_user.id(), value);
+    dict->SetWithoutPathExpansion(supervised_user.id(), std::move(value));
     seen_ids.insert(supervised_user.id());
   }
 
@@ -516,7 +518,8 @@ SyncError SupervisedUserSyncService::ProcessSyncChanges(
         if (old_value && !old_value->HasKey(kAcknowledged))
           NotifySupervisedUserAcknowledged(supervised_user.id());
 
-        base::DictionaryValue* value = new base::DictionaryValue;
+        std::unique_ptr<base::DictionaryValue> value =
+            base::MakeUnique<base::DictionaryValue>();
         value->SetString(kName, supervised_user.name());
         value->SetBoolean(kAcknowledged, supervised_user.acknowledged());
         value->SetString(kMasterKey, supervised_user.master_key());
@@ -526,7 +529,7 @@ SyncError SupervisedUserSyncService::ProcessSyncChanges(
                          supervised_user.password_signature_key());
         value->SetString(kPasswordEncryptionKey,
                          supervised_user.password_encryption_key());
-        dict->SetWithoutPathExpansion(supervised_user.id(), value);
+        dict->SetWithoutPathExpansion(supervised_user.id(), std::move(value));
 
         NotifySupervisedUsersChanged();
         break;
