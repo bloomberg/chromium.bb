@@ -1153,6 +1153,9 @@ static bool hasPropertyThatCreatesStackingContext(
       case CSSPropertyAliasWebkitTransformStyle:
       case CSSPropertyPerspective:
       case CSSPropertyAliasWebkitPerspective:
+      case CSSPropertyTranslate:
+      case CSSPropertyRotate:
+      case CSSPropertyScale:
       case CSSPropertyOffsetPath:
       case CSSPropertyOffsetPosition:
       case CSSPropertyWebkitMask:
