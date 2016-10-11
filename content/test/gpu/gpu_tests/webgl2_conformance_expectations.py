@@ -53,6 +53,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Windows only.
     # We are awesome!
+    self.Fail('conformance2/buffers/getBufferSubData.html',
+        ['win'], bug=654201)
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
@@ -502,6 +504,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
+    self.Fail('conformance2/buffers/getBufferSubData.html',
+        ['linux'], bug=654201)
 
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_byte.html',
