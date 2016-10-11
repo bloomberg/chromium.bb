@@ -273,9 +273,10 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo,
   Color color =
       m_layoutObject.resolveColor(styleToUse, CSSPropertyOutlineColor);
   if (styleToUse.outlineStyleIsAuto()) {
-    paintInfo.context.drawFocusRing(pixelSnappedOutlineRects,
-                                    styleToUse.outlineWidth(),
-                                    styleToUse.outlineOffset(), color);
+    paintInfo.context.drawFocusRing(
+        pixelSnappedOutlineRects,
+        styleToUse.getOutlineStrokeWidthForFocusRing(),
+        styleToUse.outlineOffset(), color);
     return;
   }
 

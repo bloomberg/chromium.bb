@@ -51,8 +51,9 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo,
   // LayoutTheme::themeDrawsFocusRing here.
 
   const ComputedStyle& areaElementStyle = *areaElement.ensureComputedStyle();
-  int outlineWidth = areaElementStyle.outlineWidth();
-  if (!outlineWidth)
+  // If the outline width is 0 we want to avoid drawing anything even if we
+  // don't use the value directly.
+  if (!areaElementStyle.outlineWidth())
     return;
 
   Path path = areaElement.getPath(&m_layoutImage);
@@ -79,7 +80,8 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo,
   paintInfo.context.save();
   paintInfo.context.clip(pixelSnappedIntRect(focusRect));
   paintInfo.context.drawFocusRing(
-      path, outlineWidth, areaElementStyle.outlineOffset(),
+      path, areaElementStyle.getOutlineStrokeWidthForFocusRing(),
+      areaElementStyle.outlineOffset(),
       m_layoutImage.resolveColor(areaElementStyle, CSSPropertyOutlineColor));
   paintInfo.context.restore();
 }

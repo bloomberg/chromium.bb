@@ -3479,6 +3479,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     DCHECK(!isOutlineEquivalent(&o));
     m_background.access()->m_outline = o.m_background->m_outline;
   }
+  float getOutlineStrokeWidthForFocusRing() const;
 
   // Position utility functions.
   bool hasOutOfFlowPosition() const {

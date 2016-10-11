@@ -307,10 +307,10 @@ class PLATFORM_EXPORT GraphicsContext {
   void setDrawLooper(std::unique_ptr<DrawLooperBuilder>);
 
   void drawFocusRing(const Vector<IntRect>&,
-                     int width,
+                     float width,
                      int offset,
                      const Color&);
-  void drawFocusRing(const Path&, int width, int offset, const Color&);
+  void drawFocusRing(const Path&, float width, int offset, const Color&);
 
   enum Edge {
     NoEdge = 0,
@@ -363,14 +363,8 @@ class PLATFORM_EXPORT GraphicsContext {
     // Unlike normal outlines (whole width is outside of the offset), focus
     // rings are drawn with the center of the path aligned with the offset, so
     // only half of the width is outside of the offset.
-    return focusRingOffset(offset) + (focusRingWidth(width) + 1) / 2;
+    return focusRingOffset(offset) + (width + 1) / 2;
   }
-
-#if OS(MACOSX)
-  static int focusRingWidth(int width) { return width; }
-#else
-  static int focusRingWidth(int width) { return 1; }
-#endif
 
 #if DCHECK_IS_ON()
   void setInDrawingRecorder(bool);
@@ -404,8 +398,8 @@ class PLATFORM_EXPORT GraphicsContext {
   void restoreLayer();
 
   // Helpers for drawing a focus ring (drawFocusRing)
-  void drawFocusRingPath(const SkPath&, const Color&, int width);
-  void drawFocusRingRect(const SkRect&, const Color&, int width);
+  void drawFocusRingPath(const SkPath&, const Color&, float width);
+  void drawFocusRingRect(const SkRect&, const Color&, float width);
 
   // SkCanvas wrappers.
   void clipRRect(const SkRRect&,

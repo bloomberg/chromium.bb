@@ -329,18 +329,18 @@ void GraphicsContext::compositePicture(sk_sp<SkPicture> picture,
 
 void GraphicsContext::drawFocusRingPath(const SkPath& path,
                                         const Color& color,
-                                        int width) {
+                                        float width) {
   drawPlatformFocusRing(path, m_canvas, color.rgb(), width);
 }
 
 void GraphicsContext::drawFocusRingRect(const SkRect& rect,
                                         const Color& color,
-                                        int width) {
+                                        float width) {
   drawPlatformFocusRing(rect, m_canvas, color.rgb(), width);
 }
 
 void GraphicsContext::drawFocusRing(const Path& focusRingPath,
-                                    int width,
+                                    float width,
                                     int offset,
                                     const Color& color) {
   // FIXME: Implement support for offset.
@@ -351,7 +351,7 @@ void GraphicsContext::drawFocusRing(const Path& focusRingPath,
 }
 
 void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects,
-                                    int width,
+                                    float width,
                                     int offset,
                                     const Color& color) {
   if (contextDisabled())

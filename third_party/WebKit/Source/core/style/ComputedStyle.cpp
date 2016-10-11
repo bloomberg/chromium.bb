@@ -2184,10 +2184,21 @@ void ComputedStyle::setOffsetPath(PassRefPtr<StylePath> path) {
 int ComputedStyle::outlineOutsetExtent() const {
   if (!hasOutline())
     return 0;
-  if (outlineStyleIsAuto())
-    return GraphicsContext::focusRingOutsetExtent(outlineOffset(),
-                                                  outlineWidth());
+  if (outlineStyleIsAuto()) {
+    return GraphicsContext::focusRingOutsetExtent(
+        outlineOffset(), getOutlineStrokeWidthForFocusRing());
+  }
   return std::max(0, saturatedAddition(outlineWidth(), outlineOffset()));
+}
+
+float ComputedStyle::getOutlineStrokeWidthForFocusRing() const {
+#if OS(MACOSX)
+  return outlineWidth();
+#else
+  // Draw an outline with thickness in proportion to the zoom level, but never
+  // less than 1 pixel so that it remains visible.
+  return std::max(effectiveZoom(), 1.f);
+#endif
 }
 
 bool ComputedStyle::columnRuleEquivalent(

@@ -338,18 +338,18 @@ template <typename PrimitiveType>
 void drawPlatformFocusRing(const PrimitiveType& primitive,
                            SkCanvas* canvas,
                            SkColor color,
-                           int width) {
+                           float width) {
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setColor(color);
-  paint.setStrokeWidth(GraphicsContext::focusRingWidth(width));
+  paint.setStrokeWidth(width);
 
 #if OS(MACOSX)
   paint.setAlpha(64);
   const float cornerRadius = (width - 1) * 0.5f;
 #else
-  const float cornerRadius = 1;
+  const float cornerRadius = width;
 #endif
 
   drawFocusRingPrimitive(primitive, canvas, paint, cornerRadius);
@@ -365,10 +365,10 @@ void drawPlatformFocusRing(const PrimitiveType& primitive,
 template void PLATFORM_EXPORT drawPlatformFocusRing<SkRect>(const SkRect&,
                                                             SkCanvas*,
                                                             SkColor,
-                                                            int width);
+                                                            float width);
 template void PLATFORM_EXPORT drawPlatformFocusRing<SkPath>(const SkPath&,
                                                             SkCanvas*,
                                                             SkColor,
-                                                            int width);
+                                                            float width);
 
 }  // namespace blink

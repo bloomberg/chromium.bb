@@ -131,7 +131,10 @@ inline SkScalar skBlurRadiusToSigma(SkScalar radius) {
 }
 
 template <typename PrimitiveType>
-void drawPlatformFocusRing(const PrimitiveType&, SkCanvas*, SkColor, int width);
+void drawPlatformFocusRing(const PrimitiveType&,
+                           SkCanvas*,
+                           SkColor,
+                           float width);
 
 // TODO(fmalita): remove in favor of direct SrcRectConstraint use.
 inline SkCanvas::SrcRectConstraint WebCoreClampingModeToSkiaRectConstraint(
