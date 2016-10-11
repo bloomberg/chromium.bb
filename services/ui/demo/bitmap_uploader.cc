@@ -188,7 +188,7 @@ uint32_t BitmapUploader::BindTextureForSize(const gfx::Size& size) {
 
 void BitmapUploader::OnResourcesReturned(
     WindowSurface* surface,
-    mojo::Array<cc::ReturnedResource> resources) {
+    const cc::ReturnedResourceArray& resources) {
   gpu::gles2::GLES2Interface* gl = gles2_context_->interface();
   // TODO(jamesr): Recycle.
   for (size_t i = 0; i < resources.size(); ++i) {

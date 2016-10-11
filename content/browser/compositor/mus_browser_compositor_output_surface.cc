@@ -128,7 +128,7 @@ bool MusBrowserCompositorOutputSurface::BindToClient(
 
 void MusBrowserCompositorOutputSurface::OnResourcesReturned(
     ui::WindowSurface* surface,
-    mojo::Array<cc::ReturnedResource> resources) {
+    const cc::ReturnedResourceArray& resources) {
   for (const auto& resource : resources) {
     DCHECK_EQ(1, resource.count);
     const gpu::Mailbox& mailbox = GetMailboxFromResourceId(resource.id);

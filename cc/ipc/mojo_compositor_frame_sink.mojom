@@ -27,5 +27,5 @@ interface MojoCompositorFrameSink {
 };
 
 interface MojoCompositorFrameSinkClient {
-  ReturnResources(array<cc.mojom.ReturnedResource> resources);
+  ReturnResources(ReturnedResourceArray resources);
 };

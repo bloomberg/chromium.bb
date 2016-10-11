@@ -47,7 +47,7 @@ class WindowSurface : public mojom::SurfaceClient {
                 mojo::InterfaceRequest<mojom::SurfaceClient> client_request);
 
   // SurfaceClient implementation:
-  void ReturnResources(mojo::Array<cc::ReturnedResource> resources) override;
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
   WindowSurfaceClient* client_;
   mojo::InterfacePtrInfo<mojom::Surface> surface_info_;

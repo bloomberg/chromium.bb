@@ -33,9 +33,8 @@ class CompositorFrameSink : public cc::CompositorFrameSink,
 
  private:
   // WindowSurfaceClient implementation:
-  void OnResourcesReturned(
-      WindowSurface* surface,
-      mojo::Array<cc::ReturnedResource> resources) override;
+  void OnResourcesReturned(WindowSurface* surface,
+                           const cc::ReturnedResourceArray& resources) override;
 
   void SwapBuffersComplete();
 

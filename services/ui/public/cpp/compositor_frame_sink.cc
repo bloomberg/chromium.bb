@@ -59,8 +59,8 @@ void CompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
 
 void CompositorFrameSink::OnResourcesReturned(
     ui::WindowSurface* surface,
-    mojo::Array<cc::ReturnedResource> resources) {
-  client_->ReclaimResources(resources.To<cc::ReturnedResourceArray>());
+    const cc::ReturnedResourceArray& resources) {
+  client_->ReclaimResources(resources);
 }
 
 void CompositorFrameSink::SwapBuffersComplete() {

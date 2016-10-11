@@ -229,11 +229,11 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
 }
 
 void OffscreenCanvasFrameDispatcherImpl::ReturnResources(
-    Vector<cc::mojom::blink::ReturnedResourcePtr> resources) {
+    const cc::ReturnedResourceArray& resources) {
   for (const auto& resource : resources) {
-    m_cachedImages.remove(resource->id);
-    m_sharedBitmaps.remove(resource->id);
-    m_cachedTextureIds.remove(resource->id);
+    m_cachedImages.remove(resource.id);
+    m_sharedBitmaps.remove(resource.id);
+    m_cachedTextureIds.remove(resource.id);
   }
 }
 

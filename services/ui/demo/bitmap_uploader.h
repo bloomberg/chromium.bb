@@ -58,9 +58,8 @@ class BitmapUploader : public WindowSurfaceClient {
   void SetIdNamespace(uint32_t id_namespace);
 
   // WindowSurfaceClient implementation.
-  void OnResourcesReturned(
-      WindowSurface* surface,
-      mojo::Array<cc::ReturnedResource> resources) override;
+  void OnResourcesReturned(WindowSurface* surface,
+                           const cc::ReturnedResourceArray& resources) override;
 
   Window* window_;
   std::unique_ptr<WindowSurface> surface_;

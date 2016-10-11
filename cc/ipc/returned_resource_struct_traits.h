@@ -5,7 +5,7 @@
 #ifndef CC_IPC_RETURNED_RESOURCE_STRUCT_TRAITS_H_
 #define CC_IPC_RETURNED_RESOURCE_STRUCT_TRAITS_H_
 
-#include "cc/ipc/returned_resource.mojom.h"
+#include "cc/ipc/returned_resource.mojom-shared.h"
 #include "cc/resources/returned_resource.h"
 
 namespace mojo {
@@ -37,6 +37,20 @@ struct StructTraits<cc::mojom::ReturnedResourceDataView, cc::ReturnedResource> {
     out->count = data.count();
     out->lost = data.lost();
     return true;
+  }
+};
+
+template <>
+struct StructTraits<cc::mojom::ReturnedResourceArrayDataView,
+                    cc::ReturnedResourceArray> {
+  static const cc::ReturnedResourceArray& returned_resources(
+      const cc::ReturnedResourceArray& resource_array) {
+    return resource_array;
+  }
+
+  static bool Read(cc::mojom::ReturnedResourceArrayDataView data,
+                   cc::ReturnedResourceArray* out) {
+    return data.ReadReturnedResources(out);
   }
 };
 

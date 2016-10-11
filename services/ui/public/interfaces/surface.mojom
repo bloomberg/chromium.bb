@@ -18,5 +18,5 @@ interface Surface {
 };
 
 interface SurfaceClient {
-  ReturnResources(array<cc.mojom.ReturnedResource> resources);
+  ReturnResources(cc.mojom.ReturnedResourceArray resources);
 };

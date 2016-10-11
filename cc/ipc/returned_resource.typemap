@@ -5,5 +5,11 @@
 mojom = "//cc/ipc/returned_resource.mojom"
 public_headers = [ "//cc/resources/returned_resource.h" ]
 traits_headers = [ "//cc/ipc/returned_resource_struct_traits.h" ]
-deps = [ "//cc", "//gpu/command_buffer/common" ]
-type_mappings = [ "cc.mojom.ReturnedResource=cc::ReturnedResource" ]
+deps = [
+  "//cc",
+  "//gpu/command_buffer/common",
+]
+type_mappings = [
+  "cc.mojom.ReturnedResource=cc::ReturnedResource",
+  "cc.mojom.ReturnedResourceArray=cc::ReturnedResourceArray",
+]

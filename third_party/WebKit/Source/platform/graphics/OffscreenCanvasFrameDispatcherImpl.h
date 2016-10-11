@@ -34,8 +34,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
                      bool isWebGLSoftwareRendering = false) override;
 
   // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
-  void ReturnResources(
-      Vector<cc::mojom::blink::ReturnedResourcePtr> resources) override;
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
  private:
   const cc::SurfaceId m_surfaceId;
