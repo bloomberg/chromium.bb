@@ -44,7 +44,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
         ['linux'], bug=483282)
-    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html', bug=634519)
 
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
         ['mac'], bug=654187)

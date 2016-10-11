@@ -6111,7 +6111,31 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
     }
   }
 
-  glGenerateMipmapEXT(target);
+  bool enable_srgb = 0;
+  if (target == GL_TEXTURE_2D) {
+    tex->GetLevelType(target, tex->base_level(), &type, &internal_format);
+    enable_srgb =
+        GetColorEncodingFromInternalFormat(internal_format) == GL_SRGB;
+  }
+  if (!enable_srgb || !feature_info_->feature_flags().desktop_srgb_support ||
+      !workarounds().decode_encode_srgb_for_generatemipmap) {
+    if (feature_info_->feature_flags().desktop_srgb_support) {
+      state_.EnableDisableFramebufferSRGB(enable_srgb);
+    }
+    glGenerateMipmapEXT(target);
+  } else {
+    if (target == GL_TEXTURE_2D) {
+      state_.EnableDisableFramebufferSRGB(true);
+      if (!InitializeSRGBConverter("generateMipmap")) {
+        return;
+      }
+      srgb_converter_->GenerateMipmap(this, tex, target);
+    } else {
+      // TODO(yizhou): If the target is GL_TEXTURE_3D or GL_TEXTURE_2D_ARRAY,
+      // this change can not generate correct mipmap.
+      glGenerateMipmapEXT(target);
+    }
+  }
 
   if (texture_zero_level_set) {
     // This may have some unwanted side effects, but we expect command buffer

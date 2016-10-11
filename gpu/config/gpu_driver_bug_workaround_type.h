@@ -29,6 +29,8 @@
          clear_uniforms_before_first_program_use)            \
   GPU_OP(COUNT_ALL_IN_VARYINGS_PACKING,                      \
          count_all_in_varyings_packing)                      \
+  GPU_OP(DECODE_ENCODE_SRGB_FOR_GENERATEMIPMAP,              \
+         decode_encode_srgb_for_generatemipmap)              \
   GPU_OP(DISABLE_ANGLE_INSTANCED_ARRAYS,                     \
          disable_angle_instanced_arrays)                     \
   GPU_OP(DISABLE_ASYNC_READPIXELS,                           \
