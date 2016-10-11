@@ -15,7 +15,6 @@ import unittest
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     'recipe_modules', 'bot_update', 'resources'))
-sys.platform = 'linux2'  # For consistency, ya know?
 import bot_update
 
 DEFAULT_PARAMS = {
@@ -164,6 +163,7 @@ def fake_git(*args, **kwargs):
 
 class BotUpdateUnittests(unittest.TestCase):
   def setUp(self):
+    sys.platform = 'linux2'  # For consistency, ya know?
     self.filesystem = FakeFilesystem()
     self.call = MockedCall(self.filesystem)
     self.gclient = MockedGclientSync(self.filesystem)
@@ -194,6 +194,17 @@ class BotUpdateUnittests(unittest.TestCase):
     self.params['shallow'] = True
     bot_update.ensure_checkout(**self.params)
     return self.call.records
+
+  def testBreakLocks(self):
+    sys.platform = 'win'
+    self.call.expect(('gclient.bat', 'sync')).returns(self.gclient)
+    bot_update.ensure_checkout(**self.params)
+    gclient_sync_cmd = None
+    for record in self.call.records:
+      args = record[0]
+      if args[0] == 'gclient.bat' and args[1] == 'sync':
+        gclient_sync_cmd = args
+    self.assertTrue('--break_repo_locks' in gclient_sync_cmd)
 
 
 if __name__ == '__main__':

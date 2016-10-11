@@ -322,7 +322,7 @@ def gclient_configure(solutions, target_os, target_os_only, git_cache_dir):
         solutions, target_os, target_os_only, git_cache_dir))
 
 
-def gclient_sync(with_branch_heads, shallow):
+def gclient_sync(with_branch_heads, shallow, break_repo_locks):
   # We just need to allocate a filename.
   fd, gclient_output_file = tempfile.mkstemp(suffix='.json')
   os.close(fd)
@@ -334,6 +334,8 @@ def gclient_sync(with_branch_heads, shallow):
     cmd += ['--with_branch_heads']
   if shallow:
     cmd += ['--shallow']
+  if break_repo_locks:
+    cmd += ['--break_repo_locks']
 
   try:
     call(*cmd, tries=1)
@@ -753,10 +755,14 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Ensure our build/ directory is set up with the correct .gclient file.
   gclient_configure(solutions, target_os, target_os_only, git_cache_dir)
 
+  # Windows sometimes has trouble deleting files. This can make git commands
+  # that rely on locks fail.
+  break_repo_locks = True if sys.platform.startswith('win') else False
   # Let gclient do the DEPS syncing.
   # The branch-head refspec is a special case because its possible Chrome
   # src, which contains the branch-head refspecs, is DEPSed in.
-  gclient_output = gclient_sync(BRANCH_HEADS_REFSPEC in refs, shallow)
+  gclient_output = gclient_sync(BRANCH_HEADS_REFSPEC in refs, shallow,
+                                break_repo_locks)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.
