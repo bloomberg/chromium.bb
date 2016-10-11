@@ -24,6 +24,7 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 #  fast/images, css3/images,
 #  paint
 #  svg
+#  canvas, fast/canvas
 # Some additional bugs that are caused by painting problems are also within this section.
 
 # Failures due to SPV2, that don't also fail without SPV2. DO NOT REBASELINE.
@@ -55,6 +56,12 @@ crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased
 
 crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
 
+crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Failure ]
+# The failure in the next line is due to virtual/gpu bots using osmesa
+# Under osmesa, skia's filter quality doesn't work correctly. This test is expected to pass
+# when we swith to swiftshader.
+crbug.com/549742 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
+
 crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ Failure ]
 
 crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
@@ -67,11 +74,13 @@ crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ F
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 
 crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure ]
-crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
-crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 crbug.com/619103 [ Win ] paint/invalidation/svg/text-viewbox-rescale.html [ Pass Failure ]
 crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
-crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
+
+# WebKit test is checking for outdated semantics on TypedArray constructors.
+crbug.com/623120 virtual/gpu/fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
+crbug.com/623120 fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
+crbug.com/623120 virtual/display_list_2d_canvas/fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
 
 # TODO(fmalita): re-enable
 # crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ Failure ]
@@ -82,6 +91,9 @@ crbug.com/624233 virtual/gpu-rasterization/fast/images/color-profile-background-
 
 crbug.com/626748 paint/invalidation/table/cached-change-row-border-color.html [ Failure ]
 crbug.com/626748 paint/invalidation/table/cached-change-tbody-border-color.html [ Failure ]
+
+# Very slight rendering changes caused by Skia rect clipping change.
+crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
 
 crbug.com/630615 [ Win7 ] fast/images/color-profile-background-image-space.html [ Skip ]
 
@@ -96,6 +108,18 @@ crbug.com/636271 [ Linux ] paint/invalidation/resize-iframe-text.html [ Pass Fai
 crbug.com/636271 [ Win ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
 
 crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
+
+crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
+crbug.com/645389 [ Win ] virtual/gpu/fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]
+crbug.com/645389 [ Win ] virtual/gpu/fast/canvas/canvas-hit-regions-event-test.html [ Timeout ]
+crbug.com/645389 [ Win ] fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]
+crbug.com/645389 [ Win ] fast/canvas/canvas-hit-regions-event-test.html [ Timeout ]
+crbug.com/645389 [ Win ] virtual/display_list_2d_canvas/fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]
+crbug.com/645389 [ Win ] virtual/display_list_2d_canvas/fast/canvas/canvas-hit-regions-event-test.html [ Timeout ]
+
+crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
+crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
+crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
@@ -207,8 +231,6 @@ crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printi
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
 crbug.com/617152 imported/wpt/mediacapture-streams/GUM-impossible-constraint.https.html [ Skip ]
-
-crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
 
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/492664 [ Linux ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ Failure ]
@@ -672,11 +694,6 @@ crbug.com/564403 [ Win Debug ] http/tests/inspector/service-workers/service-work
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
-# The failure in the next line is due to virtual/gpu bots using osmesa
-# Under osmesa, skia's filter quality doesn't work correctly. This test is expected to pass
-# when we swith to swiftshader.
-crbug.com/549742 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
-
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
 crbug.com/400841 media/video-canvas-draw.html [ Failure ]
@@ -716,18 +733,6 @@ crbug.com/587165 [ Win7 Debug ] virtual/threaded/fast/scroll-behavior/smooth-scr
 crbug.com/587165 [ Linux ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
 
 crbug.com/624247 [ Linux Win7 ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
-
-# WebKit test is checking for outdated semantics on TypedArray constructors.
-crbug.com/623120 virtual/gpu/fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
-crbug.com/623120 fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
-crbug.com/623120 virtual/display_list_2d_canvas/fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
-
-crbug.com/645389 [ Win ] virtual/gpu/fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]
-crbug.com/645389 [ Win ] virtual/gpu/fast/canvas/canvas-hit-regions-event-test.html [ Timeout ]
-crbug.com/645389 [ Win ] fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]
-crbug.com/645389 [ Win ] fast/canvas/canvas-hit-regions-event-test.html [ Timeout ]
-crbug.com/645389 [ Win ] virtual/display_list_2d_canvas/fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]
-crbug.com/645389 [ Win ] virtual/display_list_2d_canvas/fast/canvas/canvas-hit-regions-event-test.html [ Timeout ]
 
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
@@ -1054,8 +1059,6 @@ crbug.com/567419 inspector/elements/styles-2/metrics-box-sizing.html [ Skip ]
 
 crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
 
-crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Failure ]
-
 crbug.com/596752 virtual/threaded/inspector/tracing/decode-resize.html [ Pass Failure ]
 
 crbug.com/610300 css3/fonts/font-style-matching-4.html [ Failure Pass ]
@@ -1185,9 +1188,6 @@ crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
 
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
-
-# Very slight rendering changes caused by Skia rect clipping change.
-crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
 
 crbug.com/399507 [ Mac Linux Win10 ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
 
