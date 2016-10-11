@@ -1548,6 +1548,10 @@ class Changelist(object):
     assert self.GetIssue()
     return self._codereview_impl.SetCQState(new_state)
 
+  def CannotTriggerTryJobReason(self):
+    """Returns reason (str) if unable trigger tryjobs on this CL or None."""
+    return self._codereview_impl.CannotTriggerTryJobReason()
+
   # Forward methods to codereview specific implementation.
 
   def CloseIssue(self):
@@ -1690,6 +1694,10 @@ class _ChangelistCodereviewBase(object):
     """
     raise NotImplementedError()
 
+  def CannotTriggerTryJobReason(self):
+    """Returns reason (str) if unable trigger tryjobs on this CL or None."""
+    raise NotImplementedError()
+
 
 class _RietveldChangelistImpl(_ChangelistCodereviewBase):
   def __init__(self, changelist, auth_config=None, rietveld_server=None):
@@ -1761,6 +1769,16 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       else:
         self._props = self.RpcServer().get_issue_properties(issue, True)
     return self._props
+
+  def CannotTriggerTryJobReason(self):
+    props = self.GetIssueProperties()
+    if not props:
+      return 'Rietveld doesn\'t know about your issue %s' % self.GetIssue()
+    if props.get('closed'):
+      return 'CL %s is closed' % self.GetIssue()
+    if props.get('private'):
+      return 'CL %s is private' % self.GetIssue()
+    return None
 
   def GetApprovingReviewers(self):
     return get_approving_reviewers(self.GetIssueProperties())
@@ -2715,6 +2733,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     }
     gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(),
                           labels={'Commit-Queue': vote_map[new_state]})
+
+  def CannotTriggerTryJobReason(self):
+    # TODO(tandrii): implement for Gerrit.
+    raise NotImplementedError()
 
 
 _CODEREVIEW_IMPLEMENTATIONS = {
@@ -4698,12 +4720,9 @@ def CMDtry(parser, args):
   # Code below assumes Rietveld issue.
   # TODO(tandrii): actually implement for Gerrit http://crbug.com/599931.
 
-  props = cl.GetIssueProperties()
-  if props.get('closed'):
-    parser.error('Cannot send try jobs for a closed CL')
-
-  if props.get('private'):
-    parser.error('Cannot use try bots with private issue')
+  error_message = cl.CannotTriggerTryJobReason()
+  if error_message:
+    parser.error('Can\'t trigger try jobs: %s')
 
   if not options.name:
     options.name = cl.GetBranch()
