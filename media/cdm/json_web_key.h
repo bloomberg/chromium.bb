@@ -16,17 +16,17 @@
 
 namespace media {
 
-// The ClearKey license request format (ref:
-// https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#clear-key)
-// is a JSON object containing the following members:
+// The ClearKey license request format is a JSON object containing the following
+// members (http://w3c.github.io/encrypted-media/#clear-key-request-format):
 //   "kids" : An array of key IDs. Each element of the array is the base64url
 //            encoding of the octet sequence containing the key ID value.
-//   "type" : The requested SessionType.
+//   "type" : The requested MediaKeySessionType.
 // An example:
 //   { "kids":["67ef0gd8pvfd0","77ef0gd8pvfd0"], "type":"temporary" }
 
 // The ClearKey license format is a JSON Web Key (JWK) Set containing
 // representation of the symmetric key to be used for decryption.
+// (http://w3c.github.io/encrypted-media/#clear-key-license-format)
 // For each JWK in the set, the parameter values are as follows:
 //   "kty" (key type)  : "oct" (octet sequence)
 //   "alg" (algorithm) : "A128KW" (AES key wrap using a 128-bit key)
