@@ -6,11 +6,11 @@
 
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/common/system/tray/system_tray.h"
+#include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

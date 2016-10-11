@@ -6,9 +6,9 @@
 
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "base/macros.h"
 
 namespace ash {

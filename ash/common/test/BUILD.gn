@@ -14,6 +14,8 @@ static_library("test_support") {
     "test_palette_delegate.h",
     "test_session_state_delegate.cc",
     "test_session_state_delegate.h",
+    "test_system_tray_delegate.cc",
+    "test_system_tray_delegate.h",
     "test_volume_control_delegate.cc",
     "test_volume_control_delegate.h",
     "workspace_event_handler_test_helper.cc",

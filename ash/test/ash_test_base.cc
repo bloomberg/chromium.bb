@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/common/test/test_session_state_delegate.h"
+#include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
@@ -23,7 +24,6 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"

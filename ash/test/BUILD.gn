@@ -123,8 +123,6 @@ static_library("test_support_common") {
     "test_suite.h",
     "test_suite_init.h",
     "test_suite_init.mm",
-    "test_system_tray_delegate.cc",
-    "test_system_tray_delegate.h",
     "test_system_tray_item.cc",
     "test_system_tray_item.h",
     "test_wallpaper_delegate.cc",

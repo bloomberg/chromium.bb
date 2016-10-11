@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
@@ -19,7 +20,6 @@
 #include "ash/test/content/test_shell_content_state.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "base/command_line.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"

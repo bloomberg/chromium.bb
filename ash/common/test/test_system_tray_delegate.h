@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
-#define ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
+#ifndef ASH_COMMON_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
+#define ASH_COMMON_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
 
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/common/system/tray/ime_info.h"
@@ -62,8 +62,6 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
   void SignOut() override;
-  std::unique_ptr<SystemTrayItem> CreateRotationLockTrayItem(
-      SystemTray* tray) override;
   void GetCurrentIME(IMEInfo* info) override;
   void GetAvailableIMEList(IMEInfoList* list) override;
 
@@ -81,4 +79,4 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
 }  // namespace test
 }  // namespace ash
 
-#endif  // ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
+#endif  // ASH_COMMON_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_

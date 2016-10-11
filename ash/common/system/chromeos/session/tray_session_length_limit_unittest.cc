@@ -5,8 +5,8 @@
 #include "ash/common/system/chromeos/session/tray_session_length_limit.h"
 
 #include "ash/common/system/tray/system_tray.h"
+#include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "base/time/time.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
