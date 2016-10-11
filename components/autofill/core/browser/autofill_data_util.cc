@@ -133,16 +133,17 @@ size_t StartsWithAny(base::StringPiece16 name, const char** prefixes,
 // Returns true if |c| is a CJK (Chinese, Japanese, Korean) character, for any
 // of the CJK alphabets.
 bool IsCJKCharacter(UChar32 c) {
-  static const std::set<UScriptCode> kCjkScripts {
-    USCRIPT_HAN, // CJK logographs, used by all 3 (but rarely for Korean)
-    USCRIPT_HANGUL, // Korean alphabet
-    USCRIPT_KATAKANA, // A Japanese syllabary
-    USCRIPT_HIRAGANA, // A Japanese syllabary
-    USCRIPT_BOPOMOFO // Chinese semisyllabary, rarely used
-  };
   UErrorCode error = U_ZERO_ERROR;
-  UScriptCode script = uscript_getScript(c, &error);
-  return kCjkScripts.find(script) != kCjkScripts.end();
+  switch (uscript_getScript(c, &error)) {
+    case USCRIPT_HAN:  // CJK logographs, used by all 3 (but rarely for Korean)
+    case USCRIPT_HANGUL:    // Korean alphabet
+    case USCRIPT_KATAKANA:  // A Japanese syllabary
+    case USCRIPT_HIRAGANA:  // A Japanese syllabary
+    case USCRIPT_BOPOMOFO:  // Chinese semisyllabary, rarely used
+      return true;
+    default:
+      return false;
+  }
 }
 
 // Returns true if |c| is a Korean Hangul character.
