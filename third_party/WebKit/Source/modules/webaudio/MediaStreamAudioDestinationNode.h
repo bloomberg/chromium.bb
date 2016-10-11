@@ -60,6 +60,10 @@ class MediaStreamAudioDestinationHandler final
   Persistent<MediaStream> m_stream;
   Persistent<MediaStreamSource> m_source;
 
+  // This synchronizes dynamic changes to the channel count with
+  // process() to manage the mix bus.
+  mutable Mutex m_processLock;
+
   // This internal mix bus is for up/down mixing the input to the actual
   // number of channels in the destination.
   RefPtr<AudioBus> m_mixBus;

@@ -80,8 +80,28 @@ MediaStreamAudioDestinationHandler::~MediaStreamAudioDestinationHandler() {
 void MediaStreamAudioDestinationHandler::process(size_t numberOfFrames) {
   // Conform the input bus into the internal mix bus, which represents
   // MediaStreamDestination's channel count.
+
+  // Synchronize with possible dynamic changes to the channel count.
+  MutexTryLocker tryLocker(m_processLock);
+
+  // If we can get the lock, we can process normally by updating the
+  // mix bus to a new channel count, if needed.  If not, just use the
+  // old mix bus to do the mixing; we'll update the bus next time
+  // around.
+  if (tryLocker.locked()) {
+    unsigned count = channelCount();
+    if (count != m_mixBus->numberOfChannels()) {
+      m_mixBus = AudioBus::create(count, ProcessingSizeInFrames);
+      // setAudioFormat has an internal lock.  This can cause audio to
+      // glitch.  This is outside of our control.
+      m_source->setAudioFormat(count, context()->sampleRate());
+    }
+  }
+
   m_mixBus->copyFrom(*input(0).bus());
 
+  // consumeAudio has an internal lock (also used by setAudioFormat).
+  // This can cause audio to glitch.  This is outside of our control.
   m_source->consumeAudio(m_mixBus.get(), numberOfFrames);
 }
 
@@ -103,20 +123,11 @@ void MediaStreamAudioDestinationHandler::setChannelCount(
     return;
   }
 
-  unsigned long oldChannelCount = this->channelCount();
-  AudioHandler::setChannelCount(channelCount, exceptionState);
+  // Synchronize changes in the channel count with process() which
+  // needs to update m_mixBus.
+  MutexLocker locker(m_processLock);
 
-  // Update the pipeline with the new channel count only if absolutely
-  // necessary. This process requires the graph lock.
-  //
-  // TODO(hongchan): There might be a data race here since both threads
-  // have access to m_mixBus.
-  if (!exceptionState.hadException() &&
-      this->channelCount() != oldChannelCount && isInitialized()) {
-    BaseAudioContext::AutoLocker locker(context());
-    m_mixBus = AudioBus::create(channelCount, ProcessingSizeInFrames);
-    m_source->setAudioFormat(channelCount, context()->sampleRate());
-  }
+  AudioHandler::setChannelCount(channelCount, exceptionState);
 }
 
 unsigned long MediaStreamAudioDestinationHandler::maxChannelCount() const {
