@@ -32,10 +32,9 @@ function test()
         deferredLayerTree.resolve(InspectorTest.safeWrap(layerTreeResolved));
     }
 
-    function layerTreeResolved(layerTree)
+    function layerTreeResolved(layerTreeModel)
     {
-        InspectorTest.layerTreeModel().setLayerTree(layerTree);
-        InspectorTest.dumpLayerTree();
+        InspectorTest.dumpLayerTree(undefined, layerTreeModel.contentRoot());
         InspectorTest.completeTest();
     }
 }
