@@ -281,8 +281,11 @@ void ClientSession::CreateMediaStreams() {
       desktop_environment_->CreateVideoCapturer());
 
   // Create a AudioStream to pump audio from the capturer to the client.
-  audio_stream_ = connection_->StartAudioStream(
-      desktop_environment_->CreateAudioCapturer());
+  std::unique_ptr<protocol::AudioSource> audio_capturer =
+      desktop_environment_->CreateAudioCapturer();
+  if (audio_capturer) {
+    audio_stream_ = connection_->StartAudioStream(std::move(audio_capturer));
+  }
 
   video_stream_->SetObserver(this);
 
