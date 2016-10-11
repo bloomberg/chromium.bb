@@ -692,6 +692,7 @@ void NavigatorImpl::RequestOpenURL(
     const GURL& url,
     bool uses_post,
     const scoped_refptr<ResourceRequestBodyImpl>& body,
+    const std::string& extra_headers,
     SiteInstance* source_site_instance,
     const Referrer& referrer,
     WindowOpenDisposition disposition,
@@ -737,6 +738,7 @@ void NavigatorImpl::RequestOpenURL(
                        true /* is_renderer_initiated */);
   params.uses_post = uses_post;
   params.post_data = body;
+  params.extra_headers = extra_headers;
   params.source_site_instance = source_site_instance;
   if (redirect_chain.size() > 0)
     params.redirect_chain = redirect_chain;
@@ -779,7 +781,8 @@ void NavigatorImpl::RequestTransferURL(
     const GlobalRequestID& transferred_global_request_id,
     bool should_replace_current_entry,
     const std::string& method,
-    scoped_refptr<ResourceRequestBodyImpl> post_body) {
+    scoped_refptr<ResourceRequestBodyImpl> post_body,
+    const std::string& extra_headers) {
   // |method != "POST"| should imply absence of |post_body|.
   if (method != "POST" && post_body) {
     NOTREACHED();
@@ -839,6 +842,7 @@ void NavigatorImpl::RequestTransferURL(
     CHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
     if (controller_->GetLastCommittedEntry()) {
       entry = controller_->GetLastCommittedEntry()->Clone();
+      entry->set_extra_headers(extra_headers);
       entry->SetPageID(-1);
     } else {
       // If there's no last committed entry, create an entry for about:blank
@@ -847,7 +851,7 @@ void NavigatorImpl::RequestTransferURL(
       entry = NavigationEntryImpl::FromNavigationEntry(
           controller_->CreateNavigationEntry(
               GURL(url::kAboutBlankURL), referrer_to_use, page_transition,
-              is_renderer_initiated, std::string(),
+              is_renderer_initiated, extra_headers,
               controller_->GetBrowserContext()));
     }
     entry->AddOrUpdateFrameEntry(
@@ -860,7 +864,7 @@ void NavigatorImpl::RequestTransferURL(
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller_->CreateNavigationEntry(
             dest_url, referrer_to_use, page_transition, is_renderer_initiated,
-            std::string(), controller_->GetBrowserContext()));
+            extra_headers, controller_->GetBrowserContext()));
     entry->root_node()->frame_entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(source_site_instance));
     entry->SetRedirectChain(redirect_chain);

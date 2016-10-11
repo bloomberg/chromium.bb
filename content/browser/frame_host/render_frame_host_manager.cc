@@ -456,6 +456,14 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   std::vector<GURL> rest_of_chain = transfer_url_chain;
   rest_of_chain.pop_back();
 
+  // |extra_headers| passed to RequestTransferURL below are always empty for
+  // now, because there are no known scenarios where headers (from POST request
+  // made from one renderer) need to be forwarded into the renderer where that
+  // request ends up being transfered to.  In particular, XSSAuditor doesn't
+  // look at the headers (e.g. the Content-Type header) when analyzing the body
+  // of the POST request.
+  std::string extra_headers;
+
   transferring_render_frame_host->frame_tree_node()
       ->navigator()
       ->RequestTransferURL(
@@ -463,7 +471,7 @@ void RenderFrameHostManager::OnCrossSiteResponse(
           referrer, page_transition, global_request_id,
           should_replace_current_entry,
           transfer_navigation_handle_->IsPost() ? "POST" : "GET",
-          transfer_navigation_handle_->resource_request_body());
+          transfer_navigation_handle_->resource_request_body(), extra_headers);
 
   // If the navigation continued, the NavigationHandle should have been
   // transfered to a RenderFrameHost. In the other cases, it should be cleared.

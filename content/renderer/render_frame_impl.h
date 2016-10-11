@@ -889,6 +889,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const GURL& url,
       bool uses_post,
       const scoped_refptr<ResourceRequestBodyImpl>& resource_request_body,
+      const std::string& extra_headers,
       const Referrer& referrer,
       blink::WebNavigationPolicy policy,
       bool should_replace_current_entry,

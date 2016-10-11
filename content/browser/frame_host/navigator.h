@@ -117,6 +117,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const GURL& url,
       bool uses_post,
       const scoped_refptr<ResourceRequestBodyImpl>& body,
+      const std::string& extra_headers,
       SiteInstance* source_site_instance,
       const Referrer& referrer,
       WindowOpenDisposition disposition,
@@ -137,7 +138,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const GlobalRequestID& transferred_global_request_id,
       bool should_replace_current_entry,
       const std::string& method,
-      scoped_refptr<ResourceRequestBodyImpl> post_body) {}
+      scoped_refptr<ResourceRequestBodyImpl> post_body,
+      const std::string& extra_headers) {}
 
   // PlzNavigate
   // Called after receiving a BeforeUnloadACK IPC from the renderer. If

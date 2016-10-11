@@ -445,6 +445,7 @@ void RenderFrameProxy::navigate(const blink::WebURLRequest& request,
   params.url = request.url();
   params.uses_post = request.httpMethod().utf8() == "POST";
   params.resource_request_body = GetRequestBodyForWebURLRequest(request);
+  params.extra_headers = GetWebURLRequestHeaders(request);
   params.referrer = Referrer(
       blink::WebStringToGURL(
           request.httpHeaderField(blink::WebString::fromUTF8("Referer"))),

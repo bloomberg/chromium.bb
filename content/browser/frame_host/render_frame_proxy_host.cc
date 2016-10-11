@@ -258,11 +258,15 @@ void RenderFrameProxyHost::OnOpenURL(
 
   // TODO(alexmos, creis): Figure out whether |params.user_gesture| needs to be
   // passed in as well.
+  // TODO(lfg, lukasza): Remove |extra_headers| parameter from
+  // RequestTransferURL method once both RenderFrameProxyHost and
+  // RenderFrameHostImpl call RequestOpenURL from their OnOpenURL handlers.
+  // See also https://crbug.com/647772.
   frame_tree_node_->navigator()->RequestTransferURL(
       current_rfh, validated_url, site_instance_.get(), std::vector<GURL>(),
       params.referrer, ui::PAGE_TRANSITION_LINK, GlobalRequestID(),
       params.should_replace_current_entry, params.uses_post ? "POST" : "GET",
-      params.resource_request_body);
+      params.resource_request_body, params.extra_headers);
 }
 
 void RenderFrameProxyHost::OnRouteMessageEvent(
