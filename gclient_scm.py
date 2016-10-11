@@ -392,6 +392,14 @@ class GitWrapper(SCMWrapper):
     if managed:
       self._DisableHooks()
 
+    if gclient_utils.IsDateRevision(revision):
+      # Date-revisions only work on git-repositories if the reflog hasn't
+      # expired yet. Use rev-list to get the corresponding revision.
+      #  git rev-list -n 1 --before='time-stamp' branchname
+      if options.transitive:
+        self.Print('Warning: --transitive only works for SVN repositories.')
+        revision = default_rev
+
     rev_str = ' at %s' % revision
     files = [] if file_list is not None else None
 
@@ -1484,6 +1492,12 @@ class SVNWrapper(SCMWrapper):
                 self.Print('You can pass --force to enable automatic removal.')
               raise e
 
+    # Retrieve the current HEAD version because svn is slow at null updates.
+    if options.manually_grab_svn_rev and not revision:
+      from_info_live = scm.SVN.CaptureRemoteInfo(from_info['URL'])
+      revision = str(from_info_live['Revision'])
+      rev_str = ' at %s' % revision
+
     if from_info['URL'].rstrip('/') != base_url.rstrip('/'):
       # The repository url changed, need to switch.
       try:
@@ -1713,6 +1727,10 @@ class SVNWrapper(SCMWrapper):
       new_command.append('--force')
       if command[0] != 'checkout' and scm.SVN.AssertVersion('1.6')[0]:
         new_command.extend(('--accept', 'theirs-conflict'))
+    elif options.manually_grab_svn_rev:
+      new_command.append('--force')
+      if command[0] != 'checkout' and scm.SVN.AssertVersion('1.6')[0]:
+        new_command.extend(('--accept', 'postpone'))
     elif command[0] != 'checkout' and scm.SVN.AssertVersion('1.6')[0]:
       new_command.extend(('--accept', 'postpone'))
     return new_command
