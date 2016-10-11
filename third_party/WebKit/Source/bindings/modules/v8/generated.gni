@@ -64,6 +64,11 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/UnsignedLongOrUnsignedLongSequence.h",
 ]
 
+generated_modules_callback_function_files = [
+  "$bindings_modules_v8_output_dir/IDBObserverCallback.cpp",
+  "$bindings_modules_v8_output_dir/IDBObserverCallback.h",
+]
+
 bindings_modules_generated_interface_files =
     process_file_template(
         modules_definition_idl_files,

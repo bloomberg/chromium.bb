@@ -334,8 +334,9 @@ def write_pickle_file(pickle_filename, data):
 ################################################################################
 # IDL parsing
 #
-# We use regular expressions for parsing; this is incorrect (Web IDL is not a
-# regular language), but simple and sufficient in practice.
+# TODO(bashi): We use regular expressions for parsing; this is incorrect
+# (Web IDL is not a regular language) and broken. Remove these functions and
+# always use the parser and ASTs.
 # Leading and trailing context (e.g. following '{') used to avoid false matches.
 ################################################################################
 
@@ -360,15 +361,14 @@ def match_interface_extended_attributes_from_idl(file_contents):
     file_contents = re.sub(single_line_comment_re, '', file_contents)
     file_contents = re.sub(block_comment_re, '', file_contents)
 
-    match = re.search(r'\[(.*)\]\s*'
-                      r'((callback|partial)\s+)?'
-                      r'(interface|exception)\s+'
-                      r'\w+\s*'
-                      r'(:\s*\w+\s*)?'
-                      r'{',
-                      file_contents, flags=re.DOTALL)
+    match = re.search(
+        r'\[([^[]*)\]\s*'
+        r'(interface|callback\s+interface|partial\s+interface|exception)\s+'
+        r'\w+\s*'
+        r'(:\s*\w+\s*)?'
+        r'{',
+        file_contents, flags=re.DOTALL)
     return match
-
 
 def get_interface_extended_attributes_from_idl(file_contents):
     match = match_interface_extended_attributes_from_idl(file_contents)

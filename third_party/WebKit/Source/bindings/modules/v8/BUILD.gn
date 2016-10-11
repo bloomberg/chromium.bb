@@ -28,7 +28,8 @@ idl_compiler("generate_bindings_modules_v8_interfaces") {
 idl_impl("bindings_modules_impl_generated") {
   sources = modules_dictionary_idl_files
   outputs = bindings_modules_generated_union_type_files +
-            generated_modules_dictionary_files
+            generated_modules_dictionary_files +
+            generated_modules_callback_function_files
   output_dir = bindings_modules_v8_output_dir
   target_component = "modules"
 }

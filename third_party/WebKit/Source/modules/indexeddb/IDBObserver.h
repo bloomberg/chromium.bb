@@ -5,6 +5,7 @@
 #ifndef IDBObserver_h
 #define IDBObserver_h
 
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
@@ -21,12 +22,15 @@ class IDBObserverInit;
 class IDBTransaction;
 struct WebIDBObservation;
 
-class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>,
-                                         public ScriptWrappable {
+class MODULES_EXPORT IDBObserver final
+    : public GarbageCollectedFinalized<IDBObserver>,
+      public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBObserver* create(IDBObserverCallback&, const IDBObserverInit&);
+  static IDBObserver* create(ScriptState*,
+                             IDBObserverCallback*,
+                             const IDBObserverInit&);
 
   void removeObserver(int32_t id);
   void onChange(int32_t id,
@@ -47,8 +51,9 @@ class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>,
   DECLARE_TRACE();
 
  private:
-  IDBObserver(IDBObserverCallback&, const IDBObserverInit&);
+  IDBObserver(ScriptState*, IDBObserverCallback*, const IDBObserverInit&);
 
+  RefPtr<ScriptState> m_scriptState;
   Member<IDBObserverCallback> m_callback;
   bool m_transaction;
   bool m_values;

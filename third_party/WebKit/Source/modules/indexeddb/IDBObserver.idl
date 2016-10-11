@@ -4,7 +4,8 @@
 
 // https://github.com/WICG/indexed-db-observers/issues/24
 
-callback IDBObserverCallback = void (IDBObserverChanges changes);
+[ExperimentalCallbackFunction] callback IDBObserverCallback = void (IDBObserverChanges changes);
+
 [
    Exposed=(Window,Worker),
    CustomConstructor(IDBObserverCallback callback, IDBObserverInit options),

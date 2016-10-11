@@ -5,12 +5,12 @@
 #include "modules/indexeddb/IDBObserver.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/modules/v8/IDBObserverCallback.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBObserverCallback.h"
 #include "modules/indexeddb/IDBObserverChanges.h"
 #include "modules/indexeddb/IDBObserverInit.h"
 #include "modules/indexeddb/IDBTransaction.h"
@@ -18,14 +18,17 @@
 
 namespace blink {
 
-IDBObserver* IDBObserver::create(IDBObserverCallback& callback,
+IDBObserver* IDBObserver::create(ScriptState* scriptState,
+                                 IDBObserverCallback* callback,
                                  const IDBObserverInit& options) {
-  return new IDBObserver(callback, options);
+  return new IDBObserver(scriptState, callback, options);
 }
 
-IDBObserver::IDBObserver(IDBObserverCallback& callback,
+IDBObserver::IDBObserver(ScriptState* scriptState,
+                         IDBObserverCallback* callback,
                          const IDBObserverInit& options)
-    : m_callback(&callback),
+    : m_scriptState(scriptState),
+      m_callback(callback),
       m_transaction(options.transaction()),
       m_values(options.values()),
       m_noRecords(options.noRecords()) {
@@ -99,9 +102,12 @@ void IDBObserver::onChange(int32_t id,
                            const WebVector<int32_t>& observationIndex) {
   auto it = m_observerIds.find(id);
   DCHECK(it != m_observerIds.end());
-  m_callback->handleChanges(
-      *IDBObserverChanges::create(it->value, observations, observationIndex),
-      *this);
+  // TODO(bashi): Make sure that using TrackExceptionState is OK.
+  // crbug.com/653769
+  TrackExceptionState exceptionState;
+  m_callback->call(
+      m_scriptState.get(), this, exceptionState,
+      IDBObserverChanges::create(it->value, observations, observationIndex));
 }
 
 DEFINE_TRACE(IDBObserver) {
