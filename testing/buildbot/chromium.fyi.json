@@ -11249,18 +11249,6 @@
           "can_use_on_swarming_builders": false
         },
         "test": "mus_ws_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "views_mus_interactive_ui_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "views_mus_unittests"
       }
     ]
   },
