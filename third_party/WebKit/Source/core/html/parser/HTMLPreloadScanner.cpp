@@ -806,7 +806,10 @@ void TokenPreloadScanner::scanCommon(const Token& token,
 
       StartTagScanner scanner(tagImpl, m_mediaValues);
       scanner.processAttributes(token.attributes());
-      if (m_inPicture)
+      // TODO(yoav): ViewportWidth is currently racy and might be zero in some
+      // cases, at least in tests. That problem will go away once
+      // ParseHTMLOnMainThread lands and MediaValuesCached is eliminated.
+      if (m_inPicture && m_mediaValues->viewportWidth())
         scanner.handlePictureSourceURL(m_pictureData);
       std::unique_ptr<PreloadRequest> request = scanner.createPreloadRequest(
           m_predictedBaseElementURL, source, m_clientHintsPreferences,
