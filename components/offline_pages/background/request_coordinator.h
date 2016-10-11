@@ -230,6 +230,8 @@ class RequestCoordinator : public KeyedService,
   void UpdateMultipleRequestsCallback(
       std::unique_ptr<UpdateRequestsResult> result);
 
+  void CompletedRequestCallback(const MultipleItemStatuses& status);
+
   void HandleRemovedRequestsAndCallback(
       const RemoveRequestsCallback& callback,
       BackgroundSavePageResult status,

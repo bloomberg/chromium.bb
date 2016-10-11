@@ -357,6 +357,13 @@ void RequestCoordinator::UpdateMultipleRequestsCallback(
     StartProcessingIfConnected();
 }
 
+// When we successfully remove a request that completed successfully, move on to
+// the next request.
+void RequestCoordinator::CompletedRequestCallback(
+    const MultipleItemStatuses& status) {
+  TryNextRequest();
+}
+
 void RequestCoordinator::HandleRemovedRequestsAndCallback(
     const RemoveRequestsCallback& callback,
     BackgroundSavePageResult status,
@@ -637,7 +644,15 @@ void RequestCoordinator::EnableForOffliner(int64_t request_id) {
 }
 
 void RequestCoordinator::MarkRequestCompleted(int64_t request_id) {
-  // TODO: Remove the request, but send out SUCCEEDED instead of removed.
+  // Remove the request, but send out SUCCEEDED instead of removed.
+  std::vector<int64_t> request_ids { request_id };
+    queue_->RemoveRequests(
+      request_ids,
+      base::Bind(&RequestCoordinator::HandleRemovedRequestsAndCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Bind(&RequestCoordinator::CompletedRequestCallback,
+                            weak_ptr_factory_.GetWeakPtr()),
+                 BackgroundSavePageResult::SUCCESS));
 }
 
 const Scheduler::TriggerConditions RequestCoordinator::GetTriggerConditions(

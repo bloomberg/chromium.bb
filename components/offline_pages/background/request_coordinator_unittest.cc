@@ -944,6 +944,34 @@ TEST_F(RequestCoordinatorTest, RemoveInflightRequest) {
   EXPECT_TRUE(OfflinerWasCanceled());
 }
 
+TEST_F(RequestCoordinatorTest, MarkRequestCompleted) {
+  // Add a request to the queue.
+  offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
+                                          base::Time::Now(), kUserRequested);
+  coordinator()->queue()->AddRequest(
+      request1, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                           base::Unretained(this)));
+  PumpLoop();
+
+  // Ensure the start processing request stops before the completion callback.
+  EnableOfflinerCallback(false);
+
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  base::Callback<void(bool)> callback = base::Bind(
+      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
+
+  // Call the method under test, making sure we send SUCCESS to the observer.
+  coordinator()->MarkRequestCompleted(kRequestId1);
+  PumpLoop();
+
+  // Our observer should have seen SUCCESS instead of REMOVED.
+  EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::SUCCESS,
+            observer().last_status());
+  EXPECT_TRUE(observer().completed_called());
+}
+
 TEST_F(RequestCoordinatorTest, WatchdogTimeout) {
   // Build a request to use with the pre-renderer, and put it on the queue.
   offline_pages::SavePageRequest request(
