@@ -142,8 +142,9 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
   // Helper method to change the state.
   void SetState(State new_state);
 
-  // Helper method to reconfigure |timestamp_helper_|.
-  void ResetTimestampState();
+  // Helper method to set sample rate, channel count  and |timestamp_helper_|
+  // from |config_|.
+  void SetInitialConfiguration();
 
   // TODO(timav): refactor the common part out and use it here and in AVDA
   // (http://crbug.com/583082).

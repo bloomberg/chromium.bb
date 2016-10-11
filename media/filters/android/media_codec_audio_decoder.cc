@@ -80,7 +80,7 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
   config_ = config;
   output_cb_ = BindToCurrentLoop(output_cb);
 
-  ResetTimestampState();
+  SetInitialConfiguration();
 
   if (config_.is_encrypted()) {
     // Postpone initialization after MediaCrypto is available.
@@ -174,7 +174,8 @@ void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {
   if (!success)
     success = CreateMediaCodecLoop();
 
-  ResetTimestampState();
+  timestamp_helper_->SetBaseTimestamp(kNoTimestamp);
+
   SetState(success ? STATE_READY : STATE_ERROR);
 
   task_runner_->PostTask(FROM_HERE, closure);
@@ -437,7 +438,7 @@ bool MediaCodecAudioDecoder::OnOutputFormatChanged() {
   return true;
 }
 
-void MediaCodecAudioDecoder::ResetTimestampState() {
+void MediaCodecAudioDecoder::SetInitialConfiguration() {
   // Guess the channel count from |config_| in case OnOutputFormatChanged
   // that delivers the true count is not called before the first data arrives.
   // It seems upon certain input errors a codec may substitute silence and
