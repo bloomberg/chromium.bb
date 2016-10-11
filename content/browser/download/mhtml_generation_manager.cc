@@ -402,8 +402,8 @@ void MHTMLGenerationManager::SaveMHTML(WebContents* web_contents,
   Job* job = NewJob(web_contents, params, callback);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
       "page-serialization", "SavingMhtmlJob", job, "url",
-      web_contents->GetLastCommittedURL().possibly_invalid_spec().c_str(),
-      "file", params.file_path.value().c_str());
+      web_contents->GetLastCommittedURL().possibly_invalid_spec(),
+      "file", params.file_path.AsUTF8Unsafe());
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
