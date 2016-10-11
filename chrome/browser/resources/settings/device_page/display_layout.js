@@ -179,12 +179,13 @@ Polymer({
 
   /**
    * @param {!{model: !{item: !chrome.system.display.DisplayUnitInfo},
-   *     target: !PaperButtonElement}} e
+   *     target: !HTMLDivElement}} e
    * @private
    */
   onSelectDisplayTap_: function(e) {
     this.fire('select-display', e.model.item.id);
     // Force active in case the selected display was clicked.
+    // TODO(dpapad): Ask @stevenjb, why are we setting 'active' on a div?
     e.target.active = true;
   },
 
@@ -192,7 +193,7 @@ Polymer({
    * @param {string} id
    * @param {?DragPosition} amount
    */
-  onDrag_(id, amount) {
+  onDrag_: function(id, amount) {
     id = id.substr(1);  // Skip prefix
 
     var newBounds;
