@@ -8,6 +8,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.text.TextUtils;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -18,14 +23,12 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.physicalweb.PwsClient.FetchIconCallback;
 import org.chromium.chrome.browser.physicalweb.PwsClient.ResolveScanCallback;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Formatter;
+import java.util.HashSet;
 import java.util.Locale;
 
 /**
@@ -263,35 +266,55 @@ class PwsClientImpl implements PwsClient {
      * Get the language code for the default locale and prepend it to the Accept-Language string if
      * it isn't already present. The logic should match PrependToAcceptLanguagesIfNecessary in
      * chrome/browser/android/preferences/pref_service_bridge.cc
-     * @param locale A string representing the default locale.
+     * @param locales A string representing a default locale or a list of default locales.
      * @param acceptLanguages The default language list for the language of the user's locale.
      * @return An updated language list.
      */
     @VisibleForTesting
-    static String prependToAcceptLanguagesIfNecessary(String locale, String acceptLanguages)
-    {
-        if (locale.length() != 5 || locale.charAt(2) != '_') {
-            return acceptLanguages;
+    static String prependToAcceptLanguagesIfNecessary(String locales, String acceptLanguages) {
+        String localeString = locales + "," + acceptLanguages;
+        String[] localeList = localeString.split(",");
+
+        HashSet<String> seenLocales = new HashSet<>();
+        ArrayList<String> uniqueList = new ArrayList<>();
+        for (String locale : localeList) {
+            // TODO(yirui): Support BCP47 compliant format including 3-letter country code,
+            // '-' separator and missing country case.
+            if (locale.length() != 5 || (locale.charAt(2) != '_' && locale.charAt(2) != '-')) {
+                // Skip checking not well formed locales.
+                continue;
+            }
+
+            String language = locale.substring(0, 2);
+            String country = locale.substring(3);
+            String languageTag = makeLanguageTag(language, country);
+
+            if (seenLocales.contains(languageTag)) {
+                continue;
+            }
+            uniqueList.add(languageTag);
+            seenLocales.add(languageTag);
         }
 
-        String language = locale.substring(0, 2);
-        String region = locale.substring(3);
-        String languageTag = makeLanguageTag(language, region);
-
-        if (acceptLanguages.contains(languageTag)) {
-            return acceptLanguages;
-        }
-
-        Formatter parts = new Formatter();
-        parts.format("%s,", languageTag);
         // If language is not in the accept languages list, also add language code.
-        // This will work with the IDS_ACCEPT_LANGUAGES localized strings bundled with Chrome but
-        // may fail on arbitrary lists of language tags due to differences in case and whitespace.
-        if (!acceptLanguages.contains(language + ",") && !acceptLanguages.endsWith(language)) {
-            parts.format("%s,", language);
+        // A language code should only be inserted after the last languageTag that
+        // contains that language.
+        // This will work with the IDS_ACCEPT_LANGUAGE localized strings bundled
+        // with Chrome but may fail on arbitrary lists of language tags due to
+        // differences in case and whitespace.
+        HashSet<String> seenLanguages = new HashSet<>();
+        ArrayList<String> outputList = new ArrayList<>();
+        for (int i = uniqueList.size() - 1; i >= 0; i--) {
+            String localeAdd = uniqueList.get(i);
+            String languageAdd = localeAdd.substring(0, 2);
+            if (!seenLanguages.contains(languageAdd)) {
+                seenLanguages.add(languageAdd);
+                outputList.add(languageAdd);
+            }
+            outputList.add(localeAdd);
         }
-        parts.format("%s", acceptLanguages);
-        return parts.toString();
+        Collections.reverse(outputList);
+        return TextUtils.join(",", outputList);
     }
 
     /**

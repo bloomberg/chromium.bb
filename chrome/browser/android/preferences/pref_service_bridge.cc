@@ -8,6 +8,8 @@
 #include <stddef.h>
 
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/android/build_info.h"
@@ -20,6 +22,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -1144,42 +1147,65 @@ bool PrefServiceBridge::RegisterPrefServiceBridge(JNIEnv* env) {
 // This logic should be kept in sync with prependToAcceptLanguagesIfNecessary in
 // chrome/android/java/src/org/chromium/chrome/browser/
 //     physicalweb/PwsClientImpl.java
+// Input |locales| is a comma separated locale representaion. Each locale
+// representation should be xx_XX style, where xx is a 2-letter
+// ISO 639-1 compliant language code and XX is a 2-letter
+// ISO 3166-1 compliant country code.
 void PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(
-    const std::string& locale,
+    const std::string& locales,
     std::string* accept_languages) {
-  if (locale.size() != 5u || locale[2] != '_')  // not well-formed
-    return;
+  std::vector<std::string> locale_list =
+      base::SplitString(locales + "," + *accept_languages, ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  std::string language(locale.substr(0, 2));
-  std::string region(locale.substr(3, 2));
+  std::set<std::string> seen_tags;
+  std::vector<std::pair<std::string, std::string>> unique_locale_list;
+  for (const std::string& locale_str : locale_list) {
+    // TODO(yirui): Support BCP47 compliant format including 3-letter
+    // country code, '-' separator and missing country case.
+    if (locale_str.size() != 5u ||
+        (locale_str[2] != '_' && locale_str[2] != '-'))
+      continue;  // Skip not well formed locale.
 
-  // Java mostly follows ISO-639-1 and ICU, except for the following three.
-  // See documentation on java.util.Locale constructor for more.
-  if (language == "iw") {
-    language = "he";
-  } else if (language == "ji") {
-    language = "yi";
-  } else if (language == "in") {
-    language = "id";
+    std::string lang_code(locale_str.substr(0, 2));
+    std::string country_code(locale_str.substr(3, 2));
+
+    // Java mostly follows ISO-639-1 and ICU, except for the following three.
+    // See documentation on java.util.Locale constructor for more.
+    if (lang_code == "iw")
+      lang_code = "he";
+    else if (lang_code == "ji")
+      lang_code = "yi";
+    else if (lang_code == "in")
+      lang_code = "id";
+
+    std::string language_tag(lang_code + "-" + country_code);
+
+    if (seen_tags.find(language_tag) != seen_tags.end())
+      continue;
+    unique_locale_list.push_back(std::make_pair(lang_code, country_code));
+    seen_tags.insert(language_tag);
   }
 
-  std::string language_region(language + "-" + region);
-
-  if (accept_languages->find(language_region) == std::string::npos) {
-    std::vector<std::string> parts;
-    parts.push_back(language_region);
-    // If language is not in the accept languages list, also add language code.
-    // This will work with the IDS_ACCEPT_LANGUAGE localized strings bundled
-    // with Chrome but may fail on arbitrary lists of language tags due to
-    // differences in case and whitespace.
-    if (accept_languages->find(language + ",") == std::string::npos &&
-        !std::equal(language.rbegin(), language.rend(),
-                    accept_languages->rbegin())) {
-      parts.push_back(language);
+  // If language is not in the accept languages list, also add language
+  // code. A language code should only be inserted after the last
+  // languageTag that contains that language.
+  // This will work with the IDS_ACCEPT_LANGUAGE localized strings bundled
+  // with Chrome but may fail on arbitrary lists of language tags due to
+  // differences in case and whitespace.
+  std::set<std::string> seen_languages;
+  std::vector<std::string> output_list;
+  for (auto it = unique_locale_list.rbegin(); it != unique_locale_list.rend();
+       ++it) {
+    if (seen_languages.find(it->first) == seen_languages.end()) {
+      output_list.push_back(it->first);
+      seen_languages.insert(it->first);
     }
-    parts.push_back(*accept_languages);
-    *accept_languages = base::JoinString(parts, ",");
+    output_list.push_back(it->first + "-" + it->second);
   }
+
+  std::reverse(output_list.begin(), output_list.end());
+  *accept_languages = base::JoinString(output_list, ",");
 }
 
 // static

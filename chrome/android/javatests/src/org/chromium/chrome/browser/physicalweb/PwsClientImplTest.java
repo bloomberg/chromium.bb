@@ -80,12 +80,30 @@ public class PwsClientImplTest extends InstrumentationTestCase {
     @SmallTest
     public void testLanguageTagIsPrepended() {
         String locale = new Locale("aa", "AA").toString();
-        String languageList = "xx-XX,xx,xx-YY";
+        String languageList = "xx-XX,xx-YY,xx";
 
         // Should prepend the language tag "aa-AA" as well as the language code "aa".
         String languageListWithTag = PwsClientImpl.prependToAcceptLanguagesIfNecessary(locale,
                 languageList);
-        assertEquals("aa-AA,aa,xx-XX,xx,xx-YY", languageListWithTag);
+        assertEquals("aa-AA,aa,xx-XX,xx-YY,xx", languageListWithTag);
+    }
+
+    @SmallTest
+    public void testMultipleLanguageTagIsPrepended() {
+        String locale = "aa_AA,bb_BB";
+        String languageList = "xx-XX,xx-YY,xx";
+
+        // Should prepend the language tag "aa-AA" as well as the language code "aa".
+        String languageListWithTag = PwsClientImpl.prependToAcceptLanguagesIfNecessary(locale,
+                languageList);
+        assertEquals("aa-AA,aa,bb-BB,bb,xx-XX,xx-YY,xx", languageListWithTag);
+
+        // Make sure the language code is only inserted after the last languageTag that
+        // contains that language.
+        locale = "aa_AA,bb_BB,bb_XX";
+        languageListWithTag = PwsClientImpl.prependToAcceptLanguagesIfNecessary(locale,
+             languageList);
+        assertEquals("aa-AA,aa,bb-BB,bb-XX,bb,xx-XX,xx-YY,xx", languageListWithTag);
     }
 
     @SmallTest
@@ -100,10 +118,10 @@ public class PwsClientImplTest extends InstrumentationTestCase {
         assertEquals("xx-XX,xx-YY,xx", languageListWithTag);
 
         // Test again with the language code "xx" in the middle of the list.
-        languageList = "xx-YY,xx,xx-ZZ";
+        languageList = "xx-YY,xx-ZZ,xx";
         languageListWithTag = PwsClientImpl.prependToAcceptLanguagesIfNecessary(locale,
                 languageList);
-        assertEquals("xx-XX,xx-YY,xx,xx-ZZ", languageListWithTag);
+        assertEquals("xx-XX,xx-YY,xx-ZZ,xx", languageListWithTag);
     }
 
     @SmallTest
@@ -120,7 +138,18 @@ public class PwsClientImplTest extends InstrumentationTestCase {
     @SmallTest
     public void testLanguageTagNotPrependedWhenUnnecessary() {
         String locale = new Locale("xx", "XX").toString();
-        String languageList = "xx-XX,xx,xx-YY";
+        String languageList = "xx-XX,xx-YY,xx";
+
+        // Language list should be unmodified since the tag is already present.
+        String languageListWithTag = PwsClientImpl.prependToAcceptLanguagesIfNecessary(locale,
+                languageList);
+        assertEquals(languageList, languageListWithTag);
+    }
+
+    @SmallTest
+    public void testMultiLanguageTagNotPrependedWhenUnnecessary() {
+        String locale = "xx-XX,yy-YY";
+        String languageList = "xx-XX,xx,yy-YY,yy";
 
         // Language list should be unmodified since the tag is already present.
         String languageListWithTag = PwsClientImpl.prependToAcceptLanguagesIfNecessary(locale,
@@ -130,11 +159,11 @@ public class PwsClientImplTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testAcceptLanguageQvalues() {
-        String languageList = "xx-XX,xx,xx-YY,zz-ZZ,zz";
+        String languageList = "xx-XX,xx-YY,xx,zz-ZZ,zz";
 
         // Should insert q-values for each item except the first which implicitly has q=1.0.
         String acceptLanguage = PwsClientImpl.generateAcceptLanguageHeader(languageList);
-        assertEquals("xx-XX,xx;q=0.8,xx-YY;q=0.6,zz-ZZ;q=0.4,zz;q=0.2", acceptLanguage);
+        assertEquals("xx-XX,xx-YY;q=0.8,xx;q=0.6,zz-ZZ;q=0.4,zz;q=0.2", acceptLanguage);
 
         // When there are six or more items, the q-value should not go below 0.2.
         languageList = "xx-XA,xx-XB,xx-XC,xx-XD,xx-XE,xx-XF";
