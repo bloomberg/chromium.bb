@@ -53,12 +53,12 @@ void CrossfadeGeneratedImage::drawCrossfade(SkCanvas* canvas,
   // was maintained in order to preserve pre-existing behavior while refactoring
   // this code.  This should be investigated further. crbug.com/472634
   SkPaint layerPaint;
-  layerPaint.setXfermode(sk_ref_sp(paint.getXfermode()));
+  layerPaint.setBlendMode(paint.getBlendMode());
   SkAutoCanvasRestore ar(canvas, false);
   canvas->saveLayer(nullptr, &layerPaint);
 
   SkPaint imagePaint(paint);
-  imagePaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  imagePaint.setBlendMode(SkBlendMode::kSrcOver);
   int imageAlpha = clampedAlphaForBlending(1 - m_percentage);
   imagePaint.setAlpha(imageAlpha > 255 ? 255 : imageAlpha);
   imagePaint.setAntiAlias(paint.isAntiAlias());
@@ -68,7 +68,7 @@ void CrossfadeGeneratedImage::drawCrossfade(SkCanvas* canvas,
   // but this warrants further investigation. crbug.com/472634
   m_fromImage->draw(canvas, imagePaint, destRect, fromImageRect,
                     DoNotRespectImageOrientation, clampMode);
-  imagePaint.setXfermodeMode(SkXfermode::kPlus_Mode);
+  imagePaint.setBlendMode(SkBlendMode::kPlus);
   imageAlpha = clampedAlphaForBlending(m_percentage);
   imagePaint.setAlpha(imageAlpha > 255 ? 255 : imageAlpha);
   m_toImage->draw(canvas, imagePaint, destRect, toImageRect,
@@ -103,7 +103,7 @@ void CrossfadeGeneratedImage::drawTile(GraphicsContext& context,
     return;
 
   SkPaint paint = context.fillPaint();
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  paint.setBlendMode(SkBlendMode::kSrcOver);
   paint.setAntiAlias(context.shouldAntialias());
   FloatRect destRect((FloatPoint()), FloatSize(m_crossfadeSize));
   paint.setFilterQuality(context.computeFilterQuality(this, destRect, srcRect));

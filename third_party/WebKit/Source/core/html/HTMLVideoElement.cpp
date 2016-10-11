@@ -197,10 +197,6 @@ void HTMLVideoElement::paintCurrentFrame(SkCanvas* canvas,
   if (!webMediaPlayer())
     return;
 
-  SkXfermode::Mode mode;
-  if (!paint || !SkXfermode::AsMode(paint->getXfermode(), &mode))
-    mode = SkXfermode::kSrcOver_Mode;
-
   SkPaint mediaPaint;
   if (paint) {
     mediaPaint = *paint;
@@ -208,7 +204,6 @@ void HTMLVideoElement::paintCurrentFrame(SkCanvas* canvas,
     mediaPaint.setAlpha(0xFF);
     mediaPaint.setFilterQuality(kLow_SkFilterQuality);
   }
-  mediaPaint.setXfermodeMode(mode);
 
   webMediaPlayer()->paint(canvas, destRect, mediaPaint);
 }

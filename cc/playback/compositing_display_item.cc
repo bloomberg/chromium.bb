@@ -99,7 +99,7 @@ void CompositingDisplayItem::Raster(
     SkCanvas* canvas,
     SkPicture::AbortCallback* callback) const {
   SkPaint paint;
-  paint.setXfermodeMode(xfermode_);
+  paint.setBlendMode(static_cast<SkBlendMode>(xfermode_));
   paint.setAlpha(alpha_);
   paint.setColorFilter(color_filter_);
   const SkRect* bounds = has_bounds_ ? &bounds_ : nullptr;

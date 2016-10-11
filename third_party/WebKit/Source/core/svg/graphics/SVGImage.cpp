@@ -305,7 +305,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context,
   paint.setShader(SkShader::MakePictureShader(
       std::move(tilePicture), SkShader::kRepeat_TileMode,
       SkShader::kRepeat_TileMode, &patternTransform, nullptr));
-  paint.setXfermodeMode(compositeOp);
+  paint.setBlendMode(static_cast<SkBlendMode>(compositeOp));
   paint.setColorFilter(sk_ref_sp(context.getColorFilter()));
   context.drawRect(dstRect, paint);
 }
@@ -332,14 +332,7 @@ sk_sp<SkImage> SVGImage::imageForCurrentFrameForContainer(
 static bool drawNeedsLayer(const SkPaint& paint) {
   if (SkColorGetA(paint.getColor()) < 255)
     return true;
-
-  SkXfermode::Mode xfermode;
-  if (SkXfermode::AsMode(paint.getXfermode(), &xfermode)) {
-    if (xfermode != SkXfermode::kSrcOver_Mode)
-      return true;
-  }
-
-  return false;
+  return !paint.isSrcOver();
 }
 
 void SVGImage::draw(SkCanvas* canvas,

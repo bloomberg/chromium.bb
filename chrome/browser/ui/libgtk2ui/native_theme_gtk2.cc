@@ -193,7 +193,7 @@ void NativeThemeGtk2::PaintMenuPopupBackground(
     canvas->drawPath(path, paint);
   } else {
     canvas->drawColor(GetSystemColor(kColorId_MenuBackgroundColor),
-                      SkXfermode::kSrc_Mode);
+                      SkBlendMode::kSrc);
   }
 }
 

@@ -277,7 +277,7 @@ UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
   SkRect layer_skrect = RectToSkRect(layer_rect);
   SkPaint paint;
   paint.setAntiAlias(false);
-  paint.setXfermodeMode(SkXfermode::kClear_Mode);
+  paint.setBlendMode(SkBlendMode::kClear);
   skcanvas.drawRect(layer_skrect, paint);
   skcanvas.clipRect(layer_skrect);
 

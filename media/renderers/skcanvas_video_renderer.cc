@@ -361,10 +361,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
 
   SkPaint videoPaint;
   videoPaint.setAlpha(paint.getAlpha());
-  SkXfermode::Mode mode;
-  if (!SkXfermode::AsMode(paint.getXfermode(), &mode))
-    mode = SkXfermode::kSrcOver_Mode;
-  videoPaint.setXfermodeMode(mode);
+  videoPaint.setBlendMode(paint.getBlendMode());
   videoPaint.setFilterQuality(paint.getFilterQuality());
 
   const bool need_rotation = video_rotation != VIDEO_ROTATION_0;
@@ -436,7 +433,7 @@ void SkCanvasVideoRenderer::Copy(const scoped_refptr<VideoFrame>& video_frame,
                                  SkCanvas* canvas,
                                  const Context3D& context_3d) {
   SkPaint paint;
-  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  paint.setBlendMode(SkBlendMode::kSrc);
   paint.setFilterQuality(kLow_SkFilterQuality);
   Paint(video_frame, canvas, gfx::RectF(video_frame->visible_rect()), paint,
         media::VIDEO_ROTATION_0, context_3d);

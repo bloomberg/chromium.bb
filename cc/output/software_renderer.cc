@@ -152,12 +152,7 @@ void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
 void SoftwareRenderer::ClearCanvas(SkColor color) {
   if (!current_canvas_)
     return;
-  // SkCanvas::clear doesn't respect the current clipping region
-  // so we SkCanvas::drawColor instead if scissoring is active.
-  if (is_scissor_enabled_)
-    current_canvas_->drawColor(color, SkXfermode::kSrc_Mode);
-  else
-    current_canvas_->clear(color);
+  current_canvas_->clear(color);
 }
 
 void SoftwareRenderer::ClearFramebuffer(DrawingFrame* frame) {
@@ -244,9 +239,10 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
   if (quad->ShouldDrawWithBlending() ||
       quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode) {
     current_paint_.setAlpha(quad->shared_quad_state->opacity * 255);
-    current_paint_.setXfermodeMode(quad->shared_quad_state->blend_mode);
+    current_paint_.setBlendMode(
+        static_cast<SkBlendMode>(quad->shared_quad_state->blend_mode));
   } else {
-    current_paint_.setXfermodeMode(SkXfermode::kSrc_Mode);
+    current_paint_.setBlendMode(SkBlendMode::kSrc);
   }
 
   if (draw_region) {

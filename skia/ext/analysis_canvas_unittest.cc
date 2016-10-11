@@ -153,7 +153,7 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
 
   EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
 
-  paint.setXfermodeMode(SkXfermode::kClear_Mode);
+  paint.setBlendMode(SkBlendMode::kClear);
   canvas.drawRect(SkRect::MakeWH(382, 382), paint);
 
   EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
@@ -166,7 +166,7 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
   canvas.translate(128, 128);
   color = SkColorSetARGB(255, 11, 22, 33);
   paint.setColor(color);
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  paint.setBlendMode(SkBlendMode::kSrcOver);
   canvas.drawRect(SkRect::MakeWH(255, 255), paint);
 
   EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
@@ -239,7 +239,7 @@ TEST(AnalysisCanvasTest, SaveLayerWithXfermode) {
   TransparentFill(canvas);
   EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
   EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
-  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  paint.setBlendMode(SkBlendMode::kSrc);
   canvas.saveLayer(&bounds, &paint);
   canvas.restore();
   EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
@@ -247,7 +247,7 @@ TEST(AnalysisCanvasTest, SaveLayerWithXfermode) {
   TransparentFill(canvas);
   EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
   EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  paint.setBlendMode(SkBlendMode::kSrcOver);
   canvas.saveLayer(&bounds, &paint);
   canvas.restore();
   EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
@@ -257,7 +257,7 @@ TEST(AnalysisCanvasTest, SaveLayerWithXfermode) {
   TransparentFill(canvas);
   EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
   EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
-  paint.setXfermodeMode(SkXfermode::kDst_Mode);
+  paint.setBlendMode(SkBlendMode::kDst);
   canvas.saveLayer(&bounds, &paint);
   canvas.restore();
   EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
@@ -274,7 +274,7 @@ TEST(AnalysisCanvasTest, SaveLayerRestore) {
   SkRect bounds = SkRect::MakeWH(255, 255);
   SkPaint paint;
   paint.setColor(SkColorSetARGB(255, 255, 255, 255));
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  paint.setBlendMode(SkBlendMode::kSrcOver);
 
   // This should force non-transparency
   canvas.saveLayer(&bounds, &paint);
@@ -288,7 +288,7 @@ TEST(AnalysisCanvasTest, SaveLayerRestore) {
   EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
   EXPECT_NE(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
 
-  paint.setXfermodeMode(SkXfermode::kDst_Mode);
+  paint.setBlendMode(SkBlendMode::kDst);
 
   // This should force non-solid color
   canvas.saveLayer(&bounds, &paint);
@@ -335,7 +335,7 @@ TEST(AnalysisCanvasTest, EarlyOutNotSolid) {
 
   SkPaint paint;
   paint.setColor(SkColorSetARGB(255, 255, 255, 255));
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  paint.setBlendMode(SkBlendMode::kSrcOver);
 
   record_canvas->drawRect(SkRect::MakeWH(256, 256), paint);
   record_canvas->drawRect(SkRect::MakeWH(256, 256), paint);

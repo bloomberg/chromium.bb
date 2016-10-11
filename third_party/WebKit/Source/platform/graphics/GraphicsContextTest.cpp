@@ -138,7 +138,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
   path.addLineTo(FloatPoint(40, 40));
   SkPaint paint;
   paint.setColor(alpha.rgb());
-  paint.setXfermodeMode(SkXfermode::kSrcOut_Mode);
+  paint.setBlendMode(SkBlendMode::kSrcOut);
   context.drawPath(path.getSkPath(), paint);
 
   picture = context.endRecording();

@@ -14,17 +14,17 @@ namespace {
 
 const int kNoLayer = -1;
 
-bool ActsLikeClear(SkXfermode::Mode mode, unsigned src_alpha) {
+bool ActsLikeClear(SkBlendMode mode, unsigned src_alpha) {
   switch (mode) {
-    case SkXfermode::kClear_Mode:
+    case SkBlendMode::kClear:
       return true;
-    case SkXfermode::kSrc_Mode:
-    case SkXfermode::kSrcIn_Mode:
-    case SkXfermode::kDstIn_Mode:
-    case SkXfermode::kSrcOut_Mode:
-    case SkXfermode::kDstATop_Mode:
+    case SkBlendMode::kSrc:
+    case SkBlendMode::kSrcIn:
+    case SkBlendMode::kDstIn:
+    case SkBlendMode::kSrcOut:
+    case SkBlendMode::kDstATop:
       return src_alpha == 0;
-    case SkXfermode::kDstOut_Mode:
+    case SkBlendMode::kDstOut:
       return src_alpha == 0xFF;
     default:
       return false;
@@ -32,26 +32,17 @@ bool ActsLikeClear(SkXfermode::Mode mode, unsigned src_alpha) {
 }
 
 bool IsSolidColorPaint(const SkPaint& paint) {
-  SkXfermode::Mode xfermode;
-
-  // getXfermode can return a NULL, but that is handled
-  // gracefully by AsMode (NULL turns into kSrcOver mode).
-  if (!SkXfermode::AsMode(paint.getXfermode(), &xfermode))
-    return false;
+  SkBlendMode blendmode = paint.getBlendMode();
 
   // Paint is solid color if the following holds:
   // - Alpha is 1.0, style is fill, and there are no special effects
   // - Xfer mode is either kSrc or kSrcOver (kSrcOver is equivalent
   //   to kSrc if source alpha is 1.0, which is already checked).
-  return (paint.getAlpha() == 255 &&
-          !paint.getShader() &&
-          !paint.getLooper() &&
-          !paint.getMaskFilter() &&
-          !paint.getColorFilter() &&
-          !paint.getImageFilter() &&
-          paint.getStyle() == SkPaint::kFill_Style &&
-          (xfermode == SkXfermode::kSrc_Mode ||
-           xfermode == SkXfermode::kSrcOver_Mode));
+  return (
+      paint.getAlpha() == 255 && !paint.getShader() && !paint.getLooper() &&
+      !paint.getMaskFilter() && !paint.getColorFilter() &&
+      !paint.getImageFilter() && paint.getStyle() == SkPaint::kFill_Style &&
+      (blendmode == SkBlendMode::kSrc || blendmode == SkBlendMode::kSrcOver));
 }
 
 // Returns true if the specified drawn_rect will cover the entire canvas, and
@@ -134,8 +125,7 @@ void AnalysisCanvas::onDrawRect(const SkRect& rect, const SkPaint& paint) {
 
   bool does_cover_canvas = IsFullQuad(this, rect);
 
-  SkXfermode::Mode xfermode;
-  SkXfermode::AsMode(paint.getXfermode(), &xfermode);
+  SkBlendMode blendmode = paint.getBlendMode();
 
   // This canvas will become transparent if the following holds:
   // - The quad is a full tile quad
@@ -146,11 +136,10 @@ void AnalysisCanvas::onDrawRect(const SkRect& rect, const SkPaint& paint) {
   // not src, then this canvas will not be transparent.
   //
   // In all other cases, we keep the current transparent value
-  if (does_cover_canvas &&
-      !is_forced_not_transparent_ &&
-      ActsLikeClear(xfermode, paint.getAlpha())) {
+  if (does_cover_canvas && !is_forced_not_transparent_ &&
+      ActsLikeClear(blendmode, paint.getAlpha())) {
     is_transparent_ = true;
-  } else if (paint.getAlpha() != 0 || xfermode != SkXfermode::kSrc_Mode) {
+  } else if (paint.getAlpha() != 0 || blendmode != SkBlendMode::kSrc) {
     is_transparent_ = false;
   }
 
@@ -468,10 +457,10 @@ SkCanvas::SaveLayerStrategy AnalysisCanvas::getSaveLayerStrategy(
   // If after we draw to the save layer, we have to blend with the current
   // layer using any part of the current layer's alpha, then we can
   // conservatively say that the canvas will not be transparent.
-  SkXfermode::Mode xfermode = SkXfermode::kSrc_Mode;
+  SkBlendMode blendmode = SkBlendMode::kSrc;
   if (paint)
-    SkXfermode::AsMode(paint->getXfermode(), &xfermode);
-  if (xfermode != SkXfermode::kDst_Mode) {
+    blendmode = paint->getBlendMode();
+  if (blendmode != SkBlendMode::kDst) {
     if (force_not_transparent_stack_level_ == kNoLayer) {
       force_not_transparent_stack_level_ = saved_stack_size_;
       SetForceNotTransparent(true);

@@ -514,7 +514,7 @@ void DrawRectWithColor(SkCanvas* canvas,
                        SkColor color) {
   SkPaint paint;
   paint.setColor(color);
-  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  paint.setBlendMode(SkBlendMode::kSrc);
   canvas->drawRect(
       SkRect::MakeLTRB(SkIntToScalar(left), SkIntToScalar(top),
                        SkIntToScalar(right), SkIntToScalar(bottom)),

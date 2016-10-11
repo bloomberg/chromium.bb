@@ -69,7 +69,7 @@ sk_sp<SkShader> ImagePattern::createShader(const SkMatrix& localMatrix) {
     return SkShader::MakeColorShader(SK_ColorTRANSPARENT);
 
   SkPaint paint;
-  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  paint.setBlendMode(SkBlendMode::kSrc);
   surface->getCanvas()->drawImage(m_tileImage, borderPixelX, borderPixelY,
                                   &paint);
 

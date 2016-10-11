@@ -64,8 +64,8 @@ void RoundedImageView::OnPaint(gfx::Canvas* canvas) {
   path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius);
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setXfermodeMode(active_user_ ? SkXfermode::kSrcOver_Mode
-                                     : SkXfermode::kLuminosity_Mode);
+  paint.setBlendMode(active_user_ ? SkBlendMode::kSrcOver
+                                  : SkBlendMode::kLuminosity);
   canvas->DrawImageInPath(resized_, image_bounds.x(), image_bounds.y(), path,
                           paint);
 }

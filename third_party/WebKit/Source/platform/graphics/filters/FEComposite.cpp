@@ -155,23 +155,23 @@ FloatRect FEComposite::mapInputs(const FloatRect& rect) const {
   return unionRect(input1Rect, inputEffect(0)->mapRect(rect));
 }
 
-SkXfermode::Mode toXfermode(CompositeOperationType mode) {
+SkBlendMode toBlendMode(CompositeOperationType mode) {
   switch (mode) {
     case FECOMPOSITE_OPERATOR_OVER:
-      return SkXfermode::kSrcOver_Mode;
+      return SkBlendMode::kSrcOver;
     case FECOMPOSITE_OPERATOR_IN:
-      return SkXfermode::kSrcIn_Mode;
+      return SkBlendMode::kSrcIn;
     case FECOMPOSITE_OPERATOR_OUT:
-      return SkXfermode::kSrcOut_Mode;
+      return SkBlendMode::kSrcOut;
     case FECOMPOSITE_OPERATOR_ATOP:
-      return SkXfermode::kSrcATop_Mode;
+      return SkBlendMode::kSrcATop;
     case FECOMPOSITE_OPERATOR_XOR:
-      return SkXfermode::kXor_Mode;
+      return SkBlendMode::kXor;
     case FECOMPOSITE_OPERATOR_LIGHTER:
-      return SkXfermode::kPlus_Mode;
+      return SkBlendMode::kPlus;
     default:
       ASSERT_NOT_REACHED();
-      return SkXfermode::kSrcOver_Mode;
+      return SkBlendMode::kSrcOver;
   }
 }
 
@@ -200,8 +200,7 @@ sk_sp<SkImageFilter> FEComposite::createImageFilterInternal(
         std::move(foreground), &cropRect);
   }
 
-  return SkXfermodeImageFilter::Make(SkXfermode::Make(toXfermode(m_type)),
-                                     std::move(background),
+  return SkXfermodeImageFilter::Make(toBlendMode(m_type), std::move(background),
                                      std::move(foreground), &cropRect);
 }
 

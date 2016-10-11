@@ -197,10 +197,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_GETTOPDEVICE
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_XFERMODE_OBJECT
-#   define SK_SUPPORT_LEGACY_XFERMODE_OBJECT
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_GETDEVICE
 #   define SK_SUPPORT_LEGACY_GETDEVICE
 #endif

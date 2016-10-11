@@ -816,7 +816,7 @@ void BaseRenderingContext2D::clearRect(double x,
     return;
 
   SkPaint clearPaint;
-  clearPaint.setXfermodeMode(SkXfermode::kClear_Mode);
+  clearPaint.setBlendMode(SkBlendMode::kClear);
   clearPaint.setStyle(SkPaint::kFill_Style);
   FloatRect rect(x, y, width, height);
 
@@ -1032,12 +1032,12 @@ void BaseRenderingContext2D::drawImageInternal(SkCanvas* c,
     SkRect bounds = dstRect;
     ctm.mapRect(&bounds);
     SkPaint layerPaint;
-    layerPaint.setXfermode(sk_ref_sp(paint->getXfermode()));
+    layerPaint.setBlendMode(paint->getBlendMode());
     layerPaint.setImageFilter(paint->getImageFilter());
 
     c->saveLayer(&bounds, &layerPaint);
     c->concat(ctm);
-    imagePaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+    imagePaint.setBlendMode(SkBlendMode::kSrcOver);
     imagePaint.setImageFilter(nullptr);
   }
 
@@ -1718,21 +1718,12 @@ void BaseRenderingContext2D::checkOverdraw(
     if (paint->getLooper() || paint->getImageFilter() || paint->getMaskFilter())
       return;
 
-    SkXfermode* xfermode = paint->getXfermode();
-    if (xfermode) {
-      SkXfermode::Mode mode;
-      if (xfermode->asMode(&mode)) {
-        isSourceOver = mode == SkXfermode::kSrcOver_Mode;
-        if (!isSourceOver && mode != SkXfermode::kSrc_Mode &&
-            mode != SkXfermode::kClear_Mode)
-          return;  // The code below only knows how to handle Src, SrcOver, and
-                   // Clear
-      } else {
-        // unknown xfermode
-        ASSERT_NOT_REACHED();
-        return;
-      }
-    }
+    SkBlendMode mode = paint->getBlendMode();
+    isSourceOver = mode == SkBlendMode::kSrcOver;
+    if (!isSourceOver && mode != SkBlendMode::kSrc &&
+        mode != SkBlendMode::kClear)
+      return;  // The code below only knows how to handle Src, SrcOver, and
+               // Clear
 
     alpha = paint->getAlpha();
 

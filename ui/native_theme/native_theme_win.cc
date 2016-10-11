@@ -456,7 +456,7 @@ void NativeThemeWin::PaintDirect(SkCanvas* destination_canvas,
                           extra.scrollbar_track);
       return;
     case kScrollbarCorner:
-      destination_canvas->drawColor(SK_ColorWHITE, SkXfermode::kSrc_Mode);
+      destination_canvas->drawColor(SK_ColorWHITE, SkBlendMode::kSrc);
       return;
     case kTabPanelBackground:
       PaintTabPanelBackground(hdc, rect);

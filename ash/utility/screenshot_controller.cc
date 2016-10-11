@@ -169,7 +169,7 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
     paint.setAntiAlias(false);
     paint.setStrokeWidth(1);
     paint.setColor(SK_ColorWHITE);
-    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    paint.setBlendMode(SkBlendMode::kSrc);
     gfx::Vector2d width(kCursorSize / 2, 0);
     gfx::Vector2d height(0, kCursorSize / 2);
     gfx::Vector2d white_x_offset(1, -1);

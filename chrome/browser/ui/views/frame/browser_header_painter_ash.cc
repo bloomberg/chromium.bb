@@ -69,15 +69,12 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
                                  int corner_radius,
                                  int image_inset_x) {
   SkPath frame_path = MakeRoundRectPath(bounds, corner_radius, corner_radius);
-  // If |paint| is using an unusual SkXfermode::Mode (this is the case while
+  // If |paint| is using an unusual SkBlendMode (this is the case while
   // crossfading), we must create a new canvas to overlay |frame_image| and
-  // |frame_overlay_image| using |normal_mode| and then paint the result
+  // |frame_overlay_image| using |kSrcOver| and then paint the result
   // using the unusual mode. We try to avoid this because creating a new
   // browser-width canvas is expensive.
-  SkXfermode::Mode normal_mode;
-  SkXfermode::AsMode(nullptr, &normal_mode);
-  bool fast_path = (frame_overlay_image.isNull() ||
-      SkXfermode::IsMode(paint.getXfermode(), normal_mode));
+  bool fast_path = (frame_overlay_image.isNull() || paint.isSrcOver());
   if (fast_path) {
     if (frame_image.isNull()) {
       canvas->DrawPath(frame_path, paint);
@@ -278,7 +275,7 @@ void BrowserHeaderPainterAsh::PaintFrameImages(gfx::Canvas* canvas,
   gfx::ImageSkia frame_overlay_image = view_->GetFrameOverlayImage(active);
 
   SkPaint paint;
-  paint.setXfermodeMode(SkXfermode::kPlus_Mode);
+  paint.setBlendMode(SkBlendMode::kPlus);
   paint.setAlpha(alpha);
   paint.setColor(SkColorSetA(view_->GetFrameColor(active), alpha));
   PaintFrameImagesInRoundRect(

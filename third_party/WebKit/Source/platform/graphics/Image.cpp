@@ -258,7 +258,7 @@ void Image::drawPattern(GraphicsContext& context,
   {
     SkPaint paint = context.fillPaint();
     paint.setColor(SK_ColorBLACK);
-    paint.setXfermodeMode(compositeOp);
+    paint.setBlendMode(static_cast<SkBlendMode>(compositeOp));
     paint.setFilterQuality(
         context.computeFilterQuality(this, destRect, normSrcRect));
     paint.setAntiAlias(context.shouldAntialias());

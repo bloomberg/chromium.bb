@@ -71,7 +71,7 @@ void DropdownBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
       0, 0, view->bounds().width(), height);
 
   SkPaint paint;
-  paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
+  paint.setBlendMode(SkBlendMode::kDstIn);
   // Draw left edge.
   canvas->DrawImageInt(*left_alpha_mask_, 0, 0, left_edge_width, mask_height,
       0, 0, left_edge_width, height, false, paint);

@@ -15,7 +15,6 @@
 #include "base/strings/string_split.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -124,7 +123,7 @@ void PaintPath(Canvas* canvas,
       }
 
       case PATH_MODE_CLEAR: {
-        paint.setXfermodeMode(SkXfermode::kClear_Mode);
+        paint.setBlendMode(SkBlendMode::kClear);
         break;
       };
 

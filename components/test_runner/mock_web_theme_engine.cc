@@ -422,7 +422,7 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
                             rect.y + rect.height};
       paint.setColor(SK_ColorWHITE);
       paint.setStyle(SkPaint::kFill_Style);
-      paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+      paint.setBlendMode(SkBlendMode::kSrc);
       paint.setAntiAlias(true);
       canvas->drawIRect(cornerRect, paint);
       break;

@@ -1356,7 +1356,7 @@ void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
     icon_canvas.DrawImageInt(favicon_, 0, 0);
     SkPaint clear_paint;
     clear_paint.setAntiAlias(true);
-    clear_paint.setXfermodeMode(SkXfermode::kClear_Mode);
+    clear_paint.setBlendMode(SkBlendMode::kClear);
     const int circle_x = base::i18n::IsRTL() ? 0 : gfx::kFaviconSize;
     icon_canvas.DrawCircle(gfx::PointF(circle_x, gfx::kFaviconSize),
                            kIndicatorCropRadius, clear_paint);

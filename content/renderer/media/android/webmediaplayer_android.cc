@@ -554,10 +554,7 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   dest.set(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height);
   SkPaint video_paint;
   video_paint.setAlpha(paint.getAlpha());
-  SkXfermode::Mode mode;
-  if (!SkXfermode::AsMode(paint.getXfermode(), &mode))
-    mode = SkXfermode::kSrcOver_Mode;
-  video_paint.setXfermodeMode(mode);
+  video_paint.setBlendMode(paint.getBlendMode());
   // It is not necessary to pass the dest into the drawBitmap call since all
   // the context have been set up before calling paintCurrentFrameInContext.
   canvas->drawImageRect(image, dest, &video_paint);

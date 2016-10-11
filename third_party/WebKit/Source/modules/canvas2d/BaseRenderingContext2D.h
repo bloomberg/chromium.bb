@@ -427,7 +427,7 @@ void BaseRenderingContext2D::compositedDraw(
   SkMatrix ctm = c->getTotalMatrix();
   c->resetMatrix();
   SkPaint compositePaint;
-  compositePaint.setXfermodeMode(state().globalComposite());
+  compositePaint.setBlendMode((SkBlendMode)state().globalComposite());
   if (state().shouldDrawShadows()) {
     // unroll into two independently composited passes if drawing shadows
     SkPaint shadowPaint =
@@ -448,7 +448,7 @@ void BaseRenderingContext2D::compositedDraw(
     } else {
       ASSERT(isFullCanvasCompositeMode(state().globalComposite()));
       c->saveLayer(nullptr, &compositePaint);
-      shadowPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+      shadowPaint.setBlendMode(SkBlendMode::kSrcOver);
       c->setMatrix(ctm);
       drawFunc(c, &shadowPaint);
     }
@@ -459,7 +459,7 @@ void BaseRenderingContext2D::compositedDraw(
   c->saveLayer(nullptr, &compositePaint);
   SkPaint foregroundPaint =
       *state().getPaint(paintType, DrawForegroundOnly, imageType);
-  foregroundPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  foregroundPaint.setBlendMode(SkBlendMode::kSrcOver);
   c->setMatrix(ctm);
   drawFunc(c, &foregroundPaint);
   c->restore();

@@ -95,7 +95,7 @@ class RoundedCornersImageSource : public gfx::CanvasImageSource {
         kRoundingRadius, opaque_paint);
 
     SkPaint masking_paint;
-    masking_paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
+    masking_paint.setBlendMode(SkBlendMode::kDstIn);
     canvas->DrawImageInt(
         gfx::ImageSkia(masking_canvas->ExtractImageRep()), 0, 0, masking_paint);
   }

@@ -783,7 +783,7 @@ void NativeThemeBase::PaintMenuPopupBackground(
     SkCanvas* canvas,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
-  canvas->drawColor(kMenuPopupBackgroundColor, SkXfermode::kSrc_Mode);
+  canvas->drawColor(kMenuPopupBackgroundColor, SkBlendMode::kSrc);
 }
 
 void NativeThemeBase::PaintMenuItemBackground(

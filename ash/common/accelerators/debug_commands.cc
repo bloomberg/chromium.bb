@@ -88,7 +88,7 @@ gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
   paint.setColor(rect);
   paint.setStrokeWidth(10);
   paint.setStyle(SkPaint::kStroke_Style);
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  paint.setBlendMode(SkBlendMode::kSrcOver);
   canvas.DrawRoundRect(gfx::Rect(image_size), 100, paint);
   return gfx::ImageSkia(canvas.ExtractImageRep());
 }

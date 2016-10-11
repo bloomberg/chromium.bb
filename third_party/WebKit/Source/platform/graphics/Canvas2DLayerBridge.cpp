@@ -509,7 +509,7 @@ void Canvas2DLayerBridge::hibernate() {
   // 'this' does not already have a surface.
   DCHECK(!m_haveRecordedDrawCommands);
   SkPaint copyPaint;
-  copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  copyPaint.setBlendMode(SkBlendMode::kSrc);
   m_surface->draw(tempHibernationSurface->getCanvas(), 0, 0,
                   &copyPaint);  // GPU readback
   m_hibernationImage = tempHibernationSurface->makeImageSnapshot();
@@ -583,7 +583,7 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint) {
     }
 
     SkPaint copyPaint;
-    copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    copyPaint.setBlendMode(SkBlendMode::kSrc);
     m_surface->getCanvas()->drawImage(m_hibernationImage.get(), 0, 0,
                                       &copyPaint);
     m_hibernationImage.reset();
@@ -710,7 +710,7 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden) {
   if (!isHidden() && m_softwareRenderingWhileHidden) {
     flushRecordingOnly();
     SkPaint copyPaint;
-    copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    copyPaint.setBlendMode(SkBlendMode::kSrc);
 
     sk_sp<SkSurface> oldSurface = std::move(m_surface);
     m_surface.reset();

@@ -6,7 +6,6 @@
 
 #include "cc/output/filter_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "third_party/skia/include/effects/SkOffsetImageFilter.h"
@@ -286,7 +285,7 @@ TEST(FilterOperationsTest, MapRectTypeConversionDoesNotOverflow) {
 
   FilterOperations ops;
   ops.Append(FilterOperation::CreateReferenceFilter(SkXfermodeImageFilter::Make(
-      SkXfermode::Make(SkXfermode::kSrcOver_Mode),
+      SkBlendMode::kSrcOver,
       SkOffsetImageFilter::Make(-big_offset, -big_offset, nullptr),
       SkOffsetImageFilter::Make(big_offset, big_offset, nullptr), nullptr)));
   gfx::Rect rect = ops.MapRect(gfx::Rect(-10, -10, 20, 20), SkMatrix::I());

@@ -6,13 +6,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
-#include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/core/SkXfermode.h"
-#include "third_party/skia/include/effects/SkPictureImageFilter.h"
-#include "third_party/skia/include/effects/SkXfermodeImageFilter.h"
 
 #include <utility>
 

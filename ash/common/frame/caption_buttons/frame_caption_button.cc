@@ -130,7 +130,7 @@ void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
     icon_canvas.DrawImageInt(icon_image_, 0, 0, paint);
 
     paint.setAlpha(crossfade_icon_alpha);
-    paint.setXfermodeMode(SkXfermode::kPlus_Mode);
+    paint.setBlendMode(SkBlendMode::kPlus);
     icon_canvas.DrawImageInt(crossfade_icon_image_, 0, 0, paint);
 
     PaintCentered(canvas, gfx::ImageSkia(icon_canvas.ExtractImageRep()),

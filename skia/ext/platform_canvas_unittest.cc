@@ -53,7 +53,7 @@ void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height) {
                SkIntToScalar(width), SkIntToScalar(height));
   SkPaint paint;
   paint.setColor(SK_ColorBLACK);
-  paint.setXfermodeMode(SkXfermode::kDstATop_Mode);
+  paint.setBlendMode(SkBlendMode::kDstATop);
   canvas->drawRect(rect, paint);
 }
 

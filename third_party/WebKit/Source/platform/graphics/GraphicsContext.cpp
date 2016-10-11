@@ -236,7 +236,7 @@ void GraphicsContext::beginLayer(float opacity,
 
   SkPaint layerPaint;
   layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
-  layerPaint.setXfermodeMode(xfermode);
+  layerPaint.setBlendMode(static_cast<SkBlendMode>(xfermode));
   layerPaint.setColorFilter(WebCoreColorFilterToSkiaColorFilter(colorFilter));
   layerPaint.setImageFilter(std::move(imageFilter));
 
@@ -311,7 +311,7 @@ void GraphicsContext::compositePicture(sk_sp<SkPicture> picture,
   ASSERT(m_canvas);
 
   SkPaint picturePaint;
-  picturePaint.setXfermodeMode(op);
+  picturePaint.setBlendMode(static_cast<SkBlendMode>(op));
   m_canvas->save();
   SkRect sourceBounds = src;
   SkRect skBounds = dest;
@@ -806,7 +806,7 @@ void GraphicsContext::drawImage(
   const FloatRect src = srcPtr ? *srcPtr : image->rect();
 
   SkPaint imagePaint = immutableState()->fillPaint();
-  imagePaint.setXfermodeMode(op);
+  imagePaint.setBlendMode(static_cast<SkBlendMode>(op));
   imagePaint.setColor(SK_ColorBLACK);
   imagePaint.setFilterQuality(computeFilterQuality(image, dest, src));
   imagePaint.setAntiAlias(shouldAntialias());
@@ -836,7 +836,7 @@ void GraphicsContext::drawImageRRect(
     return;
 
   SkPaint imagePaint = immutableState()->fillPaint();
-  imagePaint.setXfermodeMode(op);
+  imagePaint.setBlendMode(static_cast<SkBlendMode>(op));
   imagePaint.setColor(SK_ColorBLACK);
   imagePaint.setFilterQuality(
       computeFilterQuality(image, dest.rect(), srcRect));
@@ -975,7 +975,7 @@ void GraphicsContext::fillRect(const FloatRect& rect,
 
   SkPaint paint = immutableState()->fillPaint();
   paint.setColor(color.rgb());
-  paint.setXfermodeMode(xferMode);
+  paint.setBlendMode(static_cast<SkBlendMode>(xferMode));
 
   drawRect(rect, paint);
 }

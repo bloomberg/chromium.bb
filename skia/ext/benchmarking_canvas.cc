@@ -117,7 +117,7 @@ std::unique_ptr<base::Value> AsValue(SkColor color) {
   return std::move(val);
 }
 
-std::unique_ptr<base::Value> AsValue(SkXfermode::Mode mode) {
+std::unique_ptr<base::Value> AsValue(SkBlendMode mode) {
   std::unique_ptr<base::StringValue> val(
       new base::StringValue(SkXfermode::ModeName(mode)));
 
@@ -131,15 +131,6 @@ std::unique_ptr<base::Value> AsValue(SkCanvas::PointMode mode) {
   std::unique_ptr<base::StringValue> val(
       new base::StringValue(gModeStrings[mode]));
 
-  return std::move(val);
-}
-
-std::unique_ptr<base::Value> AsValue(const SkXfermode& xfermode) {
-  SkXfermode::Mode mode;
-  if (xfermode.asMode(&mode))
-    return AsValue(mode);
-
-  std::unique_ptr<base::StringValue> val(new base::StringValue("unknown"));
   return std::move(val);
 }
 
@@ -169,7 +160,7 @@ std::unique_ptr<base::Value> AsValue(const SkColorFilter& filter) {
     std::unique_ptr<base::DictionaryValue> color_mode_val(
         new base::DictionaryValue());
     color_mode_val->Set("color", AsValue(color));
-    color_mode_val->Set("mode", AsValue(mode));
+    color_mode_val->Set("mode", AsValue(static_cast<SkBlendMode>(mode)));
 
     val->Set("color_mode", std::move(color_mode_val));
   }
@@ -211,9 +202,8 @@ std::unique_ptr<base::Value> AsValue(const SkPaint& paint) {
     val->SetString("Style", gStyleStrings[paint.getStyle()]);
   }
 
-  if (paint.getXfermode() != default_paint.getXfermode()) {
-    DCHECK(paint.getXfermode());
-    val->Set("Xfermode", AsValue(*paint.getXfermode()));
+  if (paint.getBlendMode() != default_paint.getBlendMode()) {
+    val->Set("Xfermode", AsValue(paint.getBlendMode()));
   }
 
   if (paint.getFlags()) {

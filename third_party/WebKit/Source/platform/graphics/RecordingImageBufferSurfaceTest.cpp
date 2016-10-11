@@ -201,7 +201,7 @@ class RecordingImageBufferSurfaceTest : public Test {
     m_testSurface->initializeCurrentFrame();
     m_testSurface->getPicture();
     SkPaint clearPaint;
-    clearPaint.setXfermodeMode(SkXfermode::kClear_Mode);
+    clearPaint.setBlendMode(SkBlendMode::kClear);
     m_imageBuffer->canvas()->drawRect(
         SkRect::MakeWH(m_testSurface->size().width(),
                        m_testSurface->size().height()),

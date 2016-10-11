@@ -15,7 +15,6 @@
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -68,7 +67,7 @@ void FilterDisplayItem::Raster(SkCanvas* canvas,
   boundaries.offset(-origin_.x(), -origin_.y());
 
   SkPaint paint;
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  paint.setBlendMode(SkBlendMode::kSrcOver);
   paint.setImageFilter(std::move(image_filter));
   canvas->saveLayer(&boundaries, &paint);
 

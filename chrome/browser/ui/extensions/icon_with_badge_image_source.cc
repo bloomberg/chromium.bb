@@ -248,7 +248,7 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
     gfx::Rect cutout_rect(rect);
     cutout_rect.Inset(-1, -1);
     SkPaint cutout_paint = rect_paint;
-    cutout_paint.setXfermodeMode(SkXfermode::kClear_Mode);
+    cutout_paint.setBlendMode(SkBlendMode::kClear);
     canvas->DrawRoundRect(cutout_rect, 2, cutout_paint);
 
     // Paint the backdrop.
@@ -302,7 +302,7 @@ void IconWithBadgeImageSource::PaintPageActionDecoration(gfx::Canvas* canvas) {
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(SK_ColorTRANSPARENT);
-  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  paint.setBlendMode(SkBlendMode::kSrc);
   canvas->DrawCircle(center_point, major_radius, paint);
   paint.setColor(decoration_color);
   canvas->DrawCircle(center_point, minor_radius, paint);

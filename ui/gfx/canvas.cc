@@ -222,7 +222,7 @@ void Canvas::DrawColor(SkColor color) {
 }
 
 void Canvas::DrawColor(SkColor color, SkXfermode::Mode mode) {
-  canvas_->drawColor(color, mode);
+  canvas_->drawColor(color, static_cast<SkBlendMode>(mode));
 }
 
 void Canvas::FillRect(const Rect& rect, SkColor color) {
@@ -235,7 +235,7 @@ void Canvas::FillRect(const Rect& rect,
   SkPaint paint;
   paint.setColor(color);
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setXfermodeMode(mode);
+  paint.setBlendMode(static_cast<SkBlendMode>(mode));
   DrawRect(rect, paint);
 }
 
@@ -263,7 +263,7 @@ void Canvas::DrawRect(const RectF& rect,
   // we set a stroke width of 1, for example, this will internally create a
   // path and fill it, which causes problems near the edge of the canvas.
   paint.setStrokeWidth(SkIntToScalar(0));
-  paint.setXfermodeMode(mode);
+  paint.setBlendMode(static_cast<SkBlendMode>(mode));
 
   DrawRect(rect, paint);
 }
@@ -542,7 +542,7 @@ bool Canvas::InitSkPaintForTiling(const ImageSkia& image,
 
   paint->setShader(CreateImageRepShader(image_rep, SkShader::kRepeat_TileMode,
                                         shader_scale));
-  paint->setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  paint->setBlendMode(SkBlendMode::kSrcOver);
   return true;
 }
 

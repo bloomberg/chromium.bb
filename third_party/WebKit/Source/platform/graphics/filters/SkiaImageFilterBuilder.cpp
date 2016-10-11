@@ -33,7 +33,6 @@
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/effects/SkImageSource.h"
 #include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 #include "third_party/skia/include/effects/SkPictureImageFilter.h"
@@ -131,7 +130,7 @@ sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection,
     // http://skbug.com/5210
     SkImageFilter::CropRect cropRect(maskPicture->cullRect());
     maskedInput = SkXfermodeImageFilter::Make(
-        SkXfermode::Make(SkXfermode::kSrcIn_Mode),
+        SkBlendMode::kSrcIn,
         SkOffsetImageFilter::Make(cullRect.x(), cullRect.y(),
                                   SkImageSource::Make(image)),
         input, &cropRect);
@@ -141,7 +140,8 @@ sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection,
   sk_sp<SkImageFilter> flipImageFilter = SkImageFilter::MakeMatrixFilter(
       reflection.reflectionMatrix(), kLow_SkFilterQuality,
       std::move(maskedInput));
-  return SkXfermodeImageFilter::Make(nullptr, std::move(flipImageFilter),
+  return SkXfermodeImageFilter::Make(SkBlendMode::kSrcOver,
+                                     std::move(flipImageFilter),
                                      std::move(input), nullptr);
 }
 

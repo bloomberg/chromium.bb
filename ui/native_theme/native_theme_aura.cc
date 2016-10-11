@@ -120,7 +120,7 @@ void NativeThemeAura::PaintMenuPopupBackground(
 
     canvas->drawPath(path, paint);
   } else {
-    canvas->drawColor(color, SkXfermode::kSrc_Mode);
+    canvas->drawColor(color, SkBlendMode::kSrc);
   }
 }
 

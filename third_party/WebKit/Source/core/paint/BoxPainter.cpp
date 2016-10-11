@@ -492,7 +492,7 @@ class ImagePaintContext {
         m_previousInterpolationQuality(context.imageInterpolationQuality()) {
     SkXfermode::Mode bgOp =
         WebCoreCompositeToSkiaComposite(layer.composite(), layer.blendMode());
-    // if op != SkXfermode::kSrcOver_Mode, a mask is being painted.
+    // if op != SkBlendMode::kSrcOver, a mask is being painted.
     m_compositeOp = (op == SkXfermode::kSrcOver_Mode) ? bgOp : op;
 
     const LayoutObject& imageClient =

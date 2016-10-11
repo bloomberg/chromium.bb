@@ -342,7 +342,7 @@ void HeadsUpDisplayLayerImpl::DrawGraphLines(SkCanvas* canvas,
   // Draw indicator line (additive blend mode to increase contrast when drawn on
   // top of graph).
   paint->setColor(DebugColors::HUDIndicatorLineColor());
-  paint->setXfermodeMode(SkXfermode::kPlus_Mode);
+  paint->setBlendMode(SkBlendMode::kPlus);
   const double indicator_top =
       bounds.height() * (1.0 - graph.indicator / graph.current_upper_bound) -
       1.0;
@@ -351,7 +351,7 @@ void HeadsUpDisplayLayerImpl::DrawGraphLines(SkCanvas* canvas,
                    bounds.right(),
                    bounds.top() + indicator_top,
                    *paint);
-  paint->setXfermode(nullptr);
+  paint->setBlendMode(SkBlendMode::kSrcOver);
 }
 
 SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
