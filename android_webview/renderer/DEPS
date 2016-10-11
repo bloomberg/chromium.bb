@@ -23,6 +23,8 @@ include_rules = [
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
 
+  "+third_party/widevine/cdm/widevine_cdm_common.h",
+
   "+ui/gfx",
   "+ui/gl/gpu_memory_buffer.h",
 

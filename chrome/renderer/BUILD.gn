@@ -118,7 +118,6 @@ static_library("renderer") {
     "//content/public/renderer",
     "//media",
     "//net",
-    "//ppapi/features",
     "//skia",
     "//storage/common",
     "//third_party/WebKit/public:blink",
@@ -126,7 +125,7 @@ static_library("renderer") {
     "//third_party/WebKit/public:resources",
     "//third_party/icu",
     "//third_party/re2",
-    "//third_party/widevine/cdm:headers",
+    "//third_party/widevine/cdm:version_h",
     "//ui/surface",
     "//v8:v8",
   ]

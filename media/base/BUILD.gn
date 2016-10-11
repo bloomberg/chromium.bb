@@ -260,9 +260,7 @@ target(link_target_type, "base") {
 
   allow_circular_includes_from = []
   defines = []
-  public_deps = [
-    "//ppapi/features",
-  ]
+  public_deps = []
   deps = [
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//gpu",
@@ -291,7 +289,7 @@ target(link_target_type, "base") {
   }
 
   if (is_android) {
-    public_deps += [
+    public_deps = [
       "//media/base/android",
       "//media/base/android:media_jni_headers",
     ]
@@ -459,7 +457,6 @@ source_set("unittests") {
     "//gpu/command_buffer/common",
     "//media",
     "//media/base/android:anywhere_unittests",
-    "//ppapi/features",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

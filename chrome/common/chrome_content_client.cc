@@ -43,7 +43,6 @@
 #include "extensions/common/constants.h"
 #include "gpu/config/gpu_info.h"
 #include "net/http/http_util.h"
-#include "ppapi/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -76,7 +75,7 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #endif
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_PEPPER_CDMS) && \
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) && \
     !defined(WIDEVINE_CDM_IS_COMPONENT)
 #define WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT
 #include "chrome/common/widevine_cdm_constants.h"

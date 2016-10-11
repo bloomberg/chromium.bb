@@ -10,7 +10,6 @@ import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//components/os_crypt/features.gni")
 import("//media/media_options.gni")
-import("//ppapi/features/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 # //build/config/android/rules.gni imports //tools/grit/grit_rule.gni, which
@@ -1445,7 +1444,7 @@ split_static_library("browser") {
     "//third_party/re2",
     "//third_party/smhasher:cityhash",
     "//third_party/webrtc/modules/desktop_capture",
-    "//third_party/widevine/cdm:headers",
+    "//third_party/widevine/cdm:version_h",
     "//third_party/zlib",
     "//third_party/zlib:compression_utils",
     "//third_party/zlib:minizip",
@@ -1921,7 +1920,6 @@ split_static_library("browser") {
     ]
     deps += [
       "//components/pdf/browser",
-      "//ppapi/features",
       "//ppapi/proxy:ipc",
       "//third_party/adobe/flash:flapper_version_h",
     ]

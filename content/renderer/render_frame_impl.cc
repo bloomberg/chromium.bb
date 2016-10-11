@@ -155,7 +155,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
-#include "ppapi/features/features.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "storage/common/data_element.h"
@@ -228,7 +227,7 @@
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
 #include "content/renderer/media/cdm/pepper_cdm_wrapper_impl.h"
 #include "content/renderer/media/cdm/render_cdm_factory.h"
 #endif
@@ -6306,11 +6305,11 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
   }
 #endif  //  defined(ENABLE_MOJO_CDM)
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
   DCHECK(frame_);
   cdm_factory_.reset(
       new RenderCdmFactory(base::Bind(&PepperCdmWrapperImpl::Create, frame_)));
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
   return cdm_factory_.get();
 }

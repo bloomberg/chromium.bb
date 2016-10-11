@@ -78,7 +78,7 @@ target(link_target_type, "renderer_sources") {
     "//skia",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/libjingle",
-    "//third_party/widevine/cdm:headers",
+    "//third_party/widevine/cdm:version_h",
     "//ui/base",
     "//ui/base/ime",
     "//ui/gfx",

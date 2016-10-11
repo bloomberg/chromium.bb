@@ -17,7 +17,6 @@
 #include "media/base/key_systems.h"
 #include "media/base/media.h"
 #include "media/base/media_client.h"
-#include "ppapi/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -424,7 +423,7 @@ TEST_F(KeySystemsTest, Basic_UnrecognizedKeySystem) {
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kUnrecognized));
   EXPECT_FALSE(CanUseAesDecryptor(kUnrecognized));
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
   std::string type;
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   EXPECT_DEATH(type = GetPepperType(kUnrecognized),
@@ -443,7 +442,7 @@ TEST_F(KeySystemsTest, Basic_UsesAesDecryptor) {
   EXPECT_EQ("UseAes", GetKeySystemNameForUMA(kUsesAes));
 
   EXPECT_TRUE(CanUseAesDecryptor(kUsesAes));
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
   std::string type;
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   EXPECT_DEATH(type = GetPepperType(kUsesAes),
@@ -600,9 +599,9 @@ TEST_F(KeySystemsTest, Basic_ExternalDecryptor) {
       kVideoWebM, no_codecs(), kExternal));
 
   EXPECT_FALSE(CanUseAesDecryptor(kExternal));
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
   EXPECT_EQ("application/x-ppapi-external-cdm", GetPepperType(kExternal));
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // defined(ENABLE_PEPPER_CDMS)
 }
 
 TEST_F(

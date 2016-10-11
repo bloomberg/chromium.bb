@@ -18,7 +18,7 @@ source_set("key_systems") {
     "//base",
     "//chromecast/public/media",
     "//media",
-    "//third_party/widevine/cdm:headers",
+    "//third_party/widevine/cdm:version_h",
   ]
 }
 

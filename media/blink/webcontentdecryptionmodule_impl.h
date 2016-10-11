@@ -14,12 +14,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "media/blink/media_blink_export.h"
-#include "ppapi/features/features.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 
 namespace blink {
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
 class WebLocalFrame;
 #endif
 class WebSecurityOrigin;

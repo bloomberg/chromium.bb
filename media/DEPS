@@ -6,7 +6,6 @@ include_rules = [
   "+device/usb",
   "+gpu",
   "+jni",
-  "+ppapi/features",
   "+skia/ext",
   "+third_party/ffmpeg",
   "+third_party/libvpx",

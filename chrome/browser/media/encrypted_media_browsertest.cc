@@ -19,14 +19,12 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "ppapi/features/features.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
-
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
 #include "chrome/browser/media/pepper_cdm_test_constants.h"
 #include "chrome/browser/media/pepper_cdm_test_helper.h"
 #include "media/base/media_switches.h"
@@ -241,14 +239,14 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
         switches::kDisableGestureRequirementForMediaPlayback);
   }
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
     InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
     test_launcher_utils::RemoveCommandLineSwitch(
         default_command_line, switches::kDisableComponentUpdate, command_line);
   }
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
   void SetUpCommandLineForKeySystem(const std::string& key_system,
                                     base::CommandLine* command_line) {
@@ -258,7 +256,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       // TODO(shadi): Add port forwarding to the test web server configuration.
       command_line->AppendSwitch(switches::kDisableWebSecurity);
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
     if (IsExternalClearKey(key_system)) {
       RegisterPepperCdm(command_line, kClearKeyCdmBaseDirectory,
                         kClearKeyCdmAdapterFileName, kClearKeyCdmDisplayName,
@@ -266,11 +264,11 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       command_line->AppendSwitchASCII(switches::kEnableFeatures,
                                       media::kExternalClearKeyForTesting.name);
     }
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // defined(ENABLE_PEPPER_CDMS)
   }
 };
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
 // Tests encrypted media playback using ExternalClearKey key system in
 // decrypt-and-decode mode.
 class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
@@ -313,7 +311,7 @@ class WVEncryptedMediaTest : public EncryptedMediaTestBase {
 };
 
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 // Tests encrypted media playback with a combination of parameters:
 // - char*: Key system name.
@@ -421,7 +419,7 @@ INSTANTIATE_TEST_CASE_P(MSE_ClearKey,
                         Combine(Values(kClearKeyKeySystem), Values(MSE)));
 
 // External Clear Key is currently only used on platforms that use Pepper CDMs.
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
 INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey,
                         EncryptedMediaTest,
                         Combine(Values(kExternalClearKeyKeySystem),
@@ -440,7 +438,7 @@ INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKeyDecryptOnly,
                         EncryptedMediaTest,
                         Combine(Values(kExternalClearKeyDecryptOnlyKeySystem),
                                 Values(MSE)));
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 #if !defined(OS_CHROMEOS)
@@ -607,7 +605,7 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, InitializeCDMFail) {
   TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem,
                        kEmeNotSupportedError);
@@ -653,4 +651,4 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
                    kEmeSessionNotFound);
 }
 
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // defined(ENABLE_PEPPER_CDMS)
