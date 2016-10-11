@@ -43,8 +43,6 @@ public final class NewTabPageUma {
     public static final int ACTION_OPENED_FOREIGN_SESSION = 6;
     // User navigated to the webpage for a snippet shown on the NTP.
     public static final int ACTION_OPENED_SNIPPET = 7;
-    // User clicked on an interest item.
-    public static final int ACTION_CLICKED_INTEREST = 8;
     // User clicked on the "learn more" link in the footer.
     public static final int ACTION_CLICKED_LEARN_MORE = 9;
     // The number of possible actions
