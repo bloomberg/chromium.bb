@@ -42,7 +42,6 @@
     ],
     "cwd": "[BUILDER_CACHE]/Linux_remote_run_Builder",
     "env": {
-      "GCLIENT_KILL_GIT_FETCH_AFTER": "1200",
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
     "name": "bot_update",
