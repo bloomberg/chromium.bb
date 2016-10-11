@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/ozone/public/gl_ozone.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -29,11 +28,6 @@ class X11SurfaceFactory : public SurfaceFactoryOzone {
  private:
   std::unique_ptr<GLOzone> glx_implementation_;
   std::unique_ptr<GLOzone> egl_implementation_;
-
-  // X11 doesn't care if things being called from different threads if
-  // XInitThreads() was called. However, GBM does care. This will ensure X11
-  // and GBM behave roughly the same.
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(X11SurfaceFactory);
 };
