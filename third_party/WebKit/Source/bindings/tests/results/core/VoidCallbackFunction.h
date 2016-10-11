@@ -6,8 +6,8 @@
 
 // clang-format off
 
-#ifndef LongExperimentalCallbackFunction_h
-#define LongExperimentalCallbackFunction_h
+#ifndef VoidCallbackFunction_h
+#define VoidCallbackFunction_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "core/CoreExport.h"
@@ -18,18 +18,18 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT LongExperimentalCallbackFunction final : public GarbageCollectedFinalized<LongExperimentalCallbackFunction> {
+class CORE_EXPORT VoidCallbackFunction final : public GarbageCollectedFinalized<VoidCallbackFunction> {
 public:
-    static LongExperimentalCallbackFunction* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static VoidCallbackFunction* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     {
-        return new LongExperimentalCallbackFunction(isolate, callback);
+        return new VoidCallbackFunction(isolate, callback);
     }
 
-    ~LongExperimentalCallbackFunction() = default;
+    ~VoidCallbackFunction() = default;
 
     DECLARE_TRACE();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue);
+    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {
@@ -43,10 +43,10 @@ public:
     }
 
 private:
-    LongExperimentalCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function>);
+    VoidCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function>);
     ScopedPersistent<v8::Function> m_callback;
 };
 
 } // namespace blink
 
-#endif // LongExperimentalCallbackFunction_h
+#endif // VoidCallbackFunction_h

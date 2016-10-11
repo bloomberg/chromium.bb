@@ -212,7 +212,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
         idl_type_name = "Or".join(member_cpp_name(member)
                                   for member in idl_type.member_types)
         return 'const %s&' % idl_type_name if used_as_rvalue_type else idl_type_name
-    if idl_type.is_experimental_callback_function:
+    if idl_type.is_callback_function and not idl_type.is_custom_callback_function:
         return base_idl_type + '*'
     if base_idl_type == 'void':
         return base_idl_type
@@ -384,8 +384,10 @@ def includes_for_type(idl_type, extended_attributes=None):
     if base_idl_type.endswith('Constructor'):
         # FIXME: replace with a [ConstructorAttribute] extended attribute
         base_idl_type = idl_type.constructor_type_name
-    if idl_type.is_experimental_callback_function:
-        component = IdlType.experimental_callback_functions[base_idl_type]['component_dir']
+    if idl_type.is_custom_callback_function:
+        return set()
+    if idl_type.is_callback_function:
+        component = IdlType.callback_functions[base_idl_type]['component_dir']
         return set(['bindings/%s/v8/%s.h' % (component, base_idl_type)])
     if base_idl_type not in component_dir:
         return set()
@@ -579,7 +581,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value}, {variable_name}, %s, exceptionState)' % nullable
     elif idl_type.use_output_parameter_for_result:
         cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value}, {variable_name}, exceptionState)'
-    elif idl_type.is_experimental_callback_function:
+    elif idl_type.is_callback_function:
         cpp_expression_format = (
             '{idl_type}::create({isolate}, v8::Local<v8::Function>::Cast({v8_value}))')
     else:
@@ -697,10 +699,10 @@ def preprocess_idl_type(idl_type):
     if idl_type.is_enum:
         # Enumerations are internally DOMStrings
         return IdlType('DOMString')
-    if idl_type.is_experimental_callback_function:
-        return idl_type
-    if idl_type.base_type in ['any', 'object'] or idl_type.is_callback_function:
+    if idl_type.base_type in ['any', 'object'] or idl_type.is_custom_callback_function:
         return IdlType('ScriptValue')
+    if idl_type.is_callback_function:
+        return idl_type
     return idl_type
 
 IdlTypeBase.preprocessed_type = property(preprocess_idl_type)
@@ -964,7 +966,7 @@ def cpp_type_has_null_value(idl_type):
     return (idl_type.is_string_type or idl_type.is_interface_type or
             idl_type.is_enum or idl_type.is_union_type
             or idl_type.base_type == 'object' or idl_type.base_type == 'any'
-            or idl_type.is_callback_function or idl_type.is_callback_interface)
+            or idl_type.is_custom_callback_function or idl_type.is_callback_interface)
 
 IdlTypeBase.cpp_type_has_null_value = property(cpp_type_has_null_value)
 

@@ -6,7 +6,7 @@
 
 // clang-format off
 
-#include "LongExperimentalCallbackFunction.h"
+#include "LongCallbackFunction.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -17,18 +17,18 @@
 
 namespace blink {
 
-LongExperimentalCallbackFunction::LongExperimentalCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+LongCallbackFunction::LongCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     : m_callback(isolate, callback)
 {
     DCHECK(!m_callback.isEmpty());
     m_callback.setPhantom();
 }
 
-DEFINE_TRACE(LongExperimentalCallbackFunction)
+DEFINE_TRACE(LongCallbackFunction)
 {
 }
 
-bool LongExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue)
+bool LongCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue)
 {
     if (!scriptState->contextIsValid())
         return false;

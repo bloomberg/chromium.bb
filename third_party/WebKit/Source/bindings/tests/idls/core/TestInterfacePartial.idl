@@ -35,7 +35,7 @@ enum PartialEnumType {
 
 typedef DOMString PartialString;
 
-callback PartialCallbackType = void (PartialString value);
+[Custom] callback PartialCallbackType = void (PartialString value);
 [
     RuntimeEnabled=PartialFeatureName,
 ] partial interface TestInterface {

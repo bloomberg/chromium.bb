@@ -20,7 +20,7 @@ Blink IDL also does not support certain recent features of the Web IDL grammar:
 Semantically, only certain extended attributes allow lists. Similarly, only certain extended attributes allow string literals.
 
 Extended attributes either take no value, take a required value, or take an optional value.
-In the following explanations, _(i)_, _(m)_, _(s)_, _(a)_, _(p)_, _(c)_, and _(d)_ mean that a given extended attribute can be specified on interfaces, methods, special operations, attributes, parameters, constants, and dictionaries, respectively. For example, _(a,p)_ means that the IDL attribute can be specified on attributes and parameters.
+In the following explanations, _(i)_, _(m)_, _(s)_, _(a)_, _(p)_, _(c)_, _(d)_, and _(f)_ mean that a given extended attribute can be specified on interfaces, methods, special operations, attributes, parameters, constants, dictionaries, and callback functions respectively. For example, _(a,p)_ means that the IDL attribute can be specified on attributes and parameters.
 
 *** note
 These restrictions are not enforced by the parser: extended attributes used in unsupported contexts will simply be ignored.
@@ -686,7 +686,7 @@ PassRefPtr<XXX> XXX::create(ScriptExecutionContext* context, ScriptState* state,
 
 You can retrieve document or frame from ScriptExecutionContext.
 
-### [Custom] _(i, m, s, a)_
+### [Custom] _(i, m, s, a, f)_
 
 Summary: They allow you to write bindings code manually as you like: full bindings for methods and attributes, certain functions for interfaces.
 
@@ -788,6 +788,19 @@ interface YYY {  // special operations with identifiers
     [Custom] getter Node namedItem(DOMString name);
 }
 ```
+
+`[Custom]` may also be specified on callback functions:
+
+```webidl
+[Custom] callback SomeCallback = void ();
+interface XXX {
+    void func(SomeCallback callback);
+};
+```
+
+When`[Custom]` is specified on a callback function, the code generator doesn't
+generate bindings for the callback function. The binding layer uses a
+`ScriptValue` instead.
 
 #### [Custom=PropertyQuery|PropertyEnumerator] _(s)_
 
@@ -1512,10 +1525,6 @@ Without `[NoImplHeader]`, the IDL compiler assumes that there is XXX.h in the im
 ## Temporary Blink-specific IDL Extended Attributes
 
 These extended attributes are _temporary_ and are only in use while some change is in progress. Unless you are involved with the change, you can generally ignore them, and should not use them.
-
-### [ExperimentalCallbackFunction]
-
-Summary: `[ExperimentalCallbackFunction]` on a callback function is a flag to collect callback functions. Currently the code generator doesn't generate bindings for IDL callback functions (instead, it just uses `ScriptValue`). While generating bindings for callback functions, to change existing code which uses callback functions until the generated bindings are stabilized is undesirable. To implement bindings generation for IDL callback functions incrementally, [ExperimentalCallbackFunction] extended attribute is added. The code generator keeps using ScriptValue for IDL callback functions which don't have this extended attribute.
 
 ### [LegacyTreatAsPartialInterface] _(i)_
 

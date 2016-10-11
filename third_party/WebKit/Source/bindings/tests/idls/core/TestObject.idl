@@ -33,10 +33,9 @@ enum TestEnum2 {"", "EnumValue1", "EnumValue2", "EnumValue3"};
 
 callback VoidCallbackFunction = void ();
 callback AnyCallbackFunctionOptionalAnyArg = any (optional any optionalAnyArg);
-[ExperimentalCallbackFunction] callback VoidExperimentalCallbackFunction = void ();
-[ExperimentalCallbackFunction] callback LongExperimentalCallbackFunction = long (long num1, long num2);
-[ExperimentalCallbackFunction] callback VoidCallbackFunctionInterfaceArg = void (HTMLDivElement divElement);
-[ExperimentalCallbackFunction] callback StringSequenceCallbackFunctionLongSequenceArg = sequence<DOMString> (sequence<long> arg);
+callback LongCallbackFunction = long (long num1, long num2);
+callback VoidCallbackFunctionInterfaceArg = void (HTMLDivElement divElement);
+callback StringSequenceCallbackFunctionLongSequenceArg = sequence<DOMString> (sequence<long> arg);
 
 // No extended attributes on the interface; those go in TestInterface.idl
 interface TestObject {
@@ -327,8 +326,7 @@ interface TestObject {
     void voidMethodOptionalVoidCallbackFunctionArg(optional VoidCallbackFunction voidCallbackFunctionArg);
     void voidMethodNullableVoidCallbackFunctionArg(VoidCallbackFunction? voidCallbackFunctionArg);
     void voidMethodAnyCallbackFunctionOptionalAnyArg(AnyCallbackFunctionOptionalAnyArg anyCallbackFunctionOptionalAnyArgArg);
-    void voidMethodVoidExperimentalCallbackFunctionArg(VoidExperimentalCallbackFunction voidExperimentalCallbackFunctionArg);
-    void voidMethodLongExperimentalCallbackFunctionArg(LongExperimentalCallbackFunction longExperimentalCallbackFunctionArg);
+    void voidMethodLongCallbackFunctionArg(LongCallbackFunction longCallbackFunctionArg);
     // Custom type conversions
     any anyMethod();
     void voidMethodEventTargetArg(EventTarget eventTargetArg);

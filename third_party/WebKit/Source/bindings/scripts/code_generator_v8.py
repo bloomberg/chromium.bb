@@ -138,7 +138,6 @@ class CodeGeneratorV8Base(CodeGeneratorBase):
         if not self.should_generate_code(definitions):
             return set()
 
-        IdlType.set_callback_functions(definitions.callback_functions.keys())
         # Resolve typedefs
         self.typedef_resolver.resolve(definitions, definition_name)
         return self.generate_code_internal(definitions, definition_name)
@@ -373,6 +372,8 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
             if callback_function_dict['component_dir'] != self.target_component:
                 continue
             callback_function = callback_function_dict['callback_function']
+            if 'Custom' in callback_function.extended_attributes:
+                continue
             path = callback_function_dict['full_path']
             outputs.update(self.generate_code_internal(callback_function, path))
         return outputs

@@ -139,8 +139,7 @@ class IdlType(IdlTypeBase):
     # FIXME: incorporate Nullable, etc.
     # to support types like short?[] vs. short[]?, instead of treating these
     # as orthogonal properties (via flags).
-    callback_functions = set(STANDARD_CALLBACK_FUNCTIONS)
-    experimental_callback_functions = {}
+    callback_functions = {}
     callback_interfaces = set()
     dictionaries = set()
     enums = {}  # name -> values
@@ -168,12 +167,19 @@ class IdlType(IdlTypeBase):
         return self.base_type in BASIC_TYPES
 
     @property
-    def is_callback_function(self):
-        return self.base_type in IdlType.callback_functions
+    def is_callback_function(self):  # pylint: disable=C0103
+        return self.base_type in IdlType.callback_functions or self.base_type in STANDARD_CALLBACK_FUNCTIONS
 
     @property
-    def is_experimental_callback_function(self):  # pylint: disable=C0103
-        return self.base_type in IdlType.experimental_callback_functions
+    def is_custom_callback_function(self):
+        # Treat standard callback functions as custom as they aren't generated.
+        if self.base_type in STANDARD_CALLBACK_FUNCTIONS:
+            return True
+        entry = IdlType.callback_functions.get(self.base_type)
+        callback_function = entry.get('callback_function')
+        if not callback_function:
+            return False
+        return 'Custom' in callback_function.extended_attributes
 
     @property
     def is_callback_interface(self):
@@ -239,10 +245,6 @@ class IdlType(IdlTypeBase):
     @classmethod
     def set_callback_functions(cls, new_callback_functions):
         cls.callback_functions.update(new_callback_functions)
-
-    @classmethod
-    def set_experimental_callback_functions(cls, new_callback_functions):
-        cls.experimental_callback_functions.update(new_callback_functions)
 
     @classmethod
     def set_callback_interfaces(cls, new_callback_interfaces):

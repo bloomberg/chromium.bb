@@ -6,10 +6,11 @@
 
 // clang-format off
 
-#include "VoidExperimentalCallbackFunction.h"
+#include "AnyCallbackFunctionOptionalAnyArg.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/ExecutionContext.h"
@@ -17,18 +18,18 @@
 
 namespace blink {
 
-VoidExperimentalCallbackFunction::VoidExperimentalCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+AnyCallbackFunctionOptionalAnyArg::AnyCallbackFunctionOptionalAnyArg(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     : m_callback(isolate, callback)
 {
     DCHECK(!m_callback.isEmpty());
     m_callback.setPhantom();
 }
 
-DEFINE_TRACE(VoidExperimentalCallbackFunction)
+DEFINE_TRACE(AnyCallbackFunctionOptionalAnyArg)
 {
 }
 
-bool VoidExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable)
+bool AnyCallbackFunctionOptionalAnyArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue)
 {
     if (!scriptState->contextIsValid())
         return false;
@@ -46,16 +47,20 @@ bool VoidExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrap
     TrackExceptionState exceptionState;
     ScriptState::Scope scope(scriptState);
 
+    v8::Local<v8::Value> optionalAnyArgArgument = optionalAnyArg.v8Value();
+
     v8::Local<v8::Value> thisValue = toV8(scriptWrappable, scriptState->context()->Global(), scriptState->isolate());
 
-    v8::Local<v8::Value> *argv = nullptr;
+    v8::Local<v8::Value> argv[] = { optionalAnyArgArgument };
 
     v8::Local<v8::Value> v8ReturnValue;
     v8::TryCatch exceptionCatcher(scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
 
-    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), thisValue, 0, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
+    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), thisValue, 1, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
     {
+        ScriptValue cppValue = ScriptValue(ScriptState::current(scriptState->isolate()), v8ReturnValue);
+        returnValue = cppValue;
         return true;
     }
     return false;

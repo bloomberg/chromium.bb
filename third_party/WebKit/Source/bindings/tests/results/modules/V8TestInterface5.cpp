@@ -15,7 +15,6 @@
 #include "bindings/core/v8/V8Iterator.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
-#include "bindings/core/v8/VoidExperimentalCallbackFunction.h"
 #include "bindings/modules/v8/BooleanOrString.h"
 #include "bindings/modules/v8/DoubleOrString.h"
 #include "bindings/modules/v8/V8TestInterface5.h"
@@ -620,12 +619,12 @@ static void voidMethodVoidExperimentalCallbackFunctionMethod(const v8::FunctionC
     }
 
     VoidExperimentalCallbackFunction* arg;
-    if (!info[0]->IsFunction()) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidExperimentalCallbackFunction", "TestInterface5", "The callback provided as parameter 1 is not a function."));
+    arg = V8VoidExperimentalCallbackFunction::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!arg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidExperimentalCallbackFunction", "TestInterface5", "parameter 1 is not of type 'VoidExperimentalCallbackFunction'."));
 
         return;
     }
-    arg = VoidExperimentalCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
 
     impl->voidMethodVoidExperimentalCallbackFunction(arg);
 }

@@ -1118,7 +1118,7 @@ def resolution_tests_methods(effective_overloads):
     # same thing.
     try:
         method = next(method for idl_type, method in idl_types_methods
-                      if idl_type.is_callback_function)
+                      if idl_type.is_custom_callback_function)
         test = '%s->IsFunction()' % cpp_value
         yield test, method
     except StopIteration:

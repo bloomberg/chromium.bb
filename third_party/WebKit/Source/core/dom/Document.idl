@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-callback CustomElementConstructor = Element ();
+[Custom] callback CustomElementConstructor = Element ();
 
 // https://html.spec.whatwg.org/#the-document-object
 enum DocumentReadyState { "loading", "interactive", "complete" };
