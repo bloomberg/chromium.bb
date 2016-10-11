@@ -25,7 +25,7 @@ namespace android {
 // static
 LayerTitleCache* LayerTitleCache::FromJavaObject(jobject jobj) {
   if (!jobj)
-    return NULL;
+    return nullptr;
   return reinterpret_cast<LayerTitleCache*>(Java_LayerTitleCache_getNativePtr(
       base::android::AttachCurrentThread(), jobj));
 }
@@ -58,14 +58,7 @@ void LayerTitleCache::UpdateLayer(JNIEnv* env,
                                   bool is_incognito,
                                   bool is_rtl) {
   DecorationTitle* title_layer = layer_cache_.Lookup(tab_id);
-  if (title_layer == NULL) {
-    layer_cache_.AddWithID(
-        new DecorationTitle(
-            resource_manager_, title_resource_id, favicon_resource_id,
-            spinner_resource_id_, spinner_incognito_resource_id_, fade_width_,
-            favicon_start_padding_, favicon_end_padding_, is_incognito, is_rtl),
-        tab_id);
-  } else {
+  if (title_layer) {
     if (title_resource_id != -1 && favicon_resource_id != -1) {
       title_layer->Update(title_resource_id, favicon_resource_id, fade_width_,
                           favicon_start_padding_, favicon_end_padding_,
@@ -73,6 +66,13 @@ void LayerTitleCache::UpdateLayer(JNIEnv* env,
     } else {
       layer_cache_.Remove(tab_id);
     }
+  } else {
+    layer_cache_.AddWithID(
+        new DecorationTitle(
+            resource_manager_, title_resource_id, favicon_resource_id,
+            spinner_resource_id_, spinner_incognito_resource_id_, fade_width_,
+            favicon_start_padding_, favicon_end_padding_, is_incognito, is_rtl),
+        tab_id);
   }
 }
 

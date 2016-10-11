@@ -97,7 +97,7 @@ class TabContentManager::TabReadbackRequest {
 // static
 TabContentManager* TabContentManager::FromJavaObject(jobject jobj) {
   if (!jobj)
-    return NULL;
+    return nullptr;
   return reinterpret_cast<TabContentManager*>(
       Java_TabContentManager_getNativePtr(base::android::AttachCurrentThread(),
                                           jobj));
@@ -133,11 +133,7 @@ void TabContentManager::SetUIResourceProvider(
 }
 
 scoped_refptr<cc::Layer> TabContentManager::GetLiveLayer(int tab_id) {
-  scoped_refptr<cc::Layer> layer = live_layer_list_[tab_id];
-  if (!layer.get())
-    return NULL;
-
-  return layer;
+  return live_layer_list_[tab_id];
 }
 
 scoped_refptr<ThumbnailLayer> TabContentManager::GetStaticLayer(
@@ -151,7 +147,7 @@ scoped_refptr<ThumbnailLayer> TabContentManager::GetStaticLayer(
       static_layer->layer()->RemoveFromParent();
       static_layer_cache_.erase(tab_id);
     }
-    return NULL;
+    return nullptr;
   }
 
   if (!static_layer.get()) {
@@ -274,7 +270,7 @@ void TabContentManager::UpdateVisibleIds(
     const JavaParamRef<jintArray>& priority) {
   std::list<int> priority_ids;
   jsize length = env->GetArrayLength(priority);
-  jint* ints = env->GetIntArrayElements(priority, NULL);
+  jint* ints = env->GetIntArrayElements(priority, nullptr);
   for (jsize i = 0; i < length; ++i)
     priority_ids.push_back(static_cast<int>(ints[i]));
 

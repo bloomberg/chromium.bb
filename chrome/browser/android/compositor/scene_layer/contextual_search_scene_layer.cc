@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/memory/ptr_util.h"
 #include "cc/layers/solid_color_layer.h"
 #include "chrome/browser/android/compositor/layer/contextual_search_layer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -116,7 +117,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
   // Load the thumbnail if necessary.
   std::string thumbnail_url =
       base::android::ConvertJavaStringToUTF8(env, j_thumbnail_url);
-  if (thumbnail_url.compare(thumbnail_url_) != 0) {
+  if (thumbnail_url != thumbnail_url_) {
     thumbnail_url_ = thumbnail_url;
     FetchThumbnail(j_profile);
   }
@@ -202,11 +203,12 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
 }
 
 void ContextualSearchSceneLayer::FetchThumbnail(jobject j_profile) {
-  if (thumbnail_url_.compare("") == 0) return;
+  if (thumbnail_url_.empty())
+    return;
 
-  GURL* gurl = new GURL(thumbnail_url_);
+  GURL gurl(thumbnail_url_);
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  fetcher_.reset(new chrome::BitmapFetcher(*gurl, this));
+  fetcher_ = base::MakeUnique<chrome::BitmapFetcher>(gurl, this);
   fetcher_->Init(
       profile->GetRequestContext(),
       std::string(),
@@ -217,14 +219,14 @@ void ContextualSearchSceneLayer::FetchThumbnail(jobject j_profile) {
 
 void ContextualSearchSceneLayer::OnFetchComplete(const GURL& url,
                                                  const SkBitmap* bitmap) {
-  bool success = bitmap != NULL && !bitmap->drawsNothing();
+  bool success = bitmap && !bitmap->drawsNothing();
   Java_ContextualSearchSceneLayer_onThumbnailFetched(env_,
                                                      object_.obj(),
                                                      success);
+  if (success)
+    contextual_search_layer_->SetThumbnail(bitmap);
 
-  if (success) contextual_search_layer_->SetThumbnail(bitmap);
-
-  fetcher_.reset(nullptr);
+  fetcher_.reset();
 }
 
 void ContextualSearchSceneLayer::SetContentTree(

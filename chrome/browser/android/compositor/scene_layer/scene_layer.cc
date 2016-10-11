@@ -15,7 +15,7 @@ namespace android {
 
 // static
 SceneLayer* SceneLayer::FromJavaObject(JNIEnv* env, jobject jobj) {
-  if (jobj == nullptr)
+  if (!jobj)
     return nullptr;
   return reinterpret_cast<SceneLayer*>(Java_SceneLayer_getNativePtr(env, jobj));
 }

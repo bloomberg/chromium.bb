@@ -151,9 +151,8 @@ void DecorationTitle::setBounds(const gfx::Size& bounds) {
   if (bounds.GetArea() == 0.f) {
     layer_->SetHideLayerAndSubtree(true);
     return;
-  } else {
-    layer_->SetHideLayerAndSubtree(false);
   }
+  layer_->SetHideLayerAndSubtree(false);
 
   // Current implementation assumes there is always enough space
   // to draw favicon and title fade.

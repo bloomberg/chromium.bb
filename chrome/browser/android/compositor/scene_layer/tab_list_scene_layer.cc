@@ -70,13 +70,13 @@ void TabListSceneLayer::UpdateLayer(
     const JavaParamRef<jobject>& jtab_content_manager,
     const JavaParamRef<jobject>& jresource_manager) {
   // TODO(changwan): move these to constructor if possible
-  if (resource_manager_ == nullptr) {
+  if (!resource_manager_) {
     resource_manager_ =
         ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
   }
-  if (layer_title_cache_ == nullptr)
+  if (!layer_title_cache_)
     layer_title_cache_ = LayerTitleCache::FromJavaObject(jlayer_title_cache);
-  if (tab_content_manager_ == nullptr) {
+  if (!tab_content_manager_) {
     tab_content_manager_ =
         TabContentManager::FromJavaObject(jtab_content_manager);
   }

@@ -99,7 +99,7 @@ CompositorView::~CompositorView() {
 
   // Explicitly reset these scoped_ptrs here because otherwise we callbacks will
   // try to access member variables during destruction.
-  compositor_.reset(NULL);
+  compositor_.reset();
 }
 
 void CompositorView::Destroy(JNIEnv* env, const JavaParamRef<jobject>& object) {
@@ -107,9 +107,7 @@ void CompositorView::Destroy(JNIEnv* env, const JavaParamRef<jobject>& object) {
 }
 
 ui::ResourceManager* CompositorView::GetResourceManager() {
-  if (!compositor_)
-    return NULL;
-  return &compositor_->GetResourceManager();
+  return compositor_ ? &compositor_->GetResourceManager() : nullptr;
 }
 
 base::android::ScopedJavaLocalRef<jobject> CompositorView::GetResourceManager(
@@ -130,9 +128,7 @@ void CompositorView::OnSwapBuffersCompleted(int pending_swap_buffers) {
 }
 
 ui::UIResourceProvider* CompositorView::GetUIResourceProvider() {
-  if (!compositor_)
-    return NULL;
-  return &compositor_->GetUIResourceProvider();
+  return compositor_ ? &compositor_->GetUIResourceProvider() : nullptr;
 }
 
 void CompositorView::SurfaceCreated(JNIEnv* env,
@@ -143,7 +139,7 @@ void CompositorView::SurfaceCreated(JNIEnv* env,
 
 void CompositorView::SurfaceDestroyed(JNIEnv* env,
                                       const JavaParamRef<jobject>& object) {
-  compositor_->SetSurface(NULL);
+  compositor_->SetSurface(nullptr);
   current_surface_format_ = 0;
   tab_content_manager_->OnUIResourcesWereEvicted();
 }
@@ -204,14 +200,14 @@ void CompositorView::SetSceneLayer(JNIEnv* env,
   if (scene_layer_ != scene_layer) {
     // The old tree should be detached only if it is not the cached layer or
     // the cached layer is not somewhere in the new root.
-    if (scene_layer_ != nullptr
-        && !scene_layer_->layer()->HasAncestor(scene_layer->layer().get())) {
+    if (scene_layer_ &&
+        !scene_layer_->layer()->HasAncestor(scene_layer->layer().get())) {
       scene_layer_->OnDetach();
     }
 
     scene_layer_ = scene_layer;
 
-    if (scene_layer == nullptr) {
+    if (!scene_layer) {
       scene_layer_layer_ = nullptr;
       return;
     }
