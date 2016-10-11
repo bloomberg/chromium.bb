@@ -241,6 +241,7 @@ HAVE_LIST="
     aom_ports
     pthread_h
     unistd_h
+    wxwidgets
 "
 EXPERIMENT_LIST="
     fp_mb_stats
@@ -648,6 +649,14 @@ EOF
     check_header unistd.h # for sysconf(3) and friends.
 
     check_header aom/aom_integer.h -I${source_path} && enable_feature aom_ports
+    enabled analyzer && soft_enable wxwidgets
+    if enabled wxwidgets; then
+      if ! wx-config --version > /dev/null; then
+        die "Couldn't find wx-config"
+      fi
+      WX_CXXFLAGS=$(wx-config --cppflags)
+      WX_LDFLAGS=$(wx-config --libs)
+    fi
 }
 
 process_toolchain() {

@@ -464,6 +464,8 @@ AS_SFX    = ${AS_SFX:-.asm}
 EXE_SFX   = ${EXE_SFX}
 VCPROJ_SFX = ${VCPROJ_SFX}
 RTCD_OPTIONS = ${RTCD_OPTIONS}
+WX_CXXFLAGS = ${WX_CXXFLAGS}
+WX_LDFLAGS = ${WX_LDFLAGS}
 EOF
 
   if enabled rvct; then cat >> $1 << EOF
