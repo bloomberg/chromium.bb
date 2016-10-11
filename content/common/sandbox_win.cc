@@ -601,7 +601,7 @@ sandbox::ResultCode AddAppContainerPolicy(sandbox::TargetPolicy* policy,
 sandbox::ResultCode AddWin32kLockdownPolicy(sandbox::TargetPolicy* policy,
                                             bool enable_opm) {
 #if !defined(NACL_WIN64)
-  if (!IsWin32kRendererLockdownEnabled())
+  if (!IsWin32kLockdownEnabled())
     return sandbox::SBOX_ALL_OK;
 
   // Enable win32k lockdown if not already.
@@ -736,8 +736,7 @@ sandbox::ResultCode StartSandboxedProcess(
     return result;
 
 #if !defined(NACL_WIN64)
-  if (type_str == switches::kRendererProcess &&
-      IsWin32kRendererLockdownEnabled()) {
+  if (type_str == switches::kRendererProcess && IsWin32kLockdownEnabled()) {
     result = AddWin32kLockdownPolicy(policy.get(), false);
     if (result != sandbox::SBOX_ALL_OK)
       return result;

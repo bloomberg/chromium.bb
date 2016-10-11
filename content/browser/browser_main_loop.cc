@@ -1300,11 +1300,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   device_monitor_mac_.reset(new media::DeviceMonitorMac());
 #endif
 
-#if defined(OS_WIN)
-  UMA_HISTOGRAM_BOOLEAN("Windows.Win32kRendererLockdown",
-                        IsWin32kRendererLockdownEnabled());
-#endif
-
   // RDH needs the IO thread to be created
   {
     TRACE_EVENT0("startup",

@@ -48,11 +48,11 @@ bool IsPinchToZoomEnabled() {
 
 #if defined(OS_WIN)
 
-bool IsWin32kRendererLockdownEnabled() {
+bool IsWin32kLockdownEnabled() {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return false;
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableWin32kRendererLockDown))
+  if (cmd_line->HasSwitch(switches::kDisableWin32kLockDown))
     return false;
   return true;
 }

@@ -13,8 +13,8 @@ namespace content {
 
 bool IsPinchToZoomEnabled();
 #if defined(OS_WIN)
-// Returns whether Win32k Renderer lockdown is enabled or not.
-bool IsWin32kRendererLockdownEnabled();
+// Returns whether Win32k lockdown is enabled for child processes or not.
+bool IsWin32kLockdownEnabled();
 #endif
 V8CacheOptions GetV8CacheOptions();
 

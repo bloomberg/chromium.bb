@@ -61,10 +61,9 @@ class PpapiPluginSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
   PpapiPluginSandboxedProcessLauncherDelegate(bool is_broker,
-                                              const PepperPluginInfo& info,
                                               ChildProcessHost* host)
 #if defined(OS_WIN)
-      : info_(info), is_broker_(is_broker) {
+      : is_broker_(is_broker) {
 #elif defined(OS_MACOSX) || defined(OS_ANDROID)
       : ipc_fd_(host->TakeClientFileDescriptor()) {
 #elif defined(OS_POSIX)
@@ -98,16 +97,10 @@ class PpapiPluginSandboxedProcessLauncherDelegate
         GetContentClient()->browser();
 
 #if !defined(NACL_WIN64)
-    if (IsWin32kRendererLockdownEnabled()) {
-      for (const auto& mime_type : info_.mime_types) {
-        if (browser_client->IsWin32kLockdownEnabledForMimeType(
-                mime_type.mime_type)) {
-          result = AddWin32kLockdownPolicy(policy, true);
-          if (result != sandbox::SBOX_ALL_OK)
-            return false;
-          break;
-        }
-      }
+    if (IsWin32kLockdownEnabled()) {
+      result = AddWin32kLockdownPolicy(policy, true);
+      if (result != sandbox::SBOX_ALL_OK)
+        return false;
     }
 #endif
     const base::string16& sid =
@@ -139,9 +132,6 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   }
 
  private:
-#if defined(OS_WIN)
-  const PepperPluginInfo& info_;
-#endif // OS_WIN
 #if defined(OS_POSIX)
   base::ScopedFD ipc_fd_;
 #endif  // OS_POSIX
@@ -456,7 +446,6 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   // to use another process instead of just forking the zygote.
   process_->Launch(
       new PpapiPluginSandboxedProcessLauncherDelegate(is_broker_,
-                                                      info,
                                                       process_->GetHost()),
       cmd_line,
       true);

@@ -280,8 +280,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool PreSpawnRenderer(sandbox::TargetPolicy* policy) override;
   base::string16 GetAppContainerSidForSandboxType(
       int sandbox_type) const override;
-  bool IsWin32kLockdownEnabledForMimeType(
-      const std::string& mime_type) const override;
 #endif
   void ExposeInterfacesToRenderer(
       shell::InterfaceRegistry* registry,

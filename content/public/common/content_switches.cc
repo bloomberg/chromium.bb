@@ -1023,15 +1023,8 @@ const char kDeviceScaleFactor[]     = "device-scale-factor";
 // Disable the Legacy Window which corresponds to the size of the WebContents.
 const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
 
-// Disables the Win32K process mitigation policy for renderer processes.
-const char kDisableWin32kRendererLockDown[] =
-    "disable-win32k-renderer-lockdown";
-
-// Enables the Win32K process mitigation policy for certain PPAPI mime
-// types. Each mime type is separated by a comma. Specify * to enable
-// the policy for all mime types.
-const char kEnableWin32kLockDownMimeTypes[] =
-    "enable-win32k-lockdown-mimetypes";
+// Disables the Win32K process mitigation policy for child processes.
+const char kDisableWin32kLockDown[] = "disable-win32k-lockdown";
 
 // Enables experimental hardware acceleration for VP8/VP9 video decoding.
 // Bitmask - 0x1=Microsoft, 0x2=AMD, 0x03=Try all.

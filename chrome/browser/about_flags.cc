@@ -476,26 +476,6 @@ const FeatureEntry::Choice kCrosRegionsModeChoices[] = {
 };
 #endif  // OS_CHROMEOS
 
-#if defined(OS_WIN)
-const FeatureEntry::Choice kPpapiWin32kLockdown[] = {
-    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-    {IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-     switches::kEnableWin32kLockDownMimeTypes, ""},
-    {IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_FLASH_ONLY,
-     switches::kEnableWin32kLockDownMimeTypes,
-     "application/x-shockwave-flash,application/futuresplash"},
-    {IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_PDF_ONLY,
-     switches::kEnableWin32kLockDownMimeTypes,
-     "application/x-google-chrome-pdf,application/pdf"},
-    {IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_FLASH_AND_PDF,
-     switches::kEnableWin32kLockDownMimeTypes,
-     "application/x-shockwave-flash,application/futuresplash,"
-     "application/x-google-chrome-pdf,application/pdf"},
-    {IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_ALL,
-     switches::kEnableWin32kLockDownMimeTypes, "*"},
-};
-#endif  // OS_WIN
-
 const FeatureEntry::Choice kForceUIDirectionChoices[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
     {IDS_FLAGS_FORCE_UI_DIRECTION_LTR, switches::kForceUIDirection,
@@ -1713,11 +1693,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_CROS_REGIONS_MODE_DESCRIPTION, kOsCrOS,
      MULTI_VALUE_TYPE(kCrosRegionsModeChoices)},
 #endif  // OS_CHROMEOS
-#if defined(OS_WIN)
-    {"enable-ppapi-win32k-lockdown", IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_NAME,
-     IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_DESCRIPTION, kOsWin,
-     MULTI_VALUE_TYPE(kPpapiWin32kLockdown)},
-#endif  // OS_WIN
 #if defined(ENABLE_NOTIFICATIONS) && defined(OS_ANDROID)
     {"enable-web-notification-custom-layouts",
      IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_NAME,
