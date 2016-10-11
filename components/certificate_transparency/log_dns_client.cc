@@ -4,13 +4,13 @@
 
 #include "components/certificate_transparency/log_dns_client.h"
 
-#include <sstream>
-
 #include "base/bind.h"
+#include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/base32/base32.h"
@@ -98,9 +98,11 @@ bool ParseAuditPath(const net::DnsResponse& response,
 }  // namespace
 
 LogDnsClient::LogDnsClient(std::unique_ptr<net::DnsClient> dns_client,
-                           const net::NetLogWithSource& net_log)
+                           const net::NetLogWithSource& net_log,
+                           size_t max_concurrent_queries)
     : dns_client_(std::move(dns_client)),
       net_log_(net_log),
+      max_concurrent_queries_(max_concurrent_queries),
       weak_ptr_factory_(this) {
   CHECK(dns_client_);
   net::NetworkChangeNotifier::AddDNSObserver(this);
@@ -128,6 +130,13 @@ void LogDnsClient::QueryLeafIndex(base::StringPiece domain_for_log,
     return;
   }
 
+  if (HasMaxConcurrentQueriesInProgress()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, net::Error::ERR_TEMPORARILY_THROTTLED, 0));
+    return;
+  }
+
   std::string encoded_leaf_hash =
       base32::Base32Encode(leaf_hash, base32::Base32EncodePolicy::OMIT_PADDING);
   DCHECK_EQ(encoded_leaf_hash.size(), 52u);
@@ -140,14 +149,14 @@ void LogDnsClient::QueryLeafIndex(base::StringPiece domain_for_log,
     return;
   }
 
-  std::ostringstream qname;
-  qname << encoded_leaf_hash << ".hash." << domain_for_log << ".";
+  std::string qname = base::StringPrintf(
+      "%s.hash.%s.", encoded_leaf_hash.c_str(), domain_for_log.data());
 
   net::DnsTransactionFactory::CallbackType transaction_callback = base::Bind(
       &LogDnsClient::QueryLeafIndexComplete, weak_ptr_factory_.GetWeakPtr());
 
   std::unique_ptr<net::DnsTransaction> dns_transaction =
-      factory->CreateTransaction(qname.str(), net::dns_protocol::kTypeTXT,
+      factory->CreateTransaction(qname, net::dns_protocol::kTypeTXT,
                                  transaction_callback, net_log_);
 
   dns_transaction->Start();
@@ -162,7 +171,8 @@ void LogDnsClient::QueryLeafIndex(base::StringPiece domain_for_log,
 // of the code would increase though, as it would need to detect gaps in the
 // audit proof caused by the server not responding with the anticipated number
 // of nodes. Ownership of the proof would need to change, as it would be shared
-// between simultaneous DNS transactions.
+// between simultaneous DNS transactions. Throttling of queries would also need
+// to take into account this increase in parallelism.
 void LogDnsClient::QueryAuditProof(base::StringPiece domain_for_log,
                                    uint64_t leaf_index,
                                    uint64_t tree_size,
@@ -171,6 +181,13 @@ void LogDnsClient::QueryAuditProof(base::StringPiece domain_for_log,
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, net::Error::ERR_INVALID_ARGUMENT, nullptr));
+    return;
+  }
+
+  if (HasMaxConcurrentQueriesInProgress()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, net::Error::ERR_TEMPORARILY_THROTTLED, nullptr));
     return;
   }
 
@@ -245,9 +262,9 @@ void LogDnsClient::QueryAuditProofNodes(
     return;
   }
 
-  std::ostringstream qname;
-  qname << node_index << "." << proof->leaf_index << "." << tree_size
-        << ".tree." << domain_for_log << ".";
+  std::string qname = base::StringPrintf(
+      "%" PRIu64 ".%" PRIu64 ".%" PRIu64 ".tree.%s.", node_index,
+      proof->leaf_index, tree_size, domain_for_log.data());
 
   net::DnsTransactionFactory::CallbackType transaction_callback =
       base::Bind(&LogDnsClient::QueryAuditProofNodesComplete,
@@ -255,7 +272,7 @@ void LogDnsClient::QueryAuditProofNodes(
                  domain_for_log, tree_size);
 
   std::unique_ptr<net::DnsTransaction> dns_transaction =
-      factory->CreateTransaction(qname.str(), net::dns_protocol::kTypeTXT,
+      factory->CreateTransaction(qname, net::dns_protocol::kTypeTXT,
                                  transaction_callback, net_log_);
   dns_transaction->Start();
   audit_proof_queries_.push_back({std::move(dns_transaction), callback});
@@ -318,6 +335,14 @@ void LogDnsClient::QueryAuditProofNodesComplete(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(query.callback, net::OK, base::Passed(std::move(proof))));
+}
+
+bool LogDnsClient::HasMaxConcurrentQueriesInProgress() const {
+  const size_t queries_in_progress =
+      leaf_index_queries_.size() + audit_proof_queries_.size();
+
+  return max_concurrent_queries_ != 0 &&
+         queries_in_progress >= max_concurrent_queries_;
 }
 
 void LogDnsClient::UpdateDnsConfig() {

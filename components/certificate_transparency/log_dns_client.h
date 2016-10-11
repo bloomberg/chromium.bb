@@ -52,8 +52,13 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // to perform DNS queries. Queries will be logged to |net_log|.
   // The |dns_client| does not need to be configured first - this will be done
   // automatically as needed.
+  // A limit can be set on the number of concurrent DNS queries by providing a
+  // positive value for |max_concurrent_queries|. Queries that would exceed this
+  // limit will fail with net::TEMPORARILY_THROTTLED. Setting this to 0 will
+  // disable this limit.
   LogDnsClient(std::unique_ptr<net::DnsClient> dns_client,
-               const net::NetLogWithSource& net_log);
+               const net::NetLogWithSource& net_log,
+               size_t max_concurrent_queries);
   // Must be deleted on the same thread that it was created on.
   ~LogDnsClient() override;
 
@@ -108,6 +113,11 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
       int net_error,
       const net::DnsResponse* response);
 
+  // Returns true if the maximum number of queries are currently in flight.
+  // If the maximum number of concurrency queries is set to 0, this will always
+  // return false.
+  bool HasMaxConcurrentQueriesInProgress() const;
+
   // Updates the |dns_client_| config using NetworkChangeNotifier.
   void UpdateDnsConfig();
 
@@ -126,6 +136,8 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   std::list<Query<LeafIndexCallback>> leaf_index_queries_;
   // Audit proof queries that haven't completed yet.
   std::list<Query<AuditProofCallback>> audit_proof_queries_;
+  // The maximum number of queries that can be in flight at one time.
+  size_t max_concurrent_queries_;
   // Creates weak_ptrs to this, for callback purposes.
   base::WeakPtrFactory<LogDnsClient> weak_ptr_factory_;
 
