@@ -1,8 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="/icons.html">
 <link rel="import" href="/printing_page/cloud_printers.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="/settings_page/settings_animated_pages.html">
@@ -25,15 +23,17 @@
         <template is="dom-if" if="[[showCupsPrintingFeatures_]]">
           <div id="cupsPrinters" class="settings-box first"
               on-tap="onTapCupsPrinters_" actionable>
-            <iron-icon icon="cr:print"></iron-icon>
-            <div class="middle">$i18n{cupsPrintersTitle}</div>
+            <div class="start">
+              $i18n{cupsPrintersTitle}
+            </div>
+            <button class="icon-arrow-right" is="paper-icon-button-light">
+            </button>
           </div>
         </template>
 </if>
         <div id="cloudPrinters" class="settings-box two-line"
             on-tap="onTapCloudPrinters_" actionable>
-          <iron-icon icon="settings:cloud-printing"></iron-icon>
-          <div class="middle">
+          <div class="start">
             $i18n{cloudPrintersTitle}
             <div class="secondary">$i18n{cloudPrintersTitleDescription}</div>
           </div>
