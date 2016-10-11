@@ -223,6 +223,24 @@
     "cmd": [
       "python",
       "-u",
+      "RECIPE_PACKAGE_REPO[build]/scripts/slave/daemonizer.py",
+      "--action",
+      "restart",
+      "--pid-file-path",
+      "/tmp/device_monitor.pid",
+      "--",
+      "[SLAVE_BUILD]/src/third_party/catapult/devil/devil/android/tools/device_monitor.py",
+      "--adb-path",
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb",
+      "--blacklist-file",
+      "[SLAVE_BUILD]/src/out/bad_devices.json"
+    ],
+    "name": "spawn_device_monitor"
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
       "RECIPE_PACKAGE_REPO[build]/scripts/slave/android/authorize_adb_devices.py",
       "--verbose",
       "--adb-path",
@@ -393,24 +411,6 @@
       "@@@STEP_LOG_LINE@03e0363a003c6ad6: blacklisted@}@@@",
       "@@@STEP_LOG_END@03e0363a003c6ad6: blacklisted@@@"
     ]
-  },
-  {
-    "cmd": [
-      "python",
-      "-u",
-      "RECIPE_PACKAGE_REPO[build]/scripts/slave/daemonizer.py",
-      "--action",
-      "restart",
-      "--pid-file-path",
-      "/tmp/device_monitor.pid",
-      "--",
-      "RECIPE_MODULE[build::chromium_android]/resources/spawn_device_monitor.py",
-      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb",
-      "[\"07a00ca4\"]",
-      "--blacklist-file",
-      "[SLAVE_BUILD]/src/out/bad_devices.json"
-    ],
-    "name": "spawn_device_monitor"
   },
   {
     "cmd": [
