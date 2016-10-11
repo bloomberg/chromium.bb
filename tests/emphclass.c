@@ -43,17 +43,17 @@ main (int argc, char **argv)
 {
 	int result = 0;
 	const char* table;
-	table = "emphclass_invalid_1.utb";
+	table = "tests/tables/emphclass/emphclass_invalid_1.utb";
 	if (lou_getTable(table)) {
 		fprintf(stderr, "%s should be invalid\n", table);
 		return 1;
 	}
-	table = "emphclass_invalid_2.utb";
+	table = "tests/tables/emphclass/emphclass_invalid_2.utb";
 	if (lou_getTable(table)) {
 		fprintf(stderr, "%s should be invalid\n", table);
 		return 1;
 	}
-	table = "emphclass_valid.utb";
+	table = "tests/tables/emphclass/emphclass_valid.utb";
 	if (!lou_getTable(table)) {
 		fprintf(stderr, "%s should be valid\n", table);
 		return 1;

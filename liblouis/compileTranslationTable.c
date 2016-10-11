@@ -4908,7 +4908,7 @@ resolveSubtable (const char *table, const char *base, const char *searchPath)
       int k;
       strcpy (tableFile, base);
       k = (int)strlen (tableFile);
-      while (k >= 0 && tableFile[k] != DIR_SEP) k--;
+      while (k >= 0 && tableFile[k] != '/' && tableFile[k] != '\\') k--;
       tableFile[++k] = '\0';
       strcat (tableFile, table);
       if (stat (tableFile, &info) == 0 && !(info.st_mode & S_IFDIR))
@@ -5340,7 +5340,7 @@ formtype EXPORT_CALL
 lou_getTypeformForEmphClass(const char *tableList, const char *emphClass) {
 	int i;
 	if (!getTable(tableList))
-		return 0;//perensap
+		return 0;
 	for (i = 0; table->emphClasses[i]; i++)
 		if (strcmp(emphClass, table->emphClasses[i]) == 0)
 			return italic << i;
