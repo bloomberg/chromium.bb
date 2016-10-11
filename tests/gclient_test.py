@@ -244,17 +244,13 @@ class GclientTest(trial_dir.TestCase):
           obj.dependencies[0], 'foo/dir2',
           gclient.GClientKeywords.FromImpl('bar'), None, None, None, None,
           None, 'DEPS', True, False),
-        gclient.Dependency(
-          obj.dependencies[0], 'foo/dir3',
-          gclient.GClientKeywords.FileImpl('url'), None, None, None, None,
-          None, 'DEPS', True, False),
       ],
       [])
     # Make sure __str__() works fine.
     # pylint: disable=W0212
     obj.dependencies[0]._file_list.append('foo')
     str_obj = str(obj)
-    self.assertEquals(471, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
+    self.assertEquals(370, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
 
   def testHooks(self):
     topdir = self.root_dir
