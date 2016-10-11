@@ -117,6 +117,18 @@ INSTANTIATE_TEST_CASE_P(
             static_cast<const libaom_test::CodecFactory *>(&libaom_test::kAV1)),
         ::testing::Combine(::testing::Values(::libaom_test::kTwoPassGood),
                            ::testing::Values(1))));
+#elif CONFIG_DAALA_EC
+// TODO(negge@mozilla.com): Because the Daala EC decoder reads raw bits in
+// reverse order from the rear of the entropy coder buffer, it cannot decode
+// a superframe without knowing the length of the frame.  This should be
+// handled by some higher level syntax that does not exist yet.
+INSTANTIATE_TEST_CASE_P(
+    DISABLED_AV1, SuperframeTest,
+    ::testing::Combine(
+        ::testing::Values(
+            static_cast<const libaom_test::CodecFactory *>(&libaom_test::kAV1)),
+        ::testing::Combine(::testing::Values(::libaom_test::kTwoPassGood),
+                           ::testing::Values(1))));
 #else
 AV1_INSTANTIATE_TEST_CASE(
     SuperframeTest,
