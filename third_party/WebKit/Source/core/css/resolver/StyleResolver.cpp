@@ -1359,6 +1359,7 @@ static inline bool isValidCueStyleProperty(CSSPropertyID id) {
     case CSSPropertyTextDecorationLine:
     case CSSPropertyTextDecorationStyle:
     case CSSPropertyTextDecorationColor:
+    case CSSPropertyTextDecorationSkip:
       return RuntimeEnabledFeatures::css3TextDecorationsEnabled();
     default:
       break;
@@ -1468,6 +1469,7 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyTextDecorationColor:
     case CSSPropertyTextDecorationLine:
     case CSSPropertyTextDecorationStyle:
+    case CSSPropertyTextDecorationSkip:
       ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
       return true;
 

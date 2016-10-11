@@ -1885,6 +1885,18 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_VAR(m_rareInheritedData, m_textUnderlinePosition, v);
   }
 
+  // text-decoration-skip
+  static TextDecorationSkip initialTextDecorationSkip() {
+    return TextDecorationSkipObjects;
+  }
+  TextDecorationSkip getTextDecorationSkip() const {
+    return static_cast<TextDecorationSkip>(
+        m_rareInheritedData->m_textDecorationSkip);
+  }
+  void setTextDecorationSkip(TextDecorationSkip v) {
+    SET_VAR(m_rareInheritedData, m_textDecorationSkip, v);
+  }
+
   // text-overflow
   static TextOverflow initialTextOverflow() { return TextOverflowClip; }
   TextOverflow getTextOverflow() const {

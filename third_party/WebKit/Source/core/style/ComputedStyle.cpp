@@ -1106,6 +1106,8 @@ void ComputedStyle::updatePropertySpecificDifferences(
                     other.m_rareInheritedData->visitedLinkTextEmphasisColor() ||
                 m_rareInheritedData->textEmphasisFill !=
                     other.m_rareInheritedData->textEmphasisFill ||
+                m_rareInheritedData->m_textDecorationSkip !=
+                    other.m_rareInheritedData->m_textDecorationSkip ||
                 m_rareInheritedData->appliedTextDecorations !=
                     other.m_rareInheritedData->appliedTextDecorations)) {
       diff.setTextDecorationOrColorChanged();

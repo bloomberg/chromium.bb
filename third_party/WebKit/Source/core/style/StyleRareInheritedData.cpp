@@ -93,6 +93,7 @@ StyleRareInheritedData::StyleRareInheritedData()
       m_textIndentType(ComputedStyle::initialTextIndentLine()),
       m_imageRendering(ComputedStyle::initialImageRendering()),
       m_textUnderlinePosition(ComputedStyle::initialTextUnderlinePosition()),
+      m_textDecorationSkip(ComputedStyle::initialTextDecorationSkip()),
       m_rubyPosition(ComputedStyle::initialRubyPosition()),
       m_subtreeWillChangeContents(false),
       m_selfOrAncestorHasDirAutoAttribute(false),
@@ -151,6 +152,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
       m_textIndentType(o.m_textIndentType),
       m_imageRendering(o.m_imageRendering),
       m_textUnderlinePosition(o.m_textUnderlinePosition),
+      m_textDecorationSkip(o.m_textDecorationSkip),
       m_rubyPosition(o.m_rubyPosition),
       m_subtreeWillChangeContents(o.m_subtreeWillChangeContents),
       m_selfOrAncestorHasDirAutoAttribute(
@@ -221,6 +223,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
          quotesDataEquivalent(o) && m_tabSize == o.m_tabSize &&
          m_imageRendering == o.m_imageRendering &&
          m_textUnderlinePosition == o.m_textUnderlinePosition &&
+         m_textDecorationSkip == o.m_textDecorationSkip &&
          m_rubyPosition == o.m_rubyPosition &&
          dataEquivalent(listStyleImage.get(), o.listStyleImage.get()) &&
          dataEquivalent(appliedTextDecorations, o.appliedTextDecorations) &&

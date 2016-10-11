@@ -2121,6 +2121,21 @@ inline TextUnderlinePosition CSSIdentifierValue::convertTo() const {
 }
 
 template <>
+inline TextDecorationSkip CSSIdentifierValue::convertTo() const {
+  switch (m_valueID) {
+    case CSSValueObjects:
+      return TextDecorationSkipObjects;
+    case CSSValueInk:
+      return TextDecorationSkipInk;
+    default:
+      break;
+  }
+
+  NOTREACHED();
+  return TextDecorationSkipObjects;
+}
+
+template <>
 inline CSSIdentifierValue::CSSIdentifierValue(ETextSecurity e)
     : CSSValue(IdentifierClass) {
   switch (e) {

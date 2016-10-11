@@ -1523,6 +1523,24 @@ static CSSValue* consumeTextDecorationLine(CSSParserTokenRange& range) {
   return list;
 }
 
+static CSSValue* consumeTextDecorationSkip(CSSParserTokenRange& range) {
+  CSSValueList* list = CSSValueList::createSpaceSeparated();
+  while (true) {
+    CSSIdentifierValue* ident =
+        consumeIdent<CSSValueObjects, CSSValueInk>(range);
+    if (!ident)
+      break;
+    if (list->hasValue(*ident))
+      return nullptr;
+    list->append(*ident);
+  }
+
+  if (!list->length())
+    return nullptr;
+
+  return list;
+}
+
 // none | strict | content | [ layout || style || paint || size ]
 static CSSValue* consumeContain(CSSParserTokenRange& range) {
   CSSValueID id = range.peek().id();
@@ -3617,6 +3635,9 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyWebkitTextDecorationsInEffect:
     case CSSPropertyTextDecorationLine:
       return consumeTextDecorationLine(m_range);
+    case CSSPropertyTextDecorationSkip:
+      DCHECK(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+      return consumeTextDecorationSkip(m_range);
     case CSSPropertyOffsetAnchor:
       return consumeOffsetAnchor(m_range, m_context.mode());
     case CSSPropertyOffsetPosition:

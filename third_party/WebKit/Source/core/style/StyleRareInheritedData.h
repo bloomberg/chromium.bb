@@ -178,6 +178,7 @@ class CORE_EXPORT StyleRareInheritedData
   // CSS Image Values Level 3
   unsigned m_imageRendering : 3;         // EImageRendering
   unsigned m_textUnderlinePosition : 1;  // TextUnderlinePosition
+  unsigned m_textDecorationSkip : 3;     // TextDecorationSkip
   unsigned m_rubyPosition : 1;           // RubyPosition
 
   // Though will-change is not itself an inherited property, the intent

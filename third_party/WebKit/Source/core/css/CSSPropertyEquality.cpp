@@ -254,6 +254,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop,
       return a.textDecorationColor() == b.textDecorationColor() &&
              a.visitedLinkTextDecorationColor() ==
                  b.visitedLinkTextDecorationColor();
+    case CSSPropertyTextDecorationSkip:
+      return a.getTextDecorationSkip() == b.getTextDecorationSkip();
     case CSSPropertyTextIndent:
       return a.textIndent() == b.textIndent();
     case CSSPropertyTextShadow:

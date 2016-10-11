@@ -374,6 +374,22 @@ enum TextDecorationStyle {
   TextDecorationStyleWavy
 };
 
+static const size_t TextDecorationSkipBits = 3;
+enum TextDecorationSkip {
+  TextDecorationSkipNone = 0x0,
+  TextDecorationSkipObjects = 0x1,
+  TextDecorationSkipInk = 0x2
+};
+inline TextDecorationSkip operator|(TextDecorationSkip a,
+                                    TextDecorationSkip b) {
+  return TextDecorationSkip(static_cast<unsigned>(a) |
+                            static_cast<unsigned>(b));
+}
+inline TextDecorationSkip& operator|=(TextDecorationSkip& a,
+                                      TextDecorationSkip b) {
+  return a = a | b;
+}
+
 enum TextAlignLast {
   TextAlignLastAuto,
   TextAlignLastStart,

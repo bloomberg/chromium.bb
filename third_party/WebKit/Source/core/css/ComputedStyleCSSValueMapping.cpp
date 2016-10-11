@@ -1121,6 +1121,18 @@ static CSSValue* valueForTextDecorationStyle(
   return CSSInitialValue::create();
 }
 
+static CSSValue* valueForTextDecorationSkip(
+    TextDecorationSkip textDecorationSkip) {
+  CSSValueList* list = CSSValueList::createSpaceSeparated();
+  if (textDecorationSkip & TextDecorationSkipObjects)
+    list->append(*CSSIdentifierValue::create(CSSValueObjects));
+  if (textDecorationSkip & TextDecorationSkipInk)
+    list->append(*CSSIdentifierValue::create(CSSValueInk));
+
+  DCHECK(list->length());
+  return list;
+}
+
 static CSSValue* touchActionFlagsToCSSValue(TouchAction touchAction) {
   CSSValueList* list = CSSValueList::createSpaceSeparated();
   if (touchAction == TouchActionAuto) {
@@ -2674,6 +2686,8 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     // Fall through.
     case CSSPropertyTextDecorationLine:
       return renderTextDecorationFlagsToCSSValue(style.getTextDecoration());
+    case CSSPropertyTextDecorationSkip:
+      return valueForTextDecorationSkip(style.getTextDecorationSkip());
     case CSSPropertyTextDecorationStyle:
       return valueForTextDecorationStyle(style.getTextDecorationStyle());
     case CSSPropertyTextDecorationColor:

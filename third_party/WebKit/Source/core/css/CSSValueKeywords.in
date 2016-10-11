@@ -580,6 +580,12 @@ clip
 ellipsis
 
 //
+// text-decoration-skip
+//
+objects
+ink
+
+//
 // -webkit-margin-collapse
 //
 // collapse

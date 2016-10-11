@@ -270,6 +270,7 @@ textCombineUpright
 textDecoration
 textDecorationColor
 textDecorationLine
+textDecorationSkip
 textDecorationStyle
 textIndent
 textJustify
