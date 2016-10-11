@@ -99,10 +99,11 @@
       /* Cap the height on smaller screens to avoid unfavorable clipping.
        * Replace the bottom margin with padding to avoid the gap between
        * the scrollbar and the bottom separator. */
-      @media all and (max-height: 714px) {
+      @media all and (max-height: 724px) {
         #dialog .body {
           margin-bottom: 0;
-          max-height: 270px;
+          /* crbug.com/652027: Show four and a *half* items in the list. */
+          max-height: 280px;
           overflow-y: scroll;
           padding-bottom: 12px;
         }
