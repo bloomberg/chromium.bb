@@ -593,8 +593,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   content::RunAllPendingInMessageLoop();
 }
 
+// See http://crbug.com/654719
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
-                       LoginStopsAutoLogin) {
+                       DISABLED_LoginStopsAutoLogin) {
   // Set up mocks to check login success.
   UserContext user_context(account_id_);
   user_context.SetKey(Key(kPassword));
