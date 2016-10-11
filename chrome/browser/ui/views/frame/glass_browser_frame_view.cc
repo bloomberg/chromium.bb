@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/theme_resources.h"
+#include "content/public/browser/web_contents.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/theme_provider.h"
@@ -89,6 +90,8 @@ base::win::ScopedHICON CreateHICONFromSkBitmapSizedTo(
 GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
                                              BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
+      window_icon_(nullptr),
+      window_title_(nullptr),
       profile_switcher_(this),
       minimize_button_(nullptr),
       maximize_button_(nullptr),
@@ -96,8 +99,25 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
       close_button_(nullptr),
       throbber_running_(false),
       throbber_frame_(0) {
-  if (browser_view->ShouldShowWindowIcon())
+  if (ShowSystemIcon())
     InitThrobberIcons();
+
+  if (ShowCustomIcon()) {
+    window_icon_ = new TabIconView(this, nullptr);
+    window_icon_->set_is_light(true);
+    window_icon_->set_id(VIEW_ID_WINDOW_ICON);
+    AddChildView(window_icon_);
+  }
+
+  if (ShowCustomTitle()) {
+    window_title_ =
+        new views::Label(browser_view->GetWindowTitle(),
+                         gfx::FontList(BrowserFrame::GetTitleFontList()));
+    window_title_->SetSubpixelRenderingEnabled(false);
+    window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    window_title_->set_id(VIEW_ID_WINDOW_TITLE);
+    AddChildView(window_title_);
+  }
 
   if (frame->CustomDrawSystemTitlebar()) {
     minimize_button_ = CreateCaptionButton(VIEW_ID_MINIMIZE_BUTTON);
@@ -151,6 +171,12 @@ int GlassBrowserFrameView::GetThemeBackgroundXInset() const {
 }
 
 void GlassBrowserFrameView::UpdateThrobber(bool running) {
+  if (ShowCustomIcon())
+    window_icon_->Update();
+
+  if (!ShowSystemIcon())
+    return;
+
   if (throbber_running_) {
     if (running) {
       DisplayNextThrobberFrame();
@@ -312,6 +338,16 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
 
+void GlassBrowserFrameView::UpdateWindowIcon() {
+  if (ShowCustomIcon() && !frame()->IsFullscreen())
+    window_icon_->SchedulePaint();
+}
+
+void GlassBrowserFrameView::UpdateWindowTitle() {
+  if (ShowCustomTitle() && !frame()->IsFullscreen())
+    window_title_->SchedulePaint();
+}
+
 void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   if (sender == minimize_button_)
@@ -322,6 +358,18 @@ void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
     frame()->Restore();
   else if (sender == close_button_)
     frame()->Close();
+}
+
+bool GlassBrowserFrameView::ShouldTabIconViewAnimate() const {
+  DCHECK(ShowCustomIcon());
+  const content::WebContents* current_tab =
+      browser_view()->GetActiveWebContents();
+  return current_tab && current_tab->IsLoading();
+}
+
+gfx::ImageSkia GlassBrowserFrameView::GetFaviconForTabIconView() {
+  DCHECK(ShowCustomIcon());
+  return frame()->widget_delegate()->GetWindowIcon();
 }
 
 bool GlassBrowserFrameView::IsMaximized() const {
@@ -347,6 +395,7 @@ void GlassBrowserFrameView::Layout() {
     // The profile switcher button depends on the caption button layout, so this
     // must be called prior to LayoutProfileSwitcher().
     LayoutCaptionButtons();
+    LayoutTitleBar();
   }
   if (browser_view()->IsRegularOrGuestSession())
     LayoutProfileSwitcher();
@@ -450,9 +499,8 @@ int GlassBrowserFrameView::TitlebarHeight(bool restored) const {
     return 0;
   // The titlebar's actual height is the same in restored and maximized, but
   // some of it is above the screen in maximized mode. See the comment in
-  // FrameTopBorderThickness().
-  return TitlebarMaximizedVisualHeight() +
-         display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSIZEFRAME);
+  // FrameTopBorderThicknessPx().
+  return TitlebarMaximizedVisualHeight() + FrameTopBorderThickness(false);
 }
 
 int GlassBrowserFrameView::WindowTopY() const {
@@ -487,6 +535,21 @@ bool GlassBrowserFrameView::CaptionButtonsOnLeadingEdge() const {
   // own RTL layout logic), Windows always draws the caption buttons on the
   // right, even when we want to be RTL. See crbug.com/560619.
   return !frame()->CustomDrawSystemTitlebar() && base::i18n::IsRTL();
+}
+
+bool GlassBrowserFrameView::ShowCustomIcon() const {
+  return frame()->CustomDrawSystemTitlebar() &&
+         browser_view()->ShouldShowWindowIcon();
+}
+
+bool GlassBrowserFrameView::ShowCustomTitle() const {
+  return frame()->CustomDrawSystemTitlebar() &&
+         browser_view()->ShouldShowWindowTitle();
+}
+
+bool GlassBrowserFrameView::ShowSystemIcon() const {
+  return !frame()->CustomDrawSystemTitlebar() &&
+         browser_view()->ShouldShowWindowIcon();
 }
 
 Windows10CaptionButton* GlassBrowserFrameView::CreateCaptionButton(
@@ -655,6 +718,39 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
     profile_indicator_icon()->SetBoundsRect(incognito_bounds_);
 }
 
+void GlassBrowserFrameView::LayoutTitleBar() {
+  if (!ShowCustomIcon() && !ShowCustomTitle())
+    return;
+
+  gfx::Rect window_icon_bounds;
+  const int icon_size =
+      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSMICON);
+  constexpr int kIconMaximizedLeftMargin = 2;
+  const int titlebar_visual_height =
+      IsMaximized() ? TitlebarMaximizedVisualHeight() : TitlebarHeight(false);
+  // Don't include the area above the screen when maximized. However it only
+  // looks centered if we start from y=0 when restored.
+  const int window_top = IsMaximized() ? WindowTopY() : 0;
+  int x = IsMaximized()
+              ? kIconMaximizedLeftMargin
+              : display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+  const int y = window_top + (titlebar_visual_height - icon_size) / 2;
+  window_icon_bounds = gfx::Rect(x, y, icon_size, icon_size);
+
+  if (ShowCustomIcon()) {
+    window_icon_->SetBoundsRect(window_icon_bounds);
+    constexpr int kIconTitleSpacing = 5;
+    x = window_icon_bounds.right() + kIconTitleSpacing;
+  }
+
+  if (ShowCustomTitle()) {
+    window_title_->SetText(browser_view()->GetWindowTitle());
+    const int max_text_width = std::max(0, MinimizeButtonX() - x);
+    window_title_->SetBounds(x, window_icon_bounds.y(), max_text_width,
+                             window_icon_bounds.height());
+  }
+}
+
 void GlassBrowserFrameView::LayoutCaptionButton(Windows10CaptionButton* button,
                                                 int previous_button_x) {
   gfx::Size button_size = button->GetPreferredSize();
@@ -702,6 +798,7 @@ gfx::Rect GlassBrowserFrameView::CalculateClientAreaBounds() const {
 }
 
 void GlassBrowserFrameView::StartThrobber() {
+  DCHECK(ShowSystemIcon());
   if (!throbber_running_) {
     throbber_running_ = true;
     throbber_frame_ = 0;
@@ -713,6 +810,7 @@ void GlassBrowserFrameView::StartThrobber() {
 }
 
 void GlassBrowserFrameView::StopThrobber() {
+  DCHECK(ShowSystemIcon());
   if (throbber_running_) {
     throbber_running_ = false;
 
@@ -721,23 +819,20 @@ void GlassBrowserFrameView::StopThrobber() {
     HICON small_icon = nullptr;
     HICON big_icon = nullptr;
 
-    // Check if hosted BrowserView has a window icon to use.
-    if (browser_view()->ShouldShowWindowIcon()) {
-      gfx::ImageSkia icon = browser_view()->GetWindowIcon();
-      if (!icon.isNull()) {
-        // Keep previous icons alive as long as they are referenced by the HWND.
-        previous_small_icon = std::move(small_window_icon_);
-        previous_big_icon = std::move(big_window_icon_);
+    gfx::ImageSkia icon = browser_view()->GetWindowIcon();
+    if (!icon.isNull()) {
+      // Keep previous icons alive as long as they are referenced by the HWND.
+      previous_small_icon = std::move(small_window_icon_);
+      previous_big_icon = std::move(big_window_icon_);
 
-        // Take responsibility for eventually destroying the created icons.
-        small_window_icon_ = CreateHICONFromSkBitmapSizedTo(
-            icon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
-        big_window_icon_ = CreateHICONFromSkBitmapSizedTo(
-            icon, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+      // Take responsibility for eventually destroying the created icons.
+      small_window_icon_ = CreateHICONFromSkBitmapSizedTo(
+          icon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+      big_window_icon_ = CreateHICONFromSkBitmapSizedTo(
+          icon, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
 
-        small_icon = small_window_icon_.get();
-        big_icon = big_window_icon_.get();
-      }
+      small_icon = small_window_icon_.get();
+      big_icon = big_window_icon_.get();
     }
 
     // Fallback to class icon.

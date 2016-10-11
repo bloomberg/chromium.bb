@@ -11,13 +11,16 @@
 #include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/windows_10_caption_button.h"
+#include "chrome/browser/ui/views/tab_icon_view.h"
+#include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserView;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
-                              public views::ButtonListener {
+                              public views::ButtonListener,
+                              public TabIconViewModel {
  public:
   // Constructs a non-client view for an BrowserFrame.
   GlassBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
@@ -36,14 +39,18 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override;
   int NonClientHitTest(const gfx::Point& point) override;
+  void UpdateWindowIcon() override;
+  void UpdateWindowTitle() override;
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {}
   void ResetWindowControls() override {}
-  void UpdateWindowIcon() override {}
-  void UpdateWindowTitle() override {}
   void SizeConstraintsChanged() override {}
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // TabIconViewModel:
+  bool ShouldTabIconViewAnimate() const override;
+  gfx::ImageSkia GetFaviconForTabIconView() override;
 
   bool IsMaximized() const;
 
@@ -109,6 +116,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // left in LTR mode, or the right in RTL mode).
   bool CaptionButtonsOnLeadingEdge() const;
 
+  bool ShowCustomIcon() const;
+  bool ShowCustomTitle() const;
+  bool ShowSystemIcon() const;
+
   Windows10CaptionButton* CreateCaptionButton(ViewID button_type);
 
   // Paint various sub-components of this view.
@@ -124,6 +135,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // Layout various sub-components of this view.
   void LayoutIncognitoIcon();
+  void LayoutTitleBar();
   void LayoutProfileSwitcher();
   void LayoutCaptionButtons();
   void LayoutCaptionButton(Windows10CaptionButton* button,
@@ -155,6 +167,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // The big icon created from the bitmap image of the window icon.
   base::win::ScopedHICON big_window_icon_;
+
+  // Icon and title. Only used when custom-drawing the titlebar for popups.
+  TabIconView* window_icon_;
+  views::Label* window_title_;
 
   // Wrapper around the in-frame profile switcher.
   AvatarButtonManager profile_switcher_;
