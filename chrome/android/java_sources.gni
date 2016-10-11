@@ -972,8 +972,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/ColorUtils.java",
   "java/src/org/chromium/chrome/browser/util/FeatureUtilities.java",
   "java/src/org/chromium/chrome/browser/util/HashUtil.java",
-  "java/src/org/chromium/chrome/browser/util/HttpURLConnectionFactory.java",
-  "java/src/org/chromium/chrome/browser/util/HttpURLConnectionFactoryImpl.java",
   "java/src/org/chromium/chrome/browser/util/IntentUtils.java",
   "java/src/org/chromium/chrome/browser/util/KeyNavigationUtil.java",
   "java/src/org/chromium/chrome/browser/util/MathUtils.java",

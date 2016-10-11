@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.util;
+package org.chromium.components.minidump_uploader.util;
 
 import java.net.HttpURLConnection;
 
@@ -15,5 +15,4 @@ public interface HttpURLConnectionFactory {
      * @return a HttpURLConnection to communicate with |url|
      */
     HttpURLConnection createHttpURLConnection(String url);
-
 }

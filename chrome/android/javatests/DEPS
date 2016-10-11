@@ -5,6 +5,7 @@ include_rules = [
   "+components/gcm_driver/android/java/src/org/chromium/components/gcm_driver",
   "+components/gcm_driver/instance_id/android/javatests/src/org/chromium/components/gcm_driver/instance_id",
   "+components/location/android/java",
+  "+components/minidump_uploader",
   "+components/navigation_interception",
   "+components/precache/android/javatests",
   "+components/sync/android/java/src/org/chromium/components/sync",

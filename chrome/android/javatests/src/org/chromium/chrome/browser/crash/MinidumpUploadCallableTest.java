@@ -9,7 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.privacy.CrashReportingPermissionManager;
-import org.chromium.chrome.browser.util.HttpURLConnectionFactory;
+import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactory;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
