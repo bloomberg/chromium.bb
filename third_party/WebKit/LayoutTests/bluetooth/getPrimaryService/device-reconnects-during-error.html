@@ -5,18 +5,20 @@
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('ServicesDiscoveredAfterReconnectionAdapter')
+  return setBluetoothFakeAdapter('DisconnectingDuringServiceRetrievalAdapter')
     .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['battery_service']}
+    ))
     .then(device => device.gatt.connect())
-    .then(gattServer => {
+    .then(gatt => {
+      let disconnected = eventPromise(gatt.device, 'gattserverdisconnected');
       let promise = assert_promise_rejects_with_message(
-        gattServer.getPrimaryService('heart_rate'),
+        gatt.getPrimaryService('battery_service'),
         new DOMException('GATT Server disconnected while retrieving services.',
                          'NetworkError'));
-      gattServer.disconnect();
-      return gattServer.connect().then(() => promise);
+      return disconnected.then(() => gatt.connect()).then(() => promise);
     });
-}, 'disconnect() and connect() called during getPrimaryService. Reject with ' +
-   'NetworkError.');
+}, 'Device disconnects during a getPrimaryService call that fails. Reject ' +
+   'with NetworkError.');
 </script>

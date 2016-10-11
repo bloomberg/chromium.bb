@@ -162,14 +162,19 @@ class GetPrimaryServicesCallback
         m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
       return;
 
-    m_device->gatt()->RemoveFromActiveAlgorithms(m_resolver.get());
+    if (!m_device->gatt()->RemoveFromActiveAlgorithms(m_resolver.get())) {
+      m_resolver->reject(
+          DOMException::create(NetworkError, kGATTServerDisconnected));
+      return;
+    }
+
     m_resolver->reject(BluetoothError::take(m_resolver, error));
   }
 
  private:
   Persistent<BluetoothDevice> m_device;
   mojom::blink::WebBluetoothGATTQueryQuantity m_quantity;
-  Persistent<ScriptPromiseResolver> m_resolver;
+  const Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 ScriptPromise BluetoothRemoteGATTServer::getPrimaryService(

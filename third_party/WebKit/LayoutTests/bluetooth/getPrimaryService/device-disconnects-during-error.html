@@ -8,19 +8,21 @@ promise_test(t => {
   return setBluetoothFakeAdapter('DisconnectingHeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['heart_rate']}],
-      optionalServices: [request_disconnection_service_uuid]
+      optionalServices: [request_disconnection_service_uuid,
+                         'battery_service']
     }))
     .then(device => {
       return device.gatt.connect()
         .then(gattServer => gattServer.getPrimaryService(request_disconnection_service_uuid))
         .then(service => service.getCharacteristic(request_disconnection_characteristic_uuid))
         .then(requestDisconnection => {
-          requestDisconnection.writeValue(new Uint8Array([0]));
-          return assert_promise_rejects_with_message(
-            device.gatt.getPrimaryServices('heart_rate'),
-            new DOMException('GATT Server disconnected while retrieving services.',
-                             'NetworkError'));
+           requestDisconnection.writeValue(new Uint8Array([0]));
+           return assert_promise_rejects_with_message(
+             device.gatt.getPrimaryService('battery_service'),
+             new DOMException('GATT Server disconnected while retrieving services.',
+                              'NetworkError'));
         });
     });
-}, 'Device disconnects during getPrimaryServices. Reject with NetworkError.');
+}, 'Device disconnects during a getPrimaryService call that fails. Reject ' +
+   'with NetworkError.');
 </script>

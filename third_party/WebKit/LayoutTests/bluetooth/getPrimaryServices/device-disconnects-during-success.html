@@ -17,10 +17,11 @@ promise_test(t => {
         .then(requestDisconnection => {
           requestDisconnection.writeValue(new Uint8Array([0]));
           return assert_promise_rejects_with_message(
-            device.gatt.getPrimaryService('heart_rate'),
+            device.gatt.getPrimaryServices(),
             new DOMException('GATT Server disconnected while retrieving services.',
                              'NetworkError'));
         });
     });
-}, 'Device disconnects during getPrimaryService. Reject with NetworkError.');
+}, 'Device disconnects during a getPrimaryServices call that succeeds. ' +
+   'Reject with NetworkError.');
 </script>

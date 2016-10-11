@@ -18,5 +18,6 @@ promise_test(() => {
                          'NetworkError'));
       return disconnected.then(() => gatt.connect()).then(() => promise);
     });
-}, 'Device disconnects during getPrimaryService. Reject with NetworkError.');
+}, 'Device disconnects during a getPrimaryService call that succeeds. Reject ' +
+   'with NetworkError.');
 </script>
