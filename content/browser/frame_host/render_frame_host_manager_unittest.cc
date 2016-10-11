@@ -3097,4 +3097,72 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
       root->child_at(0)->current_replication_state().insecure_request_policy);
 }
 
+// Tests that a BeginNavigation IPC from a no longer active RFH is ignored.
+TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
+       BeginNavigationIgnoredWhenNotActive) {
+  const GURL kUrl1("http://www.google.com");
+  const GURL kUrl2("http://www.chromium.org");
+  const GURL kUrl3("http://foo.com");
+
+  contents()->NavigateAndCommit(kUrl1);
+
+  TestRenderFrameHost* initial_rfh = main_test_rfh();
+  RenderViewHostDeletedObserver delete_observer(
+      initial_rfh->GetRenderViewHost());
+
+  // Navigate cross-site but don't simulate the swap out ACK. The initial RFH
+  // should be pending delete.
+  RenderFrameHostManager* manager =
+      main_test_rfh()->frame_tree_node()->render_manager();
+  contents()->StartNavigation(kUrl2);
+  static_cast<TestRenderFrameHost*>(manager->speculative_frame_host())
+      ->SimulateNavigationCommit(kUrl2);
+  EXPECT_NE(initial_rfh, main_test_rfh());
+  ASSERT_FALSE(delete_observer.deleted());
+  EXPECT_FALSE(initial_rfh->is_active());
+
+  // The initial RFH receives a BeginNavigation IPC. The navigation should not
+  // start.
+  initial_rfh->SendRendererInitiatedNavigationRequest(kUrl3, true);
+  EXPECT_FALSE(main_test_rfh()->frame_tree_node()->navigation_request());
+}
+
+// Tests that a DidStartProvisionalLoad IPC from a no longer active RFH is
+// ignored.
+TEST_F(RenderFrameHostManagerTest,
+       DidStartProvisionalLoadIgnoredWhenNotActive) {
+  if (IsBrowserSideNavigationEnabled()) {
+    SUCCEED() << "This test is not applicable to browser side navigation. See "
+                 "RenderFrameHostManagerTestWithBrowserSideNavigation."
+                 "BeginNavigationIgnoredWhenNotActive for a similar case when "
+                 "PlzNavigate is enabled.";
+    return;
+  }
+  const GURL kUrl1("http://www.google.com");
+  const GURL kUrl2("http://www.chromium.org");
+  const GURL kUrl3("http://foo.com");
+
+  contents()->NavigateAndCommit(kUrl1);
+
+  TestRenderFrameHost* initial_rfh = main_test_rfh();
+  RenderViewHostDeletedObserver delete_observer(
+      initial_rfh->GetRenderViewHost());
+
+  // Navigate cross-site but don't simulate the swap out ACK. The initial RFH
+  // should be pending delete.
+  RenderFrameHostManager* manager =
+      main_test_rfh()->frame_tree_node()->render_manager();
+  contents()->StartNavigation(kUrl2);
+  static_cast<TestRenderFrameHost*>(manager->pending_frame_host())
+      ->SimulateNavigationCommit(kUrl2);
+  EXPECT_NE(initial_rfh, main_test_rfh());
+  ASSERT_FALSE(delete_observer.deleted());
+  EXPECT_FALSE(initial_rfh->is_active());
+
+  // The initial RFH receives a DidStartProvisionalLoad IPC. It should not
+  // create a NavigationHandle.
+  initial_rfh->SimulateNavigationStart(kUrl3);
+  EXPECT_FALSE(initial_rfh->navigation_handle());
+}
+
 }  // namespace content

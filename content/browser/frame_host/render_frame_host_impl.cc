@@ -1038,6 +1038,11 @@ void RenderFrameHostImpl::OnDocumentOnLoadCompleted(
 void RenderFrameHostImpl::OnDidStartProvisionalLoad(
     const GURL& url,
     const base::TimeTicks& navigation_start) {
+  // TODO(clamy): Check if other navigation methods (OpenURL,
+  // DidFailProvisionalLoad, ...) should also be ignored if the RFH is no longer
+  // active.
+  if (!is_active())
+    return;
   frame_tree_node_->navigator()->DidStartProvisionalLoad(this, url,
                                                          navigation_start);
 }
@@ -1792,6 +1797,8 @@ void RenderFrameHostImpl::OnBeginNavigation(
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params) {
   CHECK(IsBrowserSideNavigationEnabled());
+  if (!is_active())
+    return;
   CommonNavigationParams validated_params = common_params;
   GetProcess()->FilterURL(false, &validated_params.url);
   frame_tree_node()->navigator()->OnBeginNavigation(
