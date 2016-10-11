@@ -879,13 +879,25 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
   if (!did_update_state)
     return;
 
+  // |updated_view| is the last view to change its TextInputState which can be
+  // used to start/stop monitoring composition info when it has a focused
+  // editable text input field.
+  RenderWidgetHost* widgetHost = updated_view->GetRenderWidgetHost();
+
+  // We might end up here when |updated_view| has had active TextInputState and
+  // then got destroyed. In that case, |updated_view->GetRenderWidgetHost()|
+  // returns nullptr.
+  if (!widgetHost)
+    return;
+
   // Set the monitor state based on the text input focus state.
   const bool has_focus = HasFocus();
   const TextInputState* state = text_input_manager->GetTextInputState();
   bool need_monitor_composition =
       has_focus && state && state->type != ui::TEXT_INPUT_TYPE_NONE;
-  Send(new InputMsg_RequestCompositionUpdate(
-      render_widget_host_->GetRoutingID(), false /* immediate request */,
+
+  widgetHost->Send(new InputMsg_RequestCompositionUpdate(
+      widgetHost->GetRoutingID(), false /* immediate request */,
       need_monitor_composition));
 
   if (has_focus) {

@@ -1489,4 +1489,95 @@ TEST_F(InputMethodMacTest, ImeCancelCompositionForAllViews) {
   EXPECT_FALSE([rwhv_cocoa_ hasMarkedText]);
 }
 
+// This test verifies that when a RenderWidgetHostView changes its
+// TextInputState to NONE we send the IPC to stop monitor composition info and,
+// conversely, when its state is set to non-NONE, we start monitoring the
+// composition info.
+TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
+  // First, we need to make the cocoa view the first responder so that the
+  // method RWHVMac::HasFocus() returns true. Then we can make sure that as long
+  // as there is some TextInputState of non-NONE, the corresponding widget will
+  // be asked to start monitoring composition info.
+  base::scoped_nsobject<CocoaTestHelperWindow> window(
+      [[CocoaTestHelperWindow alloc] init]);
+  [[window contentView] addSubview:rwhv_cocoa_];
+  [window makeFirstResponder:rwhv_cocoa_];
+  EXPECT_TRUE(rwhv_mac_->HasFocus());
+
+  TextInputState state;
+  state.type = ui::TEXT_INPUT_TYPE_TEXT;
+  tab_sink().ClearMessages();
+
+  // Make the tab's widget active.
+  rwhv_mac_->TextInputStateChanged(state);
+
+  // The tab's widget must have received an IPC regarding composition updates.
+  const IPC::Message* composition_request_msg_for_tab =
+      tab_sink().GetUniqueMessageMatching(
+          InputMsg_RequestCompositionUpdate::ID);
+  EXPECT_TRUE(composition_request_msg_for_tab);
+
+  // The message should ask for monitoring updates, but no immediate update.
+  InputMsg_RequestCompositionUpdate::Param tab_msg_params;
+  InputMsg_RequestCompositionUpdate::Read(composition_request_msg_for_tab,
+                                          &tab_msg_params);
+  bool is_tab_msg_for_immediate_request = std::get<0>(tab_msg_params);
+  bool is_tab_msg_for_monitor_request = std::get<1>(tab_msg_params);
+  EXPECT_FALSE(is_tab_msg_for_immediate_request);
+  EXPECT_TRUE(is_tab_msg_for_monitor_request);
+  tab_sink().ClearMessages();
+  child_sink().ClearMessages();
+
+  // Now make the child view active.
+  child_view_->TextInputStateChanged(state);
+
+  // The tab should receive another IPC for composition updates.
+  composition_request_msg_for_tab = tab_sink().GetUniqueMessageMatching(
+      InputMsg_RequestCompositionUpdate::ID);
+  EXPECT_TRUE(composition_request_msg_for_tab);
+
+  // This time, the tab should have been asked to stop monitoring (and no
+  // immediate updates).
+  InputMsg_RequestCompositionUpdate::Read(composition_request_msg_for_tab,
+                                          &tab_msg_params);
+  is_tab_msg_for_immediate_request = std::get<0>(tab_msg_params);
+  is_tab_msg_for_monitor_request = std::get<1>(tab_msg_params);
+  EXPECT_FALSE(is_tab_msg_for_immediate_request);
+  EXPECT_FALSE(is_tab_msg_for_monitor_request);
+  tab_sink().ClearMessages();
+
+  // The child too must have received an IPC for composition updates.
+  const IPC::Message* composition_request_msg_for_child =
+      child_sink().GetUniqueMessageMatching(
+          InputMsg_RequestCompositionUpdate::ID);
+  EXPECT_TRUE(composition_request_msg_for_child);
+
+  // Verify that the message is asking for monitoring to start; but no immediate
+  // updates.
+  InputMsg_RequestCompositionUpdate::Param child_msg_params;
+  InputMsg_RequestCompositionUpdate::Read(composition_request_msg_for_child,
+                                          &child_msg_params);
+  bool is_child_msg_for_immediate_request = std::get<0>(child_msg_params);
+  bool is_child_msg_for_monitor_request = std::get<1>(child_msg_params);
+  EXPECT_FALSE(is_child_msg_for_immediate_request);
+  EXPECT_TRUE(is_child_msg_for_monitor_request);
+  child_sink().ClearMessages();
+
+  // Make the tab view active again.
+  rwhv_mac_->TextInputStateChanged(state);
+
+  // Verify that the child received another IPC for composition updates.
+  composition_request_msg_for_child = child_sink().GetUniqueMessageMatching(
+      InputMsg_RequestCompositionUpdate::ID);
+  EXPECT_TRUE(composition_request_msg_for_child);
+
+  // Verify that this IPC is asking for no monitoring or immediate updates.
+  InputMsg_RequestCompositionUpdate::Read(composition_request_msg_for_child,
+                                          &child_msg_params);
+  is_child_msg_for_immediate_request = std::get<0>(child_msg_params);
+  is_child_msg_for_monitor_request = std::get<1>(child_msg_params);
+  EXPECT_FALSE(is_child_msg_for_immediate_request);
+  EXPECT_FALSE(is_child_msg_for_monitor_request);
+}
+
 }  // namespace content
