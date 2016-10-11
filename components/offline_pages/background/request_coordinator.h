@@ -187,7 +187,9 @@ class RequestCoordinator : public KeyedService,
 
  private:
   // Immediate start attempt status code for UMA.
-  // For any changes, also update corresponding histogram in histograms.xml.
+  // These values are written to logs. New enum values can be added, but
+  // existing enums must never be renumbered or deleted and reused.
+  // For any additions, also update corresponding histogram in histograms.xml.
   enum OfflinerImmediateStartStatus {
     // Did start processing request.
     STARTED = 0,
