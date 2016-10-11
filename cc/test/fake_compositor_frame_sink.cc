@@ -22,6 +22,11 @@ FakeCompositorFrameSink::FakeCompositorFrameSink(
 
 FakeCompositorFrameSink::~FakeCompositorFrameSink() = default;
 
+void FakeCompositorFrameSink::DetachFromClient() {
+  ReturnResourcesHeldByParent();
+  CompositorFrameSink::DetachFromClient();
+}
+
 void FakeCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
   ReturnResourcesHeldByParent();
 
@@ -53,20 +58,6 @@ void FakeCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
 
 void FakeCompositorFrameSink::SwapBuffersAck() {
   client_->DidSwapBuffersComplete();
-}
-
-bool FakeCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
-  if (CompositorFrameSink::BindToClient(client)) {
-    client_ = client;
-    return true;
-  } else {
-    return false;
-  }
-}
-
-void FakeCompositorFrameSink::DetachFromClient() {
-  ReturnResourcesHeldByParent();
-  CompositorFrameSink::DetachFromClient();
 }
 
 void FakeCompositorFrameSink::ReturnResourcesHeldByParent() {

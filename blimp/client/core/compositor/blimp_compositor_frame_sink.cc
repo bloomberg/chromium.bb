@@ -27,7 +27,6 @@ BlimpCompositorFrameSink::BlimpCompositorFrameSink(
                               std::move(worker_context_provider)),
       main_task_runner_(std::move(main_task_runner)),
       main_thread_proxy_(main_thread_proxy),
-      bound_to_client_(false),
       weak_factory_(this) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 }
@@ -46,30 +45,26 @@ void BlimpCompositorFrameSink::SwapCompositorFrameAck() {
 
 bool BlimpCompositorFrameSink::BindToClient(
     cc::CompositorFrameSinkClient* client) {
-  bool success = cc::CompositorFrameSink::BindToClient(client);
-  if (success) {
-    begin_frame_source_ = base::MakeUnique<cc::DelayBasedBeginFrameSource>(
-        base::MakeUnique<cc::DelayBasedTimeSource>(
-            base::ThreadTaskRunnerHandle::Get().get()));
-    client->SetBeginFrameSource(begin_frame_source_.get());
+  if (!cc::CompositorFrameSink::BindToClient(client))
+    return false;
 
-    main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&BlimpCompositorFrameSinkProxy::BindToProxyClient,
-                              main_thread_proxy_, weak_factory_.GetWeakPtr()));
-  }
-  return success;
+  begin_frame_source_ = base::MakeUnique<cc::DelayBasedBeginFrameSource>(
+      base::MakeUnique<cc::DelayBasedTimeSource>(
+          base::ThreadTaskRunnerHandle::Get().get()));
+  client->SetBeginFrameSource(begin_frame_source_.get());
+
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&BlimpCompositorFrameSinkProxy::BindToProxyClient,
+                            main_thread_proxy_, weak_factory_.GetWeakPtr()));
+  return true;
 }
 
 void BlimpCompositorFrameSink::DetachFromClient() {
   cc::CompositorFrameSink::DetachFromClient();
 
-  if (bound_to_client_ == true) {
-    bound_to_client_ = false;
-    main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&BlimpCompositorFrameSinkProxy::UnbindProxyClient,
-                              main_thread_proxy_));
-  }
-
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&BlimpCompositorFrameSinkProxy::UnbindProxyClient,
+                            main_thread_proxy_));
   weak_factory_.InvalidateWeakPtrs();
 }
 

@@ -51,24 +51,22 @@ DirectCompositorFrameSink::DirectCompositorFrameSink(
 
 DirectCompositorFrameSink::~DirectCompositorFrameSink() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (HasClient())
-    DetachFromClient();
 }
 
 bool DirectCompositorFrameSink::BindToClient(
     CompositorFrameSinkClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
-
   if (!CompositorFrameSink::BindToClient(client))
     return false;
+
+  surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
 
   // We want the Display's output surface to hear about lost context, and since
   // this shares a context with it, we should not be listening for lost context
   // callbacks on the context here.
-  if (context_provider())
-    context_provider()->SetLostContextCallback(base::Closure());
+  if (auto* cp = context_provider())
+    cp->SetLostContextCallback(base::Closure());
 
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
@@ -77,8 +75,6 @@ bool DirectCompositorFrameSink::BindToClient(
 }
 
 void DirectCompositorFrameSink::DetachFromClient() {
-  DCHECK(HasClient());
-
   // Unregister the SurfaceFactoryClient here instead of the dtor so that only
   // one client is alive for this namespace at any given time.
   surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);

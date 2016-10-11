@@ -163,7 +163,6 @@ bool SynchronousCompositorFrameSink::BindToClient(
       base::Bind(&SynchronousCompositorFrameSink::DidActivatePendingTree,
                  base::Unretained(this)));
   registry_->RegisterCompositorFrameSink(routing_id_, this);
-  registered_ = true;
 
   surface_manager_->RegisterFrameSinkId(kFrameSinkId);
   surface_manager_->RegisterSurfaceFactoryClient(kFrameSinkId, this);
@@ -193,8 +192,7 @@ void SynchronousCompositorFrameSink::DetachFromClient() {
   client_->SetBeginFrameSource(nullptr);
   // Destroy the begin frame source on the same thread it was bound on.
   begin_frame_source_ = nullptr;
-  if (registered_)
-    registry_->UnregisterCompositorFrameSink(routing_id_, this);
+  registry_->UnregisterCompositorFrameSink(routing_id_, this);
   client_->SetTreeActivationCallback(base::Closure());
   if (!root_local_frame_id_.is_null()) {
     surface_factory_->Destroy(root_local_frame_id_);

@@ -68,12 +68,9 @@ class CC_EXPORT OutputSurface {
   virtual ~OutputSurface();
 
   // Called by the compositor on the compositor thread. This is a place where
-  // thread-specific data for the output surface can be initialized, since from
-  // this point to when DetachFromClient() is called the output surface will
-  // only be used on the compositor thread.
-  // The caller should call DetachFromClient() on the same thread before
-  // destroying the OutputSurface, even if this fails. And BindToClient should
-  // not be called twice for a given OutputSurface.
+  // thread-specific data for the output surface can be initialized. The
+  // OutputSurface will be destroyed on the same thread that BoundToClient is
+  // called on.
   virtual bool BindToClient(OutputSurfaceClient* client);
 
   const Capabilities& capabilities() const { return capabilities_; }

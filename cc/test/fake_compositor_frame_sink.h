@@ -48,14 +48,14 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
     return base::WrapUnique(new FakeCompositorFrameSink(nullptr, nullptr));
   }
 
+  // CompositorFrameSink implementation.
+  void SwapBuffers(CompositorFrame frame) override;
+  void DetachFromClient() override;
+
   CompositorFrame* last_sent_frame() { return last_sent_frame_.get(); }
   size_t num_sent_frames() { return num_sent_frames_; }
 
-  void SwapBuffers(CompositorFrame frame) override;
-
   CompositorFrameSinkClient* client() { return client_; }
-  bool BindToClient(CompositorFrameSinkClient* client) override;
-  void DetachFromClient() override;
 
   const TransferableResourceArray& resources_held_by_parent() {
     return resources_held_by_parent_;
@@ -73,7 +73,6 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider);
 
-  CompositorFrameSinkClient* client_ = nullptr;
   std::unique_ptr<CompositorFrame> last_sent_frame_;
   size_t num_sent_frames_ = 0;
   TransferableResourceArray resources_held_by_parent_;

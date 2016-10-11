@@ -119,7 +119,6 @@ class SynchronousCompositorFrameSink
   const uint32_t compositor_frame_sink_id_;
   SynchronousCompositorRegistry* const registry_;  // Not owned.
   IPC::Sender* const sender_;                      // Not owned.
-  bool registered_ = false;
 
   // Not owned.
   SynchronousCompositorFrameSinkClient* sync_client_ = nullptr;

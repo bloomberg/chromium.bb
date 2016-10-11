@@ -36,13 +36,12 @@ class CompositorFrame;
 struct ManagedMemoryPolicy;
 class CompositorFrameSinkClient;
 
-// Represents the output surface for a compositor. The compositor owns
-// and manages its destruction. Its lifetime is:
-//   1. Created on the main thread by the LayerTreeHost through its client.
-//   2. Passed to the compositor thread and bound to a client via BindToClient.
-//      From here on, it will only be used on the compositor thread.
-//   3. If the 3D context is lost, then the compositor will delete the output
-//      surface (on the compositor thread) and go back to step 1.
+// An interface for submitting CompositorFrames to a display compositor
+// which will compose frames from multiple CompositorFrameSinks to show
+// on screen to the user.
+// If a context_provider() is present, frames should be submitted with
+// OpenGL resources (created with the context_provider()). If not, then
+// SharedBitmap resources should be used.
 class CC_EXPORT CompositorFrameSink {
  public:
   struct Capabilities {
@@ -56,11 +55,11 @@ class CC_EXPORT CompositorFrameSink {
     bool delegated_sync_points_required = true;
   };
 
-  // Constructor for GL-based and/or software compositing.
+  // Constructor for GL-based and/or software resources.
   CompositorFrameSink(scoped_refptr<ContextProvider> context_provider,
                       scoped_refptr<ContextProvider> worker_context_provider);
 
-  // Constructor for Vulkan-based compositing.
+  // Constructor for Vulkan-based resources.
   explicit CompositorFrameSink(
       scoped_refptr<VulkanContextProvider> vulkan_context_provider);
 
@@ -75,18 +74,18 @@ class CC_EXPORT CompositorFrameSink {
   // should not be called twice for a given CompositorFrameSink.
   virtual bool BindToClient(CompositorFrameSinkClient* client);
 
-  // Called by the compositor on the compositor thread. This is a place where
-  // thread-specific data for the output surface can be uninitialized.
+  // Must be called from the thread where BindToClient was called if
+  // BindToClient succeeded, after which the CompositorFrameSink may be
+  // destroyed from any thread. This is a place where thread-specific data for
+  // the object can be uninitialized.
   virtual void DetachFromClient();
 
   bool HasClient() { return !!client_; }
 
   const Capabilities& capabilities() const { return capabilities_; }
 
-  // Obtain the 3d context or the software device associated with this output
-  // surface. Either of these may return a null pointer, but not both.
-  // In the event of a lost context, the entire output surface should be
-  // recreated.
+  // The ContextProviders may be null if frames should be submitted with
+  // software SharedBitmap resources.
   ContextProvider* context_provider() const { return context_provider_.get(); }
   ContextProvider* worker_context_provider() const {
     return worker_context_provider_.get();
@@ -124,8 +123,6 @@ class CC_EXPORT CompositorFrameSink {
   base::ThreadChecker client_thread_checker_;
 
  private:
-  void DetachFromClientInternal();
-
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSink);
 };
 

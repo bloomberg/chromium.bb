@@ -88,18 +88,14 @@ bool RendererCompositorFrameSink::BindToClient(
 }
 
 void RendererCompositorFrameSink::DetachFromClient() {
-  if (!HasClient())
-    return;
   client_->SetBeginFrameSource(nullptr);
   // Destroy the begin frame source on the same thread it was bound on.
   // The CompositorFrameSink itself is destroyed on the main thread.
   begin_frame_source_ = nullptr;
+  compositor_frame_sink_proxy_->ClearCompositorFrameSink();
+  compositor_frame_sink_filter_->RemoveHandlerOnCompositorThread(
+      routing_id_, compositor_frame_sink_filter_handler_);
 
-  if (compositor_frame_sink_proxy_) {
-    compositor_frame_sink_proxy_->ClearCompositorFrameSink();
-    compositor_frame_sink_filter_->RemoveHandlerOnCompositorThread(
-        routing_id_, compositor_frame_sink_filter_handler_);
-  }
   cc::CompositorFrameSink::DetachFromClient();
 }
 
@@ -123,8 +119,6 @@ void RendererCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
 void RendererCompositorFrameSink::OnMessageReceived(
     const IPC::Message& message) {
   DCHECK(client_thread_checker_.CalledOnValidThread());
-  if (!HasClient())
-    return;
   IPC_BEGIN_MESSAGE_MAP(RendererCompositorFrameSink, message)
     IPC_MESSAGE_HANDLER(ViewMsg_ReclaimCompositorResources,
                         OnReclaimCompositorResources);

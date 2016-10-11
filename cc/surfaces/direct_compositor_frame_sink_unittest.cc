@@ -67,7 +67,9 @@ class DirectCompositorFrameSinkTest : public testing::Test {
         compositor_frame_sink_client_.did_lose_compositor_frame_sink_called());
   }
 
-  ~DirectCompositorFrameSinkTest() override {}
+  ~DirectCompositorFrameSinkTest() override {
+    compositor_frame_sink_->DetachFromClient();
+  }
 
   void SwapBuffersWithDamage(const gfx::Rect& damage_rect) {
     std::unique_ptr<RenderPass> render_pass(RenderPass::Create());

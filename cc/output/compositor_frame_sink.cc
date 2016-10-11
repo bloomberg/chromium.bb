@@ -34,7 +34,7 @@ CompositorFrameSink::CompositorFrameSink(
 
 CompositorFrameSink::~CompositorFrameSink() {
   if (client_)
-    DetachFromClientInternal();
+    DetachFromClient();
 }
 
 bool CompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
@@ -53,22 +53,16 @@ bool CompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
     }
   }
 
-  if (!success)
-    DetachFromClient();
+  if (!success) {
+    // Destroy the ContextProvider on the thread attempted to be bound.
+    context_provider_ = nullptr;
+    client_ = nullptr;
+  }
+
   return success;
 }
 
 void CompositorFrameSink::DetachFromClient() {
-  DetachFromClientInternal();
-}
-
-// We don't post tasks bound to the client directly since they might run
-// after the CompositorFrameSink has been destroyed.
-void CompositorFrameSink::OnSwapBuffersComplete() {
-  client_->DidSwapBuffersComplete();
-}
-
-void CompositorFrameSink::DetachFromClientInternal() {
   DCHECK(client_thread_checker_.CalledOnValidThread());
   DCHECK(client_);
 
@@ -76,8 +70,15 @@ void CompositorFrameSink::DetachFromClientInternal() {
     context_provider_->SetLostContextCallback(
         ContextProvider::LostContextCallback());
   }
+  // Destroy the ContextProvider on the bound thread.
   context_provider_ = nullptr;
   client_ = nullptr;
+}
+
+// We don't post tasks bound to the client directly since they might run
+// after the CompositorFrameSink has been destroyed.
+void CompositorFrameSink::OnSwapBuffersComplete() {
+  client_->DidSwapBuffersComplete();
 }
 
 void CompositorFrameSink::DidLoseCompositorFrameSink() {

@@ -26,6 +26,9 @@ CompositorFrameSink::CompositorFrameSink(
 CompositorFrameSink::~CompositorFrameSink() {}
 
 bool CompositorFrameSink::BindToClient(cc::CompositorFrameSinkClient* client) {
+  if (!cc::CompositorFrameSink::BindToClient(client))
+    return false;
+
   surface_->BindToThread();
   surface_->set_client(this);
 
@@ -35,7 +38,7 @@ bool CompositorFrameSink::BindToClient(cc::CompositorFrameSinkClient* client) {
           base::ThreadTaskRunnerHandle::Get().get())));
 
   client->SetBeginFrameSource(begin_frame_source_.get());
-  return cc::CompositorFrameSink::BindToClient(client);
+  return true;
 }
 
 void CompositorFrameSink::DetachFromClient() {

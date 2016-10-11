@@ -51,8 +51,6 @@ class BlimpCompositorFrameSink : public cc::CompositorFrameSink,
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   base::WeakPtr<BlimpCompositorFrameSinkProxy> main_thread_proxy_;
 
-  bool bound_to_client_;
-
   // This CompositorFrameSink is responsible for providing the BeginFrameSource
   // to drive frame creation.  This will be built on the compositor impl thread
   // at BindToClient call time.
