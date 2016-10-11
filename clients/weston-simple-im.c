@@ -192,7 +192,7 @@ input_method_keyboard_keymap(void *data,
 		xkb_keymap_new_from_string(keyboard->xkb_context,
 					   map_str,
 					   XKB_KEYMAP_FORMAT_TEXT_V1,
-					   0);
+					   XKB_KEYMAP_COMPILE_NO_FLAGS);
 
 	munmap(map_str, size);
 	close(fd);
@@ -503,7 +503,7 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
-	simple_im.xkb_context = xkb_context_new(0);
+	simple_im.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 	if (simple_im.xkb_context == NULL) {
 		fprintf(stderr, "Failed to create XKB context\n");
 		return -1;
