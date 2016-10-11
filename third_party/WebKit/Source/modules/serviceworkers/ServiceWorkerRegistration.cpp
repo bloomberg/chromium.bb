@@ -74,6 +74,12 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(
   return newRegistration;
 }
 
+NavigationPreloadManager* ServiceWorkerRegistration::navigationPreload() {
+  if (!m_navigationPreload)
+    m_navigationPreload = NavigationPreloadManager::create();
+  return m_navigationPreload;
+}
+
 String ServiceWorkerRegistration::scope() const {
   return m_handle->registration()->scope().string();
 }
@@ -142,6 +148,7 @@ DEFINE_TRACE(ServiceWorkerRegistration) {
   visitor->trace(m_installing);
   visitor->trace(m_waiting);
   visitor->trace(m_active);
+  visitor->trace(m_navigationPreload);
   EventTargetWithInlineData::trace(visitor);
   ActiveDOMObject::trace(visitor);
   Supplementable<ServiceWorkerRegistration>::trace(visitor);

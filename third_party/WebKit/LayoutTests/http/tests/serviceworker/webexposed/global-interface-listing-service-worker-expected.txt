@@ -433,6 +433,12 @@ interface MessagePort : EventTarget
     method postMessage
     method start
     setter onmessage
+interface NavigationPreloadManager
+    method constructor
+    method disable
+    method enable
+    method getState
+    method setHeaderValue
 interface NetworkInformation : EventTarget
     getter downlinkMax
     getter onchange
@@ -647,6 +653,7 @@ interface ServiceWorkerGlobalScope : WorkerGlobalScope
 interface ServiceWorkerRegistration : EventTarget
     getter active
     getter installing
+    getter navigationPreload
     getter onupdatefound
     getter pushManager
     getter scope

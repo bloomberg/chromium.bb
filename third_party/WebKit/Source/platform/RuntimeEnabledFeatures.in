@@ -200,6 +200,7 @@ ScrollTopLeftInterop status=experimental
 Sensor status=experimental
 ServiceWorkerClientAttributes status=stable
 ServiceWorkerClientsGetID status=stable
+ServiceWorkerNavigationPreload status=experimental
 ServiceWorkerWindowClientNavigate status=stable
 SetRootScroller status=experimental
 ShadowDOMV1 status=stable

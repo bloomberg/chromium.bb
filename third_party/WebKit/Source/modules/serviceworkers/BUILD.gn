@@ -18,6 +18,8 @@ blink_modules_sources("serviceworkers") {
     "ForeignFetchRespondWithObserver.h",
     "InstallEvent.cpp",
     "InstallEvent.h",
+    "NavigationPreloadManager.cpp",
+    "NavigationPreloadManager.h",
     "NavigatorServiceWorker.cpp",
     "NavigatorServiceWorker.h",
     "RespondWithObserver.cpp",
