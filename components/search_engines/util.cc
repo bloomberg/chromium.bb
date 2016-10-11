@@ -200,9 +200,9 @@ void MergeEnginesFromPrepopulateData(
   for (const auto* removed_engine : actions.removed_engines) {
     auto j = FindTemplateURL(template_urls, removed_engine);
     DCHECK(j != template_urls->end());
-    std::unique_ptr<TemplateURL> template_url = std::move(*j);
     DCHECK(!default_search_provider ||
            (*j)->prepopulate_id() != default_search_provider->prepopulate_id());
+    std::unique_ptr<TemplateURL> template_url = std::move(*j);
     template_urls->erase(j);
     if (service) {
       service->RemoveKeyword(template_url->id());
