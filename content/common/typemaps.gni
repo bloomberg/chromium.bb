@@ -4,6 +4,7 @@
 
 typemaps = [
   "//content/common/native_types.typemap",
+  "//content/common/media/media_devices.typemap",
   "//content/common/service_worker/embedded_worker.typemap",
   "//content/common/service_worker/fetch_event_dispatcher.typemap",
   "//content/common/url_loader_status.typemap",

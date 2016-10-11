@@ -1047,6 +1047,8 @@ source_set("browser") {
     "renderer_host/media/audio_sync_reader.h",
     "renderer_host/media/media_capture_devices_impl.cc",
     "renderer_host/media/media_capture_devices_impl.h",
+    "renderer_host/media/media_devices_dispatcher_host.cc",
+    "renderer_host/media/media_devices_dispatcher_host.h",
     "renderer_host/media/media_devices_manager.cc",
     "renderer_host/media/media_devices_manager.h",
     "renderer_host/media/media_stream_dispatcher_host.cc",

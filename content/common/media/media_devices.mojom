@@ -1,0 +1,27 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojom;
+
+import "url/mojo/origin.mojom";
+
+[Native]
+enum MediaDeviceType;
+
+[Native]
+struct MediaDeviceInfo;
+
+// This object lives in the browser and is responsible for processing device
+// enumeration requests.
+// TODO(guidou): Add support for device-change notifications.
+interface MediaDevicesDispatcherHost {
+  // The reply always contains NUM_MEDIA_DEVICE_TYPES elements.
+  // The result is indexed by device type as defined in 
+  // content/common/media/media_devices.h.
+  EnumerateDevices(bool request_audio_input,
+                   bool request_video_input,
+                   bool request_audio_output,
+                   url.mojom.Origin security_origin)
+                       => (array<array<MediaDeviceInfo>> enumeration);
+};

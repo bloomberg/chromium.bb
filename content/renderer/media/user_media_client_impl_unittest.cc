@@ -8,10 +8,13 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
+#include "content/common/media/media_devices.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_track.h"
@@ -19,6 +22,7 @@
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -41,6 +45,43 @@ class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
     SetDeviceInfo(device);
     SetStopCallback(stop_callback);
   }
+};
+
+class MockMediaDevicesDispatcherHost
+    : public ::mojom::MediaDevicesDispatcherHost {
+ public:
+  MockMediaDevicesDispatcherHost() : binding_(this) {}
+  void EnumerateDevices(bool request_audio_input,
+                        bool request_video_input,
+                        bool request_audio_output,
+                        const url::Origin& security_origin,
+                        const EnumerateDevicesCallback& callback) override {
+    std::vector<std::vector<MediaDeviceInfo>> result(NUM_MEDIA_DEVICE_TYPES);
+    if (request_audio_input) {
+      result[MEDIA_DEVICE_TYPE_AUDIO_INPUT].push_back(MediaDeviceInfo(
+          "fake_audio_input 1", "Fake Audio Input 1", "fake_group 1"));
+      result[MEDIA_DEVICE_TYPE_AUDIO_INPUT].push_back(MediaDeviceInfo(
+          "fake_audio_input 2", "Fake Audio Input 2", "fake_group 2"));
+    }
+    if (request_video_input) {
+      result[MEDIA_DEVICE_TYPE_VIDEO_INPUT].push_back(
+          MediaDeviceInfo("fake_video_input 1", "Fake Video Input 1", ""));
+      result[MEDIA_DEVICE_TYPE_VIDEO_INPUT].push_back(
+          MediaDeviceInfo("fake_video_input 2", "Fake Video Input 2", ""));
+    }
+    if (request_audio_output) {
+      result[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].push_back(MediaDeviceInfo(
+          "fake_audio_output 1", "Fake Audio Input 1", "fake_group 1"));
+    }
+    callback.Run(result);
+  }
+
+  mojom::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
+    return binding_.CreateInterfacePtrAndBind();
+  }
+
+ private:
+  mojo::Binding<mojom::MediaDevicesDispatcherHost> binding_;
 };
 
 class UserMediaClientImplUnderTest : public UserMediaClientImpl {
@@ -220,6 +261,8 @@ class UserMediaClientImplTest : public ::testing::Test {
     used_media_impl_.reset(new UserMediaClientImplUnderTest(
         dependency_factory_.get(),
         std::unique_ptr<MediaStreamDispatcher>(ms_dispatcher_)));
+    used_media_impl_->SetMediaDevicesDispatcherForTesting(
+        media_devices_dispatcher_.CreateInterfacePtrAndBind());
   }
 
   void TearDown() override {
@@ -267,37 +310,6 @@ class UserMediaClientImplTest : public ::testing::Test {
         ms_dispatcher_->video_array());
   }
 
-  void FakeMediaStreamDispatcherRequestMediaDevicesComplete() {
-    // There may be repeated replies due to device or configuration changes.
-    used_media_impl_->OnDevicesEnumerated(
-        ms_dispatcher_->audio_input_request_id(),
-        ms_dispatcher_->audio_input_array());
-    used_media_impl_->OnDevicesEnumerated(
-        ms_dispatcher_->audio_input_request_id(),
-        ms_dispatcher_->audio_input_array());
-    used_media_impl_->OnDevicesEnumerated(
-        ms_dispatcher_->audio_output_request_id(),
-        ms_dispatcher_->audio_output_array());
-    used_media_impl_->OnDevicesEnumerated(
-        ms_dispatcher_->audio_output_request_id(),
-        ms_dispatcher_->audio_output_array());
-    used_media_impl_->OnDevicesEnumerated(
-        ms_dispatcher_->video_request_id(),
-        ms_dispatcher_->video_array());
-    used_media_impl_->OnDevicesEnumerated(
-        ms_dispatcher_->video_request_id(),
-        ms_dispatcher_->video_array());
-  }
-
-  void FakeMediaStreamDispatcherRequestSourcesComplete() {
-    used_media_impl_->OnDevicesEnumerated(
-        ms_dispatcher_->audio_input_request_id(),
-        ms_dispatcher_->audio_input_array());
-    used_media_impl_->OnDevicesEnumerated(
-        ms_dispatcher_->video_request_id(),
-        ms_dispatcher_->video_array());
-  }
-
   void StartMockedVideoSource() {
     MockMediaStreamVideoCapturerSource* video_source =
         used_media_impl_->last_created_video_source();
@@ -330,6 +342,7 @@ class UserMediaClientImplTest : public ::testing::Test {
   base::MessageLoop message_loop_;
   std::unique_ptr<ChildProcess> child_process_;
   MockMediaStreamDispatcher* ms_dispatcher_;  // Owned by |used_media_impl_|.
+  MockMediaDevicesDispatcherHost media_devices_dispatcher_;
   std::unique_ptr<UserMediaClientImplUnderTest> used_media_impl_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
 };
@@ -564,7 +577,7 @@ TEST_F(UserMediaClientImplTest, StopTrackAfterReload) {
 
 TEST_F(UserMediaClientImplTest, EnumerateMediaDevices) {
   used_media_impl_->RequestMediaDevices();
-  FakeMediaStreamDispatcherRequestMediaDevicesComplete();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_SUCCEEDED,
             used_media_impl_->request_state());
@@ -619,7 +632,7 @@ TEST_F(UserMediaClientImplTest, EnumerateMediaDevices) {
 
 TEST_F(UserMediaClientImplTest, EnumerateSources) {
   used_media_impl_->RequestSources();
-  FakeMediaStreamDispatcherRequestSourcesComplete();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_SUCCEEDED,
             used_media_impl_->request_state());
@@ -643,14 +656,14 @@ TEST_F(UserMediaClientImplTest, EnumerateSources) {
   EXPECT_FALSE(source->id().isEmpty());
   EXPECT_EQ(blink::WebSourceInfo::SourceKindVideo, source->kind());
   EXPECT_FALSE(source->label().isEmpty());
-  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeUser, source->facing());
+  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeNone, source->facing());
 
   // Video input device environment facing.
   source = &used_media_impl_->last_sources()[3];
   EXPECT_FALSE(source->id().isEmpty());
   EXPECT_EQ(blink::WebSourceInfo::SourceKindVideo, source->kind());
   EXPECT_FALSE(source->label().isEmpty());
-  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeEnvironment, source->facing());
+  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeNone, source->facing());
 }
 
 TEST_F(UserMediaClientImplTest, RenderToAssociatedSinkConstraint) {

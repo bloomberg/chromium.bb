@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "content/common/content_export.h"
+
 namespace content {
 
 enum MediaDeviceType {
@@ -17,7 +19,8 @@ enum MediaDeviceType {
   NUM_MEDIA_DEVICE_TYPES,
 };
 
-struct MediaDeviceInfo {
+struct CONTENT_EXPORT MediaDeviceInfo {
+  MediaDeviceInfo() = default;
   MediaDeviceInfo(const std::string& device_id,
                   const std::string& label,
                   const std::string& group_id);

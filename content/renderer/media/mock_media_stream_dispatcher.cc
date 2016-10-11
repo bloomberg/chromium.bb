@@ -61,21 +61,7 @@ void MockMediaStreamDispatcher::EnumerateDevices(
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     MediaStreamType type,
     const url::Origin& security_origin) {
-  if (type == MEDIA_DEVICE_AUDIO_CAPTURE) {
-    audio_input_request_id_ = request_id;
-    audio_input_array_.clear();
-    AddAudioInputDeviceToArray(true);
-    AddAudioInputDeviceToArray(false);
-  } else if (type == MEDIA_DEVICE_AUDIO_OUTPUT) {
-    audio_output_request_id_ = request_id;
-    audio_output_array_.clear();
-    AddAudioOutputDeviceToArray();
-  } else if (type == MEDIA_DEVICE_VIDEO_CAPTURE) {
-    video_request_id_ = request_id;
-    video_array_.clear();
-    AddVideoDeviceToArray(true);
-    AddVideoDeviceToArray(false);
-  }
+  NOTREACHED();
 }
 
 void MockMediaStreamDispatcher::StopStreamDevice(
