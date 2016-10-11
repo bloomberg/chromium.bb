@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
   EXPECT_EQ(2U, list.size());
   EXPECT_EQ(DevToolsAgentHost::kTypePage, list[0]->GetType());
   EXPECT_EQ(main_url.spec(), list[0]->GetURL().spec());
-  EXPECT_EQ(DevToolsAgentHost::kTypePage, list[1]->GetType());
+  EXPECT_EQ(DevToolsAgentHost::kTypeFrame, list[1]->GetType());
   EXPECT_EQ(cross_site_url.spec(), list[1]->GetURL().spec());
   EXPECT_EQ(std::string(), list[0]->GetParentId());
   EXPECT_EQ(list[0]->GetId(), list[1]->GetParentId());

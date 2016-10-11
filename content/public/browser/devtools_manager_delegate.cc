@@ -15,7 +15,7 @@ void DevToolsManagerDelegate::DevToolsAgentStateChanged(
 }
 
 std::string DevToolsManagerDelegate::GetTargetType(RenderFrameHost* host) {
-  return DevToolsAgentHost::kTypePage;
+  return std::string();
 }
 
 std::string DevToolsManagerDelegate::GetTargetTitle(RenderFrameHost* host) {
