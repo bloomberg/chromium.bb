@@ -12,6 +12,7 @@ import time
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import osutils
 from chromite.lib import remote_access
 
 
@@ -30,18 +31,20 @@ class VM(object):
   VM_DIR = '/var/run/cros_vm'
 
 
-  def __init__(self, kvm_path=None, image_path=None, ssh_port=SSH_PORT,
-               dry_run=False):
+  def __init__(self, image_path=None, qemu_path=None, enable_kvm=True,
+               ssh_port=SSH_PORT, dry_run=False):
     """Initialize VM.
 
     Args:
-      kvm_path: path to kvm binary.
       image_path: path of vm image.
+      qemu_path: path to qemu binary.
+      enable_kvm: enable kvm (kernel support for virtualization).
       ssh_port: ssh port to use.
       dry_run: disable VM commands.
     """
 
-    self.kvm_path = kvm_path
+    self.qemu_path = qemu_path
+    self.enable_kvm = enable_kvm
     self.image_path = image_path
     self.ssh_port = ssh_port
     self.dry_run = dry_run
@@ -66,21 +69,6 @@ class VM(object):
     if recreate:
       cros_build_lib.SudoRunCommand(['mkdir', VM.VM_DIR])
       cros_build_lib.SudoRunCommand(['chmod', '777', VM.VM_DIR])
-
-  @staticmethod
-  def _FindKVMBinary():
-    """Returns path to KVM binary.
-
-    Returns:
-      KVM binary path.
-    """
-
-    for exe in ['kvm', 'qemu-kvm', 'qemu-system-x86_64']:
-      try:
-        return cros_build_lib.RunCommand(['which', exe],
-                                         redirect_stdout=True).output.rstrip()
-      except cros_build_lib.RunCommandError:
-        raise VMError('KVM path not found.')
 
   def PerformAction(self, start=False, stop=False, cmd=None):
     """Performs an action, one of start, stop, or run a command in the VM.
@@ -109,9 +97,11 @@ class VM(object):
     self.Stop()
 
     logging.debug('Start VM')
-    if not self.kvm_path:
-      self.kvm_path = self._FindKVMBinary()
-    logging.debug('kvm path=%s', self.kvm_path)
+    if not self.qemu_path:
+      self.qemu_path = osutils.Which('qemu-system-x86_64')
+    if not self.qemu_path:
+      raise VMError('qemu not found.')
+    logging.debug('qemu path=%s', self.qemu_path)
 
     if not self.image_path:
       self.image_path = os.environ.get('VM_IMAGE_PATH', '')
@@ -124,15 +114,18 @@ class VM(object):
     for pipe in [self.kvm_pipe_in, self.kvm_pipe_out]:
       os.mkfifo(pipe, 0600)
 
-    args = [self.kvm_path, '-m', '2G', '-smp', '4', '-vga', 'cirrus',
+    args = [self.qemu_path, '-m', '2G', '-smp', '4', '-vga', 'cirrus',
+            '-daemonize',
             '-pidfile', self.pidfile,
             '-chardev', 'pipe,id=control_pipe,path=%s' % self.kvm_monitor,
             '-serial', 'file:%s' % self.kvm_serial,
-            '-mon', 'chardev=control_pipe', '-daemonize',
+            '-mon', 'chardev=control_pipe',
             '-net', 'nic,model=virtio',
             '-net', 'user,hostfwd=tcp::%d-:22' % self.ssh_port,
             '-drive', 'file=%s,index=0,media=disk,cache=unsafe'
             % self.image_path]
+    if self.enable_kvm:
+      args.append('-enable-kvm')
     logging.info(' '.join(args))
     logging.info('Pid file: %s', self.pidfile)
     if not self.dry_run:
@@ -145,16 +138,19 @@ class VM(object):
       pid of the VM.
     """
     if not os.path.exists(self.VM_DIR):
-      logging.info('No VM running.')
+      logging.debug('%s not present.', self.VM_DIR)
       return 0
 
     if not os.path.exists(self.pidfile):
-      raise VMError('%s does not exist.' % self.pidfile)
+      logging.info('%s does not exist.', self.pidfile)
+      return 0
 
     pid = cros_build_lib.SudoRunCommand(['cat', self.pidfile],
                                         redirect_stdout=True).output.rstrip()
     if not pid.isdigit():
-      raise VMError('%s in %s is not a pid.' % (pid, self.pidfile))
+      logging.error('%s in %s is not a pid.', pid, self.pidfile)
+      return 0
+
     return int(pid)
 
   def IsRunning(self):
@@ -163,11 +159,7 @@ class VM(object):
     Returns:
       True if there's a running VM.
     """
-    try:
-      pid = self._GetVMPid()
-    except VMError:
-      return False
-
+    pid = self._GetVMPid()
     if not pid:
       return False
 
@@ -181,16 +173,15 @@ class VM(object):
     logging.debug('Stop VM')
 
     pid = self._GetVMPid()
-    if not pid:
-      return
+    if pid:
+      logging.info('Killing %d.', pid)
+      if not self.dry_run:
+        cros_build_lib.SudoRunCommand(['kill', '-9', str(pid)],
+                                      error_code_ok=True)
 
-    logging.info('Killing %d.', pid)
-    if not self.dry_run:
-      cros_build_lib.SudoRunCommand(['kill', '-9', str(pid)],
-                                    error_code_ok=True)
     self._CleanupFiles(recreate=False)
 
-  def WaitForBoot(self, timeout=10, poll_interval=0.1):
+  def WaitForBoot(self, timeout=120, poll_interval=0.1):
     """Wait for the VM to boot up.
 
     If there is no VM running, start one.
@@ -246,24 +237,27 @@ def ParseCommandLine(argv):
     List of parsed args.
   """
   parser = commandline.ArgumentParser(description=__doc__)
-  parser.add_argument('--start', action='store_true',
+  parser.add_argument('--start', action='store_true', default=False,
                       help='Start the VM.')
-  parser.add_argument('--stop', action='store_true',
+  parser.add_argument('--stop', action='store_true', default=False,
                       help='Stop the VM.')
   parser.add_argument('--cmd', help='Run this command in the VM.')
   parser.add_argument('--image-path', type='path',
                       help='Path to VM image to launch with --start.')
-  parser.add_argument('--kvm-path', type='path',
-                      help='Path of kvm binary to launch with --start.')
+  parser.add_argument('--qemu-path', type='path',
+                      help='Path of qemu binary to launch with --start.')
+  parser.add_argument('--disable-kvm', action='store_true', default=False,
+                      help='Disable KVM, use software emulation.')
   parser.add_argument('--ssh-port', type=int, default=VM.SSH_PORT,
                       help='ssh port to communicate with VM.')
-  parser.add_argument('--dry-run', action='store_true',
+  parser.add_argument('--dry-run', action='store_true', default=False,
                       help='dry run for debugging.')
   return parser.parse_args(argv)
 
 
 def main(argv):
   args = ParseCommandLine(argv)
-  vm = VM(kvm_path=args.kvm_path, image_path=args.image_path,
+  vm = VM(image_path=args.image_path,
+          qemu_path=args.qemu_path, enable_kvm=not args.disable_kvm,
           ssh_port=args.ssh_port, dry_run=args.dry_run)
   vm.PerformAction(start=args.start, stop=args.stop, cmd=args.cmd)
