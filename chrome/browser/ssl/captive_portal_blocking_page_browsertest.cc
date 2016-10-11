@@ -138,6 +138,7 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   net::SSLInfo ssl_info;
   ssl_info.cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
   // Blocking page is owned by the interstitial.
   CaptivePortalBlockingPage* blocking_page =
       new CaptivePortalBlockingPageForTesting(

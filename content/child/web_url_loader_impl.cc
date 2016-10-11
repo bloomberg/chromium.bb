@@ -34,7 +34,6 @@
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request.h"
 #include "content/common/resource_request_body_impl.h"
-#include "content/common/security_style_util.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/public/child/fixed_received_data.h"
@@ -53,6 +52,7 @@
 #include "net/url_request/url_request_data_job.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/platform/WebSecurityStyle.h"
 #include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -86,6 +86,30 @@ namespace content {
 namespace {
 
 using HeadersVector = ResourceDevToolsInfo::HeadersVector;
+
+// TODO(estark): Figure out a way for the embedder to provide the
+// security style for a resource. Ideally, the logic for assigning
+// per-resource security styles should live in the same place as the
+// logic for assigning per-page security styles (which lives in the
+// embedder). It would also be nice for the embedder to have the chance
+// to control the per-resource security style beyond the simple logic
+// here. (For example, the embedder might want to mark certain resources
+// differently if they use SHA1 signatures.) https://crbug.com/648326
+blink::WebSecurityStyle GetSecurityStyleForResource(
+    const GURL& url,
+    net::CertStatus cert_status) {
+  if (!url.SchemeIsCryptographic())
+    return blink::WebSecurityStyleUnauthenticated;
+
+  // Minor errors don't lower the security style to
+  // WebSecurityStyleAuthenticationBroken.
+  if (net::IsCertStatusError(cert_status) &&
+      !net::IsCertStatusMinorError(cert_status)) {
+    return blink::WebSecurityStyleAuthenticationBroken;
+  }
+
+  return blink::WebSecurityStyleAuthenticated;
+}
 
 // Converts timing data from |load_timing| to the format used by WebKit.
 void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
@@ -228,18 +252,18 @@ void SetSecurityStyleAndDetails(const GURL& url,
                                 WebURLResponse* response,
                                 bool report_security_info) {
   if (!report_security_info) {
-    response->setSecurityStyle(WebURLResponse::SecurityStyleUnknown);
+    response->setSecurityStyle(blink::WebSecurityStyleUnknown);
     return;
   }
   if (!url.SchemeIsCryptographic()) {
-    response->setSecurityStyle(WebURLResponse::SecurityStyleUnauthenticated);
+    response->setSecurityStyle(blink::WebSecurityStyleUnauthenticated);
     return;
   }
 
   // There are cases where an HTTPS request can come in without security
   // info attached (such as a redirect response).
   if (info.certificate.empty()) {
-    response->setSecurityStyle(WebURLResponse::SecurityStyleUnknown);
+    response->setSecurityStyle(blink::WebSecurityStyleUnknown);
     return;
   }
 
@@ -271,30 +295,8 @@ void SetSecurityStyleAndDetails(const GURL& url,
     }
   }
 
-  SecurityStyle security_style = GetSecurityStyleForResource(
-      url, true, info.cert_status);
-
-  blink::WebURLResponse::SecurityStyle security_style_blink =
-      WebURLResponse::SecurityStyleUnknown;
-  switch (security_style) {
-    case SECURITY_STYLE_UNKNOWN:
-      security_style_blink = WebURLResponse::SecurityStyleUnknown;
-      break;
-    case SECURITY_STYLE_UNAUTHENTICATED:
-      security_style_blink = WebURLResponse::SecurityStyleUnauthenticated;
-      break;
-    case SECURITY_STYLE_AUTHENTICATION_BROKEN:
-      security_style_blink = WebURLResponse::SecurityStyleAuthenticationBroken;
-      break;
-    case SECURITY_STYLE_WARNING:
-      security_style_blink = WebURLResponse::SecurityStyleWarning;
-      break;
-    case SECURITY_STYLE_AUTHENTICATED:
-      security_style_blink = WebURLResponse::SecurityStyleAuthenticated;
-      break;
-  }
-
-  response->setSecurityStyle(security_style_blink);
+  response->setSecurityStyle(
+      GetSecurityStyleForResource(url, info.cert_status));
 
   blink::WebURLResponse::SignedCertificateTimestampList sct_list(
       info.signed_certificate_timestamps.size());
@@ -310,7 +312,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
       &san);
   if (!rv) {
     NOTREACHED();
-    response->setSecurityStyle(WebURLResponse::SecurityStyleUnknown);
+    response->setSecurityStyle(blink::WebSecurityStyleUnknown);
     return;
   }
 

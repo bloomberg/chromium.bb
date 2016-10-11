@@ -23,17 +23,17 @@ typedef DevToolsProtocolClient::Response Response;
 namespace {
 
 std::string SecurityStyleToProtocolSecurityState(
-    SecurityStyle security_style) {
+    blink::WebSecurityStyle security_style) {
   switch (security_style) {
-    case SECURITY_STYLE_UNKNOWN:
+    case blink::WebSecurityStyleUnknown:
       return kSecurityStateUnknown;
-    case SECURITY_STYLE_UNAUTHENTICATED:
+    case blink::WebSecurityStyleUnauthenticated:
       return kSecurityStateNeutral;
-    case SECURITY_STYLE_AUTHENTICATION_BROKEN:
+    case blink::WebSecurityStyleAuthenticationBroken:
       return kSecurityStateInsecure;
-    case SECURITY_STYLE_WARNING:
+    case blink::WebSecurityStyleWarning:
       return kSecurityStateWarning;
-    case SECURITY_STYLE_AUTHENTICATED:
+    case blink::WebSecurityStyleAuthenticated:
       return kSecurityStateSecure;
     default:
       NOTREACHED();
@@ -78,7 +78,7 @@ void SecurityHandler::AttachToRenderFrameHost() {
   // Send an initial SecurityStyleChanged event.
   DCHECK(enabled_);
   SecurityStyleExplanations security_style_explanations;
-  SecurityStyle security_style =
+  blink::WebSecurityStyle security_style =
       web_contents->GetDelegate()->GetSecurityStyle(
           web_contents, &security_style_explanations);
   SecurityStyleChanged(security_style, security_style_explanations);
@@ -91,7 +91,7 @@ void SecurityHandler::SetRenderFrameHost(RenderFrameHost* host) {
 }
 
 void SecurityHandler::SecurityStyleChanged(
-    SecurityStyle security_style,
+    blink::WebSecurityStyle security_style,
     const SecurityStyleExplanations& security_style_explanations) {
   DCHECK(enabled_);
 

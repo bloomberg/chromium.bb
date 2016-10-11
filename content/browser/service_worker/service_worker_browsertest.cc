@@ -55,7 +55,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/security_style.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -1392,7 +1391,10 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBrowserTest,
                    ->DisplayedInsecureContent());
   NavigationEntry* entry =
       shell()->web_contents()->GetController().GetVisibleEntry();
-  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED, entry->GetSSL().security_style);
+  EXPECT_TRUE(entry->GetSSL().initialized);
+  EXPECT_TRUE(
+      https_server.GetCertificate()->Equals(entry->GetSSL().certificate.get()));
+  EXPECT_EQ(0u, entry->GetSSL().cert_status);
 
   shell()->Close();
 
@@ -1424,7 +1426,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBrowserTest,
                    ->DisplayedInsecureContent());
   NavigationEntry* entry =
       shell()->web_contents()->GetController().GetVisibleEntry();
-  EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED, entry->GetSSL().security_style);
+  EXPECT_TRUE(entry->GetSSL().initialized);
+  EXPECT_FALSE(entry->GetSSL().certificate);
 
   shell()->Close();
 

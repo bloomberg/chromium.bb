@@ -193,7 +193,6 @@ source_set("common_sources") {
     "screen_info.cc",
     "screen_info.h",
     "screen_orientation_values.h",
-    "security_style.h",
     "send_zygote_child_ping_linux.h",
     "service_info.cc",
     "service_info.h",

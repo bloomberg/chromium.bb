@@ -288,8 +288,6 @@ source_set("common") {
     "savable_url_schemes.cc",
     "savable_url_schemes.h",
     "screen_orientation_messages.h",
-    "security_style_util.cc",
-    "security_style_util.h",
     "send_zygote_child_ping_linux.cc",
     "service_manager/embedded_service_runner.cc",
     "service_manager/embedded_service_runner.h",

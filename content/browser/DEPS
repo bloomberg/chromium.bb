@@ -63,6 +63,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebNavigationHintType.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebScreenInfo.h",
+  "+third_party/WebKit/public/platform/WebSecurityStyle.h",
   "+third_party/WebKit/public/platform/WebString.h",
   "+third_party/WebKit/public/platform/mime_registry.mojom.h",
   "+third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h",

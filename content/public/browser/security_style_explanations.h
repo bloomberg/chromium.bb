@@ -9,7 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/browser/security_style_explanation.h"
-#include "content/public/common/security_style.h"
+#include "third_party/WebKit/public/platform/WebSecurityStyle.h"
 
 namespace content {
 
@@ -52,11 +52,11 @@ struct SecurityStyleExplanations {
   // These values are used to convey the effect
   // that insecure content has on the overall SecurityStyle of the page;
   // for example, a |displayed_insecure_content_style| value of
-  // SECURITY_STYLE_UNAUTHENTICATED indicates that the page's overall
-  // SecurityStyle will be downgraded to UNAUTHENTICATED as a result of
+  // WebSecurityStyleUnauthenticated indicates that the page's overall
+  // SecurityStyle will be downgraded to Unauthenticated as a result of
   // displaying insecure content.
-  SecurityStyle ran_insecure_content_style;
-  SecurityStyle displayed_insecure_content_style;
+  blink::WebSecurityStyle ran_insecure_content_style;
+  blink::WebSecurityStyle displayed_insecure_content_style;
 
   bool scheme_is_cryptographic;
 

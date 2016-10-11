@@ -16,7 +16,6 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/security_style_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -343,13 +342,7 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
     return;
 
   SSLStatus original_ssl_status = entry->GetSSL();  // Copy!
-
-  // Initialize the entry with an initial SecurityStyle if needed.
-  if (entry->GetSSL().security_style == SECURITY_STYLE_UNKNOWN) {
-    entry->GetSSL().security_style = GetSecurityStyleForResource(
-        entry->GetURL(), !!entry->GetSSL().certificate,
-        entry->GetSSL().cert_status);
-  }
+  entry->GetSSL().initialized = true;
 
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(controller_->delegate()->GetWebContents());
@@ -371,7 +364,9 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
         SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP;
   }
 
-  if (entry->GetSSL().security_style == SECURITY_STYLE_UNAUTHENTICATED)
+  // Do not record information about insecure subresources if the main
+  // page is HTTP or HTTPS without a certificate.
+  if (!entry->GetURL().SchemeIsCryptographic() || !entry->GetSSL().certificate)
     return;
 
   // Update the entry's flags for insecure content.
@@ -396,7 +391,6 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
       ssl_host_state_delegate_->DidHostRunInsecureContent(
           entry->GetURL().host(), site_instance->GetProcess()->GetID(),
           SSLHostStateDelegate::MIXED_CONTENT)) {
-    entry->GetSSL().security_style = SECURITY_STYLE_AUTHENTICATION_BROKEN;
     entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
   }
 
@@ -404,7 +398,6 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
       ssl_host_state_delegate_->DidHostRunInsecureContent(
           entry->GetURL().host(), site_instance->GetProcess()->GetID(),
           SSLHostStateDelegate::CERT_ERRORS_CONTENT)) {
-    entry->GetSSL().security_style = SECURITY_STYLE_AUTHENTICATION_BROKEN;
     entry->GetSSL().content_status |= SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS;
   }
 

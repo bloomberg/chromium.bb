@@ -33,6 +33,7 @@
 
 #include "public/platform/WebCString.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebSecurityStyle.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
@@ -54,13 +55,6 @@ class WebURLResponse {
     HTTPVersion_1_0,
     HTTPVersion_1_1,
     HTTPVersion_2_0
-  };
-  enum SecurityStyle {
-    SecurityStyleUnknown,
-    SecurityStyleUnauthenticated,
-    SecurityStyleAuthenticationBroken,
-    SecurityStyleWarning,
-    SecurityStyleAuthenticated
   };
 
   struct SignedCertificateTimestamp {
@@ -209,8 +203,8 @@ class WebURLResponse {
 
   BLINK_PLATFORM_EXPORT void setHasMajorCertificateErrors(bool);
 
-  BLINK_PLATFORM_EXPORT SecurityStyle getSecurityStyle() const;
-  BLINK_PLATFORM_EXPORT void setSecurityStyle(SecurityStyle);
+  BLINK_PLATFORM_EXPORT WebSecurityStyle getSecurityStyle() const;
+  BLINK_PLATFORM_EXPORT void setSecurityStyle(WebSecurityStyle);
 
   BLINK_PLATFORM_EXPORT void setSecurityDetails(const WebSecurityDetails&);
 

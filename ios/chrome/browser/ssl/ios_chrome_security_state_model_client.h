@@ -30,7 +30,6 @@ class IOSChromeSecurityStateModelClient
   // SecurityStateModelClient:
   void GetVisibleSecurityState(
       security_state::SecurityStateModel::VisibleSecurityState* state) override;
-  bool RetrieveCert(scoped_refptr<net::X509Certificate>* cert) override;
   bool UsedPolicyInstalledCertificate() override;
   bool IsOriginSecure(const GURL& url) override;
 

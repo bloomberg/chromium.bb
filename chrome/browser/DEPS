@@ -89,6 +89,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebDisplayMode.h",
   "+third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
+  "+third_party/WebKit/public/platform/WebSecurityStyle.h",
   "+third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h",
   "+third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h",

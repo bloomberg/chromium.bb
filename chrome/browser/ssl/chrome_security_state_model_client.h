@@ -11,7 +11,7 @@
 #include "components/security_state/security_state_model.h"
 #include "components/security_state/security_state_model_client.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/security_style.h"
+#include "third_party/WebKit/public/platform/WebSecurityStyle.h"
 
 namespace content {
 struct SecurityStyleExplanations;
@@ -33,14 +33,13 @@ class ChromeSecurityStateModelClient
   // with the given |security_info|. Populates
   // |security_style_explanations| to explain why the returned
   // SecurityStyle was chosen.
-  static content::SecurityStyle GetSecurityStyle(
+  static blink::WebSecurityStyle GetSecurityStyle(
       const security_state::SecurityStateModel::SecurityInfo& security_info,
       content::SecurityStyleExplanations* security_style_explanations);
 
   // SecurityStateModelClient:
   void GetVisibleSecurityState(
       security_state::SecurityStateModel::VisibleSecurityState* state) override;
-  bool RetrieveCert(scoped_refptr<net::X509Certificate>* cert) override;
   bool UsedPolicyInstalledCertificate() override;
   bool IsOriginSecure(const GURL& url) override;
 

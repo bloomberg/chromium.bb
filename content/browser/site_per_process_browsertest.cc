@@ -6739,8 +6739,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   ASSERT_TRUE(entry);
 
   // The main page was loaded with certificate errors.
-  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,
-            entry->GetSSL().security_style);
+  EXPECT_TRUE(net::IsCertStatusError(entry->GetSSL().cert_status));
 
   // The image that the iframe loaded had certificate errors also, so
   // the page should be marked as having displayed subresources with

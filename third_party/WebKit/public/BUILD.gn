@@ -275,6 +275,7 @@ source_set("blink_headers") {
     "platform/WebScrollbarThemeGeometry.h",
     "platform/WebScrollbarThemePainter.h",
     "platform/WebSecurityOrigin.h",
+    "platform/WebSecurityStyle.h",
     "platform/WebSelectionBound.h",
     "platform/WebSetSinkIdCallbacks.h",
     "platform/WebSize.h",

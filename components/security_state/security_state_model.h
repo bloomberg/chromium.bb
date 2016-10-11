@@ -146,9 +146,7 @@ class SecurityStateModel {
     ~VisibleSecurityState();
     bool operator==(const VisibleSecurityState& other) const;
     GURL url;
-    // The baseline SecurityLevel describing the page or request before
-    // any SecurityStateModel policies have been applied.
-    SecurityLevel initial_security_level;
+
     // True if the page fails the browser's malware or phishing checks.
     bool fails_malware_check;
 

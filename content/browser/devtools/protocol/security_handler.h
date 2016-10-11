@@ -9,7 +9,6 @@
 #include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/security_style.h"
 
 namespace content {
 namespace devtools {
@@ -34,7 +33,7 @@ class SecurityHandler : public WebContentsObserver {
 
   // WebContentsObserver overrides
   void SecurityStyleChanged(
-      SecurityStyle security_style,
+      blink::WebSecurityStyle security_style,
       const SecurityStyleExplanations& security_style_explanations) override;
 
   std::unique_ptr<Client> client_;

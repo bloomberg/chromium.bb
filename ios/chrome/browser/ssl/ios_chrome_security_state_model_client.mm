@@ -60,17 +60,6 @@ void IOSChromeSecurityStateModelClient::GetSecurityInfo(
   return security_state_model_->GetSecurityInfo(result);
 }
 
-bool IOSChromeSecurityStateModelClient::RetrieveCert(
-    scoped_refptr<net::X509Certificate>* cert) {
-  web::NavigationItem* item =
-      web_state_->GetNavigationManager()->GetVisibleItem();
-  if (!item || !item->GetSSL().certificate)
-    return false;
-
-  *cert = item->GetSSL().certificate;
-  return true;
-}
-
 bool IOSChromeSecurityStateModelClient::UsedPolicyInstalledCertificate() {
   return false;
 }
@@ -91,8 +80,6 @@ void IOSChromeSecurityStateModelClient::GetVisibleSecurityState(
   state->connection_info_initialized = true;
   state->url = item->GetURL();
   const web::SSLStatus& ssl = item->GetSSL();
-  state->initial_security_level =
-      GetSecurityLevelForSecurityStyle(ssl.security_style);
   state->certificate = ssl.certificate;
   state->cert_status = ssl.cert_status;
   state->connection_status = ssl.connection_status;

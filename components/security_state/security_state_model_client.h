@@ -28,9 +28,6 @@ class SecurityStateModelClient {
   virtual void GetVisibleSecurityState(
       SecurityStateModel::VisibleSecurityState* state) = 0;
 
-  // Returns the certificate used to load the page or request.
-  virtual bool RetrieveCert(scoped_refptr<net::X509Certificate>* cert) = 0;
-
   // Returns true if the page or request is known to be loaded with a
   // certificate installed by the system administrator.
   virtual bool UsedPolicyInstalledCertificate() = 0;

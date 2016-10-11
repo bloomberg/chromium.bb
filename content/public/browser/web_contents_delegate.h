@@ -17,10 +17,10 @@
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/common/media_stream_request.h"
-#include "content/public/common/security_style.h"
 #include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
+#include "third_party/WebKit/public/platform/WebSecurityStyle.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -520,8 +520,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Can be overridden by a delegate to return the security style of the
   // given |web_contents|, populating |security_style_explanations| to
   // explain why the SecurityStyle was downgraded. Returns
-  // SECURITY_STYLE_UNKNOWN if not overriden.
-  virtual SecurityStyle GetSecurityStyle(
+  // WebSecurityStyleUnknown if not overriden.
+  virtual blink::WebSecurityStyle GetSecurityStyle(
       WebContents* web_contents,
       SecurityStyleExplanations* security_style_explanations);
 

@@ -16,9 +16,9 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/security_style.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/WebKit/public/platform/WebSecurityStyle.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/page_transition_types.h"
@@ -297,7 +297,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // contains human-readable strings explaining why the SecurityStyle of the
   // page has been downgraded.
   virtual void SecurityStyleChanged(
-      SecurityStyle security_style,
+      blink::WebSecurityStyle security_style,
       const SecurityStyleExplanations& security_style_explanations) {}
 
   // This method is invoked when content was loaded from an in-memory cache.

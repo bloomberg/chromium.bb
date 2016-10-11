@@ -127,6 +127,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/shell/public/cpp/interface_provider.h"
+#include "third_party/WebKit/public/platform/WebSecurityStyle.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_tree_combiner.h"
@@ -3895,7 +3896,7 @@ void WebContentsImpl::DidChangeVisibleSSLState() {
     delegate_->VisibleSSLStateChanged(this);
 
     SecurityStyleExplanations security_style_explanations;
-    SecurityStyle security_style =
+    blink::WebSecurityStyle security_style =
         delegate_->GetSecurityStyle(this, &security_style_explanations);
     FOR_EACH_OBSERVER(
         WebContentsObserver, observers_,

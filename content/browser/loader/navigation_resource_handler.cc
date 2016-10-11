@@ -14,7 +14,6 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
-#include "content/common/security_style_util.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -32,9 +31,7 @@ void NavigationResourceHandler::GetSSLStatusForRequest(
     int child_id,
     SSLStatus* ssl_status) {
   DCHECK(ssl_info.cert);
-  *ssl_status = SSLStatus(GetSecurityStyleForResource(
-                              url, !!ssl_info.cert, ssl_info.cert_status),
-                          ssl_info.cert, ssl_info);
+  *ssl_status = SSLStatus(ssl_info.cert, ssl_info);
 }
 
 NavigationResourceHandler::NavigationResourceHandler(

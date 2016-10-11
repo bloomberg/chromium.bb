@@ -268,11 +268,11 @@ void WebURLResponse::setHasMajorCertificateErrors(bool value) {
   m_resourceResponse->setHasMajorCertificateErrors(value);
 }
 
-WebURLResponse::SecurityStyle WebURLResponse::getSecurityStyle() const {
-  return static_cast<SecurityStyle>(m_resourceResponse->getSecurityStyle());
+WebSecurityStyle WebURLResponse::getSecurityStyle() const {
+  return static_cast<WebSecurityStyle>(m_resourceResponse->getSecurityStyle());
 }
 
-void WebURLResponse::setSecurityStyle(SecurityStyle securityStyle) {
+void WebURLResponse::setSecurityStyle(WebSecurityStyle securityStyle) {
   m_resourceResponse->setSecurityStyle(
       static_cast<ResourceResponse::SecurityStyle>(securityStyle));
 }

@@ -12,7 +12,6 @@
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/security_style.h"
 #include "content/public/common/url_constants.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/gfx/geometry/rect.h"
@@ -255,10 +254,10 @@ bool WebContentsDelegate::SaveFrame(const GURL& url, const Referrer& referrer) {
   return false;
 }
 
-SecurityStyle WebContentsDelegate::GetSecurityStyle(
+blink::WebSecurityStyle WebContentsDelegate::GetSecurityStyle(
     WebContents* web_contents,
     SecurityStyleExplanations* security_style_explanations) {
-  return content::SECURITY_STYLE_UNKNOWN;
+  return blink::WebSecurityStyleUnknown;
 }
 
 void WebContentsDelegate::ShowCertificateViewerInDevTools(

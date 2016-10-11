@@ -10,7 +10,7 @@
 namespace content {
 
 SSLStatus::SSLStatus()
-    : security_style(SECURITY_STYLE_UNKNOWN),
+    : initialized(false),
       cert_status(0),
       security_bits(-1),
       key_exchange_group(0),
@@ -18,10 +18,9 @@ SSLStatus::SSLStatus()
       content_status(NORMAL_CONTENT),
       pkp_bypassed(false) {}
 
-SSLStatus::SSLStatus(SecurityStyle security_style,
-                     scoped_refptr<net::X509Certificate> certificate,
+SSLStatus::SSLStatus(scoped_refptr<net::X509Certificate> certificate,
                      const net::SSLInfo& ssl_info)
-    : security_style(security_style),
+    : initialized(true),
       certificate(certificate),
       cert_status(ssl_info.cert_status),
       security_bits(ssl_info.security_bits),

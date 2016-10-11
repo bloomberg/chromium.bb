@@ -1276,7 +1276,7 @@ bool Browser::CanDragEnter(content::WebContents* source,
   return true;
 }
 
-content::SecurityStyle Browser::GetSecurityStyle(
+blink::WebSecurityStyle Browser::GetSecurityStyle(
     WebContents* web_contents,
     content::SecurityStyleExplanations* security_style_explanations) {
   ChromeSecurityStateModelClient* model_client =

@@ -40,52 +40,27 @@ using security_state::SecurityStateModel;
 
 namespace {
 
-// Converts a content::SecurityStyle (an indicator of a request's
-// overall security level computed by //content) into a
-// SecurityStateModel::SecurityLevel (a finer-grained SecurityStateModel
-// concept that can express all of SecurityStateModel's policies that
-// //content doesn't necessarily know about).
-SecurityStateModel::SecurityLevel GetSecurityLevelForSecurityStyle(
-    content::SecurityStyle style) {
-  switch (style) {
-    case content::SECURITY_STYLE_UNKNOWN:
-      NOTREACHED();
-      return SecurityStateModel::NONE;
-    case content::SECURITY_STYLE_UNAUTHENTICATED:
-      return SecurityStateModel::NONE;
-    case content::SECURITY_STYLE_AUTHENTICATION_BROKEN:
-      return SecurityStateModel::DANGEROUS;
-    case content::SECURITY_STYLE_WARNING:
-      // content currently doesn't use this style.
-      NOTREACHED();
-      return SecurityStateModel::SECURITY_WARNING;
-    case content::SECURITY_STYLE_AUTHENTICATED:
-      return SecurityStateModel::SECURE;
-  }
-  return SecurityStateModel::NONE;
-}
-
 // Note: This is a lossy operation. Not all of the policies that can be
 // expressed by a SecurityLevel (a //chrome concept) can be expressed by
-// a content::SecurityStyle.
-content::SecurityStyle SecurityLevelToSecurityStyle(
+// a blink::WebSecurityStyle.
+blink::WebSecurityStyle SecurityLevelToSecurityStyle(
     SecurityStateModel::SecurityLevel security_level) {
   switch (security_level) {
     case SecurityStateModel::NONE:
     case SecurityStateModel::HTTP_SHOW_WARNING:
-      return content::SECURITY_STYLE_UNAUTHENTICATED;
+      return blink::WebSecurityStyleUnauthenticated;
     case SecurityStateModel::SECURITY_WARNING:
     case SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT:
-      return content::SECURITY_STYLE_WARNING;
+      return blink::WebSecurityStyleWarning;
     case SecurityStateModel::EV_SECURE:
     case SecurityStateModel::SECURE:
-      return content::SECURITY_STYLE_AUTHENTICATED;
+      return blink::WebSecurityStyleAuthenticated;
     case SecurityStateModel::DANGEROUS:
-      return content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+      return blink::WebSecurityStyleAuthenticationBroken;
   }
 
   NOTREACHED();
-  return content::SECURITY_STYLE_UNKNOWN;
+  return blink::WebSecurityStyleUnknown;
 }
 
 void AddConnectionExplanation(
@@ -182,7 +157,6 @@ void CheckSafeBrowsingStatus(content::NavigationEntry* entry,
   if (sb_ui_manager->IsUrlWhitelistedOrPendingForWebContents(
           entry->GetURL(), false, entry, web_contents, false)) {
     state->fails_malware_check = true;
-    state->initial_security_level = SecurityStateModel::DANGEROUS;
   }
 }
 
@@ -198,10 +172,10 @@ ChromeSecurityStateModelClient::ChromeSecurityStateModelClient(
 ChromeSecurityStateModelClient::~ChromeSecurityStateModelClient() {}
 
 // static
-content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
+blink::WebSecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
     const security_state::SecurityStateModel::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
-  const content::SecurityStyle security_style =
+  const blink::WebSecurityStyle security_style =
       SecurityLevelToSecurityStyle(security_info.security_level);
 
   security_style_explanations->ran_insecure_content_style =
@@ -212,7 +186,7 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
           SecurityStateModel::kDisplayedInsecureContentLevel);
 
   // Check if the page is HTTP; if so, no explanations are needed. Note
-  // that SECURITY_STYLE_UNAUTHENTICATED does not necessarily mean that
+  // that SecurityStyleUnauthenticated does not necessarily mean that
   // the page is loaded over HTTP, because the security style merely
   // represents how the embedder wishes to display the security state of
   // the page, and the embedder can choose to display HTTPS page as HTTP
@@ -325,16 +299,6 @@ void ChromeSecurityStateModelClient::GetSecurityInfo(
   security_state_model_->GetSecurityInfo(result);
 }
 
-bool ChromeSecurityStateModelClient::RetrieveCert(
-    scoped_refptr<net::X509Certificate>* cert) {
-  content::NavigationEntry* entry =
-      web_contents_->GetController().GetVisibleEntry();
-  if (!entry || !entry->GetSSL().certificate)
-    return false;
-  *cert = entry->GetSSL().certificate;
-  return true;
-}
-
 bool ChromeSecurityStateModelClient::UsedPolicyInstalledCertificate() {
 #if defined(OS_CHROMEOS)
   policy::PolicyCertService* service =
@@ -359,7 +323,7 @@ void ChromeSecurityStateModelClient::GetVisibleSecurityState(
     return;
   }
 
-  if (entry->GetSSL().security_style == content::SECURITY_STYLE_UNKNOWN) {
+  if (!entry->GetSSL().initialized) {
     *state = SecurityStateModel::VisibleSecurityState();
     // Connection security information is still being initialized, but malware
     // status might already be known.
@@ -370,8 +334,6 @@ void ChromeSecurityStateModelClient::GetVisibleSecurityState(
   state->connection_info_initialized = true;
   state->url = entry->GetURL();
   const content::SSLStatus& ssl = entry->GetSSL();
-  state->initial_security_level =
-      GetSecurityLevelForSecurityStyle(ssl.security_style);
   state->certificate = ssl.certificate;
   state->cert_status = ssl.cert_status;
   state->connection_status = ssl.connection_status;
