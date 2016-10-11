@@ -123,7 +123,7 @@ bool VulkanShaderModule::InitializeSPIRV(ShaderType type,
   shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
   shader_module_create_info.pCode =
       reinterpret_cast<const uint32_t*>(source.c_str());
-  shader_module_create_info.codeSize = source.length() / 4;
+  shader_module_create_info.codeSize = source.length();
 
   VkShaderModule shader_module = VK_NULL_HANDLE;
   VkResult result =
