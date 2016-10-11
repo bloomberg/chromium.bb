@@ -301,6 +301,10 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            ApplyDedupingRoutine_FeatureDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           ApplyDedupingRoutine_NopIfZeroProfiles);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           ApplyDedupingRoutine_NopIfOneProfile);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            ApplyDedupingRoutine_OncePerVersion);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            ApplyDedupingRoutine_MultipleDedupes);

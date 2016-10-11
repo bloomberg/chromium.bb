@@ -5284,6 +5284,33 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_FeatureDisabled) {
   EXPECT_EQ(2U, personal_data_->GetProfiles().size());
 }
 
+TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_NopIfZeroProfiles) {
+  EXPECT_TRUE(personal_data_->GetProfiles().empty());
+  EnableAutofillProfileCleanup();
+  EXPECT_FALSE(personal_data_->ApplyDedupingRoutine());
+}
+
+TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_NopIfOneProfile) {
+  // Create a profile to dedupe.
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile, "Homer", "J", "Simpson",
+                       "homer.simpson@abc.com", "", "742. Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "");
+
+  personal_data_->AddProfile(profile);
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
+
+  // Enable the profile cleanup now. Otherwise it would be triggered by the
+  // calls to AddProfile.
+  EnableAutofillProfileCleanup();
+  EXPECT_FALSE(personal_data_->ApplyDedupingRoutine());
+}
+
+
 // Tests that ApplyDedupingRoutine is not run a second time on the same major
 // version.
 TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_OncePerVersion) {

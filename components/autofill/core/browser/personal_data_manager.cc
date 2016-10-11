@@ -1669,7 +1669,13 @@ bool PersonalDataManager::ApplyDedupingRoutine() {
   DCHECK(IsAutofillProfileCleanupEnabled());
   is_autofill_profile_dedupe_pending_ = false;
 
-  // Check if the deduping routine has already been run on this major version.
+  // No need to de-duplicate if there are less than two profiles.
+  if (web_profiles_.get().size() < 2) {
+    DVLOG(1) << "Autofill profile de-duplication not needed.";
+    return false;
+  }
+
+  // Check if de-duplication has already been performed this major version.
   int current_major_version = atoi(version_info::GetVersionNumber().c_str());
   if (pref_service_->GetInteger(prefs::kAutofillLastVersionDeduped) >=
       current_major_version) {
