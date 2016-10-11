@@ -1735,6 +1735,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @RetryOnFailure
     @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
     public void testAppMenuSuppressedWhenExpanded() throws InterruptedException, TimeoutException {
         clickWordNode("states");
