@@ -272,8 +272,9 @@ void TtsPlatformImplMac::OnSpeechEvent(
 
   if (event_type == TTS_EVENT_END)
     char_index = utterance_.size();
+
   TtsController* controller = TtsController::GetInstance();
-controller->OnTtsEvent(
+  controller->OnTtsEvent(
       utterance_id_, event_type, char_index, error_message);
   last_char_index_ = char_index;
 }
@@ -308,16 +309,26 @@ TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
 }
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer*)sender
-            willSpeakWord:(NSRange)character_range
+            willSpeakWord:(NSRange)word_range
                  ofString:(NSString*)string {
+  // Ignore bogus word_range. The Mac speech synthesizer is a bit
+  // buggy and occasionally returns a number way out of range.
+  if (word_range.location > [string length])
+    return;
+
   ttsImplMac_->OnSpeechEvent(sender, TTS_EVENT_WORD,
-      character_range.location, "");
+      word_range.location, "");
 }
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer*)sender
  didEncounterErrorAtIndex:(NSUInteger)character_index
                  ofString:(NSString*)string
                   message:(NSString*)message {
+  // Ignore bogus character_index. The Mac speech synthesizer is a bit
+  // buggy and occasionally returns a number way out of range.
+  if (character_index > [string length])
+    return;
+
   std::string message_utf8 = base::SysNSStringToUTF8(message);
   ttsImplMac_->OnSpeechEvent(sender, TTS_EVENT_ERROR, character_index,
       message_utf8);
