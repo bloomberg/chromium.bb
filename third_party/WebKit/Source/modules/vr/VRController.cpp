@@ -63,6 +63,7 @@ void VRController::requestPresent(ScriptPromiseResolver* resolver,
     DOMException* exception = DOMException::create(
         InvalidStateError, "The service is no longer active.");
     resolver->reject(exception);
+    ReportPresentationResult(PresentationResult::ServiceInactive);
     return;
   }
 
@@ -154,6 +155,7 @@ void VRController::onPresentComplete(ScriptPromiseResolver* resolver,
     DOMException* exception =
         DOMException::create(InvalidStateError, "VRDisplay not found.");
     resolver->reject(exception);
+    ReportPresentationResult(PresentationResult::VRDisplayNotFound);
     return;
   }
 
@@ -163,6 +165,7 @@ void VRController::onPresentComplete(ScriptPromiseResolver* resolver,
     vrDisplay->forceExitPresent();
     DOMException* exception = DOMException::create(
         NotAllowedError, "Presentation request was denied.");
+    ReportPresentationResult(PresentationResult::RequestDenied);
     resolver->reject(exception);
   }
 }

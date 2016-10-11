@@ -4,6 +4,6 @@
 
 interface GamepadButton {
     readonly attribute boolean pressed;
-    [OriginTrialEnabled=GamepadExtensions] readonly attribute boolean touched;
+    [OriginTrialEnabled=GamepadExtensions, MeasureAs=GamepadButtonTouched] readonly attribute boolean touched;
     readonly attribute double value;
 };

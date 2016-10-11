@@ -1344,6 +1344,18 @@ class CORE_EXPORT UseCounter {
     VideoInCanvas = 1622,
     HiddenAutoplayedVideoInCanvas = 1623,
     OffscreenCanvas = 1624,
+    GamepadPose = 1625,
+    GamepadHand = 1626,
+    GamepadDisplayId = 1627,
+    GamepadButtonTouched = 1628,
+    GamepadPoseHasOrientation = 1629,
+    GamepadPoseHasPosition = 1630,
+    GamepadPosePosition = 1631,
+    GamepadPoseLinearVelocity = 1632,
+    GamepadPoseLinearAcceleration = 1633,
+    GamepadPoseOrientation = 1634,
+    GamepadPoseAngularVelocity = 1635,
+    GamepadPoseAngularAcceleration = 1636,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

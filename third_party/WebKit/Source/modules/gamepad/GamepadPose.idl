@@ -6,12 +6,12 @@
 [
     OriginTrialEnabled=GamepadExtensions,
 ] interface GamepadPose {
-    readonly attribute boolean hasOrientation;
-    readonly attribute boolean hasPosition;
-    readonly attribute Float32Array? position;
-    readonly attribute Float32Array? linearVelocity;
-    readonly attribute Float32Array? linearAcceleration;
-    readonly attribute Float32Array? orientation;
-    readonly attribute Float32Array? angularVelocity;
-    readonly attribute Float32Array? angularAcceleration;
+    [MeasureAs=GamepadPoseHasOrientation] readonly attribute boolean hasOrientation;
+    [MeasureAs=GamepadPoseHasPosition] readonly attribute boolean hasPosition;
+    [MeasureAs=GamepadPosePosition] readonly attribute Float32Array? position;
+    [MeasureAs=GamepadPoseLinearVelocity] readonly attribute Float32Array? linearVelocity;
+    [MeasureAs=GamepadPoseLinearAcceleration] readonly attribute Float32Array? linearAcceleration;
+    [MeasureAs=GamepadPoseOrientation] readonly attribute Float32Array? orientation;
+    [MeasureAs=GamepadPoseAngularVelocity] readonly attribute Float32Array? angularVelocity;
+    [MeasureAs=GamepadPoseAngularAcceleration] readonly attribute Float32Array? angularAcceleration;
 };

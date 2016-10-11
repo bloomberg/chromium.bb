@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
@@ -191,6 +192,14 @@ void VrShell::SetDelegate(JNIEnv* env,
   delegate_ = VrShellDelegate::getNativeDelegate(env, delegate);
 }
 
+enum class ViewerType
+{
+  UNKNOWN_TYPE = 0,
+  CARDBOARD = 1,
+  DAYDREAM = 2,
+  VIEWER_TYPE_MAX,
+};
+
 void VrShell::GvrInit(JNIEnv* env,
                       const JavaParamRef<jobject>& obj,
                       jlong native_gvr_api) {
@@ -203,6 +212,23 @@ void VrShell::GvrInit(JNIEnv* env,
       new VrController(reinterpret_cast<gvr_context*>(native_gvr_api)));
   content_input_manager_ = new VrInputManager(main_contents_);
   ui_input_manager_ = new VrInputManager(ui_contents_);
+
+  ViewerType viewerType;
+  switch (gvr_api_->GetViewerType())
+  {
+    case gvr::ViewerType::GVR_VIEWER_TYPE_DAYDREAM:
+      viewerType = ViewerType::DAYDREAM;
+      break;
+    case gvr::ViewerType::GVR_VIEWER_TYPE_CARDBOARD:
+      viewerType = ViewerType::CARDBOARD;
+      break;
+    default:
+      NOTREACHED();
+      viewerType = ViewerType::UNKNOWN_TYPE;
+      break;
+  }
+  UMA_HISTOGRAM_ENUMERATION("VRViewerType", static_cast<int>(viewerType),
+      static_cast<int>(ViewerType::VIEWER_TYPE_MAX));
 }
 
 void VrShell::InitializeGl(JNIEnv* env,

@@ -18,6 +18,7 @@
 #include "modules/vr/VRPose.h"
 #include "modules/vr/VRStageParameters.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
+#include "platform/Histogram.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
 
@@ -143,6 +144,17 @@ void VRDisplay::cancelAnimationFrame(int id) {
     document->cancelAnimationFrame(id);
 }
 
+void ReportPresentationResult(PresentationResult result) {
+  // Note that this is called twice for each call to requestPresent -
+  // one to declare that requestPresent was called, and one for the
+  // result.
+  DEFINE_STATIC_LOCAL(
+      EnumerationHistogram, vrPresentationResultHistogram,
+      ("VRDisplayPresentResult",
+       static_cast<int>(PresentationResult::PresentationResultMax)));
+  vrPresentationResultHistogram.count(static_cast<int>(result));
+}
+
 ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
                                         const HeapVector<VRLayer>& layers) {
   ExecutionContext* executionContext = scriptState->getExecutionContext();
@@ -153,6 +165,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
                       UseCounter::VRRequestPresentInsecureOrigin);
   }
 
+  ReportPresentationResult(PresentationResult::Requested);
+
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
@@ -162,6 +176,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     DOMException* exception =
         DOMException::create(InvalidStateError, "VRDisplay cannot present.");
     resolver->reject(exception);
+    ReportPresentationResult(PresentationResult::VRDisplayCannotPresent);
     return promise;
   }
 
@@ -175,6 +190,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     DOMException* exception = DOMException::create(
         InvalidStateError, "API can only be initiated by a user gesture.");
     resolver->reject(exception);
+    ReportPresentationResult(PresentationResult::NotInitiatedByUserGesture);
     return promise;
   }
 
@@ -186,6 +202,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     DOMException* exception =
         DOMException::create(InvalidStateError, "Invalid number of layers.");
     resolver->reject(exception);
+    ReportPresentationResult(PresentationResult::InvalidNumberOfLayers);
     return promise;
   }
 
@@ -196,6 +213,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     DOMException* exception =
         DOMException::create(InvalidStateError, "Invalid layer source.");
     resolver->reject(exception);
+    ReportPresentationResult(PresentationResult::InvalidLayerSource);
     return promise;
   }
 
@@ -207,6 +225,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     DOMException* exception = DOMException::create(
         InvalidStateError, "Layer source must have a WebGLRenderingContext");
     resolver->reject(exception);
+    ReportPresentationResult(
+        PresentationResult::LayerSourceMissingWebGLContext);
     return promise;
   }
 
@@ -222,6 +242,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
         InvalidStateError,
         "Layer bounds must either be an empty array or have 4 values");
     resolver->reject(exception);
+    ReportPresentationResult(PresentationResult::InvalidLayerBounds);
     return promise;
   }
 
@@ -243,6 +264,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
   } else {
     updateLayerBounds();
     resolver->resolve();
+    ReportPresentationResult(PresentationResult::SuccessAlreadyPresenting);
   }
 
   return promise;
@@ -276,16 +298,15 @@ void VRDisplay::beginPresent(ScriptPromiseResolver* resolver) {
         InvalidStateError,
         "VR Presentation not implemented for this VRDisplay.");
     resolver->reject(exception);
+    ReportPresentationResult(
+        PresentationResult::PresentationNotSupportedByDisplay);
     return;
   }
 
   m_isPresenting = true;
+  ReportPresentationResult(PresentationResult::Success);
 
   updateLayerBounds();
-
-  Document* document = m_navigatorVR->document();
-  if (document)
-    UseCounter::count(*document, UseCounter::VRPresent);
 
   resolver->resolve();
   m_navigatorVR->fireVRDisplayPresentChange(this);

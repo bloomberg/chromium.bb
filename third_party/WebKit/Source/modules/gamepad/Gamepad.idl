@@ -39,9 +39,10 @@ interface Gamepad {
     // https://github.com/w3c/gamepad/issues/28
     readonly attribute double[] axes;
     readonly attribute GamepadButton[] buttons;
-    [OriginTrialEnabled=GamepadExtensions] readonly attribute GamepadPose? pose;
-    [OriginTrialEnabled=GamepadExtensions] readonly attribute GamepadHand hand;
+
+    [OriginTrialEnabled=GamepadExtensions, MeasureAs=GamepadPose] readonly attribute GamepadPose? pose;
+    [OriginTrialEnabled=GamepadExtensions, MeasureAs=GamepadHand] readonly attribute GamepadHand hand;
 
     // https://w3c.github.io/webvr/#interface-gamepad
-    [OriginTrialEnabled=GamepadExtensions] readonly attribute unsigned long displayId;
+    [OriginTrialEnabled=GamepadExtensions, MeasureAs=GamepadDisplayId] readonly attribute unsigned long displayId;
 };
