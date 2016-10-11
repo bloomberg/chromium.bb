@@ -41,6 +41,16 @@ const base::FilePath::CharType kDataPath[] =
 #else
     FILE_PATH_LITERAL("components\\flapper\\NONEXISTENT");
 #endif
+#elif defined(OS_CHROMEOS)
+#if defined(ARCH_CPU_X86)
+    FILE_PATH_LITERAL("components/flapper/chromeos_intel32");
+#elif defined(ARCH_CPU_X86_64)
+    FILE_PATH_LITERAL("components/flapper/chromeos_intel64");
+#elif defined(ARCH_CPU_ARMEL)
+    FILE_PATH_LITERAL("components/flapper/chromeos_arm32");
+#else
+    FILE_PATH_LITERAL("components/flapper/NONEXISTENT");
+#endif
 #else  // OS_LINUX, etc.
 #if defined(ARCH_CPU_X86)
     FILE_PATH_LITERAL("components/flapper/linux");

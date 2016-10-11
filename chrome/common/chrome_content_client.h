@@ -64,7 +64,7 @@ class ChromeContentClient : public content::ContentClient {
   // plugin type. This function may return a nullptr if given an empty vector.
   // The method is only visible for testing purposes.
   static content::PepperPluginInfo* FindMostRecentPlugin(
-      const std::vector<content::PepperPluginInfo*>& plugins);
+      const std::vector<std::unique_ptr<content::PepperPluginInfo>>& plugins);
 #endif
 
   void SetActiveURL(const GURL& url) override;

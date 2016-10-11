@@ -130,7 +130,10 @@ enum {
   FILE_COMPONENT_FLASH_HINT,    // A file in a known location that points to
                                 // the component updated flash plugin.
 #endif // defined(OS_LINUX)
-
+#if defined(OS_CHROMEOS)
+ FILE_CHROME_OS_COMPONENT_FLASH,  // The location of component updated Flash on
+                                  // Chrome OS.
+#endif  // defined(OS_CHROMEOS)
   PATH_END
 };
 

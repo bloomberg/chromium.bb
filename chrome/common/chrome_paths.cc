@@ -65,6 +65,12 @@ const base::FilePath::CharType kComponentUpdatedFlashHint[] =
     FILE_PATH_LITERAL("latest-component-updated-flash");
 #endif  // defined(OS_LINUX)
 
+#if defined(OS_CHROMEOS)
+const base::FilePath::CharType kChromeOSComponentFlash[] = FILE_PATH_LITERAL(
+    "/mnt/stateful_partition/imageloader_mounts/PepperFlashPlayer/"
+    "libpepflashplayer.so");
+#endif  // defined(OS_CHROMEOS)
+
 static base::LazyInstance<base::FilePath>
     g_invalid_specified_user_data_dir = LAZY_INSTANCE_INITIALIZER;
 
@@ -569,6 +575,12 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(kComponentUpdatedFlashHint);
       break;
 #endif  // defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
+    case chrome::FILE_CHROME_OS_COMPONENT_FLASH:
+      cur = base::FilePath(kChromeOSComponentFlash);
+      create_dir = false;
+      break;
+#endif  // defined(OS_CHROMEOS)
 
     default:
       return false;

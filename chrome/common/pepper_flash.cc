@@ -34,7 +34,9 @@ const char kPepperFlashOperatingSystem[] =
     "mac";
 #elif defined(OS_WIN)
     "win";
-#else  // OS_LINUX, etc. TODO(viettrungluu): Separate out Chrome OS and Android?
+#elif defined(OS_CHROMEOS)
+    "chromeos";
+#else  // OS_LINUX,
     "linux";
 #endif
 
@@ -44,7 +46,9 @@ const char kPepperFlashArch[] =
     "ia32";
 #elif defined(ARCH_CPU_X86_64)
     "x64";
-#else  // TODO(viettrungluu): Support an ARM check?
+#elif defined(ARCH_CPU_ARMEL)
+    "arm";
+#else
     "???";
 #endif
 
