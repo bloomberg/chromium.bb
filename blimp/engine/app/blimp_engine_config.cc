@@ -37,6 +37,10 @@ void SetCommandLineDefaults(base::CommandLine* command_line) {
   // Disable threaded animation since we don't support them right now.
   // (crbug/570376).
   command_line->AppendSwitch(cc::switches::kDisableThreadedAnimation);
+
+  // Disable use-zoom-for-dsf since it ends up overriding the device scale
+  // factor reported to the client. See crbug.com/654898.
+  command_line->AppendSwitchASCII(::switches::kEnableUseZoomForDSF, "false");
 }
 
 BlimpEngineConfig::~BlimpEngineConfig() {}
