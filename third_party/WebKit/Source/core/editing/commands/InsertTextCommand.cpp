@@ -101,10 +101,11 @@ bool InsertTextCommand::performTrivialReplace(const String& text,
     return false;
 
   setEndingSelectionWithoutValidation(start, endPosition);
-  if (!selectInsertedText)
-    setEndingSelection(createVisibleSelectionDeprecated(
-        endingSelection().visibleEndDeprecated(),
-        endingSelection().isDirectional()));
+  if (!selectInsertedText) {
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    setEndingSelection(createVisibleSelection(
+        endingSelection().visibleEnd(), endingSelection().isDirectional()));
+  }
 
   return true;
 }
@@ -129,10 +130,11 @@ bool InsertTextCommand::performOverwrite(const String& text,
   Position endPosition =
       Position(textNode, start.offsetInContainerNode() + text.length());
   setEndingSelectionWithoutValidation(start, endPosition);
-  if (!selectInsertedText)
-    setEndingSelection(createVisibleSelectionDeprecated(
-        endingSelection().visibleEndDeprecated(),
-        endingSelection().isDirectional()));
+  if (!selectInsertedText) {
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    setEndingSelection(createVisibleSelection(
+        endingSelection().visibleEnd(), endingSelection().isDirectional()));
+  }
 
   return true;
 }
@@ -148,8 +150,9 @@ void InsertTextCommand::doApply(EditingState* editingState) {
   if (endingSelection().isRange()) {
     if (performTrivialReplace(m_text, m_selectInsertedText))
       return;
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     bool endOfSelectionWasAtStartOfBlock =
-        isStartOfBlock(endingSelection().visibleEndDeprecated());
+        isStartOfBlock(endingSelection().visibleEnd());
     deleteSelection(editingState, false, true, false, false);
     if (editingState->isAborted())
       return;
@@ -170,6 +173,8 @@ void InsertTextCommand::doApply(EditingState* editingState) {
       return;
   }
 
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   Position startPosition(endingSelection().start());
 
   Position placeholder;
@@ -182,8 +187,8 @@ void InsertTextCommand::doApply(EditingState* editingState) {
   Position downstream(mostForwardCaretPosition(startPosition));
   if (lineBreakExistsAtPosition(downstream)) {
     // FIXME: This doesn't handle placeholders at the end of anonymous blocks.
-    VisiblePosition caret = createVisiblePositionDeprecated(startPosition);
-    if (isEndOfBlock(caret) && isStartOfParagraphDeprecated(caret))
+    VisiblePosition caret = createVisiblePosition(startPosition);
+    if (isEndOfBlock(caret) && isStartOfParagraph(caret))
       placeholder = downstream;
     // Don't remove the placeholder yet, otherwise the block we're inserting
     // into would collapse before we get a chance to insert into it.  We check
@@ -270,15 +275,19 @@ void InsertTextCommand::doApply(EditingState* editingState) {
     }
   }
 
-  if (!m_selectInsertedText)
-    setEndingSelection(createVisibleSelectionDeprecated(
+  if (!m_selectInsertedText) {
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    setEndingSelection(createVisibleSelection(
         endingSelection().end(), endingSelection().affinity(),
         endingSelection().isDirectional()));
+  }
 }
 
 Position InsertTextCommand::insertTab(const Position& pos,
                                       EditingState* editingState) {
-  Position insertPos = createVisiblePositionDeprecated(pos).deepEquivalent();
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+  Position insertPos = createVisiblePosition(pos).deepEquivalent();
   if (insertPos.isNull())
     return pos;
 
