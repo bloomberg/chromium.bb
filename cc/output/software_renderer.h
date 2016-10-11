@@ -85,7 +85,8 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       const DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
-      const gfx::Transform& contents_device_transform) const;
+      const gfx::Transform& contents_device_transform,
+      gfx::Rect* unclipped_rect) const;
   SkBitmap GetBackdropBitmap(const gfx::Rect& bounding_rect) const;
   sk_sp<SkShader> GetBackgroundFilterShader(
       const DrawingFrame* frame,

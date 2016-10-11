@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 class GrContext;
 class SkBitmap;
@@ -30,8 +31,10 @@ class CC_EXPORT RenderSurfaceFilters {
                         GrContext* gr_context);
   static FilterOperations Optimize(const FilterOperations& filters);
 
-  static sk_sp<SkImageFilter> BuildImageFilter(const FilterOperations& filters,
-                                               const gfx::SizeF& size);
+  static sk_sp<SkImageFilter> BuildImageFilter(
+      const FilterOperations& filters,
+      const gfx::SizeF& size,
+      const gfx::Vector2dF& offset = gfx::Vector2dF(0, 0));
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(RenderSurfaceFilters);
