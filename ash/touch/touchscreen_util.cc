@@ -166,7 +166,7 @@ void AssociateInternalDevices(DisplayInfoList* displays, DeviceList* devices) {
     device_it = devices->erase(device_it);
   }
 
-  if (!matched)
+  if (!matched && internal_display)
     VLOG(2) << "=> Removing internal display " << internal_display->name();
 }
 
