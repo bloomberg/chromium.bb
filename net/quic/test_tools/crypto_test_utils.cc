@@ -15,7 +15,6 @@
 
 #include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
-#include "crypto/scoped_openssl_types.h"
 #include "crypto/secure_hash.h"
 #include "net/quic/core/crypto/channel_id.h"
 #include "net/quic/core/crypto/common_cert_set.h"
@@ -136,9 +135,8 @@ class TestChannelIDKey : public ChannelIDKey {
   // ChannelIDKey implementation.
 
   bool Sign(StringPiece signed_data, string* out_signature) const override {
-    crypto::ScopedEVP_MD_CTX md_ctx(EVP_MD_CTX_create());
-    if (!md_ctx ||
-        EVP_DigestSignInit(md_ctx.get(), nullptr, EVP_sha256(), nullptr,
+    bssl::ScopedEVP_MD_CTX md_ctx;
+    if (EVP_DigestSignInit(md_ctx.get(), nullptr, EVP_sha256(), nullptr,
                            ecdsa_key_.get()) != 1) {
       return false;
     }
@@ -160,7 +158,7 @@ class TestChannelIDKey : public ChannelIDKey {
     }
 
     uint8_t* derp = der_sig.get();
-    crypto::ScopedECDSA_SIG sig(
+    bssl::UniquePtr<ECDSA_SIG> sig(
         d2i_ECDSA_SIG(nullptr, const_cast<const uint8_t**>(&derp), sig_len));
     if (sig.get() == nullptr) {
       return false;
@@ -199,7 +197,7 @@ class TestChannelIDKey : public ChannelIDKey {
   }
 
  private:
-  crypto::ScopedEVP_PKEY ecdsa_key_;
+  bssl::UniquePtr<EVP_PKEY> ecdsa_key_;
 };
 
 class TestChannelIDSource : public ChannelIDSource {
@@ -235,24 +233,24 @@ class TestChannelIDSource : public ChannelIDSource {
     // clearing the most-significant bit.
     digest[0] &= 0x7f;
 
-    crypto::ScopedBIGNUM k(BN_new());
+    bssl::UniquePtr<BIGNUM> k(BN_new());
     CHECK(BN_bin2bn(digest, sizeof(digest), k.get()) != nullptr);
 
-    crypto::ScopedEC_GROUP p256(
+    bssl::UniquePtr<EC_GROUP> p256(
         EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
     CHECK(p256);
 
-    crypto::ScopedEC_KEY ecdsa_key(EC_KEY_new());
+    bssl::UniquePtr<EC_KEY> ecdsa_key(EC_KEY_new());
     CHECK(ecdsa_key && EC_KEY_set_group(ecdsa_key.get(), p256.get()));
 
-    crypto::ScopedEC_POINT point(EC_POINT_new(p256.get()));
+    bssl::UniquePtr<EC_POINT> point(EC_POINT_new(p256.get()));
     CHECK(EC_POINT_mul(p256.get(), point.get(), k.get(), nullptr, nullptr,
                        nullptr));
 
     EC_KEY_set_private_key(ecdsa_key.get(), k.get());
     EC_KEY_set_public_key(ecdsa_key.get(), point.get());
 
-    crypto::ScopedEVP_PKEY pkey(EVP_PKEY_new());
+    bssl::UniquePtr<EVP_PKEY> pkey(EVP_PKEY_new());
     // EVP_PKEY_set1_EC_KEY takes a reference so no |release| here.
     EVP_PKEY_set1_EC_KEY(pkey.get(), ecdsa_key.get());
 

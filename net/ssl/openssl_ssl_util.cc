@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <openssl/x509.h>
 #include <utility>
 
 #include "base/bind.h"
@@ -220,23 +221,24 @@ int GetNetSSLVersion(SSL* ssl) {
   }
 }
 
-ScopedX509 OSCertHandleToOpenSSL(X509Certificate::OSCertHandle os_handle) {
+bssl::UniquePtr<X509> OSCertHandleToOpenSSL(
+    X509Certificate::OSCertHandle os_handle) {
 #if defined(USE_OPENSSL_CERTS)
-  return ScopedX509(X509Certificate::DupOSCertHandle(os_handle));
-#else  // !defined(USE_OPENSSL_CERTS)
+  return bssl::UniquePtr<X509>(X509Certificate::DupOSCertHandle(os_handle));
+#else   // !defined(USE_OPENSSL_CERTS)
   std::string der_encoded;
   if (!X509Certificate::GetDEREncoded(os_handle, &der_encoded))
-    return ScopedX509();
+    return bssl::UniquePtr<X509>();
   const uint8_t* bytes = reinterpret_cast<const uint8_t*>(der_encoded.data());
-  return ScopedX509(d2i_X509(NULL, &bytes, der_encoded.size()));
+  return bssl::UniquePtr<X509>(d2i_X509(NULL, &bytes, der_encoded.size()));
 #endif  // defined(USE_OPENSSL_CERTS)
 }
 
-ScopedX509Stack OSCertHandlesToOpenSSL(
+bssl::UniquePtr<STACK_OF(X509)> OSCertHandlesToOpenSSL(
     const X509Certificate::OSCertHandles& os_handles) {
-  ScopedX509Stack stack(sk_X509_new_null());
+  bssl::UniquePtr<STACK_OF(X509)> stack(sk_X509_new_null());
   for (size_t i = 0; i < os_handles.size(); i++) {
-    ScopedX509 x509 = OSCertHandleToOpenSSL(os_handles[i]);
+    bssl::UniquePtr<X509> x509 = OSCertHandleToOpenSSL(os_handles[i]);
     if (!x509)
       return nullptr;
     sk_X509_push(stack.get(), x509.release());

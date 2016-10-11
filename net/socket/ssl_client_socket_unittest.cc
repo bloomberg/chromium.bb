@@ -22,7 +22,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "crypto/scoped_openssl_types.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -3141,13 +3140,13 @@ scoped_refptr<SSLPrivateKey> LoadPrivateKeyOpenSSL(
     LOG(ERROR) << "Could not read private key file: " << filepath.value();
     return nullptr;
   }
-  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<char*>(data.data()),
-                                        static_cast<int>(data.size())));
+  bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(const_cast<char*>(data.data()),
+                                           static_cast<int>(data.size())));
   if (!bio) {
     LOG(ERROR) << "Could not allocate BIO for buffer?";
     return nullptr;
   }
-  crypto::ScopedEVP_PKEY result(
+  bssl::UniquePtr<EVP_PKEY> result(
       PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, nullptr));
   if (!result) {
     LOG(ERROR) << "Could not decode private key file: " << filepath.value();
