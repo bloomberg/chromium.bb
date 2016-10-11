@@ -155,6 +155,10 @@ class ResourcePrefetchPredictor
                            OnSubresourceResponse);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetCorrectPLT);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, HandledResourceTypes);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
+                           PopulatePrefetcherRequest);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetRedirectEndpoint);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetPrefetchData);
 
   enum InitializationState {
     NOT_INITIALIZED = 0,
@@ -224,6 +228,12 @@ class ResourcePrefetchPredictor
   // Returns true if the request (should have a response in it) is "no-store".
   static bool IsNoStore(const net::URLRequest* request);
 
+  // Returns true iff |redirect_data_map| contains confident redirect endpoint
+  // for |entry_point| and assigns it to the |redirect_endpoint|.
+  static bool GetRedirectEndpoint(const std::string& entry_point,
+                                  const RedirectDataMap& redirect_data_map,
+                                  std::string* redirect_endpoint);
+
   // KeyedService methods override.
   void Shutdown() override;
 
@@ -239,12 +249,16 @@ class ResourcePrefetchPredictor
   // this point are the only ones considered for prefetching.
   void OnNavigationComplete(const NavigationID& nav_id_without_timing_info);
 
-  // Returns true if there is PrefetchData that can be used for a URL and fills
-  // |urls| with resources that need to be prefetched.
+  // Returns true iff there is PrefetchData that can be used for a
+  // |main_frame_url| and fills |urls| with resources that need to be
+  // prefetched.
   bool GetPrefetchData(const GURL& main_frame_url, std::vector<GURL>* urls);
 
-  // Converts a PrefetchData into a list of URLs.
-  void PopulatePrefetcherRequest(const PrefetchData& data,
+  // Returns true iff the |data_map| contains PrefetchData that can be used
+  // for a |main_frame_key| and fills |urls| with resources that need to be
+  // prefetched.
+  bool PopulatePrefetcherRequest(const std::string& main_frame_key,
+                                 const PrefetchDataMap& data_map,
                                  std::vector<GURL>* urls);
 
  public:

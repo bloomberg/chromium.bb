@@ -32,6 +32,7 @@ using testing::ContainerEq;
 using testing::Pointee;
 using testing::SetArgPointee;
 using testing::StrictMock;
+using testing::UnorderedElementsAre;
 
 namespace predictors {
 
@@ -257,6 +258,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
     config.min_url_visit_count = 2;
     config.max_resources_per_entry = 4;
     config.max_consecutive_misses = 2;
+    config.min_resource_confidence_to_trigger_prefetch = 0.5;
 
     // TODO(shishir): Enable the prefetching mode in the tests.
     config.mode |= ResourcePrefetchPredictorConfig::URL_LEARNING;
@@ -1324,6 +1326,181 @@ TEST_F(ResourcePrefetchPredictorTest, SummarizeResponseCachePolicy) {
   EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request_etag, &summary));
   EXPECT_TRUE(summary.has_validators);
   EXPECT_TRUE(summary.always_revalidate);
+}
+
+TEST_F(ResourcePrefetchPredictorTest, PopulatePrefetcherRequest) {
+  // The data that will be used in populating.
+  PrefetchData google = CreatePrefetchData("http://www.google.com/", 1);
+  InitializeResourceData(google.add_resources(), "http://google.com/image1.png",
+                         content::RESOURCE_TYPE_IMAGE, 10, 0, 0, 2.2,
+                         net::MEDIUM, false, false);  // good
+  InitializeResourceData(google.add_resources(), "http://google.com/style1.css",
+                         content::RESOURCE_TYPE_STYLESHEET, 2, 2, 1, 1.0,
+                         net::MEDIUM, false, false);  // still good
+  InitializeResourceData(google.add_resources(), "http://google.com/script3.js",
+                         content::RESOURCE_TYPE_SCRIPT, 1, 0, 1, 2.1,
+                         net::MEDIUM, false, false);  // bad - not enough hits
+  InitializeResourceData(
+      google.add_resources(), "http://google.com/script4.js",
+      content::RESOURCE_TYPE_SCRIPT, 4, 5, 0, 2.1, net::MEDIUM, false,
+      false);  // bad - more misses than hits (min_confidence = 0.5)
+
+  // The data to be sure that other PrefetchData won't be affected.
+  PrefetchData twitter = CreatePrefetchData("http://twitter.com", 2);
+  InitializeResourceData(
+      twitter.add_resources(), "http://twitter.com/image.jpg",
+      content::RESOURCE_TYPE_IMAGE, 10, 0, 0, 1.0, net::MEDIUM, false, false);
+
+  // The data to check negative result.
+  PrefetchData nyt = CreatePrefetchData("http://nyt.com", 3);
+  InitializeResourceData(nyt.add_resources(), "http://nyt.com/old_script.js",
+                         content::RESOURCE_TYPE_SCRIPT, 5, 7, 7, 1.0,
+                         net::MEDIUM, false, false);
+
+  PrefetchDataMap test_data;
+  test_data.insert(std::make_pair(google.primary_key(), google));
+  test_data.insert(std::make_pair(twitter.primary_key(), twitter));
+  test_data.insert(std::make_pair(nyt.primary_key(), nyt));
+
+  std::vector<GURL> urls;
+  EXPECT_TRUE(predictor_->PopulatePrefetcherRequest(google.primary_key(),
+                                                    test_data, &urls));
+  EXPECT_THAT(urls, UnorderedElementsAre(GURL("http://google.com/image1.png"),
+                                         GURL("http://google.com/style1.css")));
+
+  urls.clear();
+  EXPECT_FALSE(predictor_->PopulatePrefetcherRequest(nyt.primary_key(),
+                                                     test_data, &urls));
+  EXPECT_TRUE(urls.empty());
+
+  urls.clear();
+  EXPECT_FALSE(predictor_->PopulatePrefetcherRequest("http://404.com",
+                                                     test_data, &urls));
+  EXPECT_TRUE(urls.empty());
+}
+
+TEST_F(ResourcePrefetchPredictorTest, GetRedirectEndpoint) {
+  // The data to be requested for the most confident endpoint.
+  RedirectData google = CreateRedirectData("http://google.com/", 1);
+  InitializeRedirectStat(google.add_redirect_endpoints(), "https://google.com",
+                         10, 0, 0);
+  InitializeRedirectStat(google.add_redirect_endpoints(), "https://google.fr",
+                         10, 1, 0);
+  InitializeRedirectStat(google.add_redirect_endpoints(), "https://google.ws",
+                         20, 20, 0);
+
+  // The data to be sure that other RedirectData won't be affected.
+  RedirectData gogle = CreateRedirectData("http://gogle.com", 2);
+  InitializeRedirectStat(gogle.add_redirect_endpoints(), "https://google.com",
+                         100, 0, 0);
+
+  // The data to check negative result.
+  RedirectData facebook = CreateRedirectData("http://fb.com/", 3);
+  InitializeRedirectStat(facebook.add_redirect_endpoints(),
+                         "http://facebook.com", 5, 5,
+                         0);  // not enough confidence
+
+  RedirectDataMap data_map;
+  data_map.insert(std::make_pair(google.primary_key(), google));
+  data_map.insert(std::make_pair(gogle.primary_key(), gogle));
+  data_map.insert(std::make_pair(facebook.primary_key(), facebook));
+
+  std::string redirect_endpoint;
+  EXPECT_TRUE(predictor_->GetRedirectEndpoint("http://google.com/", data_map,
+                                              &redirect_endpoint));
+  EXPECT_EQ(redirect_endpoint, "https://google.com");
+
+  EXPECT_FALSE(predictor_->GetRedirectEndpoint("http://fb.com", data_map,
+                                               &redirect_endpoint));
+  EXPECT_FALSE(predictor_->GetRedirectEndpoint("http://404.com", data_map,
+                                               &redirect_endpoint));
+}
+
+TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
+  const GURL main_frame_url("http://google.com/?query=cats");
+  std::vector<GURL> urls;
+  // No prefetch data.
+  EXPECT_FALSE(predictor_->GetPrefetchData(main_frame_url, &urls));
+
+  // Add a resource associated with the main frame host.
+  PrefetchData google_host = CreatePrefetchData("google.com", 1);
+  const std::string script_url = "https://cdn.google.com/script.js";
+  InitializeResourceData(google_host.add_resources(), script_url,
+                         content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1,
+                         net::MEDIUM, false, false);
+  predictor_->host_table_cache_->insert(
+      std::make_pair(google_host.primary_key(), google_host));
+
+  urls.clear();
+  EXPECT_TRUE(predictor_->GetPrefetchData(main_frame_url, &urls));
+  EXPECT_THAT(urls, UnorderedElementsAre(GURL(script_url)));
+
+  // Add a resource associated with the main frame url.
+  PrefetchData google_url =
+      CreatePrefetchData("http://google.com/?query=cats", 2);
+  const std::string image_url = "https://cdn.google.com/image.png";
+  InitializeResourceData(google_url.add_resources(), image_url,
+                         content::RESOURCE_TYPE_IMAGE, 10, 0, 1, 2.1,
+                         net::MEDIUM, false, false);
+  predictor_->url_table_cache_->insert(
+      std::make_pair(google_url.primary_key(), google_url));
+
+  urls.clear();
+  EXPECT_TRUE(predictor_->GetPrefetchData(main_frame_url, &urls));
+  EXPECT_THAT(urls, UnorderedElementsAre(GURL(image_url)));
+
+  // Add host-based redirect.
+  RedirectData host_redirect = CreateRedirectData("google.com", 3);
+  InitializeRedirectStat(host_redirect.add_redirect_endpoints(),
+                         "www.google.com", 10, 0, 0);
+  predictor_->host_redirect_table_cache_->insert(
+      std::make_pair(host_redirect.primary_key(), host_redirect));
+
+  // Nothing changed: new redirect endpoint doesn't have any associated
+  // resources
+  urls.clear();
+  EXPECT_TRUE(predictor_->GetPrefetchData(main_frame_url, &urls));
+  EXPECT_THAT(urls, UnorderedElementsAre(GURL(image_url)));
+
+  // Add a resource associated with host redirect endpoint.
+  PrefetchData www_google_host = CreatePrefetchData("www.google.com", 4);
+  const std::string style_url = "https://cdn.google.com/style.css";
+  InitializeResourceData(www_google_host.add_resources(), style_url,
+                         content::RESOURCE_TYPE_STYLESHEET, 10, 0, 1, 2.1,
+                         net::MEDIUM, false, false);
+  predictor_->host_table_cache_->insert(
+      std::make_pair(www_google_host.primary_key(), www_google_host));
+
+  urls.clear();
+  EXPECT_TRUE(predictor_->GetPrefetchData(main_frame_url, &urls));
+  EXPECT_THAT(urls, UnorderedElementsAre(GURL(style_url)));
+
+  // Add url-based redirect.
+  RedirectData url_redirect =
+      CreateRedirectData("http://google.com/?query=cats", 5);
+  InitializeRedirectStat(url_redirect.add_redirect_endpoints(),
+                         "https://www.google.com/?query=cats", 10, 0, 0);
+  predictor_->url_redirect_table_cache_->insert(
+      std::make_pair(url_redirect.primary_key(), url_redirect));
+
+  // Url redirect endpoint doesn't have associated resources.
+  urls.clear();
+  EXPECT_TRUE(predictor_->GetPrefetchData(main_frame_url, &urls));
+  EXPECT_THAT(urls, UnorderedElementsAre(GURL(style_url)));
+
+  // Add a resource associated with url redirect endpoint.
+  PrefetchData www_google_url =
+      CreatePrefetchData("https://www.google.com/?query=cats", 4);
+  const std::string font_url = "https://cdn.google.com/comic-sans-ms.woff";
+  InitializeResourceData(www_google_url.add_resources(), font_url,
+                         content::RESOURCE_TYPE_FONT_RESOURCE, 10, 0, 1, 2.1,
+                         net::MEDIUM, false, false);
+  predictor_->url_table_cache_->insert(
+      std::make_pair(www_google_url.primary_key(), www_google_url));
+
+  urls.clear();
+  EXPECT_TRUE(predictor_->GetPrefetchData(main_frame_url, &urls));
+  EXPECT_THAT(urls, UnorderedElementsAre(GURL(font_url)));
 }
 
 }  // namespace predictors

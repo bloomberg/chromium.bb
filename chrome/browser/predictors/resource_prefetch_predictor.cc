@@ -61,6 +61,11 @@ enum ReportingEvent {
   REPORTING_EVENT_COUNT = 2
 };
 
+float ComputeRedirectConfidence(const predictors::RedirectStat& redirect) {
+  return (redirect.number_of_hits() + 0.0) /
+         (redirect.number_of_hits() + redirect.number_of_misses());
+}
+
 }  // namespace
 
 namespace predictors {
@@ -208,6 +213,38 @@ content::ResourceType ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
       return content::RESOURCE_TYPE_FONT_RESOURCE;
   }
   return fallback;
+}
+
+// static
+bool ResourcePrefetchPredictor::GetRedirectEndpoint(
+    const std::string& first_redirect,
+    const RedirectDataMap& redirect_data_map,
+    std::string* final_redirect) {
+  DCHECK(final_redirect);
+
+  RedirectDataMap::const_iterator it = redirect_data_map.find(first_redirect);
+  if (it == redirect_data_map.end())
+    return false;
+
+  const RedirectData& redirect_data = it->second;
+  auto best_redirect = std::max_element(
+      redirect_data.redirect_endpoints().begin(),
+      redirect_data.redirect_endpoints().end(),
+      [](const RedirectStat& x, const RedirectStat& y) {
+        return ComputeRedirectConfidence(x) < ComputeRedirectConfidence(y);
+      });
+
+  const float kMinRedirectConfidenceToTriggerPrefetch = 0.7f;
+  const int kMinRedirectHitsToTriggerPrefetch = 2;
+
+  if (best_redirect == redirect_data.redirect_endpoints().end() ||
+      ComputeRedirectConfidence(*best_redirect) <
+          kMinRedirectConfidenceToTriggerPrefetch ||
+      best_redirect->number_of_hits() < kMinRedirectHitsToTriggerPrefetch)
+    return false;
+
+  *final_redirect = best_redirect->url();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -419,9 +456,6 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
     const URLRequestSummary& response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Stop any inflight prefetching. Remove the older navigation.
-  StopPrefetching(response.navigation_id.main_frame_url);
-
   std::unique_ptr<PageRequestSummary> summary;
   NavigationMap::iterator nav_it =
       inflight_navigations_.find(response.navigation_id);
@@ -492,47 +526,63 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
 bool ResourcePrefetchPredictor::GetPrefetchData(const GURL& main_frame_url,
                                                 std::vector<GURL>* urls) {
   DCHECK(urls);
-
+  DCHECK(urls->empty());
   bool use_url_data = config_.IsPrefetchingEnabled(profile_) ?
       config_.IsURLPrefetchingEnabled(profile_) :
       config_.IsURLLearningEnabled();
-  if (use_url_data) {
-    PrefetchDataMap::const_iterator iterator =
-        url_table_cache_->find(main_frame_url.spec());
-    if (iterator != url_table_cache_->end())
-      PopulatePrefetcherRequest(iterator->second, urls);
-  }
-  if (!urls->empty())
-    return true;
-
   bool use_host_data = config_.IsPrefetchingEnabled(profile_) ?
       config_.IsHostPrefetchingEnabled(profile_) :
       config_.IsHostLearningEnabled();
-  if (use_host_data) {
-    PrefetchDataMap::const_iterator iterator =
-        host_table_cache_->find(main_frame_url.host());
-    if (iterator != host_table_cache_->end())
-      PopulatePrefetcherRequest(iterator->second, urls);
+
+  // Fetch URLs based on a redirect endpoint for URL/host first.
+  std::string redirect_endpoint;
+  if (use_url_data &&
+      GetRedirectEndpoint(main_frame_url.spec(), *url_redirect_table_cache_,
+                          &redirect_endpoint) &&
+      PopulatePrefetcherRequest(redirect_endpoint, *url_table_cache_, urls)) {
+    return true;
   }
 
-  return !urls->empty();
+  if (use_host_data &&
+      GetRedirectEndpoint(main_frame_url.host(), *host_redirect_table_cache_,
+                          &redirect_endpoint) &&
+      PopulatePrefetcherRequest(redirect_endpoint, *host_table_cache_, urls)) {
+    return true;
+  }
+
+  // Fallback to fetching URLs based on the incoming URL/host.
+  if (use_url_data && PopulatePrefetcherRequest(main_frame_url.spec(),
+                                                *url_table_cache_, urls)) {
+    return true;
+  }
+
+  return use_host_data && PopulatePrefetcherRequest(main_frame_url.host(),
+                                                    *host_table_cache_, urls);
 }
 
-void ResourcePrefetchPredictor::PopulatePrefetcherRequest(
-    const PrefetchData& data,
+bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(
+    const std::string& main_frame_key,
+    const PrefetchDataMap& data_map,
     std::vector<GURL>* urls) {
-  for (const ResourceData& resource : data.resources()) {
+  DCHECK(urls);
+  PrefetchDataMap::const_iterator it = data_map.find(main_frame_key);
+  if (it == data_map.end())
+    return false;
+
+  size_t initial_size = urls->size();
+  for (const ResourceData& resource : it->second.resources()) {
     float confidence =
         static_cast<float>(resource.number_of_hits()) /
         (resource.number_of_hits() + resource.number_of_misses());
     if (confidence < config_.min_resource_confidence_to_trigger_prefetch ||
         resource.number_of_hits() <
-            config_.min_resource_hits_to_trigger_prefetch) {
+            config_.min_resource_hits_to_trigger_prefetch)
       continue;
-    }
 
     urls->push_back(GURL(resource.resource_url()));
   }
+
+  return urls->size() > initial_size;
 }
 
 void ResourcePrefetchPredictor::StartPrefetching(const GURL& url) {
@@ -1000,10 +1050,9 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
   }
 
   RedirectData& data = cache_entry->second;
-  // Trim and sort the redirects after the update.
+  // Trim the redirects after the update.
   ResourcePrefetchPredictorTables::TrimRedirects(
       &data, config_.max_consecutive_misses);
-  ResourcePrefetchPredictorTables::SortRedirects(&data);
 
   if (data.redirect_endpoints_size() == 0) {
     redirect_map->erase(cache_entry);

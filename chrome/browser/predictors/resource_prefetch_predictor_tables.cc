@@ -115,16 +115,6 @@ void ResourcePrefetchPredictorTables::TrimRedirects(
       new_end, data->mutable_redirect_endpoints()->end());
 }
 
-// static
-void ResourcePrefetchPredictorTables::SortRedirects(RedirectData* data) {
-  std::sort(data->mutable_redirect_endpoints()->begin(),
-            data->mutable_redirect_endpoints()->end(),
-            [](const RedirectStat& x, const RedirectStat& y) {
-              // Decreasing score ordering.
-              return ComputeRedirectScore(x) > ComputeRedirectScore(y);
-            });
-}
-
 void ResourcePrefetchPredictorTables::GetAllData(
     PrefetchDataMap* url_data_map,
     PrefetchDataMap* host_data_map,
@@ -288,11 +278,6 @@ void ResourcePrefetchPredictorTables::GetAllRedirectDataHelper(
     data_map->insert(std::make_pair(key, data));
     DCHECK_EQ(data.primary_key(), key);
   }
-
-  // Sort each of the redirect vectors by score.
-  for (auto& kv : *data_map) {
-    SortRedirects(&(kv.second));
-  }
 }
 
 bool ResourcePrefetchPredictorTables::UpdateDataHelper(
@@ -369,13 +354,6 @@ float ResourcePrefetchPredictorTables::ComputeResourceScore(
   return kMaxResourcesPerType *
              (priority_multiplier * 100 + type_multiplier * 10) -
          data.average_position();
-}
-
-// static
-float ResourcePrefetchPredictorTables::ComputeRedirectScore(
-    const RedirectStat& data) {
-  // TODO(alexilin): Invent some scoring.
-  return 0.0;
 }
 
 // static

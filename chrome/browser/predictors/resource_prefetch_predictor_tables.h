@@ -95,9 +95,6 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // misses from |data|.
   static void TrimRedirects(RedirectData* data, size_t max_consecutive_misses);
 
-  // Sorts the redirects by score, decreasing.
-  static void SortRedirects(RedirectData* data);
-
   // The maximum length of the string that can be stored in the DB.
   static constexpr size_t kMaxStringLength = 1024;
 
@@ -135,7 +132,6 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
   // Computes score of |data|.
   static float ComputeResourceScore(const ResourceData& data);
-  static float ComputeRedirectScore(const RedirectStat& data);
 
   // PredictorTableBase methods.
   void CreateTableIfNonExistent() override;
