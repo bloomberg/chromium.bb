@@ -101,16 +101,24 @@ class CC_EXPORT LayerTreeHostRemote : public LayerTreeHost,
   LayerTreeHostRemote(InitParams* params,
                       std::unique_ptr<LayerTree> layer_tree);
 
- private:
-  enum class FramePipelineStage { NONE, ANIMATE, UPDATE_LAYERS, COMMIT };
+  LayerTreeHostClient* client() const { return client_; }
+  RemoteCompositorBridge* remote_compositor_bridge() const {
+    return remote_compositor_bridge_.get();
+  }
+
+  virtual void DispatchDrawAndSwapCallbacks();
+  void SetTaskRunnerProviderForTesting(
+      std::unique_ptr<TaskRunnerProvider> task_runner_provider);
 
   // RemoteCompositorBridgeClient implementation.
   void BeginMainFrame() override;
 
+ private:
+  enum class FramePipelineStage { NONE, ANIMATE, UPDATE_LAYERS, COMMIT };
+
   void MainFrameRequested(FramePipelineStage requested_pipeline_stage);
   void ScheduleMainFrameIfNecessary();
   void MainFrameComplete();
-  void DispatchDrawAndSwapCallbacks();
   void SerializeCurrentState(proto::LayerTreeHost* layer_tree_host_proto);
 
   const int id_;

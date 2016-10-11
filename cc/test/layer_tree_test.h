@@ -134,9 +134,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   base::SingleThreadTaskRunner* MainThreadTaskRunner() {
     return main_task_runner_.get();
   }
-  Proxy* proxy() const {
-    return layer_tree_host_ ? layer_tree_host_->proxy() : NULL;
-  }
+  Proxy* proxy();
   TaskRunnerProvider* task_runner_provider() const;
   TaskGraphRunner* task_graph_runner() const {
     return task_graph_runner_.get();
@@ -181,7 +179,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   CompositorMode mode_;
 
   std::unique_ptr<LayerTreeHostClientForTesting> client_;
-  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host_;
+  std::unique_ptr<LayerTreeHost> layer_tree_host_;
+  LayerTreeHostInProcess* layer_tree_host_in_process_;
 
   bool beginning_ = false;
   bool end_when_begin_returns_ = false;
@@ -220,9 +219,19 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }                                                              \
   class MultiThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
+#define REMOTE_TEST_F(TEST_FIXTURE_NAME)                    \
+  TEST_F(TEST_FIXTURE_NAME, RunRemote_DelegatingRenderer) { \
+    RunTest(CompositorMode::REMOTE);                        \
+  }                                                         \
+  class RemoteDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
+
 #define SINGLE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME) \
   SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME);                \
   MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)
+
+#define SINGLE_MULTI_AND_REMOTE_TEST_F(TEST_FIXTURE_NAME) \
+  SINGLE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME);      \
+  REMOTE_TEST_F(TEST_FIXTURE_NAME)
 
 // Some tests want to control when notify ready for activation occurs,
 // but this is not supported in the single-threaded case.

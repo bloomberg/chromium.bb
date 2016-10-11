@@ -25,7 +25,7 @@ class LayerTreeHostProxyTest : public LayerTreeTest {
     return update_check_layer_.get();
   }
 
-  ProxyMain* GetProxyMain() const {
+  ProxyMain* GetProxyMain() {
     DCHECK(HasImplThread());
     return static_cast<ProxyMain*>(proxy());
   }

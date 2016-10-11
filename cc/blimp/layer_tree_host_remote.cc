@@ -428,6 +428,11 @@ void LayerTreeHostRemote::DispatchDrawAndSwapCallbacks() {
   client_->DidCompleteSwapBuffers();
 }
 
+void LayerTreeHostRemote::SetTaskRunnerProviderForTesting(
+    std::unique_ptr<TaskRunnerProvider> task_runner_provider) {
+  task_runner_provider_ = std::move(task_runner_provider);
+}
+
 void LayerTreeHostRemote::SerializeCurrentState(
     proto::LayerTreeHost* layer_tree_host_proto) {
   // We need to serialize only the inputs received from the embedder.

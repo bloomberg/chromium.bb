@@ -6733,7 +6733,7 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
   FakeContentLayerClient client_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskLayerWithDifferentBounds);
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeTestMaskLayerWithDifferentBounds);
 
 class LayerTreeTestPageScaleFlags : public LayerTreeTest {
  protected:
@@ -6804,7 +6804,7 @@ class LayerTreeTestPageScaleFlags : public LayerTreeTest {
   std::vector<int> not_affected_by_page_scale_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestPageScaleFlags);
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeTestPageScaleFlags);
 
 class LayerTreeHostTestDestroyWhileInitializingOutputSurface
     : public LayerTreeHostTest {
