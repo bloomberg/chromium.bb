@@ -140,6 +140,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       const gfx::Point& point,
       RenderWidgetHostViewBase* target_view) override;
 
+  bool IsRenderWidgetHostViewChildFrame() override;
+
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.
   ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac() const override;

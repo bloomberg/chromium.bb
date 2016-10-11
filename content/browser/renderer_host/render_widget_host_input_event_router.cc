@@ -90,7 +90,7 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     else
       last_mouse_move_target_ = nullptr;
 
-    if (!last_mouse_move_target_)
+    if (!last_mouse_move_target_ || view == last_mouse_move_root_view_)
       last_mouse_move_root_view_ = nullptr;
   }
 }
@@ -383,27 +383,36 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
   std::vector<RenderWidgetHostViewBase*> exited_views;
   RenderWidgetHostViewBase* cur_view = target;
   entered_views.push_back(cur_view);
-  while (cur_view != root_view) {
-    // Non-root RWHVs are guaranteed to be RenderWidgetHostViewChildFrames.
+  while (cur_view->IsRenderWidgetHostViewChildFrame()) {
     cur_view =
         static_cast<RenderWidgetHostViewChildFrame*>(cur_view)->GetParentView();
     // cur_view can possibly be nullptr for guestviews that are not currently
     // connected to the webcontents tree.
-    if (!cur_view)
-      break;
+    if (!cur_view) {
+      last_mouse_move_target_ = target;
+      last_mouse_move_root_view_ = root_view;
+      return;
+    }
     entered_views.push_back(cur_view);
   }
+  // Non-root RWHVs are guaranteed to be RenderWidgetHostViewChildFrames,
+  // as long as they are the only embeddable RWHVs.
+  DCHECK_EQ(cur_view, root_view);
 
   cur_view = last_mouse_move_target_;
   if (cur_view) {
     exited_views.push_back(cur_view);
-    while (cur_view != root_view) {
+    while (cur_view->IsRenderWidgetHostViewChildFrame()) {
       cur_view = static_cast<RenderWidgetHostViewChildFrame*>(cur_view)
                      ->GetParentView();
-      if (!cur_view)
-        break;
+      if (!cur_view) {
+        last_mouse_move_target_ = target;
+        last_mouse_move_root_view_ = root_view;
+        return;
+      }
       exited_views.push_back(cur_view);
     }
+    DCHECK_EQ(cur_view, root_view);
   }
 
   // This removes common ancestors from the root downward.

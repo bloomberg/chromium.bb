@@ -277,6 +277,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // entirely, which comes first.
   virtual bool IsRenderWidgetHostViewGuest();
 
+  // Subclass identifier for RenderWidgetHostViewChildFrames. This is useful
+  // to be able to know if this RWHV is embedded within another RWHV. If
+  // other kinds of embeddable RWHVs are created, this should be renamed to
+  // a more generic term -- in which case, static casts to RWHVChildFrame will
+  // need to also be resolved.
+  virtual bool IsRenderWidgetHostViewChildFrame();
+
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
   // TODO(ekaramad): Most of the IME methods should not stay virtual after IME

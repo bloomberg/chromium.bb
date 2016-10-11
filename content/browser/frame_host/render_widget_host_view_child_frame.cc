@@ -551,6 +551,10 @@ gfx::Point RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
       point, target_view, cc::SurfaceId(frame_sink_id_, local_frame_id_));
 }
 
+bool RenderWidgetHostViewChildFrame::IsRenderWidgetHostViewChildFrame() {
+  return true;
+}
+
 #if defined(OS_MACOSX)
 ui::AcceleratedWidgetMac*
 RenderWidgetHostViewChildFrame::GetAcceleratedWidgetMac() const {
