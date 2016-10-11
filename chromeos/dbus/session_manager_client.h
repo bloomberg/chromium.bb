@@ -128,8 +128,8 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // method. It receives |sessions| argument where the keys are cryptohome_ids
   // for all users that are currently active and |success| argument which
   // indicates whether or not the request succeded.
-  typedef base::Callback<void(const ActiveSessionsMap& sessions,
-                              bool success)> ActiveSessionsCallback;
+  using ActiveSessionsCallback =
+      base::Callback<void(const ActiveSessionsMap& sessions, bool success)>;
 
   // Enumerates active user sessions. Usually Chrome naturally keeps track of
   // active users when they are added into current session. When Chrome is
@@ -143,7 +143,8 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // RetrieveDeviceLocalAccountPolicy. Takes a serialized protocol buffer as
   // string.  Upon success, we will pass a protobuf to the callback.  On
   // failure, we will pass "".
-  typedef base::Callback<void(const std::string&)> RetrievePolicyCallback;
+  using RetrievePolicyCallback =
+      base::Callback<void(const std::string& protobuf)>;
 
   // Fetches the device policy blob stored by the session manager.  Upon
   // completion of the retrieve attempt, we will call the provided callback.
@@ -174,7 +175,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Used for StoreDevicePolicy, StorePolicyForUser and
   // StoreDeviceLocalAccountPolicy. Takes a boolean indicating whether the
   // operation was successful or not.
-  typedef base::Callback<void(bool)> StorePolicyCallback;
+  using StorePolicyCallback = base::Callback<void(bool success)>;
 
   // Attempts to asynchronously store |policy_blob| as device policy.  Upon
   // completion of the store attempt, we will call callback.
@@ -201,8 +202,8 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   virtual void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
                                const std::vector<std::string>& flags) = 0;
 
-  typedef base::Callback<void(const std::vector<std::string>& state_keys)>
-      StateKeysCallback;
+  using StateKeysCallback =
+      base::Callback<void(const std::vector<std::string>& state_keys)>;
 
   // Get the currently valid server-backed state keys for the device.
   // Server-backed state keys are opaque, device-unique, time-dependent,
@@ -215,13 +216,13 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
 
   // Used for several ARC methods.  Takes a boolean indicating whether the
   // operation was successful or not.
-  typedef base::Callback<void(bool)> ArcCallback;
+  using ArcCallback = base::Callback<void(bool success)>;
 
   // Used for GetArcStartTime. Takes a boolean indicating whether the
   // operation was successful or not and the ticks of ARC start time if it
   // is successful.
-  typedef base::Callback<void(bool success, base::TimeTicks ticks)>
-      GetArcStartTimeCallback;
+  using GetArcStartTimeCallback =
+      base::Callback<void(bool success, base::TimeTicks ticks)>;
 
   // Asynchronously checks if starting the ARC instance is available.
   // The result of the operation is reported through |callback|.
@@ -235,13 +236,12 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Running ARC requires some amount of disk space. LOW_FREE_DISK_SPACE will
   // be returned when there is not enough free disk space for ARC.
   // UNKNOWN_ERROR is returned for any other errors.
-  // TODO(hidehiko): Replace "typedef" by "using".
   enum class StartArcInstanceResult {
     SUCCESS,
     UNKNOWN_ERROR,
     LOW_FREE_DISK_SPACE,
   };
-  typedef base::Callback<void(StartArcInstanceResult)> StartArcInstanceCallback;
+  using StartArcInstanceCallback = base::Callback<void(StartArcInstanceResult)>;
   virtual void StartArcInstance(const cryptohome::Identification& cryptohome_id,
                                 bool disable_boot_completed_broadcast,
                                 const StartArcInstanceCallback& callback) = 0;
