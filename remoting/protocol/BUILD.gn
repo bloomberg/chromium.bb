@@ -165,6 +165,7 @@ static_library("protocol") {
     "v2_authenticator.h",
     "validating_authenticator.cc",
     "validating_authenticator.h",
+    "video_channel_state_observer.h",
     "video_renderer.h",
     "video_stats_stub.h",
     "video_stub.h",

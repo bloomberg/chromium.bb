@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {
@@ -56,15 +57,41 @@ int64_t GetRegionArea(const webrtc::DesktopRegion& region) {
 WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple()
     : pacing_bucket_(LeakyBucket::kUnlimitedDepth, 0),
       frame_processing_delay_us_(kStatsWindow),
-      updated_region_area_(kStatsWindow) {}
+      updated_region_area_(kStatsWindow),
+      weak_factory_(this) {}
 WebrtcFrameSchedulerSimple::~WebrtcFrameSchedulerSimple() {}
 
-void WebrtcFrameSchedulerSimple::Start(const base::Closure& capture_callback) {
+void WebrtcFrameSchedulerSimple::OnKeyFrameRequested() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  key_frame_request_ = true;
+  if (!capture_timer_.IsRunning())
+    ScheduleNextFrame(base::TimeTicks::Now());
+}
+
+void WebrtcFrameSchedulerSimple::OnChannelParameters(int packet_loss,
+                                                     base::TimeDelta rtt) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void WebrtcFrameSchedulerSimple::OnTargetBitrateChanged(int bitrate_kbps) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::TimeTicks now = base::TimeTicks::Now();
+  pacing_bucket_.UpdateRate(bitrate_kbps * 1000 / 8, now);
+  ScheduleNextFrame(now);
+}
+
+void WebrtcFrameSchedulerSimple::Start(
+    WebrtcDummyVideoEncoderFactory* video_encoder_factory,
+    const base::Closure& capture_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   capture_callback_ = capture_callback;
-  ScheduleNextFrame(base::TimeTicks::Now());
+  video_encoder_factory->SetVideoChannelStateObserver(
+      weak_factory_.GetWeakPtr());
 }
 
 void WebrtcFrameSchedulerSimple::Pause(bool pause) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   paused_ = pause;
   if (paused_) {
     capture_timer_.Stop();
@@ -73,19 +100,11 @@ void WebrtcFrameSchedulerSimple::Pause(bool pause) {
   }
 }
 
-void WebrtcFrameSchedulerSimple::SetKeyFrameRequest() {
-  key_frame_request_ = true;
-}
-
-void WebrtcFrameSchedulerSimple::SetTargetBitrate(int bitrate_kbps) {
-  base::TimeTicks now = base::TimeTicks::Now();
-  pacing_bucket_.UpdateRate(bitrate_kbps * 1000 / 8, now);
-  ScheduleNextFrame(now);
-}
-
 bool WebrtcFrameSchedulerSimple::GetEncoderFrameParams(
     const webrtc::DesktopFrame& frame,
     WebrtcVideoEncoder::FrameParams* params_out) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   base::TimeTicks now = base::TimeTicks::Now();
 
   if (frame.updated_region().is_empty() && !top_off_is_active_ &&
@@ -137,6 +156,8 @@ bool WebrtcFrameSchedulerSimple::GetEncoderFrameParams(
 void WebrtcFrameSchedulerSimple::OnFrameEncoded(
     const WebrtcVideoEncoder::EncodedFrame& encoded_frame,
     const webrtc::EncodedImageCallback::Result& send_result) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   base::TimeTicks now = base::TimeTicks::Now();
   pacing_bucket_.RefillOrSpill(encoded_frame.data.size(), now);
 
@@ -154,6 +175,8 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
 }
 
 void WebrtcFrameSchedulerSimple::ScheduleNextFrame(base::TimeTicks now) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Don't capture frames when paused or target bitrate is 0 or there is
   // no capture callback set.
   if (paused_ || pacing_bucket_.rate() == 0 || capture_callback_.is_null())
@@ -181,6 +204,8 @@ void WebrtcFrameSchedulerSimple::ScheduleNextFrame(base::TimeTicks now) {
 }
 
 void WebrtcFrameSchedulerSimple::CaptureNextFrame() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   last_capture_started_time_ = base::TimeTicks::Now();
   capture_callback_.Run();
 }

@@ -75,9 +75,6 @@ class WebrtcVideoStream : public VideoStream,
       std::unique_ptr<WebrtcVideoStream::FrameTimestamps> timestamps);
   void OnFrameEncoded(EncodedFrameWithTimestamps frame);
 
-  void SetKeyFrameRequest();
-  void SetTargetBitrate(int bitrate);
-
   // Capturer used to capture the screen.
   std::unique_ptr<webrtc::DesktopCapturer> capturer_;
   // Used to send across encoded frames.
@@ -99,8 +96,6 @@ class WebrtcVideoStream : public VideoStream,
   std::unique_ptr<FrameTimestamps> captured_frame_timestamps_;
 
   std::unique_ptr<WebrtcFrameScheduler> scheduler_;
-
-  bool received_first_frame_request_ = false;
 
   webrtc::DesktopSize frame_size_;
   webrtc::DesktopVector frame_dpi_;

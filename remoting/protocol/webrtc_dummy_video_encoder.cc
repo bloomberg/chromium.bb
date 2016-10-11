@@ -7,18 +7,23 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "remoting/protocol/video_channel_state_observer.h"
 
 namespace remoting {
 namespace protocol {
 
-WebrtcDummyVideoEncoder::WebrtcDummyVideoEncoder(webrtc::VideoCodecType codec)
-    : state_(kUninitialized), video_codec_type_(codec) {
-  VLOG(1) << "video codecType " << video_codec_type_;
-}
+WebrtcDummyVideoEncoder::WebrtcDummyVideoEncoder(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer)
+    : main_task_runner_(main_task_runner),
+      state_(kUninitialized),
+      video_channel_state_observer_(video_channel_state_observer) {}
 
 WebrtcDummyVideoEncoder::~WebrtcDummyVideoEncoder() {}
 
@@ -26,20 +31,12 @@ int32_t WebrtcDummyVideoEncoder::InitEncode(
     const webrtc::VideoCodec* codec_settings,
     int32_t number_of_cores,
     size_t max_payload_size) {
-  base::AutoLock lock(lock_);
   DCHECK(codec_settings);
-  VLOG(1) << "video codecType " << codec_settings->codecType << " width "
-          << codec_settings->width << " height " << codec_settings->height
-          << " startBitrate " << codec_settings->startBitrate << " maxBitrate "
-          << codec_settings->maxBitrate << " minBitrate "
-          << codec_settings->minBitrate << " targetBitrate "
-          << codec_settings->targetBitrate << " maxFramerate "
-          << codec_settings->maxFramerate;
-
-  int streamCount = codec_settings->numberOfSimulcastStreams;
+  base::AutoLock lock(lock_);
+  int stream_count = codec_settings->numberOfSimulcastStreams;
   // Validate request is to support a single stream.
-  if (streamCount > 1) {
-    for (int i = 0; i < streamCount; ++i) {
+  if (stream_count > 1) {
+    for (int i = 0; i < stream_count; ++i) {
       if (codec_settings->simulcastStream[i].maxBitrate != 0) {
         LOG(ERROR) << "Simulcast unsupported";
         return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
@@ -52,8 +49,8 @@ int32_t WebrtcDummyVideoEncoder::InitEncode(
 
 int32_t WebrtcDummyVideoEncoder::RegisterEncodeCompleteCallback(
     webrtc::EncodedImageCallback* callback) {
-  base::AutoLock lock(lock_);
   DCHECK(callback);
+  base::AutoLock lock(lock_);
   encoded_callback_ = callback;
   return WEBRTC_VIDEO_CODEC_OK;
 }
@@ -68,34 +65,38 @@ int32_t WebrtcDummyVideoEncoder::Encode(
     const webrtc::VideoFrame& frame,
     const webrtc::CodecSpecificInfo* codec_specific_info,
     const std::vector<webrtc::FrameType>* frame_types) {
-  base::AutoLock lock(lock_);
-  if (!key_frame_request_.is_null())
-    key_frame_request_.Run();
+  // WebrtcDummyVideoCapturer doesn't generate any video frames, so Encode() can
+  // be called only from VCMGenericEncoder::RequestFrame() to request a key
+  // frame.
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoChannelStateObserver::OnKeyFrameRequested,
+                            video_channel_state_observer_));
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
 int32_t WebrtcDummyVideoEncoder::SetChannelParameters(uint32_t packet_loss,
                                                       int64_t rtt) {
-  VLOG(1) << "WebrtcDummyVideoEncoder::SetChannelParameters "
-          << "loss:RTT " << packet_loss << ":" << rtt;
-  // Unused right now.
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoChannelStateObserver::OnChannelParameters,
+                            video_channel_state_observer_, packet_loss,
+                            base::TimeDelta::FromMilliseconds(rtt)));
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
 int32_t WebrtcDummyVideoEncoder::SetRates(uint32_t bitrate,
                                           uint32_t framerate) {
-  VLOG(1) << "WebrtcDummyVideoEncoder::SetRates bitrate:framerate " << bitrate
-          << ":" << framerate;
-  if (!target_bitrate_cb_.is_null())
-    target_bitrate_cb_.Run(bitrate);
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoChannelStateObserver::OnTargetBitrateChanged,
+                            video_channel_state_observer_, bitrate));
   // framerate is not expected to be valid given we never report captured
-  // frames
+  // frames.
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
 webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     const WebrtcVideoEncoder::EncodedFrame& frame,
     base::TimeTicks capture_time) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   uint8_t* buffer =
       reinterpret_cast<uint8_t*>(const_cast<char*>(frame.data.data()));
   size_t buffer_size = frame.data.size();
@@ -140,19 +141,8 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
                                            &header);
 }
 
-void WebrtcDummyVideoEncoder::SetKeyFrameRequestCallback(
-    const base::Closure& key_frame_request) {
-  base::AutoLock lock(lock_);
-  key_frame_request_ = key_frame_request;
-}
-
-void WebrtcDummyVideoEncoder::SetTargetBitrateCallback(
-    const TargetBitrateCallback& target_bitrate_cb) {
-  base::AutoLock lock(lock_);
-  target_bitrate_cb_ = target_bitrate_cb;
-}
-
-WebrtcDummyVideoEncoderFactory::WebrtcDummyVideoEncoderFactory() {
+WebrtcDummyVideoEncoderFactory::WebrtcDummyVideoEncoderFactory()
+    : main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   // TODO(isheriff): These do not really affect anything internally
   // in webrtc.
   codecs_.push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
@@ -165,32 +155,28 @@ WebrtcDummyVideoEncoderFactory::~WebrtcDummyVideoEncoderFactory() {
 
 webrtc::VideoEncoder* WebrtcDummyVideoEncoderFactory::CreateVideoEncoder(
     webrtc::VideoCodecType type) {
-  VLOG(2) << "WebrtcDummyVideoEncoderFactory::CreateVideoEncoder " << type;
-  DCHECK(type == webrtc::kVideoCodecVP8);
-  WebrtcDummyVideoEncoder* encoder = new WebrtcDummyVideoEncoder(type);
+  DCHECK_EQ(type, webrtc::kVideoCodecVP8);
+  WebrtcDummyVideoEncoder* encoder = new WebrtcDummyVideoEncoder(
+      main_task_runner_, video_channel_state_observer_);
   base::AutoLock lock(lock_);
-  encoder->SetKeyFrameRequestCallback(key_frame_request_);
-  encoder->SetTargetBitrateCallback(target_bitrate_cb_);
-  VLOG(1) << "Created " << encoder;
   encoders_.push_back(base::WrapUnique(encoder));
   return encoder;
 }
 
 const std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec>&
 WebrtcDummyVideoEncoderFactory::codecs() const {
-  VLOG(2) << "WebrtcDummyVideoEncoderFactory::codecs";
   return codecs_;
 }
 
 bool WebrtcDummyVideoEncoderFactory::EncoderTypeHasInternalSource(
     webrtc::VideoCodecType type) const {
-  VLOG(2) << "WebrtcDummyVideoEncoderFactory::EncoderTypeHasInternalSource";
+  // Returns true to directly provide encoded frames to webrtc.
   return true;
 }
 
 void WebrtcDummyVideoEncoderFactory::DestroyVideoEncoder(
     webrtc::VideoEncoder* encoder) {
-  VLOG(2) << "WebrtcDummyVideoEncoderFactory::DestroyVideoEncoder";
+  base::AutoLock lock(lock_);
   if (encoder == nullptr) {
     LOG(ERROR) << "Attempting to destroy null encoder";
     return;
@@ -201,13 +187,15 @@ void WebrtcDummyVideoEncoderFactory::DestroyVideoEncoder(
       return;
     }
   }
-  DCHECK(false) << "Asked to remove encoder not owned by factory";
+  NOTREACHED() << "Asked to remove encoder not owned by factory.";
 }
 
 webrtc::EncodedImageCallback::Result
 WebrtcDummyVideoEncoderFactory::SendEncodedFrame(
     const WebrtcVideoEncoder::EncodedFrame& frame,
     base::TimeTicks capture_time) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(lock_);
   if (encoders_.size() != 1) {
     LOG(ERROR) << "Unexpected number of encoders " << encoders_.size();
     return webrtc::EncodedImageCallback::Result(
@@ -216,30 +204,12 @@ WebrtcDummyVideoEncoderFactory::SendEncodedFrame(
   return encoders_.front()->SendEncodedFrame(frame, capture_time);
 }
 
-void WebrtcDummyVideoEncoderFactory::SetKeyFrameRequestCallback(
-    const base::Closure& key_frame_request) {
+void WebrtcDummyVideoEncoderFactory::SetVideoChannelStateObserver(
+    base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(encoders_.empty());
   base::AutoLock lock(lock_);
-  key_frame_request_ = key_frame_request;
-  if (encoders_.size() == 1) {
-    encoders_.front()->SetKeyFrameRequestCallback(key_frame_request);
-  } else {
-    LOG(ERROR) << "Dropping key frame request callback with unexpected"
-                  " number of encoders: "
-               << encoders_.size();
-  }
-}
-
-void WebrtcDummyVideoEncoderFactory::SetTargetBitrateCallback(
-    const TargetBitrateCallback& target_bitrate_cb) {
-  base::AutoLock lock(lock_);
-  target_bitrate_cb_ = target_bitrate_cb;
-  if (encoders_.size() == 1) {
-    encoders_.front()->SetTargetBitrateCallback(target_bitrate_cb);
-  } else {
-    LOG(ERROR) << "Dropping target bitrate request callback with unexpected"
-                  " number of encoders: "
-               << encoders_.size();
-  }
+  video_channel_state_observer_ = video_channel_state_observer;
 }
 
 }  // namespace protocol

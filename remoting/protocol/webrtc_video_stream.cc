@@ -23,24 +23,6 @@
 namespace remoting {
 namespace protocol {
 
-namespace {
-
-void PostTaskOnTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::Closure& task) {
-  task_runner->PostTask(FROM_HERE, task);
-}
-
-template <typename ParamType>
-void PostTaskOnTaskRunnerWithParam(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::Callback<void(ParamType param)>& task,
-    ParamType param) {
-  task_runner->PostTask(FROM_HERE, base::Bind(task, param));
-}
-
-}  // namespace
-
 const char kStreamLabel[] = "screen_stream";
 const char kVideoLabel[] = "screen_video";
 
@@ -122,24 +104,14 @@ void WebrtcVideoStream::Start(
   result = peer_connection_->AddStream(stream_.get());
   DCHECK(result);
 
-  // Register for PLI requests.
-  webrtc_transport_->video_encoder_factory()->SetKeyFrameRequestCallback(
-      base::Bind(&PostTaskOnTaskRunner, base::ThreadTaskRunnerHandle::Get(),
-                 base::Bind(&WebrtcVideoStream::SetKeyFrameRequest,
-                            weak_factory_.GetWeakPtr())));
-
-  // Register for target bitrate notifications.
-  webrtc_transport_->video_encoder_factory()->SetTargetBitrateCallback(
-      base::Bind(&PostTaskOnTaskRunnerWithParam<int>,
-                 base::ThreadTaskRunnerHandle::Get(),
-                 base::Bind(&WebrtcVideoStream::SetTargetBitrate,
-                            weak_factory_.GetWeakPtr())));
+  scheduler_.reset(new WebrtcFrameSchedulerSimple());
+  scheduler_->Start(
+      webrtc_transport_->video_encoder_factory(),
+      base::Bind(&WebrtcVideoStream::CaptureNextFrame, base::Unretained(this)));
 
   video_stats_dispatcher_.Init(webrtc_transport_->CreateOutgoingChannel(
                                    video_stats_dispatcher_.channel_name()),
                                this);
-
-  scheduler_.reset(new WebrtcFrameSchedulerSimple());
 }
 
 void WebrtcVideoStream::Pause(bool pause) {
@@ -167,26 +139,6 @@ void WebrtcVideoStream::SetLosslessColor(bool want_lossless) {
 void WebrtcVideoStream::SetObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observer_ = observer;
-}
-
-void WebrtcVideoStream::SetKeyFrameRequest() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  scheduler_->SetKeyFrameRequest();
-
-  // Create capture scheduler when the first key frame request is received.
-  if (!received_first_frame_request_) {
-    received_first_frame_request_ = true;
-    scheduler_->Start(base::Bind(&WebrtcVideoStream::CaptureNextFrame,
-                                 base::Unretained(this)));
-  }
-}
-
-void WebrtcVideoStream::SetTargetBitrate(int target_bitrate_kbps) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  VLOG(1) << "Set Target bitrate " << target_bitrate_kbps;
-  scheduler_->SetTargetBitrate(target_bitrate_kbps);
 }
 
 void WebrtcVideoStream::OnCaptureResult(
@@ -266,7 +218,6 @@ WebrtcVideoStream::EncodedFrameWithTimestamps WebrtcVideoStream::EncodeFrame(
 void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Send the frame itself.
   webrtc::EncodedImageCallback::Result result =
       webrtc_transport_->video_encoder_factory()->SendEncodedFrame(
           *frame.frame, frame.timestamps->capture_started_time);
@@ -275,8 +226,6 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
     LOG(ERROR) << "Failed to send video frame.";
     return;
   }
-
-  scheduler_->OnFrameEncoded(*frame.frame, result);
 
   // Send FrameStats message.
   if (video_stats_dispatcher_.is_connected()) {

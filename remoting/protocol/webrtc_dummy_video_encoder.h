@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_DUMMY_WEBRTC_VIDEO_ENCODER_H_
-#define REMOTING_PROTOCOL_DUMMY_WEBRTC_VIDEO_ENCODER_H_
+#ifndef REMOTING_PROTOCOL_WEBRTC_DUMMY_VIDEO_ENCODER_H_
+#define REMOTING_PROTOCOL_WEBRTC_DUMMY_VIDEO_ENCODER_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "remoting/codec/webrtc_video_encoder.h"
 #include "third_party/webrtc/media/engine/webrtcvideoencoderfactory.h"
@@ -17,21 +19,25 @@
 namespace remoting {
 namespace protocol {
 
-using TargetBitrateCallback = base::Callback<void(int)>;
+class VideoChannelStateObserver;
 
 // WebrtcDummyVideoEncoder implements webrtc::VideoEncoder interface for WebRTC.
 // It's responsible for getting  feedback on network bandwidth, latency & RTT
 // and passing this information to the WebrtcVideoStream through the callbacks
-// in WebrtcDummyVideoEncoderFactory. Video frames are captured encoded outside
-// of this dummy encoder (in WebrtcVideoEncoded called from WebrtcVideoStream).
-// They are passed to SendEncodedFrame() to be delivered to the network layer.
+// in WebrtcDummyVideoEncoderFactory. Video frames are captured and encoded
+// outside of this dummy encoder (in WebrtcVideoEncoder called from
+// WebrtcVideoStream). They are passed to SendEncodedFrame() to be delivered to
+// the network layer.
 class WebrtcDummyVideoEncoder : public webrtc::VideoEncoder {
  public:
   enum State { kUninitialized = 0, kInitialized };
-  explicit WebrtcDummyVideoEncoder(webrtc::VideoCodecType codec);
+
+  WebrtcDummyVideoEncoder(
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer);
   ~WebrtcDummyVideoEncoder() override;
 
-  // webrtc::VideoEncoder overrides
+  // webrtc::VideoEncoder overrides.
   int32_t InitEncode(const webrtc::VideoCodec* codec_settings,
                      int32_t number_of_cores,
                      size_t max_payload_size) override;
@@ -47,19 +53,16 @@ class WebrtcDummyVideoEncoder : public webrtc::VideoEncoder {
   webrtc::EncodedImageCallback::Result SendEncodedFrame(
       const WebrtcVideoEncoder::EncodedFrame& frame,
       base::TimeTicks capture_time);
-  void SetKeyFrameRequestCallback(const base::Closure& key_frame_request);
-  void SetTargetBitrateCallback(const TargetBitrateCallback& target_bitrate_cb);
 
  private:
-  // Protects |encoded_callback_|, |key_frame_request_|,
-  // |target_bitrate_cb_| and |state_|.
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
+  // Protects |encoded_callback_| and |state_|.
   base::Lock lock_;
   State state_;
-  webrtc::EncodedImageCallback* encoded_callback_;
+  webrtc::EncodedImageCallback* encoded_callback_ = nullptr;
 
-  base::Closure key_frame_request_;
-  TargetBitrateCallback target_bitrate_cb_;
-  webrtc::VideoCodecType video_codec_type_;
+  base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer_;
 };
 
 // This is the external encoder factory implementation that is passed to
@@ -71,12 +74,11 @@ class WebrtcDummyVideoEncoderFactory
   WebrtcDummyVideoEncoderFactory();
   ~WebrtcDummyVideoEncoderFactory() override;
 
+  // cricket::WebRtcVideoEncoderFactory interface.
   webrtc::VideoEncoder* CreateVideoEncoder(
       webrtc::VideoCodecType type) override;
   const std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec>& codecs()
       const override;
-
-  // Returns true to directly provide encoded frames to webrtc
   bool EncoderTypeHasInternalSource(webrtc::VideoCodecType type) const override;
   void DestroyVideoEncoder(webrtc::VideoEncoder* encoder) override;
 
@@ -84,19 +86,21 @@ class WebrtcDummyVideoEncoderFactory
       const WebrtcVideoEncoder::EncodedFrame& packet,
       base::TimeTicks capture_time);
 
-  void SetKeyFrameRequestCallback(const base::Closure& key_frame_request);
-  void SetTargetBitrateCallback(const TargetBitrateCallback& target_bitrate_cb);
+  void SetVideoChannelStateObserver(
+      base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer);
 
  private:
-  // Protects |key_frame_request_| and |target_bitrate_cb_|.
-  base::Lock lock_;
-  base::Closure key_frame_request_;
-  TargetBitrateCallback target_bitrate_cb_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
   std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec> codecs_;
+
+  // Protects |video_channel_state_observer_| and |encoders_|.
+  base::Lock lock_;
+  base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer_;
   std::vector<std::unique_ptr<WebrtcDummyVideoEncoder>> encoders_;
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_DUMMY_WEBRTC_VIDEO_ENCODER_H_
+#endif  // REMOTING_PROTOCOL_WEBRTC_DUMMY_VIDEO_ENCODER_H_
