@@ -44,10 +44,7 @@ Panel.init = function() {
   this.searchInput_ = $('search');
 
   /** @type {Element} @private */
-  this.brailleTextElement_ = $('braille-text');
-
-  /** @type {Element} @private */
-  this.brailleCellsElement_ = $('braille-cells');
+  this.brailleTableElement_ = $('braille-table');
 
   /**
    * The array of top-level menus.
@@ -187,8 +184,19 @@ Panel.exec = function(command) {
       this.speechElement_.innerHTML += escapeForHtml(command.data);
       break;
     case PanelCommandType.UPDATE_BRAILLE:
-      this.brailleTextElement_.textContent = command.data.text;
-      this.brailleCellsElement_.textContent = command.data.braille;
+      var groups = command.data.groups;
+      this.brailleTableElement_.deleteRow(0);
+      this.brailleTableElement_.deleteRow(0);
+      var row1 = this.brailleTableElement_.insertRow(-1);
+      var row2 = this.brailleTableElement_.insertRow(-1);
+
+      for (var i = 0; i < groups.length; i++) {
+        var topCell = row1.insertCell(-1);
+        var bottomCell = row2.insertCell(-1);
+        topCell.innerHTML = groups[i][0];
+        bottomCell.innerHTML = groups[i][1];
+      }
+
       break;
     case PanelCommandType.ENABLE_MENUS:
       Panel.onEnableMenus();

@@ -91,6 +91,13 @@ CvoxBrailleDisplayManagerUnitTest.prototype = {
     this.writtenCells.length = 0;
     assertTrue(content instanceof ArrayBuffer);
     assertTrue(content.byteLength == 0);
+  },
+
+  /**
+   * Asserts that the groups passed in actually match what we expect.
+   */
+  assertGroupsValid: function(groups, expected) {
+    assertEquals(JSON.stringify(groups), JSON.stringify(expected));
   }
 };
 
@@ -185,7 +192,6 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'NoDisplay', function() {
   assertEquals(0, this.writtenCells.length);
 });
 
-
 /**
  * Tests the typical sequence: setContent, setTranslator, setContent.
  */
@@ -201,7 +207,6 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'BasicSetContent', function() {
   manager.setContent(this.NAV_BRAILLE);
   this.assertDisplayPositionAndClear(0);
 });
-
 
 /**
  * Tests that setting empty content clears the display.
@@ -254,4 +259,96 @@ TEST_F('CvoxBrailleDisplayManagerUnitTest', 'CursorAndPanning', function() {
   // Selection on all of the line.
   manager.setContent(createNavBrailleWithCursor(0, text.length));
   this.assertDisplayPositionAndClear(0, 0, this.DISPLAY_SIZE);
+});
+
+/**
+ * Tests that the grouping algorithm works with one text character that maps
+ * to one braille cell.
+ */
+TEST_F('CvoxBrailleDisplayManagerUnitTest', 'BasicGroup', function() {
+  var text = 'a';
+  var translated = '1';
+  var mapping = [0];
+  var expected = [['a','1']];
+
+  var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
+                                                     translated, text, mapping);
+  this.assertGroupsValid(groups, expected);
+});
+
+/**
+ * Tests that the grouping algorithm works with one text character that maps
+ * to multiple braille cells.
+ */
+TEST_F('CvoxBrailleDisplayManagerUnitTest', 'OneRtoManyB', function() {
+  var text = 'A';
+  var translated = '11';
+  var mapping = [0,0];
+  var expected = [['A', '11']];
+
+  var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
+                                                     translated, text, mapping);
+  this.assertGroupsValid(groups, expected);
+});
+
+/**
+ * Tests that the grouping algorithm works with one braille cell that maps
+ * to multiple text characters.
+ */
+TEST_F('CvoxBrailleDisplayManagerUnitTest', 'OneBtoManyR', function() {
+  var text = 'knowledge';
+  var translated = '1';
+  var mapping = [0];
+  var expected = [['knowledge', '1']];
+
+  var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
+                                                     translated, text, mapping);
+  this.assertGroupsValid(groups, expected);
+});
+
+/**
+ * Tests that the grouping algorithm works with one string that on both ends,
+ * have text characters that map to multiple braille cells.
+ */
+TEST_F('CvoxBrailleDisplayManagerUnitTest', 'OneRtoManyB_BothEnds', function() {
+  var text = 'AbbC';
+  var translated = 'X122X3';
+  var mapping = [0,0,1,2,3,3];
+  var expected = [['A', 'X1'], ['b', '2'],['b', '2'], ['C', 'X3']];
+
+  var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
+                                                     translated, text, mapping);
+  this.assertGroupsValid(groups, expected);
+});
+
+/**
+ * Tests that the grouping algorithm works with one string that on both ends,
+ * have braille cells that map to multiple text characters.
+ */
+TEST_F('CvoxBrailleDisplayManagerUnitTest', 'OneBtoManyR_BothEnds', function() {
+  var text = 'knowledgehappych';
+  var translated = '1234456';
+  var mapping = [0, 9, 10, 11, 12, 13, 14];
+  var expected = [['knowledge', '1'], ['h', '2'], ['a', '3'], ['p', '4'],
+      ['p', '4'], ['y', '5'], ['ch', '6']];
+
+  var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(translated,
+                                                                 text, mapping);
+  this.assertGroupsValid(groups, expected);
+});
+
+/**
+ * Tests that the grouping algorithm works with one  string that has both types
+ * of mapping.
+ */
+TEST_F('CvoxBrailleDisplayManagerUnitTest', 'RandB_Random', function() {
+  var text = 'knowledgeIsPower';
+  var translated = '1X23X45678';
+  var mapping = [0, 9, 9, 10, 11, 11, 12, 13, 14, 15];
+  var expected = [['knowledge', '1'], ['I', 'X2'], ['s', '3'], ['P', 'X4'],
+                           ['o', '5'], ['w', '6'], ['e', '7'], ['r', '8']];
+
+  var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
+                                                     translated, text, mapping);
+  this.assertGroupsValid(groups, expected);
 });

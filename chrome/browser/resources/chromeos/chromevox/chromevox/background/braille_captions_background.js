@@ -53,23 +53,28 @@ cvox.BrailleCaptionsBackground.isEnabled = function() {
   return localStorage[self.PREF_KEY] === String(true);
 };
 
-
 /**
  * @param {string} text Text of the shown braille.
  * @param {ArrayBuffer} cells Braille cells shown on the display.
+ * @param {Array<number>} brailleToText Map of Braille letters to the first
+ *     index of corresponding text letter.
  */
-cvox.BrailleCaptionsBackground.setContent = function(text, cells) {
+cvox.BrailleCaptionsBackground.setContent = function(text, cells,
+    brailleToText) {
   var self = cvox.BrailleCaptionsBackground;
   // Convert the cells to Unicode braille pattern characters.
   var byteBuf = new Uint8Array(cells);
   var brailleChars = '';
+
   for (var i = 0; i < byteBuf.length; ++i) {
     brailleChars += String.fromCharCode(
         self.BRAILLE_UNICODE_BLOCK_START | byteBuf[i]);
   }
 
+  var groups = this.groupBrailleAndText(brailleChars, text, brailleToText);
+
   if (cvox.ChromeVox.isChromeOS) {
-    var data = {text: text, braille: brailleChars};
+    var data = {groups: groups};
     (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, data)).send();
   } else {
     cvox.ExtensionBridge.send({
@@ -80,6 +85,33 @@ cvox.BrailleCaptionsBackground.setContent = function(text, cells) {
   }
 };
 
+/**
+ * @param {string} brailleChars Braille characters shown on the display.
+ * @param {string} text Text of the shown braille.
+ * @param {Array<number>} brailleToText Map of Braille letters to the first
+ *     index of corresponding text letter.
+ * @return {Array}
+ */
+cvox.BrailleCaptionsBackground.groupBrailleAndText = function(brailleChars,
+    text, brailleToText) {
+  var brailleBuf = '';
+  var groups = [];
+  var textIndex = 0;
+  for (var i = 0; i < brailleChars.length; ++i) {
+    if ((i != 0) && ((brailleToText[i] != textIndex))) {
+      groups.push([text.substr(textIndex, brailleToText[i] - textIndex),
+          brailleBuf]);
+      brailleBuf = '';
+      textIndex = brailleToText[i];
+    }
+    brailleBuf += brailleChars.charAt(i);
+  }
+  // Puts the rest of the text into the last group.
+  if (brailleBuf.length > 0) {
+    groups.push([text.substr(textIndex), brailleBuf]);
+  }
+  return groups;
+};
 
 /**
  * Sets whether the overlay should be active.
@@ -100,7 +132,6 @@ cvox.BrailleCaptionsBackground.setActive = function(newValue) {
     cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(msg));
   }
 };
-
 
 /**
  * Returns a display state representing the state of the captions feature.

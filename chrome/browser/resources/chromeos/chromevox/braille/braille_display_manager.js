@@ -199,7 +199,8 @@ cvox.BrailleDisplayManager.prototype.refresh_ = function() {
     var start = this.brailleToTextPosition_(viewPort.start);
     var end = this.brailleToTextPosition_(viewPort.end);
     cvox.BrailleCaptionsBackground.setContent(
-        this.content_.text.toString().substring(start, end), buf);
+        this.content_.text.toString().substring(start, end), buf,
+        this.brailleToText_);
   }
 };
 
