@@ -110,6 +110,11 @@ inline LayoutPoint& operator+=(LayoutPoint& a, const IntSize& b) {
   return a;
 }
 
+ALWAYS_INLINE LayoutPoint& operator-=(LayoutPoint& a, const LayoutPoint& b) {
+  a.move(-b.x(), -b.y());
+  return a;
+}
+
 ALWAYS_INLINE LayoutPoint& operator-=(LayoutPoint& a, const LayoutSize& b) {
   a.move(-b.width(), -b.height());
   return a;

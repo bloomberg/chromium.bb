@@ -580,6 +580,13 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(
     unsigned pages =
         ceilf(view->documentRect().height() / view->pageLogicalHeight());
     LayoutPoint paginationOffset;
+
+    // The fixed position object is offset from the top of the page, so remove
+    // any scroll offset.
+    LayoutPoint offsetFromRoot;
+    m_paintLayer.convertToLayerCoords(paintingInfo.rootLayer, offsetFromRoot);
+    paginationOffset -= offsetFromRoot - m_paintLayer.location();
+
     for (unsigned i = 0; i < pages; i++) {
       PaintLayerFragment fragment;
       fragment.backgroundRect = paintingInfo.paintDirtyRect;
