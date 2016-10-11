@@ -553,14 +553,15 @@ Window::~Window() {
     DCHECK(children_.empty() || children_.front() != child);
   }
 
+  // Notify observers before clearing properties (order matches aura::Window).
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
+
   // Clear properties.
   for (auto& pair : prop_map_) {
     if (pair.second.deallocator)
       (*pair.second.deallocator)(pair.second.value);
   }
   prop_map_.clear();
-
-  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
 
   // Invoke after observers so that can clean up any internal state observers
   // may have changed.

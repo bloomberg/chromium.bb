@@ -250,7 +250,6 @@ source_set("unittests") {
     "test/wm_test_helper.cc",
     "test/wm_test_helper.h",
     "window_manager_unittest.cc",
-    "wm/mru_window_tracker_unittest.cc",
   ]
 
   deps = [

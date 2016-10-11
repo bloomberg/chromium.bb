@@ -104,6 +104,8 @@ ui::mojom::ShowState MojomWindowShowStateFromUI(ui::WindowShowState state) {
 WmWindowProperty WmWindowPropertyFromUI(const std::string& ui_window_key) {
   if (ui_window_key == ui::mojom::WindowManager::kAlwaysOnTop_Property)
     return WmWindowProperty::ALWAYS_ON_TOP;
+  if (ui_window_key == ui::mojom::WindowManager::kExcludeFromMru_Property)
+    return WmWindowProperty::EXCLUDE_FROM_MRU;
   if (ui_window_key == ui::mojom::WindowManager::kShelfIconResourceId_Property)
     return WmWindowProperty::SHELF_ICON_RESOURCE_ID;
   if (ui_window_key == ui::mojom::WindowManager::kShelfItemType_Property)
@@ -371,15 +373,14 @@ bool WmWindowMus::IsSystemModal() const {
 
 bool WmWindowMus::GetBoolProperty(WmWindowProperty key) {
   switch (key) {
-    case WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY:
-      return snap_children_to_pixel_boundary_;
-
     case WmWindowProperty::ALWAYS_ON_TOP:
       return IsAlwaysOnTop();
 
     case WmWindowProperty::EXCLUDE_FROM_MRU:
-      NOTIMPLEMENTED();
-      return false;
+      return GetExcludeFromMru(window_);
+
+    case WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY:
+      return snap_children_to_pixel_boundary_;
 
     default:
       NOTREACHED();
@@ -836,7 +837,7 @@ void WmWindowMus::Unminimize() {
 }
 
 void WmWindowMus::SetExcludedFromMru(bool excluded_from_mru) {
-  NOTIMPLEMENTED();
+  SetExcludeFromMru(window_, excluded_from_mru);
 }
 
 std::vector<WmWindow*> WmWindowMus::GetChildren() {

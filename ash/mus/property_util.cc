@@ -265,5 +265,17 @@ int64_t GetInitialDisplayId(const ui::Window::SharedProperties& properties) {
                                   : mojo::ConvertTo<int64_t>(iter->second);
 }
 
+void SetExcludeFromMru(ui::Window* window, bool value) {
+  window->SetSharedProperty<bool>(
+      ui::mojom::WindowManager::kExcludeFromMru_Property, value);
+}
+
+bool GetExcludeFromMru(const ui::Window* window) {
+  return window->HasSharedProperty(
+             ui::mojom::WindowManager::kExcludeFromMru_Property) &&
+         window->GetSharedProperty<bool>(
+             ui::mojom::WindowManager::kExcludeFromMru_Property);
+}
+
 }  // namespace mus
 }  // namespace ash

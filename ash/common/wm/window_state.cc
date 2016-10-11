@@ -112,7 +112,7 @@ bool WindowState::IsUserPositionable() const {
 }
 
 bool WindowState::ShouldBeExcludedFromMru() const {
-  return (window_->GetBoolProperty(ash::WmWindowProperty::EXCLUDE_FROM_MRU));
+  return window_->GetBoolProperty(ash::WmWindowProperty::EXCLUDE_FROM_MRU);
 }
 
 bool WindowState::CanMaximize() const {

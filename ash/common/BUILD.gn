@@ -5,6 +5,7 @@
 source_set("unittests") {
   testonly = true
   sources = [
+    "../wm/mru_window_tracker_unittest.cc",
     "accelerators/accelerator_table_unittest.cc",
     "wm/container_finder_unittest.cc",
     "wm/workspace/workspace_layout_manager_unittest.cc",

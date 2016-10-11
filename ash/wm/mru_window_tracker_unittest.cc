@@ -4,30 +4,25 @@
 
 #include "ash/common/wm/mru_window_tracker.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/test/ash_test.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
-#include "ash/wm/window_state_aura.h"
-#include "ash/wm/window_util.h"
-#include "ui/aura/window.h"
+#include "ash/common/wm_window.h"
 #include "ui/base/hit_test.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 
-class MruWindowTrackerTest : public test::AshTestBase {
+class MruWindowTrackerTest : public AshTest {
  public:
   MruWindowTrackerTest() {}
   ~MruWindowTrackerTest() override {}
 
-  aura::Window* CreateWindow() {
-    return CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 400, 400));
+  std::unique_ptr<WindowOwner> CreateTestWindow() {
+    return AshTest::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   }
 
-  ash::MruWindowTracker* mru_window_tracker() {
+  MruWindowTracker* mru_window_tracker() {
     return WmShell::Get()->mru_window_tracker();
   }
 
@@ -37,98 +32,110 @@ class MruWindowTrackerTest : public test::AshTestBase {
 
 // Basic test that the activation order is tracked.
 TEST_F(MruWindowTrackerTest, Basic) {
-  std::unique_ptr<aura::Window> w1(CreateWindow());
-  std::unique_ptr<aura::Window> w2(CreateWindow());
-  std::unique_ptr<aura::Window> w3(CreateWindow());
-  wm::ActivateWindow(w3.get());
-  wm::ActivateWindow(w2.get());
-  wm::ActivateWindow(w1.get());
+  std::unique_ptr<WindowOwner> w1_owner(CreateTestWindow());
+  WmWindow* w1 = w1_owner->window();
+  std::unique_ptr<WindowOwner> w2_owner(CreateTestWindow());
+  WmWindow* w2 = w2_owner->window();
+  std::unique_ptr<WindowOwner> w3_owner(CreateTestWindow());
+  WmWindow* w3 = w3_owner->window();
+  w3->Activate();
+  w2->Activate();
+  w1->Activate();
 
-  aura::Window::Windows window_list =
-      WmWindowAura::ToAuraWindows(mru_window_tracker()->BuildMruWindowList());
-  EXPECT_EQ(w1.get(), window_list[0]);
-  EXPECT_EQ(w2.get(), window_list[1]);
-  EXPECT_EQ(w3.get(), window_list[2]);
+  WmWindow::Windows window_list = mru_window_tracker()->BuildMruWindowList();
+  EXPECT_EQ(w1, window_list[0]);
+  EXPECT_EQ(w2, window_list[1]);
+  EXPECT_EQ(w3, window_list[2]);
 }
 
 // Test that minimized windows are not treated specially.
 TEST_F(MruWindowTrackerTest, MinimizedWindowsAreLru) {
-  std::unique_ptr<aura::Window> w1(CreateWindow());
-  std::unique_ptr<aura::Window> w2(CreateWindow());
-  std::unique_ptr<aura::Window> w3(CreateWindow());
-  std::unique_ptr<aura::Window> w4(CreateWindow());
-  std::unique_ptr<aura::Window> w5(CreateWindow());
-  std::unique_ptr<aura::Window> w6(CreateWindow());
-  wm::ActivateWindow(w6.get());
-  wm::ActivateWindow(w5.get());
-  wm::ActivateWindow(w4.get());
-  wm::ActivateWindow(w3.get());
-  wm::ActivateWindow(w2.get());
-  wm::ActivateWindow(w1.get());
+  // TODO(sky): fix me. Fails in mash because of http://crbug.com/654887.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
 
-  wm::GetWindowState(w1.get())->Minimize();
-  wm::GetWindowState(w4.get())->Minimize();
-  wm::GetWindowState(w5.get())->Minimize();
+  std::unique_ptr<WindowOwner> w1_owner(CreateTestWindow());
+  WmWindow* w1 = w1_owner->window();
+  std::unique_ptr<WindowOwner> w2_owner(CreateTestWindow());
+  WmWindow* w2 = w2_owner->window();
+  std::unique_ptr<WindowOwner> w3_owner(CreateTestWindow());
+  WmWindow* w3 = w3_owner->window();
+  std::unique_ptr<WindowOwner> w4_owner(CreateTestWindow());
+  WmWindow* w4 = w4_owner->window();
+  std::unique_ptr<WindowOwner> w5_owner(CreateTestWindow());
+  WmWindow* w5 = w5_owner->window();
+  std::unique_ptr<WindowOwner> w6_owner(CreateTestWindow());
+  WmWindow* w6 = w6_owner->window();
+  w6->Activate();
+  w5->Activate();
+  w4->Activate();
+  w3->Activate();
+  w2->Activate();
+  w1->Activate();
+
+  w1->GetWindowState()->Minimize();
+  w4->GetWindowState()->Minimize();
+  w5->GetWindowState()->Minimize();
 
   // By minimizing the first window, we activate w2 which will move it to the
   // front of the MRU queue.
-  EXPECT_TRUE(wm::GetWindowState(w2.get())->IsActive());
+  EXPECT_TRUE(w2->IsActive());
 
-  aura::Window::Windows window_list =
-      WmWindowAura::ToAuraWindows(mru_window_tracker()->BuildMruWindowList());
-  EXPECT_EQ(w2.get(), window_list[0]);
-  EXPECT_EQ(w1.get(), window_list[1]);
-  EXPECT_EQ(w3.get(), window_list[2]);
-  EXPECT_EQ(w4.get(), window_list[3]);
-  EXPECT_EQ(w5.get(), window_list[4]);
-  EXPECT_EQ(w6.get(), window_list[5]);
+  WmWindow::Windows window_list = mru_window_tracker()->BuildMruWindowList();
+  EXPECT_EQ(w2, window_list[0]);
+  EXPECT_EQ(w1, window_list[1]);
+  EXPECT_EQ(w3, window_list[2]);
+  EXPECT_EQ(w4, window_list[3]);
+  EXPECT_EQ(w5, window_list[4]);
+  EXPECT_EQ(w6, window_list[5]);
 }
 
 // Tests that windows being dragged are only in the WindowList once.
 TEST_F(MruWindowTrackerTest, DraggedWindowsInListOnlyOnce) {
-  std::unique_ptr<aura::Window> w1(CreateWindow());
-  wm::ActivateWindow(w1.get());
+  std::unique_ptr<WindowOwner> w1_owner(CreateTestWindow());
+  WmWindow* w1 = w1_owner->window();
+  w1->Activate();
 
   // Start dragging the window.
-  wm::GetWindowState(w1.get())->CreateDragDetails(
+  w1->GetWindowState()->CreateDragDetails(
       gfx::Point(), HTRIGHT, aura::client::WINDOW_MOVE_SOURCE_TOUCH);
 
   // During a drag the window is reparented by the Docked container.
-  aura::Window* drag_container = Shell::GetContainer(
-      Shell::GetTargetRootWindow(), kShellWindowId_DockedContainer);
-  drag_container->AddChild(w1.get());
-  EXPECT_TRUE(wm::GetWindowState(w1.get())->is_dragged());
+  WmWindow* drag_container = w1->GetRootWindow()->GetChildByShellWindowId(
+      kShellWindowId_DockedContainer);
+  drag_container->AddChild(w1);
+  EXPECT_TRUE(w1->GetWindowState()->is_dragged());
 
   // The dragged window should only be in the list once.
-  aura::Window::Windows window_list = WmWindowAura::ToAuraWindows(
-      mru_window_tracker()->BuildWindowListIgnoreModal());
-  EXPECT_EQ(1, std::count(window_list.begin(), window_list.end(), w1.get()));
+  WmWindow::Windows window_list =
+      mru_window_tracker()->BuildWindowListIgnoreModal();
+  EXPECT_EQ(1, std::count(window_list.begin(), window_list.end(), w1));
 }
 
 // Tests that windows with propery of |kExcludeFromMruKey|==true are not in the
 // window list.
-TEST_F(MruWindowTrackerTest, ExcludedFormMru) {
-  std::unique_ptr<aura::Window> w1(CreateWindow());
-  std::unique_ptr<aura::Window> w2(CreateWindow());
-  std::unique_ptr<aura::Window> w3(CreateWindow());
+TEST_F(MruWindowTrackerTest, ExcludedFromMru) {
+  std::unique_ptr<WindowOwner> w1_owner(CreateTestWindow());
+  WmWindow* w1 = w1_owner->window();
+  std::unique_ptr<WindowOwner> w2_owner(CreateTestWindow());
+  WmWindow* w2 = w2_owner->window();
+  std::unique_ptr<WindowOwner> w3_owner(CreateTestWindow());
+  WmWindow* w3 = w3_owner->window();
 
-  wm::GetWindowState(w1.get())->SetExcludedFromMru(true);
-  wm::GetWindowState(w3.get())->SetExcludedFromMru(true);
+  w1->GetWindowState()->SetExcludedFromMru(true);
+  w3->GetWindowState()->SetExcludedFromMru(true);
 
-  wm::ActivateWindow(w3.get());
-  wm::ActivateWindow(w2.get());
-  wm::ActivateWindow(w1.get());
+  w3->Activate();
+  w2->Activate();
+  w1->Activate();
 
   // Expect the windows with |kExcludeFromMruKey| property being true are not
   // in the list.
-  aura::Window::Windows window_list =
-      WmWindowAura::ToAuraWindows(mru_window_tracker()->BuildMruWindowList());
+  WmWindow::Windows window_list = mru_window_tracker()->BuildMruWindowList();
 
-  EXPECT_EQ(window_list.end(),
-            std::find(window_list.begin(), window_list.end(), w1.get()));
-  EXPECT_EQ(window_list.end(),
-            std::find(window_list.begin(), window_list.end(), w3.get()));
-  EXPECT_EQ(1u, window_list.size());
+  // As |w1| and |w3| are excluded from the list, only |w2| should be present.
+  ASSERT_EQ(1u, window_list.size());
+  EXPECT_EQ(w2, window_list[0]);
 }
 
 }  // namespace ash

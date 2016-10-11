@@ -88,6 +88,12 @@ bool ShouldRenderParentTitleArea(ui::Window* window);
 // kInvalidDisplayID.
 int64_t GetInitialDisplayId(const ui::Window::SharedProperties& properties);
 
+// Manipulates the kExcludeFromMru_Property property.
+void SetExcludeFromMru(ui::Window* window, bool value);
+
+// Returns true if the property is set and true, otherwise false.
+bool GetExcludeFromMru(const ui::Window* window);
+
 }  // namespace mus
 }  // namespace ash
 

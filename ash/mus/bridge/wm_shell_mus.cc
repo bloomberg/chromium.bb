@@ -453,7 +453,7 @@ void WmShellMus::OnWindowTreeFocusChanged(ui::Window* gained_focus,
   if (gained_active)
     set_root_window_for_new_windows(gained_active->GetRootWindow());
 
-  WmWindow* lost_active = GetToplevelAncestor(gained_focus);
+  WmWindow* lost_active = GetToplevelAncestor(lost_focus);
   if (gained_active == lost_active)
     return;
 

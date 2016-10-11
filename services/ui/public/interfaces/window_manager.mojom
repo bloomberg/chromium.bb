@@ -29,6 +29,9 @@ interface WindowManager {
   // window. This is typically done if the client wants to handle immersive
   // themselves. Type: bool.
   const string kDisableImmersive_Property = "prop:disable_immersive";
+  // Used to explicitly control whether a window appears in the most recently
+  // used list of windows. Type: bool.
+  const string kExcludeFromMru_Property = "prop:exclude_from_mru";
   // Initial bounds to create the window at. If empty the WindowManager decides
   // the initial bounds.
   const string kInitialBounds_Property = "prop:initial_bounds";
