@@ -44,6 +44,8 @@ void VrInputManager::SendGesture(VrGesture gesture) {
                     gesture.details.scroll.delta.x,
                     gesture.details.scroll.delta.y, gesture.type);
   } else if (gesture.type == WebInputEvent::GestureTap) {
+    // TODO(asimjour): Set the correct source for cardboard trigger. See
+    // crbug.com/654832
     SendClickEvent(event_time_milliseconds, gesture.details.buttons.pos.x,
                    gesture.details.buttons.pos.y);
   } else if (gesture.type == WebInputEvent::MouseMove ||
@@ -218,7 +220,7 @@ WebGestureEvent VrInputManager::MakeGestureEvent(WebInputEvent::Type type,
   result.x = x / dpi_scale_;
   result.y = y / dpi_scale_;
   result.timeStampSeconds = time_ms / 1000.0;
-  result.sourceDevice = blink::WebGestureDeviceTouchscreen;
+  result.sourceDevice = blink::WebGestureDeviceTouchpad;
 
   return result;
 }
