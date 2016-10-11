@@ -1226,8 +1226,10 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # Tests added from W3C auto import bot
-
 crbug.com/626703 [ Win10 ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure ]
+crbug.com/626703 imported/wpt/pointerevents/pointerevent_element_haspointercapture-manual.html [ Timeout Failure ]
+crbug.com/626703 imported/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
+crbug.com/626703 imported/wpt/web-animations/timing-model/animations/set-the-target-effect-of-an-animation.html [ Failure ]
 
 crbug.com/646323 [ Mac ] editing/selection/modify_move/move_backward_line_import_crash.html [ Crash Timeout ]
 crbug.com/646323 [ Win Linux ] editing/selection/modify_move/move_backward_line_import_crash.html [ Crash ]

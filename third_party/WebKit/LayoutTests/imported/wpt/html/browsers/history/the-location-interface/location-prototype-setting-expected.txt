@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL [[SetPrototypeOf]] on a location object should return false assert_throws: function "function () {
+      Object.setPrototypeOf(location, {});
+    }" did not throw
+Harness: the test ran to completion.
+

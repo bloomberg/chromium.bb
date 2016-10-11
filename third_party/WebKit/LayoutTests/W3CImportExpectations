@@ -760,3 +760,10 @@ imported/wpt/html/semantics/document-metadata/the-base-element/base_srcdoc.html 
 # Untriaged: Tests don't complete.
 imported/wpt/html/semantics/document-metadata/the-style-element/style-error-01.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe-allowfullscreen.html [ Skip ]
+imported/wpt/svg/linking/scripted [ Skip ]
+imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_escaping-1.html [ Skip ]
+imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_escaping-2.html [ Skip ]
+imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_escaping-3.html [ Skip ]
+imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-1.html [ Skip ]
+imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-2.html [ Skip ]
+imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-3.html [ Skip ]

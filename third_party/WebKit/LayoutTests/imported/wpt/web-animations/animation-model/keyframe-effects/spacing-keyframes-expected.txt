@@ -15,5 +15,8 @@ FAIL Test paced spacing using shorthand property where only the longhand compone
 FAIL Test falling back to distribute spacing if all keyframe miss some components anim.effect.getKeyframes is not a function
 FAIL Test paced spacing only for keyframes specifying all longhand components, and falling back to distribute spacing for the reset anim.effect.getKeyframes is not a function
 FAIL Test paced spacing only for keyframes specifying all some components, and falling back to distribute spacing for the reset with some specific offsets anim.effect.getKeyframes is not a function
+FAIL Test paced spacing by setter anim.effect.getKeyframes is not a function
+FAIL Test distribute spacing by setter anim.effect.getKeyframes is not a function
+FAIL Test paced spacing by changing the paced property anim.effect.getKeyframes is not a function
 Harness: the test ran to completion.
 
