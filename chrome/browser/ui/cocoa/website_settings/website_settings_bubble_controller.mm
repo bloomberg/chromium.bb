@@ -236,6 +236,10 @@ bool IsInternalURL(const GURL& url) {
   return self;
 }
 
+- (Profile*)profile {
+  return Profile::FromBrowserContext(webContents_->GetBrowserContext());
+}
+
 - (void)windowWillClose:(NSNotification*)notification {
   if (presenter_.get())
     presenter_->OnUIClosing();
@@ -737,12 +741,14 @@ bool IsInternalURL(const GURL& url) {
   base::scoped_nsobject<PermissionSelectorButton> button(
       [[PermissionSelectorButton alloc] initWithPermissionInfo:permissionInfo
                                                         forURL:url
-                                                  withCallback:callback]);
+                                                  withCallback:callback
+                                                       profile:[self profile]]);
 
   // Determine the largest possible size for this button.
-  CGFloat maxTitleWidth = [button
-      maxTitleWidthForContentSettingsType:permissionInfo.type
-                       withDefaultSetting:permissionInfo.default_setting];
+  CGFloat maxTitleWidth =
+      [button maxTitleWidthForContentSettingsType:permissionInfo.type
+                               withDefaultSetting:permissionInfo.default_setting
+                                          profile:[self profile]];
 
   // Ensure the containing view is large enough to contain the button with its
   // widest possible title.

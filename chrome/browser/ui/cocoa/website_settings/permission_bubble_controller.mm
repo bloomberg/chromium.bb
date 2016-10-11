@@ -84,7 +84,8 @@ const NSInteger kFullscreenLeftOffset = 40;
 - (id)initForURL:(const GURL&)url
          allowed:(BOOL)allow
            index:(int)index
-        delegate:(PermissionPrompt::Delegate*)delegate;
+        delegate:(PermissionPrompt::Delegate*)delegate
+         profile:(Profile*)profile;
 
 // Returns the maximum width of its possible titles.
 - (CGFloat)maximumTitleWidth;
@@ -95,7 +96,8 @@ const NSInteger kFullscreenLeftOffset = 40;
 - (id)initForURL:(const GURL&)url
          allowed:(BOOL)allow
            index:(int)index
-        delegate:(PermissionPrompt::Delegate*)delegate {
+        delegate:(PermissionPrompt::Delegate*)delegate
+         profile:(Profile*)profile {
   if (self = [super initWithFrame:NSZeroRect pullsDown:NO]) {
     ContentSetting setting =
         allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
@@ -113,7 +115,8 @@ const NSInteger kFullscreenLeftOffset = 40;
                                                   [blockSelf title])];
         });
 
-    menuModel_.reset(new PermissionMenuModel(url, setting, changeCallback));
+    menuModel_.reset(
+        new PermissionMenuModel(profile, url, setting, changeCallback));
     menuController_.reset([[MenuController alloc] initWithModel:menuModel_.get()
                                          useWithPopUpButtonCell:NO]);
     [self setMenu:[menuController_ menu]];
@@ -579,7 +582,8 @@ const NSInteger kFullscreenLeftOffset = 40;
       [[AllowBlockMenuButton alloc] initForURL:request->GetOrigin()
                                        allowed:allow
                                          index:index
-                                      delegate:delegate_]);
+                                      delegate:delegate_
+                                       profile:browser_->profile()]);
   return button.autorelease();
 }
 

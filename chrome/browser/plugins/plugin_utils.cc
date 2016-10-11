@@ -5,9 +5,11 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 
 #include "base/values.h"
+#include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/plugin_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/common/webplugininfo.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -70,7 +72,7 @@ void GetPluginContentSettingInternal(
   // For non-JavaScript treated plugins (Flash): unless the user has explicitly
   // ALLOWed plugins, return BLOCK for any non-HTTP and non-FILE origin.
   if (!use_javascript_setting && *setting != CONTENT_SETTING_ALLOW &&
-      base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins) &&
+      PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map) &&
       !main_frame_url.SchemeIsHTTPOrHTTPS() && !main_frame_url.SchemeIsFile()) {
     *setting = CONTENT_SETTING_BLOCK;
   }
@@ -106,4 +108,22 @@ ContentSetting PluginUtils::GetFlashPluginContentSetting(
                                   main_frame_origin, plugin_url, kFlashPluginID,
                                   &plugin_setting, nullptr, is_managed);
   return plugin_setting;
+}
+
+// static
+bool PluginUtils::ShouldPreferHtmlOverPlugins(
+    const HostContentSettingsMap* host_content_settings_map) {
+  std::string provider_id;
+  ContentSetting default_setting =
+      host_content_settings_map->GetDefaultContentSetting(
+          CONTENT_SETTINGS_TYPE_PLUGINS, &provider_id);
+  ALLOW_UNUSED_LOCAL(default_setting);
+
+  // Working around a policy issue - do not allow PreferHtml if there is any
+  // policy for the plugin default setting. crbug.com/654072.
+  if (provider_id == site_settings::kPolicyProviderId)
+    return false;
+
+  // Fine. No policy interferes.
+  return base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins);
 }

@@ -57,7 +57,7 @@ void FlashDownloadInterception::InterceptFlashDownloadNavigation(
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
       host_content_settings_map, url::Origin(source_url), source_url, nullptr);
   flash_setting = PluginsFieldTrial::EffectiveContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
+      host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
 
   if (flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
     PermissionManager* manager = PermissionManager::Get(profile);
@@ -78,7 +78,7 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
     const GURL& source_url,
     const GURL& target_url,
     bool has_user_gesture) {
-  if (!base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins))
+  if (!PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map))
     return false;
 
   if (!has_user_gesture)
@@ -92,7 +92,7 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
       host_content_settings_map, url::Origin(source_url), source_url, nullptr);
   flash_setting = PluginsFieldTrial::EffectiveContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
+      host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
 
   return flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
          flash_setting == CONTENT_SETTING_BLOCK;

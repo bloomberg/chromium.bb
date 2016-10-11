@@ -4,9 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/website_settings/permission_selector_button.h"
 
-#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 
 @interface PermissionSelectorButton (Testing)
 - (NSMenu*)permissionMenu;
@@ -29,10 +31,11 @@ class PermissionSelectorButtonTest : public CocoaTest {
     GURL test_url("http://www.google.com");
     PermissionMenuModel::ChangeCallback callback = base::Bind(
         &PermissionSelectorButtonTest::Callback, base::Unretained(this));
-    view_.reset(
-        [[PermissionSelectorButton alloc] initWithPermissionInfo:test_info
-                                                          forURL:test_url
-                                                    withCallback:callback]);
+    view_.reset([[PermissionSelectorButton alloc]
+        initWithPermissionInfo:test_info
+                        forURL:test_url
+                  withCallback:callback
+                       profile:&profile_]);
     [[test_window() contentView] addSubview:view_];
   }
 
@@ -40,6 +43,9 @@ class PermissionSelectorButtonTest : public CocoaTest {
     EXPECT_TRUE(permission.type == kTestPermissionType);
     got_callback_ = true;
   }
+
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
 
   bool got_callback_;
   base::scoped_nsobject<PermissionSelectorButton> view_;

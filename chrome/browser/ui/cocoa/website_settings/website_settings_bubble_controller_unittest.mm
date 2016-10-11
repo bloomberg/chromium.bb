@@ -10,6 +10,9 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_web_contents_factory.h"
 #include "net/test/test_certificate_data.h"
 #include "testing/gtest_mac.h"
 
@@ -131,7 +134,8 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     [controller_ setDefaultWindowWidth:default_width];
     [controller_ initWithParentWindow:test_window()
               websiteSettingsUIBridge:bridge_
-                          webContents:nil
+                          webContents:web_contents_factory_.CreateWebContents(
+                                          &profile_)
                                   url:GURL("https://www.google.com")
                    isDevToolsDisabled:NO];
     window_ = [controller_ window];
@@ -201,6 +205,10 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     ChosenObjectInfoList chosen_object_info_list;
     bridge_->SetPermissionInfo(permission_info_list, chosen_object_info_list);
   }
+
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
+  content::TestWebContentsFactory web_contents_factory_;
 
   WebsiteSettingsBubbleControllerForTesting* controller_;  // Weak, owns self.
   NSWindow* window_;  // Weak, owned by controller.

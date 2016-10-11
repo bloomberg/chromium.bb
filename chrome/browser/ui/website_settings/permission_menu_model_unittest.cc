@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -23,21 +25,30 @@ class TestCallback {
   int current_;
 };
 
+class PermissionMenuModelTest : public testing::Test {
+ protected:
+  TestingProfile* profile() { return &profile_; }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
+};
+
 }  // namespace
 
-TEST(PermissionMenuModelTest, TestDefault) {
+TEST_F(PermissionMenuModelTest, TestDefault) {
   TestCallback callback;
   WebsiteSettingsUI::PermissionInfo permission;
   permission.type = CONTENT_SETTINGS_TYPE_COOKIES;
   permission.setting = CONTENT_SETTING_ALLOW;
   permission.default_setting = CONTENT_SETTING_ALLOW;
   permission.is_incognito = false;
-  PermissionMenuModel model(
-      GURL("http://www.google.com"), permission, callback.callback());
+  PermissionMenuModel model(profile(), GURL("http://www.google.com"),
+                            permission, callback.callback());
   EXPECT_EQ(3, model.GetItemCount());
 }
 
-TEST(PermissionMenuModelTest, TestDefaultMediaHttp) {
+TEST_F(PermissionMenuModelTest, TestDefaultMediaHttp) {
   for (int i = 0; i < 2; ++i) {
     ContentSettingsType type = i ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
                                  : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
@@ -47,44 +58,43 @@ TEST(PermissionMenuModelTest, TestDefaultMediaHttp) {
     permission.setting = CONTENT_SETTING_ALLOW;
     permission.default_setting = CONTENT_SETTING_ALLOW;
     permission.is_incognito = false;
-    PermissionMenuModel model(
-        GURL("http://www.google.com"), permission, callback.callback());
+    PermissionMenuModel model(profile(), GURL("http://www.google.com"),
+                              permission, callback.callback());
     EXPECT_EQ(2, model.GetItemCount());
   }
 }
 
-TEST(PermissionMenuModelTest, TestAllowBlock) {
+TEST_F(PermissionMenuModelTest, TestAllowBlock) {
   TestCallback callback;
-  PermissionMenuModel model(GURL("http://www.google.com"),
-                            CONTENT_SETTING_ALLOW,
-                            callback.callback());
+  PermissionMenuModel model(profile(), GURL("http://www.google.com"),
+                            CONTENT_SETTING_ALLOW, callback.callback());
   EXPECT_EQ(2, model.GetItemCount());
 }
 
-TEST(PermissionMenuModelTest, TestFullscreenMouseLockFileUrl) {
+TEST_F(PermissionMenuModelTest, TestFullscreenMouseLockFileUrl) {
   TestCallback callback;
   WebsiteSettingsUI::PermissionInfo permission;
   permission.type = CONTENT_SETTINGS_TYPE_FULLSCREEN;
   permission.setting = CONTENT_SETTING_ASK;
   permission.default_setting = CONTENT_SETTING_ASK;
   permission.is_incognito = false;
-  PermissionMenuModel fullscreen_model(GURL("file:///test.html"), permission,
-                                       callback.callback());
+  PermissionMenuModel fullscreen_model(profile(), GURL("file:///test.html"),
+                                       permission, callback.callback());
   EXPECT_EQ(1, fullscreen_model.GetItemCount());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK),
       fullscreen_model.GetLabelAt(0));
 
   permission.type = CONTENT_SETTINGS_TYPE_MOUSELOCK;
-  PermissionMenuModel mouselock_model(GURL("file:///test.html"), permission,
-                                      callback.callback());
+  PermissionMenuModel mouselock_model(profile(), GURL("file:///test.html"),
+                                      permission, callback.callback());
   EXPECT_EQ(1, mouselock_model.GetItemCount());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK),
       fullscreen_model.GetLabelAt(0));
 }
 
-TEST(PermissionMenuModelTest, TestIncognitoNotifications) {
+TEST_F(PermissionMenuModelTest, TestIncognitoNotifications) {
   TestCallback callback;
   WebsiteSettingsUI::PermissionInfo permission;
   permission.type = CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
@@ -92,12 +102,12 @@ TEST(PermissionMenuModelTest, TestIncognitoNotifications) {
   permission.default_setting = CONTENT_SETTING_ASK;
 
   permission.is_incognito = false;
-  PermissionMenuModel regular_model(GURL("https://www.google.com"), permission,
-                                    callback.callback());
+  PermissionMenuModel regular_model(profile(), GURL("https://www.google.com"),
+                                    permission, callback.callback());
   EXPECT_EQ(3, regular_model.GetItemCount());
 
   permission.is_incognito = true;
-  PermissionMenuModel incognito_model(GURL("https://www.google.com"),
+  PermissionMenuModel incognito_model(profile(), GURL("https://www.google.com"),
                                       permission, callback.callback());
   EXPECT_EQ(2, incognito_model.GetItemCount());
 }

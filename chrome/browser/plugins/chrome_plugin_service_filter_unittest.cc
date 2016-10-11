@@ -396,11 +396,13 @@ TEST_F(ChromePluginServiceFilterTest,
                                 incognito->GetResourceContext(), flash_plugin));
 }
 
-TEST_F(ChromePluginServiceFilterTest, BlockIfManagedSetting) {
+// If there is an enterprise managed setting, we fall back to the behavior that
+// would occur if kPreferHtmlOverPlugins was disabled (i.e. click-to-play).
+// Flash should be advertised to the page.
+TEST_F(ChromePluginServiceFilterTest, C2PIfManagedSetting) {
   content::WebPluginInfo flash_plugin(
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
-  base::HistogramTester histograms;
 
   // Activate PreferHtmlOverPlugins.
   base::test::ScopedFeatureList feature_list;
@@ -412,22 +414,18 @@ TEST_F(ChromePluginServiceFilterTest, BlockIfManagedSetting) {
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   SiteEngagementService* service = SiteEngagementService::Get(profile());
-  // Reaching 30.0 engagement should allow Flash.
   GURL url("http://www.google.com");
   url::Origin main_frame_origin(url);
-  service->ResetScoreForURL(url, 30.0);
-  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
-                                profile()->GetResourceContext(), flash_plugin));
-  histograms.ExpectUniqueSample(
-      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 30, 1);
+  // 0 engagement would usually ensure that flash isn't advertised to the page.
+  service->ResetScoreForURL(url, 0);
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
 
-  // Enterprise ASK setting should block Flash from being advertised.
+  // Enterprise ASK setting should result in C2P behavior.
   syncable_prefs::TestingPrefServiceSyncable* prefs =
       profile()->GetTestingPrefService();
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
                         new base::FundamentalValue(CONTENT_SETTING_ASK));
-  EXPECT_FALSE(IsPluginAvailable(
-      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
-  histograms.ExpectUniqueSample(
-      ChromePluginServiceFilter::kEngagementNoSettingHistogram, 30, 2);
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
+                                profile()->GetResourceContext(), flash_plugin));
 }

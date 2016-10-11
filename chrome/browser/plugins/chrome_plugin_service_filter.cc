@@ -43,9 +43,11 @@ class ProfileContentSettingObserver : public content_settings::Observer {
                                const ContentSettingsPattern& secondary_pattern,
                                ContentSettingsType content_type,
                                std::string resource_identifier) override {
-    DCHECK(base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins));
-    if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS)
+    if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+        PluginUtils::ShouldPreferHtmlOverPlugins(
+            HostContentSettingsMapFactory::GetForProfile(profile_))) {
       PluginService::GetInstance()->PurgePluginListCache(profile_, false);
+    }
   }
 
  private:
@@ -83,13 +85,11 @@ ChromePluginServiceFilter::ContextInfo::ContextInfo(
     : plugin_prefs(plugin_prefs),
       host_content_settings_map(host_content_settings_map),
       observer(ProfileContentSettingObserver(profile)) {
-  if (base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins))
-    host_content_settings_map->AddObserver(&observer);
+  host_content_settings_map->AddObserver(&observer);
 }
 
 ChromePluginServiceFilter::ContextInfo::~ContextInfo() {
-  if (base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins))
-    host_content_settings_map->RemoveObserver(&observer);
+  host_content_settings_map->RemoveObserver(&observer);
 }
 
 ChromePluginServiceFilter::OverriddenPlugin::OverriddenPlugin()
@@ -208,7 +208,8 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
   // If PreferHtmlOverPlugins is enabled and the plugin is Flash, we do
   // additional checks.
   if (plugin->name == base::ASCIIToUTF16(content::kFlashPluginName) &&
-      base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
+      PluginUtils::ShouldPreferHtmlOverPlugins(
+          context_info->host_content_settings_map.get())) {
     // Check the content setting first, and always respect the ALLOW or BLOCK
     // state. When IsPluginAvailable() is called to check whether a plugin
     // should be advertised, |url| has the same origin as |main_frame_origin|.
@@ -220,7 +221,7 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
     ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
         settings_map, main_frame_origin, plugin_content_url, &is_managed);
     flash_setting = PluginsFieldTrial::EffectiveContentSetting(
-        CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
+        settings_map, CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
     double engagement = SiteEngagementService::GetScoreFromSettings(
         settings_map, main_frame_origin.GetURL());
 

@@ -12,6 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -1289,7 +1291,8 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 }
 
-void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
+void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
+                            Profile* profile) {
   LocalizedString localized_strings[] = {
       {"addSiteHeader", IDS_SETTINGS_ADD_SITE_HEADER},
       {"addSiteLink", IDS_SETTINGS_ADD_SITE_LINK},
@@ -1488,7 +1491,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 
-  if (base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
+  if (PluginUtils::ShouldPreferHtmlOverPlugins(
+          HostContentSettingsMapFactory::GetForProfile(profile))) {
     LocalizedString flash_strings[] = {
         {"siteSettingsFlashAskBefore",
          IDS_SETTINGS_SITE_SETTINGS_FLASH_ASK_BEFORE_RUNNING},
@@ -1705,7 +1709,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddSearchEnginesStrings(html_source);
   AddSearchInSettingsStrings(html_source);
   AddSearchStrings(html_source);
-  AddSiteSettingsStrings(html_source);
+  AddSiteSettingsStrings(html_source, profile);
 #if !defined(OS_CHROMEOS)
   AddSystemStrings(html_source);
 #endif

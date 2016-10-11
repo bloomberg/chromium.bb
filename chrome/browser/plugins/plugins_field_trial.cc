@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -24,6 +25,7 @@ const char* PluginsFieldTrial::kSiteEngagementThresholdForFlashKey =
 
 // static
 ContentSetting PluginsFieldTrial::EffectiveContentSetting(
+    const HostContentSettingsMap* host_content_settings_map,
     ContentSettingsType type,
     ContentSetting setting) {
   if (type != CONTENT_SETTINGS_TYPE_PLUGINS ||
@@ -33,7 +35,7 @@ ContentSetting PluginsFieldTrial::EffectiveContentSetting(
 
   // For Plugins, ASK is obsolete. Show as BLOCK or, if PreferHtmlOverPlugins
   // feature is enabled, as DETECT_IMPORTANT_CONTENT to reflect actual behavior.
-  return base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)
+  return PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map)
              ? ContentSetting::CONTENT_SETTING_DETECT_IMPORTANT_CONTENT
              : ContentSetting::CONTENT_SETTING_BLOCK;
 }

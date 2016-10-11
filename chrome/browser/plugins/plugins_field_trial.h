@@ -21,8 +21,10 @@ class PluginsFieldTrial {
 
   // Returns the effective content setting for plugins. Passes non-plugin
   // content settings through without modification.
-  static ContentSetting EffectiveContentSetting(ContentSettingsType type,
-                                                ContentSetting setting);
+  static ContentSetting EffectiveContentSetting(
+      const HostContentSettingsMap* host_content_settings_map,
+      ContentSettingsType type,
+      ContentSetting setting);
 
   // Returns the engagement cutoff for permitting Flash to run without a prompt.
   static double GetSiteEngagementThresholdForFlash();

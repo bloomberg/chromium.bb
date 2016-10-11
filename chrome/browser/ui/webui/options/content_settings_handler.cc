@@ -33,6 +33,7 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -515,7 +516,9 @@ void ContentSettingsHandler::GetLocalizedValues(
   // TODO(tommycli): When the HTML5 By Default feature flag is on, we want to
   // display strings that begin with "Ask...", even though the setting remains
   // DETECT. Once this feature is finalized, then we migrate the setting to ASK.
-  bool is_hbd = base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  bool is_hbd = PluginUtils::ShouldPreferHtmlOverPlugins(
+      HostContentSettingsMapFactory::GetForProfile(profile));
   static OptionsStringResource flash_strings[] = {
       {"pluginsDetectImportantContent",
        is_hbd ? IDS_FLASH_ASK_RECOMMENDED_RADIO
@@ -738,13 +741,14 @@ void ContentSettingsHandler::OnGetPermissionSettingsCompleted(
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(
     ContentSettingsType type) {
   std::string provider_id;
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetProfile());
   ContentSetting default_setting =
-      HostContentSettingsMapFactory::GetForProfile(GetProfile())
-          ->GetDefaultContentSetting(type, &provider_id);
+      host_content_settings_map->GetDefaultContentSetting(type, &provider_id);
 
 #if defined(ENABLE_PLUGINS)
-  default_setting =
-      PluginsFieldTrial::EffectiveContentSetting(type, default_setting);
+  default_setting = PluginsFieldTrial::EffectiveContentSetting(
+      host_content_settings_map, type, default_setting);
 #endif
 
   // Camera and microphone default content settings cannot be set by the policy.

@@ -325,7 +325,8 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   // TODO(tommycli): Remove once we deprecate the plugin ASK policy.
   bool legacy_ask_user = plugin_setting == CONTENT_SETTING_ASK;
   plugin_setting = PluginsFieldTrial::EffectiveContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);
+      host_content_settings_map_, CONTENT_SETTINGS_TYPE_PLUGINS,
+      plugin_setting);
 
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
   DCHECK(plugin_setting != CONTENT_SETTING_ASK);
@@ -366,7 +367,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
 
   if (plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
       (plugin_setting == CONTENT_SETTING_ALLOW &&
-       base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins) &&
+       PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_) &&
        !base::FeatureList::IsEnabled(features::kRunAllFlashInAllowMode))) {
     *status = ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
   } else if (plugin_setting == CONTENT_SETTING_BLOCK) {
@@ -444,7 +445,7 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
     i = 0;
     *status = ChromeViewHostMsg_GetPluginInfo_Status::kDisabled;
 
-    if (base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins) &&
+    if (PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_) &&
         matching_plugins[0].name ==
             base::ASCIIToUTF16(content::kFlashPluginName)) {
       // TODO(tommycli): This assumes that Flash can no longer be disabled

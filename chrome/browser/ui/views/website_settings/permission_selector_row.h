@@ -19,6 +19,8 @@
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
 
+class Profile;
+
 namespace internal {
 class ComboboxModelAdapter;
 class PermissionCombobox;
@@ -36,7 +38,8 @@ class MenuRunner;
 // control whether that access is granted.
 class PermissionSelectorRow : public views::View {
  public:
-  PermissionSelectorRow(const GURL& url,
+  PermissionSelectorRow(Profile* profile,
+                        const GURL& url,
                         const WebsiteSettingsUI::PermissionInfo& permission);
 
   void AddObserver(PermissionSelectorRowObserver* observer);
@@ -56,6 +59,8 @@ class PermissionSelectorRow : public views::View {
   void InitializeComboboxView(
       views::GridLayout* layout,
       const WebsiteSettingsUI::PermissionInfo& permission);
+
+  Profile* profile_;
 
   // Model for the permission's menu.
   std::unique_ptr<PermissionMenuModel> menu_model_;

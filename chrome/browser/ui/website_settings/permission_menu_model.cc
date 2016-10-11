@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -11,10 +13,15 @@
 #include "ui/base/l10n/l10n_util.h"
 
 PermissionMenuModel::PermissionMenuModel(
+    Profile* profile,
     const GURL& url,
     const WebsiteSettingsUI::PermissionInfo& info,
     const ChangeCallback& callback)
-    : ui::SimpleMenuModel(this), permission_(info), callback_(callback) {
+    : ui::SimpleMenuModel(this),
+      host_content_settings_map_(
+          HostContentSettingsMapFactory::GetForProfile(profile)),
+      permission_(info),
+      callback_(callback) {
   DCHECK(!callback_.is_null());
   base::string16 label;
 
@@ -22,7 +29,8 @@ PermissionMenuModel::PermissionMenuModel(
 
 #if defined(ENABLE_PLUGINS)
   effective_default_setting = PluginsFieldTrial::EffectiveContentSetting(
-      permission_.type, permission_.default_setting);
+      host_content_settings_map_, permission_.type,
+      permission_.default_setting);
 #endif  // defined(ENABLE_PLUGINS)
 
   switch (effective_default_setting) {
@@ -43,7 +51,7 @@ PermissionMenuModel::PermissionMenuModel(
       // HTML5 by Default, Chrome will ask before running Flash on most sites.
       // Once the feature flag is gone, migrate the actual setting to ASK.
       label = l10n_util::GetStringUTF16(
-          base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)
+          PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_)
               ? IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK
               : IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_DETECT_IMPORTANT_CONTENT);
       break;
@@ -83,7 +91,7 @@ PermissionMenuModel::PermissionMenuModel(
   // same as any other permission with ASK, i.e. there is no ASK exception.
   // Once the feature flag is gone, remove this block of code entirely.
   if (permission_.type == CONTENT_SETTINGS_TYPE_PLUGINS &&
-      !base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
+      !PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_)) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_DETECT_IMPORTANT_CONTENT);
     AddCheckItem(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, label);
@@ -97,10 +105,14 @@ PermissionMenuModel::PermissionMenuModel(
   }
 }
 
-PermissionMenuModel::PermissionMenuModel(const GURL& url,
+PermissionMenuModel::PermissionMenuModel(Profile* profile,
+                                         const GURL& url,
                                          ContentSetting setting,
                                          const ChangeCallback& callback)
-    : ui::SimpleMenuModel(this), callback_(callback) {
+    : ui::SimpleMenuModel(this),
+      host_content_settings_map_(
+          HostContentSettingsMapFactory::GetForProfile(profile)),
+      callback_(callback) {
   DCHECK(setting == CONTENT_SETTING_ALLOW || setting == CONTENT_SETTING_BLOCK);
   permission_.type = CONTENT_SETTINGS_TYPE_DEFAULT;
   permission_.setting = setting;
@@ -117,8 +129,8 @@ bool PermissionMenuModel::IsCommandIdChecked(int command_id) const {
   ContentSetting setting = permission_.setting;
 
 #if defined(ENABLE_PLUGINS)
-  setting = PluginsFieldTrial::EffectiveContentSetting(permission_.type,
-                                                       permission_.setting);
+  setting = PluginsFieldTrial::EffectiveContentSetting(
+      host_content_settings_map_, permission_.type, permission_.setting);
 #endif  // defined(ENABLE_PLUGINS)
 
   return setting == command_id;

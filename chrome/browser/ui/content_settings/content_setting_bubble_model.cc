@@ -23,6 +23,7 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
+#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
@@ -202,7 +203,7 @@ void ContentSettingSimpleBubbleModel::SetCustomLink() {
     // When Flash has been hidden from the plugin list, it is impossible to
     // dynamically load all the plugins on the page.
     if (setting == CONTENT_SETTING_BLOCK &&
-        base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
+        PluginUtils::ShouldPreferHtmlOverPlugins(map)) {
       return;
     }
 
@@ -397,7 +398,8 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   bool flash_hidden_from_plugin_list =
       content_type() == CONTENT_SETTINGS_TYPE_PLUGINS &&
       setting == CONTENT_SETTING_BLOCK &&
-      base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins);
+      PluginUtils::ShouldPreferHtmlOverPlugins(
+          HostContentSettingsMapFactory::GetForProfile(profile()));
   set_radio_group_enabled(setting_source == SETTING_SOURCE_USER &&
                           !flash_hidden_from_plugin_list);
 

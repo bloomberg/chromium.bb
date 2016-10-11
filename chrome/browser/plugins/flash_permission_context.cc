@@ -25,11 +25,13 @@ FlashPermissionContext::~FlashPermissionContext() {}
 ContentSetting FlashPermissionContext::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-      HostContentSettingsMapFactory::GetForProfile(profile()),
-      url::Origin(embedding_origin), requesting_origin, nullptr);
+      host_content_settings_map, url::Origin(embedding_origin),
+      requesting_origin, nullptr);
   flash_setting = PluginsFieldTrial::EffectiveContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
+      host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
   if (flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT)
     return CONTENT_SETTING_ASK;
   return flash_setting;

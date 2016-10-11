@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
 #include "base/macros.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
@@ -229,6 +231,7 @@ base::string16 WebsiteSettingsUI::PermissionValueToUIString(
 
 // static
 base::string16 WebsiteSettingsUI::PermissionActionToUIString(
+    Profile* profile,
     ContentSettingsType type,
     ContentSetting setting,
     ContentSetting default_setting,
@@ -238,13 +241,15 @@ base::string16 WebsiteSettingsUI::PermissionActionToUIString(
     effective_setting = default_setting;
 
 #if defined(ENABLE_PLUGINS)
-  effective_setting =
-      PluginsFieldTrial::EffectiveContentSetting(type, effective_setting);
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  effective_setting = PluginsFieldTrial::EffectiveContentSetting(
+      host_content_settings_map, type, effective_setting);
 
   // Display the UI string for ASK instead of DETECT for HTML5 by Default.
   // TODO(tommycli): Once HTML5 by Default is shipped and the feature flag
   // is removed, just migrate the actual content setting to ASK.
-  if (base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins) &&
+  if (PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map) &&
       effective_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
     effective_setting = CONTENT_SETTING_ASK;
   }

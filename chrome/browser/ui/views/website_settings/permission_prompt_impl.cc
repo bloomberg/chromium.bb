@@ -64,7 +64,8 @@ class PermissionCombobox : public views::MenuButton,
     virtual void PermissionSelectionChanged(int index, bool allowed) = 0;
   };
 
-  PermissionCombobox(Listener* listener,
+  PermissionCombobox(Profile* profile,
+                     Listener* listener,
                      int index,
                      const GURL& url,
                      ContentSetting setting);
@@ -89,7 +90,8 @@ class PermissionCombobox : public views::MenuButton,
   std::unique_ptr<views::MenuRunner> menu_runner_;
 };
 
-PermissionCombobox::PermissionCombobox(Listener* listener,
+PermissionCombobox::PermissionCombobox(Profile* profile,
+                                       Listener* listener,
                                        int index,
                                        const GURL& url,
                                        ContentSetting setting)
@@ -97,6 +99,7 @@ PermissionCombobox::PermissionCombobox(Listener* listener,
       index_(index),
       listener_(listener),
       model_(new PermissionMenuModel(
+          profile,
           url,
           setting,
           base::Bind(&PermissionCombobox::PermissionChanged,
@@ -245,7 +248,7 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
                               requests[index]->ShouldShowPersistenceToggle();
     if (requests.size() > 1) {
       PermissionCombobox* combobox = new PermissionCombobox(
-          this, index, requests[index]->GetOrigin(),
+          owner->GetProfile(), this, index, requests[index]->GetOrigin(),
           accept_state[index] ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
       row_layout->AddView(combobox);
       customize_comboboxes_.push_back(combobox);
@@ -482,4 +485,8 @@ void PermissionPromptImpl::Accept() {
 void PermissionPromptImpl::Deny() {
   if (delegate_)
     delegate_->Deny();
+}
+
+Profile* PermissionPromptImpl::GetProfile() {
+  return browser_->profile();
 }

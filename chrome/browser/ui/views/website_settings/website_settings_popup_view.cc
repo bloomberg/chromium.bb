@@ -442,6 +442,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     const security_state::SecurityStateModel::SecurityInfo& security_info)
     : content::WebContentsObserver(web_contents),
       BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
+      profile_(profile),
       header_(nullptr),
       separator_(nullptr),
       site_settings_view_(nullptr),
@@ -680,6 +681,7 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
   for (const auto& permission : permission_info_list) {
     layout->StartRow(1, content_column);
     PermissionSelectorRow* selector = new PermissionSelectorRow(
+        profile_,
         web_contents() ? web_contents()->GetVisibleURL() : GURL::EmptyGURL(),
         permission);
     selector->AddObserver(this);

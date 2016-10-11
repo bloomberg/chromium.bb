@@ -14,13 +14,15 @@
 - (id)initWithPermissionInfo:
           (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
                       forURL:(const GURL&)url
-                withCallback:(PermissionMenuModel::ChangeCallback)callback {
+                withCallback:(PermissionMenuModel::ChangeCallback)callback
+                     profile:(Profile*)profile {
   if (self = [super initWithFrame:NSMakeRect(0, 0, 1, 1) pullsDown:NO]) {
     [self setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
     [self setBordered:NO];
     [[self cell] setControlSize:NSSmallControlSize];
 
-    menuModel_.reset(new PermissionMenuModel(url, permissionInfo, callback));
+    menuModel_.reset(
+        new PermissionMenuModel(profile, url, permissionInfo, callback));
 
     menuController_.reset([[MenuController alloc] initWithModel:menuModel_.get()
                                          useWithPopUpButtonCell:NO]);
@@ -30,7 +32,7 @@
     // Set the button title.
     base::scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
     base::string16 buttonTitle = WebsiteSettingsUI::PermissionActionToUIString(
-        permissionInfo.type, permissionInfo.setting,
+        profile, permissionInfo.type, permissionInfo.setting,
         permissionInfo.default_setting, permissionInfo.source);
     [titleItem setTitle:base::SysUTF16ToNSString(buttonTitle)];
     [[self cell] setUsesItemFromMenu:NO];
@@ -45,14 +47,15 @@
 }
 
 - (CGFloat)maxTitleWidthForContentSettingsType:(ContentSettingsType)type
-                            withDefaultSetting:(ContentSetting)defaultSetting {
+                            withDefaultSetting:(ContentSetting)defaultSetting
+                                       profile:(Profile*)profile {
   // Determine the largest possible size for this button.
   CGFloat maxTitleWidth = 0;
   for (NSMenuItem* item in [self itemArray]) {
     NSString* title =
         base::SysUTF16ToNSString(WebsiteSettingsUI::PermissionActionToUIString(
-            type, static_cast<ContentSetting>([item tag]), defaultSetting,
-            content_settings::SETTING_SOURCE_USER));
+            profile, type, static_cast<ContentSetting>([item tag]),
+            defaultSetting, content_settings::SETTING_SOURCE_USER));
     NSSize size = SizeForWebsiteSettingsButtonTitle(self, title);
     maxTitleWidth = std::max(maxTitleWidth, size.width);
   }

@@ -41,6 +41,12 @@ class PluginUtils {
       const GURL& plugin_url,
       bool* is_managed);
 
+  // Returns true if HTML content should be prefered, by hiding Flash from the
+  // plugin list. Use this instead of
+  // base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins).
+  static bool ShouldPreferHtmlOverPlugins(
+      const HostContentSettingsMap* host_content_settings_map);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PluginUtils);
 };

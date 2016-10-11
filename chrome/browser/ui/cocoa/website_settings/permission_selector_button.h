@@ -15,6 +15,8 @@
 
 @class MenuController;
 
+class Profile;
+
 @interface PermissionSelectorButton : NSPopUpButton {
  @private
   std::unique_ptr<PermissionMenuModel> menuModel_;
@@ -25,11 +27,13 @@
 - (id)initWithPermissionInfo:
           (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
                       forURL:(const GURL&)url
-                withCallback:(PermissionMenuModel::ChangeCallback)callback;
+                withCallback:(PermissionMenuModel::ChangeCallback)callback
+                     profile:(Profile*)profile;
 
 // Returns the largest possible size given all of the items in the menu.
 - (CGFloat)maxTitleWidthForContentSettingsType:(ContentSettingsType)type
-                            withDefaultSetting:(ContentSetting)defaultSetting;
+                            withDefaultSetting:(ContentSetting)defaultSetting
+                                       profile:(Profile*)profile;
 
 @end
 

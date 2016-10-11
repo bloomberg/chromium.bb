@@ -140,6 +140,8 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   // The presenter that controls the Website Settings UI.
   std::unique_ptr<WebsiteSettings> presenter_;
 
+  Profile* profile_;
+
   // The header section (containing security-related information).
   PopupHeaderView* header_;
 

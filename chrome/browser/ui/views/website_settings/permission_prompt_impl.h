@@ -20,6 +20,7 @@ class View;
 
 class Browser;
 class PermissionsBubbleDialogDelegateView;
+class Profile;
 
 class PermissionPromptImpl : public PermissionPrompt {
  public:
@@ -41,6 +42,8 @@ class PermissionPromptImpl : public PermissionPrompt {
   void TogglePersist(bool value);
   void Accept();
   void Deny();
+
+  Profile* GetProfile();
 
  private:
   // These three functions have separate implementations for Views-based and
