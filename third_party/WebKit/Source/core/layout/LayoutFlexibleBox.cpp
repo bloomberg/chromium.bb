@@ -2157,8 +2157,6 @@ void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts,
       if (child == childToExclude)
         continue;
       if (child->isOutOfFlowPositioned()) {
-        if (style()->flexWrap() == FlexWrapReverse)
-          adjustAlignmentForChild(*child, lineCrossAxisExtent);
         continue;
       }
 
