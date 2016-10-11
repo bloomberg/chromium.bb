@@ -1629,9 +1629,10 @@ void CompositeEditCommand::moveParagraphs(
                  beforeParagraph.deepEquivalent(), editingState);
     if (editingState->isAborted())
       return;
-    // Need an updateLayout here in case inserting the br has split a text node.
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
   }
+
+  // TextIterator::rangeLength requires clean layout.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   destinationIndex = TextIterator::rangeLength(
       Position::firstPositionInNode(document().documentElement()),
