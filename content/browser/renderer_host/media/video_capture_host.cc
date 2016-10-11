@@ -76,7 +76,8 @@ void VideoCaptureHost::OnBufferDestroyed(VideoCaptureControllerID controller_id,
   if (controllers_.find(controller_id) == controllers_.end())
     return;
 
-  Send(new VideoCaptureMsg_FreeBuffer(controller_id, buffer_id));
+  if (base::ContainsKey(device_id_to_observer_map_, controller_id))
+    device_id_to_observer_map_[controller_id]->OnBufferDestroyed(buffer_id);
 }
 
 void VideoCaptureHost::OnBufferReady(
@@ -87,17 +88,21 @@ void VideoCaptureHost::OnBufferReady(
   if (controllers_.find(controller_id) == controllers_.end())
     return;
 
-  VideoCaptureMsg_BufferReady_Params params;
-  params.device_id = controller_id;
-  params.buffer_id = buffer_id;
-  params.timestamp = video_frame->timestamp();
-  video_frame->metadata()->MergeInternalValuesInto(&params.metadata);
-  params.pixel_format = video_frame->format();
-  params.storage_type = video_frame->storage_type();
-  params.coded_size = video_frame->coded_size();
-  params.visible_rect = video_frame->visible_rect();
+  if (!base::ContainsKey(device_id_to_observer_map_, controller_id))
+    return;
 
-  Send(new VideoCaptureMsg_BufferReady(params));
+  mojom::VideoFrameInfoPtr info = mojom::VideoFrameInfo::New();
+  info->timestamp = video_frame->timestamp();
+  video_frame->metadata()->MergeInternalValuesInto(&info->metadata);
+
+  DCHECK_EQ(media::PIXEL_FORMAT_I420, video_frame->format());
+  info->pixel_format = media::mojom::VideoFormat::I420;
+  info->storage_type = media::PIXEL_STORAGE_CPU;
+  info->coded_size = video_frame->coded_size();
+  info->visible_rect = video_frame->visible_rect();
+
+  device_id_to_observer_map_[controller_id]->OnBufferReady(buffer_id,
+                                                           std::move(info));
 }
 
 void VideoCaptureHost::OnEnded(VideoCaptureControllerID controller_id) {

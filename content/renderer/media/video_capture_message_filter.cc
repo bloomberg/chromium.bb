@@ -56,9 +56,7 @@ bool VideoCaptureMessageFilter::Send(IPC::Message* message) {
 bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(VideoCaptureMessageFilter, message)
-    IPC_MESSAGE_HANDLER(VideoCaptureMsg_BufferReady, OnBufferReceived)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnBufferCreated)
-    IPC_MESSAGE_HANDLER(VideoCaptureMsg_FreeBuffer, OnBufferDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -108,37 +106,6 @@ void VideoCaptureMessageFilter::OnBufferCreated(int device_id,
   }
 
   delegate->OnBufferCreated(handle, length, buffer_id);
-}
-
-void VideoCaptureMessageFilter::OnBufferReceived(
-    const VideoCaptureMsg_BufferReady_Params& params) {
-  Delegate* const delegate = find_delegate(params.device_id);
-  if (!delegate) {
-    DLOG(WARNING) << "OnBufferReceived: Got video SHM buffer for a "
-                     "non-existent or removed video capture.";
-
-    return;
-  }
-
-  delegate->OnBufferReceived(params.buffer_id,
-                             params.timestamp,
-                             params.metadata,
-                             params.pixel_format,
-                             params.storage_type,
-                             params.coded_size,
-                             params.visible_rect);
-}
-
-void VideoCaptureMessageFilter::OnBufferDestroyed(int device_id,
-                                                  int buffer_id) {
-  Delegate* const delegate = find_delegate(device_id);
-  if (!delegate) {
-    DLOG(WARNING) << "OnBufferDestroyed: Instructed to free buffer for a "
-        "non-existent or removed video capture.";
-    return;
-  }
-
-  delegate->OnBufferDestroyed(buffer_id);
 }
 
 }  // namespace content

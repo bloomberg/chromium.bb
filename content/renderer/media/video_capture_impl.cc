@@ -201,94 +201,6 @@ void VideoCaptureImpl::OnBufferCreated(base::SharedMemoryHandle handle,
   DCHECK(inserted);
 }
 
-void VideoCaptureImpl::OnBufferDestroyed(int buffer_id) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-  const auto& cb_iter = client_buffers_.find(buffer_id);
-  if (cb_iter != client_buffers_.end()) {
-    DCHECK(!cb_iter->second.get() || cb_iter->second->HasOneRef())
-        << "Instructed to delete buffer we are still using.";
-    client_buffers_.erase(cb_iter);
-  }
-}
-
-void VideoCaptureImpl::OnBufferReceived(
-    int buffer_id,
-    base::TimeDelta timestamp,
-    const base::DictionaryValue& metadata,
-    media::VideoPixelFormat pixel_format,
-    media::VideoFrame::StorageType storage_type,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
-  DCHECK_EQ(media::VideoFrame::STORAGE_SHMEM, storage_type);
-
-  if (state_ != VIDEO_CAPTURE_STATE_STARTED ||
-      pixel_format != media::PIXEL_FORMAT_I420 ||
-      storage_type != media::VideoFrame::STORAGE_SHMEM) {
-    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
-                                         gpu::SyncToken(), -1.0);
-    return;
-  }
-
-  base::TimeTicks reference_time;
-  media::VideoFrameMetadata frame_metadata;
-  frame_metadata.MergeInternalValuesFrom(metadata);
-  const bool success = frame_metadata.GetTimeTicks(
-      media::VideoFrameMetadata::REFERENCE_TIME, &reference_time);
-  DCHECK(success);
-
-  if (first_frame_ref_time_.is_null())
-    first_frame_ref_time_ = reference_time;
-
-  // If the timestamp is not prepared, we use reference time to make a rough
-  // estimate. e.g. ThreadSafeCaptureOracle::DidCaptureFrame().
-  // TODO(miu): Fix upstream capturers to always set timestamp and reference
-  // time. See http://crbug/618407/ for tracking.
-  if (timestamp.is_zero())
-    timestamp = reference_time - first_frame_ref_time_;
-
-  // TODO(qiangchen): Change the metric name to "reference_time" and
-  // "timestamp", so that we have consistent naming everywhere.
-  // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
-  TRACE_EVENT_INSTANT2("cast_perf_test", "OnBufferReceived",
-                       TRACE_EVENT_SCOPE_THREAD, "timestamp",
-                       (reference_time - base::TimeTicks()).InMicroseconds(),
-                       "time_delta", timestamp.InMicroseconds());
-
-  const auto& iter = client_buffers_.find(buffer_id);
-  DCHECK(iter != client_buffers_.end());
-  const scoped_refptr<ClientBuffer> buffer = iter->second;
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
-          pixel_format, coded_size, visible_rect,
-          gfx::Size(visible_rect.width(), visible_rect.height()),
-          reinterpret_cast<uint8_t*>(buffer->buffer()->memory()),
-          buffer->buffer_size(), buffer->buffer()->handle(),
-          0 /* shared_memory_offset */, timestamp);
-  if (!frame) {
-    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
-                                         gpu::SyncToken(), -1.0);
-    return;
-  }
-
-  BufferFinishedCallback buffer_finished_callback = media::BindToCurrentLoop(
-      base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
-                 weak_factory_.GetWeakPtr(), buffer_id, buffer));
-  std::unique_ptr<gpu::SyncToken> release_sync_token(new gpu::SyncToken);
-  frame->AddDestructionObserver(
-      base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame, frame->metadata(),
-                 base::Passed(&release_sync_token), buffer_finished_callback));
-
-  frame->metadata()->MergeInternalValuesFrom(metadata);
-
-  // TODO(qiangchen): Dive into the full code path to let frame metadata hold
-  // reference time rather than using an extra parameter.
-  for (const auto& client : clients_)
-    client.second.deliver_frame_cb.Run(frame, reference_time);
-}
-
 void VideoCaptureImpl::OnDelegateAdded(int32_t device_id) {
   DVLOG(1) << __func__ << " " << device_id;
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -341,6 +253,90 @@ void VideoCaptureImpl::OnStateChanged(mojom::VideoCaptureState state) {
       clients_.clear();
       state_ = VIDEO_CAPTURE_STATE_ENDED;
       break;
+  }
+}
+
+void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
+                                     mojom::VideoFrameInfoPtr info) {
+  DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
+
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(media::mojom::VideoFormat::I420, info->pixel_format);
+  DCHECK_EQ(media::PIXEL_STORAGE_CPU, info->storage_type);
+
+  if (state_ != VIDEO_CAPTURE_STATE_STARTED ||
+      info->pixel_format != media::mojom::VideoFormat::I420 ||
+      info->storage_type != media::PIXEL_STORAGE_CPU) {
+    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
+                                         gpu::SyncToken(), -1.0);
+    return;
+  }
+
+  base::TimeTicks reference_time;
+  media::VideoFrameMetadata frame_metadata;
+  frame_metadata.MergeInternalValuesFrom(info->metadata);
+  const bool success = frame_metadata.GetTimeTicks(
+      media::VideoFrameMetadata::REFERENCE_TIME, &reference_time);
+  DCHECK(success);
+
+  if (first_frame_ref_time_.is_null())
+    first_frame_ref_time_ = reference_time;
+
+  // If the timestamp is not prepared, we use reference time to make a rough
+  // estimate. e.g. ThreadSafeCaptureOracle::DidCaptureFrame().
+  // TODO(miu): Fix upstream capturers to always set timestamp and reference
+  // time. See http://crbug/618407/ for tracking.
+  if (info->timestamp.is_zero())
+    info->timestamp = reference_time - first_frame_ref_time_;
+
+  // TODO(qiangchen): Change the metric name to "reference_time" and
+  // "timestamp", so that we have consistent naming everywhere.
+  // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
+  TRACE_EVENT_INSTANT2("cast_perf_test", "OnBufferReceived",
+                       TRACE_EVENT_SCOPE_THREAD, "timestamp",
+                       (reference_time - base::TimeTicks()).InMicroseconds(),
+                       "time_delta", info->timestamp.InMicroseconds());
+
+  const auto& iter = client_buffers_.find(buffer_id);
+  DCHECK(iter != client_buffers_.end());
+  const scoped_refptr<ClientBuffer> buffer = iter->second;
+  scoped_refptr<media::VideoFrame> frame =
+      media::VideoFrame::WrapExternalSharedMemory(
+          static_cast<media::VideoPixelFormat>(info->pixel_format),
+          info->coded_size, info->visible_rect, info->visible_rect.size(),
+          reinterpret_cast<uint8_t*>(buffer->buffer()->memory()),
+          buffer->buffer_size(), buffer->buffer()->handle(),
+          0 /* shared_memory_offset */, info->timestamp);
+  if (!frame) {
+    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
+                                         gpu::SyncToken(), -1.0);
+    return;
+  }
+
+  BufferFinishedCallback buffer_finished_callback = media::BindToCurrentLoop(
+      base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
+                 weak_factory_.GetWeakPtr(), buffer_id, buffer));
+  std::unique_ptr<gpu::SyncToken> release_sync_token(new gpu::SyncToken);
+  frame->AddDestructionObserver(
+      base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame, frame->metadata(),
+                 base::Passed(&release_sync_token), buffer_finished_callback));
+
+  frame->metadata()->MergeInternalValuesFrom(info->metadata);
+
+  // TODO(qiangchen): Dive into the full code path to let frame metadata hold
+  // reference time rather than using an extra parameter.
+  for (const auto& client : clients_)
+    client.second.deliver_frame_cb.Run(frame, reference_time);
+}
+
+void VideoCaptureImpl::OnBufferDestroyed(int32_t buffer_id) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  const auto& cb_iter = client_buffers_.find(buffer_id);
+  if (cb_iter != client_buffers_.end()) {
+    DCHECK(!cb_iter->second.get() || cb_iter->second->HasOneRef())
+        << "Instructed to delete buffer we are still using.";
+    client_buffers_.erase(cb_iter);
   }
 }
 

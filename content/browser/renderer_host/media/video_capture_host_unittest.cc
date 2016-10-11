@@ -29,16 +29,12 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
-#include "media/audio/audio_manager.h"
+#include "media/audio/mock_audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_capture_types.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/audio/cras_audio_handler.h"
-#endif
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -91,43 +87,21 @@ class MockMediaStreamRequester : public MediaStreamRequester {
 class MockVideoCaptureHost : public VideoCaptureHost {
  public:
   MockVideoCaptureHost(MediaStreamManager* manager)
-      : VideoCaptureHost(manager), return_buffers_immediately_(false) {}
+      : VideoCaptureHost(manager) {}
 
   MOCK_METHOD4(OnNewBufferCreated,
                void(int device_id,
                     base::SharedMemoryHandle handle,
                     int length,
                     int buffer_id));
-  MOCK_METHOD2(OnBufferFreed, void(int device_id, int buffer_id));
-  MOCK_METHOD1(OnBufferFilled, void(int device_id));
-
-  void SetReturnReceivedBuffersImmediately(bool enable) {
-    return_buffers_immediately_ = enable;
-  }
-
-  void ReturnReceivedBuffers(int device_id)  {
-    while (!buffer_ids_.empty()) {
-      this->ReleaseBuffer(device_id, *buffer_ids_.begin(), gpu::SyncToken(),
-                          -1.0);
-      buffer_ids_.pop_front();
-    }
-  }
 
  private:
   ~MockVideoCaptureHost() override {}
 
-  // This method is used to dispatch IPC messages to the renderer. We intercept
-  // some of these messages here to MOCK them and to map/unmap buffers.
   bool Send(IPC::Message* message) override {
-    CHECK(message);
-
-    // In this method we dispatch the messages to the according handlers as if
-    // we are the renderer.
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(MockVideoCaptureHost, *message)
-      IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnNewBufferCreatedDispatch)
-      IPC_MESSAGE_HANDLER(VideoCaptureMsg_FreeBuffer, OnBufferFreedDispatch)
-      IPC_MESSAGE_HANDLER(VideoCaptureMsg_BufferReady, OnBufferFilledDispatch)
+      IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnNewBufferCreated)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     EXPECT_TRUE(handled);
@@ -135,36 +109,6 @@ class MockVideoCaptureHost : public VideoCaptureHost {
     delete message;
     return true;
   }
-
-  // These handler methods do minimal things and delegate to the mock methods.
-  void OnNewBufferCreatedDispatch(int device_id,
-                                  base::SharedMemoryHandle handle,
-                                  uint32_t length,
-                                  int buffer_id) {
-    OnNewBufferCreated(device_id, handle, length, buffer_id);
-    buffer_ids_.push_back(buffer_id);
-  }
-
-  void OnBufferFreedDispatch(int device_id, int buffer_id) {
-    OnBufferFreed(device_id, buffer_id);
-
-    auto buffer = std::find(buffer_ids_.begin(), buffer_ids_.end(), buffer_id);
-    ASSERT_TRUE(buffer != buffer_ids_.end());
-    buffer_ids_.erase(buffer);
-  }
-
-  void OnBufferFilledDispatch(
-      const VideoCaptureMsg_BufferReady_Params& params) {
-    OnBufferFilled(params.device_id);
-    if (!return_buffers_immediately_)
-      return;
-
-    VideoCaptureHost::ReleaseBuffer(params.device_id, params.buffer_id,
-                                    gpu::SyncToken(), -1.0);
-  }
-
-  std::list<int> buffer_ids_;
-  bool return_buffers_immediately_;
 };
 
 ACTION_P2(ExitMessageLoop, task_runner, quit_closure) {
@@ -179,6 +123,8 @@ class VideoCaptureHostTest : public testing::Test,
  public:
   VideoCaptureHostTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        audio_manager_(
+            new media::MockAudioManager(base::ThreadTaskRunnerHandle::Get())),
         task_runner_(base::ThreadTaskRunnerHandle::Get()),
         opened_session_id_(kInvalidMediaCaptureSessionId),
         observer_binding_(this) {}
@@ -186,11 +132,6 @@ class VideoCaptureHostTest : public testing::Test,
   void SetUp() override {
     SetBrowserClientForTesting(&browser_client_);
 
-#if defined(OS_CHROMEOS)
-    chromeos::CrasAudioHandler::InitializeForTesting();
-#endif
-
-    audio_manager_ = media::AudioManager::CreateForTesting(task_runner_);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -216,10 +157,6 @@ class VideoCaptureHostTest : public testing::Test,
     // Release the reference to the mock object. The object will be destructed
     // on the current message loop.
     host_ = nullptr;
-
-#if defined(OS_CHROMEOS)
-    chromeos::CrasAudioHandler::Shutdown();
-#endif
   }
 
   void OpenSession() {
@@ -289,23 +226,29 @@ class VideoCaptureHostTest : public testing::Test,
   }
 
  protected:
+  // mojom::VideoCaptureObserver implementation.
   MOCK_METHOD1(OnStateChanged, void(mojom::VideoCaptureState));
+  void OnBufferReady(int32_t buffer_id,
+                     mojom::VideoFrameInfoPtr info) override {
+    DoOnBufferReady(buffer_id);
+  }
+  MOCK_METHOD1(DoOnBufferReady, void(int32_t));
+  MOCK_METHOD1(OnBufferDestroyed, void(int32_t));
 
   void StartCapture() {
-    EXPECT_CALL(*host_.get(), OnNewBufferCreated(kDeviceId, _, _, _))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return());
-
     base::RunLoop run_loop;
-    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId))
-        .Times(AnyNumber())
-        .WillOnce(ExitMessageLoop(task_runner_, run_loop.QuitClosure()));
-
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
         gfx::Size(352, 288), 30, media::PIXEL_FORMAT_I420);
 
     EXPECT_CALL(*this, OnStateChanged(mojom::VideoCaptureState::STARTED));
+    EXPECT_CALL(*host_.get(), OnNewBufferCreated(kDeviceId, _, _, _))
+        .Times(AnyNumber())
+        .WillRepeatedly(Return());
+    EXPECT_CALL(*this, DoOnBufferReady(_))
+        .Times(AnyNumber())
+        .WillOnce(ExitMessageLoop(task_runner_, run_loop.QuitClosure()));
+
     host_->Start(kDeviceId, opened_session_id_, params,
                  observer_binding_.CreateInterfacePtrAndBind());
 
@@ -314,7 +257,7 @@ class VideoCaptureHostTest : public testing::Test,
 
   void StartStopCapture() {
     // Quickly start and then stop capture, without giving much chance for
-    // asynchronous start operations to complete.
+    // asynchronous capture operations to produce frames.
     InSequence s;
     base::RunLoop run_loop;
 
@@ -355,34 +298,26 @@ class VideoCaptureHostTest : public testing::Test,
     EXPECT_CALL(*this, OnStateChanged(mojom::VideoCaptureState::STOPPED))
         .WillOnce(ExitMessageLoop(task_runner_, run_loop.QuitClosure()));
     host_->Stop(kDeviceId);
-    host_->SetReturnReceivedBuffersImmediately(true);
-    host_->ReturnReceivedBuffers(kDeviceId);
 
     run_loop.Run();
 
-    // Expect the VideoCaptureDevice has been stopped
     EXPECT_TRUE(host_->controllers_.empty());
   }
 
-  void NotifyPacketReady() {
+  void WaitForOneCapturedBuffer() {
     base::RunLoop run_loop;
-    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId))
+
+    EXPECT_CALL(*this, DoOnBufferReady(_))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(task_runner_, run_loop.QuitClosure()))
         .RetiresOnSaturation();
     run_loop.Run();
   }
 
-  void ReturnReceivedPackets() {
-    host_->ReturnReceivedBuffers(kDeviceId);
-  }
-
   void SimulateError() {
-    // Expect a change state to error state sent through IPC.
     EXPECT_CALL(*this, OnStateChanged(mojom::VideoCaptureState::FAILED));
     VideoCaptureControllerID id(kDeviceId);
     host_->OnError(id);
-    // Wait for the error callback.
     base::RunLoop().RunUntilIdle();
   }
 
@@ -434,9 +369,8 @@ TEST_F(VideoCaptureHostTest, StopWhileStartPending) {
 
 TEST_F(VideoCaptureHostTest, StartCapturePlayStop) {
   StartCapture();
-  NotifyPacketReady();
-  NotifyPacketReady();
-  ReturnReceivedPackets();
+  WaitForOneCapturedBuffer();
+  WaitForOneCapturedBuffer();
   StopCapture();
 }
 
@@ -450,7 +384,7 @@ TEST_F(VideoCaptureHostTest, StartCaptureError) {
   EXPECT_CALL(*this, OnStateChanged(mojom::VideoCaptureState::STOPPED))
       .Times(0);
   StartCapture();
-  NotifyPacketReady();
+  WaitForOneCapturedBuffer();
   SimulateError();
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
 }

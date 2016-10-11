@@ -121,18 +121,12 @@ class CONTENT_EXPORT VideoCaptureImpl
   void OnBufferCreated(base::SharedMemoryHandle handle,
                        int length,
                        int buffer_id) override;
-  void OnBufferDestroyed(int buffer_id) override;
-  void OnBufferReceived(int buffer_id,
-                        base::TimeDelta timestamp,
-                        const base::DictionaryValue& metadata,
-                        media::VideoPixelFormat pixel_format,
-                        media::VideoFrame::StorageType storage_type,
-                        const gfx::Size& coded_size,
-                        const gfx::Rect& visible_rect) override;
   void OnDelegateAdded(int32_t device_id) override;
 
   // mojom::VideoCaptureObserver implementation.
   void OnStateChanged(mojom::VideoCaptureState state) override;
+  void OnBufferReady(int32_t buffer_id, mojom::VideoFrameInfoPtr info) override;
+  void OnBufferDestroyed(int32_t buffer_id) override;
 
   // Sends an IPC message to browser process when all clients are done with the
   // buffer.

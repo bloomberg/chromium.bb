@@ -581,6 +581,7 @@ mojom("mojo_bindings") {
     # TODO(mcasas): remove the following dep after https://crbug.com/653994
     "//gpu/ipc/common:interfaces",
     "//ipc:mojom",
+    "//media/mojo/interfaces",
     "//mojo/common:common_custom_types",
     "//services/shell/public/interfaces",
     "//services/ui/public/interfaces",

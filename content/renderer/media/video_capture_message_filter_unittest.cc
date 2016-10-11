@@ -36,7 +36,6 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
                void(base::SharedMemoryHandle handle,
                     int length,
                     int buffer_id));
-  MOCK_METHOD1(OnBufferDestroyed, void(int buffer_id));
   MOCK_METHOD7(OnBufferReceived,
                void(int buffer_id,
                     base::TimeDelta timestamp,
@@ -57,16 +56,6 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
  private:
   int device_id_;
 };
-
-void ExpectMetadataContainsFooBarBaz(const base::DictionaryValue& metadata) {
-  std::string value;
-  if (metadata.GetString("foo", &value))
-    EXPECT_EQ(std::string("bar"), value);
-  else if (metadata.GetString("bar", &value))
-    EXPECT_EQ(std::string("baz"), value);
-  else
-    FAIL() << "Missing key 'foo' or key 'bar'.";
-}
 
 }  // namespace
 
@@ -101,35 +90,6 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
 #endif
   filter->OnMessageReceived(VideoCaptureMsg_NewBuffer(
       delegate.device_id(), handle, 100, 1));
-  Mock::VerifyAndClearExpectations(&delegate);
-  // VideoCaptureMsg_BufferReady
-  VideoCaptureMsg_BufferReady_Params params;
-  params.device_id = delegate.device_id();
-  params.buffer_id = 22;
-  params.timestamp = base::TimeDelta::FromMicroseconds(1);
-  params.metadata.SetString("foo", "bar");
-  media::VideoFrameMetadata frame_metadata;
-  frame_metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
-                              base::TimeTicks::FromInternalValue(1));
-  frame_metadata.MergeInternalValuesInto(&params.metadata);
-  params.pixel_format = media::PIXEL_FORMAT_I420;
-  params.storage_type = media::VideoFrame::STORAGE_SHMEM;
-  params.coded_size = gfx::Size(234, 512);
-  params.visible_rect = gfx::Rect(100, 200, 300, 400);
-
-  EXPECT_CALL(delegate,
-              OnBufferReceived(params.buffer_id, params.timestamp, _,
-                               media::PIXEL_FORMAT_I420,
-                               media::VideoFrame::STORAGE_SHMEM,
-                               params.coded_size, params.visible_rect))
-      .WillRepeatedly(WithArg<2>(Invoke(&ExpectMetadataContainsFooBarBaz)));
-  filter->OnMessageReceived(VideoCaptureMsg_BufferReady(params));
-  Mock::VerifyAndClearExpectations(&delegate);
-
-  // VideoCaptureMsg_FreeBuffer
-  EXPECT_CALL(delegate, OnBufferDestroyed(params.buffer_id));
-  filter->OnMessageReceived(VideoCaptureMsg_FreeBuffer(
-      delegate.device_id(), params.buffer_id));
   Mock::VerifyAndClearExpectations(&delegate);
 }
 

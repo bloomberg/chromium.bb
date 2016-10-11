@@ -19,27 +19,27 @@
 //      | < VideoCaptureMsg_NewBuffer(2)         |
 //      | < VideoCaptureMsg_NewBuffer(3)         |
 //      |                                        |
-//      | < VideoCaptureMsg_BufferReady(1)       |
-//      | < VideoCaptureMsg_BufferReady(2)       |
+//      | <-------- OnBufferReady(1) ---------   |
+//      | <-------- OnBufferReady(2) ---------   |
 //      | -------- ReleaseBuffer(1) --------->   |
-//      | < VideoCaptureMsg_BufferReady(3)       |
+//      | <-------- OnBufferReady(3) ---------   |
 //      | -------- ReleaseBuffer(2) --------->   |
-//      | < VideoCaptureMsg_BufferReady(1)       |
+//      | <-------- OnBufferReady(1) ---------   |
 //      | -------- ReleaseBuffer(3) --------->   |
-//      | < VideoCaptureMsg_BufferReady(2)       |
+//      | <-------- OnBufferReady(2) ---------   |
 //      | -------- ReleaseBuffer(1) --------->   |
 //      |             ...                        |
-//      | < VideoCaptureMsg_BufferReady(3)       |
-//      |                                        |
+//      | <-------- OnBufferReady(3) ---------   |
+//      =                                        =
 //      |             ... (resolution change)    |
-//      | < VideoCaptureMsg_FreeBuffer(1)        |  Buffers are re-allocated
+//      | <------ OnBufferDestroyed(3) -------   |  Buffers are re-allocated
 //      | < VideoCaptureMsg_NewBuffer(4)         |  with a larger size, as
-//      | < VideoCaptureMsg_BufferReady(4)       |  needed.
+//      | <-------- OnBufferReady(4) ---------   |  needed.
 //      | -------- ReleaseBuffer(2) --------->   |
-//      | < VideoCaptureMsg_FreeBuffer(2)        |
+//      | <------ OnBufferDestroyed(2) -------   |
 //      | < VideoCaptureMsg_NewBuffer(5)         |
-//      | < VideoCaptureMsg_BufferReady(5)       |
-//      |             ...                        |
+//      | <-------- OnBufferReady(5) ---------   |
+//      =             ...                        =
 //      |                                        |
 //      | < VideoCaptureMsg_BufferReady          |
 //      |  --------- StopCapture --------->      |
