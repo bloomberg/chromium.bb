@@ -1226,8 +1226,17 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # Tests added from W3C auto import bot
-
 crbug.com/626703 [ Win10 ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure ]
+crbug.com/626703 imported/wpt/pointerevents/pointerevent_element_haspointercapture-manual.html [ Timeout ]
+crbug.com/626703 imported/wpt/svg/linking/scripted/href-animate-element.html [ Timeout ]
+crbug.com/626703 imported/wpt/svg/linking/scripted/href-mpath-element.html [ Timeout ]
+crbug.com/626703 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_escaping-2.html [ Timeout ]
+crbug.com/626703 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-3.html [ Timeout ]
+crbug.com/626703 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-2.html [ Timeout ]
+crbug.com/626703 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_escaping-1.html [ Timeout ]
+crbug.com/626703 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_escaping-3.html [ Timeout ]
+crbug.com/626703 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-1.html  [ Timeout ]
+crbug.com/626703 imported/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 
 crbug.com/646323 [ Mac ] editing/selection/modify_move/move_backward_line_import_crash.html [ Crash Timeout ]
 crbug.com/646323 [ Win Linux ] editing/selection/modify_move/move_backward_line_import_crash.html [ Crash ]
