@@ -18,10 +18,9 @@ SSLStatus::SSLStatus()
       content_status(NORMAL_CONTENT),
       pkp_bypassed(false) {}
 
-SSLStatus::SSLStatus(scoped_refptr<net::X509Certificate> certificate,
-                     const net::SSLInfo& ssl_info)
+SSLStatus::SSLStatus(const net::SSLInfo& ssl_info)
     : initialized(true),
-      certificate(certificate),
+      certificate(ssl_info.cert),
       cert_status(ssl_info.cert_status),
       security_bits(ssl_info.security_bits),
       key_exchange_group(ssl_info.key_exchange_group),

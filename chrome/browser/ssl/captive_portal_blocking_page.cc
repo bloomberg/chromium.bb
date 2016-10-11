@@ -245,7 +245,7 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
 }
 
 void CaptivePortalBlockingPage::OverrideEntry(content::NavigationEntry* entry) {
-  entry->GetSSL() = content::SSLStatus(ssl_info_.cert, ssl_info_);
+  entry->GetSSL() = content::SSLStatus(ssl_info_);
 }
 
 void CaptivePortalBlockingPage::OnProceed() {

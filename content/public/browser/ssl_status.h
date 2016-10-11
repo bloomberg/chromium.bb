@@ -55,8 +55,7 @@ struct CONTENT_EXPORT SSLStatus {
   };
 
   SSLStatus();
-  SSLStatus(scoped_refptr<net::X509Certificate> certificate,
-            const net::SSLInfo& ssl_info);
+  SSLStatus(const net::SSLInfo& ssl_info);
   SSLStatus(const SSLStatus& other);
   ~SSLStatus();
 

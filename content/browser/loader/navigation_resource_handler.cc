@@ -31,7 +31,7 @@ void NavigationResourceHandler::GetSSLStatusForRequest(
     int child_id,
     SSLStatus* ssl_status) {
   DCHECK(ssl_info.cert);
-  *ssl_status = SSLStatus(ssl_info.cert, ssl_info);
+  *ssl_status = SSLStatus(ssl_info);
 }
 
 NavigationResourceHandler::NavigationResourceHandler(

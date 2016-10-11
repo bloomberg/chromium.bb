@@ -106,7 +106,7 @@ void BadClockBlockingPage::PopulateInterstitialStrings(
 }
 
 void BadClockBlockingPage::OverrideEntry(NavigationEntry* entry) {
-  entry->GetSSL() = content::SSLStatus(ssl_info_.cert, ssl_info_);
+  entry->GetSSL() = content::SSLStatus(ssl_info_);
 }
 
 void BadClockBlockingPage::SetSSLCertReporterForTesting(
