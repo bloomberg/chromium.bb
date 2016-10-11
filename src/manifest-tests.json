@@ -9,7 +9,7 @@
   "description": "__MSG_description__",
   "version": "4.4.3",
   "default_locale": "en",
-  "minimum_chrome_version": "32.0.0.0",
+  "minimum_chrome_version": "53.0.0.0",
   "icons": {
     "32": "images/camera_app_icons_32.png",
     "48": "images/camera_app_icons_48.png",
