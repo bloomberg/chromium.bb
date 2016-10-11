@@ -78,10 +78,7 @@ class TextFinder::DeferredScopeStringMatches
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_textFinder); }
 
-  void dispose() {
-    if (m_timer.isActive())
-      m_timer.stop();
-  }
+  void dispose() { m_timer.stop(); }
 
  private:
   DeferredScopeStringMatches(TextFinder* textFinder,

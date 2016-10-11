@@ -299,8 +299,7 @@ void SMILTimeContainer::scheduleAnimationPolicyTimer() {
 }
 
 void SMILTimeContainer::cancelAnimationPolicyTimer() {
-  if (m_animationPolicyOnceTimer.isActive())
-    m_animationPolicyOnceTimer.stop();
+  m_animationPolicyOnceTimer.stop();
 }
 
 void SMILTimeContainer::animationPolicyTimerFired(TimerBase*) {

@@ -216,8 +216,7 @@ void Scrollbar::startTimerIfNeeded(double delay) {
 }
 
 void Scrollbar::stopTimerIfNeeded() {
-  if (m_scrollTimer.isActive())
-    m_scrollTimer.stop();
+  m_scrollTimer.stop();
 }
 
 ScrollDirectionPhysical Scrollbar::pressedPartScrollDirectionPhysical() {

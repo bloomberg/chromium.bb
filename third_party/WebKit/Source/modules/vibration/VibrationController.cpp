@@ -152,9 +152,7 @@ void VibrationController::didVibrate() {
 
 void VibrationController::cancel() {
   m_pattern.clear();
-
-  if (m_timerDoVibrate.isActive())
-    m_timerDoVibrate.stop();
+  m_timerDoVibrate.stop();
 
   if (m_isRunning && !m_isCallingCancel && m_service) {
     m_isCallingCancel = true;

@@ -104,8 +104,7 @@ class AsyncMethodRunner final
     }
 
     ASSERT(!m_runWhenResumed);
-    if (m_timer.isActive())
-      m_timer.stop();
+    m_timer.stop();
   }
 
   bool isActive() const { return m_timer.isActive(); }

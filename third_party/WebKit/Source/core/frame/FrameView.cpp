@@ -307,11 +307,9 @@ void FrameView::dispose() {
   // partially destroyed |this| via |m_autoSizeInfo->m_frameView|.
   m_autoSizeInfo.clear();
 
-  if (m_postLayoutTasksTimer.isActive())
-    m_postLayoutTasksTimer.stop();
+  m_postLayoutTasksTimer.stop();
+  m_didScrollTimer.stop();
 
-  if (m_didScrollTimer.isActive())
-    m_didScrollTimer.stop();
   m_renderThrottlingObserverNotificationFactory->cancel();
 
   // FIXME: Do we need to do something here for OOPI?
@@ -3598,8 +3596,6 @@ void FrameView::updateScrollOffset(const ScrollOffset& offset,
     layoutViewItem.clearHitTestCache();
   }
 
-  if (m_didScrollTimer.isActive())
-    m_didScrollTimer.stop();
   m_didScrollTimer.startOneShot(resourcePriorityUpdateDelayAfterScroll,
                                 BLINK_FROM_HERE);
 

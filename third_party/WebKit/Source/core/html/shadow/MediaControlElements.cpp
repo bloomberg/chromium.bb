@@ -159,8 +159,7 @@ void MediaControlPanelElement::startTimer() {
 }
 
 void MediaControlPanelElement::stopTimer() {
-  if (m_transitionTimer.isActive())
-    m_transitionTimer.stop();
+  m_transitionTimer.stop();
 }
 
 void MediaControlPanelElement::transitionTimerFired(TimerBase*) {

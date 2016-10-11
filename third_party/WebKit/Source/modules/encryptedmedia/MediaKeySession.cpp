@@ -946,9 +946,7 @@ void MediaKeySession::contextDestroyed() {
   // Stop the CDM from firing any more events for this session.
   m_session.reset();
   m_isClosed = true;
-
-  if (m_actionTimer.isActive())
-    m_actionTimer.stop();
+  m_actionTimer.stop();
   m_pendingActions.clear();
   m_asyncEventQueue->close();
 }

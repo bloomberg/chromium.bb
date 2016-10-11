@@ -277,8 +277,7 @@ DEFINE_TRACE(MediaKeys) {
 }
 
 void MediaKeys::contextDestroyed() {
-  if (m_timer.isActive())
-    m_timer.stop();
+  m_timer.stop();
   m_pendingActions.clear();
 
   // We don't need the CDM anymore. Only destroyed after all related

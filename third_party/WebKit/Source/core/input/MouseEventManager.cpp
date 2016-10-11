@@ -526,8 +526,6 @@ void MouseEventManager::dispatchFakeMouseMoveEventSoon() {
 
   // Reschedule the timer, to prevent dispatching mouse move events
   // during a scroll. This avoids a potential source of scroll jank.
-  if (m_fakeMouseMoveEventTimer.isActive())
-    m_fakeMouseMoveEventTimer.stop();
   m_fakeMouseMoveEventTimer.startOneShot(kFakeMouseMoveInterval,
                                          BLINK_FROM_HERE);
 }

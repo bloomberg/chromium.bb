@@ -41,9 +41,7 @@ void PlatformEventController::stopUpdating() {
   if (!m_isActive)
     return;
 
-  if (m_timer.isActive())
-    m_timer.stop();
-
+  m_timer.stop();
   unregisterWithDispatcher();
   m_isActive = false;
 }

@@ -765,13 +765,10 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(
 
   m_mouseEventManager->setLastKnownMousePosition(mouseEvent);
 
-  if (m_hoverTimer.isActive())
-    m_hoverTimer.stop();
-
+  m_hoverTimer.stop();
   m_cursorUpdateTimer.stop();
 
   m_mouseEventManager->cancelFakeMouseMoveEvent();
-
   m_mouseEventManager->handleSvgPanIfNeeded(false);
 
   if (m_frameSetBeingResized) {
@@ -1911,8 +1908,7 @@ void EventHandler::activeIntervalTimerFired(TimerBase*) {
 void EventHandler::notifyElementActivated() {
   // Since another element has been set to active, stop current timer and clear
   // reference.
-  if (m_activeIntervalTimer.isActive())
-    m_activeIntervalTimer.stop();
+  m_activeIntervalTimer.stop();
   m_lastDeferredTapElement = nullptr;
 }
 
