@@ -68,7 +68,7 @@ class CONTENT_EXPORT QuotaPolicyCookieStore
   // Called after cookies are loaded from the database.  Calls |loaded_callback|
   // when done.
   void OnLoad(const LoadedCallback& loaded_callback,
-              const std::vector<net::CanonicalCookie*>& cookies);
+              std::vector<std::unique_ptr<net::CanonicalCookie>> cookies);
 
   // Map of (domain keys(eTLD+1), is secure cookie) to number of cookies in the
   // database.

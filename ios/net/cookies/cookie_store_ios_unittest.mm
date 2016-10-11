@@ -249,13 +249,13 @@ class TestPersistentCookieStore
 
   // Runs the completion callback with a "a=b" cookie.
   void RunLoadedCallback() {
-    std::vector<net::CanonicalCookie*> cookies;
+    std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
     net::CookieOptions options;
     options.set_include_httponly();
 
     std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
         kTestCookieURL, "a=b", base::Time::Now(), options));
-    cookies.push_back(cookie.release());
+    cookies.push_back(std::move(cookie));
 
     // Some canonical cookies cannot be converted into System cookies, for
     // example if value is not valid utf8. Such cookies are ignored.
@@ -269,8 +269,8 @@ class TestPersistentCookieStore
                                      false,         // httponly
                                      net::CookieSameSite::DEFAULT_MODE, false,
                                      net::COOKIE_PRIORITY_DEFAULT));
-    cookies.push_back(bad_canonical_cookie.release());
-    loaded_callback_.Run(cookies);
+    cookies.push_back(std::move(bad_canonical_cookie));
+    loaded_callback_.Run(std::move(cookies));
   }
 
   bool flushed() { return flushed_; }
