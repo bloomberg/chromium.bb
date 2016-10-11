@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
 #include "components/translate/core/browser/language_model.h"

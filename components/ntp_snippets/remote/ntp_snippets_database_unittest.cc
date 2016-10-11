@@ -45,7 +45,8 @@ bool operator==(const NTPSnippet& lhs, const NTPSnippet& rhs) {
 namespace {
 
 std::unique_ptr<NTPSnippet> CreateTestSnippet() {
-  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet("http://localhost"));
+  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet("http://localhost",
+                                                     kArticlesRemoteId));
   snippet->add_source(
       SnippetSource(GURL("http://localhost"), "Publisher", GURL("http://amp")));
   return snippet;

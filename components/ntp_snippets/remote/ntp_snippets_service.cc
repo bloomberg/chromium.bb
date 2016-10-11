@@ -384,10 +384,8 @@ void NTPSnippetsService::ClearCachedSuggestions(Category category) {
   if (content->snippets.empty())
     return;
 
-  if (category == articles_category_) {
-    database_->DeleteSnippets(GetSnippetIDVector(content->snippets));
-    database_->DeleteImages(GetSnippetIDVector(content->snippets));
-  }
+  database_->DeleteSnippets(GetSnippetIDVector(content->snippets));
+  database_->DeleteImages(GetSnippetIDVector(content->snippets));
   content->snippets.clear();
 
   NotifyNewSuggestions();
@@ -428,10 +426,9 @@ void NTPSnippetsService::ClearDismissedSuggestionsForDebugging(
   if (content->dismissed.empty())
     return;
 
-  if (category == articles_category_) {
-    // The image got already deleted when the suggestion was dismissed.
-    database_->DeleteSnippets(GetSnippetIDVector(content->dismissed));
-  }
+  database_->DeleteSnippets(GetSnippetIDVector(content->dismissed));
+  // The image got already deleted when the suggestion was dismissed.
+
   content->dismissed.clear();
 }
 
@@ -484,20 +481,39 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
   DCHECK(state_ == State::NOT_INITED);
   DCHECK(base::ContainsKey(categories_, articles_category_));
 
-  // TODO(treib): Support non-article categories in database. crbug.com/653476
-  CategoryContent* content = &categories_[articles_category_];
+  NTPSnippet::PtrVector to_delete;
   for (std::unique_ptr<NTPSnippet>& snippet : snippets) {
+    Category snippet_category =
+        category_factory()->FromRemoteCategory(snippet->remote_category_id());
+    // We should already know about the category.
+    if (!base::ContainsKey(categories_, snippet_category)) {
+      DLOG(WARNING) << "Loaded a suggestion for unknown category "
+                    << snippet_category << " from the DB; deleting";
+      to_delete.emplace_back(std::move(snippet));
+      continue;
+    }
+
+    CategoryContent* content = &categories_[snippet_category];
     if (snippet->is_dismissed())
       content->dismissed.emplace_back(std::move(snippet));
     else
       content->snippets.emplace_back(std::move(snippet));
   }
+  if (!to_delete.empty()) {
+    database_->DeleteSnippets(GetSnippetIDVector(to_delete));
+    database_->DeleteImages(GetSnippetIDVector(to_delete));
+  }
 
-  std::sort(content->snippets.begin(), content->snippets.end(),
-            [](const std::unique_ptr<NTPSnippet>& lhs,
-               const std::unique_ptr<NTPSnippet>& rhs) {
-              return lhs->score() > rhs->score();
-            });
+  // Sort the suggestions in each category.
+  // TODO(treib): Persist the actual order in the DB somehow? crbug.com/654409
+  for (auto& entry : categories_) {
+    CategoryContent* content = &entry.second;
+    std::sort(content->snippets.begin(), content->snippets.end(),
+              [](const std::unique_ptr<NTPSnippet>& lhs,
+                 const std::unique_ptr<NTPSnippet>& rhs) {
+                return lhs->score() > rhs->score();
+              });
+  }
 
   // TODO(tschumann): If I move ClearExpiredDismisedSnippets() to the beginning
   // of the function, it essentially does nothing but tests are still green. Fix
@@ -542,8 +558,6 @@ void NTPSnippetsService::OnFetchFinished(
       // overwrite the existing title for ARTICLES if the new one is empty.
       // TODO(treib): Remove this check after we fully switch to the content
       // suggestions backend.
-      // TODO(sfiera): Avoid hard-coding articles category checks in so many
-      // places.
       if (category != articles_category_ ||
           !fetched_category.localized_title.empty()) {
         categories_[category].localized_title =
@@ -596,11 +610,8 @@ void NTPSnippetsService::ArchiveSnippets(Category category,
                                          NTPSnippet::PtrVector* to_archive) {
   CategoryContent* content = &categories_[category];
 
-  // TODO(treib): Handle DB for non-articles too. crbug.com/653476
-  if (category == articles_category_) {
-    database_->DeleteSnippets(GetSnippetIDVector(*to_archive));
-    // Do not delete the thumbnail images as they are still handy on open NTPs.
-  }
+  database_->DeleteSnippets(GetSnippetIDVector(*to_archive));
+  // Do not delete the thumbnail images as they are still handy on open NTPs.
 
   // Archive previous snippets - move them at the beginning of the list.
   content->archived.insert(content->archived.begin(),
@@ -616,8 +627,7 @@ void NTPSnippetsService::ArchiveSnippets(Category category,
                                 kMaxArchivedSnippetCount),
         std::make_move_iterator(content->archived.end()));
     content->archived.resize(kMaxArchivedSnippetCount);
-    if (category == articles_category_)
-      database_->DeleteImages(GetSnippetIDVector(to_delete));
+    database_->DeleteImages(GetSnippetIDVector(to_delete));
   }
 }
 
@@ -672,11 +682,8 @@ void NTPSnippetsService::ReplaceSnippets(Category category,
 
   ArchiveSnippets(category, &content->snippets);
 
-  // TODO(sfiera): handle DB for non-articles too.
-  if (category == articles_category_) {
-    // Save new articles to the DB.
-    database_->SaveSnippets(new_snippets);
-  }
+  // Save new articles to the DB.
+  database_->SaveSnippets(new_snippets);
 
   content->snippets = std::move(new_snippets);
 }
@@ -699,10 +706,8 @@ void NTPSnippetsService::ClearExpiredDismissedSnippets() {
     Compact(&content->dismissed);
 
     // Delete the removed article suggestions from the DB.
-    if (category == articles_category_) {
-      // The image got already deleted when the suggestion was dismissed.
-      database_->DeleteSnippets(GetSnippetIDVector(to_delete));
-    }
+    database_->DeleteSnippets(GetSnippetIDVector(to_delete));
+    // The image got already deleted when the suggestion was dismissed.
 
     if (content->snippets.empty() && content->dismissed.empty() &&
         category != articles_category_ && !content->provided_by_server) {
@@ -720,11 +725,14 @@ void NTPSnippetsService::ClearExpiredDismissedSnippets() {
 
 void NTPSnippetsService::ClearOrphanedImages() {
   auto alive_snippets = base::MakeUnique<std::set<std::string>>();
-  for (const auto& snippet_ptr : categories_[articles_category_].snippets) {
-    alive_snippets->insert(snippet_ptr->id());
-  }
-  for (const auto& snippet_ptr : categories_[articles_category_].dismissed) {
-    alive_snippets->insert(snippet_ptr->id());
+  for (const auto& entry : categories_) {
+    const CategoryContent& content = entry.second;
+    for (const auto& snippet_ptr : content.snippets) {
+      alive_snippets->insert(snippet_ptr->id());
+    }
+    for (const auto& snippet_ptr : content.dismissed) {
+      alive_snippets->insert(snippet_ptr->id());
+    }
   }
   database_->GarbageCollectImages(std::move(alive_snippets));
 }

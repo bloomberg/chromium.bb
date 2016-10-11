@@ -24,6 +24,7 @@ message SnippetProto {
   optional float score = 7;
   repeated SnippetSourceProto sources = 8;
   optional bool dismissed = 9;
+  optional int32 remote_category_id = 10;
 }
 
 message SnippetImageProto {

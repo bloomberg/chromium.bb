@@ -167,7 +167,9 @@ bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
 
 // Creates snippets from dictionary values in |list| and adds them to
 // |snippets|. Returns true on success, false if anything went wrong.
+// |remote_category_id| is only used if |content_suggestions_api| is true.
 bool AddSnippetsFromListValue(bool content_suggestions_api,
+                              int remote_category_id,
                               const base::ListValue& list,
                               NTPSnippet::PtrVector* snippets) {
   for (const auto& value : list) {
@@ -178,7 +180,8 @@ bool AddSnippetsFromListValue(bool content_suggestions_api,
 
     std::unique_ptr<NTPSnippet> snippet;
     if (content_suggestions_api) {
-      snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*dict);
+      snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(
+          *dict, remote_category_id);
     } else {
       snippet = NTPSnippet::CreateFromChromeReaderDictionary(*dict);
     }
@@ -676,11 +679,13 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
 
   switch (fetch_api_) {
     case CHROME_READER_API: {
+      const int kUnusedRemoteCategoryId = -1;
       categories->push_back(FetchedCategory(
           category_factory_->FromKnownCategory(KnownCategories::ARTICLES)));
       const base::ListValue* recos = nullptr;
       return top_dict->GetList("recos", &recos) &&
-             AddSnippetsFromListValue(/* content_suggestions_api = */ false,
+             AddSnippetsFromListValue(/*content_suggestions_api=*/false,
+                                      kUnusedRemoteCategoryId,
                                       *recos, &categories->back().snippets);
     }
 
@@ -692,17 +697,17 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
 
       for (const auto& v : *categories_value) {
         std::string utf8_title;
-        int category_id = -1;
+        int remote_category_id = -1;
         const base::DictionaryValue* category_value = nullptr;
         if (!(v->GetAsDictionary(&category_value) &&
               category_value->GetString("localizedTitle", &utf8_title) &&
-              category_value->GetInteger("id", &category_id) &&
-              (category_id > 0))) {
+              category_value->GetInteger("id", &remote_category_id) &&
+              (remote_category_id > 0))) {
           return false;
         }
 
         categories->push_back(FetchedCategory(
-            category_factory_->FromRemoteCategory(category_id)));
+            category_factory_->FromRemoteCategory(remote_category_id)));
         categories->back().localized_title = base::UTF8ToUTF16(utf8_title);
 
         const base::ListValue* suggestions = nullptr;
@@ -712,8 +717,8 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
           continue;
         }
         if (!AddSnippetsFromListValue(
-                /* content_suggestions_api = */ true, *suggestions,
-                &categories->back().snippets)) {
+                /*content_suggestions_api=*/true, remote_category_id,
+                *suggestions, &categories->back().snippets)) {
           return false;
         }
       }

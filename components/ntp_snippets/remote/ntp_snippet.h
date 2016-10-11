@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/ntp_snippets/category.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -20,6 +19,8 @@ class DictionaryValue;
 }  // namespace base
 
 namespace ntp_snippets {
+
+extern const int kArticlesRemoteId;
 
 class SnippetProto;
 
@@ -40,7 +41,7 @@ class NTPSnippet {
   // Creates a new snippet with the given |id|.
   // Public for testing only - create snippets using the Create* methods below.
   // TODO(treib): Make this private and add a CreateSnippetForTest?
-  explicit NTPSnippet(const std::string& id);
+  NTPSnippet(const std::string& id, int remote_category_id);
 
   ~NTPSnippet();
 
@@ -55,7 +56,8 @@ class NTPSnippet {
   // Suggestions. Returns a null pointer if the dictionary doesn't correspond to
   // a valid snippet. Maps field names to Chrome Reader field names.
   static std::unique_ptr<NTPSnippet> CreateFromContentSuggestionsDictionary(
-      const base::DictionaryValue& dict);
+      const base::DictionaryValue& dict,
+      int remote_category_id);
 
   // Creates an NTPSnippet from a protocol buffer. Returns a null pointer if the
   // protocol buffer doesn't correspond to a valid snippet.
@@ -66,8 +68,6 @@ class NTPSnippet {
 
   // A unique ID for identifying the snippet. If initialized by
   // CreateFromChromeReaderDictionary() the relevant key is 'url'.
-  // TODO(treib): For now, the ID has to be a valid URL spec, otherwise
-  // fetching the salient image will fail. See TODO in ntp_snippets_service.cc.
   const std::string& id() const { return id_; }
 
   // Title of the snippet.
@@ -127,6 +127,10 @@ class NTPSnippet {
   bool is_dismissed() const { return is_dismissed_; }
   void set_dismissed(bool dismissed) { is_dismissed_ = dismissed; }
 
+  // The ID of the remote category this snippet belongs to, for use with
+  // CategoryFactory::FromRemoteCategory.
+  int remote_category_id() const { return remote_category_id_; }
+
   // Public for testing.
   static base::Time TimeFromJsonString(const std::string& timestamp_str);
   static std::string TimeToJsonString(const base::Time& time);
@@ -142,6 +146,7 @@ class NTPSnippet {
   base::Time expiry_date_;
   float score_;
   bool is_dismissed_;
+  int remote_category_id_;
 
   size_t best_source_index_;
 

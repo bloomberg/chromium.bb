@@ -19,7 +19,8 @@ std::unique_ptr<NTPSnippet> SnippetFromContentSuggestionJSON(
   if (!json_value->GetAsDictionary(&json_dict)) {
     return nullptr;
   }
-  return NTPSnippet::CreateFromContentSuggestionsDictionary(*json_dict);
+  return NTPSnippet::CreateFromContentSuggestionsDictionary(*json_dict,
+                                                            kArticlesRemoteId);
 }
 
 TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {

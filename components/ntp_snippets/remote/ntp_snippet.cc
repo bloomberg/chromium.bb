@@ -8,7 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-
+#include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 
 namespace {
@@ -38,8 +38,19 @@ bool GetURLValue(const base::DictionaryValue& dict,
 
 namespace ntp_snippets {
 
-NTPSnippet::NTPSnippet(const std::string& id)
-    : id_(id), score_(0), is_dismissed_(false), best_source_index_(0) {}
+const int kArticlesRemoteId = 1;
+static_assert(
+    static_cast<int>(KnownCategories::ARTICLES) -
+            static_cast<int>(KnownCategories::REMOTE_CATEGORIES_OFFSET) ==
+        kArticlesRemoteId,
+    "kArticlesRemoteId has a wrong value?!");
+
+NTPSnippet::NTPSnippet(const std::string& id, int remote_category_id)
+    : id_(id),
+      score_(0),
+      is_dismissed_(false),
+      remote_category_id_(remote_category_id),
+      best_source_index_(0) {}
 
 NTPSnippet::~NTPSnippet() = default;
 
@@ -55,7 +66,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
   if (!content->GetString("url", &id) || id.empty())
     return nullptr;
 
-  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(id));
+  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(id, kArticlesRemoteId));
 
   std::string title;
   if (content->GetString("title", &title))
@@ -138,7 +149,8 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
 
 // static
 std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
-    const base::DictionaryValue& dict) {
+    const base::DictionaryValue& dict,
+    int remote_category_id) {
   const base::ListValue* ids;
   std::string id;
   if (!(dict.GetList("ids", &ids) &&
@@ -146,7 +158,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
     return nullptr;
   }
 
-  auto snippet = base::MakeUnique<NTPSnippet>(id);
+  auto snippet = base::MakeUnique<NTPSnippet>(id, remote_category_id);
   snippet->sources_.emplace_back(GURL(), std::string(), GURL());
   auto* source = &snippet->sources_.back();
   snippet->best_source_index_ = 0;
@@ -175,7 +187,12 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
   if (!proto.has_id() || proto.id().empty())
     return nullptr;
 
-  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(proto.id()));
+  int remote_category_id = proto.has_remote_category_id()
+                               ? proto.remote_category_id()
+                               : kArticlesRemoteId;
+
+  std::unique_ptr<NTPSnippet> snippet(
+      new NTPSnippet(proto.id(), remote_category_id));
 
   snippet->set_title(proto.title());
   snippet->set_snippet(proto.snippet());
@@ -231,6 +248,7 @@ SnippetProto NTPSnippet::ToProto() const {
     result.set_expiry_date(expiry_date_.ToInternalValue());
   result.set_score(score_);
   result.set_dismissed(is_dismissed_);
+  result.set_remote_category_id(remote_category_id_);
 
   for (const SnippetSource& source : sources_) {
     SnippetSourceProto* source_proto = result.add_sources();

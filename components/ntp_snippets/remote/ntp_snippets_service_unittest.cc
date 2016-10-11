@@ -781,6 +781,23 @@ TEST_F(NTPSnippetsServiceTest, PersistCategoryInfos) {
   EXPECT_EQ(info_unknown_before.title(), info_unknown_after.title());
 }
 
+TEST_F(NTPSnippetsServiceTest, PersistSuggestions) {
+  auto service = MakeSnippetsService();
+
+  LoadFromJSONString(service.get(),
+                     GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)}));
+
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  ASSERT_THAT(service->GetSnippetsForTesting(other_category()), SizeIs(1));
+
+  // Recreate the service to simulate a Chrome restart.
+  ResetSnippetsService(&service);
+
+  // The suggestions in both categories should have been restored.
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  EXPECT_THAT(service->GetSnippetsForTesting(other_category()), SizeIs(1));
+}
+
 TEST_F(NTPSnippetsServiceTest, Clear) {
   auto service = MakeSnippetsService();
 
