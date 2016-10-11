@@ -553,5 +553,40 @@ TEST_F(ScrollbarAnimationControllerThinningTest,
   }
 }
 
+// Move mouse on scrollbar and capture then move out of window. Confirm that
+// the bar stays thick and dark.
+TEST_F(ScrollbarAnimationControllerThinningTest,
+       MouseCapturedAndExitWindowFromScrollbar) {
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSeconds(1);
+
+  // Move in
+  scrollbar_controller_->DidMouseMoveNear(0);
+
+  scrollbar_controller_->Animate(time);
+  time += base::TimeDelta::FromSeconds(kDuration);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  // Capture
+  scrollbar_controller_->DidCaptureScrollbarBegin();
+  time += base::TimeDelta::FromSeconds(1);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  // move out of window
+  scrollbar_controller_->DidMouseMoveOffScrollbar();
+
+  // test for 10 seconds, stay thick and dark
+  for (int i = 0; i < 10; ++i) {
+    time += base::TimeDelta::FromSeconds(1);
+    scrollbar_controller_->Animate(time);
+    EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+    EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+  }
+}
+
 }  // namespace
 }  // namespace cc
