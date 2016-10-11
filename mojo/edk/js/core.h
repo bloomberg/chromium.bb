@@ -5,13 +5,14 @@
 #ifndef MOJO_EDK_JS_CORE_H_
 #define MOJO_EDK_JS_CORE_H_
 
+#include "mojo/edk/js/js_export.h"
 #include "v8/include/v8.h"
 
 namespace mojo {
 namespace edk {
 namespace js {
 
-class Core {
+class MOJO_JS_EXPORT Core {
  public:
   static const char kModuleName[];
   static v8::Local<v8::Value> GetModule(v8::Isolate* isolate);

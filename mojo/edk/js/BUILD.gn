@@ -16,7 +16,7 @@ group("tests") {
   ]
 }
 
-source_set("js") {
+component("js") {
   sources = [
     "core.cc",
     "core.h",
@@ -25,6 +25,7 @@ source_set("js") {
     "handle.cc",
     "handle.h",
     "handle_close_observer.h",
+    "js_export.h",
     "mojo_runner_delegate.cc",
     "mojo_runner_delegate.h",
     "support.cc",
@@ -44,4 +45,5 @@ source_set("js") {
   deps = [
     "//mojo/public/cpp/system",
   ]
+  defines = [ "MOJO_JS_IMPLEMENTATION" ]
 }
