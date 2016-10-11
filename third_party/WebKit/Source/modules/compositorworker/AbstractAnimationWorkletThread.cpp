@@ -5,8 +5,8 @@
 #include "modules/compositorworker/AbstractAnimationWorkletThread.h"
 
 #include "core/workers/WorkerBackingThread.h"
+#include "core/workers/WorkletBackingThreadHolder.h"
 #include "platform/CrossThreadFunctional.h"
-#include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
@@ -18,20 +18,25 @@ namespace blink {
 namespace {
 
 // This is a singleton class holding the animation worklet thread in this
-// renderer process. BackingThreadHolder::m_thread is cleared by
+// renderer process. WorkletBackingThreadHolder::m_thread is cleared by
 // ModulesInitializer::shutdown.
+//
 // See WorkerThread::terminateAndWaitForAllWorkers for the process shutdown
 // case.
-class BackingThreadHolder {
+//
+// TODO(hongchan): consider refactoring static methods in this class into
+// a template class.
+class AnimationWorkletBackingThreadHolder final
+    : public WorkletBackingThreadHolder {
  public:
-  static BackingThreadHolder* instance() {
+  static AnimationWorkletBackingThreadHolder* instance() {
     MutexLocker locker(holderInstanceMutex());
     return s_instance;
   }
 
   static void ensureInstance() {
     if (!s_instance)
-      s_instance = new BackingThreadHolder;
+      s_instance = new AnimationWorkletBackingThreadHolder;
   }
 
   static void clear() {
@@ -46,60 +51,36 @@ class BackingThreadHolder {
   static void createForTest() {
     MutexLocker locker(holderInstanceMutex());
     DCHECK_EQ(nullptr, s_instance);
-    s_instance = new BackingThreadHolder(WorkerBackingThread::createForTest(
-        Platform::current()->compositorThread()));
+    s_instance = new AnimationWorkletBackingThreadHolder(
+        WorkerBackingThread::createForTest(
+            Platform::current()->compositorThread()));
   }
-
-  WorkerBackingThread* thread() { return m_thread.get(); }
 
  private:
-  BackingThreadHolder(
-      std::unique_ptr<WorkerBackingThread> useBackingThread = nullptr)
-      : m_thread(useBackingThread
-                     ? std::move(useBackingThread)
-                     : WorkerBackingThread::create(
-                           Platform::current()->compositorThread())) {
-    DCHECK(isMainThread());
-    m_thread->backingThread().postTask(
-        BLINK_FROM_HERE,
-        crossThreadBind(&BackingThreadHolder::initializeOnThread,
-                        crossThreadUnretained(this)));
-  }
+  AnimationWorkletBackingThreadHolder(
+      std::unique_ptr<WorkerBackingThread> backingThread = nullptr)
+      : WorkletBackingThreadHolder(
+            backingThread ? std::move(backingThread)
+                          : WorkerBackingThread::create(
+                                Platform::current()->compositorThread())) {}
 
   static Mutex& holderInstanceMutex() {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, holderMutex, new Mutex);
     return holderMutex;
   }
 
-  void initializeOnThread() {
+  void initializeOnThread() final {
     MutexLocker locker(holderInstanceMutex());
     DCHECK(!m_initialized);
     m_thread->initialize();
     m_initialized = true;
   }
 
-  void shutdownAndWait() {
-    DCHECK(isMainThread());
-    WaitableEvent doneEvent;
-    m_thread->backingThread().postTask(
-        BLINK_FROM_HERE, crossThreadBind(&BackingThreadHolder::shutdownOnThread,
-                                         crossThreadUnretained(this),
-                                         crossThreadUnretained(&doneEvent)));
-    doneEvent.wait();
-  }
-
-  void shutdownOnThread(WaitableEvent* doneEvent) {
-    m_thread->shutdown();
-    doneEvent->signal();
-  }
-
-  std::unique_ptr<WorkerBackingThread> m_thread;
-  bool m_initialized = false;
-
-  static BackingThreadHolder* s_instance;
+  static AnimationWorkletBackingThreadHolder* s_instance;
 };
 
-BackingThreadHolder* BackingThreadHolder::s_instance = nullptr;
+AnimationWorkletBackingThreadHolder*
+    AnimationWorkletBackingThreadHolder::s_instance = nullptr;
 
 }  // namespace
 
@@ -111,7 +92,7 @@ AbstractAnimationWorkletThread::AbstractAnimationWorkletThread(
 AbstractAnimationWorkletThread::~AbstractAnimationWorkletThread() {}
 
 WorkerBackingThread& AbstractAnimationWorkletThread::workerBackingThread() {
-  return *BackingThreadHolder::instance()->thread();
+  return *AnimationWorkletBackingThreadHolder::instance()->thread();
 }
 
 void collectAllGarbageOnThread(WaitableEvent* doneEvent) {
@@ -122,7 +103,8 @@ void collectAllGarbageOnThread(WaitableEvent* doneEvent) {
 void AbstractAnimationWorkletThread::collectAllGarbage() {
   DCHECK(isMainThread());
   WaitableEvent doneEvent;
-  BackingThreadHolder* instance = BackingThreadHolder::instance();
+  AnimationWorkletBackingThreadHolder* instance =
+      AnimationWorkletBackingThreadHolder::instance();
   if (!instance)
     return;
   instance->thread()->backingThread().postTask(
@@ -133,16 +115,16 @@ void AbstractAnimationWorkletThread::collectAllGarbage() {
 
 void AbstractAnimationWorkletThread::ensureSharedBackingThread() {
   DCHECK(isMainThread());
-  BackingThreadHolder::ensureInstance();
+  AnimationWorkletBackingThreadHolder::ensureInstance();
 }
 
 void AbstractAnimationWorkletThread::clearSharedBackingThread() {
   DCHECK(isMainThread());
-  BackingThreadHolder::clear();
+  AnimationWorkletBackingThreadHolder::clear();
 }
 
 void AbstractAnimationWorkletThread::createSharedBackingThreadForTest() {
-  BackingThreadHolder::createForTest();
+  AnimationWorkletBackingThreadHolder::createForTest();
 }
 
 }  // namespace blink
