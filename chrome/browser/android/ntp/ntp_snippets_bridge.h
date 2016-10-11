@@ -71,13 +71,6 @@ class NTPSnippetsBridge
                        const base::android::JavaParamRef<jobject>& obj,
                        jint category);
 
-  // Checks if the URL has been visited. The callback will not be called
-  // synchronously.
-  void GetURLVisited(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& obj,
-                     const base::android::JavaParamRef<jobject>& callback,
-                     const base::android::JavaParamRef<jstring>& jurl);
-
   void OnPageShown(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

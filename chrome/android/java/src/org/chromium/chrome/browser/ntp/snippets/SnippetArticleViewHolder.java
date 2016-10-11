@@ -33,7 +33,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.ntp.DisplayStyleObserver;
-import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
@@ -109,30 +108,20 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             // TODO(peconn): Instead, close the context menu when a snippet is clicked.
             if (!ViewCompat.isAttachedToWindow(mRecyclerView)) return true;
 
-            // The UMA is used to compare how the user views the article linked from a snippet.
             switch (item.getItemId()) {
                 case ID_OPEN_IN_NEW_WINDOW:
-                    NewTabPageUma.recordOpenSnippetMethod(
-                            NewTabPageUma.OPEN_SNIPPET_METHODS_NEW_WINDOW);
                     mManager.openSnippet(WindowOpenDisposition.NEW_WINDOW, mArticle);
                     return true;
                 case ID_OPEN_IN_NEW_TAB:
-                    NewTabPageUma.recordOpenSnippetMethod(
-                            NewTabPageUma.OPEN_SNIPPET_METHODS_NEW_TAB);
                     mManager.openSnippet(WindowOpenDisposition.NEW_FOREGROUND_TAB, mArticle);
                     return true;
                 case ID_OPEN_IN_INCOGNITO_TAB:
-                    NewTabPageUma.recordOpenSnippetMethod(
-                            NewTabPageUma.OPEN_SNIPPET_METHODS_INCOGNITO);
                     mManager.openSnippet(WindowOpenDisposition.OFF_THE_RECORD, mArticle);
                     return true;
                 case ID_SAVE_FOR_OFFLINE:
-                    NewTabPageUma.recordOpenSnippetMethod(
-                            NewTabPageUma.OPEN_SNIPPET_METHODS_SAVE_FOR_OFFLINE);
                     mManager.openSnippet(WindowOpenDisposition.SAVE_TO_DISK, mArticle);
                     return true;
                 case ID_REMOVE:
-                    // UMA is recorded during dismissal.
                     mRecyclerView.dismissItemWithAnimation(mArticle);
                     return true;
                 default:
@@ -181,15 +170,10 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     @Override
     public void onCardTapped() {
         mNewTabPageManager.openSnippet(WindowOpenDisposition.CURRENT_TAB, mArticle);
-        mArticle.trackClick();
     }
 
     @Override
     protected void createContextMenu(ContextMenu menu) {
-        RecordHistogram.recordSparseSlowlyHistogram(
-                "NewTabPage.Snippets.CardLongPressed", mArticle.mPosition);
-        mArticle.recordAgeAndScore("NewTabPage.Snippets.CardLongPressed");
-
         OnMenuItemClickListener listener =
                 new ContextMenuItemClickListener(mArticle, mNewTabPageManager, getRecyclerView());
 

@@ -108,12 +108,6 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     @Override
-    public void getSuggestionVisited(
-            SnippetArticle suggestion, Callback<Boolean> callback) {
-        callback.onResult(false);
-    }
-
-    @Override
     public void setObserver(Observer observer) {
         mObserver = observer;
     }

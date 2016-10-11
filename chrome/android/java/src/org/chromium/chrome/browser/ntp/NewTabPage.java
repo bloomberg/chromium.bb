@@ -334,6 +334,7 @@ public class NewTabPage
         @Override
         public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
             mSnippetsBridge.onSuggestionOpened(article, windowOpenDisposition);
+            NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
             NewTabPageUma.monitorContentSuggestionVisit(mTab, article.mCategory);
             LoadUrlParams loadUrlParams =
                     new LoadUrlParams(article.mUrl, PageTransition.AUTO_BOOKMARK);

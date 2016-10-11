@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -17,10 +16,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Records UMA stats for which actions the user takes on the NTP in the
@@ -69,49 +64,6 @@ public final class NewTabPageUma {
     // The number of possible NTP impression types
     private static final int NUM_NTP_IMPRESSION = 2;
 
-    /** Possible interactions with the snippets.
-     * Do not remove or change existing values other than NUM_SNIPPETS_ACTIONS. */
-    @IntDef({SNIPPETS_ACTION_SHOWN, SNIPPETS_ACTION_SCROLLED, SNIPPETS_ACTION_CLICKED,
-             SNIPPETS_ACTION_DISMISSED_OBSOLETE, SNIPPETS_ACTION_DISMISSED_VISITED,
-             SNIPPETS_ACTION_DISMISSED_UNVISITED})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface SnippetsAction {}
-    /** Snippets are enabled and are being shown to the user. */
-    public static final int SNIPPETS_ACTION_SHOWN = 0;
-    /** The snippet list has been scrolled. */
-    public static final int SNIPPETS_ACTION_SCROLLED = 1;
-    /** A snippet has been clicked. */
-    public static final int SNIPPETS_ACTION_CLICKED = 2;
-    /** A snippet has been dismissed, made obsolete by the next two actions. */
-    public static final int SNIPPETS_ACTION_DISMISSED_OBSOLETE = 3;
-    /** A snippet has been swiped away, it had been viewed by the user (on this device). */
-    public static final int SNIPPETS_ACTION_DISMISSED_VISITED = 4;
-    /** A snippet has been swiped away, it had not been viewed by the user (on this device). */
-    public static final int SNIPPETS_ACTION_DISMISSED_UNVISITED = 5;
-    /** Obsolete. The snippet list has been scrolled below the fold (once per NTP load). */
-    // public static final int SNIPPETS_ACTION_SCROLLED_BELOW_THE_FOLD_ONCE = 6;
-    /** The number of possible actions. */
-    private static final int NUM_SNIPPETS_ACTIONS = 7;
-
-    /** Possible ways to follow the link provided by a snippet.
-     * Do not remove or change existing values other than NUM_OPEN_SNIPPET_METHODS. */
-    @IntDef({OPEN_SNIPPET_METHODS_PLAIN_CLICK, OPEN_SNIPPET_METHODS_NEW_WINDOW,
-            OPEN_SNIPPET_METHODS_NEW_TAB, OPEN_SNIPPET_METHODS_INCOGNITO,
-            OPEN_SNIPPET_METHODS_SAVE_FOR_OFFLINE, NUM_OPEN_SNIPPET_METHODS})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface OpenSnippetMethod {}
-    /** The article was opened taking over the tab. */
-    public static final int OPEN_SNIPPET_METHODS_PLAIN_CLICK = 0;
-    /** The article was opened in a new window. */
-    public static final int OPEN_SNIPPET_METHODS_NEW_WINDOW = 1;
-    /** The article was opened in a new tab, */
-    public static final int OPEN_SNIPPET_METHODS_NEW_TAB = 2;
-    /** The article was opened in an incognito tab. */
-    public static final int OPEN_SNIPPET_METHODS_INCOGNITO = 3;
-    /** The article was saved to be viewed offline. */
-    public static final int OPEN_SNIPPET_METHODS_SAVE_FOR_OFFLINE = 4;
-    /** The number of ways an article can be viewed. */
-    public static final int NUM_OPEN_SNIPPET_METHODS = 5;
     /**
      * Records an action taken by the user on the NTP.
      * @param action One of the ACTION_* values defined in this class.
@@ -173,24 +125,6 @@ public final class NewTabPageUma {
             default:
                 return;
         }
-    }
-
-    /**
-     * Records important events related to snippets.
-     * @param action action key, one of {@link SnippetsAction}'s values.
-     */
-    public static void recordSnippetAction(@SnippetsAction int action) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "NewTabPage.Snippets.Interactions", action, NUM_SNIPPETS_ACTIONS);
-    }
-
-    /**
-     * Records how the article linked from a snippet was viewed.
-     * @param method method key, one of {@link OpenSnippetMethod}'s values.
-     */
-    public static void recordOpenSnippetMethod(@OpenSnippetMethod int method) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "NewTabPage.Snippets.OpenMethod", method, NUM_OPEN_SNIPPET_METHODS);
     }
 
     /**
@@ -268,8 +202,6 @@ public final class NewTabPageUma {
             if (removeObserverFromTab != null) removeObserverFromTab.removeObserver(this);
             RecordUserAction.record("MobileNTP.Snippets.VisitEnd");
             long visitTimeMs = SystemClock.elapsedRealtime() - mStartTimeMs;
-            RecordHistogram.recordLongTimesHistogram(
-                    "NewTabPage.Snippets.VisitDuration", visitTimeMs, TimeUnit.MILLISECONDS);
             SnippetsBridge.onSuggestionTargetVisited(mCategory, visitTimeMs);
         }
     }

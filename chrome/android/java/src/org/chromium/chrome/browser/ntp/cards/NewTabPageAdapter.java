@@ -13,11 +13,9 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -232,8 +230,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         if (suggestions.isEmpty()) return;
 
         setSuggestions(category, suggestions, status);
-
-        NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SHOWN);
     }
 
     @Override
@@ -497,15 +493,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             // inform the native side that the snippet has been dismissed (http://crbug.com/649299).
             return;
         }
-
-        suggestionsSource.getSuggestionVisited(suggestion, new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean result) {
-                NewTabPageUma.recordSnippetAction(result
-                        ? NewTabPageUma.SNIPPETS_ACTION_DISMISSED_VISITED
-                        : NewTabPageUma.SNIPPETS_ACTION_DISMISSED_UNVISITED);
-            }
-        });
 
         announceItemRemoved(suggestion.mTitle);
 

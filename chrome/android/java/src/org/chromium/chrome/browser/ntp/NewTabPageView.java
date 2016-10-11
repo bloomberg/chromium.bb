@@ -41,7 +41,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
@@ -405,17 +404,6 @@ public class NewTabPageView extends FrameLayout
                     new ItemTouchHelper(mNewTabPageAdapter.getItemTouchCallbacks());
             helper.attachToRecyclerView(mRecyclerView);
 
-            mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                private boolean mScrolledOnce = false;
-                @Override
-                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                    if (newState != RecyclerView.SCROLL_STATE_DRAGGING) return;
-                    RecordUserAction.record("MobileNTP.Snippets.Scrolled");
-                    if (mScrolledOnce) return;
-                    mScrolledOnce = true;
-                    NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SCROLLED);
-                }
-            });
             initializeSearchBoxRecyclerViewScrollHandling();
         } else {
             initializeSearchBoxScrollHandling();

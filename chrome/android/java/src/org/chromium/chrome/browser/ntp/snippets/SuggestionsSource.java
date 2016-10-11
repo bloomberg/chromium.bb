@@ -75,12 +75,6 @@ public interface SuggestionsSource {
     void dismissCategory(@CategoryInt int category);
 
     /**
-     * Checks whether a content suggestion has been visited. The callback is never called
-     * synchronously.
-     */
-    void getSuggestionVisited(SnippetArticle suggestion, Callback<Boolean> callback);
-
-    /**
      * Sets the recipient for update events from the source.
      */
     void setObserver(Observer observer);
