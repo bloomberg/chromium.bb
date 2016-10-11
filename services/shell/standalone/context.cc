@@ -13,9 +13,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/process/process_info.h"
 #include "base/run_loop.h"
@@ -35,6 +37,7 @@
 #include "services/catalog/store.h"
 #include "services/shell/connect_params.h"
 #include "services/shell/public/cpp/names.h"
+#include "services/shell/runner/common/switches.h"
 #include "services/shell/runner/host/in_process_native_runner.h"
 #include "services/shell/runner/host/out_of_process_native_runner.h"
 #include "services/shell/standalone/tracer.h"
@@ -49,6 +52,15 @@
 
 namespace shell {
 namespace {
+
+base::FilePath::StringType GetPathFromCommandLineSwitch(
+    const base::StringPiece& value) {
+#if defined(OS_POSIX)
+  return value.as_string();
+#elif defined(OS_WIN)
+  return base::UTF8ToUTF16(value);
+#endif  // OS_POSIX
+}
 
 // Used to ensure we only init once.
 class Setup {
@@ -168,6 +180,27 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
       new catalog::Catalog(blocking_pool_.get(), std::move(store), nullptr));
   service_manager_.reset(new ServiceManager(std::move(runner_factory),
                                             catalog_->TakeService()));
+
+  if (command_line.HasSwitch(::switches::kServiceOverrides)) {
+    base::FilePath overrides_file(GetPathFromCommandLineSwitch(
+        command_line.GetSwitchValueASCII(::switches::kServiceOverrides)));
+    JSONFileValueDeserializer deserializer(overrides_file);
+    int error = 0;
+    std::string message;
+    std::unique_ptr<base::Value> contents =
+        deserializer.Deserialize(&error, &message);
+    if (!contents) {
+      LOG(ERROR) << "Failed to parse service overrides file: " << message;
+    } else {
+      std::unique_ptr<ServiceOverrides> service_overrides =
+          base::MakeUnique<ServiceOverrides>(std::move(contents));
+      for (const auto& iter : service_overrides->entries()) {
+        if (!iter.second.package_name.empty())
+          catalog_->OverridePackageName(iter.first, iter.second.package_name);
+      }
+      service_manager_->SetServiceOverrides(std::move(service_overrides));
+    }
+  }
 
   mojom::InterfaceProviderPtr tracing_remote_interfaces;
   mojom::InterfaceProviderPtr tracing_local_interfaces;

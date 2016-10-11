@@ -18,4 +18,9 @@ const char kEnableSandbox[] = "enable-sandbox";
 // primordial message pipe to the parent.
 const char kPrimordialPipeToken[] = "primordial-pipe-token";
 
+// Specifies a JSON file from which to read a set of service metadata overrides.
+// This can be used with the standalone mojo_runner to override executable and
+// package resolution behavior.
+const char kServiceOverrides[] = "service-overrides";
+
 }  // namespace switches

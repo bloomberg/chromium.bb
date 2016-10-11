@@ -22,19 +22,24 @@ namespace catalog {
 namespace {
 
 base::FilePath GetManifestPath(const base::FilePath& package_dir,
-                               const std::string& name) {
+                               const std::string& name,
+                               const std::string& package_name_override) {
   // TODO(beng): think more about how this should be done for exe targets.
   std::string type = shell::GetNameType(name);
   std::string path = shell::GetNamePath(name);
   if (type == shell::kNameType_Service) {
+    std::string package_name;
+    if (package_name_override.empty())
+      package_name = path;
+    else
+      package_name = package_name_override;
     return package_dir.AppendASCII(kPackagesDirName).AppendASCII(
-        path + "/manifest.json");
+        package_name + "/manifest.json");
   }
   if (type == shell::kNameType_Exe)
     return package_dir.AppendASCII(path + "_manifest.json");
   return base::FilePath();
 }
-
 
 base::FilePath GetExecutablePath(const base::FilePath& package_dir,
                                  const std::string& name) {
@@ -124,12 +129,15 @@ void ScanDir(
 std::unique_ptr<Entry> ReadManifest(
     const base::FilePath& package_dir,
     const std::string& mojo_name,
+    const std::string& package_name_override,
     const base::FilePath& manifest_path_override) {
   base::FilePath manifest_path;
-  if (manifest_path_override.empty())
-    manifest_path = GetManifestPath(package_dir, mojo_name);
-  else
+  if (manifest_path_override.empty()) {
+    manifest_path =
+        GetManifestPath(package_dir, mojo_name, package_name_override);
+  } else {
     manifest_path = manifest_path_override;
+  }
 
   std::unique_ptr<Entry> entry = CreateEntryForManifestAt(manifest_path,
                                                           package_dir);
@@ -202,16 +210,29 @@ void Reader::CreateEntryForName(
   }
 
   base::FilePath manifest_path_override;
-  auto override_iter = manifest_path_overrides_.find(mojo_name);
-  if (override_iter != manifest_path_overrides_.end())
-    manifest_path_override = override_iter->second;
+  {
+    auto override_iter = manifest_path_overrides_.find(mojo_name);
+    if (override_iter != manifest_path_overrides_.end())
+      manifest_path_override = override_iter->second;
+  }
 
+  std::string package_name_override;
+  {
+    auto override_iter = package_name_overrides_.find(mojo_name);
+    if (override_iter != package_name_overrides_.end())
+      package_name_override = override_iter->second;
+  }
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
       base::Bind(&ReadManifest, system_package_dir_, mojo_name,
-                 manifest_path_override),
+                 package_name_override, manifest_path_override),
       base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(), cache,
                   entry_created_callback));
+}
+
+void Reader::OverridePackageName(const std::string& service_name,
+                                 const std::string& package_name) {
+  package_name_overrides_.insert(std::make_pair(service_name, package_name));
 }
 
 void Reader::OverrideManifestPath(const std::string& service_name,

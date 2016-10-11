@@ -89,6 +89,11 @@ Catalog::Catalog(base::SingleThreadTaskRunner* task_runner,
 
 Catalog::~Catalog() {}
 
+void Catalog::OverridePackageName(const std::string& service_name,
+                                  const std::string& package_name) {
+  system_reader_->OverridePackageName(service_name, package_name);
+}
+
 shell::mojom::ServicePtr Catalog::TakeService() {
   return std::move(service_);
 }

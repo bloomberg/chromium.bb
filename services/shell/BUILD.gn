@@ -28,6 +28,8 @@ source_set("shell") {
     "native_runner_delegate.h",
     "service_manager.cc",
     "service_manager.h",
+    "service_overrides.cc",
+    "service_overrides.h",
     "switches.cc",
     "switches.h",
   ]

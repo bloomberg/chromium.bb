@@ -58,6 +58,12 @@ class Catalog : public shell::Service,
           ManifestProvider* manifest_provider);
   ~Catalog() override;
 
+  // By default, "service:foo" resolves to a package named "foo". This allows
+  // an embedder to override that behavior for specific service names. Must be
+  // called before the catalog is connected to the ServiceManager.
+  void OverridePackageName(const std::string& service_name,
+                           const std::string& package_name);
+
   shell::mojom::ServicePtr TakeService();
 
  private:

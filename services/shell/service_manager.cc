@@ -509,6 +509,11 @@ ServiceManager::~ServiceManager() {
   root_instances_.clear();
 }
 
+void ServiceManager::SetServiceOverrides(
+    std::unique_ptr<ServiceOverrides> overrides) {
+  service_overrides_ = std::move(overrides);
+}
+
 void ServiceManager::SetInstanceQuitCallback(
     base::Callback<void(const Identity&)> callback) {
   instance_quit_callback_ = callback;
@@ -826,9 +831,14 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
                        instance_name);
       CreateServiceWithFactory(factory, target.name(), std::move(request));
     } else {
+      base::FilePath package_path;
+      if (!service_overrides_ || !service_overrides_->GetExecutablePathOverride(
+            target.name(), &package_path)) {
+        package_path = result->package_path;
+      }
+
       Identity source_instance_identity;
       base::debug::Alias(&has_source_instance);
-      base::FilePath package_path = result->package_path;
       base::debug::Alias(&package_path);
       base::debug::Alias(&source);
       base::debug::Alias(&target);
@@ -840,7 +850,7 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
       // happening somehow. https://crbug.com/649673.
       CHECK(false);
 #endif
-      instance->StartWithFilePath(result->package_path);
+      instance->StartWithFilePath(package_path);
     }
   }
 

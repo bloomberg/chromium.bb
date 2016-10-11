@@ -25,6 +25,7 @@
 #include "services/shell/public/interfaces/service.mojom.h"
 #include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/public/interfaces/service_manager.mojom.h"
+#include "services/shell/service_overrides.h"
 
 namespace shell {
 class ServiceContext;
@@ -57,6 +58,10 @@ class ServiceManager : public Service {
   ServiceManager(std::unique_ptr<NativeRunnerFactory> native_runner_factory,
                  mojom::ServicePtr catalog);
   ~ServiceManager() override;
+
+  // Sets overrides for service executable and package resolution. Must be
+  // called before any services are launched.
+  void SetServiceOverrides(std::unique_ptr<ServiceOverrides> overrides);
 
   // Provide a callback to be notified whenever an instance is destroyed.
   // Typically the creator of the Service Manager will use this to determine
@@ -152,6 +157,8 @@ class ServiceManager : public Service {
                          mojom::ResolveResultPtr result);
 
   base::WeakPtr<ServiceManager> GetWeakPtr();
+
+  std::unique_ptr<ServiceOverrides> service_overrides_;
 
   // Ownership of all root Instances. Non-root Instances are owned by their
   // parent Instance.
