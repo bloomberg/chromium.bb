@@ -96,19 +96,22 @@ HTMLElement* InsertListCommand::mergeWithNeighboringLists(
 bool InsertListCommand::selectionHasListOfType(
     const VisibleSelection& selection,
     const HTMLQualifiedName& listTag) {
-  VisiblePosition start = selection.visibleStartDeprecated();
+  DCHECK(!document().needsLayoutTreeUpdate());
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      document().lifecycle());
+
+  VisiblePosition start = selection.visibleStart();
 
   if (!enclosingList(start.deepEquivalent().anchorNode()))
     return false;
 
-  VisiblePosition end =
-      startOfParagraphDeprecated(selection.visibleEndDeprecated());
+  VisiblePosition end = startOfParagraph(selection.visibleEnd());
   while (start.isNotNull() && start.deepEquivalent() != end.deepEquivalent()) {
     HTMLElement* listElement =
         enclosingList(start.deepEquivalent().anchorNode());
     if (!listElement || !listElement->hasTagName(listTag))
       return false;
-    start = startOfNextParagraphDeprecated(start);
+    start = startOfNextParagraph(start);
   }
 
   return true;
@@ -573,19 +576,21 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart,
   // Layout is necessary since start's node's inline layoutObjects may have been
   // destroyed by the insertion The end of the content may have changed after
   // the insertion and layout so update it as well.
-  if (insertionPos == startPos)
+  if (insertionPos == startPos) {
     moveParagraphOverPositionIntoEmptyListItem(originalStart, listItemElement,
                                                editingState);
-  else
-    moveParagraphOverPositionIntoEmptyListItem(
-        createVisiblePositionDeprecated(startPos), listItemElement,
-        editingState);
+  } else {
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    moveParagraphOverPositionIntoEmptyListItem(createVisiblePosition(startPos),
+                                               listItemElement, editingState);
+  }
   if (editingState->isAborted())
     return;
 
   mergeWithNeighboringLists(listElement, editingState);
 }
 
+// TODO(xiaochengh): Stop storing VisiblePositions through mutations.
 void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(
     const VisiblePosition& pos,
     HTMLLIElement* listItemElement,
@@ -598,10 +603,12 @@ void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(
   // Inserting list element and list item list may change start of pargraph
   // to move. We calculate start of paragraph again.
   document().updateStyleAndLayoutIgnorePendingStylesheets();
+  const VisiblePosition& validPos =
+      createVisiblePosition(pos.toPositionWithAffinity());
   const VisiblePosition& start =
-      startOfParagraphDeprecated(pos, CanSkipOverEditingBoundary);
+      startOfParagraph(validPos, CanSkipOverEditingBoundary);
   const VisiblePosition& end =
-      endOfParagraphDeprecated(pos, CanSkipOverEditingBoundary);
+      endOfParagraph(validPos, CanSkipOverEditingBoundary);
   moveParagraph(start, end, VisiblePosition::beforeNode(placeholder),
                 editingState, PreserveSelection);
 }
