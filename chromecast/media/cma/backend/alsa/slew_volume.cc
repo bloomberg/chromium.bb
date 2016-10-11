@@ -11,7 +11,7 @@
 
 namespace {
 
-// The time to slew from 0.0 to 1.0.
+// The time to slew from current volume to target volume.
 const int kMaxSlewTimeMs = 100;
 const int kDefaultSampleRate = 44100;
 }
@@ -22,19 +22,29 @@ namespace media {
 SlewVolume::SlewVolume() : SlewVolume(kMaxSlewTimeMs, kMaxSlewTimeMs) {}
 
 SlewVolume::SlewVolume(int max_slew_time_up_ms, int max_slew_time_down_ms)
-    : max_slew_time_up_ms_(max_slew_time_up_ms),
+    : sample_rate_(kDefaultSampleRate),
+      max_slew_time_up_ms_(max_slew_time_up_ms),
       max_slew_time_down_ms_(max_slew_time_down_ms),
-      max_slew_up_(1000.0 / (max_slew_time_up_ms * kDefaultSampleRate)),
-      max_slew_down_(1000.0 / (max_slew_time_down_ms * kDefaultSampleRate)) {}
-
-// Slew rate should be 1 / (slew_time * sample_rate)
-void SlewVolume::SetSampleRate(int sample_rate) {
-  max_slew_up_ = 1000.0 / (max_slew_time_up_ms_ * sample_rate);
-  max_slew_down_ = 1000.0 / (max_slew_time_down_ms_ * sample_rate);
+      max_slew_up_(1000.0 / (max_slew_time_up_ms * sample_rate_)),
+      max_slew_down_(1000.0 / (max_slew_time_down_ms * sample_rate_)) {
+  LOG(INFO) << "Creating a slew volume: " << max_slew_time_up_ms;
 }
 
+void SlewVolume::SetSampleRate(int sample_rate) {
+  sample_rate_ = sample_rate;
+  SetVolume(volume_scale_);
+}
+
+// Slew rate should be volume_to_slew / slew_time / sample_rate
 void SlewVolume::SetVolume(double volume_scale) {
   volume_scale_ = volume_scale;
+  if (volume_scale_ > current_volume_) {
+    max_slew_up_ = (volume_scale_ - current_volume_) * 1000.0 /
+                   (max_slew_time_up_ms_ * sample_rate_);
+  } else {
+    max_slew_down_ = (current_volume_ - volume_scale_) * 1000.0 /
+                     (max_slew_time_down_ms_ * sample_rate_);
+  }
 }
 
 void SlewVolume::ProcessFMAC(bool repeat_transition,

@@ -36,6 +36,7 @@ class SlewVolume {
   bool ProcessInterleaved(int32_t* data, int frames);
 
  private:
+  double sample_rate_;
   double volume_scale_ = 1.0;
   double current_volume_ = 1.0;
   double last_starting_volume_ = 1.0;
