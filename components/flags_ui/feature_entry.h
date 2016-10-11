@@ -22,12 +22,16 @@ namespace flags_ui {
 // for a few milestones, until their full launch.
 struct FeatureEntry {
   enum Type {
-    // A feature with a single flag value. This is typically what you want.
+    // A feature with a single flag value.
+    //
+    // For new entries, it is recommended to instead use FEATURE_VALUE macro
+    // that is backed by a base::Feature struct. See base/feature_list.h.
     SINGLE_VALUE,
 
-    // A default enabled feature with a single flag value to disable it. Please
-    // consider whether you really need a flag to disable the feature, and even
-    // if so remove the disable flag as soon as it is no longer needed.
+    // A default enabled feature with a single flag value to disable it.
+    //
+    // For new entries, it is recommended to instead use FEATURE_VALUE macro
+    // that is backed by a base::Feature struct. See base/feature_list.h.
     SINGLE_DISABLE_VALUE,
 
     // The feature has multiple values only one of which is ever enabled.
@@ -38,14 +42,20 @@ struct FeatureEntry {
     MULTI_VALUE,
 
     // The feature has three possible values: Default, Enabled and Disabled.
-    // This should be used for features that may have their own logic to decide
-    // if the feature should be on when not explicitly specified via about
-    // flags - for example via FieldTrials.
+    // This allows the Default group to have its own logic to determine if the
+    // feature is on.
+    //
+    // For new entries, it is recommended to instead use FEATURE_VALUE macro
+    // that is backed by a base::Feature struct. See base/feature_list.h.
     ENABLE_DISABLE_VALUE,
 
     // Corresponds to a base::Feature, per base/feature_list.h. The entry will
     // have three states: Default, Enabled, Disabled. When not specified or set
     // to Default, the normal default value of the feature is used.
+    //
+    // This is recommended for all new entries, since it provides a uniform way
+    // to specify features in the codebase along with their default state, as
+    // well as the ability enable/disable via run server-side experiments.
     FEATURE_VALUE,
 
     // Corresponds to a base::Feature and additional options [O_1, ..., O_n]
