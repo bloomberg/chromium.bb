@@ -11,9 +11,9 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/threat_details.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -235,7 +235,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
@@ -269,7 +270,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
@@ -302,7 +304,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere.
   Navigate(kGoogleURL, 1, 0, true);
@@ -337,7 +340,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere.
   Navigate(kGoodURL, 1, 0, true);
@@ -370,7 +374,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere.
   Navigate(kGoogleURL, 1, 0, true);
@@ -411,7 +416,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere.
   Navigate(kGoogleURL, 1, 0, true);
@@ -467,7 +473,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere else.
   Navigate(kGoodURL, 1, 0, true);
@@ -518,7 +525,8 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Navigate somewhere.
   Navigate(kGoodURL, 1, 0, true);
@@ -569,7 +577,8 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
@@ -604,7 +613,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), false);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, false);
 
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
@@ -638,7 +648,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), false);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, false);
 
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
@@ -652,17 +663,20 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(IsExtendedReportingEnabled(*profile->GetPrefs()));
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled));
 
   // Simulate the user check the report agreement checkbox.
   sb_interstitial->controller()->SetReportingPreference(true);
 
-  EXPECT_TRUE(IsExtendedReportingEnabled(*profile->GetPrefs()));
+  EXPECT_TRUE(profile->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled));
 
   // Simulate the user uncheck the report agreement checkbox.
   sb_interstitial->controller()->SetReportingPreference(false);
 
-  EXPECT_FALSE(IsExtendedReportingEnabled(*profile->GetPrefs()));
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled));
 }
 
 // Test that extended reporting option is not shown on blocking an HTTPS main
@@ -671,7 +685,8 @@ TEST_F(SafeBrowsingBlockingPageTest, ExtendedReportingNotShownOnSecurePage) {
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Start a load.
   controller().LoadURL(GURL(kBadHTTPSURL), content::Referrer(),
@@ -704,7 +719,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Commit a load.
   content::WebContentsTester::For(web_contents())
@@ -738,7 +754,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Commit a load.
   content::WebContentsTester::For(web_contents())
@@ -772,7 +789,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Commit a load.
   content::WebContentsTester::For(web_contents())
@@ -807,7 +825,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
   // Commit a load.
   content::WebContentsTester::For(web_contents())

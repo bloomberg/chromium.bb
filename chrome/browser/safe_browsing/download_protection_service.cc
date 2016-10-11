@@ -52,7 +52,6 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
@@ -177,8 +176,9 @@ class DownloadSBClient
         total_type_(total_type),
         dangerous_type_(dangerous_type) {
     Profile* profile = Profile::FromBrowserContext(item.GetBrowserContext());
-    is_extended_reporting_ =
-        profile && IsExtendedReportingEnabled(*profile->GetPrefs());
+    is_extended_reporting_ = profile &&
+                             profile->GetPrefs()->GetBoolean(
+                                 prefs::kSafeBrowsingExtendedReportingEnabled);
   }
 
   virtual void StartCheck() = 0;
@@ -353,8 +353,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
     if (item_->GetBrowserContext()) {
       Profile* profile =
           Profile::FromBrowserContext(item_->GetBrowserContext());
-      is_extended_reporting_ =
-          profile && IsExtendedReportingEnabled(*profile->GetPrefs());
+      is_extended_reporting_ = profile &&
+             profile->GetPrefs()->GetBoolean(
+                 prefs::kSafeBrowsingExtendedReportingEnabled);
       is_incognito_ = item_->GetBrowserContext()->IsOffTheRecord();
     }
 
@@ -620,7 +621,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
   bool CanReportInvalidArchives() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     Profile* profile = Profile::FromBrowserContext(item_->GetBrowserContext());
-    if (!profile || !IsExtendedReportingEnabled(*profile->GetPrefs()))
+    if (!profile ||
+        !profile->GetPrefs()->GetBoolean(
+            prefs::kSafeBrowsingExtendedReportingEnabled))
       return false;
 
     return !item_->GetBrowserContext()->IsOffTheRecord();
@@ -1247,7 +1250,8 @@ class DownloadProtectionService::PPAPIDownloadRequest
             GetSupportedFilePath(default_file_path, alternate_extensions)),
         weakptr_factory_(this) {
     DCHECK(profile);
-    is_extended_reporting_ = IsExtendedReportingEnabled(*profile->GetPrefs());
+    is_extended_reporting_ = profile->GetPrefs()->GetBoolean(
+        prefs::kSafeBrowsingExtendedReportingEnabled);
   }
 
   ~PPAPIDownloadRequest() override {

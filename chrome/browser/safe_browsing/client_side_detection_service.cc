@@ -25,7 +25,6 @@
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -228,7 +227,8 @@ void ClientSideDetectionService::SendModelToProcess(
   Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   std::string model;
   if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
-    if (IsExtendedReportingEnabled(*profile->GetPrefs())) {
+    if (profile->GetPrefs()->GetBoolean(
+            prefs::kSafeBrowsingExtendedReportingEnabled)) {
       DVLOG(2) << "Sending phishing model " << model_loader_extended_->name()
                << " to RenderProcessHost @" << process;
       model = model_loader_extended_->model_str();

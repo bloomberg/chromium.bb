@@ -44,7 +44,6 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -554,7 +553,8 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
 bool SafeBrowsingExtendedEnabledForBrowser(const Browser* browser) {
   const Profile* profile = browser->profile();
   return profile && !profile->IsOffTheRecord() &&
-         IsExtendedReportingEnabled(*profile->GetPrefs());
+         profile->GetPrefs()->GetBoolean(
+             prefs::kSafeBrowsingExtendedReportingEnabled);
 }
 
 // Returns true if there is a profile that is not in incognito mode and the user

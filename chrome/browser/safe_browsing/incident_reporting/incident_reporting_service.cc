@@ -39,7 +39,6 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/database_manager.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -136,7 +135,8 @@ bool ProfileCanAcceptIncident(Profile* profile, const Incident& incident) {
     case MinimumProfileConsent::SAFE_BROWSING_ENABLED:
       return true;
     case MinimumProfileConsent::SAFE_BROWSING_EXTENDED_REPORTING_ENABLED:
-      return IsExtendedReportingEnabled(*profile->GetPrefs());
+      return profile->GetPrefs()->GetBoolean(
+          prefs::kSafeBrowsingExtendedReportingEnabled);
   }
   NOTREACHED();
   return false;
@@ -328,7 +328,8 @@ bool IncidentReportingService::IsEnabledForProfile(Profile* profile) {
     return false;
   if (IsFieldTrialEnabled())
     return true;
-  return IsExtendedReportingEnabled(*profile->GetPrefs());
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled);
 }
 
 IncidentReportingService::IncidentReportingService(
@@ -440,7 +441,9 @@ void IncidentReportingService::
   // extended reporting. If none are now, running will commence if/when such a
   // profile is added.
   Profile* profile = FindEligibleProfile();
-  if (profile && IsExtendedReportingEnabled(*profile->GetPrefs())) {
+  if (profile &&
+      profile->GetPrefs()->GetBoolean(
+          prefs::kSafeBrowsingExtendedReportingEnabled)) {
     extended_reporting_only_delayed_analysis_callbacks_.Start();
   }
 }
@@ -530,7 +533,8 @@ void IncidentReportingService::OnProfileAdded(Profile* profile) {
     // if they're already running.
     delayed_analysis_callbacks_.Start();
 
-    if (IsExtendedReportingEnabled(*profile->GetPrefs())) {
+    if (profile->GetPrefs()->GetBoolean(
+            prefs::kSafeBrowsingExtendedReportingEnabled)) {
       extended_reporting_only_delayed_analysis_callbacks_.Start();
     }
 
@@ -636,7 +640,8 @@ Profile* IncidentReportingService::FindEligibleProfile() const {
       continue;
     // If the current profile has Extended Reporting enabled, stop looking and
     // use that one.
-    if (IsExtendedReportingEnabled(*scan->first->GetPrefs())) {
+    if (scan->first->GetPrefs()->GetBoolean(
+            prefs::kSafeBrowsingExtendedReportingEnabled)) {
       return scan->first;
     }
     // Otherwise, store this one as a candidate and keep looking (in case we
@@ -909,8 +914,9 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
   // Find the profile that benefits from the strongest protections.
   Profile* eligible_profile = FindEligibleProfile();
   process->set_extended_consent(
-      eligible_profile &&
-      IsExtendedReportingEnabled(*eligible_profile->GetPrefs()));
+      eligible_profile ? eligible_profile->GetPrefs()->GetBoolean(
+                             prefs::kSafeBrowsingExtendedReportingEnabled) :
+                       false);
 
   process->set_field_trial_participant(enabled_by_field_trial_);
 

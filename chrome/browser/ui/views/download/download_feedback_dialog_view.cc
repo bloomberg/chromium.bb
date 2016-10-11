@@ -13,7 +13,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/page_navigator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -47,7 +46,7 @@ void DownloadFeedbackDialogView::Show(
     const UserDecisionCallback& callback) {
   // This dialog should only be shown if it hasn't been shown before.
   DCHECK(!profile->GetPrefs()->HasPrefPath(
-      safe_browsing::GetExtendedReportingPrefName()));
+      prefs::kSafeBrowsingExtendedReportingEnabled));
 
   // Only one dialog should be shown at a time, so check to see if another one
   // is open. If another one is open, treat this parallel call as if reporting
@@ -102,8 +101,8 @@ base::string16 DownloadFeedbackDialogView::GetDialogButtonLabel(
 }
 
 bool DownloadFeedbackDialogView::OnButtonClicked(bool accepted) {
-  profile_->GetPrefs()->SetBoolean(
-      safe_browsing::GetExtendedReportingPrefName(), accepted);
+  profile_->GetPrefs()->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled,
+                                   accepted);
   DialogStatusData* data =
      static_cast<DialogStatusData*>(profile_->GetUserData(kDialogStatusKey));
   DCHECK(data);

@@ -24,7 +24,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/metadata.pb.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -241,7 +240,9 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     hit_report.is_extended_reporting =
-        profile && IsExtendedReportingEnabled(*profile->GetPrefs());
+        profile &&
+        profile->GetPrefs()->GetBoolean(
+            prefs::kSafeBrowsingExtendedReportingEnabled);
     hit_report.is_metrics_reporting_active =
         ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 

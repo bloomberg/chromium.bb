@@ -24,7 +24,6 @@
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/database_manager.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -634,7 +633,9 @@ void ClientSideDetectionHost::FeatureExtractionDone(
   // Send ping even if the browser feature extraction failed.
   csd_service_->SendClientReportPhishingRequest(
       request.release(),  // The service takes ownership of the request object.
-      IsExtendedReportingEnabled(*profile->GetPrefs()), callback);
+      profile->GetPrefs()->GetBoolean(
+          prefs::kSafeBrowsingExtendedReportingEnabled),
+      callback);
 }
 
 void ClientSideDetectionHost::MalwareFeatureExtractionDone(

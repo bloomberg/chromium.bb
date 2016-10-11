@@ -32,7 +32,6 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "content/public/browser/notification_details.h"
@@ -81,7 +80,8 @@ const char kConversionErrorMessage[] =
     "properly.";
 
 PrefMappingEntry kPrefMapping[] = {
-    {"spdy_proxy.enabled", prefs::kDataSaverEnabled,
+    {"spdy_proxy.enabled",
+     prefs::kDataSaverEnabled,
      APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
     {"data_reduction.daily_original_length",
      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength,
@@ -114,7 +114,7 @@ PrefMappingEntry kPrefMapping[] = {
     {"safeBrowsingEnabled", prefs::kSafeBrowsingEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"safeBrowsingExtendedReportingEnabled",
-     safe_browsing::GetExtendedReportingPrefName(), APIPermission::kPrivacy,
+     prefs::kSafeBrowsingExtendedReportingEnabled, APIPermission::kPrivacy,
      APIPermission::kPrivacy},
     {"searchSuggestEnabled", prefs::kSearchSuggestEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},

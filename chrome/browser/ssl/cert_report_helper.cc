@@ -18,22 +18,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-// Returns a pointer to the Profile associated with |web_contents|.
-Profile* GetProfile(content::WebContents* web_contents) {
-  return Profile::FromBrowserContext(web_contents->GetBrowserContext());
-}
-
-}  // namespace
 
 // Constants for the HTTPSErrorReporter Finch experiment
 const char CertReportHelper::kFinchExperimentName[] = "ReportCertificateErrors";
@@ -73,9 +63,9 @@ void CertReportHelper::PopulateExtendedReportingOption(
   if (!show)
     return;
 
-  load_time_data->SetBoolean(security_interstitials::kBoxChecked,
-                             safe_browsing::IsExtendedReportingEnabled(
-                                 *GetProfile(web_contents_)->GetPrefs()));
+  load_time_data->SetBoolean(
+      security_interstitials::kBoxChecked,
+      IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled));
 
   const std::string privacy_link = base::StringPrintf(
       security_interstitials::kPrivacyLinkHtml,
@@ -93,8 +83,7 @@ void CertReportHelper::FinishCertCollection(
   if (!ShouldShowCertificateReporterCheckbox())
     return;
 
-  if (!safe_browsing::IsExtendedReportingEnabled(
-          *GetProfile(web_contents_)->GetPrefs()))
+  if (!IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled))
     return;
 
   if (metrics_helper_) {
@@ -156,5 +145,7 @@ bool CertReportHelper::ShouldReportCertificateError() {
 }
 
 bool CertReportHelper::IsPrefEnabled(const char* pref) {
-  return GetProfile(web_contents_)->GetPrefs()->GetBoolean(pref);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  return profile->GetPrefs()->GetBoolean(pref);
 }

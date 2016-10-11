@@ -31,7 +31,6 @@ group("safe_browsing_db_shared") {
     ":database_manager",
     ":hit_report",
     ":prefix_set",
-    ":safe_browsing_prefs",
     ":safebrowsing_proto",
     ":util",
   ]
@@ -134,17 +133,6 @@ static_library("safe_browsing_api_handler_util") {
     ":metadata_proto",
     ":util",
     "//base",
-  ]
-}
-
-static_library("safe_browsing_prefs") {
-  sources = [
-    "safe_browsing_prefs.cc",
-    "safe_browsing_prefs.h",
-  ]
-  deps = [
-    "//base:base",
-    "//components/prefs",
   ]
 }
 
