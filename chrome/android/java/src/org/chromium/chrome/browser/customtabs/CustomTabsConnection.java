@@ -662,16 +662,24 @@ public class CustomTabsConnection {
         // processes. We use a workaround in this case.
         boolean useWorkaround = true;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
-            ActivityManager am =
-                    (ActivityManager) mApplication.getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.RunningAppProcessInfo> running = am.getRunningAppProcesses();
-            for (ActivityManager.RunningAppProcessInfo rpi : running) {
-                boolean matchingUid = rpi.uid == uid;
-                boolean isForeground = rpi.importance
-                        == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
-                useWorkaround &= !matchingUid;
-                if (matchingUid && isForeground) return true;
-            }
+            do {
+                ActivityManager am =
+                        (ActivityManager) mApplication.getSystemService(Context.ACTIVITY_SERVICE);
+                // Extra paranoia here and below, some L 5.0.x devices seem to throw NPE somewhere
+                // in this code.
+                // See https://crbug.com/654705.
+                if (am == null) break;
+                List<ActivityManager.RunningAppProcessInfo> running = am.getRunningAppProcesses();
+                if (running == null) break;
+                for (ActivityManager.RunningAppProcessInfo rpi : running) {
+                    if (rpi == null) continue;
+                    boolean matchingUid = rpi.uid == uid;
+                    boolean isForeground = rpi.importance
+                            == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+                    useWorkaround &= !matchingUid;
+                    if (matchingUid && isForeground) return true;
+                }
+            } while (false);
         }
         return useWorkaround ? !isBackgroundProcess(Binder.getCallingPid()) : false;
     }
