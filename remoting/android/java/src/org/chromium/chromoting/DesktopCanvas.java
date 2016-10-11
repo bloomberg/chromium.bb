@@ -130,7 +130,7 @@ public class DesktopCanvas {
      * @param parameter The set of values defining the current System UI state.
      */
     public void onSystemUiVisibilityChanged(SystemUiVisibilityChangedEventParameter parameter) {
-        if (parameter.systemUiVisible) {
+        if (parameter.softInputMethodVisible) {
             mSystemUiScreenSize.set(parameter.left, parameter.top,
                     mRenderData.screenWidth - parameter.right,
                     mRenderData.screenHeight - parameter.bottom);
