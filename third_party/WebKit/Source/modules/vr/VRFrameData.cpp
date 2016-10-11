@@ -38,11 +38,11 @@ void projectionFromFieldOfView(DOMFloat32Array* outArray,
   out[7] = 0.0f;
   out[8] = -((leftTan - rightTan) * xScale * 0.5);
   out[9] = ((upTan - downTan) * yScale * 0.5);
-  out[10] = depthFar / (depthNear - depthFar);
+  out[10] = (depthNear + depthFar) / (depthNear - depthFar);
   out[11] = -1.0f;
   out[12] = 0.0f;
   out[13] = 0.0f;
-  out[14] = (depthFar * depthNear) / (depthNear - depthFar);
+  out[14] = (2 * depthFar * depthNear) / (depthNear - depthFar);
   out[15] = 0.0f;
 }
 
