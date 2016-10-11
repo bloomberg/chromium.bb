@@ -61,9 +61,36 @@ AXObject* AccessibilityMediaControl::create(LayoutObject* layoutObject,
     case MediaControlsPanel:
       return AXMediaControlsContainer::create(layoutObject, axObjectCache);
 
-    default:
+    case MediaEnterFullscreenButton:
+    case MediaMuteButton:
+    case MediaPlayButton:
+    case MediaSliderThumb:
+    case MediaShowClosedCaptionsButton:
+    case MediaHideClosedCaptionsButton:
+    case MediaTextTrackList:
+    case MediaUnMuteButton:
+    case MediaPauseButton:
+    case MediaTimelineContainer:
+    case MediaTrackSelectionCheckmark:
+    case MediaVolumeSliderContainer:
+    case MediaVolumeSlider:
+    case MediaVolumeSliderThumb:
+    case MediaFullscreenVolumeSlider:
+    case MediaFullscreenVolumeSliderThumb:
+    case MediaExitFullscreenButton:
+    case MediaOverlayPlayButton:
+    case MediaCastOffButton:
+    case MediaCastOnButton:
+    case MediaOverlayCastOffButton:
+    case MediaOverlayCastOnButton:
+    case MediaOverflowButton:
+    case MediaOverflowList:
+    case MediaDownloadButton:
       return new AccessibilityMediaControl(layoutObject, axObjectCache);
   }
+
+  NOTREACHED();
+  return new AccessibilityMediaControl(layoutObject, axObjectCache);
 }
 
 MediaControlElementType AccessibilityMediaControl::controlType() const {
@@ -88,6 +115,7 @@ String AccessibilityMediaControl::textAlternative(
     case MediaMuteButton:
       return queryString(WebLocalizedString::AXMediaMuteButton);
     case MediaPlayButton:
+    case MediaOverlayPlayButton:
       return queryString(WebLocalizedString::AXMediaPlayButton);
     case MediaUnMuteButton:
       return queryString(WebLocalizedString::AXMediaUnMuteButton);
@@ -102,12 +130,34 @@ String AccessibilityMediaControl::textAlternative(
     case MediaHideClosedCaptionsButton:
       return queryString(WebLocalizedString::AXMediaHideClosedCaptionsButton);
     case MediaCastOffButton:
-      return queryString(WebLocalizedString::AxMediaCastOffButton);
+    case MediaOverlayCastOffButton:
+      return queryString(WebLocalizedString::AXMediaCastOffButton);
     case MediaCastOnButton:
-      return queryString(WebLocalizedString::AxMediaCastOnButton);
-    default:
+    case MediaOverlayCastOnButton:
+      return queryString(WebLocalizedString::AXMediaCastOnButton);
+    case MediaDownloadButton:
+      return queryString(WebLocalizedString::AXMediaDownloadButton);
+    case MediaOverflowButton:
+      return queryString(WebLocalizedString::AXMediaOverflowButton);
+    case MediaSliderThumb:
+    case MediaTextTrackList:
+    case MediaTimelineContainer:
+    case MediaTrackSelectionCheckmark:
+    case MediaControlsPanel:
+    case MediaVolumeSliderContainer:
+    case MediaVolumeSlider:
+    case MediaVolumeSliderThumb:
+    case MediaFullscreenVolumeSlider:
+    case MediaFullscreenVolumeSliderThumb:
+    case MediaOverflowList:
+      return queryString(WebLocalizedString::AXMediaDefault);
+    case MediaSlider:
+      NOTREACHED();
       return queryString(WebLocalizedString::AXMediaDefault);
   }
+
+  NOTREACHED();
+  return queryString(WebLocalizedString::AXMediaDefault);
 }
 
 String AccessibilityMediaControl::description(
@@ -122,6 +172,7 @@ String AccessibilityMediaControl::description(
     case MediaMuteButton:
       return queryString(WebLocalizedString::AXMediaMuteButtonHelp);
     case MediaPlayButton:
+    case MediaOverlayPlayButton:
       return queryString(WebLocalizedString::AXMediaPlayButtonHelp);
     case MediaUnMuteButton:
       return queryString(WebLocalizedString::AXMediaUnMuteButtonHelp);
@@ -138,12 +189,33 @@ String AccessibilityMediaControl::description(
       return queryString(
           WebLocalizedString::AXMediaHideClosedCaptionsButtonHelp);
     case MediaCastOffButton:
-      return queryString(WebLocalizedString::AxMediaCastOffButtonHelp);
+    case MediaOverlayCastOffButton:
+      return queryString(WebLocalizedString::AXMediaCastOffButtonHelp);
     case MediaCastOnButton:
-      return queryString(WebLocalizedString::AxMediaCastOnButtonHelp);
-    default:
+    case MediaOverlayCastOnButton:
+      return queryString(WebLocalizedString::AXMediaCastOnButtonHelp);
+    case MediaOverflowButton:
+      return queryString(WebLocalizedString::AXMediaOverflowButtonHelp);
+    case MediaSliderThumb:
+    case MediaTextTrackList:
+    case MediaTimelineContainer:
+    case MediaTrackSelectionCheckmark:
+    case MediaControlsPanel:
+    case MediaVolumeSliderContainer:
+    case MediaVolumeSlider:
+    case MediaVolumeSliderThumb:
+    case MediaFullscreenVolumeSlider:
+    case MediaFullscreenVolumeSliderThumb:
+    case MediaOverflowList:
+    case MediaDownloadButton:
+      return queryString(WebLocalizedString::AXMediaDefault);
+    case MediaSlider:
+      NOTREACHED();
       return queryString(WebLocalizedString::AXMediaDefault);
   }
+
+  NOTREACHED();
+  return queryString(WebLocalizedString::AXMediaDefault);
 }
 
 bool AccessibilityMediaControl::computeAccessibilityIsIgnored(
@@ -166,14 +238,39 @@ AccessibilityRole AccessibilityMediaControl::roleValue() const {
     case MediaPauseButton:
     case MediaShowClosedCaptionsButton:
     case MediaHideClosedCaptionsButton:
+    case MediaOverlayPlayButton:
+    case MediaOverlayCastOffButton:
+    case MediaOverlayCastOnButton:
+    case MediaOverflowButton:
+    case MediaDownloadButton:
+    case MediaCastOnButton:
+    case MediaCastOffButton:
       return ButtonRole;
 
     case MediaTimelineContainer:
+    case MediaVolumeSliderContainer:
+    case MediaTextTrackList:
+    case MediaOverflowList:
       return GroupRole;
-    default:
-      break;
+
+    case MediaControlsPanel:
+    case MediaCurrentTimeDisplay:
+    case MediaTimeRemainingDisplay:
+    case MediaSliderThumb:
+    case MediaTrackSelectionCheckmark:
+    case MediaVolumeSlider:
+    case MediaVolumeSliderThumb:
+    case MediaFullscreenVolumeSlider:
+    case MediaFullscreenVolumeSliderThumb:
+      return UnknownRole;
+
+    case MediaSlider:
+      // Not using AccessibilityMediaControl.
+      NOTREACHED();
+      return UnknownRole;
   }
 
+  NOTREACHED();
   return UnknownRole;
 }
 

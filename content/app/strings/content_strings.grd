@@ -620,6 +620,14 @@ below:
         control remote playback
       </message>
 
+      <message name="IDS_AX_MEDIA_DOWNLOAD_BUTTON" desc="Media controls download button.">
+        download media
+      </message>
+
+      <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON" desc="Media controls overflow button.">
+        show more media controls
+      </message>
+
       <message name="IDS_AX_MEDIA_AUDIO_ELEMENT_HELP" desc="Accessible help of audio controls">
         audio
       </message>
@@ -690,6 +698,10 @@ below:
 
       <message name="IDS_AX_MEDIA_CAST_ON_BUTTON_HELP" desc="accessibility help description for remote playback control button">
         control remote playback
+      </message>
+
+      <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP" desc="accessibility help description for overflow button.">
+        more options
       </message>
 
       <message name="IDS_AX_MILLISECOND_FIELD_TEXT" desc="Accessible description of the millisecond field in a date/time control">
@@ -852,9 +864,6 @@ below:
         Please lengthen this text to <ph name="MIN_CHARACTERS">$2<ex>101</ex></ph> characters or more (you are currently using <ph name="CURRENT_LENGTH">$1<ex>100</ex></ph> characters).
       </message>
 
-      <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON" desc="Media controls overflow menu.">
-        Overflow menu
-      </message>
       <message name="IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS" desc="Media controls overflow menu item label for a closed captions button. The text for this overflow menu should be short.">
         Captions
       </message>
