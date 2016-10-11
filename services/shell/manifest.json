@@ -25,7 +25,9 @@
       // Clients requesting this class block inbound requests to bind interfaces
       // from other sources who specify wildcard rules in their manifest
       // capability interface sets.
-      "shell:explicit_class": [ ]
+      "shell:explicit_class": [ ],
+
+      "shell:service_manager": [ "shell::mojom::ServiceManager" ]
     },
     "required": {
       "service:shell": { "classes": [ "shell:all_users" ] }

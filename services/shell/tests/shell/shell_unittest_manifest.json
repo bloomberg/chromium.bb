@@ -3,11 +3,14 @@
   "name": "service:shell_unittest",
   "display_name": "Shell Unittest",
   "capabilities": {
+    "provided": {
+      "shell_unittest:create_instance_test": [
+        "shell::test::mojom::CreateInstanceTest"
+      ]
+    },
     "required": {
-      "service:shell": { "interfaces": [ "shell::mojom::ServiceManager" ] },
-      "exe:shell_unittest_driver": {
-        "interfaces": [ "shell::test::mojom::Driver" ]
-      }
+      "service:shell": { "classes": [ "shell:service_manager" ] },
+      "exe:shell_unittest_driver": { "classes":  [ "shell_unittest:driver" ] }
     }
   }
 }

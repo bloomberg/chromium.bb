@@ -2,5 +2,11 @@
   "manifest_version":  1,
   "name": "service:lifecycle_unittest_app",
   "display_name": "Lifecycle Unittest App",
-  "capabilities": { }
+  "capabilities": {
+    "provided": {
+      "lifecycle_unittest:lifecycle_control": [
+        "shell::test::mojom::LifecycleControl"
+      ]
+    }
+  }
 }

@@ -40,6 +40,7 @@ const char kCapabilityClass_ClientProcess[] = "shell:client_process";
 const char kCapabilityClass_InstanceName[] = "shell:instance_name";
 const char kCapabilityClass_AllUsers[] = "shell:all_users";
 const char kCapabilityClass_ExplicitClass[] = "shell:explicit_class";
+const char kCapabilityClass_ServiceManager[] = "shell:service_manager";
 
 }  // namespace
 
@@ -245,8 +246,13 @@ class ServiceManager::Instance
   // Service:
   bool OnConnect(const Identity& remote_identity,
                  InterfaceRegistry* registry) override {
-    registry->AddInterface<mojom::ServiceManager>(this);
-    return true;
+    Instance* source = service_manager_->GetExistingInstance(remote_identity);
+    DCHECK(source);
+    if (HasClass(source->capability_spec_, kCapabilityClass_ServiceManager)) {
+      registry->AddInterface<mojom::ServiceManager>(this);
+      return true;
+    }
+    return false;
   }
 
  private:
@@ -487,8 +493,20 @@ ServiceManager::ServiceManager(
       weak_ptr_factory_(this) {
   mojom::ServicePtr service;
   mojom::ServiceRequest request = mojo::GetProxy(&service);
-  service_manager_instance_ = CreateInstance(
-      Identity(), CreateServiceManagerIdentity(), GetPermissiveCapabilities());
+
+  CapabilitySpec spec;
+  std::set<std::string> shell_provided;
+  shell_provided.insert("shell::mojom::ServiceManager");
+  spec.provided[kCapabilityClass_ServiceManager] = shell_provided;
+  CapabilityRequest wildcard_request;
+  wildcard_request.interfaces.insert("shell::mojom::ServiceFactory");
+  spec.required["*"] = wildcard_request;
+  CapabilityRequest catalog_request;
+  catalog_request.interfaces.insert("shell::mojom::Resolver");
+  spec.required["service:catalog"] = catalog_request;
+
+  service_manager_instance_ =
+      CreateInstance(Identity(), CreateServiceManagerIdentity(), spec);
   service_manager_instance_->StartWithService(std::move(service));
   singletons_.insert(kServiceManagerName);
   service_context_.reset(new ServiceContext(this, std::move(request)));

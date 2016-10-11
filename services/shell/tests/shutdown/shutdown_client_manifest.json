@@ -3,10 +3,15 @@
   "name": "service:shutdown_client",
   "display_name": "Shutdown Client",
   "capabilities": {
+    "provided": {
+      "shutdown_unittest:shutdown_test_client_controller": [
+        "shell::mojom::ShutdownTestClientController"
+      ]
+    },
     "required": {
-      "service:shell": { "interfaces": [ "shell::mojom::ServiceManager" ] },
+      "service:shell": { "classes": [ "shell:service_manager" ] },
       "service:shutdown_service": {
-        "interfaces": [ "shell::mojom::ShutdownTestService" ]
+        "classes": [ "shutdown_unittest:shutdown_test_service" ]
       }
     }
   }

@@ -3,8 +3,13 @@
   "name": "service:shutdown_service",
   "display_name": "Shutdown Service",
   "capabilities": {
+    "provided": {
+      "shutdown_unittest:shutdown_test_service": [
+        "shell::mojom::ShutdownTestService"
+      ]
+    },
     "required": {
-      "service:shell": { "interfaces": [ "shell::mojom::ServiceManager" ] }
+      "service:shell": { "classes": [ "shell:service_manager" ] }
     }
   }
 }

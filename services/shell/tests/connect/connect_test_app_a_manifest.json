@@ -3,11 +3,22 @@
   "name": "service:connect_test_a",
   "display_name": "Connect Test A",
   "capabilities": {
+    "provided": {
+      "connect_unittests:connect_test_service": [
+        "shell::test::mojom::ConnectTestService"
+      ],
+      "connect_unittests:standalone_app": [
+        "shell::test::mojom::StandaloneApp"
+      ],
+      "connect_unittests:user_id_test": [ "shell::test::mojom::UserIdTest" ]
+    },
     "required": {
       "service:connect_unittests": {
-        "interfaces":  [ "shell::test::mojom::ExposedInterface" ]
+        "classes": [ "connect_unittests:exposed_interface" ]
       },
-      "service:connect_test_class_app": { "classes": [ "class" ] }
+      "service:connect_test_class_app": {
+        "classes": [ "connect_unittests:class" ]
+      }
     }
   }
 }

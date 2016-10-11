@@ -2,5 +2,11 @@
   "manifest_version":  1,
   "name": "service:connect_test_package",
   "display_name": "Connect Test Package",
-  "capabilities": { }
+  "capabilities": {
+    "provided": {
+      "connect_unittests:connect_test_service": [
+        "shell::test::mojom::ConnectTestService"
+      ]
+    }
+  }
 }

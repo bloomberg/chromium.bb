@@ -3,9 +3,12 @@
   "name": "service:lifecycle_unittest_parent",
   "display_name": "Lifecycle Unittest Parent",
   "capabilities": {
+    "provided": {
+      "lifecycle_unittest:parent": [ "shell::test::mojom::Parent" ]
+    },
     "required": {
       "service:lifecycle_unittest_app": {
-        "interfaces": [ "shell::test::mojom::LifecycleControl" ]
+        "classes": [ "lifecycle_unittest:lifecycle_control" ]
       }
     }
   }

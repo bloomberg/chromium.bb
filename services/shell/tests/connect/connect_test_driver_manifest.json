@@ -2,5 +2,11 @@
   "manifest_version":  1,
   "name": "exe:connect_test_driver",
   "display_name": "Connect Test Driver",
-  "capabilities": { }
+  "capabilities": {
+    "provided": {
+      "connect_unittests:client_process_test": [
+        "shell::test::mojom::ClientProcessTest"
+      ]
+    }
+  }
 }

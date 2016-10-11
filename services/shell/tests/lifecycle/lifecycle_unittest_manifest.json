@@ -5,17 +5,17 @@
   "capabilities": {
     "required": {
       "*": {
-        "interfaces": [ "shell::test::mojom::LifecycleControl" ]
+        "classes": [ "lifecycle_unittest:lifecycle_control" ]
       },
       "service:lifecycle_unittest_parent": {
-        "interfaces": [ "shell::test::mojom::Parent" ]
+        "classes":  [ "lifecycle_unittest:parent" ]
       },
       "service:shell": {
         "classes": [
+          "shell:service_manager",
           "shell:instance_name",
           "shell:client_process"
-        ],
-        "interfaces": [ "shell::mojom::ServiceManager" ]
+        ]
       }
     }
   }

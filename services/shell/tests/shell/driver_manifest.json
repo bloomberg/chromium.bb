@@ -3,6 +3,9 @@
   "name": "exe:shell_unittest_driver",
   "display_name": "Shell Unittest: Driver",
   "capabilities": {
+    "provided": {
+      "shell_unittest:driver": [ "shell::test::mojom::Driver" ]
+    },
     "required": {
       "exe:shell_unittest_target": { },
       "service:shell": { "classes": [ "shell:client_process" ] }

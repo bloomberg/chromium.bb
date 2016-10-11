@@ -4,12 +4,12 @@
   "display_name": "Shutdown Unittest",
   "capabilities": {
     "required": {
-      "service:shell": { "interfaces": [ "shell::mojom::ServiceManager" ] },
+      "service:shell": { "classes": [ "shell:service_manager" ] },
       "service:shutdown_client": {
-        "interfaces": [ "shell::mojom::ShutdownTestClientController" ]
+        "classes":  [ "shutdown_unittest:shutdown_test_client_controller" ]
       },
       "service:shutdown_service": {
-        "interfaces": [ "shell::mojom::ShutdownTestService" ]
+        "classes": [ "shutdown_unittest:shutdown_test_service" ]
       }
     }
   }
