@@ -429,8 +429,65 @@ TEST_F(TouchSelectionControllerTest, InsertionDragged) {
   EXPECT_FALSE(GetAndResetCaretMoved());
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_DRAG_STOPPED));
 
-  // Once the drag is complete, no more touch events should be consumed until
-  // the next ACTION_DOWN.
+  // Following ACTION_DOWN should not be consumed if it does not start handle
+  // dragging.
+  SetDraggingEnabled(false);
+  event = MockMotionEvent(MotionEvent::ACTION_DOWN, event_time, 0, 0);
+  EXPECT_FALSE(controller().WillHandleTouchEvent(event));
+}
+
+TEST_F(TouchSelectionControllerTest, InsertionDeactivatedWhileDragging) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  OnTapEvent();
+  controller().OnSelectionEditable(true);
+
+  float line_height = 10.f;
+  gfx::RectF start_rect(10, 0, 0, line_height);
+  bool visible = true;
+  ChangeInsertion(start_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(),
+              ElementsAre(SELECTION_ESTABLISHED, INSERTION_HANDLE_SHOWN));
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventStart());
+
+  // Enable dragging so that the following ACTION_DOWN starts handle dragging.
+  SetDraggingEnabled(true);
+
+  // Touch down to start dragging.
+  MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_FALSE(GetAndResetCaretMoved());
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_DRAG_STARTED));
+
+  // Move the handle.
+  gfx::PointF start_offset = start_rect.CenterPoint();
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 0, 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_TRUE(GetAndResetCaretMoved());
+  EXPECT_EQ(start_offset + gfx::Vector2dF(0, 5), GetLastCaretPosition());
+
+  // Deactivate touch selection to end dragging.
+  controller().HideAndDisallowShowingAutomatically();
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_DRAG_STOPPED,
+                                               INSERTION_HANDLE_CLEARED));
+
+  // Move the finger. There is no handle to move, so the cursor is not moved;
+  // but, the event is still consumed because the touch down that started the
+  // touch sequence was consumed.
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 5, 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_FALSE(GetAndResetCaretMoved());
+  EXPECT_EQ(start_offset + gfx::Vector2dF(0, 5), GetLastCaretPosition());
+
+  // Lift the finger to end the touch sequence.
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 5, 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_FALSE(GetAndResetCaretMoved());
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
+
+  // Following ACTION_DOWN should not be consumed if it does not start handle
+  // dragging.
+  SetDraggingEnabled(false);
+  event = MockMotionEvent(MotionEvent::ACTION_DOWN, event_time, 0, 0);
   EXPECT_FALSE(controller().WillHandleTouchEvent(event));
 }
 
@@ -714,8 +771,10 @@ TEST_F(TouchSelectionControllerTest, SelectionDragged) {
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLE_DRAG_STOPPED));
   EXPECT_FALSE(GetAndResetSelectionMoved());
 
-  // Once the drag is complete, no more touch events should be consumed until
-  // the next ACTION_DOWN.
+  // Following ACTION_DOWN should not be consumed if it does not start handle
+  // dragging.
+  SetDraggingEnabled(false);
+  event = MockMotionEvent(MotionEvent::ACTION_DOWN, event_time, 0, 0);
   EXPECT_FALSE(controller().WillHandleTouchEvent(event));
 }
 

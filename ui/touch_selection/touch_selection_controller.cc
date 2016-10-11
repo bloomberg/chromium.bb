@@ -68,7 +68,8 @@ TouchSelectionController::TouchSelectionController(
       temporarily_hidden_(false),
       anchor_drag_to_selection_start_(false),
       longpress_drag_selector_(this),
-      selection_handle_dragged_(false) {
+      selection_handle_dragged_(false),
+      consume_touch_sequence_(false) {
   DCHECK(client_);
 }
 
@@ -178,34 +179,16 @@ void TouchSelectionController::OnViewportChanged(
 }
 
 bool TouchSelectionController::WillHandleTouchEvent(const MotionEvent& event) {
-  if (config_.enable_longpress_drag_selection &&
-      longpress_drag_selector_.WillHandleTouchEvent(event)) {
-    return true;
-  }
-
-  if (active_status_ == INSERTION_ACTIVE) {
-    DCHECK(insertion_handle_);
-    return insertion_handle_->WillHandleTouchEvent(event);
-  }
-
-  if (active_status_ == SELECTION_ACTIVE) {
-    DCHECK(start_selection_handle_);
-    DCHECK(end_selection_handle_);
-    if (start_selection_handle_->IsActive())
-      return start_selection_handle_->WillHandleTouchEvent(event);
-
-    if (end_selection_handle_->IsActive())
-      return end_selection_handle_->WillHandleTouchEvent(event);
-
-    const gfx::PointF event_pos(event.GetX(), event.GetY());
-    if ((event_pos - GetStartPosition()).LengthSquared() <=
-        (event_pos - GetEndPosition()).LengthSquared()) {
-      return start_selection_handle_->WillHandleTouchEvent(event);
-    }
-    return end_selection_handle_->WillHandleTouchEvent(event);
-  }
-
-  return false;
+  bool handled = WillHandleTouchEventImpl(event);
+  // If ACTION_DOWN is consumed, the rest of touch sequence should be consumed,
+  // too, regardless of value of |handled|.
+  // TODO(mohsen): This will consume touch events until the next ACTION_DOWN.
+  // Ideally we should consume until the final ACTION_UP/ACTION_CANCEL.
+  // But, apparently, we can't reliably determine the final ACTION_CANCEL in a
+  // multi-touch scenario. See https://crbug.com/653212.
+  if (event.GetAction() == MotionEvent::ACTION_DOWN)
+    consume_touch_sequence_ = handled;
+  return handled || consume_touch_sequence_;
 }
 
 bool TouchSelectionController::WillHandleTapEvent(const gfx::PointF& location,
@@ -355,6 +338,38 @@ const gfx::PointF& TouchSelectionController::GetStartPosition() const {
 
 const gfx::PointF& TouchSelectionController::GetEndPosition() const {
   return end_.edge_bottom();
+}
+
+bool TouchSelectionController::WillHandleTouchEventImpl(
+    const MotionEvent& event) {
+  if (config_.enable_longpress_drag_selection &&
+      longpress_drag_selector_.WillHandleTouchEvent(event)) {
+    return true;
+  }
+
+  if (active_status_ == INSERTION_ACTIVE) {
+    DCHECK(insertion_handle_);
+    return insertion_handle_->WillHandleTouchEvent(event);
+  }
+
+  if (active_status_ == SELECTION_ACTIVE) {
+    DCHECK(start_selection_handle_);
+    DCHECK(end_selection_handle_);
+    if (start_selection_handle_->IsActive())
+      return start_selection_handle_->WillHandleTouchEvent(event);
+
+    if (end_selection_handle_->IsActive())
+      return end_selection_handle_->WillHandleTouchEvent(event);
+
+    const gfx::PointF event_pos(event.GetX(), event.GetY());
+    if ((event_pos - GetStartPosition()).LengthSquared() <=
+        (event_pos - GetEndPosition()).LengthSquared()) {
+      return start_selection_handle_->WillHandleTouchEvent(event);
+    }
+    return end_selection_handle_->WillHandleTouchEvent(event);
+  }
+
+  return false;
 }
 
 void TouchSelectionController::OnDragBegin(

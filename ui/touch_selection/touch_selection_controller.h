@@ -150,6 +150,8 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   enum InputEventType { TAP, REPEATED_TAP, LONG_PRESS, INPUT_EVENT_TYPE_NONE };
 
+  bool WillHandleTouchEventImpl(const MotionEvent& event);
+
   // TouchHandleClient implementation.
   void OnDragBegin(const TouchSelectionDraggable& draggable,
                    const gfx::PointF& drag_position) override;
@@ -239,6 +241,9 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   // Whether a selection handle was dragged during the current 'selection
   // session' - i.e. since the current selection has been activated.
   bool selection_handle_dragged_;
+
+  // Determines whether the entire touch sequence should be consumed or not.
+  bool consume_touch_sequence_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionController);
 };
