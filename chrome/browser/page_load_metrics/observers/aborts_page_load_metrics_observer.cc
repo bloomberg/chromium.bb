@@ -56,9 +56,9 @@ const char kHistogramAbortCloseDuringParse[] =
 const char kHistogramAbortNewNavigationUserInitiated[] =
     "PageLoad.AbortTiming.NewNavigation.BeforeCommit.UserInitiated";
 const char kHistogramAbortForwardBackUserInitiated[] =
-    "PageLoad.AbortTiming.NewNavigation.BeforeCommit.UserInitiated";
+    "PageLoad.AbortTiming.ForwardBackNavigation.BeforeCommit.UserInitiated";
 const char kHistogramAbortReloadUserInitiated[] =
-    "PageLoad.AbortTiming.NewNavigation.BeforeCommit.UserInitiated";
+    "PageLoad.AbortTiming.Reload.BeforeCommit.UserInitiated";
 
 }  // namespace internal
 
