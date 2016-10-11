@@ -122,9 +122,7 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
   } while (download_result == SERVER_MORE_TO_DOWNLOAD);
 
   // Exit without applying if we're shutting down or an error was detected.
-  if (download_result != SYNCER_OK)
-    return false;
-  if (ExitRequested())
+  if (download_result != SYNCER_OK || ExitRequested())
     return false;
 
   {
@@ -144,9 +142,7 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
     cycle->SendEventNotification(SyncCycleEvent::STATUS_CHANGED);
   }
 
-  if (ExitRequested())
-    return false;
-  return true;
+  return !ExitRequested();
 }
 
 SyncerError Syncer::BuildAndPostCommits(ModelTypeSet requested_types,
@@ -189,17 +185,17 @@ void Syncer::HandleCycleBegin(SyncCycle* cycle) {
 bool Syncer::HandleCycleEnd(
     SyncCycle* cycle,
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
-  if (!ExitRequested()) {
-    cycle->SendSyncCycleEndEventNotification(source);
-
-    bool success =
-        !HasSyncerError(cycle->status_controller().model_neutral_state());
-    if (success && source == sync_pb::GetUpdatesCallerInfo::PERIODIC)
-      cycle->mutable_status_controller()->UpdatePollTime();
-    return success;
-  } else {
+  if (ExitRequested())
     return false;
+
+  cycle->SendSyncCycleEndEventNotification(source);
+  bool success =
+      !HasSyncerError(cycle->status_controller().model_neutral_state());
+  if (success && source == sync_pb::GetUpdatesCallerInfo::PERIODIC) {
+    cycle->mutable_status_controller()->UpdatePollTime();
   }
+
+  return success;
 }
 
 bool Syncer::PostClearServerData(SyncCycle* cycle) {
