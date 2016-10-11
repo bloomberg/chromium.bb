@@ -442,10 +442,11 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 }
 
 - (void)getPasswordForms:(std::vector<autofill::PasswordForm>*)forms
-           fromFormsJSON:(NSString*)jsonString
+           fromFormsJSON:(NSString*)JSONNSString
                  pageURL:(const GURL&)pageURL {
   DCHECK(forms);
-  if (![jsonString length]) {
+  std::string JSONString = base::SysNSStringToUTF8(JSONNSString);
+  if (JSONString.empty()) {
     VLOG(1) << "Error in password controller javascript.";
     return;
   }
@@ -453,10 +454,10 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   int errorCode = 0;
   std::string errorMessage;
   std::unique_ptr<base::Value> jsonData(base::JSONReader::ReadAndReturnError(
-      std::string([jsonString UTF8String]), false, &errorCode, &errorMessage));
+      JSONString, false, &errorCode, &errorMessage));
   if (errorCode || !jsonData || !jsonData->IsType(base::Value::TYPE_LIST)) {
     VLOG(1) << "JSON parse error " << errorMessage
-            << " JSON string: " << [jsonString UTF8String];
+            << " JSON string: " << JSONString;
     return;
   }
 
