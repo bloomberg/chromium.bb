@@ -84,6 +84,10 @@
         '//build/args/bots/chromium.fyi/blimp_client_rel.gn',
       'Blimp Linux Engine':
         '//build/args/bots/chromium.fyi/blimp_engine_rel.gn',
+      'Blimp Client Engine Integration': {
+        'client': '//build/args/bots/chromium.fyi/blimp_client_rel.gn',
+        'engine': '//build/args/bots/chromium.fyi/blimp_engine_rel.gn',
+      },
       'Browser Side Navigation Linux': 'release_bot',
       'CFI Linux CF': 'cfi_full_cfi_diag_release_static',
       'CFI Linux ToT': 'cfi_full_clang_tot_release_static',
@@ -100,8 +104,14 @@
       'Chromium Mac 10.9 Goma Canary (clobber)': 'release_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)': 'debug_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'debug_bot',
-      'Chromium Win PGO Builder': [ 'official_optimize_chrome_pgo_phase_1_x86', 'official_optimize_chrome_pgo_phase_2_x86' ],
-      'Chromium Win x64 PGO Builder': [ 'official_optimize_chrome_pgo_phase_1', 'official_optimize_chrome_pgo_phase_2' ],
+      'Chromium Win PGO Builder': {
+        '1': 'official_optimize_chrome_pgo_phase_1_x86',
+        '2': 'official_optimize_chrome_pgo_phase_2_x86',
+      },
+      'Chromium Win x64 PGO Builder': {
+        '1': 'official_optimize_chrome_pgo_phase_1',
+        '2': 'official_optimize_chrome_pgo_phase_2',
+      },
       'Chromium Windows Analyze': 'windows_analyze',
       'CrWin7Goma': 'release_bot_x86',
       'CrWin7Goma(clbr)': 'shared_release_bot_x86',
@@ -399,10 +409,16 @@
       'win': 'official_x86',
       'win-asan': 'official_syzyasan_x86',
       'win-clang': 'official_clang_x86',
-      'win-pgo': [ 'official_chrome_pgo_phase_1_x86', 'official_chrome_pgo_phase_2_x86' ],
+      'win-pgo': {
+        '1': 'official_chrome_pgo_phase_1_x86',
+        '2': 'official_chrome_pgo_phase_2_x86',
+      },
       'win64': 'official',
       'win64-clang': 'official_clang',
-      'win64-pgo': [ 'official_chrome_pgo_phase_1', 'official_chrome_pgo_phase_2' ],
+      'win64-pgo': {
+        '1': 'official_chrome_pgo_phase_1',
+        '2': 'official_chrome_pgo_phase_2',
+      },
     },
 
     'official.desktop.continuous': {
@@ -632,7 +648,10 @@
       'win_nacl_sdk': 'release_bot_x86',
       'win_nacl_sdk_build': 'release_bot_x86',
       'win_optional_gpu_tests_rel': 'gpu_tests_deqp_gles_release_trybot_x86',
-      'win_pgo': [ 'official_optimize_chrome_pgo_phase_1_x86', 'official_optimize_chrome_pgo_phase_2_x86' ],
+      'win_pgo': {
+        '1': 'official_optimize_chrome_pgo_phase_1_x86',
+        '2': 'official_optimize_chrome_pgo_phase_2_x86',
+      },
       'win_upload_clang': 'release_bot',
       'win_chrome_official': 'official_goma_x86',
     },
