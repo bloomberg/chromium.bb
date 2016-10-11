@@ -3141,7 +3141,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	 * ignore key presses if a grab is active.  We expand the key
 	 * event delivery mechanism to route events to widgets to
 	 * properly handle key grabs.  In the meantime, this prevents
-	 * key event devlivery while a grab is active. */
+	 * key event delivery while a grab is active. */
 	if (input->grab && input->grab_button == 0)
 		return;
 
