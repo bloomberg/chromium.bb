@@ -207,8 +207,8 @@ WebView* TouchActionTest::setupTest(std::string file,
   // Scroll to verify the code properly transforms windows to client co-ords.
   const int kScrollOffset = 100;
   Document* document = static_cast<Document*>(webView->mainFrame()->document());
-  document->frame()->view()->setScrollOffset(ScrollOffset(0, kScrollOffset),
-                                             ProgrammaticScroll);
+  document->frame()->view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0, kScrollOffset), ProgrammaticScroll);
 
   return webView;
 }
