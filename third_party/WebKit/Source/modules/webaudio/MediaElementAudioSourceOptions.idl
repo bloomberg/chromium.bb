@@ -4,5 +4,5 @@
 
 // See https://webaudio.github.io/web-audio-api/#mediaelementaudiosourceoptions
 dictionary MediaElementAudioSourceOptions {
-    HTMLMediaElement mediaElement;
+    required HTMLMediaElement mediaElement;
 };

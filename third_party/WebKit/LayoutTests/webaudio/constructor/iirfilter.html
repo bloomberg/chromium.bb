@@ -64,7 +64,7 @@
         success = Should("node = new IIRFilterNode(, " + JSON.stringify(options) + ")",
           function () {
             node = new IIRFilterNode(context, options);
-          }).throw("NotFoundError") && success;
+          }).throw("TypeError") && success;
 
         options = {
           feedforward: [1, 0.5]
@@ -72,7 +72,7 @@
         success = Should("node = new IIRFilterNode(c, " + JSON.stringify(options) + ")",
           function () {
             node = new IIRFilterNode(context, options);
-          }).throw("NotFoundError") && success;
+          }).throw("TypeError") && success;
 
         Should("new AnalyserNode() with options", success)
           .summarize(
