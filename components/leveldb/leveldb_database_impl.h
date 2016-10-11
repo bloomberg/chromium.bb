@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/unguessable_token.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -37,25 +38,26 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
   void GetPrefixed(const std::vector<uint8_t>& key_prefix,
                    const GetPrefixedCallback& callback) override;
   void GetSnapshot(const GetSnapshotCallback& callback) override;
-  void ReleaseSnapshot(uint64_t snapshot_id) override;
-  void GetFromSnapshot(uint64_t snapshot_id,
+  void ReleaseSnapshot(const base::UnguessableToken& snapshot) override;
+  void GetFromSnapshot(const base::UnguessableToken& snapshot,
                        const std::vector<uint8_t>& key,
                        const GetCallback& callback) override;
   void NewIterator(const NewIteratorCallback& callback) override;
-  void NewIteratorFromSnapshot(uint64_t snapshot_id,
-                               const NewIteratorCallback& callback) override;
-  void ReleaseIterator(uint64_t iterator_id) override;
+  void NewIteratorFromSnapshot(
+      const base::UnguessableToken& snapshot,
+      const NewIteratorFromSnapshotCallback& callback) override;
+  void ReleaseIterator(const base::UnguessableToken& iterator) override;
   void IteratorSeekToFirst(
-      uint64_t iterator_id,
+      const base::UnguessableToken& iterator,
       const IteratorSeekToFirstCallback& callback) override;
-  void IteratorSeekToLast(uint64_t iterator_id,
+  void IteratorSeekToLast(const base::UnguessableToken& iterator,
                           const IteratorSeekToLastCallback& callback) override;
-  void IteratorSeek(uint64_t iterator_id,
+  void IteratorSeek(const base::UnguessableToken& iterator,
                     const std::vector<uint8_t>& target,
                     const IteratorSeekToLastCallback& callback) override;
-  void IteratorNext(uint64_t iterator_id,
+  void IteratorNext(const base::UnguessableToken& iterator,
                     const IteratorNextCallback& callback) override;
-  void IteratorPrev(uint64_t iterator_id,
+  void IteratorPrev(const base::UnguessableToken& iterator,
                     const IteratorPrevCallback& callback) override;
 
  private:
@@ -71,14 +73,14 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
   std::unique_ptr<leveldb::Env> environment_;
   std::unique_ptr<leveldb::DB> db_;
 
-  std::map<uint64_t, const Snapshot*> snapshot_map_;
+  std::map<base::UnguessableToken, const Snapshot*> snapshot_map_;
 
   // TODO(erg): If we have an existing iterator which depends on a snapshot,
   // and delete the snapshot from the client side, that shouldn't delete the
   // snapshot maybe? At worse it's a DDoS if there's multiple users of the
   // system, but this maybe should be fixed...
 
-  std::map<uint64_t, Iterator*> iterator_map_;
+  std::map<base::UnguessableToken, Iterator*> iterator_map_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBDatabaseImpl);
 };

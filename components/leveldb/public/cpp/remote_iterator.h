@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_LEVELDB_PUBLIC_CPP_REMOTE_ITERATOR_H_
 #define COMPONENTS_LEVELDB_PUBLIC_CPP_REMOTE_ITERATOR_H_
 
+#include "base/unguessable_token.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 
@@ -16,7 +17,8 @@ namespace leveldb {
 // Note: Next(), Prev() and all the Seek*() calls cause mojo sync calls.
 class RemoteIterator : public Iterator {
  public:
-  RemoteIterator(mojom::LevelDBDatabase* database, uint64_t iterator_id);
+  RemoteIterator(mojom::LevelDBDatabase* database,
+                 const base::UnguessableToken& iterator);
   ~RemoteIterator() override;
 
   // Overridden from leveldb::Iterator:
@@ -32,7 +34,7 @@ class RemoteIterator : public Iterator {
 
  private:
   mojom::LevelDBDatabase* database_;
-  uint64_t iterator_id_;
+  base::UnguessableToken iterator_;
 
   bool valid_;
   mojom::DatabaseError status_;

@@ -16,18 +16,27 @@
 namespace leveldb {
 namespace {
 
-template <typename T>
-void DoCapture(T* t, const base::Closure& quit_closure, T got_t) {
-  *t = std::move(got_t);
-  if (!quit_closure.is_null())
-    quit_closure.Run();
+template <typename... Args>
+void IgnoreAllArgs(Args&&...) {}
+
+template <typename... Args>
+void DoCaptures(typename std::decay<Args>::type*... out_args,
+                const base::Closure& quit_closure,
+                Args... in_args) {
+  IgnoreAllArgs((*out_args = std::move(in_args))...);
+  quit_closure.Run();
 }
 
 template <typename T1>
-base::Callback<void(T1)> Capture(
-    T1* t1,
-    const base::Closure& quit_closure = base::Closure()) {
-  return base::Bind(&DoCapture<T1>, t1, quit_closure);
+base::Callback<void(T1)> Capture(T1* t1, const base::Closure& quit_closure) {
+  return base::Bind(&DoCaptures<T1>, t1, quit_closure);
+}
+
+base::Callback<void(const base::UnguessableToken&)> CaptureToken(
+    base::UnguessableToken* t1,
+    const base::Closure& quit_closure) {
+  return base::Bind(&DoCaptures<const base::UnguessableToken&>, t1,
+                    quit_closure);
 }
 
 class RemoteIteratorTest : public shell::test::ServiceTest {
@@ -79,13 +88,13 @@ class RemoteIteratorTest : public shell::test::ServiceTest {
 };
 
 TEST_F(RemoteIteratorTest, Seeking) {
-  uint64_t iterator_id = 0;
+  base::UnguessableToken iterator;
   base::RunLoop run_loop;
-  database()->NewIterator(Capture(&iterator_id, run_loop.QuitClosure()));
+  database()->NewIterator(CaptureToken(&iterator, run_loop.QuitClosure()));
   run_loop.Run();
-  EXPECT_NE(0u, iterator_id);
+  EXPECT_FALSE(iterator.is_empty());
 
-  RemoteIterator it(database().get(), iterator_id);
+  RemoteIterator it(database().get(), iterator);
   EXPECT_FALSE(it.Valid());
 
   it.SeekToFirst();
@@ -105,13 +114,13 @@ TEST_F(RemoteIteratorTest, Seeking) {
 }
 
 TEST_F(RemoteIteratorTest, Next) {
-  uint64_t iterator_id = 0;
+  base::UnguessableToken iterator;
   base::RunLoop run_loop;
-  database()->NewIterator(Capture(&iterator_id, run_loop.QuitClosure()));
+  database()->NewIterator(CaptureToken(&iterator, run_loop.QuitClosure()));
   run_loop.Run();
-  EXPECT_NE(0u, iterator_id);
+  EXPECT_FALSE(iterator.is_empty());
 
-  RemoteIterator it(database().get(), iterator_id);
+  RemoteIterator it(database().get(), iterator);
   EXPECT_FALSE(it.Valid());
 
   it.SeekToFirst();
@@ -134,13 +143,13 @@ TEST_F(RemoteIteratorTest, Next) {
 }
 
 TEST_F(RemoteIteratorTest, Prev) {
-  uint64_t iterator_id = 0;
+  base::UnguessableToken iterator;
   base::RunLoop run_loop;
-  database()->NewIterator(Capture(&iterator_id, run_loop.QuitClosure()));
+  database()->NewIterator(CaptureToken(&iterator, run_loop.QuitClosure()));
   run_loop.Run();
-  EXPECT_NE(0u, iterator_id);
+  EXPECT_FALSE(iterator.is_empty());
 
-  RemoteIterator it(database().get(), iterator_id);
+  RemoteIterator it(database().get(), iterator);
   EXPECT_FALSE(it.Valid());
 
   it.SeekToLast();

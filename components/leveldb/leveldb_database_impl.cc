@@ -17,17 +17,6 @@
 namespace leveldb {
 namespace {
 
-template <typename T>
-uint64_t GetSafeRandomId(const std::map<uint64_t, T>& m) {
-  // Associate a random unsigned 64 bit handle to |s|, checking for the highly
-  // improbable id duplication or castability to null.
-  uint64_t new_id = base::RandUint64();
-  while ((new_id == 0) || (m.find(new_id) != m.end()))
-    new_id = base::RandUint64();
-
-  return new_id;
-}
-
 template <typename FunctionType>
 leveldb::Status ForEachWithPrefix(leveldb::DB* db,
                                   const leveldb::Slice& key_prefix,
@@ -138,24 +127,26 @@ void LevelDBDatabaseImpl::GetPrefixed(const std::vector<uint8_t>& key_prefix,
 
 void LevelDBDatabaseImpl::GetSnapshot(const GetSnapshotCallback& callback) {
   const Snapshot* s = db_->GetSnapshot();
-  uint64_t new_id = GetSafeRandomId(snapshot_map_);
-  snapshot_map_.insert(std::make_pair(new_id, s));
-  callback.Run(new_id);
+  base::UnguessableToken token = base::UnguessableToken::Create();
+  snapshot_map_.insert(std::make_pair(token, s));
+  callback.Run(token);
 }
 
-void LevelDBDatabaseImpl::ReleaseSnapshot(uint64_t snapshot_id) {
-  auto it = snapshot_map_.find(snapshot_id);
+void LevelDBDatabaseImpl::ReleaseSnapshot(
+    const base::UnguessableToken& snapshot) {
+  auto it = snapshot_map_.find(snapshot);
   if (it != snapshot_map_.end()) {
     db_->ReleaseSnapshot(it->second);
     snapshot_map_.erase(it);
   }
 }
 
-void LevelDBDatabaseImpl::GetFromSnapshot(uint64_t snapshot_id,
-                                          const std::vector<uint8_t>& key,
-                                          const GetCallback& callback) {
+void LevelDBDatabaseImpl::GetFromSnapshot(
+    const base::UnguessableToken& snapshot,
+    const std::vector<uint8_t>& key,
+    const GetCallback& callback) {
   // If the snapshot id is invalid, send back invalid argument
-  auto it = snapshot_map_.find(snapshot_id);
+  auto it = snapshot_map_.find(snapshot);
   if (it == snapshot_map_.end()) {
     callback.Run(mojom::DatabaseError::INVALID_ARGUMENT,
                  std::vector<uint8_t>());
@@ -171,18 +162,18 @@ void LevelDBDatabaseImpl::GetFromSnapshot(uint64_t snapshot_id,
 
 void LevelDBDatabaseImpl::NewIterator(const NewIteratorCallback& callback) {
   Iterator* iterator = db_->NewIterator(leveldb::ReadOptions());
-  uint64_t new_id = GetSafeRandomId(iterator_map_);
-  iterator_map_.insert(std::make_pair(new_id, iterator));
-  callback.Run(new_id);
+  base::UnguessableToken token = base::UnguessableToken::Create();
+  iterator_map_.insert(std::make_pair(token, iterator));
+  callback.Run(token);
 }
 
 void LevelDBDatabaseImpl::NewIteratorFromSnapshot(
-    uint64_t snapshot_id,
-    const NewIteratorCallback& callback) {
+    const base::UnguessableToken& snapshot,
+    const NewIteratorFromSnapshotCallback& callback) {
   // If the snapshot id is invalid, send back invalid argument
-  auto it = snapshot_map_.find(snapshot_id);
+  auto it = snapshot_map_.find(snapshot);
   if (it == snapshot_map_.end()) {
-    callback.Run(0);
+    callback.Run(base::Optional<base::UnguessableToken>());
     return;
   }
 
@@ -190,13 +181,14 @@ void LevelDBDatabaseImpl::NewIteratorFromSnapshot(
   options.snapshot = it->second;
 
   Iterator* iterator = db_->NewIterator(options);
-  uint64_t new_id = GetSafeRandomId(iterator_map_);
-  iterator_map_.insert(std::make_pair(new_id, iterator));
-  callback.Run(new_id);
+  base::UnguessableToken new_token = base::UnguessableToken::Create();
+  iterator_map_.insert(std::make_pair(new_token, iterator));
+  callback.Run(new_token);
 }
 
-void LevelDBDatabaseImpl::ReleaseIterator(uint64_t iterator_id) {
-  auto it = iterator_map_.find(iterator_id);
+void LevelDBDatabaseImpl::ReleaseIterator(
+    const base::UnguessableToken& iterator) {
+  auto it = iterator_map_.find(iterator);
   if (it != iterator_map_.end()) {
     delete it->second;
     iterator_map_.erase(it);
@@ -204,9 +196,9 @@ void LevelDBDatabaseImpl::ReleaseIterator(uint64_t iterator_id) {
 }
 
 void LevelDBDatabaseImpl::IteratorSeekToFirst(
-    uint64_t iterator_id,
+    const base::UnguessableToken& iterator,
     const IteratorSeekToFirstCallback& callback) {
-  auto it = iterator_map_.find(iterator_id);
+  auto it = iterator_map_.find(iterator);
   if (it == iterator_map_.end()) {
     callback.Run(false, mojom::DatabaseError::INVALID_ARGUMENT, base::nullopt,
                  base::nullopt);
@@ -219,9 +211,9 @@ void LevelDBDatabaseImpl::IteratorSeekToFirst(
 }
 
 void LevelDBDatabaseImpl::IteratorSeekToLast(
-    uint64_t iterator_id,
+    const base::UnguessableToken& iterator,
     const IteratorSeekToLastCallback& callback) {
-  auto it = iterator_map_.find(iterator_id);
+  auto it = iterator_map_.find(iterator);
   if (it == iterator_map_.end()) {
     callback.Run(false, mojom::DatabaseError::INVALID_ARGUMENT, base::nullopt,
                  base::nullopt);
@@ -234,10 +226,10 @@ void LevelDBDatabaseImpl::IteratorSeekToLast(
 }
 
 void LevelDBDatabaseImpl::IteratorSeek(
-    uint64_t iterator_id,
+    const base::UnguessableToken& iterator,
     const std::vector<uint8_t>& target,
     const IteratorSeekToLastCallback& callback) {
-  auto it = iterator_map_.find(iterator_id);
+  auto it = iterator_map_.find(iterator);
   if (it == iterator_map_.end()) {
     callback.Run(false, mojom::DatabaseError::INVALID_ARGUMENT, base::nullopt,
                  base::nullopt);
@@ -249,9 +241,9 @@ void LevelDBDatabaseImpl::IteratorSeek(
   ReplyToIteratorMessage(it->second, callback);
 }
 
-void LevelDBDatabaseImpl::IteratorNext(uint64_t iterator_id,
+void LevelDBDatabaseImpl::IteratorNext(const base::UnguessableToken& iterator,
                                        const IteratorNextCallback& callback) {
-  auto it = iterator_map_.find(iterator_id);
+  auto it = iterator_map_.find(iterator);
   if (it == iterator_map_.end()) {
     callback.Run(false, mojom::DatabaseError::INVALID_ARGUMENT, base::nullopt,
                  base::nullopt);
@@ -263,9 +255,9 @@ void LevelDBDatabaseImpl::IteratorNext(uint64_t iterator_id,
   ReplyToIteratorMessage(it->second, callback);
 }
 
-void LevelDBDatabaseImpl::IteratorPrev(uint64_t iterator_id,
+void LevelDBDatabaseImpl::IteratorPrev(const base::UnguessableToken& iterator,
                                        const IteratorPrevCallback& callback) {
-  auto it = iterator_map_.find(iterator_id);
+  auto it = iterator_map_.find(iterator);
   if (it == iterator_map_.end()) {
     callback.Run(false, mojom::DatabaseError::INVALID_ARGUMENT, base::nullopt,
                  base::nullopt);

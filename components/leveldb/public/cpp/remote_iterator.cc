@@ -9,14 +9,14 @@
 namespace leveldb {
 
 RemoteIterator::RemoteIterator(mojom::LevelDBDatabase* database,
-                               uint64_t iterator_id)
+                               const base::UnguessableToken& iterator)
     : database_(database),
-      iterator_id_(iterator_id),
+      iterator_(iterator),
       valid_(false),
       status_(mojom::DatabaseError::OK) {}
 
 RemoteIterator::~RemoteIterator() {
-  database_->ReleaseIterator(iterator_id_);
+  database_->ReleaseIterator(iterator_);
 }
 
 bool RemoteIterator::Valid() const {
@@ -24,26 +24,24 @@ bool RemoteIterator::Valid() const {
 }
 
 void RemoteIterator::SeekToFirst() {
-  database_->IteratorSeekToFirst(iterator_id_, &valid_, &status_, &key_,
-                                 &value_);
+  database_->IteratorSeekToFirst(iterator_, &valid_, &status_, &key_, &value_);
 }
 
 void RemoteIterator::SeekToLast() {
-  database_->IteratorSeekToLast(iterator_id_, &valid_, &status_, &key_,
-                                &value_);
+  database_->IteratorSeekToLast(iterator_, &valid_, &status_, &key_, &value_);
 }
 
 void RemoteIterator::Seek(const Slice& target) {
-  database_->IteratorSeek(iterator_id_, GetVectorFor(target), &valid_, &status_,
+  database_->IteratorSeek(iterator_, GetVectorFor(target), &valid_, &status_,
                           &key_, &value_);
 }
 
 void RemoteIterator::Next() {
-  database_->IteratorNext(iterator_id_, &valid_, &status_, &key_, &value_);
+  database_->IteratorNext(iterator_, &valid_, &status_, &key_, &value_);
 }
 
 void RemoteIterator::Prev() {
-  database_->IteratorPrev(iterator_id_, &valid_, &status_, &key_, &value_);
+  database_->IteratorPrev(iterator_, &valid_, &status_, &key_, &value_);
 }
 
 Slice RemoteIterator::key() const {
