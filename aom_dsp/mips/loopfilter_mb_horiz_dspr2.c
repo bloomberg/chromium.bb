@@ -20,9 +20,9 @@
 #include "aom_mem/aom_mem.h"
 
 #if HAVE_DSPR2
-void aom_lpf_horizontal_16_dspr2(unsigned char *s, int pitch,
-                                 const uint8_t *blimit, const uint8_t *limit,
-                                 const uint8_t *thresh, int count) {
+static void mb_lpf_horizontal_edge(unsigned char *s, int pitch,
+                                   const uint8_t *blimit, const uint8_t *limit,
+                                   const uint8_t *thresh, int count) {
   uint32_t mask;
   uint32_t hev, flat, flat2;
   uint8_t i;
@@ -716,5 +716,19 @@ void aom_lpf_horizontal_16_dspr2(unsigned char *s, int pitch,
 
     s = s + 4;
   }
+}
+
+void aom_lpf_horizontal_edge_8_dspr2(unsigned char *s, int pitch,
+                                     const uint8_t *blimit,
+                                     const uint8_t *limit,
+                                     const uint8_t *thresh) {
+  mb_lpf_horizontal_edge(s, pitch, blimit, limit, thresh, 1);
+}
+
+void aom_lpf_horizontal_edge_16_dspr2(unsigned char *s, int pitch,
+                                      const uint8_t *blimit,
+                                      const uint8_t *limit,
+                                      const uint8_t *thresh) {
+  mb_lpf_horizontal_edge(s, pitch, blimit, limit, thresh, 2);
 }
 #endif  // #if HAVE_DSPR2
