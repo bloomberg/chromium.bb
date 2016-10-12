@@ -82,6 +82,16 @@ static void setHasTextDescendantsOnAncestors(InlineFlowBox* box) {
   }
 }
 
+static inline bool hasIdenticalLineHeightProperties(
+    const ComputedStyle& parentStyle,
+    const ComputedStyle& childStyle,
+    bool isRoot) {
+  return parentStyle.hasIdenticalAscentDescentAndLineGap(childStyle) &&
+         parentStyle.lineHeight() == childStyle.lineHeight() &&
+         (parentStyle.verticalAlign() == VerticalAlignBaseline || isRoot) &&
+         childStyle.verticalAlign() == VerticalAlignBaseline;
+}
+
 void InlineFlowBox::addToLine(InlineBox* child) {
   ASSERT(!child->parent());
   ASSERT(!child->nextOnLine());
@@ -114,20 +124,14 @@ void InlineFlowBox::addToLine(InlineBox* child) {
         getLineLayoutItem().styleRef(isFirstLineStyle());
     const ComputedStyle& childStyle =
         child->getLineLayoutItem().styleRef(isFirstLineStyle());
+    bool root = isRootInlineBox();
     bool shouldClearDescendantsHaveSameLineHeightAndBaseline = false;
     if (child->getLineLayoutItem().isAtomicInlineLevel()) {
       shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
     } else if (child->isText()) {
       if (child->getLineLayoutItem().isBR() ||
           (child->getLineLayoutItem().parent() != getLineLayoutItem())) {
-        if (!parentStyle.font()
-                 .getFontMetrics()
-                 .hasIdenticalAscentDescentAndLineGap(
-                     childStyle.font().getFontMetrics()) ||
-            parentStyle.lineHeight() != childStyle.lineHeight() ||
-            (parentStyle.verticalAlign() != VerticalAlignBaseline &&
-             !isRootInlineBox()) ||
-            childStyle.verticalAlign() != VerticalAlignBaseline)
+        if (!hasIdenticalLineHeightProperties(parentStyle, childStyle, root))
           shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
       }
       if (childStyle.hasTextCombine() ||
@@ -146,17 +150,11 @@ void InlineFlowBox::addToLine(InlineBox* child) {
         // Check the child's bit, and then also check for differences in font,
         // line-height, vertical-align
         if (!childFlowBox->descendantsHaveSameLineHeightAndBaseline() ||
-            !parentStyle.font()
-                 .getFontMetrics()
-                 .hasIdenticalAscentDescentAndLineGap(
-                     childStyle.font().getFontMetrics()) ||
-            parentStyle.lineHeight() != childStyle.lineHeight() ||
-            (parentStyle.verticalAlign() != VerticalAlignBaseline &&
-             !isRootInlineBox()) ||
-            childStyle.verticalAlign() != VerticalAlignBaseline ||
+            !hasIdenticalLineHeightProperties(parentStyle, childStyle, root) ||
             childStyle.hasBorder() || childStyle.hasPadding() ||
-            childStyle.hasTextCombine())
+            childStyle.hasTextCombine()) {
           shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
+        }
       }
     }
 

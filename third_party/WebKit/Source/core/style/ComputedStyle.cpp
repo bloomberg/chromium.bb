@@ -1801,6 +1801,15 @@ void ComputedStyle::setFont(const Font& font) {
   m_styleInheritedData.access()->font = font;
 }
 
+bool ComputedStyle::hasIdenticalAscentDescentAndLineGap(
+    const ComputedStyle& other) const {
+  const SimpleFontData* fontData = font().primaryFont();
+  const SimpleFontData* otherFontData = other.font().primaryFont();
+  return fontData && otherFontData &&
+         fontData->getFontMetrics().hasIdenticalAscentDescentAndLineGap(
+             otherFontData->getFontMetrics());
+}
+
 const Length& ComputedStyle::specifiedLineHeight() const {
   return m_styleInheritedData->line_height;
 }
