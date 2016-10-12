@@ -11,23 +11,32 @@ Call stack:
 Event target: INPUT
 Script execution resumed.
 
+Running: testAuxclickBreakpoint
+Script execution paused.
+Call stack:
+    0) testElementEventListener (event-listener-breakpoints.html:7)
+    1) addListenerAndAuxclick (event-listener-breakpoints.html:23)
+    2)  (:1)
+Event target: INPUT
+Script execution resumed.
+
 Running: testTimerFiredBreakpoint
 Script execution paused.
 Call stack:
-    0) timerFired (event-listener-breakpoints.html:26)
+    0) timerFired (event-listener-breakpoints.html:33)
 Script execution resumed.
 
 Running: testLoadBreakpointOnXHR
 Script execution paused.
 Call stack:
-    0) loadCallback (event-listener-breakpoints.html:49)
+    0) loadCallback (event-listener-breakpoints.html:56)
 Event target: XMLHttpRequest
 Script execution resumed.
 
 Running: testMediaEventBreakpoint
 Script execution paused.
 Call stack:
-    0) onVideoPlay (event-listener-breakpoints.html:61)
+    0) onVideoPlay (event-listener-breakpoints.html:68)
 Event target: VIDEO
 Script execution resumed.
 
@@ -35,7 +44,7 @@ Running: testPointerEventBreakpoint
 Script execution paused.
 Call stack:
     0) testElementEventListener (event-listener-breakpoints.html:7)
-    1) addListenerAndPointerDown (event-listener-breakpoints.html:23)
+    1) addListenerAndPointerDown (event-listener-breakpoints.html:30)
     2)  (:1)
 Event target: INPUT
 Script execution resumed.

@@ -16,6 +16,13 @@ function addListenerAndClick()
     element.click();
 }
 
+function addListenerAndAuxclick()
+{
+    var element = document.getElementById("test");
+    element.addEventListener("auxclick", testElementEventListener, true);
+    element.dispatchEvent(new MouseEvent("auxclick", {button: 1}));
+}
+
 function addListenerAndPointerDown()
 {
     var element = document.getElementById("test");
@@ -84,6 +91,26 @@ function test()
             function resumed()
             {
                 InspectorTest.evaluateInPage("addListenerAndClick()", next);
+            }
+        },
+
+        function testAuxclickBreakpoint(next)
+        {
+            pane._setBreakpoint("listener:auxclick");
+            InspectorTest.waitUntilPaused(paused);
+            InspectorTest.evaluateInPageWithTimeout("addListenerAndAuxclick()");
+
+            function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
+            {
+                InspectorTest.captureStackTrace(callFrames);
+                printEventTargetName(auxData);
+                pane._removeBreakpoint("listener:auxclick");
+                InspectorTest.resumeExecution(resumed);
+            }
+
+            function resumed()
+            {
+                InspectorTest.evaluateInPage("addListenerAndAuxclick()", next);
             }
         },
 
