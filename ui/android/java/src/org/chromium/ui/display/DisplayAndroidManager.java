@@ -152,7 +152,8 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
 
         @Override
         public void onDisplayAdded(int sdkDisplayId) {
-            addDisplay(getDisplayManager().getDisplay(sdkDisplayId));
+            // DisplayAndroid is added lazily on first use. This is to workaround corner case
+            // bug where DisplayManager.getDisplay(sdkDisplayId) returning null here.
         }
 
         @Override
@@ -163,8 +164,10 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
         @Override
         public void onDisplayChanged(int sdkDisplayId) {
             updateDeviceDisplayInfo();
-            mIdMap.get(sdkDisplayId)
-                    .updateFromDisplay(getDisplayManager().getDisplay(sdkDisplayId));
+            DisplayAndroid displayAndroid = mIdMap.get(sdkDisplayId);
+            if (displayAndroid != null) {
+                displayAndroid.updateFromDisplay(getDisplayManager().getDisplay(sdkDisplayId));
+            }
         }
     }
 
@@ -204,12 +207,8 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
 
     private DisplayAndroidManager() {
         mIdMap = new SparseArray<>();
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             mBackend = new DisplayListenerBackendImpl();
-            for (Display display : getDisplayManager().getDisplays()) {
-                addDisplay(display);
-            }
         } else {
             Display display = getDisplayFromContext(getContext());
             mBackend = new DisplayListenerAPI16(display.getDisplayId());
@@ -218,8 +217,13 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
         mBackend.startListening();
     }
 
-    /* package */ DisplayAndroid getDisplayAndroid(int sdkDisplayId) {
-        return mIdMap.get(sdkDisplayId);
+    /* package */ DisplayAndroid getDisplayAndroid(Display display) {
+        int sdkDisplayId = display.getDisplayId();
+        DisplayAndroid displayAndroid = mIdMap.get(sdkDisplayId);
+        if (displayAndroid == null) {
+            displayAndroid = addDisplay(display);
+        }
+        return displayAndroid;
     }
 
     /* package */ void startAccurateListening() {
@@ -230,8 +234,10 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
         mBackend.stopAccurateListening();
     }
 
-    private void addDisplay(Display display) {
+    private DisplayAndroid addDisplay(Display display) {
         int sdkDisplayId = display.getDisplayId();
-        mIdMap.put(sdkDisplayId, new DisplayAndroid(display));
+        DisplayAndroid displayAndroid = new DisplayAndroid(display);
+        mIdMap.put(sdkDisplayId, displayAndroid);
+        return displayAndroid;
     }
 }

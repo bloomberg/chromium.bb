@@ -57,8 +57,7 @@ public class DisplayAndroid {
      */
     public static DisplayAndroid get(Context context) {
         Display display = DisplayAndroidManager.getDisplayFromContext(context);
-        int id = display.getDisplayId();
-        return getManager().getDisplayAndroid(id);
+        return getManager().getDisplayAndroid(display);
     }
 
     /**
