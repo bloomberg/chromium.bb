@@ -309,9 +309,7 @@ void AddAnimationToElementWithExistingPlayer(
       timeline->animation_host()->GetElementAnimationsForElementId(element_id);
   DCHECK(element_animations);
   DCHECK(element_animations->players_list().might_have_observers());
-  ElementAnimations::PlayersList::Iterator it(
-      &element_animations->players_list());
-  AnimationPlayer* player = it.GetNext();
+  AnimationPlayer* player = &*element_animations->players_list().begin();
   DCHECK(player);
   player->AddAnimation(std::move(animation));
 }
@@ -324,9 +322,7 @@ void RemoveAnimationFromElementWithExistingPlayer(
       timeline->animation_host()->GetElementAnimationsForElementId(element_id);
   DCHECK(element_animations);
   DCHECK(element_animations->players_list().might_have_observers());
-  ElementAnimations::PlayersList::Iterator it(
-      &element_animations->players_list());
-  AnimationPlayer* player = it.GetNext();
+  AnimationPlayer* player = &*element_animations->players_list().begin();
   DCHECK(player);
   player->RemoveAnimation(animation_id);
 }
@@ -339,9 +335,7 @@ Animation* GetAnimationFromElementWithExistingPlayer(
       timeline->animation_host()->GetElementAnimationsForElementId(element_id);
   DCHECK(element_animations);
   DCHECK(element_animations->players_list().might_have_observers());
-  ElementAnimations::PlayersList::Iterator it(
-      &element_animations->players_list());
-  AnimationPlayer* player = it.GetNext();
+  AnimationPlayer* player = &*element_animations->players_list().begin();
   DCHECK(player);
   return player->GetAnimationById(animation_id);
 }

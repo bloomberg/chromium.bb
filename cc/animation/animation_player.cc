@@ -1035,8 +1035,8 @@ void AnimationPlayer::PurgeAnimationsMarkedForDeletion() {
 
 void AnimationPlayer::PushNewAnimationsToImplThread(
     AnimationPlayer* animation_player_impl) const {
-  // Any new animations owned by the main thread's ElementAnimations are cloned
-  // and added to the impl thread's ElementAnimations.
+  // Any new animations owned by the main thread's AnimationPlayer are cloned
+  // and added to the impl thread's AnimationPlayer.
   for (size_t i = 0; i < animations_.size(); ++i) {
     // If the animation is already running on the impl thread, there is no
     // need to copy it over.

@@ -60,7 +60,7 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   bool IsEmpty() const;
 
   typedef base::ObserverList<AnimationPlayer> PlayersList;
-  PlayersList& players_list() const { return *players_list_.get(); }
+  const PlayersList& players_list() const { return players_list_; }
 
   // Ensures that the list of active animations on the main thread and the impl
   // thread are kept in sync. This function does not take ownership of the impl
@@ -199,7 +199,7 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   static TargetProperties GetPropertiesMaskForAnimationState();
 
-  std::unique_ptr<PlayersList> players_list_;
+  PlayersList players_list_;
   AnimationHost* animation_host_;
   ElementId element_id_;
 

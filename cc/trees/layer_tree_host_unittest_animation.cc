@@ -858,10 +858,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
             layer->element_id());
     DCHECK(element_animations);
     DCHECK(element_animations->players_list().might_have_observers());
-
-    ElementAnimations::PlayersList::Iterator it(
-        &element_animations->players_list());
-    AnimationPlayer* player = it.GetNext();
+    AnimationPlayer* player = &*element_animations->players_list().begin();
     DCHECK(player);
     return *player;
   }

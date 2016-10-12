@@ -438,22 +438,16 @@ AnimationPlayer* AnimationTimelinesTest::GetPlayerForElementId(
     ElementId element_id) {
   const scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element_id);
-  return element_animations
-             ? ElementAnimations::PlayersList::Iterator(
-                   &element_animations->players_list())
-                   .GetNext()
-             : nullptr;
+  return element_animations ? &*element_animations->players_list().begin()
+                            : nullptr;
 }
 
 AnimationPlayer* AnimationTimelinesTest::GetImplPlayerForLayerId(
     ElementId element_id) {
   const scoped_refptr<ElementAnimations> element_animations =
       host_impl_->GetElementAnimationsForElementId(element_id);
-  return element_animations
-             ? ElementAnimations::PlayersList::Iterator(
-                   &element_animations->players_list())
-                   .GetNext()
-             : nullptr;
+  return element_animations ? &*element_animations->players_list().begin()
+                            : nullptr;
 }
 
 int AnimationTimelinesTest::NextTestLayerId() {
