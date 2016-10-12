@@ -381,9 +381,9 @@ void ExecFilePathWatcherCallback::NotifyPathChanged(const base::FilePath& path,
       DCHECK(base::mac::IsAtMostOS10_9());
       Boolean fs_in_trash;
       FSRef ref;
-      if (CFURLGetFSRef(base::mac::NSToCFCast(executable_fsref_.get()), &ref)) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+      if (CFURLGetFSRef(base::mac::NSToCFCast(executable_fsref_.get()), &ref)) {
         // This is ok because it only happens on 10.9 and won't be needed once
         // we stop supporting that.
         OSErr err = FSDetermineIfRefIsEnclosedByFolder(
