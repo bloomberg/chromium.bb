@@ -88,6 +88,7 @@ class CORE_EXPORT FileInputType final : public InputType,
   void disabledAttributeChanged() override;
   void multipleAttributeChanged() override;
   String defaultToolTip(const InputTypeView&) const override;
+  void copyNonAttributeProperties(const HTMLInputElement&) override;
 
   // FileChooserClient implementation.
   void filesChosen(const Vector<FileChooserFileInfo>&) override;

@@ -645,6 +645,8 @@ const AtomicString& InputType::defaultAutocapitalize() const {
   return none;
 }
 
+void InputType::copyNonAttributeProperties(const HTMLInputElement&) {}
+
 bool InputType::shouldAppearIndeterminate() const {
   return false;
 }

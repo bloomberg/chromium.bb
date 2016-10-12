@@ -397,4 +397,11 @@ String FileInputType::defaultToolTip(const InputTypeView&) const {
   return names.toString();
 }
 
+void FileInputType::copyNonAttributeProperties(const HTMLInputElement& source) {
+  DCHECK(m_fileList->isEmpty());
+  const FileList* sourceList = source.files();
+  for (unsigned i = 0; i < sourceList->length(); ++i)
+    m_fileList->append(sourceList->item(i)->clone());
+}
+
 }  // namespace blink

@@ -199,7 +199,7 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
 
   bool multiple() const;
 
-  FileList* files();
+  FileList* files() const;
   void setFiles(FileList*);
 
   void setFilesFromPaths(const Vector<String>&);

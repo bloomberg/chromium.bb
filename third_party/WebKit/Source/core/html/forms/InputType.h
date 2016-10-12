@@ -195,6 +195,7 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   virtual const QualifiedName& subResourceAttributeName() const;
   virtual bool supportsAutocapitalize() const;
   virtual const AtomicString& defaultAutocapitalize() const;
+  virtual void copyNonAttributeProperties(const HTMLInputElement&);
 
   // Parses the specified string for the type, and return
   // the Decimal value for the parsing result if the parsing
