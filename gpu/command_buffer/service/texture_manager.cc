@@ -1115,12 +1115,15 @@ bool Texture::ValidForTexture(
     int32_t max_x;
     int32_t max_y;
     int32_t max_z;
-    return SafeAddInt32(xoffset, width, &max_x) &&
-           SafeAddInt32(yoffset, height, &max_y) &&
-           SafeAddInt32(zoffset, depth, &max_z) &&
-           xoffset >= 0 &&
+    return xoffset >= 0 &&
            yoffset >= 0 &&
            zoffset >= 0 &&
+           width >= 0 &&
+           height >= 0 &&
+           depth >= 0 &&
+           SafeAddInt32(xoffset, width, &max_x) &&
+           SafeAddInt32(yoffset, height, &max_y) &&
+           SafeAddInt32(zoffset, depth, &max_z) &&
            max_x <= info.width &&
            max_y <= info.height &&
            max_z <= info.depth;

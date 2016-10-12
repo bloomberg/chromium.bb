@@ -13448,23 +13448,6 @@ void GLES2DecoderImpl::DoCompressedTexSubImage2D(
   ExitCommandProcessingEarly();
 }
 
-static void Clip(
-    GLint start, GLint range, GLint sourceRange,
-    GLint* out_start, GLint* out_range) {
-  DCHECK(out_start);
-  DCHECK(out_range);
-  if (start < 0) {
-    range += start;
-    start = 0;
-  }
-  GLint end = start + range;
-  if (end > sourceRange) {
-    range -= end - sourceRange;
-  }
-  *out_start = start;
-  *out_range = range;
-}
-
 bool GLES2DecoderImpl::ValidateCopyTexFormat(
     const char* func_name, GLenum internal_format,
     GLenum read_format, GLenum read_type) {
@@ -13622,37 +13605,31 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   }
 
   // Clip to size to source dimensions
-  GLint copyX = 0;
-  GLint copyY = 0;
-  GLint copyWidth = 0;
-  GLint copyHeight = 0;
-  Clip(x, width, size.width(), &copyX, &copyWidth);
-  Clip(y, height, size.height(), &copyY, &copyHeight);
+  gfx::Rect src(x, y, width, height);
+  const gfx::Rect dst(0, 0, size.width(), size.height());
+  src.Intersect(dst);
 
-  if (copyX != x ||
-      copyY != y ||
-      copyWidth != width ||
-      copyHeight != height) {
+  if (src.x() != x || src.y() != y ||
+      src.width() != width || src.height() != height) {
     // some part was clipped so clear the rect.
     std::unique_ptr<char[]> zero(new char[pixels_size]);
     memset(zero.get(), 0, pixels_size);
     glTexImage2D(target, level, TextureManager::AdjustTexInternalFormat(
                                     feature_info_.get(), internal_format),
                  width, height, border, format, type, zero.get());
-    if (copyHeight > 0 && copyWidth > 0) {
-      GLint dx = copyX - x;
-      GLint dy = copyY - y;
-      GLint destX = dx;
-      GLint destY = dy;
+    if (!src.IsEmpty()) {
+      GLint destX = src.x() - x;
+      GLint destY = src.y() - y;
       if (requires_luma_blit) {
         copy_tex_image_blit_->DoCopyTexSubImageToLUMACompatibilityTexture(
             this, texture->service_id(), texture->target(), target, format,
-            type, level, destX, destY, 0, copyX, copyY, copyWidth, copyHeight,
+            type, level, destX, destY, 0,
+            src.x(), src.y(), src.width(), src.height(),
             GetBoundReadFramebufferServiceId(),
             GetBoundReadFramebufferInternalFormat());
       } else {
-        glCopyTexSubImage2D(target, level, destX, destY, copyX, copyY,
-                            copyWidth, copyHeight);
+        glCopyTexSubImage2D(target, level, destX, destY,
+                            src.x(), src.y(), src.width(), src.height());
       }
     }
   } else {
@@ -13681,7 +13658,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     if (requires_luma_blit) {
       copy_tex_image_blit_->DoCopyTexImage2DToLUMACompatibilityTexture(
           this, texture->service_id(), texture->target(), target, format,
-          type, level, internal_format, copyX, copyY, copyWidth, copyHeight,
+          type, level, internal_format, x, y, width, height,
           GetBoundReadFramebufferServiceId(),
           GetBoundReadFramebufferInternalFormat());
     } else if (use_workaround) {
@@ -13705,8 +13682,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
         glGenTextures(1, &temp_texture);
         ScopedTextureBinder binder(&state_, temp_texture,
                                    source_texture_target);
-        glCopyTexImage2D(source_texture_target, 0, temp_internal_format, copyX,
-                         copyY, copyWidth, copyHeight, border);
+        glCopyTexImage2D(source_texture_target, 0, temp_internal_format,
+                         x, y, width, height, border);
 
         // Attach the temp texture to the read framebuffer.
         glFramebufferTexture2DEXT(framebuffer_target, GL_COLOR_ATTACHMENT0,
@@ -13716,7 +13693,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       // Copy to the final texture.
       DCHECK_EQ(static_cast<GLuint>(GL_TEXTURE_2D), dest_texture_target);
       glCopyTexImage2D(dest_texture_target, level, final_internal_format, 0, 0,
-                       copyWidth, copyHeight, 0);
+                       width, height, 0);
 
       // Rebind source texture.
       glFramebufferTexture2DEXT(framebuffer_target, GL_COLOR_ATTACHMENT0,
@@ -13735,8 +13712,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
         texture_manager()->WorkaroundCopyTexImageCubeMap(&texture_state_,
             &state_, &framebuffer_state_, texture_ref, func_name, args);
       }
-      glCopyTexImage2D(target, level, final_internal_format, copyX, copyY,
-                       copyWidth, copyHeight, border);
+      glCopyTexImage2D(target, level, final_internal_format,
+                       x, y, width, height, border);
     }
   }
   GLenum error = LOCAL_PEEK_GL_ERROR(func_name);
@@ -13801,15 +13778,16 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
 
   ScopedResolvedFramebufferBinder binder(this, false, true);
   gfx::Size size = GetBoundReadFramebufferSize();
-  GLint copyX = 0;
-  GLint copyY = 0;
-  GLint copyWidth = 0;
-  GLint copyHeight = 0;
-  Clip(x, width, size.width(), &copyX, &copyWidth);
-  Clip(y, height, size.height(), &copyY, &copyHeight);
 
-  GLint dx = copyX - x;
-  GLint dy = copyY - y;
+  gfx::Rect src(x, y, width, height);
+  const gfx::Rect dst(0, 0, size.width(), size.height());
+  src.Intersect(dst);
+
+  if (src.IsEmpty())
+    return;
+
+  GLint dx = src.x() - x;
+  GLint dy = src.y() - y;
   GLint destX = xoffset + dx;
   GLint destY = yoffset + dy;
   // It's only legal to skip clearing the level of the target texture
@@ -13822,14 +13800,15 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   // Validated above.
   DCHECK(have_level);
   if (destX == 0 && destY == 0 &&
-      copyWidth == level_width && copyHeight == level_height) {
+      src.width() == level_width && src.height() == level_height) {
     // Write all pixels in below.
     texture_manager()->SetLevelCleared(texture_ref, target, level, true);
   } else {
     gfx::Rect cleared_rect;
     if (TextureManager::CombineAdjacentRects(
             texture->GetLevelClearedRect(target, level),
-            gfx::Rect(destX, destY, copyWidth, copyHeight), &cleared_rect)) {
+            gfx::Rect(destX, destY, src.width(), src.height()),
+            &cleared_rect)) {
       DCHECK_GE(cleared_rect.size().GetArea(),
                 texture->GetLevelClearedRect(target, level).size().GetArea());
       texture_manager()->SetLevelClearedRect(texture_ref, target, level,
@@ -13844,22 +13823,20 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     }
   }
 
-  if (copyHeight > 0 && copyWidth > 0) {
-    if (CopyTexImageResourceManager::CopyTexImageRequiresBlit(
-            feature_info_.get(), internal_format)) {
-      if (!InitializeCopyTexImageBlitter("glCopyTexSubImage2D")) {
-        return;
-      }
-      copy_tex_image_blit_->DoCopyTexSubImageToLUMACompatibilityTexture(
-          this, texture->service_id(), texture->target(), target,
-          internal_format, type, level, destX, destY, 0,
-          copyX, copyY, copyWidth, copyHeight,
-          GetBoundReadFramebufferServiceId(),
-          GetBoundReadFramebufferInternalFormat());
-    } else {
-      glCopyTexSubImage2D(target, level, destX, destY, copyX, copyY, copyWidth,
-                          copyHeight);
+  if (CopyTexImageResourceManager::CopyTexImageRequiresBlit(
+          feature_info_.get(), internal_format)) {
+    if (!InitializeCopyTexImageBlitter("glCopyTexSubImage2D")) {
+      return;
     }
+    copy_tex_image_blit_->DoCopyTexSubImageToLUMACompatibilityTexture(
+        this, texture->service_id(), texture->target(), target,
+        internal_format, type, level, destX, destY, 0,
+        src.x(), src.y(), src.width(), src.height(),
+        GetBoundReadFramebufferServiceId(),
+        GetBoundReadFramebufferInternalFormat());
+  } else {
+    glCopyTexSubImage2D(target, level, destX, destY,
+                        src.x(), src.y(), src.width(), src.height());
   }
 
   // This may be a slow command.  Exit command processing to allow for
@@ -13917,15 +13894,15 @@ void GLES2DecoderImpl::DoCopyTexSubImage3D(
 
   ScopedResolvedFramebufferBinder binder(this, false, true);
   gfx::Size size = GetBoundReadFramebufferSize();
-  GLint copyX = 0;
-  GLint copyY = 0;
-  GLint copyWidth = 0;
-  GLint copyHeight = 0;
-  Clip(x, width, size.width(), &copyX, &copyWidth);
-  Clip(y, height, size.height(), &copyY, &copyHeight);
 
-  GLint dx = copyX - x;
-  GLint dy = copyY - y;
+  gfx::Rect src(x, y, width, height);
+  const gfx::Rect dst(0, 0, size.width(), size.height());
+  src.Intersect(dst);
+  if (src.IsEmpty())
+    return;
+
+  GLint dx = src.x() - x;
+  GLint dy = src.y() - y;
   GLint destX = xoffset + dx;
   GLint destY = yoffset + dy;
   // For 3D textures, we always clear the entire texture to 0 if it is not
@@ -13940,22 +13917,20 @@ void GLES2DecoderImpl::DoCopyTexSubImage3D(
     DCHECK(texture->IsLevelCleared(target, level));
   }
 
-  if (copyHeight > 0 && copyWidth > 0) {
-    if (CopyTexImageResourceManager::CopyTexImageRequiresBlit(
-            feature_info_.get(), internal_format)) {
-      if (!InitializeCopyTexImageBlitter(func_name)) {
-        return;
-      }
-      copy_tex_image_blit_->DoCopyTexSubImageToLUMACompatibilityTexture(
-          this, texture->service_id(), texture->target(), target,
-          internal_format, type, level, destX, destY, zoffset,
-          copyX, copyY, copyWidth, copyHeight,
-          GetBoundReadFramebufferServiceId(),
-          GetBoundReadFramebufferInternalFormat());
-    } else {
-      glCopyTexSubImage3D(target, level, destX, destY, zoffset,
-                          copyX, copyY, copyWidth, copyHeight);
+  if (CopyTexImageResourceManager::CopyTexImageRequiresBlit(
+          feature_info_.get(), internal_format)) {
+    if (!InitializeCopyTexImageBlitter(func_name)) {
+      return;
     }
+    copy_tex_image_blit_->DoCopyTexSubImageToLUMACompatibilityTexture(
+        this, texture->service_id(), texture->target(), target,
+        internal_format, type, level, destX, destY, zoffset,
+        src.x(), src.y(), src.width(), src.height(),
+        GetBoundReadFramebufferServiceId(),
+        GetBoundReadFramebufferInternalFormat());
+  } else {
+    glCopyTexSubImage3D(target, level, destX, destY, zoffset,
+                        src.x(), src.y(), src.width(), src.height());
   }
 
   // This may be a slow command.  Exit command processing to allow for
