@@ -20,6 +20,7 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_decode_accelerator.h"
+#include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -39,21 +40,28 @@ class MEDIA_GPU_EXPORT V4L2Device
   static uint32_t VideoPixelFormatToV4L2PixFmt(VideoPixelFormat format);
   static uint32_t VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
                                                 bool slice_based);
+  std::vector<VideoCodecProfile> V4L2PixFmtToVideoCodecProfiles(
+      uint32_t pix_fmt,
+      bool is_encoder);
   static uint32_t V4L2PixFmtToDrmFormat(uint32_t format);
   // Convert format requirements requested by a V4L2 device to gfx::Size.
   static gfx::Size CodedSizeFromV4L2Format(struct v4l2_format format);
 
-  enum Type {
+  enum class Type {
     kDecoder,
     kEncoder,
     kImageProcessor,
     kJpegDecoder,
   };
 
-  // Creates and initializes an appropriate V4L2Device of |type| for the
-  // current platform and returns a scoped_refptr<V4L2Device> on success, or
-  // NULL.
-  static scoped_refptr<V4L2Device> Create(Type type);
+  // Create and initialize an appropriate V4L2Device instance for the current
+  // platform, or return nullptr if not available.
+  static scoped_refptr<V4L2Device> Create();
+
+  // Open a V4L2 device of |type| for use with |v4l2_pixfmt|.
+  // Return true on success.
+  // The device will be closed in the destructor.
+  virtual bool Open(Type type, uint32_t v4l2_pixfmt) = 0;
 
   // Parameters and return value are the same as for the standard ioctl() system
   // call.
@@ -84,10 +92,6 @@ class MEDIA_GPU_EXPORT V4L2Device
                      int flags,
                      unsigned int offset) = 0;
   virtual void Munmap(void* addr, unsigned int len) = 0;
-
-  // Initializes the V4L2Device to operate as a device of |type|.
-  // Returns true on success.
-  virtual bool Initialize() = 0;
 
   // Return a vector of dmabuf file descriptors, exported for V4L2 buffer with
   // |index|, assuming the buffer contains |num_planes| V4L2 planes and is of
@@ -125,8 +129,13 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Returns the supported texture target for the V4L2Device.
   virtual GLenum GetTextureTarget() = 0;
 
-  // Returns the preferred V4L2 input format or 0 if don't care.
-  virtual uint32_t PreferredInputFormat() = 0;
+  // Returns the preferred V4L2 input format for |type| or 0 if none.
+  virtual uint32_t PreferredInputFormat(Type type) = 0;
+
+  // NOTE: The below methods to query capabilities have a side effect of
+  // closing the previously-open device, if any, and should not be called after
+  // Open().
+  // TODO(posciak): fix this.
 
   // Get minimum and maximum resolution for fourcc |pixelformat| and store to
   // |min_resolution| and |max_resolution|.
@@ -134,24 +143,45 @@ class MEDIA_GPU_EXPORT V4L2Device
                               gfx::Size* min_resolution,
                               gfx::Size* max_resolution);
 
+  // Return V4L2 pixelformats supported by the available image processor
+  // devices for |buf_type|.
+  virtual std::vector<uint32_t> GetSupportedImageProcessorPixelformats(
+      v4l2_buf_type buf_type) = 0;
+
   // Return supported profiles for decoder, including only profiles for given
   // fourcc |pixelformats|.
-  VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles(
+  virtual VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles(
       const size_t num_formats,
-      const uint32_t pixelformats[]);
+      const uint32_t pixelformats[]) = 0;
 
-  // Return true if the device supports |profile|, taking into account only
-  // fourccs from the given array of |pixelformats| of size |num_formats|.
-  bool SupportsDecodeProfileForV4L2PixelFormats(VideoCodecProfile profile,
-                                                const size_t num_formats,
-                                                const uint32_t pixelformats[]);
+  // Return supported profiles for encoder.
+  virtual VideoEncodeAccelerator::SupportedProfiles
+  GetSupportedEncodeProfiles() = 0;
+
+  // Return true if image processing is supported, false otherwise.
+  virtual bool IsImageProcessingSupported() = 0;
+
+  // Return true if JPEG decoding is supported, false otherwise.
+  virtual bool IsJpegDecodingSupported() = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<V4L2Device>;
-  explicit V4L2Device(Type type);
+  V4L2Device();
   virtual ~V4L2Device();
 
-  const Type type_;
+  VideoDecodeAccelerator::SupportedProfiles EnumerateSupportedDecodeProfiles(
+      const size_t num_formats,
+      const uint32_t pixelformats[]);
+
+  VideoEncodeAccelerator::SupportedProfiles EnumerateSupportedEncodeProfiles();
+
+  std::vector<uint32_t> EnumerateSupportedPixelformats(v4l2_buf_type buf_type);
+
+ private:
+  // Perform platform-specific initialization of the device instance.
+  // Return true on success, false on error or if the particular implementation
+  // is not available.
+  virtual bool Initialize() = 0;
 };
 
 }  //  namespace media

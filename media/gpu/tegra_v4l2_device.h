@@ -22,8 +22,10 @@ namespace media {
 // V4L2 specification via the library API instead of system calls.
 class TegraV4L2Device : public V4L2Device {
  public:
-  explicit TegraV4L2Device(Type type);
+  TegraV4L2Device();
 
+  // V4L2Device implementation.
+  bool Open(Type type, uint32_t v4l2_pixfmt) override;
   int Ioctl(int flags, void* arg) override;
   bool Poll(bool poll_device, bool* event_pending) override;
   bool SetDevicePollInterrupt() override;
@@ -34,11 +36,10 @@ class TegraV4L2Device : public V4L2Device {
              int flags,
              unsigned int offset) override;
   void Munmap(void* addr, unsigned int len) override;
-  bool Initialize() override;
   std::vector<base::ScopedFD> GetDmabufsForV4L2Buffer(
       int index,
       size_t num_planes,
-      enum v4l2_buf_type type) override;
+      enum v4l2_buf_type buf_type) override;
   bool CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) override;
   EGLImageKHR CreateEGLImage(
       EGLDisplay egl_display,
@@ -51,13 +52,32 @@ class TegraV4L2Device : public V4L2Device {
   EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
                              EGLImageKHR egl_image) override;
   GLenum GetTextureTarget() override;
-  uint32_t PreferredInputFormat() override;
+  uint32_t PreferredInputFormat(Type type) override;
+
+  std::vector<uint32_t> GetSupportedImageProcessorPixelformats(
+      v4l2_buf_type buf_type) override;
+
+  VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles(
+      const size_t num_formats,
+      const uint32_t pixelformats[]) override;
+
+  VideoEncodeAccelerator::SupportedProfiles GetSupportedEncodeProfiles()
+      override;
+
+  bool IsImageProcessingSupported() override;
+
+  bool IsJpegDecodingSupported() override;
 
  private:
   ~TegraV4L2Device() override;
 
+  bool Initialize() override;
+
+  bool OpenInternal(Type type);
+  void Close();
+
   // The actual device fd.
-  int device_fd_;
+  int device_fd_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(TegraV4L2Device);
 };

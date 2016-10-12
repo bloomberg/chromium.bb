@@ -403,6 +403,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   std::vector<OutputRecord> output_buffer_map_;
 
   VideoCodecProfile video_profile_;
+  uint32_t input_format_fourcc_;
   uint32_t output_format_fourcc_;
   gfx::Size visible_size_;
   gfx::Size coded_size_;

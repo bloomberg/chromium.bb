@@ -15,11 +15,13 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
+#include <algorithm>
 #include <memory>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/gpu/generic_v4l2_device.h"
@@ -41,27 +43,18 @@ static const base::FilePath::CharType kV4l2Lib[] =
 
 namespace media {
 
-namespace {
-const char kDecoderDevice[] = "/dev/video-dec";
-const char kEncoderDevice[] = "/dev/video-enc";
-const char kImageProcessorDevice[] = "/dev/image-proc0";
-const char kJpegDecoderDevice[] = "/dev/jpeg-dec";
-}
-
-GenericV4L2Device::GenericV4L2Device(Type type) : V4L2Device(type) {
+GenericV4L2Device::GenericV4L2Device() {
 #if defined(USE_LIBV4L2)
   use_libv4l2_ = false;
 #endif
 }
 
 GenericV4L2Device::~GenericV4L2Device() {
-#if defined(USE_LIBV4L2)
-  if (use_libv4l2_ && device_fd_.is_valid())
-    v4l2_close(device_fd_.release());
-#endif
+  CloseDevice();
 }
 
 int GenericV4L2Device::Ioctl(int request, void* arg) {
+  DCHECK(device_fd_.is_valid());
 #if defined(USE_LIBV4L2)
   if (use_libv4l2_)
     return HANDLE_EINTR(v4l2_ioctl(device_fd_.get(), request, arg));
@@ -99,6 +92,7 @@ void* GenericV4L2Device::Mmap(void* addr,
                               int prot,
                               int flags,
                               unsigned int offset) {
+  DCHECK(device_fd_.is_valid());
   return mmap(addr, len, prot, flags, device_fd_.get(), offset);
 }
 
@@ -136,62 +130,49 @@ bool GenericV4L2Device::ClearDevicePollInterrupt() {
 }
 
 bool GenericV4L2Device::Initialize() {
-  const char* device_path = NULL;
   static bool v4l2_functions_initialized = PostSandboxInitialization();
   if (!v4l2_functions_initialized) {
     LOG(ERROR) << "Failed to initialize LIBV4L2 libs";
     return false;
   }
 
-  switch (type_) {
-    case kDecoder:
-      device_path = kDecoderDevice;
-      break;
-    case kEncoder:
-      device_path = kEncoderDevice;
-      break;
-    case kImageProcessor:
-      device_path = kImageProcessorDevice;
-      break;
-    case kJpegDecoder:
-      device_path = kJpegDecoderDevice;
-      break;
-  }
+  return true;
+}
 
-  DVLOG(2) << "Initialize(): opening device: " << device_path;
-  // Open the video device.
-  device_fd_.reset(
-      HANDLE_EINTR(open(device_path, O_RDWR | O_NONBLOCK | O_CLOEXEC)));
-  if (!device_fd_.is_valid()) {
+bool GenericV4L2Device::Open(Type type, uint32_t v4l2_pixfmt) {
+  std::string path = GetDevicePathFor(type, v4l2_pixfmt);
+
+  if (path.empty()) {
+    DVLOG(1) << "No devices supporting " << std::hex << "0x" << v4l2_pixfmt
+             << " for type: " << static_cast<int>(type);
     return false;
   }
-#if defined(USE_LIBV4L2)
-  if (type_ == kEncoder &&
-      HANDLE_EINTR(v4l2_fd_open(device_fd_.get(), V4L2_DISABLE_CONVERSION)) !=
-          -1) {
-    DVLOG(2) << "Using libv4l2 for " << device_path;
-    use_libv4l2_ = true;
+
+  if (!OpenDevicePath(path, type)) {
+    LOG(ERROR) << "Failed opening " << path;
+    return false;
   }
-#endif
 
   device_poll_interrupt_fd_.reset(eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC));
   if (!device_poll_interrupt_fd_.is_valid()) {
+    LOG(ERROR) << "Failed creating a poll interrupt fd";
     return false;
   }
+
   return true;
 }
 
 std::vector<base::ScopedFD> GenericV4L2Device::GetDmabufsForV4L2Buffer(
     int index,
     size_t num_planes,
-    enum v4l2_buf_type type) {
-  DCHECK(V4L2_TYPE_IS_MULTIPLANAR(type));
+    enum v4l2_buf_type buf_type) {
+  DCHECK(V4L2_TYPE_IS_MULTIPLANAR(buf_type));
 
   std::vector<base::ScopedFD> dmabuf_fds;
   for (size_t i = 0; i < num_planes; ++i) {
     struct v4l2_exportbuffer expbuf;
     memset(&expbuf, 0, sizeof(expbuf));
-    expbuf.type = type;
+    expbuf.type = buf_type;
     expbuf.index = index;
     expbuf.plane = i;
     expbuf.flags = O_CLOEXEC;
@@ -307,11 +288,115 @@ GLenum GenericV4L2Device::GetTextureTarget() {
   return GL_TEXTURE_EXTERNAL_OES;
 }
 
-uint32_t GenericV4L2Device::PreferredInputFormat() {
-  // TODO(posciak): We should support "dontcare" returns here once we
-  // implement proper handling (fallback, negotiation) for this in users.
-  CHECK_EQ(type_, kEncoder);
-  return V4L2_PIX_FMT_NV12M;
+uint32_t GenericV4L2Device::PreferredInputFormat(Type type) {
+  if (type == Type::kEncoder)
+    return V4L2_PIX_FMT_NV12M;
+
+  return 0;
+}
+
+std::vector<uint32_t> GenericV4L2Device::GetSupportedImageProcessorPixelformats(
+    v4l2_buf_type buf_type) {
+  std::vector<uint32_t> supported_pixelformats;
+
+  Type type = Type::kImageProcessor;
+  const auto& devices = GetDevicesForType(type);
+  for (const auto& device : devices) {
+    if (!OpenDevicePath(device.first, type)) {
+      LOG(ERROR) << "Failed opening " << device.first;
+      continue;
+    }
+
+    std::vector<uint32_t> pixelformats =
+        EnumerateSupportedPixelformats(buf_type);
+
+    supported_pixelformats.insert(supported_pixelformats.end(),
+                                  pixelformats.begin(), pixelformats.end());
+    CloseDevice();
+  }
+
+  return supported_pixelformats;
+}
+
+VideoDecodeAccelerator::SupportedProfiles
+GenericV4L2Device::GetSupportedDecodeProfiles(const size_t num_formats,
+                                              const uint32_t pixelformats[]) {
+  VideoDecodeAccelerator::SupportedProfiles supported_profiles;
+
+  Type type = Type::kDecoder;
+  const auto& devices = GetDevicesForType(type);
+  for (const auto& device : devices) {
+    if (!OpenDevicePath(device.first, type)) {
+      LOG(ERROR) << "Failed opening " << device.first;
+      continue;
+    }
+
+    const auto& profiles =
+        EnumerateSupportedDecodeProfiles(num_formats, pixelformats);
+    supported_profiles.insert(supported_profiles.end(), profiles.begin(),
+                              profiles.end());
+    CloseDevice();
+  }
+
+  return supported_profiles;
+}
+
+VideoEncodeAccelerator::SupportedProfiles
+GenericV4L2Device::GetSupportedEncodeProfiles() {
+  VideoEncodeAccelerator::SupportedProfiles supported_profiles;
+
+  Type type = Type::kEncoder;
+  const auto& devices = GetDevicesForType(type);
+  for (const auto& device : devices) {
+    if (!OpenDevicePath(device.first, type)) {
+      LOG(ERROR) << "Failed opening " << device.first;
+      continue;
+    }
+
+    const auto& profiles = EnumerateSupportedEncodeProfiles();
+    supported_profiles.insert(supported_profiles.end(), profiles.begin(),
+                              profiles.end());
+    CloseDevice();
+  }
+
+  return supported_profiles;
+}
+
+bool GenericV4L2Device::IsImageProcessingSupported() {
+  const auto& devices = GetDevicesForType(Type::kImageProcessor);
+  return !devices.empty();
+}
+
+bool GenericV4L2Device::IsJpegDecodingSupported() {
+  const auto& devices = GetDevicesForType(Type::kJpegDecoder);
+  return !devices.empty();
+}
+
+bool GenericV4L2Device::OpenDevicePath(const std::string& path, Type type) {
+  DCHECK(!device_fd_.is_valid());
+
+  device_fd_.reset(
+      HANDLE_EINTR(open(path.c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC)));
+  if (!device_fd_.is_valid())
+    return false;
+
+#if defined(USE_LIBV4L2)
+  if (type == Type::kEncoder &&
+      HANDLE_EINTR(v4l2_fd_open(device_fd_.get(), V4L2_DISABLE_CONVERSION)) !=
+          -1) {
+    DVLOG(2) << "Using libv4l2 for " << path;
+    use_libv4l2_ = true;
+  }
+#endif
+  return true;
+}
+
+void GenericV4L2Device::CloseDevice() {
+#if defined(USE_LIBV4L2)
+  if (use_libv4l2_ && device_fd_.is_valid())
+    v4l2_close(device_fd_.release());
+#endif
+  device_fd_.reset();
 }
 
 // static
@@ -324,6 +409,87 @@ bool GenericV4L2Device::PostSandboxInitialization() {
 #else
   return true;
 #endif
+}
+
+void GenericV4L2Device::EnumerateDevicesForType(Type type) {
+  static const std::string kDecoderDevicePattern = "/dev/video-dec";
+  static const std::string kEncoderDevicePattern = "/dev/video-enc";
+  static const std::string kImageProcessorDevicePattern = "/dev/image-proc";
+  static const std::string kJpegDecoderDevicePattern = "/dev/jpeg-dec";
+
+  std::string device_pattern;
+  v4l2_buf_type buf_type;
+  switch (type) {
+    case Type::kDecoder:
+      device_pattern = kDecoderDevicePattern;
+      buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+      break;
+    case Type::kEncoder:
+      device_pattern = kEncoderDevicePattern;
+      buf_type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+      break;
+    case Type::kImageProcessor:
+      device_pattern = kImageProcessorDevicePattern;
+      buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+      break;
+    case Type::kJpegDecoder:
+      device_pattern = kJpegDecoderDevicePattern;
+      buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+      break;
+  }
+
+  std::vector<std::string> candidate_paths;
+
+  // TODO(posciak): Remove this legacy unnumbered device once
+  // all platforms are updated to use numbered devices.
+  candidate_paths.push_back(device_pattern);
+
+  // We are sandboxed, so we can't query directory contents to check which
+  // devices are actually available. Try to open the first 10; if not present,
+  // we will just fail to open immediately.
+  for (int i = 0; i < 10; ++i) {
+    candidate_paths.push_back(
+        base::StringPrintf("%s%d", device_pattern.c_str(), i));
+  }
+
+  Devices devices;
+  for (const auto& path : candidate_paths) {
+    if (!OpenDevicePath(path, type))
+      continue;
+
+    const auto& supported_pixelformats =
+        EnumerateSupportedPixelformats(buf_type);
+    if (!supported_pixelformats.empty()) {
+      DVLOG(1) << "Found device: " << path;
+      devices.push_back(std::make_pair(path, supported_pixelformats));
+    }
+
+    CloseDevice();
+  }
+
+  DCHECK_EQ(devices_by_type_.count(type), 0u);
+  devices_by_type_[type] = devices;
+}
+
+const GenericV4L2Device::Devices& GenericV4L2Device::GetDevicesForType(
+    Type type) {
+  if (devices_by_type_.count(type) == 0)
+    EnumerateDevicesForType(type);
+
+  DCHECK_NE(devices_by_type_.count(type), 0u);
+  return devices_by_type_[type];
+}
+
+std::string GenericV4L2Device::GetDevicePathFor(Type type, uint32_t pixfmt) {
+  const Devices& devices = GetDevicesForType(type);
+
+  for (const auto& device : devices) {
+    if (std::find(device.second.begin(), device.second.end(), pixfmt) !=
+        device.second.end())
+      return device.first;
+  }
+
+  return std::string();
 }
 
 }  //  namespace media

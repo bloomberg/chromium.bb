@@ -19,6 +19,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -154,9 +155,16 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
 
 void AddV4L2GpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   if (IsAcceleratedVideoDecodeEnabled()) {
-    // Device node for V4L2 video decode accelerator drivers.
-    static const char kDevVideoDecPath[] = "/dev/video-dec";
-    permissions->push_back(BrokerFilePermission::ReadWrite(kDevVideoDecPath));
+    // Device nodes for V4L2 video decode accelerator drivers.
+    static const base::FilePath::CharType kDevicePath[] =
+        FILE_PATH_LITERAL("/dev/");
+    static const base::FilePath::CharType kVideoDecPattern[] = "video-dec[0-9]";
+    base::FileEnumerator enumerator(base::FilePath(kDevicePath), false,
+                                    base::FileEnumerator::FILES,
+                                    base::FilePath(kVideoDecPattern).value());
+    for (base::FilePath name = enumerator.Next(); !name.empty();
+         name = enumerator.Next())
+      permissions->push_back(BrokerFilePermission::ReadWrite(name.value()));
   }
 
   // Device node for V4L2 video encode accelerator drivers.

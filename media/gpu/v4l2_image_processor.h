@@ -55,21 +55,23 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
   std::vector<base::ScopedFD> GetDmabufsForOutputBuffer(
       int output_buffer_index);
 
-  // Returns a vector of supported input formats in fourcc. This can be called
-  // before Initialize.
-  std::vector<uint32_t> GetSupportedInputFormats();
+  // Returns true if image processing is supported on this platform.
+  static bool IsSupported();
 
-  // Returns a vector of supported output formats in fourcc. This can be called
-  // before Initialize.
-  std::vector<uint32_t> GetSupportedOutputFormats();
+  // Returns a vector of supported input formats in fourcc.
+  static std::vector<uint32_t> GetSupportedInputFormats();
 
-  // Gets the output allocated size and number of planes given |pixelformat|
-  // fourcc and visible size |size|. Return true if success. The adjusted coded
-  // size will be stored in |size| and the number of planes will be stored in
-  // |num_planes|. This can be called before Initialize.
-  bool TryOutputFormat(uint32_t pixelformat,
-                       gfx::Size* size,
-                       size_t* num_planes);
+  // Returns a vector of supported output formats in fourcc.
+  static std::vector<uint32_t> GetSupportedOutputFormats();
+
+  // Gets output allocated size and number of planes required by the device
+  // for conversion from |input_pixelformat| to |output_pixelformat|, for
+  // visible size |size|. Returns true on success. Adjusted coded size will be
+  // stored in |size| and the number of planes will be stored in |num_planes|.
+  static bool TryOutputFormat(uint32_t input_pixelformat,
+                              uint32_t output_pixelformat,
+                              gfx::Size* size,
+                              size_t* num_planes);
 
   // Returns input allocated size required by the processor to be fed with.
   gfx::Size input_allocated_size() const { return input_allocated_size_; }

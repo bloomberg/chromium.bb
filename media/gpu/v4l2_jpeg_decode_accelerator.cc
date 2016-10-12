@@ -187,6 +187,11 @@ void V4L2JpegDecodeAccelerator::PostNotifyError(int32_t bitstream_buffer_id,
 bool V4L2JpegDecodeAccelerator::Initialize(Client* client) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
+  if (!device_->Open(V4L2Device::Type::kJpegDecoder, V4L2_PIX_FMT_JPEG)) {
+    LOG(ERROR) << "Failed to open device";
+    return false;
+  }
+
   // Capabilities check.
   struct v4l2_capability caps;
   const __u32 kCapsRequired = V4L2_CAP_STREAMING | V4L2_CAP_VIDEO_M2M;
@@ -253,16 +258,13 @@ void V4L2JpegDecodeAccelerator::Decode(
                             base::Unretained(this), base::Passed(&job_record)));
 }
 
+// static
 bool V4L2JpegDecodeAccelerator::IsSupported() {
-  v4l2_fmtdesc fmtdesc;
-  memset(&fmtdesc, 0, sizeof(fmtdesc));
-  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
+  if (!device)
+    return false;
 
-  for (; device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
-    if (fmtdesc.pixelformat == V4L2_PIX_FMT_JPEG)
-      return true;
-  }
-  return false;
+  return device->IsJpegDecodingSupported();
 }
 
 void V4L2JpegDecodeAccelerator::DecodeTask(
@@ -449,6 +451,11 @@ void V4L2JpegDecodeAccelerator::DestroyInputBuffers() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
 
+  free_input_buffers_.clear();
+
+  if (input_buffer_map_.empty())
+    return;
+
   if (input_streamon_) {
     __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
     IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMOFF, &type);
@@ -468,12 +475,16 @@ void V4L2JpegDecodeAccelerator::DestroyInputBuffers() {
   IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
 
   input_buffer_map_.clear();
-  free_input_buffers_.clear();
 }
 
 void V4L2JpegDecodeAccelerator::DestroyOutputBuffers() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
+
+  free_output_buffers_.clear();
+
+  if (output_buffer_map_.empty())
+    return;
 
   if (output_streamon_) {
     __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -494,7 +505,6 @@ void V4L2JpegDecodeAccelerator::DestroyOutputBuffers() {
   IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
 
   output_buffer_map_.clear();
-  free_output_buffers_.clear();
 }
 
 void V4L2JpegDecodeAccelerator::DevicePollTask() {

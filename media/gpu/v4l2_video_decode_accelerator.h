@@ -531,6 +531,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
 
   // The codec we'll be decoding for.
   VideoCodecProfile video_profile_;
+  // Chosen input format for video_profile_.
+  uint32_t input_format_fourcc_;
   // Chosen output format.
   uint32_t output_format_fourcc_;
 

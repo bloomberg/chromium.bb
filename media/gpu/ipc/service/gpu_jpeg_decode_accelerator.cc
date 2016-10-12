@@ -384,8 +384,7 @@ std::unique_ptr<JpegDecodeAccelerator> GpuJpegDecodeAccelerator::CreateV4L2JDA(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
   std::unique_ptr<JpegDecodeAccelerator> decoder;
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-  scoped_refptr<V4L2Device> device =
-      V4L2Device::Create(V4L2Device::kJpegDecoder);
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (device)
     decoder.reset(new V4L2JpegDecodeAccelerator(device, io_task_runner));
 #endif

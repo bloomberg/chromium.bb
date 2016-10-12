@@ -61,7 +61,7 @@ bool MakeDecoderContextCurrent(
 
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
 std::unique_ptr<VideoEncodeAccelerator> CreateV4L2VEA() {
-  scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (!device)
     return nullptr;
   return base::WrapUnique<VideoEncodeAccelerator>(

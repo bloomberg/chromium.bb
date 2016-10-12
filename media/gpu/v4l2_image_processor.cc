@@ -135,6 +135,13 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
   output_visible_size_ = output_visible_size;
   output_allocated_size_ = output_allocated_size;
 
+  if (!device_->Open(V4L2Device::Type::kImageProcessor, input_format_fourcc_)) {
+    LOG(ERROR) << "Failed to open device for input format: "
+               << VideoPixelFormatToString(input_format)
+               << " fourcc: " << std::hex << "0x" << input_format_fourcc_;
+    return false;
+  }
+
   // Capabilities check.
   struct v4l2_capability caps;
   memset(&caps, 0, sizeof(caps));
@@ -181,39 +188,54 @@ std::vector<base::ScopedFD> V4L2ImageProcessor::GetDmabufsForOutputBuffer(
                                           V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
 }
 
+// static
+bool V4L2ImageProcessor::IsSupported() {
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
+  if (!device)
+    return false;
+
+  return device->IsImageProcessingSupported();
+}
+
+// static
 std::vector<uint32_t> V4L2ImageProcessor::GetSupportedInputFormats() {
-  std::vector<uint32_t> input_formats;
-  v4l2_fmtdesc fmtdesc;
-  memset(&fmtdesc, 0, sizeof(fmtdesc));
-  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  for (; device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
-    input_formats.push_back(fmtdesc.pixelformat);
-  }
-  return input_formats;
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
+  if (!device)
+    return std::vector<uint32_t>();
+
+  return device->GetSupportedImageProcessorPixelformats(
+      V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
 }
 
+// static
 std::vector<uint32_t> V4L2ImageProcessor::GetSupportedOutputFormats() {
-  std::vector<uint32_t> output_formats;
-  v4l2_fmtdesc fmtdesc;
-  memset(&fmtdesc, 0, sizeof(fmtdesc));
-  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  for (; device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
-    output_formats.push_back(fmtdesc.pixelformat);
-  }
-  return output_formats;
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
+  if (!device)
+    return std::vector<uint32_t>();
+
+  return device->GetSupportedImageProcessorPixelformats(
+      V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
 }
 
-bool V4L2ImageProcessor::TryOutputFormat(uint32_t pixelformat,
+// static
+bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
+                                         uint32_t output_pixelformat,
                                          gfx::Size* size,
                                          size_t* num_planes) {
   DVLOG(1) << __func__ << ": size=" << size->ToString();
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
+  if (!device ||
+      !device->Open(V4L2Device::Type::kImageProcessor, input_pixelformat))
+    return false;
+
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   format.fmt.pix_mp.width = size->width();
   format.fmt.pix_mp.height = size->height();
-  format.fmt.pix_mp.pixelformat = pixelformat;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_TRY_FMT, &format);
+  format.fmt.pix_mp.pixelformat = output_pixelformat;
+  if (device->Ioctl(VIDIOC_TRY_FMT, &format) != 0)
+    return false;
 
   *num_planes = format.fmt.pix_mp.num_planes;
   *size = V4L2Device::CodedSizeFromV4L2Format(format);

@@ -15,26 +15,28 @@
 
 namespace media {
 
-V4L2Device::V4L2Device(Type type) : type_(type) {}
+V4L2Device::V4L2Device() {}
 
 V4L2Device::~V4L2Device() {}
 
 // static
-scoped_refptr<V4L2Device> V4L2Device::Create(Type type) {
+scoped_refptr<V4L2Device> V4L2Device::Create() {
   DVLOG(3) << __PRETTY_FUNCTION__;
 
-  scoped_refptr<GenericV4L2Device> generic_device(new GenericV4L2Device(type));
-  if (generic_device->Initialize())
-    return generic_device;
+  scoped_refptr<V4L2Device> device;
 
 #if defined(ARCH_CPU_ARMEL)
-  scoped_refptr<TegraV4L2Device> tegra_device(new TegraV4L2Device(type));
-  if (tegra_device->Initialize())
-    return tegra_device;
+  device = new TegraV4L2Device();
+  if (device->Initialize())
+    return device;
 #endif
 
-  DVLOG(1) << "Failed to create V4L2Device";
-  return scoped_refptr<V4L2Device>();
+  device = new GenericV4L2Device();
+  if (device->Initialize())
+    return device;
+
+  DVLOG(1) << "Failed to create a V4L2Device";
+  return nullptr;
 }
 
 // static
@@ -58,7 +60,7 @@ VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
       return PIXEL_FORMAT_ARGB;
 
     default:
-      LOG(FATAL) << "Add more cases as needed";
+      DVLOG(1) << "Add more cases as needed";
       return PIXEL_FORMAT_UNKNOWN;
   }
 }
@@ -109,6 +111,50 @@ uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
 }
 
 // static
+std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
+    uint32_t pix_fmt,
+    bool is_encoder) {
+  VideoCodecProfile min_profile, max_profile;
+  std::vector<VideoCodecProfile> profiles;
+
+  switch (pix_fmt) {
+    case V4L2_PIX_FMT_H264:
+    case V4L2_PIX_FMT_H264_SLICE:
+      if (is_encoder) {
+        // TODO(posciak): need to query the device for supported H.264 profiles,
+        // for now choose Main as a sensible default.
+        min_profile = H264PROFILE_MAIN;
+        max_profile = H264PROFILE_MAIN;
+      } else {
+        min_profile = H264PROFILE_MIN;
+        max_profile = H264PROFILE_MAX;
+      }
+      break;
+
+    case V4L2_PIX_FMT_VP8:
+    case V4L2_PIX_FMT_VP8_FRAME:
+      min_profile = VP8PROFILE_MIN;
+      max_profile = VP8PROFILE_MAX;
+      break;
+
+    case V4L2_PIX_FMT_VP9:
+    case V4L2_PIX_FMT_VP9_FRAME:
+      min_profile = VP9PROFILE_MIN;
+      max_profile = VP9PROFILE_MAX;
+      break;
+
+    default:
+      DVLOG(1) << "Unhandled pixelformat " << std::hex << "0x" << pix_fmt;
+      return profiles;
+  }
+
+  for (int profile = min_profile; profile <= max_profile; ++profile)
+    profiles.push_back(static_cast<VideoCodecProfile>(profile));
+
+  return profiles;
+}
+
+// static
 uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
   switch (format) {
     case V4L2_PIX_FMT_NV12:
@@ -125,8 +171,11 @@ uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
     case V4L2_PIX_FMT_RGB32:
       return DRM_FORMAT_ARGB8888;
 
+    case V4L2_PIX_FMT_MT21:
+      return DRM_FORMAT_MT21;
+
     default:
-      DVLOG(1) << "Add more cases as needed";
+      DVLOG(1) << "Unrecognized format " << std::hex << "0x" << format;
       return 0;
   }
 }
@@ -259,70 +308,84 @@ void V4L2Device::GetSupportedResolution(uint32_t pixelformat,
   }
 }
 
-VideoDecodeAccelerator::SupportedProfiles
-V4L2Device::GetSupportedDecodeProfiles(const size_t num_formats,
-                                       const uint32_t pixelformats[]) {
-  DCHECK_EQ(type_, kDecoder);
-  VideoDecodeAccelerator::SupportedProfiles profiles;
-  VideoDecodeAccelerator::SupportedProfile profile;
+std::vector<uint32_t> V4L2Device::EnumerateSupportedPixelformats(
+    v4l2_buf_type buf_type) {
+  std::vector<uint32_t> pixelformats;
+
   v4l2_fmtdesc fmtdesc;
   memset(&fmtdesc, 0, sizeof(fmtdesc));
-  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  fmtdesc.type = buf_type;
 
   for (; Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
-    if (std::find(pixelformats, pixelformats + num_formats,
-                  fmtdesc.pixelformat) == pixelformats + num_formats)
+    DVLOG(1) << "Found " << fmtdesc.description << std::hex << " (0x"
+             << fmtdesc.pixelformat << ")";
+    pixelformats.push_back(fmtdesc.pixelformat);
+  }
+
+  return pixelformats;
+}
+
+VideoDecodeAccelerator::SupportedProfiles
+V4L2Device::EnumerateSupportedDecodeProfiles(const size_t num_formats,
+                                             const uint32_t pixelformats[]) {
+  VideoDecodeAccelerator::SupportedProfiles profiles;
+
+  const auto& supported_pixelformats =
+      EnumerateSupportedPixelformats(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
+
+  for (uint32_t pixelformat : supported_pixelformats) {
+    if (std::find(pixelformats, pixelformats + num_formats, pixelformat) ==
+        pixelformats + num_formats)
       continue;
-    int min_profile, max_profile;
-    switch (fmtdesc.pixelformat) {
-      case V4L2_PIX_FMT_H264:
-      case V4L2_PIX_FMT_H264_SLICE:
-        min_profile = H264PROFILE_MIN;
-        max_profile = H264PROFILE_MAX;
-        break;
-      case V4L2_PIX_FMT_VP8:
-      case V4L2_PIX_FMT_VP8_FRAME:
-        min_profile = VP8PROFILE_MIN;
-        max_profile = VP8PROFILE_MAX;
-        break;
-      case V4L2_PIX_FMT_VP9:
-      case V4L2_PIX_FMT_VP9_FRAME:
-        min_profile = VP9PROFILE_MIN;
-        max_profile = VP9PROFILE_MAX;
-        break;
-      default:
-        NOTREACHED() << "Unhandled pixelformat " << std::hex
-                     << fmtdesc.pixelformat;
-        return profiles;
-    }
-    GetSupportedResolution(fmtdesc.pixelformat, &profile.min_resolution,
+
+    VideoDecodeAccelerator::SupportedProfile profile;
+    GetSupportedResolution(pixelformat, &profile.min_resolution,
                            &profile.max_resolution);
-    for (int media_profile = min_profile; media_profile <= max_profile;
-         ++media_profile) {
-      profile.profile = static_cast<VideoCodecProfile>(media_profile);
+
+    const auto video_codec_profiles =
+        V4L2PixFmtToVideoCodecProfiles(pixelformat, false);
+
+    for (const auto& video_codec_profile : video_codec_profiles) {
+      profile.profile = video_codec_profile;
       profiles.push_back(profile);
+
+      DVLOG(1) << "Found decoder profile " << GetProfileName(profile.profile)
+               << ", resolutions: " << profile.min_resolution.ToString() << " "
+               << profile.max_resolution.ToString();
     }
   }
+
   return profiles;
 }
 
-bool V4L2Device::SupportsDecodeProfileForV4L2PixelFormats(
-    VideoCodecProfile profile,
-    const size_t num_formats,
-    const uint32_t pixelformats[]) {
-  // Get all supported profiles by this device, taking into account only fourccs
-  // in pixelformats.
-  const auto supported_profiles =
-      GetSupportedDecodeProfiles(num_formats, pixelformats);
+VideoEncodeAccelerator::SupportedProfiles
+V4L2Device::EnumerateSupportedEncodeProfiles() {
+  VideoEncodeAccelerator::SupportedProfiles profiles;
 
-  // Try to find requested profile among the returned supported_profiles.
-  const auto iter = std::find_if(
-      supported_profiles.begin(), supported_profiles.end(),
-      [profile](const VideoDecodeAccelerator::SupportedProfile& p) {
-        return profile == p.profile;
-      });
+  const auto& supported_pixelformats =
+      EnumerateSupportedPixelformats(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
 
-  return iter != supported_profiles.end();
+  for (const auto& pixelformat : supported_pixelformats) {
+    VideoEncodeAccelerator::SupportedProfile profile;
+    profile.max_framerate_numerator = 30;
+    profile.max_framerate_denominator = 1;
+    gfx::Size min_resolution;
+    GetSupportedResolution(pixelformat, &min_resolution,
+                           &profile.max_resolution);
+
+    const auto video_codec_profiles =
+        V4L2PixFmtToVideoCodecProfiles(pixelformat, true);
+
+    for (const auto& video_codec_profile : video_codec_profiles) {
+      profile.profile = video_codec_profile;
+      profiles.push_back(profile);
+
+      DVLOG(1) << "Found encoder profile " << GetProfileName(profile.profile)
+               << ", max resolution: " << profile.max_resolution.ToString();
+    }
+  }
+
+  return profiles;
 }
 
 }  //  namespace media

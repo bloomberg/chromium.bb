@@ -153,6 +153,21 @@ bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(encoder_state_, kUninitialized);
 
+  output_format_fourcc_ =
+      V4L2Device::VideoCodecProfileToV4L2PixFmt(output_profile, false);
+  if (!output_format_fourcc_) {
+    LOG(ERROR) << "Initialize(): invalid output_profile="
+               << GetProfileName(output_profile);
+    return false;
+  }
+
+  if (!device_->Open(V4L2Device::Type::kEncoder, output_format_fourcc_)) {
+    DVLOG(1) << "Failed to open device for profile="
+             << GetProfileName(output_profile) << ", fourcc=0x" << std::hex
+             << output_format_fourcc_;
+    return false;
+  }
+
   struct v4l2_capability caps;
   memset(&caps, 0, sizeof(caps));
   const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
@@ -169,11 +184,15 @@ bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
   }
 
   if (input_format != device_input_format_) {
-    DVLOG(1) << "Input format not supported by the HW, will convert to "
+    DVLOG(1) << "Input format not supported by the HW, will try to convert to "
              << VideoPixelFormatToString(device_input_format_);
 
-    scoped_refptr<V4L2Device> device =
-        V4L2Device::Create(V4L2Device::kImageProcessor);
+    if (!V4L2ImageProcessor::IsSupported()) {
+      DVLOG(1) << "Image processor not available";
+      return false;
+    }
+
+    scoped_refptr<V4L2Device> device = V4L2Device::Create();
     image_processor_.reset(new V4L2ImageProcessor(device));
 
     // Convert from input_format to device_input_format_, keeping the size
@@ -349,41 +368,11 @@ void V4L2VideoEncodeAccelerator::Destroy() {
 
 VideoEncodeAccelerator::SupportedProfiles
 V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
-  SupportedProfiles profiles;
-  SupportedProfile profile;
-  profile.max_framerate_numerator = 30;
-  profile.max_framerate_denominator = 1;
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
+  if (!device)
+    return SupportedProfiles();
 
-  gfx::Size min_resolution;
-  v4l2_fmtdesc fmtdesc;
-  memset(&fmtdesc, 0, sizeof(fmtdesc));
-  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  for (; device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
-    device_->GetSupportedResolution(fmtdesc.pixelformat, &min_resolution,
-                                    &profile.max_resolution);
-    switch (fmtdesc.pixelformat) {
-      case V4L2_PIX_FMT_H264:
-        profile.profile = H264PROFILE_MAIN;
-        profiles.push_back(profile);
-        break;
-      case V4L2_PIX_FMT_VP8:
-        profile.profile = VP8PROFILE_ANY;
-        profiles.push_back(profile);
-        break;
-      case V4L2_PIX_FMT_VP9:
-        profile.profile = VP9PROFILE_PROFILE0;
-        profiles.push_back(profile);
-        profile.profile = VP9PROFILE_PROFILE1;
-        profiles.push_back(profile);
-        profile.profile = VP9PROFILE_PROFILE2;
-        profiles.push_back(profile);
-        profile.profile = VP9PROFILE_PROFILE3;
-        profiles.push_back(profile);
-        break;
-    }
-  }
-
-  return profiles;
+  return device->GetSupportedEncodeProfiles();
 }
 
 void V4L2VideoEncodeAccelerator::FrameProcessed(bool force_keyframe,
@@ -991,13 +980,6 @@ bool V4L2VideoEncodeAccelerator::SetOutputFormat(
   DCHECK(!input_streamon_);
   DCHECK(!output_streamon_);
 
-  output_format_fourcc_ =
-      V4L2Device::VideoCodecProfileToV4L2PixFmt(output_profile, false);
-  if (!output_format_fourcc_) {
-    LOG(ERROR) << "Initialize(): invalid output_profile=" << output_profile;
-    return false;
-  }
-
   output_buffer_byte_size_ = kOutputBufferSize;
 
   struct v4l2_format format;
@@ -1049,7 +1031,8 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   format.fmt.pix_mp.num_planes = input_planes_count;
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
     // Error or format unsupported by device, try to negotiate a fallback.
-    input_format_fourcc = device_->PreferredInputFormat();
+    input_format_fourcc =
+        device_->PreferredInputFormat(V4L2Device::Type::kEncoder);
     input_format =
         V4L2Device::V4L2PixFmtToVideoPixelFormat(input_format_fourcc);
     if (input_format == PIXEL_FORMAT_UNKNOWN) {
@@ -1315,6 +1298,11 @@ void V4L2VideoEncodeAccelerator::DestroyInputBuffers() {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
 
+  free_input_buffers_.clear();
+
+  if (input_buffer_map_.empty())
+    return;
+
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
   reqbufs.count = 0;
@@ -1323,13 +1311,17 @@ void V4L2VideoEncodeAccelerator::DestroyInputBuffers() {
   IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
 
   input_buffer_map_.clear();
-  free_input_buffers_.clear();
 }
 
 void V4L2VideoEncodeAccelerator::DestroyOutputBuffers() {
   DVLOG(3) << "DestroyOutputBuffers()";
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
+
+  free_output_buffers_.clear();
+
+  if (output_buffer_map_.empty())
+    return;
 
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     if (output_buffer_map_[i].address != NULL)
@@ -1345,7 +1337,6 @@ void V4L2VideoEncodeAccelerator::DestroyOutputBuffers() {
   IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
 
   output_buffer_map_.clear();
-  free_output_buffers_.clear();
 }
 
 }  // namespace media
