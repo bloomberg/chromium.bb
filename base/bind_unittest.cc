@@ -25,14 +25,6 @@ using ::testing::Return;
 using ::testing::StrictMock;
 
 namespace base {
-
-using internal::OnceCallback;
-using internal::RepeatingCallback;
-using internal::OnceClosure;
-using internal::RepeatingClosure;
-using internal::BindOnce;
-using internal::BindRepeating;
-
 namespace {
 
 class IncompleteType;
