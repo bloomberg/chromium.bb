@@ -11,7 +11,6 @@
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/test/gtest_util.h"
 #include "net/tools/quic/quic_client_session.h"
-#include "net/tools/quic/spdy_balsa_utils.h"
 
 using std::string;
 using testing::StrictMock;
@@ -72,9 +71,10 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
         promise_id_(kServerDataStreamId1) {
     session_.Initialize();
 
-    headers_.SetResponseFirstlineFromStringPieces("HTTP/1.1", "200", "Ok");
-    headers_.ReplaceOrAppendHeader("content-length", "11");
-    headers_string_ = SpdyBalsaUtils::SerializeResponseHeaders(headers_);
+    headers_[":status"] = "200";
+    headers_["content-length"] = "11";
+
+    headers_string_ = SpdyUtils::SerializeUncompressedHeaders(headers_);
 
     stream_.reset(new QuicSpdyClientStream(kClientDataStreamId1, &session_));
     stream_visitor_.reset(new StreamVisitor());
@@ -142,7 +142,7 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
   std::unique_ptr<QuicSpdyClientStream> stream_;
   std::unique_ptr<StreamVisitor> stream_visitor_;
   std::unique_ptr<QuicSpdyClientStream> promised_stream_;
-  BalsaHeaders headers_;
+  SpdyHeaderBlock headers_;
   string headers_string_;
   string body_;
   SpdyHeaderBlock push_promise_;
