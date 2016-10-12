@@ -17,11 +17,6 @@ void PropertyRegistry::registerProperty(
       name, new Registration(syntax, inherits, initial, initialVariableData));
 }
 
-void PropertyRegistry::unregisterProperty(const AtomicString& name) {
-  DCHECK(registration(name));
-  m_registrations.remove(name);
-}
-
 const PropertyRegistry::Registration* PropertyRegistry::registration(
     const AtomicString& name) const {
   return m_registrations.get(name);

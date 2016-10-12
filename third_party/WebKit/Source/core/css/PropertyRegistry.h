@@ -51,7 +51,6 @@ class PropertyRegistry : public GarbageCollected<PropertyRegistry> {
                         bool inherits,
                         const CSSValue* initial,
                         PassRefPtr<CSSVariableData> initialVariableData);
-  void unregisterProperty(const AtomicString&);
   const Registration* registration(const AtomicString&) const;
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_registrations); }

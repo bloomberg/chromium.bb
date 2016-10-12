@@ -5,6 +5,4 @@
 partial interface CSS {
     [RuntimeEnabled=CSSVariables2, CallWith=ExecutionContext, RaisesException]
         static void registerProperty(PropertyDescriptor descriptor);
-    [RuntimeEnabled=CSSVariables2, CallWith=ExecutionContext, RaisesException]
-        static void unregisterProperty(DOMString name);
 };

@@ -128,25 +128,4 @@ void PropertyRegistration::registerProperty(
                                     StyleChangeReason::PropertyRegistration));
 }
 
-void PropertyRegistration::unregisterProperty(
-    ExecutionContext* executionContext,
-    const String& property,
-    ExceptionState& exceptionState) {
-  Document* document = toDocument(executionContext);
-  PropertyRegistry& registry = *document->propertyRegistry();
-  AtomicString atomicProperty(property);
-  if (!registry.registration(atomicProperty)) {
-    exceptionState.throwDOMException(
-        NotFoundError,
-        "CSS.unregisterProperty() called with non-registered property " +
-            property);
-    return;
-  }
-  registry.unregisterProperty(atomicProperty);
-
-  document->setNeedsStyleRecalc(SubtreeStyleChange,
-                                StyleChangeReasonForTracing::create(
-                                    StyleChangeReason::PropertyUnregistration));
-}
-
 }  // namespace blink

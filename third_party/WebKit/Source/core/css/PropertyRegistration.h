@@ -21,9 +21,6 @@ class PropertyRegistration {
   static void registerProperty(ExecutionContext*,
                                const PropertyDescriptor&,
                                ExceptionState&);
-  static void unregisterProperty(ExecutionContext*,
-                                 const String&,
-                                 ExceptionState&);
 };
 
 }  // namespace blink
