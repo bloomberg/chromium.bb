@@ -356,7 +356,7 @@ bool AwContentsClientBridge::ShouldOverrideUrlLoading(const base::string16& url,
     // Tell the chromium message loop to not perform any tasks after the current
     // one - we want to make sure we return to Java cleanly without first making
     // any new JNI calls.
-    static_cast<base::MessageLoopForUI*>(base::MessageLoop::current())->Abort();
+    base::MessageLoopForUI::current()->Abort();
     // If we crashed we don't want to continue the navigation.
     return true;
   }
