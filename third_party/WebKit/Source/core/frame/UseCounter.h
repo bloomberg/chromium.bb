@@ -1356,6 +1356,7 @@ class CORE_EXPORT UseCounter {
     GamepadPoseOrientation = 1634,
     GamepadPoseAngularVelocity = 1635,
     GamepadPoseAngularAcceleration = 1636,
+    DeprecatedBluetoothDeviceUUIDsAttribute = 1637,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
