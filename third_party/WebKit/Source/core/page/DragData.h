@@ -86,11 +86,13 @@ class CORE_EXPORT DragData {
   String droppedFileSystemId() const;
 
  private:
-  IntPoint m_clientPosition;
-  IntPoint m_globalPosition;
-  Member<DataObject> m_platformDragData;
-  DragOperation m_draggingSourceOperationMask;
-  DragApplicationFlags m_applicationFlags;
+  const IntPoint m_clientPosition;
+  const IntPoint m_globalPosition;
+  const Member<DataObject> m_platformDragData;
+  const DragOperation m_draggingSourceOperationMask;
+  const DragApplicationFlags m_applicationFlags;
+
+  bool containsHTML() const;
 };
 
 }  // namespace blink

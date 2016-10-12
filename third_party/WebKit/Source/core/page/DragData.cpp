@@ -49,8 +49,8 @@ DragData::DragData(DataObject* data,
       m_draggingSourceOperationMask(sourceOperationMask),
       m_applicationFlags(flags) {}
 
-static bool containsHTML(const DataObject* dropData) {
-  return dropData->types().contains(mimeTypeTextHTML);
+bool DragData::containsHTML() const {
+  return m_platformDragData->types().contains(mimeTypeTextHTML);
 }
 
 bool DragData::containsURL(FilenameConversionPolicy filenamePolicy) const {
@@ -107,8 +107,8 @@ bool DragData::canSmartReplace() const {
 }
 
 bool DragData::containsCompatibleContent() const {
-  return containsPlainText() || containsURL() ||
-         containsHTML(m_platformDragData) || containsFiles();
+  return containsPlainText() || containsURL() || containsHTML() ||
+         containsFiles();
 }
 
 DocumentFragment* DragData::asFragment(LocalFrame* frame) const {
@@ -127,7 +127,7 @@ DocumentFragment* DragData::asFragment(LocalFrame* frame) const {
     // and call createFragmentFromMarkup.
   }
 
-  if (m_platformDragData->types().contains(mimeTypeTextHTML)) {
+  if (containsHTML()) {
     String html;
     KURL baseURL;
     m_platformDragData->htmlAndBaseURL(html, baseURL);

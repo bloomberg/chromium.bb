@@ -82,9 +82,6 @@ class CORE_EXPORT DragController final
 
   DECLARE_TRACE();
 
-  static const int DragIconRightInset;
-  static const int DragIconBottomInset;
-
  private:
   DragController(Page*);
 
@@ -111,10 +108,11 @@ class CORE_EXPORT DragController final
 
   Member<Page> m_page;
 
-  Member<Document>
-      m_documentUnderMouse;  // The document the mouse was last dragged over.
-  Member<Document>
-      m_dragInitiator;  // The Document (if any) that initiated the drag.
+  // The document the mouse was last dragged over.
+  Member<Document> m_documentUnderMouse;
+  // The Document (if any) that initiated the drag.
+  Member<Document> m_dragInitiator;
+
   Member<HTMLInputElement> m_fileInputElementUnderMouse;
   bool m_documentIsHandlingDrag;
 

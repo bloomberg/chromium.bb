@@ -93,14 +93,11 @@
 
 namespace blink {
 
-const int DragController::DragIconRightInset = 7;
-const int DragController::DragIconBottomInset = 3;
-
 static const int MaxOriginalImageArea = 1500 * 1500;
 static const int LinkDragBorderInset = 2;
 static const float DragImageAlpha = 0.75f;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static bool dragTypeIsValid(DragSourceAction action) {
   switch (action) {
     case DragSourceActionDHTML:
@@ -112,9 +109,10 @@ static bool dragTypeIsValid(DragSourceAction action) {
       return false;
   }
   // Make sure MSVC doesn't complain that not all control paths return a value.
+  NOTREACHED();
   return false;
 }
-#endif
+#endif  // DCHECK_IS_ON()
 
 static PlatformMouseEvent createMouseEvent(DragData* dragData) {
   return PlatformMouseEvent(
