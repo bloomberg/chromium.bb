@@ -349,7 +349,7 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 
 
 def map_and_run(
-    command, isolated_hash, storage, cache, leak_temp_dir, root_dir,
+    command, isolated_hash, storage, isolate_cache, leak_temp_dir, root_dir,
     hard_timeout, grace_period, bot_file, extra_args, install_packages_fn,
     use_symlinks):
   """Runs a command with optional isolated input/output.
@@ -358,6 +358,7 @@ def map_and_run(
 
   Returns metadata about the result.
   """
+  assert root_dir or root_dir is None
   assert bool(command) ^ bool(isolated_hash)
   result = {
     'duration': None,
@@ -397,8 +398,8 @@ def map_and_run(
 
   if root_dir:
     file_path.ensure_tree(root_dir, 0700)
-  else:
-    root_dir = os.path.dirname(cache.cache_dir) if cache.cache_dir else None
+  elif isolate_cache.cache_dir:
+    root_dir = os.path.dirname(isolate_cache.cache_dir)
   # See comment for these constants.
   run_dir = make_temp_dir(ISOLATED_RUN_DIR, root_dir)
   # storage should be normally set but don't crash if it is not. This can happen
@@ -418,7 +419,7 @@ def map_and_run(
       bundle, isolated_stats['download'] = fetch_and_map(
           isolated_hash=isolated_hash,
           storage=storage,
-          cache=cache,
+          cache=isolate_cache,
           outdir=run_dir,
           use_symlinks=use_symlinks)
       if not bundle.command:
@@ -761,7 +762,7 @@ def main(args):
   parser = create_option_parser()
   options, args = parser.parse_args(args)
 
-  cache = isolateserver.process_cache_options(options)
+  isolated_cache = isolateserver.process_cache_options(options)
   if options.clean:
     if options.isolated:
       parser.error('Can\'t use --isolated with --clean.')
@@ -769,10 +770,10 @@ def main(args):
       parser.error('Can\'t use --isolate-server with --clean.')
     if options.json:
       parser.error('Can\'t use --json with --clean.')
-    cache.cleanup()
+    isolated_cache.cleanup()
     return 0
   if not options.no_clean:
-    cache.cleanup()
+    isolated_cache.cleanup()
 
   if not options.isolated and not args:
     parser.error('--isolated or command to run is required.')
@@ -806,15 +807,15 @@ def main(args):
       storage = isolateserver.get_storage(
           options.isolate_server, options.namespace)
       with storage:
-        # Hashing schemes used by |storage| and |cache| MUST match.
-        assert storage.hash_algo == cache.hash_algo
+        # Hashing schemes used by |storage| and |isolated_cache| MUST match.
+        assert storage.hash_algo == isolated_cache.hash_algo
         return run_tha_test(
-            command, options.isolated, storage, cache, options.leak_temp_dir,
-            options.json, options.root_dir, options.hard_timeout,
-            options.grace_period, options.bot_file, args, install_packages_fn,
-            options.use_symlinks)
+            command, options.isolated, storage, isolated_cache,
+            options.leak_temp_dir, options.json, options.root_dir,
+            options.hard_timeout, options.grace_period, options.bot_file, args,
+            install_packages_fn, options.use_symlinks)
     return run_tha_test(
-        command, options.isolated, None, cache, options.leak_temp_dir,
+        command, options.isolated, None, isolated_cache, options.leak_temp_dir,
         options.json, options.root_dir, options.hard_timeout,
         options.grace_period, options.bot_file, args, install_packages_fn,
         options.use_symlinks)
