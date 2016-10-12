@@ -195,7 +195,32 @@ function test()
                 fs.reportRemoved();
                 next();
             }
-        }
+        },
+
+        function testGitFolders(next)
+        {
+            var fs = new InspectorTest.TestFileSystem("file:///var/www3");
+            var project1 = fs.root.mkdir("project_1");
+            project1.mkdir(".git").addFile("foo.git");
+            var project2 = fs.root.mkdir("project_2");
+            project2.mkdir(".git").addFile("bar.git");
+            var project3 = fs.root.mkdir("project_3");
+            project3.mkdir(".svn").addFile("baz.svn");
+            var project4 = fs.root.mkdir("project_4");
+            project4.addFile("index.html");
+            fs.reportCreated(dumpGitFolders);
+
+            function dumpGitFolders()
+            {
+                var isolatedFileSystem = WebInspector.isolatedFileSystemManager.fileSystem("file:///var/www3");
+                var folders = isolatedFileSystem.gitFolders();
+                folders.sort();
+                for (var gitFolder of folders)
+                    InspectorTest.addResult(gitFolder);
+                fs.reportRemoved();
+                next();
+            }
+        },
     ]);
 };
 </script>

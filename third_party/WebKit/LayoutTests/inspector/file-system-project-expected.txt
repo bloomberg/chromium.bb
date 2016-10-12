@@ -69,3 +69,7 @@ Dumping uiSourceCodes origin URLs:
   - file:///var/www4/html/foo.js
   - file:///var/www4/html/bar.js
 
+Running: testGitFolders
+project_1
+project_2
+
