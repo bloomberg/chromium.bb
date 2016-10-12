@@ -92,6 +92,10 @@ struct LayoutFlexibleBox::FlexItem {
     return flexBaseContentSize + mainAxisBorderAndPadding + mainAxisMargin;
   }
 
+  LayoutUnit flexedMarginBoxSize() const {
+    return flexedContentSize + mainAxisBorderAndPadding + mainAxisMargin;
+  }
+
   LayoutBox* box;
   const LayoutUnit flexBaseContentSize;
   const LayoutUnit hypotheticalMainContentSize;
@@ -1040,9 +1044,7 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren,
       FlexItem& flexItem = lineItems[i];
       if (flexItem.box->isOutOfFlowPositioned())
         continue;
-      remainingFreeSpace -= flexItem.flexedContentSize +
-                            flexItem.mainAxisBorderAndPadding +
-                            flexItem.mainAxisMargin;
+      remainingFreeSpace -= flexItem.flexedMarginBoxSize();
     }
     layoutAndPlaceChildren(crossAxisOffset, lineItems, remainingFreeSpace,
                            relayoutChildren, layoutScope, lineContexts);
