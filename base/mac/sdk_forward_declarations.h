@@ -268,10 +268,12 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
 
 @class NSLayoutXAxisAnchor;
+@class NSLayoutYAxisAnchor;
 
 @interface NSView (ElCapitanSDK)
 @property(readonly, strong) NSLayoutXAxisAnchor* leftAnchor;
 @property(readonly, strong) NSLayoutXAxisAnchor* rightAnchor;
+@property(readonly, strong) NSLayoutYAxisAnchor* bottomAnchor;
 @end
 
 #endif  // MAC_OS_X_VERSION_10_11

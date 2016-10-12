@@ -40,6 +40,7 @@
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
 @interface NSObject (NSLayoutConstraint)
 - (NSLayoutConstraint*)constraintEqualToAnchor:(id)anchor constant:(CGFloat)c;
+- (NSLayoutConstraint*)constraintEqualToAnchor:(id)anchor;
 @end
 #endif
 
@@ -285,6 +286,10 @@ const CGFloat kWindowGradientHeight = 24.0;
   [[leadingSourceAnchorDuck constraintEqualToAnchor:leadingTargetAnchor
                                            constant:leadingOffset]
       setActive:YES];
+
+  [[[button bottomAnchor]
+      constraintEqualToAnchor:[[button superview] bottomAnchor]]
+          setActive:YES];
 }
 
 - (void)adjustCloseButton:(NSNotification*)notification {
