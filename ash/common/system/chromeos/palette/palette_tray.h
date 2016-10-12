@@ -123,6 +123,11 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;
 
+  // The shelf auto-hide state is checked during the tray constructor, so we
+  // have to use a helper variable instead of just checking if we have a tray
+  // instance.
+  bool should_block_shelf_auto_hide_ = false;
+
   // Used to indicate whether the palette bubble is automatically opened by a
   // stylus eject event.
   bool is_bubble_auto_opened_ = false;

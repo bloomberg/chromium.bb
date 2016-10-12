@@ -214,6 +214,10 @@ bool PaletteTray::ShowPalette() {
 
   DCHECK(tray_container());
 
+  // The views::TrayBubbleView ctor will cause a shelf auto hide update check.
+  // Make sure to block auto hiding before that check happens.
+  should_block_shelf_auto_hide_ = true;
+
   // Create view, customize it.
   views::TrayBubbleView* bubble_view =
       views::TrayBubbleView::Create(tray_container(), this, &init_params);
@@ -338,9 +342,12 @@ void PaletteTray::HideBubble(const views::TrayBubbleView* bubble_view) {
 }
 
 void PaletteTray::HidePalette() {
+  should_block_shelf_auto_hide_ = false;
   is_bubble_auto_opened_ = false;
   num_actions_in_bubble_ = 0;
   bubble_.reset();
+
+  shelf()->UpdateAutoHideState();
 }
 
 void PaletteTray::RecordPaletteOptionsUsage(PaletteTrayOptions option) {
@@ -365,7 +372,7 @@ void PaletteTray::RecordPaletteModeCancellation(PaletteModeCancelType type) {
 }
 
 bool PaletteTray::ShouldBlockShelfAutoHide() const {
-  return !!bubble_;
+  return should_block_shelf_auto_hide_;
 }
 
 void PaletteTray::OnActiveToolChanged() {
