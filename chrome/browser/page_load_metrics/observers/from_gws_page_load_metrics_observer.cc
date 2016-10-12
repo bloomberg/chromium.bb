@@ -81,6 +81,14 @@ const char kHistogramFromGWSAbortForwardBackBeforePaint[] =
 const char kHistogramFromGWSAbortForwardBackBeforeInteraction[] =
     "PageLoad.Clients.FromGoogleSearch.AbortTiming.ForwardBackNavigation."
     "AfterPaint.Before1sDelayedInteraction";
+const char kHistogramFromGWSAbortBackgroundBeforeCommit[] =
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.Background.BeforeCommit";
+const char kHistogramFromGWSAbortBackgroundBeforePaint[] =
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.Background.AfterCommit."
+    "BeforePaint";
+const char kHistogramFromGWSAbortBackgroundBeforeInteraction[] =
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.Background.AfterPaint."
+    "BeforeInteraction";
 
 }  // namespace internal
 
@@ -110,6 +118,10 @@ void LogCommittedAbortsBeforePaint(UserAbortType abort_type,
       PAGE_LOAD_HISTOGRAM(
           internal::kHistogramFromGWSAbortForwardBackBeforePaint,
           time_to_abort);
+      break;
+    case UserAbortType::ABORT_BACKGROUND:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSAbortBackgroundBeforePaint,
+                          time_to_abort);
       break;
     default:
       // These should only be logged for provisional aborts.
@@ -143,6 +155,11 @@ void LogAbortsAfterPaintBeforeInteraction(UserAbortType abort_type,
     case UserAbortType::ABORT_FORWARD_BACK:
       PAGE_LOAD_HISTOGRAM(
           internal::kHistogramFromGWSAbortForwardBackBeforeInteraction,
+          time_to_abort);
+      break;
+    case UserAbortType::ABORT_BACKGROUND:
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramFromGWSAbortBackgroundBeforeInteraction,
           time_to_abort);
       break;
     default:
@@ -179,6 +196,11 @@ void LogProvisionalAborts(UserAbortType abort_type,
     case UserAbortType::ABORT_FORWARD_BACK:
       PAGE_LOAD_HISTOGRAM(
           internal::kHistogramFromGWSAbortForwardBackBeforeCommit,
+          time_to_abort);
+      break;
+    case UserAbortType::ABORT_BACKGROUND:
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramFromGWSAbortBackgroundBeforeCommit,
           time_to_abort);
       break;
     default:

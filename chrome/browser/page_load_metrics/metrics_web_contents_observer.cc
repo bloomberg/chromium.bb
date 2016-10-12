@@ -423,6 +423,13 @@ void PageLoadTracker::WebContentsHidden() {
     DCHECK_EQ(started_in_foreground_, foreground_time_.is_null());
     background_time_ = base::TimeTicks::Now();
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&background_time_);
+    // Though most cases where a tab is backgrounded are user initiated, we
+    // can't be certain that we were backgrounded due to a user action. For
+    // example, on Android, the screen times out after a period of inactivity,
+    // resulting in a non-user-initiated backgrounding.
+    const bool abort_is_user_initiated = false;
+    NotifyAbort(ABORT_BACKGROUND, abort_is_user_initiated, background_time_,
+                true);
   }
 
   for (const auto& observer : observers_)

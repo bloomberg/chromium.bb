@@ -22,6 +22,8 @@ const char kHistogramAbortStopBeforeCommit[] =
     "PageLoad.AbortTiming.Stop.BeforeCommit";
 const char kHistogramAbortCloseBeforeCommit[] =
     "PageLoad.AbortTiming.Close.BeforeCommit";
+const char kHistogramAbortBackgroundBeforeCommit[] =
+    "PageLoad.AbortTiming.Background.BeforeCommit";
 const char kHistogramAbortOtherBeforeCommit[] =
     "PageLoad.AbortTiming.Other.BeforeCommit";
 
@@ -37,6 +39,8 @@ const char kHistogramAbortStopBeforePaint[] =
     "PageLoad.AbortTiming.Stop.AfterCommit.BeforePaint";
 const char kHistogramAbortCloseBeforePaint[] =
     "PageLoad.AbortTiming.Close.AfterCommit.BeforePaint";
+const char kHistogramAbortBackgroundBeforePaint[] =
+    "PageLoad.AbortTiming.Background.AfterCommit.BeforePaint";
 
 const char kHistogramAbortClientRedirectDuringParse[] =
     "PageLoad.AbortTiming.ClientRedirect.DuringParse";
@@ -50,6 +54,8 @@ const char kHistogramAbortStopDuringParse[] =
     "PageLoad.AbortTiming.Stop.DuringParse";
 const char kHistogramAbortCloseDuringParse[] =
     "PageLoad.AbortTiming.Close.DuringParse";
+const char kHistogramAbortBackgroundDuringParse[] =
+    "PageLoad.AbortTiming.Background.DuringParse";
 
 // These metrics should be temporary until we have landed on a one-size-fits-all
 // abort metric.
@@ -108,6 +114,10 @@ void RecordAbortBeforeCommit(UserAbortType abort_type,
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortCloseBeforeCommit,
                           time_to_abort);
       return;
+    case UserAbortType::ABORT_BACKGROUND:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortBackgroundBeforeCommit,
+                          time_to_abort);
+      return;
     case UserAbortType::ABORT_OTHER:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortOtherBeforeCommit,
                           time_to_abort);
@@ -147,6 +157,10 @@ void RecordAbortAfterCommitBeforePaint(UserAbortType abort_type,
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortCloseBeforePaint,
                           time_to_abort);
       return;
+    case UserAbortType::ABORT_BACKGROUND:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortBackgroundBeforePaint,
+                          time_to_abort);
+      return;
     case UserAbortType::ABORT_OTHER:
       NOTREACHED() << "Received UserAbortType::ABORT_OTHER for committed load.";
       return;
@@ -183,6 +197,10 @@ void RecordAbortDuringParse(UserAbortType abort_type,
       return;
     case UserAbortType::ABORT_CLOSE:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortCloseDuringParse,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_BACKGROUND:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortBackgroundDuringParse,
                           time_to_abort);
       return;
     case UserAbortType::ABORT_OTHER:

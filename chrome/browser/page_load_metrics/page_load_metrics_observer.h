@@ -32,17 +32,22 @@ enum UserAbortType {
   // meta refresh tag.
   ABORT_CLIENT_REDIRECT,
 
-  // If the navigation is replaced by a new navigation. This includes link
+  // If the page load is replaced by a new navigation. This includes link
   // clicks, typing in the omnibox (not a reload), and form submissions.
   ABORT_NEW_NAVIGATION,
 
   // If the user presses the stop X button.
   ABORT_STOP,
 
-  // If the navigation is aborted by closing the tab or browser.
+  // If the page load is aborted by closing the tab or browser.
   ABORT_CLOSE,
 
-  // We don't know why the navigation aborted. This is the value we assign to an
+  // The page load was backgrounded, e.g. the browser was minimized or the user
+  // switched tabs. Note that the same page may be foregrounded in the future,
+  // so this is not a 'terminal' abort type.
+  ABORT_BACKGROUND,
+
+  // We don't know why the page load aborted. This is the value we assign to an
   // aborted load if the only signal we get is a provisional load finishing
   // without committing, either without error or with net::ERR_ABORTED.
   ABORT_OTHER,

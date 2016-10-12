@@ -19,6 +19,15 @@ class AbortsPageLoadMetricsObserverTest
     timing.navigation_start = base::Time::FromDoubleT(1);
     SimulateTimingUpdate(timing);
   }
+
+  int CountTotalAbortMetricsRecorded() {
+    base::HistogramTester::CountsMap counts_map =
+        histogram_tester().GetTotalCountsForPrefix("PageLoad.AbortTiming.");
+    int count = 0;
+    for (const auto& entry : counts_map)
+      count += entry.second;
+    return count;
+  }
 };
 
 TEST_F(AbortsPageLoadMetricsObserverTest, NewNavigationBeforeCommit) {
@@ -47,6 +56,17 @@ TEST_F(AbortsPageLoadMetricsObserverTest, ForwardBackBeforeCommit) {
       internal::kHistogramAbortForwardBackBeforeCommit, 1);
 }
 
+TEST_F(AbortsPageLoadMetricsObserverTest, BackgroundBeforeCommit) {
+  StartNavigation(GURL("https://www.google.com"));
+  // Simulate the tab being backgrounded.
+  web_contents()->WasHidden();
+
+  NavigateAndCommit(GURL("about:blank"));
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramAbortBackgroundBeforeCommit, 1);
+  EXPECT_EQ(1, CountTotalAbortMetricsRecorded());
+}
+
 TEST_F(AbortsPageLoadMetricsObserverTest,
        NewProvisionalNavigationBeforeCommit) {
   StartNavigation(GURL("https://www.google.com"));
@@ -73,10 +93,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest, NewNavigationBeforePaint) {
   NavigateAndCommit(GURL("https://www.example.com"));
   histogram_tester().ExpectTotalCount(
       internal::kHistogramAbortNewNavigationBeforePaint, 1);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramAbortReloadBeforePaint, 0);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramAbortForwardBackBeforePaint, 0);
+  EXPECT_EQ(1, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest, ReloadBeforePaint) {
@@ -87,10 +104,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest, ReloadBeforePaint) {
                                       ui::PAGE_TRANSITION_RELOAD);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramAbortReloadBeforePaint, 1);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramAbortNewNavigationBeforePaint, 0);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramAbortForwardBackBeforePaint, 0);
+  EXPECT_EQ(1, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest, ForwardBackBeforePaint) {
@@ -103,10 +117,18 @@ TEST_F(AbortsPageLoadMetricsObserverTest, ForwardBackBeforePaint) {
                                 ui::PAGE_TRANSITION_FORWARD_BACK));
   histogram_tester().ExpectTotalCount(
       internal::kHistogramAbortForwardBackBeforePaint, 1);
+  EXPECT_EQ(1, CountTotalAbortMetricsRecorded());
+}
+
+TEST_F(AbortsPageLoadMetricsObserverTest, BackgroundBeforePaint) {
+  NavigateAndCommit(GURL("https://www.example.com"));
+  SimulateTimingWithoutPaint();
+  // Simulate the tab being backgrounded.
+  web_contents()->WasHidden();
+  NavigateAndCommit(GURL("https://www.google.com"));
   histogram_tester().ExpectTotalCount(
-      internal::kHistogramAbortNewNavigationBeforePaint, 0);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramAbortReloadBeforePaint, 0);
+      internal::kHistogramAbortBackgroundBeforePaint, 1);
+  EXPECT_EQ(1, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest, StopBeforeCommit) {
@@ -118,6 +140,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest, StopBeforeCommit) {
   DeleteContents();
   histogram_tester().ExpectTotalCount(internal::kHistogramAbortStopBeforeCommit,
                                       1);
+  EXPECT_EQ(1, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest, StopBeforePaint) {
@@ -130,6 +153,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest, StopBeforePaint) {
   DeleteContents();
   histogram_tester().ExpectTotalCount(internal::kHistogramAbortStopBeforePaint,
                                       1);
+  EXPECT_EQ(1, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest, StopBeforeCommitAndBeforePaint) {
@@ -147,6 +171,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest, StopBeforeCommitAndBeforePaint) {
                                       1);
   histogram_tester().ExpectTotalCount(internal::kHistogramAbortStopBeforePaint,
                                       1);
+  EXPECT_EQ(2, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest, CloseBeforeCommit) {
@@ -155,6 +180,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest, CloseBeforeCommit) {
   DeleteContents();
   histogram_tester().ExpectTotalCount(
       internal::kHistogramAbortCloseBeforeCommit, 1);
+  EXPECT_EQ(1, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest, CloseBeforePaint) {
@@ -164,6 +190,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest, CloseBeforePaint) {
   DeleteContents();
   histogram_tester().ExpectTotalCount(internal::kHistogramAbortCloseBeforePaint,
                                       1);
+  EXPECT_EQ(1, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest,
@@ -179,6 +206,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest,
       internal::kHistogramAbortCloseBeforeCommit, 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramAbortCloseBeforePaint,
                                       1);
+  EXPECT_EQ(2, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest,
@@ -194,6 +222,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest,
                                       1);
   histogram_tester().ExpectTotalCount(internal::kHistogramAbortCloseBeforePaint,
                                       1);
+  EXPECT_EQ(2, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest, NoAbortNewNavigationFromAboutURL) {
@@ -201,6 +230,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest, NoAbortNewNavigationFromAboutURL) {
   NavigateAndCommit(GURL("https://www.example.com"));
   histogram_tester().ExpectTotalCount(
       internal::kHistogramAbortNewNavigationBeforePaint, 0);
+  EXPECT_EQ(0, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest,
@@ -212,6 +242,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest,
   // with it, no abort is logged.
   histogram_tester().ExpectTotalCount(
       internal::kHistogramAbortNewNavigationBeforePaint, 0);
+  EXPECT_EQ(0, CountTotalAbortMetricsRecorded());
 }
 
 TEST_F(AbortsPageLoadMetricsObserverTest, NoAbortNewNavigationAfterPaint) {
