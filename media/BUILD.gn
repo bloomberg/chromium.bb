@@ -9,6 +9,7 @@ import("//build/config/features.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
+import("//ppapi/features/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/ffmpeg/ffmpeg_options.gni")
@@ -601,12 +602,13 @@ test("media_unittests") {
     "//media/base:test_support",
     "//media/base:unittests",
     "//media/test:pipeline_integration_tests",
+    "//ppapi/features",
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libwebm",
     "//third_party/libyuv",
-    "//third_party/widevine/cdm:version_h",
+    "//third_party/widevine/cdm:headers",
     "//ui/gfx:test_support",
     "//url",
   ]
@@ -729,7 +731,7 @@ test("media_perftests") {
     "//testing/gmock",
     "//testing/gtest",
     "//testing/perf",
-    "//third_party/widevine/cdm:version_h",
+    "//third_party/widevine/cdm:headers",
     "//ui/gfx:test_support",
   ]
   if (media_use_ffmpeg) {

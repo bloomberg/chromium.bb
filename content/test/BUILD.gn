@@ -1422,7 +1422,7 @@ test("content_unittests") {
     "//third_party/leveldatabase",
     "//third_party/libjingle",
     "//third_party/re2",
-    "//third_party/widevine/cdm:version_h",
+    "//third_party/widevine/cdm:headers",
     "//ui/accessibility",
     "//ui/base:test_support",
     "//ui/compositor:test_support",

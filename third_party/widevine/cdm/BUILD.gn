@@ -7,6 +7,7 @@ import("//build/config/features.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//media/cdm/ppapi/cdm_paths.gni")
 import("//media/cdm/ppapi/ppapi_cdm_adapter.gni")
+import("//ppapi/features/features.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 
 widevine_arch = current_cpu
@@ -52,6 +53,7 @@ if (is_android) {
 }
 
 copy("version_h") {
+  visibility = [ ":*" ]  # Depend on ":headers" instead.
   sources = [
     widevine_cdm_version_h_file,
   ]
@@ -61,6 +63,17 @@ copy("version_h") {
   # widevine_cdm_version.h in this directory to avoid conflicts.
   outputs = [
     "$root_gen_dir/widevine_cdm_version.h",
+  ]
+}
+
+source_set("headers") {
+  public = [
+    "widevine_cdm_common.h",
+  ]
+
+  public_deps = [
+    ":version_h",  # Forward permission to use version header.
+    "//ppapi/features",
   ]
 }
 

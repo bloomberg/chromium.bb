@@ -11,6 +11,7 @@ import("//chrome/common/features.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//components/os_crypt/features.gni")
+import("//ppapi/features/features.gni")
 import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//v8/gni/v8.gni")
@@ -1904,7 +1905,7 @@ test("browser_tests") {
       "//third_party/leveldatabase",
       "//third_party/libjingle",
       "//third_party/webrtc/modules/desktop_capture",
-      "//third_party/widevine/cdm:version_h",
+      "//third_party/widevine/cdm:headers",
       "//ui/accessibility:test_support",
       "//ui/base:test_support",
       "//ui/compositor:test_support",
@@ -2891,9 +2892,10 @@ if (!is_android) {
     # differently if possible).
     deps = [
       "//base/test:test_support_perf",
+      "//ppapi/features",
       "//testing/gtest",
       "//testing/perf",
-      "//third_party/widevine/cdm:version_h",
+      "//third_party/widevine/cdm:headers",
     ]
 
     if (enable_pepper_cdms) {
@@ -3422,6 +3424,7 @@ test("unit_tests") {
     "//components/version_info:generate_version_info",
     "//courgette:courgette_lib",
     "//google_apis",
+    "//ppapi/features",
     "//skia",
     "//third_party/cacheinvalidation",
     "//third_party/icu",

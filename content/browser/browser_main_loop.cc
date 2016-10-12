@@ -88,6 +88,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
+#include "ppapi/features/features.h"
 #include "services/shell/runner/common/client_util.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
@@ -177,7 +178,7 @@
 #include "content/browser/plugin_service_impl.h"
 #endif
 
-#if defined(ENABLE_MOJO_CDM) && defined(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_MOJO_CDM) && BUILDFLAG(ENABLE_PEPPER_CDMS)
 #include "content/browser/media/cdm_service_impl.h"
 #endif
 
@@ -770,7 +771,7 @@ int BrowserMainLoop::PreCreateThreads() {
   }
 #endif
 
-#if defined(ENABLE_MOJO_CDM) && defined(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_MOJO_CDM) && BUILDFLAG(ENABLE_PEPPER_CDMS)
   // Prior to any processing happening on the IO thread, we create the
   // CDM service as it is predominantly used from the IO thread. This must
   // be called on the main thread since it involves file path checks.

@@ -45,6 +45,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "ppapi/features/features.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -53,7 +54,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
 #include "chrome/browser/media/pepper_cdm_test_helper.h"
 #endif
 
@@ -356,7 +357,7 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
 #endif
   }
 
-#if defined(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
   // Since the CDM is bundled and registered through the component updater,
   // we must re-enable the component updater.
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
@@ -365,7 +366,7 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
     test_launcher_utils::RemoveCommandLineSwitch(
         default_command_line, switches::kDisableComponentUpdate, command_line);
   }
-#endif  // defined(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
 
   void SetUpInProcessBrowserTestFixture() override {
     ContentSettingsTest::SetUpInProcessBrowserTestFixture();
@@ -497,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
   RunLoadPepperPluginTest(content::kFlashPluginSwfMimeType, false);
 }
 
-#if defined(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE) && \
+#if BUILDFLAG(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE) && \
     !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
                        WidevineCdm) {
@@ -508,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
   EXPECT_TRUE(IsPepperCdmRegistered(kWidevineCdmPluginMimeType));
   RunLoadPepperPluginTest(kWidevineCdmPluginMimeType, true);
 }
-#endif  // defined(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE) &&
+#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE) &&
         // !defined(OS_CHROMEOS)
 
 #if !defined(DISABLE_NACL)
@@ -527,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
   RunJavaScriptBlockedTest("load_flash_no_js.html", false);
 }
 
-#if defined(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        WidevineCdm) {
   // Check that Widevine CDM is available and registered.
@@ -537,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
   EXPECT_TRUE(IsPepperCdmRegistered(kWidevineCdmPluginMimeType));
   RunJavaScriptBlockedTest("load_widevine_no_js.html", true);
 }
-#endif  // defined(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
 
 #if !defined(DISABLE_NACL)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,

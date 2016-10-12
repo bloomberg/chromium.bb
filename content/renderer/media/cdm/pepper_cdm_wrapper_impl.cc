@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(ENABLE_PEPPER_CDMS)
+#include "ppapi/features/features.h"
+
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
 #include "content/renderer/media/cdm/pepper_cdm_wrapper_impl.h"
 
 #include <utility>
@@ -94,4 +96,4 @@ ContentDecryptorDelegate* PepperCdmWrapperImpl::GetCdmDelegate() {
 
 }  // namespace content
 
-#endif  // defined(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)

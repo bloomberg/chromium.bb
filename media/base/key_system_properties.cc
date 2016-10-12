@@ -5,6 +5,7 @@
 #include "media/base/key_system_properties.h"
 
 #include "base/logging.h"
+#include "ppapi/features/features.h"
 
 namespace media {
 
@@ -20,7 +21,7 @@ bool KeySystemProperties::UseAesDecryptor() const {
 }
 
 std::string KeySystemProperties::GetPepperType() const {
-#if !defined(ENABLE_PEPPER_CDMS)
+#if !BUILDFLAG(ENABLE_PEPPER_CDMS)
   NOTREACHED();
 #endif
   return "";

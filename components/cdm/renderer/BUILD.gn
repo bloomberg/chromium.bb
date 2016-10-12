@@ -22,6 +22,7 @@ static_library("renderer") {
     "//components/cdm/common",
     "//content/public/renderer",
     "//media",
-    "//third_party/widevine/cdm:version_h",
+    "//ppapi/features",
+    "//third_party/widevine/cdm:headers",
   ]
 }
