@@ -40,8 +40,10 @@ if (is_android) {
   }
 
   if (!defined(default_lint_android_sdk_root)) {
-    default_lint_android_sdk_root = default_android_sdk_root
-    default_lint_android_sdk_version = default_android_sdk_version
+    # Purposefully repeated so that downstream can change
+    # default_android_sdk_root without changing lint version.
+    default_lint_android_sdk_root = "//third_party/android_tools/sdk"
+    default_lint_android_sdk_version = "23"
   }
 
   if (!defined(default_android_keystore_path)) {
