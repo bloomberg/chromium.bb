@@ -118,6 +118,75 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
   EXPECT_EQ(5u, plainTextRange.end());
 }
 
+TEST_F(InputMethodControllerTest, SetCompositionKeepingStyle) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' "
+      "contenteditable='true'>abc1<b>2</b>34567<b>8</b>9</div>",
+      "sample");
+
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(3, 12, Color(255, 0, 0), false, 0));
+  controller().setCompositionFromExistingText(underlines, 3, 12);
+
+  // Subtract a character.
+  controller().setComposition(String("12345789"), underlines, 8, 8);
+  EXPECT_STREQ("abc1<b>2</b>3457<b>8</b>9", div->innerHTML().utf8().data());
+
+  // Append a character.
+  controller().setComposition(String("123456789"), underlines, 9, 9);
+  EXPECT_STREQ("abc1<b>2</b>34567<b>8</b>9", div->innerHTML().utf8().data());
+
+  // Subtract and append characters.
+  controller().setComposition(String("123hello789"), underlines, 11, 11);
+  EXPECT_STREQ("abc1<b>2</b>3hello7<b>8</b>9", div->innerHTML().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, SetCompositionWithEmojiKeepingStyle) {
+  // U+1F3E0 = 0xF0 0x9F 0x8F 0xA0 (UTF8). It's an emoji character.
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable='true'><b>&#x1f3e0</b></div>",
+      "sample");
+
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+
+  controller().setCompositionFromExistingText(underlines, 0, 2);
+
+  // 0xF0 0x9F 0x8F 0xAB is also an emoji character, with the same leading
+  // surrogate pair to the previous one.
+  controller().setComposition(String::fromUTF8("\xF0\x9F\x8F\xAB"), underlines,
+                              2, 2);
+  EXPECT_STREQ("<b>\xF0\x9F\x8F\xAB</b>", div->innerHTML().utf8().data());
+
+  controller().setComposition(String::fromUTF8("\xF0\x9F\x8F\xA0"), underlines,
+                              2, 2);
+  EXPECT_STREQ("<b>\xF0\x9F\x8F\xA0</b>", div->innerHTML().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest,
+       SetCompositionWithTeluguSignVisargaKeepingStyle) {
+  // U+0C03 = 0xE0 0xB0 0x83 (UTF8), a telugu sign visarga with one code point.
+  // It's one grapheme cluster if separated. It can also form one grapheme
+  // cluster with another code point(e.g, itself).
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable='true'><b>&#xc03</b></div>", "sample");
+
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+  controller().setCompositionFromExistingText(underlines, 0, 1);
+
+  // 0xE0 0xB0 0x83 0xE0 0xB0 0x83, a telugu character with 2 code points in
+  // 1 grapheme cluster.
+  controller().setComposition(String::fromUTF8("\xE0\xB0\x83\xE0\xB0\x83"),
+                              underlines, 2, 2);
+  EXPECT_STREQ("<b>\xE0\xB0\x83\xE0\xB0\x83</b>",
+               div->innerHTML().utf8().data());
+
+  controller().setComposition(String::fromUTF8("\xE0\xB0\x83"), underlines, 1,
+                              1);
+  EXPECT_STREQ("<b>\xE0\xB0\x83</b>", div->innerHTML().utf8().data());
+}
+
 TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
   insertHTMLElement("<div id='sample' contenteditable='true'>hello world</div>",
                     "sample");
@@ -485,7 +554,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventData) {
 
   document().setTitle(emptyString());
   controller().setComposition("ni", underlines, 0, 1);
-  EXPECT_STREQ("beforeinput.data:ni;input.data:ni;",
+  EXPECT_STREQ("beforeinput.data:i;input.data:i;",
                document().title().utf8().data());
 
   document().setTitle(emptyString());
