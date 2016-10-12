@@ -4,6 +4,8 @@
 
 #include "ui/gfx/animation/animation.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
 
