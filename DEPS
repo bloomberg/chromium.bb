@@ -8,13 +8,19 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 411082
-  "build_rev": "43fc964cebbd602e2bd9721253d510a4f42d93ac", # from cr commit position 415304
+  # chrome_rev: 424840
+  "build_rev": "35915a4e77b124044c105896485d40f6fdd969e2", # from cr commit position 424824
   "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db", # from cr commit position 392828
-  "libcxx_static_rev": "fd8f9a82862aa40dab0c5bcdea6e498715284f5a", # from cr commit position 369150
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "f26ef1bab777afd1379aa900e7f39b99100db725", # from cr commit position 415563
+  "clang_rev": "3d97083b856ee7262f59c1a93beaa65174c8ca0a", # from cr commit position 424416
+
+  # Rolls of build_overrides_rev should done at the same time as a roll
+  # of build_rev as build_overrides/ is tightly coupled with build/.
+  # build_overrides/ is forked from chromium/src/build_overrides/ and
+  # needs to be manually updated to keep in sync before a build_rev
+  # update can be done.
+  "build_overrides_rev": "2202dc63a4fe83cde3c5b90fe80b3d8c72accc36",
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
@@ -23,16 +29,17 @@ vars = {
   # in the build that goes into Chromium.  But we might as well update it too.)
   # You should now use the roll-dep script in depot_tools to do this update.
   "gtest_rev": "6f8a66431cb592dad629028a50b3dd418a408c87",
-  "gyp_rev": "c61b0b35c8396bfd59efc6cfc11401d912b0f510",
-  "breakpad_rev": "5f638d532312685548d5033618c8a36f73302d0a",
+  "gyp_rev": "e7079f0e0e14108ab0dba58728ff219637458563",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': 'adb8bf4e8fc92aa1717bf151b862d58e6f27c4f2',
+  'buildtools_revision': '39b1db2ab4aa4b2ccaa263c29bdf63e7c1ee28aa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
   'lss_revision': '3f6478ac95edf86cd3da300c2c0d34a438f5dbeb',
+
+  "breakpad_rev": "5f638d532312685548d5033618c8a36f73302d0a",
 
   # Separately pinned repositories, update with roll-dep individually.
   "third_party_rev": "d4e38e5faf600b39649025e5605d6e7f94518ea7",
@@ -42,9 +49,6 @@ vars = {
   "nsis_rev": "21b6ad22daa7bfc04b9f1c1805a34622e2607a93", # from svn revision 7071
   "ragel_rev": "da42bb33f1b67c2d70b38ec1d2edf5263271b635", # from svn revision 9010
   "validator_snapshots_rev": "ef053694ef9b0d98d9bed0b9bb649963084bfc81",
-  # Rolls of build_overrides_rev should done at the same time as a roll of
-  # build_rev as build_overrides/ is tightly coupled with build/.
-  "build_overrides_rev": "2881125066dcf38dae595d92eac8a6b477529116",
 
   "chromium_git": "https://chromium.googlesource.com",
 }
@@ -77,9 +81,6 @@ deps = {
   "third_party/lcov":
     Var("chromium_git") + "/chromium/src/third_party/lcov.git@" +
     Var("lcov_rev"),
-  "third_party/libc++-static":
-    Var("chromium_git") + "/chromium/src/third_party/libc++-static.git@" +
-    Var("libcxx_static_rev"),
   "third_party/lss":
     Var("chromium_git") + "/linux-syscall-support.git@" +
     Var("lss_revision"),
@@ -224,18 +225,6 @@ hooks = [
                 '--no_auth',
                 '--bucket', 'chromium-clang-format',
                 '-s', 'buildtools/linux64/clang-format.sha1',
-    ],
-  },
-  # Pull the prebuilt libc++ static library for mac.
-  {
-    'name': 'libcpp_mac',
-    'pattern': '.',
-    'action': [ 'download_from_google_storage',
-                '--no_resume',
-                '--platform=darwin',
-                '--no_auth',
-                '--bucket', 'chromium-libcpp',
-                '-s', 'third_party/libc++-static/libc++.a.sha1',
     ],
   },
 
