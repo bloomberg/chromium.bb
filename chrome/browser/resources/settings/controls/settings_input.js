@@ -36,6 +36,8 @@ Polymer({
       reflectToAttribute: true
     },
 
+    canTab: Boolean,
+
     /* Properties for paper-input. This is not strictly necessary.
      * Though it does define the types for the closure compiler. */
     errorMessage: { type: String },
@@ -75,6 +77,16 @@ Polymer({
              this.pref.type == chrome.settingsPrivate.PrefType.URL);
       this.value = /** @type {string} */(this.pref.value);
     }
+  },
+
+  /**
+   * Gets a tab index for this control if it can be tabbed to.
+   * @param {boolean} canTab
+   * @return {number}
+   * @private
+   */
+  getTabindex_: function(canTab) {
+    return canTab ? 0 : -1;
   },
 
   /**

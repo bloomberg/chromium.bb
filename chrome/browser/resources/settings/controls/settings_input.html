@@ -19,7 +19,8 @@
           no-label-float="[[noLabelFloat]]" pattern="[[pattern]]"
           readonly$="[[readonly]]" required="[[required]]" type="[[type]]"
           on-blur="onBlur_" disabled="[[isDisabled_(disabled, pref)]]"
-          stop-keyboard-event-propagation$="[[stopKeyboardEventPropagation]]">
+          stop-keyboard-event-propagation$="[[stopKeyboardEventPropagation]]"
+          tabindex$="[[getTabindex_(canTab)]]">
       </paper-input>
       <template is="dom-if" if="[[pref.policySource]]">
         <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
