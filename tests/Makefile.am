@@ -45,6 +45,7 @@ squash_space_SOURCES = squash_space.c
 typeform_SOURCES = typeform.c
 typeform_for_emphclass_SOURCES = typeform_for_emphclass.c
 uplow_with_unicode_SOURCES = uplow_with_unicode.c
+check_metadata_SOURCES = check_metadata.c
 
 # Note that this is not currently included in check_programs below
 # otherwise make check would never complete.
@@ -82,7 +83,8 @@ program_TESTS =					\
 	logging					\
 	findTable				\
 	emphclass				\
-	checkTable
+	checkTable				\
+	check_metadata
 
 check_PROGRAMS = $(program_TESTS)
 
@@ -90,7 +92,8 @@ dist_check_SCRIPTS =		\
 	check_all_tables.pl	\
 	check_endless_loop.pl	\
 	multiple_table_path.pl  \
-	ueb_test_data.pl
+	ueb_test_data.pl	\
+	check_included_tables.sh
 
 # if we have Python and liblouis is configured with ucs4 then we can
 # invoke the python based tests
@@ -190,9 +193,9 @@ TESTS =				\
 	$(dist_check_SCRIPTS)   \
 	$(dist_yaml_TESTS)
 
-TESTS_ENVIRONMENT =																						\
-	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables,$(top_srcdir)/tests/tablesWithMetadata,$(top_srcdir)/tests/tables/emphclass,	\
-	UEB_TEST_DATA_PATH=$(top_srcdir)/tests/ueb_test_data																	\
-	PYTHONPATH=$(top_builddir)/python:$$PYTHONPATH																		\
-	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH															\
+AM_TESTS_ENVIRONMENT =								\
+	LOUIS_TABLEPATH=$(abs_top_srcdir)					\
+	UEB_TEST_DATA_PATH=$(top_srcdir)/tests/ueb_test_data			\
+	PYTHONPATH=$(top_builddir)/python:$$PYTHONPATH				\
+	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH	\
 	PATH=$(top_builddir)/tools:$$PATH

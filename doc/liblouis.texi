@@ -103,6 +103,7 @@ Fifth Floor, Boston, MA 02110-1301, USA.
 * Introduction::
 * How to Write Translation Tables::
 * Notes on Back-Translation::
+* Table Metadata::
 * Testing Translation Tables interactively::
 * Automated Testing of Translation Tables::
 * Programming with liblouis::
@@ -181,6 +182,8 @@ Programming with liblouis
 * lou_setDataPath::
 * lou_getDataPath::
 * lou_getTable::
+* lou_findTable::
+* lou_indexTables::
 * lou_checkTable::
 * lou_readCharFromFile::
 * lou_free::
@@ -217,7 +220,9 @@ translation software.
 If you are mostly interested in writing braille translation tables
 then you want to focus on @ref{How to Write Translation Tables}. You
 might want to look at @ref{Notes on Back-Translation} if you are
-interested in back-translation. Finally @ref{Testing Translation
+interested in back-translation. Read @ref{Table Metadata} if you want
+to find out how you can augment your tables with metadata in order to
+make them discoverable by programs. Finally @ref{Testing Translation
 Tables interactively} and @ref{Automated Testing of Translation
 Tables} will show how your braille translation tables can be tested
 interactively and also in an automated fashion.
@@ -1612,6 +1617,73 @@ present, then @code{pass3}, then @code{pass2}, then the
 backtranslation, then corrections. Note that this is exactly the
 inverse of forward translation.
 
+@node Table Metadata
+@chapter Table Metadata
+
+Translation tables may contain metadata. This makes them
+discoverable. Programs may for example use the Liblouis function
+@ref{lou_findTable,@code{lou_findTable}} to find a table based on a
+special query of which the @ref{Query Syntax,syntax} is described
+below.
+
+@section Syntax
+
+Metadata must be defined in special comments within the table
+header. The table header is the area at the top of the file, before
+the first translation rule, consisting of only comments or empty
+lines. Any metadata within included tables is ignored.
+
+A metadata field must be defined on its own line, starting with
+@code{#+}. It has the following syntax:
+
+@example
+#+@emph{<key>}: @emph{<value>}
+@end example
+
+where @samp{@emph{<key>}} and @samp{@emph{<value>}} are sequences of
+one or more characters @code{0} to @code{9}, @code{a} to @code{z},
+@code{A} tot @code{Z}, @code{-} and @code{_}. The colon that separates
+the key and value may have zero or more spaces or tabs on either side.
+
+A value is optional. In case of no value the colon must be omitted as
+well:
+
+@example
+#+@emph{<key>}
+@end example
+
+There is no restriction on which keys and values are allowed, as long
+as the syntax is correct. However in order to be really useful there
+must be some standard keys and values. A possible grammar is proposed
+on the wiki page
+@url{https://github.com/liblouis/liblouis/wiki/Table-discovery-based-on-table-metadata#standard-metadata-tags,Standard
+metadata tags}.
+
+@anchor{Query Syntax}
+@section Query Syntax
+
+A query that is passed to the @ref{lou_findTable,@code{lou_findTable}}
+function must have the following syntax:
+
+@example
+@emph{<feature1>} @emph{<feature2>} @emph{<feature3>} ...
+@end example
+
+where @samp{@emph{<feature>}} is either:
+
+@example
+@emph{<key>}:@emph{<value>}
+@end example
+
+or:
+
+@example
+@emph{<key>}
+@end example
+
+Features are separated by one or more spaces or tabs. No spaces are
+allowed around colons.
+
 @node Testing Translation Tables interactively
 @chapter Testing Translation Tables interactively
 
@@ -2200,6 +2272,8 @@ the doctest directory in the source distribution.
 * lou_setDataPath::
 * lou_getDataPath::
 * lou_getTable::
+* lou_findTable::
+* lou_indexTables::
 * lou_checkTable::
 * lou_readCharFromFile::
 * lou_free::
@@ -2215,14 +2289,14 @@ You use the liblouis library by calling the following functions,
 @code{lou_translate}, @code{lou_backTranslate},
 @code{lou_registerLogCallback}, @code{lou_setLogLevel},
 @code{lou_logFile}, @code{lou_logPrint}, @code{lou_logEnd},
-@code{lou_getTable}, @code{lou_checkTable}, @code{lou_hyphenate},
-@code{lou_charToDots}, @code{lou_dotsToChar},
-@code{lou_compileString}, @code{lou_getTypeformForEmphClass},
-@code{lou_readCharFromFile}, @code{lou_version}, @code{lou_free} and
-@code{lou_charSize}.
-These are described below. The header file, @file{liblouis.h}, also
-contains brief descriptions. Liblouis is written in straight C. It has
-four code modules, @file{compileTranslationTable.c}, @file{logging.c},
+@code{lou_getTable}, @code{lou_findTable}, @code{lou_indexTables},
+@code{lou_checkTable}, @code{lou_hyphenate}, @code{lou_charToDots},
+@code{lou_dotsToChar}, @code{lou_compileString},
+@code{lou_getTypeformForEmphClass}, @code{lou_readCharFromFile},
+@code{lou_version}, @code{lou_free} and @code{lou_charSize}. These are
+described below. The header file, @file{liblouis.h}, also contains
+brief descriptions. Liblouis is written in straight C. It has four
+code modules, @file{compileTranslationTable.c}, @file{logging.c},
 @file{lou_translateString.c} and @file{lou_backTranslateString.c}. In
 addition, there are two header files, @file{liblouis.h}, which defines
 the API, and @file{louis.h}, used only internally and by
@@ -2793,6 +2867,60 @@ returns a pointer to the compiled table. If errors are found error
 messages are logged to the log callback (see
 @code{lou_registerLogCallback}). Errors result in a @code{NULL}
 pointer being returned.
+
+@node lou_findTable
+@section lou_findTable
+@findex lou_findTable
+
+@example
+char *lou_findTable (const char *query);
+@end example
+
+This function can be used to find a table based on
+metadata. @code{query} is a string in the special @ref{Query
+Syntax,query syntax}. It is matched against @ref{Table Metadata,table
+metadata} inside the tables that were previously indexed with
+@ref{lou_indexTables,@code{lou_indexTables}}. Returns the file name of
+the best match. Returns @code{NULL} if the query is invalid or if no
+match can be found.
+
+The match algorithm works as follows:
+
+@itemize @bullet
+@item
+For every table a match quotient with the query is computed. The table
+with the highest (positive) match quotient wins. If no table has a
+positive quotient, there is no match.
+@item
+A query is a list of features. Features defined first have a higher
+importance (have a higher impact on the final quotient) than features
+defined later.
+@item
+A feature that matches a metadata field in the table (keys equal and
+values equal, or both values absent) adds to the quotient.
+@item
+A feature that is undefined in the table (no field with that key)
+creates a medium penalty.
+@item
+A feature that is defined in the table but does not match (keys equal
+but values not equal) creates the highest penalty.
+@item
+Every field in the table that has no corresponding feature in the
+query creates a very small penalty.
+@end itemize
+
+@node lou_indexTables
+@section lou_indexTables
+@findex lou_indexTables
+
+@example
+void lou_indexTables (const char **tables);
+@end example
+
+This function must be called prior to
+@ref{lou_findTable,@code{lou_findTable}}. It parses, analyzes and
+indexes all specified tables. @code{tables} must be an array of file
+names. Tables that contain invalid metadata are ignored.
 
 @node lou_checkTable
 @section lou_checkTable
