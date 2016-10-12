@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.Surface;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.content_shell_apk.ContentShellTestBase;
@@ -158,6 +159,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
     }
 
     @MediumTest
+    @Feature({"ScreenOrientation"})
     public void testOrientationChanges() throws Exception {
         int rotation = lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         assertEquals(orientationToRotation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE), rotation);
@@ -232,6 +234,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
     }
 
     @MediumTest
+    @Feature({"ScreenOrientation"})
     public void testBasicValues() throws Exception {
         int rotation = lockOrientationValueAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY);
         assertEquals(
