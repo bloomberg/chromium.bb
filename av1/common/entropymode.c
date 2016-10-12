@@ -951,13 +951,13 @@ static const aom_prob default_tx_size_prob[MAX_TX_DEPTH][TX_SIZE_CONTEXTS]
                                           };
 
 #if CONFIG_LOOP_RESTORATION
-const aom_tree_index
-    av1_switchable_restore_tree[TREE_SIZE(RESTORE_SWITCHABLE_TYPES)] = {
-      -RESTORE_NONE, 2, -RESTORE_BILATERAL, -RESTORE_WIENER,
-    };
+const aom_tree_index av1_switchable_restore_tree[TREE_SIZE(
+    RESTORE_SWITCHABLE_TYPES)] = {
+  -RESTORE_NONE, 2, -RESTORE_SGRPROJ, 4, -RESTORE_BILATERAL, -RESTORE_WIENER,
+};
 
-static const aom_prob
-    default_switchable_restore_prob[RESTORE_SWITCHABLE_TYPES - 1] = { 32, 128 };
+static const aom_prob default_switchable_restore_prob[RESTORE_SWITCHABLE_TYPES -
+                                                      1] = { 32, 85, 128 };
 #endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_VAR_TX

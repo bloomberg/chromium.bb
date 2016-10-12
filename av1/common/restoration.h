@@ -20,14 +20,35 @@
 extern "C" {
 #endif
 
+#define RESTORATION_TILESIZE_SML 128
+#define RESTORATION_TILESIZE_BIG 256
+#define RESTORATION_TILEPELS_MAX \
+  (RESTORATION_TILESIZE_BIG * RESTORATION_TILESIZE_BIG * 9 / 4)
+#define SGRPROJ_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX * 5 * 8)
+
+#define SGRPROJ_PARAMS_BITS 3
+#define SGRPROJ_PARAMS (1 << SGRPROJ_PARAMS_BITS)
+
+// Precision bits for projection
+#define SGRPROJ_PRJ_BITS 7
+// Restoration precision bits generated higher than source before projection
+#define SGRPROJ_RST_BITS 4
+// Internal precision bits for core selfguided_restoration
+#define SGRPROJ_SGR_BITS 8
+#define SGRPROJ_SGR (1 << SGRPROJ_SGR_BITS)
+
+#define SGRPROJ_PRJ_MIN0 (-(1 << SGRPROJ_PRJ_BITS) / 4)
+#define SGRPROJ_PRJ_MAX0 (SGRPROJ_PRJ_MIN0 + (1 << SGRPROJ_PRJ_BITS) - 1)
+#define SGRPROJ_PRJ_MIN1 (-(1 << SGRPROJ_PRJ_BITS) / 4)
+#define SGRPROJ_PRJ_MAX1 (SGRPROJ_PRJ_MIN1 + (1 << SGRPROJ_PRJ_BITS) - 1)
+
+#define SGRPROJ_BITS (SGRPROJ_PRJ_BITS * 2 + SGRPROJ_PARAMS_BITS)
+
 #define BILATERAL_LEVEL_BITS_KF 4
 #define BILATERAL_LEVELS_KF (1 << BILATERAL_LEVEL_BITS_KF)
 #define BILATERAL_LEVEL_BITS 3
 #define BILATERAL_LEVELS (1 << BILATERAL_LEVEL_BITS)
-// #define DEF_BILATERAL_LEVEL     2
 
-#define RESTORATION_TILESIZE_SML 128
-#define RESTORATION_TILESIZE_BIG 256
 #define BILATERAL_SUBTILE_BITS 1
 #define BILATERAL_SUBTILES (1 << (2 * BILATERAL_SUBTILE_BITS))
 
@@ -65,12 +86,27 @@ typedef struct {
 } WienerInfo;
 
 typedef struct {
+  int r1;
+  int e1;
+  int r2;
+  int e2;
+} sgr_params_type;
+
+typedef struct {
+  int level;
+  int ep;
+  int xqd[2];
+} SgrprojInfo;
+
+typedef struct {
   RestorationType frame_restoration_type;
   RestorationType *restoration_type;
   // Bilateral filter
   BilateralInfo *bilateral_info;
   // Wiener filter
   WienerInfo *wiener_info;
+  // Selfguided proj filter
+  SgrprojInfo *sgrproj_info;
 } RestorationInfo;
 
 typedef struct {
@@ -140,6 +176,11 @@ static INLINE void av1_get_rest_tile_limits(
   }
 }
 
+extern const sgr_params_type sgr_params[SGRPROJ_PARAMS];
+
+void av1_selfguided_restoration(int64_t *dgd, int width, int height, int stride,
+                                int bit_depth, int r, int eps, void *tmpbuf);
+void decode_xq(int *xqd, int *xq);
 int av1_bilateral_level_bits(const struct AV1Common *const cm);
 void av1_loop_restoration_init(RestorationInternal *rst, RestorationInfo *rsi,
                                int kf, int width, int height);

@@ -343,6 +343,7 @@ extern const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)];
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_LOOP_RESTORATION
+#define RESTORE_NONE_SGRPROJ_PROB 64
 #define RESTORE_NONE_BILATERAL_PROB 16
 #define RESTORE_NONE_WIENER_PROB 64
 extern const aom_tree_index
