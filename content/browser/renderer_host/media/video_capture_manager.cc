@@ -34,14 +34,15 @@
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_factory.h"
 
-#if defined(ENABLE_SCREEN_CAPTURE)
+#if defined(ENABLE_SCREEN_CAPTURE) && !defined(OS_ANDROID)
 #include "content/browser/media/capture/desktop_capture_device.h"
 #if defined(USE_AURA)
 #include "content/browser/media/capture/desktop_capture_device_aura.h"
 #endif
-#if defined(OS_ANDROID)
-#include "content/browser/media/capture/screen_capture_device_android.h"
 #endif
+
+#if defined(ENABLE_SCREEN_CAPTURE) && defined(OS_ANDROID)
+#include "content/browser/media/capture/screen_capture_device_android.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -630,11 +631,13 @@ VideoCaptureManager::DoStartDesktopCaptureOnDeviceThread(
   } else {
 #if defined(OS_ANDROID)
     video_capture_device = base::MakeUnique<ScreenCaptureDeviceAndroid>();
-#elif defined(USE_AURA)
+#else
+#if defined(USE_AURA)
     video_capture_device = DesktopCaptureDeviceAura::Create(desktop_id);
-#endif
+#endif  // defined(USE_AURA)
     if (!video_capture_device)
       video_capture_device = DesktopCaptureDevice::Create(desktop_id);
+#endif  // defined (OS_ANDROID)
   }
 #endif  // defined(ENABLE_SCREEN_CAPTURE)
 
