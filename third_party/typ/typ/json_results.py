@@ -151,7 +151,7 @@ def _actual_results_for_test(test_name, results):
                 actuals.append('PASS')
             elif r.actual == ResultType.Skip:
                 actuals.append('SKIP')
-    if not actuals:
+    if not actuals:  # pragma: untested
         actuals.append('SKIP')
     return ' '.join(actuals)
 

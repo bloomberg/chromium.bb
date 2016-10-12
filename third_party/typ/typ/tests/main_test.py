@@ -18,7 +18,6 @@ import os
 import sys
 import textwrap
 
-
 from typ import main
 from typ import test_case
 from typ import Host
@@ -142,14 +141,18 @@ SF_TEST_FILES = {'sf_test.py': SF_TEST_PY}
 LOAD_TEST_PY = """
 import unittest
 
+
 class BaseTest(unittest.TestCase):
     pass
+
 
 def method_fail(self):
     self.fail()
 
+
 def method_pass(self):
     pass
+
 
 def load_tests(_, _2, _3):
     setattr(BaseTest, "test_fail", method_fail)
@@ -355,8 +358,9 @@ class TestCli(test_case.MainTestCase):
         self.check(['--help'], ret=0, rout='.*', err='')
 
     def test_import_failure_missing_file(self):
-        self.check(['-l', 'foo'], ret=1, err='',
-                   rout='Failed to load "foo".*')
+        _, out, _, _ = self.check(['-l', 'foo'], ret=1, err='')
+        self.assertIn('Failed to load "foo" in find_tests', out)
+        self.assertIn('No module named foo', out)
 
     def test_import_failure_missing_package(self):
         files = {'foo.py': d("""\
@@ -367,13 +371,14 @@ class TestCli(test_case.MainTestCase):
                                 def test_case(self):
                                     pass
                              """)}
-        self.check(['-l', 'foo.py'], files=files, ret=1, err='',
-                   rout=('Failed to load "foo.py":'))
+        _, out, _, _ = self.check(['-l', 'foo.py'], files=files, ret=1, err='')
+        self.assertIn('Failed to load "foo.py" in find_tests', out)
+        self.assertIn('No module named package_that_does_not_exist', out)
 
     def test_import_failure_no_tests(self):
         files = {'foo.py': 'import unittest'}
-        self.check(['-l', 'foo.bar'], files=files, ret=1, err='',
-                   rout='Failed to load "foo.bar":.*')
+        self.check(['-l', 'foo'], files=files, ret=1, err='',
+                   out='No tests to run.\n')
 
     def test_import_failure_syntax_error(self):
         files = {'syn_test.py': d("""\
