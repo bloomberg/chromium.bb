@@ -17,6 +17,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_POSIX)
+#include "base/files/file_descriptor_watcher_posix.h"
+#endif
+
 namespace remoting {
 
 using testing::_;
@@ -42,6 +46,10 @@ class LocalInputMonitorTest : public testing::Test {
   void SetUp() override;
 
   base::MessageLoop message_loop_;
+#if defined(OS_POSIX)
+  // Required to watch a file descriptor from NativeMessageProcessHost.
+  base::FileDescriptorWatcher file_descriptor_watcher_;
+#endif
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 
@@ -52,6 +60,9 @@ class LocalInputMonitorTest : public testing::Test {
 
 LocalInputMonitorTest::LocalInputMonitorTest()
     : message_loop_(kDesiredMessageLoopType),
+#if defined(OS_POSIX)
+      file_descriptor_watcher_(base::MessageLoopForIO::current()),
+#endif
       client_jid_("user@domain/rest-of-jid"),
       client_session_control_factory_(&client_session_control_) {
 }
