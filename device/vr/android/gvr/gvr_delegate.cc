@@ -15,8 +15,11 @@ GvrDelegateProvider* GvrDelegateProvider::GetInstance() {
 }
 
 void GvrDelegateProvider::SetInstance(GvrDelegateProvider* delegate_provider) {
-  // Don't initialize the delegate_provider_ twice.
-  DCHECK(!delegate_provider_);
+  if (delegate_provider) {
+    // Don't initialize the delegate_provider_ twice.  Re-enable
+    // (crbug.com/655297)
+    // DCHECK(!delegate_provider_);
+  }
   delegate_provider_ = delegate_provider;
 }
 
