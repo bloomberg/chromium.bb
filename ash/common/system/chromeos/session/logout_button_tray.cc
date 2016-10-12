@@ -119,7 +119,7 @@ LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
     button_ = new LogoutButton(this);
   }
   tray_container()->AddChildView(button_);
-  if (!ash::MaterialDesignController::IsShelfMaterial())
+  if (!MaterialDesignController::IsShelfMaterial())
     tray_container()->SetBorder(views::Border::NullBorder());
   WmShell::Get()->system_tray_notifier()->AddLogoutButtonObserver(this);
 }
@@ -133,7 +133,7 @@ void LogoutButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
   // TrayBackgroundView::SetShelfAlignment() can lay it out correctly.
   UpdateButtonTextAndImage(login_status_, alignment);
   TrayBackgroundView::SetShelfAlignment(alignment);
-  if (!ash::MaterialDesignController::IsShelfMaterial())
+  if (!MaterialDesignController::IsShelfMaterial())
     tray_container()->SetBorder(views::Border::NullBorder());
 }
 
@@ -182,17 +182,20 @@ void LogoutButtonTray::UpdateButtonTextAndImage(LoginStatus login_status,
   login_status_ = login_status;
   const base::string16 title =
       user::GetLocalizedSignOutStringForStatus(login_status, false);
+  const int button_size = MaterialDesignController::IsShelfMaterial()
+                              ? kTrayItemSize
+                              : GetTrayConstant(TRAY_ITEM_HEIGHT_LEGACY);
   if (alignment == SHELF_ALIGNMENT_BOTTOM) {
     button_->SetText(title);
     button_->SetImage(views::LabelButton::STATE_NORMAL, gfx::ImageSkia());
-    button_->SetMinSize(gfx::Size(0, kTrayItemSize));
+    button_->SetMinSize(gfx::Size(0, button_size));
   } else {
     button_->SetText(base::string16());
     button_->SetAccessibleName(title);
     button_->SetImage(
         views::LabelButton::STATE_NORMAL,
         gfx::CreateVectorIcon(gfx::VectorIconId::SHELF_LOGOUT, kTrayIconColor));
-    button_->SetMinSize(gfx::Size(kTrayItemSize, kTrayItemSize));
+    button_->SetMinSize(gfx::Size(button_size, button_size));
   }
   UpdateVisibility();
 }
