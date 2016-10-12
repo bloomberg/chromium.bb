@@ -7,8 +7,8 @@
     Exposed=ServiceWorker,
     ImplementedAs=ServiceWorkerClient,
 ] interface Client {
-    [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute USVString url;
-    [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute ContextFrameType frameType;
-    [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute DOMString id;
+    readonly attribute USVString url;
+    readonly attribute ContextFrameType frameType;
+    readonly attribute DOMString id;
     [PostMessage, RaisesException, CallWith=ExecutionContext] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
 };
