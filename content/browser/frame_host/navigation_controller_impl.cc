@@ -1303,6 +1303,9 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   // update the SSL status.
   existing_entry->GetSSL() = rfh->navigation_handle()->ssl_status();
 
+  // The extra headers may have changed due to reloading with different headers.
+  existing_entry->set_extra_headers(pending_entry_->extra_headers());
+
   // Update the existing FrameNavigationEntry to ensure all of its members
   // reflect the parameters coming from the renderer process.
   existing_entry->AddOrUpdateFrameEntry(

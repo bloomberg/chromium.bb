@@ -800,8 +800,9 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
   const base::Time timestamp = controller.GetVisibleEntry()->GetTimestamp();
   EXPECT_FALSE(timestamp.is_null());
 
+  const std::string new_extra_headers("Foo: Bar");
   controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, new_extra_headers);
   entry_id = controller.GetPendingEntry()->GetUniqueID();
   EXPECT_EQ(0U, notifications.size());
   main_test_rfh()->PrepareForCommit();
@@ -819,6 +820,9 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
   ASSERT_TRUE(controller.GetVisibleEntry());
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
+
+  // The extra headers should have been updated.
+  EXPECT_EQ(new_extra_headers, controller.GetVisibleEntry()->extra_headers());
 
   // The timestamp should have been updated.
   //
