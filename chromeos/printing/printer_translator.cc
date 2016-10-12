@@ -19,11 +19,10 @@ namespace chromeos {
 
 namespace {
 
-// ppd fields
-const char kPPDid[] = "id";
-const char kFileName[] = "file_name";
-const char kVersionNumber[] = "version_number";
-const char kFromQuirks[] = "from_quirks_server";
+// PPD reference fields
+const char kUserSuppliedPpdUrl[] = "user_supplied_ppd_url";
+const char kEffectiveManufacturer[] = "effective_manufacturer";
+const char kEffectiveModel[] = "effective_model";
 
 // printer fields
 const char kDisplayName[] = "display_name";
@@ -31,29 +30,31 @@ const char kDescription[] = "description";
 const char kManufacturer[] = "manufacturer";
 const char kModel[] = "model";
 const char kUri[] = "uri";
-const char kPPD[] = "ppd";
+const char kPpdReference[] = "ppd_reference";
 const char kUUID[] = "uuid";
 
-std::unique_ptr<Printer::PPDFile> DictionaryToPPDFile(
+Printer::PpdReference DictionaryToPpdReference(
     const base::DictionaryValue* value) {
-  std::unique_ptr<Printer::PPDFile> ppd = base::MakeUnique<Printer::PPDFile>();
-  // struct PPDFile defines default values for these fields so there is no need
-  // to check return values.
-  value->GetInteger(kPPDid, &ppd->id);
-  value->GetString(kFileName, &ppd->file_name);
-  value->GetInteger(kVersionNumber, &ppd->version_number);
-  value->GetBoolean(kFromQuirks, &ppd->from_quirks_server);
+  Printer::PpdReference ppd;
+  value->GetString(kUserSuppliedPpdUrl, &ppd.user_supplied_ppd_url);
+  value->GetString(kEffectiveManufacturer, &ppd.effective_manufacturer);
+  value->GetString(kEffectiveModel, &ppd.effective_model);
   return ppd;
 }
 
-std::unique_ptr<base::DictionaryValue> PPDFileToDictionary(
-    const Printer::PPDFile& ppd) {
-  std::unique_ptr<base::DictionaryValue> dictionary =
-      base::MakeUnique<base::DictionaryValue>();
-  dictionary->SetInteger(kPPDid, ppd.id);
-  dictionary->SetString(kFileName, ppd.file_name);
-  dictionary->SetInteger(kVersionNumber, ppd.version_number);
-  dictionary->SetBoolean(kFromQuirks, ppd.from_quirks_server);
+// Convert a PpdReference struct to a DictionaryValue.
+std::unique_ptr<base::DictionaryValue> PpdReferenceToDictionary(
+    const Printer::PpdReference& ppd) {
+  auto dictionary = base::MakeUnique<DictionaryValue>();
+  if (!ppd.user_supplied_ppd_url.empty()) {
+    dictionary->SetString(kUserSuppliedPpdUrl, ppd.user_supplied_ppd_url);
+  }
+  if (!ppd.effective_manufacturer.empty()) {
+    dictionary->SetString(kEffectiveManufacturer, ppd.effective_manufacturer);
+  }
+  if (!ppd.effective_model.empty()) {
+    dictionary->SetString(kEffectiveModel, ppd.effective_model);
+  }
   return dictionary;
 }
 
@@ -97,8 +98,8 @@ std::unique_ptr<Printer> PrefToPrinter(const DictionaryValue& value) {
     printer->set_uuid(uuid);
 
   const DictionaryValue* ppd;
-  if (value.GetDictionary(kPPD, &ppd)) {
-    printer->SetPPD(DictionaryToPPDFile(ppd));
+  if (value.GetDictionary(kPpdReference, &ppd)) {
+    *printer->mutable_ppd_reference() = DictionaryToPpdReference(ppd);
   }
 
   return printer;
@@ -115,7 +116,8 @@ std::unique_ptr<base::DictionaryValue> PrinterToPref(const Printer& printer) {
   dictionary->SetString(kUri, printer.uri());
   dictionary->SetString(kUUID, printer.uuid());
 
-  dictionary->Set(kPPD, PPDFileToDictionary(printer.ppd()));
+  dictionary->Set(kPpdReference,
+                  PpdReferenceToDictionary(printer.ppd_reference()));
 
   return dictionary;
 }

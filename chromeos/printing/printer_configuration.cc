@@ -18,8 +18,4 @@ Printer& Printer::operator=(const Printer& other) = default;
 
 Printer::~Printer() {}
 
-void Printer::SetPPD(std::unique_ptr<Printer::PPDFile> ppd) {
-  ppd_ = *(ppd.get());
-}
-
 }  // namespace chromeos

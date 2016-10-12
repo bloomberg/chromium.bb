@@ -23,11 +23,10 @@ const char kModel[] = "Inktastic Laser Magic";
 const char kUri[] = "ipp://printy.domain.co:555/ipp/print";
 const char kUUID[] = "UUID-UUID-UUID";
 
-// PPDFile test data
-const int kPPDiD = 13334;
-const char kFileName[] = "path/to/ppd/file.ppd";
-const int kVersion = 47773;
-const bool kQuirks = false;
+// PpdReference test data
+const char kUserSuppliedPpdUrl[] = "/some/path/to/user.url";
+const char kEffectiveManufacturer[] = "Ehch Pea";
+const char kEffectiveModel[] = "PrintBlaster 2000";
 
 TEST(PrinterTranslatorTest, PrefToPrinterMissingId) {
   base::DictionaryValue value;
@@ -78,23 +77,34 @@ TEST(PrinterTranslatorTest, PrinterToPref) {
   base::ExpectDictStringValue(kUUID, *pref, "uuid");
 }
 
-TEST(PrinterTranslatorTest, PrinterToPrefPPDFile) {
-  Printer::PPDFile ppd;
-  ppd.id = kPPDiD;
-  ppd.file_name = kFileName;
-  ppd.version_number = kVersion;
-  ppd.from_quirks_server = kQuirks;
-
+TEST(PrinterTranslatorTest, PrinterToPrefPpdReference) {
   Printer printer("UNIQUE_ID");
-  printer.SetPPD(base::MakeUnique<Printer::PPDFile>(std::move(ppd)));
+  auto* ppd = printer.mutable_ppd_reference();
+  ppd->user_supplied_ppd_url = kUserSuppliedPpdUrl;
+  ppd->effective_manufacturer = kEffectiveManufacturer;
+  ppd->effective_model = kEffectiveModel;
 
   std::unique_ptr<base::DictionaryValue> actual = PrinterToPref(printer);
 
-  base::ExpectDictIntegerValue(kPPDiD, *actual, "ppd.id");
-  base::ExpectDictStringValue(kFileName, *actual, "ppd.file_name");
-  base::ExpectDictIntegerValue(kVersion, *actual, "ppd.version_number");
-  base::ExpectDictBooleanValue(kQuirks, *actual, "ppd.from_quirks_server");
+  base::ExpectDictStringValue(kUserSuppliedPpdUrl, *actual,
+                              "ppd_reference.user_supplied_ppd_url");
+  base::ExpectDictStringValue(kEffectiveManufacturer, *actual,
+                              "ppd_reference.effective_manufacturer");
+  base::ExpectDictStringValue(kEffectiveModel, *actual,
+                              "ppd_reference.effective_model");
 }
+
+// Make sure we don't serialize empty fields.
+TEST(PrinterTranslatorTest, PrinterToPrefPpdReferenceLazy) {
+  Printer printer("UNIQUE_ID");
+  std::unique_ptr<base::DictionaryValue> actual = PrinterToPref(printer);
+
+  EXPECT_FALSE(actual->HasKey("ppd_reference.user_supplied_ppd_url"));
+  EXPECT_FALSE(actual->HasKey("ppd_reference.effective_manufacturer"));
+  EXPECT_FALSE(actual->HasKey("ppd_reference.effective_model"));
+}
+
+// FIXME add a test that we don't set fields that are empty.
 
 TEST(PrinterTranslatorTest, PrefToPrinterRoundTrip) {
   base::DictionaryValue preference;
@@ -106,10 +116,11 @@ TEST(PrinterTranslatorTest, PrefToPrinterRoundTrip) {
   preference.SetString("uri", kUri);
   preference.SetString("uuid", kUUID);
 
-  preference.SetInteger("ppd.id", kPPDiD);
-  preference.SetString("ppd.file_name", kFileName);
-  preference.SetInteger("ppd.version_number", kVersion);
-  preference.SetBoolean("ppd.from_quirks_server", kQuirks);
+  preference.SetString("ppd_reference.user_supplied_ppd_url",
+                       kUserSuppliedPpdUrl);
+  preference.SetString("ppd_reference.effective_manufacturer",
+                       kEffectiveManufacturer);
+  preference.SetString("ppd_reference.effective_model", kEffectiveModel);
 
   std::unique_ptr<Printer> printer = PrefToPrinter(preference);
   std::unique_ptr<base::DictionaryValue> pref_copy = PrinterToPref(*printer);
