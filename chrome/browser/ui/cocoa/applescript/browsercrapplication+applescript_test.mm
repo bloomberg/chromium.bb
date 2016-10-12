@@ -4,10 +4,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/cocoa/applescript/bookmark_folder_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/browsercrapplication+applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
@@ -110,6 +112,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest,
                 [bookmarkFolder containerProperty]);
   }
 
-  EXPECT_NSEQ(@"Other Bookmarks", [[NSApp otherBookmarks] title]);
-  EXPECT_NSEQ(@"Bookmarks Bar", [[NSApp bookmarksBar] title]);
+  BookmarkFolderAppleScript* otherBookmarks =
+      base::mac::ObjCCast<BookmarkFolderAppleScript>([NSApp otherBookmarks]);
+  EXPECT_NSEQ(@"Other Bookmarks", [otherBookmarks title]);
+  BookmarkFolderAppleScript* bookmarksBar =
+      base::mac::ObjCCast<BookmarkFolderAppleScript>([NSApp bookmarksBar]);
+  EXPECT_NSEQ(@"Bookmarks Bar", [bookmarksBar title]);
 }
