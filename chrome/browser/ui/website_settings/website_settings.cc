@@ -396,6 +396,15 @@ void WebsiteSettings::OnRevokeSSLErrorBypassButtonPressed() {
 void WebsiteSettings::Init(
     const GURL& url,
     const SecurityStateModel::SecurityInfo& security_info) {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // On desktop, internal URLs aren't handled by this class. Instead, a
+  // custom and simpler popup is shown.
+  DCHECK(!url.SchemeIs(content::kChromeUIScheme) &&
+         !url.SchemeIs(content::kChromeDevToolsScheme) &&
+         !url.SchemeIs(content::kViewSourceScheme) &&
+         !url.SchemeIs(content_settings::kExtensionScheme));
+#endif
+
   bool isChromeUINativeScheme = false;
 #if BUILDFLAG(ANDROID_JAVA_UI)
   isChromeUINativeScheme = url.SchemeIs(chrome::kChromeUINativeScheme);

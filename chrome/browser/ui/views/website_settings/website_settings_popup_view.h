@@ -64,6 +64,15 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
  public:
   ~WebsiteSettingsPopupView() override;
 
+  // Type of the popup being displayed.
+  enum PopupType {
+    POPUP_NONE,
+    // Usual page info bubble for websites.
+    POPUP_WEBSITE_SETTINGS,
+    // Custom bubble for internal pages like chrome:// and chrome-extensions://.
+    POPUP_INTERNAL_PAGE
+  };
+
   // If |anchor_view| is null, |anchor_rect| is used to anchor the bubble.
   static void ShowPopup(
       views::View* anchor_view,
@@ -73,7 +82,8 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
       const GURL& url,
       const security_state::SecurityStateModel::SecurityInfo& security_info);
 
-  static bool IsPopupShowing();
+  // Returns the type of the popup bubble being shown.
+  static PopupType GetShownPopupType();
 
  private:
   friend class test::WebsiteSettingsPopupViewTestApi;

@@ -185,6 +185,7 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 
 bool IsInternalURL(const GURL& url) {
   return url.SchemeIs(content::kChromeUIScheme) ||
+         url.SchemeIs(content::kChromeDevToolsScheme) ||
          url.SchemeIs(extensions::kExtensionScheme) ||
          url.SchemeIs(content::kViewSourceScheme);
 }
@@ -264,7 +265,8 @@ bool IsInternalURL(const GURL& url) {
     text = IDS_PAGE_INFO_VIEW_SOURCE_PAGE;
     // view-source scheme uses the same icon as chrome:// pages.
     icon = IDR_PRODUCT_LOGO_16;
-  } else if (!url.SchemeIs(content::kChromeUIScheme)) {
+  } else if (!url.SchemeIs(content::kChromeUIScheme) &&
+             !url.SchemeIs(content::kChromeDevToolsScheme)) {
     NOTREACHED();
   }
 

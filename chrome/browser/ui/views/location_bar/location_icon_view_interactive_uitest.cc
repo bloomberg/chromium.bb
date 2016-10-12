@@ -4,14 +4,12 @@
 
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "ui/aura/window.h"
 
 namespace {
 
@@ -34,7 +32,8 @@ IN_PROC_BROWSER_TEST_F(LocationIconViewTest, HideOnSecondClick) {
       runner1->QuitClosure());
   runner1->Run();
 
-  EXPECT_TRUE(WebsiteSettingsPopupView::IsPopupShowing());
+  EXPECT_EQ(WebsiteSettingsPopupView::POPUP_WEBSITE_SETTINGS,
+            WebsiteSettingsPopupView::GetShownPopupType());
 
   // Verify that clicking again doesn't reshow it.
   scoped_refptr<content::MessageLoopRunner> runner2 =
@@ -46,7 +45,8 @@ IN_PROC_BROWSER_TEST_F(LocationIconViewTest, HideOnSecondClick) {
       runner2->QuitClosure());
   runner2->Run();
 
-  EXPECT_FALSE(WebsiteSettingsPopupView::IsPopupShowing());
+  EXPECT_EQ(WebsiteSettingsPopupView::POPUP_NONE,
+            WebsiteSettingsPopupView::GetShownPopupType());
 }
 
 }  // namespace

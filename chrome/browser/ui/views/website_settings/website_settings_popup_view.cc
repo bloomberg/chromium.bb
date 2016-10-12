@@ -71,7 +71,8 @@ namespace {
 // to return a weak pointer from ShowPopup so callers can associate it with the
 // current window (or other context) and check if the popup they care about is
 // showing.
-bool is_popup_showing = false;
+WebsiteSettingsPopupView::PopupType g_shown_popup_type =
+    WebsiteSettingsPopupView::POPUP_NONE;
 
 // General constants -----------------------------------------------------------
 
@@ -334,6 +335,7 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(
     gfx::NativeView parent_window,
     const GURL& url)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT) {
+  g_shown_popup_type = WebsiteSettingsPopupView::POPUP_INTERNAL_PAGE;
   set_parent_window(parent_window);
 
   int text = IDS_PAGE_INFO_INTERNAL_PAGE;
@@ -345,7 +347,8 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(
     text = IDS_PAGE_INFO_VIEW_SOURCE_PAGE;
     // view-source scheme uses the same icon as chrome:// pages.
     icon = IDR_PRODUCT_LOGO_16;
-  } else if (!url.SchemeIs(content::kChromeUIScheme)) {
+  } else if (!url.SchemeIs(content::kChromeUIScheme) &&
+             !url.SchemeIs(content::kChromeDevToolsScheme)) {
     NOTREACHED();
   }
 
@@ -385,7 +388,7 @@ views::NonClientFrameView* InternalPageInfoPopupView::CreateNonClientFrameView(
 }
 
 void InternalPageInfoPopupView::OnWidgetDestroying(views::Widget* widget) {
-  is_popup_showing = false;
+  g_shown_popup_type = WebsiteSettingsPopupView::POPUP_NONE;
 }
 
 int InternalPageInfoPopupView::GetDialogButtons() const {
@@ -407,10 +410,10 @@ void WebsiteSettingsPopupView::ShowPopup(
     content::WebContents* web_contents,
     const GURL& url,
     const security_state::SecurityStateModel::SecurityInfo& security_info) {
-  is_popup_showing = true;
   gfx::NativeView parent_window =
       anchor_view ? nullptr : web_contents->GetNativeView();
   if (url.SchemeIs(content::kChromeUIScheme) ||
+      url.SchemeIs(content::kChromeDevToolsScheme) ||
       url.SchemeIs(extensions::kExtensionScheme) ||
       url.SchemeIs(content::kViewSourceScheme)) {
     // Use the concrete type so that |SetAnchorRect| can be called as a friend.
@@ -429,8 +432,9 @@ void WebsiteSettingsPopupView::ShowPopup(
 }
 
 // static
-bool WebsiteSettingsPopupView::IsPopupShowing() {
-  return is_popup_showing;
+WebsiteSettingsPopupView::PopupType
+WebsiteSettingsPopupView::GetShownPopupType() {
+  return g_shown_popup_type;
 }
 
 WebsiteSettingsPopupView::WebsiteSettingsPopupView(
@@ -450,8 +454,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       cookie_dialog_link_(nullptr),
       permissions_view_(nullptr),
       weak_factory_(this) {
+  g_shown_popup_type = POPUP_WEBSITE_SETTINGS;
   set_parent_window(parent_window);
-
   is_devtools_disabled_ =
       profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled);
 
@@ -518,7 +522,7 @@ void WebsiteSettingsPopupView::OnChosenObjectDeleted(
 }
 
 void WebsiteSettingsPopupView::OnWidgetDestroying(views::Widget* widget) {
-  is_popup_showing = false;
+  g_shown_popup_type = POPUP_NONE;
   presenter_->OnUIClosing();
 }
 

@@ -866,6 +866,9 @@ TEST_F(WebsiteSettingsTest, AboutBlankPage) {
   EXPECT_EQ(base::string16(), website_settings()->organization_name());
 }
 
+// On desktop, internal URLs aren't handled by WebsiteSettings class. Instead, a
+// custom and simpler popup is shown, so no need to test.
+#if defined(OS_ANDROID) || defined(OS_IOS)
 TEST_F(WebsiteSettingsTest, InternalPage) {
   SetURL("chrome://bookmarks");
   SetDefaultUIExpectations(mock_ui());
@@ -875,3 +878,4 @@ TEST_F(WebsiteSettingsTest, InternalPage) {
             website_settings()->site_identity_status());
   EXPECT_EQ(base::string16(), website_settings()->organization_name());
 }
+#endif

@@ -57,7 +57,9 @@ bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
       model->PasteAndGo(text);
   }
 
-  suppress_mouse_released_action_ = WebsiteSettingsPopupView::IsPopupShowing();
+  suppress_mouse_released_action_ =
+      WebsiteSettingsPopupView::GetShownPopupType() !=
+      WebsiteSettingsPopupView::POPUP_NONE;
   return true;
 }
 
