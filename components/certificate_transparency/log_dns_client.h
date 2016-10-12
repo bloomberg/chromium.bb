@@ -34,11 +34,6 @@ namespace certificate_transparency {
 // It must be created and deleted on the same thread. It is not thread-safe.
 class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
  public:
-  // Invoked when a leaf index query completes.
-  // If an error occured, |net_error| will be a net::Error code, otherwise it
-  // will be net::OK and |leaf_index| will be the leaf index that was received.
-  using LeafIndexCallback =
-      base::Callback<void(int net_error, uint64_t leaf_index)>;
   // Invoked when an audit proof query completes.
   // If an error occurred, |net_error| will be a net::Error code, otherwise it
   // will be net::OK and |proof| will be the audit proof that was received.
@@ -70,48 +65,29 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // The DnsClient's config will be updated in response.
   void OnInitialDNSConfigRead() override;
 
-  // Queries a CT log to discover the index of the leaf with |leaf_hash|.
-  // The log is identified by |domain_for_log|, which is the DNS name used as a
-  // suffix for all queries.
-  // The |leaf_hash| is the SHA-256 hash of a Merkle tree leaf in that log.
-  // The |callback| is invoked when the query is complete, or an error occurs.
-  void QueryLeafIndex(base::StringPiece domain_for_log,
-                      base::StringPiece leaf_hash,
-                      const LeafIndexCallback& callback);
-
-  // Queries a CT log to retrieve an audit proof for the leaf at |leaf_index|.
+  // Queries a CT log to retrieve an audit proof for the leaf with |leaf_hash|.
+  // The |leaf_hash| is the SHA-256 Merkle leaf hash (see RFC6962, section 2.1).
   // The size of the CT log tree must be provided in |tree_size|.
   // The log is identified by |domain_for_log|, which is the DNS name used as a
   // suffix for all queries.
   // The |callback| is invoked when the query is complete, or an error occurs.
-  void QueryAuditProof(base::StringPiece domain_for_log,
-                       uint64_t leaf_index,
+  void QueryAuditProof(const std::string& domain_for_log,
+                       base::StringPiece leaf_hash,
                        uint64_t tree_size,
                        const AuditProofCallback& callback);
 
  private:
-  void QueryLeafIndexComplete(net::DnsTransaction* transaction,
-                              int neterror,
-                              const net::DnsResponse* response);
+  // An audit proof query that is in progress.
+  class AuditProofQuery;
 
-  // Queries a CT log to retrieve part of an audit |proof|. The |node_index|
-  // indicates which node of the audit proof/ should be requested. The CT log
-  // may return up to 7 nodes, starting from |node_index| (this is the maximum
-  // that will fit in a DNS UDP packet). The nodes will be appended to
-  // |proof->nodes|.
-  void QueryAuditProofNodes(std::unique_ptr<net::ct::MerkleAuditProof> proof,
-                            base::StringPiece domain_for_log,
-                            uint64_t tree_size,
-                            uint64_t node_index,
-                            const AuditProofCallback& callback);
-
-  void QueryAuditProofNodesComplete(
-      std::unique_ptr<net::ct::MerkleAuditProof> proof,
-      base::StringPiece domain_for_log,
-      uint64_t tree_size,
-      net::DnsTransaction* transaction,
-      int net_error,
-      const net::DnsResponse* response);
+  // Invoked when an audit proof query completes.
+  // |callback| is the user-provided callback that should be notified.
+  // |result| is a net::Error indicating success or failure.
+  // |query| is the query that has completed.
+  // The query is removed from |audit_proof_queries_| by this method.
+  void QueryAuditProofComplete(const AuditProofCallback& callback,
+                               int result,
+                               AuditProofQuery* query);
 
   // Returns true if the maximum number of queries are currently in flight.
   // If the maximum number of concurrency queries is set to 0, this will always
@@ -121,21 +97,12 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // Updates the |dns_client_| config using NetworkChangeNotifier.
   void UpdateDnsConfig();
 
-  // A DNS query that is in flight.
-  template <typename CallbackType>
-  struct Query {
-    std::unique_ptr<net::DnsTransaction> transaction;
-    CallbackType callback;
-  };
-
   // Used to perform DNS queries.
   std::unique_ptr<net::DnsClient> dns_client_;
   // Passed to the DNS client for logging.
   net::NetLogWithSource net_log_;
-  // Leaf index queries that haven't completed yet.
-  std::list<Query<LeafIndexCallback>> leaf_index_queries_;
   // Audit proof queries that haven't completed yet.
-  std::list<Query<AuditProofCallback>> audit_proof_queries_;
+  std::list<std::unique_ptr<AuditProofQuery>> audit_proof_queries_;
   // The maximum number of queries that can be in flight at one time.
   size_t max_concurrent_queries_;
   // Creates weak_ptrs to this, for callback purposes.
