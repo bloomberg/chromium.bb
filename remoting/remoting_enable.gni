@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Keep in sync with remoting/remoting_enable.gypi.
-
 import("//build/config/ui.gni")
+
+declare_args() {
+  enable_remoting = !is_ios && !is_chromecast
+}
 
 enable_remoting_host = false
 enable_me2me_host = false

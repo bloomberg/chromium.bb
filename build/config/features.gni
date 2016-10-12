@@ -61,8 +61,6 @@ declare_args() {
 
   enable_supervised_users = !is_ios && !is_chromecast
 
-  enable_remoting = !is_ios && !is_chromecast
-
   # Variable safe_browsing is used to control the build time configuration for
   # safe browsing feature. Safe browsing can be compiled in 3 different levels:
   # 0 disables it, 1 enables it fully, and 2 enables mobile protection via an
