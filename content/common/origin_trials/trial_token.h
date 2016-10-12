@@ -13,6 +13,8 @@
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size);
+
 namespace blink {
 enum class WebOriginTrialTokenStatus;
 }
@@ -60,7 +62,12 @@ class CONTENT_EXPORT TrialToken {
   base::Time expiry_time() { return expiry_time_; }
 
  protected:
+  // Tests can access the Parse method directly to validate it, and so are
+  // declared as friends here. All other access to Parse should be made through
+  // TrialToken::From, which will always also ensure that there is a valid
+  // signature attached to the token.
   friend class TrialTokenTest;
+  friend int ::LLVMFuzzerTestOneInput(const uint8_t*, size_t);
 
   // If the string represents a properly signed and well-formed token, the token
   // payload is returned in the |out_token_payload| parameter and success is

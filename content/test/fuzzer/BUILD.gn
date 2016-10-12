@@ -26,6 +26,18 @@ if (!is_component_build) {
     testonly = true
   }
 
+  fuzzer_test("origin_trial_token_fuzzer") {
+    sources = [
+      "origin_trial_token_fuzzer.cc",
+    ]
+    deps = [
+      ":fuzzer_support",
+    ]
+    dict =
+        "//content/test/data/fuzzer_dictionaries/origin_trial_token_fuzzer.dict"
+    seed_corpus = "//content/test/data/fuzzer_corpus/origin_trial_token_data/"
+  }
+
   fuzzer_test("renderer_fuzzer") {
     sources = [
       "renderer_fuzzer.cc",
