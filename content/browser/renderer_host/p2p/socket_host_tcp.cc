@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/p2p_messages.h"
 #include "ipc/ipc_sender.h"
 #include "jingle/glue/fake_ssl_client_socket.h"
@@ -122,9 +123,7 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
     // directly here as the caller may not expect an error/close to
     // happen here.  This is okay, as from the caller's point of view,
     // the connect always happens asynchronously.
-    base::MessageLoop* message_loop = base::MessageLoop::current();
-    CHECK(message_loop);
-    message_loop->task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&P2PSocketHostTcpBase::OnConnected,
                               base::Unretained(this), status));
   }
