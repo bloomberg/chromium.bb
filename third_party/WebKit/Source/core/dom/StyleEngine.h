@@ -254,12 +254,14 @@ class CORE_EXPORT StyleEngine final
                             const String& text,
                             TextPosition startPosition);
 
-  const DocumentStyleSheetCollection* documentStyleSheetCollection() const {
-    return m_documentStyleSheetCollection.get();
+  const DocumentStyleSheetCollection& documentStyleSheetCollection() const {
+    DCHECK(m_documentStyleSheetCollection);
+    return *m_documentStyleSheetCollection;
   }
 
-  DocumentStyleSheetCollection* documentStyleSheetCollection() {
-    return m_documentStyleSheetCollection.get();
+  DocumentStyleSheetCollection& documentStyleSheetCollection() {
+    DCHECK(m_documentStyleSheetCollection);
+    return *m_documentStyleSheetCollection;
   }
 
   void updateActiveStyleSheetsInShadow(

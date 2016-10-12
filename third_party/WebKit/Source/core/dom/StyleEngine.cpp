@@ -92,7 +92,7 @@ inline Document* StyleEngine::master() {
 TreeScopeStyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(
     TreeScope& treeScope) {
   if (treeScope == m_document)
-    return documentStyleSheetCollection();
+    return &documentStyleSheetCollection();
 
   StyleSheetCollectionMap::AddResult result =
       m_styleSheetCollectionMap.add(&treeScope, nullptr);
@@ -105,19 +105,19 @@ TreeScopeStyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(
 TreeScopeStyleSheetCollection* StyleEngine::styleSheetCollectionFor(
     TreeScope& treeScope) {
   if (treeScope == m_document)
-    return documentStyleSheetCollection();
+    return &documentStyleSheetCollection();
 
   StyleSheetCollectionMap::iterator it =
       m_styleSheetCollectionMap.find(&treeScope);
   if (it == m_styleSheetCollectionMap.end())
-    return 0;
+    return nullptr;
   return it->value.get();
 }
 
 const HeapVector<Member<StyleSheet>>& StyleEngine::styleSheetsForStyleSheetList(
     TreeScope& treeScope) {
   if (treeScope == m_document)
-    return documentStyleSheetCollection()->styleSheetsForStyleSheetList();
+    return documentStyleSheetCollection().styleSheetsForStyleSheetList();
 
   return ensureStyleSheetCollectionFor(treeScope)
       ->styleSheetsForStyleSheetList();
@@ -284,7 +284,7 @@ void StyleEngine::clearMediaQueryRuleSetOnTreeScopeStyleSheets(
 
 void StyleEngine::clearMediaQueryRuleSetStyleSheets() {
   resolverChanged(FullStyleUpdate);
-  documentStyleSheetCollection()->clearMediaQueryRuleSetStyleSheets();
+  documentStyleSheetCollection().clearMediaQueryRuleSetStyleSheets();
   clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_activeTreeScopes);
 }
 
@@ -294,8 +294,8 @@ void StyleEngine::updateStyleSheetsInImport(
   HeapVector<Member<StyleSheet>> sheetsForList;
   ImportedDocumentStyleSheetCollector subcollector(parentCollector,
                                                    sheetsForList);
-  documentStyleSheetCollection()->collectStyleSheets(*this, subcollector);
-  documentStyleSheetCollection()->swapSheetsForSheetList(sheetsForList);
+  documentStyleSheetCollection().collectStyleSheets(*this, subcollector);
+  documentStyleSheetCollection().swapSheetsForSheetList(sheetsForList);
 }
 
 void StyleEngine::updateActiveStyleSheetsInShadow(
@@ -325,7 +325,7 @@ void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode) {
   TRACE_EVENT0("blink,blink_style", "StyleEngine::updateActiveStyleSheets");
 
   if (shouldUpdateDocumentStyleSheetCollection(updateMode))
-    documentStyleSheetCollection()->updateActiveStyleSheets(*this, updateMode);
+    documentStyleSheetCollection().updateActiveStyleSheets(*this, updateMode);
 
   if (shouldUpdateShadowTreeStyleSheetCollection(updateMode)) {
     UnorderedTreeScopeSet treeScopesRemoved;
@@ -352,12 +352,12 @@ void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode) {
 const HeapVector<Member<CSSStyleSheet>>
 StyleEngine::activeStyleSheetsForInspector() const {
   if (m_activeTreeScopes.isEmpty())
-    return documentStyleSheetCollection()->activeAuthorStyleSheets();
+    return documentStyleSheetCollection().activeAuthorStyleSheets();
 
   HeapVector<Member<CSSStyleSheet>> activeStyleSheets;
 
   activeStyleSheets.appendVector(
-      documentStyleSheetCollection()->activeAuthorStyleSheets());
+      documentStyleSheetCollection().activeAuthorStyleSheets());
   for (TreeScope* treeScope : m_activeTreeScopes) {
     if (TreeScopeStyleSheetCollection* collection =
             m_styleSheetCollectionMap.get(treeScope))
@@ -394,7 +394,7 @@ void StyleEngine::appendActiveAuthorStyleSheets() {
   DCHECK(isMaster());
 
   m_resolver->appendAuthorStyleSheets(
-      documentStyleSheetCollection()->activeAuthorStyleSheets());
+      documentStyleSheetCollection().activeAuthorStyleSheets());
   for (TreeScope* treeScope : m_activeTreeScopes) {
     if (TreeScopeStyleSheetCollection* collection =
             m_styleSheetCollectionMap.get(treeScope))
