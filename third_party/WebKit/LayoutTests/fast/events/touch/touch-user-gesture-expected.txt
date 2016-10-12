@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 13: Performing operations that require explicit user interaction on touchstart events is deprecated and will be removed in M55, around December 2016. See https://www.chromestatus.com/features/5649871251963904 for more details.
-CONSOLE WARNING: line 13: Performing operations that require explicit user interaction on touchmove events is deprecated and will be removed in M55, around December 2016. See https://www.chromestatus.com/features/5649871251963904 for more details.
+CONSOLE WARNING: line 13: Performing operations that require explicit user interaction on touchstart events is deprecated and will be removed in M56, around January 2017. See https://www.chromestatus.com/features/5649871251963904 for more details.
+CONSOLE WARNING: line 13: Performing operations that require explicit user interaction on touchmove events is deprecated and will be removed in M56, around January 2017. See https://www.chromestatus.com/features/5649871251963904 for more details.
 Target
 Test user gesture behavior during touch events.
 touchstart should be a user gesture
