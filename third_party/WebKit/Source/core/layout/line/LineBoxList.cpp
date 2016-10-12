@@ -287,11 +287,16 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container,
   }
 
   // Try to figure out which line box we belong in. First try to find a previous
-  // line box by examining our siblings. If we didn't find a line box, then use
-  // our parent's first line box.
+  // line box by examining our siblings. If we are a float inside an inline then
+  // check the siblings of our inline parent. If we didn't find a line box, then
+  // use our parent's first line box.
   RootInlineBox* box = nullptr;
-  LineLayoutItem curr = nullptr;
-  for (curr = child.previousSibling(); curr; curr = curr.previousSibling()) {
+  LineLayoutItem curr = child.isFloating() && !child.previousSibling() &&
+                                child.parent() &&
+                                child.parent().isLayoutInline()
+                            ? child.parent().previousSibling()
+                            : child.previousSibling();
+  for (; curr; curr = curr.previousSibling()) {
     if (curr.isFloatingOrOutOfFlowPositioned())
       continue;
 
