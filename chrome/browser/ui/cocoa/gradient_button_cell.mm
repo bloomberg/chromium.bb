@@ -50,8 +50,6 @@ static const NSTimeInterval kAnimationShowDuration = 0.2;
 // now so we don't suck.  -jrg
 static const NSTimeInterval kAnimationHideDuration = 0.4;
 
-static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
-
 @implementation GradientButtonCell
 
 @synthesize hoverAlpha = hoverAlpha_;
@@ -83,8 +81,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
 // Return YES if we are pulsing (towards another state or continuously).
 - (BOOL)pulsing {
   if ((pulseState_ == gradient_button_cell::kPulsingOn) ||
-      (pulseState_ == gradient_button_cell::kPulsingOff) ||
-      (pulseState_ == gradient_button_cell::kPulsingContinuous))
+      (pulseState_ == gradient_button_cell::kPulsingOff))
     return YES;
   return NO;
 }
@@ -112,16 +109,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
       return;
     }
     break;
-  case gradient_button_cell::kPulsingContinuous:
-    opacity += elapsed / kAnimationContinuousCycleDuration * pulseMultiplier_;
-    if (opacity > 1.0) {
-      opacity = 1.0;
-      pulseMultiplier_ *= -1.0;
-    } else if (opacity < 0.0) {
-      opacity = 0.0;
-      pulseMultiplier_ *= -1.0;
-    }
-    outerStrokeAlphaMult_ = opacity;
+  case gradient_button_cell::kPulsingStuckOn:
+    outerStrokeAlphaMult_ = 1.0;
     break;
   default:
     NOTREACHED() << "unknown pulse state";
@@ -147,7 +136,6 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
 // state change.
 - (void)setPulseState:(gradient_button_cell::PulseState)pstate {
   pulseState_ = pstate;
-  pulseMultiplier_ = 0.0;
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
   lastHoverUpdate_ = [NSDate timeIntervalSinceReferenceDate];
 
@@ -167,10 +155,9 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                          0.0 : 1.0)];
     [self performOnePulseStep];
     break;
-  case gradient_button_cell::kPulsingContinuous:
+  case gradient_button_cell::kPulsingStuckOn:
     // Semantics of continuous pulsing are that we pulse independent
     // of mouse position.
-    pulseMultiplier_ = 1.0;
     [self performOnePulseStep];
     break;
   default:
@@ -183,19 +170,19 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
-- (void)setIsContinuousPulsing:(BOOL)continuous {
-  if (!continuous && pulseState_ != gradient_button_cell::kPulsingContinuous)
+- (void)setPulseIsStuckOn:(BOOL)on {
+  if (!on && pulseState_ != gradient_button_cell::kPulsingStuckOn)
     return;
-  if (continuous) {
-    [self setPulseState:gradient_button_cell::kPulsingContinuous];
+  if (on) {
+    [self setPulseState:gradient_button_cell::kPulsingStuckOn];
   } else {
     [self setPulseState:(isMouseInside_ ? gradient_button_cell::kPulsedOn :
                          gradient_button_cell::kPulsedOff)];
   }
 }
 
-- (BOOL)isContinuousPulsing {
-  return (pulseState_ == gradient_button_cell::kPulsingContinuous) ?
+- (BOOL)isPulseStuckOn {
+  return (pulseState_ == gradient_button_cell::kPulsingStuckOn) ?
       YES : NO;
 }
 
@@ -204,7 +191,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
 // reflect our new state.
 - (void)setMouseInside:(BOOL)flag animate:(BOOL)animated {
   isMouseInside_ = flag;
-  if (pulseState_ != gradient_button_cell::kPulsingContinuous) {
+  if (pulseState_ != gradient_button_cell::kPulsingStuckOn) {
     if (animated) {
       // In Material Design, if the button is already fully on, don't pulse it
       // on again if the mouse is within its bounds.
@@ -290,7 +277,6 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
 - (void)sharedInit {
   shouldTheme_ = YES;
   pulseState_ = gradient_button_cell::kPulsedOff;
-  pulseMultiplier_ = 1.0;
   outerStrokeAlphaMult_ = 1.0;
   gradient_.reset([[self gradientForHoverAlpha:0.0 isThemed:NO] retain]);
 }
@@ -603,11 +589,11 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
       ![self showsBorderOnlyWhileMouseInside] &&
       enabled;
   if (([self isBordered] && ![self showsBorderOnlyWhileMouseInside]) ||
-      pressed || [self isMouseInside] || [self isContinuousPulsing] ||
+      pressed || [self isMouseInside] || [self isPulseStuckOn] ||
       hasMaterialHighlight) {
     // When pulsing we want the bookmark to stand out a little more.
     BOOL showClickedGradient = pressed ||
-        (pulseState_ == gradient_button_cell::kPulsingContinuous);
+        (pulseState_ == gradient_button_cell::kPulsingStuckOn);
     BOOL showHighlightGradient = [self isHighlighted] || hasMaterialHighlight;
 
     [self drawBorderAndFillForTheme:themeProvider

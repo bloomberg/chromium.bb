@@ -343,7 +343,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     if (node->parent() == bookmarkModel_->bookmark_bar_node()) {
       for (BookmarkButton* button in [self buttons]) {
         if ([button bookmarkNode] == node) {
-          [button setIsContinuousPulsing:YES];
+          [button setPulseIsStuckOn:YES];
           return button;
         }
       }
@@ -362,7 +362,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!pulsingButton_)
     return;
 
-  [pulsingButton_ setIsContinuousPulsing:YES];
+  [pulsingButton_ setPulseIsStuckOn:YES];
   pulsingBookmarkObserver_.reset(
       new BookmarkModelObserverForCocoa(bookmarkModel_, ^() {
         // Stop pulsing if anything happened to the node.
@@ -375,7 +375,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!pulsingButton_)
     return;
 
-  [pulsingButton_ setIsContinuousPulsing:NO];
+  [pulsingButton_ setPulseIsStuckOn:NO];
   pulsingButton_ = nil;
   pulsingBookmarkObserver_.reset();
 }

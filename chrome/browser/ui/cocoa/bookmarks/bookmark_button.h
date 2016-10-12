@@ -239,12 +239,12 @@ class BookmarkNode;
 // http://crbug.com/35967
 - (BOOL)isEmpty;
 
-// Turn on or off pulsing of a bookmark button.
+// Stick or unstick the pulse of a bookmark button.
 // Triggered by the bookmark bubble.
-- (void)setIsContinuousPulsing:(BOOL)flag;
+- (void)setPulseIsStuckOn:(BOOL)flag;
 
-// Return continuous pulse state.
-- (BOOL)isContinuousPulsing;
+// Return pulse sticky state.
+- (BOOL)isPulseStuckOn;
 
 // Return the location in screen coordinates where the remove animation should
 // be displayed.

@@ -100,12 +100,12 @@ BookmarkButton* gDraggedButton = nil; // Weak
   return [self bookmarkNode] ? NO : YES;
 }
 
-- (void)setIsContinuousPulsing:(BOOL)flag {
-  [[self cell] setIsContinuousPulsing:flag];
+- (void)setPulseIsStuckOn:(BOOL)flag {
+  [[self cell] setPulseIsStuckOn:flag];
 }
 
-- (BOOL)isContinuousPulsing {
-  return [[self cell] isContinuousPulsing];
+- (BOOL)isPulseStuckOn {
+  return [[self cell] isPulseStuckOn];
 }
 
 - (NSPoint)screenLocationForRemoveAnimation {

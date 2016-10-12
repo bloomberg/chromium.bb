@@ -83,17 +83,16 @@ TEST_F(GradientButtonCellTest, ContinuousPulseOnOff) {
   GradientButtonCell* cell = [view_ cell];
 
   // On/off
-  EXPECT_FALSE([cell isContinuousPulsing]);
-  [cell setIsContinuousPulsing:YES];
-  EXPECT_TRUE([cell isContinuousPulsing]);
-  EXPECT_TRUE([cell pulsing]);
-  [cell setIsContinuousPulsing:NO];
-  EXPECT_FALSE([cell isContinuousPulsing]);
+  EXPECT_FALSE([cell isPulseStuckOn]);
+  [cell setPulseIsStuckOn:YES];
+  EXPECT_TRUE([cell isPulseStuckOn]);
+  EXPECT_FALSE([cell pulsing]);
+  [cell setPulseIsStuckOn:NO];
+  EXPECT_FALSE([cell isPulseStuckOn]);
 
   // On/safeOff
-  [cell setIsContinuousPulsing:YES];
-  EXPECT_TRUE([cell isContinuousPulsing]);
-  [cell safelyStopPulsing];
+  [cell setPulseIsStuckOn:YES];
+  EXPECT_TRUE([cell isPulseStuckOn]);
 }
 
 // More for valgrind; we don't confirm state change does anything useful.
