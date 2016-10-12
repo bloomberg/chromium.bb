@@ -1,10 +1,11 @@
 # This file should only include tests that we never intend to fix.
-# There should only be 4 categories of tests here:
+# There should only be 6 categories of tests here:
 #   1. Test harness tests.
 #   2. Tests enabled by chromium embedders (e.g. Opera).
 #   3. Tests that apply to some platforms but not others.
 #   4. Tests that are too slow in Debug and so we only want to skip them in Debug.
 #   5. Tests that crash due to resource limitations on some platforms or in Debug.
+#   6. Tests that fail due to Debug rendering variations from Release behavior.
 
 # FIXME: Remove the WontFix keyword and have that be implied. That way, people won't abuse
 # WontFix outside of this file.
@@ -118,8 +119,8 @@ virtual/threaded/animations/transition-and-animation-1.html [ WontFix ]
 virtual/threaded/animations/transition-and-animation-2.html [ WontFix ]
 virtual/threaded/transitions/transition-end-event-multiple-04.html [ WontFix ]
 
-# This test only fails with an ASSERT in Debug build.
-[ Release ] editing/input/orphan-set-selection-range.html [ WontFix ]
+# This test only fails with an ASSERT in Debug build. But it's WontFix for Release, so something's wrong.
+crbug.com/655256 [ Release ] editing/input/orphan-set-selection-range.html [ WontFix ]
 
 # See crbug.com/522326
 imported/wpt/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ WontFix ]
@@ -175,6 +176,11 @@ crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/ove
 
 # Stack overflow crashes on Win
 crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ WontFix ]
+
+# Debug rendering difference only on Win Debug
+crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ WontFix ]
+crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ WontFix ]
+crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ WontFix ]
 
 # Only Windows supports Symbol CMAP encoded fonts.
 crbug.com/627953 [ Android Linux Mac ] fast/text/symbol-cmap.html [ WontFix ]

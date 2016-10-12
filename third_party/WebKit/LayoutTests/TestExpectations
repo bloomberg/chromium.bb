@@ -50,8 +50,6 @@ crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-re
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
-crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
-
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 
 crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
@@ -62,13 +60,9 @@ crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ 
 # when we swith to swiftshader.
 crbug.com/549742 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
 
-crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ Failure ]
-
 crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
 
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
-
-crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ Failure ]
 
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
