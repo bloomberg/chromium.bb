@@ -608,8 +608,7 @@ void XboxController::WriteXboxOneInit() {
 
 //-----------------------------------------------------------------------------
 
-XboxDataFetcher::XboxDataFetcher()
-    : listening_(false), source_(NULL), port_(NULL) {}
+XboxDataFetcher::XboxDataFetcher() : listening_(false), source_(NULL) {}
 
 XboxDataFetcher::~XboxDataFetcher() {
   while (!controllers_.empty()) {
@@ -668,10 +667,10 @@ void XboxDataFetcher::DeviceRemoved(void* context, io_iterator_t iterator) {
 bool XboxDataFetcher::RegisterForNotifications() {
   if (listening_)
     return true;
-  port_ = IONotificationPortCreate(kIOMasterPortDefault);
-  if (!port_)
+  port_.reset(IONotificationPortCreate(kIOMasterPortDefault));
+  if (!port_.is_valid())
     return false;
-  source_ = IONotificationPortGetRunLoopSource(port_);
+  source_ = IONotificationPortGetRunLoopSource(port_.get());
   if (!source_)
     return false;
   CFRunLoopAddSource(CFRunLoopGetCurrent(), source_, kCFRunLoopDefaultMode);
@@ -711,12 +710,10 @@ bool XboxDataFetcher::RegisterForDeviceNotifications(
   // Retain it before each call to IOServiceAddMatchingNotification to keep
   // things balanced.
   CFRetain(matching_dict);
-  io_iterator_t device_added_iter;
   IOReturn ret;
-  ret = IOServiceAddMatchingNotification(port_, kIOFirstMatchNotification,
+  ret = IOServiceAddMatchingNotification(port_.get(), kIOFirstMatchNotification,
                                          matching_dict, DeviceAdded, this,
-                                         &device_added_iter);
-  added_iter->reset(device_added_iter);
+                                         added_iter->InitializeInto());
   if (ret != kIOReturnSuccess) {
     LOG(ERROR) << "Error listening for Xbox controller add events: " << ret;
     return false;
@@ -724,11 +721,9 @@ bool XboxDataFetcher::RegisterForDeviceNotifications(
   DeviceAdded(this, added_iter->get());
 
   CFRetain(matching_dict);
-  io_iterator_t device_removed_iter;
-  ret = IOServiceAddMatchingNotification(port_, kIOTerminatedNotification,
+  ret = IOServiceAddMatchingNotification(port_.get(), kIOTerminatedNotification,
                                          matching_dict, DeviceRemoved, this,
-                                         &device_removed_iter);
-  removed_iter->reset(device_removed_iter);
+                                         removed_iter->InitializeInto());
   if (ret != kIOReturnSuccess) {
     LOG(ERROR) << "Error listening for Xbox controller remove events: " << ret;
     return false;
@@ -743,9 +738,7 @@ void XboxDataFetcher::UnregisterFromNotifications() {
   listening_ = false;
   if (source_)
     CFRunLoopSourceInvalidate(source_);
-  if (port_)
-    IONotificationPortDestroy(port_);
-  port_ = NULL;
+  port_.reset();
 }
 
 XboxController* XboxDataFetcher::ControllerForLocation(UInt32 location_id) {

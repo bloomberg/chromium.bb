@@ -88,19 +88,15 @@ HidServiceMac::HidServiceMac(
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DCHECK(task_runner_.get());
 
-  notify_port_ = IONotificationPortCreate(kIOMasterPortDefault);
+  notify_port_.reset(IONotificationPortCreate(kIOMasterPortDefault));
   CFRunLoopAddSource(CFRunLoopGetMain(),
-                     IONotificationPortGetRunLoopSource(notify_port_),
+                     IONotificationPortGetRunLoopSource(notify_port_.get()),
                      kCFRunLoopDefaultMode);
 
-  io_iterator_t iterator;
-  IOReturn result =
-      IOServiceAddMatchingNotification(notify_port_,
-                                       kIOFirstMatchNotification,
-                                       IOServiceMatching(kIOHIDDeviceKey),
-                                       FirstMatchCallback,
-                                       this,
-                                       &iterator);
+  IOReturn result = IOServiceAddMatchingNotification(
+      notify_port_.get(), kIOFirstMatchNotification,
+      IOServiceMatching(kIOHIDDeviceKey), FirstMatchCallback, this,
+      devices_added_iterator_.InitializeInto());
   if (result != kIOReturnSuccess) {
     HID_LOG(ERROR) << "Failed to listen for device arrival: "
                    << HexErrorCode(result);
@@ -108,16 +104,12 @@ HidServiceMac::HidServiceMac(
   }
 
   // Drain the iterator to arm the notification.
-  devices_added_iterator_.reset(iterator);
   AddDevices();
-  iterator = IO_OBJECT_NULL;
 
-  result = IOServiceAddMatchingNotification(notify_port_,
-                                            kIOTerminatedNotification,
-                                            IOServiceMatching(kIOHIDDeviceKey),
-                                            TerminatedCallback,
-                                            this,
-                                            &iterator);
+  result = IOServiceAddMatchingNotification(
+      notify_port_.get(), kIOTerminatedNotification,
+      IOServiceMatching(kIOHIDDeviceKey), TerminatedCallback, this,
+      devices_removed_iterator_.InitializeInto());
   if (result != kIOReturnSuccess) {
     HID_LOG(ERROR) << "Failed to listen for device removal: "
                    << HexErrorCode(result);
@@ -125,7 +117,6 @@ HidServiceMac::HidServiceMac(
   }
 
   // Drain devices_added_iterator_ to arm the notification.
-  devices_removed_iterator_.reset(iterator);
   RemoveDevices();
   FirstEnumerationComplete();
 }

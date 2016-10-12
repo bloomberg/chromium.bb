@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/scoped_ionotificationportref.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -44,7 +45,7 @@ class HidServiceMac : public HidService {
       io_service_t device);
 
   // Platform notification port.
-  IONotificationPortRef notify_port_;
+  base::mac::ScopedIONotificationPortRef notify_port_;
   base::mac::ScopedIOObject<io_iterator_t> devices_added_iterator_;
   base::mac::ScopedIOObject<io_iterator_t> devices_removed_iterator_;
 

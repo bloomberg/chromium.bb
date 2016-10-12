@@ -14,6 +14,7 @@
 #include <set>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_ionotificationportref.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/mac/scoped_ioplugininterface.h"
 #include "base/macros.h"
@@ -184,7 +185,7 @@ class XboxDataFetcher : public GamepadDataFetcher,
   // port_ owns source_, so this doesn't need to be a ScopedCFTypeRef, but we
   // do need to maintain a reference to it so we can invalidate it.
   CFRunLoopSourceRef source_;
-  IONotificationPortRef port_;
+  base::mac::ScopedIONotificationPortRef port_;
   base::mac::ScopedIOObject<io_iterator_t> xbox_360_device_added_iter_;
   base::mac::ScopedIOObject<io_iterator_t> xbox_360_device_removed_iter_;
   base::mac::ScopedIOObject<io_iterator_t> xbox_one_device_added_iter_;
