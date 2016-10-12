@@ -23,11 +23,6 @@ const base::Feature kDropSyncCredential = {"drop-sync-credential",
 const base::Feature kEnableAutomaticPasswordSaving = {
     "enable-automatic-password-saving", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable supporting of updating password in the password manager on a password
-// change form submit.
-const base::Feature kEnablePasswordChangeSupport = {
-    "enable-password-change-support", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable a context menu item in the password field that allows the user
 // to manually enforce saving of their password.
 const base::Feature kEnablePasswordForceSaving = {

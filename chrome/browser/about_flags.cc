@@ -965,10 +965,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_AUTOMATIC_PASSWORD_SAVING_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnableAutomaticPasswordSaving)},
-    {"enable-password-change-support", IDS_FLAGS_PASSWORD_CHANGE_SUPPORT_NAME,
-     IDS_FLAGS_PASSWORD_CHANGE_SUPPORT_DESCRIPTION, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kEnablePasswordChangeSupport)},
     {"enable-password-force-saving", IDS_FLAGS_PASSWORD_FORCE_SAVING_NAME,
      IDS_FLAGS_PASSWORD_FORCE_SAVING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(
