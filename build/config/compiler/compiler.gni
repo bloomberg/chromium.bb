@@ -78,7 +78,7 @@ declare_args() {
              ((is_linux && (current_cpu == "x64" || current_cpu == "x86" ||
                             current_cpu == "arm" || current_cpu == "mipsel")) ||
               (is_android && (current_cpu == "x86" || current_cpu == "x64" ||
-                              current_cpu == "arm")))
+                              current_cpu == "arm" || current_cpu == "arm64")))
 }
 
 # If it wasn't manually set, set to an appropriate default.
