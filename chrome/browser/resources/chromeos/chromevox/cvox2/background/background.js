@@ -164,6 +164,14 @@ Background = function() {
 
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
       this.onAccessibilityGesture_);
+
+  /**
+   * Maps a non-desktop root automation node to a range position suitable for
+   *     restoration.
+   * @type {WeakMap<AutomationNode, cursors.Range>}
+   * @private
+   */
+  this.focusRecoveryMap_ = new WeakMap();
 };
 
 /**
@@ -208,6 +216,13 @@ Background.GESTURE_NEXT_COMMAND_MAP = {
 
 Background.prototype = {
   __proto__: ChromeVoxState.prototype,
+  /**
+   * Maps the last node with range in a given root.
+   * @type {WeakMap<AutomationNode>}
+   */
+  get focusRecoveryMap() {
+    return this.focusRecoveryMap_;
+  },
 
   /**
    * @override
@@ -680,59 +695,15 @@ Background.prototype = {
   },
 
   /**
-   * Restore the range to the last range that was *not* in the ChromeVox
-   * panel. This is used when the ChromeVox Panel closes.
-   * @param {function()=} opt_callback
-   * @private
+   * Save the current ChromeVox range.
    */
-  restoreCurrentRange_: function(opt_callback) {
-    if (this.savedRange_) {
-      var node = this.savedRange_.start.node;
-      var containingWebView = node;
-      while (containingWebView && containingWebView.role != RoleType.webView)
-        containingWebView = containingWebView.parent;
+  markCurrentRange: function() {
+    if (!this.currentRange)
+      return;
 
-      if (containingWebView) {
-        // Focusing the webView causes a focus change event which steals focus
-        // away from the saved range.
-        var saved = this.savedRange_;
-        var setSavedRange = function(e) {
-          if (e.target.root == saved.start.node.root) {
-          this.navigateToRange(saved, false);
-          opt_callback && opt_callback();
-        }
-          node.root.removeEventListener(EventType.focus, setSavedRange, true);
-        }.bind(this);
-        node.root.addEventListener(EventType.focus, setSavedRange, true);
-        containingWebView.focus();
-      }
-      this.navigateToRange(this.savedRange_);
-      this.savedRange_ = null;
-    }
-  },
-
-  /**
-   * Move ChromeVox without saving any ranges.
-   */
-  startExcursion: function() {
-    this.inExcursion_ = true;
-  },
-
-  /**
-   * Move ChromeVox back to the last saved range.
-   * @param {function()=} opt_callback Called when range has been restored.
-   */
-  endExcursion: function(opt_callback) {
-    this.inExcursion_ = false;
-    this.restoreCurrentRange_(opt_callback);
-  },
-
-  /**
-   * Move ChromeVox back to the last saved range.
-   */
-  saveExcursion: function() {
-    this.savedRange_ =
-        new cursors.Range(this.currentRange_.start, this.currentRange_.end);
+    var root = AutomationUtil.getTopLevelRoot(this.currentRange.start.node);
+    if (root)
+      this.focusRecoveryMap_.set(root, this.currentRange);
   },
 
   /**

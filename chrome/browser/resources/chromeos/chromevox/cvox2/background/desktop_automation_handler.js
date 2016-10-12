@@ -252,6 +252,28 @@ DesktopAutomationHandler.prototype = {
     // views.
     if (evt.eventFrom == '')
       Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
+    if (!node.root)
+      return;
+
+    var root = AutomationUtil.getTopLevelRoot(node.root);
+
+    // If we're crossing out of a root, save it in case it needs recovering.
+    var prevRange = ChromeVoxState.instance.currentRange;
+    var prevNode = prevRange ? prevRange.start.node : null;
+    if (prevNode) {
+    var prevRoot = AutomationUtil.getTopLevelRoot(prevNode);
+      if (prevRoot && prevRoot !== root)
+      ChromeVoxState.instance.focusRecoveryMap.set(prevRoot, prevRange);
+    }
+
+    // If a previous node was saved for this focus, restore it.
+    var savedRange = ChromeVoxState.instance.focusRecoveryMap.get(root);
+    ChromeVoxState.instance.focusRecoveryMap.delete(root);
+    if (savedRange) {
+      ChromeVoxState.instance.navigateToRange(savedRange, false);
+      return;
+    }
+
     this.onEventDefault(new chrome.automation.AutomationEvent(
         EventType.focus, node, evt.eventFrom));
   },
@@ -429,7 +451,7 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onMenuStart: function(evt) {
-    ChromeVoxState.instance.startExcursion();
+    ChromeVoxState.instance.markCurrentRange();
     this.onEventDefault(evt);
   },
 
@@ -439,7 +461,16 @@ DesktopAutomationHandler.prototype = {
    */
   onMenuEnd: function(evt) {
     this.onEventDefault(evt);
-    ChromeVoxState.instance.endExcursion();
+
+    // This is a work around for Chrome context menus not firing a focus event
+    // after you close them.
+    chrome.automation.getFocus(function(focus) {
+      if (focus) {
+        this.onFocus(
+            new chrome.automation.AutomationEvent(
+                EventType.focus, focus, 'page'));
+      }
+    }.bind(this));
   },
 
   /**

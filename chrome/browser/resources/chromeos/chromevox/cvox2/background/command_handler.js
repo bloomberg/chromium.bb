@@ -474,27 +474,21 @@ CommandHandler.onCommand = function(command) {
       }
       break;
     case 'toggleKeyboardHelp':
-      ChromeVoxState.instance.startExcursion();
       (new PanelCommand(PanelCommandType.OPEN_MENUS)).send();
       return false;
     case 'showHeadingsList':
-      ChromeVoxState.instance.startExcursion();
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_heading')).send();
       return false;
     case 'showFormsList':
-      ChromeVoxState.instance.startExcursion();
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_form')).send();
       return false;
     case 'showLandmarksList':
-      ChromeVoxState.instance.startExcursion();
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_landmark')).send();
       return false;
     case 'showLinksList':
-      ChromeVoxState.instance.startExcursion();
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link')).send();
       return false;
     case 'showTablesList':
-      ChromeVoxState.instance.startExcursion();
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'table_strategy')).send();
       return false;
     case 'toggleSearchWidget':

@@ -625,24 +625,33 @@ Panel.getCallbackForCurrentItem = function() {
  * was queued, execute it once focus is restored.
  */
 Panel.closeMenusAndRestoreFocus = function() {
-  // Make sure we're not in full-screen mode.
-  window.location = '#';
+  // Watch for the next focus event.
+  var onFocus = function(desktop, evt) {
+    desktop.removeEventListener(chrome.automation.EventType.focus, onFocus);
+    Panel.pendingCallback_ && Panel.pendingCallback_();
+  }.bind(this);
 
-  this.activeMenu_ = null;
+  chrome.automation.getDesktop(function(desktop) {
+    onFocus = /** @type {function(chrome.automation.AutomationEvent)} */(
+        onFocus.bind(this, desktop));
+    desktop.addEventListener(chrome.automation.EventType.focus,
+                             onFocus,
+                             true);
 
-  var bkgnd =
-      chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
-  bkgnd['endExcursion'](Panel.pendingCallback_);
+    // Make sure all menus are cleared to avoid bogous output when we re-open.
+    Panel.clearMenus();
+
+    // Make sure we're not in full-screen mode.
+    window.location = '#';
+
+    this.activeMenu_ = null;
+  });
 };
 
 /**
  * Open the tutorial.
  */
 Panel.onTutorial = function() {
-  var bkgnd =
-      chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
-  bkgnd['startExcursion']();
-
   // Change the url fragment to 'fullscreen', which signals the native
   // host code to make the window fullscreen, revealing the menus.
   window.location = '#fullscreen';

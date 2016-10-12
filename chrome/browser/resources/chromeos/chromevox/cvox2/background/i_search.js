@@ -123,7 +123,6 @@ ISearchUI = function(input) {
   this.onKeyDown = this.onKeyDown.bind(this);
   this.onTextInput = this.onTextInput.bind(this);
 
-  this.background_['startExcursion']();
   input.addEventListener('keydown', this.onKeyDown, true);
   input.addEventListener('textInput', this.onTextInput, true);
 };
@@ -156,12 +155,10 @@ ISearchUI.prototype = {
         break;
       case 'Escape':
         this.pendingSearchId_ = 0;
-        this.background_['endExcursion']();
         Panel.closeMenusAndRestoreFocus();
         return false;
       case 'Enter':
         this.pendingSearchId_ = 0;
-        this.background_['saveExcursion']();
         Panel.closeMenusAndRestoreFocus();
         return false;
       default:
