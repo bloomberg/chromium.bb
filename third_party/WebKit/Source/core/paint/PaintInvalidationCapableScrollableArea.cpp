@@ -38,8 +38,13 @@ static LayoutRect scrollControlPaintInvalidationRect(
   // transform space than their contained box (the scrollbarPaintOffset
   // transform node).
   if (!paintInvalidationRect.isEmpty() &&
-      !RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+      !RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     context.mapLocalRectToPaintInvalidationBacking(box, paintInvalidationRect);
+
+    IntSize adjustment = box.scrollAdjustmentForPaintInvalidation(
+        *context.paintInvalidationContainer);
+    paintInvalidationRect.move(adjustment);
+  }
   return paintInvalidationRect;
 }
 
