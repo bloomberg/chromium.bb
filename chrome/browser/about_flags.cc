@@ -499,17 +499,6 @@ const FeatureEntry::Choice kNtpSwitchToExistingTabChoices[] = {
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationOnlyPersonal[] = {
     {"fetching_personalization", "personal"},
-    {"fetching_host_restrict", "off"},
-};
-const FeatureEntry::FeatureParam
-    kNTPSnippetsFeatureVariationOnlyNonPersonalHostRestricted[] = {
-        {"fetching_personalization", "non_personal"},
-        {"fetching_host_restrict", "on"},
-};
-const FeatureEntry::FeatureParam
-    kNTPSnippetsFeatureVariationOnlyPersonalHostRestricted[] = {
-        {"fetching_personalization", "personal"},
-        {"fetching_host_restrict", "on"},
 };
 
 const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationServer[] = {
@@ -526,13 +515,6 @@ const FeatureEntry::FeatureVariation kNTPSnippetsFeatureVariations[] = {
     {"via ChromeReader (only personalized)",
      kNTPSnippetsFeatureVariationOnlyPersonal,
      arraysize(kNTPSnippetsFeatureVariationOnlyPersonal), nullptr},
-    {"via ChromeReader (only from most visited sites)",
-     kNTPSnippetsFeatureVariationOnlyNonPersonalHostRestricted,
-     arraysize(kNTPSnippetsFeatureVariationOnlyPersonal), nullptr},
-    {"via ChromeReader (only personalized from most visited sites)",
-     kNTPSnippetsFeatureVariationOnlyPersonalHostRestricted,
-     arraysize(kNTPSnippetsFeatureVariationOnlyPersonalHostRestricted),
-     nullptr},
     {"via content suggestion server (backed by ChromeReader)",
      kNTPSnippetsFeatureVariationServer,
      arraysize(kNTPSnippetsFeatureVariationServer), nullptr},
