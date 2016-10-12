@@ -17,8 +17,6 @@
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/time.h"
 #include "components/sync/core/sync_manager.h"
-#include "components/sync/core/user_share.h"
-#include "components/sync/core_impl/change_reorder_buffer.h"
 #include "components/sync/core_impl/debug_info_event_listener.h"
 #include "components/sync/core_impl/js_mutation_event_observer.h"
 #include "components/sync/core_impl/js_sync_encryption_handler_observer.h"
@@ -30,7 +28,9 @@
 #include "components/sync/engine_impl/nudge_handler.h"
 #include "components/sync/engine_impl/sync_engine_event_listener.h"
 #include "components/sync/js/js_backend.h"
+#include "components/sync/syncable/change_reorder_buffer.h"
 #include "components/sync/syncable/directory_change_delegate.h"
+#include "components/sync/syncable/user_share.h"
 #include "net/base/network_change_notifier.h"
 
 class GURL;

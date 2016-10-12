@@ -27,8 +27,8 @@
 //   }
 //
 
-#ifndef COMPONENTS_SYNC_CORE_TEST_TEST_USER_SHARE_H_
-#define COMPONENTS_SYNC_CORE_TEST_TEST_USER_SHARE_H_
+#ifndef COMPONENTS_SYNC_SYNCABLE_TEST_USER_SHARE_H_
+#define COMPONENTS_SYNC_SYNCABLE_TEST_USER_SHARE_H_
 
 #include <stddef.h>
 
@@ -36,7 +36,7 @@
 
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/user_share.h"
+#include "components/sync/syncable/user_share.h"
 
 namespace syncer {
 
@@ -90,4 +90,4 @@ class TestUserShare {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_TEST_TEST_USER_SHARE_H_
+#endif  // COMPONENTS_SYNC_SYNCABLE_TEST_USER_SHARE_H_

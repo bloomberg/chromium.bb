@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core_impl/change_reorder_buffer.h"
+#include "components/sync/syncable/change_reorder_buffer.h"
 
 #include <limits>
 #include <queue>
 #include <set>
 #include <utility>  // for pair<>
 
-#include "components/sync/core/base_node.h"
-#include "components/sync/core/base_transaction.h"
+#include "components/sync/syncable/base_node.h"
+#include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
 

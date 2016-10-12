@@ -7,8 +7,8 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/read_node.h"
-#include "components/sync/core/read_transaction.h"
+#include "components/sync/syncable/read_node.h"
+#include "components/sync/syncable/read_transaction.h"
 
 // This file contains tests that exercise enabling and disabling data
 // types.

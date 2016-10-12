@@ -10,10 +10,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
 #include "components/sync/core/configure_reason.h"
-#include "components/sync/core/read_transaction.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/directory.h"
+#include "components/sync/syncable/read_transaction.h"
 
 namespace syncer {
 

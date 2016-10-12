@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/read_node.h"
+#include "components/sync/syncable/read_node.h"
 
 #include "base/logging.h"
-#include "components/sync/core/base_transaction.h"
+#include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
 #include "components/sync/syncable/syncable_util.h"

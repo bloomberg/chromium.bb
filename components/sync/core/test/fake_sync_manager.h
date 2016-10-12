@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "components/sync/core/sync_manager.h"
-#include "components/sync/core/test/test_user_share.h"
+#include "components/sync/syncable/test_user_share.h"
 
 class GURL;
 

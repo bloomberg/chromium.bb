@@ -18,7 +18,6 @@
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/core/activation_context.h"
-#include "components/sync/core/base_transaction.h"
 #include "components/sync/core/internal_components_factory.h"
 #include "components/sync/core/internal_components_factory_impl.h"
 #include "components/sync/core/sync_manager_factory.h"
@@ -30,6 +29,7 @@
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/engine/net/http_bridge.h"
 #include "components/sync/engine/sync_string_conversions.h"
+#include "components/sync/syncable/base_transaction.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.

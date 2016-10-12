@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_WRITE_NODE_H_
-#define COMPONENTS_SYNC_CORE_WRITE_NODE_H_
+#ifndef COMPONENTS_SYNC_SYNCABLE_WRITE_NODE_H_
+#define COMPONENTS_SYNC_SYNCABLE_WRITE_NODE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,7 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/base_node.h"
+#include "components/sync/syncable/base_node.h"
 
 namespace sync_pb {
 class BookmarkSpecifics;
@@ -179,4 +179,4 @@ class WriteNode : public BaseNode {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_WRITE_NODE_H_
+#endif  // COMPONENTS_SYNC_SYNCABLE_WRITE_NODE_H_

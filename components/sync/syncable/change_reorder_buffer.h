@@ -6,8 +6,8 @@
 // actions to achieve the ordering constraint required by the SyncObserver
 // interface of the SyncAPI.
 
-#ifndef COMPONENTS_SYNC_CORE_IMPL_CHANGE_REORDER_BUFFER_H_
-#define COMPONENTS_SYNC_CORE_IMPL_CHANGE_REORDER_BUFFER_H_
+#ifndef COMPONENTS_SYNC_SYNCABLE_CHANGE_REORDER_BUFFER_H_
+#define COMPONENTS_SYNC_SYNCABLE_CHANGE_REORDER_BUFFER_H_
 
 #include <stdint.h>
 
@@ -17,8 +17,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "components/sync/core/change_record.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/syncable/change_record.h"
 
 namespace syncer {
 
@@ -91,4 +91,4 @@ class ChangeReorderBuffer {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_IMPL_CHANGE_REORDER_BUFFER_H_
+#endif  // COMPONENTS_SYNC_SYNCABLE_CHANGE_REORDER_BUFFER_H_

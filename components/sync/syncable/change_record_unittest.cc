@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/change_record.h"
+#include "components/sync/syncable/change_record.h"
 
 #include <stddef.h>
 

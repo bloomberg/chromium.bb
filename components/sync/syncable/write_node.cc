@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/write_node.h"
+#include "components/sync/syncable/write_node.h"
 
 #include <memory>
 
@@ -10,14 +10,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/sync/base/cryptographer.h"
-#include "components/sync/core/base_transaction.h"
-#include "components/sync/core/write_transaction.h"
 #include "components/sync/core_impl/syncapi_internal.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
+#include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/nigori_util.h"
 #include "components/sync/syncable/syncable_util.h"
+#include "components/sync/syncable/write_transaction.h"
 
 using std::string;
 using std::vector;

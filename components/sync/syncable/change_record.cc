@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/change_record.h"
+#include "components/sync/syncable/change_record.h"
 
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "components/sync/core/base_node.h"
-#include "components/sync/core/read_node.h"
 #include "components/sync/protocol/proto_value_conversions.h"
+#include "components/sync/syncable/base_node.h"
+#include "components/sync/syncable/read_node.h"
 
 namespace syncer {
 

@@ -4,6 +4,7 @@ include_rules = [
   "+components/sync/core",
   "+components/sync/driver",
   "+components/sync/engine",
+  "+components/sync/syncable",
   "+components/sync/js",
   "+google/cacheinvalidation",
   "+jingle/notifier/base",

@@ -5,7 +5,7 @@
 #include "components/sync/driver/data_type_controller.h"
 
 #include "components/sync/base/data_type_histogram.h"
-#include "components/sync/core/user_share.h"
+#include "components/sync/syncable/user_share.h"
 
 namespace syncer {
 

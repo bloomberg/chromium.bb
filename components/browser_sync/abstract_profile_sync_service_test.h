@@ -16,7 +16,7 @@
 #include "base/test/test_message_loop.h"
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/change_record.h"
+#include "components/sync/syncable/change_record.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

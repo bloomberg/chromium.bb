@@ -14,19 +14,19 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
-#include "components/sync/core/base_node.h"
-#include "components/sync/core/change_record.h"
-#include "components/sync/core/read_node.h"
-#include "components/sync/core/read_transaction.h"
-#include "components/sync/core/write_node.h"
-#include "components/sync/core/write_transaction.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/model/local_change_observer.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model/syncable_service.h"
+#include "components/sync/syncable/base_node.h"
+#include "components/sync/syncable/change_record.h"
 #include "components/sync/syncable/entry.h"  // TODO(tim): Bug 123674.
+#include "components/sync/syncable/read_node.h"
+#include "components/sync/syncable/read_transaction.h"
+#include "components/sync/syncable/write_node.h"
+#include "components/sync/syncable/write_transaction.h"
 
 namespace syncer {
 

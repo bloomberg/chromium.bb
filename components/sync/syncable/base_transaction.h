@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_BASE_TRANSACTION_H_
-#define COMPONENTS_SYNC_CORE_BASE_TRANSACTION_H_
+#ifndef COMPONENTS_SYNC_SYNCABLE_BASE_TRANSACTION_H_
+#define COMPONENTS_SYNC_SYNCABLE_BASE_TRANSACTION_H_
 
 #include "base/macros.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/user_share.h"
+#include "components/sync/syncable/user_share.h"
 
 namespace syncer {
 
@@ -58,4 +58,4 @@ class BaseTransaction {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_BASE_TRANSACTION_H_
+#endif  // COMPONENTS_SYNC_SYNCABLE_BASE_TRANSACTION_H_

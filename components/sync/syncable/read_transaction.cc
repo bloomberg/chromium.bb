@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/read_transaction.h"
+#include "components/sync/syncable/read_transaction.h"
 
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/syncable_read_transaction.h"

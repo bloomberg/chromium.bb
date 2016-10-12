@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/user_share.h"
+#include "components/sync/syncable/user_share.h"
 
 #include "components/sync/syncable/directory.h"
 

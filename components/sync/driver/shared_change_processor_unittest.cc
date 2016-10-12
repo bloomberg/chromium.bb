@@ -12,7 +12,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/test/test_user_share.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/generic_change_processor.h"
@@ -23,6 +22,7 @@
 #include "components/sync/model/attachments/attachment_store.h"
 #include "components/sync/model/data_type_error_handler_mock.h"
 #include "components/sync/model/fake_syncable_service.h"
+#include "components/sync/syncable/test_user_share.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -86,7 +86,7 @@
 #include "ui/base/l10n/time_format.h"
 
 #if defined(OS_ANDROID)
-#include "components/sync/core/read_transaction.h"
+#include "components/sync/syncable/read_transaction.h"
 #endif
 
 using sync_sessions::SessionsSyncManager;

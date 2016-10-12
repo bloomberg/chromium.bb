@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_DELETE_JOURNAL_H_
-#define COMPONENTS_SYNC_CORE_DELETE_JOURNAL_H_
+#ifndef COMPONENTS_SYNC_SYNCABLE_DELETE_JOURNAL_H_
+#define COMPONENTS_SYNC_SYNCABLE_DELETE_JOURNAL_H_
 
 #include <stdint.h>
 
@@ -45,4 +45,4 @@ class DeleteJournal {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_DELETE_JOURNAL_H_
+#endif  // COMPONENTS_SYNC_SYNCABLE_DELETE_JOURNAL_H_

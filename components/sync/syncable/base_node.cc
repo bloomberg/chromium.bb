@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/base_node.h"
+#include "components/sync/syncable/base_node.h"
 
 #include <stack>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sync/base/time.h"
-#include "components/sync/core/base_transaction.h"
 #include "components/sync/core_impl/syncapi_internal.h"
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
@@ -20,6 +19,7 @@
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/theme_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
+#include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/syncable_base_transaction.h"

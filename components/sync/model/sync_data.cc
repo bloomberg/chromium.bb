@@ -10,9 +10,9 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "components/sync/core/base_node.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/syncable/base_node.h"
 
 namespace syncer {
 namespace {

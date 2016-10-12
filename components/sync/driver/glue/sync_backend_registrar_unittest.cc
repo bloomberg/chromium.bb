@@ -7,12 +7,12 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "components/sync/core/test/test_user_share.h"
 #include "components/sync/driver/change_processor_mock.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/glue/browser_thread_model_worker.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/engine/passive_model_worker.h"
+#include "components/sync/syncable/test_user_share.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

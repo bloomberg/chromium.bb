@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_WRITE_TRANSACTION_H_
-#define COMPONENTS_SYNC_CORE_WRITE_TRANSACTION_H_
+#ifndef COMPONENTS_SYNC_SYNCABLE_WRITE_TRANSACTION_H_
+#define COMPONENTS_SYNC_SYNCABLE_WRITE_TRANSACTION_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,8 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/sync/core/base_transaction.h"
 #include "components/sync/model/sync_change_processor.h"
+#include "components/sync/syncable/base_transaction.h"
 
 namespace tracked_objects {
 class Location;
@@ -79,4 +79,4 @@ class WriteTransaction : public BaseTransaction {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_WRITE_TRANSACTION_H_
+#endif  // COMPONENTS_SYNC_SYNCABLE_WRITE_TRANSACTION_H_

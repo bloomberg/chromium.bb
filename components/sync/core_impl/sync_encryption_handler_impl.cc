@@ -22,11 +22,6 @@
 #include "components/sync/base/experiments.h"
 #include "components/sync/base/passphrase_type.h"
 #include "components/sync/base/time.h"
-#include "components/sync/core/read_node.h"
-#include "components/sync/core/read_transaction.h"
-#include "components/sync/core/user_share.h"
-#include "components/sync/core/write_node.h"
-#include "components/sync/core/write_transaction.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/protocol/encryption.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
@@ -35,9 +30,14 @@
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/nigori_util.h"
+#include "components/sync/syncable/read_node.h"
+#include "components/sync/syncable/read_transaction.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
 #include "components/sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
+#include "components/sync/syncable/user_share.h"
+#include "components/sync/syncable/write_node.h"
+#include "components/sync/syncable/write_transaction.h"
 
 namespace syncer {
 

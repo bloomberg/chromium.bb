@@ -10,9 +10,9 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "components/sync/core/user_share.h"
 #include "components/sync/driver/change_processor.h"
 #include "components/sync/driver/sync_client.h"
+#include "components/sync/syncable/user_share.h"
 
 namespace syncer {
 

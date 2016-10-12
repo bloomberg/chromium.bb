@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_READ_NODE_H_
-#define COMPONENTS_SYNC_CORE_READ_NODE_H_
+#ifndef COMPONENTS_SYNC_SYNCABLE_READ_NODE_H_
+#define COMPONENTS_SYNC_SYNCABLE_READ_NODE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/base_node.h"
+#include "components/sync/syncable/base_node.h"
 
 namespace syncer {
 
@@ -75,4 +75,4 @@ class ReadNode : public BaseNode {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_READ_NODE_H_
+#endif  // COMPONENTS_SYNC_SYNCABLE_READ_NODE_H_

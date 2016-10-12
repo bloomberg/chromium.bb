@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_BASE_NODE_H_
-#define COMPONENTS_SYNC_CORE_BASE_NODE_H_
+#ifndef COMPONENTS_SYNC_SYNCABLE_BASE_NODE_H_
+#define COMPONENTS_SYNC_SYNCABLE_BASE_NODE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -240,4 +240,4 @@ class BaseNode {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_BASE_NODE_H_
+#endif  // COMPONENTS_SYNC_SYNCABLE_BASE_NODE_H_

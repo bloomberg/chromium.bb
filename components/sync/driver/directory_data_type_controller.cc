@@ -8,10 +8,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/core/user_share.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
+#include "components/sync/syncable/user_share.h"
 
 namespace syncer {
 

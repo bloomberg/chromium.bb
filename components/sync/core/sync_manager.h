@@ -19,7 +19,6 @@
 #include "components/sync/base/invalidation_interface.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
-#include "components/sync/core/change_record.h"
 #include "components/sync/core/configure_reason.h"
 #include "components/sync/core/connection_status.h"
 #include "components/sync/core/internal_components_factory.h"
@@ -31,6 +30,7 @@
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/sync_status.h"
 #include "components/sync/protocol/sync_protocol_error.h"
+#include "components/sync/syncable/change_record.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class GURL;

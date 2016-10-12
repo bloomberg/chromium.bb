@@ -4,9 +4,9 @@
 
 #include "components/sync/core_impl/test/sync_manager_for_profile_sync_test.h"
 
-#include "components/sync/core/test/test_user_share.h"
-#include "components/sync/core/user_share.h"
 #include "components/sync/syncable/directory.h"
+#include "components/sync/syncable/test_user_share.h"
+#include "components/sync/syncable/user_share.h"
 
 namespace syncer {
 
