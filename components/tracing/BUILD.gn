@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 component("tracing") {
@@ -114,5 +115,24 @@ source_set("unit_tests") {
   if (!is_android) {
     sources += [ "browser/trace_config_file_unittest.cc" ]
     deps += [ ":startup_tracing" ]
+  }
+}
+
+test("tracing_perftests") {
+  sources = [
+    "test/perf_test_helpers.cc",
+    "test/perf_test_helpers.h",
+    "test/trace_event_perftest.cc",
+  ]
+  deps = [
+    "//base:base",
+    "//base/test:test_support",
+    "//base/test:test_support_perf",
+    "//testing/gtest",
+    "//testing/perf",
+  ]
+
+  if (is_android) {
+    deps += [ "//testing/android/native_test:native_test_native_code" ]
   }
 }
