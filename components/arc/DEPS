@@ -1,5 +1,4 @@
 include_rules = [
-  "+chromeos/arc",
   "+chromeos/chromeos_switches.h",
   "+chromeos/cryptohome",
   "+chromeos/dbus",
