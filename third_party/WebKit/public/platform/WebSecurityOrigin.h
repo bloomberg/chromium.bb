@@ -120,7 +120,7 @@ class WebSecurityOrigin {
   // embedders, https://crbug.com/490074.
   operator url::Origin() const {
     return isUnique() ? url::Origin()
-                      : url::Origin::UnsafelyCreateOriginWithoutNormalization(
+                      : url::Origin::CreateFromNormalizedTuple(
                             protocol().utf8(), host().utf8(), effectivePort());
   }
 
