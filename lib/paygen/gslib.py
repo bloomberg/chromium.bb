@@ -413,9 +413,18 @@ def Remove(*paths, **kwargs):  # pylint: disable=docstring-misnamed-args
   try:
     RunGsutilCommand(args, failed_exception=RemoveFail, **kwargs)
   except RemoveFail as e:
-    if not (ignore_no_match and 'No URLs matched' in str(e.args[0])):
-      raise
+    should_raise = True
+    msg = str(e.args[0])
 
+    # Sometimes Google Storage glitches and complains about failing to remove a
+    # specific revision of the file.  It ends up getting removed anyway, but it
+    # throws a NotFoundException.
+    if (ignore_no_match and (('No URLs matched' in msg) or
+                             ('NotFoundException:' in msg))):
+      should_raise = False
+
+    if should_raise:
+      raise
 
 def RemoveDirContents(gs_dir_uri):
   """Remove all contents of a directory.

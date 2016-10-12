@@ -220,6 +220,41 @@ class TestGsLib(cros_test_lib.MoxTestCase):
                       gslib.Remove, path)
     self.mox.VerifyAll()
 
+  def testRemoveNotFoundExceptionIgnoreNoMatch(self):
+    """Verify that setting ignore_no_match to True ignores NotFoundExceptions"""
+    path = 'gs://bucket/some/gs/path/that/totally/does/not/exist'
+
+    # Set up the test replay script.
+    cmd = [self.gsutil, 'rm', '-R', path]
+    failure_msg = 'Removing ' + path + '...\nNotFoundException: 404 ' + path
+    self.cmd_result.error = failure_msg
+    error = cros_build_lib.RunCommandError(failure_msg, self.cmd_result)
+    cros_build_lib.RunCommand(cmd, redirect_stdout=True,
+                              redirect_stderr=True).AndRaise(error)
+    self.mox.ReplayAll()
+
+    # Run the test verification.
+    gslib.Remove(path, recurse=True, ignore_no_match=True)
+    self.mox.VerifyAll()
+
+  def testRemoveNotFoundException(self):
+    """Verify that a NotFoundException results in a failure."""
+    path = 'gs://bucket/some/gs/path/that/totally/does/not/exist'
+
+    # Set up the test replay script.
+    cmd = [self.gsutil, 'rm', path]
+    failure_msg = 'Removing ' + path + '...\nNotFoundException: 404 ' + path
+    self.cmd_result.error = failure_msg
+    error = cros_build_lib.RunCommandError(failure_msg, self.cmd_result)
+    for _ix in xrange(gslib.RETRY_ATTEMPTS + 1):
+      cros_build_lib.RunCommand(cmd, redirect_stdout=True,
+                                redirect_stderr=True).AndRaise(error)
+    self.mox.ReplayAll()
+
+    # Run the test verification.
+    self.assertRaises(gslib.RemoveFail, gslib.Remove, path)
+    self.mox.VerifyAll()
+
   def testCreateWithContents(self):
     gs_path = 'gs://chromeos-releases-test/create-with-contents-test'
     contents = 'Stuff with Rocks In'
