@@ -1854,12 +1854,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       pbi->need_resync = 0;
     }
 #if CONFIG_PALETTE
-    if (frame_is_intra_only(cm))
-      cm->allow_screen_content_tools = aom_rb_read_bit(rb);
+    cm->allow_screen_content_tools = aom_rb_read_bit(rb);
 #endif  // CONFIG_PALETTE
   } else {
     cm->intra_only = cm->show_frame ? 0 : aom_rb_read_bit(rb);
-
+#if CONFIG_PALETTE
+    if (cm->intra_only) cm->allow_screen_content_tools = aom_rb_read_bit(rb);
+#endif  // CONFIG_PALETTE
     if (cm->error_resilient_mode) {
       cm->reset_frame_context = RESET_FRAME_CONTEXT_ALL;
     } else {

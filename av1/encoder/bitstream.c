@@ -2026,12 +2026,13 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     write_bitdepth_colorspace_sampling(cm, wb);
     write_frame_size(cm, wb);
 #if CONFIG_PALETTE
-    if (frame_is_intra_only(cm))
-      aom_wb_write_bit(wb, cm->allow_screen_content_tools);
+    aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #endif  // CONFIG_PALETTE
   } else {
     if (!cm->show_frame) aom_wb_write_bit(wb, cm->intra_only);
-
+#if CONFIG_PALETTE
+    if (cm->intra_only) aom_wb_write_bit(wb, cm->allow_screen_content_tools);
+#endif  // CONFIG_PALETTE
     if (!cm->error_resilient_mode) {
       if (cm->intra_only) {
         aom_wb_write_bit(wb,
