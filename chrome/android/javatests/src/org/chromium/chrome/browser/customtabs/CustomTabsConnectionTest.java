@@ -189,7 +189,8 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         assertTrue(mCustomTabsConnection.newSession(token));
 
         Bundle extras = new Bundle();
-        extras.putBoolean(CustomTabsConnection.NO_PRERENDERING_KEY, true);
+        extras.putInt(
+                CustomTabsConnection.DEBUG_OVERRIDE_KEY, CustomTabsConnection.NO_PRERENDERING);
         assertTrue(mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), extras, null));
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -297,6 +298,26 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
                 assertNull(WarmupManager.getInstance().takeSpareWebContents(false, false));
                 String referrer = mCustomTabsConnection.getReferrerForSession(token).getUrl();
                 assertNotNull(mCustomTabsConnection.takePrerenderedUrl(token, URL, referrer));
+            }
+        });
+    }
+
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPrefetchOnlyNoPrerenderHasSpareWebContents() {
+        assertTrue(mCustomTabsConnection.warmup(0));
+        final CustomTabsSessionToken token =
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
+        assertTrue(mCustomTabsConnection.newSession(token));
+
+        Bundle extras = new Bundle();
+        extras.putInt(CustomTabsConnection.DEBUG_OVERRIDE_KEY, CustomTabsConnection.PREFETCH_ONLY);
+        assertTrue(mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), extras, null));
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertSpareWebContentsNotNullAndDestroy();
             }
         });
     }

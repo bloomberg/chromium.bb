@@ -26,6 +26,12 @@ public class MainActivity extends Activity {
     private static final String DEFAULT_URL = "https://www.android.com";
     private static final String DEFAULT_PACKAGE = "com.google.android.apps.chrome";
 
+    // Keep in sync with the same constants in CustomTabsConnection.
+    private static final String DEBUG_OVERRIDE_KEY =
+            "android.support.customtabs.maylaunchurl.DEBUG_OVERRIDE";
+    private static final int NO_PRERENDERING = 1;
+    private static final int PREFETCH_ONLY = 2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,9 +150,7 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 Bundle extras = new Bundle();
-                extras.putBoolean(
-                        "android.support.customtabs.maylaunchurl.NO_PRERENDERING",
-                        prerenderMode == 0);
+                if (prerenderMode == 0) extras.putInt(DEBUG_OVERRIDE_KEY, NO_PRERENDERING);
                 session.mayLaunchUrl(uri, extras, null);
                 handler.postDelayed(launchRunnable, delayToLaunchUrl);
             }

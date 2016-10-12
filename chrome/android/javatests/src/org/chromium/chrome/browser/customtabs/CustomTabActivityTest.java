@@ -860,7 +860,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         assertTrue(connection.newSession(token));
         Bundle extras = new Bundle();
-        extras.putBoolean(CustomTabsConnection.NO_PRERENDERING_KEY, true);
+        extras.putInt(
+                CustomTabsConnection.DEBUG_OVERRIDE_KEY, CustomTabsConnection.NO_PRERENDERING);
         assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), extras, null));
         try {
             startCustomTabActivityWithIntent(intent);
@@ -1330,7 +1331,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         Bundle extras = null;
         if (noPrerendering) {
             extras = new Bundle();
-            extras.putBoolean(CustomTabsConnection.NO_PRERENDERING_KEY, true);
+            extras.putInt(
+                    CustomTabsConnection.DEBUG_OVERRIDE_KEY, CustomTabsConnection.NO_PRERENDERING);
         }
         assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), extras, null));
         try {
@@ -1448,10 +1450,11 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         CriteriaHelper.pollUiThread(new Criteria("No Prerender") {
             @Override
             public boolean isSatisfied() {
-                return connection.mPrerender != null && connection.mPrerender.mWebContents != null
+                return connection.mSpeculation != null
+                        && connection.mSpeculation.webContents != null
                         && ExternalPrerenderHandler.hasPrerenderedAndFinishedLoadingUrl(
                                    Profile.getLastUsedProfile(), url,
-                                   connection.mPrerender.mWebContents);
+                                   connection.mSpeculation.webContents);
             }
         });
     }
