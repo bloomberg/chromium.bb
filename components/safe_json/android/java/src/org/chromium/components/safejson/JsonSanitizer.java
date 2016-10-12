@@ -99,6 +99,8 @@ public class JsonSanitizer {
                     case END_DOCUMENT:
                         end = true;
                         break;
+                    default:
+                        assert false : token;
                 }
             }
             result = stringWriter.toString();
