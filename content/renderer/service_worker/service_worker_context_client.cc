@@ -472,6 +472,12 @@ void ServiceWorkerContextClient::willDestroyWorkerContext(
     it.GetCurrentValue()->Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
                               base::Time::Now());
   }
+  // Aborts the all pending fetch event callbacks.
+  for (WorkerContextData::FetchEventCallbacksMap::iterator it(
+           &context_->fetch_event_callbacks);
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
+  }
 
   // We have to clear callbacks now, as they need to be freed on the
   // same thread.
