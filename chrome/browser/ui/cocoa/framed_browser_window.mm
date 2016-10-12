@@ -33,6 +33,16 @@
 // - close/min in the background don't bring the window forward
 // - rollover effects work correctly
 
+// The NSLayoutConstraint class hierarchy only exists in the 10.11 SDK. When
+// targeting something lower, constraintEqualToAnchor:constant: needs to be
+// invoked using duck typing.
+#if !defined(MAC_OS_X_VERSION_10_11) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
+@interface NSObject (NSLayoutConstraint)
+- (NSLayoutConstraint*)constraintEqualToAnchor:(id)anchor constant:(CGFloat)c;
+@end
+#endif
+
 namespace {
 
 // Size of the gradient. Empirically determined so that the gradient looks
@@ -265,8 +275,16 @@ const CGFloat kWindowGradientHeight = 24.0;
     leadingTargetAnchor = [[button superview] rightAnchor];
     leadingOffset = -leadingOffset;
   }
-  [[leadingSourceAnchor constraintEqualToAnchor:leadingTargetAnchor
-                                       constant:leadingOffset] setActive:YES];
+
+#if !defined(MAC_OS_X_VERSION_10_11) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
+  id leadingSourceAnchorDuck = leadingSourceAnchor;
+#else
+  NSLayoutXAxisAnchor* leadingSourceAnchorDuck = leadingSourceAnchor;
+#endif
+  [[leadingSourceAnchorDuck constraintEqualToAnchor:leadingTargetAnchor
+                                           constant:leadingOffset]
+      setActive:YES];
 }
 
 - (void)adjustCloseButton:(NSNotification*)notification {

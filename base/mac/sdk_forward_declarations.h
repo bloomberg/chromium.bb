@@ -267,9 +267,7 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
 #if !defined(MAC_OS_X_VERSION_10_11) || \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
 
-@interface NSLayoutXAxisAnchor : NSObject
-- (NSLayoutConstraint*)constraintEqualToAnchor:(id)anchor constant:(CGFloat)c;
-@end
+@class NSLayoutXAxisAnchor;
 
 @interface NSView (ElCapitanSDK)
 @property(readonly, strong) NSLayoutXAxisAnchor* leftAnchor;
