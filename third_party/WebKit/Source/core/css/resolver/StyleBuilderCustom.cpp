@@ -954,8 +954,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyVariable(
     const CSSValue* parsedValue =
         declaration.value()->parseForSyntax(registration->syntax());
     if (parsedValue) {
-      parsedValue = &StyleBuilderConverter::convertRegisteredPropertyValue(
-          state, *parsedValue);
       DCHECK(parsedValue);
       if (isInheritedProperty)
         state.style()->setResolvedInheritedVariable(name, declaration.value(),

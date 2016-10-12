@@ -1801,6 +1801,9 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state,
           state.style()->getFontDescription())
     applyInheritedOnly = false;
 
+  // Registered custom properties are computed after high priority properties.
+  CSSVariableResolver::computeRegisteredVariables(state);
+
   // Now do the normal priority UA properties.
   applyMatchedProperties<LowPropertyPriority>(state, matchResult.uaRules(),
                                               false, applyInheritedOnly);

@@ -35,6 +35,8 @@ class CSSVariableResolver {
       const CSSValue&,
       bool disallowAnimationTainted);
 
+  static void computeRegisteredVariables(const StyleResolverState&);
+
   DECLARE_TRACE();
 
  private:
@@ -82,7 +84,6 @@ class CSSVariableResolver {
   PassRefPtr<CSSVariableData> resolveCustomProperty(AtomicString name,
                                                     const CSSVariableData&);
 
-  const StyleResolverState& m_styleResolverState;
   StyleInheritedVariables* m_inheritedVariables;
   StyleNonInheritedVariables* m_nonInheritedVariables;
   Member<const PropertyRegistry> m_registry;
