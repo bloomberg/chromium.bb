@@ -162,6 +162,10 @@ bool IsDescendantOf(const BookmarkNode* node, const BookmarkNode* root);
 bool HasDescendantsOf(const std::vector<const BookmarkNode*>& list,
                       const BookmarkNode* root);
 
+// Returns the parent to add new nodes to, never returns null (as long as
+// the model is loaded).
+const BookmarkNode* GetParentForNewNodes(BookmarkModel* model);
+
 }  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_UTILS_H_

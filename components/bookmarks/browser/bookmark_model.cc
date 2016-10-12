@@ -168,13 +168,6 @@ void BookmarkModel::Load(
   store_->LoadBookmarks(CreateLoadDetails(), ui_task_runner);
 }
 
-const BookmarkNode* BookmarkModel::GetParentForNewNodes() {
-  std::vector<const BookmarkNode*> nodes =
-      GetMostRecentlyModifiedUserFolders(this, 1);
-  DCHECK(!nodes.empty());  // This list is always padded with default folders.
-  return nodes[0];
-}
-
 void BookmarkModel::AddObserver(BookmarkModelObserver* observer) {
   observers_.AddObserver(observer);
 }

@@ -113,10 +113,6 @@ class BookmarkModel : public BookmarkUndoProvider,
     return node && (node == &root_ || node->parent() == &root_);
   }
 
-  // Returns the parent the last node was added to. This never returns NULL
-  // (as long as the model is loaded).
-  const BookmarkNode* GetParentForNewNodes();
-
   void AddObserver(BookmarkModelObserver* observer);
   void RemoveObserver(BookmarkModelObserver* observer);
 

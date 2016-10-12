@@ -206,6 +206,21 @@ void GetBookmarksMatchingPropertiesImpl(
   }
 }
 
+#if defined(OS_ANDROID)
+// Returns whether or not a bookmark model contains any bookmarks aside of the
+// permanent nodes.
+bool HasUserCreatedBookmarks(BookmarkModel* model) {
+  const BookmarkNode* root_node = model->root_node();
+
+  for (int i = 0; i < root_node->child_count(); ++i) {
+    const BookmarkNode* node = root_node->GetChild(i);
+    if (node->child_count() > 0)
+      return true;
+  }
+  return false;
+}
+#endif
+
 }  // namespace
 
 QueryFields::QueryFields() {}
@@ -498,7 +513,7 @@ void AddIfNotBookmarked(BookmarkModel* model,
   if (IsBookmarkedByUser(model, url))
     return;  // Nothing to do, a user bookmark with that url already exists.
   model->client()->RecordAction(base::UserMetricsAction("BookmarkAdded"));
-  const BookmarkNode* parent = model->GetParentForNewNodes();
+  const BookmarkNode* parent = GetParentForNewNodes(model);
   model->AddURL(parent, parent->child_count(), title, url);
 }
 
@@ -567,6 +582,17 @@ bool HasDescendantsOf(const std::vector<const BookmarkNode*>& list,
       return true;
   }
   return false;
+}
+
+const BookmarkNode* GetParentForNewNodes(BookmarkModel* model) {
+#if defined(OS_ANDROID)
+  if (!HasUserCreatedBookmarks(model))
+    return model->mobile_node();
+#endif
+  std::vector<const BookmarkNode*> nodes =
+      GetMostRecentlyModifiedUserFolders(model, 1);
+  DCHECK(!nodes.empty());  // This list is always padded with default folders.
+  return nodes[0];
 }
 
 }  // namespace bookmarks

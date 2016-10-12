@@ -873,26 +873,43 @@ TEST_F(BookmarkModelTest, Copy) {
             actual_model_string);
 }
 
+// Tests the default node if no bookmarks have been added yet
+TEST_F(BookmarkModelTest, ParentForNewNodesWithEmptyModel) {
+#if defined(OS_ANDROID)
+  ASSERT_EQ(model_->mobile_node(), GetParentForNewNodes(model_.get()));
+#else
+  ASSERT_EQ(model_->bookmark_bar_node(), GetParentForNewNodes(model_.get()));
+#endif
+}
+
+#if defined(OS_ANDROID)
+// Tests that the bookmark_bar_node can still be returned even on Android in
+// case the last bookmark was added to it.
+TEST_F(BookmarkModelTest, ParentCanBeBookmarkBarOnAndroid) {
+  const base::string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+
+  model_->AddURL(model_->bookmark_bar_node(), 0, title, url);
+  ASSERT_EQ(model_->bookmark_bar_node(), GetParentForNewNodes(model_.get()));
+}
+#endif
+
 // Tests that adding a URL to a folder updates the last modified time.
 TEST_F(BookmarkModelTest, ParentForNewNodes) {
-  ASSERT_EQ(model_->bookmark_bar_node(), model_->GetParentForNewNodes());
-
   const base::string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
 
   model_->AddURL(model_->other_node(), 0, title, url);
-  ASSERT_EQ(model_->other_node(), model_->GetParentForNewNodes());
+  ASSERT_EQ(model_->other_node(), GetParentForNewNodes(model_.get()));
 }
 
 // Tests that adding a URL to a folder updates the last modified time.
 TEST_F(BookmarkModelTest, ParentForNewMobileNodes) {
-  ASSERT_EQ(model_->bookmark_bar_node(), model_->GetParentForNewNodes());
-
   const base::string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
 
   model_->AddURL(model_->mobile_node(), 0, title, url);
-  ASSERT_EQ(model_->mobile_node(), model_->GetParentForNewNodes());
+  ASSERT_EQ(model_->mobile_node(), GetParentForNewNodes(model_.get()));
 }
 
 // Make sure recently modified stays in sync when adding a URL.
