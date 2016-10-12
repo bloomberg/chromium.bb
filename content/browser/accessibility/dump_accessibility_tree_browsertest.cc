@@ -1080,6 +1080,12 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("input-text.html"));
 }
 
+// Fails on Android GN bot, see crbug.com/569542.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       MAYBE(AccessibilityInputTextReadOnly)) {
+  RunHtmlTest(FILE_PATH_LITERAL("input-text-read-only.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityInputTextNameCalc) {
   RunHtmlTest(FILE_PATH_LITERAL("input-text-name-calc.html"));
@@ -1349,7 +1355,12 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTextarea) {
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-    AccessibilityTextareaWithSelection) {
+                       AccessibilityTextareaReadOnly) {
+  RunHtmlTest(FILE_PATH_LITERAL("textarea-read-only.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityTextareaWithSelection) {
   RunHtmlTest(FILE_PATH_LITERAL("textarea-with-selection.html"));
 }
 

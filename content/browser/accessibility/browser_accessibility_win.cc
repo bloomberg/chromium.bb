@@ -5438,10 +5438,13 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_TEXT_FIELD:
     case ui::AX_ROLE_SEARCH_BOX:
       ia_role = ROLE_SYSTEM_TEXT;
-      if (HasState(ui::AX_STATE_MULTILINE))
+      if (HasState(ui::AX_STATE_MULTILINE)) {
         ia2_state |= IA2_STATE_MULTI_LINE;
-      else
+      } else {
         ia2_state |= IA2_STATE_SINGLE_LINE;
+      }
+      if (HasState(ui::AX_STATE_READ_ONLY))
+        ia_state |= STATE_SYSTEM_READONLY;
       ia2_state |= IA2_STATE_SELECTABLE_TEXT;
       break;
     case ui::AX_ROLE_ABBR:
@@ -5496,11 +5499,11 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   // Compute the final value of READONLY for MSAA.
   //
   // We always set the READONLY state for elements that have the
-  // aria-readonly attribute and for a few roles (in the switch above).
-  // We clear the READONLY state on focusable controls and on a document.
-  // Everything else, the majority of objects, do not have this state set.
-  if (HasState(ui::AX_STATE_FOCUSABLE) &&
-      ia_role != ROLE_SYSTEM_DOCUMENT) {
+  // aria-readonly attribute and for a few roles (in the switch above),
+  // including read-only text fields.
+  // The majority of focusable controls should not have the read-only state set.
+  if (HasState(ui::AX_STATE_FOCUSABLE) && ia_role != ROLE_SYSTEM_DOCUMENT &&
+      ia_role != ROLE_SYSTEM_TEXT) {
     ia_state &= ~(STATE_SYSTEM_READONLY);
   }
   if (!HasState(ui::AX_STATE_READ_ONLY))
