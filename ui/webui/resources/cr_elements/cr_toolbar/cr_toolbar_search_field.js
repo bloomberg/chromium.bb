@@ -100,8 +100,8 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  hideSearch_: function(e) {
-    this.showingSearch = false;
-    e.stopPropagation();
+  clearSearch_: function(e) {
+    this.setValue('');
+    this.getSearchInput().focus();
   }
 });

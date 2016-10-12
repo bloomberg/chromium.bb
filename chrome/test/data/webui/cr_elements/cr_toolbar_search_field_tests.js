@@ -52,6 +52,19 @@ cr.define('cr_toolbar_search_field', function() {
         assertNotEquals(field.$.searchInput, field.root.activeElement);
       });
 
+      test('clear search button clears and refocuses input', function() {
+        MockInteractions.tap(field);
+        simulateSearch('query1');
+        Polymer.dom.flush();
+
+        var clearSearch = field.$$('#clearSearch');
+        clearSearch.focus();
+        MockInteractions.tap(clearSearch);
+        assertTrue(field.showingSearch);
+        assertEquals('', field.getValue());
+        assertEquals(field.$.searchInput, field.root.activeElement);
+      });
+
       test('notifies on new searches', function() {
         MockInteractions.tap(field);
         simulateSearch('query1');
@@ -59,7 +72,7 @@ cr.define('cr_toolbar_search_field', function() {
         assertEquals('query1', field.getValue());
 
         MockInteractions.tap(field.$$('#clearSearch'));
-        assertFalse(field.showingSearch);
+        assertTrue(field.showingSearch);
         assertEquals('', field.getValue());
 
         simulateSearch('query2');
@@ -98,9 +111,6 @@ cr.define('cr_toolbar_search_field', function() {
         var clearSearch = field.$$('#clearSearch');
         assertFalse(clearSearch.hidden);
         assertTrue(field.showingSearch);
-
-        MockInteractions.tap(clearSearch);
-        assertFalse(field.showingSearch);
       });
     });
   }

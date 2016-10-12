@@ -3279,7 +3279,7 @@ input[type='search']::-webkit-search-decoration, input[type='search']::-webkit-s
       <input is="iron-input" id="searchInput" type="search" on-blur="onInputBlur_" incremental="" autofocus="">
     </paper-input-container>
     <template is="dom-if" if="[[hasSearchText_]]">
-      <paper-icon-button icon="cr:cancel" id="clearSearch" title="[[clearLabel]]" on-tap="hideSearch_">
+      <paper-icon-button icon="cr:cancel" id="clearSearch" title="[[clearLabel]]" on-tap="clearSearch_">
       </paper-icon-button>
     </template>
   </template>
