@@ -306,6 +306,8 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
     case DownloadItem::CANCELLED:
       Java_DownloadController_onDownloadCancelled(
           env, GetJavaObject()->Controller(env), jguid);
+      DownloadController::RecordDownloadCancelReason(
+          DownloadController::CANCEL_REASON_OTHER_NATIVE_RESONS);
       break;
     case DownloadItem::INTERRUPTED:
       // When device loses/changes network, we get a NETWORK_TIMEOUT,

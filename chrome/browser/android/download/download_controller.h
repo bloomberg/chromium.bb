@@ -61,6 +61,7 @@ class DownloadController : public DownloadControllerBase {
     CANCEL_REASON_DANGEROUS_DOWNLOAD_INFOBAR_DISMISSED,
     CANCEL_REASON_NO_EXTERNAL_STORAGE,
     CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET,
+    CANCEL_REASON_OTHER_NATIVE_RESONS,
     CANCEL_REASON_MAX
   };
   static void RecordDownloadCancelReason(DownloadCancelReason reason);
