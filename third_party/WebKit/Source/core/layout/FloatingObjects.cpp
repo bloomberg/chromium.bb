@@ -73,8 +73,7 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject,
                                const LayoutRect& frameRect,
                                bool shouldPaint,
                                bool isDescendant,
-                               bool isLowestNonOverhangingFloatInChild,
-                               bool performingUnsafeClone)
+                               bool isLowestNonOverhangingFloatInChild)
     : m_layoutObject(layoutObject),
       m_originatingLine(nullptr),
       m_frameRect(frameRect),
@@ -87,16 +86,7 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject,
       m_isInPlacedTree(false)
 #endif
 {
-  m_shouldPaint = shouldPaint;
-  // TODO(chrishtr): Avoid the following hack when performing an unsafe clone.
-  // This avoids a use-after-free bug due to the fact that we sometimes fail to
-  // remove floats from their container when detaching (crbug.com/619380).
-  // This is actually a bug in the floats detach machinery, which needs to be
-  // fixed, in which case this workaround can be removed. In any case, it should
-  // be safe because moving floats from one owner to another should cause
-  // layout, which will in turn update the m_shouldPaint property.
-  if (!performingUnsafeClone)
-    m_shouldPaint = m_shouldPaint || shouldPaintForCompositedLayoutPart();
+  m_shouldPaint = shouldPaint || shouldPaintForCompositedLayoutPart();
 }
 
 bool FloatingObject::shouldPaintForCompositedLayoutPart() {
@@ -144,9 +134,9 @@ std::unique_ptr<FloatingObject> FloatingObject::copyToNewContainer(
 }
 
 std::unique_ptr<FloatingObject> FloatingObject::unsafeClone() const {
-  std::unique_ptr<FloatingObject> cloneObject = wrapUnique(
-      new FloatingObject(layoutObject(), getType(), m_frameRect, m_shouldPaint,
-                         m_isDescendant, false, true));
+  std::unique_ptr<FloatingObject> cloneObject =
+      wrapUnique(new FloatingObject(layoutObject(), getType(), m_frameRect,
+                                    m_shouldPaint, m_isDescendant, false));
   cloneObject->m_isPlaced = m_isPlaced;
   return cloneObject;
 }

@@ -124,8 +124,12 @@ void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase,
     anonBlockHere->deleteLineBoxTree();
     anonBlockHere->destroy();
   }
-  // Move all remaining children normally.
-  moveChildrenTo(toBase, firstChild(), beforeChild);
+  // Move all remaining children normally. If moving all children, include our
+  // float list.
+  if (!beforeChild)
+    moveAllChildrenIncludingFloatsTo(toBase, toBase->hasLayer() || hasLayer());
+  else
+    moveChildrenTo(toBase, firstChild(), beforeChild, toBase->children());
 }
 
 ETextAlign LayoutRubyBase::textAlignmentForLine(

@@ -137,8 +137,7 @@ class FloatingObject {
                  const LayoutRect&,
                  bool shouldPaint,
                  bool isDescendant,
-                 bool isLowestNonOverhangingFloatInChild,
-                 bool performingUnsafeClone = false);
+                 bool isLowestNonOverhangingFloatInChild);
 
   bool shouldPaintForCompositedLayoutPart();
 
