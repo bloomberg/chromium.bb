@@ -23,7 +23,7 @@ CompositorWorkerGlobalScope* CompositorWorkerGlobalScope::create(
   CompositorWorkerGlobalScope* context = new CompositorWorkerGlobalScope(
       startupData->m_scriptURL, startupData->m_userAgent, thread, timeOrigin,
       std::move(startupData->m_starterOriginPrivilegeData),
-      startupData->m_workerClients.release());
+      startupData->m_workerClients);
   context->applyContentSecurityPolicyFromVector(
       *startupData->m_contentSecurityPolicyHeaders);
   if (!startupData->m_referrerPolicy.isNull())

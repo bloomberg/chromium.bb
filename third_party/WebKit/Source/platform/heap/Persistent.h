@@ -454,6 +454,11 @@ class CrossThreadPersistent
 
   T* atomicGet() { return Parent::atomicGet(); }
 
+  // Instead of using release(), assign then clear() instead.
+  // Using release() with per thread heap enabled can cause the object to be
+  // destroyed before assigning it to a new handle.
+  T* release() = delete;
+
   template <typename U>
   CrossThreadPersistent& operator=(U* other) {
     Parent::operator=(other);

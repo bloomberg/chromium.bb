@@ -53,7 +53,7 @@ SharedWorkerThread::SharedWorkerThread(
     : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy),
       m_workerBackingThread(
           WorkerBackingThread::create("SharedWorker Thread",
-                                      BlinkGC::MainThreadHeapMode)),
+                                      BlinkGC::PerThreadHeapMode)),
       m_name(name.isolatedCopy()) {}
 
 SharedWorkerThread::~SharedWorkerThread() {}

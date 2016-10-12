@@ -54,7 +54,7 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::create(
   DedicatedWorkerGlobalScope* context = new DedicatedWorkerGlobalScope(
       startupData->m_scriptURL, startupData->m_userAgent, thread, timeOrigin,
       std::move(startupData->m_starterOriginPrivilegeData),
-      startupData->m_workerClients.release());
+      startupData->m_workerClients);
   context->applyContentSecurityPolicyFromVector(
       *startupData->m_contentSecurityPolicyHeaders);
   context->setWorkerSettings(std::move(startupData->m_workerSettings));

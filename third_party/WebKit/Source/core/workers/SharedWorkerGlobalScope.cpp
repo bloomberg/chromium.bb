@@ -60,7 +60,7 @@ SharedWorkerGlobalScope* SharedWorkerGlobalScope::create(
   SharedWorkerGlobalScope* context = new SharedWorkerGlobalScope(
       name, startupData->m_scriptURL, startupData->m_userAgent, thread,
       std::move(startupData->m_starterOriginPrivilegeData),
-      startupData->m_workerClients.release());
+      startupData->m_workerClients);
   context->applyContentSecurityPolicyFromVector(
       *startupData->m_contentSecurityPolicyHeaders);
   context->setWorkerSettings(std::move(startupData->m_workerSettings));
