@@ -69,9 +69,9 @@ float minAudioBufferSampleRate() {
 }
 
 float maxAudioBufferSampleRate() {
-  // Windows can support audio sampling rates this high, so allow AudioBuffer
-  // rates this high as well.
-  return 192000;
+  // <video> tags support sample rates up 384 kHz so audio context
+  // should too.
+  return 384000;
 }
 }  // namespace AudioUtilities
 

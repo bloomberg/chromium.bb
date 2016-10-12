@@ -111,7 +111,7 @@ OfflineAudioContext* OfflineAudioContext::create(
   // fairly arbitrary.
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, offlineContextSampleRateHistogram,
-      ("WebAudio.OfflineAudioContext.SampleRate", 3000, 192000, 50));
+      ("WebAudio.OfflineAudioContext.SampleRate384kHz", 3000, 384000, 50));
 
   offlineContextChannelCountHistogram.sample(numberOfChannels);
   offlineContextLengthHistogram.count(numberOfFrames);

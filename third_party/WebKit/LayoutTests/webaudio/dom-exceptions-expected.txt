@@ -9,10 +9,13 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS context.createBuffer(99, 1, context.sampleRate) threw exception NotSupportedError: Failed to execute 'createBuffer' on 'BaseAudioContext': The number of channels provided (99) is outside the range [1, 32]..
 PASS context.createBuffer(0, 1, context.sampleRate) threw exception NotSupportedError: Failed to execute 'createBuffer' on 'BaseAudioContext': The number of channels provided (0) is outside the range [1, 32]..
-PASS context.createBuffer(1, 1, 1) threw exception NotSupportedError: Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (1) is outside the range [3000, 192000]..
-PASS context.createBuffer(1, 1, 1e6) threw exception NotSupportedError: Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (1.00000e+6) is outside the range [3000, 192000]..
+PASS context.createBuffer(1, 1, 1) threw exception NotSupportedError: Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (1) is outside the range [3000, 384000]..
+PASS context.createBuffer(1, 1, 2999) threw exception NotSupportedError: Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (2999) is outside the range [3000, 384000]..
+PASS context.createBuffer(1, 1, 384001) threw exception NotSupportedError: Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (384001) is outside the range [3000, 384000]..
+PASS context.createBuffer(1, 1, 1e6) threw exception NotSupportedError: Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (1.00000e+6) is outside the range [3000, 384000]..
 PASS context.createBuffer(1, 1, 3000) did not throw exception.
 PASS context.createBuffer(1, 1, 192000) did not throw exception.
+PASS context.createBuffer(1, 1, 384000) did not throw exception.
 PASS context.createBuffer(1, 0, context.sampleRate) threw exception NotSupportedError: Failed to execute 'createBuffer' on 'BaseAudioContext': The number of frames provided (0) is less than or equal to the minimum bound (0)..
 PASS context.createBuffer(new ArrayBuffer(100), true) threw exception TypeError: Failed to execute 'createBuffer' on 'BaseAudioContext': 3 arguments required, but only 2 present..
 PASS context.createMediaElementSource(null) threw exception TypeError: Failed to execute 'createMediaElementSource' on 'BaseAudioContext': parameter 1 is not of type 'HTMLMediaElement'..
@@ -76,8 +79,8 @@ PASS node.getFrequencyResponse(new Float32Array(1), null, new Float32Array(1)) t
 PASS node.getFrequencyResponse(new Float32Array(1), new Float32Array(1), null) threw exception TypeError: Failed to execute 'getFrequencyResponse' on 'BiquadFilterNode': parameter 3 is not of type 'Float32Array'..
 PASS new OfflineAudioContext(32, 100, context.sampleRate) did not throw exception.
 PASS new OfflineAudioContext(99, 100, context.sampleRate) threw exception IndexSizeError: Failed to construct 'OfflineAudioContext': The number of channels provided (99) is outside the range [0, 32]..
-PASS new OfflineAudioContext(1, 100, 1) threw exception IndexSizeError: Failed to construct 'OfflineAudioContext': The sampleRate provided (1) is outside the range [3000, 192000]..
-PASS new OfflineAudioContext(1, 100, 1e6) threw exception IndexSizeError: Failed to construct 'OfflineAudioContext': The sampleRate provided (1.00000e+6) is outside the range [3000, 192000]..
+PASS new OfflineAudioContext(1, 100, 1) threw exception IndexSizeError: Failed to construct 'OfflineAudioContext': The sampleRate provided (1) is outside the range [3000, 384000]..
+PASS new OfflineAudioContext(1, 100, 1e6) threw exception IndexSizeError: Failed to construct 'OfflineAudioContext': The sampleRate provided (1.00000e+6) is outside the range [3000, 384000]..
 PASS new OfflineAudioContext(1, -88200000000000, 44100) threw exception NotSupportedError: Failed to construct 'OfflineAudioContext': OfflineAudioContext(1, 1448390656, 44100).
 PASS node.oversample = '9x' did not throw exception.
 PASS Invalid oversample value did not change node.oversample

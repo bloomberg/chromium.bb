@@ -12,10 +12,12 @@ var context;
 // Make sure we don't crash when giving 0 as number of frames.
 shouldThrow("new OfflineAudioContext(1, 0, 44100)");
 // Make sure we don't throw exceptions for supported ranges of sample rates for an OfflineAudioContext.
+shouldThrow("context = new OfflineAudioContext(2, 512, 2999)");
 shouldNotThrow("context = new OfflineAudioContext(2, 512, 3000)");
-shouldBeEqualToNumber("context.length", 512);      
-shouldNotThrow("context = new OfflineAudioContext(2, 1024, 192000)");
+shouldBeEqualToNumber("context.length", 512);
+shouldNotThrow("context = new OfflineAudioContext(2, 1024, 384000)");
 shouldBeEqualToNumber("context.length", 1024);      
+shouldThrow("context = new OfflineAudioContext(2, 1024, 384001)");      
 shouldNotThrow("context = new OfflineAudioContext(2, 2048, 8000)");
 shouldBeEqualToNumber("context.length", 2048);      
 shouldNotThrow("context = new OfflineAudioContext(2, 4096, 11025)");

@@ -42,10 +42,13 @@ function runTest() {
     shouldThrow("context.createBuffer(0, 1, context.sampleRate)");
     // Invalid sample rate: NotSupportedError
     shouldThrow("context.createBuffer(1, 1, 1)");
+    shouldThrow("context.createBuffer(1, 1, 2999)");
+    shouldThrow("context.createBuffer(1, 1, 384001)");
     shouldThrow("context.createBuffer(1, 1, 1e6)");
     // Check valid values from crbug.com/344375
     shouldNotThrow("context.createBuffer(1, 1, 3000)");
     shouldNotThrow("context.createBuffer(1, 1, 192000)");
+    shouldNotThrow("context.createBuffer(1, 1, 384000)");
     // Invalid number of frames: NotSupportedError
     shouldThrow("context.createBuffer(1, 0, context.sampleRate)");
     // 2-arg createBuffer not allowed.
