@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -376,7 +377,6 @@ void CacheStorageManager::DeleteOriginDidClose(
     return;
   }
 
-  MigrateOrigin(origin);
   PostTaskAndReplyWithResult(
       cache_task_runner_.get(), FROM_HERE,
       base::Bind(&DeleteDir, ConstructOriginPath(root_path_, origin)),
@@ -403,7 +403,6 @@ CacheStorage* CacheStorageManager::FindOrCreateCacheStorage(
   DCHECK(request_context_getter_);
   CacheStorageMap::const_iterator it = cache_storage_map_.find(origin);
   if (it == cache_storage_map_.end()) {
-    MigrateOrigin(origin);
     CacheStorage* cache_storage = new CacheStorage(
         ConstructOriginPath(root_path_, origin), IsMemoryBacked(),
         cache_task_runner_.get(), request_context_getter_, quota_manager_proxy_,
@@ -416,16 +415,6 @@ CacheStorage* CacheStorageManager::FindOrCreateCacheStorage(
 }
 
 // static
-base::FilePath CacheStorageManager::ConstructLegacyOriginPath(
-    const base::FilePath& root_path,
-    const GURL& origin) {
-  const std::string origin_hash = base::SHA1HashString(origin.spec());
-  const std::string origin_hash_hex = base::ToLowerASCII(
-      base::HexEncode(origin_hash.c_str(), origin_hash.length()));
-  return root_path.AppendASCII(origin_hash_hex);
-}
-
-// static
 base::FilePath CacheStorageManager::ConstructOriginPath(
     const base::FilePath& root_path,
     const GURL& origin) {
@@ -434,28 +423,6 @@ base::FilePath CacheStorageManager::ConstructOriginPath(
   const std::string origin_hash_hex = base::ToLowerASCII(
       base::HexEncode(origin_hash.c_str(), origin_hash.length()));
   return root_path.AppendASCII(origin_hash_hex);
-}
-
-// Migrate from old origin-based path to storage identifier-based path.
-// TODO(jsbell); Remove after a few releases.
-void CacheStorageManager::MigrateOrigin(const GURL& origin) {
-  if (IsMemoryBacked())
-    return;
-  base::FilePath old_path = ConstructLegacyOriginPath(root_path_, origin);
-  base::FilePath new_path = ConstructOriginPath(root_path_, origin);
-  cache_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MigrateOriginOnTaskRunner, old_path, new_path));
-}
-
-// static
-void CacheStorageManager::MigrateOriginOnTaskRunner(
-    const base::FilePath& old_path,
-    const base::FilePath& new_path) {
-  if (base::PathExists(old_path)) {
-    if (!base::PathExists(new_path))
-      base::Move(old_path, new_path);
-    base::DeleteFile(old_path, /*recursive*/ true);
-  }
 }
 
 }  // namespace content
