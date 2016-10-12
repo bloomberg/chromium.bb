@@ -416,10 +416,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       upload_size_(0),
       upload_position_(0),
       is_resume_pending_(false),
-      displayed_insecure_content_(false),
-      displayed_content_with_cert_errors_(false),
-      displayed_password_field_on_http_(false),
-      displayed_credit_card_field_on_http_(false),
       has_accessed_initial_document_(false),
       theme_color_(SK_ColorTRANSPARENT),
       last_sent_theme_color_(SK_ColorTRANSPARENT),
@@ -2542,22 +2538,6 @@ void WebContentsImpl::ResizeDueToAutoResize(
     delegate_->ResizeDueToAutoResize(this, new_size);
 }
 
-bool WebContentsImpl::DisplayedInsecureContent() const {
-  return displayed_insecure_content_;
-}
-
-bool WebContentsImpl::DisplayedContentWithCertErrors() const {
-  return displayed_content_with_cert_errors_;
-}
-
-bool WebContentsImpl::DisplayedPasswordFieldOnHttp() const {
-  return displayed_password_field_on_http_;
-}
-
-bool WebContentsImpl::DisplayedCreditCardFieldOnHttp() const {
-  return displayed_credit_card_field_on_http_;
-}
-
 WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
   if (!delegate_)
     return NULL;
@@ -3434,17 +3414,6 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     theme_color_ = SK_ColorTRANSPARENT;
   }
 
-  if (!details.is_in_page) {
-    // Once the main frame is navigated, we're no longer considered to have
-    // displayed insecure content.
-    displayed_insecure_content_ = false;
-    displayed_content_with_cert_errors_ = false;
-    displayed_password_field_on_http_ = false;
-    displayed_credit_card_field_on_http_ = false;
-    SSLManager::NotifySSLInternalStateChanged(
-        GetController().GetBrowserContext());
-  }
-
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidNavigateMainFrame(details, params));
@@ -3532,9 +3501,7 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
 
 void WebContentsImpl::OnDidDisplayInsecureContent() {
   RecordAction(base::UserMetricsAction("SSL.DisplayedInsecureContent"));
-  displayed_insecure_content_ = true;
-  SSLManager::NotifySSLInternalStateChanged(
-      GetController().GetBrowserContext());
+  controller_.ssl_manager()->DidDisplayMixedContent();
 }
 
 void WebContentsImpl::OnDidRunInsecureContent(const GURL& security_origin,
@@ -3545,16 +3512,12 @@ void WebContentsImpl::OnDidRunInsecureContent(const GURL& security_origin,
   if (base::EndsWith(security_origin.spec(), kDotGoogleDotCom,
                      base::CompareCase::INSENSITIVE_ASCII))
     RecordAction(base::UserMetricsAction("SSL.RanInsecureContentGoogle"));
-  controller_.ssl_manager()->DidRunInsecureContent(security_origin);
-  SSLManager::NotifySSLInternalStateChanged(
-      GetController().GetBrowserContext());
+  controller_.ssl_manager()->DidRunMixedContent(security_origin);
 }
 
 void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
     const GURL& url) {
-  displayed_content_with_cert_errors_ = true;
-  SSLManager::NotifySSLInternalStateChanged(
-      GetController().GetBrowserContext());
+  controller_.ssl_manager()->DidDisplayContentWithCertErrors();
 }
 
 void WebContentsImpl::OnDidRunContentWithCertificateErrors(
@@ -3567,8 +3530,6 @@ void WebContentsImpl::OnDidRunContentWithCertificateErrors(
   // about:blank and sandboxed origins. https://crbug.com/609527
   controller_.ssl_manager()->DidRunContentWithCertErrors(
       entry->GetURL().GetOrigin());
-  SSLManager::NotifySSLInternalStateChanged(
-      GetController().GetBrowserContext());
 }
 
 void WebContentsImpl::OnDocumentLoadedInFrame() {
@@ -3876,15 +3837,11 @@ void WebContentsImpl::StopMediaSession() {
 }
 
 void WebContentsImpl::OnPasswordInputShownOnHttp() {
-  displayed_password_field_on_http_ = true;
-  SSLManager::NotifySSLInternalStateChanged(
-      GetController().GetBrowserContext());
+  controller_.ssl_manager()->DidShowPasswordInputOnHttp();
 }
 
 void WebContentsImpl::OnCreditCardInputShownOnHttp() {
-  displayed_credit_card_field_on_http_ = true;
-  SSLManager::NotifySSLInternalStateChanged(
-      GetController().GetBrowserContext());
+  controller_.ssl_manager()->DidShowCreditCardInputOnHttp();
 }
 
 void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {

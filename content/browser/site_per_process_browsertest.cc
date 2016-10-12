@@ -6586,20 +6586,26 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   GURL iframe_url(
       https_server.GetURL("/mixed-content/basic-passive-in-iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), iframe_url));
-  EXPECT_TRUE(web_contents->DisplayedInsecureContent());
+  NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 SSLStatus::DISPLAYED_INSECURE_CONTENT));
 
   // When the subframe navigates, the WebContents should still be marked
   // as having displayed insecure content.
   GURL navigate_url(https_server.GetURL("/title1.html"));
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
   NavigateFrameToURL(root->child_at(0), navigate_url);
-  EXPECT_TRUE(web_contents->DisplayedInsecureContent());
+  entry = web_contents->GetController().GetVisibleEntry();
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 SSLStatus::DISPLAYED_INSECURE_CONTENT));
 
   // When the main frame navigates, it should no longer be marked as
   // displaying insecure content.
   EXPECT_TRUE(
       NavigateToURL(shell(), https_server.GetURL("b.com", "/title1.html")));
-  EXPECT_FALSE(web_contents->DisplayedInsecureContent());
+  entry = web_contents->GetController().GetVisibleEntry();
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  SSLStatus::DISPLAYED_INSECURE_CONTENT));
 }
 
 // Tests that, when a parent frame is set to strictly block mixed
@@ -6618,7 +6624,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   GURL iframe_url_with_strict_blocking(https_server.GetURL(
       "/mixed-content/basic-passive-in-iframe-with-strict-blocking.html"));
   EXPECT_TRUE(NavigateToURL(shell(), iframe_url_with_strict_blocking));
-  EXPECT_FALSE(web_contents->DisplayedInsecureContent());
+  NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  SSLStatus::DISPLAYED_INSECURE_CONTENT));
 
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
   EXPECT_EQ(blink::kBlockAllMixedContent,
@@ -6660,7 +6668,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   GURL iframe_url_with_upgrade(https_server.GetURL(
       "/mixed-content/basic-passive-in-iframe-with-upgrade.html"));
   EXPECT_TRUE(NavigateToURL(shell(), iframe_url_with_upgrade));
-  EXPECT_FALSE(web_contents->DisplayedInsecureContent());
+  NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  SSLStatus::DISPLAYED_INSECURE_CONTENT));
 
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
   EXPECT_EQ(blink::kUpgradeInsecureRequests,
@@ -6738,8 +6748,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   // The image that the iframe loaded had certificate errors also, so
   // the page should be marked as having displayed subresources with
   // cert errors.
-  EXPECT_TRUE(entry->GetSSL().content_status &
-              SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS);
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS));
 }
 
 // Test setting a cross-origin iframe to display: none.

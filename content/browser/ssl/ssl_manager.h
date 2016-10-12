@@ -13,6 +13,7 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/ssl_status.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "url/gurl.h"
@@ -62,9 +63,6 @@ class CONTENT_EXPORT SSLManager {
       const net::SSLInfo& ssl_info,
       bool fatal);
 
-  // Called when SSL state for a host or tab changes.
-  static void NotifySSLInternalStateChanged(BrowserContext* context);
-
   // Construct an SSLManager for the specified tab.
   explicit SSLManager(NavigationControllerImpl* controller);
   virtual ~SSLManager();
@@ -78,10 +76,16 @@ class CONTENT_EXPORT SSLManager {
                                 bool has_certificate,
                                 net::CertStatus ssl_cert_status);
 
-  // Entry point for insecure mixed content (loaded over HTTP).
-  void DidRunInsecureContent(const GURL& security_origin);
-
-  // Entry point for content loaded with HTTPS certificate errors.
+  // The following methods are called when a page includes insecure
+  // content. These methods update the SSLStatus on the NavigationEntry
+  // appropriately. If the result could change the visible SSL state,
+  // they notify the WebContents of the change via
+  // DidChangeVisibleSSLState();
+  void DidDisplayMixedContent();
+  void DidDisplayContentWithCertErrors();
+  void DidShowPasswordInputOnHttp();
+  void DidShowCreditCardInputOnHttp();
+  void DidRunMixedContent(const GURL& security_origin);
   void DidRunContentWithCertErrors(const GURL& security_origin);
 
   // An error occurred with the certificate in an SSL connection.
@@ -107,13 +111,25 @@ class CONTENT_EXPORT SSLManager {
   void OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
                            int options_mask);
 
-  // Updates the NavigationEntry with our current state. This will
-  // notify the WebContents of an SSL state change if a change was
-  // actually made.
-  void UpdateEntry(NavigationEntryImpl* entry);
+  // Updates the NavigationEntry's |content_status| flags according to
+  // state in |ssl_host_state_delegate| and
+  // |additional_content_status_flags|, a bitmask of
+  // SSLStatus::ContentStatusFlags. (Pass 0 to set no additional content
+  // status flags.) This will notify the WebContents of an SSL state
+  // change if a change was actually made.
+  void UpdateEntry(NavigationEntryImpl* entry,
+                   int additional_content_status_flags);
+
+  // Helper function for UpdateEntry().
+  void UpdateLastCommittedEntry(int additional_content_status_flags);
 
   // Notifies the WebContents that the SSL state changed.
   void NotifyDidChangeVisibleSSLState();
+
+  // Updates the last committed entries of all |context|'s
+  // SSLManagers. Notifies each WebContents of visible SSL state changes
+  // if necessary.
+  static void NotifySSLInternalStateChanged(BrowserContext* context);
 
   // The NavigationController that owns this SSLManager.  We are responsible
   // for the security UI of this tab.

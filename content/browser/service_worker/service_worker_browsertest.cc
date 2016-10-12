@@ -1387,11 +1387,11 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBrowserTest,
   TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), https_server.GetURL(kPageUrl));
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-  EXPECT_FALSE(static_cast<WebContentsImpl*>(shell()->web_contents())
-                   ->DisplayedInsecureContent());
   NavigationEntry* entry =
       shell()->web_contents()->GetController().GetVisibleEntry();
   EXPECT_TRUE(entry->GetSSL().initialized);
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  SSLStatus::DISPLAYED_INSECURE_CONTENT));
   EXPECT_TRUE(
       https_server.GetCertificate()->Equals(entry->GetSSL().certificate.get()));
   EXPECT_EQ(0u, entry->GetSSL().cert_status);
@@ -1422,11 +1422,11 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBrowserTest,
   TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl));
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-  EXPECT_FALSE(static_cast<WebContentsImpl*>(shell()->web_contents())
-                   ->DisplayedInsecureContent());
   NavigationEntry* entry =
       shell()->web_contents()->GetController().GetVisibleEntry();
   EXPECT_TRUE(entry->GetSSL().initialized);
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  SSLStatus::DISPLAYED_INSECURE_CONTENT));
   EXPECT_FALSE(entry->GetSSL().certificate);
 
   shell()->Close();

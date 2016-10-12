@@ -22,7 +22,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
-#include "content/public/browser/ssl_status.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -151,17 +150,6 @@ void SSLManager::OnSSLCertificateSubresourceError(
                         ssl_info, fatal);
 }
 
-// static
-void SSLManager::NotifySSLInternalStateChanged(BrowserContext* context) {
-  SSLManagerSet* managers = static_cast<SSLManagerSet*>(
-      context->GetUserData(kSSLManagerKeyName));
-
-  for (std::set<SSLManager*>::iterator i = managers->get().begin();
-       i != managers->get().end(); ++i) {
-    (*i)->UpdateEntry((*i)->controller()->GetLastCommittedEntry());
-  }
-}
-
 SSLManager::SSLManager(NavigationControllerImpl* controller)
     : controller_(controller),
       ssl_host_state_delegate_(
@@ -185,13 +173,47 @@ SSLManager::~SSLManager() {
 
 void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
-  UpdateEntry(entry);
+  int content_status_flags = 0;
+  if (!details.is_main_frame) {
+    // If it wasn't a main-frame navigation, then carry over content
+    // status flags. (For example, the mixed content flag shouldn't
+    // clear because of a frame navigation.)
+    NavigationEntryImpl* previous_entry =
+        controller_->GetEntryAtIndex(details.previous_entry_index);
+    if (previous_entry) {
+      content_status_flags = previous_entry->GetSSL().content_status;
+    }
+  }
+  UpdateEntry(entry, content_status_flags);
   // Always notify the WebContents that the SSL state changed when a
   // load is committed, in case the active navigation entry has changed.
   NotifyDidChangeVisibleSSLState();
 }
 
-void SSLManager::DidRunInsecureContent(const GURL& security_origin) {
+void SSLManager::DidDisplayMixedContent() {
+  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_INSECURE_CONTENT);
+}
+
+void SSLManager::DidDisplayContentWithCertErrors() {
+  NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
+  if (!entry)
+    return;
+  // Only record information about subresources with cert errors if the
+  // main page is HTTPS with a certificate.
+  if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate) {
+    UpdateLastCommittedEntry(SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS);
+  }
+}
+
+void SSLManager::DidShowPasswordInputOnHttp() {
+  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+void SSLManager::DidShowCreditCardInputOnHttp() {
+  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+}
+
+void SSLManager::DidRunMixedContent(const GURL& security_origin) {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   if (!entry)
     return;
@@ -205,7 +227,7 @@ void SSLManager::DidRunInsecureContent(const GURL& security_origin) {
         security_origin.host(), site_instance->GetProcess()->GetID(),
         SSLHostStateDelegate::MIXED_CONTENT);
   }
-  UpdateEntry(entry);
+  UpdateEntry(entry, 0);
   NotifySSLInternalStateChanged(controller_->GetBrowserContext());
 }
 
@@ -223,7 +245,7 @@ void SSLManager::DidRunContentWithCertErrors(const GURL& security_origin) {
         security_origin.host(), site_instance->GetProcess()->GetID(),
         SSLHostStateDelegate::CERT_ERRORS_CONTENT);
   }
-  UpdateEntry(entry);
+  UpdateEntry(entry, 0);
   NotifySSLInternalStateChanged(controller_->GetBrowserContext());
 }
 
@@ -335,7 +357,8 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
                  ssl_host_state_delegate_));
 }
 
-void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
+void SSLManager::UpdateEntry(NavigationEntryImpl* entry,
+                             int additional_content_status_flags) {
   // We don't always have a navigation entry to update, for example in the
   // case of the Web Inspector.
   if (!entry)
@@ -343,45 +366,7 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
 
   SSLStatus original_ssl_status = entry->GetSSL();  // Copy!
   entry->GetSSL().initialized = true;
-
-  WebContentsImpl* web_contents_impl =
-      static_cast<WebContentsImpl*>(controller_->delegate()->GetWebContents());
-
-  // For sensitive inputs (password, credit card) on HTTP, do not clear
-  // the |content_status| flag when the WebContents no longer has the
-  // flag set. This is different from how DISPLAYED_INSECURE_CONTENT and
-  // DISPLAYED_CONTENT_WITH_CERT_ERRORS are handled below. For sensitive
-  // inputs on HTTP, once the NavigationEntry has been marked as having
-  // displayed a sensitive input, it stays that way, even if the
-  // sensitive input is subsequently removed from the page.
-  if (web_contents_impl->DisplayedPasswordFieldOnHttp()) {
-    entry->GetSSL().content_status |=
-        SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP;
-  }
-
-  if (web_contents_impl->DisplayedCreditCardFieldOnHttp()) {
-    entry->GetSSL().content_status |=
-        SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP;
-  }
-
-  // Do not record information about insecure subresources if the main
-  // page is HTTP or HTTPS without a certificate.
-  if (!entry->GetURL().SchemeIsCryptographic() || !entry->GetSSL().certificate)
-    return;
-
-  // Update the entry's flags for insecure content.
-  if (!web_contents_impl->DisplayedInsecureContent())
-    entry->GetSSL().content_status &= ~SSLStatus::DISPLAYED_INSECURE_CONTENT;
-  if (web_contents_impl->DisplayedInsecureContent())
-    entry->GetSSL().content_status |= SSLStatus::DISPLAYED_INSECURE_CONTENT;
-  if (!web_contents_impl->DisplayedContentWithCertErrors()) {
-    entry->GetSSL().content_status &=
-        ~SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
-  }
-  if (web_contents_impl->DisplayedContentWithCertErrors()) {
-    entry->GetSSL().content_status |=
-        SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
-  }
+  entry->GetSSL().content_status |= additional_content_status_flags;
 
   SiteInstance* site_instance = entry->site_instance();
   // Note that |site_instance| can be NULL here because NavigationEntries don't
@@ -394,7 +379,10 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
     entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
   }
 
-  if (site_instance && ssl_host_state_delegate_ &&
+  // Only record information about subresources with cert errors if the
+  // main page is HTTPS with a certificate.
+  if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate &&
+      site_instance && ssl_host_state_delegate_ &&
       ssl_host_state_delegate_->DidHostRunInsecureContent(
           entry->GetURL().host(), site_instance->GetProcess()->GetID(),
           SSLHostStateDelegate::CERT_ERRORS_CONTENT)) {
@@ -405,10 +393,28 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
     NotifyDidChangeVisibleSSLState();
 }
 
+void SSLManager::UpdateLastCommittedEntry(int additional_content_status_flags) {
+  NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
+  if (!entry)
+    return;
+  UpdateEntry(entry, additional_content_status_flags);
+}
+
 void SSLManager::NotifyDidChangeVisibleSSLState() {
   WebContentsImpl* contents =
       static_cast<WebContentsImpl*>(controller_->delegate()->GetWebContents());
   contents->DidChangeVisibleSSLState();
+}
+
+// static
+void SSLManager::NotifySSLInternalStateChanged(BrowserContext* context) {
+  SSLManagerSet* managers =
+      static_cast<SSLManagerSet*>(context->GetUserData(kSSLManagerKeyName));
+
+  for (std::set<SSLManager*>::iterator i = managers->get().begin();
+       i != managers->get().end(); ++i) {
+    (*i)->UpdateEntry((*i)->controller()->GetLastCommittedEntry(), 0);
+  }
 }
 
 }  // namespace content
