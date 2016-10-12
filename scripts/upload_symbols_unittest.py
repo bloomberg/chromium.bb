@@ -615,7 +615,9 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
       if symbol.file_name == fail_file:
         raise urllib2.URLError('network failure')
 
-    self.PatchObject(upload_symbols, 'UploadSymbolFile', side_effect=failSome)
+    upload_mock = self.PatchObject(upload_symbols, 'UploadSymbolFile',
+                                   side_effect=failSome)
+    upload_mock.__name__ = 'UploadSymbolFileMock2'
 
     result = upload_symbols.PerformSymbolsFileUpload(
         symbols, 'fake_url', product_name='product')
@@ -692,6 +694,8 @@ class UploadSymbolsTest(SymbolsTestBase):
     # Mock out UploadSymbolFile so it's easy to see which file to fail for.
     upload_mock = self.PatchObject(upload_symbols, 'UploadSymbolFile',
                                    side_effect=failSome)
+    # Mock __name__ for logging.
+    upload_mock.__name__ = 'UploadSymbolFileMock'
 
     result = upload_symbols.UploadSymbols(
         [self.data], 'fake_url', 'product',

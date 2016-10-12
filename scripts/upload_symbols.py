@@ -535,7 +535,8 @@ def PerformSymbolsFileUpload(symbols, upload_url, product_name='ChromeOS'):
               UPLOAD_STATS, ShouldRetryUpload, MAX_RETRIES,
               UploadSymbolFile,
               upload_url, s, product_name,
-              sleep=INITIAL_RETRY_DELAY)
+              sleep=INITIAL_RETRY_DELAY,
+              log_all_retries=True)
         logging.info('upload of %10i bytes took %s', s.FileSize(), timer.delta)
         s.status = SymbolFile.UPLOADED
       except urllib2.HTTPError as e:

@@ -33,6 +33,7 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
       the command before giving up.  Worst case, the command is invoked
       (max_retry + 1) times before failing.
     functor: A callable to pass args and kwargs to.
+    log_all_retries: when True, log all retries.
     args: Positional args passed to functor.
     kwargs: Optional args passed to functor.
     sleep: Optional keyword.  Multiplier for how long to sleep between
@@ -66,6 +67,7 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
     time.sleep(random_delay)
 
 
+  log_all_retries = kwargs.pop('log_all_retries', False)
   sleep = kwargs.pop('sleep', 0)
   if max_retry < 0:
     raise ValueError('max_retry needs to be zero or more: %s' % max_retry)
@@ -89,6 +91,9 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
   for attempt in xrange(max_retry + 1):
     if attempt > 0 and delay_sec:
       delay()
+
+    if attempt and log_all_retries:
+      logging.debug('Will retry %s (attempt %d)', functor.__name__, attempt + 1)
 
     if attempt and sleep:
       if backoff_factor > 1:
