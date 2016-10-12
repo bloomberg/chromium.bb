@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/toolchain/toolchain.gni")
 
 declare_args() {
   # Compile for Address Sanitizer to find memory bugs.
@@ -54,7 +55,7 @@ declare_args() {
   #
   # TODO(pcc): Remove this flag if/when CFI is enabled in all official builds.
   is_cfi = target_os == "linux" && !is_chromeos && target_cpu == "x64" &&
-           is_chrome_branded && is_official_build
+           is_chrome_branded && is_official_build && allow_posix_link_time_opt
 
   # Enable checks for bad casts: derived cast and unrelated cast.
   # TODO(krasin): remove this, when we're ready to add these checks by default.
