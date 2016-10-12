@@ -2,24 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Utility module for testharness."""
+"""Utility module for checking testharness test output."""
 
-
-# const definitions
-TESTHARNESSREPORT_HEADER = 'This is a testharness.js-based test.'
-TESTHARNESSREPORT_FOOTER = 'Harness: the test ran to completion.'
+_TESTHARNESSREPORT_HEADER = 'This is a testharness.js-based test.'
+_TESTHARNESSREPORT_FOOTER = 'Harness: the test ran to completion.'
 
 
 def is_all_pass_testharness_result(content_text):
     """Returns whether |content_text| is a testharness result that only contains PASS lines."""
     return (is_testharness_output(content_text) and
             is_testharness_output_passing(content_text) and
-            not is_testharness_output_with_console_errors_or_warnings(content_text))
+            not has_console_errors_or_warnings(content_text))
 
 
 def is_testharness_output(content_text):
-    """Returns whether the content_text in parameter is a testharness output."""
-
+    """Returns whether |content_text| is a testharness output."""
     # Leading and trailing white spaces are accepted.
     lines = content_text.strip().splitlines()
     lines = [line.strip() for line in lines]
@@ -28,55 +25,50 @@ def is_testharness_output(content_text):
     found_header = False
     found_footer = False
     for line in lines:
-        if line == TESTHARNESSREPORT_HEADER:
+        if line == _TESTHARNESSREPORT_HEADER:
             found_header = True
-        elif line == TESTHARNESSREPORT_FOOTER:
+        elif line == _TESTHARNESSREPORT_FOOTER:
             found_footer = True
 
     return found_header and found_footer
 
 
 def is_testharness_output_passing(content_text):
-    """Returns whether the content_text in parameter is a passing testharness output.
-
-    Note:
-        It is expected that the |content_text| is a testharness output.
-    """
+    """Returns whether |content_text| is a passing testharness output."""
 
     # Leading and trailing white spaces are accepted.
     lines = content_text.strip().splitlines()
     lines = [line.strip() for line in lines]
 
     # The check is very conservative and rejects any unexpected content in the output.
-    previousLineWasConsoleMessage = False
+    previous_line_is_console_line = False
     for line in lines:
         # There should be no empty lines, unless the empty line follows a console message.
         if len(line) == 0:
-            if previousLineWasConsoleMessage:
+            if previous_line_is_console_line:
                 continue
             else:
                 return False
 
         # Those lines are expected to be exactly equivalent.
-        if line == TESTHARNESSREPORT_HEADER or \
-           line == TESTHARNESSREPORT_FOOTER:
-            previousLineWasConsoleMessage = False
+        if line == _TESTHARNESSREPORT_HEADER or line == _TESTHARNESSREPORT_FOOTER:
+            previous_line_is_console_line = False
             continue
 
         # Those are expected passing output.
         if line.startswith('CONSOLE'):
-            previousLineWasConsoleMessage = True
+            previous_line_is_console_line = True
             continue
 
         if line.startswith('PASS'):
-            previousLineWasConsoleMessage = False
+            previous_line_is_console_line = False
             continue
 
         # Those are expected failing output.
-        if line.startswith('FAIL') or \
-           line.startswith('TIMEOUT') or \
-           line.startswith('NOTRUN') or \
-           line.startswith('Harness Error. harness_status = '):
+        if (line.startswith('FAIL') or
+                line.startswith('TIMEOUT') or
+                line.startswith('NOTRUN') or
+                line.startswith('Harness Error. harness_status = ')):
             return False
 
         # Unexpected output should be considered as a failure.
@@ -85,17 +77,11 @@ def is_testharness_output_passing(content_text):
     return True
 
 
-def is_testharness_output_with_console_errors_or_warnings(content_text):
-    """Returns whether the content_text in parameter is a testharness output with
-    console errors.
+def has_console_errors_or_warnings(content_text):
+    """Returns whether |content_text| is has console errors or warnings."""
 
-    Note:
-        It is expected that the |content_text| is a testharness output.
-    """
+    def is_warning_or_error(line):
+        return line.startswith('CONSOLE ERROR:') or line.startswith('CONSOLE WARNING:')
 
     lines = content_text.strip().splitlines()
-    for line in lines:
-        if line.startswith('CONSOLE ERROR:') or line.startswith('CONSOLE WARNING:'):
-            return True
-
-    return False
+    return any(is_warning_or_error(line) for line in lines)
