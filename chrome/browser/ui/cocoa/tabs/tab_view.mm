@@ -51,6 +51,14 @@ const NSTimeInterval kGlowUpdateInterval = 0.025;
 // has moved less than the threshold, we want to close the tab.
 const CGFloat kRapidCloseDist = 2.5;
 
+@interface NSView (PrivateAPI)
+// Called by AppKit to check if dragging this view should move the window.
+// NSButton overrides this method in the same way so dragging window buttons
+// has no effect. NSView implementation returns NSZeroRect so the whole view
+// area can be dragged.
+- (NSRect)_opaqueRectForWindowMoveWhenInTitlebar;
+@end
+
 // This class contains the logic for drawing Material Design tab images. The
 // |setTabEdgeStrokeColor| method is overridden by |TabHeavyImageMaker| to draw
 // high-contrast tabs.
@@ -217,6 +225,13 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     [center removeObserver:self];
   }
   [super dealloc];
+}
+
+// Called by AppKit to check if dragging this view should move the window.
+// NSButton overrides this method in the same way so dragging window buttons
+// has no effect.
+- (NSRect)_opaqueRectForWindowMoveWhenInTitlebar {
+  return [self bounds];
 }
 
 // Called to obtain the context menu for when the user hits the right mouse

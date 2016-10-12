@@ -19,10 +19,6 @@ const NSInteger kFramedWindowButtonsWithTabStripOffsetFromLeft = 11;
 const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromTop = 4;
 const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 8;
 
-// The amount of window background image that is painted at the top of the
-// window, so that it shows behind the tap strip area.
-const CGFloat kBrowserFrameViewPaintHeight = 60.0;
-
 // Cocoa class representing a framed browser window.
 // We need to override NSWindow with our own class since we need access to all
 // unhandled keyboard events and subclassing NSWindow is the only method to do
@@ -41,6 +37,10 @@ const CGFloat kBrowserFrameViewPaintHeight = 60.0;
 
   CGFloat windowButtonsInterButtonSpacing_;
 }
+
+// The amount of window background image that is painted at the top of the
+// window, so that it shows behind the tap strip area.
++ (CGFloat)browserFrameViewPaintHeight;
 
 // Designated initializer.
 - (id)initWithContentRect:(NSRect)contentRect

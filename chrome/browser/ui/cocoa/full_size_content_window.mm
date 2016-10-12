@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_objc_class_swizzler.h"
+#import "chrome/browser/ui/cocoa/browser_window_layout.h"
 
 @interface FullSizeContentWindow ()
 
@@ -139,20 +140,23 @@ static IMP g_original_callstacksymbols_implementation;
       [self setContentView:chromeWindowView_];
       [chromeWindowView_ setFrame:[[chromeWindowView_ superview] bounds]];
 
-      // Our content view overlaps the window control buttons, so we must ensure
-      // it is positioned below the buttons.
-      NSView* superview = [chromeWindowView_ superview];
-      [chromeWindowView_ removeFromSuperview];
+      if (!chrome::ShouldUseFullSizeContentView()) {
+        // Chrome content view overlaps the window control buttons. Adding
+        // subview above the window's content view ensures that content view is
+        // positioned below the buttons.
+        NSView* superview = [chromeWindowView_ superview];
+        [chromeWindowView_ removeFromSuperview];
 
-      // Prevent the AppKit from generating a backtrace to include in it's
-      // complaint about our upcoming call to addSubview:positioned:relativeTo:.
-      // See +load for more info.
-      base::AutoReset<bool> disable_symbolication(&g_disable_callstacksymbols,
-                                                  true);
+        // Prevent the AppKit from generating a backtrace to include in it's
+        // complaint about our upcoming call to
+        // addSubview:positioned:relativeTo:. See +load for more info.
+        base::AutoReset<bool> disable_symbolication(&g_disable_callstacksymbols,
+                                                    true);
 
-      [superview addSubview:chromeWindowView_
-                 positioned:NSWindowBelow
-                 relativeTo:nil];
+        [superview addSubview:chromeWindowView_
+                   positioned:NSWindowBelow
+                   relativeTo:nil];
+      }
     }
   }
   return self;

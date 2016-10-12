@@ -17,6 +17,16 @@ namespace chrome {
 // The height of the tab strip.
 const CGFloat kTabStripHeight = 37;
 
+bool ShouldUseFullSizeContentView() {
+  // Prior to macOS 10.11 Chrome has added a subview above the window's content
+  // view, which the Appkit warns about at runtime. This was done to make sure
+  // that window buttons are always displayed above the content. Presumably,
+  // doing so may break in a future macOS release. Using
+  // NSFullSizeContentViewWindowMask makes window buttons displayed inside
+  // the titlebar, so they are not covered by the content view.
+  return base::mac::IsAtLeastOS10_11();
+}
+
 }  // namespace chrome
 
 namespace {

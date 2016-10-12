@@ -144,6 +144,14 @@ CGFloat FlipXInView(NSView* view, CGFloat width, CGFloat x) {
 
 }  // namespace
 
+@interface NSView (PrivateAPI)
+// Called by AppKit to check if dragging this view should move the window.
+// NSButton overrides this method in the same way so dragging window buttons
+// has no effect. NSView implementation returns NSZeroRect so the whole view
+// area can be dragged.
+- (NSRect)_opaqueRectForWindowMoveWhenInTitlebar;
+@end
+
 @interface TabStripController (Private)
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
@@ -227,6 +235,10 @@ CGFloat FlipXInView(NSView* view, CGFloat width, CGFloat x) {
 @implementation TabStripControllerDragBlockingView
 - (BOOL)mouseDownCanMoveWindow {
   return NO;
+}
+
+- (NSRect)_opaqueRectForWindowMoveWhenInTitlebar {
+ return [self bounds];
 }
 
 - (id)initWithFrame:(NSRect)frameRect

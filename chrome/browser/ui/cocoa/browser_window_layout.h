@@ -14,6 +14,10 @@ namespace chrome {
 // The height of the tab strip.
 extern const CGFloat kTabStripHeight;
 
+// Returns true if windows should use NSFullSizeContentViewWindowMask style
+// mask.
+bool ShouldUseFullSizeContentView();
+
 // The parameters used to calculate the layout of the views managed by the
 // BrowserWindowController.
 struct LayoutParameters {

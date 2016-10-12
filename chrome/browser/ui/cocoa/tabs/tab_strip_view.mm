@@ -13,6 +13,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
@@ -351,7 +352,11 @@
   if (!base::mac::IsAtLeastOS10_10())
     return nil;
 
-  NSView* rootView = [[[self window] contentView] superview];
+  NSView* rootView = [[self window] contentView];
+  if (!chrome::ShouldUseFullSizeContentView()) {
+    rootView = [rootView superview];
+  }
+
   Class nsVisualEffectViewClass = NSClassFromString(@"NSVisualEffectView");
   DCHECK(nsVisualEffectViewClass);
   for (NSView* view in [rootView subviews]) {
