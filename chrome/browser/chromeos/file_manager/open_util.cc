@@ -79,13 +79,16 @@ void OpenFileMimeTypeAfterTasksListed(
     const platform_util::OpenOperationCallback& callback,
     std::unique_ptr<std::vector<file_tasks::FullTaskDescriptor>> tasks) {
   // Select a default handler. If a default handler is not available, select
-  // a non-generic file handler.
+  // the first non-generic file handler.
   const file_tasks::FullTaskDescriptor* chosen_task = nullptr;
   for (const auto& task : *tasks) {
     if (!task.is_generic_file_handler()) {
-      chosen_task = &task;
-      if (task.is_default())
+      if (task.is_default()) {
+        chosen_task = &task;
         break;
+      }
+      if (!chosen_task)
+        chosen_task = &task;
     }
   }
 
