@@ -323,11 +323,6 @@ const EmbeddedSearchRequestParams& SearchBox::GetEmbeddedSearchRequestParams() {
   return embedded_search_request_params_;
 }
 
-void SearchBox::Focus() {
-  render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
-      render_view()->GetRoutingID(), page_seq_no_, OMNIBOX_FOCUS_VISIBLE));
-}
-
 void SearchBox::Paste(const base::string16& text) {
   render_view()->Send(new ChromeViewHostMsg_PasteAndOpenDropdown(
       render_view()->GetRoutingID(), page_seq_no_, text));

@@ -107,9 +107,6 @@ class SearchBox : public content::RenderViewObserver,
   bool GetMostVisitedItemWithID(InstantRestrictedID most_visited_item_id,
                                 InstantMostVisitedItem* item) const;
 
-  // Sends ChromeViewHostMsg_FocusOmnibox to the browser.
-  void Focus();
-
   // Sends ChromeViewHostMsg_SearchBoxPaste to the browser.
   void Paste(const base::string16& text);
 

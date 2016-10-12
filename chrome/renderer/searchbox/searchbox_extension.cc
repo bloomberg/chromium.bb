@@ -418,9 +418,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void DeleteMostVisitedItem(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // Focuses the omnibox.
-  static void Focus(const v8::FunctionCallbackInfo<v8::Value>& args);
-
   // Gets Most Visited Items.
   static void GetMostVisitedItems(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -591,8 +588,6 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     return v8::FunctionTemplate::New(isolate, CheckIsUserSyncingHistory);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "DeleteMostVisitedItem")))
     return v8::FunctionTemplate::New(isolate, DeleteMostVisitedItem);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "Focus")))
-    return v8::FunctionTemplate::New(isolate, Focus);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetMostVisitedItems")))
     return v8::FunctionTemplate::New(isolate, GetMostVisitedItems);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetMostVisitedItemData")))
@@ -692,16 +687,6 @@ void SearchBoxExtensionWrapper::DeleteMostVisitedItem(
            << " DeleteMostVisitedItem: " << args[0]->ToInteger()->Value();
   SearchBox::Get(render_view)->
       DeleteMostVisitedItem(args[0]->ToInteger()->Value());
-}
-
-// static
-void SearchBoxExtensionWrapper::Focus(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
-
-  DVLOG(1) << render_view << " Focus";
-  SearchBox::Get(render_view)->Focus();
 }
 
 // static

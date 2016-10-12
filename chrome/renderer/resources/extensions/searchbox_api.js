@@ -13,7 +13,6 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       //                            Private functions
       // =======================================================================
-      native function Focus();
       native function GetMostVisitedItemData();
       native function GetQuery();
       native function GetSearchRequestParams();
@@ -36,12 +35,9 @@ if (!chrome.embeddedSearch) {
       Object.defineProperty(this, 'requestParams',
                             { get: GetSearchRequestParams });
 
-      this.focus = function() {
-        Focus();
-      };
-
       // This method is restricted to chrome-search://most-visited pages by
       // checking the invoking context's origin in searchbox_extension.cc.
+      // TODO(treib): Why is this in searchBox rather than newTabPage?
       this.getMostVisitedItemData = function(restrictedId) {
         var item = GetMostVisitedItemData(restrictedId);
         if (item) {
