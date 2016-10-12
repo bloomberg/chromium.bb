@@ -392,7 +392,7 @@ function initialize() {
               '/html/sys_info.html', {
                 frame: 'chrome',
                 id: SYSINFO_WINDOW_ID,
-                width: 600,
+                width: 640,
                 height: 400,
                 hidden: false,
                 resizable: true

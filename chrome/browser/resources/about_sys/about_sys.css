@@ -169,8 +169,3 @@ html[dir='rtl'] #details .name {
 .number-expanded .stat-value {
   display: auto;
 }
-
-#status {
-  color: rgb(255, 0, 0);
-  margin: .5em 0;
-}
