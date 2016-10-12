@@ -36,7 +36,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
       // FocusableBorder
       case NativeTheme::kColorId_UnfocusedBorderColor:
-        return SkColorSetA(SK_ColorBLACK, 0x24);
+        return SkColorSetA(SK_ColorBLACK, 0x33);
 
       // Textfields
       case NativeTheme::kColorId_TextfieldDefaultColor:
