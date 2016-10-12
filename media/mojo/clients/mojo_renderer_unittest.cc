@@ -372,6 +372,21 @@ TEST_F(MojoRendererTest, GetMediaTime) {
   Destroy();
 }
 
+TEST_F(MojoRendererTest, OnBufferingStateChange) {
+  Initialize();
+  Play();
+
+  EXPECT_CALL(renderer_client_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
+      .Times(1);
+  remote_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_ENOUGH);
+
+  EXPECT_CALL(renderer_client_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
+      .Times(1);
+  remote_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
+
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(MojoRendererTest, OnEnded) {
   Initialize();
   Play();

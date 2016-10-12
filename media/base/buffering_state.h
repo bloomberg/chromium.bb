@@ -19,6 +19,8 @@ enum BufferingState {
   //
   // Typical reason is enough data has been prerolled to start playback.
   BUFFERING_HAVE_ENOUGH,
+
+  BUFFERING_STATE_MAX = BUFFERING_HAVE_ENOUGH,
 };
 
 // Used to indicate changes in buffering state;

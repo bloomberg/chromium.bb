@@ -165,7 +165,7 @@ void MojoRendererService::OnStatisticsUpdate(const PipelineStatistics& stats) {
 
 void MojoRendererService::OnBufferingStateChange(BufferingState state) {
   DVLOG(2) << __FUNCTION__ << "(" << state << ")";
-  client_->OnBufferingStateChange(static_cast<mojom::BufferingState>(state));
+  client_->OnBufferingStateChange(state);
 }
 
 void MojoRendererService::OnWaitingForDecryptionKey() {

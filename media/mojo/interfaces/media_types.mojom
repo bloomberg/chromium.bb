@@ -8,11 +8,8 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "mojo/common/common_custom_types.mojom";
 
 // See media/base/buffering_state.h for descriptions.
-// Kept in sync with media::BufferingState via static_asserts.
-enum BufferingState {
-  HAVE_NOTHING,
-  HAVE_ENOUGH,
-};
+[Native]
+enum BufferingState;
 
 // See media/base/decode_status.h for descriptions.
 // Kept in sync with media::DecodeStatus via static_asserts.

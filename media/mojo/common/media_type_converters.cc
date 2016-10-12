@@ -11,7 +11,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/buffering_state.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/decode_status.h"
@@ -47,10 +46,6 @@ namespace mojo {
       media::media_enum::value ==                                          \
           static_cast<media::media_enum>(media::mojom::media_enum::value), \
       "Mismatched enum: " #media_enum #value)
-
-// BufferingState.
-ASSERT_ENUM_EQ(BufferingState, BUFFERING_, , HAVE_NOTHING);
-ASSERT_ENUM_EQ(BufferingState, BUFFERING_, , HAVE_ENOUGH);
 
 // DecodeStatus.
 ASSERT_ENUM_CLASS_EQ(DecodeStatus, OK);

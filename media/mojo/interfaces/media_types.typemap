@@ -4,7 +4,10 @@
 
 mojom = "//media/mojo/interfaces/media_types.mojom"
 
-public_headers = [ "//media/base/subsample_entry.h" ]
+public_headers = [
+  "//media/base/buffering_state.h",
+  "//media/base/subsample_entry.h",
+]
 
 traits_headers = [ "//media/base/ipc/media_param_traits_macros.h" ]
 
@@ -13,4 +16,7 @@ deps = [
   "//media/base/ipc",
 ]
 
-type_mappings = [ "media.mojom.SubsampleEntry=media::SubsampleEntry" ]
+type_mappings = [
+  "media.mojom.BufferingState=media::BufferingState",
+  "media.mojom.SubsampleEntry=media::SubsampleEntry",
+]
