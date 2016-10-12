@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/color_palette.h"
@@ -25,7 +26,6 @@ namespace {
 // Time spent with animation fully open.
 const int kStayOpenTimeMS = 3200;
 }
-
 
 // static
 const int ContentSettingImageView::kAnimationDurationMS =
@@ -209,11 +209,14 @@ bool ContentSettingImageView::OnActivate(const ui::Event& event) {
 
   content::WebContents* web_contents = parent_->GetWebContents();
   if (web_contents && !bubble_view_) {
+    views::View* anchor = this;
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+      anchor = parent_;
     bubble_view_ = new ContentSettingBubbleContents(
                 content_setting_image_model_->CreateBubbleModel(
                     parent_->delegate()->GetContentSettingBubbleModelDelegate(),
                     web_contents, parent_->profile()),
-                web_contents, this, views::BubbleBorder::TOP_RIGHT);
+                web_contents, anchor, views::BubbleBorder::TOP_RIGHT);
     views::Widget* bubble_widget =
         views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
     bubble_widget->AddObserver(this);

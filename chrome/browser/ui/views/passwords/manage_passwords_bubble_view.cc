@@ -720,10 +720,15 @@ void ManagePasswordsBubbleView::ShowBubble(
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   bool is_fullscreen = browser_view->IsFullscreen();
-  ManagePasswordsIconViews* anchor_view =
-      is_fullscreen
-          ? NULL
-          : browser_view->GetLocationBarView()->manage_passwords_icon_view();
+  views::View* anchor_view = nullptr;
+  if (!is_fullscreen) {
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      anchor_view = browser_view->GetLocationBarView();
+    } else {
+      anchor_view =
+          browser_view->GetLocationBarView()->manage_passwords_icon_view();
+    }
+  }
   manage_passwords_bubble_ = new ManagePasswordsBubbleView(
       web_contents, anchor_view, reason);
 
@@ -732,8 +737,10 @@ void ManagePasswordsBubbleView::ShowBubble(
 
   views::Widget* manage_passwords_bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(manage_passwords_bubble_);
-  if (anchor_view)
-    manage_passwords_bubble_widget->AddObserver(anchor_view);
+  if (anchor_view) {
+    manage_passwords_bubble_widget->AddObserver(
+        browser_view->GetLocationBarView()->manage_passwords_icon_view());
+  }
 
   // Adjust for fullscreen after creation as it relies on the content size.
   if (is_fullscreen) {

@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "components/prefs/pref_member.h"
+#include "components/translate/core/browser/translate_step.h"
+#include "components/translate/core/common/translate_errors.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -27,6 +29,11 @@ class BrowserActionsContainer;
 class HomeButton;
 class ReloadButton;
 class ToolbarButton;
+
+namespace autofill {
+class SaveCardBubbleController;
+class SaveCardBubbleView;
+}
 
 namespace bookmarks {
 class BookmarkBubbleObserver;
@@ -80,16 +87,17 @@ class ToolbarView : public views::AccessiblePaneView,
                           bool already_bookmarked,
                           bookmarks::BookmarkBubbleObserver* observer);
 
-  // Returns the view to which the "Save credit card" bubble should be anchored.
-  views::View* GetSaveCreditCardBubbleAnchor();
+  // Shows a bubble offering to save a credit card and anchors it appropriately.
+  autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
+      content::WebContents* contents,
+      autofill::SaveCardBubbleController* controller,
+      bool is_user_gesture);
 
-  // Returns the view to which the Translate bubble should be anchored.
-  views::View* GetTranslateBubbleAnchor();
-
-  // Adds |anchor_view| as an observer of |bubble_widget| to track its
-  // visibility.
-  void OnBubbleCreatedForAnchor(views::View* anchor_view,
-                                views::Widget* bubble_widget);
+  // Shows the translate bubble and anchors it appropriately.
+  void ShowTranslateBubble(content::WebContents* web_contents,
+                           translate::TranslateStep step,
+                           translate::TranslateErrors::Type error_type,
+                           bool is_user_gesture);
 
   // Returns the maximum width the browser actions container can have.
   int GetMaxBrowserActionsWidth() const;

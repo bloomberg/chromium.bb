@@ -61,7 +61,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
-#include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
@@ -1249,13 +1248,8 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
     content::WebContents* web_contents,
     autofill::SaveCardBubbleController* controller,
     bool is_user_gesture) {
-  views::View* anchor_view = toolbar_->GetSaveCreditCardBubbleAnchor();
-  autofill::SaveCardBubbleViews* view = new autofill::SaveCardBubbleViews(
-      anchor_view, web_contents, controller);
-  toolbar_->OnBubbleCreatedForAnchor(anchor_view, view->GetWidget());
-  view->Show(is_user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE
-                             : autofill::SaveCardBubbleViews::AUTOMATIC);
-  return view;
+  return toolbar_->ShowSaveCreditCardBubble(web_contents, controller,
+                                            is_user_gesture);
 }
 
 void BrowserView::ShowTranslateBubble(
@@ -1270,21 +1264,14 @@ void BrowserView::ShowTranslateBubble(
       return;
   }
 
-  ChromeTranslateClient* chrome_translate_client =
-      ChromeTranslateClient::FromWebContents(web_contents);
   translate::LanguageState& language_state =
-      chrome_translate_client->GetLanguageState();
+      ChromeTranslateClient::FromWebContents(web_contents)->GetLanguageState();
   language_state.SetTranslateEnabled(true);
 
-  if (IsMinimized())
-    return;
-
-  views::View* anchor_view = toolbar_->GetTranslateBubbleAnchor();
-  views::Widget* bubble_widget = TranslateBubbleView::ShowBubble(
-      anchor_view, web_contents, step,
-      error_type, is_user_gesture ? TranslateBubbleView::USER_GESTURE
-                                  : TranslateBubbleView::AUTOMATIC);
-  toolbar_->OnBubbleCreatedForAnchor(anchor_view, bubble_widget);
+  if (!IsMinimized()) {
+    toolbar_->ShowTranslateBubble(web_contents, step, error_type,
+                                  is_user_gesture);
+  }
 }
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)

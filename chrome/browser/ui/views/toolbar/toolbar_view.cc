@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
@@ -43,6 +44,7 @@
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+#include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -309,29 +311,48 @@ void ToolbarView::ShowBookmarkBubble(
     bubble_widget->AddObserver(star_view);
 }
 
-views::View* ToolbarView::GetSaveCreditCardBubbleAnchor() {
-  views::View* save_credit_card_icon_view =
-      location_bar()->save_credit_card_icon_view();
-  return (save_credit_card_icon_view && save_credit_card_icon_view->visible())
-             ? save_credit_card_icon_view
-             : app_menu_button_;
-}
-
-views::View* ToolbarView::GetTranslateBubbleAnchor() {
-  views::View* translate_icon_view = location_bar()->translate_icon_view();
-  return (translate_icon_view && translate_icon_view->visible())
-             ? translate_icon_view
-             : app_menu_button_;
-}
-
-void ToolbarView::OnBubbleCreatedForAnchor(views::View* anchor_view,
-                                           views::Widget* bubble_widget) {
-  if (bubble_widget &&
-      (anchor_view == location_bar()->save_credit_card_icon_view() ||
-       anchor_view == location_bar()->translate_icon_view())) {
-    DCHECK(anchor_view);
-    bubble_widget->AddObserver(static_cast<BubbleIconView*>(anchor_view));
+autofill::SaveCardBubbleView* ToolbarView::ShowSaveCreditCardBubble(
+    content::WebContents* web_contents,
+    autofill::SaveCardBubbleController* controller,
+    bool is_user_gesture) {
+  views::View* anchor_view = location_bar();
+  BubbleIconView* card_view = location_bar()->save_credit_card_icon_view();
+  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    if (card_view && card_view->visible())
+      anchor_view = card_view;
+    else
+      anchor_view = app_menu_button_;
   }
+
+  autofill::SaveCardBubbleViews* bubble = new autofill::SaveCardBubbleViews(
+      anchor_view, web_contents, controller);
+  if (card_view)
+    bubble->GetWidget()->AddObserver(card_view);
+  bubble->Show(is_user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE
+                               : autofill::SaveCardBubbleViews::AUTOMATIC);
+  return bubble;
+}
+
+void ToolbarView::ShowTranslateBubble(
+    content::WebContents* web_contents,
+    translate::TranslateStep step,
+    translate::TranslateErrors::Type error_type,
+    bool is_user_gesture) {
+  views::View* anchor_view = location_bar();
+  BubbleIconView* translate_icon_view = location_bar()->translate_icon_view();
+  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    if (translate_icon_view && translate_icon_view->visible())
+      anchor_view = translate_icon_view;
+    else
+      anchor_view = app_menu_button_;
+  }
+
+  views::Widget* bubble_widget = TranslateBubbleView::ShowBubble(
+      anchor_view, web_contents, step,
+      error_type, is_user_gesture ? TranslateBubbleView::USER_GESTURE
+                                  : TranslateBubbleView::AUTOMATIC);
+  if (bubble_widget && translate_icon_view)
+    bubble_widget->AddObserver(translate_icon_view);
 }
 
 int ToolbarView::GetMaxBrowserActionsWidth() const {

@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_zoom_request_client.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/views/controls/button/image_button.h"
@@ -34,7 +35,7 @@
 #include "ui/views/widget/widget.h"
 
 // static
-ZoomBubbleView* ZoomBubbleView::zoom_bubble_ = NULL;
+ZoomBubbleView* ZoomBubbleView::zoom_bubble_ = nullptr;
 
 // static
 void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
@@ -45,10 +46,14 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   bool is_fullscreen = browser_view->IsFullscreen();
-  bool anchor_to_view = !is_fullscreen ||
-      browser_view->immersive_mode_controller()->IsRevealed();
-  ZoomView* anchor_view = anchor_to_view ?
-      browser_view->GetLocationBarView()->zoom_view() : NULL;
+  views::View* anchor_view = nullptr;
+  if (!is_fullscreen ||
+      browser_view->immersive_mode_controller()->IsRevealed()) {
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+      anchor_view = browser_view->GetLocationBarView();
+    else
+      anchor_view = browser_view->GetLocationBarView()->zoom_view();
+  }
 
   // Find the extension that initiated the zoom change, if any.
   zoom::ZoomController* zoom_controller =
@@ -80,13 +85,15 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   }
 
   // If we do not have an anchor view, parent the bubble to the content area.
-  if (!anchor_to_view)
+  if (!anchor_view)
     zoom_bubble_->set_parent_window(web_contents->GetNativeView());
 
   views::Widget* zoom_bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(zoom_bubble_);
-  if (anchor_view)
-    zoom_bubble_widget->AddObserver(anchor_view);
+  if (anchor_view) {
+    zoom_bubble_widget->AddObserver(
+        browser_view->GetLocationBarView()->zoom_view());
+  }
 
   // Adjust for fullscreen after creation as it relies on the content size.
   if (is_fullscreen)
@@ -112,8 +119,8 @@ ZoomBubbleView::ZoomBubbleView(
     DisplayReason reason,
     ImmersiveModeController* immersive_mode_controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
-      image_button_(NULL),
-      label_(NULL),
+      image_button_(nullptr),
+      label_(nullptr),
       web_contents_(web_contents),
       auto_close_(reason == AUTOMATIC),
       immersive_mode_controller_(immersive_mode_controller) {
@@ -200,16 +207,16 @@ void ZoomBubbleView::Init() {
 
 void ZoomBubbleView::WindowClosing() {
   // |zoom_bubble_| can be a new bubble by this point (as Close(); doesn't
-  // call this right away). Only set to NULL when it's this bubble.
+  // call this right away). Only set to nullptr when it's this bubble.
   if (zoom_bubble_ == this)
-    zoom_bubble_ = NULL;
+    zoom_bubble_ = nullptr;
 }
 
 void ZoomBubbleView::CloseBubble() {
   // Widget's Close() is async, but we don't want to use zoom_bubble_ after
   // this. Additionally web_contents_ may have been destroyed.
-  zoom_bubble_ = NULL;
-  web_contents_ = NULL;
+  zoom_bubble_ = nullptr;
+  web_contents_ = nullptr;
   LocationBarBubbleDelegateView::CloseBubble();
 }
 
@@ -232,7 +239,7 @@ void ZoomBubbleView::OnImmersiveRevealStarted() {
 }
 
 void ZoomBubbleView::OnImmersiveModeControllerDestroyed() {
-  immersive_mode_controller_ = NULL;
+  immersive_mode_controller_ = nullptr;
 }
 
 void ZoomBubbleView::OnExtensionIconImageChanged(
