@@ -165,6 +165,9 @@ class PDFEngine {
     // Notifies the client that the document has failed to load.
     virtual void DocumentLoadFailed() = 0;
 
+    // Notifies the client that the document has requested substitute fonts.
+    virtual void FontSubstituted() = 0;
+
     virtual pp::Instance* GetPluginInstance() = 0;
 
     // Notifies that an unsupported feature in the PDF was encountered.

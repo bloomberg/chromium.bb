@@ -65,6 +65,7 @@ class PreviewModeClient : public PDFEngine::Client {
   void DocumentPaintOccurred() override;
   void DocumentLoadComplete(int page_count) override;
   void DocumentLoadFailed() override;
+  void FontSubstituted() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
   void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;

@@ -118,6 +118,7 @@ void PDFiumPage::Unload() {
 
 FPDF_PAGE PDFiumPage::GetPage() {
   ScopedUnsupportedFeature scoped_unsupported_feature(engine_);
+  ScopedSubstFont scoped_subst_font(engine_);
   if (!available_)
     return nullptr;
   if (!page_) {
@@ -132,6 +133,7 @@ FPDF_PAGE PDFiumPage::GetPage() {
 
 FPDF_PAGE PDFiumPage::GetPrintPage() {
   ScopedUnsupportedFeature scoped_unsupported_feature(engine_);
+  ScopedSubstFont scoped_subst_font(engine_);
   if (!available_)
     return nullptr;
   if (!page_) {

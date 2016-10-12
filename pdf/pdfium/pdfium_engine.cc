@@ -110,6 +110,8 @@ const int32_t kMaxProgressivePaintTimeMs = 300;
 // process.
 const int32_t kMaxInitialProgressivePaintTimeMs = 250;
 
+PDFiumEngine* g_engine_for_fontmapper = nullptr;
+
 std::vector<uint32_t> GetPageNumbersFromPrintPageNumberRange(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count) {
@@ -258,6 +260,9 @@ void* MapFont(struct _FPDF_SYSFONTINFO*, int weight, int italic,
     NOTREACHED();
     return nullptr;
   }
+
+  if (g_engine_for_fontmapper)
+    g_engine_for_fontmapper->FontSubstituted();
 
   PP_Resource font_resource = pp::PDF::GetFontFileWithFallback(
       pp::InstanceHandle(g_last_instance_id),
@@ -1171,6 +1176,10 @@ void PDFiumEngine::UnsupportedFeature(int type) {
   client_->DocumentHasUnsupportedFeature(feature);
 }
 
+void PDFiumEngine::FontSubstituted() {
+  client_->FontSubstituted();
+}
+
 void PDFiumEngine::ContinueFind(int32_t result) {
   StartFind(current_find_text_, result != 0);
 }
@@ -1223,6 +1232,7 @@ void PDFiumEngine::PrintBegin() {
 pp::Resource PDFiumEngine::PrintPages(
     const PP_PrintPageNumberRange_Dev* page_ranges, uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings) {
+  ScopedSubstFont scoped_subst_font(this);
   if (HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY))
     return PrintPagesAsPDF(page_ranges, page_range_count, print_settings);
   else if (HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY))
@@ -1375,6 +1385,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
 
 pp::Buffer_Dev PDFiumEngine::GetFlattenedPrintData(const FPDF_DOCUMENT& doc) {
   pp::Buffer_Dev buffer;
+  ScopedSubstFont scoped_subst_font(this);
   int page_count = FPDF_GetPageCount(doc);
   for (int i = 0; i < page_count; ++i) {
     FPDF_PAGE page = FPDF_LoadPage(doc, i);
@@ -2453,6 +2464,7 @@ void PDFiumEngine::LoadDocument() {
     return;
 
   ScopedUnsupportedFeature scoped_unsupported_feature(this);
+  ScopedSubstFont scoped_subst_font(this);
   bool needs_password = false;
   if (TryLoadingDoc(std::string(), &needs_password)) {
     ContinueLoadingDocument(std::string());
@@ -2517,6 +2529,7 @@ void PDFiumEngine::OnGetPasswordComplete(int32_t result,
 
 void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
   ScopedUnsupportedFeature scoped_unsupported_feature(this);
+  ScopedSubstFont scoped_subst_font(this);
 
   bool needs_password = false;
   bool loaded = TryLoadingDoc(password, &needs_password);
@@ -3731,6 +3744,15 @@ ScopedUnsupportedFeature::ScopedUnsupportedFeature(PDFiumEngine* engine)
 
 ScopedUnsupportedFeature::~ScopedUnsupportedFeature() {
   g_engine_for_unsupported = old_engine_;
+}
+
+ScopedSubstFont::ScopedSubstFont(PDFiumEngine* engine)
+    : old_engine_(g_engine_for_fontmapper) {
+  g_engine_for_fontmapper = engine;
+}
+
+ScopedSubstFont::~ScopedSubstFont() {
+  g_engine_for_fontmapper = old_engine_;
 }
 
 namespace {
