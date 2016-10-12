@@ -87,7 +87,8 @@ mojo::ScopedSharedBufferHandle
 PlatformSensorProviderBase::CloneSharedBufferHandle() {
   DCHECK(CalledOnValidThread());
   CreateSharedBufferIfNeeded();
-  return shared_buffer_handle_->Clone();
+  return shared_buffer_handle_->Clone(
+      mojo::SharedBufferHandle::AccessMode::READ_ONLY);
 }
 
 void PlatformSensorProviderBase::NotifySensorCreated(
