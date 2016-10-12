@@ -8,6 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebMemoryPressureLevel.h"
+#include "public/platform/WebMemoryState.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -24,6 +25,8 @@ class PLATFORM_EXPORT MemoryCoordinatorClient : public GarbageCollectedMixin {
   // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
   // gone.
   virtual void onMemoryPressure(WebMemoryPressureLevel) {}
+
+  virtual void onMemoryStateChange(MemoryState) {}
 };
 
 // MemoryCoordinator listens to some events which could be opportunities
@@ -44,10 +47,14 @@ class PLATFORM_EXPORT MemoryCoordinator final
   // gone.
   void onMemoryPressure(WebMemoryPressureLevel);
 
+  void onMemoryStateChange(MemoryState);
+
   DECLARE_TRACE();
 
  private:
   MemoryCoordinator();
+
+  void clearMemory();
 
   HeapHashSet<WeakMember<MemoryCoordinatorClient>> m_clients;
 };

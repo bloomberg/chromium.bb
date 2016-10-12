@@ -13,6 +13,10 @@ void WebMemoryCoordinator::onMemoryPressure(
   MemoryCoordinator::instance().onMemoryPressure(pressureLevel);
 }
 
+void WebMemoryCoordinator::onMemoryStateChange(MemoryState state) {
+  MemoryCoordinator::instance().onMemoryStateChange(state);
+}
+
 void WebMemoryCoordinator::prepareToSuspend() {
   MemoryCoordinator::instance().prepareToSuspend();
 }

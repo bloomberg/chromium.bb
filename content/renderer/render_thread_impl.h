@@ -14,6 +14,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
+#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/user_metrics_action.h"
@@ -155,6 +156,7 @@ class CONTENT_EXPORT RenderThreadImpl
       public gpu::GpuChannelHostFactory,
       public blink::scheduler::RendererScheduler::RAILModeObserver,
       public ChildMemoryCoordinatorDelegate,
+      public base::MemoryCoordinatorClient,
       NON_EXPORTED_BASE(public mojom::Renderer),
       // TODO(blundell): Separate this impl out into Blink.
       NON_EXPORTED_BASE(public device::mojom::TimeZoneMonitorClient),
@@ -493,6 +495,11 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
   std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) override;
+
+  // base::MemoryCoordinatorClient implementation:
+  void OnMemoryStateChange(base::MemoryState state) override;
+
+  void ClearMemory();
 
   void Init(scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
 

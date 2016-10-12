@@ -222,6 +222,7 @@ source_set("blink_headers") {
     "platform/WebMediaStreamTrackSourcesRequest.h",
     "platform/WebMemoryCoordinator.h",
     "platform/WebMemoryPressureLevel.h",
+    "platform/WebMemoryState.h",
     "platform/WebMessagePortChannel.h",
     "platform/WebMessagePortChannelClient.h",
     "platform/WebMimeRegistry.h",

@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
@@ -896,6 +897,8 @@ void RenderThreadImpl::Init(
 #endif
 
   is_renderer_suspended_ = false;
+
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 RenderThreadImpl::~RenderThreadImpl() {
@@ -1027,6 +1030,8 @@ void RenderThreadImpl::Shutdown() {
   main_message_loop_.reset();
 
   lazy_tls.Pointer()->Set(nullptr);
+
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
 bool RenderThreadImpl::Send(IPC::Message* msg) {
@@ -2132,20 +2137,48 @@ void RenderThreadImpl::OnCreateNewSharedWorker(
 void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   TRACE_EVENT0("memory","RenderThreadImpl::OnMemoryPressure");
-  ReleaseFreeMemory();
-
-  // Do not call into blink if it is not initialized.
   if (blink_platform_impl_) {
     blink::WebMemoryCoordinator::onMemoryPressure(
         static_cast<blink::WebMemoryPressureLevel>(memory_pressure_level));
+  }
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+    ReleaseFreeMemory();
+    ClearMemory();
+  }
+}
 
-    if (memory_pressure_level ==
-        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-      // Purge Skia font cache, by setting it to 0 and then again to the
-      // previous limit.
-      size_t font_cache_limit = SkGraphics::SetFontCacheLimit(0);
-      SkGraphics::SetFontCacheLimit(font_cache_limit);
-    }
+void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
+  // TODO(hajimehoshi): Adjust the size of this memory usage according to
+  // |state|. RenderThreadImpl doesn't have a feature to limit memory usage at
+  // present.
+  if (blink_platform_impl_) {
+    blink::WebMemoryCoordinator::onMemoryStateChange(
+        static_cast<blink::MemoryState>(state));
+  }
+  switch (state) {
+    case base::MemoryState::NORMAL:
+      break;
+    case base::MemoryState::THROTTLED:
+      ReleaseFreeMemory();
+      break;
+    case base::MemoryState::SUSPENDED:
+      ReleaseFreeMemory();
+      ClearMemory();
+      break;
+    case base::MemoryState::UNKNOWN:
+      NOTREACHED();
+      break;
+  }
+}
+
+void RenderThreadImpl::ClearMemory() {
+  // Do not call into blink if it is not initialized.
+  if (blink_platform_impl_) {
+    // Purge Skia font cache, by setting it to 0 and then again to the
+    // previous limit.
+    size_t font_cache_limit = SkGraphics::SetFontCacheLimit(0);
+    SkGraphics::SetFontCacheLimit(font_cache_limit);
   }
 }
 
