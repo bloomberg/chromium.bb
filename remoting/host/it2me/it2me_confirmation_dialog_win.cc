@@ -203,6 +203,19 @@ It2MeConfirmationDialogWin::TaskDialogCallbackProc(HWND hwnd,
       SetForegroundWindow(hwnd);
       dialog->is_foreground_window_ = false;
     }
+
+    if (!dialog->is_foreground_window_) {
+      // Ensure the dialog is always at the top of the top-most window stack,
+      // even if it doesn't have focus, so the user can always see it.
+      BringWindowToTop(hwnd);
+    }
+  } else if (notification == TDN_CREATED) {
+    // After the dialog has been created, but before it is visible, set its
+    // z-order so it will be a top-most window and have always on top behavior.
+    if (!SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+                      SWP_NOMOVE | SWP_NOSIZE)) {
+      PLOG(ERROR) << "SetWindowPos() failed";
+    }
   }
 
   return S_OK;
