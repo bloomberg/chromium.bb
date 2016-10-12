@@ -76,14 +76,15 @@ namespace blink {
 // What you should know about thread checks
 // ========================================
 // When assertion is enabled this class performs thread-safety check so that
-// provideTo and from happen on the same thread. If you want to provide
-// some value for Workers this thread check may not work very well though,
-// since in most case you'd provide the value while worker preparation is
-// being done on the main thread, even before the worker thread is started.
+// supplements are provided to and from the same thread.
+// If you want to provide some value for Workers, this thread check may be too
+// strict, since in you'll be providing the value while worker preparation is
+// being done on the main thread, even before the worker thread has started.
 // If that's the case you can explicitly call reattachThread() when the
 // Supplementable object is passed to the final destination thread (i.e.
-// worker thread). Please be extremely careful to use the method though,
-// as randomly calling the method could easily cause racy condition.
+// worker thread). This will allow supplements to be accessed on that thread.
+// Please be extremely careful to use the method though, as randomly calling
+// the method could easily cause racy condition.
 //
 // Note that reattachThread() does nothing if assertion is not enabled.
 //
@@ -120,28 +121,28 @@ class Supplementable : public virtual GarbageCollectedMixin {
  public:
   void provideSupplement(const char* key, Supplement<T>* supplement) {
 #if DCHECK_IS_ON()
-    DCHECK_EQ(m_threadId, currentThread());
+    DCHECK_EQ(m_creationThreadId, currentThread());
 #endif
     this->m_supplements.set(key, supplement);
   }
 
   void removeSupplement(const char* key) {
 #if DCHECK_IS_ON()
-    DCHECK_EQ(m_threadId, currentThread());
+    DCHECK_EQ(m_creationThreadId, currentThread());
 #endif
     this->m_supplements.remove(key);
   }
 
   Supplement<T>* requireSupplement(const char* key) {
 #if DCHECK_IS_ON()
-    DCHECK_EQ(m_threadId, currentThread());
+    DCHECK_EQ(m_attachedThreadId, currentThread());
 #endif
     return this->m_supplements.get(key);
   }
 
   void reattachThread() {
 #if DCHECK_IS_ON()
-    m_threadId = currentThread();
+    m_attachedThreadId = currentThread();
 #endif
   }
 
@@ -154,14 +155,16 @@ class Supplementable : public virtual GarbageCollectedMixin {
 
   Supplementable()
 #if DCHECK_IS_ON()
-      : m_threadId(currentThread())
+      : m_attachedThreadId(currentThread()),
+        m_creationThreadId(currentThread())
 #endif
   {
   }
 
 #if DCHECK_IS_ON()
  private:
-  ThreadIdentifier m_threadId;
+  ThreadIdentifier m_attachedThreadId;
+  ThreadIdentifier m_creationThreadId;
 #endif
 };
 
