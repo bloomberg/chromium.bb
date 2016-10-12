@@ -536,7 +536,7 @@ bool TestLauncher::Run() {
   if (requested_cycles != 1)
     results_tracker_.PrintSummaryOfAllIterations();
 
-  MaybeSaveSummaryAsJSON();
+  MaybeSaveSummaryAsJSON(std::vector<std::string>());
 
   return run_result_;
 }
@@ -656,9 +656,7 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
     KillSpawnedTestProcesses();
 #endif  // defined(OS_POSIX)
 
-    results_tracker_.AddGlobalTag("BROKEN_TEST_EARLY_EXIT");
-    results_tracker_.AddGlobalTag(kUnreliableResultsTag);
-    MaybeSaveSummaryAsJSON();
+    MaybeSaveSummaryAsJSON({"BROKEN_TEST_EARLY_EXIT", kUnreliableResultsTag});
 
     exit(1);
   }
@@ -989,6 +987,9 @@ void TestLauncher::RunTests() {
     test_names.push_back(test_name);
   }
 
+  // Save an early test summary in case the launcher crashes or gets killed.
+  MaybeSaveSummaryAsJSON({"EARLY_SUMMARY", kUnreliableResultsTag});
+
   test_started_count_ = launcher_delegate_->RunTests(this, test_names);
 
   if (test_started_count_ == 0) {
@@ -1026,12 +1027,13 @@ void TestLauncher::RunTestIteration() {
       FROM_HERE, Bind(&TestLauncher::RunTests, Unretained(this)));
 }
 
-void TestLauncher::MaybeSaveSummaryAsJSON() {
+void TestLauncher::MaybeSaveSummaryAsJSON(
+    const std::vector<std::string>& additional_tags) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kTestLauncherSummaryOutput)) {
     FilePath summary_path(command_line->GetSwitchValuePath(
                               switches::kTestLauncherSummaryOutput));
-    if (!results_tracker_.SaveSummaryAsJSON(summary_path)) {
+    if (!results_tracker_.SaveSummaryAsJSON(summary_path, additional_tags)) {
       LOG(ERROR) << "Failed to save test launcher output summary.";
     }
   }

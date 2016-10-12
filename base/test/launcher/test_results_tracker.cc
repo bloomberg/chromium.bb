@@ -296,12 +296,17 @@ void TestResultsTracker::AddGlobalTag(const std::string& tag) {
   global_tags_.insert(tag);
 }
 
-bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
+bool TestResultsTracker::SaveSummaryAsJSON(
+    const FilePath& path,
+    const std::vector<std::string>& additional_tags) const {
   std::unique_ptr<DictionaryValue> summary_root(new DictionaryValue);
 
   std::unique_ptr<ListValue> global_tags(new ListValue);
   for (const auto& global_tag : global_tags_) {
     global_tags->AppendString(global_tag);
+  }
+  for (const auto& tag : additional_tags) {
+    global_tags->AppendString(tag);
   }
   summary_root->Set("global_tags", std::move(global_tags));
 
