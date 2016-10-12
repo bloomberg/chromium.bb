@@ -13,6 +13,7 @@
 
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 
 using sandbox::bpf_dsl::AllOf;
 using sandbox::bpf_dsl::Allow;
@@ -103,6 +104,7 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
 #else
     case __NR_getrlimit:
 #endif
+    case __NR_sysinfo:  // https://crbug.com/655277
     case __NR_uname:
 
     // Permit socket operations so that renderers can connect to logd and
@@ -128,6 +130,11 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     const Arg<pid_t> tgid(0);
     return If(tgid == pid_, Allow())
            .Else(Error(EPERM));
+  }
+
+  // https://crbug.com/655299
+  if (sysno == __NR_clock_getres) {
+    return sandbox::RestrictClockID();
   }
 
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
