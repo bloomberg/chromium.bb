@@ -1925,12 +1925,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mash_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "media_blink_unittests"
       },
       {

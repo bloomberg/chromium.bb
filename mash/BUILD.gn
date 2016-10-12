@@ -10,7 +10,6 @@ group("all") {
   testonly = true
 
   deps = [
-    ":mash_unittests",
     "//components/leveldb",
     "//mash/catalog_viewer",
     "//mash/example",
@@ -20,6 +19,11 @@ group("all") {
     "//mash/session",
     "//mash/task_viewer",
   ]
+
+  # Build on platforms that support ash.
+  if (is_win || is_chromeos) {
+    deps += [ "//mash:mash_unittests" ]
+  }
 }
 
 group("browser") {
