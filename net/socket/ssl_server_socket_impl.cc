@@ -881,8 +881,10 @@ SSLServerContextImpl::SSLServerContextImpl(
 
   DCHECK_LT(SSL3_VERSION, ssl_server_config_.version_min);
   DCHECK_LT(SSL3_VERSION, ssl_server_config_.version_max);
-  SSL_CTX_set_min_version(ssl_ctx_.get(), ssl_server_config_.version_min);
-  SSL_CTX_set_max_version(ssl_ctx_.get(), ssl_server_config_.version_max);
+  CHECK(SSL_CTX_set_min_proto_version(ssl_ctx_.get(),
+                                      ssl_server_config_.version_min));
+  CHECK(SSL_CTX_set_max_proto_version(ssl_ctx_.get(),
+                                      ssl_server_config_.version_max));
 
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
   // set everything we care about to an absolute value.
