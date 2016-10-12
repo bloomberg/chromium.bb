@@ -253,10 +253,6 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
     blockToInsert = startBlock->cloneElementWithoutChildren();
   }
 
-  // TODO(xiaochengh): Recalculate visiblePos properly after mutations, so that
-  // visiblePos is always valid when used. Straightforward recanonicalization
-  // by deepEquivalent() leads to failure of
-  // editing/inserting/insert_paragraph_separator.html.
   VisiblePosition visiblePos =
       createVisiblePosition(insertionPosition, affinity);
   bool isFirstInBlock = isStartOfBlock(visiblePos);
@@ -418,6 +414,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
     document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     insertionPosition = Position::inParentAfterNode(*br);
+    visiblePos = createVisiblePosition(insertionPosition);
     // If the insertion point is a break element, there is nothing else
     // we need to do.
     if (visiblePos.deepEquivalent().anchorNode()->layoutObject()->isBR()) {
@@ -482,7 +479,6 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
 
       positionAfterSplit = Position::firstPositionInNode(textNode);
       insertionPosition = Position(textNode->previousSibling(), textOffset);
-      visiblePos = createVisiblePosition(insertionPosition);
     }
   }
 
@@ -506,12 +502,13 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
     return;
 
   document().updateStyleAndLayoutIgnorePendingStylesheets();
+  visiblePos = createVisiblePosition(insertionPosition);
 
   // If the paragraph separator was inserted at the end of a paragraph, an empty
   // line must be created.  All of the nodes, starting at visiblePos, are about
   // to be added to the new paragraph element.  If the first node to be inserted
   // won't be one that will hold an empty line open, add a br.
-  if (isEndOfParagraphDeprecated(visiblePos) &&
+  if (isEndOfParagraph(visiblePos) &&
       !lineBreakExistsAtVisiblePosition(visiblePos)) {
     appendNode(HTMLBRElement::create(document()), blockToInsert, editingState);
     if (editingState->isAborted())
