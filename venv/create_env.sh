@@ -22,12 +22,13 @@ cd "$(dirname "$(readlink -f -- "$0")")"
 (
   # Try for 30 seconds to acquire an exclusive lock on virtualenv.
   flock -w 30 9 || ( echo "Failed to acquire lock on virtualenv."; exit 1 )
-  if [[ requirements.txt -nt venv/timestamp ]]; then
+  installed="$venv_dir/.installed.txt"
+  if ! cmp -s requirements.txt "$installed" ; then
     echo "Creating or updating virtualenv in $(pwd)/$venv_dir/"
     virtualenv "$venv_dir" --extra-search-dir=pip_packages
     activate "$venv_dir"
     pip install --no-index -f pip_packages -r requirements.txt
-    touch "$venv_dir"/timestamp
+    cp requirements.txt "$installed"
   else
     echo "Existing virtualenv $(pwd)/$venv_dir/ is already up to date."
   fi
