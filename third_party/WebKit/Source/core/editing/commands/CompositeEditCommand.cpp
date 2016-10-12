@@ -1482,7 +1482,6 @@ void CompositeEditCommand::moveParagraphWithClones(
   }
 }
 
-// TODO(xiaochengh): Ensure valid VisiblePositions are passed to this function.
 void CompositeEditCommand::moveParagraph(
     const VisiblePosition& startOfParagraphToMove,
     const VisiblePosition& endOfParagraphToMove,
@@ -1491,18 +1490,14 @@ void CompositeEditCommand::moveParagraph(
     ShouldPreserveSelection shouldPreserveSelection,
     ShouldPreserveStyle shouldPreserveStyle,
     Node* constrainingAncestor) {
-  DCHECK(isStartOfParagraphDeprecated(startOfParagraphToMove))
-      << startOfParagraphToMove;
-  DCHECK(isEndOfParagraphDeprecated(endOfParagraphToMove))
-      << endOfParagraphToMove;
+  DCHECK(!document().needsLayoutTreeUpdate());
+  DCHECK(isStartOfParagraph(startOfParagraphToMove)) << startOfParagraphToMove;
+  DCHECK(isEndOfParagraph(endOfParagraphToMove)) << endOfParagraphToMove;
   moveParagraphs(startOfParagraphToMove, endOfParagraphToMove, destination,
                  editingState, shouldPreserveSelection, shouldPreserveStyle,
                  constrainingAncestor);
 }
 
-// TODO(xiaochengh): Ensure valid VisiblePositions are passed to this function,
-// and do proper recalculation after mutations so that they are still valid when
-// being used.
 void CompositeEditCommand::moveParagraphs(
     const VisiblePosition& startOfParagraphToMove,
     const VisiblePosition& endOfParagraphToMove,
@@ -1511,11 +1506,10 @@ void CompositeEditCommand::moveParagraphs(
     ShouldPreserveSelection shouldPreserveSelection,
     ShouldPreserveStyle shouldPreserveStyle,
     Node* constrainingAncestor) {
+  DCHECK(!document().needsLayoutTreeUpdate());
   if (startOfParagraphToMove.deepEquivalent() == destination.deepEquivalent() ||
       startOfParagraphToMove.isNull())
     return;
-
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   int startIndex = -1;
   int endIndex = -1;
@@ -1552,11 +1546,10 @@ void CompositeEditCommand::moveParagraphs(
   }
 
   RelocatablePosition beforeParagraphPosition(
-      previousPositionOfDeprecated(startOfParagraphToMove,
-                                   CannotCrossEditingBoundary)
+      previousPositionOf(startOfParagraphToMove, CannotCrossEditingBoundary)
           .deepEquivalent());
   RelocatablePosition afterParagraphPosition(
-      nextPositionOfDeprecated(endOfParagraphToMove, CannotCrossEditingBoundary)
+      nextPositionOf(endOfParagraphToMove, CannotCrossEditingBoundary)
           .deepEquivalent());
 
   // We upstream() the end and downstream() the start so that we don't include
@@ -1651,8 +1644,8 @@ void CompositeEditCommand::moveParagraphs(
       Position::firstPositionInNode(document().documentElement()),
       destination.toParentAnchoredPosition(), true);
 
-  VisibleSelection destinationSelection =
-      createVisibleSelectionDeprecated(destination, originalIsDirectional);
+  VisibleSelection destinationSelection = createVisibleSelection(
+      destination.toPositionWithAffinity(), originalIsDirectional);
   if (endingSelection().isNone()) {
     // We abort executing command since |destination| becomes invisible.
     editingState->abort();

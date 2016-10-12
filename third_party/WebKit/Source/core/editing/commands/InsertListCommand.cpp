@@ -431,6 +431,11 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         previousPositionOf(start).deepEquivalent().anchorNode(), listElement);
     DCHECK_NE(previousListChild, listChildNode);
   }
+
+  // Helpers for making |start| and |end| valid again after DOM changes.
+  PositionWithAffinity startPosition = start.toPositionWithAffinity();
+  PositionWithAffinity endPosition = end.toPositionWithAffinity();
+
   // When removing a list, we must always create a placeholder to act as a point
   // of insertion for the list content being removed.
   HTMLBRElement* placeholder = HTMLBRElement::create(document());
@@ -470,6 +475,12 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
   }
   if (editingState->isAborted())
     return;
+
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+  // Make |start| and |end| valid again.
+  start = createVisiblePosition(startPosition);
+  end = createVisiblePosition(endPosition);
 
   VisiblePosition insertionPoint = VisiblePosition::beforeNode(placeholder);
   moveParagraphs(start, end, insertionPoint, editingState, PreserveSelection,

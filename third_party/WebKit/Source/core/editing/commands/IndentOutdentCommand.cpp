@@ -295,6 +295,8 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState) {
         createVisiblePosition(visibleEndOfParagraph.toPositionWithAffinity());
   }
 
+  // TODO(xiaochengh): We should not store a VisiblePosition and later inspect
+  // its properties when it is already invalidated.
   VisiblePosition startOfParagraphToMove =
       startOfParagraph(visibleStartOfParagraph);
   VisiblePosition endOfParagraphToMove = endOfParagraph(visibleEndOfParagraph);
@@ -306,6 +308,10 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState) {
     return;
 
   document().updateStyleAndLayoutIgnorePendingStylesheets();
+  startOfParagraphToMove =
+      createVisiblePosition(startOfParagraphToMove.toPositionWithAffinity());
+  endOfParagraphToMove =
+      createVisiblePosition(endOfParagraphToMove.toPositionWithAffinity());
   moveParagraph(startOfParagraphToMove, endOfParagraphToMove,
                 VisiblePosition::beforeNode(placeholder), editingState,
                 PreserveSelection);

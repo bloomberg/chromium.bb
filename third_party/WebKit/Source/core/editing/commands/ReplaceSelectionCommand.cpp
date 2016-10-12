@@ -1525,9 +1525,15 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
   if (shouldMergeStart(selectionStartWasStartOfParagraph,
                        fragment.hasInterchangeNewlineAtStart(),
                        startIsInsideMailBlockquote)) {
-    // TODO(xiaochengh): Stop storing VisiblePositions through mutations.
     VisiblePosition startOfParagraphToMove = positionAtStartOfInsertedContent();
     VisiblePosition destination = previousPositionOf(startOfParagraphToMove);
+
+    // Helpers for making the VisiblePositions valid again after DOM changes.
+    PositionWithAffinity startOfParagraphToMovePosition =
+        startOfParagraphToMove.toPositionWithAffinity();
+    PositionWithAffinity destinationPosition =
+        destination.toPositionWithAffinity();
+
     // We need to handle the case where we need to merge the end
     // but our destination node is inside an inline that is the last in the
     // block.
@@ -1553,26 +1559,30 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
     // what comes after and prevent that from happening.
     VisiblePosition endOfInsertedContent = positionAtEndOfInsertedContent();
     if (startOfParagraph(endOfInsertedContent).deepEquivalent() ==
-        startOfParagraphToMove.deepEquivalent()) {
+        startOfParagraphToMovePosition.position()) {
       insertNodeAt(HTMLBRElement::create(document()),
                    endOfInsertedContent.deepEquivalent(), editingState);
       if (editingState->isAborted())
         return;
       // Mutation events (bug 22634) triggered by inserting the <br> might have
       // removed the content we're about to move
-      if (!startOfParagraphToMove.deepEquivalent().isConnected())
+      if (!startOfParagraphToMovePosition.position().isConnected())
         return;
     }
 
     document().updateStyleAndLayoutIgnorePendingStylesheets();
 
+    // Making the two VisiblePositions valid again.
+    startOfParagraphToMove =
+        createVisiblePosition(startOfParagraphToMovePosition);
+    destination = createVisiblePosition(destinationPosition);
+
     // FIXME: Maintain positions for the start and end of inserted content
     // instead of keeping nodes.  The nodes are only ever used to create
     // positions where inserted content starts/ends.
     moveParagraph(startOfParagraphToMove,
-                  endOfParagraph(createVisiblePosition(
-                      startOfParagraphToMove.toPositionWithAffinity())),
-                  destination, editingState);
+                  endOfParagraph(startOfParagraphToMove), destination,
+                  editingState);
     if (editingState->isAborted())
       return;
 
