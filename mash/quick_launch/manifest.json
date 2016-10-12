@@ -6,7 +6,7 @@
     "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },
     "required": {
       "*": { "classes": [ "app", "mash:launchable" ] },
-      "service:catalog": { "interfaces": [ "catalog::mojom::Catalog" ] }
+      "service:catalog": { "classes": [ "catalog:catalog" ] }
     }
   }
 }

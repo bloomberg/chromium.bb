@@ -3,14 +3,17 @@
   "name": "service:mus_ws_unittests_app",
   "display_name": "Mus Window Server Unittests",
   "capabilities": {
+    "provided": {
+      "ui:window_tree_client": [
+        "ui::mojom::WindowTreeClient"
+      ]
+    },
     "required": {
       "*": { "classes": [ "app" ] },
       "service:mus_ws_unittests_app": {
-        "interfaces": [ "ui::mojom::WindowTreeClient" ]
+        "classes": [ "ui:window_tree_client" ]
       },
-      "service:ui": {
-        "interfaces":  [ "ui::mojom::WindowTreeHostFactory" ]
-      }
+      "service:ui": { "classes": [ "ui:window_tree_host_factory" ] }
     }
   }
 }

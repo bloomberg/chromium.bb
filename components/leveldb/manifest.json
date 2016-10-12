@@ -3,6 +3,9 @@
   "name": "service:leveldb",
   "display_name": "LevelDB Service",
   "capabilities": {
+    "provided": {
+      "leveldb:leveldb": [ "leveldb::mojom::LevelDBService" ]
+    },
     "required": {
       "*": { "classes": [ "app" ] }
     }

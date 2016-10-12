@@ -6,7 +6,7 @@
     "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },
     "required": {
       "*": { "classes": [ "app" ] },
-      "service:mash_session": { "interfaces": [ "mash::session::mojom::Session" ] }
+      "service:mash_session": { "classes": [ "mash_session:session" ] }
     }
   }
 }

@@ -3,10 +3,13 @@
   "name": "service:accessibility_autoclick",
   "display_name": "Autoclick",
   "capabilities": {
-    "provided": { "mash:launchable": ["mash::mojom::Launchable"] },
+    "provided": {
+      "mash:launchable": [ "mash::mojom::Launchable" ],
+      "ash:autoclick": [ "ash::autoclick::mojom::AutoclickController" ]
+    },
     "required": {
       "*": { "classes": [ "app" ] },
-      "service:shell": { "interfaces": [ "shell::mojom::Shell" ] }
+      "service:shell": { "classes": [ "shell:service_manager" ] }
     }
   }
 }

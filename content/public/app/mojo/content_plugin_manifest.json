@@ -4,7 +4,10 @@
   "display_name": "Content (plugin process)",
   "capabilities": {
     "provided": {
-      "browser": [ "IPC::mojom::ChannelBootstrap" ]
+      "browser": [ "IPC::mojom::ChannelBootstrap" ],
+      "shell:service_factory": [
+        "shell::mojom::ServiceFactory"
+      ]
     },
     "required": {
       "service:content_browser": {

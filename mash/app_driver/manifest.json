@@ -7,9 +7,7 @@
       "*": {
         "classes": [ "mash:launchable", "mus:window_manager" ]
       },
-      "service:catalog": {
-        "interfaces": [ "catalog::mojom::Catalog" ]
-      }
+      "service:catalog": { "classes": [ "catalog:catalog" ] }
     }
   }
 }

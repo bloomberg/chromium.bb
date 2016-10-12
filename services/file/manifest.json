@@ -4,6 +4,10 @@
   "process-group": "browser",
   "display_name": "File Service",
   "capabilities": {
+    "provided": {
+      "file:filesystem": [ "file::mojom::FileSystem" ],
+      "file:leveldb": [ "leveldb::mojom::LevelDBService" ]
+    },
     "required": {
       "*": { "classes": [ "app" ] }
     }

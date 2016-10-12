@@ -5,8 +5,7 @@
   "capabilities": {
     "required": {
       "service:ui": {
-        "interfaces": [ "ui::mojom::WindowManagerWindowTreeFactory"],
-        "classes": [ "app" ]
+        "classes": [ "app", "ui:window_manager" ]
       }
     }
   }

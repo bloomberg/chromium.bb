@@ -4,7 +4,7 @@
   "display_name": "Navigation",
   "capabilities": {
     "provided": {
-      "app":  [ "navigation::mojom::ViewFactory" ]
+      "app": [ "navigation::mojom::ViewFactory" ]
     },
     "required": {
       "*": { "classes": [ "app" ] },

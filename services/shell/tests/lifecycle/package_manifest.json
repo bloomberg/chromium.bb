@@ -7,6 +7,9 @@
     "provided": {
       "lifecycle_unittest:lifecycle_control": [
         "shell::test::mojom::LifecycleControl"
+      ],
+      "shell:service_factory": [
+        "shell::mojom::ServiceFactory"
       ]
     }
   }

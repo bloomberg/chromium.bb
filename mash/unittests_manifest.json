@@ -5,11 +5,7 @@
   "capabilities": {
     "required": {
       "*": { "classes": [ "app", "test" ] },
-      "service:ash": {
-        "interfaces": [
-          "ui::mojom::AcceleratorRegistrar"
-        ]
-      }
+      "service:ash": { "classes": [ "mus:window_manager" ] }
     }
   }
 }

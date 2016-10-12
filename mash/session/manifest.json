@@ -3,6 +3,9 @@
   "name": "service:mash_session",
   "display_name": "User Session",
   "capabilities": {
+    "provided": {
+      "mash_session:session": [ "mash::session::mojom::Session" ]
+    },
     "required": { "*": { "classes": [ "app" ] } }
   }
 }

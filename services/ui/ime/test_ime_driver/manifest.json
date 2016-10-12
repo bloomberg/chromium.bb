@@ -4,9 +4,7 @@
   "display_name": "Test IME Driver",
   "capabilities": {
     "required": {
-      "service:ui": {
-        "interfaces": [ "ui::mojom::IMERegistrar" ]
-      }
+      "service:ui": { "classes": [ "ui:ime_registrar" ] }
     }
   }
 }

@@ -31,6 +31,9 @@
         "device::mojom::TimeZoneMonitor",
         "media::mojom::ImageCapture",
         "memory_coordinator::mojom::MemoryCoordinatorHandle"
+      ],
+      "shell:service_factory": [
+        "shell::mojom::ServiceFactory"
       ]
     },
     "required": {
@@ -50,13 +53,8 @@
           "shell:user_id"
         ]
       },
-      "service:file": {
-        "interfaces": [
-          "file::mojom::FileSystem",
-          "leveldb::mojom::LevelDBService"
-        ]
-      },
-      "service:media": { "interfaces": [ "media::mojom::MediaService" ] }
+      "service:file": { "classes": [ "file:filesystem", "file:leveldb" ] },
+      "service:media": { "classes": [ "media:media" ] }
     }
   }
 }

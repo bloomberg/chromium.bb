@@ -21,12 +21,32 @@
       ],
       "test": [
         "ui::mojom::WindowServerTest"
+      ],
+      "ui:gpu_client": [
+        "ui::mojom::Gpu",
+        "ui::mojom::GpuService"
+      ],
+      "ui:ime_registrar": [
+        "ui::mojom::IMERegistrar"
+      ],
+      "ui:user_access_manager": [
+        "ui::mojom::UserAccessManager"
+      ],
+      "ui:window_manager": [
+        "display::mojom::DisplayController",
+        "ui::mojom::AccessibilityManager",
+        "ui::mojom::WindowManagerWindowTreeFactory"
+      ],
+      "ui:window_tree_host_factory": [
+        "ui::mojom::WindowTreeHostFactory"
       ]
     },
     "required": {
-      "service:ui": { "classes": [ "ozone" ] },
       "*": { "classes": [ "app" ] },
-      "service:shell": { "classes": [ "shell:all_users", "shell:explicit_class" ] }
+      "service:shell": {
+        "classes": [ "shell:all_users", "shell:explicit_class" ]
+      },
+      "service:ui": { "classes": [ "ozone" ] }
     }
   }
 }

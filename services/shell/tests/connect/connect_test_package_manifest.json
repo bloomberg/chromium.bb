@@ -6,6 +6,9 @@
     "provided": {
       "connect_unittests:connect_test_service": [
         "shell::test::mojom::ConnectTestService"
+      ],
+      "shell:service_factory": [
+        "shell::mojom::ServiceFactory"
       ]
     }
   }

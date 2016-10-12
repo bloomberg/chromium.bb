@@ -13,29 +13,10 @@
     },
     "required": {
       "*": { "classes": [ "accessibility", "app" ] },
-      "service:content_browser" : {
-        "interfaces": [
-          "ash::mojom::SystemTrayClient",
-          "ash::mojom::WallpaperManager",
-          "app_list::mojom::AppListPresenter",
-          "keyboard::mojom::Keyboard"
-        ]
-      },
-      "service:mash_session": {
-        "interfaces": [ "mash::session::mojom::Session" ]
-      },
-      "service:ui": {
-        "interfaces": [
-          "display::mojom::DisplayController",
-          "ui::mojom::AccessibilityManager",
-          "ui::mojom::WindowManagerWindowTreeFactory"
-        ]
-      },
-      "service:touch_hud": {
-        "interfaces": [
-          "mash::mojom::Launchable"
-        ]
-      }
+      "service:content_browser" : { "classes": [ "content_browser:ash" ] },
+      "service:mash_session": { "classes": [ "mash_session:session" ] },
+      "service:ui": { "classes": [ "ui:window_manager" ] },
+      "service:touch_hud": { "classes": [ "mash:launchable" ] }
     }
   }
 }

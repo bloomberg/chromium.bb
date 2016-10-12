@@ -3,10 +3,13 @@
   "name": "service:mash_init",
   "display_name": "Root Controller",
   "capabilities": {
+    "provided": {
+      "mash_init:init": [ "mash::init::mojom::Init" ]
+    },
     "required": {
       "*": { },
-      "service:login": { "interfaces": [ "mash::login::mojom::Login" ] },
-      "service:shell": { "classes": ["shell:user_id", "shell:all_users"] }
+      "service:login": { "classes": [ "login:login" ] },
+      "service:shell": { "classes": [ "shell:user_id", "shell:all_users" ] }
     }
   }
 }

@@ -495,15 +495,10 @@ ServiceManager::ServiceManager(
   mojom::ServiceRequest request = mojo::GetProxy(&service);
 
   CapabilitySpec spec;
-  std::set<std::string> shell_provided;
-  shell_provided.insert("shell::mojom::ServiceManager");
-  spec.provided[kCapabilityClass_ServiceManager] = shell_provided;
-  CapabilityRequest wildcard_request;
-  wildcard_request.interfaces.insert("shell::mojom::ServiceFactory");
-  spec.required["*"] = wildcard_request;
-  CapabilityRequest catalog_request;
-  catalog_request.interfaces.insert("shell::mojom::Resolver");
-  spec.required["service:catalog"] = catalog_request;
+  spec.provided[kCapabilityClass_ServiceManager].insert(
+      "shell::mojom::ServiceManager");
+  spec.required["*"].classes.insert("shell:service_factory");
+  spec.required["service:catalog"].classes.insert("shell:resolver");
 
   service_manager_instance_ =
       CreateInstance(Identity(), CreateServiceManagerIdentity(), spec);
@@ -584,6 +579,8 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
   //             a bit of a chicken-and-egg problem.
   CapabilitySpec spec;
   spec.provided["app"].insert("filesystem::mojom::Directory");
+  spec.provided["catalog:catalog"].insert("catalog::mojom::Catalog");
+  spec.provided["shell:resolver"].insert("shell::mojom::Resolver");
   spec.provided["control"].insert("catalog::mojom::CatalogControl");
   Instance* instance = CreateInstance(
       CreateServiceManagerIdentity(), CreateCatalogIdentity(), spec);

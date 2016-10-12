@@ -7,11 +7,17 @@
 // is run in a Mash environment.
 {
   "capabilities": {
+    "provided": {
+      "content_browser:ash": [
+        "ash::mojom::SystemTrayClient",
+        "ash::mojom::WallpaperManager",
+        "app_list::mojom::AppListPresenter",
+        "keyboard::mojom::Keyboard"
+      ]
+    },
     "required": {
       "service:ash": { "classes": [ "ash" ] },
-      "service:accessibility_autoclick": {
-        "interfaces": [ "ash::autoclick::mojom::AutoclickController" ]
-      },
+      "service:accessibility_autoclick": { "classes": [ "ash:autoclick" ] },
       "service:mash_session": { "classes": [ "app" ] }
     }
   }

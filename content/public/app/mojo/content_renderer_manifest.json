@@ -13,16 +13,14 @@
         "mojom::ResourceUsageReporter",
         "visitedlink::mojom::VisitedLinkNotificationSink",
         "web_cache::mojom::WebCache"
+      ],
+      "shell:service_factory": [
+        "shell::mojom::ServiceFactory"
       ]
     },
     "required": {
       "service:content_browser": { "classes":  [ "renderer" ] },
-      "service:ui": {
-        "interfaces": [
-          "ui::mojom::Gpu",
-          "ui::mojom::GpuService"
-        ]
-      }
+      "service:ui": { "classes":  [ "ui:gpu_client" ] }
     }
   }
 }

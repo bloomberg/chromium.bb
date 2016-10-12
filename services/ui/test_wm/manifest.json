@@ -4,7 +4,7 @@
   "display_name": "Test Window Manager",
   "capabilities": {
     "required": {
-      "service:ui": { "interfaces": [ "ui::mojom::WindowManagerWindowTreeFactory" ] }
+      "service:ui": { "classes": [ "ui:window_manager" ] }
     }
   }
 }

@@ -6,7 +6,7 @@
     "provided": { "mash:launchable": ["mash::mojom::Launchable"] },
     "required": {
       "*": { "classes": [ "app" ] },
-      "service:shell": { "interfaces": [ "shell::mojom::Shell" ] }
+      "service:shell": { "classes": [ "shell:service_manager" ] }
     }
   }
 }
