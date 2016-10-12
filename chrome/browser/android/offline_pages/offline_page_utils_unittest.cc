@@ -13,8 +13,8 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
-#include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
@@ -26,6 +26,7 @@
 #include "components/offline_pages/offline_page_test_archiver.h"
 #include "components/offline_pages/offline_page_test_store.h"
 #include "components/offline_pages/offline_page_types.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -79,17 +80,13 @@ class OfflinePageUtilsTest
       const GURL& url,
       const base::FilePath& file_name);
 
+  content::TestBrowserThreadBundle browser_thread_bundle_;
   int64_t offline_id_;
   GURL url_;
-
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
   TestingProfile profile_;
 };
 
-OfflinePageUtilsTest::OfflinePageUtilsTest()
-    : task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_) {}
+OfflinePageUtilsTest::OfflinePageUtilsTest() = default;
 
 OfflinePageUtilsTest::~OfflinePageUtilsTest() {}
 
@@ -113,7 +110,7 @@ void OfflinePageUtilsTest::SetUp() {
 }
 
 void OfflinePageUtilsTest::RunUntilIdle() {
-  task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void OfflinePageUtilsTest::OnSavePageDone(SavePageResult result,
