@@ -71,7 +71,8 @@ TEST_F(FramedBrowserWindowTest, ShowAndClose) {
 }
 
 // Test that undocumented title-hiding API we're using does the job.
-TEST_F(FramedBrowserWindowTest, DoesHideTitle) {
+// TODO(crbug.com/655112): Fails on Mac 10.11 Tests.
+TEST_F(FramedBrowserWindowTest, DISABLED_DoesHideTitle) {
   // The -display calls are not strictly necessary, but they do
   // make it easier to see what's happening when debugging (without
   // them the changes are never flushed to the screen).
@@ -102,7 +103,8 @@ TEST_F(FramedBrowserWindowTest, DoesHideTitle) {
 }
 
 // Test to make sure that our window widgets are in the right place.
-TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
+// TODO(crbug.com/655112): Fails on Mac 10.11 Tests.
+TEST_F(FramedBrowserWindowTest, DISABLED_WindowWidgetLocation) {
   BOOL yes = YES;
   BOOL no = NO;
 
