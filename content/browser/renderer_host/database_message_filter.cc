@@ -279,7 +279,7 @@ void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
   TRACE_EVENT0("io", "DatabaseMessageFilter::OnDatabaseGetSpaceAvailable");
 
   quota_manager->GetUsageAndQuota(
-      GURL(origin.Serialize()), storage::kStorageTypeTemporary,
+      origin.GetURL(), storage::kStorageTypeTemporary,
       base::Bind(&DatabaseMessageFilter::OnDatabaseGetUsageAndQuota, this,
                  reply_msg));
 }
@@ -345,7 +345,7 @@ void DatabaseMessageFilter::OnDatabaseModified(
   }
 
   std::string origin_identifier(
-      storage::GetIdentifierFromOrigin(GURL(origin.Serialize())));
+      storage::GetIdentifierFromOrigin(origin.GetURL()));
   if (!database_connections_.IsDatabaseOpened(origin_identifier,
                                               database_name)) {
     bad_message::ReceivedBadMessage(this,
@@ -368,7 +368,7 @@ void DatabaseMessageFilter::OnDatabaseClosed(
   }
 
   std::string origin_identifier(
-      storage::GetIdentifierFromOrigin(GURL(origin.Serialize())));
+      storage::GetIdentifierFromOrigin(origin.GetURL()));
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
     bad_message::ReceivedBadMessage(this,
@@ -391,8 +391,7 @@ void DatabaseMessageFilter::OnHandleSqliteError(
     return;
   }
   db_tracker_->HandleSqliteError(
-      storage::GetIdentifierFromOrigin(GURL(origin.Serialize())), database_name,
-      error);
+      storage::GetIdentifierFromOrigin(origin.GetURL()), database_name, error);
 }
 
 void DatabaseMessageFilter::OnDatabaseSizeChanged(

@@ -134,7 +134,7 @@ void PermissionServiceImpl::RequestPermission(
       base::Bind(&PermissionRequestResponseCallbackWrapper, callback), 1));
   int id = browser_context->GetPermissionManager()->RequestPermission(
       PermissionDescriptorToPermissionType(permission),
-      context_->render_frame_host(), GURL(origin.Serialize()), user_gesture,
+      context_->render_frame_host(), origin.GetURL(), user_gesture,
       base::Bind(&PermissionServiceImpl::OnRequestPermissionResponse,
                  weak_factory_.GetWeakPtr(), pending_request_id));
 
@@ -184,8 +184,7 @@ void PermissionServiceImpl::RequestPermissions(
   int pending_request_id = pending_requests_.Add(
       new PendingRequest(callback, permissions.size()));
   int id = browser_context->GetPermissionManager()->RequestPermissions(
-      types, context_->render_frame_host(), GURL(origin.Serialize()),
-      user_gesture,
+      types, context_->render_frame_host(), origin.GetURL(), user_gesture,
       base::Bind(&PermissionServiceImpl::OnRequestPermissionsResponse,
                  weak_factory_.GetWeakPtr(), pending_request_id));
 

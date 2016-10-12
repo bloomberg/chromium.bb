@@ -181,7 +181,7 @@ void BudgetDatabase::SpendBudgetAfterSync(const url::Origin& origin,
 
   // Get the current SES score, to generate UMA.
   SiteEngagementService* service = SiteEngagementService::Get(profile_);
-  double score = service->GetScore(GURL(origin.Serialize()));
+  double score = service->GetScore(origin.GetURL());
 
   // Walk the list of budget chunks to see if the origin has enough budget.
   double total = 0;
@@ -305,7 +305,7 @@ void BudgetDatabase::SyncLoadedCache(const url::Origin& origin,
 void BudgetDatabase::AddEngagementBudget(const url::Origin& origin) {
   // Get the current SES score, which we'll use to set a new budget.
   SiteEngagementService* service = SiteEngagementService::Get(profile_);
-  double score = service->GetScore(GURL(origin.Serialize()));
+  double score = service->GetScore(origin.GetURL());
 
   // By default we award the "full" award. Then that ratio is decreased if
   // there have been other awards recently.

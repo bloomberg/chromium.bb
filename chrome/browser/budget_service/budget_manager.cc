@@ -69,7 +69,7 @@ double BudgetManager::GetCost(blink::mojom::BudgetOperationType type) {
 
 void BudgetManager::GetBudget(const url::Origin& origin,
                               const GetBudgetCallback& callback) {
-  if (origin.unique() || !content::IsOriginSecure(GURL(origin.Serialize()))) {
+  if (origin.unique() || !content::IsOriginSecure(origin.GetURL())) {
     callback.Run(blink::mojom::BudgetServiceErrorType::NOT_SUPPORTED,
                  mojo::Array<blink::mojom::BudgetStatePtr>());
     return;
@@ -80,7 +80,7 @@ void BudgetManager::GetBudget(const url::Origin& origin,
 void BudgetManager::Reserve(const url::Origin& origin,
                             blink::mojom::BudgetOperationType type,
                             const ReserveCallback& callback) {
-  if (origin.unique() || !content::IsOriginSecure(GURL(origin.Serialize()))) {
+  if (origin.unique() || !content::IsOriginSecure(origin.GetURL())) {
     callback.Run(blink::mojom::BudgetServiceErrorType::NOT_SUPPORTED,
                  false /* success */);
     return;
@@ -93,7 +93,7 @@ void BudgetManager::Reserve(const url::Origin& origin,
 void BudgetManager::Consume(const url::Origin& origin,
                             blink::mojom::BudgetOperationType type,
                             const ConsumeCallback& callback) {
-  if (origin.unique() || !content::IsOriginSecure(GURL(origin.Serialize()))) {
+  if (origin.unique() || !content::IsOriginSecure(origin.GetURL())) {
     callback.Run(false /* success */);
     return;
   }

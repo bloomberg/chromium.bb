@@ -149,8 +149,8 @@ void SiteDetails::CollectSiteInfo(WebContents* contents,
       // determine process placement.
       url::Origin origin = frame->GetLastCommittedOrigin();
       GURL site = SiteInstance::GetSiteForURL(
-          context, origin.unique() ? frame->GetLastCommittedURL()
-                                   : GURL(origin.Serialize()));
+          context,
+          origin.unique() ? frame->GetLastCommittedURL() : origin.GetURL());
 
       bool should_isolate = ShouldIsolate(context, scenario, site);
 

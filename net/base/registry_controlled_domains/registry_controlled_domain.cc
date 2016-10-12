@@ -219,8 +219,7 @@ bool SameDomainOrHost(
 bool SameDomainOrHost(const url::Origin& origin1,
                       const url::Origin& origin2,
                       PrivateRegistryFilter filter) {
-  return SameDomainOrHost(GURL(origin1.Serialize()), GURL(origin2.Serialize()),
-                          filter);
+  return SameDomainOrHost(origin1.GetURL(), origin2.GetURL(), filter);
 }
 
 size_t GetRegistryLength(

@@ -44,8 +44,7 @@ class IndexedDBTest : public testing::Test {
         quota_manager_proxy_(new MockQuotaManagerProxy(nullptr, nullptr)),
         file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
-    special_storage_policy_->AddSessionOnly(
-        GURL(kSessionOnlyOrigin.Serialize()));
+    special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin.GetURL());
   }
   ~IndexedDBTest() override {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();

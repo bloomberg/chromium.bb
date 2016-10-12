@@ -2074,11 +2074,10 @@ ChromeContentBrowserClient::AllowWebBluetooth(
       HostContentSettingsMapFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context));
 
-  if (content_settings->GetContentSetting(GURL(requesting_origin.Serialize()),
-                                          GURL(embedding_origin.Serialize()),
-                                          CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD,
-                                          std::string()) ==
-      CONTENT_SETTING_BLOCK) {
+  if (content_settings->GetContentSetting(
+          requesting_origin.GetURL(), embedding_origin.GetURL(),
+          CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD,
+          std::string()) == CONTENT_SETTING_BLOCK) {
     return AllowWebBluetoothResult::BLOCK_POLICY;
   }
   return AllowWebBluetoothResult::ALLOW;

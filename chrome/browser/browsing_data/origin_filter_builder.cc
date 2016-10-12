@@ -52,7 +52,7 @@ base::Callback<bool(const ContentSettingsPattern& pattern)>
 
   for (const url::Origin& origin : origin_list_) {
     patterns_from_origins->push_back(
-        ContentSettingsPattern::FromURLNoWildcard(GURL(origin.Serialize())));
+        ContentSettingsPattern::FromURLNoWildcard(origin.GetURL()));
     DCHECK(patterns_from_origins->back().IsValid());
   }
 

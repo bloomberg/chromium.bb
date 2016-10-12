@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/url_util.h"
 #include "storage/browser/database/database_util.h"
+#include "url/origin.h"
 
 using storage::QuotaClient;
 using storage::DatabaseUtil;
@@ -37,7 +38,7 @@ void GetAllOriginsOnIndexedDBThread(IndexedDBContextImpl* context,
                                     std::set<GURL>* origins_to_return) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   for (const auto& origin : context->GetAllOrigins())
-    origins_to_return->insert(GURL(origin.Serialize()));
+    origins_to_return->insert(origin.GetURL());
 }
 
 void DidGetOrigins(const IndexedDBQuotaClient::GetOriginsCallback& callback,

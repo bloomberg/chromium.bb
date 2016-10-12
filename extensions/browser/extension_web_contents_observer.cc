@@ -24,6 +24,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/view_type.h"
+#include "url/origin.h"
 
 namespace extensions {
 
@@ -245,8 +246,8 @@ const Extension* ExtensionWebContentsObserver::GetExtensionFromFrame(
     // schemes. With site isolation, this is still needed to exclude sandboxed
     // extension frames with a unique origin.
     if (origin.unique() ||
-        site_url != content::SiteInstance::GetSiteForURL(
-                        browser_context, GURL(origin.Serialize())))
+        site_url != content::SiteInstance::GetSiteForURL(browser_context,
+                                                         origin.GetURL()))
       return nullptr;
   }
 

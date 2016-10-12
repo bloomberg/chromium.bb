@@ -41,7 +41,7 @@ GURL GURLOriginWithWKSecurityOrigin(WKSecurityOrigin* origin) {
   url::SchemeHostPort origin_tuple(base::SysNSStringToUTF8(origin.protocol),
                                    base::SysNSStringToUTF8(origin.host),
                                    base::checked_cast<uint16_t>(origin.port));
-  return GURL(origin_tuple.Serialize());
+  return origin_tuple.GetURL();
 }
 
 }  // namespace web

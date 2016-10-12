@@ -19,14 +19,6 @@
 
 namespace content {
 
-namespace {
-
-GURL ConvertToGURL(const url::Origin& origin) {
-  return origin.unique() ? GURL() : GURL(origin.Serialize());
-}
-
-}  // namespace
-
 void SetAndCheckAncestorFlag(MediaStreamRequest* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* rfh =
@@ -213,7 +205,7 @@ void MediaStreamUIProxy::CheckAccess(
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Core::CheckAccess, base::Unretained(core_.get()),
-                 ConvertToGURL(security_origin), type, render_process_id,
+                 security_origin.GetURL(), type, render_process_id,
                  render_frame_id),
       base::Bind(&MediaStreamUIProxy::OnCheckedAccess,
                  weak_factory_.GetWeakPtr(), callback));

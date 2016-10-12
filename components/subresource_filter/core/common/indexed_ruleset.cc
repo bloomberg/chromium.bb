@@ -362,7 +362,7 @@ bool IsThirdPartyUrl(const GURL& url, const url::Origin& first_party_origin) {
   // TODO(pkalinnikov): Avoid converting Origin to GURL.
   return first_party_origin.unique() ||
          !net::registry_controlled_domains::SameDomainOrHost(
-             url, GURL(first_party_origin.Serialize()),
+             url, first_party_origin.GetURL(),
              net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 

@@ -70,6 +70,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
@@ -488,7 +489,7 @@ void RenderMessageFilter::OnCacheableMetadataAvailableForCacheStorage(
     memcpy(buf->data(), &data.front(), data.size());
 
   cache_storage_context_->cache_manager()->OpenCache(
-      GURL(cache_storage_origin.Serialize()), cache_storage_cache_name,
+      cache_storage_origin.GetURL(), cache_storage_cache_name,
       base::Bind(&RenderMessageFilter::OnCacheStorageOpenCallback,
                  weak_ptr_factory_.GetWeakPtr(), url, expected_response_time,
                  buf, data.size()));

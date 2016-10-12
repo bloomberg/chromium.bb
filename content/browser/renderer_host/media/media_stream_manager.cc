@@ -168,10 +168,6 @@ bool CalledOnIOThread() {
          !BrowserThread::IsMessageLoopValid(BrowserThread::IO);
 }
 
-GURL ConvertToGURL(const url::Origin& origin) {
-  return origin.unique() ? GURL() : GURL(origin.Serialize());
-}
-
 bool GetDeviceIDFromHMAC(const std::string& salt,
                          const url::Origin& security_origin,
                          const std::string& hmac_device_id,
@@ -307,7 +303,7 @@ class MediaStreamManager::DeviceRequest {
     target_frame_id_ = requesting_frame_id;
     ui_request_.reset(new MediaStreamRequest(
         requesting_process_id, requesting_frame_id, page_request_id,
-        ConvertToGURL(security_origin), user_gesture, request_type,
+        security_origin.GetURL(), user_gesture, request_type,
         requested_audio_device_id, requested_video_device_id, audio_type_,
         video_type_));
   }
@@ -321,7 +317,7 @@ class MediaStreamManager::DeviceRequest {
     target_frame_id_ = target_render_frame_id;
     ui_request_.reset(new MediaStreamRequest(
         target_render_process_id, target_render_frame_id, page_request_id,
-        ConvertToGURL(security_origin), user_gesture, request_type, "", "",
+        security_origin.GetURL(), user_gesture, request_type, "", "",
         audio_type_, video_type_));
   }
 
@@ -348,7 +344,7 @@ class MediaStreamManager::DeviceRequest {
 
     media_observer->OnMediaRequestStateChanged(
         target_process_id_, target_frame_id_, page_request_id,
-        ConvertToGURL(security_origin), stream_type, new_state);
+        security_origin.GetURL(), stream_type, new_state);
   }
 
   MediaRequestState state(MediaStreamType stream_type) const {
@@ -1964,7 +1960,7 @@ bool MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
 bool MediaStreamManager::IsOriginAllowed(int render_process_id,
                                          const url::Origin& origin) {
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
-          render_process_id, ConvertToGURL(origin))) {
+          render_process_id, origin.GetURL())) {
     LOG(ERROR) << "MSM: Renderer requested a URL it's not allowed to use.";
     return false;
   }

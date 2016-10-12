@@ -35,6 +35,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if !defined(OS_MACOSX)
 #include "third_party/khronos/GLES2/gl2.h"

@@ -17,7 +17,6 @@
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
-#include "url/gurl.h"
 
 namespace {
 
@@ -182,7 +181,7 @@ void LocalStorageCachedArea::KeyDeleted(const std::vector<uint8_t>& key,
 
   blink::WebStorageEventDispatcher::dispatchLocalStorageEvent(
       key_string, Uint8VectorToString16(old_value), base::NullableString16(),
-      GURL(origin_.Serialize()), page_url, originating_area);
+      origin_.GetURL(), page_url, originating_area);
 }
 
 void LocalStorageCachedArea::AllDeleted(const std::string& source) {
@@ -213,8 +212,7 @@ void LocalStorageCachedArea::AllDeleted(const std::string& source) {
 
   blink::WebStorageEventDispatcher::dispatchLocalStorageEvent(
       base::NullableString16(), base::NullableString16(),
-      base::NullableString16(), GURL(origin_.Serialize()), page_url,
-      originating_area);
+      base::NullableString16(), origin_.GetURL(), page_url, originating_area);
 }
 
 void LocalStorageCachedArea::GetAllComplete(const std::string& source) {
@@ -261,9 +259,8 @@ void LocalStorageCachedArea::KeyAddedOrChanged(
   }
 
   blink::WebStorageEventDispatcher::dispatchLocalStorageEvent(
-      key_string, old_value, new_value_string,
-      GURL(origin_.Serialize()), page_url, originating_area);
-
+      key_string, old_value, new_value_string, origin_.GetURL(), page_url,
+      originating_area);
 }
 
 void LocalStorageCachedArea::EnsureLoaded() {
