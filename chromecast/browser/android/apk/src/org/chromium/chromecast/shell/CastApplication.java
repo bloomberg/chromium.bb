@@ -6,10 +6,10 @@ package org.chromium.chromecast.shell;
 
 import android.content.Context;
 import android.os.Build;
-import android.util.Log;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.content.app.ContentApplication;
 
