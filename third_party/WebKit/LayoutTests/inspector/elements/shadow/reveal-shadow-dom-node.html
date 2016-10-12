@@ -33,10 +33,11 @@ function test()
         {
             var shadowDiv = children[0];
             InspectorTest.addResult("User-agent shadow DOM hidden:");
-            WebInspector.panels.elements.revealAndSelectNode(shadowDiv);
-            WebInspector.settingForTest("showUAShadowDOM").set(true);
-            InspectorTest.addResult("User-agent shadow DOM shown:");
-            WebInspector.panels.elements.revealAndSelectNode(shadowDiv);
+            WebInspector.panels.elements.revealAndSelectNode(shadowDiv).then(() => {
+                WebInspector.settingForTest("showUAShadowDOM").set(true);
+                InspectorTest.addResult("User-agent shadow DOM shown:");
+                WebInspector.panels.elements.revealAndSelectNode(shadowDiv);
+            });
         }
     });
 }

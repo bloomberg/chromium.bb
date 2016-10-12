@@ -3,7 +3,6 @@
 <script src="../inspector-test.js"></script>
 <script src="../console-test.js"></script>
 <script>
-
 function loadScript()
 {
     var script = document.createElement('script');
@@ -44,7 +43,7 @@ function test()
 
     function panelChanged()
     {
-        InspectorTest.addResult("Panel " + WebInspector.inspectorView.currentPanel().name + " was opened");
+        InspectorTest.addResult("Panel " + WebInspector.inspectorView._tabbedPane._currentTab.id + " was opened");
         InspectorTest.completeTest();
     }
 

@@ -9,7 +9,7 @@
 function test()
 {
 
-    WebInspector.SourcesPanel.show();
+    WebInspector.viewManager.showView("sources");
     InspectorTest.showScriptSource("search.js", didShowScriptSource);
 
     function didShowScriptSource(sourceFrame)

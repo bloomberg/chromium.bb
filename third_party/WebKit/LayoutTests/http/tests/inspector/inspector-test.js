@@ -1079,10 +1079,11 @@ function runTest(enableWatchDogWhileDebugging)
         }
 
         // 3. Run test function.
-        Promise.all(promises).then(function() {
+        Promise.all(promises).then(() => {
             if (lastLoadedPanel)
-                WebInspector.inspectorView.showInitialPanelForTest(lastLoadedPanel);
-            testFunction();
+                WebInspector.inspectorView.showPanel(lastLoadedPanel).then(testFunction);
+            else
+                testFunction();
         }).catch(function(e) {
             console.error(e);
             InspectorTest.completeTest();

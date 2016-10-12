@@ -12,7 +12,7 @@ InspectorTest.startDebuggerTest = function(callback, quiet)
     console.assert(InspectorTest.debuggerModel.debuggerEnabled(), "Debugger has to be enabled");
     if (quiet !== undefined)
         InspectorTest._quiet = quiet;
-    WebInspector.SourcesPanel.show();
+    WebInspector.viewManager.showView("sources");
 
     InspectorTest.addSniffer(WebInspector.DebuggerModel.prototype, "_pausedScript", InspectorTest._pausedScript, true);
     InspectorTest.addSniffer(WebInspector.DebuggerModel.prototype, "_resumedScript", InspectorTest._resumedScript, true);

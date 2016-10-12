@@ -14,8 +14,6 @@ function scrollAndDisplay()
 
 function test()
 {
-    var currentPanel = WebInspector.inspectorView.currentPanel();
-    InspectorTest.assertEquals(currentPanel._panelName, "timeline", "Current panel should be the timeline.");
     Runtime.experiments.enableForTest("timelineInvalidationTracking");
 
     InspectorTest.invokeAsyncWithTimeline("scrollAndDisplay", onRecordingDone);

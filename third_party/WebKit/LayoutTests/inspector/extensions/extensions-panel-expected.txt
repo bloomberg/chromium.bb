@@ -27,15 +27,14 @@ Extension panel size correct
 Panel hidden
 RUNNING TEST: extension_testGlobalShortcuts
 Panel shown, now toggling console...
-Panel resized, switching away...
-Panel hidden, test passed.
+Panel resized, test passed.
 RUNNING TEST: extension_testOpenResource
 Showing .../extensions-panel.html
-Showing resource .../inspector/extensions/extensions-panel.html in panel sources (sources), line: 1001
+Showing resource .../inspector/extensions/extensions-panel.html in panel sources), line: 1001
 Showing .../abe.png
-Showing resource .../extensions/resources/abe.png in panel sources (sources), line: 1002
+Showing resource .../extensions/resources/abe.png in panel sources), line: 1002
 Showing .../missing.txt
-Showing resource .../extensions/resources/missing.txt in panel network (network), line: undefined
+Showing resource .../extensions/resources/missing.txt in panel network), line: undefined
 Showing not-found.html
 log: Extension server error: Object not found: not-found.html
 Showing javascript:console.error('oh no!')

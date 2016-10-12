@@ -46,7 +46,7 @@ function test()
     }
 
     // Start with non-resources panel.
-    WebInspector.ConsolePanel.show();
+    WebInspector.viewManager.showView("console");
 
     InspectorTest.addSniffer(WebInspector.IndexedDBTreeElement.prototype, "_indexedDBAdded", indexedDBAdded, true);
     function indexedDBAdded()
@@ -67,7 +67,7 @@ function test()
     }
 
     // Switch to resources panel.
-    WebInspector.ResourcesPanel.show();
+    WebInspector.viewManager.showView("resources");
 
     InspectorTest.addResult("Expanded IndexedDB tree element.");
     WebInspector.panels.resources.indexedDBListTreeElement.expand();

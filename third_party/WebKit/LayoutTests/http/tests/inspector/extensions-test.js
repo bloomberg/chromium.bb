@@ -71,5 +71,6 @@ function extension_showPanel(panelId, callback)
 
 var test = function()
 {
+    WebInspector.moduleSetting("shortcutPanelSwitch").set(true);
     InspectorTest.runExtensionTests();
 }

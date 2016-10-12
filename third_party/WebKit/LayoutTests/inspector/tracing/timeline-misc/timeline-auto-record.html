@@ -13,7 +13,7 @@ function test()
     InspectorTest.addSniffer(panel, "recordingStarted", recordingStarted);
     InspectorTest.addSniffer(panel, "loadingComplete", callbackBarrier.createCallback());
 
-    WebInspector.ConsolePanel.show();
+    WebInspector.viewManager.showView("console");
     InspectorTest.runWhenPageLoads(step1);
     InspectorTest.addResult("Reloading page on console panel");
     panel._millisecondsToRecordAfterLoadEvent = 1;
@@ -21,7 +21,7 @@ function test()
 
     function step1()
     {
-        WebInspector.TimelinePanel.show();
+        WebInspector.viewManager.showView("timeline");
         InspectorTest.runWhenPageLoads(callbackBarrier.createCallback());
         callbackBarrier.callWhenDone(recordingStopped);
         InspectorTest.addResult("Reloading page on timeline panel");

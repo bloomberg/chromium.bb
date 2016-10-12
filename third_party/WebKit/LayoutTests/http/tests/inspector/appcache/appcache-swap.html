@@ -10,7 +10,7 @@ function test()
     var frameId1;
     var frameId2;
 
-    WebInspector.ResourcesPanel.show();
+    WebInspector.viewManager.showView("resources");
     InspectorTest.startApplicationCacheStatusesRecording();
     InspectorTest.dumpApplicationCache();
     InspectorTest.createAndNavigateIFrame("resources/with-versioned-manifest.php", step1);
