@@ -1375,7 +1375,7 @@ void InspectorNetworkAgent::didCommitLoad(LocalFrame* frame,
     return;
 
   if (m_state->booleanProperty(NetworkAgentState::cacheDisabled, false))
-    memoryCache()->evictResources();
+    memoryCache()->evictResources(MemoryCache::DoNotEvictUnusedPreloads);
 
   m_resourcesData->clear(IdentifiersFactory::loaderId(loader));
 }

@@ -631,19 +631,41 @@ MemoryCache::Statistics MemoryCache::getStatistics() {
   return stats;
 }
 
-void MemoryCache::evictResources() {
-  while (true) {
-    ResourceMapIndex::iterator resourceMapIter = m_resourceMaps.begin();
-    if (resourceMapIter == m_resourceMaps.end())
-      break;
+void MemoryCache::evictResources(EvictResourcePolicy policy) {
+  for (auto resourceMapIter = m_resourceMaps.begin();
+       resourceMapIter != m_resourceMaps.end();) {
     ResourceMap* resources = resourceMapIter->value.get();
-    while (true) {
-      ResourceMap::iterator resourceIter = resources->begin();
-      if (resourceIter == resources->end())
-        break;
-      evict(resourceIter->value.get());
+    HeapVector<Member<MemoryCacheEntry>> unusedPreloads;
+    for (auto resourceIter = resources->begin();
+         resourceIter != resources->end(); resourceIter = resources->begin()) {
+      DCHECK(resourceIter.get());
+      DCHECK(resourceIter->value.get());
+      DCHECK(resourceIter->value->resource());
+      if (policy == EvictAllResources ||
+          !(resourceIter->value->resource() &&
+            resourceIter->value->resource()->isUnusedPreload())) {
+        evict(resourceIter->value.get());
+      } else {
+        // Store unused preloads aside, so they could be added back later.
+        // That is in order to avoid the performance impact of iterating over
+        // the same resource multiple times.
+        unusedPreloads.append(resourceIter->value.get());
+        resources->remove(resourceIter);
+      }
     }
-    m_resourceMaps.remove(resourceMapIter);
+    for (const auto& unusedPreload : unusedPreloads) {
+      KURL url =
+          removeFragmentIdentifierIfNeeded(unusedPreload->resource()->url());
+      resources->set(url, unusedPreload);
+    }
+    // We may iterate multiple times over resourceMaps with unused preloads.
+    // That's extremely unlikely to have any real-life performance impact.
+    if (!resources->size()) {
+      m_resourceMaps.remove(resourceMapIter);
+      resourceMapIter = m_resourceMaps.begin();
+    } else {
+      ++resourceMapIter;
+    }
   }
 }
 

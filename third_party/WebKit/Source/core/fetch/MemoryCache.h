@@ -200,7 +200,8 @@ class CORE_EXPORT MemoryCache final
     m_maxPruneDeferralDelay = seconds;
   }
 
-  void evictResources();
+  enum EvictResourcePolicy { EvictAllResources, DoNotEvictUnusedPreloads };
+  void evictResources(EvictResourcePolicy = EvictAllResources);
 
   void prune();
 
