@@ -154,3 +154,7 @@ QUIC_FLAG(bool, FLAGS_quic_create_session_after_insertion, false)
 
 // If true, rejected packet number is removed from public reset packet.
 QUIC_FLAG(bool, FLAGS_quic_remove_packet_number_from_public_reset, false)
+
+// If true, will send QUIC_PUSH_STREAM_TIMED_OUT when push stream is unclaimed
+// and times out.
+QUIC_FLAG(bool, FLAGS_quic_send_push_stream_timed_out_error, true)
