@@ -698,12 +698,15 @@ bool SchedulerWorkerPoolImpl::Initialize(
   DCHECK(workers_.empty());
 
   for (size_t i = 0; i < max_threads; ++i) {
+    // The last SchedulerWorker added to the idle stack should be ALIVE.
+    const SchedulerWorker::InitialState initial_state =
+        (i == max_threads - 1) ? SchedulerWorker::InitialState::ALIVE
+                               : SchedulerWorker::InitialState::DETACHED;
     std::unique_ptr<SchedulerWorker> worker = SchedulerWorker::Create(
         priority_hint, MakeUnique<SchedulerWorkerDelegateImpl>(
                            this, re_enqueue_sequence_callback,
                            &shared_priority_queue_, static_cast<int>(i)),
-        task_tracker_, i == 0 ? SchedulerWorker::InitialState::ALIVE
-                              : SchedulerWorker::InitialState::DETACHED);
+        task_tracker_, initial_state);
     if (!worker)
       break;
     idle_workers_stack_.Push(worker.get());
