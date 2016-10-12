@@ -111,8 +111,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
             min(kMaxInitialRoundTripTimeUs,
                 config.GetInitialRoundTripTimeUsToSend())));
   }
-  // TODO(ianswett): BBR is currently a server only feature.
-  if (FLAGS_quic_allow_bbr && config.HasReceivedConnectionOptions() &&
+  if (FLAGS_quic_allow_new_bbr && config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kTBBR)) {
     SetSendAlgorithm(kBBR);
   }
@@ -943,8 +942,8 @@ void QuicSentPacketManager::CancelRetransmissionsForStream(
 void QuicSentPacketManager::SetSendAlgorithm(
     CongestionControlType congestion_control_type) {
   SetSendAlgorithm(SendAlgorithmInterface::Create(
-      clock_, &rtt_stats_, congestion_control_type, stats_,
-      initial_congestion_window_));
+      clock_, &rtt_stats_, &unacked_packets_, congestion_control_type,
+      QuicRandom::GetInstance(), stats_, initial_congestion_window_));
 }
 
 void QuicSentPacketManager::SetSendAlgorithm(

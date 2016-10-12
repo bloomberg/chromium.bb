@@ -9,7 +9,7 @@
 
 // If true, QUIC BBR congestion control may be enabled via Finch and/or via QUIC
 // connection options.
-QUIC_FLAG(bool, FLAGS_quic_allow_bbr, false)
+QUIC_FLAG(bool, FLAGS_quic_allow_new_bbr, true)
 
 // Time period for which a given connection_id should live in the time-wait
 // state.

@@ -941,7 +941,8 @@ TEST_F(TcpCubicSenderPacketsTest, DefaultMaxCwnd) {
   RttStats rtt_stats;
   QuicConnectionStats stats;
   std::unique_ptr<SendAlgorithmInterface> sender(SendAlgorithmInterface::Create(
-      &clock_, &rtt_stats, kCubic, &stats, kInitialCongestionWindow));
+      &clock_, &rtt_stats, /*unacked_packets=*/nullptr, kCubic,
+      QuicRandom::GetInstance(), &stats, kInitialCongestionWindow));
 
   SendAlgorithmInterface::CongestionVector acked_packets;
   SendAlgorithmInterface::CongestionVector missing_packets;

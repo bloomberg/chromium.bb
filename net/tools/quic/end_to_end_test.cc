@@ -1337,7 +1337,7 @@ TEST_P(EndToEndTest, SetIndependentMaxIncomingDynamicStreamsLimits) {
 }
 
 TEST_P(EndToEndTest, NegotiateCongestionControl) {
-  FLAGS_quic_allow_bbr = true;
+  FLAGS_quic_allow_new_bbr = true;
   // Disable this flag because if connection uses multipath sent packet manager,
   // static_cast here does not work.
   FLAGS_quic_enable_multipath = false;
@@ -1350,9 +1350,7 @@ TEST_P(EndToEndTest, NegotiateCongestionControl) {
       expected_congestion_control_type = kReno;
       break;
     case kTBBR:
-      // TODO(vasilvv): switch this back to kBBR when new BBR implementation is
-      // in.
-      expected_congestion_control_type = kCubic;
+      expected_congestion_control_type = kBBR;
       break;
     case kQBIC:
       expected_congestion_control_type = kCubic;

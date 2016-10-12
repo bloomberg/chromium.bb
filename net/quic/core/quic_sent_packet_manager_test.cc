@@ -1420,7 +1420,7 @@ TEST_P(QuicSentPacketManagerTest, NegotiateTimeLossDetectionFromOptions) {
 }
 
 TEST_P(QuicSentPacketManagerTest, NegotiateCongestionControlFromOptions) {
-  FLAGS_quic_allow_bbr = true;
+  FLAGS_quic_allow_new_bbr = true;
   QuicConfig config;
   QuicTagVector options;
 
@@ -1436,9 +1436,8 @@ TEST_P(QuicSentPacketManagerTest, NegotiateCongestionControlFromOptions) {
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
   EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
   manager_.SetFromConfig(config);
-  // TODO(vasilvv): change this back to kBBR when the new version is in.
-  EXPECT_EQ(kCubic, QuicSentPacketManagerPeer::GetSendAlgorithm(manager_)
-                        ->GetCongestionControlType());
+  EXPECT_EQ(kBBR, QuicSentPacketManagerPeer::GetSendAlgorithm(manager_)
+                      ->GetCongestionControlType());
 
   options.clear();
   options.push_back(kBYTE);
