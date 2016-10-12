@@ -21,7 +21,7 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   // Make sure an unbundled program can get the input focus.
   ProcessSerialNumber psn = { 0, kCurrentProcess };
   TransformProcessType(&psn,kProcessTransformToForegroundApplication);
-  SetFrontProcess(&psn);
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 
   base::scoped_nsobject<WindowedNSNotificationObserver> async_waiter;
   if (![window isKeyWindow]) {
