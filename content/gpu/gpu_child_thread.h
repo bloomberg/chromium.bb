@@ -112,7 +112,6 @@ class GpuChildThread : public ChildThreadImpl,
   void OnClean();
   void OnCrash();
   void OnHang();
-  void OnDisableWatchdog();
   void OnGpuSwitched();
 
   void OnEstablishChannel(const EstablishChannelParams& params);

@@ -239,7 +239,6 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_Clean, OnClean)
     IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
     IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
-    IPC_MESSAGE_HANDLER(GpuMsg_DisableWatchdog, OnDisableWatchdog)
     IPC_MESSAGE_HANDLER(GpuMsg_GpuSwitched, OnGpuSwitched)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -470,18 +469,6 @@ void GpuChildThread::OnHang() {
   for (;;) {
     // Do not sleep here. The GPU watchdog timer tracks the amount of user
     // time this thread is using and it doesn't use much while calling Sleep.
-  }
-}
-
-void GpuChildThread::OnDisableWatchdog() {
-  DVLOG(1) << "GPU: Disabling watchdog thread";
-  if (watchdog_thread_.get()) {
-    // Disarm the watchdog before shutting down the message loop. This prevents
-    // the future posting of tasks to the message loop.
-    if (watchdog_thread_->message_loop())
-      watchdog_thread_->PostAcknowledge();
-    // Prevent rearming.
-    watchdog_thread_->Stop();
   }
 }
 

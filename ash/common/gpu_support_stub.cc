@@ -14,8 +14,6 @@ bool GPUSupportStub::IsPanelFittingDisabled() const {
   return false;
 }
 
-void GPUSupportStub::DisableGpuWatchdog() {}
-
 void GPUSupportStub::GetGpuProcessHandles(
     const GetGpuProcessHandlesCallback& callback) const {}
 

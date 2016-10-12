@@ -94,20 +94,17 @@ scoped_refptr<GpuWatchdogThread> GpuWatchdogThread::Create() {
   return watchdog_thread;
 }
 
-void GpuWatchdogThread::PostAcknowledge() {
-  // Called on the monitored thread. Responds with OnAcknowledge. Cannot use
-  // the method factory. Rely on reference counting instead.
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&GpuWatchdogThread::OnAcknowledge, this));
-}
-
 void GpuWatchdogThread::CheckArmed() {
   // If the watchdog is |awaiting_acknowledge_|, reset this variable to false
   // and post an acknowledge task now. No barrier is needed as
   // |awaiting_acknowledge_| is only ever read from this thread.
   if (base::subtle::NoBarrier_CompareAndSwap(&awaiting_acknowledge_, true,
-                                             false))
-    PostAcknowledge();
+                                             false)) {
+    // Called on the monitored thread. Responds with OnAcknowledge. Cannot use
+    // the method factory. Rely on reference counting instead.
+    task_runner()->PostTask(
+        FROM_HERE, base::Bind(&GpuWatchdogThread::OnAcknowledge, this));
+  }
 }
 
 void GpuWatchdogThread::ReportProgress() {

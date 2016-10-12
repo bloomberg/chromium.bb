@@ -58,7 +58,6 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
       return true;
     }
     case DEV_TOGGLE_UNIFIED_DESKTOP:
-    case DISABLE_GPU_WATCHDOG:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
     case POWER_PRESSED:

@@ -12,7 +12,6 @@
 #include "ash/accelerators/accelerator_commands_aura.h"
 #include "ash/common/accelerators/debug_commands.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/gpu_support.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
@@ -306,7 +305,6 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
 #if defined(OS_CHROMEOS)
     case DEV_ADD_REMOVE_DISPLAY:
     case DEV_TOGGLE_UNIFIED_DESKTOP:
-    case DISABLE_GPU_WATCHDOG:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
     case POWER_PRESSED:
@@ -369,7 +367,6 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
       return CanHandleTouchHud();
 
     // Following are always enabled.
-    case DISABLE_GPU_WATCHDOG:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
     case POWER_PRESSED:
@@ -447,9 +444,6 @@ void AcceleratorControllerDelegateAura::PerformAction(
     case DEV_TOGGLE_UNIFIED_DESKTOP:
       Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(
           !Shell::GetInstance()->display_manager()->unified_desktop_enabled());
-      break;
-    case DISABLE_GPU_WATCHDOG:
-      Shell::GetInstance()->gpu_support()->DisableGpuWatchdog();
       break;
     case LOCK_PRESSED:
     case LOCK_RELEASED:

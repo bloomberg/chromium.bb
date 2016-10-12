@@ -24,8 +24,6 @@ class ASH_EXPORT GPUSupport {
 
   virtual bool IsPanelFittingDisabled() const = 0;
 
-  virtual void DisableGpuWatchdog() = 0;
-
   virtual void GetGpuProcessHandles(
       const GetGpuProcessHandlesCallback& callback) const = 0;
 };

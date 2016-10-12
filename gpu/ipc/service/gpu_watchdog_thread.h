@@ -40,7 +40,6 @@ class GPU_EXPORT GpuWatchdogThread
  public:
   static scoped_refptr<GpuWatchdogThread> Create();
 
-  void PostAcknowledge();
   void CheckArmed();
 
   // Must be called after a PowerMonitor has been created. Can be called from

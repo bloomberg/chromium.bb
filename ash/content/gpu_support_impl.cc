@@ -18,10 +18,6 @@ bool GPUSupportImpl::IsPanelFittingDisabled() const {
       gpu::GPU_FEATURE_TYPE_PANEL_FITTING);
 }
 
-void GPUSupportImpl::DisableGpuWatchdog() {
-  content::GpuDataManager::GetInstance()->DisableGpuWatchdog();
-}
-
 void GPUSupportImpl::GetGpuProcessHandles(
     const GetGpuProcessHandlesCallback& callback) const {
   content::GpuDataManager::GetInstance()->GetGpuProcessHandles(callback);

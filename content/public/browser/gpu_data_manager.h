@@ -86,9 +86,6 @@ class GpuDataManager {
   // to access them again.
   virtual void UnblockDomainFrom3DAPIs(const GURL& url) = 0;
 
-  // Disable the gpu process watchdog thread.
-  virtual void DisableGpuWatchdog() = 0;
-
   // Set GL strings. This triggers a re-calculation of GPU blacklist
   // decision.
   virtual void SetGLStrings(const std::string& gl_vendor,

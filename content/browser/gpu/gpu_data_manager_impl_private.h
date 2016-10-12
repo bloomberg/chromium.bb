@@ -57,7 +57,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void AddObserver(GpuDataManagerObserver* observer);
   void RemoveObserver(GpuDataManagerObserver* observer);
   void UnblockDomainFrom3DAPIs(const GURL& url);
-  void DisableGpuWatchdog();
   void SetGLStrings(const std::string& gl_vendor,
                     const std::string& gl_renderer,
                     const std::string& gl_version);

@@ -449,12 +449,6 @@ void GpuDataManagerImplPrivate::UnblockDomainFrom3DAPIs(const GURL& url) {
   timestamps_of_gpu_resets_.clear();
 }
 
-void GpuDataManagerImplPrivate::DisableGpuWatchdog() {
-  GpuProcessHost::SendOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                           false /* force_create */,
-                           new GpuMsg_DisableWatchdog);
-}
-
 void GpuDataManagerImplPrivate::SetGLStrings(const std::string& gl_vendor,
                                              const std::string& gl_renderer,
                                              const std::string& gl_version) {

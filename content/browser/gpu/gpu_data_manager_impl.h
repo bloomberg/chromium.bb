@@ -86,7 +86,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void AddObserver(GpuDataManagerObserver* observer) override;
   void RemoveObserver(GpuDataManagerObserver* observer) override;
   void UnblockDomainFrom3DAPIs(const GURL& url) override;
-  void DisableGpuWatchdog() override;
   void SetGLStrings(const std::string& gl_vendor,
                     const std::string& gl_renderer,
                     const std::string& gl_version) override;
