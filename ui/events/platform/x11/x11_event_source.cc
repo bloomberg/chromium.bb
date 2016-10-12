@@ -96,7 +96,6 @@ X11EventSource::X11EventSource(X11EventSourceDelegate* delegate,
                                XDisplay* display)
     : delegate_(delegate),
       display_(display),
-      event_timestamp_(CurrentTime),
       dummy_initialized_(false),
       continue_stream_(true) {
   DCHECK(!instance_);
@@ -184,11 +183,41 @@ Time X11EventSource::GetCurrentServerTime() {
 }
 
 Time X11EventSource::GetTimestamp() {
-  if (event_timestamp_ != CurrentTime) {
-    return event_timestamp_;
+  if (!dispatching_events_.empty()) {
+    DCHECK(dispatching_events_.top());
+    Time timestamp = ExtractTimeFromXEvent(*dispatching_events_.top());
+    if (timestamp != CurrentTime)
+      return timestamp;
   }
   DVLOG(1) << "Making a round trip to get a recent server timestamp.";
   return GetCurrentServerTime();
+}
+
+base::Optional<gfx::Point>
+X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
+  if (dispatching_events_.empty())
+    return base::nullopt;
+
+  XEvent* event = dispatching_events_.top();
+  DCHECK(event);
+  bool is_valid_event = false;
+  switch (event->type) {
+    case ButtonPress:
+    case ButtonRelease:
+    case MotionNotify:
+    case EnterNotify:
+    case LeaveNotify:
+      is_valid_event = true;
+      break;
+    case GenericEvent:
+      if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(event))
+        break;
+      is_valid_event = true;
+  }
+
+  if (is_valid_event)
+    return ui::EventSystemLocationFromNative(event);
+  return base::nullopt;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -201,12 +230,12 @@ void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
     have_cookie = true;
   }
 
-  event_timestamp_ = ExtractTimeFromXEvent(*xevent);
+  dispatching_events_.push(xevent);
 
   delegate_->ProcessXEvent(xevent);
   PostDispatchEvent(xevent);
 
-  event_timestamp_ = CurrentTime;
+  dispatching_events_.pop();
 
   if (have_cookie)
     XFreeEventData(xevent->xgeneric.display, &xevent->xcookie);

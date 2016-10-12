@@ -8,8 +8,10 @@
 #include <stdint.h>
 
 #include <memory>
+#include <stack>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/events/events_export.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -17,6 +19,10 @@ using Time = unsigned long;
 using XEvent = union _XEvent;
 using XID = unsigned long;
 using XWindow = unsigned long;
+
+namespace gfx {
+class Point;
+}
 
 namespace ui {
 
@@ -77,6 +83,10 @@ class EVENTS_EXPORT X11EventSource {
   // current event does not have a timestamp.
   Time GetTimestamp();
 
+  // Returns the root pointer location only if there is an event being
+  // dispatched that contains that information.
+  base::Optional<gfx::Point> GetRootCursorLocationFromCurrentEvent() const;
+
   void StopCurrentEventStream();
   void OnDispatcherListChanged();
 
@@ -105,8 +115,9 @@ class EVENTS_EXPORT X11EventSource {
   // The connection to the X11 server used to receive the events.
   XDisplay* display_;
 
-  // The timestamp of the event being dispatched.
-  Time event_timestamp_;
+  // Events currently being dispatched.  The topmost event in this stack
+  // corresponds to the deepest-nested message loop.
+  std::stack<XEvent*> dispatching_events_;
 
   // State necessary for UpdateLastSeenServerTime
   bool dummy_initialized_;

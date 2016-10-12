@@ -22,6 +22,7 @@
 #include "ui/display/util/display_util.h"
 #include "ui/display/util/x11/edid_parser_x11.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -133,20 +134,18 @@ DesktopScreenX11::~DesktopScreenX11() {
 gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
   TRACE_EVENT0("views", "DesktopScreenX11::GetCursorScreenPoint()");
 
-  XDisplay* display = gfx::GetXDisplay();
+  if (ui::X11EventSource::HasInstance()) {
+    auto point = ui::X11EventSource::GetInstance()
+                     ->GetRootCursorLocationFromCurrentEvent();
+    if (point)
+      return point.value();
+  }
 
   ::Window root, child;
   int root_x, root_y, win_x, win_y;
   unsigned int mask;
-  XQueryPointer(display,
-                DefaultRootWindow(display),
-                &root,
-                &child,
-                &root_x,
-                &root_y,
-                &win_x,
-                &win_y,
-                &mask);
+  XQueryPointer(xdisplay_, x_root_window_, &root, &child, &root_x, &root_y,
+                &win_x, &win_y, &mask);
 
   return PixelToDIPPoint(gfx::Point(root_x, root_y));
 }
