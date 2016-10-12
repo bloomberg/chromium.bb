@@ -216,11 +216,13 @@ void MessageLoop::RemoveDestructionObserver(
 
 void MessageLoop::AddNestingObserver(NestingObserver* observer) {
   DCHECK_EQ(this, current());
+  CHECK(allow_nesting_);
   nesting_observers_.AddObserver(observer);
 }
 
 void MessageLoop::RemoveNestingObserver(NestingObserver* observer) {
   DCHECK_EQ(this, current());
+  CHECK(allow_nesting_);
   nesting_observers_.RemoveObserver(observer);
 }
 
@@ -257,6 +259,8 @@ Closure MessageLoop::QuitWhenIdleClosure() {
 
 void MessageLoop::SetNestableTasksAllowed(bool allowed) {
   if (allowed) {
+    CHECK(allow_nesting_);
+
     // Kick the native pump just in case we enter a OS-driven nested message
     // loop.
     pump_->ScheduleWork();
@@ -367,6 +371,8 @@ void MessageLoop::SetThreadTaskRunnerHandle() {
 
 void MessageLoop::RunHandler() {
   DCHECK_EQ(this, current());
+  DCHECK(run_loop_);
+  CHECK(allow_nesting_ || run_loop_->run_depth_ == 1);
   pump_->Run(this);
 }
 

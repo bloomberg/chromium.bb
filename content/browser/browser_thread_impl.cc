@@ -185,6 +185,14 @@ void BrowserThreadImpl::FlushThreadPoolHelperForTesting() {
 void BrowserThreadImpl::Init() {
   BrowserThreadGlobals& globals = g_globals.Get();
 
+  if (BrowserThread::CurrentlyOn(BrowserThread::DB) ||
+      BrowserThread::CurrentlyOn(BrowserThread::FILE) ||
+      BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING) ||
+      BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER) ||
+      BrowserThread::CurrentlyOn(BrowserThread::CACHE)) {
+    base::MessageLoop::current()->DisallowNesting();
+  }
+
   using base::subtle::AtomicWord;
   AtomicWord* storage =
       reinterpret_cast<AtomicWord*>(&globals.thread_delegates[identifier_]);
