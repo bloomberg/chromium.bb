@@ -1625,6 +1625,16 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace() {
 }
 
 void RenderViewImpl::printPage(WebLocalFrame* frame) {
+  UMA_HISTOGRAM_BOOLEAN("PrintPreview.InitiatedByScript",
+                        frame->top() == frame);
+
+  // Logging whether the top frame is remote is sufficient in this case. If
+  // the top frame is local, the printing code will function correctly and
+  // the frame itself will be printed, so the cases this histogram tracks is
+  // where printing of a subframe will fail as of now.
+  UMA_HISTOGRAM_BOOLEAN("PrintPreview.OutOfProcessSubframe",
+                        frame->top()->isWebRemoteFrame());
+
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     PrintPage(frame, input_handler().handling_input_event()));
 }
