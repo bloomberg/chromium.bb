@@ -125,6 +125,8 @@ table_files = \
 	ethio-g1.ctb \
 	et.tbl \
 	eurodefs.cti \
+	fa-ir-comp8.ctb \
+	fa-ir-g1.utb \
 	fi1.ctb \
 	fi2.ctb \
 	fi-fi-8dot.ctb \
