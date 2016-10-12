@@ -114,17 +114,25 @@ void HTMLTableRowElement::deleteCell(int index,
                                      ExceptionState& exceptionState) {
   HTMLCollection* children = cells();
   int numCells = children ? children->length() : 0;
-  if (index == -1)
-    index = numCells - 1;
-  if (index >= 0 && index < numCells) {
-    Element* cell = children->item(index);
-    HTMLElement::removeChild(cell, exceptionState);
-  } else {
+  // 1. If index is less than −1 or greater than or equal to the number of
+  // elements in the cells collection, then throw "IndexSizeError".
+  if (index < -1 || index >= numCells) {
     exceptionState.throwDOMException(
         IndexSizeError, "The value provided (" + String::number(index) +
                             ") is outside the range [0, " +
                             String::number(numCells) + ").");
+    return;
   }
+  // 2. If index is −1, remove the last element in the cells collection
+  // from its parent, or do nothing if the cells collection is empty.
+  if (index == -1) {
+    if (numCells == 0)
+      return;
+    index = numCells - 1;
+  }
+  // 3. Remove the indexth element in the cells collection from its parent.
+  Element* cell = children->item(index);
+  HTMLElement::removeChild(cell, exceptionState);
 }
 
 HTMLCollection* HTMLTableRowElement::cells() {
