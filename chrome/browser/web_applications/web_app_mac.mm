@@ -4,7 +4,6 @@
 
 #import "chrome/browser/web_applications/web_app_mac.h"
 
-#import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
 
@@ -54,6 +53,7 @@
 #import "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_family.h"
@@ -93,53 +93,33 @@ class Latch : public base::RefCountedThreadSafe<
   DISALLOW_COPY_AND_ASSIGN(Latch);
 };
 
-class ScopedCarbonHandle {
- public:
-  ScopedCarbonHandle(size_t initial_size) : handle_(NewHandle(initial_size)) {
-    DCHECK(handle_);
-    DCHECK_EQ(noErr, MemError());
+// Writes |icons| to |path| in .icns format.
+bool WriteIconsToFile(const std::vector<gfx::Image>& icons,
+                      const base::FilePath& path) {
+  base::scoped_nsobject<NSMutableData> data(
+      [[NSMutableData alloc] initWithCapacity:0]);
+  base::ScopedCFTypeRef<CGImageDestinationRef> image_destination(
+      CGImageDestinationCreateWithData(base::mac::NSToCFCast(data),
+                                       kUTTypeAppleICNS, icons.size(),
+                                       nullptr));
+  DCHECK(image_destination);
+  for (const gfx::Image& image : icons) {
+    base::ScopedCFTypeRef<CGImageRef> cg_image(SkCreateCGImageRefWithColorspace(
+        image.AsBitmap(), base::mac::GetSRGBColorSpace()));
+    CGImageDestinationAddImage(image_destination, cg_image, nullptr);
   }
-  ~ScopedCarbonHandle() { DisposeHandle(handle_); }
-
-  Handle Get() { return handle_; }
-  char* Data() { return *handle_; }
-  size_t HandleSize() const { return GetHandleSize(handle_); }
-
-  IconFamilyHandle GetAsIconFamilyHandle() {
-    return reinterpret_cast<IconFamilyHandle>(handle_);
+  if (!CGImageDestinationFinalize(image_destination)) {
+    NOTREACHED() << "CGImageDestinationFinalize failed.";
+    return false;
   }
-
-  bool WriteDataToFile(const base::FilePath& path) {
-    NSData* data = [NSData dataWithBytes:Data()
-                                  length:HandleSize()];
-    return [data writeToFile:base::mac::FilePathToNSString(path)
-                  atomically:NO];
-  }
-
- private:
-  Handle handle_;
-};
-
-void ConvertSkiaToARGB(const SkBitmap& bitmap, ScopedCarbonHandle* handle) {
-  CHECK_EQ(4u * bitmap.width() * bitmap.height(), handle->HandleSize());
-
-  char* argb = handle->Data();
-  SkAutoLockPixels lock(bitmap);
-  for (int y = 0; y < bitmap.height(); ++y) {
-    for (int x = 0; x < bitmap.width(); ++x) {
-      SkColor pixel = bitmap.getColor(x, y);
-      argb[0] = SkColorGetA(pixel);
-      argb[1] = SkColorGetR(pixel);
-      argb[2] = SkColorGetG(pixel);
-      argb[3] = SkColorGetB(pixel);
-      argb += 4;
-    }
-  }
+  return [data writeToFile:base::mac::FilePathToNSString(path) atomically:NO];
 }
 
-// Adds |image| to |icon_family|. Returns true on success, false on failure.
-bool AddGfxImageToIconFamily(IconFamilyHandle icon_family,
-                             const gfx::Image& image) {
+// Returns true if |image| can be used for an icon resource.
+bool IsImageValidForIcon(const gfx::Image& image) {
+  if (image.IsEmpty())
+    return false;
+
   // When called via ShowCreateChromeAppShortcutsDialog the ImageFamily will
   // have all the representations desired here for mac, from the kDesiredSizes
   // array in web_app.cc.
@@ -149,35 +129,16 @@ bool AddGfxImageToIconFamily(IconFamilyHandle icon_family,
     return false;
   }
 
-  OSType icon_type;
   switch (bitmap.width()) {
     case 512:
-      icon_type = kIconServices512PixelDataARGB;
-      break;
     case 256:
-      icon_type = kIconServices256PixelDataARGB;
-      break;
     case 128:
-      icon_type = kIconServices128PixelDataARGB;
-      break;
     case 48:
-      icon_type = kIconServices48PixelDataARGB;
-      break;
     case 32:
-      icon_type = kIconServices32PixelDataARGB;
-      break;
     case 16:
-      icon_type = kIconServices16PixelDataARGB;
-      break;
-    default:
-      return false;
+      return true;
   }
-
-  ScopedCarbonHandle raw_data(bitmap.getSize());
-  ConvertSkiaToARGB(bitmap, &raw_data);
-  OSErr result = SetIconFamilyData(icon_family, icon_type, raw_data.Get());
-  DCHECK_EQ(noErr, result);
-  return result == noErr;
+  return false;
 }
 
 bool AppShimsDisabledForTest() {
@@ -976,29 +937,20 @@ bool WebAppShortcutCreator::UpdateIcon(const base::FilePath& app_path) const {
   if (info_->favicon.empty())
     return true;
 
-  ScopedCarbonHandle icon_family(0);
-  bool image_added = false;
+  std::vector<gfx::Image> valid_icons;
   for (gfx::ImageFamily::const_iterator it = info_->favicon.begin();
        it != info_->favicon.end(); ++it) {
-    if (it->IsEmpty())
-      continue;
-
-    // Missing an icon size is not fatal so don't fail if adding the bitmap
-    // doesn't work.
-    if (!AddGfxImageToIconFamily(icon_family.GetAsIconFamilyHandle(), *it))
-      continue;
-
-    image_added = true;
+    if (IsImageValidForIcon(*it))
+      valid_icons.push_back(*it);
   }
-
-  if (!image_added)
+  if (valid_icons.empty())
     return false;
 
   base::FilePath resources_path = GetResourcesPath(app_path);
   if (!base::CreateDirectory(resources_path))
     return false;
 
-  return icon_family.WriteDataToFile(resources_path.Append("app.icns"));
+  return WriteIconsToFile(valid_icons, resources_path.Append("app.icns"));
 }
 
 bool WebAppShortcutCreator::UpdateInternalBundleIdentifier() const {
