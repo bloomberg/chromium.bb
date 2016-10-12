@@ -239,10 +239,6 @@ class SSLClientSocketImpl::SSLContext {
     SSL_CTX_set_cert_verify_callback(ssl_ctx_.get(), CertVerifyCallback, NULL);
     SSL_CTX_set_cert_cb(ssl_ctx_.get(), ClientCertRequestCallback, NULL);
     SSL_CTX_set_verify(ssl_ctx_.get(), SSL_VERIFY_PEER, NULL);
-    // This stops |SSL_shutdown| from generating the close_notify message, which
-    // is currently not sent on the network.
-    // TODO(haavardm): Remove setting quiet shutdown once 118366 is fixed.
-    SSL_CTX_set_quiet_shutdown(ssl_ctx_.get(), 1);
 
     // Disable the internal session cache. Session caching is handled
     // externally (i.e. by SSLClientSessionCache).
@@ -625,28 +621,14 @@ int SSLClientSocketImpl::Connect(const CompletionCallback& callback) {
 }
 
 void SSLClientSocketImpl::Disconnect() {
-  crypto::OpenSSLErrStackTracer tracer(FROM_HERE);
-
-  if (ssl_) {
-    // Calling SSL_shutdown prevents the session from being marked as
-    // unresumable.
-    SSL_shutdown(ssl_.get());
-    ssl_.reset();
-  }
-  transport_bio_.reset();
-
   disconnected_ = true;
 
   // Shut down anything that may call us back.
   cert_verifier_request_.reset();
-  transport_->socket()->Disconnect();
+  channel_id_request_.Cancel();
+  weak_factory_.InvalidateWeakPtrs();
 
-  // Null all callbacks, delete all buffers.
-  transport_send_busy_ = false;
-  send_buffer_ = NULL;
-  transport_recv_busy_ = false;
-  recv_buffer_ = NULL;
-
+  // Release user callbacks.
   user_connect_callback_.Reset();
   user_read_callback_.Reset();
   user_write_callback_.Reset();
@@ -655,37 +637,13 @@ void SSLClientSocketImpl::Disconnect() {
   user_write_buf_ = NULL;
   user_write_buf_len_ = 0;
 
-  pending_read_error_ = kNoPendingResult;
-  pending_read_ssl_error_ = SSL_ERROR_NONE;
-  pending_read_error_info_ = OpenSSLErrorInfo();
-
-  transport_read_error_ = OK;
-  transport_write_error_ = OK;
-
-  server_cert_verify_result_.Reset();
-  completed_connect_ = false;
-
-  cert_authorities_.clear();
-  cert_key_types_.clear();
-
-  start_cert_verification_time_ = base::TimeTicks();
-
-  negotiated_protocol_ = kProtoUnknown;
-
-  channel_id_sent_ = false;
-  tb_was_negotiated_ = false;
-  pending_session_ = nullptr;
-  certificate_verified_ = false;
-  certificate_requested_ = false;
-  channel_id_request_.Cancel();
-
-  signature_result_ = kNoPendingResult;
-  signature_.clear();
+  transport_->socket()->Disconnect();
 }
 
 bool SSLClientSocketImpl::IsConnected() const {
-  // If the handshake has not yet completed.
-  if (!completed_connect_)
+  // If the handshake has not yet completed or the socket has been explicitly
+  // disconnected.
+  if (!completed_connect_ || disconnected_)
     return false;
   // If an asynchronous operation is still pending.
   if (user_read_buf_.get() || user_write_buf_.get())
@@ -695,8 +653,9 @@ bool SSLClientSocketImpl::IsConnected() const {
 }
 
 bool SSLClientSocketImpl::IsConnectedAndIdle() const {
-  // If the handshake has not yet completed.
-  if (!completed_connect_)
+  // If the handshake has not yet completed or the socket has been explicitly
+  // disconnected.
+  if (!completed_connect_ || disconnected_)
     return false;
   // If an asynchronous operation is still pending.
   if (user_read_buf_.get() || user_write_buf_.get())
