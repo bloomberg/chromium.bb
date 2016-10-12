@@ -79,15 +79,17 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
     static void Bind(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
                      mojom::EmbeddedWorkerInstanceClientRequest request);
 
-   private:
+   protected:
     // Implementation of mojo interfaces.
     void StartWorker(const EmbeddedWorkerStartParams& params) override;
+    void StopWorker(const StopWorkerCallback& callback) override;
 
     base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
     mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
 
     base::Optional<int> embedded_worker_id_;
 
+   private:
     DISALLOW_COPY_AND_ASSIGN(MockEmbeddedWorkerInstanceClient);
   };
 
@@ -105,6 +107,11 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& msg) override;
+
+  // Register a mojo endpoint object derived from
+  // MockEmbeddedWorkerInstanceClient.
+  void RegisterMockInstanceClient(
+      std::unique_ptr<MockEmbeddedWorkerInstanceClient> client);
 
   // IPC sink for EmbeddedWorker messages.
   IPC::TestSink* ipc_sink() { return &sink_; }
@@ -135,6 +142,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   int new_render_process_id() const { return new_mock_render_process_id_; }
 
   TestBrowserContext* browser_context() { return browser_context_.get(); }
+
+  base::WeakPtr<EmbeddedWorkerTestHelper> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
 
  protected:
   // Called when StartWorker, StopWorker and SendMessageToWorker message

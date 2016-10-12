@@ -460,8 +460,11 @@ void EmbeddedWorkerInstance::Start(
   params->settings.v8_cache_options = GetV8CacheOptions();
 
   mojom::EmbeddedWorkerInstanceClientRequest request;
-  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled())
+  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
     request = mojo::GetProxy(&client_);
+    client_.set_connection_error_handler(
+        base::Bind(&EmbeddedWorkerInstance::Detach, base::Unretained(this)));
+  }
 
   inflight_start_task_.reset(
       new StartTask(this, params->script_url, std::move(request)));
@@ -476,8 +479,15 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
   // Abort an inflight start task.
   inflight_start_task_.reset();
 
-  ServiceWorkerStatusCode status =
-      registry_->StopWorker(process_id(), embedded_worker_id_);
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_IPC_FAILED;
+  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
+    status = SERVICE_WORKER_OK;
+    client_->StopWorker(base::Bind(&EmbeddedWorkerRegistry::OnWorkerStopped,
+                                   base::Unretained(registry_.get()),
+                                   process_id(), embedded_worker_id()));
+  } else {
+    status = registry_->StopWorker(process_id(), embedded_worker_id_);
+  }
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.SendStopWorker.Status", status,
                             SERVICE_WORKER_ERROR_MAX_VALUE);
   // StopWorker could fail if we were starting up and don't have a process yet,
@@ -756,7 +766,7 @@ void EmbeddedWorkerInstance::OnDetached() {
 }
 
 void EmbeddedWorkerInstance::Detach() {
-  registry_->RemoveWorker(process_id(), embedded_worker_id_);
+  registry_->DetachWorker(process_id(), embedded_worker_id());
   OnDetached();
 }
 
@@ -836,6 +846,7 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   // Abort an inflight start task.
   inflight_start_task_.reset();
 
+  client_.reset();
   devtools_proxy_.reset();
   process_handle_.reset();
   status_ = EmbeddedWorkerStatus::STOPPED;

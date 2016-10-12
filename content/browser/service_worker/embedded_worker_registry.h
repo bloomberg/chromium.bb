@@ -109,9 +109,10 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
 
  private:
   friend class base::RefCounted<EmbeddedWorkerRegistry>;
+  friend class MojoEmbeddedWorkerInstanceTest;
   friend class EmbeddedWorkerInstance;
   friend class EmbeddedWorkerInstanceTest;
-  FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest,
+  FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTestP,
                            RemoveWorkerInSharedProcess);
 
   using WorkerInstanceMap = std::map<int, EmbeddedWorkerInstance*>;
@@ -135,6 +136,10 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   // |process_id| could be invalid (i.e. ChildProcessHost::kInvalidUniqueID)
   // if it's not running.
   void RemoveWorker(int process_id, int embedded_worker_id);
+  // DetachWorker is called when EmbeddedWorkerInstance releases a process.
+  // |process_id| could be invalid (i.e. ChildProcessHost::kInvalidUniqueID)
+  // if it's not running.
+  void DetachWorker(int process_id, int embedded_worker_id);
 
   EmbeddedWorkerInstance* GetWorkerForMessage(int process_id,
                                               int embedded_worker_id);

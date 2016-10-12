@@ -304,7 +304,13 @@ ServiceWorkerStatusCode EmbeddedWorkerRegistry::Send(
 void EmbeddedWorkerRegistry::RemoveWorker(int process_id,
                                           int embedded_worker_id) {
   DCHECK(base::ContainsKey(worker_map_, embedded_worker_id));
+  DetachWorker(process_id, embedded_worker_id);
   worker_map_.erase(embedded_worker_id);
+}
+
+void EmbeddedWorkerRegistry::DetachWorker(int process_id,
+                                          int embedded_worker_id) {
+  DCHECK(base::ContainsKey(worker_map_, embedded_worker_id));
   if (!base::ContainsKey(worker_process_map_, process_id))
     return;
   worker_process_map_[process_id].erase(embedded_worker_id);

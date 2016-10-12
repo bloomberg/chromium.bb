@@ -13,4 +13,5 @@ struct EmbeddedWorkerStartParams;
 // Interface to control a renderer-side worker's environment.
 interface EmbeddedWorkerInstanceClient {
   StartWorker(EmbeddedWorkerStartParams params);
+  StopWorker() => ();
 };

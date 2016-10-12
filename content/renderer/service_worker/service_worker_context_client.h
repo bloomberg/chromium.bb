@@ -59,6 +59,7 @@ class ServiceWorkerProviderContext;
 class ServiceWorkerContextClient;
 class ThreadSafeSender;
 class WebServiceWorkerRegistrationImpl;
+class EmbeddedWorkerInstanceClientImpl;
 
 // This class provides access to/from an ServiceWorker's WorkerGlobalScope.
 // Unless otherwise noted, all methods are called on the worker thread.
@@ -77,11 +78,13 @@ class ServiceWorkerContextClient
   static ServiceWorkerContextClient* ThreadSpecificInstance();
 
   // Called on the main thread.
-  ServiceWorkerContextClient(int embedded_worker_id,
-                             int64_t service_worker_version_id,
-                             const GURL& service_worker_scope,
-                             const GURL& script_url,
-                             int worker_devtools_agent_route_id);
+  ServiceWorkerContextClient(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& service_worker_scope,
+      const GURL& script_url,
+      int worker_devtools_agent_route_id,
+      std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker);
   ~ServiceWorkerContextClient() override;
 
   void OnMessageReceived(int thread_id,
@@ -262,6 +265,9 @@ class ServiceWorkerContextClient
 
   // Not owned; this object is destroyed when proxy_ becomes invalid.
   blink::WebServiceWorkerContextProxy* proxy_;
+
+  // Renderer-side object corresponding to WebEmbeddedWorkerInstance
+  std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client_;
 
   // Initialized on the worker thread in workerContextStarted and
   // destructed on the worker thread in willDestroyWorkerContext.

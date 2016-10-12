@@ -17,6 +17,7 @@
 #include "content/public/common/content_client.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
+#include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -56,16 +57,9 @@ bool EmbeddedWorkerDispatcher::OnMessageReceived(
 
 void EmbeddedWorkerDispatcher::WorkerContextDestroyed(
     int embedded_worker_id) {
-  if (ContainsKey(stop_worker_times_, embedded_worker_id)) {
-    base::TimeTicks stop_time = stop_worker_times_[embedded_worker_id];
-    UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.TerminateThread.Time",
-                               base::TimeTicks::Now() - stop_time);
-    stop_worker_times_.erase(embedded_worker_id);
-  }
-
+  UnregisterWorker(embedded_worker_id);
   RenderThreadImpl::current()->thread_safe_sender()->Send(
       new EmbeddedWorkerHostMsg_WorkerStopped(embedded_worker_id));
-  workers_.Remove(embedded_worker_id);
 }
 
 void EmbeddedWorkerDispatcher::OnStartWorker(
@@ -76,18 +70,14 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
       params, base::MakeUnique<ServiceWorkerContextClient>(
                   params.embedded_worker_id, params.service_worker_version_id,
                   params.scope, params.script_url,
-                  params.worker_devtools_agent_route_id));
+                  params.worker_devtools_agent_route_id, nullptr));
   RegisterWorker(params.embedded_worker_id, std::move(wrapper));
 }
 
 void EmbeddedWorkerDispatcher::OnStopWorker(int embedded_worker_id) {
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerDispatcher::OnStopWorker");
   WorkerWrapper* wrapper = workers_.Lookup(embedded_worker_id);
-  if (!wrapper) {
-    LOG(WARNING) << "Got OnStopWorker for nonexistent worker";
-    return;
-  }
-
+  DCHECK(wrapper);
   // This should eventually call WorkerContextDestroyed. (We may need to post
   // a delayed task to forcibly abort the worker context if we find it
   // necessary)
@@ -164,6 +154,25 @@ void EmbeddedWorkerDispatcher::RegisterWorker(
     int embedded_worker_id,
     std::unique_ptr<WorkerWrapper> wrapper) {
   workers_.AddWithID(wrapper.release(), embedded_worker_id);
+}
+
+void EmbeddedWorkerDispatcher::UnregisterWorker(int embedded_worker_id) {
+  if (ContainsKey(stop_worker_times_, embedded_worker_id)) {
+    base::TimeTicks stop_time = stop_worker_times_[embedded_worker_id];
+    UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.TerminateThread.Time",
+                               base::TimeTicks::Now() - stop_time);
+    stop_worker_times_.erase(embedded_worker_id);
+  }
+  workers_.Remove(embedded_worker_id);
+}
+
+void EmbeddedWorkerDispatcher::RecordStopWorkerTimer(int embedded_worker_id) {
+  WorkerWrapper* wrapper = workers_.Lookup(embedded_worker_id);
+  DCHECK(wrapper);
+  // This should eventually call WorkerContextDestroyed. (We may need to post
+  // a delayed task to forcibly abort the worker context if we find it
+  // necessary)
+  stop_worker_times_[embedded_worker_id] = base::TimeTicks::Now();
 }
 
 }  // namespace content

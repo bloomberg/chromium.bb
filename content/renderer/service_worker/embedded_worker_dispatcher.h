@@ -67,11 +67,17 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
                              ConsoleMessageLevel level,
                              const std::string& message);
 
+  // These methods are used by EmbeddedWorkerInstanceClientImpl to keep
+  // consistency between chromium IPC and mojo IPC.
+  // TODO(shimazu): Remove them after all messages for EmbeddedWorker are
+  // replaced by mojo IPC. (Tracking issue: https://crbug.com/629701)
   std::unique_ptr<WorkerWrapper> StartWorkerContext(
       const EmbeddedWorkerStartParams& params,
       std::unique_ptr<ServiceWorkerContextClient> context_client);
   void RegisterWorker(int embedded_worker_id,
                       std::unique_ptr<WorkerWrapper> wrapper);
+  void UnregisterWorker(int embedded_worker_id);
+  void RecordStopWorkerTimer(int embedded_worker_id);
 
   IDMap<WorkerWrapper, IDMapOwnPointer> workers_;
   std::map<int /* embedded_worker_id */, base::TimeTicks> stop_worker_times_;

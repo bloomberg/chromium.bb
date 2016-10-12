@@ -34,6 +34,7 @@
 #include "content/common/service_worker/fetch_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -42,6 +43,7 @@
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
+#include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -259,7 +261,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url,
-    int worker_devtools_agent_route_id)
+    int worker_devtools_agent_route_id,
+    std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
@@ -267,7 +270,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       worker_devtools_agent_route_id_(worker_devtools_agent_route_id),
       sender_(ChildThreadImpl::current()->thread_safe_sender()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      proxy_(nullptr) {
+      proxy_(nullptr),
+      embedded_worker_client_(std::move(embedded_worker_client)) {
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
                            "ServiceWorkerContextClient::StartingWorkerContext",
                            this);
@@ -493,6 +497,16 @@ void ServiceWorkerContextClient::willDestroyWorkerContext(
 
 void ServiceWorkerContextClient::workerContextDestroyed() {
   DCHECK(g_worker_client_tls.Pointer()->Get() == NULL);
+
+  // Check if mojo is enabled
+  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
+    DCHECK(embedded_worker_client_);
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&EmbeddedWorkerInstanceClientImpl::StopWorkerCompleted,
+                   base::Passed(&embedded_worker_client_)));
+    return;
+  }
 
   // Now we should be able to free the WebEmbeddedWorker container on the
   // main thread.
