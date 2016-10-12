@@ -45,8 +45,10 @@ public final class NewTabPageUma {
     public static final int ACTION_OPENED_SNIPPET = 7;
     // User clicked on the "learn more" link in the footer.
     public static final int ACTION_CLICKED_LEARN_MORE = 9;
+    // User clicked on the "Refresh" button in the "all dismissed" state.
+    public static final int ACTION_CLICKED_ALL_DISMISSED_REFRESH = 10;
     // The number of possible actions
-    private static final int NUM_ACTIONS = 10;
+    private static final int NUM_ACTIONS = 11;
 
     // User navigated to a page using the omnibox.
     private static final int RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX = 0;

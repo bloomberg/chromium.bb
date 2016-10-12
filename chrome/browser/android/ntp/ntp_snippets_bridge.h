@@ -71,6 +71,10 @@ class NTPSnippetsBridge
                        const base::android::JavaParamRef<jobject>& obj,
                        jint category);
 
+  void RestoreDismissedCategories(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   void OnPageShown(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

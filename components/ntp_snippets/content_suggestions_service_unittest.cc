@@ -164,6 +164,11 @@ class ContentSuggestionsServiceTest : public testing::Test {
     return service()->providers_by_category_;
   }
 
+  const std::map<Category, ContentSuggestionsProvider*, Category::CompareByID>&
+  dismissed_providers() {
+    return service()->dismissed_providers_by_category_;
+  }
+
   CategoryFactory* category_factory() { return service()->category_factory(); }
 
   Category FromKnownCategory(KnownCategories known_category) {
@@ -599,6 +604,42 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardClearHistory) {
   EXPECT_CALL(*provider, ClearHistory(begin, end, _));
   base::Callback<bool(const GURL& url)> filter;
   service()->ClearHistory(begin, end, filter);
+}
+
+TEST_F(ContentSuggestionsServiceTest, DismissAndRestoreCategory) {
+  // Register a category with one suggestion.
+  Category category = FromKnownCategory(KnownCategories::ARTICLES);
+  MockProvider* provider = RegisterProvider(category);
+  provider->FireCategoryStatusChangedWithCurrentStatus(category);
+  provider->FireSuggestionsChanged(category, CreateSuggestions(category, {42}));
+
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(category));
+  EXPECT_THAT(service()->GetCategoryStatus(category),
+              Eq(CategoryStatus::AVAILABLE));
+  ExpectThatSuggestionsAre(category, {42});
+  EXPECT_THAT(providers().count(category), Eq(1ul));
+  EXPECT_THAT(dismissed_providers(), IsEmpty());
+
+  // Dismissing the category clears the suggestions for it.
+  service()->DismissCategory(category);
+
+  EXPECT_THAT(service()->GetCategories(), IsEmpty());
+  EXPECT_THAT(service()->GetCategoryStatus(category),
+              Eq(CategoryStatus::NOT_PROVIDED));
+  EXPECT_THAT(service()->GetSuggestionsForCategory(category), IsEmpty());
+  EXPECT_THAT(providers(), IsEmpty());
+  EXPECT_THAT(dismissed_providers().count(category), Eq(1ul));
+
+  // Restoring the dismissed category makes it available again but it is still
+  // empty.
+  service()->RestoreDismissedCategories();
+
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(category));
+  EXPECT_THAT(service()->GetCategoryStatus(category),
+              Eq(CategoryStatus::AVAILABLE));
+  EXPECT_THAT(service()->GetSuggestionsForCategory(category), IsEmpty());
+  EXPECT_THAT(providers().count(category), Eq(1ul));
+  EXPECT_THAT(dismissed_providers(), IsEmpty());
 }
 
 }  // namespace ntp_snippets

@@ -124,6 +124,12 @@ public class SnippetsBridge implements SuggestionsSource {
         nativeDismissCategory(mNativeSnippetsBridge, category);
     }
 
+    @Override
+    public void restoreDismissedCategories() {
+        assert mNativeSnippetsBridge != 0;
+        nativeRestoreDismissedCategories(mNativeSnippetsBridge);
+    }
+
     public void onPageShown(int[] categories, int[] suggestionsPerCategory) {
         assert mNativeSnippetsBridge != 0;
         nativeOnPageShown(mNativeSnippetsBridge, categories, suggestionsPerCategory);
@@ -234,6 +240,7 @@ public class SnippetsBridge implements SuggestionsSource {
     private native void nativeDismissSuggestion(long nativeNTPSnippetsBridge, String url,
             int globalPosition, int category, int categoryPosition, String idWithinCategory);
     private native void nativeDismissCategory(long nativeNTPSnippetsBridge, int category);
+    private native void nativeRestoreDismissedCategories(long nativeNTPSnippetsBridge);
     private native void nativeOnPageShown(
             long nativeNTPSnippetsBridge, int[] categories, int[] suggestionsPerCategory);
     private native void nativeOnSuggestionShown(long nativeNTPSnippetsBridge, int globalPosition,

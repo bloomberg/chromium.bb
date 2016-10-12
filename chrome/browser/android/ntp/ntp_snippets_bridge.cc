@@ -251,6 +251,12 @@ void NTPSnippetsBridge::DismissCategory(JNIEnv* env,
   content_suggestions_service_->DismissCategory(CategoryFromIDValue(category));
 }
 
+void NTPSnippetsBridge::RestoreDismissedCategories(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  content_suggestions_service_->RestoreDismissedCategories();
+}
+
 void NTPSnippetsBridge::OnPageShown(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

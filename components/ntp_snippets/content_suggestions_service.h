@@ -125,6 +125,10 @@ class ContentSuggestionsService : public KeyedService,
   // This will not trigger an update through the observers.
   void DismissCategory(Category category);
 
+  // Restores all dismissed categories.
+  // This will not trigger an update through the observers.
+  void RestoreDismissedCategories();
+
   // Observer accessors.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -236,6 +240,11 @@ class ContentSuggestionsService : public KeyedService,
   // |providers_|.
   std::map<Category, ContentSuggestionsProvider*, Category::CompareByID>
       providers_by_category_;
+
+  // All dismissed categories and their providers. These may be restored by
+  // RestoreDismissedCategories().
+  std::map<Category, ContentSuggestionsProvider*, Category::CompareByID>
+      dismissed_providers_by_category_;
 
   // All current suggestion categories, in an order determined by the
   // |category_factory_|. This vector contains exactly the same categories as

@@ -160,10 +160,12 @@ public class NewTabPageAdapterTest {
         ItemsMatcher matcher = new ItemsMatcher(mAdapter, 0);
         matcher.expect(NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD);
         for (SectionDescriptor descriptor : descriptors) matcher.expect(descriptor);
-        if (descriptors.length > 0) {
+        if (descriptors.length == 0) {
+            matcher.expect(NewTabPageItem.VIEW_TYPE_ALL_DISMISSED);
+        } else {
             matcher.expect(NewTabPageItem.VIEW_TYPE_FOOTER);
-            matcher.expect(NewTabPageItem.VIEW_TYPE_SPACING);
         }
+        matcher.expect(NewTabPageItem.VIEW_TYPE_SPACING);
         matcher.expectPosition(mAdapter.getItemCount());
     }
 
@@ -360,7 +362,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testProgressIndicatorDisplay() {
-        int progressPos = mAdapter.getLastContentItemPosition() - 1;
+        int progressPos = mAdapter.getFooterPosition() - 1;
         SuggestionsSection section = (SuggestionsSection) mAdapter.getGroup(progressPos);
         List<NewTabPageItem> items = section.getItems();
         ProgressItem progress = (ProgressItem) items.get(items.size() - 1);

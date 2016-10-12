@@ -150,9 +150,22 @@ void ContentSuggestionsService::DismissCategory(Category category) {
   if (providers_it == providers_by_category_.end())
     return;
 
+  suggestions_by_category_[category].clear();
+  dismissed_providers_by_category_[providers_it->first] = providers_it->second;
   providers_by_category_.erase(providers_it);
   categories_.erase(
       std::find(categories_.begin(), categories_.end(), category));
+}
+
+void ContentSuggestionsService::RestoreDismissedCategories() {
+  // Make a copy as the original will be modified during iteration.
+  auto dismissed_providers_by_category_copy = dismissed_providers_by_category_;
+  for (const auto& category_provider_pair :
+       dismissed_providers_by_category_copy) {
+    RegisterCategoryIfRequired(category_provider_pair.second,
+                               category_provider_pair.first);
+  }
+  DCHECK(dismissed_providers_by_category_.empty());
 }
 
 void ContentSuggestionsService::AddObserver(Observer* observer) {
@@ -272,6 +285,12 @@ bool ContentSuggestionsService::RegisterCategoryIfRequired(
   if (it != providers_by_category_.end()) {
     DCHECK_EQ(it->second, provider);
     return false;
+  }
+
+  auto dismissed_it = dismissed_providers_by_category_.find(category);
+  if (dismissed_it != dismissed_providers_by_category_.end()) {
+    DCHECK_EQ(dismissed_it->second, provider);
+    dismissed_providers_by_category_.erase(dismissed_it);
   }
 
   providers_by_category_[category] = provider;

@@ -58,6 +58,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     private final List<ItemGroup> mGroups = new ArrayList<>();
     private final AboveTheFoldItem mAboveTheFold = new AboveTheFoldItem();
     private final SigninPromoItem mSigninPromo = new SigninPromoItem();
+    private final AllDismissedItem mAllDismissed = new AllDismissedItem();
     private final Footer mFooter = new Footer();
     private final SpacingItem mBottomSpacer = new SpacingItem();
 
@@ -134,14 +135,14 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mAboveTheFoldView = aboveTheFoldView;
         mUiConfig = uiConfig;
         mSigninPromo.setObserver(this);
-        resetSections();
+        resetSections(/*alwaysAllowEmptySections=*/false);
         mNewTabPageManager.getSuggestionsSource().setObserver(this);
 
         mNewTabPageManager.registerSignInStateObserver(new SignInStateObserver() {
             @Override
             public void onSignedIn() {
                 mSigninPromo.hide();
-                resetSections();
+                resetSections(/*alwaysAllowEmptySections=*/false);
             }
 
             @Override
@@ -151,12 +152,15 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         });
     }
 
-    /** Resets the sections, reloading the whole new tab page content. */
-    private void resetSections() {
+    /**
+     * Resets the sections, reloading the whole new tab page content.
+     * @param alwaysAllowEmptySections Whether sections are always allowed to be displayed when
+     *     they are empty, even when they are normally not.
+     */
+    public void resetSections(boolean alwaysAllowEmptySections) {
         mSections.clear();
 
         SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
-
         int[] categories = suggestionsSource.getCategories();
         int[] suggestionsPerCategory = new int[categories.length];
         int i = 0;
@@ -167,7 +171,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
                     || categoryStatus == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED)
                 continue;
 
-            suggestionsPerCategory[i++] = resetSection(category, categoryStatus);
+            suggestionsPerCategory[i++] =
+                    resetSection(category, categoryStatus, alwaysAllowEmptySections);
         }
 
         mNewTabPageManager.trackSnippetsPageImpression(categories, suggestionsPerCategory);
@@ -175,17 +180,29 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         updateGroups();
     }
 
-    private int resetSection(@CategoryInt int category, @CategoryStatusEnum int categoryStatus) {
+    /**
+     * Resets the section for {@code category}. Removes the section if there are no suggestions for
+     * it and it is not allowed to be empty. Otherwise, creates the section if it is not present
+     * yet. Sets the available suggestions on the section.
+     * @param category The category for which the section must be reset.
+     * @param categoryStatus The category status.
+     * @param alwaysAllowEmptySections Whether sections are always allowed to be displayed when
+     *     they are empty, even when they are normally not.
+     * @return The number of suggestions for the section.
+     */
+    private int resetSection(@CategoryInt int category, @CategoryStatusEnum int categoryStatus,
+            boolean alwaysAllowEmptySections) {
         SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
         List<SnippetArticle> suggestions = suggestionsSource.getSuggestionsForCategory(category);
-
-        // Create the new section.
         SuggestionsCategoryInfo info = suggestionsSource.getCategoryInfo(category);
-        if (suggestions.isEmpty() && !info.showIfEmpty()) {
+
+        // Do not show an empty section if not allowed.
+        if (suggestions.isEmpty() && !info.showIfEmpty() && !alwaysAllowEmptySections) {
             mSections.remove(category);
             return 0;
         }
 
+        // Create the section if needed.
         SuggestionsSection section = mSections.get(category);
         if (section == null) {
             section = new SuggestionsSection(info, this);
@@ -252,7 +269,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
                 return;
 
             case CategoryStatus.SIGNED_OUT:
-                resetSection(category, status);
+                resetSection(category, status, /*alwaysAllowEmptySections=*/false);
                 return;
 
             default:
@@ -313,6 +330,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             return new Footer.ViewHolder(mRecyclerView, mNewTabPageManager);
         }
 
+        if (viewType == NewTabPageItem.VIEW_TYPE_ALL_DISMISSED) {
+            return new AllDismissedItem.ViewHolder(mRecyclerView, mNewTabPageManager, this);
+        }
+
         return null;
     }
 
@@ -345,7 +366,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         return RecyclerView.NO_POSITION;
     }
 
-    public int getLastContentItemPosition() {
+    public int getFooterPosition() {
         return getGroupPositionOffset(mFooter);
     }
 
@@ -388,11 +409,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mGroups.add(mAboveTheFold);
         mGroups.addAll(mSections.values());
         mGroups.add(mSigninPromo);
-        if (hasVisibleBelowTheFoldItems()) {
-            mGroups.add(mFooter);
-            mGroups.add(mBottomSpacer);
-        }
+        mGroups.add(hasAllBeenDismissed() ? mAllDismissed : mFooter);
+        mGroups.add(mBottomSpacer);
 
+        // TODO(mvanouwerkerk): Notify about the subset of changed items. At least |mAboveTheFold|
+        // has not changed when refreshing from the all dismissed state.
         notifyDataSetChanged();
     }
 
@@ -400,17 +421,15 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mSections.remove(section.getCategory());
         int startPos = getGroupPositionOffset(section);
         mGroups.remove(section);
-        int removedItems = section.getItems().size();
+        notifyItemRangeRemoved(startPos, section.getItems().size());
 
-        notifyItemRangeRemoved(startPos, removedItems);
-
-        if (!hasVisibleBelowTheFoldItems()) {
-            mGroups.remove(mFooter);
-            mGroups.remove(mBottomSpacer);
-            notifyItemRangeRemoved(startPos + removedItems, 2);
-        } else {
-            notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
+        if (hasAllBeenDismissed()) {
+            int footerPosition = getFooterPosition();
+            mGroups.set(mGroups.indexOf(mFooter), mAllDismissed);
+            notifyItemChanged(footerPosition);
         }
+
+        notifyItemChanged(getBottomSpacerPosition());
     }
 
     @Override
@@ -505,11 +524,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         // TODO(dgn): accessibility announcement.
         mSigninPromo.dismiss();
 
-        if (!hasVisibleBelowTheFoldItems()) {
-            int footerPosition = getLastContentItemPosition();
-            mGroups.remove(mFooter);
-            mGroups.remove(mBottomSpacer);
-            notifyItemRangeRemoved(footerPosition, 2);
+        if (hasAllBeenDismissed()) {
+            int footerPosition = getFooterPosition();
+            mGroups.set(mGroups.indexOf(mFooter), mAllDismissed);
+            notifyItemChanged(footerPosition);
         }
     }
 
@@ -540,8 +558,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         return mRecyclerView.findViewHolderForAdapterPosition(siblingPosDelta + swipePos);
     }
 
-    private boolean hasVisibleBelowTheFoldItems() {
-        return !mSections.isEmpty() || mSigninPromo.isShown();
+    private boolean hasAllBeenDismissed() {
+        return mSections.isEmpty() && !mSigninPromo.isShown();
     }
 
     @VisibleForTesting

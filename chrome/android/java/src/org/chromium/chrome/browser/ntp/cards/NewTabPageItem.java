@@ -18,7 +18,8 @@ public interface NewTabPageItem {
      * @see NewTabPageItem#getType()
      */
     @IntDef({VIEW_TYPE_ABOVE_THE_FOLD, VIEW_TYPE_HEADER, VIEW_TYPE_SNIPPET, VIEW_TYPE_SPACING,
-            VIEW_TYPE_STATUS, VIEW_TYPE_PROGRESS, VIEW_TYPE_ACTION, VIEW_TYPE_PROMO})
+            VIEW_TYPE_STATUS, VIEW_TYPE_PROGRESS, VIEW_TYPE_ACTION, VIEW_TYPE_FOOTER,
+            VIEW_TYPE_PROMO, VIEW_TYPE_ALL_DISMISSED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {}
 
@@ -75,6 +76,15 @@ public interface NewTabPageItem {
      * @see Adapter#getItemViewType(int)
      */
     public static final int VIEW_TYPE_PROMO = 9;
+
+    /**
+     * View type for a {@link AllDismissedItem}.
+     * @see Adapter#getItemViewType(int)
+     */
+    public static final int VIEW_TYPE_ALL_DISMISSED = 10;
+
+    // NOTE: when adding new entries here, also update the IntDef at the top of this file, and
+    // CardViewHolder#isCard(int type).
 
     /**
       * Returns the type ({@link ViewType}) of this list item. This is so we can

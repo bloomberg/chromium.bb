@@ -195,11 +195,11 @@ public class NewTabPageRecyclerView extends RecyclerView {
             return 0;
         }
 
-        ViewHolder lastContentItem = findLastContentItem();
+        ViewHolder spacer = findBottomSpacer();
         ViewHolder aboveTheFold = findViewHolderForAdapterPosition(aboveTheFoldPosition);
 
         int bottomSpacing = getHeight() - mToolbarHeight;
-        if (lastContentItem == null || aboveTheFold == null) {
+        if (spacer == null || aboveTheFold == null) {
             // This can happen in several cases, where some elements are not visible and the
             // RecyclerView didn't already attach them. We handle it by just adding space to make
             // sure that we never run out and force the UI to jump around and get stuck in a
@@ -207,17 +207,16 @@ public class NewTabPageRecyclerView extends RecyclerView {
             // next pass. Known cases that make it necessary:
             //  - The card list is refreshed while the NTP is not shown, for example when changing
             //    the sync settings.
-            //  - Dismissing a snippet and having the status card coming to take its place.
+            //  - Dismissing a suggestion and having the status card coming to take its place.
             //  - Refresh while being below the fold, for example by tapping the status card.
 
             if (aboveTheFold != null) bottomSpacing -= aboveTheFold.itemView.getBottom();
 
             Log.w(TAG, "The RecyclerView items are not attached, can't determine the content "
-                            + "height: snap=%s, last=%s. Using full height: %d ",
-                    aboveTheFold, lastContentItem, bottomSpacing);
+                            + "height: snap=%s, spacer=%s. Using full height: %d ",
+                    aboveTheFold, spacer, bottomSpacing);
         } else {
-            int contentHeight =
-                    lastContentItem.itemView.getBottom() - aboveTheFold.itemView.getBottom();
+            int contentHeight = spacer.itemView.getTop() - aboveTheFold.itemView.getBottom();
             bottomSpacing -= contentHeight - mCompensationHeight;
         }
 
@@ -314,20 +313,6 @@ public class NewTabPageRecyclerView extends RecyclerView {
     }
 
     /**
-     * Finds the view holder for the last content item: the footer.
-     * @return The {@code ViewHolder} of the last content item, or null if it is not present.
-     */
-    private ViewHolder findLastContentItem() {
-        int position = getNewTabPageAdapter().getLastContentItemPosition();
-        if (position == RecyclerView.NO_POSITION) return null;
-
-        ViewHolder viewHolder = findViewHolderForAdapterPosition(position);
-        if (viewHolder instanceof Footer.ViewHolder) return viewHolder;
-
-        return null;
-    }
-
-    /**
      * Finds the view holder for the bottom spacer.
      * @return The {@code ViewHolder} of the bottom spacer, or null if it is not present.
      */
@@ -340,7 +325,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
 
     /**
      * Finds the above the fold view.
-     * @return The View for above the fold or null, if it is not present.
+     * @return The view for above the fold or null, if it is not present.
      */
     public NewTabPageLayout findAboveTheFoldView() {
         int position = getNewTabPageAdapter().getAboveTheFoldPosition();

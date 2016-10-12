@@ -75,6 +75,11 @@ public interface SuggestionsSource {
     void dismissCategory(@CategoryInt int category);
 
     /**
+     * Restores all categories previously dismissed with {@link #dismissCategory}.
+     */
+    void restoreDismissedCategories();
+
+    /**
      * Sets the recipient for update events from the source.
      */
     void setObserver(Observer observer);

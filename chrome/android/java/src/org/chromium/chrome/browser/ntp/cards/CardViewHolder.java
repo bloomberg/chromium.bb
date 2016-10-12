@@ -245,6 +245,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
             case NewTabPageItem.VIEW_TYPE_SPACING:
             case NewTabPageItem.VIEW_TYPE_PROGRESS:
             case NewTabPageItem.VIEW_TYPE_FOOTER:
+            case NewTabPageItem.VIEW_TYPE_ALL_DISMISSED:
                 return false;
             default:
                 assert false;
