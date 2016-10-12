@@ -697,6 +697,13 @@ bool AddTransformNodeIfNeeded(
             node->id);
     sticky_data->constraints = StickyPositionConstraint(layer);
     sticky_data->scroll_ancestor = GetScrollParentId(data_from_ancestor, layer);
+    ScrollNode* scroll_ancestor =
+        data_for_children->property_trees->scroll_tree.Node(
+            sticky_data->scroll_ancestor);
+    if (scroll_ancestor->is_inner_viewport_scroll_layer) {
+      data_for_children->property_trees->transform_tree
+          .AddNodeAffectedByInnerViewportBoundsDelta(node->id);
+    }
     sticky_data->main_thread_offset =
         layer->position().OffsetFromOrigin() -
         sticky_data->constraints.parent_relative_sticky_box_offset

@@ -429,8 +429,10 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
       tree->property_trees()->scroll_tree.current_scroll_offset(
           scroll_node->owner_id);
 
-  gfx::RectF clip(gfx::PointF(scroll_offset.x(), scroll_offset.y()),
-                  gfx::SizeF(scroll_node->scroll_clip_layer_bounds));
+  gfx::RectF clip(
+      gfx::PointF(scroll_offset.x(), scroll_offset.y()),
+      gfx::SizeF(tree->property_trees()->scroll_tree.scroll_clip_layer_bounds(
+          scroll_node->id)));
   gfx::Vector2dF sticky_offset(
       constraint.scroll_container_relative_sticky_box_rect.OffsetFromOrigin());
   gfx::Vector2dF layer_offset(sticky_data->main_thread_offset);
