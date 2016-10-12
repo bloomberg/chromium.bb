@@ -110,7 +110,8 @@ class CloudPolicyClientTest : public testing::Test {
         em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION);
 
     em::CertificateBasedDeviceRegisterRequest* cert_based_register_request =
-        cert_based_registration_request_.mutable_cert_based_register_request();
+        cert_based_registration_request_
+        .mutable_certificate_based_register_request();
     fake_signing_service_.SignDataSynchronously(data.SerializeAsString(),
         cert_based_register_request->mutable_signed_request());
 

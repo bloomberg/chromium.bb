@@ -185,7 +185,7 @@ void CloudPolicyClient::OnRegisterWithCertificateRequestSigned(bool success,
           GetRequestContext()));
   policy_fetch_request_job_->SetClientID(client_id_);
   em::SignedData* signed_request = policy_fetch_request_job_->GetRequest()->
-      mutable_cert_based_register_request()->mutable_signed_request();
+      mutable_certificate_based_register_request()->mutable_signed_request();
   signed_request->set_data(signed_data.data());
   signed_request->set_signature(signed_data.signature());
   signed_request->set_extra_data_bytes(signed_data.extra_data_bytes());

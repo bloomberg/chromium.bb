@@ -295,7 +295,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       return (400, 'Invalid request parameter')
     if request_type == 'register':
       response = self.ProcessRegister(rmsg.register_request)
-    elif request_type == 'cert_based_register':
+    elif request_type == 'certificate_based_register':
       response = self.ProcessCertBasedRegister(rmsg.register_request)
     elif request_type == 'api_authorization':
       response = self.ProcessApiAuthorization(rmsg.service_api_access_request)

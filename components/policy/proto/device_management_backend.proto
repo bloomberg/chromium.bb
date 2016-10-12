@@ -1197,7 +1197,7 @@ message CertificateBasedDeviceRegistrationData {
 //   attribute_update: device_attribute_update_request
 //   gcm_id_update: gcm_id_update_request
 //   check_android_management: check_android_management_request
-//   certificate_based_register: cert_based_register_request
+//   certificate_based_register: certificate_based_register_request
 //
 message DeviceManagementRequest {
   // Register request.
@@ -1253,7 +1253,7 @@ message DeviceManagementRequest {
 
   // Request to register with a registration certificate.
   optional CertificateBasedDeviceRegisterRequest
-      cert_based_register_request = 18;
+      certificate_based_register_request = 18;
 
 }
 
