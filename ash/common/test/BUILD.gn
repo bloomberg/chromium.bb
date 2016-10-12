@@ -18,6 +18,8 @@ static_library("test_support") {
     "test_system_tray_delegate.h",
     "test_volume_control_delegate.cc",
     "test_volume_control_delegate.h",
+    "wm_shell_test_api.cc",
+    "wm_shell_test_api.h",
     "workspace_event_handler_test_helper.cc",
     "workspace_event_handler_test_helper.h",
   ]

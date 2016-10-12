@@ -334,8 +334,6 @@ void WmShell::SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui) {
 void WmShell::SetSystemTrayDelegate(
     std::unique_ptr<SystemTrayDelegate> delegate) {
   DCHECK(delegate);
-  DCHECK(!system_tray_delegate_);
-  // TODO(jamescook): Create via ShellDelegate once it moves to //ash/common.
   system_tray_delegate_ = std::move(delegate);
   system_tray_delegate_->Initialize();
 #if defined(OS_CHROMEOS)

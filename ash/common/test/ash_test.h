@@ -27,6 +27,7 @@ class WidgetDelegate;
 namespace ash {
 
 class AshTestImpl;
+class SystemTray;
 class WmShelf;
 class WmWindow;
 
@@ -62,6 +63,9 @@ class AshTest : public testing::Test {
 
   // Returns the WmShelf for the primary display.
   static WmShelf* GetPrimaryShelf();
+
+  // Returns the system tray on the primary display.
+  static SystemTray* GetPrimarySystemTray();
 
   bool SupportsMultipleDisplays() const;
 

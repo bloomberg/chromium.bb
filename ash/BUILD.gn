@@ -1228,7 +1228,6 @@ test("ash_unittests") {
     "common/system/tiles/tray_tiles_unittest.cc",
     "common/system/tray/system_tray_unittest.cc",
     "common/system/tray/tray_details_view_unittest.cc",
-    "common/system/update/tray_update_unittest.cc",
     "common/system/user/tray_user_unittest.cc",
 
     # TODO: convert to use AshTest http://crbug.com/654517.

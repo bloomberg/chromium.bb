@@ -4,6 +4,8 @@
 
 #include "ash/common/test/ash_test.h"
 
+#include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/system/status_area_widget.h"
 #include "ash/common/test/ash_test_impl.h"
 #include "ash/common/test/test_session_state_delegate.h"
 #include "ash/common/wm_root_window_controller.h"
@@ -31,6 +33,11 @@ WmShelf* AshTest::GetPrimaryShelf() {
       ->GetPrimaryRootWindow()
       ->GetRootWindowController()
       ->GetShelf();
+}
+
+// static
+SystemTray* AshTest::GetPrimarySystemTray() {
+  return GetPrimaryShelf()->GetStatusAreaWidget()->system_tray();
 }
 
 bool AshTest::SupportsMultipleDisplays() const {

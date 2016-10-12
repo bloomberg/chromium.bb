@@ -457,6 +457,7 @@ class ASH_EXPORT WmShell {
   friend class AcceleratorControllerTest;
   friend class ScopedRootWindowForNewWindows;
   friend class Shell;
+  friend class WmShellTestApi;
 
   static WmShell* instance_;
 

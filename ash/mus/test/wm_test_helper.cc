@@ -6,6 +6,9 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/test/material_design_controller_test_api.h"
+#include "ash/common/test/test_system_tray_delegate.h"
+#include "ash/common/test/wm_shell_test_api.h"
+#include "ash/common/wm_shell.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
@@ -102,6 +105,11 @@ void WmTestHelper::Init() {
   window_manager_app_->InitWindowManager(
       window_tree_client_setup_.OwnWindowTreeClient(),
       blocking_pool_owner_->pool());
+
+  // TODO(jamescook): Pass a TestShellDelegate into WindowManager and use it to
+  // create the various test delegates.
+  WmShellTestApi().SetSystemTrayDelegate(
+      base::MakeUnique<test::TestSystemTrayDelegate>());
 
   ui::WindowTreeClient* window_tree_client =
       window_manager_app_->window_manager()->window_tree_client();
