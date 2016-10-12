@@ -4155,7 +4155,7 @@ TEST_F(LayerTreeHostImplTopControlsTest,
                 ->ScrollBegin(BeginState(gfx::Point()).get(),
                               InputHandler::TOUCHSCREEN)
                 .thread);
-  EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), inner_scroll);
+  EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), outer_scroll);
 
   host_impl_->ScrollBy(
       UpdateState(gfx::Point(), gfx::Vector2dF(0.f, -50.f)).get());
@@ -4611,7 +4611,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollOuterViewport) {
                 .thread);
   host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
 
-  EXPECT_EQ(host_impl_->InnerViewportScrollLayer(),
+  EXPECT_EQ(host_impl_->OuterViewportScrollLayer(),
             host_impl_->CurrentlyScrollingLayer());
   host_impl_->ScrollEnd(EndState().get());
 
@@ -4628,7 +4628,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollOuterViewport) {
   host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
 
   EXPECT_EQ(0, host_impl_->top_controls_manager()->ContentTopOffset());
-  EXPECT_EQ(host_impl_->InnerViewportScrollLayer(),
+  EXPECT_EQ(host_impl_->OuterViewportScrollLayer(),
             host_impl_->CurrentlyScrollingLayer());
 
   host_impl_->ScrollEnd(EndState().get());
@@ -5437,17 +5437,26 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   gfx::Size surface_size(10, 10);
   std::unique_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl_->active_tree(), 1);
-  std::unique_ptr<LayerImpl> root_clip =
+  std::unique_ptr<LayerImpl> inner_clip =
       LayerImpl::Create(host_impl_->active_tree(), 2);
-  std::unique_ptr<LayerImpl> root_scroll =
-      CreateScrollableLayer(3, surface_size, root_clip.get());
-  root_clip->test_properties()->force_render_surface = true;
-  root_scroll->test_properties()->is_container_for_fixed_position_layers = true;
-  root_clip->test_properties()->AddChild(std::move(root_scroll));
-  root_ptr->test_properties()->AddChild(std::move(root_clip));
+  std::unique_ptr<LayerImpl> inner_scroll =
+      CreateScrollableLayer(3, surface_size, inner_clip.get());
+  std::unique_ptr<LayerImpl> outer_clip =
+      LayerImpl::Create(host_impl_->active_tree(), 7);
+  std::unique_ptr<LayerImpl> outer_scroll =
+      CreateScrollableLayer(8, surface_size, outer_clip.get());
+  inner_clip->test_properties()->force_render_surface = true;
+  inner_scroll->test_properties()->is_container_for_fixed_position_layers =
+      true;
+  outer_scroll->test_properties()->is_container_for_fixed_position_layers =
+      true;
+  outer_clip->test_properties()->AddChild(std::move(outer_scroll));
+  inner_scroll->test_properties()->AddChild(std::move(outer_clip));
+  inner_clip->test_properties()->AddChild(std::move(inner_scroll));
+  root_ptr->test_properties()->AddChild(std::move(inner_clip));
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
   host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 3,
-                                                      Layer::INVALID_ID);
+                                                      8);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
 
@@ -5460,19 +5469,27 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   host_impl_->active_tree()->DetachLayers();
   std::unique_ptr<LayerImpl> root_ptr2 =
       LayerImpl::Create(host_impl_->active_tree(), 4);
-  std::unique_ptr<LayerImpl> root_clip2 =
+  std::unique_ptr<LayerImpl> inner_clip2 =
       LayerImpl::Create(host_impl_->active_tree(), 5);
-  std::unique_ptr<LayerImpl> root_scroll2 =
-      CreateScrollableLayer(6, surface_size, root_clip2.get());
-  root_scroll2->test_properties()->is_container_for_fixed_position_layers =
+  std::unique_ptr<LayerImpl> inner_scroll2 =
+      CreateScrollableLayer(6, surface_size, inner_clip2.get());
+  std::unique_ptr<LayerImpl> outer_clip2 =
+      LayerImpl::Create(host_impl_->active_tree(), 9);
+  std::unique_ptr<LayerImpl> outer_scroll2 =
+      CreateScrollableLayer(10, surface_size, outer_clip2.get());
+  inner_scroll2->test_properties()->is_container_for_fixed_position_layers =
       true;
-  root_clip2->test_properties()->AddChild(std::move(root_scroll2));
-  root_clip2->test_properties()->force_render_surface = true;
-  root_ptr2->test_properties()->AddChild(std::move(root_clip2));
+  outer_scroll2->test_properties()->is_container_for_fixed_position_layers =
+      true;
+  outer_clip2->test_properties()->AddChild(std::move(outer_scroll2));
+  inner_scroll2->test_properties()->AddChild(std::move(outer_clip2));
+  inner_clip2->test_properties()->AddChild(std::move(inner_scroll2));
+  inner_clip2->test_properties()->force_render_surface = true;
+  root_ptr2->test_properties()->AddChild(std::move(inner_clip2));
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr2));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 4, 6,
-                                                      Layer::INVALID_ID);
+                                                      10);
   host_impl_->active_tree()->DidBecomeActive();
 
   // Scrolling should still work even though we did not draw yet.
@@ -6318,10 +6335,15 @@ TEST_F(LayerTreeHostImplTest, OverscrollOnMainThread) {
   const gfx::Size viewport_size(50, 50);
   CreateBasicVirtualViewportLayers(viewport_size, content_size);
 
-  LayerImpl* scroll_layer =
-      host_impl_->active_tree()->InnerViewportScrollLayer();
-  scroll_layer->set_main_thread_scrolling_reasons(
-      MainThreadScrollingReason::kThreadedScrollingDisabled);
+  host_impl_->active_tree()
+      ->InnerViewportScrollLayer()
+      ->set_main_thread_scrolling_reasons(
+          MainThreadScrollingReason::kThreadedScrollingDisabled);
+  host_impl_->active_tree()
+      ->OuterViewportScrollLayer()
+      ->set_main_thread_scrolling_reasons(
+          MainThreadScrollingReason::kThreadedScrollingDisabled);
+
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   DrawFrame();
@@ -6474,6 +6496,180 @@ TEST_F(LayerTreeHostImplTest, ScrollChainingWithReplacedOuterViewport) {
                      outer_scroll_layer->CurrentScrollOffset());
     EXPECT_VECTOR_EQ(gfx::Vector2dF(50.f, 50.f),
                      scroll_layer->CurrentScrollOffset());
+  }
+}
+// Test that scrolls chain correctly when a child scroller on the page (e.g. a
+// scrolling div) is set as the outer viewport but scrolls start from a layer
+// that's not a descendant of the outer viewport. This happens in the
+// rootScroller proposal.
+TEST_F(LayerTreeHostImplTest, RootScrollerScrollNonDescendant) {
+  const gfx::Size content_size(300, 300);
+  const gfx::Size viewport_size(300, 300);
+
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+
+  LayerImpl* content_layer =
+      CreateBasicVirtualViewportLayers(viewport_size, content_size);
+  LayerImpl* inner_scroll_layer = host_impl_->InnerViewportScrollLayer();
+
+  LayerImpl* outer_scroll_layer = nullptr;
+  LayerImpl* sibling_scroll_layer = nullptr;
+
+  // Initialization: Add a scrolling layer, simulating an ordinary DIV, to be
+  // set as the outer viewport. Add a sibling scrolling layer that isn't a child
+  // of the outer viewport scroll layer.
+  {
+    std::unique_ptr<LayerImpl> clip = LayerImpl::Create(layer_tree_impl, 10);
+    clip->SetBounds(content_size);
+    clip->SetPosition(gfx::PointF(100, 100));
+
+    std::unique_ptr<LayerImpl> scroll = LayerImpl::Create(layer_tree_impl, 11);
+    scroll->SetBounds(gfx::Size(1200, 1200));
+    scroll->SetScrollClipLayer(clip->id());
+    scroll->SetDrawsContent(true);
+
+    outer_scroll_layer = scroll.get();
+
+    clip->test_properties()->AddChild(std::move(scroll));
+    content_layer->test_properties()->AddChild(std::move(clip));
+
+    // Create the non-descendant.
+    std::unique_ptr<LayerImpl> clip2 = LayerImpl::Create(layer_tree_impl, 14);
+    clip2->SetBounds(gfx::Size(600, 600));
+    clip2->SetPosition(gfx::PointF());
+
+    std::unique_ptr<LayerImpl> scroll2 = LayerImpl::Create(layer_tree_impl, 15);
+    scroll2->SetBounds(gfx::Size(1200, 1200));
+    scroll2->SetScrollClipLayer(clip2->id());
+    scroll2->SetDrawsContent(true);
+
+    sibling_scroll_layer = scroll2.get();
+
+    clip2->test_properties()->AddChild(std::move(scroll2));
+    content_layer->test_properties()->AddChild(std::move(clip2));
+
+    layer_tree_impl->SetViewportLayersFromIds(
+        Layer::INVALID_ID, layer_tree_impl->PageScaleLayer()->id(),
+        inner_scroll_layer->id(), outer_scroll_layer->id());
+    layer_tree_impl->BuildPropertyTreesForTesting();
+
+    ASSERT_EQ(outer_scroll_layer, layer_tree_impl->OuterViewportScrollLayer());
+  }
+
+  // Scrolls should target the non-descendant scroller. Chaining should not
+  // propagate to the outer viewport scroll layer.
+  {
+    // This should fully scroll the layer.
+    host_impl_->ScrollBegin(BeginState(gfx::Point(0, 0)).get(),
+                            InputHandler::TOUCHSCREEN);
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(0, 0), gfx::Vector2dF(1000.f, 1000.f)).get());
+    host_impl_->ScrollEnd(EndState().get());
+
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(600.f, 600.f),
+                     sibling_scroll_layer->CurrentScrollOffset());
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(),
+                     outer_scroll_layer->CurrentScrollOffset());
+
+    // Scrolling now should chain up but, since the outer viewport is a sibling
+    // rather than an ancestor, we shouldn't chain to it.
+    host_impl_->ScrollBegin(BeginState(gfx::Point(0, 0)).get(),
+                            InputHandler::TOUCHSCREEN);
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(0, 0), gfx::Vector2dF(1000.f, 1000.f)).get());
+    host_impl_->ScrollEnd(EndState().get());
+
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(600.f, 600.f),
+                     sibling_scroll_layer->CurrentScrollOffset());
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(),
+                     outer_scroll_layer->CurrentScrollOffset());
+  }
+
+  float min_page_scale = 1.f, max_page_scale = 4.f;
+  float page_scale_factor = 1.f;
+  host_impl_->active_tree()->PushPageScaleFromMainThread(
+      page_scale_factor, min_page_scale, max_page_scale);
+
+  gfx::Vector2dF viewport_size_vec(viewport_size.width(),
+                                   viewport_size.height());
+
+  // Reset the scroll offset.
+  sibling_scroll_layer->SetCurrentScrollOffset(gfx::ScrollOffset());
+
+  // Now pinch-zoom in. Anchoring should cause scrolling only on the inner
+  // viewport layer.
+  {
+    // Pinch in to the middle of the screen. The inner viewport should scroll
+    // to keep the gesture anchored but not the outer or the sibling scroller.
+    page_scale_factor = 2.f;
+    gfx::Point anchor(viewport_size.width() / 2, viewport_size.height() / 2);
+    host_impl_->ScrollBegin(BeginState(anchor).get(),
+                            InputHandler::TOUCHSCREEN);
+    host_impl_->PinchGestureBegin();
+    host_impl_->PinchGestureUpdate(page_scale_factor, anchor);
+    host_impl_->PinchGestureEnd();
+
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(anchor.x() / 2, anchor.y() / 2),
+                     inner_scroll_layer->CurrentScrollOffset());
+
+    host_impl_->ScrollBy(UpdateState(anchor, viewport_size_vec).get());
+
+    EXPECT_VECTOR_EQ(ScaleVector2d(viewport_size_vec, 1.f / page_scale_factor),
+                     inner_scroll_layer->CurrentScrollOffset());
+    // TODO(bokan): This doesn't yet work but we'll probably want to fix this
+    // at some point.
+    // EXPECT_VECTOR_EQ(
+    //     gfx::Vector2dF(),
+    //     outer_scroll_layer->CurrentScrollOffset());
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(),
+                     sibling_scroll_layer->CurrentScrollOffset());
+
+    host_impl_->ScrollEnd(EndState().get());
+  }
+
+  // Reset the scroll offsets
+  sibling_scroll_layer->SetCurrentScrollOffset(gfx::ScrollOffset());
+  inner_scroll_layer->SetCurrentScrollOffset(gfx::ScrollOffset());
+  outer_scroll_layer->SetCurrentScrollOffset(gfx::ScrollOffset());
+
+  // Scrolls over the sibling while pinched in should scroll the sibling first,
+  // but then chain up to the inner viewport so that the user can still pan
+  // around. The outer viewport should be unaffected.
+  {
+    // This should fully scroll the sibling but, because we latch to the
+    // scroller, it shouldn't chain up to the inner viewport yet.
+    host_impl_->ScrollBegin(BeginState(gfx::Point(0, 0)).get(),
+                            InputHandler::TOUCHSCREEN);
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(0, 0), gfx::Vector2dF(2000.f, 2000.f)).get());
+    host_impl_->ScrollEnd(EndState().get());
+
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(600.f, 600.f),
+                     sibling_scroll_layer->CurrentScrollOffset());
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(),
+                     inner_scroll_layer->CurrentScrollOffset());
+
+    // Scrolling now should chain up to the inner viewport.
+    host_impl_->ScrollBegin(BeginState(gfx::Point(0, 0)).get(),
+                            InputHandler::TOUCHSCREEN);
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(0, 0), gfx::Vector2dF(2000.f, 2000.f)).get());
+    host_impl_->ScrollEnd(EndState().get());
+
+    EXPECT_VECTOR_EQ(ScaleVector2d(viewport_size_vec, 1 / page_scale_factor),
+                     inner_scroll_layer->CurrentScrollOffset());
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(),
+                     outer_scroll_layer->CurrentScrollOffset());
+
+    // No more scrolling should be possible.
+    host_impl_->ScrollBegin(BeginState(gfx::Point(0, 0)).get(),
+                            InputHandler::TOUCHSCREEN);
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(0, 0), gfx::Vector2dF(2000.f, 2000.f)).get());
+    host_impl_->ScrollEnd(EndState().get());
+
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(),
+                     outer_scroll_layer->CurrentScrollOffset());
   }
 }
 
@@ -8377,13 +8573,13 @@ TEST_F(LayerTreeHostImplTest, NotScrollInvisibleScroller) {
   // any layer that is a drawn RSLL member, then we can ignore the hit.
   //
   // Why SCROLL_STARTED? In this case, it's because we've bubbled out and
-  // started scrolling the inner viewport.
+  // started scrolling the viewport.
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
             host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                                     InputHandler::WHEEL)
                 .thread);
 
-  EXPECT_EQ(2, host_impl_->CurrentlyScrollingLayer()->id());
+  EXPECT_EQ(117, host_impl_->CurrentlyScrollingLayer()->id());
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleDescendent) {
@@ -9363,16 +9559,16 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, FlingScrollBubblesToInner) {
                   ->ScrollBegin(BeginState(gfx::Point()).get(),
                                 InputHandler::TOUCHSCREEN)
                   .thread);
-    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_->FlingScrollBegin().thread);
-    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
 
     gfx::Vector2d scroll_delta(inner_viewport.width() / 2.f,
                                inner_viewport.height() / 2.f);
     host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
     inner_expected += gfx::Vector2dF(scroll_delta.x(), scroll_delta.y());
-    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
 
     host_impl_->ScrollEnd(EndState().get());
     host_impl_->ClearCurrentlyScrollingLayerForTesting();
@@ -9387,18 +9583,18 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, FlingScrollBubblesToInner) {
                   ->ScrollBegin(BeginState(gfx::Point()).get(),
                                 InputHandler::TOUCHSCREEN)
                   .thread);
-    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_->FlingScrollBegin().thread);
-    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
 
     host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
     inner_expected += gfx::Vector2dF(scroll_delta.x(), scroll_delta.y());
-    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
 
     host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
     outer_expected += gfx::Vector2dF(scroll_delta.x(), scroll_delta.y());
-    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
 
     host_impl_->ScrollEnd(EndState().get());
     host_impl_->ClearCurrentlyScrollingLayerForTesting();
@@ -9547,7 +9743,6 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
   SetupVirtualViewportLayers(content_size, outer_viewport, inner_viewport);
 
   LayerImpl* outer_scroll = host_impl_->OuterViewportScrollLayer();
-  LayerImpl* inner_scroll = host_impl_->InnerViewportScrollLayer();
 
   std::unique_ptr<LayerImpl> child =
       CreateScrollableLayer(10, outer_viewport, outer_scroll);
@@ -9563,7 +9758,8 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
                 ->RootScrollBegin(BeginState(gfx::Point()).get(),
                                   InputHandler::TOUCHSCREEN)
                 .thread);
-  EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), inner_scroll);
+  EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(),
+            host_impl_->ViewportMainScrollLayer());
   host_impl_->ScrollEnd(EndState().get());
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
             host_impl_
@@ -11153,7 +11349,7 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
     LayerTreeImpl* pending_tree = host_impl_->pending_tree();
     pending_tree->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     LayerImpl* last_scrolled_layer = pending_tree->LayerById(
-        host_impl_->active_tree()->LastScrolledLayerId());
+        host_impl_->active_tree()->InnerViewportScrollLayer()->id());
 
     // When building property trees from impl side, the builder uses the scroll
     // offset of layer_impl to initialize the scroll offset in scroll tree:

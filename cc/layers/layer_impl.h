@@ -98,7 +98,6 @@ class CC_EXPORT LayerImpl {
   bool IsActive() const;
 
   void DistributeScroll(ScrollState* scroll_state);
-  void ApplyScroll(ScrollState* scroll_state);
 
   void set_property_tree_sequence_number(int sequence_number) {}
 

@@ -195,7 +195,7 @@ void Viewport::PinchEnd() {
 }
 
 LayerImpl* Viewport::MainScrollLayer() const {
-  return InnerScrollLayer();
+  return OuterScrollLayer();
 }
 
 gfx::Vector2dF Viewport::ScrollTopControls(const gfx::Vector2dF& delta) {

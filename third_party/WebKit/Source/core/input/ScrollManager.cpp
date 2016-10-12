@@ -83,6 +83,7 @@ void ScrollManager::recomputeScrollChain(const Node& startNode,
 
   DCHECK(startNode.layoutObject());
   LayoutBox* curBox = startNode.layoutObject()->enclosingBox();
+  Element* documentElement = m_frame->document()->documentElement();
 
   // Scrolling propagates along the containing block chain and ends at the
   // RootScroller element. The RootScroller element will have a custom
@@ -98,13 +99,13 @@ void ScrollManager::recomputeScrollChain(const Node& startNode,
       // In normal circumastances, the documentElement will be the root
       // scroller but the documentElement itself isn't a containing block,
       // that'll be the document node rather than the element.
-      curElement = m_frame->document()->documentElement();
-      DCHECK(!curElement || isEffectiveRootScroller(*curElement));
+      curElement = documentElement;
     }
 
     if (curElement) {
       scrollChain.push_front(DOMNodeIds::idForNode(curElement));
-      if (isEffectiveRootScroller(*curElement))
+      if (isEffectiveRootScroller(*curElement) ||
+          curElement->isSameNode(documentElement))
         break;
     }
 

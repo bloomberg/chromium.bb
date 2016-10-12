@@ -598,6 +598,8 @@ class CC_EXPORT LayerTreeHostImpl
     ClearCurrentlyScrollingLayer();
   }
 
+  LayerImpl* ViewportMainScrollLayer();
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,

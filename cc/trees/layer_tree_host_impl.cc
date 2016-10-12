@@ -2221,6 +2221,10 @@ void LayerTreeHostImpl::SetLayerTreeMutator(
   mutator_->SetClient(this);
 }
 
+LayerImpl* LayerTreeHostImpl::ViewportMainScrollLayer() {
+  return viewport()->MainScrollLayer();
+}
+
 void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
   ClearUIResources();
   tile_manager_.FinishTasksAndCleanUp();
@@ -2830,19 +2834,18 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     if (scroll_node) {
       for (; scroll_tree.parent(scroll_node);
            scroll_node = scroll_tree.parent(scroll_node)) {
-        if (!scroll_node->scrollable ||
-            scroll_node->is_outer_viewport_scroll_layer)
+        if (!scroll_node->scrollable)
           continue;
 
-        if (scroll_node->is_inner_viewport_scroll_layer) {
+        if (viewport()->MainScrollLayer() &&
+            scroll_node->owner_id == viewport()->MainScrollLayer()->id()) {
           gfx::Vector2dF scrolled =
               viewport()->ScrollAnimated(pending_delta, delayed_by);
           // Viewport::ScrollAnimated returns pending_delta as long as it
           // starts an animation.
           if (scrolled == pending_delta)
             return scroll_status;
-          pending_delta -= scrolled;
-          continue;
+          break;
         }
 
         gfx::Vector2dF scroll_delta =
@@ -3042,18 +3045,19 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
   std::list<const ScrollNode*> current_scroll_chain;
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
+  ScrollNode* viewport_scroll_node =
+      viewport()->MainScrollLayer()
+          ? scroll_tree.Node(viewport()->MainScrollLayer()->scroll_tree_index())
+          : nullptr;
   if (scroll_node) {
+    // TODO(bokan): The loop checks for a null parent but don't we still want to
+    // distribute to the root scroll node?
     for (; scroll_tree.parent(scroll_node);
          scroll_node = scroll_tree.parent(scroll_node)) {
-      if (scroll_node->is_outer_viewport_scroll_layer) {
-        // TODO(bokan): This should use Viewport::MainScrollLayer once that
-        // returns the outer viewport scroll layer.
+      if (scroll_node == viewport_scroll_node) {
         // Don't chain scrolls past the outer viewport scroll layer. Once we
         // reach that, we should scroll the viewport which is represented by the
         // main viewport scroll layer.
-        DCHECK(viewport()->MainScrollLayer());
-        ScrollNode* viewport_scroll_node = scroll_tree.Node(
-            viewport()->MainScrollLayer()->scroll_tree_index());
         DCHECK(viewport_scroll_node);
         current_scroll_chain.push_front(viewport_scroll_node);
         break;
@@ -3251,9 +3255,11 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, InputHandler::TOUCHSCREEN, layer_impl,
       &scroll_on_main_thread, &main_thread_scrolling_reasons);
+
   // Scrollbars for the viewport are registered with the outer viewport layer.
   if (scroll_layer_impl == InnerViewportScrollLayer())
     scroll_layer_impl = OuterViewportScrollLayer();
+
   if (scroll_on_main_thread || !scroll_layer_impl)
     return;
 
