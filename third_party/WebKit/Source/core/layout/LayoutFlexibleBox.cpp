@@ -895,15 +895,6 @@ bool LayoutFlexibleBox::crossAxisLengthIsDefinite(const LayoutBox& child,
   return length.isFixed();
 }
 
-bool LayoutFlexibleBox::childFlexBaseSizeRequiresLayout(
-    const LayoutBox& child) const {
-  return (!mainAxisLengthIsDefinite(child, flexBasisForChild(child)) &&
-          (hasOrthogonalFlow(child) ||
-           (crossAxisOverflowForChild(child) == OverflowAuto &&
-            !PaintLayerScrollableArea::FreezeScrollbarsScope::
-                scrollbarsAreFrozen())));
-}
-
 void LayoutFlexibleBox::cacheChildMainSize(const LayoutBox& child) {
   DCHECK(!child.needsLayout());
   LayoutUnit mainSize;
@@ -944,8 +935,11 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(
   if (child.styleRef().containsSize())
     return LayoutUnit();
 
+  // The flex basis is indefinite (=auto), so we need to compute the actual
+  // width of the child. For the logical width axis we just use the preferred
+  // width; for the height we need to lay out the child.
   LayoutUnit mainAxisExtent;
-  if (childFlexBaseSizeRequiresLayout(child)) {
+  if (hasOrthogonalFlow(child)) {
     if (childLayoutType == NeverLayout)
       return LayoutUnit();
 
@@ -958,11 +952,8 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(
     }
     mainAxisExtent = m_intrinsicSizeAlongMainAxis.get(&child);
   } else {
-    // We don't need to add scrollbarLogicalWidth here. For overflow: scroll,
-    // the preferred width already includes the scrollbar size (via
-    // scrollbarLogicalWidth()). For overflow: auto,
-    // childFlexBaseSizeRequiresLayout returns true and we handle that via the
-    // other branch of this if.
+    // We don't need to add scrollbarLogicalWidth here because the preferred
+    // width includes the scrollbar, even for overflow: auto.
     mainAxisExtent = child.maxPreferredLogicalWidth();
   }
   DCHECK_GE(mainAxisExtent - mainAxisBorderAndPadding, LayoutUnit())
