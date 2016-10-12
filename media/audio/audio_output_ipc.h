@@ -16,23 +16,13 @@
 
 namespace media {
 
-// Current status of the audio output stream in the browser process. Browser
-// sends information about the current playback state and error to the
-// renderer process using this type.
-enum AudioOutputIPCDelegateState {
-  AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING,
-  AUDIO_OUTPUT_IPC_DELEGATE_STATE_PAUSED,
-  AUDIO_OUTPUT_IPC_DELEGATE_STATE_ERROR,
-  AUDIO_OUTPUT_IPC_DELEGATE_STATE_LAST = AUDIO_OUTPUT_IPC_DELEGATE_STATE_ERROR
-};
-
 // Contains IPC notifications for the state of the server side
 // (AudioOutputController) audio state changes and when an AudioOutputController
 // has been created.  Implemented by AudioOutputDevice.
 class MEDIA_EXPORT AudioOutputIPCDelegate {
  public:
   // Called when state of an audio stream has changed.
-  virtual void OnStateChanged(AudioOutputIPCDelegateState state) = 0;
+  virtual void OnError() = 0;
 
   // Called when an authorization request for an output device has been
   // completed

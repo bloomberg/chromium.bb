@@ -289,23 +289,15 @@ void AudioRendererHost::AudioEntry::OnCreated() {
 }
 
 void AudioRendererHost::AudioEntry::OnPlaying() {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&AudioRendererHost::DoNotifyStreamStateChanged,
-                 host_,
-                 stream_id_,
-                 true));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&AudioRendererHost::StreamStateChanged,
+                                     host_, stream_id_, true));
 }
 
 void AudioRendererHost::AudioEntry::OnPaused() {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&AudioRendererHost::DoNotifyStreamStateChanged,
-                 host_,
-                 stream_id_,
-                 false));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&AudioRendererHost::StreamStateChanged,
+                                     host_, stream_id_, false));
 }
 
 void AudioRendererHost::AudioEntry::OnError() {
@@ -363,18 +355,12 @@ void AudioRendererHost::DidValidateRenderFrame(int stream_id, bool is_valid) {
   }
 }
 
-void AudioRendererHost::DoNotifyStreamStateChanged(int stream_id,
-                                                   bool is_playing) {
+void AudioRendererHost::StreamStateChanged(int stream_id, bool is_playing) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntry* const entry = LookupById(stream_id);
   if (!entry)
     return;
-
-  Send(new AudioMsg_NotifyStreamStateChanged(
-      stream_id,
-      is_playing ? media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING
-                 : media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PAUSED));
 
   if (is_playing) {
     AudioStreamMonitor::StartMonitoringStream(
@@ -605,8 +591,7 @@ void AudioRendererHost::OnSetVolume(int stream_id, double volume) {
 }
 
 void AudioRendererHost::SendErrorMessage(int stream_id) {
-  Send(new AudioMsg_NotifyStreamStateChanged(
-      stream_id, media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_ERROR));
+  Send(new AudioMsg_NotifyStreamError(stream_id));
 }
 
 void AudioRendererHost::OnCloseStream(int stream_id) {

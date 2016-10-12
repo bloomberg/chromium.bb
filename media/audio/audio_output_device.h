@@ -113,7 +113,7 @@ class MEDIA_EXPORT AudioOutputDevice
 
   // Methods called on IO thread ----------------------------------------------
   // AudioOutputIPCDelegate methods.
-  void OnStateChanged(AudioOutputIPCDelegateState state) override;
+  void OnError() override;
   void OnDeviceAuthorized(OutputDeviceStatus device_status,
                           const media::AudioParameters& output_params,
                           const std::string& matched_device_id) override;

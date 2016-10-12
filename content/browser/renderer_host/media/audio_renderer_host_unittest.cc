@@ -102,8 +102,6 @@ class MockAudioRendererHost : public AudioRendererHost {
                     const media::AudioParameters& output_params,
                     const std::string& matched_device_id));
   MOCK_METHOD2(OnStreamCreated, void(int stream_id, int length));
-  MOCK_METHOD1(OnStreamPlaying, void(int stream_id));
-  MOCK_METHOD1(OnStreamPaused, void(int stream_id));
   MOCK_METHOD1(OnStreamError, void(int stream_id));
 
  private:
@@ -129,8 +127,7 @@ class MockAudioRendererHost : public AudioRendererHost {
                           OnNotifyDeviceAuthorized)
       IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated,
                           OnNotifyStreamCreated)
-      IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamStateChanged,
-                          OnNotifyStreamStateChanged)
+      IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamError, OnNotifyStreamError)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     EXPECT_TRUE(handled);
@@ -168,23 +165,7 @@ class MockAudioRendererHost : public AudioRendererHost {
     OnStreamCreated(stream_id, length);
   }
 
-  void OnNotifyStreamStateChanged(int stream_id,
-                                  media::AudioOutputIPCDelegateState state) {
-    switch (state) {
-      case media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PLAYING:
-        OnStreamPlaying(stream_id);
-        break;
-      case media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_PAUSED:
-        OnStreamPaused(stream_id);
-        break;
-      case media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_ERROR:
-        OnStreamError(stream_id);
-        break;
-      default:
-        FAIL() << "Unknown stream state";
-        break;
-    }
-  }
+  void OnNotifyStreamError(int stream_id) { OnStreamError(stream_id); }
 
   std::unique_ptr<base::SharedMemory> shared_memory_;
   std::unique_ptr<base::SyncSocket> sync_socket_;
@@ -321,13 +302,11 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void Play() {
-    EXPECT_CALL(*host_.get(), OnStreamPlaying(kStreamId));
     host_->OnPlayStream(kStreamId);
     SyncWithAudioThread();
   }
 
   void Pause() {
-    EXPECT_CALL(*host_.get(), OnStreamPaused(kStreamId));
     host_->OnPauseStream(kStreamId);
     SyncWithAudioThread();
   }

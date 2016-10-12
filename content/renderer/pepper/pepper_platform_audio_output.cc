@@ -79,8 +79,7 @@ void PepperPlatformAudioOutput::ShutDown() {
       base::Bind(&PepperPlatformAudioOutput::ShutDownOnIOThread, this));
 }
 
-void PepperPlatformAudioOutput::OnStateChanged(
-    media::AudioOutputIPCDelegateState state) {}
+void PepperPlatformAudioOutput::OnError() {}
 
 void PepperPlatformAudioOutput::OnDeviceAuthorized(
     media::OutputDeviceStatus device_status,

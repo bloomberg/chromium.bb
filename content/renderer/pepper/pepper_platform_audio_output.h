@@ -52,7 +52,7 @@ class PepperPlatformAudioOutput
   void ShutDown();
 
   // media::AudioOutputIPCDelegate implementation.
-  void OnStateChanged(media::AudioOutputIPCDelegateState state) override;
+  void OnError() override;
   void OnDeviceAuthorized(media::OutputDeviceStatus device_status,
                           const media::AudioParameters& output_params,
                           const std::string& matched_device_id) override;

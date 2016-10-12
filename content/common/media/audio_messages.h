@@ -26,9 +26,6 @@
 IPC_ENUM_TRAITS_MAX_VALUE(media::AudioInputIPCDelegateState,
                           media::AUDIO_INPUT_IPC_DELEGATE_STATE_LAST)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::AudioOutputIPCDelegateState,
-                          media::AUDIO_OUTPUT_IPC_DELEGATE_STATE_LAST)
-
 IPC_ENUM_TRAITS_MAX_VALUE(media::OutputDeviceStatus,
                           media::OUTPUT_DEVICE_STATUS_LAST)
 
@@ -73,10 +70,8 @@ IPC_MESSAGE_CONTROL5(
     uint32_t /* segment count */)
 
 // Notification message sent from AudioRendererHost to renderer for state
-// update after the renderer has requested a Create/Start/Close.
-IPC_MESSAGE_CONTROL2(AudioMsg_NotifyStreamStateChanged,
-                     int /* stream id */,
-                     media::AudioOutputIPCDelegateState /* new state */)
+// update on error.
+IPC_MESSAGE_CONTROL1(AudioMsg_NotifyStreamError, int /* stream id */)
 
 // Notification message sent from browser to renderer for state update.
 IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamStateChanged,
