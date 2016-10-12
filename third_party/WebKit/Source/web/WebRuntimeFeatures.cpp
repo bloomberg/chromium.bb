@@ -320,6 +320,10 @@ void WebRuntimeFeatures::enableRenderingPipelineThrottling(bool enable) {
   RuntimeEnabledFeatures::setRenderingPipelineThrottlingEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableExpensiveBackgroundTimerThrottling(bool enable) {
+  RuntimeEnabledFeatures::setExpensiveBackgroundTimerThrottlingEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableRootLayerScrolling(bool enable) {
   RuntimeEnabledFeatures::setRootLayerScrollingEnabled(enable);
 }

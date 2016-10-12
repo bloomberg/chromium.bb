@@ -84,6 +84,7 @@ DisplayList2dCanvas status=stable
 DocumentWriteEvaluator
 DOMConvenienceAPI status=stable
 DurableStorage status=stable
+ExpensiveBackgroundTimerThrottling status=experimental
 FontCacheScaling status=test
 ForceDisplayList2dCanvas
 // See crbug.com/585250.

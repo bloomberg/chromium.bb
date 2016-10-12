@@ -5,6 +5,7 @@
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 
 #include "base/logging.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
@@ -14,6 +15,12 @@
 
 namespace blink {
 namespace scheduler {
+
+namespace {
+
+const double kBackgroundBudgetAsCPUFraction = .01;
+
+}  // namespace
 
 WebViewSchedulerImpl::WebViewSchedulerImpl(
     WebScheduler::InterventionReporter* intervention_reporter,
@@ -27,8 +34,24 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       disable_background_timer_throttling_(disable_background_timer_throttling),
       allow_virtual_time_to_advance_(true),
       have_seen_loading_task_(false),
-      virtual_time_(false) {
+      virtual_time_(false),
+      is_audio_playing_(false),
+      background_time_budget_pool_(nullptr) {
   renderer_scheduler->AddWebViewScheduler(this);
+
+  if (RuntimeEnabledFeatures::expensiveBackgroundTimerThrottlingEnabled()) {
+    background_time_budget_pool_ =
+        renderer_scheduler_->task_queue_throttler()->CreateTimeBudgetPool(
+            "background");
+
+    LazyNow lazy_now(renderer_scheduler_->tick_clock());
+
+    // Disable throttling because page is visible by default.
+    background_time_budget_pool_->DisableThrottling(&lazy_now);
+
+    background_time_budget_pool_->SetTimeBudget(lazy_now.Now(),
+                                                kBackgroundBudgetAsCPUFraction);
+  }
 }
 
 WebViewSchedulerImpl::~WebViewSchedulerImpl() {
@@ -38,6 +61,9 @@ WebViewSchedulerImpl::~WebViewSchedulerImpl() {
     frame_scheduler->DetachFromWebViewScheduler();
   }
   renderer_scheduler_->RemoveWebViewScheduler(this);
+
+  if (background_time_budget_pool_)
+    background_time_budget_pool_->Close();
 }
 
 void WebViewSchedulerImpl::setPageVisible(bool page_visible) {
@@ -48,6 +74,15 @@ void WebViewSchedulerImpl::setPageVisible(bool page_visible) {
 
   for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->setPageVisible(page_visible_);
+  }
+
+  if (background_time_budget_pool_) {
+    LazyNow lazy_now(renderer_scheduler_->tick_clock());
+    if (page_visible_) {
+      background_time_budget_pool_->DisableThrottling(&lazy_now);
+    } else {
+      background_time_budget_pool_->EnableThrottling(&lazy_now);
+    }
   }
 }
 

@@ -1479,9 +1479,9 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kDataReductionProxyLoFiChoices)},
     {"enable-data-reduction-proxy-lite-page",
      IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LITE_PAGE_NAME,
-     IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LITE_PAGE_DESCRIPTION,
-     kOsAll, SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
-                                   kEnableDataReductionProxyLitePage)},
+     IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LITE_PAGE_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(
+         data_reduction_proxy::switches::kEnableDataReductionProxyLitePage)},
     {"clear-data-reduction-proxy-data-savings",
      IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_NAME,
      IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION, kOsAll,
@@ -2011,8 +2011,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DESCRIPTION, kOsDesktop,
      MULTI_VALUE_TYPE(kSecurityVerboseChoices)},
 #if defined(OS_CHROMEOS)
-    {"arc-boot-completed-broadcast",
-     IDS_FLAGS_ARC_BOOT_COMPLETED,
+    {"arc-boot-completed-broadcast", IDS_FLAGS_ARC_BOOT_COMPLETED,
      IDS_FLAGS_ARC_BOOT_COMPLETED_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kBootCompletedBroadcastFeature)},
 #endif
@@ -2027,6 +2026,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-generic-sensor", IDS_FLAGS_ENABLE_GENERIC_SENSOR_NAME,
      IDS_FLAGS_ENABLE_GENERIC_SENSOR_DESCRIPTION, kOsAndroid | kOsMac,
      FEATURE_VALUE_TYPE(features::kGenericSensor)},
+    {"expensive-background-timer-throttling",
+     IDS_FLAGS_EXPENSIVE_BACKGROUND_TIMER_THROTTLING_NAME,
+     IDS_FLAGS_EXPENSIVE_BACKGROUND_TIMER_THROTTLING_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kExpensiveBackgroundTimerThrottling)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

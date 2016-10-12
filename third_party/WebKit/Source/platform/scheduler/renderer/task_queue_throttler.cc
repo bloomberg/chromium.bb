@@ -88,13 +88,16 @@ void TaskQueueThrottler::TimeBudgetPool::SetTimeBudget(base::TimeTicks now,
 
 void TaskQueueThrottler::TimeBudgetPool::AddQueue(base::TimeTicks now,
                                                   TaskQueue* queue) {
-  Metadata& metadata = task_queue_throttler_->queue_details_[queue];
+  std::pair<TaskQueueMap::iterator, bool> insert_result =
+      task_queue_throttler_->queue_details_.insert(
+          std::make_pair(queue, Metadata(0, queue->IsQueueEnabled())));
+  Metadata& metadata = insert_result.first->second;
   DCHECK(!metadata.time_budget_pool);
   metadata.time_budget_pool = this;
 
   associated_task_queues_.insert(queue);
 
-  if (!metadata.IsThrottled())
+  if (!is_enabled_ || !metadata.IsThrottled())
     return;
 
   queue->SetQueueEnabled(false);
@@ -114,7 +117,7 @@ void TaskQueueThrottler::TimeBudgetPool::RemoveQueue(base::TimeTicks now,
   task_queue_throttler_->MaybeDeleteQueueMetadata(find_it);
   associated_task_queues_.erase(queue);
 
-  if (is_throttled)
+  if (!is_enabled_ || !is_throttled)
     return;
 
   task_queue_throttler_->MaybeSchedulePumpQueue(FROM_HERE, now, queue,
@@ -266,8 +269,10 @@ void TaskQueueThrottler::SetQueueEnabled(TaskQueue* task_queue, bool enabled) {
 
   find_it->second.enabled = enabled;
 
-  if (!find_it->second.IsThrottled())
+  if (!find_it->second.IsThrottled()) {
+    task_queue->SetQueueEnabled(enabled);
     return;
+  }
 
   // We don't enable the queue here because it's throttled and there might be
   // tasks in it's work queue that would execute immediatly rather than after
