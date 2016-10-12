@@ -73,6 +73,7 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   void prepareTransfer(Transferables*);
   void finalizeTransfer(ExceptionState&);
 
+  // Shared between File and FileList logic; does not write a leading tag.
   bool writeFile(File*, ExceptionState&);
 
   // v8::ValueSerializer::Delegate

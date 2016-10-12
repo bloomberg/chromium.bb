@@ -11,6 +11,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
+#include "core/fileapi/FileList.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
@@ -151,6 +152,36 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(
       return readFile();
     case FileIndexTag:
       return readFileIndex();
+    case FileListTag: {
+      // This does not presently deduplicate a File object and its entry in a
+      // FileList, which is non-standard behavior.
+      uint32_t length;
+      if (!readUint32(&length))
+        return nullptr;
+      FileList* fileList = FileList::create();
+      for (uint32_t i = 0; i < length; i++) {
+        if (File* file = readFile())
+          fileList->append(file);
+        else
+          return nullptr;
+      }
+      return fileList;
+    }
+    case FileListIndexTag: {
+      // This does not presently deduplicate a File object and its entry in a
+      // FileList, which is non-standard behavior.
+      uint32_t length;
+      if (!readUint32(&length))
+        return nullptr;
+      FileList* fileList = FileList::create();
+      for (uint32_t i = 0; i < length; i++) {
+        if (File* file = readFileIndex())
+          fileList->append(file);
+        else
+          return nullptr;
+      }
+      return fileList;
+    }
     case ImageBitmapTag: {
       uint32_t originClean = 0, isPremultiplied = 0, width = 0, height = 0,
                pixelLength = 0;

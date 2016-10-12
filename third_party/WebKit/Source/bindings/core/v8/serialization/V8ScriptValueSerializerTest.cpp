@@ -12,6 +12,7 @@
 #include "bindings/core/v8/V8CompositorProxy.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8File.h"
+#include "bindings/core/v8/V8FileList.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
@@ -22,6 +23,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
+#include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
@@ -898,6 +900,146 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndexOutOfRange) {
     deserializer.setBlobInfoArray(&blobInfoArray);
     ASSERT_TRUE(deserializer.deserialize()->IsNull());
   }
+}
+
+// Most of the logic for FileList is shared with File, so the tests here are
+// fairly basic.
+
+TEST(V8ScriptValueSerializerTest, RoundTripFileList) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  FileList* fileList = FileList::create();
+  fileList->append(File::create("/native/path"));
+  fileList->append(File::create("/native/path2"));
+  v8::Local<v8::Value> wrapper = toV8(fileList, scope.getScriptState());
+  v8::Local<v8::Value> result = roundTrip(wrapper, scope);
+  ASSERT_TRUE(V8FileList::hasInstance(result, scope.isolate()));
+  FileList* newFileList = V8FileList::toImpl(result.As<v8::Object>());
+  ASSERT_EQ(2u, newFileList->length());
+  EXPECT_EQ("/native/path", newFileList->item(0)->path());
+  EXPECT_EQ("/native/path2", newFileList->item(1)->path());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeEmptyFileList) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  RefPtr<SerializedScriptValue> input =
+      serializedValue({0xff, 0x09, 0x3f, 0x00, 0x6c, 0x00});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scope.getScriptState(), input).deserialize();
+  ASSERT_TRUE(V8FileList::hasInstance(result, scope.isolate()));
+  FileList* newFileList = V8FileList::toImpl(result.As<v8::Object>());
+  EXPECT_EQ(0u, newFileList->length());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeFileListWithInvalidLength) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  RefPtr<SerializedScriptValue> input =
+      serializedValue({0xff, 0x09, 0x3f, 0x00, 0x6c, 0x01});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scope.getScriptState(), input).deserialize();
+  EXPECT_TRUE(result->IsNull());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeFileListV8WithoutSnapshot) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  TimeIntervalChecker timeIntervalChecker;
+  RefPtr<SerializedScriptValue> input = serializedValue(
+      {0xff, 0x08, 0x3f, 0x00, 0x6c, 0x01, 0x04, 'p', 'a',  't',  'h', 0x04,
+       'n',  'a',  'm',  'e',  0x03, 'r',  'e',  'l', 0x24, 'f',  '4', 'a',
+       '6',  'e',  'd',  'd',  '5',  '-',  '6',  '5', 'a',  'd',  '-', '4',
+       'd',  'c',  '3',  '-',  'b',  '6',  '7',  'c', '-',  'a',  '7', '7',
+       '9',  'c',  '0',  '2',  'f',  '0',  'f',  'a', '3',  0x0a, 't', 'e',
+       'x',  't',  '/',  'p',  'l',  'a',  'i',  'n', 0x00, 0x00});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scope.getScriptState(), input).deserialize();
+  ASSERT_TRUE(V8FileList::hasInstance(result, scope.isolate()));
+  FileList* newFileList = V8FileList::toImpl(result.As<v8::Object>());
+  EXPECT_EQ(1u, newFileList->length());
+  File* newFile = newFileList->item(0);
+  EXPECT_EQ("path", newFile->path());
+  EXPECT_EQ("name", newFile->name());
+  EXPECT_EQ("rel", newFile->webkitRelativePath());
+  EXPECT_EQ("f4a6edd5-65ad-4dc3-b67c-a779c02f0fa3", newFile->uuid());
+  EXPECT_EQ("text/plain", newFile->type());
+  EXPECT_FALSE(newFile->hasValidSnapshotMetadata());
+  EXPECT_EQ(0u, newFile->size());
+  EXPECT_TRUE(timeIntervalChecker.wasAliveAt(newFile->lastModifiedDate()));
+  EXPECT_EQ(File::IsNotUserVisible, newFile->getUserVisibility());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripFileListIndex) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  FileList* fileList = FileList::create();
+  fileList->append(File::create("/native/path"));
+  fileList->append(File::create("/native/path2"));
+  v8::Local<v8::Value> wrapper = toV8(fileList, scope.getScriptState());
+  WebBlobInfoArray blobInfoArray;
+  v8::Local<v8::Value> result =
+      roundTrip(wrapper, scope, nullptr, nullptr, &blobInfoArray);
+
+  // FileList should be produced correctly.
+  ASSERT_TRUE(V8FileList::hasInstance(result, scope.isolate()));
+  FileList* newFileList = V8FileList::toImpl(result.As<v8::Object>());
+  ASSERT_EQ(2u, newFileList->length());
+  EXPECT_EQ("/native/path", newFileList->item(0)->path());
+  EXPECT_EQ("/native/path2", newFileList->item(1)->path());
+
+  // And the blob info array should be populated.
+  ASSERT_EQ(2u, blobInfoArray.size());
+  EXPECT_TRUE(blobInfoArray[0].isFile());
+  EXPECT_EQ("/native/path", blobInfoArray[0].filePath());
+  EXPECT_TRUE(blobInfoArray[1].isFile());
+  EXPECT_EQ("/native/path2", blobInfoArray[1].filePath());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeEmptyFileListIndex) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  RefPtr<SerializedScriptValue> input =
+      serializedValue({0xff, 0x09, 0x3f, 0x00, 0x4c, 0x00});
+  WebBlobInfoArray blobInfoArray;
+  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
+  deserializer.setBlobInfoArray(&blobInfoArray);
+  v8::Local<v8::Value> result = deserializer.deserialize();
+  ASSERT_TRUE(V8FileList::hasInstance(result, scope.isolate()));
+  FileList* newFileList = V8FileList::toImpl(result.As<v8::Object>());
+  EXPECT_EQ(0u, newFileList->length());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeFileListIndexWithInvalidLength) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  RefPtr<SerializedScriptValue> input =
+      serializedValue({0xff, 0x09, 0x3f, 0x00, 0x4c, 0x02});
+  WebBlobInfoArray blobInfoArray;
+  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
+  deserializer.setBlobInfoArray(&blobInfoArray);
+  v8::Local<v8::Value> result = deserializer.deserialize();
+  EXPECT_TRUE(result->IsNull());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeFileListIndex) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  RefPtr<SerializedScriptValue> input =
+      serializedValue({0xff, 0x09, 0x3f, 0x00, 0x4c, 0x01, 0x00, 0x00});
+  WebBlobInfoArray blobInfoArray;
+  blobInfoArray.emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                              "/native/path", "name", "text/plain");
+  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
+  deserializer.setBlobInfoArray(&blobInfoArray);
+  v8::Local<v8::Value> result = deserializer.deserialize();
+  FileList* newFileList = V8FileList::toImpl(result.As<v8::Object>());
+  EXPECT_EQ(1u, newFileList->length());
+  File* newFile = newFileList->item(0);
+  EXPECT_EQ("/native/path", newFile->path());
+  EXPECT_EQ("name", newFile->name());
+  EXPECT_EQ("d875dfc2-4505-461b-98fe-0cf6cc5eaf44", newFile->uuid());
+  EXPECT_EQ("text/plain", newFile->type());
 }
 
 class ScopedEnableCompositorWorker {

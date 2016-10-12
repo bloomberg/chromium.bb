@@ -8,6 +8,7 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8CompositorProxy.h"
 #include "bindings/core/v8/V8File.h"
+#include "bindings/core/v8/V8FileList.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
@@ -174,7 +175,21 @@ bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable,
     return true;
   }
   if (wrapperTypeInfo == &V8File::wrapperTypeInfo) {
+    writeTag(m_blobInfoArray ? FileIndexTag : FileTag);
     return writeFile(wrappable->toImpl<File>(), exceptionState);
+  }
+  if (wrapperTypeInfo == &V8FileList::wrapperTypeInfo) {
+    // This does not presently deduplicate a File object and its entry in a
+    // FileList, which is non-standard behavior.
+    FileList* fileList = wrappable->toImpl<FileList>();
+    unsigned length = fileList->length();
+    writeTag(m_blobInfoArray ? FileListIndexTag : FileListTag);
+    writeUint32(length);
+    for (unsigned i = 0; i < length; i++) {
+      if (!writeFile(fileList->item(i), exceptionState))
+        return false;
+    }
+    return true;
   }
   if (wrapperTypeInfo == &V8ImageBitmap::wrapperTypeInfo) {
     ImageBitmap* imageBitmap = wrappable->toImpl<ImageBitmap>();
@@ -294,10 +309,8 @@ bool V8ScriptValueSerializer::writeFile(File* file,
     double lastModified = lastModifiedMs / msPerSecond;
     m_blobInfoArray->emplaceAppend(file->uuid(), file->path(), file->name(),
                                    file->type(), lastModified, size);
-    writeTag(FileIndexTag);
     writeUint32(static_cast<uint32_t>(index));
   } else {
-    writeTag(FileTag);
     writeUTF8String(file->hasBackingFile() ? file->path() : emptyString());
     writeUTF8String(file->name());
     writeUTF8String(file->webkitRelativePath());
