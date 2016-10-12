@@ -12,9 +12,8 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/returned_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/Histogram.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
@@ -183,21 +182,35 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   // TODO(crbug.com/646022): making this overlay-able.
   resource.is_overlay_candidate = false;
 
-  if (image->isTextureBacked() &&
-      Platform::current()->isGPUCompositingEnabled() &&
-      !isWebGLSoftwareRendering) {
-    // Case 1: both canvas and compositor are gpu accelerated.
-    setTransferableResourceToStaticBitmapImage(resource, image);
-  } else if (!Platform::current()->isGPUCompositingEnabled() ||
-             isWebGLSoftwareRendering) {
-    // Case 2: both canvas and compositor are not gpu accelerated, or canvas is
-    // accelerated but --disable-gpu-compositing is specified, or
-    // WebGL's commit called with swiftshader. The last case is indicated by
-    // WebGraphicsContext3DProvider::isSoftwareRendering.
-    setTransferableResourceToSharedBitmap(resource, image);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      EnumerationHistogram, commitTypeHistogram,
+      new EnumerationHistogram("OffscreenCanvas.CommitType",
+                               OffscreenCanvasCommitTypeCount));
+  if (image->isTextureBacked()) {
+    if (Platform::current()->isGPUCompositingEnabled() &&
+        !isWebGLSoftwareRendering) {
+      // Case 1: both canvas and compositor are gpu accelerated.
+      commitTypeHistogram.count(CommitGPUCanvasGPUCompositing);
+      setTransferableResourceToStaticBitmapImage(resource, image);
+    } else {
+      // Case 2: canvas is accelerated but --disable-gpu-compositing is
+      // specified, or WebGL's commit is called with SwiftShader. The latter
+      // case is indicated by
+      // WebGraphicsContext3DProvider::isSoftwareRendering.
+      commitTypeHistogram.count(CommitGPUCanvasSoftwareCompositing);
+      setTransferableResourceToSharedBitmap(resource, image);
+    }
   } else {
-    // Case 3: canvas is not gpu-accelerated, but compositor is.
-    setTransferableResourceToSharedGPUContext(resource, image);
+    if (Platform::current()->isGPUCompositingEnabled() &&
+        !isWebGLSoftwareRendering) {
+      // Case 3: canvas is not gpu-accelerated, but compositor is
+      commitTypeHistogram.count(CommitSoftwareCanvasGPUCompositing);
+      setTransferableResourceToSharedGPUContext(resource, image);
+    } else {
+      // Case 4: both canvas and compositor are not gpu accelerated.
+      commitTypeHistogram.count(CommitSoftwareCanvasSoftwareCompositing);
+      setTransferableResourceToSharedBitmap(resource, image);
+    }
   }
 
   m_nextResourceId++;

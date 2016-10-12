@@ -36,6 +36,15 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
+  // This enum is used in histogram, so it should be append-only.
+  enum OffscreenCanvasCommitType {
+    CommitGPUCanvasGPUCompositing = 0,
+    CommitGPUCanvasSoftwareCompositing = 1,
+    CommitSoftwareCanvasGPUCompositing = 2,
+    CommitSoftwareCanvasSoftwareCompositing = 3,
+    OffscreenCanvasCommitTypeCount,
+  };
+
  private:
   const cc::SurfaceId m_surfaceId;
   const int m_width;
