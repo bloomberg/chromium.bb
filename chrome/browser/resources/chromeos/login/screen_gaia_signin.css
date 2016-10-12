@@ -31,10 +31,6 @@
   width: 100%;
 }
 
-.gaia-signin #step-logo {
-  display: none;
-}
-
 #signin-frame {
   display: block;
   opacity: 0;

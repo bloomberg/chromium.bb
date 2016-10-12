@@ -7,10 +7,6 @@
   width: 448px; /* Should be the same as #gaia-signin. */
 }
 
-.fatal-error #step-logo {
-  display: none;
-}
-
 #fatal-error-card {
   bottom: 0;
   display: block;
