@@ -28,6 +28,7 @@ CONTENT_EXPORT extern const base::Feature kFontCacheScaling;
 CONTENT_EXPORT extern const base::Feature
     kFramebustingNeedsSameOriginOrUserGesture;
 CONTENT_EXPORT extern const base::Feature kGamepadExtensions;
+CONTENT_EXPORT extern const base::Feature kGenericSensor;
 CONTENT_EXPORT extern const base::Feature kMediaDocumentDownloadButton;
 CONTENT_EXPORT extern const base::Feature kMemoryCoordinator;
 CONTENT_EXPORT extern const base::Feature kNewMediaPlaybackUi;

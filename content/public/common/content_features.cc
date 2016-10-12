@@ -66,6 +66,12 @@ const base::Feature kFramebustingNeedsSameOriginOrUserGesture{
 const base::Feature kGamepadExtensions{"GamepadExtensions",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables sensors based on Generic Sensor API:
+// https://w3c.github.io/sensors/
+const base::Feature kGenericSensor{"GenericSensor",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+
 // FeatureList definition for trials to enable the download button on
 // MediaDocument.
 const base::Feature kMediaDocumentDownloadButton{

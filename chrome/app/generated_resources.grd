@@ -15262,6 +15262,13 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       Enable WebUSB support.
     </message>
 
+    <message name="IDS_FLAGS_ENABLE_GENERIC_SENSOR_NAME" desc="Title for the flag to enable Generic Sensor API.">
+      Generic Sensor
+    </message>
+    <message name="IDS_FLAGS_ENABLE_GENERIC_SENSOR_DESCRIPTION" desc="Description for the flag to enable Generic Sensor API.">
+      Enable sensor APIs based on Generic Sensor API.
+    </message>
+
     <!-- Chrome IME API activated bubble. -->
     <message name="IDS_IME_API_ACTIVATED_WARNING" desc="The Warning info when an IME extension is trying to activate.">
       <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> extension may collect all the text you type, including personal data like passwords and credit card numbers. Do you want to use this extension?

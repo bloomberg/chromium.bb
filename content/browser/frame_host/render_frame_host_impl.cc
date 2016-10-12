@@ -82,6 +82,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
@@ -2218,8 +2219,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   GetInterfaceRegistry()->AddInterface<device::VRService>(
       base::Bind(&device::VRServiceImpl::BindRequest));
 #endif
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGenericSensors)) {
+  if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
     GetInterfaceRegistry()->AddInterface(
         base::Bind(&device::SensorProviderImpl::Create),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));

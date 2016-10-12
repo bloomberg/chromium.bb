@@ -306,6 +306,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableFeatureFromString("CompositeOpaqueScrollers",
         false);
 
+  if (base::FeatureList::IsEnabled(features::kGenericSensor))
+    WebRuntimeFeatures::enableGenericSensor(true);
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

@@ -124,7 +124,6 @@ CONTENT_EXPORT extern const char
     kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G[];
 CONTENT_EXPORT extern const char
     kEnableWebFontsInterventionV2SwitchValueDisabled[];
-CONTENT_EXPORT extern const char kEnableGenericSensors[];
 CONTENT_EXPORT extern const char kEnableGpuAsyncWorkerContext[];
 CONTENT_EXPORT extern const char kEnableGpuMemoryBufferCompositorResources[];
 CONTENT_EXPORT extern const char kEnableGpuMemoryBufferVideoFrames[];
