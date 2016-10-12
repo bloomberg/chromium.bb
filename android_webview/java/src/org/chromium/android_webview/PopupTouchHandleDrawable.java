@@ -10,9 +10,11 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.SystemClock;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.PopupWindow;
@@ -272,7 +274,53 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     private boolean isShowingAllowed() {
-        return mAttachedToWindow && mVisible && mFocused && !mScrolling && !mTemporarilyHidden;
+        final float deviceScale = mContentViewCore.getDeviceScaleFactor();
+        // mOriginX/YDip * deviceScale is the distance of the handler drawable from the top left of
+        // the containerView (the WebView).
+        return mAttachedToWindow && mVisible && mFocused && !mScrolling && !mTemporarilyHidden
+                && isPositionVisible(mOriginXDip * deviceScale, mOriginYDip * deviceScale);
+    }
+
+    // Adapted from android.widget.Editor#isPositionVisible.
+    private boolean isPositionVisible(final float positionX, final float positionY) {
+        final float[] position = new float[2];
+        position[0] = positionX;
+        position[1] = positionY;
+        View view = mContentViewCore.getContainerView();
+
+        while (view != null) {
+            if (view != mContentViewCore.getContainerView()) {
+                // Local scroll is already taken into account in positionX/Y
+                position[0] -= view.getScrollX();
+                position[1] -= view.getScrollY();
+            }
+
+            final float drawableWidth = mDrawable.getIntrinsicWidth();
+            final float drawableHeight = mDrawable.getIntrinsicHeight();
+
+            if (position[0] + drawableWidth < 0 || position[1] + drawableHeight < 0
+                    || position[0] > view.getWidth() || position[1] > view.getHeight()) {
+                return false;
+            }
+
+            if (!view.getMatrix().isIdentity()) {
+                view.getMatrix().mapPoints(position);
+            }
+
+            position[0] += view.getLeft();
+            position[1] += view.getTop();
+
+            final ViewParent parent = view.getParent();
+            if (parent instanceof View) {
+                view = (View) parent;
+            } else {
+                // We've reached the ViewRoot, stop iterating
+                view = null;
+            }
+        }
+
+        // We've been able to walk up the view hierarchy and the position was never clipped
+        return true;
     }
 
     private void updateVisibility() {
@@ -457,7 +505,7 @@ public class PopupTouchHandleDrawable extends View {
         mParentPositionObserver.addListener(mParentPositionListener);
         mContainer.setContentView(this);
         try {
-            mContainer.showAtLocation(mContentViewCore.getContainerView(), 0,
+            mContainer.showAtLocation(mContentViewCore.getContainerView(), Gravity.NO_GRAVITY,
                     getContainerPositionX(), getContainerPositionY());
         } catch (WindowManager.BadTokenException e) {
             hide();
