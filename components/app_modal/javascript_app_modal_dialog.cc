@@ -92,12 +92,13 @@ bool JavaScriptAppModalDialog::IsJavaScriptModalDialog() {
   return true;
 }
 
-void JavaScriptAppModalDialog::Invalidate() {
+void JavaScriptAppModalDialog::Invalidate(bool suppress_callbacks) {
   if (!IsValid())
     return;
 
-  AppModalDialog::Invalidate();
-  CallDialogClosedCallback(false, base::string16());
+  AppModalDialog::Invalidate(suppress_callbacks);
+  if (!suppress_callbacks)
+    CallDialogClosedCallback(false, base::string16());
   if (native_dialog())
     CloseModalDialog();
 }
@@ -154,7 +155,7 @@ void JavaScriptAppModalDialog::NotifyDelegate(bool success,
 
   // On Views, we can end up coming through this code path twice :(.
   // See crbug.com/63732.
-  AppModalDialog::Invalidate();
+  AppModalDialog::Invalidate(false);
 }
 
 void JavaScriptAppModalDialog::CallDialogClosedCallback(bool success,

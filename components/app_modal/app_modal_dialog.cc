@@ -52,7 +52,7 @@ bool AppModalDialog::IsValid() {
   return valid_;
 }
 
-void AppModalDialog::Invalidate() {
+void AppModalDialog::Invalidate(bool suppress_callbacks) {
   valid_ = false;
 }
 

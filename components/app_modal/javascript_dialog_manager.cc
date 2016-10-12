@@ -241,12 +241,6 @@ bool JavaScriptDialogManager::HandleJavaScriptDialog(
   return true;
 }
 
-void JavaScriptDialogManager::ResetDialogState(
-    content::WebContents* web_contents) {
-  CancelActiveAndPendingDialogs(web_contents);
-  javascript_dialog_extra_data_.erase(web_contents);
-}
-
 base::string16 JavaScriptDialogManager::GetTitle(
     content::WebContents* web_contents,
     const GURL& origin_url,
@@ -281,8 +275,9 @@ base::string16 JavaScriptDialogManager::GetTitle(
           : IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
 }
 
-void JavaScriptDialogManager::CancelActiveAndPendingDialogs(
-    content::WebContents* web_contents) {
+void JavaScriptDialogManager::CancelDialogs(content::WebContents* web_contents,
+                                            bool suppress_callbacks,
+                                            bool reset_state) {
   AppModalDialogQueue* queue = AppModalDialogQueue::GetInstance();
   AppModalDialog* active_dialog = queue->active_dialog();
   for (AppModalDialogQueue::iterator i = queue->begin();
@@ -292,10 +287,13 @@ void JavaScriptDialogManager::CancelActiveAndPendingDialogs(
     if ((*i) == active_dialog)
       continue;
     if ((*i)->web_contents() == web_contents)
-      (*i)->Invalidate();
+      (*i)->Invalidate(suppress_callbacks);
   }
   if (active_dialog && active_dialog->web_contents() == web_contents)
-    active_dialog->Invalidate();
+    active_dialog->Invalidate(suppress_callbacks);
+
+  if (reset_state)
+    javascript_dialog_extra_data_.erase(web_contents);
 }
 
 void JavaScriptDialogManager::OnBeforeUnloadDialogClosed(

@@ -497,8 +497,12 @@ WebContentsImpl::~WebContentsImpl() {
   created_widgets_.clear();
 
   // Clear out any JavaScript state.
-  if (dialog_manager_)
-    dialog_manager_->ResetDialogState(this);
+  if (dialog_manager_) {
+    // This object is being destructed, so make sure that no callbacks happen.
+    dialog_manager_->CancelDialogs(this,
+                                   true,   // suppress_callbacks,
+                                   true);  // reset_state
+  }
 
   if (color_chooser_info_.get())
     color_chooser_info_->chooser->End();
@@ -901,8 +905,11 @@ int WebContentsImpl::GetRoutingID() const {
 }
 
 void WebContentsImpl::CancelActiveAndPendingDialogs() {
-  if (dialog_manager_)
-    dialog_manager_->CancelActiveAndPendingDialogs(this);
+  if (dialog_manager_) {
+    dialog_manager_->CancelDialogs(this,
+                                   false,   // suppress_callbacks,
+                                   false);  // reset_state
+  }
   if (browser_plugin_embedder_)
     browser_plugin_embedder_->CancelGuestDialogs();
 }
@@ -3461,8 +3468,11 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
 
   // If this is a user-initiated navigation, start allowing JavaScript dialogs
   // again.
-  if (params.gesture == NavigationGestureUser && dialog_manager_)
-    dialog_manager_->ResetDialogState(this);
+  if (params.gesture == NavigationGestureUser && dialog_manager_) {
+    dialog_manager_->CancelDialogs(this,
+                                   false,  // suppress_callbacks,
+                                   true);  // reset_state
+  }
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
@@ -4867,8 +4877,11 @@ void WebContentsImpl::CancelModalDialogsForRenderManager() {
   // Note that we don't bother telling browser_plugin_embedder_ because the
   // cross-process navigation will either destroy the browser plugins or not
   // require their dialogs to close.
-  if (dialog_manager_)
-    dialog_manager_->ResetDialogState(this);
+  if (dialog_manager_) {
+    dialog_manager_->CancelDialogs(this,
+                                   false,  // suppress_callbacks,
+                                   true);  // reset_state
+  }
 }
 
 void WebContentsImpl::NotifySwappedFromRenderManager(RenderFrameHost* old_host,

@@ -145,19 +145,15 @@ bool JavaScriptDialogTabHelper::HandleJavaScriptDialog(
   return false;
 }
 
-void JavaScriptDialogTabHelper::CancelActiveAndPendingDialogs(
-    content::WebContents* web_contents) {
+void JavaScriptDialogTabHelper::CancelDialogs(
+    content::WebContents* web_contents,
+    bool suppress_callbacks,
+    bool reset_state) {
   // Cancel any app-modal dialogs that may be going.
-  AppModalDialogManager()->CancelActiveAndPendingDialogs(web_contents);
-
-  // More work here for the auto-dismissing dialogs.
-}
-
-void JavaScriptDialogTabHelper::ResetDialogState(
-    content::WebContents* web_contents) {
-  // Reset any app-modal dialog state that may exist.
-  if (!IsEnabled())
-    return AppModalDialogManager()->ResetDialogState(web_contents);
+  if (!IsEnabled()) {
+    return AppModalDialogManager()->CancelDialogs(
+        web_contents, suppress_callbacks, reset_state);
+  }
 
   // More work here for the auto-dismissing dialogs.
 }

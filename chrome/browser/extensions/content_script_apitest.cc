@@ -176,7 +176,7 @@ DialogHelper::~DialogHelper() {
 }
 
 void DialogHelper::CloseDialogs() {
-  dialog_manager_->CancelActiveAndPendingDialogs(web_contents_);
+  dialog_manager_->CancelDialogs(web_contents_, false, false);
 }
 
 void DialogHelper::DialogOpened() {

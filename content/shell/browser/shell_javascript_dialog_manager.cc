@@ -104,8 +104,9 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
 #endif
 }
 
-void ShellJavaScriptDialogManager::CancelActiveAndPendingDialogs(
-    WebContents* web_contents) {
+void ShellJavaScriptDialogManager::CancelDialogs(WebContents* web_contents,
+                                                 bool suppress_callbacks,
+                                                 bool reset_state) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   if (dialog_) {
     dialog_->Cancel();
@@ -114,13 +115,14 @@ void ShellJavaScriptDialogManager::CancelActiveAndPendingDialogs(
 #else
   // TODO: implement ShellJavaScriptDialog for other platforms, drop this #if
 #endif
-}
 
-void ShellJavaScriptDialogManager::ResetDialogState(WebContents* web_contents) {
   if (before_unload_callback_.is_null())
     return;
-  before_unload_callback_.Run(false, base::string16());
-  before_unload_callback_.Reset();
+
+  if (reset_state) {
+    before_unload_callback_.Run(false, base::string16());
+    before_unload_callback_.Reset();
+  }
 }
 
 void ShellJavaScriptDialogManager::DialogClosed(ShellJavaScriptDialog* dialog) {

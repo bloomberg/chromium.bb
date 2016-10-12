@@ -3425,9 +3425,12 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager {
     return true;
   }
 
-  void CancelActiveAndPendingDialogs(WebContents* web_contents) override {}
-
-  void ResetDialogState(WebContents* web_contents) override { ++reset_count_; }
+  void CancelDialogs(WebContents* web_contents,
+                     bool suppress_callbacks,
+                     bool reset_state) override {
+    if (reset_state)
+      ++reset_count_;
+  }
 
  private:
   size_t reset_count_ = 0;

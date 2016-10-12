@@ -55,7 +55,7 @@ class AppModalDialog {
 
   // Invalidates the dialog, therefore causing it to not be shown when its turn
   // to be shown comes around.
-  virtual void Invalidate();
+  virtual void Invalidate(bool suppress_callbacks);
 
   // Used only for testing. Returns whether the dialog is a JavaScript modal
   // dialog.

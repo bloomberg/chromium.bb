@@ -51,12 +51,9 @@ void AwJavaScriptDialogManager::RunBeforeUnloadDialog(
                                 callback);
 }
 
-void AwJavaScriptDialogManager::CancelActiveAndPendingDialogs(
-    content::WebContents* web_contents) {
-}
-
-void AwJavaScriptDialogManager::ResetDialogState(
-    content::WebContents* web_contents) {
-}
+void AwJavaScriptDialogManager::CancelDialogs(
+    content::WebContents* web_contents,
+    bool suppress_callbacks,
+    bool reset_state) {}
 
 }  // namespace android_webview

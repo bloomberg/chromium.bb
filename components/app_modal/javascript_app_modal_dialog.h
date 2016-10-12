@@ -52,7 +52,7 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   // Overridden from AppModalDialog:
   NativeAppModalDialog* CreateNativeDialog() override;
   bool IsJavaScriptModalDialog() override;
-  void Invalidate() override;
+  void Invalidate(bool suppress_callbacks) override;
 
   // Callbacks from NativeDialog when the user accepts or cancels the dialog.
   void OnCancel(bool suppress_js_messages);

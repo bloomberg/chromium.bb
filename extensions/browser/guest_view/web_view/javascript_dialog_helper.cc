@@ -85,13 +85,9 @@ bool JavaScriptDialogHelper::HandleJavaScriptDialog(
   return false;
 }
 
-void JavaScriptDialogHelper::CancelActiveAndPendingDialogs(
-    content::WebContents* web_contents) {
-}
-
-void JavaScriptDialogHelper::ResetDialogState(
-    content::WebContents* web_contents) {
-}
+void JavaScriptDialogHelper::CancelDialogs(content::WebContents* web_contents,
+                                           bool suppress_callbacks,
+                                           bool reset_state) {}
 
 void JavaScriptDialogHelper::OnPermissionResponse(
     const DialogClosedCallback& callback,
