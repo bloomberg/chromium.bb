@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.Context;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.ContextUtils;
@@ -24,8 +25,9 @@ import java.util.List;
  * Shows a card prompting the user to sign in. This item is also an {@link ItemGroup}, and calling
  * {@link #hide()} or {@link #maybeShow()} will control its visibility.
  */
-public class SigninPromoItem extends StatusItem implements ItemGroup {
-    private final List<NewTabPageItem> mItems = Collections.<NewTabPageItem>singletonList(this);
+public class SignInPromo implements ItemGroup, StatusCardViewHolder.DataSource {
+    private final NewTabPageItem mItem = new Item();
+    private final List<NewTabPageItem> mItems = Collections.<NewTabPageItem>singletonList(mItem);
     private Observer mChangeObserver;
 
     /**
@@ -42,10 +44,7 @@ public class SigninPromoItem extends StatusItem implements ItemGroup {
      */
     private boolean mDismissed;
 
-    public SigninPromoItem() {
-        super(org.chromium.chrome.R.string.snippets_disabled_generic_prompt,
-                org.chromium.chrome.R.string.snippets_disabled_signed_out_instructions,
-                org.chromium.chrome.R.string.sign_in_button);
+    public SignInPromo() {
         mDismissed = ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
                              .getNewTabPageSigninPromoDismissed();
         mVisible = !SigninManager.get(ContextUtils.getApplicationContext()).isSignedInOnNative();
@@ -56,13 +55,21 @@ public class SigninPromoItem extends StatusItem implements ItemGroup {
         return isShown() ? mItems : Collections.<NewTabPageItem>emptyList();
     }
 
-    @Override
-    public int getType() {
-        return NewTabPageItem.VIEW_TYPE_PROMO;
+    private class Item implements NewTabPageItem {
+        @Override
+        public int getType() {
+            return NewTabPageItem.VIEW_TYPE_PROMO;
+        }
+
+        @Override
+        public void onBindViewHolder(NewTabPageViewHolder holder) {
+            assert holder instanceof ViewHolder;
+            ((ViewHolder) holder).onBindViewHolder(SignInPromo.this);
+        }
     }
 
     @Override
-    protected void performAction(Context context) {
+    public void performAction(Context context) {
         AccountSigninActivity.startIfAllowed(context, SigninAccessPoint.NTP_CONTENT_SUGGESTIONS);
     }
 
@@ -70,6 +77,24 @@ public class SigninPromoItem extends StatusItem implements ItemGroup {
     public void setObserver(Observer changeObserver) {
         assert mChangeObserver == null;
         this.mChangeObserver = changeObserver;
+    }
+
+    @Override
+    @StringRes
+    public int getHeader() {
+        return R.string.snippets_disabled_generic_prompt;
+    }
+
+    @Override
+    @StringRes
+    public int getDescription() {
+        return R.string.snippets_disabled_signed_out_instructions;
+    }
+
+    @Override
+    @StringRes
+    public int getActionLabel() {
+        return R.string.sign_in_button;
     }
 
     public boolean isShown() {
@@ -106,7 +131,7 @@ public class SigninPromoItem extends StatusItem implements ItemGroup {
     }
 
     /**
-     * View Holder for {@link SigninPromoItem}.
+     * View Holder for {@link SignInPromo}.
      */
     public static class ViewHolder extends StatusCardViewHolder {
         private final int mSeparationSpaceSize;

@@ -57,7 +57,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      */
     private final List<ItemGroup> mGroups = new ArrayList<>();
     private final AboveTheFoldItem mAboveTheFold = new AboveTheFoldItem();
-    private final SigninPromoItem mSigninPromo = new SigninPromoItem();
+    private final SignInPromo mSigninPromo = new SignInPromo();
     private final AllDismissedItem mAllDismissed = new AllDismissedItem();
     private final Footer mFooter = new Footer();
     private final SpacingItem mBottomSpacer = new SpacingItem();
@@ -323,7 +323,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         }
 
         if (viewType == NewTabPageItem.VIEW_TYPE_PROMO) {
-            return new SigninPromoItem.ViewHolder(mRecyclerView, mUiConfig);
+            return new SignInPromo.ViewHolder(mRecyclerView, mUiConfig);
         }
 
         if (viewType == NewTabPageItem.VIEW_TYPE_FOOTER) {

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.Context;
+import android.support.annotation.StringRes;
 
 import org.chromium.chrome.R;
 
@@ -12,26 +13,40 @@ import org.chromium.chrome.R;
  * Card that is shown when the user needs to be made aware of some information about their
  * configuration that affects the NTP suggestions.
  */
-public class StatusItem implements NewTabPageItem {
-    private final int mHeaderStringId;
-    private final int mDescriptionStringId;
-    private final int mActionStringId;
-
-    protected StatusItem(int headerStringId, int descriptionStringId, int actionStringId) {
-        mHeaderStringId = headerStringId;
-        mDescriptionStringId = descriptionStringId;
-        mActionStringId = actionStringId;
-    }
-
+public abstract class StatusItem implements NewTabPageItem, StatusCardViewHolder.DataSource {
     public static StatusItem createNoSuggestionsItem(SuggestionsCategoryInfo categoryInfo) {
-        return new StatusItem(R.string.ntp_status_card_title_no_suggestions,
-                categoryInfo.getNoSuggestionDescription(), 0);
+        return new NoSuggestionsItem(categoryInfo);
     }
 
-    protected void performAction(Context context) {}
+    private static class NoSuggestionsItem extends StatusItem {
+        private final SuggestionsCategoryInfo mCategoryInfo;
 
-    protected boolean hasAction() {
-        return mActionStringId != 0;
+        public NoSuggestionsItem(SuggestionsCategoryInfo info) {
+            mCategoryInfo = info;
+        }
+
+        @Override
+        @StringRes
+        public int getHeader() {
+            return R.string.ntp_status_card_title_no_suggestions;
+        }
+
+        @Override
+        @StringRes
+        public int getDescription() {
+            return mCategoryInfo.getNoSuggestionDescription();
+        }
+
+        @Override
+        @StringRes
+        public int getActionLabel() {
+            return 0;
+        }
+
+        @Override
+        public void performAction(Context context) {
+            assert false;
+        }
     }
 
     @Override
@@ -43,17 +58,5 @@ public class StatusItem implements NewTabPageItem {
     public void onBindViewHolder(NewTabPageViewHolder holder) {
         assert holder instanceof StatusCardViewHolder;
         ((StatusCardViewHolder) holder).onBindViewHolder(this);
-    }
-
-    public int getHeader() {
-        return mHeaderStringId;
-    }
-
-    public int getDescription() {
-        return mDescriptionStringId;
-    }
-
-    public int getActionLabel() {
-        return mActionStringId;
     }
 }

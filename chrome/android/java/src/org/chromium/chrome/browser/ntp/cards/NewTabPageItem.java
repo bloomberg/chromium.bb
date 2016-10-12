@@ -72,7 +72,7 @@ public interface NewTabPageItem {
     public static final int VIEW_TYPE_FOOTER = 8;
 
     /**
-     * View type for a {@link SigninPromoItem}.
+     * View type for a {@link SignInPromo}.
      * @see Adapter#getItemViewType(int)
      */
     public static final int VIEW_TYPE_PROMO = 9;
