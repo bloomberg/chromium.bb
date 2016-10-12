@@ -129,6 +129,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
 
     @SmallTest
     @Feature({"Webapps"})
+    @RetryOnFailure
     public void testHidesAfterLoadFails() throws Exception {
         startWebappActivity();
         assertTrue(getActivity().isSplashScreenVisibleForTests());
@@ -286,6 +287,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
 
     @SmallTest
     @Feature({"Webapps"})
+    @RetryOnFailure
     public void testSplashScreenWithoutImageAppears() throws Exception {
         // Register an image that's too small for the splash screen.
         Context context = getInstrumentation().getTargetContext();
@@ -318,6 +320,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
 
     @SmallTest
     @Feature({"Webapps"})
+    @RetryOnFailure
     public void testSplashScreenAppearsWithoutRegisteredSplashImage() throws Exception {
         // Don't register anything for the web app, which represents apps that were added to the
         // home screen before splash screen images were downloaded.
