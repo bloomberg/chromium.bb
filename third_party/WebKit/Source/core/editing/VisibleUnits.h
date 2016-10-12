@@ -151,23 +151,6 @@ CORE_EXPORT VisiblePositionInFlatTree
 previousPositionOf(const VisiblePositionInFlatTree&,
                    EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 
-// These deprecated functions perform synchronous layout, messing up the
-// rendering pipeline. They may also take invalid VisiblePositions as their
-// arguments. Callers should ensure clean layout and pass valid VisiblePositions
-// to the un-deprecated functions listed above.
-CORE_EXPORT VisiblePosition
-nextPositionOfDeprecated(const VisiblePosition&,
-                         EditingBoundaryCrossingRule = CanCrossEditingBoundary);
-CORE_EXPORT VisiblePositionInFlatTree
-nextPositionOfDeprecated(const VisiblePositionInFlatTree&,
-                         EditingBoundaryCrossingRule = CanCrossEditingBoundary);
-CORE_EXPORT VisiblePosition previousPositionOfDeprecated(
-    const VisiblePosition&,
-    EditingBoundaryCrossingRule = CanCrossEditingBoundary);
-CORE_EXPORT VisiblePositionInFlatTree previousPositionOfDeprecated(
-    const VisiblePositionInFlatTree&,
-    EditingBoundaryCrossingRule = CanCrossEditingBoundary);
-
 // words
 CORE_EXPORT VisiblePosition startOfWord(const VisiblePosition&,
                                         EWordSide = RightWordIfOnBoundary);
@@ -276,40 +259,6 @@ CORE_EXPORT bool isEndOfParagraph(
 bool inSameParagraph(const VisiblePosition&,
                      const VisiblePosition&,
                      EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-
-// These deprecated functions perform synchronous layout, messing up the
-// rendering pipeline. They may also take invalid VisiblePositions as their
-// arguments. Callers should ensure clean layout and pass valid VisiblePositions
-// to the un-deprecated functions listed above.
-CORE_EXPORT VisiblePosition startOfParagraphDeprecated(
-    const VisiblePosition&,
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT VisiblePositionInFlatTree startOfParagraphDeprecated(
-    const VisiblePositionInFlatTree&,
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT VisiblePosition endOfParagraphDeprecated(
-    const VisiblePosition&,
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT VisiblePositionInFlatTree endOfParagraphDeprecated(
-    const VisiblePositionInFlatTree&,
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-VisiblePosition startOfNextParagraphDeprecated(const VisiblePosition&);
-CORE_EXPORT bool isStartOfParagraphDeprecated(
-    const VisiblePosition&,
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT bool isStartOfParagraphDeprecated(
-    const VisiblePositionInFlatTree&,
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT bool isEndOfParagraphDeprecated(
-    const VisiblePosition&,
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT bool isEndOfParagraphDeprecated(
-    const VisiblePositionInFlatTree&,
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-bool inSameParagraphDeprecated(
-    const VisiblePosition&,
-    const VisiblePosition&,
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 
 // blocks (true paragraphs; line break elements don't break blocks)
 VisiblePosition startOfBlock(

@@ -1860,28 +1860,6 @@ VisiblePositionInFlatTree startOfParagraph(
 }
 
 template <typename Strategy>
-VisiblePositionTemplate<Strategy> startOfParagraphAlgorithmDeprecated(
-    const VisiblePositionTemplate<Strategy>& visiblePosition,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return createVisiblePositionDeprecated(startOfParagraphAlgorithm(
-      visiblePosition.deepEquivalent(), boundaryCrossingRule));
-}
-
-VisiblePosition startOfParagraphDeprecated(
-    const VisiblePosition& c,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return startOfParagraphAlgorithmDeprecated<EditingStrategy>(
-      c, boundaryCrossingRule);
-}
-
-VisiblePositionInFlatTree startOfParagraphDeprecated(
-    const VisiblePositionInFlatTree& c,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return startOfParagraphAlgorithmDeprecated<EditingInFlatTreeStrategy>(
-      c, boundaryCrossingRule);
-}
-
-template <typename Strategy>
 static PositionTemplate<Strategy> endOfParagraphAlgorithm(
     const PositionTemplate<Strategy>& position,
     EditingBoundaryCrossingRule boundaryCrossingRule) {
@@ -1991,28 +1969,6 @@ VisiblePositionInFlatTree endOfParagraph(
       c, boundaryCrossingRule);
 }
 
-template <typename Strategy>
-static VisiblePositionTemplate<Strategy> endOfParagraphAlgorithmDeprecated(
-    const VisiblePositionTemplate<Strategy>& visiblePosition,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return createVisiblePositionDeprecated(endOfParagraphAlgorithm(
-      visiblePosition.deepEquivalent(), boundaryCrossingRule));
-}
-
-VisiblePosition endOfParagraphDeprecated(
-    const VisiblePosition& c,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return endOfParagraphAlgorithmDeprecated<EditingStrategy>(
-      c, boundaryCrossingRule);
-}
-
-VisiblePositionInFlatTree endOfParagraphDeprecated(
-    const VisiblePositionInFlatTree& c,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return endOfParagraphAlgorithmDeprecated<EditingInFlatTreeStrategy>(
-      c, boundaryCrossingRule);
-}
-
 // FIXME: isStartOfParagraph(startOfNextParagraph(pos)) is not always true
 VisiblePosition startOfNextParagraph(const VisiblePosition& visiblePosition) {
   DCHECK(visiblePosition.isValid()) << visiblePosition;
@@ -2028,19 +1984,6 @@ VisiblePosition startOfNextParagraph(const VisiblePosition& visiblePosition) {
 }
 
 // FIXME: isStartOfParagraph(startOfNextParagraph(pos)) is not always true
-VisiblePosition startOfNextParagraphDeprecated(
-    const VisiblePosition& visiblePosition) {
-  VisiblePosition paragraphEnd(
-      endOfParagraphDeprecated(visiblePosition, CanSkipOverEditingBoundary));
-  VisiblePosition afterParagraphEnd(
-      nextPositionOf(paragraphEnd, CannotCrossEditingBoundary));
-  // The position after the last position in the last cell of a table
-  // is not the start of the next paragraph.
-  if (tableElementJustBefore(afterParagraphEnd))
-    return nextPositionOf(afterParagraphEnd, CannotCrossEditingBoundary);
-  return afterParagraphEnd;
-}
-
 bool inSameParagraph(const VisiblePosition& a,
                      const VisiblePosition& b,
                      EditingBoundaryCrossingRule boundaryCrossingRule) {
@@ -2049,16 +1992,6 @@ bool inSameParagraph(const VisiblePosition& a,
   return a.isNotNull() &&
          startOfParagraph(a, boundaryCrossingRule).deepEquivalent() ==
              startOfParagraph(b, boundaryCrossingRule).deepEquivalent();
-}
-
-bool inSameParagraphDeprecated(
-    const VisiblePosition& a,
-    const VisiblePosition& b,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return a.isNotNull() &&
-         startOfParagraphDeprecated(a, boundaryCrossingRule).deepEquivalent() ==
-             startOfParagraphDeprecated(b, boundaryCrossingRule)
-                 .deepEquivalent();
 }
 
 template <typename Strategy>
@@ -2084,30 +2017,6 @@ bool isStartOfParagraph(const VisiblePositionInFlatTree& pos,
 }
 
 template <typename Strategy>
-static bool isStartOfParagraphAlgorithmDeprecated(
-    const VisiblePositionTemplate<Strategy>& pos,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return pos.isNotNull() &&
-         pos.deepEquivalent() ==
-             startOfParagraphDeprecated(pos, boundaryCrossingRule)
-                 .deepEquivalent();
-}
-
-bool isStartOfParagraphDeprecated(
-    const VisiblePosition& pos,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return isStartOfParagraphAlgorithmDeprecated<EditingStrategy>(
-      pos, boundaryCrossingRule);
-}
-
-bool isStartOfParagraphDeprecated(
-    const VisiblePositionInFlatTree& pos,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return isStartOfParagraphAlgorithmDeprecated<EditingInFlatTreeStrategy>(
-      pos, boundaryCrossingRule);
-}
-
-template <typename Strategy>
 static bool isEndOfParagraphAlgorithm(
     const VisiblePositionTemplate<Strategy>& pos,
     EditingBoundaryCrossingRule boundaryCrossingRule) {
@@ -2125,30 +2034,6 @@ bool isEndOfParagraph(const VisiblePosition& pos,
 bool isEndOfParagraph(const VisiblePositionInFlatTree& pos,
                       EditingBoundaryCrossingRule boundaryCrossingRule) {
   return isEndOfParagraphAlgorithm<EditingInFlatTreeStrategy>(
-      pos, boundaryCrossingRule);
-}
-
-template <typename Strategy>
-static bool isEndOfParagraphAlgorithmDeprecated(
-    const VisiblePositionTemplate<Strategy>& pos,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return pos.isNotNull() &&
-         pos.deepEquivalent() ==
-             endOfParagraphDeprecated(pos, boundaryCrossingRule)
-                 .deepEquivalent();
-}
-
-bool isEndOfParagraphDeprecated(
-    const VisiblePosition& pos,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return isEndOfParagraphAlgorithmDeprecated<EditingStrategy>(
-      pos, boundaryCrossingRule);
-}
-
-bool isEndOfParagraphDeprecated(
-    const VisiblePositionInFlatTree& pos,
-    EditingBoundaryCrossingRule boundaryCrossingRule) {
-  return isEndOfParagraphAlgorithmDeprecated<EditingInFlatTreeStrategy>(
       pos, boundaryCrossingRule);
 }
 
@@ -3887,29 +3772,6 @@ VisiblePositionInFlatTree nextPositionOf(
       visiblePosition.toPositionWithAffinity(), rule);
 }
 
-VisiblePosition nextPositionOfDeprecated(const VisiblePosition& visiblePosition,
-                                         EditingBoundaryCrossingRule rule) {
-  if (visiblePosition.isNull())
-    return VisiblePosition();
-  visiblePosition.deepEquivalent()
-      .document()
-      ->updateStyleAndLayoutIgnorePendingStylesheets();
-  return nextPositionOfAlgorithm<EditingStrategy>(
-      visiblePosition.toPositionWithAffinity(), rule);
-}
-
-VisiblePositionInFlatTree nextPositionOfDeprecated(
-    const VisiblePositionInFlatTree& visiblePosition,
-    EditingBoundaryCrossingRule rule) {
-  if (visiblePosition.isNull())
-    return VisiblePositionInFlatTree();
-  visiblePosition.deepEquivalent()
-      .document()
-      ->updateStyleAndLayoutIgnorePendingStylesheets();
-  return nextPositionOfAlgorithm<EditingInFlatTreeStrategy>(
-      visiblePosition.toPositionWithAffinity(), rule);
-}
-
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> skipToStartOfEditingBoundary(
     const VisiblePositionTemplate<Strategy>& pos,
@@ -3984,30 +3846,6 @@ VisiblePositionInFlatTree previousPositionOf(
     const VisiblePositionInFlatTree& visiblePosition,
     EditingBoundaryCrossingRule rule) {
   DCHECK(visiblePosition.isValid()) << visiblePosition;
-  return previousPositionOfAlgorithm<EditingInFlatTreeStrategy>(
-      visiblePosition.deepEquivalent(), rule);
-}
-
-VisiblePosition previousPositionOfDeprecated(
-    const VisiblePosition& visiblePosition,
-    EditingBoundaryCrossingRule rule) {
-  if (visiblePosition.isNull())
-    return VisiblePosition();
-  visiblePosition.deepEquivalent()
-      .document()
-      ->updateStyleAndLayoutIgnorePendingStylesheets();
-  return previousPositionOfAlgorithm<EditingStrategy>(
-      visiblePosition.deepEquivalent(), rule);
-}
-
-VisiblePositionInFlatTree previousPositionOfDeprecated(
-    const VisiblePositionInFlatTree& visiblePosition,
-    EditingBoundaryCrossingRule rule) {
-  if (visiblePosition.isNull())
-    return VisiblePositionInFlatTree();
-  visiblePosition.deepEquivalent()
-      .document()
-      ->updateStyleAndLayoutIgnorePendingStylesheets();
   return previousPositionOfAlgorithm<EditingInFlatTreeStrategy>(
       visiblePosition.deepEquivalent(), rule);
 }

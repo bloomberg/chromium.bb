@@ -105,18 +105,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
                             : affinity());
   }
 
-  // These deprecated functions perform synchronous layout, messing up the
-  // pipeline. Callers should ensure clean layout and then switch to the
-  // un-deprecated functions above.
-  VisiblePositionTemplate<Strategy> visibleStartDeprecated() const {
-    return createVisiblePositionDeprecated(
-        m_start, isRange() ? TextAffinity::Downstream : affinity());
-  }
-  VisiblePositionTemplate<Strategy> visibleEndDeprecated() const {
-    return createVisiblePositionDeprecated(
-        m_end, isRange() ? TextAffinity::Upstream : affinity());
-  }
-
   bool operator==(const VisibleSelectionTemplate&) const;
   bool operator!=(const VisibleSelectionTemplate& other) const {
     return !operator==(other);
@@ -272,56 +260,6 @@ createVisibleSelection(const VisiblePositionInFlatTree&,
 CORE_EXPORT VisibleSelectionInFlatTree
 createVisibleSelection(const PositionInFlatTreeWithAffinity&,
                        bool isDirectional = false);
-
-// Callers of these functions should ensure clean layout by themselves and then
-// switch to the proper versions (to be introduced).
-CORE_EXPORT VisibleSelection
-createVisibleSelectionDeprecated(const Position&,
-                                 TextAffinity,
-                                 bool isDirectional = false);
-CORE_EXPORT VisibleSelection
-createVisibleSelectionDeprecated(const Position& base,
-                                 const Position& extent,
-                                 TextAffinity = SelDefaultAffinity,
-                                 bool isDirectional = false);
-CORE_EXPORT VisibleSelection
-createVisibleSelectionDeprecated(const EphemeralRange&,
-                                 TextAffinity = SelDefaultAffinity,
-                                 bool isDirectional = false);
-CORE_EXPORT VisibleSelection
-createVisibleSelectionDeprecated(const VisiblePosition&,
-                                 bool isDirectional = false);
-CORE_EXPORT VisibleSelection
-createVisibleSelectionDeprecated(const VisiblePosition&,
-                                 const VisiblePosition&,
-                                 bool isDirectional = false);
-CORE_EXPORT VisibleSelection
-createVisibleSelectionDeprecated(const PositionWithAffinity&,
-                                 bool isDirectional = false);
-
-CORE_EXPORT VisibleSelectionInFlatTree
-createVisibleSelectionDeprecated(const PositionInFlatTree&,
-                                 TextAffinity,
-                                 bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree
-createVisibleSelectionDeprecated(const PositionInFlatTree& base,
-                                 const PositionInFlatTree& extent,
-                                 TextAffinity = SelDefaultAffinity,
-                                 bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree
-createVisibleSelectionDeprecated(const EphemeralRangeInFlatTree&,
-                                 TextAffinity = SelDefaultAffinity,
-                                 bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree
-createVisibleSelectionDeprecated(const VisiblePositionInFlatTree&,
-                                 bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree
-createVisibleSelectionDeprecated(const VisiblePositionInFlatTree&,
-                                 const VisiblePositionInFlatTree&,
-                                 bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree
-createVisibleSelectionDeprecated(const PositionInFlatTreeWithAffinity&,
-                                 bool isDirectional = false);
 
 // We don't yet support multi-range selections, so we only ever have one range
 // to return.
