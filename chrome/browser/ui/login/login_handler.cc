@@ -475,14 +475,9 @@ PasswordForm LoginHandler::MakeInputForPasswordManager(
   } else {
     dialog_form.scheme = PasswordForm::SCHEME_OTHER;
   }
-  if (auth_info.is_proxy) {
-    dialog_form.origin = auth_info.challenger.GetURL();
-  } else if (!auth_info.challenger.IsSameOriginWith(url::Origin(request_url))) {
-    dialog_form.origin = GURL();
-    NOTREACHED();  // crbug.com/32718
-  } else {
-    dialog_form.origin = auth_info.challenger.GetURL();
-  }
+  dialog_form.origin = auth_info.challenger.GetURL();
+  DCHECK(auth_info.is_proxy ||
+         auth_info.challenger.IsSameOriginWith(url::Origin(request_url)));
   dialog_form.signon_realm = GetSignonRealm(dialog_form.origin, auth_info);
   return dialog_form;
 }
