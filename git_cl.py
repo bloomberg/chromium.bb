@@ -318,24 +318,34 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
   assert False, 'unreachable'
 
 
-def trigger_try_jobs(auth_config, changelist, options, masters, category):
-  rietveld_url = settings.GetDefaultServerUrl()
-  rietveld_host = urlparse.urlparse(rietveld_url).hostname
-  authenticator = auth.get_authenticator_for_host(rietveld_host, auth_config)
+def _trigger_try_jobs(auth_config, changelist, masters, options,
+                      category='git_cl_try', patchset=None):
+  assert changelist.GetIssue(), 'CL must be uploaded first'
+  codereview_url = changelist.GetCodereviewServer()
+  assert codereview_url, 'CL must be uploaded first'
+  patchset = patchset or changelist.GetMostRecentPatchset()
+  assert patchset, 'CL must be uploaded first'
+
+  codereview_host = urlparse.urlparse(codereview_url).hostname
+  authenticator = auth.get_authenticator_for_host(codereview_host, auth_config)
   http = authenticator.authorize(httplib2.Http())
   http.force_exception_to_status_code = True
-  issue_props = changelist.GetIssueProperties()
-  issue = changelist.GetIssue()
-  patchset = changelist.GetMostRecentPatchset()
-  properties = _get_properties_from_options(options)
+
+  # TODO(tandrii): consider caching Gerrit CL details just like
+  # _RietveldChangelistImpl does, then caching values in these two variables
+  # won't be necessary.
+  owner_email = changelist.GetIssueOwner()
+  project = changelist.GetIssueProject()
 
   buildbucket_put_url = (
       'https://{hostname}/_ah/api/buildbucket/v1/builds/batch'.format(
           hostname=options.buildbucket_host))
-  buildset = 'patch/rietveld/{hostname}/{issue}/{patch}'.format(
-      hostname=rietveld_host,
-      issue=issue,
+  buildset = 'patch/{codereview}/{hostname}/{issue}/{patch}'.format(
+      codereview='gerrit' if changelist.IsGerrit() else 'rietveld',
+      hostname=codereview_host,
+      issue=changelist.GetIssue(),
       patch=patchset)
+  extra_properties = _get_properties_from_options(options)
 
   batch_req_body = {'builds': []}
   print_text = []
@@ -348,26 +358,26 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
       parameters = {
           'builder_name': builder,
           'changes': [{
-              'author': {'email': issue_props['owner_email']},
+              'author': {'email': owner_email},
               'revision': options.revision,
           }],
           'properties': {
               'category': category,
-              'issue': issue,
+              'issue': changelist.GetIssue(),
               'master': master,
-              'patch_project': issue_props['project'],
+              'patch_project': project,
               'patch_storage': 'rietveld',
               'patchset': patchset,
               'reason': options.name,
-              'rietveld': rietveld_url,
+              'rietveld': codereview_url,
           },
       }
       if 'presubmit' in builder.lower():
         parameters['properties']['dry_run'] = 'true'
       if tests:
         parameters['properties']['testfilter'] = tests
-      if properties:
-        parameters['properties'].update(properties)
+      if extra_properties:
+        parameters['properties'].update(extra_properties)
       if options.clobber:
         parameters['properties']['clobber'] = True
       batch_req_body['builds'].append(
@@ -1548,10 +1558,6 @@ class Changelist(object):
     assert self.GetIssue()
     return self._codereview_impl.SetCQState(new_state)
 
-  def CannotTriggerTryJobReason(self):
-    """Returns reason (str) if unable trigger tryjobs on this CL or None."""
-    return self._codereview_impl.CannotTriggerTryJobReason()
-
   # Forward methods to codereview specific implementation.
 
   def CloseIssue(self):
@@ -1563,11 +1569,25 @@ class Changelist(object):
   def GetCodereviewServer(self):
     return self._codereview_impl.GetCodereviewServer()
 
+  def GetIssueOwner(self):
+    """Get owner from codereview, which may differ from this checkout."""
+    return self._codereview_impl.GetIssueOwner()
+
+  def GetIssueProject(self):
+    """Get project from codereview, which may differ from what this
+    checkout's codereview.settings or gerrit project URL say.
+    """
+    return self._codereview_impl.GetIssueProject()
+
   def GetApprovingReviewers(self):
     return self._codereview_impl.GetApprovingReviewers()
 
   def GetMostRecentPatchset(self):
     return self._codereview_impl.GetMostRecentPatchset()
+
+  def CannotTriggerTryJobReason(self):
+    """Returns reason (str) if unable trigger tryjobs on this CL or None."""
+    return self._codereview_impl.CannotTriggerTryJobReason()
 
   def __getattr__(self, attr):
     # This is because lots of untested code accesses Rietveld-specific stuff
@@ -1698,6 +1718,12 @@ class _ChangelistCodereviewBase(object):
     """Returns reason (str) if unable trigger tryjobs on this CL or None."""
     raise NotImplementedError()
 
+  def GetIssueOwner(self):
+    raise NotImplementedError()
+
+  def GetIssueProject(self):
+    raise NotImplementedError()
+
 
 class _RietveldChangelistImpl(_ChangelistCodereviewBase):
   def __init__(self, changelist, auth_config=None, rietveld_server=None):
@@ -1782,6 +1808,12 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
   def GetApprovingReviewers(self):
     return get_approving_reviewers(self.GetIssueProperties())
+
+  def GetIssueOwner(self):
+    return (self.GetIssueProperties() or {}).get('owner_email')
+
+  def GetIssueProject(self):
+    return (self.GetIssueProperties() or {}).get('project')
 
   def AddComment(self, message):
     return self.RpcServer().add_comment(self.GetIssue(), message)
@@ -2735,6 +2767,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                           labels={'Commit-Queue': vote_map[new_state]})
 
   def CannotTriggerTryJobReason(self):
+    # TODO(tandrii): implement for Gerrit.
+    raise NotImplementedError()
+
+  def GetIssueOwner(self):
+    # TODO(tandrii): implement for Gerrit.
+    raise NotImplementedError()
+
+  def GetIssueProject(self):
     # TODO(tandrii): implement for Gerrit.
     raise NotImplementedError()
 
@@ -4717,8 +4757,6 @@ def CMDtry(parser, args):
         'Not yet supported for Gerrit (http://crbug.com/599931).\n'
         'If your project has Commit Queue, dry run is a workaround:\n'
         '  git cl set-commit --dry-run')
-  # Code below assumes Rietveld issue.
-  # TODO(tandrii): actually implement for Gerrit http://crbug.com/599931.
 
   error_message = cl.CannotTriggerTryJobReason()
   if error_message:
@@ -4813,26 +4851,24 @@ def CMDtry(parser, args):
   for builders in masters.itervalues():
     if any('triggered' in b for b in builders):
       print('ERROR You are trying to send a job to a triggered bot. This type '
-            'of bot requires an\ninitial job from a parent (usually a builder).'
-            '  Instead send your job to the parent.\n'
+            'of bot requires an initial job from a parent (usually a builder). '
+            'Instead send your job to the parent.\n'
             'Bot list: %s' % builders, file=sys.stderr)
       return 1
 
   patchset = cl.GetMostRecentPatchset()
-  if patchset and patchset != cl.GetPatchset():
-    print(
-        '\nWARNING Mismatch between local config and server. Did a previous '
-        'upload fail?\ngit-cl try always uses latest patchset from rietveld. '
-        'Continuing using\npatchset %s.\n' % patchset)
+  if patchset != cl.GetPatchset():
+    print('Warning: Codereview server has newer patchsets (%s) than most '
+          'recent upload from local checkout (%s). Did a previous upload '
+          'fail?\n'
+          'By default, git cl try uses the latest patchset from '
+          'codereview, continuing to use patchset %s.\n' %
+          (patchset, cl.GetPatchset(), patchset))
   try:
-    trigger_try_jobs(auth_config, cl, options, masters, 'git_cl_try')
+    _trigger_try_jobs(auth_config, cl, masters, options, 'git_cl_try',
+                     patchset)
   except BuildbucketResponseException as ex:
     print('ERROR: %s' % ex)
-    return 1
-  except Exception as e:
-    stacktrace = (''.join(traceback.format_stack()) + traceback.format_exc())
-    print('ERROR: Exception when trying to trigger try jobs: %s\n%s' %
-          (e, stacktrace))
     return 1
   return 0
 
@@ -4876,8 +4912,8 @@ def CMDtry_results(parser, args):
       print('Warning: Codereview server has newer patchsets (%s) than most '
             'recent upload from local checkout (%s). Did a previous upload '
             'fail?\n'
-            'By default, git cl try uses latest patchset from codereview, '
-            'continuing to use patchset %s.\n' %
+            'By default, git cl try-results uses the latest patchset from '
+            'codereview, continuing to use patchset %s.\n' %
             (patchset, cl.GetPatchset(), patchset))
   try:
     jobs = fetch_try_jobs(auth_config, cl, options.buildbucket_host, patchset)
