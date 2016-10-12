@@ -230,6 +230,25 @@ size_t ImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame) {
   return frameBytesCleared;
 }
 
+void ImageDecoder::setFrameMemoryAllocator(size_t frameIndex,
+                                           SkBitmap::Allocator* allocator) {
+  if (frameIndex <= m_frameBufferCache.size())
+    m_frameBufferCache[frameIndex].setMemoryAllocator(allocator);
+}
+
+bool ImageDecoder::frameHasDependentFrame(size_t frameIndex) {
+  if ((frameIndex + 1) >= frameCount())
+    return false;
+  size_t nextFrameRequiredFrameIndex =
+      m_frameBufferCache[frameIndex + 1].requiredPreviousFrameIndex();
+  DCHECK(nextFrameRequiredFrameIndex == kNotFound ||
+         nextFrameRequiredFrameIndex == frameIndex ||
+         (nextFrameRequiredFrameIndex < frameIndex &&
+          m_frameBufferCache[frameIndex].getDisposalMethod() ==
+              ImageFrame::DisposeOverwritePrevious));
+  return (nextFrameRequiredFrameIndex == frameIndex);
+}
+
 void ImageDecoder::clearFrameBuffer(size_t frameIndex) {
   m_frameBufferCache[frameIndex].clearPixelData();
 }

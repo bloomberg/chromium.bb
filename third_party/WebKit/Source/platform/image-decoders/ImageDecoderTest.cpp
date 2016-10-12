@@ -66,6 +66,7 @@ class TestImageDecoder : public ImageDecoder {
 
  private:
   void decodeSize() override {}
+  size_t decodeFrameCount() override { return m_frameBufferCache.size(); }
   void decode(size_t index) override {}
 };
 
@@ -93,14 +94,20 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndex) {
 
   // The first frame doesn't require any previous frame.
   EXPECT_EQ(kNotFound, frameBuffers[0].requiredPreviousFrameIndex());
+  EXPECT_TRUE(decoder->frameHasDependentFrame(0));
   // The previous DisposeNotSpecified frame is required.
   EXPECT_EQ(0u, frameBuffers[1].requiredPreviousFrameIndex());
   // DisposeKeep is treated as DisposeNotSpecified.
   EXPECT_EQ(1u, frameBuffers[2].requiredPreviousFrameIndex());
+  EXPECT_TRUE(decoder->frameHasDependentFrame(1));
   // Previous DisposeOverwritePrevious frames are skipped.
   EXPECT_EQ(1u, frameBuffers[3].requiredPreviousFrameIndex());
   EXPECT_EQ(1u, frameBuffers[4].requiredPreviousFrameIndex());
   EXPECT_EQ(4u, frameBuffers[5].requiredPreviousFrameIndex());
+  EXPECT_FALSE(decoder->frameHasDependentFrame(2));
+  EXPECT_FALSE(decoder->frameHasDependentFrame(3));
+  EXPECT_TRUE(decoder->frameHasDependentFrame(4));
+  EXPECT_FALSE(decoder->frameHasDependentFrame(5));
 }
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndexDisposeOverwriteBgcolor) {

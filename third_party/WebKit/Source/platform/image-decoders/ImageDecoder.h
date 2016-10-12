@@ -258,19 +258,17 @@ class PLATFORM_EXPORT ImageDecoder {
   // and returns true. Otherwise returns false.
   virtual bool hotSpot(IntPoint&) const { return false; }
 
-  virtual void setMemoryAllocator(SkBitmap::Allocator* allocator) {
-    // FIXME: this doesn't work for images with multiple frames.
-    if (m_frameBufferCache.isEmpty()) {
-      m_frameBufferCache.resize(1);
-      m_frameBufferCache[0].setRequiredPreviousFrameIndex(
-          findRequiredPreviousFrame(0, false));
-    }
-    m_frameBufferCache[0].setMemoryAllocator(allocator);
-  }
-
   virtual bool canDecodeToYUV() { return false; }
   virtual bool decodeToYUV() { return false; }
   virtual void setImagePlanes(std::unique_ptr<ImagePlanes>) {}
+
+  // If the frame has not been allocated, enables allocation on the memory
+  // provided by client.
+  void setFrameMemoryAllocator(size_t, SkBitmap::Allocator*);
+
+  // Parses the data and returns whether any later frames depend on the image
+  // data of the provided frame.
+  bool frameHasDependentFrame(size_t);
 
  protected:
   ImageDecoder(AlphaOption alphaOption,
