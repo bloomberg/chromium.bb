@@ -20,17 +20,23 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.content.browser.BrowserStartupController.StartupCallback;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,6 +83,7 @@ class UrlManager {
     private final PriorityQueue<String> mUrlsSortedByTimestamp;
     private NotificationManagerProxy mNotificationManager;
     private PwsClient mPwsClient;
+    private long mNativePhysicalWebDataSourceAndroid;
 
     /**
      * Interface for observers that should be notified when the nearby URL list changes.
@@ -113,12 +120,14 @@ class UrlManager {
             }
         });
         initSharedPreferences();
+        registerNativeInitStartupCallback();
     }
 
     /**
      * Get a singleton instance of this class.
      * @return A singleton instance of this class.
      */
+    @CalledByNative
     public static UrlManager getInstance() {
         if (sInstance == null) {
             sInstance = new UrlManager(ContextUtils.getApplicationContext());
@@ -186,7 +195,6 @@ class UrlManager {
      * This method additionally updates the Physical Web notification.
      * @param urlInfo The URL to remove.
      */
-    @VisibleForTesting
     public void removeUrl(UrlInfo urlInfo) {
         Log.d(TAG, "URL lost: %s", urlInfo);
         recordUpdate();
@@ -252,7 +260,10 @@ class UrlManager {
     }
 
     /**
-     * Gets all UrlInfos and PwsResults for resolved URLs.
+     * Gets all UrlInfos and PwsResults for nearby URLs.
+     * The UrlInfos and PwsResults are returned as parallel arrays. Unresolved URLs in the UrlInfo
+     * array will have a null element in the corresponding entry of the PwsResult array.
+     * @return A PwCollection object containg parallel arrays of UrlInfos and PwsResults.
      */
     public PwCollection getPwCollection() {
         List<PwsResult> nearbyPwsResults = new ArrayList<>();
@@ -627,6 +638,37 @@ class UrlManager {
         }
     }
 
+    /**
+     * Register a StartupCallback to initialize the native portion of the JNI bridge.
+     */
+    private void registerNativeInitStartupCallback() {
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                BrowserStartupController.get(mContext, LibraryProcessType.PROCESS_BROWSER)
+                        .addStartupCompletedObserver(new StartupCallback() {
+                            @Override
+                            public void onSuccess(boolean alreadyStarted) {
+                                mNativePhysicalWebDataSourceAndroid = nativeInit();
+                            }
+
+                            @Override
+                            public void onFailure() {
+                                // Startup failed.
+                            }
+                        });
+            }
+        });
+    }
+
+    /**
+     * Checks if we have initialized the native library and received a handle to the data source.
+     * @return true if the data source handle is non-null.
+     */
+    private boolean isNativeInitialized() {
+        return mNativePhysicalWebDataSourceAndroid != 0;
+    }
+
     @VisibleForTesting
     void overridePwsClientForTesting(PwsClient pwsClient) {
         mPwsClient = pwsClient;
@@ -670,4 +712,6 @@ class UrlManager {
     int getMaxCacheSize() {
         return MAX_CACHE_SIZE;
     }
+
+    private native long nativeInit();
 }

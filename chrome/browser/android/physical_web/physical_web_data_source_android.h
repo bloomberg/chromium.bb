@@ -5,17 +5,24 @@
 #ifndef CHROME_BROWSER_ANDROID_PHYSICAL_WEB_PHYSICAL_WEB_DATA_SOURCE_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_PHYSICAL_WEB_PHYSICAL_WEB_DATA_SOURCE_ANDROID_H_
 
+#include <jni.h>
+
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "components/physical_web/data_source/physical_web_data_source.h"
+#include "components/physical_web/data_source/physical_web_data_source_impl.h"
 
 namespace base {
 class ListValue;
 }
 
-class PhysicalWebDataSourceAndroid : public PhysicalWebDataSource {
+class PhysicalWebDataSourceAndroid : public PhysicalWebDataSourceImpl {
  public:
   PhysicalWebDataSourceAndroid();
   ~PhysicalWebDataSourceAndroid() override;
+
+  static bool RegisterPhysicalWebDataSource(JNIEnv* env);
+
+  void Initialize();
 
   void StartDiscovery(bool network_request_enabled) override;
   void StopDiscovery() override;
@@ -23,10 +30,10 @@ class PhysicalWebDataSourceAndroid : public PhysicalWebDataSource {
   std::unique_ptr<base::ListValue> GetMetadata() override;
   bool HasUnresolvedDiscoveries() override;
 
-  void RegisterListener(PhysicalWebListener* listener) override;
-  void UnregisterListener(PhysicalWebListener* listener) override;
-
  private:
+  // A reference to the Java UrlManager singleton.
+  base::android::ScopedJavaGlobalRef<jobject> url_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(PhysicalWebDataSourceAndroid);
 };
 

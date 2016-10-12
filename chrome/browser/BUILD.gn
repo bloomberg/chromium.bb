@@ -3859,6 +3859,7 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/password_manager/AccountChooserDialog.java",
       "../android/java/src/org/chromium/chrome/browser/password_manager/AutoSigninFirstRunDialog.java",
       "../android/java/src/org/chromium/chrome/browser/password_manager/Credential.java",
+      "../android/java/src/org/chromium/chrome/browser/physicalweb/UrlManager.java",
       "../android/java/src/org/chromium/chrome/browser/policy/PolicyAuditor.java",
       "../android/java/src/org/chromium/chrome/browser/precache/PrecacheLauncher.java",
       "../android/java/src/org/chromium/chrome/browser/preferences/LocationSettings.java",
