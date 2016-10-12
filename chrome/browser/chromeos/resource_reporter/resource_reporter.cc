@@ -9,10 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "components/rappor/rappor_service.h"
@@ -24,60 +26,57 @@ namespace {
 
 #define GET_ENUM_VAL(enum_entry) static_cast<int>(enum_entry)
 
-// The task manager refresh interval, currently at 1 minute.
-const int64_t kRefreshIntervalSeconds = 60;
+// At a critical memory pressure event, we only care about a single complete
+// refresh from the task manager (with background calculations). So we request
+// the minimum refresh rate (once per second).
+constexpr int64_t kRefreshIntervalSeconds = 1;
 
 // Various memory usage sizes in bytes.
-const int64_t kMemory1GB = 1024 * 1024 * 1024;
-const int64_t kMemory800MB = 800 * 1024 * 1024;
-const int64_t kMemory600MB = 600 * 1024 * 1024;
-const int64_t kMemory400MB = 400 * 1024 * 1024;
-const int64_t kMemory200MB = 200 * 1024 * 1024;
+constexpr int64_t kMemory1GB = 1024 * 1024 * 1024;
+constexpr int64_t kMemory800MB = 800 * 1024 * 1024;
+constexpr int64_t kMemory600MB = 600 * 1024 * 1024;
+constexpr int64_t kMemory400MB = 400 * 1024 * 1024;
+constexpr int64_t kMemory200MB = 200 * 1024 * 1024;
 
 // The name of the Rappor metric to report the CPU usage.
-const char kCpuRapporMetric[] = "ResourceReporter.Cpu";
+constexpr char kCpuRapporMetric[] = "ResourceReporter.Cpu";
 
 // The name of the Rappor metric to report the memory usage.
-const char kMemoryRapporMetric[] = "ResourceReporter.Memory";
+constexpr char kMemoryRapporMetric[] = "ResourceReporter.Memory";
 
 // The name of the string field of the Rappor metrics in which we'll record the
 // task's Rappor sample name.
-const char kRapporTaskStringField[] = "task";
+constexpr char kRapporTaskStringField[] = "task";
 
 // The name of the flags field of the Rappor metrics in which we'll store the
 // priority of the process on which the task is running.
-const char kRapporPriorityFlagsField[] = "priority";
+constexpr char kRapporPriorityFlagsField[] = "priority";
 
 // The name of the flags field of the CPU usage Rappor metrics in which we'll
 // record the number of cores in the current system.
-const char kRapporNumCoresRangeFlagsField[] = "num_cores_range";
+constexpr char kRapporNumCoresRangeFlagsField[] = "num_cores_range";
 
 // The name of the flags field of the Rappor metrics in which we'll store the
 // CPU / memory usage ranges.
-const char kRapporUsageRangeFlagsField[] = "usage_range";
+constexpr char kRapporUsageRangeFlagsField[] = "usage_range";
 
-// Currently set to be one day.
-const int kMinimumTimeBetweenReportsInMs = 1 * 24 * 60 * 60 * 1000;
+// Key used to store the last time a Rappor report was recorded in local_state.
+constexpr char kLastRapporReportTimeKey[] =
+    "resource_reporter.last_report_time";
 
-// A functor to sort the TaskRecords by their |cpu|.
-struct TaskRecordCpuLessThan {
-  bool operator()(ResourceReporter::TaskRecord* const& lhs,
-                  ResourceReporter::TaskRecord* const& rhs) const {
-    if (lhs->cpu_percent == rhs->cpu_percent)
-      return lhs->id < rhs->id;
-    return lhs->cpu_percent < rhs->cpu_percent;
-  }
-};
+// To keep privacy guarantees of Rappor, we limit the reports to at most once
+// per day.
+constexpr base::TimeDelta kMinimumTimeBetweenReports =
+    base::TimeDelta::FromDays(1);
 
-// A functor to sort the TaskRecords by their |memory|.
-struct TaskRecordMemoryLessThan {
-  bool operator()(ResourceReporter::TaskRecord* const& lhs,
-                  ResourceReporter::TaskRecord* const& rhs) const {
-    if (lhs->memory_bytes == rhs->memory_bytes)
-      return lhs->id < rhs->id;
-    return lhs->memory_bytes < rhs->memory_bytes;
-  }
-};
+// Gets the memory usage threshold of a process beyond which the process is
+// considered memory-intensive on the current device it's running on.
+int64_t GetMemoryThresholdForDeviceInBytes() {
+  const int64_t bytes_per_cpu = base::SysInfo::AmountOfPhysicalMemory() /
+                                base::SysInfo::NumberOfProcessors();
+
+  return bytes_per_cpu * 0.6;
+}
 
 }  // namespace
 
@@ -103,14 +102,21 @@ ResourceReporter* ResourceReporter::GetInstance() {
   return base::Singleton<ResourceReporter>::get();
 }
 
-void ResourceReporter::StartMonitoring() {
+// static
+void ResourceReporter::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDoublePref(kLastRapporReportTimeKey, 0.0);
+}
+
+void ResourceReporter::StartMonitoring(
+    task_manager::TaskManagerInterface* task_manager_to_observe) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (is_monitoring_)
     return;
 
+  task_manager_to_observe_ = task_manager_to_observe;
+  DCHECK(task_manager_to_observe_);
   is_monitoring_ = true;
-  task_manager::TaskManagerInterface::GetTaskManager()->AddObserver(this);
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&ResourceReporter::OnMemoryPressure, base::Unretained(this))));
 }
@@ -121,57 +127,23 @@ void ResourceReporter::StopMonitoring() {
   if (!is_monitoring_)
     return;
 
+  // We might be shutting down right after a critical memory pressure event, and
+  // before we get an update from the task manager with all background
+  // calculations refreshed. In this case we must unregister from the task
+  // manager here.
+  if (observed_task_manager())
+    observed_task_manager()->RemoveObserver(this);
+
   is_monitoring_ = false;
   memory_pressure_listener_.reset();
-  task_manager::TaskManagerInterface::GetTaskManager()->RemoveObserver(this);
 }
 
-void ResourceReporter::OnTaskAdded(task_manager::TaskId id) {
-  // Ignore this event.
-}
-
-void ResourceReporter::OnTaskToBeRemoved(task_manager::TaskId id) {
-  auto it = task_records_.find(id);
-  if (it == task_records_.end())
-    return;
-
-  // Must be erased from the sorted set first.
-  // Note: this could mean that the sorted records are now less than
-  // |kTopConsumerCount| with other records in |task_records_| that can be
-  // added now. That's ok, we ignore this case.
-  auto cpu_it = std::find(task_records_by_cpu_.begin(),
-                           task_records_by_cpu_.end(),
-                           it->second.get());
-  if (cpu_it != task_records_by_cpu_.end())
-    task_records_by_cpu_.erase(cpu_it);
-
-  auto memory_it = std::find(task_records_by_memory_.begin(),
-                              task_records_by_memory_.end(),
-                              it->second.get());
-  if (memory_it != task_records_by_memory_.end())
-    task_records_by_memory_.erase(memory_it);
-
-  task_records_.erase(it);
-}
-
-void ResourceReporter::OnTasksRefreshed(
+void ResourceReporter::OnTasksRefreshedWithBackgroundCalculations(
     const task_manager::TaskIdList& task_ids) {
-  have_seen_first_task_manager_refresh_ = true;
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // A priority queue to sort the task records by their |cpu|. Greatest |cpu|
-  // first.
-  std::priority_queue<TaskRecord*,
-                      std::vector<TaskRecord*>,
-                      TaskRecordCpuLessThan> records_by_cpu_queue;
-  // A priority queue to sort the task records by their |memory|. Greatest
-  // |memory| first.
-  std::priority_queue<TaskRecord*,
-                      std::vector<TaskRecord*>,
-                      TaskRecordMemoryLessThan> records_by_memory_queue;
-  task_records_by_cpu_.clear();
-  task_records_by_cpu_.reserve(kTopConsumersCount);
-  task_records_by_memory_.clear();
-  task_records_by_memory_.reserve(kTopConsumersCount);
+  task_records_.clear();
+  task_records_.reserve(task_ids.size());
 
   for (const auto& id : task_ids) {
     const double cpu_usage = observed_task_manager()->GetCpuUsage(id);
@@ -198,56 +170,55 @@ void ResourceReporter::OnTasksRefreshed(
 
       default:
         // Other tasks types will be reported using Rappor.
-        TaskRecord* task_data = nullptr;
-        auto itr = task_records_.find(id);
-        if (itr == task_records_.end()) {
-          task_data = new TaskRecord(id);
-          task_records_[id] = base::WrapUnique(task_data);
-        } else {
-          task_data = itr->second.get();
+        if (memory_usage < kTaskMemoryThresholdForReporting &&
+            cpu_usage < kTaskCpuThresholdForReporting) {
+          // We only care about CPU and memory intensive tasks.
+          break;
         }
 
-        DCHECK_EQ(task_data->id, id);
-        task_data->task_name_for_rappor =
-            observed_task_manager()->GetTaskNameForRappor(id);
-        task_data->cpu_percent = cpu_usage;
-        task_data->memory_bytes = memory_usage;
-        task_data->is_background =
-            observed_task_manager()->IsTaskOnBackgroundedProcess(id);
-
-        // Push only valid or useful data to both priority queues. They might
-        // end up having more records than |kTopConsumerCount|, that's fine.
-        // We'll take care of that next.
-        if (task_data->cpu_percent > 0)
-          records_by_cpu_queue.push(task_data);
-        if (task_data->memory_bytes > 0)
-          records_by_memory_queue.push(task_data);
+        task_records_.emplace_back(
+            id, observed_task_manager()->GetTaskNameForRappor(id), cpu_usage,
+            memory_usage,
+            observed_task_manager()->IsTaskOnBackgroundedProcess(id));
     }
   }
 
-  // Sort the |kTopConsumersCount| task records by their CPU and memory usage.
-  while (!records_by_cpu_queue.empty() &&
-         task_records_by_cpu_.size() < kTopConsumersCount) {
-    task_records_by_cpu_.push_back(records_by_cpu_queue.top());
-    records_by_cpu_queue.pop();
+  // Now that we got the data, we don't need the task manager anymore.
+  if (base::MemoryPressureMonitor::Get()->GetCurrentPressureLevel() !=
+          MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL ||
+      !task_records_.empty()) {
+    // The memory pressure events are emitted once per second. In order to avoid
+    // unsubscribing and then resubscribing to the task manager again on the
+    // next event, we keep listening to the task manager as long as the memory
+    // pressure level is critical AND we couldn't find any violators yet.
+    observed_task_manager()->RemoveObserver(this);
   }
 
-  while (!records_by_memory_queue.empty() &&
-         task_records_by_memory_.size() < kTopConsumersCount) {
-    task_records_by_memory_.push_back(records_by_memory_queue.top());
-    records_by_memory_queue.pop();
-  }
+  // Schedule reporting the samples.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&ResourceReporter::ReportSamples, base::Unretained(this)));
 }
 
 // static
-const size_t ResourceReporter::kTopConsumersCount = 10U;
+const double ResourceReporter::kTaskCpuThresholdForReporting = 70.0;
+
+// static
+const int64_t ResourceReporter::kTaskMemoryThresholdForReporting =
+    GetMemoryThresholdForDeviceInBytes();
 
 ResourceReporter::ResourceReporter()
     : TaskManagerObserver(base::TimeDelta::FromSeconds(kRefreshIntervalSeconds),
                           task_manager::REFRESH_TYPE_CPU |
                               task_manager::REFRESH_TYPE_MEMORY |
                               task_manager::REFRESH_TYPE_PRIORITY),
-      system_cpu_cores_range_(GetCurrentSystemCpuCoresRange()) {}
+      task_manager_to_observe_(nullptr),
+      system_cpu_cores_range_(GetCurrentSystemCpuCoresRange()),
+      last_browser_process_cpu_(0.0),
+      last_gpu_process_cpu_(0.0),
+      last_browser_process_memory_(0),
+      last_gpu_process_memory_(0),
+      is_monitoring_(false) {}
 
 // static
 std::unique_ptr<rappor::Sample> ResourceReporter::CreateRapporSample(
@@ -322,14 +293,14 @@ const ResourceReporter::TaskRecord* ResourceReporter::SampleTaskByCpu() const {
   // weights to randomly select one of them to be reported by Rappor. The higher
   // the CPU usage, the higher the chance that the task will be selected.
   // See https://en.wikipedia.org/wiki/Reservoir_sampling.
-  TaskRecord* sampled_task = nullptr;
+  const TaskRecord* sampled_task = nullptr;
   double cpu_weights_sum = 0;
-  for (auto* task_data : task_records_by_cpu_) {
-    if ((base::RandDouble() * (cpu_weights_sum + task_data->cpu_percent)) >=
+  for (const auto& task_data : task_records_) {
+    if ((base::RandDouble() * (cpu_weights_sum + task_data.cpu_percent)) >=
         cpu_weights_sum) {
-      sampled_task = task_data;
+      sampled_task = &task_data;
     }
-    cpu_weights_sum += task_data->cpu_percent;
+    cpu_weights_sum += task_data.cpu_percent;
   }
 
   return sampled_task;
@@ -341,88 +312,114 @@ ResourceReporter::SampleTaskByMemory() const {
   // weights to randomly select one of them to be reported by Rappor. The higher
   // the memory usage, the higher the chance that the task will be selected.
   // See https://en.wikipedia.org/wiki/Reservoir_sampling.
-  TaskRecord* sampled_task = nullptr;
+  const TaskRecord* sampled_task = nullptr;
   int64_t memory_weights_sum = 0;
-  for (auto* task_data : task_records_by_memory_) {
-    if ((base::RandDouble() * (memory_weights_sum + task_data->memory_bytes)) >=
+  for (const auto& task_data : task_records_) {
+    if ((base::RandDouble() * (memory_weights_sum + task_data.memory_bytes)) >=
         memory_weights_sum) {
-      sampled_task = task_data;
+      sampled_task = &task_data;
     }
-    memory_weights_sum += task_data->memory_bytes;
+    memory_weights_sum += task_data.memory_bytes;
   }
 
   return sampled_task;
 }
 
+void ResourceReporter::ReportSamples() {
+  // Report browser and GPU processes usage using UMA histograms.
+  UMA_HISTOGRAM_ENUMERATION(
+      "ResourceReporter.BrowserProcess.CpuUsage",
+      GET_ENUM_VAL(GetCpuUsageRange(last_browser_process_cpu_)),
+      GET_ENUM_VAL(CpuUsageRange::NUM_RANGES));
+  UMA_HISTOGRAM_ENUMERATION(
+      "ResourceReporter.BrowserProcess.MemoryUsage",
+      GET_ENUM_VAL(GetMemoryUsageRange(last_browser_process_memory_)),
+      GET_ENUM_VAL(MemoryUsageRange::NUM_RANGES));
+  UMA_HISTOGRAM_ENUMERATION(
+      "ResourceReporter.GpuProcess.CpuUsage",
+      GET_ENUM_VAL(GetCpuUsageRange(last_gpu_process_cpu_)),
+      GET_ENUM_VAL(CpuUsageRange::NUM_RANGES));
+  UMA_HISTOGRAM_ENUMERATION(
+      "ResourceReporter.GpuProcess.MemoryUsage",
+      GET_ENUM_VAL(GetMemoryUsageRange(last_gpu_process_memory_)),
+      GET_ENUM_VAL(MemoryUsageRange::NUM_RANGES));
+
+  // For the rest of tasks, report them using Rappor.
+  auto* rappor_service = g_browser_process->rappor_service();
+  if (!rappor_service || task_records_.empty())
+    return;
+
+  // We have samples to report via Rappor. Store 'now' as the time of the last
+  // report.
+  if (g_browser_process->local_state()) {
+    g_browser_process->local_state()->SetDouble(
+        kLastRapporReportTimeKey, base::Time::NowFromSystemTime().ToDoubleT());
+  }
+
+  // Use weighted random sampling to select a task to report in the CPU
+  // metric.
+  const TaskRecord* sampled_cpu_task = SampleTaskByCpu();
+  if (sampled_cpu_task) {
+    std::unique_ptr<rappor::Sample> cpu_sample(
+        CreateRapporSample(rappor_service, *sampled_cpu_task));
+    cpu_sample->SetFlagsField(kRapporNumCoresRangeFlagsField,
+                              GET_ENUM_VAL(system_cpu_cores_range_),
+                              GET_ENUM_VAL(CpuCoresNumberRange::NUM_RANGES));
+    cpu_sample->SetFlagsField(
+        kRapporUsageRangeFlagsField,
+        GET_ENUM_VAL(GetCpuUsageRange(sampled_cpu_task->cpu_percent)),
+        GET_ENUM_VAL(CpuUsageRange::NUM_RANGES));
+    rappor_service->RecordSampleObj(kCpuRapporMetric, std::move(cpu_sample));
+  }
+
+  // Use weighted random sampling to select a task to report in the memory
+  // metric.
+  const TaskRecord* sampled_memory_task = SampleTaskByMemory();
+  if (sampled_memory_task) {
+    std::unique_ptr<rappor::Sample> memory_sample(
+        CreateRapporSample(rappor_service, *sampled_memory_task));
+    memory_sample->SetFlagsField(
+        kRapporUsageRangeFlagsField,
+        GET_ENUM_VAL(GetMemoryUsageRange(sampled_memory_task->memory_bytes)),
+        GET_ENUM_VAL(MemoryUsageRange::NUM_RANGES));
+    rappor_service->RecordSampleObj(kMemoryRapporMetric,
+                                    std::move(memory_sample));
+  }
+}
+
 void ResourceReporter::OnMemoryPressure(
     MemoryPressureLevel memory_pressure_level) {
-  if (have_seen_first_task_manager_refresh_ &&
-      memory_pressure_level ==
+  if (memory_pressure_level ==
       MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-    // Report browser and GPU processes usage using UMA histograms.
-    UMA_HISTOGRAM_ENUMERATION(
-        "ResourceReporter.BrowserProcess.CpuUsage",
-        GET_ENUM_VAL(GetCpuUsageRange(last_browser_process_cpu_)),
-        GET_ENUM_VAL(CpuUsageRange::NUM_RANGES));
-    UMA_HISTOGRAM_ENUMERATION(
-        "ResourceReporter.BrowserProcess.MemoryUsage",
-        GET_ENUM_VAL(GetMemoryUsageRange(last_browser_process_memory_)),
-        GET_ENUM_VAL(MemoryUsageRange::NUM_RANGES));
-    UMA_HISTOGRAM_ENUMERATION(
-        "ResourceReporter.GpuProcess.CpuUsage",
-        GET_ENUM_VAL(GetCpuUsageRange(last_gpu_process_cpu_)),
-        GET_ENUM_VAL(CpuUsageRange::NUM_RANGES));
-    UMA_HISTOGRAM_ENUMERATION(
-        "ResourceReporter.GpuProcess.MemoryUsage",
-        GET_ENUM_VAL(GetMemoryUsageRange(last_gpu_process_memory_)),
-        GET_ENUM_VAL(MemoryUsageRange::NUM_RANGES));
-
-    // For the rest of tasks, report them using Rappor.
-    auto* rappor_service = g_browser_process->rappor_service();
-    if (!rappor_service)
+    // If we are already listening to the task manager, then we're waiting for
+    // a refresh event.
+    if (observed_task_manager())
       return;
 
     // We only record Rappor samples only if it's the first ever critical memory
     // pressure event we receive, or it has been more than
     // |kMinimumTimeBetweenReportsInMs| since the last time we recorded samples.
-    if (!have_seen_first_memory_pressure_event_) {
-      have_seen_first_memory_pressure_event_ = true;
-    } else if ((base::TimeTicks::Now() - last_memory_pressure_event_time_) <
-        base::TimeDelta::FromMilliseconds(kMinimumTimeBetweenReportsInMs)) {
-      return;
+    if (g_browser_process->local_state()) {
+      const base::Time now = base::Time::NowFromSystemTime();
+      const base::Time last_rappor_report_time =
+          base::Time::FromDoubleT(g_browser_process->local_state()->GetDouble(
+              kLastRapporReportTimeKey));
+      const base::TimeDelta delta_since_last_report =
+          now >= last_rappor_report_time ? now - last_rappor_report_time
+                                         : base::TimeDelta::Max();
+
+      if (delta_since_last_report < kMinimumTimeBetweenReports)
+        return;
     }
 
-    last_memory_pressure_event_time_ = base::TimeTicks::Now();
-
-    // Use weighted random sampling to select a task to report in the CPU
-    // metric.
-    const TaskRecord* sampled_cpu_task = SampleTaskByCpu();
-    if (sampled_cpu_task) {
-      std::unique_ptr<rappor::Sample> cpu_sample(
-          CreateRapporSample(rappor_service, *sampled_cpu_task));
-      cpu_sample->SetFlagsField(kRapporNumCoresRangeFlagsField,
-                                GET_ENUM_VAL(system_cpu_cores_range_),
-                                GET_ENUM_VAL(CpuCoresNumberRange::NUM_RANGES));
-      cpu_sample->SetFlagsField(
-          kRapporUsageRangeFlagsField,
-          GET_ENUM_VAL(GetCpuUsageRange(sampled_cpu_task->cpu_percent)),
-          GET_ENUM_VAL(CpuUsageRange::NUM_RANGES));
-      rappor_service->RecordSampleObj(kCpuRapporMetric, std::move(cpu_sample));
-    }
-
-    // Use weighted random sampling to select a task to report in the memory
-    // metric.
-    const TaskRecord* sampled_memory_task = SampleTaskByMemory();
-    if (sampled_memory_task) {
-      std::unique_ptr<rappor::Sample> memory_sample(
-          CreateRapporSample(rappor_service, *sampled_memory_task));
-      memory_sample->SetFlagsField(
-          kRapporUsageRangeFlagsField,
-          GET_ENUM_VAL(GetMemoryUsageRange(sampled_memory_task->memory_bytes)),
-          GET_ENUM_VAL(MemoryUsageRange::NUM_RANGES));
-      rappor_service->RecordSampleObj(kMemoryRapporMetric,
-                                      std::move(memory_sample));
-    }
+    // Start listening to the task manager and wait for the first refresh event
+    // with background calculations completion.
+    task_manager_to_observe_->AddObserver(this);
+  } else {
+    // If we are still listening to the task manager from an earlier critical
+    // memory pressure level, we need to stop listening to it.
+    if (observed_task_manager())
+      observed_task_manager()->RemoveObserver(this);
   }
 }
 

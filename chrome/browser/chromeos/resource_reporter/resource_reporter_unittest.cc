@@ -11,10 +11,13 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/memory_pressure_monitor.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
 #include "chrome/browser/task_manager/test_task_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using task_manager::TaskId;
@@ -23,43 +26,35 @@ namespace chromeos {
 
 namespace {
 
-const int64_t k1KB = 1024;
-const int64_t k1MB = 1024 * 1024;
-const int64_t k1GB = 1024 * 1024 * 1024;
+constexpr int64_t k1KB = 1024;
+constexpr int64_t k1MB = 1024 * 1024;
+constexpr int64_t k1GB = 1024 * 1024 * 1024;
+
+constexpr double kBrowserProcessCpu = 21.0;
+constexpr int64_t kBrowserProcessMemory = 300 * k1MB;
+constexpr double kGpuProcessCpu = 60.0;
+constexpr int64_t kGpuProcessMemory = 900 * k1MB;
 
 // A list of task records that we'll use to fill the task manager.
 const ResourceReporter::TaskRecord kTestTasks[] = {
-    { 0, "0", 30.0, 43 * k1KB, false },
-    { 1, "1", 9.0, 20 * k1MB, false },
-    { 2, "2", 35.0, 3 * k1GB, false },
-    { 3, "3", 21.0, 300 * k1MB, false },  // Browser task.
-    { 4, "4", 85.0, 400 * k1KB, false },
-    { 5, "5", 30.1, 500 * k1MB, false },
-    { 6, "6", 60.0, 900 * k1MB, false },  // GPU task.
-    { 7, "7", 4.0, 1 * k1GB, false },
-    { 8, "8", 40.0, 64 * k1KB, false },
-    { 9, "9", 93.0, 64 * k1MB, false },
-    { 10, "10", 2.23, 2 * k1KB, false },
-    { 11, "11", 55.0, 40 * k1MB, false },
-    { 12, "12", 87.0, 30 * k1KB, false },
+    {0, "0", 30.0, 43 * k1KB, false},
+    {1, "1", 9.0, 20 * k1MB, false},
+    {2, "2", 35.0, 3 * k1GB, false},
+    // Browser task.
+    {3, "3", kBrowserProcessCpu, kBrowserProcessMemory, false},
+    {4, "4", 85.0, 400 * k1KB, false},
+    {5, "5", 30.1, 500 * k1MB, false},
+    // GPU task.
+    {6, "6", kGpuProcessCpu, kGpuProcessMemory, false},
+    {7, "7", 4.0, 1 * k1GB, false},
+    {8, "8", 40.0, 64 * k1KB, false},
+    {9, "9", 93.0, 64 * k1MB, false},
+    {10, "10", 2.23, 2 * k1KB, false},
+    {11, "11", 55.0, 40 * k1MB, false},
+    {12, "12", 87.0, 30 * k1KB, false},
 };
 
-// A list of task IDs that will be removed from the task manager later after all
-// the above tasks have been added.
-const task_manager::TaskId kIdsOfTasksToRemove[] = {
-    4, 7, 12, 8, 5,
-};
-
-// Must be larger than |ResourceReporter::kTopConsumerCount| + 2 (to account for
-// the browser and GPU tasks).
-const size_t kTasksSize = arraysize(kTestTasks);
-
-// Must be smaller than |ResourceReporter::kTopConsumerCount|.
-const size_t kInitiallyAddedTasks = kTasksSize - 6;
-
-// Must be such that |kTasksSize| - |kTasksToBeRemovedSize| is less than
-// |ResourceReporter::kTopConsumerCount|.
-const size_t kTasksToBeRemovedSize = arraysize(kIdsOfTasksToRemove);
+constexpr size_t kTasksSize = arraysize(kTestTasks);
 
 // A test implementation of the task manager that can be used to collect CPU and
 // memory usage so that they can be tested with the resource reporter.
@@ -98,25 +93,43 @@ class DummyTaskManager : public task_manager::TestTaskManager {
     tasks_[kTestTasks[index].id] = &kTestTasks[index];
   }
 
-  void RemoveTask(TaskId id) {
-    NotifyObserversOnTaskToBeRemoved(id);
-
-    tasks_.erase(id);
-  }
-
   void ManualRefresh() {
     ids_.clear();
-    for (const auto& pair : tasks_) {
+    for (const auto& pair : tasks_)
       ids_.push_back(pair.first);
-    }
 
-    NotifyObserversOnRefresh(ids_);
+    NotifyObserversOnRefreshWithBackgroundCalculations(ids_);
   }
 
  private:
   std::map<TaskId, const ResourceReporter::TaskRecord*> tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyTaskManager);
+};
+
+class DummyMemoryPressureMonitor : public base::MemoryPressureMonitor {
+ public:
+  DummyMemoryPressureMonitor()
+      : MemoryPressureMonitor(),
+        memory_pressure_level_(
+            MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE) {}
+  ~DummyMemoryPressureMonitor() override {}
+
+  void SetAndNotifyMemoryPressure(MemoryPressureLevel level) {
+    memory_pressure_level_ = level;
+    base::MemoryPressureListener::SimulatePressureNotification(level);
+  }
+
+  // base::CriticalMemoryPressureMonitor:
+  MemoryPressureLevel GetCurrentPressureLevel() const override {
+    return memory_pressure_level_;
+  }
+  void SetDispatchCallback(const DispatchCallback& callback) override {}
+
+ private:
+  MemoryPressureLevel memory_pressure_level_;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyMemoryPressureMonitor);
 };
 
 }  // namespace
@@ -126,30 +139,16 @@ class ResourceReporterTest : public testing::Test {
   ResourceReporterTest() {}
   ~ResourceReporterTest() override {}
 
-  // Start / Stop observing the task manager.
-  void Start() {
-    task_manager_.AddObserver(resource_reporter());
+  void SetUp() override {
+    resource_reporter()->StartMonitoring(&task_manager_);
   }
-  void Stop() {
-    task_manager_.RemoveObserver(resource_reporter());
-  }
+
+  void TearDown() override { resource_reporter()->StopMonitoring(); }
 
   // Adds a number of tasks less than |kTopConsumersCount| to the task manager.
-  void AddInitialTasks() {
-    for (size_t i = 0; i < kInitiallyAddedTasks; ++i)
+  void AddTasks() {
+    for (size_t i = 0; i < kTasksSize; ++i)
       task_manager_.AddTaskFromIndex(i);
-  }
-
-  // Adds all the remaining tasks to the task manager so that we have more than
-  // |kTopConsumersCount|.
-  void AddRemainingTasks() {
-    for (size_t i = kInitiallyAddedTasks; i < kTasksSize; ++i)
-      task_manager_.AddTaskFromIndex(i);
-  }
-
-  // Remove the task with |id| from the task manager.
-  void RemoveTask(TaskId id) {
-    task_manager_.RemoveTask(id);
   }
 
   // Manually refresh the task manager.
@@ -157,37 +156,17 @@ class ResourceReporterTest : public testing::Test {
     task_manager_.ManualRefresh();
   }
 
-  // Tests that the task records in |ResourceReporter::task_records_by_cpu_| are
-  // properly sorted by the CPU usage in a descending order.
-  bool IsCpuRecordsSetSorted() const {
-    double current_cpu = std::numeric_limits<double>::max();
-    for (auto* record : resource_reporter()->task_records_by_cpu_) {
-      if (record->cpu_percent > current_cpu)
-        return false;
-      current_cpu = record->cpu_percent;
-    }
-
-    return true;
-  }
-
-  // Tests that the task records in |ResourceReporter::task_records_by_memory_|
-  // are properly sorted by the memory usage in a descending order.
-  bool IsMemoryRecordsSetSorted() const {
-    int64_t current_memory = std::numeric_limits<int64_t>::max();
-    for (auto* record : resource_reporter()->task_records_by_memory_) {
-      if (record->memory_bytes > current_memory)
-        return false;
-      current_memory = record->memory_bytes;
-    }
-
-    return true;
-  }
-
   ResourceReporter* resource_reporter() const {
     return ResourceReporter::GetInstance();
   }
 
+  DummyMemoryPressureMonitor* monitor() { return &monitor_; }
+
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
+
+  DummyMemoryPressureMonitor monitor_;
+
   DummyTaskManager task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceReporterTest);
@@ -262,67 +241,58 @@ TEST_F(ResourceReporterTest, TestGetMemoryRapporMetricName) {
 // Tests all the interactions between the resource reporter and the task
 // manager.
 TEST_F(ResourceReporterTest, TestAll) {
-  // First start by making sure that our assumptions are correct.
-  ASSERT_LT(kInitiallyAddedTasks, ResourceReporter::kTopConsumersCount);
-  ASSERT_LT(ResourceReporter::kTopConsumersCount, kTasksSize - 2);
-  ASSERT_LT(kTasksSize - kTasksToBeRemovedSize - 2,
-            ResourceReporter::kTopConsumersCount);
+  using MemoryPressureLevel = base::MemoryPressureListener::MemoryPressureLevel;
 
-  Start();
+  // Moderate memory pressure events should not trigger any sampling.
+  monitor()->SetAndNotifyMemoryPressure(
+      MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(resource_reporter()->observed_task_manager());
 
-  // Add the initial tasks to the task manager, and expect that after a refresh
-  // that the resource reporter is already tracking them, and the records are
-  // sorted properly.
-  AddInitialTasks();
+  // A critical memory pressure event, but the task manager is not tracking any
+  // resource intensive tasks yet.
+  monitor()->SetAndNotifyMemoryPressure(
+      MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+  // We should keep listening to the task manager, even after a refresh.
   RefreshTaskManager();
-  // Browser and GPU tasks won't be added.
-  EXPECT_EQ(kInitiallyAddedTasks - 2,
-            resource_reporter()->task_records_.size());
-  EXPECT_LE(resource_reporter()->task_records_by_cpu_.size(),
-            ResourceReporter::kTopConsumersCount);
-  EXPECT_LE(resource_reporter()->task_records_by_memory_.size(),
-            ResourceReporter::kTopConsumersCount);
-  EXPECT_TRUE(IsCpuRecordsSetSorted());
-  EXPECT_TRUE(IsMemoryRecordsSetSorted());
+  EXPECT_TRUE(resource_reporter()->observed_task_manager());
 
-  // After adding the remaining tasks which are more than |kTopConsumerCount|,
-  // we must expect that the records used for recording the samples are EQUAL to
-  // |kTopConsumerCount|, and the records are still properly sorted.
-  AddRemainingTasks();
+  // Memory pressure reduces to moderate again, we should stop watching the task
+  // manager.
+  monitor()->SetAndNotifyMemoryPressure(
+      MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(resource_reporter()->observed_task_manager());
+
+  // Memory pressure becomes critical and we have violating tasks.
+  AddTasks();
+  monitor()->SetAndNotifyMemoryPressure(
+      MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(resource_reporter()->observed_task_manager());
   RefreshTaskManager();
-  EXPECT_EQ(kTasksSize - 2, resource_reporter()->task_records_.size());
-  EXPECT_EQ(ResourceReporter::kTopConsumersCount,
-            resource_reporter()->task_records_by_cpu_.size());
-  EXPECT_EQ(ResourceReporter::kTopConsumersCount,
-            resource_reporter()->task_records_by_memory_.size());
-  EXPECT_TRUE(IsCpuRecordsSetSorted());
-  EXPECT_TRUE(IsMemoryRecordsSetSorted());
 
-  // Removing tasks from the task manager must result in their removal from the
-  // resource reporter immediately without having to wait until the next
-  // refresh.
-  for (const auto& id : kIdsOfTasksToRemove)
-    RemoveTask(id);
-  const size_t kExpectedTasksCount = kTasksSize - kTasksToBeRemovedSize - 2;
-  EXPECT_EQ(kExpectedTasksCount, resource_reporter()->task_records_.size());
-  EXPECT_LE(resource_reporter()->task_records_by_cpu_.size(),
-            ResourceReporter::kTopConsumersCount);
-  EXPECT_LE(resource_reporter()->task_records_by_memory_.size(),
-            ResourceReporter::kTopConsumersCount);
-  EXPECT_TRUE(IsCpuRecordsSetSorted());
-  EXPECT_TRUE(IsMemoryRecordsSetSorted());
+  // Make sure that the ResourceReporter is no longer listening to the task
+  // manager right after the refresh.
+  EXPECT_FALSE(resource_reporter()->observed_task_manager());
 
-  // After refresh nothing changes.
-  RefreshTaskManager();
-  EXPECT_EQ(kExpectedTasksCount, resource_reporter()->task_records_.size());
-  EXPECT_LE(resource_reporter()->task_records_by_cpu_.size(),
-            ResourceReporter::kTopConsumersCount);
-  EXPECT_LE(resource_reporter()->task_records_by_memory_.size(),
-            ResourceReporter::kTopConsumersCount);
-  EXPECT_TRUE(IsCpuRecordsSetSorted());
-  EXPECT_TRUE(IsMemoryRecordsSetSorted());
+  // Make sure the ResourceReporter is not tracking any but the tasks exceeding
+  // the defined resource use thresholds.
+  ASSERT_FALSE(resource_reporter()->task_records_.empty());
+  for (const auto& task_record : resource_reporter()->task_records_) {
+    EXPECT_TRUE(task_record.cpu_percent >=
+                    ResourceReporter::kTaskCpuThresholdForReporting ||
+                task_record.memory_bytes >=
+                    ResourceReporter::kTaskMemoryThresholdForReporting);
+  }
 
-  Stop();
+  // Make sure you have the right info about the Browser and GPU process.
+  EXPECT_EQ(resource_reporter()->last_browser_process_cpu_, kBrowserProcessCpu);
+  EXPECT_EQ(resource_reporter()->last_browser_process_memory_,
+            kBrowserProcessMemory);
+  EXPECT_EQ(resource_reporter()->last_gpu_process_cpu_, kGpuProcessCpu);
+  EXPECT_EQ(resource_reporter()->last_gpu_process_memory_, kGpuProcessMemory);
 }
 
 }  // namespace chromeos

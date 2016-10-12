@@ -83,6 +83,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/network_connect_delegate_chromeos.h"
 #include "chrome/common/channel_info.h"
@@ -418,7 +419,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   arc_service_launcher_.reset(new arc::ArcServiceLauncher());
   arc_service_launcher_->Initialize();
 
-  chromeos::ResourceReporter::GetInstance()->StartMonitoring();
+  chromeos::ResourceReporter::GetInstance()->StartMonitoring(
+      task_manager::TaskManagerInterface::GetTaskManager());
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
