@@ -15,7 +15,7 @@ requestAnimationFrame(function() {
     {transform: 'translateX(0px)'},
     {transform: 'translateX(1000px)'},
   ], 1000);
-  setTimeout(function() {
+  requestAnimationFrame(function() {
     eventSender.mouseMoveTo(1, 1);
     eventSender.mouseMoveTo(1, 2);
     anim.pause();

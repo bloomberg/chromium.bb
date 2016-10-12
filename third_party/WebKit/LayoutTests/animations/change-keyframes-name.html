@@ -61,7 +61,9 @@
             testRunner.dumpAsText();
             testRunner.waitUntilDone();
         }
-        setTimeout(change, 200);
+        requestAnimationFrame(() => {
+            requestAnimationFrame(change);
+        });
     }
     
   </script>

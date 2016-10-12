@@ -47,10 +47,10 @@
       endEventReceived = true;
       document.getElementById('box').className = '';
       // Launch again the animation to catch the animation iteration events this time.
-      setTimeout(function () {
+      requestAnimationFrame(function () {
         document.getElementById('box').style.webkitAnimationIterationCount = "infinite";
         document.getElementById('box').className = 'animate';
-      }, 200);
+      });
     }, false);
 
     onload = function()

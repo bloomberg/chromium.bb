@@ -102,11 +102,11 @@ function runIndividualTest(testIndex) {
     clearElementAnimationStyle(element);
 
     // Unfortunately need to force a style recalculation before testing.
-    setTimeout(function () {
+    requestAnimationFrame(function () {
         element.style.webkitAnimation = TEST_INPUTS[testIndex];
 
         // And another forced style recalculation.
-        setTimeout(function() {
+        requestAnimationFrame(function() {
             var computedStyle = window.getComputedStyle(element);
 
             for (var i=0; i < PROPERTIES_TO_TEST.length; i++) {
@@ -124,8 +124,8 @@ function runIndividualTest(testIndex) {
                 if (window.testRunner)
                     testRunner.notifyDone();
             }
-        }, 0);
-    }, 0);
+        });
+    });
 }
 
 if (window.testRunner) {
