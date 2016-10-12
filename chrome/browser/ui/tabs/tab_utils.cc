@@ -177,30 +177,6 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
 
 gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
                                      SkColor button_color) {
-#if defined(OS_MACOSX)
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    switch (alert_state) {
-      case TabAlertState::AUDIO_PLAYING:
-        return rb->GetNativeImageNamed(IDR_TAB_AUDIO_INDICATOR);
-      case TabAlertState::AUDIO_MUTING:
-        return rb->GetNativeImageNamed(IDR_TAB_AUDIO_MUTING_INDICATOR);
-      case TabAlertState::MEDIA_RECORDING:
-        return rb->GetNativeImageNamed(IDR_TAB_RECORDING_INDICATOR);
-      case TabAlertState::TAB_CAPTURING:
-        return rb->GetNativeImageNamed(IDR_TAB_CAPTURE_INDICATOR);
-      case TabAlertState::BLUETOOTH_CONNECTED:
-        return rb->GetNativeImageNamed(IDR_TAB_BLUETOOTH_INDICATOR);
-      case TabAlertState::USB_CONNECTED:
-        return rb->GetNativeImageNamed(IDR_TAB_USB_INDICATOR);
-      case TabAlertState::NONE:
-        break;
-    }
-    NOTREACHED();
-    return gfx::Image();
-  }
-#endif
-
   gfx::VectorIconId icon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
   switch (alert_state) {
     case TabAlertState::AUDIO_PLAYING:

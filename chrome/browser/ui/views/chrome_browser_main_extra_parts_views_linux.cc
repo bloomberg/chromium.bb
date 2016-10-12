@@ -91,9 +91,6 @@ void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreCreateThreads() {
   ChromeBrowserMainExtraPartsViews::PreCreateThreads();
-  // TODO(varkha): The next call should not be necessary once Material Design is
-  // on unconditionally.
-  views::LinuxUI::instance()->MaterialDesignControllerReady();
   views::LinuxUI::instance()->UpdateDeviceScaleFactor(
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
 

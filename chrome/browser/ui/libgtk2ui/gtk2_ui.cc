@@ -40,7 +40,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/gfx/canvas.h"
@@ -227,11 +226,6 @@ int indicators_count;
 
 // The unknown content type.
 const char* kUnknownContentType = "application/octet-stream";
-
-// Values used as the new luminance and saturation values in the inactive tab
-// text color.
-const double kInactiveLuminance = 0.15;
-const double kInactiveSaturation = 0.3;
 
 // TODO(erg): ThemeService has a whole interface just for reading default
 // constants. Figure out what to do with that more long term; for now, just
@@ -465,10 +459,6 @@ void Gtk2UI::Initialize() {
 
   // Instantiate the singleton instance of Gtk2EventLoop.
   Gtk2EventLoop::GetInstance();
-}
-
-void Gtk2UI::MaterialDesignControllerReady() {
-  UpdateMaterialDesignColors();
 }
 
 bool Gtk2UI::GetTint(int id, color_utils::HSL* tint) const {
@@ -825,6 +815,8 @@ void Gtk2UI::LoadGtkValues() {
 
   colors_[ThemeProperties::COLOR_TAB_TEXT] = label_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = label_color;
+  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
+      color_utils::BlendTowardOppositeLuma(label_color, 50);
 
   UpdateDefaultFont();
 
@@ -832,21 +824,6 @@ void Gtk2UI::LoadGtkValues() {
   GetNormalButtonTintHSL(&button_tint_);
   GetNormalEntryForegroundHSL(&entry_tint_);
   GetSelectedEntryForegroundHSL(&selected_entry_tint_);
-
-  // The inactive frame color never occurs naturally in the theme, as it is a
-  // tinted version of the normal frame color. We generate another color based
-  // on the background tab color, with the lightness and saturation moved in the
-  // opposite direction. (We don't touch the hue, since there should be subtle
-  // hints of the color in the text.)
-  color_utils::HSL inactive_tab_text_hsl;
-  color_utils::SkColorToHSL(
-      theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground),
-      &inactive_tab_text_hsl);
-  inactive_tab_text_hsl.s = kInactiveLuminance;
-  inactive_tab_text_hsl.l = kInactiveSaturation;
-
-  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-      color_utils::HSLToSkColor(inactive_tab_text_hsl, 255);
 
   // We pick the text and background colors for the NTP out of the colors for a
   // GtkEntry. We do this because GtkEntries background color is never the same
@@ -925,23 +902,6 @@ void Gtk2UI::LoadCursorTheme() {
     XcursorSetDefaultSize(gfx::GetXDisplay(), size);
 
   g_free(theme);
-}
-
-void Gtk2UI::UpdateMaterialDesignColors() {
-  // TODO(varkha): This should be merged back into LoadGtkValues() once Material
-  // Design is on unconditionally.
-  // Early return when Material Design Controller is not initialized yet. This
-  // is harmless and the colors will get updated when this method is called
-  // again after the initialization. See http://crbug.com/622234.
-  if (!ui::MaterialDesignController::is_mode_initialized() ||
-      !ui::MaterialDesignController::IsModeMaterial()) {
-    return;
-  }
-  NativeThemeGtk2* theme = NativeThemeGtk2::instance();
-  SkColor label_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
-  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-      color_utils::BlendTowardOppositeLuma(label_color, 50);
 }
 
 void Gtk2UI::BuildFrameColors() {
@@ -1111,9 +1071,6 @@ void Gtk2UI::UpdateDefaultFont() {
 
 void Gtk2UI::ResetStyle() {
   LoadGtkValues();
-  // TODO(varkha): There will be no need to call UpdateMaterialDesignColors()
-  // once Material Design is on unconditionally.
-  UpdateMaterialDesignColors();
   NativeThemeGtk2::instance()->NotifyObservers();
 }
 

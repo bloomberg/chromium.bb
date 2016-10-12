@@ -329,14 +329,9 @@ TEST_F(TabStripTest, ImmersiveMode) {
 // Creates a tab strip in stacked layout mode and verifies the correctness
 // of hit tests against the visible/occluded regions of a tab and the tab
 // close button of the active tab.
-TEST_F(TabStripTest, TabHitTestMaskWhenStacked) {
-  // TODO(varkha,pkasting): Update the test for Material Design layout.
-  // crbug.com/575327
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    VLOG(1) << "Test is DISABLED for material design layouts.";
-    return;
-  }
-
+// TODO(pkasting): Update the test for Material Design layout.
+// crbug.com/575327
+TEST_F(TabStripTest, DISABLED_TabHitTestMaskWhenStacked) {
   tab_strip_->SetBounds(0, 0, 300, 20);
 
   controller_->AddTab(0, false);

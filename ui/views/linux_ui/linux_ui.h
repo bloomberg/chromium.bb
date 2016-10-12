@@ -80,10 +80,6 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   static LinuxUI* instance();
 
   virtual void Initialize() = 0;
-  // TODO(varkha): This should not be necessary once Material Design is on
-  // unconditionally.
-  virtual void MaterialDesignControllerReady() = 0;
-
   virtual bool GetTint(int id, color_utils::HSL* tint) const = 0;
   virtual bool GetColor(int id, SkColor* color) const = 0;
 

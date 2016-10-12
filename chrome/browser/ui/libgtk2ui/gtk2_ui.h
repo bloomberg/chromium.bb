@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
-#include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/window/frame_buttons.h"
@@ -68,9 +67,6 @@ class Gtk2UI : public views::LinuxUI {
 
   // ui::LinuxUI:
   void Initialize() override;
-  // TODO(varkha): This should not be necessary once Material Design is on
-  // unconditionally.
-  void MaterialDesignControllerReady() override;
   bool GetTint(int id, color_utils::HSL* tint) const override;
   bool GetColor(int id, SkColor* color) const override;
   SkColor GetFocusRingColor() const override;
@@ -127,11 +123,6 @@ class Gtk2UI : public views::LinuxUI {
 
   // Initialize the Xcursor theme and size with the GTK theme and size.
   void LoadCursorTheme();
-
-  // Updates colors if necessary after possible modification of command line.
-  // TODO(varkha): This should not be necessary once Material Design is on
-  // unconditionally.
-  void UpdateMaterialDesignColors();
 
   // Reads in explicit theme frame colors from the ChromeGtkFrame style class
   // or generates them per our fallback algorithm.
