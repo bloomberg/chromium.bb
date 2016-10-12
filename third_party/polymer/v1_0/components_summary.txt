@@ -90,9 +90,9 @@ Tree link: https://github.com/PolymerElements/iron-icons/tree/v1.1.3
 
 Name: iron-iconset-svg
 Repository: git://github.com/PolymerElements/iron-iconset-svg.git
-Tree: v1.0.9
-Revision: ce9b2ea1f73d936cffdd05f3fe34b1f69d1d32db
-Tree link: https://github.com/PolymerElements/iron-iconset-svg/tree/v1.0.9
+Tree: v1.0.11
+Revision: 9ecdf97d854d36b7715c7b250bdab9b3d5cfaa26
+Tree link: https://github.com/PolymerElements/iron-iconset-svg/tree/v1.0.11
 
 Name: iron-input
 Repository: git://github.com/PolymerElements/iron-input.git
