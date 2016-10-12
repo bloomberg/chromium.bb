@@ -932,23 +932,7 @@ if (enable_me2me_host) {
       }
     }
 
-    # The [remoting_]native_messaging_host target is called differently on
-    # Linux and Mac vs Windows.
-    # TODO(sergeyu): Rename it to remoting_native_messaging_host on all
-    # platforms.
-    # TODO(nicholss): To aid in the rename effort, I am adding a link to
-    # native_messaging_host from remoting_native_messaging_host so up stream
-    # build targets need to only know about remoting_native_messaging_host.
-    # The issue is changing the target changes the executable, we could force
-    # a name in the build target or we could update the install packages to use
-    # the new name. Holding off making that choice for now.
-    group("remoting_native_messaging_host") {
-      deps = [
-        ":native_messaging_host",
-      ]
-    }
-
-    target(app_target_type, "native_messaging_host") {
+    target(app_target_type, "remoting_native_messaging_host") {
       if (is_mac) {
         info_plist = "setup/native_messaging_host-Info.plist"
         extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
@@ -1095,6 +1079,20 @@ if (enable_me2me_host) {
   } else if (is_mac) {
     import("//build/config/zip.gni")
 
+    copy("remoting_native_messaging_host_rename") {
+      sources = [
+        "$root_build_dir/remoting_native_messaging_host.app",
+      ]
+
+      outputs = [
+        "$target_gen_dir/native_messaging_host.app",
+      ]
+
+      deps = [
+        ":remoting_native_messaging_host",
+      ]
+    }
+
     action("remoting_me2me_host_archive") {
       # TODO(GYP) TODO(crbug.com/622415) This needs work and testing.
 
@@ -1142,7 +1140,8 @@ if (enable_me2me_host) {
                "--generated-files",
                "remoting_host_prefpane.prefPane",
                "remoting_me2me_host.app",
-               "native_messaging_host.app",
+               rebase_path("$target_gen_dir/native_messaging_host.app",
+                           root_build_dir),
                "remote_assistance_host.app",
                "remoting_host_uninstaller.app",
                "remoting/com.google.chrome.remote_desktop.json",
@@ -1182,6 +1181,7 @@ if (enable_me2me_host) {
         ":remoting_host_uninstaller",
         ":remoting_me2me_host",
         ":remoting_native_messaging_host",
+        ":remoting_native_messaging_host_rename",
         ":remoting_native_messaging_manifests",
         "//remoting/host/it2me:remote_assistance_host",
       ]
