@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
@@ -35,6 +36,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -59,6 +61,27 @@ namespace {
 const std::string kBody = "hello";
 const std::string kNextBody = "hello again";
 const std::string kErrorBody = "bad";
+
+// Constructs and returns a proxy with the specified scheme.
+net::ProxyServer GetProxyWithScheme(net::ProxyServer::Scheme scheme) {
+  switch (scheme) {
+    case net::ProxyServer::SCHEME_HTTP:
+      return net::ProxyServer::FromURI("origin.net:443",
+                                       net::ProxyServer::SCHEME_HTTP);
+    case net::ProxyServer::SCHEME_HTTPS:
+      return net::ProxyServer::FromURI("https://origin.net:443",
+                                       net::ProxyServer::SCHEME_HTTPS);
+    case net::ProxyServer::SCHEME_QUIC:
+      return net::ProxyServer::FromURI("quic://origin.net:443",
+                                       net::ProxyServer::SCHEME_QUIC);
+    case net::ProxyServer::SCHEME_DIRECT:
+      return net::ProxyServer::FromURI("DIRECT",
+                                       net::ProxyServer::SCHEME_DIRECT);
+    default:
+      NOTREACHED();
+      return net::ProxyServer::FromURI("", net::ProxyServer::SCHEME_INVALID);
+  }
+}
 
 }  // namespace
 
@@ -167,11 +190,17 @@ TEST_F(DataReductionProxyBypassStatsTest, IsDataReductionProxyUnreachable) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     TestCase test_case = test_cases[i];
 
+    DataReductionProxyTypeInfo proxy_info;
+    proxy_info.proxy_servers.clear();
+    proxy_info.proxy_servers.push_back(
+        GetProxyWithScheme(net::ProxyServer::SCHEME_HTTPS));
+
     EXPECT_CALL(*config(), IsDataReductionProxy(testing::_, testing::_))
         .WillRepeatedly(testing::Return(
             test_case.fallback_proxy_server_is_data_reduction_proxy));
     EXPECT_CALL(*config(), WasDataReductionProxyUsed(url_request(), testing::_))
-        .WillRepeatedly(testing::Return(test_case.was_proxy_used));
+        .WillRepeatedly(testing::DoAll(testing::SetArgPointee<1>(proxy_info),
+                                       Return(test_case.was_proxy_used)));
 
     std::unique_ptr<DataReductionProxyBypassStats> bypass_stats =
         BuildBypassStats();
@@ -188,12 +217,18 @@ TEST_F(DataReductionProxyBypassStatsTest, IsDataReductionProxyUnreachable) {
 TEST_F(DataReductionProxyBypassStatsTest, ProxyUnreachableThenReachable) {
   net::ProxyServer fallback_proxy_server =
       net::ProxyServer::FromURI("foo.com", net::ProxyServer::SCHEME_HTTP);
+  DataReductionProxyTypeInfo proxy_info;
+  proxy_info.proxy_servers.clear();
+  proxy_info.proxy_servers.push_back(fallback_proxy_server);
+  proxy_info.proxy_index = 0;
+
   std::unique_ptr<DataReductionProxyBypassStats> bypass_stats =
       BuildBypassStats();
   EXPECT_CALL(*config(), IsDataReductionProxy(testing::_, testing::_))
       .WillOnce(testing::Return(true));
   EXPECT_CALL(*config(), WasDataReductionProxyUsed(url_request(), testing::_))
-      .WillOnce(testing::Return(true));
+      .WillOnce(testing::DoAll(testing::SetArgPointee<1>(proxy_info),
+                               testing::Return(true)));
 
   // proxy falls back
   bypass_stats->OnProxyFallback(fallback_proxy_server,
@@ -210,10 +245,16 @@ TEST_F(DataReductionProxyBypassStatsTest, ProxyUnreachableThenReachable) {
 TEST_F(DataReductionProxyBypassStatsTest, ProxyReachableThenUnreachable) {
   net::ProxyServer fallback_proxy_server =
       net::ProxyServer::FromURI("foo.com", net::ProxyServer::SCHEME_HTTP);
+  DataReductionProxyTypeInfo proxy_info;
+  proxy_info.proxy_servers.clear();
+  proxy_info.proxy_servers.push_back(fallback_proxy_server);
+  proxy_info.proxy_index = 0;
+
   std::unique_ptr<DataReductionProxyBypassStats> bypass_stats =
       BuildBypassStats();
   EXPECT_CALL(*config(), WasDataReductionProxyUsed(url_request(), testing::_))
-      .WillOnce(testing::Return(true));
+      .WillOnce(testing::DoAll(testing::SetArgPointee<1>(proxy_info),
+                               testing::Return(true)));
   EXPECT_CALL(*config(), IsDataReductionProxy(testing::_, testing::_))
       .WillRepeatedly(testing::Return(true));
 
@@ -492,11 +533,18 @@ TEST_F(DataReductionProxyBypassStatsTest, SuccessfulRequestCompletion) {
       fake_request->CancelWithError(static_cast<int>(test.net_error));
 
     DataReductionProxyTypeInfo proxy_info;
+    proxy_info.proxy_servers.clear();
+    proxy_info.proxy_servers.push_back(
+        GetProxyWithScheme(net::ProxyServer::SCHEME_HTTP));
+    proxy_info.proxy_servers.push_back(
+        GetProxyWithScheme(net::ProxyServer::SCHEME_HTTPS));
     proxy_info.proxy_index = test.proxy_index;
     EXPECT_CALL(*config(), WasDataReductionProxyUsed(fake_request.get(),
                                                      testing::NotNull()))
-        .WillRepeatedly(testing::DoAll(testing::SetArgPointee<1>(proxy_info),
-                                       Return(test.was_proxy_used)));
+        .WillRepeatedly(
+            testing::DoAll(testing::SetArgPointee<1>(proxy_info),
+                           testing::DoAll(testing::SetArgPointee<1>(proxy_info),
+                                          Return(test.was_proxy_used))));
 
     bypass_stats->OnUrlRequestCompleted(fake_request.get(), false,
                                         test.net_error);
@@ -518,6 +566,75 @@ TEST_F(DataReductionProxyBypassStatsTest, SuccessfulRequestCompletion) {
     }
   }
 }
+
+// Verifies that the scheme of the data reduction proxy used is recorded
+// correctly.
+TEST_F(DataReductionProxyBypassStatsTest, ProxyScheme) {
+  const struct {
+    net::ProxyServer::Scheme scheme;
+    int expected_bucket;
+  } tests[] = {{net::ProxyServer::SCHEME_HTTP, 1},
+               {net::ProxyServer::SCHEME_HTTPS, 2},
+               {net::ProxyServer::SCHEME_QUIC, 3}};
+
+  for (const auto& test : tests) {
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<DataReductionProxyBypassStats> bypass_stats =
+        BuildBypassStats();
+
+    std::string response_headers(
+        "HTTP/1.1 200 OK\n"
+        "Via: 1.1 Chrome-Compression-Proxy\n");
+    std::unique_ptr<net::URLRequest> fake_request(
+        CreateURLRequestWithResponseHeaders(GURL("http://www.google.com/"),
+                                            response_headers));
+    DataReductionProxyTypeInfo proxy_info;
+    proxy_info.proxy_servers.clear();
+    proxy_info.proxy_servers.push_back(GetProxyWithScheme(test.scheme));
+    proxy_info.proxy_index = 0;
+    EXPECT_CALL(*config(), WasDataReductionProxyUsed(fake_request.get(),
+                                                     testing::NotNull()))
+        .WillRepeatedly(testing::DoAll(testing::SetArgPointee<1>(proxy_info),
+                                       Return(true)));
+
+    bypass_stats->OnUrlRequestCompleted(fake_request.get(), false, net::OK);
+
+    histogram_tester.ExpectUniqueSample("DataReductionProxy.ProxySchemeUsed",
+                                        test.expected_bucket, 1);
+  }
+}
+
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+// This test hits a NOTREACHED so it is a release mode only test.
+// Verifies that the scheme of the data reduction proxy used is recorded
+// correctly when the proxy scheme is invalid.
+TEST_F(DataReductionProxyBypassStatsTest, UnknownProxyScheme) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<DataReductionProxyBypassStats> bypass_stats =
+      BuildBypassStats();
+
+  std::string response_headers(
+      "HTTP/1.1 200 OK\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n");
+  std::unique_ptr<net::URLRequest> fake_request(
+      CreateURLRequestWithResponseHeaders(GURL("http://www.google.com/"),
+                                          response_headers));
+  DataReductionProxyTypeInfo proxy_info;
+  proxy_info.proxy_servers.clear();
+  proxy_info.proxy_servers.push_back(
+      GetProxyWithScheme(net::ProxyServer::SCHEME_DIRECT));
+  proxy_info.proxy_index = 0;
+  EXPECT_CALL(*config(),
+              WasDataReductionProxyUsed(fake_request.get(), testing::NotNull()))
+      .WillRepeatedly(
+          testing::DoAll(testing::SetArgPointee<1>(proxy_info), Return(true)));
+
+  bypass_stats->OnUrlRequestCompleted(fake_request.get(), false, net::OK);
+
+  histogram_tester.ExpectUniqueSample("DataReductionProxy.ProxySchemeUsed", 0,
+                                      1);
+}
+#endif
 
 // End-to-end tests for the DataReductionProxy.BypassedBytes histograms.
 class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {

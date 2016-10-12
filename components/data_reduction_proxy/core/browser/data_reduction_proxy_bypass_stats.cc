@@ -34,6 +34,31 @@ const int kMinFailedRequestsWhenUnavailable = 1;
 const int kMaxSuccessfulRequestsWhenUnavailable = 0;
 const int kMaxFailedRequestsBeforeReset = 3;
 
+// Scheme of the data reduction proxy used.
+enum ProxyScheme {
+  PROXY_SCHEME_UNKNOWN = 0,
+  PROXY_SCHEME_HTTP,
+  PROXY_SCHEME_HTTPS,
+  PROXY_SCHEME_QUIC,
+  PROXY_SCHEME_MAX
+};
+
+// Converts net::ProxyServer::Scheme to type ProxyScheme.
+ProxyScheme ConvertNetProxySchemeToProxyScheme(
+    net::ProxyServer::Scheme scheme) {
+  switch (scheme) {
+    case net::ProxyServer::SCHEME_HTTP:
+      return PROXY_SCHEME_HTTP;
+    case net::ProxyServer::SCHEME_HTTPS:
+      return PROXY_SCHEME_HTTPS;
+    case net::ProxyServer::SCHEME_QUIC:
+      return PROXY_SCHEME_QUIC;
+    default:
+      NOTREACHED() << scheme;
+      return PROXY_SCHEME_UNKNOWN;
+  }
+}
+
 // Records a net error code that resulted in bypassing the data reduction
 // proxy (|is_primary| is true) or the data reduction proxy fallback.
 void RecordDataReductionProxyBypassOnNetworkError(
@@ -136,6 +161,11 @@ void DataReductionProxyBypassStats::OnUrlRequestCompleted(
     UMA_HISTOGRAM_COUNTS_100(
         "DataReductionProxy.SuccessfulRequestCompletionCounts",
         proxy_info.proxy_index);
+    UMA_HISTOGRAM_ENUMERATION(
+        "DataReductionProxy.ProxySchemeUsed",
+        ConvertNetProxySchemeToProxyScheme(
+            proxy_info.proxy_servers.at(proxy_info.proxy_index).scheme()),
+        PROXY_SCHEME_MAX);
     if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
       UMA_HISTOGRAM_COUNTS_100(
           "DataReductionProxy.SuccessfulRequestCompletionCounts.MainFrame",
