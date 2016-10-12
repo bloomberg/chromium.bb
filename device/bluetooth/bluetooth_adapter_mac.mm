@@ -77,6 +77,7 @@ BluetoothAdapterMac::BluetoothAdapterMac()
     : BluetoothAdapter(),
       classic_powered_(false),
       num_discovery_sessions_(0),
+      should_update_name_(true),
       classic_discovery_manager_(
           BluetoothDiscoveryManagerMac::CreateClassic(this)),
       weak_ptr_factory_(this) {
@@ -112,6 +113,20 @@ std::string BluetoothAdapterMac::GetAddress() const {
 }
 
 std::string BluetoothAdapterMac::GetName() const {
+  if (!should_update_name_) {
+    return name_;
+  }
+
+  IOBluetoothHostController* controller =
+      [IOBluetoothHostController defaultController];
+  if (controller == nil) {
+    name_ = std::string();
+  } else {
+    name_ = base::SysNSStringToUTF8([controller nameAsString]);
+    if (!name_.empty()) {
+      should_update_name_ = false;
+    }
+  }
   return name_;
 }
 
@@ -402,14 +417,8 @@ void BluetoothAdapterMac::PollAdapter() {
         base::SysNSStringToUTF8([controller addressAsString]));
     classic_powered = ([controller powerState] == kBluetoothHCIPowerStateON);
 
-    // For performance reasons, cache the adapter's name. It's not uncommon for
-    // a call to [controller nameAsString] to take tens of milliseconds. Note
-    // that this caching strategy might result in clients receiving a stale
-    // name. If this is a significant issue, then some more sophisticated
-    // workaround for the performance bottleneck will be needed. For additional
-    // context, see http://crbug.com/461181 and http://crbug.com/467316
-    if (address != address_ || (!address.empty() && name_.empty()))
-      name_ = base::SysNSStringToUTF8([controller nameAsString]);
+    if (address != address_)
+      should_update_name_ = true;
   }
 
   bool is_present = !address.empty();
