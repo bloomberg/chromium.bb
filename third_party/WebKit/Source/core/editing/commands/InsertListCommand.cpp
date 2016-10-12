@@ -169,11 +169,15 @@ void InsertListCommand::doApply(EditingState* editingState) {
     VisibleSelection selection =
         selectionForParagraphIteration(endingSelection());
     DCHECK(selection.isRange());
-    // TODO(xiaochengh): Stop storing VisiblePositions through mutations.
-    VisiblePosition startOfSelection = selection.visibleStart();
-    VisiblePosition endOfSelection = selection.visibleEnd();
+
+    VisiblePosition visibleStartOfSelection = selection.visibleStart();
+    VisiblePosition visibleEndOfSelection = selection.visibleEnd();
+    PositionWithAffinity startOfSelection =
+        visibleStartOfSelection.toPositionWithAffinity();
+    PositionWithAffinity endOfSelection =
+        visibleEndOfSelection.toPositionWithAffinity();
     Position startOfLastParagraph =
-        startOfParagraph(endOfSelection, CanSkipOverEditingBoundary)
+        startOfParagraph(visibleEndOfSelection, CanSkipOverEditingBoundary)
             .deepEquivalent();
 
     Range* currentSelection = firstRangeOf(endingSelection());
@@ -181,19 +185,19 @@ void InsertListCommand::doApply(EditingState* editingState) {
     ContainerNode* scopeForEndOfSelection = nullptr;
     // FIXME: This is an inefficient way to keep selection alive because
     // indexForVisiblePosition walks from the beginning of the document to the
-    // endOfSelection everytime this code is executed. But not using index is
-    // hard because there are so many ways we can lose selection inside
+    // visibleEndOfSelection everytime this code is executed. But not using
+    // index is hard because there are so many ways we can lose selection inside
     // doApplyForSingleParagraph.
-    int indexForStartOfSelection =
-        indexForVisiblePosition(startOfSelection, scopeForStartOfSelection);
+    int indexForStartOfSelection = indexForVisiblePosition(
+        visibleStartOfSelection, scopeForStartOfSelection);
     int indexForEndOfSelection =
-        indexForVisiblePosition(endOfSelection, scopeForEndOfSelection);
+        indexForVisiblePosition(visibleEndOfSelection, scopeForEndOfSelection);
 
-    if (startOfParagraph(startOfSelection, CanSkipOverEditingBoundary)
+    if (startOfParagraph(visibleStartOfSelection, CanSkipOverEditingBoundary)
             .deepEquivalent() != startOfLastParagraph) {
       forceListCreation = !selectionHasListOfType(selection, listTag);
 
-      VisiblePosition startOfCurrentParagraph = startOfSelection;
+      VisiblePosition startOfCurrentParagraph = visibleStartOfSelection;
       while (inSameTreeAndOrdered(startOfCurrentParagraph.deepEquivalent(),
                                   startOfLastParagraph) &&
              !inSameParagraph(startOfCurrentParagraph,
@@ -204,13 +208,13 @@ void InsertListCommand::doApply(EditingState* editingState) {
         // startOfCurrentParagraph. Return early to avoid an infinite loop and
         // because there is no more work to be done.
         // FIXME(<rdar://problem/5983974>): The endingSelection() may be
-        // incorrect here.  Compute the new location of endOfSelection and use
-        // it as the end of the new selection.
+        // incorrect here.  Compute the new location of visibleEndOfSelection
+        // and use it as the end of the new selection.
         if (!startOfLastParagraph.isConnected())
           return;
         setEndingSelection(startOfCurrentParagraph);
 
-        // Save and restore endOfSelection and startOfLastParagraph when
+        // Save and restore visibleEndOfSelection and startOfLastParagraph when
         // necessary since moveParagraph and movePragraphWithClones can remove
         // nodes.
         bool singleParagraphResult = doApplyForSingleParagraph(
@@ -222,49 +226,60 @@ void InsertListCommand::doApply(EditingState* editingState) {
 
         document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-        if (endOfSelection.isNull() || endOfSelection.isOrphan() ||
-            startOfLastParagraph.isNull() || startOfLastParagraph.isOrphan()) {
-          endOfSelection = visiblePositionForIndex(indexForEndOfSelection,
-                                                   scopeForEndOfSelection);
-          // If endOfSelection is null, then some contents have been deleted
-          // from the document. This should never happen and if it did, exit
-          // early immediately because we've lost the loop invariant.
-          DCHECK(endOfSelection.isNotNull());
-          if (endOfSelection.isNull() || !rootEditableElementOf(endOfSelection))
+        // Make |visibleEndOfSelection| valid again.
+        if (!endOfSelection.isConnected() ||
+            !startOfLastParagraph.isConnected()) {
+          visibleEndOfSelection = visiblePositionForIndex(
+              indexForEndOfSelection, scopeForEndOfSelection);
+          endOfSelection = visibleEndOfSelection.toPositionWithAffinity();
+          // If visibleEndOfSelection is null, then some contents have been
+          // deleted from the document. This should never happen and if it did,
+          // exit early immediately because we've lost the loop invariant.
+          DCHECK(visibleEndOfSelection.isNotNull());
+          if (visibleEndOfSelection.isNull() ||
+              !rootEditableElementOf(visibleEndOfSelection))
             return;
-          startOfLastParagraph =
-              startOfParagraph(endOfSelection, CanSkipOverEditingBoundary)
-                  .deepEquivalent();
+          startOfLastParagraph = startOfParagraph(visibleEndOfSelection,
+                                                  CanSkipOverEditingBoundary)
+                                     .deepEquivalent();
+        } else {
+          visibleEndOfSelection = createVisiblePosition(endOfSelection);
         }
 
         startOfCurrentParagraph =
             startOfNextParagraph(endingSelection().visibleStart());
       }
-      setEndingSelection(endOfSelection);
+      setEndingSelection(visibleEndOfSelection);
     }
     doApplyForSingleParagraph(forceListCreation, listTag, *currentSelection,
                               editingState);
+    if (editingState->isAborted())
+      return;
 
     document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-    if (editingState->isAborted())
-      return;
     // Fetch the end of the selection, for the reason mentioned above.
-    if (endOfSelection.isNull() || endOfSelection.isOrphan()) {
-      endOfSelection = visiblePositionForIndex(indexForEndOfSelection,
-                                               scopeForEndOfSelection);
-      if (endOfSelection.isNull())
+    if (!endOfSelection.isConnected()) {
+      visibleEndOfSelection = visiblePositionForIndex(indexForEndOfSelection,
+                                                      scopeForEndOfSelection);
+      if (visibleEndOfSelection.isNull())
         return;
+    } else {
+      visibleEndOfSelection = createVisiblePosition(endOfSelection);
     }
-    if (startOfSelection.isNull() || startOfSelection.isOrphan()) {
-      startOfSelection = visiblePositionForIndex(indexForStartOfSelection,
-                                                 scopeForStartOfSelection);
-      if (startOfSelection.isNull())
+
+    if (!startOfSelection.isConnected()) {
+      visibleStartOfSelection = visiblePositionForIndex(
+          indexForStartOfSelection, scopeForStartOfSelection);
+      if (visibleStartOfSelection.isNull())
         return;
+    } else {
+      visibleStartOfSelection = createVisiblePosition(startOfSelection);
     }
-    setEndingSelection(createVisibleSelection(
-        startOfSelection.deepEquivalent(), endOfSelection.deepEquivalent(),
-        startOfSelection.affinity(), endingSelection().isDirectional()));
+
+    setEndingSelection(
+        createVisibleSelection(visibleStartOfSelection, visibleEndOfSelection,
+                               endingSelection().isDirectional()));
     return;
   }
 
