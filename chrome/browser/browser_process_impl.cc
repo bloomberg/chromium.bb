@@ -155,7 +155,7 @@
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
 #endif
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
@@ -307,7 +307,7 @@ void BrowserProcessImpl::StartTearDown() {
   if (safe_browsing_service_.get())
     safe_browsing_service()->ShutDown();
   network_time_tracker_.reset();
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   plugins_resource_service_.reset();
 #endif
 
@@ -1082,7 +1082,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   // Triggers initialization of the singleton instance on UI thread.
   PluginFinder::GetInstance()->Init();
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   DCHECK(!plugins_resource_service_.get());
   plugins_resource_service_.reset(new PluginsResourceService(local_state()));
   plugins_resource_service_->Init();

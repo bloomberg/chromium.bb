@@ -131,7 +131,7 @@
 #include "extensions/browser/extension_prefs.h"
 #endif  // defined(ENABLE_EXTENSIONS)
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
@@ -378,7 +378,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   PluginFinder::RegisterPrefs(registry);
 #endif
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   PluginsResourceService::RegisterPrefs(registry);
 #endif
 

@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -25,7 +26,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugins/plugin_installer.h"
 #endif
 
@@ -246,13 +247,13 @@ base::DictionaryValue* PluginFinder::LoadBuiltInPluginList() {
 }
 
 PluginFinder::~PluginFinder() {
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   base::STLDeleteValues(&installers_);
 #endif
   base::STLDeleteValues(&identifier_plugin_);
 }
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 bool PluginFinder::FindPlugin(
     const std::string& mime_type,
     const std::string& language,
@@ -320,7 +321,7 @@ void PluginFinder::ReinitializePlugins(
       DCHECK(!identifier_plugin_[identifier]);
       identifier_plugin_[identifier] = CreatePluginMetadata(identifier, plugin);
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
       if (installers_.find(identifier) == installers_.end())
         installers_[identifier] = new PluginInstaller();
 #endif

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/common/features.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "url/gurl.h"
 
@@ -46,7 +47,7 @@ class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
   void RecordExtraShutdownMetrics() override;
 
  private:
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION) || defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION) || defined(ENABLE_EXTENSIONS)
   content::WebContents* web_contents_;
 #endif
   const GURL request_url_;
@@ -54,7 +55,7 @@ class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
 #if defined(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 #endif
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   std::unique_ptr<CaptivePortalMetricsRecorder> captive_portal_recorder_;
 #endif
 

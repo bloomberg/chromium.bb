@@ -85,7 +85,7 @@
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #endif
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #endif
 
@@ -196,7 +196,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   BookmarkModelFactory::GetInstance();
   BookmarkUndoServiceFactory::GetInstance();
   BrowsingDataRemoverFactory::GetInstance();
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalServiceFactory::GetInstance();
 #endif
 #if defined(OS_ANDROID)

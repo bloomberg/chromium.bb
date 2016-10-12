@@ -41,6 +41,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
@@ -70,7 +71,7 @@
 #include "ui/base/win/atl_module.h"
 #endif
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #endif
 
@@ -237,7 +238,7 @@ void InProcessBrowserTest::SetUp() {
   // Mac, many tests will hang waiting for a user to approve KeyChain access.
   OSCryptMocker::SetUpWithSingleton();
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalService::set_state_for_testing(
       CaptivePortalService::DISABLED_FOR_TESTING);
 #endif

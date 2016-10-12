@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
+#include "chrome/common/features.h"
 #include "content/public/common/webplugininfo.h"
 
 namespace base {
@@ -25,7 +26,7 @@ class GURL;
 class PluginMetadata;
 class PrefRegistrySimple;
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 class PluginInstaller;
 #endif
 
@@ -43,7 +44,7 @@ class PluginFinder {
 
   void ReinitializePlugins(const base::DictionaryValue* json_metadata);
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   // Finds a plugin for the given MIME type and language (specified as an IETF
   // language tag, i.e. en-US). If found, sets |installer| to the
   // corresponding PluginInstaller and |plugin_metadata| to a copy of the
@@ -78,7 +79,7 @@ class PluginFinder {
   // Returns NULL if the plugin list couldn't be parsed.
   static base::DictionaryValue* LoadBuiltInPluginList();
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   std::map<std::string, PluginInstaller*> installers_;
 #endif
 

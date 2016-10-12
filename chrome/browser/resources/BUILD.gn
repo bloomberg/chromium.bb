@@ -88,6 +88,10 @@ if (!is_ios) {
 
     # TODO(thestig): use_qualified_include = true
     defines = chrome_grit_defines
+    if (enable_hangout_services_extension) {
+      defines += [ "enable_hangout_services_extension" ]
+    }
+
     outputs = [
       "grit/component_extension_resources.h",
       "grit/component_extension_resources_map.cc",

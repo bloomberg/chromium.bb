@@ -26,6 +26,7 @@
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -399,7 +400,7 @@ class HangoutServicesBrowserTest : public AudioWaitingExtensionTest {
   }
 };
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(ENABLE_HANGOUT_SERVICES_EXTENSION)
+#if defined(GOOGLE_CHROME_BUILD) || BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
 IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
                        RunComponentExtensionTest) {
   // This runs the end-to-end JavaScript test for the Hangout Services
@@ -436,6 +437,6 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
   g_browser_process->webrtc_log_uploader()->OverrideUploadWithBufferForTesting(
       NULL);
 }
-#endif  // defined(GOOGLE_CHROME_BUILD) || defined(ENABLE_HANGOUT_SERVICES_EXTENSION)
+#endif  // defined(GOOGLE_CHROME_BUILD) || BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
 
 }  // namespace extensions

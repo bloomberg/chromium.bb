@@ -26,9 +26,12 @@ buildflag_header("features") {
     "ANDROID_JAVA_UI=$android_java_ui",
     "ENABLE_BACKGROUND=$enable_background",
     "ENABLE_BASIC_PRINT_DIALOG=$enable_basic_print_dialog",
+    "ENABLE_CAPTIVE_PORTAL_DETECTION=$enable_captive_portal_detection",
     "ENABLE_GOOGLE_NOW=$enable_google_now",
+    "ENABLE_HANGOUT_SERVICES_EXTENSION=$enable_hangout_services_extension",
     "ENABLE_ONE_CLICK_SIGNIN=$enable_one_click_signin",
     "ENABLE_PACKAGE_MASH_SERVICES=$enable_package_mash_services",
+    "ENABLE_PLUGIN_INSTALLATION=$enable_plugin_installation",
     "ENABLE_SERVICE_DISCOVERY=$enable_service_discovery",
     "ENABLE_XPC_NOTIFICATIONS=$enable_xpc_notifications",
     "PGO_BUILD=$pgo_build",
@@ -568,10 +571,10 @@ static_library("constants") {
   ]
 
   public_deps = [
+    ":features",
     "//content/public/common:result_codes",
   ]
   deps = [
-    ":features",
     ":version_header",
     "//base",
     "//base/third_party/dynamic_annotations",

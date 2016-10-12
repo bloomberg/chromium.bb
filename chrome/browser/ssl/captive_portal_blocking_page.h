@@ -11,11 +11,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
+#include "chrome/common/features.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
-#if !defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if !BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #error This file must be built with ENABLE_CAPTIVE_PORTAL_DETECTION flag.
 #endif
 

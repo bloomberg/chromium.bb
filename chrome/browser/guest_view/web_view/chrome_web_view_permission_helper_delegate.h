@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_PERMISSION_HELPER_DELEGATE_H_
 
 #include "base/macros.h"
+#include "chrome/common/features.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
@@ -64,11 +65,11 @@ class ChromeWebViewPermissionHelperDelegate :
   void OnBlockedOutdatedPlugin(int placeholder_id,
                                const std::string& identifier);
   void OnOpenAboutPlugins();
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   void OnFindMissingPlugin(int placeholder_id, const std::string& mime_type);
 
   void OnRemovePluginPlaceholderHost(int placeholder_id);
-#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
+#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 
   void OnPermissionResponse(const std::string& identifier,
                             bool allow,

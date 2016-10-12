@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/features.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/web_contents.h"
@@ -15,7 +16,7 @@
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #endif
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/ssl/captive_portal_metrics_recorder.h"
 #endif
 
@@ -33,7 +34,7 @@ ChromeMetricsHelper::ChromeMetricsHelper(
           g_browser_process->rappor_service()
               ? g_browser_process->rappor_service()->AsWeakPtr()
               : base::WeakPtr<rappor::RapporService>()),
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION) || defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION) || defined(ENABLE_EXTENSIONS)
       web_contents_(web_contents),
 #endif
       request_url_(request_url),
@@ -44,14 +45,14 @@ ChromeMetricsHelper::ChromeMetricsHelper(
 ChromeMetricsHelper::~ChromeMetricsHelper() {}
 
 void ChromeMetricsHelper::StartRecordingCaptivePortalMetrics(bool overridable) {
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal_recorder_.reset(
       new CaptivePortalMetricsRecorder(web_contents_, overridable));
 #endif
 }
 
 void ChromeMetricsHelper::RecordExtraShutdownMetrics() {
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   // The captive portal metrics should be recorded when the interstitial is
   // closing (or destructing).
   if (captive_portal_recorder_)

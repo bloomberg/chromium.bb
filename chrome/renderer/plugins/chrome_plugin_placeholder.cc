@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/features.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -76,7 +77,7 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
   if (placeholder_routing_id_ == MSG_ROUTING_NONE)
     return;
   RenderThread::Get()->RemoveRoute(placeholder_routing_id_);
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   if (has_host_) {
     RenderThread::Get()->Send(new ChromeViewHostMsg_RemovePluginPlaceholderHost(
         routing_id(), placeholder_routing_id_));
@@ -183,7 +184,7 @@ int32_t ChromePluginPlaceholder::CreateRoutingId() {
 bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_FoundMissingPlugin, OnFoundMissingPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_DidNotFindMissingPlugin,
                         OnDidNotFindMissingPlugin)
@@ -228,7 +229,7 @@ void ChromePluginPlaceholder::ShowPermissionBubbleCallback() {
       new ChromeViewHostMsg_ShowFlashPermissionBubble(routing_id()));
 }
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 void ChromePluginPlaceholder::OnDidNotFindMissingPlugin() {
   SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_FOUND));
 }
@@ -263,7 +264,7 @@ void ChromePluginPlaceholder::OnCancelledDownloadingPlugin() {
   SetMessage(
       l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED, plugin_name_));
 }
-#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
+#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 
 void ChromePluginPlaceholder::OnPluginComponentUpdateDownloading() {
   SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING, plugin_name_));

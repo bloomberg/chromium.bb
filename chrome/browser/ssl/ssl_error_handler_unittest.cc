@@ -12,6 +12,7 @@
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
+#include "chrome/common/features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/captive_portal/captive_portal_testing_utils.h"
@@ -163,7 +164,7 @@ class SSLErrorHandlerTest : public ChromeRenderViewHostTestHarness {
   base::FieldTrialList field_trial_list_;
 };
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 
 TEST_F(SSLErrorHandlerTest,
        ShouldShowSSLInterstitialOnTimerExpired) {
@@ -268,7 +269,7 @@ TEST_F(SSLErrorHandlerTest, ShouldNotHandleNameMismatchOnNonOverridableError) {
   EXPECT_TRUE(error_handler()->ssl_interstitial_shown());
 }
 
-#else  // #if !defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#else  // #if !BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 
 TEST_F(SSLErrorHandlerTest,
        ShouldShowSSLInterstitialOnCaptivePortalDetectionDisabled) {
@@ -280,7 +281,7 @@ TEST_F(SSLErrorHandlerTest,
   EXPECT_FALSE(error_handler()->captive_portal_interstitial_shown());
 }
 
-#endif  // defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#endif  // BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 
 TEST_F(SSLErrorHandlerTest,
        ShouldShowSSLInterstitialOnTimerExpiredWhenSuggestedUrlExists) {

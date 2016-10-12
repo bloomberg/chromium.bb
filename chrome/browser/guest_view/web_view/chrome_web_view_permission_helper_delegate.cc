@@ -9,6 +9,7 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/features.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
@@ -60,7 +61,7 @@ bool ChromeWebViewPermissionHelperDelegate::OnMessageReceived(
                         OnCouldNotLoadPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_OpenAboutPlugins,
                         OnOpenAboutPlugins)
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RemovePluginPlaceholderHost,
                         OnRemovePluginPlaceholderHost)
 #endif
@@ -102,11 +103,11 @@ void ChromeWebViewPermissionHelperDelegate::OnBlockedOutdatedPlugin(
 void ChromeWebViewPermissionHelperDelegate::OnOpenAboutPlugins() {
 }
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 void ChromeWebViewPermissionHelperDelegate::OnRemovePluginPlaceholderHost(
     int placeholder_id) {
 }
-#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
+#endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 
 void ChromeWebViewPermissionHelperDelegate::OnPermissionResponse(
     const std::string& identifier,

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/common/features.h"
 #include "chrome/common/prerender_types.h"
 #include "chrome/renderer/plugins/power_saver_info.h"
 #include "components/plugins/renderer/loadable_plugin_placeholder.h"
@@ -86,7 +87,7 @@ class ChromePluginPlaceholder final
   void ShowPermissionBubbleCallback();
 
   // IPC message handlers:
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   void OnDidNotFindMissingPlugin();
   void OnFoundMissingPlugin(const base::string16& plugin_name);
   void OnStartedDownloadingPlugin();
@@ -107,7 +108,7 @@ class ChromePluginPlaceholder final
   // a separate routing ID for messages specific to this placeholder.
   int32_t placeholder_routing_id_ = MSG_ROUTING_NONE;
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   bool has_host_ = false;
 #endif
 

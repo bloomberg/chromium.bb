@@ -289,12 +289,6 @@ if (enable_webrtc) {
     "enable_webrtc",
   ]
 }
-if (enable_hangout_services_extension) {
-  grit_defines += [
-    "-D",
-    "enable_hangout_services_extension",
-  ]
-}
 if (enable_task_manager) {
   grit_defines += [
     "-D",

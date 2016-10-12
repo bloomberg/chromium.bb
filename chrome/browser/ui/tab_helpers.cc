@@ -86,7 +86,7 @@
 #include "components/zoom/zoom_controller.h"
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
 
@@ -239,7 +239,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 // --- Feature tab helpers behind flags ---
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalTabHelper::CreateForWebContents(web_contents);
 #endif
 

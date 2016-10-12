@@ -10,11 +10,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/common/features.h"
 #include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 #include <map>
 #endif
 
@@ -22,7 +23,7 @@ class GURL;
 class PluginFinder;
 class PluginMetadata;
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 class PluginInstaller;
 class PluginPlaceholderHost;
 #endif
@@ -60,7 +61,7 @@ class PluginObserver : public content::WebContentsObserver,
                                const std::string& identifier);
   void OnBlockedComponentUpdatedPlugin(int placeholder_id,
                                        const std::string& identifier);
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   void OnRemovePluginPlaceholderHost(int placeholder_id);
 #endif
   void RemoveComponentObserver(int placeholder_id);
@@ -68,7 +69,7 @@ class PluginObserver : public content::WebContentsObserver,
   void OnShowFlashPermissionBubble();
   void OnCouldNotLoadPlugin(const base::FilePath& plugin_path);
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   // Stores all PluginPlaceholderHosts, keyed by their routing ID.
   std::map<int, PluginPlaceholderHost*> plugin_placeholders_;
 #endif

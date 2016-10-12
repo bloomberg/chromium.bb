@@ -33,7 +33,7 @@ class DevToolsAutoOpener;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 class PluginsResourceService;
 #endif
 
@@ -315,7 +315,7 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<component_updater::SupervisedUserWhitelistInstaller>
       supervised_user_whitelist_installer_;
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   std::unique_ptr<PluginsResourceService> plugins_resource_service_;
 #endif
 

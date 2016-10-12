@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pepper_flash.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -278,7 +279,7 @@ mojo::Array<mojom::PluginDataPtr> PluginsPageHandler::GeneratePluginsData(
 
     plugin_data->critical = false;
     plugin_data->update_url = "";
-#if defined(ENABLE_PLUGIN_INSTALLATION)
+#if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
     bool out_of_date = plugin_metadata->GetSecurityStatus(*active_plugin) ==
                        PluginMetadata::SECURITY_STATUS_OUT_OF_DATE;
     plugin_data->critical = out_of_date;

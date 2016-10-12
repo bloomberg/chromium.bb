@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/features.h"
 #include "chrome/grit/browser_resources.h"
 #include "extensions/common/constants.h"
 
@@ -83,7 +84,7 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
 #if defined(ENABLE_GOOGLE_NOW)
     case IDR_GOOGLE_NOW_MANIFEST:
 #endif
-#if defined(GOOGLE_CHROME_BUILD) || defined(ENABLE_HANGOUT_SERVICES_EXTENSION)
+#if defined(GOOGLE_CHROME_BUILD) || BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
     case IDR_HANGOUT_SERVICES_MANIFEST:
 #endif
 #if defined(ENABLE_HOTWORDING)

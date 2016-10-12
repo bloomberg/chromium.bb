@@ -19,6 +19,7 @@
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
+#include "chrome/common/features.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/ssl_errors/error_info.h"
 #include "content/public/browser/notification_service.h"
@@ -27,7 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
@@ -131,7 +132,7 @@ void RecordUMA(SSLErrorHandlerEvent event) {
                             SSL_ERROR_HANDLER_EVENT_COUNT);
 }
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 bool IsCaptivePortalInterstitialEnabled() {
   return base::FieldTrialList::FindFullName("CaptivePortalInterstitial") ==
          "Enabled";
@@ -252,7 +253,7 @@ void SSLErrorHandler::StartHandlingError() {
     return;
   }
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalTabHelper* captive_portal_tab_helper =
       CaptivePortalTabHelper::FromWebContents(web_contents_);
   if (captive_portal_tab_helper) {
@@ -277,7 +278,7 @@ void SSLErrorHandler::StartHandlingError() {
 }
 
 void SSLErrorHandler::CheckForCaptivePortal() {
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalService* captive_portal_service =
       CaptivePortalServiceFactory::GetForProfile(profile_);
   captive_portal_service->DetectCaptivePortal();
@@ -315,7 +316,7 @@ bool SSLErrorHandler::IsErrorOverridable() const {
 }
 
 void SSLErrorHandler::ShowCaptivePortalInterstitial(const GURL& landing_url) {
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   // Show captive portal blocking page. The interstitial owns the blocking page.
   RecordUMA(IsErrorOverridable()
                 ? SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE
@@ -379,7 +380,7 @@ void SSLErrorHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   DCHECK_EQ(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT, type);
 
   timer_.Stop();

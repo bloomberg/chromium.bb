@@ -15,6 +15,7 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
+#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
@@ -33,7 +34,7 @@
 #include "net/ssl/ssl_info.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
 #endif
 
@@ -83,7 +84,7 @@ class InterstitialHTMLSource : public content::URLDataSource {
   DISALLOW_COPY_AND_ASSIGN(InterstitialHTMLSource);
 };
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 // Provides fake connection information to the captive portal blocking page so
 // that both Wi-Fi and non Wi-Fi blocking pages can be displayed.
 class CaptivePortalBlockingPageWithNetInfo : public CaptivePortalBlockingPage {
@@ -260,7 +261,7 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
       web_contents, main_frame_url, resource);
 }
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
     content::WebContents* web_contents) {
   bool is_wifi_connection = false;
@@ -361,7 +362,7 @@ void InterstitialHTMLSource::StartDataRequest(
   } else if (base::StartsWith(path, "clock", base::CompareCase::SENSITIVE)) {
     interstitial_delegate.reset(CreateBadClockBlockingPage(web_contents_));
   }
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   else if (base::StartsWith(path, "captiveportal",
                             base::CompareCase::SENSITIVE))
   {

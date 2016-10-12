@@ -22,9 +22,15 @@ declare_args() {
   # and have a system dialog.
   enable_basic_print_dialog = enable_basic_printing && !is_chromeos
 
+  enable_captive_portal_detection = !is_android && !is_ios && !is_chromecast
+
   # Google Now is disabled to prepare for its removal.
   # http://crbug.com/539674
   enable_google_now = false
+
+  # Hangout services is an extension that adds extra features to Hangouts.
+  # For official Chrome builds, this flag is set on the bots.
+  enable_hangout_services_extension = false
 
   # 'Ok Google' hotwording is disabled by default. Set to true to enable. (This
   # will download a closed-source NaCl module at startup.) Chrome-branded
@@ -37,6 +43,8 @@ declare_args() {
   # Set to true to bundle all the mash related mojo services into chrome.
   # Specify --mash to chrome to have chrome start the mash environment.
   enable_package_mash_services = is_chromeos
+
+  enable_plugin_installation = is_win || is_mac
 
   enable_service_discovery = enable_mdns || is_mac
 
