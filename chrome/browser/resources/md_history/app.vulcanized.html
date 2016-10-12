@@ -3665,14 +3665,20 @@ button.more-vert-button div {
 }
 
 :host {
-  display: block;
+  display: flex;
         height: 100%;
-        padding-top: 5px;
+        overflow-x: hidden;
+        overflow-y: auto;
         width: var(--side-bar-width);
+}
+
+:host([drawer]) {
+  height: calc(100% - var(--toolbar-height));
 }
 
 div.separator {
   background-color: rgba(0, 0, 0, 0.08);
+        flex-shrink: 0;
         height: 1px;
         margin: 8px 0;
 }
@@ -3694,6 +3700,10 @@ iron-selector {
   -webkit-user-select: none;
         background-color: transparent;
         color: #5a5a5a;
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        padding-top: 8px;
 }
 
 iron-selector > a {
@@ -3713,18 +3723,15 @@ iron-selector > a {
 
 iron-selector > a.iron-selected {
   color: var(--google-blue-500);
-        font-weight: 500;
+}
+
+#spacer {
+  flex: 1;
 }
 
 #footer {
-  bottom: 0;
-        color: var(--paper-grey-600);
-        position: absolute;
+  color: var(--paper-grey-600);
         width: var(--side-bar-width);
-}
-
-:host([drawer]) #footer {
-  bottom: 120px;
 }
 
 #footer-text {
@@ -3756,6 +3763,7 @@ iron-selector > a.iron-selected {
         <iron-icon icon="cr:open-in-new"></iron-icon>
         <paper-ripple id="cbd-ripple"></paper-ripple>
       </a>
+      <div id="spacer"></div>
       <div id="footer" hidden="[[!showFooter]]">
         <div class="separator"></div>
         <div id="footer-text">$i18nRaw{sidebarFooter}</div>
@@ -3885,9 +3893,9 @@ history-toolbar {
 #drawer-header {
   align-items: center;
         border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        box-sizing: border-box;
         display: flex;
         height: var(--toolbar-height);
-        margin-bottom: 5px;
 }
 
 h1 {
