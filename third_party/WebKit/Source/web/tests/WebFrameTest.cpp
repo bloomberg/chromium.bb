@@ -10170,4 +10170,37 @@ TEST_F(WebFrameTest, ImageDocumentDecodeError) {
             toImageDocument(document)->cachedImage()->getStatus());
 }
 
+// Load a page with display:none set and try to scroll it. It shouldn't crash
+// due to lack of layoutObject. crbug.com/653327.
+TEST_F(WebFrameTest, ScrollBeforeLayoutDoesntCrash) {
+  registerMockedHttpURLLoad("display-none.html");
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initializeAndLoad(m_baseURL + "display-none.html");
+  WebViewImpl* webView = webViewHelper.webView();
+  webViewHelper.resize(WebSize(640, 480));
+
+  Document* document = webView->mainFrameImpl()->frame()->document();
+  document->documentElement()->setLayoutObject(nullptr);
+
+  WebGestureEvent beginEvent;
+  beginEvent.type = WebInputEvent::GestureScrollEnd;
+  beginEvent.sourceDevice = WebGestureDeviceTouchpad;
+  WebGestureEvent updateEvent;
+  updateEvent.type = WebInputEvent::GestureScrollEnd;
+  updateEvent.sourceDevice = WebGestureDeviceTouchpad;
+  WebGestureEvent endEvent;
+  endEvent.type = WebInputEvent::GestureScrollEnd;
+  endEvent.sourceDevice = WebGestureDeviceTouchpad;
+
+  // Try GestureScrollEnd and GestureScrollUpdate first to make sure that not
+  // seeing a Begin first doesn't break anything. (This currently happens).
+  webViewHelper.webView()->handleInputEvent(endEvent);
+  webViewHelper.webView()->handleInputEvent(updateEvent);
+
+  // Try a full Begin/Update/End cycle.
+  webViewHelper.webView()->handleInputEvent(beginEvent);
+  webViewHelper.webView()->handleInputEvent(updateEvent);
+  webViewHelper.webView()->handleInputEvent(endEvent);
+}
+
 }  // namespace blink

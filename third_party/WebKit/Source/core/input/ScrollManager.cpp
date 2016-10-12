@@ -214,7 +214,8 @@ WebInputEventResult ScrollManager::handleGestureScrollBegin(
   if (!m_scrollGestureHandlingNode)
     m_scrollGestureHandlingNode = m_frame->document()->documentElement();
 
-  if (!m_scrollGestureHandlingNode)
+  if (!m_scrollGestureHandlingNode ||
+      !m_scrollGestureHandlingNode->layoutObject())
     return WebInputEventResult::NotHandled;
 
   passScrollGestureEventToWidget(gestureEvent,
@@ -240,6 +241,10 @@ WebInputEventResult ScrollManager::handleGestureScrollUpdate(
     const PlatformGestureEvent& gestureEvent) {
   DCHECK_EQ(gestureEvent.type(), PlatformEvent::GestureScrollUpdate);
 
+  Node* node = m_scrollGestureHandlingNode.get();
+  if (!node || !node->layoutObject())
+    return WebInputEventResult::NotHandled;
+
   // Negate the deltas since the gesture event stores finger movement and
   // scrolling occurs in the direction opposite the finger's movement
   // direction. e.g. Finger moving up has negative event delta but causes the
@@ -251,14 +256,7 @@ WebInputEventResult ScrollManager::handleGestureScrollUpdate(
   if (delta.isZero())
     return WebInputEventResult::NotHandled;
 
-  Node* node = m_scrollGestureHandlingNode.get();
-
-  if (!node)
-    return WebInputEventResult::NotHandled;
-
   LayoutObject* layoutObject = node->layoutObject();
-  if (!layoutObject)
-    return WebInputEventResult::NotHandled;
 
   // Try to send the event to the correct view.
   WebInputEventResult result =
@@ -324,7 +322,7 @@ WebInputEventResult ScrollManager::handleGestureScrollEnd(
     const PlatformGestureEvent& gestureEvent) {
   Node* node = m_scrollGestureHandlingNode;
 
-  if (node) {
+  if (node && node->layoutObject()) {
     passScrollGestureEventToWidget(gestureEvent, node->layoutObject());
     std::unique_ptr<ScrollStateData> scrollStateData =
         wrapUnique(new ScrollStateData());
