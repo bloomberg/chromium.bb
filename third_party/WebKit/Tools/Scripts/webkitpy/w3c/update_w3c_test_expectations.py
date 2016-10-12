@@ -43,18 +43,17 @@ class W3CExpectationsLineAdder(object):
             _log.error('No issue on current branch.')
             return 1
 
-        try_bots = self.get_try_bots()
         rietveld = Rietveld(self.host.web)
-        try_jobs = rietveld.latest_try_jobs(issue_number, try_bots)
-        _log.debug('Latest try jobs: %r', try_jobs)
+        builds = rietveld.latest_try_job_results(issue_number, self.get_try_bots())
+        _log.debug('Latest try jobs: %r', builds)
 
-        if not try_jobs:
+        if not builds:
             _log.error('No try job information was collected.')
             return 1
 
         test_expectations = {}
-        for job in try_jobs:
-            platform_results = self.get_failing_results_dict(job)
+        for build in builds:
+            platform_results = self.get_failing_results_dict(build)
             test_expectations = self.merge_dicts(test_expectations, platform_results)
 
         for test_name, platform_result in test_expectations.iteritems():

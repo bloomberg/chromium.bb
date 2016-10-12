@@ -56,7 +56,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         if not issue_number:
             return
 
-        builds = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
+        builds = self.rietveld.latest_try_job_results(issue_number, self._try_bots())
         if options.trigger_jobs:
             if self.trigger_jobs_for_missing_builds(builds):
                 _log.info('Please re-run webkit-patch rebaseline-cl once all pending try jobs have finished.')
@@ -163,10 +163,10 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
     def _builds_to_tests(self, issue_number):
         """Fetches a list of try bots, and for each, fetches tests with new baselines."""
         _log.debug('Getting results for Rietveld issue %d.', issue_number)
-        try_jobs = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
-        if not try_jobs:
+        builds = self.rietveld.latest_try_job_results(issue_number, self._try_bots())
+        if not builds:
             _log.debug('No try job results for builders in: %r.', self._try_bots())
-        return {build: self._tests_to_rebaseline(build) for build in try_jobs}
+        return {build: self._tests_to_rebaseline(build) for build in builds}
 
     def _try_bots(self):
         """Returns a collection of try bot builders to fetch results for."""
