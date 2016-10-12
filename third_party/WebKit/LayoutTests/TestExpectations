@@ -1121,8 +1121,6 @@ crbug.com/600261 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcO
 
 crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
-crbug.com/653813 paint/invalidation/overflow-hidden-yet-scrolled-with-custom-scrollbar.html [ NeedsRebaseline ]
-
 crbug.com/600248 imported/wpt/web-animations/interfaces/AnimationEffectTiming/endDelay.html [ Pass Failure ]
 crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/constructor.html [ Failure Timeout ]
 crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/finished.html [ Pass Failure ]
