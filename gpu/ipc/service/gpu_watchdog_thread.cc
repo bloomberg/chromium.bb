@@ -135,11 +135,7 @@ void GpuWatchdogThread::GpuWatchdogTaskObserver::DidProcessTask(
     const base::PendingTask& pending_task) {}
 
 GpuWatchdogThread::~GpuWatchdogThread() {
-  // Verify that the thread was explicitly stopped. If the thread is stopped
-  // implicitly by the destructor, CleanUp() will not be called.
-  DCHECK(!weak_factory_.HasWeakPtrs());
-  // TODO(jbauman): Switch to DCHECK after we debug http://crbug.com/609252
-  CHECK(!IsRunning());
+  Stop();
 
 #if defined(OS_WIN)
   CloseHandle(watched_thread_handle_);

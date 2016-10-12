@@ -379,12 +379,6 @@ void GpuChildThread::OnFinalize() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void GpuChildThread::StopWatchdog() {
-  if (watchdog_thread_.get()) {
-    watchdog_thread_->Stop();
-  }
-}
-
 void GpuChildThread::OnCollectGraphicsInfo() {
   if (dead_on_arrival_)
     return;

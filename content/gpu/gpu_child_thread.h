@@ -73,7 +73,6 @@ class GpuChildThread : public ChildThreadImpl,
   void Shutdown() override;
 
   void Init(const base::Time& process_start_time);
-  void StopWatchdog();
 
  private:
   // ChildThreadImpl:.

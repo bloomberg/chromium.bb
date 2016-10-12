@@ -295,8 +295,6 @@ int GpuMain(const MainFunctionParams& parameters) {
     base::RunLoop().Run();
   }
 
-  child_thread->StopWatchdog();
-
   return dead_on_arrival ? 2 : 0;
 }
 
