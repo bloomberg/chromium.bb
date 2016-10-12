@@ -184,11 +184,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
-  void AddCertificate(net::CertificateMimeType cert_type,
-                      const void* cert_data,
-                      size_t cert_size,
-                      int render_process_id,
-                      int render_frame_id) override;
   content::MediaObserver* GetMediaObserver() override;
   content::PlatformNotificationService* GetPlatformNotificationService()
       override;

@@ -34,12 +34,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // moment during startup. AwContentBrowserClient owns the result.
   AwBrowserContext* InitBrowserContext();
 
-  // Overriden methods from ContentBrowserClient.
-  void AddCertificate(net::CertificateMimeType cert_type,
-                      const void* cert_data,
-                      size_t cert_size,
-                      int render_process_id,
-                      int render_frame_id) override;
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(

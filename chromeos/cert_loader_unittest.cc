@@ -46,7 +46,7 @@ class TestNSSCertDatabase : public net::NSSCertDatabaseChromeOS {
   ~TestNSSCertDatabase() override {}
 
   void NotifyOfCertAdded(const net::X509Certificate* cert) {
-    NSSCertDatabaseChromeOS::NotifyObserversOfCertAdded(cert);
+    NSSCertDatabaseChromeOS::NotifyObserversCertDBChanged(nullptr);
   }
 };
 

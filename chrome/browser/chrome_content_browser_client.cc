@@ -77,7 +77,6 @@
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_message_filter.h"
-#include "chrome/browser/ssl/ssl_add_certificate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
@@ -2217,16 +2216,6 @@ void ChromeContentBrowserClient::SelectClientCertificate(
 
   chrome::ShowSSLClientCertificateSelector(web_contents, cert_request_info,
                                            std::move(delegate));
-}
-
-void ChromeContentBrowserClient::AddCertificate(
-    net::CertificateMimeType cert_type,
-    const void* cert_data,
-    size_t cert_size,
-    int render_process_id,
-    int render_frame_id) {
-  chrome::SSLAddCertificate(cert_type, cert_data, cert_size,
-                            render_process_id, render_frame_id);
 }
 
 content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {

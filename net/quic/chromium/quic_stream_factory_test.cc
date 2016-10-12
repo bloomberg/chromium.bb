@@ -3800,59 +3800,7 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, OnCertAdded) {
-  Initialize();
-  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-  MockQuicData socket_data;
-  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructClientRstPacket());
-  socket_data.AddSocketDataToFactory(&socket_factory_);
-
-  MockQuicData socket_data2;
-  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddSocketDataToFactory(&socket_factory_);
-
-  QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, "GET", net_log_,
-                            callback_.callback()));
-
-  EXPECT_THAT(callback_.WaitForResult(), IsOk());
-  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
-  HttpRequestInfo request_info;
-  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
-
-  // Add a cert and verify that stream saw the event.
-  factory_->OnCertAdded(nullptr);
-  EXPECT_EQ(ERR_CERT_DATABASE_CHANGED,
-            stream->ReadResponseHeaders(callback_.callback()));
-  EXPECT_FALSE(factory_->require_confirmation());
-
-  // Now attempting to request a stream to the same origin should create
-  // a new session.
-
-  QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, "GET", net_log_,
-                             callback_.callback()));
-
-  EXPECT_THAT(callback_.WaitForResult(), IsOk());
-  stream = request2.CreateStream();
-  stream.reset();  // Will reset stream 3.
-
-  EXPECT_TRUE(socket_data.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
-  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
-}
-
-TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
+TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -3880,7 +3828,7 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
                                          net_log_, CompletionCallback()));
 
   // Change the CA cert and verify that stream saw the event.
-  factory_->OnCACertChanged(nullptr);
+  factory_->OnCertDBChanged(nullptr);
   EXPECT_EQ(ERR_CERT_DATABASE_CHANGED,
             stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_FALSE(factory_->require_confirmation());
