@@ -127,7 +127,6 @@ class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class RendererGpuVideoAcceleratorFactories;
 class ResourceDispatchThrottler;
-class V8SamplingProfiler;
 class VideoCaptureImplManager;
 
 #if defined(OS_ANDROID)
@@ -576,7 +575,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
   scoped_refptr<MidiMessageFilter> midi_message_filter_;
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
-  std::unique_ptr<V8SamplingProfiler> v8_sampling_profiler_;
 
   std::unique_ptr<BrowserPluginManager> browser_plugin_manager_;
 

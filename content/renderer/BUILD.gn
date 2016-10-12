@@ -94,8 +94,6 @@ target(link_target_type, "renderer") {
     "devtools/lock_free_circular_queue.h",
     "devtools/render_widget_screen_metrics_emulator.cc",
     "devtools/render_widget_screen_metrics_emulator.h",
-    "devtools/v8_sampling_profiler.cc",
-    "devtools/v8_sampling_profiler.h",
     "dom_automation_controller.cc",
     "dom_automation_controller.h",
     "dom_storage/dom_storage_cached_area.cc",
