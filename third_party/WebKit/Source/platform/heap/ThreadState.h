@@ -301,14 +301,15 @@ class PLATFORM_EXPORT ThreadState {
   }
   bool sweepForbidden() const { return m_sweepForbidden; }
 
-  class GCForbiddenScope final {
+  class MainThreadGCForbiddenScope final {
     STACK_ALLOCATED();
 
    public:
-    GCForbiddenScope() : m_threadState(ThreadState::current()) {
+    MainThreadGCForbiddenScope()
+        : m_threadState(ThreadState::mainThreadState()) {
       m_threadState->enterGCForbiddenScope();
     }
-    ~GCForbiddenScope() { m_threadState->leaveGCForbiddenScope(); }
+    ~MainThreadGCForbiddenScope() { m_threadState->leaveGCForbiddenScope(); }
 
    private:
     ThreadState* const m_threadState;

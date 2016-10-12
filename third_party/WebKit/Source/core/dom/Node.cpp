@@ -317,7 +317,7 @@ void Node::setNodeValue(const String&) {
 }
 
 NodeList* Node::childNodes() {
-  ThreadState::GCForbiddenScope gcForbidden;
+  ThreadState::MainThreadGCForbiddenScope gcForbidden;
   if (isContainerNode())
     return ensureRareData().ensureNodeLists().ensureChildNodeList(
         toContainerNode(*this));

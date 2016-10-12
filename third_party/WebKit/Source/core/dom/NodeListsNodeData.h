@@ -190,7 +190,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
 
 template <typename Collection>
 inline Collection* ContainerNode::ensureCachedCollection(CollectionType type) {
-  ThreadState::GCForbiddenScope gcForbidden;
+  ThreadState::MainThreadGCForbiddenScope gcForbidden;
   return ensureNodeLists().addCache<Collection>(*this, type);
 }
 
@@ -198,7 +198,7 @@ template <typename Collection>
 inline Collection* ContainerNode::ensureCachedCollection(
     CollectionType type,
     const AtomicString& name) {
-  ThreadState::GCForbiddenScope gcForbidden;
+  ThreadState::MainThreadGCForbiddenScope gcForbidden;
   return ensureNodeLists().addCache<Collection>(*this, type, name);
 }
 
@@ -208,7 +208,7 @@ inline Collection* ContainerNode::ensureCachedCollection(
     const AtomicString& namespaceURI,
     const AtomicString& localName) {
   DCHECK_EQ(type, TagCollectionType);
-  ThreadState::GCForbiddenScope gcForbidden;
+  ThreadState::MainThreadGCForbiddenScope gcForbidden;
   return ensureNodeLists().addCache(*this, namespaceURI, localName);
 }
 
