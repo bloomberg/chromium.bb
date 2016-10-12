@@ -836,6 +836,7 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style,
     }
   }
 
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
   fixRangeAndApplyInlineStyle(styleToApply, start, end, editingState);
   if (editingState->isAborted())
     return;

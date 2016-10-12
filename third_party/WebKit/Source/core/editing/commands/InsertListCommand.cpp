@@ -70,6 +70,7 @@ HTMLElement* InsertListCommand::mergeWithNeighboringLists(
     EditingState* editingState) {
   HTMLElement* list = passedList;
   Element* previousList = ElementTraversal::previousSibling(*list);
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
   if (canMergeLists(previousList, list)) {
     mergeIdenticalElements(previousList, list, editingState);
     if (editingState->isAborted())
@@ -84,6 +85,7 @@ HTMLElement* InsertListCommand::mergeWithNeighboringLists(
     return list;
 
   HTMLElement* nextList = toHTMLElement(nextSibling);
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
   if (canMergeLists(list, nextList)) {
     mergeIdenticalElements(list, nextList, editingState);
     if (editingState->isAborted())
@@ -541,6 +543,7 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart,
     if (editingState->isAborted())
       return;
 
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     if (canMergeLists(previousList, nextList))
       mergeIdenticalElements(previousList, nextList, editingState);
 

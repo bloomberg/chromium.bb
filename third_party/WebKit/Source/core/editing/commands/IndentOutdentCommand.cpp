@@ -116,11 +116,14 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start,
   if (editingState->isAborted())
     return false;
 
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
   if (canMergeLists(previousList, newList)) {
     mergeIdenticalElements(previousList, newList, editingState);
     if (editingState->isAborted())
       return false;
   }
+
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
   if (canMergeLists(newList, nextList)) {
     mergeIdenticalElements(newList, nextList, editingState);
     if (editingState->isAborted())
