@@ -379,6 +379,7 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
     }
     started_drag_ = true;
     Attach(source_tabstrip_, gfx::Point());
+    gfx::Point drag_point_in_screen = point_in_screen;
     if (static_cast<int>(drag_data_.size()) ==
         GetModel(source_tabstrip_)->count()) {
       if (was_source_maximized_ || was_source_fullscreen_) {
@@ -403,6 +404,7 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
                                          &drag_bounds);
         widget->SetVisibilityChangedAnimationsEnabled(true);
       } else {
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
         // The user has to move the mouse some amount of pixels before the drag
         // starts. Offset the window by this amount so that the relative offset
         // of the initial location is consistent. See crbug.com/518740
@@ -411,8 +413,14 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
         bounds.Offset(point_in_screen.x() - start_point_in_screen_.x(),
                       point_in_screen.y() - start_point_in_screen_.y());
         widget->SetBounds(bounds);
+#else
+        // Linux does not need the window offset behavior above because all drag
+        // implementations move windows relative to a passed-in cursor position
+        // instead of the implicit current cursor position like on Windows.
+        drag_point_in_screen = start_point_in_screen_;
+#endif
       }
-      RunMoveLoop(GetWindowOffset(point_in_screen));
+      RunMoveLoop(GetWindowOffset(drag_point_in_screen));
       return;
     }
   }

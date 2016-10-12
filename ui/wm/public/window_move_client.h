@@ -41,7 +41,6 @@ class AURA_EXPORT WindowMoveClient {
   // Ends a previously started move loop.
   virtual void EndMoveLoop() = 0;
 
- protected:
   virtual ~WindowMoveClient() {}
 };
 
