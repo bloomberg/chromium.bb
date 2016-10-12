@@ -32,9 +32,14 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
         new ChildWindowSurfaceWin(manager, surface_handle));
     surface = egl_surface;
 
-    // TODO(jbauman): Get frame statistics from DirectComposition
-    std::unique_ptr<gfx::VSyncProvider> vsync_provider(
-        new gl::VSyncProviderWin(surface_handle));
+    std::unique_ptr<gfx::VSyncProvider> vsync_provider;
+    // Use DWM based gl::VSyncProviderWin provider only if sync control
+    // extension isn't supported. Otherwise the Initialize call below should
+    // assign a default VSyncProvider.
+    if (!ChildWindowSurfaceWin::HasEGLExtension("EGL_CHROMIUM_sync_control")) {
+      vsync_provider.reset(new gl::VSyncProviderWin(surface_handle));
+    }
+
     if (!egl_surface->Initialize(std::move(vsync_provider)))
       return nullptr;
   } else {
