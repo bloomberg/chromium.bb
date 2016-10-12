@@ -93,6 +93,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kWebAssembly))
     WebRuntimeFeatures::enableWebAssemblySerialization(true);
 
+  WebRuntimeFeatures::enableSharedArrayBuffer(
+      base::FeatureList::IsEnabled(features::kSharedArrayBuffer));
+
   if (command_line.HasSwitch(switches::kDisableSharedWorkers))
     WebRuntimeFeatures::enableSharedWorker(false);
 

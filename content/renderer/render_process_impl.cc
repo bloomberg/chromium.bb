@@ -89,6 +89,8 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
   SetV8FlagIfFeature(features::kAsmJsToWebAssembly, "--validate-asm");
   SetV8FlagIfFeature(features::kWebAssembly, "--expose-wasm");
+  SetV8FlagIfFeature(features::kSharedArrayBuffer,
+                     "--harmony-sharedarraybuffer");
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

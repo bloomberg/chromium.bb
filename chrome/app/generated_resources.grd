@@ -5867,6 +5867,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ASM_WASM_DESCRIPTION" desc="Description for the flag to enable Asm.js to WebAssembly.">
         Validate Asm.js when "use asm" is present and then convert to WebAssembly.
       </message>
+      <message name="IDS_FLAGS_ENABLE_SHARED_ARRAY_BUFFER_NAME" desc="Title for the flag to enable SharedArrayBuffers in JavaScript.">
+        Experimental enabled SharedArrayBuffer support in JavaScript.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SHARED_ARRAY_BUFFER_DESCRIPTION" desc="Description for the flag to enable SharedArrayBuffers in JavaScript.">
+        Enable SharedArrayBuffer support in JavaScript.
+      </message>
       <message name="IDS_FLAGS_ENABLE_WASM_NAME" desc="Title for the flag to enable WebAssembly.">
         Experimental WebAssembly
       </message>

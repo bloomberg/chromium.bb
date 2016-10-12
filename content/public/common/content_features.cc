@@ -152,6 +152,10 @@ const base::Feature kRenderingPipelineThrottling{
 const base::Feature kScrollAnchoring{"ScrollAnchoring",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// http://tc39.github.io/ecmascript_sharedmem/shmem.html
+const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Speculatively launches Service Workers on mouse/touch events.
 const base::Feature kSpeculativeLaunchServiceWorker{
     "SpeculativeLaunchServiceWorker", base::FEATURE_DISABLED_BY_DEFAULT};
