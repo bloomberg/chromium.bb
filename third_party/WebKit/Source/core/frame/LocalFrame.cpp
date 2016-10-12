@@ -379,6 +379,8 @@ void LocalFrame::reload(FrameLoadType loadType,
 }
 
 void LocalFrame::detach(FrameDetachType type) {
+  m_detached = true;
+
   PluginScriptForbiddenScope forbidPluginDestructorScripting;
   m_loader.stopAllLoaders();
   // Don't allow any new child frames to load in this frame: attaching a new

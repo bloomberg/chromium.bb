@@ -2026,6 +2026,12 @@ bool WebLocalFrameImpl::isLoading() const {
          !frame()->document()->loadEventFinished();
 }
 
+bool WebLocalFrameImpl::
+    isFrameDetachedForSpecialOneOffStopTheCrashingHackBug561873() const {
+  return !frame() ||
+         frame()->isFrameDetachedForSpecialOneOffStopTheCrashingHackBug561873();
+}
+
 bool WebLocalFrameImpl::isNavigationScheduledWithin(
     double intervalInSeconds) const {
   return frame() &&

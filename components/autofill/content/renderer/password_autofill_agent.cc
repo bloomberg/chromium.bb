@@ -946,7 +946,12 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     logger->LogBoolean(Logger::STRING_ONLY_VISIBLE, only_visible);
   }
 
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+  // RenderFrameObserver::DidFinishLoad() can fire when Frame is
+  // detaching. crbug.com/654654
+  if (frame->isFrameDetachedForSpecialOneOffStopTheCrashingHackBug561873())
+    return;
+
   // Make sure that this security origin is allowed to use password manager.
   blink::WebSecurityOrigin origin = frame->document().getSecurityOrigin();
   if (logger) {

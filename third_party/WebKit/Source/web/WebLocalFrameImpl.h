@@ -259,6 +259,8 @@ class WEB_EXPORT WebLocalFrameImpl final
                 WebHistoryLoadType,
                 bool isClientRedirect) override;
   bool isLoading() const override;
+  bool isFrameDetachedForSpecialOneOffStopTheCrashingHackBug561873()
+      const override;
   bool isNavigationScheduledWithin(double interval) const override;
   void setCommittedFirstRealLoad() override;
   void sendOrientationChangeEvent() override;

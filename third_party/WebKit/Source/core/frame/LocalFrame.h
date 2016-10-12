@@ -218,6 +218,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   PluginData* pluginData() const;
 
+  bool isFrameDetachedForSpecialOneOffStopTheCrashingHackBug561873() const {
+    return m_detached || !client();
+  }
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -257,6 +261,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   float m_textZoomFactor;
 
   bool m_inViewSourceMode;
+  bool m_detached = false;
 
   Member<InstrumentingAgents> m_instrumentingAgents;
 
