@@ -6,6 +6,7 @@
 #define COMPONENTS_EXO_WM_HELPER_ASH_H_
 
 #include "ash/common/shell_observer.h"
+#include "ash/common/system/accessibility_observer.h"
 #include "base/macros.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/cursor_client_observer.h"
@@ -19,6 +20,7 @@ class WMHelperAsh : public WMHelper,
                     public aura::client::ActivationChangeObserver,
                     public aura::client::FocusChangeObserver,
                     public aura::client::CursorClientObserver,
+                    public ash::AccessibilityObserver,
                     public ash::ShellObserver {
  public:
   WMHelperAsh();
@@ -37,6 +39,8 @@ class WMHelperAsh : public WMHelper,
   void AddPostTargetHandler(ui::EventHandler* handler) override;
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
   bool IsMaximizeModeWindowManagerEnabled() const override;
+  bool IsSpokenFeedbackEnabled() const override;
+  void PlayEarcon(int sound_key) const override;
 
   // Overriden from aura::client::ActivationChangeObserver:
   void OnWindowActivated(
@@ -51,6 +55,10 @@ class WMHelperAsh : public WMHelper,
   // Overriden from aura::client::CursorClientObserver:
   void OnCursorVisibilityChanged(bool is_visible) override;
   void OnCursorSetChanged(ui::CursorSetType cursor_set) override;
+
+  // Overridden from ash::AccessibilityObserver:
+  void OnAccessibilityModeChanged(
+      ash::AccessibilityNotificationVisibility notify) override;
 
   // Overriden from ash::ShellObserver:
   void OnMaximizeModeStarted() override;

@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/system/accessibility_observer.h"
 #include "ash/common/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -43,10 +42,10 @@ class ShellSurface : public SurfaceDelegate,
                      public SurfaceObserver,
                      public views::WidgetDelegate,
                      public views::View,
-                     public ash::AccessibilityObserver,
                      public ash::wm::WindowStateObserver,
                      public aura::WindowObserver,
-                     public WMHelper::ActivationObserver {
+                     public WMHelper::ActivationObserver,
+                     public WMHelper::AccessibilityObserver {
  public:
   ShellSurface(Surface* surface,
                ShellSurface* parent,
@@ -196,10 +195,6 @@ class ShellSurface : public SurfaceDelegate,
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
 
-  // Overridden from ash::AccessibilityObserver:
-  void OnAccessibilityModeChanged(
-      ash::AccessibilityNotificationVisibility notify) override;
-
   // Overridden from ash::wm::WindowStateObserver:
   void OnPreWindowStateTypeChange(ash::wm::WindowState* window_state,
                                   ash::wm::WindowStateType old_type) override;
@@ -216,6 +211,9 @@ class ShellSurface : public SurfaceDelegate,
   void OnWindowActivated(
       aura::Window* gained_active,
       aura::Window* lost_active) override;
+
+  // Overridden from WMHelper::AccessibilityObserver:
+  void OnAccessibilityModeChanged() override;
 
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;

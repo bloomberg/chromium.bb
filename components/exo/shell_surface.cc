@@ -7,10 +7,8 @@
 #include <algorithm>
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/accessibility_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
@@ -235,8 +233,7 @@ class ShadowUnderlayEventHandler : public ui::EventHandler {
           std::find(std::begin(kEarconEventTypes), std::end(kEarconEventTypes),
                     event->type()) != std::end(kEarconEventTypes);
       if (is_earcon_event_type)
-        ash::WmShell::Get()->accessibility_delegate()->PlayEarcon(
-            chromeos::SOUND_VOLUME_ADJUST);
+        WMHelper::GetInstance()->PlayEarcon(chromeos::SOUND_VOLUME_ADJUST);
 #endif
       event->SetHandled();
     }
@@ -382,8 +379,7 @@ ShellSurface::~ShellSurface() {
     surface_->SetSurfaceDelegate(nullptr);
     surface_->RemoveSurfaceObserver(this);
   }
-  ash::WmShell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(
-      this);
+  WMHelper::GetInstance()->RemoveAccessibilityObserver(this);
 }
 
 void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
@@ -808,14 +804,6 @@ gfx::Size ShellSurface::GetPreferredSize() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ash::AccessibilityObserver overrides:
-
-void ShellSurface::OnAccessibilityModeChanged(
-    ash::AccessibilityNotificationVisibility) {
-  UpdateShadow();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ash::wm::WindowStateObserver overrides:
 
 void ShellSurface::OnPreWindowStateTypeChange(
@@ -913,6 +901,13 @@ void ShellSurface::OnWindowActivated(
     Configure();
     UpdateShadow();
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WMHelper::AccessibilityObserver overrides:
+
+void ShellSurface::OnAccessibilityModeChanged() {
+  UpdateShadow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1074,7 +1069,7 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
       new CustomWindowStateDelegate(widget_)));
 
   // Receive accessibility changes to update shadow underlay.
-  ash::WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
+  WMHelper::GetInstance()->AddAccessibilityObserver(this);
 
   // Show widget next time Commit() is called.
   pending_show_widget_ = true;
@@ -1350,10 +1345,9 @@ void ShellSurface::UpdateShadow() {
       window->StackChildAtBottom(shadow_underlay_);
     }
 
-    bool underlay_capture_events = ash::WmShell::Get()
-                                       ->accessibility_delegate()
-                                       ->IsSpokenFeedbackEnabled() &&
-                                   widget_->IsActive();
+    bool underlay_capture_events =
+        WMHelper::GetInstance()->IsSpokenFeedbackEnabled() &&
+        widget_->IsActive();
 
     float shadow_underlay_opacity = rectangular_shadow_background_opacity_;
     // Put the black background layer behind the window if

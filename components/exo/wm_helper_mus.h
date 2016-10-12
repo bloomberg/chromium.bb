@@ -33,6 +33,8 @@ class WMHelperMus : public WMHelper,
   void AddPostTargetHandler(ui::EventHandler* handler) override;
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
   bool IsMaximizeModeWindowManagerEnabled() const override;
+  bool IsSpokenFeedbackEnabled() const override;
+  void PlayEarcon(int sound_key) const override;
 
   // Overriden from ui::WindowTreeClientObserver:
   void OnWindowTreeFocusChanged(ui::Window* gained_focus,

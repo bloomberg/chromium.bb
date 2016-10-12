@@ -100,6 +100,15 @@ bool WMHelperMus::IsMaximizeModeWindowManagerEnabled() const {
   return false;
 }
 
+bool WMHelperMus::IsSpokenFeedbackEnabled() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void WMHelperMus::PlayEarcon(int sound_key) const {
+  NOTIMPLEMENTED();
+}
+
 void WMHelperMus::OnWindowTreeFocusChanged(ui::Window* gained_focus,
                                            ui::Window* lost_focus) {
   aura::Window* gained_active =

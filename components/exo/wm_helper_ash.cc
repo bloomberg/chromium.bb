@@ -4,6 +4,7 @@
 
 #include "components/exo/wm_helper_ash.h"
 
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
@@ -89,6 +90,16 @@ bool WMHelperAsh::IsMaximizeModeWindowManagerEnabled() const {
       ->IsMaximizeModeWindowManagerEnabled();
 }
 
+bool WMHelperAsh::IsSpokenFeedbackEnabled() const {
+  return ash::WmShell::Get()
+      ->accessibility_delegate()
+      ->IsSpokenFeedbackEnabled();
+}
+
+void WMHelperAsh::PlayEarcon(int sound_key) const {
+  return ash::WmShell::Get()->accessibility_delegate()->PlayEarcon(sound_key);
+}
+
 void WMHelperAsh::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -107,6 +118,11 @@ void WMHelperAsh::OnCursorVisibilityChanged(bool is_visible) {
 
 void WMHelperAsh::OnCursorSetChanged(ui::CursorSetType cursor_set) {
   NotifyCursorSetChanged(cursor_set);
+}
+
+void WMHelperAsh::OnAccessibilityModeChanged(
+    ash::AccessibilityNotificationVisibility notify) {
+  NotifyAccessibilityModeChanged();
 }
 
 void WMHelperAsh::OnMaximizeModeStarted() {

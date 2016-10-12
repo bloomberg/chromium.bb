@@ -62,6 +62,14 @@ void WMHelper::RemoveMaximizeModeObserver(MaximizeModeObserver* observer) {
   maximize_mode_observers_.RemoveObserver(observer);
 }
 
+void WMHelper::AddAccessibilityObserver(AccessibilityObserver* observer) {
+  accessibility_observers_.AddObserver(observer);
+}
+
+void WMHelper::RemoveAccessibilityObserver(AccessibilityObserver* observer) {
+  accessibility_observers_.RemoveObserver(observer);
+}
+
 void WMHelper::NotifyWindowActivated(aura::Window* gained_active,
                                      aura::Window* lost_active) {
   FOR_EACH_OBSERVER(ActivationObserver, activation_observers_,
@@ -92,6 +100,11 @@ void WMHelper::NotifyMaximizeModeStarted() {
 void WMHelper::NotifyMaximizeModeEnded() {
   FOR_EACH_OBSERVER(MaximizeModeObserver, maximize_mode_observers_,
                     OnMaximizeModeEnded());
+}
+
+void WMHelper::NotifyAccessibilityModeChanged() {
+  FOR_EACH_OBSERVER(AccessibilityObserver, accessibility_observers_,
+                    OnAccessibilityModeChanged());
 }
 
 }  // namespace exo

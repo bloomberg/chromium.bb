@@ -726,7 +726,7 @@ TEST_F(ShellSurfaceTest, SpokenFeedbackFullscreenBackground) {
   // Enable spoken feedback.
   ash::WmShell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
       ash::A11Y_NOTIFICATION_NONE);
-  shell_surface.OnAccessibilityModeChanged(ash::A11Y_NOTIFICATION_NONE);
+  shell_surface.OnAccessibilityModeChanged();
 
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
             shell_surface.shadow_underlay()->bounds());
@@ -762,8 +762,8 @@ TEST_F(ShellSurfaceTest, SpokenFeedbackFullscreenBackground) {
   // Disable spoken feedback. Shadow underlay is restored.
   ash::WmShell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
       ash::A11Y_NOTIFICATION_NONE);
-  shell_surface.OnAccessibilityModeChanged(ash::A11Y_NOTIFICATION_NONE);
-  shell_surface2.OnAccessibilityModeChanged(ash::A11Y_NOTIFICATION_NONE);
+  shell_surface.OnAccessibilityModeChanged();
+  shell_surface2.OnAccessibilityModeChanged();
 
   EXPECT_TRUE(shell_surface.shadow_underlay()->IsVisible());
   EXPECT_EQ(shadow_bounds, shell_surface.shadow_underlay()->bounds());
