@@ -431,7 +431,7 @@ void BrowserContext::Initialize(
 
   ServiceManagerConnection* service_manager_connection =
       ServiceManagerConnection::GetForProcess();
-  if (service_manager_connection && base::MessageLoop::current()) {
+  if (service_manager_connection && base::ThreadTaskRunnerHandle::IsSet()) {
     // NOTE: Many unit tests create a TestBrowserContext without initializing
     // Mojo or the global service manager connection.
 
