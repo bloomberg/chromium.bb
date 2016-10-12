@@ -106,7 +106,11 @@ remoting.It2MeActivity.prototype.stop = function() {
  * @param {!remoting.Error} error
  */
 remoting.It2MeActivity.prototype.onConnectionFailed = function(error) {
-  this.showErrorMessage_(error);
+  // onConnectionFailed is also called if the connection is canceled, in which
+  // case no error message should be shown.
+  if (!error.isNone()) {
+    this.showErrorMessage_(error);
+  }
   base.dispose(this.desktopActivity_);
   this.desktopActivity_ = null;
 };
