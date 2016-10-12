@@ -36,6 +36,11 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionWithAffinityTemplate {
 
   bool isNotNull() const { return m_position.isNotNull(); }
   bool isNull() const { return m_position.isNull(); }
+  bool isOrphan() const { return m_position.isOrphan(); }
+  bool isConnected() const { return m_position.isConnected(); }
+
+  Node* anchorNode() const { return m_position.anchorNode(); }
+  Document* document() const { return m_position.document(); }
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_position); }
 

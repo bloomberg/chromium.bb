@@ -182,7 +182,7 @@ static PositionWithAffinityTemplate<Strategy> honorEditingBoundaryAtOrBefore(
 
   // Return empty position if |pos| is not somewhere inside the editable
   // region containing this position
-  if (highestRoot && !pos.position().anchorNode()->isDescendantOf(highestRoot))
+  if (highestRoot && !pos.anchorNode()->isDescendantOf(highestRoot))
     return PositionWithAffinityTemplate<Strategy>();
 
   // Return |pos| itself if the two are from the very same editable region, or
@@ -1430,8 +1430,8 @@ bool inSameLineAlgorithm(
     const PositionWithAffinityTemplate<Strategy>& position2) {
   if (position1.isNull() || position2.isNull())
     return false;
-  DCHECK_EQ(position1.position().document(), position2.position().document());
-  DCHECK(!position1.position().document()->needsLayoutTreeUpdate());
+  DCHECK_EQ(position1.document(), position2.document());
+  DCHECK(!position1.document()->needsLayoutTreeUpdate());
 
   PositionWithAffinityTemplate<Strategy> startOfLine1 = startOfLine(position1);
   PositionWithAffinityTemplate<Strategy> startOfLine2 = startOfLine(position2);
@@ -2644,11 +2644,11 @@ template <typename Strategy>
 LayoutRect localCaretRectOfPositionTemplate(
     const PositionWithAffinityTemplate<Strategy>& position,
     LayoutObject*& layoutObject) {
-  if (position.position().isNull()) {
+  if (position.isNull()) {
     layoutObject = nullptr;
     return LayoutRect();
   }
-  Node* node = position.position().anchorNode();
+  Node* node = position.anchorNode();
 
   layoutObject = node->layoutObject();
   if (!layoutObject)

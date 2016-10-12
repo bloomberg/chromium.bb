@@ -59,9 +59,8 @@ VisiblePositionTemplate<Strategy>::VisiblePositionTemplate(
     : m_positionWithAffinity(positionWithAffinity)
 #if DCHECK_IS_ON()
       ,
-      m_domTreeVersion(
-          positionWithAffinity.position().document()->domTreeVersion()),
-      m_styleVersion(positionWithAffinity.position().document()->styleVersion())
+      m_domTreeVersion(positionWithAffinity.document()->domTreeVersion()),
+      m_styleVersion(positionWithAffinity.document()->styleVersion())
 #endif
 {
 }
@@ -71,9 +70,9 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(
     const PositionWithAffinityTemplate<Strategy>& positionWithAffinity) {
   if (positionWithAffinity.isNull())
     return VisiblePositionTemplate<Strategy>();
-  DCHECK(positionWithAffinity.position().isConnected()) << positionWithAffinity;
+  DCHECK(positionWithAffinity.isConnected()) << positionWithAffinity;
 
-  Document& document = *positionWithAffinity.position().document();
+  Document& document = *positionWithAffinity.document();
   DCHECK(!document.needsLayoutTreeUpdate());
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       document.lifecycle());
@@ -247,7 +246,7 @@ bool VisiblePositionTemplate<Strategy>::isValid() const {
 #if DCHECK_IS_ON()
   if (isNull())
     return true;
-  Document& document = *m_positionWithAffinity.position().document();
+  Document& document = *m_positionWithAffinity.document();
   return m_domTreeVersion == document.domTreeVersion() &&
          m_styleVersion == document.styleVersion() &&
          !document.needsLayoutTreeUpdate();

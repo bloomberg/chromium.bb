@@ -140,8 +140,7 @@ bool FrameCaret::caretPositionIsValidForDocument(
   if (!isActive())
     return true;
 
-  return caretPosition().position().document() == document &&
-         !caretPosition().position().isOrphan();
+  return caretPosition().document() == document && !caretPosition().isOrphan();
 }
 
 void FrameCaret::invalidateCaretRect(bool forceInvalidation) {
@@ -195,7 +194,7 @@ IntRect FrameCaret::absoluteCaretBounds() {
       updateCaretRect(createVisiblePosition(caretPosition()));
     }
   }
-  return absoluteBoundsForLocalRect(caretPosition().position().anchorNode(),
+  return absoluteBoundsForLocalRect(caretPosition().anchorNode(),
                                     localCaretRectWithoutUpdate());
 }
 
@@ -216,8 +215,8 @@ void FrameCaret::paintCaret(GraphicsContext& context,
     return;
 
   updateCaretRect(caretPosition());
-  CaretBase::paintCaret(caretPosition().position().anchorNode(), context,
-                        paintOffset, DisplayItem::kCaret);
+  CaretBase::paintCaret(caretPosition().anchorNode(), context, paintOffset,
+                        DisplayItem::kCaret);
 }
 
 void FrameCaret::dataWillChange(const CharacterData& node) {
@@ -257,7 +256,7 @@ bool FrameCaret::shouldBlinkCaret() const {
     return false;
 
   return focusedElement->isShadowIncludingInclusiveAncestorOf(
-      caretPosition().position().anchorNode());
+      caretPosition().anchorNode());
 }
 
 void FrameCaret::caretBlinkTimerFired(TimerBase*) {

@@ -97,7 +97,7 @@ VisibleSelection createVisibleSelectionDeprecated(
     const PositionWithAffinity& pos,
     bool isDirectional) {
   if (pos.isNotNull())
-    pos.position().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    pos.document()->updateStyleAndLayoutIgnorePendingStylesheets();
   return VisibleSelection::create(pos.position(), pos.position(),
                                   pos.affinity(), isDirectional);
 }
@@ -165,7 +165,7 @@ VisibleSelectionInFlatTree createVisibleSelectionDeprecated(
     const PositionInFlatTreeWithAffinity& pos,
     bool isDirectional) {
   if (pos.isNotNull())
-    pos.position().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    pos.document()->updateStyleAndLayoutIgnorePendingStylesheets();
   return VisibleSelectionInFlatTree::create(pos.position(), pos.position(),
                                             pos.affinity(), isDirectional);
 }

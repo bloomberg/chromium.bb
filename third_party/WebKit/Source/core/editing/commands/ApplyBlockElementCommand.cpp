@@ -186,10 +186,9 @@ void ApplyBlockElementCommand::formatSelection(
     if (endAfterSelection.isNotNull() && !endAfterSelection.isConnected())
       break;
     // Sanity check: Make sure our moveParagraph calls didn't remove
-    // endOfNextParagraph.position().anchorNode() If somehow, e.g. mutation
+    // endOfNextParagraph.anchorNode() If somehow, e.g. mutation
     // event handler, we did, return to prevent crashes.
-    if (endOfNextParagraph.isNotNull() &&
-        !endOfNextParagraph.position().isConnected())
+    if (endOfNextParagraph.isNotNull() && !endOfNextParagraph.isConnected())
       return;
 
     document().updateStyleAndLayoutIgnorePendingStylesheets();

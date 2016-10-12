@@ -362,8 +362,7 @@ void IndentOutdentCommand::outdentRegion(
       break;
 
     document().updateStyleAndLayoutIgnorePendingStylesheets();
-    if (endOfNextParagraph.isNotNull() &&
-        !endOfNextParagraph.position().isConnected()) {
+    if (endOfNextParagraph.isNotNull() && !endOfNextParagraph.isConnected()) {
       endOfCurrentParagraph = createVisiblePosition(endingSelection().end());
       endOfNextParagraph = endOfParagraph(nextPositionOf(endOfCurrentParagraph))
                                .toPositionWithAffinity();

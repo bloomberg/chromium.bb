@@ -1220,7 +1220,7 @@ Range* Document::caretRangeFromPoint(int x, int y) {
 
   HitTestResult result = hitTestInDocument(this, x, y);
   PositionWithAffinity positionWithAffinity = result.position();
-  if (positionWithAffinity.position().isNull())
+  if (positionWithAffinity.isNull())
     return nullptr;
 
   Position rangeCompliantPosition =

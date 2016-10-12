@@ -104,10 +104,10 @@ static void mapCaretRectToCaretPainter(LayoutItem caretLayoutItem,
 void CaretBase::updateCaretRect(const PositionWithAffinity& caretPosition) {
   m_caretLocalRect = LayoutRect();
 
-  if (caretPosition.position().isNull())
+  if (caretPosition.isNull())
     return;
 
-  DCHECK(caretPosition.position().anchorNode()->layoutObject());
+  DCHECK(caretPosition.anchorNode()->layoutObject());
 
   // First compute a rect local to the layoutObject at the selection start.
   LayoutObject* layoutObject;
@@ -116,7 +116,7 @@ void CaretBase::updateCaretRect(const PositionWithAffinity& caretPosition) {
   // Get the layoutObject that will be responsible for painting the caret
   // (which is either the layoutObject we just found, or one of its containers).
   LayoutBlockItem caretPainterItem =
-      LayoutBlockItem(caretLayoutObject(caretPosition.position().anchorNode()));
+      LayoutBlockItem(caretLayoutObject(caretPosition.anchorNode()));
 
   mapCaretRectToCaretPainter(LayoutItem(layoutObject), caretPainterItem,
                              m_caretLocalRect);

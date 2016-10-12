@@ -39,7 +39,7 @@ DragCaretController* DragCaretController::create() {
 }
 
 bool DragCaretController::hasCaretIn(const LayoutBlock& layoutBlock) const {
-  Node* node = m_position.position().anchorNode();
+  Node* node = m_position.anchorNode();
   if (!node)
     return false;
   if (layoutBlock != CaretBase::caretLayoutObject(node))
@@ -58,18 +58,18 @@ void DragCaretController::setCaretPosition(
   // involves updating compositing state.
   DisableCompositingQueryAsserts disabler;
 
-  if (Node* node = m_position.position().anchorNode())
+  if (Node* node = m_position.anchorNode())
     m_caretBase->invalidateCaretRect(node);
   m_position = createVisiblePosition(position).toPositionWithAffinity();
   Document* document = nullptr;
-  if (Node* node = m_position.position().anchorNode()) {
+  if (Node* node = m_position.anchorNode()) {
     m_caretBase->invalidateCaretRect(node);
     document = &node->document();
   }
   if (m_position.isNull()) {
     m_caretBase->clearCaretRect();
   } else {
-    DCHECK(!m_position.position().isOrphan());
+    DCHECK(!m_position.isOrphan());
     document->updateStyleAndLayoutTree();
     m_caretBase->updateCaretRect(m_position);
   }
@@ -96,7 +96,7 @@ void DragCaretController::nodeWillBeRemoved(Node& node) {
   if (!removingNodeRemovesPosition(node, m_position.position()))
     return;
 
-  m_position.position().document()->layoutViewItem().clearSelection();
+  m_position.document()->layoutViewItem().clearSelection();
   clear();
 }
 
@@ -108,9 +108,10 @@ DEFINE_TRACE(DragCaretController) {
 void DragCaretController::paintDragCaret(LocalFrame* frame,
                                          GraphicsContext& context,
                                          const LayoutPoint& paintOffset) const {
-  if (m_position.position().anchorNode()->document().frame() == frame)
-    m_caretBase->paintCaret(m_position.position().anchorNode(), context,
-                            paintOffset, DisplayItem::kDragCaret);
+  if (m_position.anchorNode()->document().frame() == frame) {
+    m_caretBase->paintCaret(m_position.anchorNode(), context, paintOffset,
+                            DisplayItem::kDragCaret);
+  }
 }
 
 }  // namespace blink

@@ -1566,7 +1566,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
         return;
       // Mutation events (bug 22634) triggered by inserting the <br> might have
       // removed the content we're about to move
-      if (!startOfParagraphToMovePosition.position().isConnected())
+      if (!startOfParagraphToMovePosition.isConnected())
         return;
     }
 
