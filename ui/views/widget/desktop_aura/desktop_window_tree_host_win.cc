@@ -469,13 +469,6 @@ void DesktopWindowTreeHostWin::FlashFrame(bool flash_frame) {
 void DesktopWindowTreeHostWin::OnRootViewLayout() {
 }
 
-void DesktopWindowTreeHostWin::OnNativeWidgetFocus() {
-  // HWNDMessageHandler will perform the proper updating on its own.
-}
-
-void DesktopWindowTreeHostWin::OnNativeWidgetBlur() {
-}
-
 bool DesktopWindowTreeHostWin::IsAnimatingClosed() const {
   return pending_close_;
 }

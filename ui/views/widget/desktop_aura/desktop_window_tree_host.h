@@ -149,11 +149,6 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   virtual void OnRootViewLayout() = 0;
 
-  // Called when the DesktopNativeWidgetAura's aura::Window is focused and
-  // blurred.
-  virtual void OnNativeWidgetFocus() = 0;
-  virtual void OnNativeWidgetBlur() = 0;
-
   // Returns true if the Widget was closed but is still showing because of
   // animations.
   virtual bool IsAnimatingClosed() const = 0;

@@ -1096,10 +1096,8 @@ void DesktopNativeWidgetAura::OnWindowActivated(
 void DesktopNativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
                                               aura::Window* lost_focus) {
   if (content_window_ == gained_focus) {
-    desktop_window_tree_host_->OnNativeWidgetFocus();
     native_widget_delegate_->OnNativeFocus();
   } else if (content_window_ == lost_focus) {
-    desktop_window_tree_host_->OnNativeWidgetBlur();
     native_widget_delegate_->OnNativeBlur();
   }
 }

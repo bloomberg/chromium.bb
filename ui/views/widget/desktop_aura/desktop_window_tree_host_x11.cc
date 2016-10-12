@@ -1152,12 +1152,6 @@ void DesktopWindowTreeHostX11::OnRootViewLayout() {
   UpdateMinAndMaxSize();
 }
 
-void DesktopWindowTreeHostX11::OnNativeWidgetFocus() {
-}
-
-void DesktopWindowTreeHostX11::OnNativeWidgetBlur() {
-}
-
 bool DesktopWindowTreeHostX11::IsAnimatingClosed() const {
   return false;
 }
