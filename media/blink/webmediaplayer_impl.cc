@@ -227,7 +227,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       suppress_destruction_errors_(false),
       can_suspend_state_(CanSuspendState::UNKNOWN),
       is_encrypted_(false),
-      underflow_count_(0) {
+      underflow_count_(0),
+      observer_(params.media_observer()) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
   DCHECK(client_);
@@ -334,11 +335,15 @@ void WebMediaPlayerImpl::DisableOverlay() {
 void WebMediaPlayerImpl::enteredFullscreen() {
   if (!force_video_overlays_ && !disable_fullscreen_video_overlays_)
     EnableOverlay();
+  if (observer_)
+    observer_->OnEnteredFullscreen();
 }
 
 void WebMediaPlayerImpl::exitedFullscreen() {
   if (!force_video_overlays_ && !disable_fullscreen_video_overlays_)
     DisableOverlay();
+  if (observer_)
+    observer_->OnExitedFullscreen();
 }
 
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
@@ -968,6 +973,9 @@ void WebMediaPlayerImpl::SetCdm(blink::WebContentDecryptionModule* cdm) {
     return;
   }
 
+  if (observer_)
+    observer_->OnSetCdm(cdm_context);
+
   // Keep the reference to the CDM, as it shouldn't be destroyed until
   // after the pipeline is done with the |cdm_context|.
   pending_cdm_ = std::move(cdm_reference);
@@ -1120,6 +1128,9 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
     video_weblayer_->SetContentsOpaqueIsFixed(true);
     client_->setWebLayer(video_weblayer_.get());
   }
+
+  if (observer_)
+    observer_->OnMetadataChanged(metadata);
 
   CreateWatchTimeReporter();
   UpdatePlayState();

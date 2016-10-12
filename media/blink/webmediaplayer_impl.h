@@ -21,6 +21,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "media/base/media_observer.h"
 #include "media/base/media_tracks.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/renderer_factory.h"
@@ -211,6 +212,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // TODO(hubbe): WMPI_CAST make private.
   void OnPipelineSeeked(bool time_updated);
 
+  // Restart the player/pipeline as soon as possible. This will destroy the
+  // current renderer, if any, and create a new one via the RendererFactory; and
+  // then seek to resume playback at the current position.
+  void ScheduleRestart();
+
   // Distinct states that |delegate_| can be in.
   // TODO(sandersd): This should move into WebMediaPlayerDelegate.
   // (Public for testing.)
@@ -253,9 +259,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Actually seek. Avoids causing |should_notify_time_changed_| to be set when
   // |time_updated| is false.
   void DoSeek(base::TimeDelta time, bool time_updated);
-
-  // Ask for the renderer to be restarted (destructed and recreated).
-  void ScheduleRestart();
 
   // Called after |defer_load_cb_| has decided to allow the load. If
   // |defer_load_cb_| is null this is called immediately.
@@ -553,6 +556,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Number of times we've reached BUFFERING_HAVE_NOTHING during playback.
   int underflow_count_;
   std::unique_ptr<base::ElapsedTimer> underflow_timer_;
+
+  // Monitors the player events.
+  base::WeakPtr<MediaObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

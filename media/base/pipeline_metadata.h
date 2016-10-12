@@ -6,18 +6,26 @@
 #define MEDIA_BASE_PIPELINE_METADATA_H_
 
 #include "base/time/time.h"
+#include "media/base/audio_decoder_config.h"
+#include "media/base/video_decoder_config.h"
 #include "media/base/video_rotation.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
 
 // Metadata describing a pipeline once it has been initialized.
-struct PipelineMetadata {
-  PipelineMetadata()
-      : has_audio(false), has_video(false), video_rotation(VIDEO_ROTATION_0) {}
+struct MEDIA_EXPORT PipelineMetadata {
+  PipelineMetadata();
+  ~PipelineMetadata();
+
+  // Required by Chromium style: Complex class/struct needs an explicit
+  // out-of-line copy constructor.
+  PipelineMetadata(const PipelineMetadata&);
 
   bool has_audio;
   bool has_video;
+  AudioDecoderConfig audio_decoder_config;
+  VideoDecoderConfig video_decoder_config;
   gfx::Size natural_size;
   VideoRotation video_rotation;
   base::Time timeline_offset;

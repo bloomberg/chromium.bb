@@ -10,6 +10,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "media/base/media_observer.h"
 #include "media/blink/media_blink_export.h"
 #include "media/filters/context_3d.h"
 
@@ -55,7 +57,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       const Context3DCB& context_3d,
       const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
       blink::WebContentDecryptionModule* initial_cdm,
-      SurfaceManager* surface_manager);
+      SurfaceManager* surface_manager,
+      base::WeakPtr<MediaObserver> media_observer);
 
   ~WebMediaPlayerParams();
 
@@ -95,6 +98,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
 
   SurfaceManager* surface_manager() const { return surface_manager_; }
 
+  base::WeakPtr<MediaObserver> media_observer() const {
+    return media_observer_;
+  }
+
  private:
   DeferLoadCB defer_load_cb_;
   scoped_refptr<SwitchableAudioRendererSink> audio_renderer_sink_;
@@ -107,6 +114,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
 
   blink::WebContentDecryptionModule* initial_cdm_;
   SurfaceManager* surface_manager_;
+  base::WeakPtr<MediaObserver> media_observer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };

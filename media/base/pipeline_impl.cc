@@ -858,9 +858,12 @@ void PipelineImpl::RendererWrapper::ReportMetadata() {
     metadata.has_video = true;
     metadata.natural_size = stream->video_decoder_config().natural_size();
     metadata.video_rotation = stream->video_rotation();
+    metadata.video_decoder_config = stream->video_decoder_config();
   }
-  if (demuxer_->GetStream(DemuxerStream::AUDIO)) {
+  stream = demuxer_->GetStream(DemuxerStream::AUDIO);
+  if (stream) {
     metadata.has_audio = true;
+    metadata.audio_decoder_config = stream->audio_decoder_config();
   }
 
   main_task_runner_->PostTask(FROM_HERE, base::Bind(&PipelineImpl::OnMetadata,

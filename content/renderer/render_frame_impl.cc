@@ -252,6 +252,11 @@
 #include "media/mojo/clients/mojo_decoder_factory.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+#include "media/remoting/remoting_controller.h"        // nogncheck
+#include "media/remoting/remoting_renderer_factory.h"  // nogncheck
+#endif
+
 using base::Time;
 using base::TimeDelta;
 using blink::WebCachePolicy;
@@ -2657,6 +2662,20 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 #endif  // defined(ENABLE_PLUGINS)
 }
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+std::unique_ptr<media::RemotingController>
+RenderFrameImpl::CreateRemotingController() {
+  media::mojom::RemotingSourcePtr remoting_source;
+  media::mojom::RemotingSourceRequest remoting_source_request =
+      mojo::GetProxy(&remoting_source);
+  media::mojom::RemoterPtr remoter;
+  GetRemoterFactory()->Create(std::move(remoting_source),
+                              mojo::GetProxy(&remoter));
+  return base::MakeUnique<media::RemotingController>(
+      std::move(remoting_source_request), std::move(remoter));
+}
+#endif
+
 blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     const blink::WebMediaPlayerSource& source,
     WebMediaPlayerClient* client,
@@ -2695,7 +2714,17 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #if defined(OS_ANDROID)
   if (UseWebMediaPlayerImpl(url) && !media_surface_manager_)
     media_surface_manager_ = new RendererSurfaceViewManager(this);
+#endif  // defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+  std::unique_ptr<media::RemotingController> remoting_controller =
+      CreateRemotingController();
+  base::WeakPtr<media::MediaObserver> media_observer =
+      remoting_controller->GetWeakPtr();
+#else
+  base::WeakPtr<media::MediaObserver> media_observer = nullptr;
 #endif
+
   media::WebMediaPlayerParams params(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
@@ -2706,7 +2735,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->compositor_task_runner(), context_3d_cb,
       base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
                  base::Unretained(blink::mainThreadIsolate())),
-      initial_cdm, media_surface_manager_);
+      initial_cdm, media_surface_manager_, media_observer);
 
 #if defined(OS_ANDROID)
   if (!UseWebMediaPlayerImpl(url)) {
@@ -2726,15 +2755,17 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
           media_log, GetDecoderFactory(),
           base::Bind(&RenderThreadImpl::GetGpuFactories,
                      base::Unretained(render_thread))));
-#endif  // defined(ENABLE_MOJO_RENDERER)
+#endif
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+  media::RemotingController* remoting_controller_ptr =
+      remoting_controller.get();
+  media_renderer_factory = base::MakeUnique<media::RemotingRendererFactory>(
+      std::move(media_renderer_factory), std::move(remoting_controller));
+#endif
 
   if (!url_index_.get() || url_index_->frame() != frame_)
     url_index_.reset(new media::UrlIndex(frame_));
-
-  // TODO(miu): In a soon-upcoming change, call GetRemoterFactory()->Create() to
-  // allow the local media pipeline to receive notifications about when Media
-  // Remoting can take place. Control logic in/around WebMediaPlayerImpl will
-  // implement media.mojom.RemotingSource. http://crbug.com/643964
 
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
       frame_, client, encrypted_client,
@@ -2744,6 +2775,11 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #if defined(OS_ANDROID)  // WMPI_CAST
   media_player->SetMediaPlayerManager(GetMediaPlayerManager());
   media_player->SetDeviceScaleFactor(render_view_->GetDeviceScaleFactor());
+#endif  // defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+  remoting_controller_ptr->SetSwitchRendererCallback(base::Bind(
+      &media::WebMediaPlayerImpl::ScheduleRestart, media_player->AsWeakPtr()));
 #endif
 
   return media_player;
@@ -6300,11 +6336,13 @@ bool RenderFrameImpl::AreSecureCodecsSupported() {
 #endif  // defined(OS_ANDROID)
 }
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 media::mojom::RemoterFactory* RenderFrameImpl::GetRemoterFactory() {
   if (!remoter_factory_)
     GetRemoteInterfaces()->GetInterface(&remoter_factory_);
   return remoter_factory_.get();
 }
+#endif
 
 media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
   if (cdm_factory_)

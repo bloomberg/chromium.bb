@@ -105,6 +105,7 @@ class CdmFactory;
 class DecoderFactory;
 class MediaPermission;
 class MediaServiceProvider;
+class RemotingController;
 class RendererWebMediaPlayerDelegate;
 class SurfaceManager;
 class UrlIndex;
@@ -1032,7 +1033,10 @@ class CONTENT_EXPORT RenderFrameImpl
   shell::mojom::InterfaceProvider* GetMediaInterfaceProvider();
 #endif
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   media::mojom::RemoterFactory* GetRemoterFactory();
+#endif
+
   media::CdmFactory* GetCdmFactory();
   media::DecoderFactory* GetDecoderFactory();
 
@@ -1059,6 +1063,12 @@ class CONTENT_EXPORT RenderFrameImpl
                      bool final_status_update);
 
   void InitializeBlameContext(RenderFrameImpl* parent_frame);
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+  // Creates the RemotingController to control whether to switch to/from media
+  // remoting from/to local playback.
+  std::unique_ptr<media::RemotingController> CreateRemotingController();
+#endif
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToWebFrame is called, and it is null after
@@ -1198,9 +1208,11 @@ class CONTENT_EXPORT RenderFrameImpl
 
   media::SurfaceManager* media_surface_manager_;
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   // Lazy-bound pointer to the RemoterFactory service in the browser
   // process. Always use the GetRemoterFactory() accessor instead of this.
   media::mojom::RemoterFactoryPtr remoter_factory_;
+#endif
 
   // The CDM and decoder factory attached to this frame, lazily initialized.
   std::unique_ptr<media::CdmFactory> cdm_factory_;

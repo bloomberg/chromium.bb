@@ -119,3 +119,10 @@ declare_args() {
     }
   }
 }
+
+declare_args() {
+  # This switch defines whether the Media Remoting implementation will be built.
+  # When enabled, media is allowed to be renderer and played back on remote
+  # devices when the tab is being casted and other conditions are met.
+  enable_media_remoting = !is_chromecast && !is_ios && !is_android
+}
