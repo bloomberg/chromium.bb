@@ -367,14 +367,16 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // Update the service worker params of the request params.
-  request_params_.should_create_service_worker =
-      (frame_tree_node_->pending_sandbox_flags() &
-       blink::WebSandboxFlags::Origin) != blink::WebSandboxFlags::Origin;
-  if (navigation_handle_->service_worker_handle()) {
-    request_params_.service_worker_provider_id =
-        navigation_handle_->service_worker_handle()
-            ->service_worker_provider_host_id();
-  }
+  bool did_create_service_worker_host =
+      navigation_handle_->service_worker_handle() &&
+      navigation_handle_->service_worker_handle()
+              ->service_worker_provider_host_id() !=
+          kInvalidServiceWorkerProviderId;
+  request_params_.service_worker_provider_id =
+      did_create_service_worker_host
+          ? navigation_handle_->service_worker_handle()
+                ->service_worker_provider_host_id()
+          : kInvalidServiceWorkerProviderId;
 
   // Update the lofi state of the request.
   if (response->head.is_using_lofi)
@@ -469,6 +471,7 @@ void NavigationRequest::OnStartChecksComplete(
   bool can_create_service_worker =
       (frame_tree_node_->pending_sandbox_flags() &
        blink::WebSandboxFlags::Origin) != blink::WebSandboxFlags::Origin;
+  request_params_.should_create_service_worker = can_create_service_worker;
   if (can_create_service_worker) {
     ServiceWorkerContextWrapper* service_worker_context =
         static_cast<ServiceWorkerContextWrapper*>(
