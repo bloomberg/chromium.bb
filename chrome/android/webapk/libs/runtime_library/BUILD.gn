@@ -57,7 +57,6 @@ android_assets("runtime_library_assets") {
     "$target_gen_dir/$runtime_library_dex_asset_name",
     "$target_gen_dir/webapk_dex_version.txt",
   ]
-  disable_compression = true
 
   deps = [
     ":runtime_library_for_assets_java",
