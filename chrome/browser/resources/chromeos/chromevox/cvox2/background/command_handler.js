@@ -516,15 +516,17 @@ CommandHandler.onCommand = function(command) {
       output.withString(target.docUrl || '').go();
       return false;
     case 'copy':
-      var textarea = document.createElement('textarea');
-      document.body.appendChild(textarea);
-      textarea.focus();
-      document.execCommand('paste');
-      var clipboardContent = textarea.value;
-      textarea.remove();
-      cvox.ChromeVox.tts.speak(
-          Msgs.getMsg('copy', [clipboardContent]), cvox.QueueMode.FLUSH);
-      ChromeVoxState.instance.pageSel_ = null;
+      window.setTimeout(function() {
+        var textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+        textarea.focus();
+        document.execCommand('paste');
+        var clipboardContent = textarea.value;
+        textarea.remove();
+        cvox.ChromeVox.tts.speak(
+            Msgs.getMsg('copy', [clipboardContent]), cvox.QueueMode.FLUSH);
+        ChromeVoxState.instance.pageSel_ = null;
+      }, 20);
       return true;
     case 'toggleSelection':
       if (!ChromeVoxState.instance.pageSel_) {

@@ -162,13 +162,29 @@ cursors.Cursor.prototype = {
    * @private
    */
   get selectionNode_() {
-    if (!this.node)
+    var adjustedNode = this.node;
+    if (!adjustedNode)
       return null;
 
-    if (this.node.role == RoleType.inlineTextBox)
-      return this.node.parent;
+    // Selections over line break nodes are broken.
+    var parent = adjustedNode.parent;
+    var grandparent = parent && parent.parent;
+    if (parent.role == RoleType.lineBreak) {
+      adjustedNode = grandparent;
+    } else if (grandparent.role == RoleType.lineBreak) {
+      adjustedNode = grandparent.parent;
+    } else if (this.index_ == cursors.NODE_INDEX ||
+        adjustedNode.role == RoleType.inlineTextBox ||
+        chrome.automation.NameFromType[adjustedNode.nameFrom] != 'contents') {
+      // A node offset or unselectable character offset.
+      adjustedNode = parent;
+    } else {
+      // A character offset into content.
+      adjustedNode =
+          adjustedNode.find({role: RoleType.staticText}) || adjustedNode;
+    }
 
-    return this.node;
+    return adjustedNode;
   },
 
   /**
@@ -180,7 +196,10 @@ cursors.Cursor.prototype = {
    */
   get selectionIndex_() {
     var adjustedIndex = this.index_;
-    if (this.node.role == RoleType.inlineTextBox) {
+
+    // Selecting things under a line break is currently broken.
+    if (this.node.role == RoleType.inlineTextBox &&
+        this.node.parent && this.node.parent.role != RoleType.lineBreak) {
       if (adjustedIndex == cursors.NODE_INDEX)
         adjustedIndex = 0;
 
@@ -189,11 +208,20 @@ cursors.Cursor.prototype = {
         adjustedIndex += sibling.name.length;
         sibling = sibling.previousSibling;
       }
-    } else if (this.index_ == cursors.NODE_INDEX) {
-      // Indicies of this kind are buggy. Set it to 0 (different than the DOM
-      // index in parent convention).
-      adjustedIndex = 0;
+    } else if (this.index_ == cursors.NODE_INDEX ||
+        chrome.automation.NameFromType[this.node.nameFrom] != 'contents') {
+      // A node offset or unselectable character offset.
+
+      // The selected node could have been adjusted upwards in the tree.
+      var childOfSelection = this.node;
+      do {
+        adjustedIndex = childOfSelection.indexInParent;
+        childOfSelection = childOfSelection.parent;
+      } while (childOfSelection && childOfSelection != this.selectionNode_);
     }
+    // A character offset into content is the remaining case. It requires no
+    // adjustment.
+
     return adjustedIndex;
   },
 
@@ -617,7 +645,7 @@ cursors.Range.prototype = {
       // We want to adjust to select the entire node for node offsets;
       // otherwise, use the plain character offset.
       var startIndex = this.start.selectionIndex_;
-      var endIndex = this.end.index == cursors.NODE_INDEX ?
+      var endIndex = this.end.index_ == cursors.NODE_INDEX ?
           this.end.selectionIndex_ + 1 : this.end.selectionIndex_;
 
       chrome.automation.setDocumentSelection(

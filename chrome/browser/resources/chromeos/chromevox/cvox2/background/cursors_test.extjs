@@ -347,7 +347,7 @@ TEST_F('CursorsTest', 'SingleDocSelection', function() {
         assertEquals(link.firstChild, root.anchorObject);
         assertEquals(0, root.anchorOffset);
         assertEquals(link.firstChild, root.focusObject);
-        assertEquals(16, root.focusOffset);
+        assertEquals(1, root.focusOffset);
         this.listenOnce(root, 'textSelectionChanged', verifySel);
         multiSel.select();
       } else {
@@ -381,16 +381,14 @@ TEST_F('CursorsTest', 'MultiLineOffsetSelection', function() {
     secondLineCursor = new cursors.Cursor(secondLine, 1);
     assertEquals(7, secondLineCursor.selectionIndex_);
 
-    // Now, try selecting via node offsets. This defaults to index 0 and not
-    // index in parent because Blink accessibility selection doesn't always
-    // work.
+    // Now, try selecting via node offsets.
     var cursor = new cursors.Cursor(root.firstChild, -1);
-    assertEquals(root.firstChild, cursor.selectionNode_);
+    assertEquals(root, cursor.selectionNode_);
     assertEquals(0, cursor.selectionIndex_);
 
     cursor = new cursors.Cursor(root.firstChild.nextSibling, -1);
-    assertEquals(root.firstChild.nextSibling, cursor.selectionNode_);
-    assertEquals(0, cursor.selectionIndex_);
+    assertEquals(root, cursor.selectionNode_);
+    assertEquals(1, cursor.selectionIndex_);
   });
 });
 
