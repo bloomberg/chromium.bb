@@ -79,8 +79,8 @@ void scaleHorizontallyAndTranslate(GraphicsContext& context,
 void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context,
                                                      const LayoutRect& boxRect,
                                                      bool clip) const {
-  ASSERT(!m_needsFontUpdate);
-  ASSERT(m_isCombined);
+  DCHECK_EQ(m_needsFontUpdate, false);
+  DCHECK(m_isCombined);
 
   // On input, the |boxRect| is:
   // 1. Horizontal flow, rotated from the main vertical flow coordinate using
@@ -100,7 +100,7 @@ void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context,
   float width;
   if (m_scaleX >= 1.0f) {
     // Fast path, more than 90% of cases
-    ASSERT(m_scaleX == 1.0f);
+    DCHECK_EQ(m_scaleX, 1.0f);
     float offsetX = (cellHeight - m_combinedTextWidth) / 2;
     context.concatCTM(AffineTransform::translation(offsetX, offsetY));
     width = boxRect.width();
