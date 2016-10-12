@@ -339,6 +339,7 @@ Program::Program(ProgramManager* manager, GLuint service_id)
       link_status_(false),
       uniforms_cleared_(false),
       transform_feedback_buffer_mode_(GL_NONE),
+      effective_transform_feedback_buffer_mode_(GL_NONE),
       fragment_output_type_mask_(0u),
       fragment_output_written_mask_(0u) {
   DCHECK(manager_);
@@ -693,6 +694,9 @@ void Program::Update() {
   UpdateFragmentOutputBaseTypes();
   UpdateVertexInputBaseTypes();
   UpdateUniformBlockSizeInfo();
+
+  effective_transform_feedback_buffer_mode_ = transform_feedback_buffer_mode_;
+  effective_transform_feedback_varyings_ = transform_feedback_varyings_;
 
   valid_ = true;
 }
@@ -1326,8 +1330,8 @@ bool Program::Link(ShaderManager* manager,
                                  attached_shaders_[0].get(),
                                  attached_shaders_[1].get(),
                                  &bind_attrib_location_map_,
-                                 transform_feedback_varyings_,
-                                 transform_feedback_buffer_mode_,
+                                 effective_transform_feedback_varyings_,
+                                 effective_transform_feedback_buffer_mode_,
                                  shader_callback);
       }
       UMA_HISTOGRAM_CUSTOM_COUNTS(

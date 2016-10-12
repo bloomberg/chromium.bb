@@ -3975,7 +3975,6 @@ void GLES2DecoderImpl::DeleteBuffersHelper(GLsizei n,
     if (buffer && !buffer->IsDeleted()) {
       buffer->RemoveMappedRange();
       state_.RemoveBoundBuffer(buffer);
-      transform_feedback_manager_->RemoveBoundBuffer(buffer);
       RemoveBuffer(client_id);
     }
   }
@@ -5754,13 +5753,46 @@ void GLES2DecoderImpl::DoBindTransformFeedback(
 
 void GLES2DecoderImpl::DoBeginTransformFeedback(GLenum primitive_mode) {
   const char* function_name = "glBeginTransformFeedback";
-  DCHECK(state_.bound_transform_feedback.get());
-  if (state_.bound_transform_feedback->active()) {
+  TransformFeedback* transform_feedback = state_.bound_transform_feedback.get();
+  DCHECK(transform_feedback);
+  if (transform_feedback->active()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
                        "transform feedback is already active");
     return;
   }
-  state_.bound_transform_feedback->DoBeginTransformFeedback(primitive_mode);
+  if (!CheckCurrentProgram(function_name)) {
+    return;
+  }
+  Program* program = state_.current_program.get();
+  DCHECK(program);
+  size_t required_buffer_count =
+      program->effective_transform_feedback_varyings().size();
+  if (required_buffer_count == 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       "no active transform feedback varyings");
+    return;
+  }
+  if (required_buffer_count > 1 &&
+      GL_INTERLEAVED_ATTRIBS ==
+          program->effective_transform_feedback_buffer_mode()) {
+    required_buffer_count = 1;
+  }
+  for (size_t ii = 0; ii < required_buffer_count; ++ii) {
+    Buffer* buffer = transform_feedback->GetBufferBinding(ii);
+    if (!buffer) {
+      std::string msg = base::StringPrintf("missing buffer bound at index %i",
+                                           static_cast<int>(ii));
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, msg.c_str());
+      return;
+    }
+    if (buffer->GetMappedRange()) {
+      std::string msg = base::StringPrintf(
+          "bound buffer bound at index %i is mapped", static_cast<int>(ii));
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, msg.c_str());
+      return;
+    }
+  }
+  transform_feedback->DoBeginTransformFeedback(primitive_mode);
 }
 
 void GLES2DecoderImpl::DoEndTransformFeedback() {
@@ -9703,10 +9735,18 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
     return error::kNoError;
   }
 
-  if (feature_info_->IsWebGL2OrES3Context() && !AttribsTypeMatch()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-        "vertexAttrib function must match shader attrib type");
-    return error::kNoError;
+  if (feature_info_->IsWebGL2OrES3Context()) {
+    if (!AttribsTypeMatch()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                         "vertexAttrib function must match shader attrib type");
+      return error::kNoError;
+    }
+    if (state_.bound_array_buffer.get() &&
+        state_.bound_array_buffer->GetMappedRange()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                         "bound ARRAY_BUFFER is mapped");
+      return error::kNoError;
+    }
   }
 
   base::CheckedNumeric<GLuint> checked_max_vertex = first;
@@ -9841,10 +9881,25 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
     return error::kNoError;
   }
 
-  if (feature_info_->IsWebGL2OrES3Context() && !AttribsTypeMatch()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-        "vertexAttrib function must match shader attrib type");
-    return error::kNoError;
+  if (feature_info_->IsWebGL2OrES3Context()) {
+    if (!AttribsTypeMatch()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                         "vertexAttrib function must match shader attrib type");
+      return error::kNoError;
+    }
+    if (state_.bound_array_buffer.get() &&
+        state_.bound_array_buffer->GetMappedRange()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                         "bound ARRAY_BUFFER is mapped");
+      return error::kNoError;
+    }
+    if (state_.vertex_attrib_manager->element_array_buffer() &&
+        state_.vertex_attrib_manager->element_array_buffer()
+            ->GetMappedRange()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                         "bound ELEMENT_ARRAY_BUFFER is mapped");
+      return error::kNoError;
+    }
   }
 
   GLuint max_vertex_accessed;
@@ -17159,6 +17214,12 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
       !AllBitsSet(access, GL_MAP_WRITE_BIT)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
         "MAP_FLUSH_EXPLICIT_BIT set without MAP_WRITE_BIT");
+    return error::kNoError;
+  }
+  if (target == GL_TRANSFORM_FEEDBACK_BUFFER &&
+      state_.bound_transform_feedback->active()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                       "transform feedback is active");
     return error::kNoError;
   }
   if (AllBitsSet(access, GL_MAP_INVALIDATE_BUFFER_BIT)) {

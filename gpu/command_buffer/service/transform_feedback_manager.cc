@@ -116,12 +116,5 @@ void TransformFeedbackManager::RemoveTransformFeedback(GLuint client_id) {
   }
 }
 
-void TransformFeedbackManager::RemoveBoundBuffer(Buffer* buffer) {
-  for (auto iter = transform_feedbacks_.begin();
-       iter != transform_feedbacks_.end(); ++iter) {
-    iter->second->RemoveBoundBuffer(buffer);
-  }
-}
-
 }  // namespace gles2
 }  // namespace gpu
