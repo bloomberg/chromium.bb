@@ -188,9 +188,10 @@ void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(
     const WebServiceWorkerRequest& webRequest) {
   if (!OriginTrials::foreignFetchEnabled(workerGlobalScope())) {
     // If origin trial tokens have expired, or are otherwise no longer valid
-    // no events should be dispatched.
-    // TODO(mek): Ideally the browser wouldn't even start the service worker
-    // if its tokens have expired.
+    // no events should be dispatched. We can check it in the browser process if
+    // the service worker is installed after M56. But if the service worker was
+    // installed in old version of Chrome (< M56) we have to check it in the
+    // renderer process (here).
     ServiceWorkerGlobalScopeClient::from(workerGlobalScope())
         ->respondToFetchEvent(responseID, WTF::currentTime());
     ServiceWorkerGlobalScopeClient::from(workerGlobalScope())

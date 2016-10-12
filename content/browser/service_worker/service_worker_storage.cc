@@ -408,6 +408,8 @@ void ServiceWorkerStorage::StoreRegistration(
   data.is_active = (version == registration->active_version());
   data.foreign_fetch_scopes = version->foreign_fetch_scopes();
   data.foreign_fetch_origins = version->foreign_fetch_origins();
+  if (version->origin_trial_tokens())
+    data.origin_trial_tokens = *version->origin_trial_tokens();
 
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
@@ -1260,6 +1262,8 @@ ServiceWorkerStorage::GetOrCreateRegistration(
     version->script_cache_map()->SetResources(resources);
     version->set_foreign_fetch_scopes(data.foreign_fetch_scopes);
     version->set_foreign_fetch_origins(data.foreign_fetch_origins);
+    if (data.origin_trial_tokens)
+      version->SetValidOriginTrialTokens(*data.origin_trial_tokens);
   }
 
   if (version->status() == ServiceWorkerVersion::ACTIVATED)

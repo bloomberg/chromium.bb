@@ -8,6 +8,15 @@ option optimize_for = LITE_RUNTIME;
 
 package content;
 
+message ServiceWorkerOriginTrialFeature {
+  required string name = 1;
+  repeated string tokens = 2;
+}
+
+message ServiceWorkerOriginTrialInfo {
+  repeated ServiceWorkerOriginTrialFeature features = 1;
+}
+
 message ServiceWorkerRegistrationData {
   required int64 registration_id = 1;
   required string scope_url = 2;
@@ -28,6 +37,12 @@ message ServiceWorkerRegistrationData {
 
   repeated string foreign_fetch_scope = 9;
   repeated string foreign_fetch_origin = 10;
+
+  // If the registration data was created by old Chrome (< M56),
+  // |origin_trial_tokens| is not set. In this case, we have to start the
+  // Service Worker and load the main script resource in ServiceWorkerStorage
+  // to check the HTTP header.
+  optional ServiceWorkerOriginTrialInfo origin_trial_tokens = 11;
 }
 
 message ServiceWorkerResourceRecord {

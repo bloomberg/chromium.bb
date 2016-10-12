@@ -34,6 +34,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/common/origin_trials/trial_token_validator.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_start_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -700,6 +701,12 @@ void ServiceWorkerVersion::Doom() {
   context_->storage()->PurgeResources(resources);
 }
 
+void ServiceWorkerVersion::SetValidOriginTrialTokens(
+    const TrialTokenValidator::FeatureToTokensMap& tokens) {
+  origin_trial_tokens_ =
+      TrialTokenValidator::GetValidTokens(url::Origin(scope()), tokens);
+}
+
 void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
   embedded_worker()->set_devtools_attached(attached);
   if (stop_when_devtools_detached_ && !attached) {
@@ -741,6 +748,18 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
 void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
     const net::HttpResponseInfo& http_info) {
   main_script_http_info_.reset(new net::HttpResponseInfo(http_info));
+
+  // Updates |origin_trial_tokens_| if it is not set yet. This happens when:
+  //  1) The worker is a new one.
+  //  OR
+  //  2) The worker is an existing one but the entry in ServiceWorkerDatabase
+  //     was written by old version Chrome (< M56), so |origin_trial_tokens|
+  //     wasn't set in the entry.
+  if (!origin_trial_tokens_) {
+    origin_trial_tokens_ = TrialTokenValidator::GetValidTokensFromHeaders(
+        url::Origin(scope()), http_info.headers.get());
+  }
+
   FOR_EACH_OBSERVER(Listener, listeners_,
                     OnMainScriptHttpResponseInfoSet(this));
 }

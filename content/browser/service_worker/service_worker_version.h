@@ -33,6 +33,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
+#include "content/common/origin_trials/trial_token_validator.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
@@ -352,6 +353,19 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void set_pause_after_download(bool pause_after_download) {
     pause_after_download_ = pause_after_download;
   }
+
+  // Returns nullptr if the main script is not loaded yet and:
+  //  1) The worker is a new one.
+  //  OR
+  //  2) The worker is an existing one but the entry in ServiceWorkerDatabase
+  //     was written by old version of Chrome (< M56), so |origin_trial_tokens|
+  //     wasn't set in the entry.
+  const TrialTokenValidator::FeatureToTokensMap* origin_trial_tokens() const {
+    return origin_trial_tokens_.get();
+  }
+  // Set valid tokens in |tokens|. Invalid tokens in |tokens| are ignored.
+  void SetValidOriginTrialTokens(
+      const TrialTokenValidator::FeatureToTokensMap& tokens);
 
   void SetDevToolsAttached(bool attached);
 
@@ -747,6 +761,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   std::vector<int> pending_skip_waiting_requests_;
   std::unique_ptr<net::HttpResponseInfo> main_script_http_info_;
+
+  std::unique_ptr<TrialTokenValidator::FeatureToTokensMap> origin_trial_tokens_;
 
   // If not OK, the reason that StartWorker failed. Used for
   // running |start_callbacks_|.

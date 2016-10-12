@@ -1223,6 +1223,16 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
     }
     out->foreign_fetch_origins.push_back(parsed_origin);
   }
+  if (data.has_origin_trial_tokens()) {
+    const ServiceWorkerOriginTrialInfo& info = data.origin_trial_tokens();
+    TrialTokenValidator::FeatureToTokensMap origin_trial_tokens;
+    for (int i = 0; i < info.features_size(); ++i) {
+      const auto& feature = info.features(i);
+      for (int j = 0; j < feature.tokens_size(); ++j)
+        origin_trial_tokens[feature.name()].push_back(feature.tokens(j));
+    }
+    out->origin_trial_tokens = origin_trial_tokens;
+  }
 
   return ServiceWorkerDatabase::STATUS_OK;
 }
@@ -1256,6 +1266,15 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
   }
   for (const url::Origin& origin : registration.foreign_fetch_origins)
     data.add_foreign_fetch_origin(origin.Serialize());
+  if (registration.origin_trial_tokens) {
+    ServiceWorkerOriginTrialInfo* info = data.mutable_origin_trial_tokens();
+    for (const auto& feature : *registration.origin_trial_tokens) {
+      ServiceWorkerOriginTrialFeature* feature_out = info->add_features();
+      feature_out->set_name(feature.first);
+      for (const auto& token : feature.second)
+        feature_out->add_tokens(token);
+    }
+  }
 
   std::string value;
   bool success = data.SerializeToString(&value);

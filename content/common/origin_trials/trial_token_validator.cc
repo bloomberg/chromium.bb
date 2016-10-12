@@ -5,6 +5,7 @@
 #include "content/common/origin_trials/trial_token_validator.h"
 
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "content/common/origin_trials/trial_token.h"
 #include "content/public/common/content_client.h"
@@ -81,6 +82,54 @@ bool TrialTokenValidator::RequestEnablesFeature(
         return true;
   }
   return false;
+}
+
+std::unique_ptr<TrialTokenValidator::FeatureToTokensMap>
+TrialTokenValidator::GetValidTokensFromHeaders(
+    const url::Origin& origin,
+    const net::HttpResponseHeaders* headers) {
+  std::unique_ptr<FeatureToTokensMap> tokens(
+      base::MakeUnique<FeatureToTokensMap>());
+  if (!base::FeatureList::IsEnabled(features::kOriginTrials))
+    return tokens;
+
+  if (!IsOriginSecure(origin.GetURL()))
+    return tokens;
+
+  size_t iter = 0;
+  std::string token;
+  while (headers->EnumerateHeader(&iter, "Origin-Trial", &token)) {
+    std::string token_feature;
+    if (TrialTokenValidator::ValidateToken(token, origin, &token_feature) ==
+        blink::WebOriginTrialTokenStatus::Success) {
+      (*tokens)[token_feature].push_back(token);
+    }
+  }
+  return tokens;
+}
+
+std::unique_ptr<TrialTokenValidator::FeatureToTokensMap>
+TrialTokenValidator::GetValidTokens(const url::Origin& origin,
+                                    const FeatureToTokensMap& tokens) {
+  std::unique_ptr<FeatureToTokensMap> out_tokens(
+      base::MakeUnique<FeatureToTokensMap>());
+  if (!base::FeatureList::IsEnabled(features::kOriginTrials))
+    return out_tokens;
+
+  if (!IsOriginSecure(origin.GetURL()))
+    return out_tokens;
+
+  for (const auto& feature : tokens) {
+    for (const std::string& token : feature.second) {
+      std::string token_feature;
+      if (TrialTokenValidator::ValidateToken(token, origin, &token_feature) ==
+          blink::WebOriginTrialTokenStatus::Success) {
+        DCHECK_EQ(token_feature, feature.first);
+        (*out_tokens)[feature.first].push_back(token);
+      }
+    }
+  }
+  return out_tokens;
 }
 
 }  // namespace content
