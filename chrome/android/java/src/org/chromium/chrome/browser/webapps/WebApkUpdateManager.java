@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.WebappRegistry.FetchWebappDataStorageCallback;
 import org.chromium.webapk.lib.client.WebApkVersion;
-import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.util.concurrent.TimeUnit;
@@ -38,6 +37,11 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      * server if the previous update attempt failed.
      */
     private static final long RETRY_UPDATE_DURATION = TimeUnit.HOURS.toMillis(12L);
+
+    /**
+     * Id of WebAPK data in WebappDataStorage
+     */
+    private String mId;
 
     /** Version number of //chrome/android/webapk/shell_apk code. */
     private int mShellApkVersion;
@@ -65,6 +69,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
             return;
         }
 
+        mId = info.id();
         mVersionCode = packageInfo.versionCode;
         final Bundle metadata = packageInfo.applicationInfo.metaData;
         mShellApkVersion =
@@ -119,8 +124,8 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      */
     public void updateAsync(ManifestUpgradeDetector.FetchedManifestData data) {
         String packageName = mUpgradeDetector.getWebApkPackageName();
-        nativeUpdateAsync(data.startUrl, data.scopeUrl, data.name, data.shortName, data.iconUrl,
-                data.iconMurmur2Hash, data.icon, data.displayMode, data.orientation,
+        nativeUpdateAsync(mId, data.startUrl, data.scopeUrl, data.name, data.shortName,
+                data.iconUrl, data.iconMurmur2Hash, data.icon, data.displayMode, data.orientation,
                 data.themeColor, data.backgroundColor, mUpgradeDetector.getManifestUrl(),
                 packageName, mVersionCode);
     }
@@ -171,8 +176,8 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      * fails.
      */
     @CalledByNative
-    private static void onBuiltWebApk(final boolean success, String webapkPackage) {
-        WebappRegistry.getWebappDataStorage(WebApkConstants.WEBAPK_ID_PREFIX + webapkPackage,
+    private static void onBuiltWebApk(String id, final boolean success) {
+        WebappRegistry.getWebappDataStorage(id,
                 new FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
@@ -184,8 +189,8 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
                 });
     }
 
-    private static native void nativeUpdateAsync(String startUrl, String scope, String name,
-            String shortName, String iconUrl, String iconMurmur2Hash, Bitmap icon, int displayMode,
-            int orientation, long themeColor, long backgroundColor, String manifestUrl,
-            String webApkPackage, int webApkVersion);
+    private static native void nativeUpdateAsync(String id, String startUrl, String scope,
+            String name, String shortName, String iconUrl, String iconMurmur2Hash, Bitmap icon,
+            int displayMode, int orientation, long themeColor, long backgroundColor,
+            String manifestUrl, String webApkPackage, int webApkVersion);
 }

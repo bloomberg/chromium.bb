@@ -25,7 +25,8 @@ bool WebApkUpdateManager::Register(JNIEnv* env) {
 }
 
 // static
-void WebApkUpdateManager::OnBuiltWebApk(bool success,
+void WebApkUpdateManager::OnBuiltWebApk(const std::string& id,
+                                        bool success,
                                         const std::string& webapk_package) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
@@ -36,15 +37,15 @@ void WebApkUpdateManager::OnBuiltWebApk(bool success,
     LOG(WARNING) << "Server request to update WebAPK failed.";
   }
 
-  base::android::ScopedJavaLocalRef<jstring> java_webapk_package =
-      base::android::ConvertUTF8ToJavaString(env, webapk_package);
-  Java_WebApkUpdateManager_onBuiltWebApk(env, success,
-                                         java_webapk_package.obj());
+  base::android::ScopedJavaLocalRef<jstring> java_id =
+      base::android::ConvertUTF8ToJavaString(env, id);
+  Java_WebApkUpdateManager_onBuiltWebApk(env, java_id.obj(), success);
 }
 
 // static JNI method.
 static void UpdateAsync(JNIEnv* env,
                         const JavaParamRef<jclass>& clazz,
+                        const JavaParamRef<jstring>& java_id,
                         const JavaParamRef<jstring>& java_start_url,
                         const JavaParamRef<jstring>& java_scope,
                         const JavaParamRef<jstring>& java_name,
@@ -67,6 +68,7 @@ static void UpdateAsync(JNIEnv* env,
     return;
   }
 
+  std::string id(ConvertJavaStringToUTF8(env, java_id));
   GURL start_url(ConvertJavaStringToUTF8(env, java_start_url));
   GURL scope(ConvertJavaStringToUTF8(env, java_scope));
   GURL web_manifest_url(ConvertJavaStringToUTF8(env, java_web_manifest_url));
@@ -96,6 +98,6 @@ static void UpdateAsync(JNIEnv* env,
   WebApkInstaller* installer = new WebApkInstaller(info, icon_bitmap);
   installer->UpdateAsync(
       profile,
-      base::Bind(&WebApkUpdateManager::OnBuiltWebApk),
+      base::Bind(&WebApkUpdateManager::OnBuiltWebApk, id),
       icon_murmur2_hash, webapk_package, java_webapk_version);
 }
