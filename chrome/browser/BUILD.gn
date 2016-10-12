@@ -1932,8 +1932,6 @@ split_static_library("browser") {
     sources += [
       "loader/data_reduction_proxy_resource_throttle_android.cc",
       "loader/data_reduction_proxy_resource_throttle_android.h",
-      "safe_browsing/mock_permission_report_sender.cc",
-      "safe_browsing/mock_permission_report_sender.h",
       "safe_browsing/permission_reporter.cc",
       "safe_browsing/permission_reporter.h",
       "safe_browsing/ping_manager.cc",
@@ -4065,6 +4063,15 @@ static_library("test_support") {
     "sync/profile_sync_test_util.cc",
     "sync/profile_sync_test_util.h",
   ]
+
+  if (safe_browsing_mode != 0) {
+    # "Safe Browsing Basic" files used for safe browsing in full mode
+    # (safe_browsing=1) and mobile (=2)
+    sources += [
+      "safe_browsing/mock_permission_report_sender.cc",
+      "safe_browsing/mock_permission_report_sender.h",
+    ]
+  }
 
   configs += [ "//build/config:precompiled_headers" ]
 
