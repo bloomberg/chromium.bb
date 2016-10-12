@@ -78,35 +78,21 @@ bool MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
     std::unique_ptr<CreatePresentationConnectionRequest> request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Check if the media router dialog exists for |initiator| and return if so.
-  if (IsShowingMediaRouterDialog())
-    return false;
-
-  create_connection_request_ = std::move(request);
-  initiator_observer_.reset(new InitiatorWebContentsObserver(initiator_, this));
-  CreateMediaRouterDialog();
-
-  // Show the initiator holding the existing media router dialog.
-  ActivateInitiatorWebContents();
-
-  MediaRouterMetrics::RecordMediaRouterDialogOrigin(
-      MediaRouterDialogOpenOrigin::PAGE);
-
-  return true;
+  bool dialog_needs_creation = !IsShowingMediaRouterDialog();
+  if (dialog_needs_creation) {
+    create_connection_request_ = std::move(request);
+    MediaRouterMetrics::RecordMediaRouterDialogOrigin(
+        MediaRouterDialogOpenOrigin::PAGE);
+  }
+  FocusOnMediaRouterDialog(dialog_needs_creation);
+  return dialog_needs_creation;
 }
 
 bool MediaRouterDialogController::ShowMediaRouterDialog() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Don't create dialog if it already exists.
   bool dialog_needs_creation = !IsShowingMediaRouterDialog();
-  if (dialog_needs_creation) {
-    initiator_observer_.reset(
-        new InitiatorWebContentsObserver(initiator_, this));
-    CreateMediaRouterDialog();
-  }
-
-  ActivateInitiatorWebContents();
+  FocusOnMediaRouterDialog(dialog_needs_creation);
   return dialog_needs_creation;
 }
 
@@ -116,7 +102,13 @@ void MediaRouterDialogController::HideMediaRouterDialog() {
   Reset();
 }
 
-void MediaRouterDialogController::ActivateInitiatorWebContents() {
+void MediaRouterDialogController::FocusOnMediaRouterDialog(
+    bool dialog_needs_creation) {
+  if (dialog_needs_creation) {
+    initiator_observer_.reset(
+        new InitiatorWebContentsObserver(initiator_, this));
+    CreateMediaRouterDialog();
+  }
   initiator_->GetDelegate()->ActivateContents(initiator_);
 }
 

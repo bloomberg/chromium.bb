@@ -58,8 +58,9 @@ class MediaRouterDialogController {
   // instance.
   explicit MediaRouterDialogController(content::WebContents* initiator);
 
-  // Activates the WebContents that initiated the dialog, e.g. focuses the tab.
-  void ActivateInitiatorWebContents();
+  // Creates a media router dialog if necessary, then activates the WebContents
+  // that initiated the dialog, e.g. focuses the tab.
+  void FocusOnMediaRouterDialog(bool dialog_needs_creation);
 
   // Passes the ownership of the CreatePresentationConnectionRequest to the
   // caller.
