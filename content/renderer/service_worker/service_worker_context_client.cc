@@ -465,6 +465,14 @@ void ServiceWorkerContextClient::willDestroyWorkerContext(
   // (while we're still on the worker thread).
   proxy_ = NULL;
 
+  // Aborts the all pending sync event callbacks.
+  for (WorkerContextData::SyncEventCallbacksMap::iterator it(
+           &context_->sync_event_callbacks);
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
+                              base::Time::Now());
+  }
+
   // We have to clear callbacks now, as they need to be freed on the
   // same thread.
   context_.reset();
