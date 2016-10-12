@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.15",
+  "version": "11.16",
   "entries": [
     {
       "id": 1,
@@ -1346,6 +1346,22 @@ LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "features": [
         "accelerated_vpx_decode"
+      ]
+    },
+    {
+      "id": 124,
+      "description": "New AMD drivers have rendering glitches with GPU Rasterization",
+      "cr_bugs": [653538],
+      "os" : {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "driver_version": {
+        "op": ">",
+        "value": "16.200.1035.1001"
+      },
+      "features": [
+        "gpu_rasterization"
       ]
     }
   ]
