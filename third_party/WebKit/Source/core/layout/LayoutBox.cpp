@@ -2894,6 +2894,10 @@ void LayoutBox::updateLogicalHeight() {
   setMarginAfter(computedValues.m_margins.m_after);
 }
 
+static inline Length heightForDocumentElement(const Document& document) {
+  return document.documentElement()->layoutObject()->style()->logicalHeight();
+}
+
 void LayoutBox::computeLogicalHeight(
     LayoutUnit logicalHeight,
     LayoutUnit logicalTop,
@@ -3003,13 +3007,8 @@ void LayoutBox::computeLogicalHeight(
   // of, and it ends up being 0. That is bad.
   bool paginatedContentNeedsBaseHeight =
       document().printing() && h.isPercentOrCalc() &&
-      (isDocumentElement() || (isBody() &&
-                               document()
-                                   .documentElement()
-                                   ->layoutObject()
-                                   ->style()
-                                   ->logicalHeight()
-                                   .isPercentOrCalc())) &&
+      (isDocumentElement() ||
+       (isBody() && heightForDocumentElement(document()).isPercentOrCalc())) &&
       !isInline();
   if (stretchesToViewport() || paginatedContentNeedsBaseHeight) {
     LayoutUnit margins = collapsedMarginBefore() + collapsedMarginAfter();
