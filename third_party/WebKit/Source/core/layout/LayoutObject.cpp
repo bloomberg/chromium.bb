@@ -2710,10 +2710,16 @@ void LayoutObject::willBeRemovedFromTree() {
   }
 }
 
-void LayoutObject::maybeClearIsScrollAnchorObject() {
-  if (m_bitfields.isScrollAnchorObject())
-    m_bitfields.setIsScrollAnchorObject(
-        findReferencingScrollAnchors(this, DontClear));
+void LayoutObject::clearIsScrollAnchorObject(bool unconditionally) {
+  if (!m_bitfields.isScrollAnchorObject())
+    return;
+
+  if (unconditionally) {
+    m_bitfields.setIsScrollAnchorObject(false);
+    return;
+  }
+  m_bitfields.setIsScrollAnchorObject(
+      findReferencingScrollAnchors(this, DontClear));
 }
 
 void LayoutObject::removeFromLayoutFlowThread() {

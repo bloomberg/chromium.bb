@@ -1746,9 +1746,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   void setIsScrollAnchorObject() { m_bitfields.setIsScrollAnchorObject(true); }
-  // Clears the IsScrollAnchorObject bit, unless any ScrollAnchor still refers
-  // to us.
-  void maybeClearIsScrollAnchorObject();
+
+  // If unconditionally is true, you are responsible for ensuring that
+  // no ScrollAnchors reference this LayoutObject.
+  void clearIsScrollAnchorObject(bool unconditionally = false);
 
   bool scrollAnchorDisablingStyleChanged() {
     return m_bitfields.scrollAnchorDisablingStyleChanged();

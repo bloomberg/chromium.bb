@@ -241,6 +241,34 @@ TEST_F(ScrollAnchorTest, AnchoringWhenContentRemovedFromScrollingDiv) {
             scrollAnchor(scroller).anchorObject());
 }
 
+// Test that a non-anchoring scroll on scroller clears scroll anchors for all
+// parent scrollers.
+TEST_F(ScrollAnchorTest, ClearScrollAnchorsOnAncestors) {
+  setBodyInnerHTML(
+      "<style>"
+      "    body { height: 1000px } div { height: 200px }"
+      "    #scroller { height: 100px; width: 200px; overflow: scroll; }"
+      "</style>"
+      "<div id='changer'>abc</div>"
+      "<div id='anchor'>def</div>"
+      "<div id='scroller'><div></div></div>");
+
+  ScrollableArea* viewport = layoutViewport();
+
+  scrollLayoutViewport(ScrollOffset(0, 250));
+  setHeight(document().getElementById("changer"), 300);
+
+  EXPECT_EQ(350, viewport->scrollOffsetInt().height());
+  EXPECT_EQ(document().getElementById("anchor")->layoutObject(),
+            scrollAnchor(viewport).anchorObject());
+
+  // Scrolling the nested scroller should clear the anchor on the main frame.
+  ScrollableArea* scroller =
+      scrollerForElement(document().getElementById("scroller"));
+  scroller->scrollBy(ScrollOffset(0, 100), UserScroll);
+  EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
+}
+
 TEST_F(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing) {
   setBodyInnerHTML(
       "<style> body { height: 1000px } </style>"

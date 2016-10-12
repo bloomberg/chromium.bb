@@ -9,6 +9,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/api/LayoutBoxItem.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/Histogram.h"
 
@@ -34,7 +35,7 @@ void ScrollAnchor::setScroller(ScrollableArea* scroller) {
   DCHECK(scroller->isRootFrameViewport() || scroller->isFrameView() ||
          scroller->isPaintLayerScrollableArea());
   m_scroller = scroller;
-  clear();
+  clearSelf();
 }
 
 // TODO(pilgrim): Replace all instances of scrollerLayoutBox with
@@ -222,7 +223,7 @@ void ScrollAnchor::save() {
           ? scrollOffset.height()
           : scrollOffset.width();
   if (blockDirectionScrollOffset == 0) {
-    clear();
+    clearSelf();
     return;
   }
 
@@ -278,7 +279,7 @@ void ScrollAnchor::restore() {
     // Note that we only clear if the adjustment would have been non-zero.
     // This minimizes redundant calls to findAnchor.
     // TODO(skobes): add UMA metric for this.
-    clear();
+    clearSelf();
 
     DEFINE_STATIC_LOCAL(EnumerationHistogram, suppressedBySanaclapHistogram,
                         ("Layout.ScrollAnchor.SuppressedBySanaclap", 2));
@@ -298,12 +299,36 @@ void ScrollAnchor::restore() {
                     UseCounter::ScrollAnchored);
 }
 
-void ScrollAnchor::clear() {
+void ScrollAnchor::clearSelf(bool unconditionally) {
   LayoutObject* anchorObject = m_anchorObject;
   m_anchorObject = nullptr;
 
   if (anchorObject)
-    anchorObject->maybeClearIsScrollAnchorObject();
+    anchorObject->clearIsScrollAnchorObject(unconditionally);
+}
+
+void ScrollAnchor::clear() {
+  LayoutObject* layoutObject =
+      m_anchorObject ? m_anchorObject : scrollerLayoutBox(m_scroller);
+  PaintLayer* layer = nullptr;
+  if (LayoutObject* parent = layoutObject->parent())
+    layer = parent->enclosingLayer();
+
+  // Walk up the layer tree to clear any scroll anchors.
+  while (layer) {
+    if (PaintLayerScrollableArea* scrollableArea = layer->getScrollableArea()) {
+      ScrollAnchor* anchor = scrollableArea->scrollAnchor();
+      DCHECK(anchor);
+      anchor->clearSelf(true);
+    }
+    layer = layer->parent();
+  }
+
+  if (FrameView* view = layoutObject->frameView()) {
+    ScrollAnchor* anchor = view->scrollAnchor();
+    DCHECK(anchor);
+    anchor->clearSelf(true);
+  }
 }
 
 bool ScrollAnchor::refersTo(const LayoutObject* layoutObject) const {
@@ -312,7 +337,7 @@ bool ScrollAnchor::refersTo(const LayoutObject* layoutObject) const {
 
 void ScrollAnchor::notifyRemoved(LayoutObject* layoutObject) {
   if (m_anchorObject == layoutObject)
-    clear();
+    clearSelf();
 }
 
 }  // namespace blink
