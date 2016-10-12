@@ -16,17 +16,20 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
+#include "content/shell/renderer/layout_test/interface_registry_js_wrapper.h"
 #include "content/shell/renderer/layout_test/layout_test_render_frame_observer.h"
 #include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
 #include "content/shell/renderer/layout_test/test_media_stream_renderer_factory.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/test/mock_webclipboard_impl.h"
+#include "gin/modules/module_registry.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
@@ -247,6 +250,33 @@ LayoutTestContentRendererClient::GetImageDecodeColorProfile() {
 void LayoutTestContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
     v8::Local<v8::Context> context) {
   blink::WebTestingSupport::injectInternalsObject(context);
+}
+
+void LayoutTestContentRendererClient::RunScriptsAtDocumentEnd(
+    RenderFrame* render_frame) {
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+  blink::WebLocalFrame* frame = render_frame->GetWebFrame();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Context::Scope context_scope(context);
+
+  gin::ModuleRegistry* registry = gin::ModuleRegistry::From(context);
+  if (registry->available_modules().count(
+          InterfaceRegistryJsWrapper::kPerFrameModuleName)) {
+    return;
+  }
+
+  registry->AddBuiltinModule(
+      isolate, InterfaceRegistryJsWrapper::kPerFrameModuleName,
+      InterfaceRegistryJsWrapper::Create(isolate, context,
+                                         render_frame->GetInterfaceRegistry())
+          .ToV8());
+  registry->AddBuiltinModule(
+      isolate, InterfaceRegistryJsWrapper::kPerProcessModuleName,
+      InterfaceRegistryJsWrapper::Create(
+          isolate, context, RenderThread::Get()->GetInterfaceRegistry())
+          .ToV8());
+  registry->AttemptToLoadMoreModules(isolate);
 }
 
 void LayoutTestContentRendererClient::

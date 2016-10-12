@@ -33,7 +33,10 @@ define('Mojo Helpers', [
     'mojo/public/js/support',
     'content/public/renderer/frame_interfaces',
     'content/public/renderer/interfaces',
-], (core, router, support, frameInterfaces, interfaces) => {
+    'content/shell/renderer/layout_test/frame_interface_registry',
+    'content/shell/renderer/layout_test/interface_registry',
+], (core, router, support, frameInterfaces, interfaces, frameInterfaceRegistry,
+    interfaceRegistry) => {
   let tearDown = () => {
     frameInterfaces.clearInterfaceOverridesForTesting();
     interfaces.clearInterfaceOverridesForTesting();
@@ -47,7 +50,9 @@ define('Mojo Helpers', [
     router,
     support,
     frameInterfaces,
+    frameInterfaceRegistry,
     interfaces,
+    interfaceRegistry,
   };
 });
 

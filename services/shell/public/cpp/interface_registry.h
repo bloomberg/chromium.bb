@@ -61,6 +61,16 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
           base::WrapUnique(binder), interface_name);
     }
 
+    template <typename Interface>
+    void GetLocalInterface(mojo::InterfaceRequest<Interface> request) {
+      GetLocalInterface(Interface::Name_, request.PassMessagePipe());
+    }
+
+    void GetLocalInterface(const std::string& name,
+                           mojo::ScopedMessagePipeHandle handle) {
+      registry_->GetInterface(name, std::move(handle));
+    }
+
    private:
     InterfaceRegistry* registry_;
     DISALLOW_COPY_AND_ASSIGN(TestApi);
