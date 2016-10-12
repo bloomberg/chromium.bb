@@ -2495,7 +2495,8 @@ _hasMixinRules: function (rules) {
 return rules[0].selector.indexOf(this.VAR_START) === 0;
 },
 removeCustomProps: function (cssText) {
-return cssText;
+cssText = this.removeCustomPropAssignment(cssText);
+return this.removeCustomPropApply(cssText);
 },
 removeCustomPropAssignment: function (cssText) {
 return cssText.replace(this._rx.customProp, '').replace(this._rx.mixinProp, '');

@@ -9,17 +9,18 @@ index 7a24999..4eefcba 100644
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 +<link rel="stylesheet" href="chrome://resources/css/roboto.css">
-diff --git a/components-chromium/polymer/polymer-extracted.js b/components-chromium/polymer/polymer-extracted.js
-index baf9ab3..985fe6c 100644
---- a/components-chromium/polymer/polymer-extracted.js
-+++ b/components-chromium/polymer/polymer-extracted.js
-@@ -2444,8 +2444,7 @@ _hasMixinRules: function (rules) {
- return rules[0].selector.indexOf(this.VAR_START) >= 0;
- },
- removeCustomProps: function (cssText) {
--cssText = this.removeCustomPropAssignment(cssText);
--return this.removeCustomPropApply(cssText);
-+return cssText;
- },
- removeCustomPropAssignment: function (cssText) {
- return cssText.replace(this._rx.customProp, '').replace(this._rx.mixinProp, '');
+diff --git a/components-chromium/paper-icon-button/paper-icon-button-light.html b/components-chromium/paper-icon-button/paper-icon-button-light.html
+index 2eaa665..7416f94 100644
+--- a/components-chromium/paper-icon-button/paper-icon-button-light.html
++++ b/components-chromium/paper-icon-button/paper-icon-button-light.html
+@@ -45,9 +45,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
+       paper-ripple {
+         opacity: 0.6;
+         color: currentColor;
++        @apply(--paper-icon-button-light-ripple);
+       }
+     </style>
+     <content></content>
+   </template>
+   </dom-module>
+
