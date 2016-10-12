@@ -198,12 +198,9 @@ public class TabPersistentStore extends TabPersister {
      * @param modelSelector The {@link TabModelSelector} to restore to and save from.
      * @param tabCreatorManager The {@link TabCreatorManager} to use.
      * @param observer      Notified when the TabPersistentStore has completed tasks.
-     * @param mergeTabs     Whether tabs from a second TabModelSelector should be merged into
-     *                      into this instance.
      */
     public TabPersistentStore(TabPersistencePolicy policy, TabModelSelector modelSelector,
-            TabCreatorManager tabCreatorManager, TabPersistentStoreObserver observer,
-            final boolean mergeTabs) {
+            TabCreatorManager tabCreatorManager, TabPersistentStoreObserver observer) {
         mPersistencePolicy = policy;
         mTabModelSelector = modelSelector;
         mTabCreatorManager = tabCreatorManager;
@@ -226,10 +223,9 @@ public class TabPersistentStore extends TabPersister {
                 startFetchTabListTask(executor, mPersistencePolicy.getStateFileName());
         startPrefetchActiveTabTask(executor);
 
-        if (mergeTabs) {
-            assert mPersistencePolicy.getStateToBeMergedFileName() != null;
-            mPrefetchTabListToMergeTask = startFetchTabListTask(
-                    executor, mPersistencePolicy.getStateToBeMergedFileName());
+        String mergedStateFileName = mPersistencePolicy.getStateToBeMergedFileName();
+        if (mergedStateFileName != null) {
+            mPrefetchTabListToMergeTask = startFetchTabListTask(executor, mergedStateFileName);
         }
     }
 

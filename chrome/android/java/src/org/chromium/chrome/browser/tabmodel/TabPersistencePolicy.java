@@ -37,7 +37,8 @@ public interface TabPersistencePolicy {
     String getStateFileName();
 
     /**
-     * @return The filename of the state that is to be merged.
+     * @return The filename of the state that is to be merged.  If null, no merge will be
+     *         triggered.
      */
     @Nullable
     String getStateToBeMergedFileName();

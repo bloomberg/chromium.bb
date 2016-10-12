@@ -61,9 +61,9 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
         TabModelOrderController orderController = new TabModelOrderController(mSelector);
         TabContentManager tabContentManager =
                 new TabContentManager(getInstrumentation().getTargetContext(), null, false);
-        TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(0);
+        TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(0, false);
         TabPersistentStore tabPersistentStore = new TabPersistentStore(persistencePolicy, mSelector,
-                null, null, false);
+                null, null);
 
         TabModelDelegate delegate = new TabModelDelegate() {
             @Override
