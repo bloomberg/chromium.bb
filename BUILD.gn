@@ -49,9 +49,17 @@ config("libsrtp_config") {
   ]
 }
 
+config("libsrtp_warnings") {
+  cflags = []
+  if (is_win) {
+    cflags += [ "/wd4018" ]  # Signed/unsigned mismatch in comparison
+  }
+}
+
 static_library("libsrtp") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ ":libsrtp_warnings" ]
   public_configs = [ ":libsrtp_config" ]
   sources = [
     # includes
@@ -108,6 +116,13 @@ static_library("libsrtp") {
 
 config("srtp_test_config") {
   include_dirs = [ "test" ]
+  configs = [ ":libsrtp_warnings" ]
+  cflags = []
+  if (is_win && is_clang) {
+    # TODO(mattdr): Bring in https://github.com/cisco/libsrtp/pull/213
+    # and remove this.
+    cflags += [ "-Wno-format" ]
+  }
 }
 
 template("srtp_test") {
