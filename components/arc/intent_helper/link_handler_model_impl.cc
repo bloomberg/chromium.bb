@@ -132,7 +132,8 @@ void LinkHandlerModelImpl::NotifyObserver(
     ash::LinkHandlerInfo handler = {handlers_[i]->name.get(), icon, i};
     handlers.push_back(handler);
   }
-  FOR_EACH_OBSERVER(Observer, observer_list_, ModelChanged(handlers));
+  for (auto& observer : observer_list_)
+    observer.ModelChanged(handlers);
 }
 
 // static

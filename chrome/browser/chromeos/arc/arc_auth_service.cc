@@ -357,7 +357,8 @@ void ArcAuthService::OnSignInComplete() {
   UpdateProvisioningResultUMA(ProvisioningResult::SUCCESS,
                               IsAccountManaged(profile_));
 
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnInitialStart());
+  for (auto& observer : observer_list_)
+    observer.OnInitialStart();
 }
 
 void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {
@@ -443,7 +444,8 @@ void ArcAuthService::SetState(State state) {
     return;
 
   state_ = state;
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInChanged(state_));
+  for (auto& observer : observer_list_)
+    observer.OnOptInChanged(state_);
 }
 
 bool ArcAuthService::IsAllowed() const {
@@ -596,7 +598,8 @@ void ArcAuthService::OnOptInPreferenceChanged() {
   OnSyncedPrefChanged(prefs::kArcEnabled, IsArcManaged());
 
   const bool arc_enabled = IsArcEnabled();
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInEnabled(arc_enabled));
+  for (auto& observer : observer_list_)
+    observer.OnOptInEnabled(arc_enabled);
 
   if (!arc_enabled) {
     StopArc();
@@ -636,7 +639,8 @@ void ArcAuthService::ShutdownBridge() {
   arc_bridge_service()->Shutdown();
   if (state_ != State::NOT_INITIALIZED)
     SetState(State::STOPPED);
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnShutdownBridge());
+  for (auto& observer : observer_list_)
+    observer.OnShutdownBridge();
 }
 
 void ArcAuthService::ShutdownBridgeAndCloseUI() {
@@ -663,7 +667,8 @@ void ArcAuthService::RemoveObserver(Observer* observer) {
 void ArcAuthService::CloseUI() {
   ui_page_ = UIPage::NO_PAGE;
   ui_page_status_.clear();
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInUIClose());
+  for (auto& observer : observer_list_)
+    observer.OnOptInUIClose();
   if (!g_disable_ui_for_testing)
     ArcAuthNotification::Hide();
 }
@@ -671,8 +676,8 @@ void ArcAuthService::CloseUI() {
 void ArcAuthService::SetUIPage(UIPage page, const base::string16& status) {
   ui_page_ = page;
   ui_page_status_ = status;
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnOptInUIShowPage(ui_page_, ui_page_status_));
+  for (auto& observer : observer_list_)
+    observer.OnOptInUIShowPage(ui_page_, ui_page_status_);
 }
 
 // This is the special method to support enterprise mojo API.

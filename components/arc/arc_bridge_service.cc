@@ -73,10 +73,13 @@ void ArcBridgeService::SetState(State state) {
   DCHECK_NE(state_, state);
   state_ = state;
   VLOG(2) << "State: " << static_cast<uint32_t>(state_);
-  if (state_ == State::READY)
-    FOR_EACH_OBSERVER(Observer, observer_list(), OnBridgeReady());
-  else if (state == State::STOPPED)
-    FOR_EACH_OBSERVER(Observer, observer_list(), OnBridgeStopped(stop_reason_));
+  if (state_ == State::READY) {
+    for (auto& observer : observer_list())
+      observer.OnBridgeReady();
+  } else if (state == State::STOPPED) {
+    for (auto& observer : observer_list())
+      observer.OnBridgeStopped(stop_reason_);
+  }
 }
 
 void ArcBridgeService::SetStopReason(StopReason stop_reason) {

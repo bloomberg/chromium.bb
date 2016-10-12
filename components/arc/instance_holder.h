@@ -99,9 +99,11 @@ class InstanceHolder {
     instance_ = instance;
     version_ = version;
     if (instance_) {
-      FOR_EACH_OBSERVER(Observer, observer_list_, OnInstanceReady());
+      for (auto& observer : observer_list_)
+        observer.OnInstanceReady();
     } else {
-      FOR_EACH_OBSERVER(Observer, observer_list_, OnInstanceClosed());
+      for (auto& observer : observer_list_)
+        observer.OnInstanceClosed();
     }
   }
 

@@ -47,7 +47,8 @@ void ArcNotificationSurfaceManager::AddSurface(
 
   notification_surface_map_[surface->notification_id()] = surface;
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnNotificationSurfaceAdded(surface));
+  for (auto& observer : observers_)
+    observer.OnNotificationSurfaceAdded(surface);
 }
 
 void ArcNotificationSurfaceManager::RemoveSurface(
@@ -57,8 +58,8 @@ void ArcNotificationSurfaceManager::RemoveSurface(
     return;
 
   notification_surface_map_.erase(it);
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnNotificationSurfaceRemoved(surface));
+  for (auto& observer : observers_)
+    observer.OnNotificationSurfaceRemoved(surface);
 }
 
 void ArcNotificationSurfaceManager::AddObserver(Observer* observer) {

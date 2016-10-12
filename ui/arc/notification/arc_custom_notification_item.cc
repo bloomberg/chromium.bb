@@ -49,7 +49,8 @@ ArcCustomNotificationItem::ArcCustomNotificationItem(
 }
 
 ArcCustomNotificationItem::~ArcCustomNotificationItem() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnItemDestroying());
+  for (auto& observer : observers_)
+    observer.OnItemDestroying();
 }
 
 void ArcCustomNotificationItem::UpdateWithArcNotificationData(
@@ -93,7 +94,8 @@ void ArcCustomNotificationItem::UpdateWithArcNotificationData(
         *data->snapshot_image, data->snapshot_image_scale));
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnItemUpdated());
+  for (auto& observer : observers_)
+    observer.OnItemUpdated();
 
   AddToMessageCenter();
 }

@@ -483,7 +483,8 @@ void ArcBridgeBootstrapImpl::OnMojoConnected(base::ScopedFD fd) {
 
   VLOG(2) << "Mojo is connected. ARC is running.";
   state_ = State::RUNNING;
-  FOR_EACH_OBSERVER(ArcBridgeBootstrap::Observer, observer_list_, OnReady());
+  for (auto& observer : observer_list_)
+    observer.OnReady();
 }
 
 void ArcBridgeBootstrapImpl::Stop() {
@@ -581,8 +582,8 @@ void ArcBridgeBootstrapImpl::OnStopped(ArcBridgeService::StopReason reason) {
   VLOG(2) << "ARC session is stopped.";
   arc_bridge_host_.reset();
   state_ = State::STOPPED;
-  FOR_EACH_OBSERVER(ArcBridgeBootstrap::Observer, observer_list_,
-                    OnStopped(reason));
+  for (auto& observer : observer_list_)
+    observer.OnStopped(reason);
 }
 
 }  // namespace

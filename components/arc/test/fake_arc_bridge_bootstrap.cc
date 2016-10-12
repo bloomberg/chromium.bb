@@ -17,10 +17,11 @@ FakeArcBridgeBootstrap::~FakeArcBridgeBootstrap() = default;
 
 void FakeArcBridgeBootstrap::Start() {
   if (boot_failure_emulation_enabled_) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnStopped(boot_failure_reason_));
+    for (auto& observer : observer_list_)
+      observer.OnStopped(boot_failure_reason_);
   } else if (!boot_suspended_) {
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnReady());
+    for (auto& observer : observer_list_)
+      observer.OnReady();
   }
 }
 
@@ -30,7 +31,8 @@ void FakeArcBridgeBootstrap::Stop() {
 
 void FakeArcBridgeBootstrap::StopWithReason(
     ArcBridgeService::StopReason reason) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnStopped(reason));
+  for (auto& observer : observer_list_)
+    observer.OnStopped(reason);
 }
 
 void FakeArcBridgeBootstrap::EnableBootFailureEmulation(
