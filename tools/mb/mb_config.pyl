@@ -755,11 +755,11 @@
     ],
 
     'android_debug_static_bot': [
-      'android', 'debug_static_bot',
+      'android', 'debug_static_bot', 'vr_shell',
     ],
 
     'android_debug_static_bot_arm64': [
-      'android', 'debug_static_bot', 'arm64',
+      'android', 'debug_static_bot', 'arm64', 'vr_shell',
     ],
 
     'android_debug_trybot': [
