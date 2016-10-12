@@ -67,7 +67,7 @@ void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
 
 std::unique_ptr<base::ScopedClosureRunner>
 UtilityProcessMojoProxyResolverFactory::CreateResolver(
-    const mojo::String& pac_script,
+    const std::string& pac_script,
     mojo::InterfaceRequest<net::interfaces::ProxyResolver> req,
     net::interfaces::ProxyResolverFactoryRequestClientPtr client) {
   DCHECK(thread_checker_.CalledOnValidThread());

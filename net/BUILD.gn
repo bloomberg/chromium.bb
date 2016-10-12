@@ -742,7 +742,6 @@ if (use_v8_in_net && !is_android) {
     public_deps = [
       ":net_with_v8",
       "//base",
-      "//mojo/common",
       "//mojo/public/cpp/bindings",
       "//net/interfaces",
 
@@ -772,7 +771,6 @@ if (use_v8_in_net && !is_android) {
 
     public_deps = [
       ":net",
-      "//mojo/common",
       "//mojo/public/cpp/bindings",
       "//net/interfaces",
     ]
