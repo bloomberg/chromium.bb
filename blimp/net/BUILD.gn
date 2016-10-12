@@ -97,8 +97,10 @@ source_set("helium") {
     "helium/helium_errors.h",
     "helium/helium_result.cc",
     "helium/helium_result.h",
+    "helium/helium_stream.h",
     "helium/helium_sync_manager.cc",
     "helium/helium_sync_manager.h",
+    "helium/helium_transport.h",
     "helium/syncable.h",
     "helium/version_vector.cc",
     "helium/version_vector.h",
@@ -108,6 +110,7 @@ source_set("helium") {
     ":net_export",
     "//base",
     "//blimp/common",
+    "//net",
   ]
 
   public_deps = [
