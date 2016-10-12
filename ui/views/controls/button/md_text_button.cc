@@ -277,6 +277,14 @@ void MdTextButton::UpdateColors() {
   // stroke will also change colors to match.
   SkColor stroke_color =
       is_prominent_ ? SK_ColorTRANSPARENT : SkColorSetA(text_color, 0x4e);
+
+  // Disabled, non-prominent buttons need their stroke lightened. Prominent
+  // buttons need it left at SK_ColorTRANSPARENT from above.
+  if (state() == STATE_DISABLED && !is_prominent_) {
+    stroke_color = color_utils::BlendTowardOppositeLuma(
+        stroke_color, gfx::kDisabledControlAlpha);
+  }
+
   DCHECK_EQ(SK_AlphaOPAQUE, static_cast<int>(SkColorGetA(bg_color)));
   set_background(Background::CreateBackgroundPainter(
       true, Painter::CreateRoundRectWith1PxBorderPainter(
