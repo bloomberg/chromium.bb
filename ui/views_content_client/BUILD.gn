@@ -34,6 +34,7 @@ component("views_content_client") {
     "//ui/gfx/geometry",
     "//ui/resources",
     "//ui/resources:ui_test_pak",
+    "//ui/resources:ui_test_pak_data_200_percent",
     "//ui/views",
     "//ui/views:test_support",
   ]

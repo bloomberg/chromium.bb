@@ -64,7 +64,7 @@ if (is_ios || is_mac) {
   group("ui_test_pak") {
     public_deps = [
       ":repack_ui_test_mac_locale_pack",
-      ":repack_ui_test_pak",
+      ":repack_ui_test_pak_100_percent",
     ]
   }
 
@@ -130,20 +130,27 @@ if (is_ios || is_mac) {
       "$root_out_dir/ui/en-US.pak",
     ]
     public_deps = [
-      ":repack_ui_test_pak",
+      ":repack_ui_test_pak_100_percent",
     ]
   }
 }
 
-# This group exists just for targets that need the data file
-# to exist in the build directory so it can be loaded for test purposes.
+# This group exists just for targets that need the data file to exist in the
+# build directory so it can be loaded for test purposes. If a target requires
+# 200 percent resources it should also depend on ui_test_pak_data_200_percent.
 group("ui_test_pak_data") {
   data_deps = [
-    ":repack_ui_test_pak",
+    ":repack_ui_test_pak_100_percent",
   ]
 }
 
-repack("repack_ui_test_pak") {
+group("ui_test_pak_data_200_percent") {
+  data_deps = [
+    ":repack_ui_test_pak_200_percent",
+  ]
+}
+
+repack("repack_ui_test_pak_100_percent") {
   # Depend on ui_test_pak or ui_test_pak_data instead of this one.
   visibility = [
     ":ui_test_pak",
@@ -197,6 +204,26 @@ repack("repack_ui_test_pak") {
   if (use_aura && toolkit_views) {
     deps += [ "//ui/app_list/resources" ]
     sources += [ "$root_gen_dir/ui/app_list/resources/app_list_resources_100_percent.pak" ]
+  }
+}
+
+repack("repack_ui_test_pak_200_percent") {
+  visibility = [ ":ui_test_pak_data_200_percent" ]
+
+  sources = [
+    "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
+  ]
+
+  output = "$root_out_dir/ui_test_200_percent.pak"
+
+  deps = [
+    "//ui/resources",
+  ]
+
+  if (toolkit_views) {
+    deps += [ "//ui/views/resources" ]
+    sources +=
+        [ "$root_gen_dir/ui/views/resources/views_resources_200_percent.pak" ]
   }
 }
 
