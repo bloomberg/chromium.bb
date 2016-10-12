@@ -91,6 +91,7 @@ class CORE_EXPORT FrameCaret final : public CaretBase {
   // The last node which painted the caret. Retained for clearing the old
   // caret when it moves.
   Member<Node> m_previousCaretNode;
+  Member<Node> m_previousCaretAnchorNode;
   LayoutRect m_previousCaretRect;
   CaretVisibility m_caretVisibility;
   CaretVisibility m_previousCaretVisibility;

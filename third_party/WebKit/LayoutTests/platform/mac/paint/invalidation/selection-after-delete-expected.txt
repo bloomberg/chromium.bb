@@ -17,17 +17,17 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutBR BR",
+          "object": "LayoutBlockFlow DIV id='test'",
           "rect": [38, 74, 3, 20],
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutBR BR",
+          "object": "LayoutBlockFlow DIV id='test'",
           "rect": [38, 74, 3, 20],
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutBR BR",
+          "object": "LayoutBlockFlow DIV id='test'",
           "rect": [38, 74, 3, 20],
           "reason": "invalidate paint rectangle"
         }

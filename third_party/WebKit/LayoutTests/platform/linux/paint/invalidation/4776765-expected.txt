@@ -17,22 +17,22 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutBR BR",
+          "object": "LayoutBlockFlow DIV id='div'",
           "rect": [7, 83, 3, 21],
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutBR BR",
+          "object": "LayoutBlockFlow DIV id='div'",
           "rect": [7, 83, 3, 21],
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutBR BR",
+          "object": "LayoutBlockFlow DIV id='div'",
           "rect": [7, 83, 3, 21],
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutBR BR",
+          "object": "LayoutBlockFlow DIV id='div'",
           "rect": [7, 63, 3, 21],
           "reason": "invalidate paint rectangle"
         }

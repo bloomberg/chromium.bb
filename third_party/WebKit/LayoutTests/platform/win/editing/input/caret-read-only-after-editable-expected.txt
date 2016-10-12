@@ -1,0 +1,15 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x83
+  LayoutBlockFlow {HTML} at (0,0) size 800x83
+    LayoutBlockFlow {BODY} at (8,8) size 784x67
+      LayoutBlockFlow (anonymous) at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 313x17
+          text run at (0,0) width 313: "Test passes if caret is visible after text is entered."
+      LayoutBlockFlow {DIV} at (0,18) size 784x49 [border: (1px solid #000000)]
+        LayoutText {#text} at (1,2) size 38x45
+          text run at (1,2) width 38: "ab"
+        LayoutInline {SPAN} at (0,0) size 359x45 [color=#BBBBBB]
+          LayoutText {#text} at (38,2) size 359x45
+            text run at (38,2) width 359: "autocomplete hint text"
+caret: position 2 of child 0 {#text} of child 1 {DIV} of body

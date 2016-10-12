@@ -60,6 +60,7 @@ DEFINE_TRACE(FrameCaret) {
   visitor->trace(m_selectionEditor);
   visitor->trace(m_frame);
   visitor->trace(m_previousCaretNode);
+  visitor->trace(m_previousCaretAnchorNode);
   CaretBase::trace(visitor);
 }
 
@@ -151,10 +152,22 @@ void FrameCaret::invalidateCaretRect(bool forceInvalidation) {
   DCHECK(caretPositionIsValidForDocument(*m_frame->document()));
   LayoutObject* layoutObject = nullptr;
   LayoutRect newRect;
+  PositionWithAffinity currentCaretPosition = caretPosition();
   if (isActive())
-    newRect = localCaretRectOfPosition(caretPosition(), layoutObject);
+    newRect = localCaretRectOfPosition(currentCaretPosition, layoutObject);
   Node* newNode = layoutObject ? layoutObject->node() : nullptr;
-
+  // The current selected node |newNode| could be a child multiple levels below
+  // its associated "anchor node" ancestor, so we reference and keep around the
+  // anchor node for checking editability.
+  // TODO(wkorman): Consider storing previous Position, rather than Node, and
+  // making use of EditingUtilies::isEditablePosition() directly.
+  Node* newAnchorNode =
+      currentCaretPosition.position().parentAnchoredEquivalent().anchorNode();
+  if (newNode && newAnchorNode && newNode != newAnchorNode &&
+      newAnchorNode->layoutObject() && newAnchorNode->layoutObject()->isBox()) {
+    newNode->layoutObject()->mapToVisualRectInAncestorSpace(
+        toLayoutBoxModelObject(newAnchorNode->layoutObject()), newRect);
+  }
   // It's possible for the timer to be inactive even though we want to
   // invalidate the caret. For example, when running as a layout test the
   // caret blink interval could be zero and thus |m_caretBlinkTimer| will
@@ -166,11 +179,14 @@ void FrameCaret::invalidateCaretRect(bool forceInvalidation) {
       m_caretVisibility == m_previousCaretVisibility)
     return;
 
-  if (m_previousCaretNode && shouldRepaintCaret(*m_previousCaretNode))
-    invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
-  if (newNode && shouldRepaintCaret(*newNode))
-    invalidateLocalCaretRect(newNode, newRect);
+  if (m_previousCaretNode && shouldRepaintCaret(*m_previousCaretAnchorNode)) {
+    invalidateLocalCaretRect(m_previousCaretAnchorNode.get(),
+                             m_previousCaretRect);
+  }
+  if (newNode && shouldRepaintCaret(*newAnchorNode))
+    invalidateLocalCaretRect(newAnchorNode, newRect);
   m_previousCaretNode = newNode;
+  m_previousCaretAnchorNode = newAnchorNode;
   m_previousCaretRect = newRect;
   m_previousCaretVisibility = m_caretVisibility;
 }
@@ -223,17 +239,20 @@ void FrameCaret::dataWillChange(const CharacterData& node) {
   if (node == m_previousCaretNode) {
     // This invalidation is eager, and intentionally uses stale state.
     DisableCompositingQueryAsserts disabler;
-    invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
+    invalidateLocalCaretRect(m_previousCaretAnchorNode.get(),
+                             m_previousCaretRect);
   }
 }
 
 void FrameCaret::nodeWillBeRemoved(Node& node) {
-  if (node != m_previousCaretNode)
+  if (node != m_previousCaretNode && node != m_previousCaretAnchorNode)
     return;
   // Hits in ManualTests/caret-paint-after-last-text-is-removed.html
   DisableCompositingQueryAsserts disabler;
-  invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
+  invalidateLocalCaretRect(m_previousCaretAnchorNode.get(),
+                           m_previousCaretRect);
   m_previousCaretNode = nullptr;
+  m_previousCaretAnchorNode = nullptr;
   m_previousCaretRect = LayoutRect();
   m_previousCaretVisibility = CaretVisibility::Hidden;
 }
@@ -241,6 +260,7 @@ void FrameCaret::nodeWillBeRemoved(Node& node) {
 void FrameCaret::documentDetached() {
   m_caretBlinkTimer.stop();
   m_previousCaretNode.clear();
+  m_previousCaretAnchorNode.clear();
 }
 
 bool FrameCaret::shouldBlinkCaret() const {
@@ -267,4 +287,4 @@ void FrameCaret::caretBlinkTimerFired(TimerBase*) {
   setCaretRectNeedsUpdate();
 }
 
-}  // nemaspace blink
+}  // namespace blink
