@@ -35,6 +35,9 @@ class LoadingMobile(perf_benchmark.PerfBenchmark):
 # waterfall any time soon.
 @benchmark.Disabled('all')
 class LoadingClusterTelemetry(perf_benchmark.PerfBenchmark):
+
+  options = {'upload_results': True}
+
   _ALL_NET_CONFIGS = traffic_setting.NETWORK_CONFIGS.keys()
 
   def CreateTimelineBasedMeasurementOptions(self):
