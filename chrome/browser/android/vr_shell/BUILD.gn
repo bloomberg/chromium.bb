@@ -6,9 +6,9 @@ import("//build/config/android/rules.gni")
 import("//chrome/common/features.gni")
 import("//testing/test.gni")
 
-assert(enable_vr_shell && android_java_ui)
+assert(enable_vr_shell || enable_webvr)
 
-static_library("vr_shell") {
+static_library("vr_common") {
   sources = [
     "animation.cc",
     "animation.h",
@@ -62,17 +62,19 @@ generate_jni("vr_shell_jni_headers") {
   jni_package = "vr_shell"
 }
 
-test("vr_shell_unittests") {
-  sources = [
-    "ui_elements_unittest.cc",
-    "ui_scene_unittest.cc",
-  ]
+if (enable_vr_shell) {
+  test("vr_shell_unittests") {
+    sources = [
+      "ui_elements_unittest.cc",
+      "ui_scene_unittest.cc",
+    ]
 
-  deps = [
-    ":vr_shell",
-    "//base/test:run_all_unittests",
-    "//base/test:test_support",
-    "//testing/gtest",
-    "//ui/gfx/geometry",
-  ]
+    deps = [
+      ":vr_common",
+      "//base/test:run_all_unittests",
+      "//base/test:test_support",
+      "//testing/gtest",
+      "//ui/gfx/geometry",
+    ]
+  }
 }

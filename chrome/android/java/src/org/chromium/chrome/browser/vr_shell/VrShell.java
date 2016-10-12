@@ -12,7 +12,6 @@ import static android.opengl.GLES20.glGenTextures;
 import static android.opengl.GLES20.glTexParameteri;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.graphics.SurfaceTexture.OnFrameAvailableListener;
 import android.opengl.GLES11Ext;
@@ -64,7 +63,7 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     private FrameListener mContentFrameListener;
     private FrameListener mUiFrameListener;
 
-    private ContentViewCoreContainer mContentViewCoreContainer;
+    private FrameLayout mContentViewCoreContainer;
 
     // The tab that holds the main ContentViewCore.
     private Tab mTab;
@@ -86,22 +85,16 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     private ContentViewCore mUiCVC;
     private VrWindowAndroid mUiVrWindowAndroid;
 
-    private class ContentViewCoreContainer extends FrameLayout {
-        public ContentViewCoreContainer(Context context) {
-            super(context);
-        }
-
-        @Override
-        public boolean dispatchTouchEvent(MotionEvent event) {
-            return true;
-        }
-    }
-
     @UsedByReflection("VrShellDelegate.java")
     public VrShell(Activity activity) {
         super(activity);
         mActivity = activity;
-        mContentViewCoreContainer = new ContentViewCoreContainer(activity);
+        mContentViewCoreContainer = new FrameLayout(getContext()) {
+            @Override
+            public boolean dispatchTouchEvent(MotionEvent event) {
+                return true;
+            }
+        };
         addView(mContentViewCoreContainer, 0, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));

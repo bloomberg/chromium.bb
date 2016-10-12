@@ -10,8 +10,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -176,8 +178,9 @@ public class AppMenuPropertiesDelegate {
             menu.findItem(R.id.reader_mode_prefs_id)
                     .setVisible(DomDistillerUrlUtils.isDistilledPage(currentTab.getUrl()));
 
-            // Only display the Enter VR button if VR Shell is enabled.
-            menu.findItem(R.id.enter_vr_id).setVisible(mActivity.isVrShellEnabled());
+            // Only display the Enter VR button if VR Shell Dev environment is enabled.
+            menu.findItem(R.id.enter_vr_id).setVisible(
+                    CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_VR_SHELL_DEV));
         }
 
         if (isOverviewMenu) {

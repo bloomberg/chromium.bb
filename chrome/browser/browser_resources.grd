@@ -198,8 +198,7 @@
         <include name="IDR_SNIPPETS_INTERNALS_HTML" file="resources\snippets_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />
         <include name="IDR_SNIPPETS_INTERNALS_CSS" file="resources\snippets_internals.css" compress="gzip" type="BINDATA" />
         <include name="IDR_SNIPPETS_INTERNALS_JS" file="resources\snippets_internals.js" compress="gzip" type="BINDATA" />
-        <!-- TODO: Enable only for VrShell, independent of Android. -->
-        <if expr="enable_vr_shell">
+        <if expr="enable_vr_shell or enable_webvr">
           <include name="IDR_VR_SHELL_UI_HTML" file="resources\vr_shell\vr_shell_ui.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
           <include name="IDR_VR_SHELL_UI_CSS" file="resources\vr_shell\vr_shell_ui.css" type="BINDATA" />
           <include name="IDR_VR_SHELL_UI_JS" file="resources\vr_shell\vr_shell_ui.js" type="BINDATA" />

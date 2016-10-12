@@ -213,6 +213,9 @@ public abstract class ChromeSwitches {
     public static final String CHECK_FOR_WEB_MANIFEST_UPDATE_ON_STARTUP =
             "check-for-web-manifest-update-on-startup";
 
+    /** Enable Vr Shell development environment. */
+    public static final String ENABLE_VR_SHELL_DEV = "enable-vr-shell-dev";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }

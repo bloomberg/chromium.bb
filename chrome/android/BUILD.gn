@@ -261,9 +261,7 @@ android_library("chrome_java") {
     ]
   }
 
-  # VrActivity currently depends on ChromeTabbedActivity which is part of
-  # android_java_ui.
-  if (enable_vr_shell && android_java_ui) {
+  if (enable_vr_shell || enable_webvr) {
     java_files += chrome_vr_java_sources
     deps += [
       "//third_party/gvr-android-sdk:gvr_base_java",
