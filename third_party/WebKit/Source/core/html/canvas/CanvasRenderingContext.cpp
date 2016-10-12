@@ -74,8 +74,7 @@ sk_sp<SkColorSpace> CanvasRenderingContext::skColorSpace() const {
     case kSRGBCanvasColorSpace:
       return SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
     case kLinearRGBCanvasColorSpace:
-      return SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named)
-          ->makeLinearGamma();
+      return SkColorSpace::NewNamed(SkColorSpace::kSRGBLinear_Named);
     case kLegacyCanvasColorSpace:
       if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
         // Legacy colorspace ensures color matching with CSS is preserved.
