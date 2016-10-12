@@ -44,12 +44,18 @@ void PrePaintTreeWalk::walk(FrameView& frameView,
   m_propertyTreeBuilder.buildTreeNodes(frameView,
                                        localContext.treeBuilderContext);
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     m_paintInvalidator.invalidatePaintIfNeeded(
         frameView, localContext.paintInvalidatorContext);
+  }
 
   if (LayoutView* layoutView = frameView.layoutView())
     walk(*layoutView, localContext);
+
+#if DCHECK_IS_ON()
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    frameView.layoutView()->assertSubtreeClearedPaintInvalidationFlags();
+#endif
 }
 
 void PrePaintTreeWalk::walk(const LayoutObject& object,
@@ -62,6 +68,7 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
     // positioned descendants if their containers are between the multi-column
     // container and the spanner. See PaintPropertyTreeBuilder for details.
     localContext.treeBuilderContext.isUnderMultiColumnSpanner = true;
+    object.getMutableForPainting().clearPaintInvalidationFlags();
     walk(*toLayoutMultiColumnSpannerPlaceholder(object)
               .layoutObjectInFlowThread(),
          localContext);
