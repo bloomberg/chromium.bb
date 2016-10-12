@@ -5,7 +5,6 @@
 // https://wicg.github.io/mediasession/#the-mediasession-interface
 
 [
-    Constructor(),
     RuntimeEnabled=MediaSession,
 ] interface MediaSession {
     [CallWith=ScriptState] attribute MediaMetadata? metadata;

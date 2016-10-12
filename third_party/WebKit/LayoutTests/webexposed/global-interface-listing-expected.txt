@@ -3756,6 +3756,12 @@ interface MediaError
     attribute MEDIA_ERR_SRC_NOT_SUPPORTED
     getter code
     method constructor
+interface MediaImage
+    attribute @@toStringTag
+    getter sizes
+    getter src
+    getter type
+    method constructor
 interface MediaKeyMessageEvent : Event
     attribute @@toStringTag
     getter message
@@ -3809,6 +3815,13 @@ interface MediaList
     method deleteMedium
     method item
     setter mediaText
+interface MediaMetadata
+    attribute @@toStringTag
+    getter album
+    getter artist
+    getter artwork
+    getter title
+    method constructor
 interface MediaQueryList : EventTarget
     attribute @@toStringTag
     getter matches
@@ -3851,6 +3864,11 @@ interface MediaRecorder : EventTarget
     setter onresume
     setter onstart
     setter onstop
+interface MediaSession
+    attribute @@toStringTag
+    getter metadata
+    method constructor
+    setter metadata
 interface MediaSettingsRange
     attribute @@toStringTag
     getter current
@@ -4075,6 +4093,7 @@ interface Navigator
     getter languages
     getter maxTouchPoints
     getter mediaDevices
+    getter mediaSession
     getter mimeTypes
     getter nfc
     getter onLine

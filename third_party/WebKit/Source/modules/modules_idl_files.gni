@@ -549,6 +549,7 @@ modules_dependency_idl_files =
           "installedapp/NavigatorInstalledApp.idl",
           "mediacapturefromelement/HTMLCanvasElementCapture.idl",
           "mediacapturefromelement/HTMLMediaElementCapture.idl",
+          "mediasession/NavigatorMediaSession.idl",
           "mediasource/AudioTrackSourceBuffer.idl",
           "mediasource/VideoTrackSourceBuffer.idl",
           "mediasource/HTMLVideoElementMediaSource.idl",

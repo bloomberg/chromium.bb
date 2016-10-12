@@ -3,11 +3,9 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
-  console.warn("dummy log entry to avoid an empty -expected.txt in virtual/");
-
   test(function() {
     var image = new MediaImage({});
-    assert_true(image != null);
+    assert_not_equals(image, null);
 
     var exception = false;
     try {

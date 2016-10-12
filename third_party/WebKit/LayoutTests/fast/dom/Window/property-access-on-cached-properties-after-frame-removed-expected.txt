@@ -48,6 +48,7 @@ PASS window.cached_navigator.vendorSub is ''
 PASS window.cached_navigator_connection.onchange is null
 PASS window.cached_navigator_connection.ontypechange is null
 PASS window.cached_navigator_mediaDevices.ondevicechange is null
+PASS window.cached_navigator_mediaSession.metadata is null
 PASS window.cached_navigator_presentation.defaultRequest is null
 PASS window.cached_navigator_serviceWorker.controller is null
 PASS window.cached_navigator_serviceWorker.oncontrollerchange is null

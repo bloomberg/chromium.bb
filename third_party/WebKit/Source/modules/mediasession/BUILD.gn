@@ -14,5 +14,7 @@ blink_modules_sources("mediasession") {
     "MediaMetadataSanitizer.h",
     "MediaSession.cpp",
     "MediaSession.h",
+    "NavigatorMediaSession.cpp",
+    "NavigatorMediaSession.h",
   ]
 }

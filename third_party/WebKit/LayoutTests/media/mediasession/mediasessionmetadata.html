@@ -3,11 +3,10 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
-  console.warn("dummy log entry to avoid an empty -expected.txt in virtual/");
 
   test(function() {
     var metadata = new MediaMetadata({});
-    assert_true(metadata != null);
+    assert_not_equals(metadata, null);
 
     var exception = false;
     try {
@@ -22,7 +21,7 @@
       metadata = new MediaMetadata(42);
     } catch (e) {
       exception = true;
-    }
+  }
     assert_true(exception);
   }, 'Test that MediaMetadata is constructed using a dictionary');
 
