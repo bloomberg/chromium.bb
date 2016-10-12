@@ -270,8 +270,13 @@ void MdTextButton::UpdateColors() {
     bg_color = color_utils::GetResultingPaintColor(shade, bg_color);
   }
 
+  // Specified text color: 5a5a5a @ 1.0 alpha
+  // Specified stroke color: 000000 @ 0.2 alpha
+  // 000000 @ 0.2 is very close to 5a5a5a @ 0.308 (== 0x4e); both are cccccc @
+  // 1.0, and this way if NativeTheme changes the button color, the button
+  // stroke will also change colors to match.
   SkColor stroke_color =
-      is_prominent_ ? SK_ColorTRANSPARENT : SkColorSetA(text_color, 0x33);
+      is_prominent_ ? SK_ColorTRANSPARENT : SkColorSetA(text_color, 0x4e);
   DCHECK_EQ(SK_AlphaOPAQUE, static_cast<int>(SkColorGetA(bg_color)));
   set_background(Background::CreateBackgroundPainter(
       true, Painter::CreateRoundRectWith1PxBorderPainter(
