@@ -35,7 +35,8 @@ class ServiceThreadDelegate : public SchedulerWorker::Delegate {
     return nullptr;
   }
 
-  void DidRunTask(const Task* task, const TimeDelta& task_latency) override {
+  void DidRunTaskWithPriority(TaskPriority task_priority,
+                              const TimeDelta& task_latency) override {
     NOTREACHED()
         << "GetWork() never returns a sequence so no task should ever run.";
   }

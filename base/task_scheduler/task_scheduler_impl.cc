@@ -118,12 +118,12 @@ void TaskSchedulerImpl::ReEnqueueSequenceCallback(
   DCHECK(sequence);
 
   const SequenceSortKey sort_key = sequence->GetSortKey();
-  TaskTraits traits(sequence->PeekTask()->traits);
 
-  // Update the priority of |traits| so that the next task in |sequence| runs
-  // with the highest priority in |sequence| as opposed to the next task's
-  // specific priority.
-  traits.WithPriority(sort_key.priority());
+  // The next task in |sequence| should run in a worker pool suited for its
+  // traits, except for the priority which is adjusted to the highest priority
+  // in |sequence|.
+  const TaskTraits traits =
+      sequence->PeekTaskTraits().WithPriority(sort_key.priority());
 
   GetWorkerPoolForTraits(traits)->ReEnqueueSequence(std::move(sequence),
                                                     sort_key);

@@ -205,7 +205,7 @@ bool TaskTracker::WillPostTask(const Task* task) {
   return true;
 }
 
-bool TaskTracker::RunTask(const Task* task,
+bool TaskTracker::RunTask(std::unique_ptr<Task> task,
                           const SequenceToken& sequence_token) {
   DCHECK(task);
   DCHECK(sequence_token.IsValid());

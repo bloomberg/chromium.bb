@@ -70,12 +70,13 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
         continue;
       }
 
-      const Task* task = sequence->PeekTask();
-      const TimeTicks start_time = TimeTicks::Now();
-      if (outer_->task_tracker_->RunTask(task, sequence->token()))
-        outer_->delegate_->DidRunTask(task, start_time - task->sequenced_time);
+      std::unique_ptr<Task> task = sequence->TakeTask();
+      const TaskPriority task_priority = task->traits.priority();
+      const TimeDelta task_latency = TimeTicks::Now() - task->sequenced_time;
+      if (outer_->task_tracker_->RunTask(std::move(task), sequence->token()))
+        outer_->delegate_->DidRunTaskWithPriority(task_priority, task_latency);
 
-      const bool sequence_became_empty = sequence->PopTask();
+      const bool sequence_became_empty = sequence->Pop();
 
       // If |sequence| isn't empty immediately after the pop, re-enqueue it to
       // maintain the invariant that a non-empty Sequence is always referenced

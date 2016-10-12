@@ -238,7 +238,8 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   void OnMainEntry(SchedulerWorker* worker,
                    const TimeDelta& detach_duration) override;
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override;
-  void DidRunTask(const Task* task, const TimeDelta& task_latency) override;
+  void DidRunTaskWithPriority(TaskPriority task_priority,
+                              const TimeDelta& task_latency) override;
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override;
   TimeDelta GetSleepTimeout() override;
   bool CanDetach(SchedulerWorker* worker) override;
@@ -588,12 +589,12 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
   return sequence;
 }
 
-void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask(
-    const Task* task,
-    const TimeDelta& task_latency) {
+void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
+    DidRunTaskWithPriority(TaskPriority task_priority,
+                           const TimeDelta& task_latency) {
   ++num_tasks_since_last_wait_;
 
-  const int priority_index = static_cast<int>(task->traits.priority());
+  const int priority_index = static_cast<int>(task_priority);
 
   // As explained in the header file, histograms are allocated on demand. It
   // doesn't matter if an element of |task_latency_histograms_| is set multiple
@@ -603,7 +604,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask(
       subtle::Acquire_Load(&outer_->task_latency_histograms_[priority_index]));
   if (!task_latency_histogram) {
     task_latency_histogram =
-        GetTaskLatencyHistogram(outer_->name_, task->traits.priority());
+        GetTaskLatencyHistogram(outer_->name_, task_priority);
     subtle::Release_Store(
         &outer_->task_latency_histograms_[priority_index],
         reinterpret_cast<subtle::AtomicWord>(task_latency_histogram));
