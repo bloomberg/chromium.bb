@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/sequence_checker.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -21,38 +21,26 @@ class ProxyNonThreadSafeThreadTraits {
  public:
   class RefCount {
    public:
-    RefCount() : ref_(0) {
-#ifndef NDEBUG
-      message_loop_ = base::MessageLoop::current();
-#endif
-    }
+    RefCount() : ref_(0) {}
 
     ~RefCount() {
-#ifndef NDEBUG
-      DCHECK(message_loop_ == base::MessageLoop::current());
-#endif
+      DCHECK(sequence_checker_.CalledOnValidSequence());
     }
 
     int32_t AddRef() {
-#ifndef NDEBUG
-      DCHECK(message_loop_ == base::MessageLoop::current());
-#endif
+      DCHECK(sequence_checker_.CalledOnValidSequence());
       return ++ref_;
     }
 
     int32_t Release() {
-#ifndef NDEBUG
-      DCHECK(message_loop_ == base::MessageLoop::current());
-#endif
+      DCHECK(sequence_checker_.CalledOnValidSequence());
       DCHECK(ref_ > 0);
       return --ref_;
     }
 
    private:
     int32_t ref_;
-#ifndef NDEBUG
-    base::MessageLoop* message_loop_;
-#endif
+    base::SequenceChecker sequence_checker_;
   };
 
   // No-op lock class.

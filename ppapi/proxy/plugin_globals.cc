@@ -4,11 +4,10 @@
 
 #include "ppapi/proxy/plugin_globals.h"
 
-#include "base/location.h"
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -189,7 +188,7 @@ base::TaskRunner* PluginGlobals::GetFileTaskRunner() {
 void PluginGlobals::MarkPluginIsActive() {
   if (!plugin_recently_active_) {
     plugin_recently_active_ = true;
-    if (!GetBrowserSender() || !base::MessageLoop::current())
+    if (!GetBrowserSender() || !base::ThreadTaskRunnerHandle::IsSet())
       return;
     GetBrowserSender()->Send(new PpapiHostMsg_Keepalive());
     DCHECK(keepalive_throttle_interval_milliseconds_);
