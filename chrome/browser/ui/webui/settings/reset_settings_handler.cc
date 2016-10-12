@@ -22,10 +22,12 @@
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
@@ -89,6 +91,10 @@ void ResetSettingsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onHideResetProfileBanner",
       base::Bind(&ResetSettingsHandler::OnHideResetProfileBanner,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getTriggeredResetToolName",
+      base::Bind(&ResetSettingsHandler::HandleGetTriggeredResetToolName,
                  base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
@@ -231,6 +237,39 @@ ProfileResetter* ResetSettingsHandler::GetResetter() {
   if (!resetter_)
     resetter_.reset(new ProfileResetter(profile_));
   return resetter_.get();
+}
+
+void ResetSettingsHandler::HandleGetTriggeredResetToolName(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  // Set up the localized strings for the triggered profile reset dialog.
+  // Custom reset tool names are supported on Windows only.
+  base::string16 reset_tool_name;
+#if defined(OS_WIN)
+  Profile* profile = Profile::FromWebUI(web_ui());
+  TriggeredProfileResetter* triggered_profile_resetter =
+      TriggeredProfileResetterFactory::GetForBrowserContext(profile);
+  // TriggeredProfileResetter instance will be nullptr for incognito profiles.
+  if (triggered_profile_resetter) {
+    reset_tool_name = triggered_profile_resetter->GetResetToolName();
+
+    // Now that a reset UI has been shown, don't trigger again for this profile.
+    triggered_profile_resetter->ClearResetTrigger();
+  }
+#endif  // defined(OS_WIN)
+
+  if (reset_tool_name.empty()) {
+    reset_tool_name = l10n_util::GetStringUTF16(
+        IDS_TRIGGERED_RESET_PROFILE_SETTINGS_DEFAULT_TOOL_NAME);
+  }
+
+  base::StringValue string_value(reset_tool_name);
+  ResolveJavascriptCallback(*callback_id, string_value);
 }
 
 #if defined(OS_CHROMEOS)

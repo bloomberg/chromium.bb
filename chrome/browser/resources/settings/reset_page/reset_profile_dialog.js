@@ -4,8 +4,11 @@
 
 /**
  * @fileoverview
+ *
  * 'settings-reset-profile-dialog' is the dialog shown for clearing profile
- * settings.
+ * settings. A triggered variant of this dialog can be shown under certain
+ * circumstances. See triggered_profile_resetter.h for when the triggered
+ * variant will be used.
  */
 Polymer({
   is: 'settings-reset-profile-dialog',
@@ -15,6 +18,19 @@ Polymer({
   properties: {
     // TODO(dpapad): Evaluate whether this needs to be synced across different
     // settings tabs.
+
+    /** @private */
+    isTriggered_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    triggeredResetToolName_: {
+      type: String,
+      value: '',
+    },
+
     /** @private */
     clearingInProgress_: {
       type: Boolean,
@@ -25,6 +41,30 @@ Polymer({
   /** @private {!settings.ResetBrowserProxy} */
   browserProxy_: null,
 
+  /**
+   * @private
+   * @return {string}
+   */
+  getExplanationText_: function() {
+    if (this.isTriggered_) {
+      return loadTimeData.getStringF('triggeredResetPageExplanation',
+                                     this.triggeredResetToolName_);
+    }
+    return loadTimeData.getStringF('resetPageExplanation');
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  getPageTitle_: function() {
+    if (this.isTriggered_) {
+      return loadTimeData.getStringF('triggeredResetPageTitle',
+                                     this.triggeredResetToolName_);
+    }
+    return loadTimeData.getStringF('resetPageTitle');
+  },
+
   /** @override */
   ready: function() {
     this.browserProxy_ = settings.ResetBrowserProxyImpl.getInstance();
@@ -34,10 +74,24 @@ Polymer({
     }.bind(this));
   },
 
-  /** @override */
-  attached: function() {
+  /** @private */
+  showDialog_: function() {
     this.$.dialog.showModal();
     this.browserProxy_.onShowResetProfileDialog();
+  },
+
+  /** @override */
+  attached: function() {
+    this.isTriggered_ =
+        settings.getCurrentRoute() == settings.Route.TRIGGERED_RESET_DIALOG;
+    if (this.isTriggered_) {
+      this.browserProxy_.getTriggeredResetToolName().then(function(name) {
+        this.triggeredResetToolName_ = name;
+        this.showDialog_();
+      }.bind(this));
+    } else {
+      this.showDialog_();
+    }
   },
 
   /** @private */

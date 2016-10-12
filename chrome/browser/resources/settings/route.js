@@ -96,6 +96,8 @@ cr.define('settings', function() {
   r.SIGN_OUT = r.BASIC.createChild('/signOut');
   r.CLEAR_BROWSER_DATA = r.ADVANCED.createChild('/clearBrowserData');
   r.RESET_DIALOG = r.ADVANCED.createChild('/resetProfileSettings');
+  r.TRIGGERED_RESET_DIALOG =
+      r.ADVANCED.createChild('/triggeredResetProfileSettings');
 
 <if expr="chromeos">
   r.INTERNET = r.BASIC.createSection('/internet', 'internet');

@@ -35,6 +35,13 @@ cr.define('settings', function() {
      */
     showReportedSettings: function() {},
 
+    /**
+     * Retrieves the triggered reset tool name.
+     * @return {!Promise<string>} A promise firing with the tool name, once it
+     *     has been retrieved.
+     */
+    getTriggeredResetToolName: function() {},
+
 <if expr="chromeos">
     /**
      * A method to be called when the reset powerwash dialog is shown.
@@ -88,6 +95,11 @@ cr.define('settings', function() {
         div.style.whiteSpace = 'pre';
         win.document.body.appendChild(div);
       });
+    },
+
+    /** @override */
+    getTriggeredResetToolName: function() {
+      return cr.sendWithPromise('getTriggeredResetToolName');
     },
 
 <if expr="chromeos">

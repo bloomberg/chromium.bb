@@ -39,10 +39,15 @@ Polymer({
     },
   },
 
-  /** @protected */
-  currentRouteChanged: function() {
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} route
+   * @protected
+   */
+  currentRouteChanged: function(route) {
     this.showResetProfileDialog_ =
-        settings.getCurrentRoute() == settings.Route.RESET_DIALOG;
+        route == settings.Route.TRIGGERED_RESET_DIALOG ||
+        route == settings.Route.RESET_DIALOG;
   },
 
   /** @private */

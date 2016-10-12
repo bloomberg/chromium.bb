@@ -70,6 +70,9 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
   // Called when the reset profile banner is shown.
   void OnHideResetProfileBanner(const base::ListValue* args);
 
+  // Retrieve the triggered reset tool name, called from Javascript.
+  void HandleGetTriggeredResetToolName(const base::ListValue* args);
+
   // Called when BrandcodeConfigFetcher completed fetching settings.
   void OnSettingsFetched();
 

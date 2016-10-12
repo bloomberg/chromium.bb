@@ -24,10 +24,12 @@
       }
     </style>
     <dialog is="cr-dialog" id="dialog">
-      <div class="title">$i18n{resetPageTitle}</div>
+      <div class="title">
+        [[getPageTitle_(isTriggered_, triggeredResetToolName_)]]
+      </div>
       <div class="body">
         <span>
-          $i18n{resetPageExplanation}
+          [[getExplanationText_(isTriggered_, triggeredResetToolName_)]]
           <a href="$i18nRaw{resetPageLearnMoreUrl}" target="_blank">
             $i18n{learnMore}
           </a>
