@@ -17,8 +17,8 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/surface_damage_observer.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_observer.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
 
@@ -41,15 +41,19 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   Surface* GetSurfaceForId(const SurfaceId& surface_id);
 
-  void AddObserver(SurfaceDamageObserver* obs) {
-    observer_list_.AddObserver(obs);
-  }
+  void AddObserver(SurfaceObserver* obs) { observer_list_.AddObserver(obs); }
 
-  void RemoveObserver(SurfaceDamageObserver* obs) {
+  void RemoveObserver(SurfaceObserver* obs) {
     observer_list_.RemoveObserver(obs);
   }
 
   bool SurfaceModified(const SurfaceId& surface_id);
+
+  // Called when a CompositorFrame is submitted to a SurfaceFactory for a given
+  // |surface_id| for the first time.
+  void SurfaceCreated(const SurfaceId& surface_id,
+                      const gfx::Size& frame_size,
+                      float device_scale_factor);
 
   // A frame for a surface satisfies a set of sequence numbers in a particular
   // id namespace.
@@ -110,7 +114,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   using SurfaceMap = std::unordered_map<SurfaceId, Surface*, SurfaceIdHash>;
   SurfaceMap surface_map_;
-  base::ObserverList<SurfaceDamageObserver> observer_list_;
+  base::ObserverList<SurfaceObserver> observer_list_;
   base::ThreadChecker thread_checker_;
 
   // List of surfaces to be destroyed, along with what sequences they're still

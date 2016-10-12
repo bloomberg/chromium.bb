@@ -64,7 +64,7 @@ gpu::SyncToken GenTestSyncToken(int id) {
   return token;
 }
 
-class SurfaceFactoryTest : public testing::Test, public SurfaceDamageObserver {
+class SurfaceFactoryTest : public testing::Test, public SurfaceObserver {
  public:
   SurfaceFactoryTest()
       : factory_(
@@ -76,7 +76,18 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceDamageObserver {
     factory_->Create(local_frame_id_);
   }
 
-  // SurfaceDamageObserver implementation.
+  const SurfaceId& last_created_surface_id() const {
+    return last_created_surface_id_;
+  }
+
+  // SurfaceObserver implementation.
+  void OnSurfaceCreated(const SurfaceId& surface_id,
+                        const gfx::Size& frame,
+                        float device_scale_factor) override {
+    EXPECT_EQ(kArbitraryFrameSinkId, surface_id.frame_sink_id());
+    last_created_surface_id_ = surface_id;
+  }
+
   void OnSurfaceDamaged(const SurfaceId& id, bool* changed) override {
     *changed = true;
   }
@@ -101,6 +112,7 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceDamageObserver {
     frame.delegated_frame_data = std::move(frame_data);
     factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
                                     SurfaceFactory::DrawCallback());
+    EXPECT_EQ(last_created_surface_id_.local_frame_id(), local_frame_id_);
   }
 
   void UnrefResources(ResourceId* ids_to_unref,
@@ -145,6 +157,7 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceDamageObserver {
   TestSurfaceFactoryClient client_;
   std::unique_ptr<SurfaceFactory> factory_;
   LocalFrameId local_frame_id_;
+  SurfaceId last_created_surface_id_;
 
   // This is the sync token submitted with the frame. It should never be
   // returned to the client.
@@ -435,6 +448,7 @@ TEST_F(SurfaceFactoryTest, BlankNoIndexIncrement) {
   factory_->SubmitCompositorFrame(local_frame_id, std::move(frame),
                                   SurfaceFactory::DrawCallback());
   EXPECT_EQ(2, surface->frame_index());
+  EXPECT_EQ(last_created_surface_id().local_frame_id(), local_frame_id);
   factory_->Destroy(local_frame_id);
 }
 
@@ -481,7 +495,7 @@ TEST_F(SurfaceFactoryTest, DestroyAll) {
   uint32_t execute_count = 0;
   factory_->SubmitCompositorFrame(id, std::move(frame),
                                   base::Bind(&DrawCallback, &execute_count));
-
+  EXPECT_EQ(last_created_surface_id().local_frame_id(), id);
   local_frame_id_ = LocalFrameId();
   factory_->DestroyAll();
   EXPECT_EQ(1u, execute_count);
@@ -507,6 +521,7 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
   DCHECK(manager_.GetSurfaceForId(id2));
   factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
                                   SurfaceFactory::DrawCallback());
+  EXPECT_EQ(last_created_surface_id().local_frame_id(), local_frame_id_);
   DCHECK(!manager_.GetSurfaceForId(id2));
 
   // Check that waiting after the sequence is satisfied works.
@@ -563,6 +578,7 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
     frame.delegated_frame_data = std::move(frame_data);
     factory_->SubmitCompositorFrame(local_frame_id2, std::move(frame),
                                     SurfaceFactory::DrawCallback());
+    EXPECT_EQ(last_created_surface_id().local_frame_id(), local_frame_id2);
   }
   factory_->Destroy(local_frame_id2);
 
@@ -576,6 +592,7 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
     frame.delegated_frame_data = std::move(frame_data);
     factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
                                     SurfaceFactory::DrawCallback());
+    EXPECT_EQ(last_created_surface_id().local_frame_id(), local_frame_id_);
   }
   factory_->Destroy(local_frame_id_);
   EXPECT_TRUE(manager_.GetSurfaceForId(id2));
@@ -613,6 +630,7 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
     frame.delegated_frame_data = std::move(frame_data);
     factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
                                     SurfaceFactory::DrawCallback());
+    EXPECT_EQ(last_created_surface_id().local_frame_id(), local_frame_id_);
   }
   void* source1 = &source1;
   void* source2 = &source2;

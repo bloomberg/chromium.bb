@@ -76,6 +76,21 @@ void SurfaceFactory::SubmitCompositorFrame(const LocalFrameId& local_frame_id,
   OwningSurfaceMap::iterator it = surface_map_.find(local_frame_id);
   DCHECK(it != surface_map_.end());
   DCHECK(it->second->factory().get() == this);
+  const CompositorFrame& previous_frame = it->second->GetEligibleFrame();
+  // Tell the SurfaceManager if this is the first frame submitted with this
+  // LocalFrameId.
+  if (!previous_frame.delegated_frame_data) {
+    float device_scale_factor = frame.metadata.device_scale_factor;
+    gfx::Size frame_size;
+    // CompositorFrames may not be populated with a RenderPass in unit tests.
+    if (frame.delegated_frame_data &&
+        !frame.delegated_frame_data->render_pass_list.empty()) {
+      frame_size =
+          frame.delegated_frame_data->render_pass_list[0]->output_rect.size();
+    }
+    manager_->SurfaceCreated(it->second->surface_id(), frame_size,
+                             device_scale_factor);
+  }
   it->second->QueueFrame(std::move(frame), callback);
   if (!manager_->SurfaceModified(SurfaceId(frame_sink_id_, local_frame_id))) {
     TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
