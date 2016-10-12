@@ -233,11 +233,7 @@ void IDBCursor::continuePrimaryKey(ScriptState* scriptState,
         TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
     return;
   }
-  if (!m_gotValue) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::noValueErrorMessage);
-    return;
-  }
+
   if (isDeleted()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      IDBDatabase::sourceDeletedErrorMessage);
@@ -249,10 +245,17 @@ void IDBCursor::continuePrimaryKey(ScriptState* scriptState,
                                      "The cursor's source is not an index.");
     return;
   }
+
   if (m_direction != WebIDBCursorDirectionNext &&
       m_direction != WebIDBCursorDirectionPrev) {
     exceptionState.throwDOMException(
         InvalidAccessError, "The cursor's direction is not 'next' or 'prev'.");
+    return;
+  }
+
+  if (!m_gotValue) {
+    exceptionState.throwDOMException(InvalidStateError,
+                                     IDBDatabase::noValueErrorMessage);
     return;
   }
 
