@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/metrics/proto/translate_event.pb.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/translate/core/browser/proto/translate_ranker_model.pb.h"
@@ -80,6 +81,21 @@ class TranslateRankerTest : public ::testing::Test {
 
   static double Sigmoid(double x) { return 1.0 / (1.0 + exp(-x)); }
 
+  static metrics::TranslateEventProto CreateTranslateEvent(
+      const std::string& src_lang,
+      const std::string& dst_lang,
+      int accept_count,
+      int decline_count,
+      int ignore_count) {
+    metrics::TranslateEventProto translate_event;
+    translate_event.set_source_language(src_lang);
+    translate_event.set_target_language(dst_lang);
+    translate_event.set_accept_count(accept_count);
+    translate_event.set_decline_count(decline_count);
+    translate_event.set_ignore_count(ignore_count);
+    return translate_event;
+  }
+
   static const char* const kPreferredLanguagePrefs;
 
   std::unique_ptr<user_prefs::TestingPrefServiceSyncable> prefs_;
@@ -125,7 +141,15 @@ TEST_F(TranslateRankerTest, EnableEnforcement) {
 TEST_F(TranslateRankerTest, EnableQueryAndEnforcement) {
   InitFeatures({kTranslateRankerQuery, kTranslateRankerEnforcement}, {});
   EXPECT_TRUE(TranslateRanker::IsEnabled());
+  EXPECT_FALSE(TranslateRanker::IsLoggingEnabled());
 }
+
+TEST_F(TranslateRankerTest, EnableLogging) {
+  InitFeatures({kTranslateRankerLogging}, {});
+  EXPECT_FALSE(TranslateRanker::IsEnabled());
+  EXPECT_TRUE(TranslateRanker::IsLoggingEnabled());
+}
+
 
 TEST_F(TranslateRankerTest, CalculateScore) {
   InitFeatures({kTranslateRankerQuery, kTranslateRankerEnforcement}, {});
@@ -154,6 +178,54 @@ TEST_F(TranslateRankerTest, ShouldOfferTranslation) {
   // With a bias of 0.25 en-fr is over the threshold.
   EXPECT_TRUE(GetRankerForTest(0.25f)->ShouldOfferTranslation(*translate_prefs_,
                                                               "en", "fr"));
+}
+
+TEST_F(TranslateRankerTest, RecordAndFlushEvents) {
+  InitFeatures({kTranslateRankerLogging}, {});
+  std::unique_ptr<translate::TranslateRanker> ranker = GetRankerForTest(0.0f);
+  std::vector<metrics::TranslateEventProto> flushed_events;
+
+  // Check that flushing an empty cache will return an empty vector.
+  ranker->FlushTranslateEvents(&flushed_events);
+  EXPECT_EQ(0U, flushed_events.size());
+
+  auto event_1 = CreateTranslateEvent("fr", "en", 1, 0, 3);
+  auto event_2 = CreateTranslateEvent("jp", "en", 2, 0, 3);
+  auto event_3 = CreateTranslateEvent("es", "de", 4, 5, 6);
+  ranker->RecordTranslateEvent(event_1);
+  ranker->RecordTranslateEvent(event_2);
+  ranker->RecordTranslateEvent(event_3);
+
+  // Capture the data and verify that it is as expected.
+  ranker->FlushTranslateEvents(&flushed_events);
+  EXPECT_EQ(3U, flushed_events.size());
+  ASSERT_EQ("fr", flushed_events[0].source_language());
+  ASSERT_EQ("jp", flushed_events[1].source_language());
+  ASSERT_EQ("es", flushed_events[2].source_language());
+
+  // Check that the cache has been cleared.
+  ranker->FlushTranslateEvents(&flushed_events);
+  EXPECT_EQ(0U, flushed_events.size());
+}
+
+TEST_F(TranslateRankerTest, LoggingDisabled) {
+  InitFeatures({}, {kTranslateRankerLogging});
+  std::unique_ptr<translate::TranslateRanker> ranker = GetRankerForTest(0.0f);
+  std::vector<metrics::TranslateEventProto> flushed_events;
+
+  ranker->FlushTranslateEvents(&flushed_events);
+  EXPECT_EQ(0U, flushed_events.size());
+
+  auto event_1 = CreateTranslateEvent("fr", "en", 1, 0, 3);
+  auto event_2 = CreateTranslateEvent("jp", "en", 2, 0, 3);
+  auto event_3 = CreateTranslateEvent("es", "de", 4, 5, 6);
+  ranker->RecordTranslateEvent(event_1);
+  ranker->RecordTranslateEvent(event_2);
+  ranker->RecordTranslateEvent(event_3);
+
+  // Logging is disabled, so no events should be cached.
+  ranker->FlushTranslateEvents(&flushed_events);
+  EXPECT_EQ(0U, flushed_events.size());
 }
 
 }  // namespace translate

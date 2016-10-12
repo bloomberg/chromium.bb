@@ -16,16 +16,21 @@ namespace chrome_intelligence {
 class TranslateRankerModel;
 }
 
+namespace metrics {
+class TranslateEventProto;
+}
+
 namespace translate {
 
 class TranslatePrefs;
 class TranslateRankerMetricsProvider;
 class TranslateURLFetcher;
 
-// Features used to enable ranker query and enforcement. Note that enabling
-// enforcement implies (forces) enabling queries.
+// Features used to enable ranker query, enforcement and logging. Note that
+// enabling enforcement implies (forces) enabling queries.
 extern const base::Feature kTranslateRankerQuery;
 extern const base::Feature kTranslateRankerEnforcement;
+extern const base::Feature kTranslateRankerLogging;
 
 // If enabled, downloads a translate ranker model and uses it to determine
 // whether the user should be given a translation prompt or not.
@@ -35,6 +40,9 @@ class TranslateRanker {
 
   // Returns true if query or enforcement is enabled.
   static bool IsEnabled();
+
+  // Returns true if translate events logging is enabled.
+  static bool IsLoggingEnabled();
 
   // Returns the singleton TranslateRanker instance.
   static TranslateRanker* GetInstance();
@@ -58,6 +66,15 @@ class TranslateRanker {
 
   // Returns the model version (a date stamp) or 0 if there is no valid model.
   int GetModelVersion() const;
+
+  // Caches the translate event.
+  void RecordTranslateEvent(
+      const metrics::TranslateEventProto& translate_event);
+
+  // Transfers cached translate events to the given vector pointer and clears
+  // the cache.
+  void FlushTranslateEvents(
+      std::vector<metrics::TranslateEventProto>* translate_events);
 
  private:
   // The ID which is assigned to the underlying URLFetcher.
@@ -90,6 +107,9 @@ class TranslateRanker {
   // Tracks the last time the translate ranker attempted to download its model.
   // Used for UMA reporting of timing.
   base::Time download_start_time_;
+
+  // Saved cache of translate event protos.
+  std::vector<metrics::TranslateEventProto> translate_events_cache_;
 
   FRIEND_TEST_ALL_PREFIXES(TranslateRankerTest, CalculateScore);
 

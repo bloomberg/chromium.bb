@@ -5,6 +5,8 @@
 #include "components/translate/core/browser/translate_ranker_metrics_provider.h"
 
 #include "base/metrics/sparse_histogram.h"
+#include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
+#include "components/metrics/proto/translate_event.pb.h"
 #include "components/translate/core/browser/proto/translate_ranker_model.pb.h"
 #include "components/translate/core/browser/translate_ranker.h"
 
@@ -14,15 +16,21 @@ TranslateRankerMetricsProvider::TranslateRankerMetricsProvider() {}
 TranslateRankerMetricsProvider::~TranslateRankerMetricsProvider() {}
 
 void TranslateRankerMetricsProvider::ProvideGeneralMetrics(
-    metrics::ChromeUserMetricsExtension* /* uma_proto */) {
-  // Nothing to report if the translate ranker is disabled.
-  if (!TranslateRanker::IsEnabled())
-    return;
-
-  const TranslateRanker* translate_ranker = TranslateRanker::GetInstance();
+    metrics::ChromeUserMetricsExtension* uma_proto) {
+  TranslateRanker* translate_ranker = TranslateRanker::GetInstance();
   if (translate_ranker != nullptr) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Translate.Ranker.Model.Version",
-                                translate_ranker->GetModelVersion());
+    std::vector<metrics::TranslateEventProto> translate_events;
+    translate_ranker->FlushTranslateEvents(&translate_events);
+    for (metrics::TranslateEventProto& event : translate_events) {
+      uma_proto->add_translate_event()->Swap(&event);
+    }
+
+    if (TranslateRanker::IsEnabled()) {
+      // TODO(hamelphi): Remove this logging once we start using
+      // TranslateEventProtos.
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Translate.Ranker.Model.Version",
+                                  translate_ranker->GetModelVersion());
+    }
   }
 }
 

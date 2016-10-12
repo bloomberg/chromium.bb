@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
+#include "components/metrics/proto/translate_event.pb.h"
 #include "components/translate/core/browser/proto/translate_ranker_model.pb.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -86,11 +87,19 @@ const base::Feature kTranslateRankerQuery{"TranslateRankerQuery",
 const base::Feature kTranslateRankerEnforcement{
     "TranslateRankerEnforcement", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kTranslateRankerLogging{"TranslateRankerLogging",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 TranslateRanker::~TranslateRanker() {}
 
 // static
 bool TranslateRanker::IsEnabled() {
   return IsQueryEnabled() || IsEnforcementEnabled();
+}
+
+// static
+bool TranslateRanker::IsLoggingEnabled() {
+  return base::FeatureList::IsEnabled(kTranslateRankerLogging);
 }
 
 // static
@@ -280,6 +289,20 @@ void TranslateRanker::ParseModel(int /* id */,
   ReportModelStatus(MODEL_STATUS_OK);
   model_ = std::move(new_model);
   model_fetcher_.reset();
+}
+
+void TranslateRanker::FlushTranslateEvents(
+    std::vector<metrics::TranslateEventProto>* translate_events) {
+  if (IsLoggingEnabled()) {
+    translate_events->swap(translate_events_cache_);
+    translate_events_cache_.clear();
+  }
+}
+
+void TranslateRanker::RecordTranslateEvent(
+    const metrics::TranslateEventProto& translate_event) {
+  if (IsLoggingEnabled())
+    translate_events_cache_.push_back(translate_event);
 }
 
 }  // namespace translate
