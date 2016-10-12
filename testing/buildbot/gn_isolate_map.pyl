@@ -368,13 +368,6 @@
     "label": "//content/public/android:content_junit_tests",
     "type": "junit_test",
   },
-  "content_site_isolation_browsertests": {
-    "label": "//content/test:content_site_isolation_browsertests",
-    "label_type": "group",
-    "type": "windowed_test_launcher",
-    "executable": "content_browsertests",
-    "args": ["--site-per-process", "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"],
-  },
   "content_shell_test_apk": {
     "label": "//content/shell/android:content_shell_test_apk",
     "type": "console_test_launcher",
