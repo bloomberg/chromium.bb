@@ -113,6 +113,7 @@ by a child template that "extends" this file.
         android:allowBackup="true"
         android:manageSpaceActivity="@string/manage_space_activity"
         android:fullBackupContent="@xml/chromebackupscheme"
+        android:fullBackupOnly="true"
         android:restoreAnyVersion="true"
         {% block android_backup_agent %}
         android:backupAgent="org.chromium.chrome.browser.ChromeBackupAgent"
