@@ -305,11 +305,11 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseWaitCancels) {
   // Create response stream, but no data yet.
   session_.GetOrCreateStream(promise_id_);
 
-  // Fire the alarm that will cancel the promised stream.
+  // Cancel the promised stream.
   EXPECT_CALL(session_, CloseStream(promise_id_));
   EXPECT_CALL(*connection_,
               SendRstStream(promise_id_, QUIC_STREAM_CANCELLED, 0));
-  alarm_factory_.FireAlarm(QuicClientPromisedInfoPeer::GetAlarm(promised));
+  promised->Cancel();
 
   // Promise is gone
   EXPECT_EQ(session_.GetPromisedById(promise_id_), nullptr);
