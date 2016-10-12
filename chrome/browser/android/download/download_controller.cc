@@ -245,6 +245,7 @@ void DownloadController::OnDownloadStarted(
     delegate->OnDownloadStarted(
         download_item->GetTargetFilePath().BaseName().value());
   }
+  OnDownloadUpdated(download_item);
 }
 
 void DownloadController::OnDownloadUpdated(DownloadItem* item) {

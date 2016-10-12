@@ -350,8 +350,10 @@ void DownloadManagerService::CancelDownloadInternal(
     return;
   content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
   if (item) {
-    item->Cancel(true);
+    // Remove the observer first to avoid item->Cancel() causing re-entrance
+    // issue.
     item->RemoveObserver(DownloadControllerBase::Get());
+    item->Cancel(true);
   }
 }
 
