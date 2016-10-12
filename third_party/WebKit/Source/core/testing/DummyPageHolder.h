@@ -44,6 +44,7 @@ namespace blink {
 class Document;
 class LocalFrame;
 class FrameView;
+class InterfaceProvider;
 class IntSize;
 class Settings;
 
@@ -70,7 +71,8 @@ class DummyPageHolder {
       const IntSize& initialViewSize = IntSize(),
       Page::PageClients* = 0,
       FrameLoaderClient* = nullptr,
-      FrameSettingOverrideFunction = nullptr);
+      FrameSettingOverrideFunction = nullptr,
+      InterfaceProvider* = nullptr);
   ~DummyPageHolder();
 
   Page& page() const;
@@ -82,7 +84,8 @@ class DummyPageHolder {
   DummyPageHolder(const IntSize& initialViewSize,
                   Page::PageClients*,
                   FrameLoaderClient*,
-                  FrameSettingOverrideFunction settingOverrider);
+                  FrameSettingOverrideFunction settingOverrider,
+                  InterfaceProvider* = nullptr);
 
   Persistent<Page> m_page;
   Persistent<LocalFrame> m_frame;

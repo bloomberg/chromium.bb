@@ -33,8 +33,11 @@
 
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
+#include "public/platform/InterfaceProvider.h"
+#include "public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom-blink.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 
@@ -81,6 +84,25 @@ void PasswordInputType::enableSecureTextInput() {
 void PasswordInputType::disableSecureTextInput() {
   if (element().document().frame())
     element().document().setUseSecureKeyboardEntryWhenActive(false);
+}
+
+LayoutObject* PasswordInputType::createLayoutObject(
+    const ComputedStyle& style) const {
+  LayoutObject* layoutObject = TextFieldInputType::createLayoutObject(style);
+  Document& document = element().document();
+  if (document.isSecureContext() || !layoutObject) {
+    // The browser process only cares about passwords on pages where the
+    // top-level URL is not secure. Secure contexts must have a top-level
+    // URL that is secure, so there is no need to send notifications for
+    // password fields in secure contexts.
+    return layoutObject;
+  }
+
+  mojom::blink::SensitiveInputVisibilityServicePtr sensitiveInputServicePtr;
+  element().document().frame()->interfaceProvider()->getInterface(
+      mojo::GetProxy(&sensitiveInputServicePtr));
+  sensitiveInputServicePtr->PasswordFieldVisibleInInsecureContext();
+  return layoutObject;
 }
 
 }  // namespace blink

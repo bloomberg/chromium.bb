@@ -1145,6 +1145,7 @@ source_set("unit_tests") {
     "html/forms/EmailInputTypeTest.cpp",
     "html/forms/FileInputTypeTest.cpp",
     "html/forms/OptionListTest.cpp",
+    "html/forms/PasswordInputTypeTest.cpp",
     "html/forms/StepRangeTest.cpp",
     "html/parser/AtomicHTMLTokenTest.cpp",
     "html/parser/CSSPreloadScannerTest.cpp",

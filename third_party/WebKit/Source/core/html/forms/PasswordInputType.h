@@ -40,7 +40,8 @@ class PasswordInputType final : public BaseTextInputType {
   static InputType* create(HTMLInputElement&);
 
  private:
-  PasswordInputType(HTMLInputElement& element) : BaseTextInputType(element) {}
+  explicit PasswordInputType(HTMLInputElement& element)
+      : BaseTextInputType(element) {}
   void countUsage() override;
   const AtomicString& formControlType() const override;
   bool shouldSaveAndRestoreFormControlState() const override;
@@ -49,6 +50,7 @@ class PasswordInputType final : public BaseTextInputType {
   bool shouldRespectListAttribute() override;
   void enableSecureTextInput() override;
   void disableSecureTextInput() override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) const override;
 };
 
 }  // namespace blink

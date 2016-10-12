@@ -97,6 +97,30 @@ void ContentPasswordManagerDriverFactory::BindPasswordManagerDriver(
     driver->BindRequest(std::move(request));
 }
 
+// static
+void ContentPasswordManagerDriverFactory::BindSensitiveInputVisibilityService(
+    content::RenderFrameHost* render_frame_host,
+    blink::mojom::SensitiveInputVisibilityServiceRequest request) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return;
+
+  ContentPasswordManagerDriverFactory* factory =
+      ContentPasswordManagerDriverFactory::FromWebContents(web_contents);
+  // We try to bind to the driver, but if driver is not ready for now or totally
+  // not available for this render frame host, the request will be just dropped.
+  // This would cause the message pipe to be closed, which will raise a
+  // connection error on the peer side.
+  if (!factory)
+    return;
+
+  ContentPasswordManagerDriver* driver =
+      factory->GetDriverForFrame(render_frame_host);
+  if (driver)
+    driver->BindSensitiveInputVisibilityServiceRequest(std::move(request));
+}
+
 ContentPasswordManagerDriver*
 ContentPasswordManagerDriverFactory::GetDriverForFrame(
     content::RenderFrameHost* render_frame_host) {

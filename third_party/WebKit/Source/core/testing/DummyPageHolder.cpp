@@ -47,16 +47,18 @@ std::unique_ptr<DummyPageHolder> DummyPageHolder::create(
     const IntSize& initialViewSize,
     Page::PageClients* pageClients,
     FrameLoaderClient* frameLoaderClient,
-    FrameSettingOverrideFunction settingOverrider) {
+    FrameSettingOverrideFunction settingOverrider,
+    InterfaceProvider* interfaceProvider) {
   return wrapUnique(new DummyPageHolder(initialViewSize, pageClients,
-                                        frameLoaderClient, settingOverrider));
+                                        frameLoaderClient, settingOverrider,
+                                        interfaceProvider));
 }
 
-DummyPageHolder::DummyPageHolder(
-    const IntSize& initialViewSize,
-    Page::PageClients* pageClientsArgument,
-    FrameLoaderClient* frameLoaderClient,
-    FrameSettingOverrideFunction settingOverrider) {
+DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize,
+                                 Page::PageClients* pageClientsArgument,
+                                 FrameLoaderClient* frameLoaderClient,
+                                 FrameSettingOverrideFunction settingOverrider,
+                                 InterfaceProvider* interfaceProvider) {
   Page::PageClients pageClients;
   if (!pageClientsArgument) {
     fillWithEmptyClients(pageClients);
@@ -79,7 +81,7 @@ DummyPageHolder::DummyPageHolder(
     m_frameLoaderClient = EmptyFrameLoaderClient::create();
 
   m_frame = LocalFrame::create(m_frameLoaderClient.get(), &m_page->frameHost(),
-                               nullptr);
+                               nullptr, interfaceProvider);
   m_frame->setView(FrameView::create(m_frame.get(), initialViewSize));
   m_frame->view()->page()->frameHost().visualViewport().setSize(
       initialViewSize);

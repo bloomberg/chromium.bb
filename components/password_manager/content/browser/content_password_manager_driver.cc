@@ -49,7 +49,7 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
       password_generation_manager_(client, this),
       password_autofill_manager_(this, autofill_client),
       next_free_key_(0),
-      binding_(this),
+      password_manager_binding_(this),
       weak_factory_(this) {}
 
 ContentPasswordManagerDriver::~ContentPasswordManagerDriver() {
@@ -67,7 +67,12 @@ ContentPasswordManagerDriver::GetForRenderFrameHost(
 
 void ContentPasswordManagerDriver::BindRequest(
     autofill::mojom::PasswordManagerDriverRequest request) {
-  binding_.Bind(std::move(request));
+  password_manager_binding_.Bind(std::move(request));
+}
+
+void ContentPasswordManagerDriver::BindSensitiveInputVisibilityServiceRequest(
+    blink::mojom::SensitiveInputVisibilityServiceRequest request) {
+  sensitive_input_visibility_bindings_.AddBinding(this, std::move(request));
 }
 
 void ContentPasswordManagerDriver::FillPasswordForm(
@@ -201,6 +206,12 @@ void ContentPasswordManagerDriver::OnFocusedPasswordFormFound(
           BadMessageReason::CPMD_BAD_ORIGIN_FOCUSED_PASSWORD_FORM_FOUND))
     return;
   GetPasswordManager()->OnPasswordFormForceSaveRequested(this, password_form);
+}
+
+void ContentPasswordManagerDriver::PasswordFieldVisibleInInsecureContext() {
+  // TODO(estark): notify the WebContents that a password field was
+  // shown, which will downgrade the security UI
+  // appropriately. https://crbug.com/647560
 }
 
 void ContentPasswordManagerDriver::DidNavigateFrame(

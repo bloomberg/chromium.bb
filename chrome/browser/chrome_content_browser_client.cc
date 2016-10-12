@@ -2957,6 +2957,11 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
                      BindPasswordManagerDriver,
                  render_frame_host));
 
+  registry->AddInterface(
+      base::Bind(&password_manager::ContentPasswordManagerDriverFactory::
+                     BindSensitiveInputVisibilityService,
+                 render_frame_host));
+
 #if BUILDFLAG(ANDROID_JAVA_UI)
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
