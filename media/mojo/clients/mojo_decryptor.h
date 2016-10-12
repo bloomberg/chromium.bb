@@ -54,7 +54,7 @@ class MojoDecryptor : public Decryptor {
                          mojom::DecoderBufferPtr buffer);
   void OnAudioDecoded(const AudioDecodeCB& audio_decode_cb,
                       mojom::Decryptor::Status status,
-                      mojo::Array<mojom::AudioBufferPtr> audio_buffers);
+                      std::vector<mojom::AudioBufferPtr> audio_buffers);
   void OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
                       mojom::Decryptor::Status status,
                       mojom::VideoFramePtr video_frame);

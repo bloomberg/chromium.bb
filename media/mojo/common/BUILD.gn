@@ -15,7 +15,6 @@ source_set("common") {
     "mojo_decoder_buffer_converter.h",
     "mojo_shared_buffer_video_frame.cc",
     "mojo_shared_buffer_video_frame.h",
-    "mojo_type_trait.h",
   ]
 
   deps = [

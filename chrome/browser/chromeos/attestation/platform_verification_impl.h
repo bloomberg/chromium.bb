@@ -30,8 +30,8 @@ class PlatformVerificationImpl : public media::mojom::PlatformVerification {
   ~PlatformVerificationImpl() override;
 
   // mojo::InterfaceImpl<PlatformVerification> implementation.
-  void ChallengePlatform(const mojo::String& service_id,
-                         const mojo::String& challenge,
+  void ChallengePlatform(const std::string& service_id,
+                         const std::string& challenge,
                          const ChallengePlatformCallback& callback) override;
 
  private:

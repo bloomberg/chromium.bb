@@ -12,7 +12,7 @@ interface ProvisionFetcher {
   // Requests the provision information with |default_url| and |request_data|
   // and returns |result| and the |response|. The input parameters |default_url|
   // and |request_data| corresponds to Java class MediaDrm.ProvisionRequest.
-  // |response| will be null iff |result| is false.
+  // |response| will be empty iff |result| is false.
   Retrieve(string default_url, string request_data)
-      => (bool result, string? response);
+      => (bool result, string response);
 };

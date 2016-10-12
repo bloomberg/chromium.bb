@@ -18,7 +18,6 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/media_keys.h"
-#include "media/mojo/common/mojo_type_trait.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -90,21 +89,18 @@ class MojoCdm : public MediaKeys,
   void OnConnectionError();
 
   // mojom::ContentDecryptionModuleClient implementation.
-  void OnSessionMessage(const mojo::String& session_id,
+  void OnSessionMessage(const std::string& session_id,
                         mojom::CdmMessageType message_type,
-                        mojo::Array<uint8_t> message) final;
-  void OnSessionClosed(const mojo::String& session_id) final;
+                        const std::vector<uint8_t>& message) final;
+  void OnSessionClosed(const std::string& session_id) final;
   void OnSessionKeysChange(
-      const mojo::String& session_id,
+      const std::string& session_id,
       bool has_additional_usable_key,
-      mojo::Array<mojom::CdmKeyInformationPtr> keys_info) final;
-  void OnSessionExpirationUpdate(const mojo::String& session_id,
+      std::vector<mojom::CdmKeyInformationPtr> keys_info) final;
+  void OnSessionExpirationUpdate(const std::string& session_id,
                                  double new_expiry_time_sec) final;
 
   // Callback for InitializeCdm.
-  // Note: Cannot use OnPromiseResult() below since we need to handle connection
-  // error. Also we have extra parameters |cdm_id| and |decryptor|, which aren't
-  // needed in CdmInitializedPromise.
   void OnCdmInitialized(mojom::CdmPromiseResultPtr result,
                         int cdm_id,
                         mojom::DecryptorPtr decryptor);
@@ -113,18 +109,12 @@ class MojoCdm : public MediaKeys,
   void OnKeyAdded();
 
   // Callbacks to handle CDM promises.
-  // We have to inline this method, since MS VS 2013 compiler fails to compile
-  // it when this method is not inlined. It fails with error C2244
-  // "unable to match function definition to an existing declaration".
-  template <typename... T>
-  void OnPromiseResult(std::unique_ptr<CdmPromiseTemplate<T...>> promise,
-                       mojom::CdmPromiseResultPtr result,
-                       typename MojoTypeTrait<T>::MojoType... args) {
-    if (result->success)
-      promise->resolve(args.template To<T>()...);  // See ISO C++03 14.2/4.
-    else
-      RejectPromise(std::move(promise), std::move(result));
-  }
+  void OnSimpleCdmPromiseResult(std::unique_ptr<SimpleCdmPromise> promise,
+                                mojom::CdmPromiseResultPtr result);
+  void OnNewSessionCdmPromiseResult(
+      std::unique_ptr<NewSessionCdmPromise> promise,
+      mojom::CdmPromiseResultPtr result,
+      const std::string& session_id);
 
   base::ThreadChecker thread_checker_;
 

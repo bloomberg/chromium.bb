@@ -36,8 +36,8 @@ ProvisionFetcherImpl::ProvisionFetcherImpl(
 
 ProvisionFetcherImpl::~ProvisionFetcherImpl() {}
 
-void ProvisionFetcherImpl::Retrieve(const mojo::String& default_url,
-                                    const mojo::String& request_data,
+void ProvisionFetcherImpl::Retrieve(const std::string& default_url,
+                                    const std::string& request_data,
                                     const RetrieveCallback& callback) {
   DVLOG(1) << __FUNCTION__ << ": " << default_url;
   provision_fetcher_->Retrieve(

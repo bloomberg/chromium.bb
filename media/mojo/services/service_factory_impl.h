@@ -37,7 +37,7 @@ class ServiceFactoryImpl : public mojom::ServiceFactory {
   // mojom::ServiceFactory implementation.
   void CreateAudioDecoder(mojom::AudioDecoderRequest request) final;
   void CreateVideoDecoder(mojom::VideoDecoderRequest request) final;
-  void CreateRenderer(const mojo::String& audio_device_id,
+  void CreateRenderer(const std::string& audio_device_id,
                       mojom::RendererRequest request) final;
   void CreateCdm(mojom::ContentDecryptionModuleRequest request) final;
 

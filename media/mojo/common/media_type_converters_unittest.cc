@@ -290,7 +290,7 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Normal) {
   config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
                     kExtraDataVector, Unencrypted(), base::TimeDelta(), 0);
   mojom::AudioDecoderConfigPtr ptr(mojom::AudioDecoderConfig::From(config));
-  EXPECT_FALSE(ptr->extra_data.is_null());
+  EXPECT_FALSE(ptr->extra_data.empty());
   AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
   EXPECT_TRUE(result.Matches(config));
 }
@@ -300,7 +300,7 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_EmptyExtraData) {
   config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
                     EmptyExtraData(), Unencrypted(), base::TimeDelta(), 0);
   mojom::AudioDecoderConfigPtr ptr(mojom::AudioDecoderConfig::From(config));
-  EXPECT_TRUE(ptr->extra_data.is_null());
+  EXPECT_TRUE(ptr->extra_data.empty());
   AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
   EXPECT_TRUE(result.Matches(config));
 }
@@ -324,7 +324,7 @@ TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_Normal) {
                             COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
                             kNaturalSize, kExtraDataVector, Unencrypted());
   mojom::VideoDecoderConfigPtr ptr(mojom::VideoDecoderConfig::From(config));
-  EXPECT_FALSE(ptr->extra_data.is_null());
+  EXPECT_FALSE(ptr->extra_data.empty());
   VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
   EXPECT_TRUE(result.Matches(config));
 }
@@ -334,7 +334,7 @@ TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_EmptyExtraData) {
                             COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
                             kNaturalSize, EmptyExtraData(), Unencrypted());
   mojom::VideoDecoderConfigPtr ptr(mojom::VideoDecoderConfig::From(config));
-  EXPECT_TRUE(ptr->extra_data.is_null());
+  EXPECT_TRUE(ptr->extra_data.empty());
   VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
   EXPECT_TRUE(result.Matches(config));
 }

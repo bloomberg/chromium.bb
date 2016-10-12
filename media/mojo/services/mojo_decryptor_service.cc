@@ -98,7 +98,8 @@ void MojoDecryptorService::DecryptAndDecodeAudio(
   scoped_refptr<DecoderBuffer> media_buffer =
       mojo_decoder_buffer_reader_->ReadDecoderBuffer(encrypted);
   if (!media_buffer) {
-    callback.Run(Status::DECRYPTION_ERROR, nullptr);
+    callback.Run(Status::DECRYPTION_ERROR,
+                 std::vector<mojom::AudioBufferPtr>());
     return;
   }
 
@@ -190,7 +191,7 @@ void MojoDecryptorService::OnAudioDecoded(
                                                     << status << ")";
   DVLOG_IF(3, status == media::Decryptor::kSuccess) << __FUNCTION__;
 
-  mojo::Array<mojom::AudioBufferPtr> audio_buffers;
+  std::vector<mojom::AudioBufferPtr> audio_buffers;
   for (const auto& frame : frames)
     audio_buffers.push_back(mojom::AudioBuffer::From(frame));
 

@@ -85,7 +85,7 @@ void ServiceFactoryImpl::CreateVideoDecoder(
 }
 
 void ServiceFactoryImpl::CreateRenderer(
-    const mojo::String& audio_device_id,
+    const std::string& audio_device_id,
     mojo::InterfaceRequest<mojom::Renderer> request) {
 #if defined(ENABLE_MOJO_RENDERER)
   RendererFactory* renderer_factory = GetRendererFactory();

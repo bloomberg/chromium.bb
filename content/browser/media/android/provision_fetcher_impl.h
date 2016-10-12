@@ -29,8 +29,8 @@ class ProvisionFetcherImpl : public media::mojom::ProvisionFetcher {
   ~ProvisionFetcherImpl() override;
 
   // media::mojom::ProvisionFetcher implementation.
-  void Retrieve(const mojo::String& default_url,
-                const mojo::String& request_data,
+  void Retrieve(const std::string& default_url,
+                const std::string& request_data,
                 const RetrieveCallback& callback) final;
 
  private:

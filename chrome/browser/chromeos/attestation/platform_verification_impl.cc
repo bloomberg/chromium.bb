@@ -37,8 +37,8 @@ PlatformVerificationImpl::~PlatformVerificationImpl() {
 }
 
 void PlatformVerificationImpl::ChallengePlatform(
-    const mojo::String& service_id,
-    const mojo::String& challenge,
+    const std::string& service_id,
+    const std::string& challenge,
     const ChallengePlatformCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

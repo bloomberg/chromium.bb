@@ -198,7 +198,7 @@ void MojoDecryptor::OnBufferDecrypted(const DecryptCB& decrypt_cb,
 void MojoDecryptor::OnAudioDecoded(
     const AudioDecodeCB& audio_decode_cb,
     mojom::Decryptor::Status status,
-    mojo::Array<mojom::AudioBufferPtr> audio_buffers) {
+    std::vector<mojom::AudioBufferPtr> audio_buffers) {
   DVLOG_IF(1, status != mojom::Decryptor::Status::SUCCESS)
       << __FUNCTION__ << "(" << status << ")";
   DVLOG_IF(3, status == mojom::Decryptor::Status::SUCCESS) << __FUNCTION__;

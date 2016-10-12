@@ -54,7 +54,7 @@ interface Decryptor {
   // For video, ReleaseSharedBuffer() must be called when the VideoFrame
   // is shared memory based and the memory is no longer needed.
   DecryptAndDecodeAudio(DecoderBuffer encrypted)
-      => (Status status, array<AudioBuffer>? audio_buffers);
+      => (Status status, array<AudioBuffer> audio_buffers);
   DecryptAndDecodeVideo(DecoderBuffer encrypted)
       => (Status status, VideoFrame? video_frame);
 

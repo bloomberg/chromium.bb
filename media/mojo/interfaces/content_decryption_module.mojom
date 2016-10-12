@@ -48,7 +48,7 @@ struct CdmPromiseResult {
   bool success;
   CdmException exception;
   uint32 system_code;
-  string? error_message;
+  string error_message;
 };
 
 // Transport layer of media::CdmKeyInformation (see
@@ -103,20 +103,20 @@ interface ContentDecryptionModule {
 
   // Creates a session with the |init_data_type|, |init_data| and |session_type|
   // provided. If |result.success| is false, the output |session_id| will be
-  // null.
+  // empty.
   CreateSessionAndGenerateRequest(SessionType session_type,
                                   InitDataType init_data_type,
                                   array<uint8> init_data)
-      => (CdmPromiseResult result, string? session_id);
+      => (CdmPromiseResult result, string session_id);
 
   // Loads the session associated with |session_id| and |session_type|.
   // Combinations of |result.success| and |session_id| means:
-  //   (true, non-null) : Session successfully loaded.
-  //   (true, null) : Session not found.
-  //   (false, non-null): N/A; this combination is not allowed.
-  //   (false, null) : Unexpected error. See other fields in |result|.
+  //   (true, non-empty) : Session successfully loaded.
+  //   (true, empty) : Session not found.
+  //   (false, non-empty): N/A; this combination is not allowed.
+  //   (false, empty) : Unexpected error. See other fields in |result|.
   LoadSession(SessionType session_type, string session_id)
-      => (CdmPromiseResult result, string? session_id);
+      => (CdmPromiseResult result, string session_id);
 
   // Updates a session specified by |session_id| with |response|.
   UpdateSession(string session_id, array<uint8> response)
@@ -138,7 +138,7 @@ interface ContentDecryptionModuleClient {
   OnSessionClosed(string session_id);
 
   OnSessionKeysChange(string session_id, bool has_additional_usable_key,
-                      array<CdmKeyInformation> key_information);
+                      array<CdmKeyInformation> keys_info);
 
   // Provide session expiration update for |session_id|.
   // |new_expiry_time_sec| is the number of seconds since epoch (Jan 1, 1970).

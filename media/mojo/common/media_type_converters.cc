@@ -397,8 +397,7 @@ TypeConverter<media::mojom::DecryptConfigPtr, media::DecryptConfig>::Convert(
       media::mojom::DecryptConfig::New());
   mojo_decrypt_config->key_id = input.key_id();
   mojo_decrypt_config->iv = input.iv();
-  mojo_decrypt_config->subsamples =
-      Array<media::SubsampleEntry>::From(input.subsamples());
+  mojo_decrypt_config->subsamples = input.subsamples();
 
   return mojo_decrypt_config;
 }
@@ -408,9 +407,8 @@ std::unique_ptr<media::DecryptConfig>
 TypeConverter<std::unique_ptr<media::DecryptConfig>,
               media::mojom::DecryptConfigPtr>::
     Convert(const media::mojom::DecryptConfigPtr& input) {
-  return base::MakeUnique<media::DecryptConfig>(
-      input->key_id, input->iv,
-      input->subsamples.To<std::vector<media::SubsampleEntry>>());
+  return base::MakeUnique<media::DecryptConfig>(input->key_id, input->iv,
+                                                input->subsamples);
 }
 
 // static
@@ -434,9 +432,11 @@ TypeConverter<media::mojom::DecoderBufferPtr,
   mojo_buffer->splice_timestamp = input->splice_timestamp();
 
   // Note: The side data is always small, so this copy is okay.
-  std::vector<uint8_t> side_data(input->side_data(),
-                                 input->side_data() + input->side_data_size());
-  mojo_buffer->side_data.Swap(&side_data);
+  if (input->side_data()) {
+    DCHECK_GT(input->side_data_size(), 0u);
+    mojo_buffer->side_data.assign(input->side_data(),
+                                  input->side_data() + input->side_data_size());
+  }
 
   if (input->decrypt_config()) {
     mojo_buffer->decrypt_config =
@@ -461,16 +461,12 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
   scoped_refptr<media::DecoderBuffer> buffer(
       new media::DecoderBuffer(input->data_size));
 
-  if (!input->side_data.is_null() && !input->side_data.empty()) {
-    buffer->CopySideDataFrom(&input->side_data.front(),
-                             input->side_data.size());
-  }
+  if (!input->side_data.empty())
+    buffer->CopySideDataFrom(input->side_data.data(), input->side_data.size());
 
   buffer->set_timestamp(input->timestamp);
   buffer->set_duration(input->duration);
-
-  if (input->is_key_frame)
-    buffer->set_is_key_frame(true);
+  buffer->set_is_key_frame(input->is_key_frame);
 
   if (input->decrypt_config) {
     buffer->set_decrypt_config(
@@ -501,9 +497,7 @@ TypeConverter<media::mojom::AudioDecoderConfigPtr, media::AudioDecoderConfig>::
   config->channel_layout =
       static_cast<media::mojom::ChannelLayout>(input.channel_layout());
   config->samples_per_second = input.samples_per_second();
-  if (!input.extra_data().empty()) {
-    config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
-  }
+  config->extra_data = input.extra_data();
   config->seek_preroll = input.seek_preroll();
   config->codec_delay = input.codec_delay();
   config->encryption_scheme =
@@ -519,7 +513,7 @@ TypeConverter<media::AudioDecoderConfig, media::mojom::AudioDecoderConfigPtr>::
   config.Initialize(static_cast<media::AudioCodec>(input->codec),
                     static_cast<media::SampleFormat>(input->sample_format),
                     static_cast<media::ChannelLayout>(input->channel_layout),
-                    input->samples_per_second, input->extra_data.storage(),
+                    input->samples_per_second, input->extra_data,
                     input->encryption_scheme.To<media::EncryptionScheme>(),
                     input->seek_preroll, input->codec_delay);
   return config;
@@ -540,9 +534,7 @@ TypeConverter<media::mojom::VideoDecoderConfigPtr, media::VideoDecoderConfig>::
   config->coded_size = input.coded_size();
   config->visible_rect = input.visible_rect();
   config->natural_size = input.natural_size();
-  if (!input.extra_data().empty()) {
-    config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
-  }
+  config->extra_data = input.extra_data();
   config->encryption_scheme =
       media::mojom::EncryptionScheme::From(input.encryption_scheme());
   return config;
@@ -558,7 +550,7 @@ TypeConverter<media::VideoDecoderConfig, media::mojom::VideoDecoderConfigPtr>::
                     static_cast<media::VideoPixelFormat>(input->format),
                     static_cast<media::ColorSpace>(input->color_space),
                     input->coded_size, input->visible_rect, input->natural_size,
-                    input->extra_data.storage(),
+                    input->extra_data,
                     input->encryption_scheme.To<media::EncryptionScheme>());
   return config;
 }
@@ -569,8 +561,7 @@ media::mojom::CdmKeyInformationPtr TypeConverter<
     media::CdmKeyInformation>::Convert(const media::CdmKeyInformation& input) {
   media::mojom::CdmKeyInformationPtr info(
       media::mojom::CdmKeyInformation::New());
-  std::vector<uint8_t> key_id_copy(input.key_id);
-  info->key_id.Swap(&key_id_copy);
+  info->key_id = input.key_id;
   info->status = static_cast<media::mojom::CdmKeyStatus>(input.status);
   info->system_code = input.system_code;
   return info;
@@ -582,7 +573,7 @@ TypeConverter<std::unique_ptr<media::CdmKeyInformation>,
               media::mojom::CdmKeyInformationPtr>::
     Convert(const media::mojom::CdmKeyInformationPtr& input) {
   return base::MakeUnique<media::CdmKeyInformation>(
-      input->key_id.storage(),
+      input->key_id,
       static_cast<media::CdmKeyInformation::KeyStatus>(input->status),
       input->system_code);
 }
@@ -624,10 +615,10 @@ TypeConverter<media::mojom::AudioBufferPtr, scoped_refptr<media::AudioBuffer>>::
   buffer->end_of_stream = input->end_of_stream();
   buffer->timestamp = input->timestamp();
 
-  if (!input->end_of_stream()) {
-    std::vector<uint8_t> input_data(input->data_.get(),
-                                    input->data_.get() + input->data_size_);
-    buffer->data.Swap(&input_data);
+  if (input->data_) {
+    DCHECK_GT(input->data_size(), 0u);
+    buffer->data.assign(input->data_.get(),
+                        input->data_.get() + input->data_size_);
   }
 
   return buffer;
@@ -643,11 +634,10 @@ TypeConverter<scoped_refptr<media::AudioBuffer>, media::mojom::AudioBufferPtr>::
   // Setup channel pointers.  AudioBuffer::CopyFrom() will only use the first
   // one in the case of interleaved data.
   std::vector<const uint8_t*> channel_ptrs(input->channel_count, nullptr);
-  std::vector<uint8_t> storage = input->data.storage();
-  const size_t size_per_channel = storage.size() / input->channel_count;
-  DCHECK_EQ(0u, storage.size() % input->channel_count);
+  const size_t size_per_channel = input->data.size() / input->channel_count;
+  DCHECK_EQ(0u, input->data.size() % input->channel_count);
   for (int i = 0; i < input->channel_count; ++i)
-    channel_ptrs[i] = storage.data() + i * size_per_channel;
+    channel_ptrs[i] = input->data.data() + i * size_per_channel;
 
   return media::AudioBuffer::CopyFrom(
       static_cast<media::SampleFormat>(input->sample_format),

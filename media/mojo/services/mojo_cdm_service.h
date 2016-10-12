@@ -48,26 +48,26 @@ class MEDIA_MOJO_EXPORT MojoCdmService
 
   // mojom::ContentDecryptionModule implementation.
   void SetClient(mojom::ContentDecryptionModuleClientPtr client) final;
-  void Initialize(const mojo::String& key_system,
-                  const mojo::String& security_origin,
+  void Initialize(const std::string& key_system,
+                  const std::string& security_origin,
                   mojom::CdmConfigPtr cdm_config,
                   const InitializeCallback& callback) final;
-  void SetServerCertificate(mojo::Array<uint8_t> certificate_data,
+  void SetServerCertificate(const std::vector<uint8_t>& certificate_data,
                             const SetServerCertificateCallback& callback) final;
   void CreateSessionAndGenerateRequest(
       mojom::ContentDecryptionModule::SessionType session_type,
       mojom::ContentDecryptionModule::InitDataType init_data_type,
-      mojo::Array<uint8_t> init_data,
+      const std::vector<uint8_t>& init_data,
       const CreateSessionAndGenerateRequestCallback& callback) final;
   void LoadSession(mojom::ContentDecryptionModule::SessionType session_type,
-                   const mojo::String& session_id,
+                   const std::string& session_id,
                    const LoadSessionCallback& callback) final;
-  void UpdateSession(const mojo::String& session_id,
-                     mojo::Array<uint8_t> response,
+  void UpdateSession(const std::string& session_id,
+                     const std::vector<uint8_t>& response,
                      const UpdateSessionCallback& callback) final;
-  void CloseSession(const mojo::String& session_id,
+  void CloseSession(const std::string& session_id,
                     const CloseSessionCallback& callback) final;
-  void RemoveSession(const mojo::String& session_id,
+  void RemoveSession(const std::string& session_id,
                      const RemoveSessionCallback& callback) final;
 
   // Get CDM to be used by the media pipeline.

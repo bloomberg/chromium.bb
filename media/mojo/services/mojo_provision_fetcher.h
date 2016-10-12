@@ -28,7 +28,7 @@ class MojoProvisionFetcher : public ProvisionFetcher {
   // Callback for mojom::ProvisionFetcherPtr::Retrieve().
   void OnResponse(const ResponseCB& response_cb,
                   bool success,
-                  mojo::String response);
+                  const std::string& response);
 
   mojom::ProvisionFetcherPtr provision_fetcher_ptr_;
 

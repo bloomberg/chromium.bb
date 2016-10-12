@@ -23,7 +23,7 @@ module media.mojom;
 interface PlatformVerification {
   ChallengePlatform(string service_id, string challenge) =>
       (bool success,
-       string? signed_data,
-       string? signed_data_signature,
-       string? platform_key_certificate);
+       string signed_data,
+       string signed_data_signature,
+       string platform_key_certificate);
 };
