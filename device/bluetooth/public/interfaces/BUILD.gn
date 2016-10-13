@@ -15,6 +15,7 @@ mojom("interfaces") {
 mojom("experimental_interfaces") {
   sources = [
     "adapter.mojom",
+    "device.mojom",
   ]
 
   visibility = [

@@ -5,10 +5,13 @@
 #ifndef DEVICE_BLUETOOTH_ADAPTER_H_
 #define DEVICE_BLUETOOTH_ADAPTER_H_
 
+#include <string>
+
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/public/interfaces/adapter.mojom.h"
+#include "device/bluetooth/public/interfaces/device.mojom.h"
 
 namespace bluetooth {
 
@@ -24,6 +27,8 @@ class Adapter : public mojom::Adapter,
 
   // mojom::Adapter overrides:
   void GetInfo(const GetInfoCallback& callback) override;
+  void GetDevice(const std::string& address,
+                 const GetDeviceCallback& callback) override;
   void GetDevices(const GetDevicesCallback& callback) override;
   void SetClient(mojom::AdapterClientPtr client) override;
 
@@ -34,10 +39,6 @@ class Adapter : public mojom::Adapter,
                      device::BluetoothDevice* device) override;
 
  private:
-  // Creates a mojom::DeviceInfo using info from the given |device|.
-  static mojom::DeviceInfoPtr ConstructDeviceInfoStruct(
-      const device::BluetoothDevice* device);
-
   // The current Bluetooth adapter.
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
