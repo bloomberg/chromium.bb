@@ -115,8 +115,6 @@ class MockAuditProofCallback {
   base::RunLoop run_loop_;
 };
 
-}  // namespace
-
 class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
  protected:
   LogDnsClientTest()
@@ -811,4 +809,5 @@ INSTANTIATE_TEST_CASE_P(ReadMode,
                         ::testing::Values(net::IoMode::ASYNC,
                                           net::IoMode::SYNCHRONOUS));
 
+}  // namespace
 }  // namespace certificate_transparency
