@@ -4,12 +4,11 @@
 
 #include "dbus/dbus_statistics.h"
 
-#include <memory>
-#include <set>
+#include <map>
+#include <tuple>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -18,43 +17,24 @@ namespace dbus {
 
 namespace {
 
-// Used to store dbus statistics sorted alphabetically by service, interface,
-// then method (using std::string <).
-struct Stat {
-  Stat(const std::string& service,
-       const std::string& interface,
-       const std::string& method)
-      : service(service),
-        interface(interface),
-        method(method),
-        sent_method_calls(0),
-        received_signals(0),
-        sent_blocking_method_calls(0) {
-  }
+struct StatKey {
   std::string service;
   std::string interface;
   std::string method;
-  int sent_method_calls;
-  int received_signals;
-  int sent_blocking_method_calls;
-
-  bool Compare(const Stat& other) const {
-    if (service != other.service)
-      return service < other.service;
-    if (interface != other.interface)
-      return interface < other.interface;
-    return method < other.method;
-  }
-
-  struct PtrCompare {
-    bool operator()(Stat* lhs, Stat* rhs) const {
-      DCHECK(lhs && rhs);
-      return lhs->Compare(*rhs);
-    }
-  };
 };
 
-typedef std::set<Stat*, Stat::PtrCompare> StatSet;
+bool operator<(const StatKey& lhs, const StatKey& rhs) {
+  return std::tie(lhs.service, lhs.interface, lhs.method) <
+         std::tie(rhs.service, rhs.interface, rhs.method);
+}
+
+struct StatValue {
+  int sent_method_calls = 0;
+  int received_signals = 0;
+  int sent_blocking_method_calls = 0;
+};
+
+using StatMap = std::map<StatKey, StatValue>;
 
 //------------------------------------------------------------------------------
 // DBusStatistics
@@ -69,10 +49,9 @@ class DBusStatistics {
 
   ~DBusStatistics() {
     DCHECK_EQ(origin_thread_id_, base::PlatformThread::CurrentId());
-    base::STLDeleteContainerPointers(stats_.begin(), stats_.end());
   }
 
-  // Enum to specify which field in Stat to increment in AddStat
+  // Enum to specify which field in Stat to increment in AddStat.
   enum StatType {
     TYPE_SENT_METHOD_CALLS,
     TYPE_RECEIVED_SIGNALS,
@@ -89,7 +68,7 @@ class DBusStatistics {
                << base::PlatformThread::CurrentId();
       return;
     }
-    Stat* stat = GetStat(service, interface, method, true);
+    StatValue* stat = GetStats(service, interface, method, true);
     DCHECK(stat);
     if (type == TYPE_SENT_METHOD_CALLS)
       ++stat->sent_method_calls;
@@ -103,33 +82,35 @@ class DBusStatistics {
 
   // Look up the Stat entry in |stats_|. If |add_stat| is true, add a new entry
   // if one does not already exist.
-  Stat* GetStat(const std::string& service,
-                const std::string& interface,
-                const std::string& method,
-                bool add_stat) {
+  StatValue* GetStats(const std::string& service,
+                      const std::string& interface,
+                      const std::string& method,
+                      bool add_stat) {
     DCHECK_EQ(origin_thread_id_, base::PlatformThread::CurrentId());
-    std::unique_ptr<Stat> stat(new Stat(service, interface, method));
-    StatSet::iterator found = stats_.find(stat.get());
-    if (found != stats_.end())
-      return *found;
+
+    StatKey key = {service, interface, method};
+    auto it = stats_.find(key);
+    if (it != stats_.end())
+      return &(it->second);
+
     if (!add_stat)
-      return NULL;
-    found = stats_.insert(stat.release()).first;
-    return *found;
+      return nullptr;
+
+    return &(stats_[key]);
   }
 
-  StatSet& stats() { return stats_; }
+  StatMap& stats() { return stats_; }
   base::Time start_time() { return start_time_; }
 
  private:
-  StatSet stats_;
+  StatMap stats_;
   base::Time start_time_;
   base::PlatformThreadId origin_thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusStatistics);
 };
 
-DBusStatistics* g_dbus_statistics = NULL;
+DBusStatistics* g_dbus_statistics = nullptr;
 
 }  // namespace
 
@@ -145,7 +126,7 @@ void Initialize() {
 
 void Shutdown() {
   delete g_dbus_statistics;
-  g_dbus_statistics = NULL;
+  g_dbus_statistics = nullptr;
 }
 
 void AddSentMethodCall(const std::string& service,
@@ -182,7 +163,7 @@ std::string GetAsString(ShowInString show, FormatString format) {
   if (!g_dbus_statistics)
     return "DBusStatistics not initialized.";
 
-  const StatSet& stats = g_dbus_statistics->stats();
+  const StatMap& stats = g_dbus_statistics->stats();
   if (stats.empty())
     return "No DBus calls.";
 
@@ -193,19 +174,21 @@ std::string GetAsString(ShowInString show, FormatString format) {
   std::string result;
   int sent = 0, received = 0, sent_blocking = 0;
   // Stats are stored in order by service, then interface, then method.
-  for (StatSet::const_iterator iter = stats.begin(); iter != stats.end(); ) {
-    StatSet::const_iterator cur_iter = iter;
-    StatSet::const_iterator next_iter = ++iter;
-    const Stat* stat = *cur_iter;
-    sent += stat->sent_method_calls;
-    received += stat->received_signals;
-    sent_blocking += stat->sent_blocking_method_calls;
+  for (auto iter = stats.begin(); iter != stats.end();) {
+    auto cur_iter = iter;
+    auto next_iter = ++iter;
+    const StatKey& stat_key = cur_iter->first;
+    const StatValue& stat = cur_iter->second;
+    sent += stat.sent_method_calls;
+    received += stat.received_signals;
+    sent_blocking += stat.sent_blocking_method_calls;
     // If this is not the last stat, and if the next stat matches the current
     // stat, continue.
     if (next_iter != stats.end() &&
-        (*next_iter)->service == stat->service &&
-        (show < SHOW_INTERFACE || (*next_iter)->interface == stat->interface) &&
-        (show < SHOW_METHOD || (*next_iter)->method == stat->method))
+        next_iter->first.service == stat_key.service &&
+        (show < SHOW_INTERFACE ||
+         next_iter->first.interface == stat_key.interface) &&
+        (show < SHOW_METHOD || next_iter->first.method == stat_key.method))
       continue;
 
     if (!sent && !received && !sent_blocking)
@@ -214,12 +197,12 @@ std::string GetAsString(ShowInString show, FormatString format) {
     // Add a line to the result and clear the counts.
     std::string line;
     if (show == SHOW_SERVICE) {
-      line += stat->service;
+      line += stat_key.service;
     } else {
       // The interface usually includes the service so don't show both.
-      line += stat->interface;
+      line += stat_key.interface;
       if (show >= SHOW_METHOD)
-        line += "." + stat->method;
+        line += "." + stat_key.method;
     }
     line += base::StringPrintf(":");
     if (sent_blocking) {
@@ -269,7 +252,8 @@ bool GetCalls(const std::string& service,
               int* blocking) {
   if (!g_dbus_statistics)
     return false;
-  Stat* stat = g_dbus_statistics->GetStat(service, interface, method, false);
+  StatValue* stat =
+      g_dbus_statistics->GetStats(service, interface, method, false);
   if (!stat)
     return false;
   *sent = stat->sent_method_calls;
