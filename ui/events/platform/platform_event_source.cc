@@ -75,12 +75,10 @@ uint32_t PlatformEventSource::DispatchEvent(PlatformEvent platform_event) {
   if (overridden_dispatcher_)
     action = overridden_dispatcher_->DispatchEvent(platform_event);
 
-  if ((action & POST_DISPATCH_PERFORM_DEFAULT) &&
-      dispatchers_.might_have_observers()) {
-    base::ObserverList<PlatformEventDispatcher>::Iterator iter(&dispatchers_);
-    while (PlatformEventDispatcher* dispatcher = iter.GetNext()) {
-      if (dispatcher->CanDispatchEvent(platform_event))
-        action = dispatcher->DispatchEvent(platform_event);
+  if (action & POST_DISPATCH_PERFORM_DEFAULT) {
+    for (PlatformEventDispatcher& dispatcher : dispatchers_) {
+      if (dispatcher.CanDispatchEvent(platform_event))
+        action = dispatcher.DispatchEvent(platform_event);
       if (action & POST_DISPATCH_STOP_PROPAGATION)
         break;
     }

@@ -144,11 +144,9 @@ Window::~Window() {
 
   if (delegate_)
     delegate_->OnWindowDestroyed(this);
-  base::ObserverListBase<WindowObserver>::Iterator iter(&observers_);
-  for (WindowObserver* observer = iter.GetNext(); observer;
-       observer = iter.GetNext()) {
-    RemoveObserver(observer);
-    observer->OnWindowDestroyed(this);
+  for (WindowObserver& observer : observers_) {
+    RemoveObserver(&observer);
+    observer.OnWindowDestroyed(this);
   }
 
   // Delete the LayoutManager before properties. This way if the LayoutManager

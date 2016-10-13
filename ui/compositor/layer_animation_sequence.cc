@@ -232,15 +232,11 @@ void LayerAnimationSequence::OnScheduled() {
 }
 
 void LayerAnimationSequence::OnAnimatorDestroyed() {
-  if (observers_.might_have_observers()) {
-    base::ObserverListBase<LayerAnimationObserver>::Iterator it(&observers_);
-    LayerAnimationObserver* obs;
-    while ((obs = it.GetNext()) != NULL) {
-      if (!obs->RequiresNotificationWhenAnimatorDestroyed()) {
-        // Remove the observer, but do not allow notifications to be sent.
-        observers_.RemoveObserver(obs);
-        obs->DetachedFromSequence(this, false);
-      }
+  for (LayerAnimationObserver& observer : observers_) {
+    if (!observer.RequiresNotificationWhenAnimatorDestroyed()) {
+      // Remove the observer, but do not allow notifications to be sent.
+      observers_.RemoveObserver(&observer);
+      observer.DetachedFromSequence(this, false);
     }
   }
 }

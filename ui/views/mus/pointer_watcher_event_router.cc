@@ -17,14 +17,7 @@ namespace {
 
 bool HasPointerWatcher(
     base::ObserverList<views::PointerWatcher, true>* observer_list) {
-  if (!observer_list->might_have_observers())
-    return false;
-
-  // might_have_observers() returned true, see if there really are any
-  // observers. The only way to truly know is to use an Iterator and see if it
-  // has at least one observer.
-  base::ObserverList<PointerWatcher>::Iterator iterator(observer_list);
-  return !!iterator.GetNext();
+  return observer_list->begin() != observer_list->end();
 }
 
 }  // namespace

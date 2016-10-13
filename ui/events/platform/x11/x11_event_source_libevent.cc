@@ -179,12 +179,9 @@ void X11EventSourceLibevent::AddEventWatcher() {
 }
 
 void X11EventSourceLibevent::DispatchXEventToXEventDispatchers(XEvent* xevent) {
-  if (dispatchers_xevent_.might_have_observers()) {
-    base::ObserverList<XEventDispatcher>::Iterator iter(&dispatchers_xevent_);
-    while (XEventDispatcher* dispatcher = iter.GetNext()) {
-      if (dispatcher->DispatchXEvent(xevent))
-        break;
-    }
+  for (XEventDispatcher& dispatcher : dispatchers_xevent_) {
+    if (dispatcher.DispatchXEvent(xevent))
+      break;
   }
 }
 
