@@ -437,14 +437,6 @@ void ImageResource::finish(double loadFinishTime) {
   Resource::finish(loadFinishTime);
 }
 
-void ImageResource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail,
-                                 WebProcessMemoryDump* memoryDump) const {
-  Resource::onMemoryDump(levelOfDetail, memoryDump);
-  const String name = getMemoryDumpName() + "/encoded_data";
-  if (m_image && !m_image->isNull())
-    m_image->data()->onMemoryDump(name, memoryDump);
-}
-
 void ImageResource::error(const ResourceError& error) {
   if (m_multipartParser)
     m_multipartParser->cancel();
