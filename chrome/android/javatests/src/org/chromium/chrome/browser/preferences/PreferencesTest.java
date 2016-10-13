@@ -16,6 +16,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
@@ -138,8 +139,12 @@ public class PreferencesTest extends NativeLibraryTestBase {
      * Make sure that when a user switches to a search engine that uses HTTP, the location
      * permission is not added.
      */
-    @SmallTest
-    @Feature({"Preferences"})
+    /*
+     * @SmallTest
+     * @Feature({"Preferences"})
+     * BUG=crbug.com/540706
+     */
+    @FlakyTest
     @DisableIf.Build(hardware_is = "sprout", message = "fails on android-one: crbug.com/540706")
     public void testSearchEnginePreferenceHttp() throws Exception {
         ensureTemplateUrlServiceLoaded();
