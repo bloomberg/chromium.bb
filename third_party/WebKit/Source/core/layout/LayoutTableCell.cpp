@@ -206,6 +206,7 @@ void LayoutTableCell::addLayerHitTestRects(
 }
 
 void LayoutTableCell::computeIntrinsicPadding(int rowHeight,
+                                              EVerticalAlign verticalAlign,
                                               SubtreeLayoutScope& layouter) {
   int oldIntrinsicPaddingBefore = intrinsicPaddingBefore();
   int oldIntrinsicPaddingAfter = intrinsicPaddingAfter();
@@ -214,7 +215,7 @@ void LayoutTableCell::computeIntrinsicPadding(int rowHeight,
                                              oldIntrinsicPaddingAfter;
 
   int intrinsicPaddingBefore = 0;
-  switch (style()->verticalAlign()) {
+  switch (verticalAlign) {
     case VerticalAlignSub:
     case VerticalAlignSuper:
     case VerticalAlignTextTop:

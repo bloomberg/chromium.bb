@@ -200,7 +200,13 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
            va == VerticalAlignSub || va == VerticalAlignLength;
   }
 
-  void computeIntrinsicPadding(int rowHeight, SubtreeLayoutScope&);
+  // Align the cell in the block direction. This is done by calculating an
+  // intrinsic padding before and after the cell contents, so that all cells in
+  // the row get the same logical height.
+  void computeIntrinsicPadding(int rowHeight,
+                               EVerticalAlign,
+                               SubtreeLayoutScope&);
+
   void clearIntrinsicPadding() { setIntrinsicPadding(0, 0); }
 
   int intrinsicPaddingBefore() const { return m_intrinsicPaddingBefore; }

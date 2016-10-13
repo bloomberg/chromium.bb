@@ -781,6 +781,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutUnit pageLogicalHeightForOffset(LayoutUnit) const;
   LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit,
                                                  PageBoundaryRule) const;
+  bool crossesPageBoundary(LayoutUnit offset, LayoutUnit logicalHeight) const;
 
   // Calculate the strut to insert in order fit content of size
   // |contentLogicalHeight|. |strutToNextPage| is the strut to add to |offset|

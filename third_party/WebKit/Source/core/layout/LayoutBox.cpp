@@ -5502,6 +5502,14 @@ LayoutUnit LayoutBox::pageRemainingLogicalHeightForOffset(
                                                          pageBoundaryRule);
 }
 
+bool LayoutBox::crossesPageBoundary(LayoutUnit offset,
+                                    LayoutUnit logicalHeight) const {
+  if (!view()->layoutState()->pageLogicalHeight())
+    return false;
+  return pageRemainingLogicalHeightForOffset(offset, AssociateWithLatterPage) <
+         logicalHeight;
+}
+
 LayoutUnit LayoutBox::calculatePaginationStrutToFitContent(
     LayoutUnit offset,
     LayoutUnit strutToNextPage,

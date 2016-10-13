@@ -1175,7 +1175,19 @@ void LayoutTableSection::layoutRows() {
       relayoutCellIfFlexed(*cell, r, rHeight);
 
       SubtreeLayoutScope layouter(*cell);
-      cell->computeIntrinsicPadding(rHeight, layouter);
+      LayoutUnit rowLogicalTop(m_rowPos[rowIndex]);
+      EVerticalAlign cellVerticalAlign;
+      // If the cell crosses a fragmentainer boundary, just align it at the
+      // top. That's how it was laid out initially, before we knew the final
+      // row height, and re-aligning it now could result in the cell being
+      // fragmented differently, which could change its height and thus violate
+      // the requested alignment. Give up instead of risking circular
+      // dependencies and unstable layout.
+      if (crossesPageBoundary(rowLogicalTop, LayoutUnit(rHeight)))
+        cellVerticalAlign = VerticalAlignTop;
+      else
+        cellVerticalAlign = cell->style()->verticalAlign();
+      cell->computeIntrinsicPadding(rHeight, cellVerticalAlign, layouter);
 
       LayoutRect oldCellRect = cell->frameRect();
 
