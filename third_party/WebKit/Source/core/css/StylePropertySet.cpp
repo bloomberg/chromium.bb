@@ -347,19 +347,17 @@ void MutableStylePropertySet::setProperty(CSSPropertyID propertyID,
 
 bool MutableStylePropertySet::setProperty(const CSSProperty& property,
                                           CSSProperty* slot) {
-  if (!removeShorthandProperty(property.id())) {
-    const AtomicString& name =
-        (property.id() == CSSPropertyVariable)
-            ? toCSSCustomPropertyDeclaration(property.value())->name()
-            : nullAtom;
-    CSSProperty* toReplace =
-        slot ? slot : findCSSPropertyWithID(property.id(), name);
-    if (toReplace && *toReplace == property)
-      return false;
-    if (toReplace) {
-      *toReplace = property;
-      return true;
-    }
+  const AtomicString& name =
+      (property.id() == CSSPropertyVariable)
+          ? toCSSCustomPropertyDeclaration(property.value())->name()
+          : nullAtom;
+  CSSProperty* toReplace =
+      slot ? slot : findCSSPropertyWithID(property.id(), name);
+  if (toReplace && *toReplace == property)
+    return false;
+  if (toReplace) {
+    *toReplace = property;
+    return true;
   }
   m_propertyVector.append(property);
   return true;
