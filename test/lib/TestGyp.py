@@ -6,6 +6,7 @@
 TestGyp.py:  a testing framework for GYP integration tests.
 """
 
+import errno
 import collections
 from contextlib import contextmanager
 import itertools
