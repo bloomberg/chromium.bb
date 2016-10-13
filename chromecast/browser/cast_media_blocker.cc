@@ -47,10 +47,8 @@ void CastMediaBlocker::UpdateMediaBlockedState() {
   }
 }
 
-void CastMediaBlocker::MediaSessionStateChanged(
-    bool is_controllable,
-    bool is_suspended,
-    const base::Optional<content::MediaMetadata>& metadata) {
+void CastMediaBlocker::MediaSessionStateChanged(bool is_controllable,
+                                                bool is_suspended) {
   controllable_ = is_controllable;
   suspended_ = is_suspended;
   UpdateMediaBlockedState();

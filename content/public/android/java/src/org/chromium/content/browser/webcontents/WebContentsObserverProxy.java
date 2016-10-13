@@ -232,11 +232,17 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
-    public void mediaSessionStateChanged(
-            boolean isControllable, boolean isSuspended, MediaMetadata metadata) {
+    public void mediaSessionStateChanged(boolean isControllable, boolean isSuspended) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().mediaSessionStateChanged(
-                    isControllable, isSuspended, metadata);
+            mObserversIterator.next().mediaSessionStateChanged(isControllable, isSuspended);
+        }
+    }
+
+    @Override
+    @CalledByNative
+    public void mediaSessionMetadataChanged(MediaMetadata metadata) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().mediaSessionMetadataChanged(metadata);
         }
     }
 

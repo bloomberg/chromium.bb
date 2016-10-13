@@ -75,10 +75,8 @@ void MediaSession::WebContentsDestroyed() {
 
 void MediaSession::SetMetadata(const base::Optional<MediaMetadata>& metadata) {
   metadata_ = metadata;
-  // TODO(zqzhang): On Android, the metadata is sent though JNI everytime the
-  // media session play/pause state changes. Need to find a way to seprate the
-  // state change and Metadata update. See https://crbug.com/621855.
-  static_cast<WebContentsImpl*>(web_contents())->OnMediaSessionStateChanged();
+  static_cast<WebContentsImpl*>(web_contents())
+      ->OnMediaSessionMetadataChanged();
 }
 
 bool MediaSession::AddPlayer(MediaSessionObserver* observer,

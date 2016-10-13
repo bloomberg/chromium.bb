@@ -41,10 +41,8 @@ class CastMediaBlocker : public content::WebContentsObserver {
   };
 
   // content::WebContentsObserver implementation:
-  void MediaSessionStateChanged(
-      bool is_controllable,
-      bool is_suspended,
-      const base::Optional<content::MediaMetadata>& metadata) override;
+  void MediaSessionStateChanged(bool is_controllable,
+                                bool is_suspended) override;
 
   // Whether or not media in the app can be controlled and if media is currently
   // suspended. These variables cache arguments from MediaSessionStateChanged().

@@ -3818,10 +3818,17 @@ void WebContentsImpl::OnUpdateFaviconURL(
 
 void WebContentsImpl::OnMediaSessionStateChanged() {
   MediaSession* session = MediaSession::Get(this);
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    MediaSessionStateChanged(session->IsControllable(),
-                                             session->IsSuspended(),
-                                             session->metadata()));
+  for (auto& observer : observers_) {
+    observer.MediaSessionStateChanged(session->IsControllable(),
+                                       session->IsSuspended());
+  }
+}
+
+void WebContentsImpl::OnMediaSessionMetadataChanged() {
+  MediaSession* session = MediaSession::Get(this);
+  for (auto& observer : observers_) {
+    observer.MediaSessionMetadataChanged(session->metadata());
+  }
 }
 
 void WebContentsImpl::ResumeMediaSession() {

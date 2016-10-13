@@ -166,10 +166,14 @@ public abstract class WebContentsObserver {
      * Called when the media session state changed.
      * @param isControllable if the session can be resumed or suspended.
      * @param isSuspended if the session currently suspended or not.
-     * @param metadata of the media session.
      */
-    public void mediaSessionStateChanged(
-            boolean isControllable, boolean isSuspended, MediaMetadata metadata) {}
+    public void mediaSessionStateChanged(boolean isControllable, boolean isSuspended) {}
+
+    /**
+     * Called when the media session metadata changed.
+     * @param metadata the new MediaMetadata after change.
+     */
+    public void mediaSessionMetadataChanged(MediaMetadata metadata) {}
 
     /**
      * Stop observing the web contents and clean up associated references.

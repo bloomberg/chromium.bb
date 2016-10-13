@@ -469,9 +469,12 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void MediaStoppedPlaying(const MediaPlayerId& id) {}
 
   // Invoked when media session has changed its state.
-  virtual void MediaSessionStateChanged(
-      bool is_controllable,
-      bool is_suspended,
+  virtual void MediaSessionStateChanged(bool is_controllable,
+                                        bool is_suspended) {}
+
+  // Invoked when media session metadata has changed. When |metadata| is
+  // nullopt, it means the metadata is being unset.
+  virtual void MediaSessionMetadataChanged(
       const base::Optional<MediaMetadata>& metadata) {}
 
   // Invoked when the renderer process changes the page scale factor.

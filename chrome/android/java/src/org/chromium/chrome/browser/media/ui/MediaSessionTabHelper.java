@@ -44,7 +44,12 @@ public class MediaSessionTabHelper {
     private WebContentsObserver mWebContentsObserver;
     private int mPreviousVolumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE;
     private MediaNotificationInfo.Builder mNotificationInfoBuilder = null;
-    private MediaMetadata mFallbackMetadata;
+    // The fallback title if |mPageMetadata| is null or its title is empty.
+    private String mFallbackTitle = null;
+    // The metadata set by the page.
+    private MediaMetadata mPageMetadata = null;
+    // The currently showing metadata.
+    private MediaMetadata mCurrentMetadata = null;
 
     private MediaNotificationListener mControlsListener = new MediaNotificationListener() {
         @Override
@@ -93,23 +98,10 @@ public class MediaSessionTabHelper {
             }
 
             @Override
-            public void mediaSessionStateChanged(boolean isControllable, boolean isPaused,
-                    MediaMetadata metadata) {
+            public void mediaSessionStateChanged(boolean isControllable, boolean isPaused) {
                 if (!isControllable) {
                     hideNotification();
                     return;
-                }
-
-                mFallbackMetadata = null;
-
-                // The page's title is used as a placeholder if no title is specified in the
-                // metadata.
-                if (metadata == null || TextUtils.isEmpty(metadata.getTitle())) {
-                    mFallbackMetadata = new MediaMetadata(
-                            sanitizeMediaTitle(mTab.getTitle()),
-                            metadata == null ? "" : metadata.getArtist(),
-                            metadata == null ? "" : metadata.getAlbum());
-                    metadata = mFallbackMetadata;
                 }
 
                 Intent contentIntent = Tab.createBringTabToFrontIntent(mTab.getId());
@@ -118,9 +110,10 @@ public class MediaSessionTabHelper {
                             MediaNotificationUma.SOURCE_MEDIA);
                 }
 
+                mCurrentMetadata = getMetadata();
                 mNotificationInfoBuilder =
                         new MediaNotificationInfo.Builder()
-                                .setMetadata(metadata)
+                                .setMetadata(mCurrentMetadata)
                                 .setPaused(isPaused)
                                 .setOrigin(mOrigin)
                                 .setTabId(mTab.getId())
@@ -141,6 +134,12 @@ public class MediaSessionTabHelper {
                 if (activity != null) {
                     activity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
                 }
+            }
+
+            @Override
+            public void mediaSessionMetadataChanged(MediaMetadata metadata) {
+                mPageMetadata = metadata;
+                updateNotificationMetadata();
             }
         };
     }
@@ -206,14 +205,11 @@ public class MediaSessionTabHelper {
         @Override
         public void onTitleUpdated(Tab tab) {
             assert tab == mTab;
-            if (mNotificationInfoBuilder == null || mFallbackMetadata == null) return;
-
-            mFallbackMetadata = new MediaMetadata(mFallbackMetadata);
-            mFallbackMetadata.setTitle(sanitizeMediaTitle(mTab.getTitle()));
-            mNotificationInfoBuilder.setMetadata(mFallbackMetadata);
-
-            MediaNotificationManager.show(ContextUtils.getApplicationContext(),
-                    mNotificationInfoBuilder.build());
+            String newFallbackTitle = sanitizeMediaTitle(tab.getTitle());
+            if (!TextUtils.equals(mFallbackTitle, newFallbackTitle)) {
+                mFallbackTitle = newFallbackTitle;
+                updateNotificationMetadata();
+            }
         }
 
         @Override
@@ -302,5 +298,46 @@ public class MediaSessionTabHelper {
         }
         mFavicon = MediaNotificationManager.scaleIconForDisplay(icon);
         return true;
+    }
+
+    /**
+     * Updates the metadata in media notification. This method should be called whenever
+     * |mPageMetadata| or |mFallbackTitle| is changed.
+     */
+    private void updateNotificationMetadata() {
+        if (mNotificationInfoBuilder == null) return;
+
+        MediaMetadata newMetadata = getMetadata();
+        if (mCurrentMetadata.equals(newMetadata)) return;
+
+        mCurrentMetadata = newMetadata;
+        mNotificationInfoBuilder.setMetadata(mCurrentMetadata);
+        MediaNotificationManager.show(
+                ContextUtils.getApplicationContext(), mNotificationInfoBuilder.build());
+    }
+
+    /**
+     * @return The up-to-date MediaSession metadata. Returns the cached object like |mPageMetadata|
+     * or |mCurrentMetadata| if it reflects the current state. Otherwise will return a new
+     * {@link MediaMetadata} object.
+     */
+    private MediaMetadata getMetadata() {
+        String title = mFallbackTitle;
+        String artist = "";
+        String album = "";
+        if (mPageMetadata != null) {
+            if (!TextUtils.isEmpty(mPageMetadata.getTitle())) return mPageMetadata;
+
+            artist = mPageMetadata.getArtist();
+            album = mPageMetadata.getAlbum();
+        }
+
+        if (mCurrentMetadata != null && TextUtils.equals(title, mCurrentMetadata.getTitle())
+                && TextUtils.equals(artist, mCurrentMetadata.getArtist())
+                && TextUtils.equals(album, mCurrentMetadata.getAlbum())) {
+            return mCurrentMetadata;
+        }
+
+        return new MediaMetadata(title, artist, album);
     }
 }
