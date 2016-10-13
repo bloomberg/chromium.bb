@@ -22,6 +22,8 @@ Local changes:
  * Merged COPYING/PATENTS to LICENSE
  * Disabled "-frename-registers" flag for ARM64 linux build as clang(3.9.0)
    build fails with error - unsupported flag.
+ * Disabled the SSE2 version of VerticalUnfilter due to a crash on android
+   (crbug.com/654974)
 Cherry-picks:
   Revert patch f7fc4bc: dec/webp.c: don't wait for data before reporting w/h
   Revert patch d1c359e: fix shared object build with -fvisibility=hidden
