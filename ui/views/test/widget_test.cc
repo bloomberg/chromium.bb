@@ -150,5 +150,32 @@ View* TestInitialFocusWidgetDelegate::GetInitiallyFocusedView() {
   return view_;
 }
 
+WidgetActivationWaiter::WidgetActivationWaiter(Widget* widget, bool active)
+    : observed_(false), active_(active) {
+  if (active == widget->IsActive()) {
+    observed_ = true;
+    return;
+  }
+  widget->AddObserver(this);
+}
+
+WidgetActivationWaiter::~WidgetActivationWaiter() {}
+
+void WidgetActivationWaiter::Wait() {
+  if (!observed_)
+    run_loop_.Run();
+}
+
+void WidgetActivationWaiter::OnWidgetActivationChanged(Widget* widget,
+                                                       bool active) {
+  if (active_ != active)
+    return;
+
+  observed_ = true;
+  widget->RemoveObserver(this);
+  if (run_loop_.running())
+    run_loop_.Quit();
+}
+
 }  // namespace test
 }  // namespace views

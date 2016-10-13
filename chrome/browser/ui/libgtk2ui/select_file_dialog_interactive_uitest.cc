@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl_gtk2.h"
 
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -15,43 +14,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
 
 using BrowserSelectFileDialogTest = InProcessBrowserTest;
-
-// Spins a run loop until a Widget's activation reaches the desired state.
-class WidgetActivationWaiter : public views::WidgetObserver {
- public:
-  WidgetActivationWaiter(views::Widget* widget, bool active)
-      : observed_(false), active_(active) {
-    widget->AddObserver(this);
-    EXPECT_NE(active, widget->IsActive());
-  }
-
-  void Wait() {
-    if (!observed_)
-      run_loop_.Run();
-  }
-
- private:
-  // views::WidgetObserver:
-  void OnWidgetActivationChanged(views::Widget* widget, bool active) override {
-    if (active_ != active)
-      return;
-
-    observed_ = true;
-    widget->RemoveObserver(this);
-    if (run_loop_.running())
-      run_loop_.Quit();
-  }
-
-  base::RunLoop run_loop_;
-  bool observed_;
-  bool active_;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetActivationWaiter);
-};
 
 namespace libgtk2ui {
 
@@ -118,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSelectFileDialogTest, ModalTest) {
 
   // Run a nested loop until the browser window becomes inactive
   // so that the file-picker can be active.
-  WidgetActivationWaiter waiter_inactive(widget, false);
+  views::test::WidgetActivationWaiter waiter_inactive(widget, false);
   waiter_inactive.Wait();
   EXPECT_FALSE(browser()->window()->IsActive());
 
@@ -139,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSelectFileDialogTest, ModalTest) {
   file_picker.Close();
 
   // Run a nested loop until the browser window becomes active.
-  WidgetActivationWaiter wait_active(widget, true);
+  views::test::WidgetActivationWaiter wait_active(widget, true);
   wait_active.Wait();
 
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);

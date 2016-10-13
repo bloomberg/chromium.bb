@@ -6,10 +6,12 @@
 #define UI_VIEWS_TEST_WIDGET_TEST_H_
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace ui {
 namespace internal {
@@ -151,6 +153,29 @@ class TestInitialFocusWidgetDelegate : public TestDesktopWidgetDelegate {
   View* view_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInitialFocusWidgetDelegate);
+};
+
+// Use in tests to wait until a Widget's activation change to a particular
+// value. To use create and call Wait().
+class WidgetActivationWaiter : public WidgetObserver {
+ public:
+  WidgetActivationWaiter(Widget* widget, bool active);
+  ~WidgetActivationWaiter() override;
+
+  // Returns when the active status matches that supplied to the constructor. If
+  // the active status does not match that of the constructor a RunLoop is used
+  // until the active status matches, otherwise this returns immediately.
+  void Wait();
+
+ private:
+  // views::WidgetObserver override:
+  void OnWidgetActivationChanged(Widget* widget, bool active) override;
+
+  base::RunLoop run_loop_;
+  bool observed_;
+  bool active_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetActivationWaiter);
 };
 
 }  // namespace test
