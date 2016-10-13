@@ -45,11 +45,8 @@ class TestRetryStats(cros_test_lib.TestCase):
 
   def _verifyStats(self, category, success=0, failure=0, retry=0):
     """Verify that the given category has the specified values collected."""
-    stats = [e for e in retry_stats._STATS_COLLECTION if e.category == category]
-
-    stats_success = len([e for e in stats if retry_stats._SuccessFilter(e)])
-    stats_failure = len(stats) - stats_success
-    stats_retry = sum([retry_stats._RetryCount(e) for e in stats])
+    stats_success, stats_failure, stats_retry = retry_stats.CategoryStats(
+        category)
 
     self.assertEqual(stats_success, success)
     self.assertEqual(stats_failure, failure)

@@ -70,12 +70,22 @@ def _RetryCount(entry):
   return max(len(entry.attempts) - 1, 0)
 
 
-def ReportCategoryStats(out, category):
-  """Dump stats reports for a given category.
+def CategoryStats(category):
+  """Return stats numbers for a given category.
+
+  success is the number of times a given command succeeded, even if it had to be
+  retried.
+
+  failure is the number of times we exhausting all retries without success.
+
+  retry is the total number of times we retried a command, unrelated to eventual
+  success or failure.
 
   Args:
-    out: Output stream to write to (e.g. sys.stdout).
     category: A string that defines the 'namespace' for these stats.
+
+  Returns:
+    succuess, failure, retry values as integers.
   """
   # Convert the multiprocess proxy list into a local simple list.
   local_stats_collection = list(_STATS_COLLECTION)
@@ -83,12 +93,23 @@ def ReportCategoryStats(out, category):
   # Extract the values for the category we care about.
   stats = [e for e in local_stats_collection if e.category == category]
 
-  line = '*' * 60 + '\n'
-  edge = '*' * 2
-
   success = len([e for e in stats if _SuccessFilter(e)])
   failure = len(stats) - success
   retry = sum([_RetryCount(e) for e in stats])
+
+  return success, failure, retry
+
+def ReportCategoryStats(out, category):
+  """Dump stats reports for a given category.
+
+  Args:
+    out: Output stream to write to (e.g. sys.stdout).
+    category: A string that defines the 'namespace' for these stats.
+  """
+  success, failure, retry = CategoryStats(category)
+
+  line = '*' * 60 + '\n'
+  edge = '*' * 2
 
   out.write(line)
   out.write(edge + ' Performance Statistics for %s' % category + '\n')
