@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/api/test/test_api.h"
@@ -156,7 +157,7 @@ void ExtensionApiTest::SetUpInProcessBrowserTestFixture() {
   test_config_->SetString(kTestDataDirectory,
                           net::FilePathToFileURL(test_data_dir_).spec());
   test_config_->SetInteger(kTestWebSocketPort, 0);
-  bool isolate_extensions = true;
+  bool isolate_extensions = extensions::IsIsolateExtensionsEnabled();
   test_config_->SetBoolean(kIsolateExtensions, isolate_extensions);
   extensions::TestGetConfigFunction::set_test_config_state(
       test_config_.get());

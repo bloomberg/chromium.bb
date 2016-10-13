@@ -68,7 +68,11 @@ bool CrossesExtensionProcessBoundary(
 }
 
 bool IsIsolateExtensionsEnabled() {
-  return true;
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("SiteIsolationExtensions");
+  bool is_control_group = base::StartsWith(
+      group_name, "Control", base::CompareCase::INSENSITIVE_ASCII);
+  return !is_control_group;
 }
 
 }  // namespace extensions
