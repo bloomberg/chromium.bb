@@ -14,6 +14,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
+#include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 
@@ -26,14 +28,44 @@ ExtensionNavigationThrottle::~ExtensionNavigationThrottle() {}
 content::NavigationThrottle::ThrottleCheckResult
 ExtensionNavigationThrottle::WillStartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  GURL url(navigation_handle()->GetURL());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(
+      navigation_handle()->GetWebContents()->GetBrowserContext());
 
-  // This method for now enforces only web_accessible_resources for navigations.
-  // Top-level navigations should always be allowed.
-  DCHECK(!navigation_handle()->IsInMainFrame());
+  if (navigation_handle()->IsInMainFrame()) {
+    // Block top-level navigations to blob: or filesystem: URLs with extension
+    // origin from non-extension processes.  See https://crbug.com/645028.
+    bool is_nested_url = url.SchemeIsFileSystem() || url.SchemeIsBlob();
+    bool is_extension = false;
+    if (registry) {
+      is_extension = !!registry->enabled_extensions().GetExtensionOrAppByURL(
+          navigation_handle()->GetStartingSiteInstance()->GetSiteURL());
+    }
+
+    url::Origin origin(url);
+    if (is_nested_url && origin.scheme() == extensions::kExtensionScheme &&
+        !is_extension) {
+      // Relax this restriction for apps that use <webview>.  See
+      // https://crbug.com/652077.
+      const extensions::Extension* extension =
+          registry->enabled_extensions().GetByID(origin.host());
+      bool has_webview_permission =
+          extension &&
+          extension->permissions_data()->HasAPIPermission(
+              extensions::APIPermission::kWebView);
+      if (!has_webview_permission)
+        return content::NavigationThrottle::CANCEL;
+    }
+
+    return content::NavigationThrottle::PROCEED;
+  }
+
+  // Now enforce web_accessible_resources for navigations. Top-level navigations
+  // should always be allowed.
 
   // If the navigation is not to a chrome-extension:// URL, no need to perform
   // any more checks.
-  if (!navigation_handle()->GetURL().SchemeIs(extensions::kExtensionScheme))
+  if (!url.SchemeIs(extensions::kExtensionScheme))
     return content::NavigationThrottle::PROCEED;
 
   // The subframe which is navigated needs to have all of its ancestors be
@@ -58,8 +90,7 @@ ExtensionNavigationThrottle::WillStartRequest() {
   content::RenderFrameHost* ancestor = navigating_frame->GetParent();
   bool external_ancestor = false;
   while (ancestor) {
-    if (ancestor->GetLastCommittedURL().GetOrigin() !=
-        navigation_handle()->GetURL().GetOrigin()) {
+    if (ancestor->GetLastCommittedURL().GetOrigin() != url.GetOrigin()) {
       // Ignore DevTools, as it is allowed to embed extension pages.
       if (!ancestor->GetLastCommittedURL().SchemeIs(
               content::kChromeDevToolsScheme)) {
@@ -75,15 +106,12 @@ ExtensionNavigationThrottle::WillStartRequest() {
 
   // Since there was at least one origin different than the navigation URL,
   // explicitly check for the resource in web_accessible_resources.
-  std::string resource_path = navigation_handle()->GetURL().path();
-  ExtensionRegistry* registry = ExtensionRegistry::Get(
-      navigation_handle()->GetWebContents()->GetBrowserContext());
+  std::string resource_path = url.path();
   if (!registry)
     return content::NavigationThrottle::BLOCK_REQUEST;
 
   const extensions::Extension* extension =
-      registry->enabled_extensions().GetByID(
-          navigation_handle()->GetURL().host());
+      registry->enabled_extensions().GetByID(url.host());
   if (!extension)
     return content::NavigationThrottle::BLOCK_REQUEST;
 

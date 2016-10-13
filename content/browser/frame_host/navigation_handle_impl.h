@@ -33,7 +33,6 @@ class NavigatorDelegate;
 class ResourceRequestBodyImpl;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
-class SiteInstance;
 
 // This class keeps track of a single navigation. It is created upon receipt of
 // a DidStartProvisionalLoad IPC in a RenderFrameHost. The RenderFrameHost owns
@@ -87,6 +86,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // NavigationHandle implementation:
   const GURL& GetURL() override;
+  SiteInstance* GetStartingSiteInstance() override;
   bool IsInMainFrame() override;
   bool IsParentMainFrame() override;
   bool IsRendererInitiated() override;
@@ -335,6 +335,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // See NavigationHandle for a description of those member variables.
   GURL url_;
+  scoped_refptr<SiteInstance> starting_site_instance_;
   Referrer sanitized_referrer_;
   bool has_user_gesture_;
   ui::PageTransition transition_;

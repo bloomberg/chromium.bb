@@ -22,8 +22,6 @@
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/permissions/api_permission.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
@@ -179,31 +177,6 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  GURL url(request->url());
-
-  // Block top-level navigations to blob: or filesystem: URLs with extension
-  // origin from non-extension processes.  See https://crbug.com/645028.
-  bool is_nested_url = url.SchemeIsFileSystem() || url.SchemeIsBlob();
-  bool is_navigation =
-      info && content::IsResourceTypeFrame(info->GetResourceType());
-  url::Origin origin(url);
-  if (is_nested_url && is_navigation && info->IsMainFrame() &&
-      origin.scheme() == extensions::kExtensionScheme &&
-      !extension_info_map_->process_map().Contains(info->GetChildID())) {
-    // Relax this restriction for apps that use <webview>.  See
-    // https://crbug.com/652077.
-    const extensions::Extension* extension =
-        extension_info_map_->extensions().GetByID(origin.host());
-    bool has_webview_permission =
-        extension &&
-        extension->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kWebView);
-    if (!has_webview_permission)
-      return net::ERR_ABORTED;
-  }
-
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
       profile_, extension_info_map_.get(),
       GetExtensionNavigationUIData(request), request, callback, new_url);

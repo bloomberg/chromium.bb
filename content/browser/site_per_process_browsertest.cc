@@ -41,6 +41,7 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/interstitial_page_delegate.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -8347,6 +8348,35 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Resume the navigation in the previous RFH that has just been marked as
   // pending deletion. We should not crash.
   transfer_manager.WaitForNavigationFinished();
+}
+
+class NavigationHandleWatcher : public WebContentsObserver {
+ public:
+  NavigationHandleWatcher(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    DCHECK_EQ(GURL("http://b.com/"),
+              navigation_handle->GetStartingSiteInstance()->GetSiteURL());
+  }
+};
+
+// Verifies that the SiteInstance of a NavigationHandle correctly identifies the
+// RenderFrameHost that started the navigation (and not the destination RFH).
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigationHandleSiteInstance) {
+  // Navigate to a page with a cross-site iframe.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Navigate the iframe cross-site.
+  NavigationHandleWatcher watcher(shell()->web_contents());
+  TestNavigationObserver load_observer(shell()->web_contents());
+  GURL frame_url = embedded_test_server()->GetURL("c.com", "/title1.html");
+  EXPECT_TRUE(ExecuteScript(
+      shell()->web_contents(),
+      "window.frames[0].location = \"" + frame_url.spec() + "\";"));
+  load_observer.Wait();
 }
 
 }  // namespace content

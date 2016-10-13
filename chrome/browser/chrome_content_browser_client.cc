@@ -3143,8 +3143,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-  if (!handle->IsInMainFrame())
-    throttles.push_back(new extensions::ExtensionNavigationThrottle(handle));
+  throttles.push_back(new extensions::ExtensionNavigationThrottle(handle));
 #endif
 
   subresource_filter::ContentSubresourceFilterDriverFactory*

@@ -91,6 +91,10 @@ NavigationHandleImpl::NavigationHandleImpl(
       weak_factory_(this) {
   DCHECK(!navigation_start.is_null());
   redirect_chain_.push_back(url);
+
+  starting_site_instance_ =
+      frame_tree_node_->current_frame_host()->GetSiteInstance();
+
   GetDelegate()->DidStartNavigation(this);
 
   if (IsInMainFrame()) {
@@ -126,6 +130,10 @@ RequestContextType NavigationHandleImpl::GetRequestContextType() const {
 
 const GURL& NavigationHandleImpl::GetURL() {
   return url_;
+}
+
+SiteInstance* NavigationHandleImpl::GetStartingSiteInstance() {
+  return starting_site_instance_.get();
 }
 
 bool NavigationHandleImpl::IsInMainFrame() {

@@ -23,6 +23,7 @@ namespace content {
 class NavigationData;
 class NavigationThrottle;
 class RenderFrameHost;
+class SiteInstance;
 class WebContents;
 
 // A NavigationHandle tracks information related to a single navigation.
@@ -47,6 +48,11 @@ class CONTENT_EXPORT NavigationHandle {
   // example, viewing a page's source navigates to the URL of the page, but the
   // virtual URL is prefixed with "view-source:".
   virtual const GURL& GetURL() = 0;
+
+  // Returns the SiteInstance that started the request.
+  // If a frame in SiteInstance A navigates a frame in SiteInstance B to a URL
+  // in SiteInstance C, then this returns B.
+  virtual SiteInstance* GetStartingSiteInstance() = 0;
 
   // Whether the navigation is taking place in the main frame or in a subframe.
   // This remains constant over the navigation lifetime.
