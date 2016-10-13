@@ -207,23 +207,12 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         if config['factory_install_netboot']:
           commands.MakeNetboot(buildroot, board, factory_install_symlink)
 
-      # Build the factory toolkit.
-      chroot_dir = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
-      chroot_tmp_dir = os.path.join(chroot_dir, 'tmp')
-      with osutils.TempDir(base_dir=chroot_tmp_dir, sudo_rm=True) as tempdir:
-        # Build the factory toolkit.
-        if config['factory_toolkit']:
-          toolkit_dir = os.path.join(tempdir, 'factory_toolkit')
-          os.makedirs(toolkit_dir)
-          commands.MakeFactoryToolkit(
-              buildroot, board, toolkit_dir, self._run.attrs.release_tag)
-
-        # Build and upload factory zip if needed.
-        if factory_install_symlink or config['factory_toolkit']:
-          filename = commands.BuildFactoryZip(
-              buildroot, board, archive_path, factory_install_symlink,
-              toolkit_dir, self._run.attrs.release_tag)
-          self._release_upload_queue.put([filename])
+      # Build and upload factory zip if needed.
+      if factory_install_symlink or config['factory_toolkit']:
+        filename = commands.BuildFactoryZip(
+            buildroot, board, archive_path, factory_install_symlink,
+            self._run.attrs.release_tag)
+        self._release_upload_queue.put([filename])
 
     def ArchiveStandaloneArtifact(artifact_info):
       """Build and upload a single archive."""

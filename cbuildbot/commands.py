@@ -1909,23 +1909,6 @@ def MakeNetboot(buildroot, board, image_dir):
   RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
 
 
-def MakeFactoryToolkit(buildroot, board, output_dir, version=None):
-  """Build a factory toolkit.
-
-  Args:
-    buildroot: Root directory where build occurs.
-    board: Board type that was built on this machine.
-    output_dir: Directory for the resulting factory toolkit.
-    version: Version string to be included in ID string.
-  """
-  cmd = ['./make_factory_toolkit.sh',
-         '--board=%s' % board,
-         '--output_dir=%s' % path_util.ToChrootPath(output_dir)]
-  if version is not None:
-    cmd.extend(['--version', version])
-  RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
-
-
 def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
   """Build a recovery image.
 
@@ -2359,7 +2342,7 @@ def BuildFirmwareArchive(buildroot, board, archive_dir):
 
 
 def BuildFactoryZip(buildroot, board, archive_dir, factory_shim_dir,
-                    factory_toolkit_dir, version=None):
+                    version=None):
   """Build factory_image.zip in archive_dir.
 
   Args:
@@ -2367,7 +2350,6 @@ def BuildFactoryZip(buildroot, board, archive_dir, factory_shim_dir,
     board: Board name of build target.
     archive_dir: Directory to store factory_image.zip.
     factory_shim_dir: Directory containing factory shim.
-    factory_toolkit_dir: Directory containing factory toolkit.
     version: The version string to be included in the factory image.zip.
 
   Returns:
@@ -2386,8 +2368,6 @@ def BuildFactoryZip(buildroot, board, archive_dir, factory_shim_dir,
       factory_shim_dir:
           ['*factory_install*.bin', '*partition*',
            os.path.join('netboot', '*')],
-      factory_toolkit_dir:
-          ['*factory_image*.bin', '*partition*', 'install_factory_toolkit.run'],
   }
 
   for folder, patterns in rules.items():
