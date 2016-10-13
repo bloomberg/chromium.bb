@@ -59,8 +59,10 @@ class SESSIONS_EXPORT ContentSerializedNavigationDriver
   const ExtendedInfoHandlerMap& GetAllExtendedInfoHandlers() const;
 
  private:
-  ContentSerializedNavigationDriver();
   friend struct base::DefaultSingletonTraits<ContentSerializedNavigationDriver>;
+  friend class ContentSerializedNavigationBuilderTest;
+
+  ContentSerializedNavigationDriver();
 
   ExtendedInfoHandlerMap extended_info_handler_map_;
 

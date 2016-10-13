@@ -87,20 +87,39 @@ void SetExtendedInfoForTest(content::NavigationEntry* entry) {
                       base::ASCIIToUTF16(kExtendedInfoValue1));
   entry->SetExtraData(kExtendedInfoKey2,
                       base::ASCIIToUTF16(kExtendedInfoValue2));
-  ContentSerializedNavigationDriver::GetInstance()->RegisterExtendedInfoHandler(
-      kExtendedInfoKey1, base::WrapUnique<ExtendedInfoHandler>(
-                             new TestExtendedInfoHandler(kExtendedInfoKey1)));
-  ContentSerializedNavigationDriver::GetInstance()->RegisterExtendedInfoHandler(
-      kExtendedInfoKey2, base::WrapUnique<ExtendedInfoHandler>(
-                             new TestExtendedInfoHandler(kExtendedInfoKey2)));
 }
 
 }  // namespace
 
+class ContentSerializedNavigationBuilderTest : public testing::Test {
+ public:
+  ContentSerializedNavigationBuilderTest() {}
+  ~ContentSerializedNavigationBuilderTest() override {}
+
+  void SetUp() override {
+    ContentSerializedNavigationDriver* driver =
+        ContentSerializedNavigationDriver::GetInstance();
+    driver->RegisterExtendedInfoHandler(
+        kExtendedInfoKey1, base::WrapUnique<ExtendedInfoHandler>(
+                               new TestExtendedInfoHandler(kExtendedInfoKey1)));
+    driver->RegisterExtendedInfoHandler(
+        kExtendedInfoKey2, base::WrapUnique<ExtendedInfoHandler>(
+                               new TestExtendedInfoHandler(kExtendedInfoKey2)));
+  }
+
+  void TearDown() override {
+    ContentSerializedNavigationDriver* driver =
+        ContentSerializedNavigationDriver::GetInstance();
+    driver->extended_info_handler_map_.clear();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSerializedNavigationBuilderTest);
+};
 
 // Create a SerializedNavigationEntry from a NavigationEntry.  All its fields
 // should match the NavigationEntry's.
-TEST(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
+TEST_F(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
   const std::unique_ptr<content::NavigationEntry> navigation_entry(
       MakeNavigationEntryForTest());
   SetExtendedInfoForTest(navigation_entry.get());
@@ -146,7 +165,7 @@ TEST(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
 // a SerializedNavigationEntry and back.  The new one should match the old one
 // except for fields that aren't preserved, which should be set to
 // expected values.
-TEST(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
+TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
   const std::unique_ptr<content::NavigationEntry> old_navigation_entry(
       MakeNavigationEntryForTest());
   SetExtendedInfoForTest(old_navigation_entry.get());
@@ -197,7 +216,7 @@ TEST(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
   EXPECT_EQ(kExtendedInfoValue2, base::UTF16ToASCII(extra_data));
 }
 
-TEST(ContentSerializedNavigationBuilderTest, SetPasswordState) {
+TEST_F(ContentSerializedNavigationBuilderTest, SetPasswordState) {
   std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
 
