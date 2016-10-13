@@ -82,6 +82,9 @@ void ScrollbarAnimationControllerThinning::DidCaptureScrollbarEnd() {
 }
 
 void ScrollbarAnimationControllerThinning::DidMouseMoveOffScrollbar() {
+  if (!mouse_is_over_scrollbar_ && !mouse_is_near_scrollbar_)
+    return;
+
   mouse_is_over_scrollbar_ = false;
   mouse_is_near_scrollbar_ = false;
 

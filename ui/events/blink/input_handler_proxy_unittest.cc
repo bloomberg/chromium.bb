@@ -151,6 +151,7 @@ class MockInputHandler : public cc::InputHandler {
 
   void MouseDown() override {}
   void MouseUp() override {}
+  void MouseLeave() override {}
 
   void MouseMoveAt(const gfx::Point& mouse_position) override {}
 
