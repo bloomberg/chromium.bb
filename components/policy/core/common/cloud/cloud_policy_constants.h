@@ -23,9 +23,11 @@ POLICY_EXPORT extern const char kParamAgent[];
 POLICY_EXPORT extern const char kParamAppType[];
 POLICY_EXPORT extern const char kParamDeviceID[];
 POLICY_EXPORT extern const char kParamDeviceType[];
+POLICY_EXPORT extern const char kParamLastError[];
 POLICY_EXPORT extern const char kParamOAuthToken[];
 POLICY_EXPORT extern const char kParamPlatform[];
 POLICY_EXPORT extern const char kParamRequest[];
+POLICY_EXPORT extern const char kParamRetry[];
 
 // String extern constants for the device and app type we report to the server.
 POLICY_EXPORT extern const char kValueAppType[];

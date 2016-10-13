@@ -220,6 +220,9 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
   // Number of times that this job has been retried due to connection errors.
   int retries_count_;
 
+  // The last error why we had to retry.
+  int last_error_ = 0;
+
   // The request context to use for this job.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
@@ -328,10 +331,20 @@ GURL DeviceManagementRequestJobImpl::GetURL(
     const std::string& server_url) {
   std::string result(server_url);
   result += '?';
-  for (ParameterMap::const_iterator entry(query_params_.begin());
-       entry != query_params_.end();
-       ++entry) {
-    if (entry != query_params_.begin())
+  ParameterMap current_query_params(query_params_);
+  if (last_error_ == 0) {
+    // Not a retry.
+    current_query_params.push_back(
+        std::make_pair(dm_protocol::kParamRetry, "false"));
+  } else {
+    current_query_params.push_back(
+        std::make_pair(dm_protocol::kParamRetry, "true"));
+    current_query_params.push_back(std::make_pair(dm_protocol::kParamLastError,
+                                                  std::to_string(last_error_)));
+  }
+  for (ParameterMap::const_iterator entry(current_query_params.begin());
+       entry != current_query_params.end(); ++entry) {
+    if (entry != current_query_params.begin())
       result += '&';
     result += net::EscapeQueryParamValue(entry->first, true);
     result += '=';
@@ -362,6 +375,7 @@ void DeviceManagementRequestJobImpl::ConfigureRequest(
 
 DeviceManagementRequestJobImpl::RetryMethod
 DeviceManagementRequestJobImpl::ShouldRetry(const net::URLFetcher* fetcher) {
+  last_error_ = fetcher->GetStatus().error();
   if (FailedWithProxy(fetcher) && !bypass_proxy_) {
     // Retry the job immediately if it failed due to a broken proxy, by
     // bypassing the proxy on the next try.
