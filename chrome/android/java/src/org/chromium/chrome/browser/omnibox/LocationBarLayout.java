@@ -674,6 +674,12 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 } else if (animation == mNavigationIconShowAnimator) {
                     mSecurityButton.setVisibility(INVISIBLE);
                 }
+                // This is done specifically not to show offline page verbose status with the
+                // icon. It should be properly solved, when omnibox verbose status animation is
+                // implemented. See: http://crbug.com/648129
+                updateVerboseStatusVisibility();
+                // URL cleanup to not show not emphasized URL next to padlock.
+                setUrlToPageUrl();
             }
 
             @Override
@@ -683,6 +689,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 } else if (animation == mNavigationIconShowAnimator) {
                     mNavigationButton.setVisibility(VISIBLE);
                 }
+                // As above. See: http://crbug.com/648129
+                updateVerboseStatusVisibility();
             }
         };
 
@@ -1389,8 +1397,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * omnibox.
      */
     private void updateVerboseStatusVisibility() {
-        boolean verboseStatusVisible =
-                mNavigationButtonType == NavigationButtonType.OFFLINE && !mUrlHasFocus;
+        boolean verboseStatusVisible = !mUrlHasFocus
+                && mNavigationButtonType == NavigationButtonType.OFFLINE
+                && mNavigationButton.getVisibility() == VISIBLE
+                && mSecurityButton.getVisibility() == INVISIBLE;
 
         int verboseStatusVisibility = verboseStatusVisible ? VISIBLE : GONE;
 
