@@ -3042,6 +3042,7 @@ Segment::Segment()
       output_cues_(true),
       accurate_cluster_duration_(false),
       fixed_size_cluster_timecode_(false),
+      estimate_file_duration_(true),
       payload_pos_(0),
       size_position_(0),
       doc_type_version_(kDefaultDocTypeVersion),
@@ -3150,6 +3151,10 @@ bool Segment::Init(IMkvWriter* ptr_writer) {
   writer_cluster_ = ptr_writer;
   writer_cues_ = ptr_writer;
   writer_header_ = ptr_writer;
+  memset(&track_frames_written_, 0,
+         sizeof(track_frames_written_[0]) * kMaxTrackNumber);
+  memset(&last_track_timestamp_, 0,
+         sizeof(last_track_timestamp_[0]) * kMaxTrackNumber);
   return segment_info_.Init();
 }
 
@@ -3212,9 +3217,26 @@ bool Segment::Finalize() {
       chunk_count_++;
     }
 
-    const double duration =
+    double duration =
         (static_cast<double>(last_timestamp_) + last_block_duration_) /
         segment_info_.timecode_scale();
+    if (last_block_duration_ == 0 && estimate_file_duration_) {
+      const int num_tracks = static_cast<int>(tracks_.track_entries_size());
+      for (int i = 0; i < num_tracks; ++i) {
+        if (track_frames_written_[i] < 2)
+          continue;
+
+        // Estimate the duration for the last block of a Track.
+        const double nano_per_frame =
+            static_cast<double>(last_track_timestamp_[i]) /
+            (track_frames_written_[i] - 1);
+        const double track_duration =
+            (last_track_timestamp_[i] + nano_per_frame) /
+            segment_info_.timecode_scale();
+        if (track_duration > duration)
+          duration = track_duration;
+      }
+    }
     segment_info_.set_duration(duration);
     if (!segment_info_.Finalize(writer_header_))
       return false;
@@ -3460,7 +3482,10 @@ bool Segment::AddGenericFrame(const Frame* frame) {
     Frame* const new_frame = new (std::nothrow) Frame();
     if (!new_frame || !new_frame->CopyFrom(*frame))
       return false;
-    return QueueFrame(new_frame);
+    if (!QueueFrame(new_frame))
+      return false;
+    track_frames_written_[frame->track_number() - 1]++;
+    return true;
   }
 
   if (!DoNewClusterProcessing(frame->track_number(), frame->timestamp(),
@@ -3500,6 +3525,7 @@ bool Segment::AddGenericFrame(const Frame* frame) {
   last_timestamp_ = frame->timestamp();
   last_track_timestamp_[frame->track_number() - 1] = frame->timestamp();
   last_block_duration_ = frame->duration();
+  track_frames_written_[frame->track_number() - 1]++;
 
   if (frame_created)
     delete frame;

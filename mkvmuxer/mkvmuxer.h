@@ -1683,6 +1683,10 @@ class Segment {
   Mode mode() const { return mode_; }
   CuesPosition cues_position() const { return cues_position_; }
   bool output_cues() const { return output_cues_; }
+  void set_estimate_file_duration(bool estimate_duration) {
+    estimate_file_duration_ = estimate_duration;
+  }
+  bool estimate_file_duration() const { return estimate_file_duration_; }
   const SegmentInfo* segment_info() const { return &segment_info_; }
 
   // Returns true when codec IDs are valid for WebM.
@@ -1842,6 +1846,9 @@ class Segment {
   // Last timestamp in nanoseconds by track number added to a cluster.
   uint64_t last_track_timestamp_[kMaxTrackNumber];
 
+  // Number of frames written per track.
+  uint64_t track_frames_written_[kMaxTrackNumber];
+
   // Maximum time in nanoseconds for a cluster duration. This variable is a
   // guideline and some clusters may have a longer duration. Default is 30
   // seconds.
@@ -1869,6 +1876,9 @@ class Segment {
 
   // Flag whether or not to write the Cluster Timecode using exactly 8 bytes.
   bool fixed_size_cluster_timecode_;
+
+  // Flag whether or not to estimate the file duration.
+  bool estimate_file_duration_;
 
   // The size of the EBML header, used to validate the header if
   // WriteEbmlHeader() is called more than once.

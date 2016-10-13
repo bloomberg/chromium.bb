@@ -51,6 +51,7 @@ bool CompareFiles(const std::string& file1, const std::string& file2) {
     const std::size_t r1 = std::fread(buf1, 1, kBlockSize, f1.get());
     const std::size_t r2 = std::fread(buf2, 1, kBlockSize, f2.get());
 
+    // TODO(fgalligan): Add output of which byte differs.
     if (r1 != r2 || std::memcmp(buf1, buf2, r1)) {
       return 0;  // Files are not equal
     }
