@@ -231,9 +231,10 @@ PassRefPtr<SimpleFontData> RemoteFontFaceSource::createLoadingFallbackFontData(
 void RemoteFontFaceSource::beginLoadIfNeeded() {
   if (m_fontSelector->document() && m_font->stillNeedsLoad()) {
     m_fontSelector->document()->fetcher()->startLoad(m_font);
+    if (!m_font->isLoaded())
+      m_font->startLoadLimitTimers();
     m_histograms.loadStarted();
   }
-  m_font->startLoadLimitTimersIfNeeded();
 
   if (m_face)
     m_face->didBeginLoad();

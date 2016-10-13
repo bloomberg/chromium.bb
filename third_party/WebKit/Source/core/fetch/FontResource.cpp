@@ -83,7 +83,7 @@ FontResource* FontResource::fetch(FetchRequest& request,
 FontResource::FontResource(const ResourceRequest& resourceRequest,
                            const ResourceLoaderOptions& options)
     : Resource(resourceRequest, Font, options),
-      m_loadLimitState(UnderLimit),
+      m_loadLimitState(LoadNotStarted),
       m_corsFailed(false),
       m_fontLoadShortLimitTimer(this,
                                 &FontResource::fontLoadShortLimitCallback),
@@ -105,15 +105,14 @@ void FontResource::didAddClient(ResourceClient* c) {
 void FontResource::setRevalidatingRequest(const ResourceRequest& request) {
   // Reload will use the same object, and needs to reset |m_loadLimitState|
   // before any didAddClient() is called again.
-  m_loadLimitState = UnderLimit;
+  m_loadLimitState = LoadNotStarted;
   Resource::setRevalidatingRequest(request);
 }
 
-void FontResource::startLoadLimitTimersIfNeeded() {
-  DCHECK(!stillNeedsLoad());
-  if (isLoaded() || m_fontLoadLongLimitTimer.isActive())
-    return;
-  DCHECK_EQ(m_loadLimitState, UnderLimit);
+void FontResource::startLoadLimitTimers() {
+  DCHECK(isLoading());
+  DCHECK_EQ(m_loadLimitState, LoadNotStarted);
+  m_loadLimitState = UnderLimit;
   m_fontLoadShortLimitTimer.startOneShot(fontLoadWaitShortLimitSec,
                                          BLINK_FROM_HERE);
   m_fontLoadLongLimitTimer.startOneShot(fontLoadWaitLongLimitSec,
