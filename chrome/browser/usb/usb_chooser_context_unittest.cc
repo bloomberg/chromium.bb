@@ -8,7 +8,7 @@
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "device/core/mock_device_client.h"
+#include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 

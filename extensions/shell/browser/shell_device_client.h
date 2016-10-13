@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 
 namespace extensions {
 

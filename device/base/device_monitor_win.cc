@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/core/device_monitor_win.h"
+#include "device/base/device_monitor_win.h"
 
 #include <dbt.h>
 #include <windows.h>
@@ -45,8 +45,8 @@ class DeviceMonitorMessageWindow {
       g_message_window = new DeviceMonitorMessageWindow();
       if (g_message_window->Init()) {
         base::AtExitManager::RegisterTask(
-          base::Bind(&base::DeletePointer<DeviceMonitorMessageWindow>,
-                     base::Unretained(g_message_window)));
+            base::Bind(&base::DeletePointer<DeviceMonitorMessageWindow>,
+                       base::Unretained(g_message_window)));
       } else {
         delete g_message_window;
         g_message_window = nullptr;
@@ -70,8 +70,7 @@ class DeviceMonitorMessageWindow {
   friend void base::DeletePointer<DeviceMonitorMessageWindow>(
       DeviceMonitorMessageWindow* message_window);
 
-  DeviceMonitorMessageWindow() {
-  }
+  DeviceMonitorMessageWindow() {}
 
   ~DeviceMonitorMessageWindow() {
     if (notify_handle_) {
@@ -157,8 +156,7 @@ void DeviceMonitorWin::Observer::OnDeviceAdded(const GUID& class_guid,
 
 void DeviceMonitorWin::Observer::OnDeviceRemoved(
     const GUID& class_guid,
-    const std::string& device_path) {
-}
+    const std::string& device_path) {}
 
 // static
 DeviceMonitorWin* DeviceMonitorWin::GetForDeviceInterface(
@@ -181,8 +179,7 @@ DeviceMonitorWin* DeviceMonitorWin::GetForAllInterfaces() {
   return nullptr;
 }
 
-DeviceMonitorWin::~DeviceMonitorWin() {
-}
+DeviceMonitorWin::~DeviceMonitorWin() {}
 
 void DeviceMonitorWin::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
@@ -192,19 +189,18 @@ void DeviceMonitorWin::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-DeviceMonitorWin::DeviceMonitorWin() {
-}
+DeviceMonitorWin::DeviceMonitorWin() {}
 
 void DeviceMonitorWin::NotifyDeviceAdded(const GUID& class_guid,
                                          const std::string& device_path) {
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnDeviceAdded(class_guid, device_path));
+  for (auto& observer : observer_list_)
+    observer.OnDeviceAdded(class_guid, device_path);
 }
 
 void DeviceMonitorWin::NotifyDeviceRemoved(const GUID& class_guid,
                                            const std::string& device_path) {
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnDeviceRemoved(class_guid, device_path));
+  for (auto& observer : observer_list_)
+    observer.OnDeviceRemoved(class_guid, device_path);
 }
 
 }  // namespace device

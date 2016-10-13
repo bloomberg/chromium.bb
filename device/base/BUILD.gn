@@ -4,8 +4,8 @@
 
 import("//build/config/features.gni")
 
-component("core") {
-  output_name = "device_core"
+component("base") {
+  output_name = "device_base"
 
   sources = [
     "device_client.cc",
@@ -16,7 +16,7 @@ component("core") {
     "device_monitor_win.h",
   ]
 
-  defines = [ "DEVICE_CORE_IMPLEMENTATION" ]
+  defines = [ "DEVICE_BASE_IMPLEMENTATION" ]
 
   deps = []
 
@@ -47,7 +47,7 @@ source_set("mocks") {
   ]
 
   deps = [
-    ":core",
+    ":base",
     "//device/hid:mocks",
     "//device/usb:test_support",
   ]

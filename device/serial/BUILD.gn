@@ -43,7 +43,7 @@ static_library("serial") {
   public_deps = [
     ":serial_mojo",
     "//base",
-    "//device/core",
+    "//device/base",
   ]
 
   deps = [

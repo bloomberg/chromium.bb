@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_CORE_MOCK_DEVICE_CLIENT_H_
-#define DEVICE_CORE_MOCK_DEVICE_CLIENT_H_
+#ifndef DEVICE_BASE_MOCK_DEVICE_CLIENT_H_
+#define DEVICE_BASE_MOCK_DEVICE_CLIENT_H_
 
 #include <memory>
 
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 
 namespace device {
 
@@ -36,4 +36,4 @@ class MockDeviceClient : device::DeviceClient {
 
 }  // namespace device
 
-#endif  // DEVICE_CORE_MOCK_DEVICE_CLIENT_H_
+#endif  // DEVICE_BASE_MOCK_DEVICE_CLIENT_H_

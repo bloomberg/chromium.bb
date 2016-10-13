@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/usb/public/interfaces/device.mojom.h"
 #include "device/usb/usb_device.h"
 

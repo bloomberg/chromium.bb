@@ -20,7 +20,7 @@
 #include "chrome/browser/printing/pwg_raster_converter.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"

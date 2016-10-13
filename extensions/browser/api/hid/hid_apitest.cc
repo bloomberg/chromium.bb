@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "device/core/mock_device_client.h"
+#include "device/base/mock_device_client.h"
 #include "device/hid/hid_collection_info.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_info.h"

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_device_info.h"

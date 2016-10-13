@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "device/core/mock_device_client.h"
+#include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"

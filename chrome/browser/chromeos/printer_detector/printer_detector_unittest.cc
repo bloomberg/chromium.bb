@@ -23,7 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "device/core/mock_device_client.h"
+#include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/usb_descriptors.h"

@@ -21,7 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
-#include "device/core/device_monitor_linux.h"
+#include "device/base/device_monitor_linux.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_device_linux.h"
 #include "device/usb/webusb_descriptors.h"

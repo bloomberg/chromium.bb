@@ -8,7 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service.h"
 #include "extensions/common/api/usb.h"

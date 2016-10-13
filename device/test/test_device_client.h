@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 
 namespace base {
 class SingleThreadTaskRunner;

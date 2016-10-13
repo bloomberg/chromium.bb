@@ -54,7 +54,7 @@ static_library("usb") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//components/device_event_log",
-    "//device/core",
+    "//device/base",
     "//net",
   ]
 

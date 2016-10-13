@@ -16,7 +16,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/common/origin_util.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_ids.h"
 #include "ui/base/l10n/l10n_util.h"

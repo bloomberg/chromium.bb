@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROME_DEVICE_CLIENT_H_
 #define CHROME_BROWSER_CHROME_DEVICE_CLIENT_H_
 
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 
 #include <memory>
 

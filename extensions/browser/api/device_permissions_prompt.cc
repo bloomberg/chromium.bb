@@ -12,7 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"

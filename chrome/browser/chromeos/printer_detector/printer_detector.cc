@@ -26,7 +26,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_ids.h"

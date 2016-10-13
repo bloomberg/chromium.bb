@@ -13,7 +13,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/memory/ptr_util.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_service.h"

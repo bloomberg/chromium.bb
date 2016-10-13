@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_CORE_DEVICE_CLIENT_H_
-#define DEVICE_CORE_DEVICE_CLIENT_H_
+#ifndef DEVICE_BASE_DEVICE_CLIENT_H_
+#define DEVICE_BASE_DEVICE_CLIENT_H_
 
 #include "base/macros.h"
-#include "device/core/device_core_export.h"
+#include "device/base/device_base_export.h"
 
 namespace device {
 
@@ -16,7 +16,7 @@ class UsbService;
 // Interface used by consumers of //device APIs to get pointers to the service
 // singletons appropriate for a given embedding application. For an example see
 // //chrome/browser/chrome_device_client.h.
-class DEVICE_CORE_EXPORT DeviceClient {
+class DEVICE_BASE_EXPORT DeviceClient {
  public:
   // Construction sets the single instance.
   DeviceClient();
@@ -39,4 +39,4 @@ class DEVICE_CORE_EXPORT DeviceClient {
 
 }  // namespace device
 
-#endif  // DEVICE_CORE_DEVICE_CLIENT_H_
+#endif  // DEVICE_BASE_DEVICE_CLIENT_H_

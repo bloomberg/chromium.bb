@@ -40,7 +40,7 @@ source_set("hid") {
   deps = [
     "//base",
     "//components/device_event_log",
-    "//device/core",
+    "//device/base",
     "//net",
   ]
 

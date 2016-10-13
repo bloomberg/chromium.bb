@@ -22,7 +22,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"

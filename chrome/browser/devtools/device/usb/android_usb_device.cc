@@ -21,7 +21,7 @@
 #include "chrome/browser/devtools/device/usb/android_usb_socket.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service.h"

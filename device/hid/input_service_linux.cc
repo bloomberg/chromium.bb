@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "device/core/device_monitor_linux.h"
+#include "device/base/device_monitor_linux.h"
 #include "device/udev_linux/udev.h"
 
 namespace device {

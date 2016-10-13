@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/usb/mojo/device_impl.h"
 #include "device/usb/mojo/permission_provider.h"
 #include "device/usb/mojo/type_converters.h"

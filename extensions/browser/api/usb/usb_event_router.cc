@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/usb/usb_device.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/usb/usb_guid_map.h"

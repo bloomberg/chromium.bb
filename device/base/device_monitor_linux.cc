@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/core/device_monitor_linux.h"
+#include "device/base/device_monitor_linux.h"
 
 #include <memory>
 
@@ -111,7 +111,8 @@ void DeviceMonitorLinux::Enumerate(const EnumerateCallback& callback) {
 
 void DeviceMonitorLinux::WillDestroyCurrentMessageLoop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(Observer, observers_, WillDestroyMonitorMessageLoop());
+  for (auto& observer : observers_)
+    observer.WillDestroyMonitorMessageLoop();
   g_device_monitor_linux_ptr.Get().reset(nullptr);
 }
 
@@ -129,10 +130,13 @@ void DeviceMonitorLinux::OnMonitorCanReadWithoutBlocking() {
     return;
 
   std::string action(udev_device_get_action(device.get()));
-  if (action == kUdevActionAdd)
-    FOR_EACH_OBSERVER(Observer, observers_, OnDeviceAdded(device.get()));
-  else if (action == kUdevActionRemove)
-    FOR_EACH_OBSERVER(Observer, observers_, OnDeviceRemoved(device.get()));
+  if (action == kUdevActionAdd) {
+    for (auto& observer : observers_)
+      observer.OnDeviceAdded(device.get());
+  } else if (action == kUdevActionRemove) {
+    for (auto& observer : observers_)
+      observer.OnDeviceRemoved(device.get());
+  }
 }
 
 }  // namespace device

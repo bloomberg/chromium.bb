@@ -19,7 +19,7 @@
 
 #if defined(OS_WIN)
 #include "base/scoped_observer.h"
-#include "device/core/device_monitor_win.h"
+#include "device/base/device_monitor_win.h"
 #endif  // OS_WIN
 
 struct libusb_device;

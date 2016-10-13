@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/test/base/testing_profile.h"
-#include "device/core/mock_device_client.h"
+#include "device/base/mock_device_client.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/mock_hid_service.h"
 #include "device/usb/mock_usb_device.h"

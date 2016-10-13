@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_HID_DEVICE_MONITOR_LINUX_H_
-#define DEVICE_HID_DEVICE_MONITOR_LINUX_H_
+#ifndef DEVICE_BASE_DEVICE_MONITOR_LINUX_H_
+#define DEVICE_BASE_DEVICE_MONITOR_LINUX_H_
 
 #include <memory>
 #include <string>
@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "device/core/device_core_export.h"
+#include "device/base/device_base_export.h"
 #include "device/udev_linux/scoped_udev.h"
 
 struct udev_device;
@@ -23,7 +23,7 @@ namespace device {
 
 // This class listends for notifications from libudev about
 // connected/disconnected devices. This class is *NOT* thread-safe.
-class DEVICE_CORE_EXPORT DeviceMonitorLinux
+class DEVICE_BASE_EXPORT DeviceMonitorLinux
     : public base::MessageLoop::DestructionObserver {
  public:
   typedef base::Callback<void(udev_device* device)> EnumerateCallback;
@@ -71,4 +71,4 @@ class DEVICE_CORE_EXPORT DeviceMonitorLinux
 
 }  // namespace device
 
-#endif  // DEVICE_HID_DEVICE_MONITOR_LINUX_H_
+#endif  // DEVICE_BASE_DEVICE_MONITOR_LINUX_H_

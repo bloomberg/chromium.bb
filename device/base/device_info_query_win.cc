@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/core/device_info_query_win.h"
+#include "device/base/device_info_query_win.h"
 
 #include <stddef.h>
 #include <string.h>

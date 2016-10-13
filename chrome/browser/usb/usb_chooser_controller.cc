@@ -23,7 +23,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"

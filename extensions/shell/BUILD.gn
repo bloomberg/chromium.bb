@@ -37,7 +37,7 @@ source_set("app_shell_lib") {
     "//components/web_cache/renderer",
     "//content",
     "//content/shell:content_shell_lib",
-    "//device/core",
+    "//device/base",
     "//device/hid",
     "//extensions:extensions_resources",
     "//extensions:shell_and_test_pak",

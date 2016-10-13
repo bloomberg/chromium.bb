@@ -10,7 +10,7 @@
 #include "chrome/browser/usb/usb_chooser_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/web_contents_tester.h"
-#include "device/core/mock_device_client.h"
+#include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/public/interfaces/device_manager.mojom.h"

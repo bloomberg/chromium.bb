@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_CORE_DEVICE_INFO_QUERY_WIN_H_
-#define DEVICE_CORE_DEVICE_INFO_QUERY_WIN_H_
+#ifndef DEVICE_BASE_DEVICE_INFO_QUERY_WIN_H_
+#define DEVICE_BASE_DEVICE_INFO_QUERY_WIN_H_
 
 #include <windows.h>
 #include <setupapi.h>
@@ -11,14 +11,14 @@
 #include <string>
 
 #include "base/macros.h"
-#include "device/core/device_core_export.h"
+#include "device/base/device_base_export.h"
 
 namespace device {
 
 // Wraps HDEVINFO and SP_DEVINFO_DATA into a class that can automatically
 // release them. Provides interfaces that can add a device using its
 // device path, get device info and get device string property.
-class DEVICE_CORE_EXPORT DeviceInfoQueryWin {
+class DEVICE_BASE_EXPORT DeviceInfoQueryWin {
  public:
   DeviceInfoQueryWin();
   ~DeviceInfoQueryWin();
@@ -46,4 +46,4 @@ class DEVICE_CORE_EXPORT DeviceInfoQueryWin {
 
 }  // namespace device
 
-#endif  // DEVICE_CORE_DEVICE_INFO_QUERY_WIN_H_
+#endif  // DEVICE_BASE_DEVICE_INFO_QUERY_WIN_H_

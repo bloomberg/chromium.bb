@@ -33,7 +33,7 @@
 #include <usbiodef.h>
 
 #include "base/strings/string_util.h"
-#include "device/core/device_info_query_win.h"
+#include "device/base/device_info_query_win.h"
 #endif  // OS_WIN
 
 using net::IOBufferWithSize;

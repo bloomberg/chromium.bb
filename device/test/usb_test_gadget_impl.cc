@@ -27,7 +27,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "device/core/device_client.h"
+#include "device/base/device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"

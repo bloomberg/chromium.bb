@@ -139,8 +139,8 @@ test("device_unittests") {
       "usb/webusb_descriptors_unittest.cc",
     ]
     deps += [
-      "//device/core",
-      "//device/core:mocks",
+      "//device/base",
+      "//device/base:mocks",
       "//device/usb",
       "//device/usb:test_support",
       "//device/usb/mojo",

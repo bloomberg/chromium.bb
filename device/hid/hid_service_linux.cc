@@ -25,7 +25,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
-#include "device/core/device_monitor_linux.h"
+#include "device/base/device_monitor_linux.h"
 #include "device/hid/hid_connection_linux.h"
 #include "device/hid/hid_device_info_linux.h"
 #include "device/udev_linux/scoped_udev.h"
