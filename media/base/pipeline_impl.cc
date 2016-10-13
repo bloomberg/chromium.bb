@@ -823,10 +823,24 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
     const PipelineStatusCB& done_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  if (!demuxer_->GetStream(DemuxerStream::AUDIO) &&
-      !demuxer_->GetStream(DemuxerStream::VIDEO)) {
-    done_cb.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
-    return;
+  switch (demuxer_->GetType()) {
+    case DemuxerStreamProvider::Type::STREAM:
+      if (!demuxer_->GetStream(DemuxerStream::AUDIO) &&
+          !demuxer_->GetStream(DemuxerStream::VIDEO)) {
+        DVLOG(1) << "Error: demuxer does not have an audio or a video stream.";
+        done_cb.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
+        return;
+      }
+      break;
+
+    case DemuxerStreamProvider::Type::URL:
+      // NOTE: Empty GURL are not valid.
+      if (!demuxer_->GetUrl().is_valid()) {
+        DVLOG(1) << "Error: demuxer does not have a valid URL.";
+        done_cb.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
+        return;
+      }
+      break;
   }
 
   if (cdm_context_)
@@ -852,18 +866,31 @@ void PipelineImpl::RendererWrapper::ReportMetadata() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   PipelineMetadata metadata;
-  metadata.timeline_offset = demuxer_->GetTimelineOffset();
-  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-  if (stream) {
-    metadata.has_video = true;
-    metadata.natural_size = stream->video_decoder_config().natural_size();
-    metadata.video_rotation = stream->video_rotation();
-    metadata.video_decoder_config = stream->video_decoder_config();
-  }
-  stream = demuxer_->GetStream(DemuxerStream::AUDIO);
-  if (stream) {
-    metadata.has_audio = true;
-    metadata.audio_decoder_config = stream->audio_decoder_config();
+  DemuxerStream* stream;
+
+  switch (demuxer_->GetType()) {
+    case DemuxerStreamProvider::Type::STREAM:
+      metadata.timeline_offset = demuxer_->GetTimelineOffset();
+      stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+      if (stream) {
+        metadata.has_video = true;
+        metadata.natural_size = stream->video_decoder_config().natural_size();
+        metadata.video_rotation = stream->video_rotation();
+        metadata.video_decoder_config = stream->video_decoder_config();
+      }
+      stream = demuxer_->GetStream(DemuxerStream::AUDIO);
+      if (stream) {
+        metadata.has_audio = true;
+        metadata.audio_decoder_config = stream->audio_decoder_config();
+      }
+      break;
+
+    case DemuxerStreamProvider::Type::URL:
+      // We don't know if the MediaPlayerRender has Audio/Video until we start
+      // playing. Conservatively assume that they do.
+      metadata.has_video = true;
+      metadata.has_audio = true;
+      break;
   }
 
   main_task_runner_->PostTask(FROM_HERE, base::Bind(&PipelineImpl::OnMetadata,

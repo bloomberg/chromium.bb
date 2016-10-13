@@ -297,8 +297,10 @@ void MojoRenderer::OnVideoNaturalSizeChange(const gfx::Size& size) {
   DVLOG(2) << __FUNCTION__ << ": " << size.ToString();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  video_renderer_sink_->PaintSingleFrame(
-      video_overlay_factory_->CreateFrame(size));
+  if (video_overlay_factory_) {
+    video_renderer_sink_->PaintSingleFrame(
+        video_overlay_factory_->CreateFrame(size));
+  }
   client_->OnVideoNaturalSizeChange(size);
 }
 

@@ -206,6 +206,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   gfx::Size GetCanvasSize() const;
   void SetDeviceScaleFactor(float scale_factor);
   void setPoster(const blink::WebURL& poster) override;
+  void SetUseFallbackPath(bool use_fallback_path);
 #endif
 
   // Called from WebMediaPlayerCast.
@@ -544,6 +545,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // state will be set to YES or NO respectively if a frame is available.
   enum class CanSuspendState { UNKNOWN, YES, NO };
   CanSuspendState can_suspend_state_;
+
+  // Used for HLS playback and in certain fallback paths (e.g. on older devices
+  // that can't support the unified media pipeline).
+  GURL fallback_url_;
+  bool use_fallback_path_;
 
   // Called some-time after OnHidden() if the media was suspended in a playing
   // state as part of the call to OnHidden().

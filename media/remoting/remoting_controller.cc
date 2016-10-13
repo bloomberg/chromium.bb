@@ -103,13 +103,14 @@ void RemotingController::OnMetadataChanged(const PipelineMetadata& metadata) {
   if (!has_video_ && !has_audio_)
     return;
 
+  // On Android, when using the MediaPlayerRenderer, |has_video_| and
+  // |has_audio_| will be true, but the respective configs will be empty.
+  // We cannot make any assumptions on the validity of configs.
   if (has_video_) {
-    DCHECK(metadata.video_decoder_config.IsValidConfig());
     video_decoder_config_ = metadata.video_decoder_config;
     is_encrypted_ |= video_decoder_config_.is_encrypted();
   }
   if (has_audio_) {
-    DCHECK(metadata.audio_decoder_config.IsValidConfig());
     audio_decoder_config_ = metadata.audio_decoder_config;
     is_encrypted_ |= audio_decoder_config_.is_encrypted();
   }

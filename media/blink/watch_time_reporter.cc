@@ -38,8 +38,6 @@ WatchTimeReporter::WatchTimeReporter(bool has_audio,
       get_media_time_cb_(get_media_time_cb) {
   DCHECK(!get_media_time_cb_.is_null());
   DCHECK(has_audio_ || has_video_);
-  if (has_video_)
-    DCHECK(!initial_video_size_.IsEmpty());
 
   if (base::PowerMonitor* pm = base::PowerMonitor::Get())
     pm->AddObserver(this);
@@ -120,6 +118,9 @@ void WatchTimeReporter::OnPowerStateChange(bool on_battery_power) {
 bool WatchTimeReporter::ShouldReportWatchTime() {
   // Only report watch time for media of sufficient size with both audio and
   // video tracks present.
+  // TODO(tguilbert): HLS playback will always have an |initial_video_size_| of
+  // (0,0) and never report watchtime. Fix this as part of HLS UMA cleanup.
+  // See  crbug.com/650891.
   return has_audio_ && has_video_ &&
          initial_video_size_.height() >= kMinimumVideoSize.height() &&
          initial_video_size_.width() >= kMinimumVideoSize.width();

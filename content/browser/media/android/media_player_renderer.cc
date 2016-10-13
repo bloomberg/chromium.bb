@@ -81,6 +81,18 @@ void MediaPlayerRenderer::StartPlayingFrom(base::TimeDelta time) {
 
   media_player_->Start();
   media_player_->SeekTo(time);
+
+  // WMPI needs to receive a BUFFERING_HAVE_ENOUGH data before sending a
+  // playback_rate > 0. The MediaPlayer manages its own buffering and will pause
+  // internally if ever it runs out of data. Sending BUFFERING_HAVE_ENOUGH here
+  // is always safe.
+  //
+  // NOTE: OnBufferingUpdate is triggered whenever the media has buffered or
+  // played up to a % value between 1-100, and it's not a reliable indicator of
+  // the buffering state.
+  //
+  // TODO(tguilbert): Investigate the effect of this call on UMAs.
+  renderer_client_->OnBufferingStateChange(media::BUFFERING_HAVE_ENOUGH);
 }
 
 void MediaPlayerRenderer::SetPlaybackRate(double playback_rate) {
@@ -182,15 +194,7 @@ void MediaPlayerRenderer::OnPlaybackComplete(int player_id) {
 
 void MediaPlayerRenderer::OnMediaInterrupted(int player_id) {}
 
-void MediaPlayerRenderer::OnBufferingUpdate(int player_id, int percentage) {
-  // As per Android documentation, |percentage| actually indicates "percentage
-  // buffered or played". E.g. if we are at 50% playback and have 1%
-  // buffered, |percentage| will be equal to 51.
-  //
-  // MediaPlayer manages its own buffering and will pause internally if ever it
-  // runs out of data. Therefore, we can always return BUFFERING_HAVE_ENOUGH.
-  renderer_client_->OnBufferingStateChange(media::BUFFERING_HAVE_ENOUGH);
-}
+void MediaPlayerRenderer::OnBufferingUpdate(int player_id, int percentage) {}
 
 void MediaPlayerRenderer::OnSeekComplete(int player_id,
                                          const base::TimeDelta& current_time) {}

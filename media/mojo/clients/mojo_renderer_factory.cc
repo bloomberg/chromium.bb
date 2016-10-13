@@ -17,7 +17,6 @@ MojoRendererFactory::MojoRendererFactory(
     shell::mojom::InterfaceProvider* interface_provider)
     : get_gpu_factories_cb_(get_gpu_factories_cb),
       interface_provider_(interface_provider) {
-  DCHECK(!get_gpu_factories_cb_.is_null());
   DCHECK(interface_provider_);
 }
 
@@ -29,8 +28,14 @@ std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     AudioRendererSink* /* audio_renderer_sink */,
     VideoRendererSink* video_renderer_sink,
     const RequestSurfaceCB& /* request_surface_cb */) {
-  std::unique_ptr<VideoOverlayFactory> overlay_factory(
-      new VideoOverlayFactory(get_gpu_factories_cb_.Run()));
+  std::unique_ptr<VideoOverlayFactory> overlay_factory;
+
+  // |get_gpu_factories_cb_| can be null in the HLS/MediaPlayerRenderer case,
+  // when we do not need to create video overlays.
+  if (!get_gpu_factories_cb_.is_null()) {
+    overlay_factory =
+        base::MakeUnique<VideoOverlayFactory>(get_gpu_factories_cb_.Run());
+  }
 
   mojom::RendererPtr renderer_ptr;
   shell::GetInterface<mojom::Renderer>(interface_provider_, &renderer_ptr);

@@ -168,4 +168,10 @@ const base::Feature kVideoColorManagement{"video-color-management",
 const base::Feature kExternalClearKeyForTesting{
     "external-clear-key-for-testing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
+// Replaces WPMA by the MediaPlayerRenderer for HLS and fallback playback.
+const base::Feature kAndroidMediaPlayerRenderer{
+    "android-media-player-renderer", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace media

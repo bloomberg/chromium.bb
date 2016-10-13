@@ -94,9 +94,11 @@
 #include "device/geolocation/geolocation_service_context.h"
 #include "device/vibration/vibration_manager_impl.h"
 #include "device/wake_lock/wake_lock_service_context.h"
+#include "media/base/media_switches.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "ui/accessibility/ax_tree.h"
@@ -110,6 +112,10 @@
 #if defined(ENABLE_MOJO_CDM)
 #include "content/browser/media/android/provision_fetcher_impl.h"
 #endif
+#include "content/browser/media/android/media_player_renderer.h"
+#include "media/base/audio_renderer_sink.h"
+#include "media/base/video_renderer_sink.h"
+#include "media/mojo/services/mojo_renderer_service.h"  //nogncheck
 #endif
 
 #if defined(OS_MACOSX)
@@ -211,7 +217,26 @@ RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
 void RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView() {
   g_allow_injecting_javascript = true;
 }
-#endif
+
+void CreateMediaPlayerRenderer(
+    content::RenderFrameHost* render_frame_host,
+    mojo::InterfaceRequest<media::mojom::Renderer> request) {
+  std::unique_ptr<MediaPlayerRenderer> renderer =
+      base::MakeUnique<MediaPlayerRenderer>(render_frame_host);
+
+  // base::Unretained is safe here because the lifetime of the MediaPlayerRender
+  // is tied to the lifetime of the MojoRendererService.
+  media::MojoRendererService::InitiateSurfaceRequestCB surface_request_cb =
+      base::Bind(&MediaPlayerRenderer::InitiateScopedSurfaceRequest,
+                 base::Unretained(renderer.get()));
+
+  media::MojoRendererService::Create(
+      nullptr,  // CDMs are not supported.
+      nullptr,  // Manages its own audio_sink.
+      nullptr,  // Does not use video_sink. See StreamTextureWrapper instead.
+      std::move(renderer), surface_request_cb, std::move(request));
+}
+#endif  // defined(OS_ANDROID)
 
 // static
 RenderFrameHostImpl* RenderFrameHostImpl::FromID(int process_id,
@@ -2180,10 +2205,16 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   GetInterfaceRegistry()->AddInterface(
       GetGlobalJavaInterfaces()
           ->CreateInterfaceFactory<device::VibrationManager>());
+
+  if (base::FeatureList::IsEnabled(media::kAndroidMediaPlayerRenderer)) {
+    // Creates a MojoRendererService, passing it a MediaPlayerRender.
+    GetInterfaceRegistry()->AddInterface<media::mojom::Renderer>(base::Bind(
+        &content::CreateMediaPlayerRenderer, base::Unretained(this)));
+  }
 #else
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&device::VibrationManagerImpl::Create));
-#endif
+#endif  // defined(OS_ANDROID)
 
   bool enable_web_bluetooth = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableWebBluetooth);

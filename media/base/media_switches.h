@@ -88,6 +88,9 @@ MEDIA_EXPORT extern const base::Feature kUseNewMediaCache;
 MEDIA_EXPORT extern const base::Feature kVideoColorManagement;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
 
+#if defined(OS_ANDROID)
+MEDIA_EXPORT extern const base::Feature kAndroidMediaPlayerRenderer;
+#endif  // defined(OS_ANDROID)
 }  // namespace media
 
 #endif  // MEDIA_BASE_MEDIA_SWITCHES_H_

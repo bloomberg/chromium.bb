@@ -35,6 +35,7 @@
 #include "media/base/media_keys.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_url_demuxer.h"
 #include "media/base/text_renderer.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
@@ -226,6 +227,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       overlay_surface_id_(SurfaceManager::kNoSurfaceID),
       suppress_destruction_errors_(false),
       can_suspend_state_(CanSuspendState::UNKNOWN),
+      use_fallback_path_(false),
       is_encrypted_(false),
       underflow_count_(0),
       observer_(params.media_observer()) {
@@ -360,6 +362,9 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
 
   // Set subresource URL for crash reporting.
   base::debug::SetCrashKeyValue("subresource_url", gurl.spec());
+
+  if (use_fallback_path_)
+    fallback_url_ = gurl;
 
   load_type_ = load_type;
 
@@ -1396,6 +1401,10 @@ void WebMediaPlayerImpl::SetDeviceScaleFactor(float scale_factor) {
 void WebMediaPlayerImpl::setPoster(const blink::WebURL& poster) {
   cast_impl_.setPoster(poster);
 }
+
+void WebMediaPlayerImpl::SetUseFallbackPath(bool use_fallback_path) {
+  use_fallback_path_ = use_fallback_path;
+}
 #endif  // defined(OS_ANDROID)  // WMPI_CAST
 
 void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
@@ -1409,7 +1418,7 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
   //
   // TODO(tguilbert): Remove this code path once we have the ability to host a
   // MediaPlayer within a Mojo media renderer.  http://crbug.com/580626
-  if (data_source_) {
+  if (data_source_ && !use_fallback_path_) {
     const GURL url_after_redirects = data_source_->GetUrlAfterRedirects();
     if (MediaCodecUtil::IsHLSURL(url_after_redirects)) {
       client_->requestReload(url_after_redirects);
@@ -1458,6 +1467,7 @@ void WebMediaPlayerImpl::OnSurfaceRequested(
     const SurfaceCreatedCB& surface_created_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(surface_manager_);
+  DCHECK(!use_fallback_path_);
 
   // A null callback indicates that the decoder is going away.
   if (surface_created_cb.is_null()) {
@@ -1504,6 +1514,12 @@ void WebMediaPlayerImpl::StartPipeline() {
 
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnEncryptedMediaInitData);
+
+  if (use_fallback_path_) {
+    demuxer_.reset(new MediaUrlDemuxer(media_task_runner_, fallback_url_));
+    pipeline_controller_.Start(demuxer_.get(), this, false, false);
+    return;
+  }
 
   // Figure out which demuxer to use.
   if (load_type_ != LoadTypeMediaSource) {

@@ -221,11 +221,14 @@
 
 #include "content/renderer/android/app_web_message_port_client.h"
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"
+#include "content/renderer/media/android/media_player_renderer_client_factory.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/renderer_surface_view_manager.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
+#include "content/renderer/media/android/stream_texture_wrapper_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "media/base/android/media_codec_util.h"
+#include "media/mojo/clients/mojo_renderer_factory.h"  // nogncheck
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #endif
 
@@ -2735,25 +2738,43 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
                  base::Unretained(blink::mainThreadIsolate())),
       initial_cdm, media_surface_manager_, media_observer);
 
+  bool use_fallback_path = false;
 #if defined(OS_ANDROID)
-  if (!UseWebMediaPlayerImpl(url)) {
+  use_fallback_path = !UseWebMediaPlayerImpl(url);
+
+  if (use_fallback_path &&
+      !base::FeatureList::IsEnabled(media::kAndroidMediaPlayerRenderer)) {
     return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
   }
 #endif  // defined(OS_ANDROID)
 
+  std::unique_ptr<media::RendererFactory> media_renderer_factory;
+  if (use_fallback_path) {
+#if defined(OS_ANDROID)
+    auto mojo_renderer_factory = base::MakeUnique<media::MojoRendererFactory>(
+        media::MojoRendererFactory::GetGpuFactoriesCB(),
+        GetRemoteInterfaces()->get());
+
+    media_renderer_factory = base::MakeUnique<MediaPlayerRendererClientFactory>(
+        render_thread->compositor_task_runner(),
+        std::move(mojo_renderer_factory),
+        base::Bind(&StreamTextureWrapperImpl::Create,
+                   render_thread->GetStreamTexureFactory(),
+                   base::ThreadTaskRunnerHandle::Get()));
+#endif  // defined(OS_ANDROID)
+  } else {
 #if defined(ENABLE_MOJO_RENDERER)
-  std::unique_ptr<media::RendererFactory> media_renderer_factory(
-      new media::MojoRendererFactory(
-          base::Bind(&RenderThreadImpl::GetGpuFactories,
-                     base::Unretained(render_thread)),
-          GetMediaInterfaceProvider()));
+    media_renderer_factory = base::MakeUnique<media::MojoRendererFactory>(
+        base::Bind(&RenderThreadImpl::GetGpuFactories,
+                   base::Unretained(render_thread)),
+        GetMediaInterfaceProvider());
 #else
-  std::unique_ptr<media::RendererFactory> media_renderer_factory(
-      new media::DefaultRendererFactory(
-          media_log, GetDecoderFactory(),
-          base::Bind(&RenderThreadImpl::GetGpuFactories,
-                     base::Unretained(render_thread))));
+    media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
+        media_log, GetDecoderFactory(),
+        base::Bind(&RenderThreadImpl::GetGpuFactories,
+                   base::Unretained(render_thread)));
 #endif
+  }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   media::RemotingController* remoting_controller_ptr =
@@ -2773,13 +2794,13 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #if defined(OS_ANDROID)  // WMPI_CAST
   media_player->SetMediaPlayerManager(GetMediaPlayerManager());
   media_player->SetDeviceScaleFactor(render_view_->GetDeviceScaleFactor());
+  media_player->SetUseFallbackPath(use_fallback_path);
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   remoting_controller_ptr->SetSwitchRendererCallback(base::Bind(
       &media::WebMediaPlayerImpl::ScheduleRestart, media_player->AsWeakPtr()));
 #endif
-
   return media_player;
 }
 
@@ -6297,7 +6318,6 @@ RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
     media_player_manager_ = new RendererMediaPlayerManager(this);
   return media_player_manager_;
 }
-
 #endif  // defined(OS_ANDROID)
 
 media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
