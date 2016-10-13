@@ -264,8 +264,9 @@ bool DragController::performDrag(DragData* dragData) {
             isHTMLPlugInElement(*result.innerNode()) &&
             toHTMLPlugInElement(result.innerNode())->canProcessDrag();
       }
-      dataTransfer->setAccessPolicy(
-          DataTransferNumb);  // Invalidate clipboard here for security
+
+      // Invalidate clipboard here for security.
+      dataTransfer->setAccessPolicy(DataTransferNumb);
     }
     if (preventedDefault) {
       m_documentUnderMouse = nullptr;
@@ -285,9 +286,10 @@ bool DragController::performDrag(DragData* dragData) {
   if (operationForLoad(dragData) == DragOperationNone)
     return false;
 
-  if (m_page->settings().navigateOnDragDrop())
-    m_page->deprecatedLocalMainFrame()->loader().load(
+  if (m_page->settings().navigateOnDragDrop()) {
+    m_page->mainFrame()->navigate(
         FrameLoadRequest(nullptr, ResourceRequest(dragData->asURL())));
+  }
   return true;
 }
 
