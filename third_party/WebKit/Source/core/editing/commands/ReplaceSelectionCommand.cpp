@@ -627,6 +627,8 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(
                        AtomicString(newInlineStyle->style()->asText()));
     }
 
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     // FIXME: Tolerate differences in id, class, and style attributes.
     if (element->parentNode() && isNonTableCellHTMLBlockElement(element) &&
         areIdenticalElements(*element, *element->parentNode()) &&
@@ -1475,6 +1477,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
       return;
   }
 
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
   if (endBR &&
       (plainTextFragment ||
        (shouldRemoveEndBR(endBR, originalVisPosBeforeEndBR) &&
@@ -1611,6 +1614,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
           if (editingState->isAborted())
             return;
         }
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
         setEndingSelection(
             VisiblePosition::afterNode(insertedNodes.lastLeafInserted()));
         // Select up to the paragraph separator that was added.
@@ -1625,6 +1629,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
           insertNodeAfter(newListItem, enclosingBlockElement, editingState);
           if (editingState->isAborted())
             return;
+          document().updateStyleAndLayoutIgnorePendingStylesheets();
           setEndingSelection(VisiblePosition::firstPositionInNode(newListItem));
         } else {
           // Use a default paragraph element (a plain div) for the empty

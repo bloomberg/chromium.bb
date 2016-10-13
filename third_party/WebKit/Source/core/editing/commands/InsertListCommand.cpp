@@ -361,6 +361,7 @@ bool InsertListCommand::doApplyForSingleParagraph(
       if (editingState->isAborted())
         return false;
 
+      document().updateStyleAndLayoutIgnorePendingStylesheets();
       Node* firstChildInList =
           enclosingListChild(VisiblePosition::firstPositionInNode(listElement)
                                  .deepEquivalent()
@@ -401,6 +402,7 @@ bool InsertListCommand::doApplyForSingleParagraph(
         currentSelection.setEnd(newList, Position::lastOffsetInNode(newList),
                                 IGNORE_EXCEPTION);
 
+      document().updateStyleAndLayoutIgnorePendingStylesheets();
       setEndingSelection(VisiblePosition::firstPositionInNode(newList));
 
       return true;

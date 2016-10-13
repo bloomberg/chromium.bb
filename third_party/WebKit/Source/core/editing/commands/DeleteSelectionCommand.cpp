@@ -56,6 +56,7 @@ static bool isTableRowEmpty(Node* row) {
   if (!isHTMLTableRowElement(row))
     return false;
 
+  row->document().updateStyleAndLayoutIgnorePendingStylesheets();
   for (Node* child = row->firstChild(); child; child = child->nextSibling()) {
     if (isTableCell(child) && !isTableCellEmpty(child))
       return false;
@@ -414,11 +415,13 @@ bool DeleteSelectionCommand::handleSpecialCaseBRDelete(
   // FIXME: This code doesn't belong in here.
   // We detect the case where the start is an empty line consisting of BR not
   // wrapped in a block element.
-  if (upstreamStartIsBR && downstreamStartIsBR &&
-      !(isStartOfBlock(VisiblePosition::beforeNode(nodeAfterUpstreamStart)) &&
-        isEndOfBlock(VisiblePosition::afterNode(nodeAfterUpstreamStart)))) {
-    m_startsAtEmptyLine = true;
-    m_endingPosition = m_downstreamEnd;
+  if (upstreamStartIsBR && downstreamStartIsBR) {
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    if (!(isStartOfBlock(VisiblePosition::beforeNode(nodeAfterUpstreamStart)) &&
+          isEndOfBlock(VisiblePosition::afterNode(nodeAfterUpstreamStart)))) {
+      m_startsAtEmptyLine = true;
+      m_endingPosition = m_downstreamEnd;
+    }
   }
 
   return false;
@@ -490,6 +493,7 @@ void DeleteSelectionCommand::removeNode(
     return;
   }
 
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
   if (node == m_startBlock) {
     VisiblePosition previous = previousPositionOf(
         VisiblePosition::firstPositionInNode(m_startBlock.get()));
