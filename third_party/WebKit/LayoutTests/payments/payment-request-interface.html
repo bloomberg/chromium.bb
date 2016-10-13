@@ -156,6 +156,12 @@ test(function() {
 }, 'Shipping option identifier should default to the last selected shipping option, if multiple are selected.');
 
 test(function() {
+    var shippingOptions = [buildItem({'id': 'express', 'selected': false}), buildItem({'id': 'express', 'selected': true})];
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': shippingOptions}, {'requestShipping': true});
+    assert_equals(null, request.shippingOption);
+}, 'No shipping option selected for duplicate shipping option identifiers.');
+
+test(function() {
     var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': false});
     assert_equals(null, request.shippingType);
 }, 'Shipping type should be null if shipping is explicitly not requested.');
@@ -264,10 +270,6 @@ generate_tests(assert_throws, [
     }],
     ['Duplicate supported payment method identifiers should throw TypeError.', null, function() {
         new PaymentRequest([{'supportedMethods': ['foo']}, {'supportedMethods': ['foo']}], buildDetails(), {})
-    }],
-    ['Duplicate shipping option identifiers should throw TypeError.', null, function() {
-        var shippingOptions = [buildItem({'id': 'express', 'selected': false}), buildItem({'id': 'express', 'selected': true})];
-        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': shippingOptions}, {'requestShipping': true})
     }],
     ['Absence of total should throw TypeError.', null, function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {'displayItems': [buildItem()]})

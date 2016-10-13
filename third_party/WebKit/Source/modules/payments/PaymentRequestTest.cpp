@@ -598,5 +598,46 @@ TEST(PaymentRequestTest, NoExceptionWithErrorMessageInUpdate) {
   EXPECT_FALSE(scope.getExceptionState().hadException());
 }
 
+TEST(PaymentRequestTest,
+     ShouldResolveWithEmptyShippingOptionsIfIDsOfShippingOptionsAreDuplicated) {
+  V8TestingScope scope;
+  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+  makePaymentRequestOriginSecure(scope.document());
+  PaymentDetails details;
+  details.setTotal(buildPaymentItemForTest());
+  HeapVector<PaymentShippingOption> shippingOptions(2);
+  shippingOptions[0] = buildShippingOptionForTest(
+      PaymentTestDataId, PaymentTestOverwriteValue, "standard");
+  shippingOptions[0].setSelected(true);
+  shippingOptions[1] = buildShippingOptionForTest(
+      PaymentTestDataId, PaymentTestOverwriteValue, "standard");
+  details.setShippingOptions(shippingOptions);
+  PaymentOptions options;
+  options.setRequestShipping(true);
+  PaymentRequest* request = PaymentRequest::create(
+      scope.getScriptState(), buildPaymentMethodDataForTest(), details, options,
+      scope.getExceptionState());
+  EXPECT_FALSE(scope.getExceptionState().hadException());
+  EXPECT_TRUE(request->shippingOption().isNull());
+  request->show(scope.getScriptState())
+      .then(funcs.expectNoCall(), funcs.expectNoCall());
+  String detailWithShippingOptions =
+      "{\"total\": {\"label\": \"Total\", \"amount\": {\"currency\": \"USD\", "
+      "\"value\": \"5.00\"}},"
+      "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": "
+      "\"Standard shipping\", \"amount\": {\"currency\": \"USD\", \"value\": "
+      "\"5.00\"}, \"selected\": true}, {\"id\": \"standardShippingOption\", "
+      "\"label\": \"Standard shipping\", \"amount\": {\"currency\": \"USD\", "
+      "\"value\": \"5.00\"}, \"selected\": true}]}";
+
+  request->onUpdatePaymentDetails(ScriptValue::from(
+      scope.getScriptState(),
+      fromJSONString(scope.getScriptState(), detailWithShippingOptions,
+                     scope.getExceptionState())));
+
+  EXPECT_FALSE(scope.getExceptionState().hadException());
+  EXPECT_TRUE(request->shippingOption().isNull());
+}
+
 }  // namespace
 }  // namespace blink

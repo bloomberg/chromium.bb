@@ -223,8 +223,8 @@ void validateDisplayItems(const HeapVector<PaymentItem>& items,
   }
 }
 
-void validateShippingOptions(const HeapVector<PaymentShippingOption>& options,
-                             ExceptionState& exceptionState) {
+void validateAndFixupShippingOptions(HeapVector<PaymentShippingOption>& options,
+                                     ExceptionState& exceptionState) {
   HashSet<String> uniqueIds;
   for (const auto& option : options) {
     if (!option.hasId() || option.id().isEmpty()) {
@@ -233,8 +233,7 @@ void validateShippingOptions(const HeapVector<PaymentShippingOption>& options,
     }
 
     if (uniqueIds.contains(option.id())) {
-      exceptionState.throwTypeError(
-          "Duplicate shipping option identifiers are not allowed");
+      options = HeapVector<PaymentShippingOption>();
       return;
     }
     uniqueIds.add(option.id());
@@ -291,8 +290,8 @@ void validatePaymentDetailsModifiers(
   }
 }
 
-void validatePaymentDetails(const PaymentDetails& details,
-                            ExceptionState& exceptionState) {
+void validateAndFixupPaymentDetails(PaymentDetails& details,
+                                    ExceptionState& exceptionState) {
   if (!details.hasTotal()) {
     exceptionState.throwTypeError("Must specify total");
     return;
@@ -314,7 +313,10 @@ void validatePaymentDetails(const PaymentDetails& details,
   }
 
   if (details.hasShippingOptions()) {
-    validateShippingOptions(details.shippingOptions(), exceptionState);
+    HeapVector<PaymentShippingOption> fixedShippingOptions =
+        details.shippingOptions();
+    validateAndFixupShippingOptions(fixedShippingOptions, exceptionState);
+    details.setShippingOptions(fixedShippingOptions);
     if (exceptionState.hadException())
       return;
   }
@@ -524,7 +526,7 @@ void PaymentRequest::onUpdatePaymentDetails(
     return;
   }
 
-  validatePaymentDetails(details, exceptionState);
+  validateAndFixupPaymentDetails(details, exceptionState);
   if (exceptionState.hadException()) {
     m_showResolver->reject(
         DOMException::create(SyntaxError, exceptionState.message()));
@@ -589,17 +591,18 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
     return;
   }
 
-  validatePaymentDetails(details, exceptionState);
+  PaymentDetails fixedDetails(details);
+  validateAndFixupPaymentDetails(fixedDetails, exceptionState);
   if (exceptionState.hadException())
     return;
 
-  if (details.hasError() && !details.error().isEmpty()) {
+  if (fixedDetails.hasError() && !fixedDetails.error().isEmpty()) {
     exceptionState.throwTypeError("Error value should be empty");
     return;
   }
 
   if (m_options.requestShipping()) {
-    m_shippingOption = getSelectedShippingOption(details);
+    m_shippingOption = getSelectedShippingOption(fixedDetails);
     m_shippingType = getValidShippingType(m_options.shippingType());
   }
 
@@ -612,7 +615,7 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
       m_clientBinding.CreateInterfacePtrAndBind(),
       mojo::WTFArray<mojom::blink::PaymentMethodDataPtr>::From(
           validatedMethodData),
-      mojom::blink::PaymentDetails::From(details),
+      mojom::blink::PaymentDetails::From(fixedDetails),
       mojom::blink::PaymentOptions::From(m_options));
 }
 
