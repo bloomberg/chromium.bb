@@ -38,11 +38,11 @@
 #include "../platform/WebPoint.h"
 #include "../platform/WebRect.h"
 #include "../platform/WebSize.h"
+#include "../platform/WebTextInputInfo.h"
 #include "../platform/WebTopControlsState.h"
 #include "WebCompositionUnderline.h"
 #include "WebRange.h"
 #include "WebTextDirection.h"
-#include "WebTextInputInfo.h"
 
 namespace blink {
 

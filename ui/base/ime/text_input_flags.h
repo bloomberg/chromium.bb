@@ -8,7 +8,7 @@
 namespace ui {
 
 // Intentionally keep in sync with blink::WebTextInputFlags defined in:
-// third_party/WebKit/public/web/WebTextInputType.h
+// third_party/WebKit/public/platform/WebTextInputType.h
 enum TextInputFlags {
   TEXT_INPUT_FLAG_NONE = 0,
   TEXT_INPUT_FLAG_AUTOCOMPLETE_ON = 1 << 0,

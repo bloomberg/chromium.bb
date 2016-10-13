@@ -324,6 +324,7 @@ component("platform") {
     "WebIconSizesParser.cpp",
     "WebScheduler.cpp",
     "WebTaskRunner.cpp",
+    "WebTextInputInfo.cpp",
     "WebThread.cpp",
     "WebThreadSupportingGC.cpp",
     "WebThreadSupportingGC.h",

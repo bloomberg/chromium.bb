@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebTextInputInfo.h"
+#include "public/platform/WebTextInputInfo.h"
 
 namespace blink {
 

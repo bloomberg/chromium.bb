@@ -8,7 +8,7 @@
 namespace ui {
 
 // Intentionally keep sync with blink::WebTextInputType defined in:
-// third_party/WebKit/public/web/WebTextInputType.h
+// third_party/WebKit/public/platform/WebTextInputType.h
 //
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.base.ime

@@ -244,7 +244,6 @@ component("web") {
     "WebTextCheckingCompletionImpl.cpp",
     "WebTextCheckingCompletionImpl.h",
     "WebTextCheckingResult.cpp",
-    "WebTextInputInfo.cpp",
     "WebUserGestureIndicator.cpp",
     "WebUserGestureToken.cpp",
     "WebUserMediaRequest.cpp",

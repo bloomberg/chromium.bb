@@ -26,7 +26,8 @@
 #ifndef WebTextInputInfo_h
 #define WebTextInputInfo_h
 
-#include "../platform/WebString.h"
+#include "WebCommon.h"
+#include "WebString.h"
 #include "WebTextInputType.h"
 
 namespace blink {
@@ -56,7 +57,7 @@ struct WebTextInputInfo {
   // This string is lower-case.
   WebString inputMode;
 
-  BLINK_EXPORT bool equals(const WebTextInputInfo&) const;
+  BLINK_PLATFORM_EXPORT bool equals(const WebTextInputInfo&) const;
 
   WebTextInputInfo()
       : type(WebTextInputTypeNone),

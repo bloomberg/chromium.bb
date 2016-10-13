@@ -76,7 +76,7 @@ if (is_android) {
     sources = [
       "./platform/WebDisplayMode.h",
       "./platform/WebInputEvent.h",
-      "./web/WebTextInputType.h",
+      "./platform/WebTextInputType.h",
     ]
   }
 
@@ -295,6 +295,8 @@ source_set("blink_headers") {
     "platform/WebString.h",
     "platform/WebSuspendableTask.h",
     "platform/WebTaskRunner.h",
+    "platform/WebTextInputInfo.h",
+    "platform/WebTextInputType.h",
     "platform/WebTextRun.h",
     "platform/WebThemeEngine.h",
     "platform/WebThread.h",
@@ -553,8 +555,6 @@ source_set("blink_headers") {
     "web/WebTextCheckingResult.h",
     "web/WebTextDecorationType.h",
     "web/WebTextDirection.h",
-    "web/WebTextInputInfo.h",
-    "web/WebTextInputType.h",
     "web/WebTouchAction.h",
     "web/WebTreeScopeType.h",
     "web/WebURLLoaderOptions.h",
