@@ -394,9 +394,6 @@ static_library("opus") {
       deps = [
         ":convert_rtcd_assembler",
       ]
-
-      configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
-      cflags += [ "-mfpu=neon" ]
     }
   }
 }
