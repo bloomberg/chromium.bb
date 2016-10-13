@@ -35,7 +35,7 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   typedef base::Callback<void(blink::mojom::WebBluetoothRequestDeviceOptionsPtr,
                               const std::string& device_address)>
       SuccessCallback;
-  typedef base::Callback<void(blink::mojom::WebBluetoothError error)>
+  typedef base::Callback<void(blink::mojom::WebBluetoothResult result)>
       ErrorCallback;
 
   // |web_bluetooth_service_| service that owns this class.
@@ -112,7 +112,7 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   // Helper function to asynchronously run success_callback_.
   void PostSuccessCallback(const std::string& device_address);
   // Helper function to asynchronously run error_callback_.
-  void PostErrorCallback(blink::mojom::WebBluetoothError error);
+  void PostErrorCallback(blink::mojom::WebBluetoothResult result);
 
   // If true all new instances of this class will have a scan duration of 0.
   static bool use_test_scan_duration_;

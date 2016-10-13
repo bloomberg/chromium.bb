@@ -13,13 +13,13 @@ namespace blink {
 DOMException* BluetoothError::take(
     ScriptPromiseResolver*,
     int32_t
-        webError /* Corresponds to WebBluetoothError in web_bluetooth.mojom */) {
-  switch (static_cast<mojom::blink::WebBluetoothError>(webError)) {
-    case mojom::blink::WebBluetoothError::SUCCESS:
+        webError /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */) {
+  switch (static_cast<mojom::blink::WebBluetoothResult>(webError)) {
+    case mojom::blink::WebBluetoothResult::SUCCESS:
       ASSERT_NOT_REACHED();
       return DOMException::create(UnknownError);
-#define MAP_ERROR(enumeration, name, message)        \
-  case mojom::blink::WebBluetoothError::enumeration: \
+#define MAP_ERROR(enumeration, name, message)         \
+  case mojom::blink::WebBluetoothResult::enumeration: \
     return DOMException::create(name, message)
 
       // InvalidModificationErrors:

@@ -69,7 +69,7 @@ class ConnectCallback : public WebBluetoothRemoteGATTServerConnectCallbacks {
 
   void onError(
       int32_t
-          error /* Corresponds to WebBluetoothError in web_bluetooth.mojom */)
+          error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
       override {
     if (!m_resolver->getExecutionContext() ||
         m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
@@ -156,7 +156,7 @@ class GetPrimaryServicesCallback
 
   void onError(
       int32_t
-          error /* Corresponds to WebBluetoothError in web_bluetooth.mojom */)
+          error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
       override {
     if (!m_resolver->getExecutionContext() ||
         m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())

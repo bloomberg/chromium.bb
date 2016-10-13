@@ -225,7 +225,7 @@ BluetoothDeviceChooserController::BluetoothDeviceChooserController(
 BluetoothDeviceChooserController::~BluetoothDeviceChooserController() {
   if (chooser_) {
     DCHECK(!error_callback_.is_null());
-    error_callback_.Run(blink::mojom::WebBluetoothError::CHOOSER_CANCELLED);
+    error_callback_.Run(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
   }
 }
 
@@ -256,7 +256,7 @@ void BluetoothDeviceChooserController::GetDevice(
     RecordRequestDeviceOutcome(
         UMARequestDeviceOutcome::BLACKLISTED_SERVICE_IN_FILTER);
     PostErrorCallback(
-        blink::mojom::WebBluetoothError::REQUEST_DEVICE_WITH_BLACKLISTED_UUID);
+        blink::mojom::WebBluetoothResult::REQUEST_DEVICE_WITH_BLACKLISTED_UUID);
     return;
   }
   BluetoothBlacklist::Get().RemoveExcludedUUIDs(options_.get());
@@ -270,7 +270,7 @@ void BluetoothDeviceChooserController::GetDevice(
   // matching origins. When relaxing this, take care to handle non-sandboxed
   // unique origins.
   if (!embedding_origin.IsSameOriginWith(requesting_origin)) {
-    PostErrorCallback(blink::mojom::WebBluetoothError::
+    PostErrorCallback(blink::mojom::WebBluetoothResult::
                           REQUEST_DEVICE_FROM_CROSS_ORIGIN_IFRAME);
     return;
   }
@@ -282,7 +282,7 @@ void BluetoothDeviceChooserController::GetDevice(
     VLOG(1) << "Bluetooth Adapter not present. Can't serve requestDevice.";
     RecordRequestDeviceOutcome(
         UMARequestDeviceOutcome::BLUETOOTH_ADAPTER_NOT_PRESENT);
-    PostErrorCallback(blink::mojom::WebBluetoothError::NO_BLUETOOTH_ADAPTER);
+    PostErrorCallback(blink::mojom::WebBluetoothResult::NO_BLUETOOTH_ADAPTER);
     return;
   }
 
@@ -292,7 +292,7 @@ void BluetoothDeviceChooserController::GetDevice(
     case ContentBrowserClient::AllowWebBluetoothResult::BLOCK_POLICY: {
       RecordRequestDeviceOutcome(
           UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_POLICY_DISABLED);
-      PostErrorCallback(blink::mojom::WebBluetoothError::
+      PostErrorCallback(blink::mojom::WebBluetoothResult::
                             CHOOSER_NOT_SHOWN_API_LOCALLY_DISABLED);
       return;
     }
@@ -305,7 +305,7 @@ void BluetoothDeviceChooserController::GetDevice(
       // Block requests.
       RecordRequestDeviceOutcome(
           UMARequestDeviceOutcome::BLUETOOTH_GLOBALLY_DISABLED);
-      PostErrorCallback(blink::mojom::WebBluetoothError::
+      PostErrorCallback(blink::mojom::WebBluetoothResult::
                             CHOOSER_NOT_SHOWN_API_GLOBALLY_DISABLED);
       return;
     }
@@ -324,7 +324,7 @@ void BluetoothDeviceChooserController::GetDevice(
 
   if (!chooser_.get()) {
     PostErrorCallback(
-        blink::mojom::WebBluetoothError::WEB_BLUETOOTH_NOT_SUPPORTED);
+        blink::mojom::WebBluetoothResult::WEB_BLUETOOTH_NOT_SUPPORTED);
     return;
   }
 
@@ -470,27 +470,27 @@ void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
       return;
     case BluetoothChooser::Event::DENIED_PERMISSION:
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
-      PostErrorCallback(blink::mojom::WebBluetoothError::
+      PostErrorCallback(blink::mojom::WebBluetoothResult::
                             CHOOSER_NOT_SHOWN_USER_DENIED_PERMISSION_TO_SCAN);
       break;
     case BluetoothChooser::Event::CANCELLED:
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
-      PostErrorCallback(blink::mojom::WebBluetoothError::CHOOSER_CANCELLED);
+      PostErrorCallback(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
       break;
     case BluetoothChooser::Event::SHOW_OVERVIEW_HELP:
       VLOG(1) << "Overview Help link pressed.";
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
-      PostErrorCallback(blink::mojom::WebBluetoothError::CHOOSER_CANCELLED);
+      PostErrorCallback(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
       break;
     case BluetoothChooser::Event::SHOW_ADAPTER_OFF_HELP:
       VLOG(1) << "Adapter Off Help link pressed.";
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
-      PostErrorCallback(blink::mojom::WebBluetoothError::CHOOSER_CANCELLED);
+      PostErrorCallback(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
       break;
     case BluetoothChooser::Event::SHOW_NEED_LOCATION_HELP:
       VLOG(1) << "Need Location Help link pressed.";
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
-      PostErrorCallback(blink::mojom::WebBluetoothError::CHOOSER_CANCELLED);
+      PostErrorCallback(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
       break;
     case BluetoothChooser::Event::SELECTED:
       PostSuccessCallback(device_address);
@@ -511,7 +511,7 @@ void BluetoothDeviceChooserController::PostSuccessCallback(
 }
 
 void BluetoothDeviceChooserController::PostErrorCallback(
-    blink::mojom::WebBluetoothError error) {
+    blink::mojom::WebBluetoothResult error) {
   if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(error_callback_, error))) {
     LOG(WARNING) << "No TaskRunner.";

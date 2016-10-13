@@ -149,7 +149,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
       const std::string& device_id);
   void OnGetDeviceFailed(const RequestDeviceCallback& callback,
-                         blink::mojom::WebBluetoothError error);
+                         blink::mojom::WebBluetoothResult result);
 
   // Callbacks for BluetoothDevice::CreateGattConnection.
   void OnCreateGATTConnectionSuccess(

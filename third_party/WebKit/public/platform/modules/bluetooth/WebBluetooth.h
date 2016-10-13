@@ -24,38 +24,38 @@ struct WebRequestDeviceOptions;
 // Success and failure callbacks for requestDevice.
 using WebBluetoothRequestDeviceCallbacks = WebCallbacks<
     std::unique_ptr<WebBluetoothDeviceInit>,
-    int32_t /* Corresponds to WebBluetoothError in web_bluetooth.mojom */>;
+    int32_t /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */>;
 
 // Success and failure callbacks for GattServer.connect().
 using WebBluetoothRemoteGATTServerConnectCallbacks = WebCallbacks<
     void,
-    int32_t /* Corresponds to WebBluetoothError in web_bluetooth.mojom */>;
+    int32_t /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */>;
 
 // Success and failure callbacks for getPrimaryService(s).
 using WebBluetoothGetPrimaryServicesCallbacks = WebCallbacks<
     const WebVector<WebBluetoothRemoteGATTService*>&,
-    int32_t /* Corresponds to WebBluetoothError in web_bluetooth.mojom */>;
+    int32_t /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */>;
 
 // Success and failure callbacks for getCharacteristic(s).
 using WebBluetoothGetCharacteristicsCallbacks = WebCallbacks<
     const WebVector<WebBluetoothRemoteGATTCharacteristicInit*>&,
-    int32_t /* Corresponds to WebBluetoothError in web_bluetooth.mojom */>;
+    int32_t /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */>;
 
 // Success and failure callbacks for readValue.
 using WebBluetoothReadValueCallbacks = WebCallbacks<
     const WebVector<uint8_t>&,
-    int32_t /* Corresponds to WebBluetoothError in web_bluetooth.mojom */>;
+    int32_t /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */>;
 
 // Success and failure callbacks for writeValue.
 using WebBluetoothWriteValueCallbacks = WebCallbacks<
     const WebVector<uint8_t>&,
-    int32_t /* Corresponds to WebBluetoothError in web_bluetooth.mojom */>;
+    int32_t /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */>;
 
 // Success and failure callbacks for characteristic.startNotifications and
 // characteristic.stopNotifications.
 using WebBluetoothNotificationsCallbacks = WebCallbacks<
     void,
-    int32_t /* Corresponds to WebBluetoothError in web_bluetooth.mojom */>;
+    int32_t /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */>;
 
 class WebBluetooth {
  public:

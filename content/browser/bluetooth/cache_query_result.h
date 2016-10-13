@@ -27,21 +27,22 @@ struct CacheQueryResult {
 
   ~CacheQueryResult() {}
 
-  blink::mojom::WebBluetoothError GetWebError() const {
+  blink::mojom::WebBluetoothResult GetWebResult() const {
     switch (outcome) {
       case CacheQueryOutcome::SUCCESS:
       case CacheQueryOutcome::BAD_RENDERER:
         NOTREACHED();
-        return blink::mojom::WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
+        return blink::mojom::WebBluetoothResult::DEVICE_NO_LONGER_IN_RANGE;
       case CacheQueryOutcome::NO_DEVICE:
-        return blink::mojom::WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
+        return blink::mojom::WebBluetoothResult::DEVICE_NO_LONGER_IN_RANGE;
       case CacheQueryOutcome::NO_SERVICE:
-        return blink::mojom::WebBluetoothError::SERVICE_NO_LONGER_EXISTS;
+        return blink::mojom::WebBluetoothResult::SERVICE_NO_LONGER_EXISTS;
       case CacheQueryOutcome::NO_CHARACTERISTIC:
-        return blink::mojom::WebBluetoothError::CHARACTERISTIC_NO_LONGER_EXISTS;
+        return blink::mojom::WebBluetoothResult::
+            CHARACTERISTIC_NO_LONGER_EXISTS;
     }
     NOTREACHED();
-    return blink::mojom::WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
+    return blink::mojom::WebBluetoothResult::DEVICE_NO_LONGER_IN_RANGE;
   }
 
   device::BluetoothDevice* device = nullptr;
