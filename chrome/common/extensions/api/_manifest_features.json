@@ -45,15 +45,11 @@
     "channel": "stable",
     "extension_types": ["extension"]
   },
-  "chrome_settings_overrides": [{
+  "chrome_settings_overrides": {
     "channel": "stable",
     "extension_types": ["extension"],
-    "platforms": ["win"]
-  }, {
-    "channel": "canary",
-    "extension_types": ["extension"],
-    "platforms": ["mac"]
-  }],
+    "platforms": ["win", "mac"]
+  },
   "chrome_ui_overrides": [{
     "channel": "dev",
     "extension_types": ["extension"]
