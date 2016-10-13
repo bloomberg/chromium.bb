@@ -584,7 +584,6 @@ const char kEapRemoteCertificationProperty[] = "EAP.RemoteCertification";
 const char kEapCaCertPemProperty[] = "EAP.CACertPEM";
 const char kEapSubjectMatchProperty[] = "EAP.SubjectMatch";
 const char kErrorDetailsProperty[] = "ErrorDetails";
-const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
 const char kKeyManagementIEEE8021X[] = "IEEE8021X";
 const char kIPConfigProperty[] = "IPConfig";
 const char kL2tpIpsecCaCertPemProperty[] = "L2TPIPsec.CACertPEM";
