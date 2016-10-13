@@ -26,6 +26,10 @@ class WebServiceWorkerRegistration {
       WebCallbacks<void, const WebServiceWorkerError&>;
   using WebServiceWorkerUnregistrationCallbacks =
       WebCallbacks<bool, const WebServiceWorkerError&>;
+  using WebEnableNavigationPreloadCallbacks =
+      WebCallbacks<void, const WebServiceWorkerError&>;
+  using WebDisableNavigationPreloadCallbacks =
+      WebCallbacks<void, const WebServiceWorkerError&>;
 
   // The handle interface that retains a reference to the implementation of
   // WebServiceWorkerRegistration in the embedder and is owned by
@@ -46,6 +50,9 @@ class WebServiceWorkerRegistration {
                       WebServiceWorkerUpdateCallbacks*) {}
   virtual void unregister(WebServiceWorkerProvider*,
                           WebServiceWorkerUnregistrationCallbacks*) {}
+
+  virtual void enableNavigationPreload(WebEnableNavigationPreloadCallbacks*) {}
+  virtual void disableNavigationPreload(WebEnableNavigationPreloadCallbacks*) {}
 };
 
 }  // namespace blink

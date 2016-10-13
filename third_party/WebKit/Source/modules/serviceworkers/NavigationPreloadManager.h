@@ -11,14 +11,17 @@
 
 namespace blink {
 
+class ServiceWorkerRegistration;
+
 class NavigationPreloadManager final
     : public GarbageCollected<NavigationPreloadManager>,
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NavigationPreloadManager* create() {
-    return new NavigationPreloadManager();
+  static NavigationPreloadManager* create(
+      ServiceWorkerRegistration* registration) {
+    return new NavigationPreloadManager(registration);
   }
 
   ScriptPromise enable(ScriptState*);
@@ -26,10 +29,12 @@ class NavigationPreloadManager final
   ScriptPromise setHeaderValue(ScriptState*, const String& value);
   ScriptPromise getState(ScriptState*);
 
-  DEFINE_INLINE_TRACE() {}
+  DECLARE_TRACE();
 
  private:
-  NavigationPreloadManager();
+  explicit NavigationPreloadManager(ServiceWorkerRegistration*);
+
+  Member<ServiceWorkerRegistration> m_registration;
 };
 
 }  // namespace blink

@@ -13,6 +13,7 @@
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistrationProxy.h"
 
 namespace content {
@@ -143,6 +144,24 @@ void WebServiceWorkerRegistrationImpl::unregister(
   DCHECK(dispatcher);
   dispatcher->UnregisterServiceWorker(provider_impl->provider_id(),
                                       registration_id(), callbacks);
+}
+
+void WebServiceWorkerRegistrationImpl::enableNavigationPreload(
+    WebEnableNavigationPreloadCallbacks* callbacks) {
+  std::unique_ptr<WebEnableNavigationPreloadCallbacks> owned_callbacks(
+      callbacks);
+  // TODO(falken): Implement this.
+  owned_callbacks->onError(blink::WebServiceWorkerError(
+      blink::WebServiceWorkerError::ErrorTypeAbort, "Not implemented"));
+}
+
+void WebServiceWorkerRegistrationImpl::disableNavigationPreload(
+    WebDisableNavigationPreloadCallbacks* callbacks) {
+  std::unique_ptr<WebDisableNavigationPreloadCallbacks> owned_callbacks(
+      callbacks);
+  // TODO(falken): Implement this.
+  owned_callbacks->onError(blink::WebServiceWorkerError(
+      blink::WebServiceWorkerError::ErrorTypeAbort, "Not implemented"));
 }
 
 int64_t WebServiceWorkerRegistrationImpl::registration_id() const {

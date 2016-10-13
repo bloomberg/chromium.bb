@@ -76,7 +76,7 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(
 
 NavigationPreloadManager* ServiceWorkerRegistration::navigationPreload() {
   if (!m_navigationPreload)
-    m_navigationPreload = NavigationPreloadManager::create();
+    m_navigationPreload = NavigationPreloadManager::create(this);
   return m_navigationPreload;
 }
 
