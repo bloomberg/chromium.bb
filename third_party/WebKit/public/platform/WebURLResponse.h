@@ -114,6 +114,8 @@ class WebURLResponse {
           sctList(sctList) {}
     // All strings are human-readable values.
     WebString protocol;
+    // keyExchange is the empty string if not applicable for the connection's
+    // protocol.
     WebString keyExchange;
     // keyExchangeGroup is the empty string if not applicable for the
     // connection's key exchange.

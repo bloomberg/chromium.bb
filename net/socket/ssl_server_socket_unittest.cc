@@ -549,17 +549,19 @@ TEST_F(SSLServerSocketTest, Handshake) {
   ASSERT_TRUE(client_socket_->GetSSLInfo(&ssl_info));
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, ssl_info.cert_status);
 
-  // The default cipher suite should be ECDHE and, unless on NSS and the
-  // platform doesn't support it, an AEAD.
+  // The default cipher suite should be ECDHE and an AEAD.
   uint16_t cipher_suite =
       SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
   const char* key_exchange;
   const char* cipher;
   const char* mac;
   bool is_aead;
-  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, cipher_suite);
-  EXPECT_STREQ("ECDHE_RSA", key_exchange);
+  bool is_tls13;
+  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, &is_tls13,
+                          cipher_suite);
   EXPECT_TRUE(is_aead);
+  ASSERT_FALSE(is_tls13);
+  EXPECT_STREQ("ECDHE_RSA", key_exchange);
 }
 
 // This test makes sure the session cache is working.

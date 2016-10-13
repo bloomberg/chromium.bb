@@ -191,6 +191,26 @@ TEST(ChromeSecurityStateModelClientTest, ConnectionExplanation) {
         "strong cipher (CHACHA20_POLY1305).",
         explanation.description);
   }
+
+  // TLS 1.3 ciphers use the key exchange group exclusively.
+  net::SSLConnectionStatusSetCipherSuite(0x1301 /* TLS_AES_128_GCM_SHA256 */,
+                                         &security_info.connection_status);
+  net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_3,
+                                     &security_info.connection_status);
+  security_info.key_exchange_group = 29;  // X25519
+  {
+    content::SecurityStyleExplanations explanations;
+    ChromeSecurityStateModelClient::GetSecurityStyle(security_info,
+                                                     &explanations);
+    content::SecurityStyleExplanation explanation;
+    ASSERT_TRUE(FindSecurityStyleExplanation(
+        explanations.secure_explanations, "Secure Connection", &explanation));
+    EXPECT_EQ(
+        "The connection to this site is encrypted and authenticated using a "
+        "strong protocol (TLS 1.3), a strong key exchange (X25519), and a "
+        "strong cipher (AES_128_GCM).",
+        explanation.description);
+  }
 }
 
 }  // namespace
