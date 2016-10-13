@@ -809,7 +809,9 @@ def collect(
       total_duration += metadata.get('duration', 0)
 
       if decorate:
-        print(decorate_shard_output(swarming, index, metadata))
+        s = decorate_shard_output(swarming, index, metadata).encode(
+            'utf-8', 'replace')
+        print(s)
         if len(seen_shards) < len(task_ids):
           print('')
       else:
