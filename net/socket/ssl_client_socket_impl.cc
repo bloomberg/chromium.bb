@@ -112,8 +112,14 @@ std::unique_ptr<base::Value> NetLogPrivateKeyOperationCallback(
     case SSLPrivateKey::Type::RSA:
       type_str = "RSA";
       break;
-    case SSLPrivateKey::Type::ECDSA:
-      type_str = "ECDSA";
+    case SSLPrivateKey::Type::ECDSA_P256:
+      type_str = "ECDSA_P256";
+      break;
+    case SSLPrivateKey::Type::ECDSA_P384:
+      type_str = "ECDSA_P384";
+      break;
+    case SSLPrivateKey::Type::ECDSA_P521:
+      type_str = "ECDSA_P521";
       break;
   }
 
@@ -2009,12 +2015,16 @@ bool SSLClientSocketImpl::IsRenegotiationAllowed() const {
 int SSLClientSocketImpl::PrivateKeyTypeCallback() {
   switch (ssl_config_.client_private_key->GetType()) {
     case SSLPrivateKey::Type::RSA:
-      return EVP_PKEY_RSA;
-    case SSLPrivateKey::Type::ECDSA:
-      return EVP_PKEY_EC;
+      return NID_rsaEncryption;
+    case SSLPrivateKey::Type::ECDSA_P256:
+      return NID_X9_62_prime256v1;
+    case SSLPrivateKey::Type::ECDSA_P384:
+      return NID_secp384r1;
+    case SSLPrivateKey::Type::ECDSA_P521:
+      return NID_secp521r1;
   }
   NOTREACHED();
-  return EVP_PKEY_NONE;
+  return NID_undef;
 }
 
 size_t SSLClientSocketImpl::PrivateKeyMaxSignatureLenCallback() {

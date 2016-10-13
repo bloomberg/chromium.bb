@@ -160,7 +160,7 @@ static void OnSystemRequestCompletion(
 
   // Create an SSLPrivateKey wrapper for the private key JNI reference.
   scoped_refptr<net::SSLPrivateKey> private_key =
-      net::WrapJavaPrivateKey(private_key_ref);
+      net::WrapJavaPrivateKey(client_cert.get(), private_key_ref);
   if (!private_key) {
     LOG(ERROR) << "Could not create OpenSSL wrapper for private key";
     return;
