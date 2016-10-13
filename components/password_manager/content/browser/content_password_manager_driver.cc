@@ -174,7 +174,6 @@ void ContentPasswordManagerDriver::PasswordFormsParsed(
 
 void ContentPasswordManagerDriver::OnPasswordFormsParsedNoRenderCheck(
     const std::vector<autofill::PasswordForm>& forms) {
-  MaybeNotifyPasswordInputShownOnHttp(render_frame_host_);
   GetPasswordManager()->OnPasswordFormsParsed(this, forms);
   GetPasswordGenerationManager()->CheckIfFormClassifierShouldRun();
 }
@@ -209,9 +208,7 @@ void ContentPasswordManagerDriver::OnFocusedPasswordFormFound(
 }
 
 void ContentPasswordManagerDriver::PasswordFieldVisibleInInsecureContext() {
-  // TODO(estark): notify the WebContents that a password field was
-  // shown, which will downgrade the security UI
-  // appropriately. https://crbug.com/647560
+  MaybeNotifyPasswordInputShownOnHttp(render_frame_host_);
 }
 
 void ContentPasswordManagerDriver::DidNavigateFrame(

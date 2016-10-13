@@ -966,13 +966,9 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
 
 // Tests that when an invisible password field is present on an HTTP page
 // load, and when the command-line flag is set, the security level is
-// downgraded to HTTP_SHOW_WARNING.
-//
-// TODO(estark): this will eventually be refined so that the warning
-// will not show up for invisible password
-// inputs. https://codereview.chromium.org/2378503002/
+// *not* downgraded to HTTP_SHOW_WARNING.
 IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
-                       PasswordSecurityLevelDowngradedForInvisibleInput) {
+                       PasswordSecurityLevelNotDowngradedForInvisibleInput) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
@@ -987,13 +983,13 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
                                  "/password/invisible_password.html"));
   security_state::SecurityStateModel::SecurityInfo security_info;
   model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
+  EXPECT_EQ(security_state::SecurityStateModel::NONE,
             security_info.security_level);
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
-  EXPECT_TRUE(entry->GetSSL().content_status &
-              content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+  EXPECT_FALSE(entry->GetSSL().content_status &
+               content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
 }
 
 // Tests that when a visible password field is detected inside an iframe
