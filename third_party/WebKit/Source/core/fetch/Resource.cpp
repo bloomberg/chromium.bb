@@ -455,7 +455,7 @@ bool Resource::isEligibleForIntegrityCheck(
 void Resource::setIntegrityDisposition(
     ResourceIntegrityDisposition disposition) {
   DCHECK_NE(disposition, ResourceIntegrityDisposition::NotChecked);
-  DCHECK(m_type == Resource::Script);
+  DCHECK(m_type == Resource::Script || m_type == Resource::CSSStyleSheet);
   m_integrityDisposition = disposition;
 }
 

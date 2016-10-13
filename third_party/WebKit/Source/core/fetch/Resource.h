@@ -227,7 +227,7 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool errorOccurred() const {
     return m_status == LoadError || m_status == DecodeError;
   }
-  bool loadFailedOrCanceled() { return !m_error.isNull(); }
+  bool loadFailedOrCanceled() const { return !m_error.isNull(); }
 
   DataBufferingPolicy getDataBufferingPolicy() const {
     return m_options.dataBufferingPolicy;

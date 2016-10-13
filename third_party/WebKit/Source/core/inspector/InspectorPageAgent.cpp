@@ -231,7 +231,8 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource,
   switch (cachedResource->getType()) {
     case Resource::CSSStyleSheet:
       maybeEncodeTextContent(
-          toCSSStyleSheetResource(cachedResource)->sheetText(),
+          toCSSStyleSheetResource(cachedResource)
+              ->sheetText(CSSStyleSheetResource::MIMETypeCheck::Lax),
           cachedResource->resourceBuffer(), result, base64Encoded);
       return true;
     case Resource::Script:

@@ -429,17 +429,37 @@ void LinkStyle::setCSSStyleSheet(
   // See the comment in PendingScript.cpp about why this check is necessary
   // here, instead of in the resource fetcher. https://crbug.com/500701.
   if (!cachedStyleSheet->errorOccurred() &&
-      m_owner->fastHasAttribute(HTMLNames::integrityAttr) &&
-      cachedStyleSheet->resourceBuffer() &&
-      !SubresourceIntegrity::CheckSubresourceIntegrity(
-          *m_owner, cachedStyleSheet->resourceBuffer()->data(),
-          cachedStyleSheet->resourceBuffer()->size(), KURL(baseURL, href),
-          *cachedStyleSheet)) {
-    m_loading = false;
-    removePendingSheet();
-    notifyLoadedSheetAndAllCriticalSubresources(
-        Node::ErrorOccurredLoadingSubresource);
-    return;
+      !m_owner->fastGetAttribute(HTMLNames::integrityAttr).isEmpty() &&
+      !cachedStyleSheet->integrityMetadata().isEmpty()) {
+    ResourceIntegrityDisposition disposition =
+        cachedStyleSheet->integrityDisposition();
+
+    DCHECK(disposition != ResourceIntegrityDisposition::NotChecked ||
+           !cachedStyleSheet->sheetText().isNull());
+
+    if (disposition == ResourceIntegrityDisposition::NotChecked &&
+        !cachedStyleSheet->loadFailedOrCanceled()) {
+      DCHECK(cachedStyleSheet->resourceBuffer());
+      if (SubresourceIntegrity::CheckSubresourceIntegrity(
+              *m_owner, cachedStyleSheet->resourceBuffer()->data(),
+              cachedStyleSheet->resourceBuffer()->size(), KURL(baseURL, href),
+              *cachedStyleSheet))
+        disposition = ResourceIntegrityDisposition::Passed;
+      else
+        disposition = ResourceIntegrityDisposition::Failed;
+
+      // TODO(kouhei): Remove this const_cast crbug.com/653502
+      const_cast<CSSStyleSheetResource*>(cachedStyleSheet)
+          ->setIntegrityDisposition(disposition);
+    }
+
+    if (disposition == ResourceIntegrityDisposition::Failed) {
+      m_loading = false;
+      removePendingSheet();
+      notifyLoadedSheetAndAllCriticalSubresources(
+          Node::ErrorOccurredLoadingSubresource);
+      return;
+    }
   }
 
   CSSParserContext parserContext(m_owner->document(), nullptr, baseURL,

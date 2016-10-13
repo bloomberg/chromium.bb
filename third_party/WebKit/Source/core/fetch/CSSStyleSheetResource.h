@@ -79,10 +79,10 @@ class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
   void setParsedStyleSheetCache(StyleSheetContents*);
 
   void destroyDecodedDataIfPossible() override;
-  void destroyDecodedDataForFailedRevalidation() override {
-    destroyDecodedDataIfPossible();
-  }
+  void destroyDecodedDataForFailedRevalidation() override;
 
+  // Decoded sheet text cache is available iff loading this CSS resource is
+  // successfully complete.
   String m_decodedSheetText;
 
   Member<StyleSheetContents> m_parsedStyleSheetCache;
