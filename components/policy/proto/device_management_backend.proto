@@ -19,14 +19,14 @@ message SignedData {
   optional int32 extra_data_bytes = 3;
 }
 
-// Request from device to server to register device.
+// Request from device to server to register a device, user or browser.
 message DeviceRegisterRequest {
   // Reregister device without erasing server state.  It can be used
   // to refresh dmtoken etc.  Client MUST set this value to true if it
   // reuses an existing device id.
   optional bool reregister = 1;
 
-  // Device register type.  This field does not exist for TT release.
+  // Register type.  This field does not exist for TT release.
   // When a client requests for policies, server should verify the
   // client has been registered properly.  For example, a client must
   // register with type DEVICE in order to retrieve device policies.
@@ -125,8 +125,16 @@ message DeviceRegisterResponse {
     // settings from the cloud, but additionally this mode enables the demo
     // account on the device.
     RETAIL = 1;
+    // Devices in CHROME_AD mode are in enterprises with AD.  Device settings
+    // are controlled through the AD policy infrastructure.
+    CHROME_AD = 2;
   }
   optional DeviceMode enrollment_type = 3 [default = ENTERPRISE];
+
+  // An opaque configuration string for devices that require it.  CHROME_AD
+  // devices, for example, may use this string for AD discovery.  Must be at
+  // most a few kBytes.
+  optional string configuration_seed = 4;
 }
 
 // Request from device to server to unregister device.
@@ -163,10 +171,6 @@ message DeviceServiceApiAccessRequest {
 message DeviceServiceApiAccessResponse {
   // The OAuth2 authorization code for the requested scope(s).
   // This can be exchanged for a refresh token.
-  //
-  // The server may send a successful response but not set this field or set an
-  // empty string to reject the auth code request and instruct the client to
-  // skip robot account auth setup.
   optional string auth_code = 1;
 }
 
@@ -235,6 +239,24 @@ message PolicyFetchRequest {
   optional string verification_key_hash = 9;
 }
 
+// This message contains the information which is signed by the verification
+// key during policy key rotation.  It is included in serialized form in
+// PolicyFetchResponse below.  A signature of the serialized form is included
+// in the new_public_key_verification_data_signature field. For backward
+// compatibility reasons, a signature over just {new_public_key, domain} fields
+// is included in new_public_key_verification_signature_DEPRECATED field.
+message PublicKeyVerificationData {
+  // The new public policy key after a key rotation.
+  optional bytes new_public_key = 1;
+
+  // The domain of the device/user.
+  optional string domain = 2;
+
+  // The version number of the new_public_key. This must be monotonically
+  // increasing (within a domain).
+  optional int32 new_public_key_version = 3;
+}
+
 // This message customizes how the device behaves when it is disabled by its
 // owner. The message will be sent as part of the DeviceState fetched during
 // normal operation and as part of the DeviceStateRetrievalResponse fetched when
@@ -262,9 +284,8 @@ message DeviceState {
   optional DisabledState disabled_state = 2;
 }
 
-// This message is included in serialized form in PolicyFetchResponse
-// below.  It may also be signed, with the signature being created for
-// the serialized form.
+// This message is included in serialized form in PolicyFetchResponse below. It
+// may also be signed, with the signature being created for the serialized form.
 message PolicyData {
   // See PolicyFetchRequest.policy_type.
   optional string policy_type = 1;
@@ -349,7 +370,7 @@ message PolicyData {
 
   // Server-provided identifier of the fetched policy. This is to be used
   // by the client when requesting Policy Posture assertion through an API
-  // call or SAML flow.
+  // call or SAML flow. For details, see http://go/chrome-nac-server-design.
   optional string policy_token = 15;
 
   // Indicates the management mode of the device. Note that old policies do not
@@ -434,6 +455,34 @@ message PolicyFetchResponse {
   optional bytes new_public_key = 5;
   optional bytes new_public_key_signature = 6;
 
+  // DEPRECATED ON THE SERVER: Exists only to support older clients.  This
+  // signature is similar to new_public_key_verification_data_signature, but is
+  // computed over PublicKeyVerificationData proto with version field unset.  In
+  // other words, we set the new public key value, and domain value and then
+  // produce this signature.
+  optional bytes new_public_key_verification_signature = 7;
+
+  // This is a serialized |PublicKeyVerificationData| protobuf
+  // (defined above). See comments for |new_public_key_verification_signature|
+  // field for details on how this data is signed.
+  // Please note that |new_public_key| is also included inside this data
+  // field. Thus we have new public key signed with old version of private key
+  // (if client indicated to us that it has old key version), and
+  // new public key data signed by master verification key (if client told
+  // us that it has public verification key - see |verification_key_id| field
+  // of |PolicyFetchRequest|). In most cases, both signatures will be provided.
+  // However, client might not have old policy signing key - for example, when
+  // new profile is being set up. In this case, only verification signature
+  // is supplied.
+  // Or, client might not have verification public key (legacy Chrome build
+  // before verification key was introduced, or outdated build which has
+  // old/compromised verification key). In that case, verification signature
+  // cannot be provided.
+  // If client is missing both public keys (old signing key and verification
+  // key), then we are unable to produce any valid signature and client must
+  // drop such PolicyFetchResponse.
+  optional bytes new_public_key_verification_data = 8;
+
   // If new_public_key is specified, this field contains a signature
   // of a PolicyPublicKeyAndDomain protobuf, signed using a key only
   // available to DMServer. The public key portion of this well-known key is
@@ -448,10 +497,11 @@ message PolicyFetchResponse {
   // and new_public_key_signature described above, Chrome also verifies
   // new_public_key with the embedded public key and
   // new_public_key_verification_signature.
-  optional bytes new_public_key_verification_signature = 7;
+  optional bytes new_public_key_verification_data_signature = 9;
 }
 
-// Protobuf used to generate the new_public_key_verification_signature field.
+// DEPRECATED ON THE SERVER: Protobuf used to generate the deprecated
+// new_public_key_verification_signature field.
 message PolicyPublicKeyAndDomain {
   // The public key to sign (taken from the |new_public_key| field in
   // PolicyFetchResponse).
@@ -1105,7 +1155,7 @@ message CheckAndroidManagementRequest {}
 message CheckAndroidManagementResponse {}
 
 // Request to register a new device (authenticated by enterprise enrollment
-// certificate).
+// certificate). See http://go/zero-touch-chrome for details.
 // The response message will be the DeviceRegisterReponse.
 message CertificateBasedDeviceRegisterRequest {
   // Signed request to register with a certificate. The signed_request.data
@@ -1165,7 +1215,7 @@ message CertificateBasedDeviceRegistrationData {
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
 //   * deviceid: MUST BE no more than 64-char in [\x21-\x7E].
-//   * agent: MUST BE a string of characters.
+//   * agent: MUST BE no more than 64-char long.
 // * HTTP Authorization header MUST be in the following formats:
 //   * For register, ping and check_android_management requests
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
@@ -1271,9 +1321,37 @@ message DeviceManagementRequest {
 // 491 Request Pending: the request is pending approval.
 // 500 Internal Server Error: most likely a bug in DM server.
 // 503 Service Unavailable: most likely a backend error.
-// 901 Device Not Found: the device id is not found.
 // 902 Policy Not Found: the policy is not found.
 message DeviceManagementResponse {
+  // TODO(hong): move error handling to HTTP level.
+  // Error code to client.
+  enum ErrorCode {
+    SUCCESS = 0;
+    // Returned for register request when device management is not supported
+    // for the domain.
+    DEVICE_MANAGEMENT_NOT_SUPPORTED = 1;
+    // Returned when the device is not found.
+    DEVICE_NOT_FOUND  = 2;
+    // Returned when passed in device management token doesn't match the token
+    // on server side.
+    DEVICE_MANAGEMENT_TOKEN_INVALID  = 3;
+    // Returned when device registration is pending approval (if required).
+    ACTIVATION_PENDING = 4;
+    // Returned when the policy is not found.
+    POLICY_NOT_FOUND  = 5;
+  }
+
+  // Error code for this reponse.
+  //
+  // For responses to TT clients, this field MUST be set, since it WAS
+  // a required field.  For special error code listed above, we return
+  // 200 in HTTP Status Code and set the real error code here.
+  //
+  // For release clients, we plan to move all error code to HTTP
+  // Status Code, so it is much easier for log analysis.  If possible,
+  // we plan to remove this field once Chrome OS TT phase is over.
+  optional ErrorCode error = 1 [default = SUCCESS];
+
   // Error message.
   optional string error_message = 2;
 
