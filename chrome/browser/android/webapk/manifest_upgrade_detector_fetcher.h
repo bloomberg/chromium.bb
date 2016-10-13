@@ -53,8 +53,10 @@ class ManifestUpgradeDetectorFetcher : public content::WebContentsObserver {
   ~ManifestUpgradeDetectorFetcher() override;
 
   // content::WebContentsObserver:
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
+  void DidStopLoading() override;
+
+  // Fetches the installable data.
+  void FetchInstallableData();
 
   // Called once the installable data has been fetched.
   void OnDidGetInstallableData(const InstallableData& installable_data);
@@ -74,6 +76,9 @@ class ManifestUpgradeDetectorFetcher : public content::WebContentsObserver {
 
   // The WebAPK's Web Manifest URL that the detector is looking for.
   const GURL web_manifest_url_;
+
+  // The URL for which the installable data is being fetched / was last fetched.
+  GURL last_fetched_url_;
 
   // Downloads app icon and computes Murmur2 hash.
   std::unique_ptr<WebApkIconHasher> icon_hasher_;

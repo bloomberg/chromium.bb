@@ -13,7 +13,6 @@
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/manifest.h"
 #include "jni/ManifestUpgradeDetectorFetcher_jni.h"
@@ -87,14 +86,24 @@ void ManifestUpgradeDetectorFetcher::Start(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& java_web_contents) {
   ReplaceWebContents(env, obj, java_web_contents);
+  if (!web_contents()->IsLoading())
+    FetchInstallableData();
 }
 
-void ManifestUpgradeDetectorFetcher::DidFinishLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url) {
-  if (render_frame_host->GetParent())
+void ManifestUpgradeDetectorFetcher::DidStopLoading() {
+  FetchInstallableData();
+}
+
+void ManifestUpgradeDetectorFetcher::FetchInstallableData() {
+  GURL url = web_contents()->GetLastCommittedURL();
+
+  // DidStopLoading() can be called multiple times for a single URL. Only fetch
+  // installable data the first time.
+  if (url == last_fetched_url_)
     return;
-  if (!IsInScope(validated_url, scope_))
+  last_fetched_url_ = url;
+
+  if (!IsInScope(url, scope_))
     return;
 
   InstallableParams params;
