@@ -151,8 +151,8 @@ TEST_F(SiteEngagementHelperTest, ScrollEventEngagementAccumulation) {
   UserInputAccumulation(blink::WebInputEvent::GestureScrollBegin);
 }
 
-TEST_F(SiteEngagementHelperTest, GestureEngagementAccumulation) {
-  UserInputAccumulation(blink::WebInputEvent::GestureTapDown);
+TEST_F(SiteEngagementHelperTest, TouchEngagementAccumulation) {
+  UserInputAccumulation(blink::WebInputEvent::TouchStart);
 }
 
 TEST_F(SiteEngagementHelperTest, MediaEngagementAccumulation) {
@@ -308,9 +308,9 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
 
   HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::RawKeyDown);
   HandleUserInputAndRestartTracking(helper,
-                                    blink::WebInputEvent::GestureTapDown);
+                                    blink::WebInputEvent::TouchStart);
   HandleUserInputAndRestartTracking(helper,
-                                    blink::WebInputEvent::GestureTapDown);
+                                    blink::WebInputEvent::TouchStart);
   HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::RawKeyDown);
   HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::MouseDown);
 
@@ -336,7 +336,7 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
   HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::MouseDown);
   HandleMediaPlaying(helper, true);
   HandleUserInputAndRestartTracking(helper,
-                                    blink::WebInputEvent::GestureTapDown);
+                                    blink::WebInputEvent::TouchStart);
   HandleMediaPlaying(helper, false);
 
   EXPECT_DOUBLE_EQ(0.93, service->GetScore(url1));
@@ -368,7 +368,7 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
   EXPECT_DOUBLE_EQ(1.43, service->GetTotalEngagementPoints());
 
   HandleUserInputAndRestartTracking(helper,
-                                    blink::WebInputEvent::GestureTapDown);
+                                    blink::WebInputEvent::TouchStart);
   HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::RawKeyDown);
 
   EXPECT_DOUBLE_EQ(0.93, service->GetScore(url1));
@@ -441,7 +441,7 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
   // Timer should start running again after input.
-  HandleUserInput(helper, blink::WebInputEvent::GestureTapDown);
+  HandleUserInput(helper, blink::WebInputEvent::TouchStart);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTrackingInput(helper));
   EXPECT_TRUE(media_tracker_timer->IsRunning());

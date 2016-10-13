@@ -100,7 +100,7 @@ void SiteEngagementService::Helper::InputTracker::DidGetUserInteraction(
     case blink::WebInputEvent::MouseDown:
       helper()->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_MOUSE);
       break;
-    case blink::WebInputEvent::GestureTapDown:
+    case blink::WebInputEvent::TouchStart:
       helper()->RecordUserInput(
           SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
       break;

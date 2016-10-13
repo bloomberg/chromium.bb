@@ -1884,7 +1884,7 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
 
   if (delegate_ && (event.type == WebInputEvent::MouseDown ||
                     event.type == WebInputEvent::GestureScrollBegin ||
-                    event.type == WebInputEvent::GestureTapDown ||
+                    event.type == WebInputEvent::TouchStart ||
                     event.type == WebInputEvent::RawKeyDown)) {
     delegate_->OnUserInteraction(this, event.type);
   }

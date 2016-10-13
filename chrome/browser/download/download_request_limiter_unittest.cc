@@ -496,8 +496,8 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnUserGesture) {
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
-  // Do a user gesture with gesture tap, which should reset back to allow one.
-  OnUserInteraction(blink::WebInputEvent::GestureTapDown);
+  // Do a touch event, which should reset back to allow one.
+  OnUserInteraction(blink::WebInputEvent::TouchStart);
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
@@ -611,7 +611,7 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RawWebContents) {
   EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents.get()));
   OnUserInteractionFor(web_contents.get(),
-                       blink::WebInputEvent::GestureTapDown);
+                       blink::WebInputEvent::TouchStart);
   EXPECT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents.get()));
   CanDownloadFor(web_contents.get());
