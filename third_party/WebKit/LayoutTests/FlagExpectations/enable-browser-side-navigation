@@ -127,7 +127,7 @@ Bug(none) fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
 crbug.com/648600 fast/overflow/overflow-height-float-not-removed-crash.html [ Failure ]
 crbug.com/648600 virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Failure ]
 
-# https://crbug.com/648608: Send the right cookies when loading a popup
+# https://crbug.com/648608: Properly set the initator of the navigation.
 crbug.com/648608 http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
 crbug.com/648608 http/tests/cookies/same-site/popup-same-site.html [ Failure ]
 
