@@ -650,7 +650,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateToUniqueOrigin,
                         OnUpdateToUniqueOrigin)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidAssignPageId, OnDidAssignPageId)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeSandboxFlags,
                         OnDidChangeSandboxFlags)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
@@ -1729,12 +1728,6 @@ void RenderFrameHostImpl::OnUpdateToUniqueOrigin(
                                       is_potentially_trustworthy_unique_origin);
 }
 
-void RenderFrameHostImpl::OnDidAssignPageId(int32_t page_id) {
-  // Update the RVH's current page ID so that future IPCs from the renderer
-  // correspond to the new page.
-  render_view_host_->page_id_ = page_id;
-}
-
 FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
     int32_t child_frame_routing_id,
     bad_message::BadMessageReason reason) {
@@ -1799,9 +1792,8 @@ void RenderFrameHostImpl::OnUpdateTitle(
     return;
   }
 
-  delegate_->UpdateTitle(this, render_view_host_->page_id_, title,
-                         WebTextDirectionToChromeTextDirection(
-                             title_direction));
+  delegate_->UpdateTitle(
+      this, title, WebTextDirectionToChromeTextDirection(title_direction));
 }
 
 void RenderFrameHostImpl::OnUpdateEncoding(const std::string& encoding_name) {

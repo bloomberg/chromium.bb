@@ -255,7 +255,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       enabled_bindings_(0),
-      page_id_(-1),
       is_active_(!swapped_out),
       is_swapped_out_(swapped_out),
       main_frame_routing_id_(main_frame_routing_id),
@@ -942,14 +941,7 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // decoupled.
 }
 
-void RenderViewHostImpl::OnUpdateState(int32_t page_id,
-                                       const PageState& state) {
-  // If the following DCHECK fails, you have encountered a tricky edge-case that
-  // has evaded reproduction for a very long time. Please report what you were
-  // doing on http://crbug.com/407376, whether or not you can reproduce the
-  // failure.
-  DCHECK_EQ(page_id, page_id_);
-
+void RenderViewHostImpl::OnUpdateState(const PageState& state) {
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
@@ -960,7 +952,7 @@ void RenderViewHostImpl::OnUpdateState(int32_t page_id,
     return;
   }
 
-  delegate_->UpdateState(this, page_id, state);
+  delegate_->UpdateState(this, state);
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {

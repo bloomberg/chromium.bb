@@ -287,7 +287,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
   void OnShowFullscreenWidget(int route_id);
   void OnRenderProcessGone(int status, int error_code);
-  void OnUpdateState(int32_t page_id, const PageState& state);
+  void OnUpdateState(const PageState& state);
   void OnUpdateTargetURL(const GURL& url);
   void OnClose();
   void OnRequestMove(const gfx::Rect& pos);
@@ -358,11 +358,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // A bitwise OR of bindings types that have been enabled for this RenderView.
   // See BindingsPolicy for details.
   int enabled_bindings_;
-
-  // The most recent page ID we've heard from the renderer process.  This is
-  // used as context when other session history related IPCs arrive.
-  // TODO(creis): Allocate this in WebContents/NavigationController instead.
-  int32_t page_id_;
 
   // Tracks whether this RenderViewHost is in an active state.  False if the
   // main frame is pending swap out, pending deletion, or swapped out, because

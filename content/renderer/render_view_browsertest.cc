@@ -644,51 +644,6 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   EXPECT_EQ(0, memcmp(raw_data, element.data.data(), length));
 }
 
-// Check that page ID will be initialized in case of navigation
-// that replaces current entry.
-TEST_F(RenderViewImplTest, OnBrowserNavigationUpdatePageID) {
-  // An http url will trigger a resource load so cannot be used here.
-  CommonNavigationParams common_params;
-  StartNavigationParams start_params;
-  RequestNavigationParams request_params;
-  common_params.url = GURL("data:text/html,<div>Page</div>");
-  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  common_params.transition = ui::PAGE_TRANSITION_TYPED;
-
-  // Set up params to emulate a browser side navigation
-  // that should replace current entry.
-  common_params.should_replace_current_entry = true;
-  request_params.page_id = -1;
-  request_params.nav_entry_id = 1;
-  request_params.current_history_list_length = 1;
-
-  frame()->Navigate(common_params, start_params, request_params);
-  ProcessPendingMessages();
-
-  // Page ID should be initialized.
-  EXPECT_NE(view_page_id(), -1);
-
-  const IPC::Message* frame_navigate_msg =
-      render_thread_->sink().GetUniqueMessageMatching(
-          FrameHostMsg_DidCommitProvisionalLoad::ID);
-  EXPECT_TRUE(frame_navigate_msg);
-
-  FrameHostMsg_DidCommitProvisionalLoad::Param host_nav_params;
-  FrameHostMsg_DidCommitProvisionalLoad::Read(frame_navigate_msg,
-                                              &host_nav_params);
-  EXPECT_TRUE(std::get<0>(host_nav_params).page_state.IsValid());
-
-  const IPC::Message* frame_page_id_msg =
-      render_thread_->sink().GetUniqueMessageMatching(
-          FrameHostMsg_DidAssignPageId::ID);
-  EXPECT_TRUE(frame_page_id_msg);
-
-  FrameHostMsg_DidAssignPageId::Param host_page_id_params;
-  FrameHostMsg_DidAssignPageId::Read(frame_page_id_msg, &host_page_id_params);
-
-  EXPECT_EQ(std::get<0>(host_page_id_params), view_page_id());
-}
-
 #if defined(OS_ANDROID)
 TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
   CommonNavigationParams common_params;
@@ -1020,9 +975,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   ASSERT_TRUE(msg_A);
   ViewHostMsg_UpdateState::Param param;
   ViewHostMsg_UpdateState::Read(msg_A, &param);
-  int page_id_A = std::get<0>(param);
-  PageState state_A = std::get<1>(param);
-  EXPECT_EQ(1, page_id_A);
+  PageState state_A = std::get<0>(param);
   render_thread_->sink().ClearMessages();
 
   // Load page C, which will trigger an UpdateState message for page B.
@@ -1034,9 +987,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
   ViewHostMsg_UpdateState::Read(msg_B, &param);
-  int page_id_B = std::get<0>(param);
-  PageState state_B = std::get<1>(param);
-  EXPECT_EQ(2, page_id_B);
+  PageState state_B = std::get<0>(param);
   EXPECT_NE(state_A, state_B);
   render_thread_->sink().ClearMessages();
 
@@ -1049,9 +1000,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_C);
   ViewHostMsg_UpdateState::Read(msg_C, &param);
-  int page_id_C = std::get<0>(param);
-  PageState state_C = std::get<1>(param);
-  EXPECT_EQ(3, page_id_C);
+  PageState state_C = std::get<0>(param);
   EXPECT_NE(state_B, state_C);
   render_thread_->sink().ClearMessages();
 
@@ -1104,9 +1053,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg);
   ViewHostMsg_UpdateState::Read(msg, &param);
-  int page_id = std::get<0>(param);
-  PageState state = std::get<1>(param);
-  EXPECT_EQ(page_id_C, page_id);
+  PageState state = std::get<0>(param);
   EXPECT_NE(state_A, state);
   EXPECT_NE(state_B, state);
   EXPECT_EQ(state_C, state);

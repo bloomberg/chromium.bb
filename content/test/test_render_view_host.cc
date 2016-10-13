@@ -307,14 +307,13 @@ void TestRenderViewHost::TestOnStartDragging(
 }
 
 void TestRenderViewHost::TestOnUpdateStateWithFile(
-    int page_id,
     const base::FilePath& file_path) {
   PageState state = PageState::CreateForTesting(GURL("http://www.google.com"),
                                                 false, "data", &file_path);
   if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     static_cast<RenderFrameHostImpl*>(GetMainFrame())->OnUpdateState(state);
   } else {
-    OnUpdateState(page_id, state);
+    OnUpdateState(state);
   }
 }
 

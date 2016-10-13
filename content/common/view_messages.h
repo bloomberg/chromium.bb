@@ -736,9 +736,7 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_Close_ACK,
 IPC_MESSAGE_ROUTED0(ViewHostMsg_ClosePage_ACK)
 
 // Notifies the browser that we have session history information.
-// page_id: unique ID that allows us to distinguish between history entries.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateState,
-                    int32_t /* page_id */,
+IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateState,
                     content::PageState /* state */)
 
 // Notifies the browser that we want to show a destination url for a potential

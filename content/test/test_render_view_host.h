@@ -197,8 +197,7 @@ class TestRenderViewHost
   void SimulateWasShown() override;
   WebPreferences TestComputeWebkitPrefs() override;
 
-  void TestOnUpdateStateWithFile(
-      int page_id, const base::FilePath& file_path);
+  void TestOnUpdateStateWithFile(const base::FilePath& file_path);
 
   void TestOnStartDragging(const DropData& drop_data);
 

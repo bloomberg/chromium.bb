@@ -1462,7 +1462,7 @@ void RenderViewImpl::SendUpdateState() {
   if (!entry)
     return;
 
-  Send(new ViewHostMsg_UpdateState(GetRoutingID(), page_id_,
+  Send(new ViewHostMsg_UpdateState(GetRoutingID(),
                                    HistoryEntryToPageState(entry)));
 }
 

@@ -367,7 +367,7 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
 
   main_test_rfh()->SendNavigateWithParams(&params);
 
-  contents()->UpdateTitle(main_test_rfh(), 0,
+  contents()->UpdateTitle(main_test_rfh(),
                           base::ASCIIToUTF16("    Lots O' Whitespace\n"),
                           base::i18n::LEFT_TO_RIGHT);
   EXPECT_EQ(base::ASCIIToUTF16("Lots O' Whitespace"), contents()->GetTitle());
@@ -376,8 +376,7 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
 TEST_F(WebContentsImplTest, UpdateTitleBeforeFirstNavigation) {
   ASSERT_TRUE(controller().IsInitialNavigation());
   const base::string16 title = base::ASCIIToUTF16("Initial Entry Title");
-  contents()->UpdateTitle(main_test_rfh(), -1, title,
-                          base::i18n::LEFT_TO_RIGHT);
+  contents()->UpdateTitle(main_test_rfh(), title, base::i18n::LEFT_TO_RIGHT);
   EXPECT_EQ(title, contents()->GetTitle());
 }
 
@@ -389,8 +388,7 @@ TEST_F(WebContentsImplTest, DontUseTitleFromPendingEntry) {
 
   // Also test setting title while the first navigation is still pending.
   const base::string16 title = base::ASCIIToUTF16("Initial Entry Title");
-  contents()->UpdateTitle(main_test_rfh(), -1, title,
-                          base::i18n::LEFT_TO_RIGHT);
+  contents()->UpdateTitle(main_test_rfh(), title, base::i18n::LEFT_TO_RIGHT);
   EXPECT_EQ(title, contents()->GetTitle());
 }
 

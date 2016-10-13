@@ -105,7 +105,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // The state for the page changed and should be updated.
   virtual void UpdateState(RenderViewHost* render_view_host,
-                           int32_t page_id,
                            const PageState& state) {}
 
   // The destination URL has changed should be updated.

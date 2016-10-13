@@ -43,9 +43,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case FrameHostMsg_DomOperationResponse::ID:
     // Input events propagate from parent to child.
     case FrameHostMsg_ForwardInputEvent::ID:
-    // The browser should always have an accurate mirror of the renderer's
-    // notion of the current page id.
-    case FrameHostMsg_DidAssignPageId::ID:
     // A swapped-out frame's opener might be updated with window.open.
     case FrameHostMsg_DidChangeOpener::ID:
     // For handling pop-ups from cross-site frames.
