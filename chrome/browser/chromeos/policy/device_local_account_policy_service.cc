@@ -423,7 +423,10 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
       break;
     case chromeos::CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
       waiting_for_cros_settings_ = true;
-      return;
+      // Purposely break to allow initialization with temporarily untrusted
+      // settings so that a crash-n-restart public session have its loader
+      // properly registered as ExtensionService's external provider.
+      break;
     case chromeos::CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
       waiting_for_cros_settings_ = false;
       return;
