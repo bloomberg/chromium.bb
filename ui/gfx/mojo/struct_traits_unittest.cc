@@ -185,4 +185,11 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
 #endif
 }
 
+TEST_F(StructTraitsTest, NullGpuMemoryBufferHandle) {
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  GpuMemoryBufferHandle output;
+  proxy->EchoGpuMemoryBufferHandle(GpuMemoryBufferHandle(), &output);
+  EXPECT_TRUE(output.is_null());
+}
+
 }  // namespace gfx
