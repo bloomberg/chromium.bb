@@ -215,6 +215,32 @@ TYPED_TEST_P(GLImageTest, CreateAndDestroy) {
 REGISTER_TYPED_TEST_CASE_P(GLImageTest, CreateAndDestroy);
 
 template <typename GLImageTestDelegate>
+class GLImageOddSizeTest : public GLImageTest<GLImageTestDelegate> {};
+
+// This test verifies that odd-sized GLImages can be created and destroyed.
+TYPED_TEST_CASE_P(GLImageOddSizeTest);
+
+TYPED_TEST_P(GLImageOddSizeTest, CreateAndDestroy) {
+  const gfx::Size odd_image_size(17, 53);
+  const uint8_t* image_color = this->delegate_.GetImageColor();
+
+  // Create an odd-sized solid color green image of preferred format. This must
+  // succeed in order for a GLImage to be conformant.
+  scoped_refptr<GLImage> odd_image =
+      this->delegate_.CreateSolidColorImage(odd_image_size, image_color);
+  ASSERT_TRUE(odd_image);
+
+  // Verify that image size is correct.
+  EXPECT_EQ(odd_image->GetSize().ToString(), odd_image_size.ToString());
+
+  odd_image->Destroy(true /* have_context */);
+}
+
+// The GLImageTest test case verifies the behaviour that is expected from a
+// GLImage in order to be conformant.
+REGISTER_TYPED_TEST_CASE_P(GLImageOddSizeTest, CreateAndDestroy);
+
+template <typename GLImageTestDelegate>
 class GLImageZeroInitializeTest : public GLImageTest<GLImageTestDelegate> {};
 
 // This test verifies that if an uninitialized image is bound to a texture, the

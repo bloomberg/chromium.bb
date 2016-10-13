@@ -56,6 +56,10 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
                               GLImageTestTypes);
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
+                              GLImageOddSizeTest,
+                              GLImageTestTypes);
+
+INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
                               GLImageCopyTest,
                               GLImageTestTypes);
 
