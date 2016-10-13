@@ -119,9 +119,6 @@ virtual/threaded/animations/transition-and-animation-1.html [ WontFix ]
 virtual/threaded/animations/transition-and-animation-2.html [ WontFix ]
 virtual/threaded/transitions/transition-end-event-multiple-04.html [ WontFix ]
 
-# This test only fails with an ASSERT in Debug build. But it's WontFix for Release, so something's wrong.
-crbug.com/655256 [ Release ] editing/input/orphan-set-selection-range.html [ WontFix ]
-
 # See crbug.com/522326
 imported/wpt/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ WontFix ]
 # We don't allow to access external hosts in layout tests.
