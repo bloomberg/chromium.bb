@@ -61,8 +61,8 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   enum CategoryGroupEnabledFlags {
     // Category group enabled for the recording mode.
     ENABLED_FOR_RECORDING = 1 << 0,
-    // Category group enabled by SetEventCallbackEnabled().
-    ENABLED_FOR_EVENT_CALLBACK = 1 << 2,
+    // 1 << 2 was used for ENABLED_FOR_EVENT_CALLBACK.
+
     // Category group enabled to export events to ETW.
     ENABLED_FOR_ETW_EXPORT = 1 << 3,
     // Category group being filtered before logged.
@@ -168,31 +168,6 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // objects.
   void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead);
 
-  // Not using base::Callback because of its limited by 7 parameters.
-  // Also, using primitive type allows directly passing callback from WebCore.
-  // WARNING: It is possible for the previously set callback to be called
-  // after a call to SetEventCallbackEnabled() that replaces or a call to
-  // SetEventCallbackDisabled() that disables the callback.
-  // This callback may be invoked on any thread.
-  // For TRACE_EVENT_PHASE_COMPLETE events, the client will still receive pairs
-  // of TRACE_EVENT_PHASE_BEGIN and TRACE_EVENT_PHASE_END events to keep the
-  // interface simple.
-  typedef void (*EventCallback)(TimeTicks timestamp,
-                                char phase,
-                                const unsigned char* category_group_enabled,
-                                const char* name,
-                                const char* scope,
-                                unsigned long long id,
-                                int num_args,
-                                const char* const arg_names[],
-                                const unsigned char arg_types[],
-                                const unsigned long long arg_values[],
-                                unsigned int flags);
-
-  // Enable tracing for EventCallback.
-  void SetEventCallbackEnabled(const TraceConfig& trace_config,
-                               EventCallback cb);
-  void SetEventCallbackDisabled();
   void SetArgumentFilterPredicate(
       const ArgumentFilterPredicate& argument_filter_predicate);
 
@@ -412,10 +387,10 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
                     ProcessMemoryDump* pmd) override;
 
   // Enable/disable each category group based on the current mode_,
-  // category_filter_, event_callback_ and event_callback_category_filter_.
-  // Enable the category group in the enabled mode if category_filter_ matches
-  // the category group, or event_callback_ is not null and
-  // event_callback_category_filter_ matches the category group.
+  // category_filter_ and event_filters_enabled_.
+  // Enable the category group in the recording mode if category_filter_ matches
+  // the category group, is not null. Enable category for filtering if any
+  // filter in event_filters_enabled_ enables it.
   void UpdateCategoryGroupEnabledFlags();
   void UpdateCategoryGroupEnabledFlag(size_t category_index);
 
@@ -504,7 +479,6 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   int num_traces_recorded_;
   std::unique_ptr<TraceBuffer> logged_events_;
   std::vector<std::unique_ptr<TraceEvent>> metadata_events_;
-  subtle::AtomicWord /* EventCallback */ event_callback_;
   bool dispatching_to_observer_list_;
   std::vector<EnabledStateObserver*> enabled_state_observer_list_;
   std::map<AsyncEnabledStateObserver*, RegisteredAsyncObserver>
@@ -537,7 +511,6 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   subtle::AtomicWord /* Options */ trace_options_;
 
   TraceConfig trace_config_;
-  TraceConfig event_callback_trace_config_;
   TraceConfig::EventFilters enabled_event_filters_;
 
   ThreadLocalPointer<ThreadLocalEventBuffer> thread_local_event_buffer_;

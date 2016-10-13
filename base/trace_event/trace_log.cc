@@ -464,7 +464,6 @@ TraceLog* TraceLog::GetInstance() {
 TraceLog::TraceLog()
     : enabled_modes_(0),
       num_traces_recorded_(0),
-      event_callback_(0),
       dispatching_to_observer_list_(false),
       process_sort_index_(0),
       process_id_hash_(0),
@@ -472,7 +471,6 @@ TraceLog::TraceLog()
       watch_category_(0),
       trace_options_(kInternalRecordUntilFull),
       trace_config_(TraceConfig()),
-      event_callback_trace_config_(TraceConfig()),
       thread_shared_chunk_index_(0),
       generation_(0),
       use_worker_thread_(false) {
@@ -563,11 +561,6 @@ void TraceLog::UpdateCategoryGroupEnabledFlag(size_t category_index) {
   if (enabled_modes_ & RECORDING_MODE &&
       trace_config_.IsCategoryGroupEnabled(category_group)) {
     enabled_flag |= ENABLED_FOR_RECORDING;
-  }
-
-  if (event_callback_ &&
-      event_callback_trace_config_.IsCategoryGroupEnabled(category_group)) {
-    enabled_flag |= ENABLED_FOR_EVENT_CALLBACK;
   }
 
 #if defined(OS_WIN)
@@ -1002,21 +995,6 @@ void TraceLog::CheckIfBufferIsFullWhileLocked() {
     }
     SetDisabledWhileLocked(RECORDING_MODE);
   }
-}
-
-void TraceLog::SetEventCallbackEnabled(const TraceConfig& trace_config,
-                                       EventCallback cb) {
-  AutoLock lock(lock_);
-  subtle::NoBarrier_Store(&event_callback_,
-                          reinterpret_cast<subtle::AtomicWord>(cb));
-  event_callback_trace_config_ = trace_config;
-  UpdateCategoryGroupEnabledFlags();
-}
-
-void TraceLog::SetEventCallbackDisabled() {
-  AutoLock lock(lock_);
-  subtle::NoBarrier_Store(&event_callback_, 0);
-  UpdateCategoryGroupEnabledFlags();
 }
 
 // Flush() works as the following:
@@ -1516,18 +1494,6 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     }
   }
 
-  if (*category_group_enabled & ENABLED_FOR_EVENT_CALLBACK) {
-    EventCallback event_callback = reinterpret_cast<EventCallback>(
-        subtle::NoBarrier_Load(&event_callback_));
-    if (event_callback) {
-      event_callback(
-          offset_event_timestamp,
-          phase == TRACE_EVENT_PHASE_COMPLETE ? TRACE_EVENT_PHASE_BEGIN : phase,
-          category_group_enabled, name, scope, id, num_args, arg_names,
-          arg_types, arg_values, flags);
-    }
-  }
-
   return handle;
 }
 
@@ -1674,17 +1640,6 @@ void TraceLog::UpdateTraceEventDuration(
 
   if (!console_message.empty())
     LOG(ERROR) << console_message;
-
-  if (category_group_enabled_local & ENABLED_FOR_EVENT_CALLBACK) {
-    EventCallback event_callback = reinterpret_cast<EventCallback>(
-        subtle::NoBarrier_Load(&event_callback_));
-    if (event_callback) {
-      event_callback(
-        now, TRACE_EVENT_PHASE_END, category_group_enabled, name,
-        trace_event_internal::kGlobalScope, trace_event_internal::kNoId, 0,
-        nullptr, nullptr, nullptr, TRACE_EVENT_FLAG_NONE);
-    }
-  }
 
   if (category_group_enabled_local & ENABLED_FOR_FILTERING)
     EndFilteredEvent(category_group_enabled, name, handle);
