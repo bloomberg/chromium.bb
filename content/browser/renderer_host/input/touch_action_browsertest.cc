@@ -188,15 +188,11 @@ class TouchActionBrowserTest : public ContentBrowserTest {
 // Mac doesn't yet have a gesture recognizer, so can't support turning touch
 // events into scroll gestures.
 // Will be fixed with http://crbug.com/337142
-#if defined(OS_MACOSX)
-#define MAYBE_DefaultAuto DISABLED_DefaultAuto
-#else
-#define MAYBE_DefaultAuto DefaultAuto
-#endif
+// Flaky on all platforms: https://crbug.com/376668
 //
 // Verify the test infrastructure works - we can touch-scroll the page and get a
 // touchcancel as expected.
-IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_DefaultAuto) {
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, DISABLED_DefaultAuto) {
   LoadURL();
 
   bool scrolled = DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, 45), true);
