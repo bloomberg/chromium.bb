@@ -147,6 +147,9 @@ class TabManager : public TabStripModelObserver {
   // Sets/clears the auto-discardable state of the tab.
   void SetTabAutoDiscardableState(content::WebContents* contents, bool state);
 
+  // Returns true when a given renderer can suspend when it is backgrounded.
+  bool CanSuspendBackgroundedRenderer(int render_process_id);
+
   // Returns true if |first| is considered less desirable to be killed than
   // |second|.
   static bool CompareTabStats(const TabStats& first, const TabStats& second);

@@ -51,6 +51,7 @@
 #include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/memory/chrome_memory_coordinator_delegate.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -3246,3 +3247,8 @@ void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
   }
 }
 #endif  // defined(ENABLE_WEBRTC)
+
+std::unique_ptr<content::MemoryCoordinatorDelegate>
+ChromeContentBrowserClient::GetMemoryCoordinatorDelegate() {
+  return memory::ChromeMemoryCoordinatorDelegate::Create();
+}

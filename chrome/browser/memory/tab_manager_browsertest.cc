@@ -22,6 +22,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "url/gurl.h"
@@ -390,6 +391,41 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
 
   // Should be able to discard the background tab now.
   EXPECT_TRUE(tab_manager->DiscardTabImpl());
+}
+
+IN_PROC_BROWSER_TEST_F(TabManagerTest, CanSuspendBackgroundedRenderer) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+
+  // Open 2 tabs, the second one being in the background.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUIAboutURL),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  auto* tab = browser()->tab_strip_model()->GetWebContentsAt(1);
+  // Simulate that a video stream is now being captured.
+  content::MediaStreamDevice fake_media_device(
+      content::MEDIA_DEVICE_VIDEO_CAPTURE, "fake_media_device",
+      "fake_media_device");
+  content::MediaStreamDevices video_devices(1, fake_media_device);
+  MediaCaptureDevicesDispatcher* dispatcher =
+      MediaCaptureDevicesDispatcher::GetInstance();
+  dispatcher->SetTestVideoCaptureDevices(video_devices);
+  std::unique_ptr<content::MediaStreamUI> video_stream_ui =
+      dispatcher->GetMediaStreamCaptureIndicator()->RegisterMediaStream(
+          tab, video_devices);
+  video_stream_ui->OnStarted(base::Closure());
+
+  // Should not be able to suspend a tab which plays a video.
+  int render_process_id = tab->GetRenderProcessHost()->GetID();
+  ASSERT_FALSE(tab_manager->CanSuspendBackgroundedRenderer(render_process_id));
+
+  // Remove the video stream.
+  video_stream_ui.reset();
+
+  // Should be able to suspend the background tab now.
+  EXPECT_TRUE(tab_manager->CanSuspendBackgroundedRenderer(render_process_id));
 }
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, AutoDiscardable) {

@@ -10,6 +10,7 @@
 #include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 #include "content/common/memory_coordinator.mojom.h"
+#include "content/public/browser/memory_coordinator_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -59,6 +60,9 @@ class CONTENT_EXPORT MemoryCoordinator {
   // for testing.
   void OnConnectionError(int render_process_id);
 
+  // Returns true when a given renderer can be suspended.
+  bool CanSuspendRenderer(int render_process_id);
+
  private:
   friend struct base::DefaultSingletonTraits<MemoryCoordinator>;
 
@@ -85,6 +89,8 @@ class CONTENT_EXPORT MemoryCoordinator {
   // MemoryCoordinator and removed automatically when an underlying binding is
   // disconnected.
   ChildInfoMap children_;
+
+  std::unique_ptr<MemoryCoordinatorDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryCoordinator);
 };

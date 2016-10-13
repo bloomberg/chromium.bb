@@ -134,6 +134,7 @@ source_set("browser_sources") {
     "media_capture_devices.h",
     "media_device_id.cc",
     "media_device_id.h",
+    "memory_coordinator_delegate.h",
     "memory_pressure_controller.cc",
     "memory_pressure_controller.h",
     "message_port_delegate.h",

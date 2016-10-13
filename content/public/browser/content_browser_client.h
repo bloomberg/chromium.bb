@@ -114,6 +114,7 @@ class ExternalVideoSurfaceContainer;
 class GpuProcessHost;
 class LocationProvider;
 class MediaObserver;
+class MemoryCoordinatorDelegate;
 class NavigationHandle;
 class NavigationUIData;
 class PlatformNotificationService;
@@ -775,6 +776,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual base::string16 GetAppContainerSidForSandboxType(
       int sandbox_type) const;
 #endif
+
+  // Returns an instance of MemoryCoordinatorDelegate.
+  virtual std::unique_ptr<MemoryCoordinatorDelegate>
+  GetMemoryCoordinatorDelegate();
 };
 
 }  // namespace content

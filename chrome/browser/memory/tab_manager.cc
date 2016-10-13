@@ -418,6 +418,23 @@ void TabManager::SetTabAutoDiscardableState(content::WebContents* contents,
   GetWebContentsData(contents)->SetAutoDiscardableState(state);
 }
 
+bool TabManager::CanSuspendBackgroundedRenderer(int render_process_id) {
+  // A renderer can be suspended if it's not playing media.
+  auto tab_stats = GetUnsortedTabStats();
+  for (auto& tab : tab_stats) {
+    if (tab.child_process_host_id != render_process_id)
+      continue;
+    TabStripModel* model;
+    int index = FindTabStripModelById(tab.tab_contents_id, &model);
+    if (index == -1)
+      return false;
+    WebContents* web_contents = model->GetWebContentsAt(index);
+    if (IsMediaTab(web_contents))
+      return false;
+  }
+  return true;
+}
+
 // static
 bool TabManager::CompareTabStats(const TabStats& first,
                                  const TabStats& second) {

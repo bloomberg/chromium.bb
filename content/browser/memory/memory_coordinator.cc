@@ -5,6 +5,9 @@
 #include "content/browser/memory/memory_coordinator.h"
 
 #include "base/memory/memory_coordinator_client_registry.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 
 namespace content {
@@ -41,7 +44,9 @@ MemoryCoordinator* MemoryCoordinator::GetInstance() {
                          base::LeakySingletonTraits<MemoryCoordinator>>::get();
 }
 
-MemoryCoordinator::MemoryCoordinator() {}
+MemoryCoordinator::MemoryCoordinator()
+    : delegate_(GetContentClient()->browser()->GetMemoryCoordinatorDelegate()) {
+}
 
 MemoryCoordinator::~MemoryCoordinator() {}
 
@@ -75,6 +80,11 @@ bool MemoryCoordinator::SetMemoryState(int render_process_id,
   if (iter->second.memory_state == memory_state)
     return true;
 
+  // Can't suspend the given renderer.
+  if (memory_state == mojom::MemoryState::SUSPENDED &&
+      !CanSuspendRenderer(render_process_id))
+    return false;
+
   // Update the internal state and send the message.
   iter->second.memory_state = memory_state;
   iter->second.handle->child()->OnStateChange(memory_state);
@@ -101,6 +111,16 @@ void MemoryCoordinator::AddChildForTesting(
 
 void MemoryCoordinator::OnConnectionError(int render_process_id) {
   children_.erase(render_process_id);
+}
+
+bool MemoryCoordinator::CanSuspendRenderer(int render_process_id) {
+  // If there is no delegate (i.e. tests), renderers are always suspendable.
+  if (!delegate_)
+    return true;
+  auto* render_process_host = RenderProcessHost::FromID(render_process_id);
+  if (!render_process_host->IsProcessBackgrounded())
+      return false;
+  return delegate_->CanSuspendBackgroundedRenderer(render_process_id);
 }
 
 void MemoryCoordinator::CreateChildInfoMapEntry(

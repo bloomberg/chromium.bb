@@ -305,6 +305,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationHandle* handle) override;
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
       content::NavigationHandle* navigation_handle) override;
+  std::unique_ptr<content::MemoryCoordinatorDelegate>
+  GetMemoryCoordinatorDelegate() override;
 
  private:
   friend class DisableWebRtcEncryptionFlagTest;

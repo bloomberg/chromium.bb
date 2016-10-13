@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/memory_coordinator_delegate.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/common/sandbox_type.h"
@@ -422,6 +423,11 @@ base::string16 ContentBrowserClient::GetAppContainerSidForSandboxType(
 std::unique_ptr<base::Value> ContentBrowserClient::GetServiceManifestOverlay(
     const std::string& name) {
   return nullptr;
+}
+
+std::unique_ptr<MemoryCoordinatorDelegate>
+ContentBrowserClient::GetMemoryCoordinatorDelegate() {
+  return std::unique_ptr<MemoryCoordinatorDelegate>();
 }
 
 }  // namespace content

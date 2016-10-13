@@ -555,6 +555,8 @@ split_static_library("browser") {
     "media/webrtc/window_icon_util_chromeos.cc",
     "media/webrtc/window_icon_util_mac.mm",
     "media/webrtc/window_icon_util_win.cc",
+    "memory/chrome_memory_coordinator_delegate.cc",
+    "memory/chrome_memory_coordinator_delegate.h",
     "memory_details.cc",
     "memory_details.h",
     "memory_details_android.cc",
