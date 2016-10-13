@@ -244,8 +244,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
         findViewById(R.id.host_setup_link_android).setOnClickListener(this);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar,
-                R.string.open_navigation_drawer, R.string.close_navigation_drawer) {
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, 0, 0) {
             @Override
             public void onDrawerClosed(View drawerView) {
                 super.onDrawerClosed(drawerView);
@@ -287,6 +286,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
         DrawableCompat.setTint(menuIcon.mutate(),
                 ChromotingUtil.getColorAttribute(this, R.attr.colorControlNormal));
         getSupportActionBar().setHomeAsUpIndicator(menuIcon);
+        getSupportActionBar().setHomeActionContentDescription(R.string.actionbar_menu);
 
         mAccountSwitcher = AccountSwitcherFactory.getInstance().createAccountSwitcher(this, this);
         mAccountSwitcher.setNavigation(NavigationMenuAdapter.createNavigationMenu(this));

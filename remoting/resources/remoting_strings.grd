@@ -616,12 +616,6 @@
         <message desc="Title for Cast button in Android application menu." name="IDS_CAST_BUTTON_TITLE" formatter_data="android_java">
           Cast
         </message>
-        <message desc="Text for the Android action-bar button which opens the sliding navigation drawer when touched." name="IDS_OPEN_NAVIGATION_DRAWER" formatter_data="android_java">
-          Open navigation drawer
-        </message>
-        <message desc="Text for the Android action-bar button which closes the sliding navigation drawer when touched." name="IDS_CLOSE_NAVIGATION_DRAWER" formatter_data="android_java">
-          Close navigation drawer
-        </message>
 
 <!-- Play Store listings text. These Android-specific strings are not marked
      with formatter_data="android_java" since they are used only for the Play
@@ -1159,6 +1153,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       </message>
       <message desc="Label for the Feedback button displayed in the Android Help screen. Pressing this button causes the Feedback screen to be shown." name="IDS_ACTIONBAR_FEEDBACK" formatter_data="android_java">
         Feedback
+      </message>
+      <message desc="Label for the menu button displayed on the Android toolbar. Pressing this button will open a drawer with a list of menu options." name="IDS_ACTIONBAR_MENU" formatter_data="android_java">
+        Menu
       </message>
       <message desc="Label for button to accept remote assistance.  This button appears in the Hangouts confirm dialog." name="IDS_HANGOUTS_CONFIRM_DIALOG_ACCEPT" >
         Accept
