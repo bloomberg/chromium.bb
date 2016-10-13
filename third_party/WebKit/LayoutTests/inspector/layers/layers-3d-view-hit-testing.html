@@ -5,7 +5,6 @@
 <script>
 function test()
 {
-    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 4000);
     var contentRoot;
     var layers;
     var rootOffsetXInPixels, rootOffsetYInPixels, rootHeightInPixels, rootWidthInPixels;
@@ -50,6 +49,7 @@ function test()
     function dumpStateForOutlineType(type)
     {
         var outlined = "none";
+        WebInspector.panels.layers._update();
 
         function checkLayer(layerInfo)
         {

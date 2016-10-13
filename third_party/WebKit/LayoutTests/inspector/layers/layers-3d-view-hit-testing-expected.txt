@@ -21,5 +21,5 @@ selected layer: layer b
 Selecting content root
 State of layers:
 hovered layer: none
-selected layer: none
+selected layer: content root
 
