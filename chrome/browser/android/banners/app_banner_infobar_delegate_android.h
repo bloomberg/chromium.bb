@@ -23,7 +23,6 @@ namespace infobars {
 class InfoBarManager;
 }
 
-class AppBannerInfoBar;
 struct ShortcutInfo;
 
 namespace banners {
@@ -43,7 +42,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       bool is_webapk,
       webapk::InstallSource webapk_install_source);
 
-  // Creates and shows the infobar for an Android app.
   // Creates an infobar and delegate for promoting the installation of an
   // Android app, and adds the infobar to the InfoBarManager for |web_contents|.
   static bool Create(
@@ -57,7 +55,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   ~AppBannerInfoBarDelegateAndroid() override;
 
-  // Called when the AppBannerInfoBar's button needs to be updated.
+  // Called when the AppBannerInfoBarAndroid's button needs to be updated.
   void UpdateInstallState(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
 
