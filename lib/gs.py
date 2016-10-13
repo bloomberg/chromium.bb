@@ -403,6 +403,13 @@ class GSContext(object):
 
       # Locate the module in the build dir.
       temp_mod_path = os.path.join(tempdir, 'crcmod', '_crcfunext.so')
+      # If the module compile failed (missing compiler/headers/whatever),
+      # then the setup.py build command above would have passed, but there
+      # won't actually be a _crcfunext.so module.  Check for it here to
+      # disambiguate other errors from shutil.copy2.
+      if not os.path.exists(temp_mod_path):
+        logging.debug('No crcmod module produced (missing host compiler?)')
+        return False
       try:
         shutil.copy2(temp_mod_path, mod_path)
         return True
