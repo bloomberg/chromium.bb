@@ -115,7 +115,10 @@ LayoutRect SVGLayoutSupport::transformPaintInvalidationRect(
   if (adjustedRect.isEmpty())
     return LayoutRect();
 
-  return enclosingLayoutRect(adjustedRect);
+  // Use enclosingIntRect because we cannot properly apply subpixel offset of
+  // the SVGRoot since we don't know the desired subpixel accumulation at this
+  // point.
+  return LayoutRect(enclosingIntRect(adjustedRect));
 }
 
 static const LayoutSVGRoot& computeTransformToSVGRoot(

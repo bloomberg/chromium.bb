@@ -12,7 +12,7 @@ layer at (0,0) size 785x767 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 518x26
           text run at (0,0) width 518: "There should be a red, white and blue pattern below this"
       LayoutSVGRoot (floating) {svg} at (25,149) size 202x202
-        LayoutSVGRect {rect} at (54,178) size 145x145 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+        LayoutSVGRect {rect} at (53,177) size 146x146 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
       LayoutBlockFlow {p} at (0,353.63) size 761.97x26
         LayoutText {#text} at (0,0) size 517x26
           text run at (0,0) width 517: "There should be a red, white and blue pattern above this"

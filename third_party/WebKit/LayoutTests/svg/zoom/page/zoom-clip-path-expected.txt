@@ -9,12 +9,12 @@ layer at (0,0) size 800x248
             LayoutSVGRect {rect} at (16,16) size 105x105 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
           LayoutSVGResourceClipper {clipPath} [id="clip2"] [clipPathUnits=userSpaceOnUse]
             LayoutSVGRect {rect} at (16,16) size 105x105 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
-            LayoutSVGRect {rect} at (120,120) size 104x104 [fill={[type=SOLID] [color=#000000]}] [x=50.00] [y=50.00] [width=50.00] [height=50.00]
+            LayoutSVGRect {rect} at (119,119) size 105x105 [fill={[type=SOLID] [color=#000000]}] [x=50.00] [y=50.00] [width=50.00] [height=50.00]
           LayoutSVGResourceClipper {clipPath} [id="clip3"] [clipPathUnits=objectBoundingBox]
-            LayoutSVGRect {rect} at (16,16) size 2x2 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=0.50] [height=0.50]
+            LayoutSVGRect {rect} at (16,16) size 3x3 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=0.50] [height=0.50]
           LayoutSVGResourceClipper {clipPath} [id="clip4"] [clipPathUnits=objectBoundingBox]
-            LayoutSVGRect {rect} at (16,16) size 2x2 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=0.50] [height=0.50]
-            LayoutSVGRect {rect} at (17,17) size 2x2 [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=0.50] [height=0.50]
+            LayoutSVGRect {rect} at (16,16) size 3x3 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=0.50] [height=0.50]
+            LayoutSVGRect {rect} at (17,17) size 3x3 [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=0.50] [height=0.50]
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0

@@ -48,6 +48,6 @@ layer at (0,0) size 800x249
             chunk 1 text run 1 at (20.00,75.00) startOffset 0 endOffset 5 width 32.06: "'faQ'"
         LayoutSVGRect {rect} at (45,63) size 155x27 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=17.77] [y=9.45] [width=84.42] [height=13.33]
         LayoutSVGRect {rect} at (45,98) size 124x50 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=17.77] [y=28.89] [width=67.20] [height=26.11]
-        LayoutSVGRect {rect} at (49,157) size 63x33 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=20.00] [y=61.67] [width=33.50] [height=16.66]
+        LayoutSVGRect {rect} at (49,157) size 64x33 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=20.00] [y=61.67] [width=33.50] [height=16.66]
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
