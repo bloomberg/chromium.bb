@@ -90,6 +90,10 @@ const int kOutputTimeoutSeconds = 15;
 // the infrastructure.
 const size_t kOutputSnippetLinesLimit = 5000;
 
+// Limit of output snippet size. Exceeding this limit
+// results in truncating the output and failing the test.
+const size_t kOutputSnippetBytesLimit = 2.5 * 1024 * 1024;
+
 // Set of live launch test processes with corresponding lock (it is allowed
 // for callers to launch processes on different threads).
 LazyInstance<std::map<ProcessHandle, CommandLine> > g_live_processes
@@ -568,8 +572,20 @@ void TestLauncher::LaunchChildGTestProcess(
            launched_callback));
 }
 
-void TestLauncher::OnTestFinished(const TestResult& result) {
+void TestLauncher::OnTestFinished(const TestResult& original_result) {
   ++test_finished_count_;
+
+  TestResult result(original_result);
+
+  if (result.output_snippet.length() > kOutputSnippetBytesLimit) {
+    if (result.status == TestResult::TEST_SUCCESS)
+      result.status = TestResult::TEST_EXCESSIVE_OUTPUT;
+    result.output_snippet = StringPrintf(
+        "<truncated (%" PRIuS " bytes)>\n", result.output_snippet.length()) +
+        result.output_snippet.substr(
+            result.output_snippet.length() - kOutputSnippetLinesLimit) +
+        "\n";
+  }
 
   bool print_snippet = false;
   std::string print_test_stdio("auto");
