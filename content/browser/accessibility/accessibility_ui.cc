@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/webui/web_ui_data_source_impl.h"
 #include "content/common/view_message_enums.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/favicon_status.h"
@@ -142,8 +143,8 @@ bool HandleRequestCallback(BrowserContext* current_context,
 
 AccessibilityUI::AccessibilityUI(WebUI* web_ui) : WebUIController(web_ui) {
   // Set up the chrome://accessibility source.
-  WebUIDataSource* html_source =
-      WebUIDataSource::Create(kChromeUIAccessibilityHost);
+  WebUIDataSourceImpl* html_source = static_cast<WebUIDataSourceImpl*>(
+      WebUIDataSource::Create(kChromeUIAccessibilityHost));
 
   web_ui->RegisterMessageCallback(
       "toggleAccessibility",
@@ -170,6 +171,8 @@ AccessibilityUI::AccessibilityUI(WebUI* web_ui) : WebUIController(web_ui) {
   html_source->SetRequestFilter(
       base::Bind(&HandleRequestCallback,
                  web_ui->GetWebContents()->GetBrowserContext()));
+  html_source->DisableI18nAndUseGzipForAllPaths();
+  html_source->ExcludePathFromGzip(kDataFile);
 
   BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
