@@ -22,6 +22,7 @@
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "net/ssl/channel_id_store.h"
@@ -53,6 +54,8 @@ typedef std::list<content::ServiceWorkerUsageInfo> ServiceWorkerUsageInfoList;
 typedef std::list<content::CacheStorageUsageInfo> CacheStorageUsageInfoList;
 typedef std::map<GURL, std::list<content::AppCacheInfo> > AppCacheInfoMap;
 typedef std::vector<std::string> FlashLSODomainList;
+typedef std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>
+    MediaLicenseInfoList;
 
 }  // namespace
 
@@ -76,7 +79,8 @@ class LocalDataContainer {
       scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper,
       scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper,
       scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper,
-      scoped_refptr<BrowsingDataFlashLSOHelper> flash_data_helper);
+      scoped_refptr<BrowsingDataFlashLSOHelper> flash_data_helper,
+      scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper);
   virtual ~LocalDataContainer();
 
   // This method must be called to start the process of fetching the resources.
@@ -86,6 +90,7 @@ class LocalDataContainer {
  private:
   friend class CookiesTreeModel;
   friend class CookieTreeAppCacheNode;
+  friend class CookieTreeMediaLicenseNode;
   friend class CookieTreeCookieNode;
   friend class CookieTreeDatabaseNode;
   friend class CookieTreeLocalStorageNode;
@@ -118,6 +123,7 @@ class LocalDataContainer {
   void OnCacheStorageModelInfoLoaded(
       const CacheStorageUsageInfoList& cache_storage_info);
   void OnFlashLSOInfoLoaded(const FlashLSODomainList& domains);
+  void OnMediaLicenseInfoLoaded(const MediaLicenseInfoList& media_license_info);
 
   // Pointers to the helper objects, needed to retreive all the types of locally
   // stored data.
@@ -133,6 +139,7 @@ class LocalDataContainer {
   scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper_;
   scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper_;
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
+  scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper_;
 
   // Storage for all the data that was retrieved through the helper objects.
   // The collected data is used for (re)creating the CookiesTreeModel.
@@ -148,6 +155,7 @@ class LocalDataContainer {
   ServiceWorkerUsageInfoList service_worker_info_list_;
   CacheStorageUsageInfoList cache_storage_info_list_;
   FlashLSODomainList flash_lso_domain_list_;
+  MediaLicenseInfoList media_license_info_list_;
 
   // A delegate, which must outlive this object. The update callbacks use the
   // delegate to deliver the updated data to the CookieTreeModel.

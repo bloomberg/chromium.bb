@@ -21,6 +21,7 @@
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -110,6 +111,12 @@ void CookiesViewHandler::GetLocalizedValues(
       {"label_channel_id_expires", IDS_COOKIES_CHANNEL_ID_EXPIRES_LABEL},
       {"label_protected_by_apps",
        IDS_GEOLOCATION_SET_BY_HOVER},  // TODO(bauerb): Use a better string
+      {"cookie_media_license", IDS_COOKIES_MEDIA_LICENSE},
+      {"label_media_license_origin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL},
+      {"label_media_license_size",
+       IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL},
+      {"label_media_license_last_modified",
+       IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -216,7 +223,8 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         BrowsingDataChannelIDHelper::Create(profile->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(service_worker_context),
         new BrowsingDataCacheStorageHelper(cache_storage_context),
-        BrowsingDataFlashLSOHelper::Create(profile));
+        BrowsingDataFlashLSOHelper::Create(profile),
+        BrowsingDataMediaLicenseHelper::Create(file_system_context));
     cookies_tree_model_.reset(new CookiesTreeModel(
         container, profile->GetExtensionSpecialStoragePolicy()));
     cookies_tree_model_->AddCookiesTreeObserver(this);

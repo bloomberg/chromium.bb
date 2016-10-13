@@ -10,6 +10,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
@@ -266,8 +268,75 @@ int64_t PluginPrivateFileSystemBackend::GetOriginUsageOnFileTaskRunner(
     FileSystemContext* context,
     const GURL& origin_url,
     FileSystemType type) {
-  // We don't track usage on this filesystem.
-  return 0;
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+
+  if (!CanHandleType(type))
+    return 0;
+
+  int64_t total_size;
+  base::Time last_modified_time;
+  GetOriginDetailsOnFileTaskRunner(context, origin_url, &total_size,
+                                   &last_modified_time);
+  return total_size;
+}
+
+void PluginPrivateFileSystemBackend::GetOriginDetailsOnFileTaskRunner(
+    FileSystemContext* context,
+    const GURL& origin_url,
+    int64_t* total_size,
+    base::Time* last_modified_time) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+
+  *total_size = 0;
+  *last_modified_time = base::Time::UnixEpoch();
+  std::string fsid =
+      storage::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+          storage::kFileSystemTypePluginPrivate, "pluginprivate",
+          base::FilePath());
+  DCHECK(storage::ValidateIsolatedFileSystemId(fsid));
+
+  std::string root = storage::GetIsolatedFileSystemRootURIString(
+      origin_url, fsid, "pluginprivate");
+
+  std::unique_ptr<FileSystemOperationContext> operation_context(
+      new FileSystemOperationContext(context));
+
+  // Determine the available plugin private filesystem directories for this
+  // origin. Currently the plugin private filesystem is only used by Encrypted
+  // Media Content Decryption Modules. Each CDM gets a directory based on the
+  // mimetype (e.g. plugin application/x-ppapi-widevine-cdm uses directory
+  // application_x-ppapi-widevine-cdm). Enumerate through the set of
+  // directories so that data from any CDM used by this origin is counted.
+  base::File::Error error;
+  base::FilePath path = obfuscated_file_util()->GetDirectoryForOriginAndType(
+      origin_url, "", false, &error);
+  if (error != base::File::FILE_OK) {
+    DLOG(ERROR) << "Unable to read directory for " << origin_url;
+    return;
+  }
+
+  base::FileEnumerator directory_enumerator(path, false,
+                                            base::FileEnumerator::DIRECTORIES);
+  base::FilePath plugin_path;
+  while (!(plugin_path = directory_enumerator.Next()).empty()) {
+    std::string plugin_name = plugin_path.BaseName().MaybeAsASCII();
+    if (OpenFileSystemOnFileTaskRunner(
+            obfuscated_file_util(), plugin_map_, origin_url, fsid, plugin_name,
+            storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT) !=
+        base::File::FILE_OK) {
+      continue;
+    }
+
+    std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
+        obfuscated_file_util()->CreateFileEnumerator(
+            operation_context.get(), context->CrackURL(GURL(root)), true));
+
+    while (!enumerator->Next().empty()) {
+      *total_size += enumerator->Size();
+      if (enumerator->LastModifiedTime() > *last_modified_time)
+        *last_modified_time = enumerator->LastModifiedTime();
+    }
+  }
 }
 
 scoped_refptr<QuotaReservation>

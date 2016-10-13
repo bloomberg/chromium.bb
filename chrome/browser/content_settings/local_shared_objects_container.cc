@@ -220,7 +220,7 @@ LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
   LocalDataContainer* container = new LocalDataContainer(
       cookies_, databases_, local_storages_, session_storages_, appcaches_,
       indexed_dbs_, file_systems_, nullptr, channel_ids_, service_workers_,
-      cache_storages_, nullptr);
+      cache_storages_, nullptr, nullptr);
 
   return base::MakeUnique<CookiesTreeModel>(container, nullptr);
 }

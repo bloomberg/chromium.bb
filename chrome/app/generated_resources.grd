@@ -10522,6 +10522,12 @@ I don't think this site should be blocked!
       <message name="IDS_COOKIES_INDEXED_DBS" desc="Label for Indexed Databases (name of an HTML standard)">
         Indexed databases
       </message>
+      <message name="IDS_COOKIES_MEDIA_LICENSE" desc="The text shown when there is an Media License in the Cookies table">
+        Media license
+      </message>
+      <message name="IDS_COOKIES_MEDIA_LICENSES" desc="Label for Media Licenses">
+        Media licenses
+      </message>
       <message name="IDS_COOKIES_FILE_SYSTEM" desc="The text shown when there is a file system (name of an HTML standard) in the Cookies table">
         File system
       </message>

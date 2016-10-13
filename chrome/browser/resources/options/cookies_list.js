@@ -47,6 +47,9 @@ cr.define('options', function() {
                        ['size', 'label_cache_storage_size'],
                        ['modified', 'label_cache_storage_last_modified']],
     'flash_lso': [['domain', 'label_cookie_domain']],
+    'media_license': [['origin', 'label_media_license_origin'],
+                      ['size', 'label_media_license_size'],
+                      ['modified', 'label_media_license_last_modified']],
   };
 
   /**
@@ -256,6 +259,7 @@ cr.define('options', function() {
         channelIDs: 0,
         serviceWorker: false,
         cacheStorage: false,
+        mediaLicense: false,
       };
       if (this.origin)
         this.origin.collectSummaryInfo(info);
@@ -281,6 +285,8 @@ cr.define('options', function() {
         list.push(loadTimeData.getString('cookie_cache_storage'));
       if (info.flashLSO)
         list.push(loadTimeData.getString('cookie_flash_lso'));
+      if (info.mediaLicense)
+        list.push(loadTimeData.getString('cookie_media_license'));
 
       var text = '';
       for (var i = 0; i < list.length; ++i) {
@@ -505,6 +511,8 @@ cr.define('options', function() {
           info.cacheStorage = true;
         } else if (this.data.type == 'flash_lso') {
           info.flashLSO = true;
+        } else if (this.data.type == 'media_license') {
+          info.mediaLicense = true;
         }
 
         var apps = this.data.appsProtectingThis;

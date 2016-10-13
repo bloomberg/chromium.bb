@@ -56,6 +56,7 @@ var categoryLabels = {
   'indexed_db': loadTimeData.getString('cookieDatabaseStorage'),
   'local_storage': loadTimeData.getString('cookieLocalStorage'),
   'service_worker': loadTimeData.getString('cookieServiceWorker'),
+  'media_license': loadTimeData.getString('cookieMediaLicense'),
 };
 
 /**

@@ -531,7 +531,7 @@ class SiteDataDeleteHelper :
         new BrowsingDataCookieHelper(profile_->GetRequestContext()),
         new BrowsingDataDatabaseHelper(profile_),
         new BrowsingDataLocalStorageHelper(profile_),
-        NULL,
+        nullptr,
         new BrowsingDataAppCacheHelper(profile_),
         new BrowsingDataIndexedDBHelper(indexed_db_context),
         BrowsingDataFileSystemHelper::Create(file_system_context),
@@ -539,7 +539,8 @@ class SiteDataDeleteHelper :
         BrowsingDataChannelIDHelper::Create(profile_->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(service_worker_context),
         new BrowsingDataCacheStorageHelper(cache_storage_context),
-        NULL);
+        nullptr,
+        nullptr);
 
     cookies_tree_model_.reset(new CookiesTreeModel(
         container, profile_->GetExtensionSpecialStoragePolicy()));

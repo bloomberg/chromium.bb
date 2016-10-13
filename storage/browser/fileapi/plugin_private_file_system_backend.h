@@ -118,6 +118,15 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
       const GURL& origin_url,
       FileSystemType type) override;
 
+  // Get details on the files saved for the specified |origin_url|. Returns
+  // the total size and last modified time for the set of all files stored
+  // for the particular origin. |total_size| = 0 and |last_modified_time| =
+  // base::Time::UnixEpoch() if no files found.
+  void GetOriginDetailsOnFileTaskRunner(FileSystemContext* context,
+                                        const GURL& origin_url,
+                                        int64_t* total_size,
+                                        base::Time* last_modified_time);
+
  private:
   friend class content::PluginPrivateFileSystemBackendTest;
 

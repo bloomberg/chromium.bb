@@ -45,4 +45,7 @@
                     ['size', 'cacheStorageSize'],
                     ['modified', 'cacheStorageLastModified']],
   'flash_lso': [['domain', 'cookieDomain']],
+  'media_license': [['origin', 'mediaLicenseOrigin'],
+                    ['size', 'mediaLicenseSize'],
+                    ['modified', 'mediaLicenseLastModified']],
 };

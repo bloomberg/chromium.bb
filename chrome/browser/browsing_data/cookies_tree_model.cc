@@ -144,6 +144,7 @@ bool TypeIsProtected(CookieTreeNode::DetailedInfo::NodeType type) {
     case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
     case CookieTreeNode::DetailedInfo::TYPE_CHANNEL_ID:
     case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO:
+    case CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE:
       return false;
     default:
       break;
@@ -276,6 +277,15 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitFlashLSO(
     const std::string& flash_lso_domain) {
   Init(TYPE_FLASH_LSO);
   this->flash_lso_domain = flash_lso_domain;
+  return *this;
+}
+
+CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitMediaLicense(
+    const BrowsingDataMediaLicenseHelper::MediaLicenseInfo*
+        media_license_info) {
+  Init(TYPE_MEDIA_LICENSE);
+  this->media_license_info = media_license_info;
+  this->origin = media_license_info->origin;
   return *this;
 }
 
@@ -583,6 +593,32 @@ CookieTreeNode::DetailedInfo CookieTreeCacheStorageNode::GetDetailedInfo()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// CookieTreeMediaLicenseNode, public:
+
+CookieTreeMediaLicenseNode::CookieTreeMediaLicenseNode(
+    const std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>::iterator
+        media_license_info)
+    : CookieTreeNode(base::UTF8ToUTF16(media_license_info->origin.spec())),
+      media_license_info_(media_license_info) {}
+
+CookieTreeMediaLicenseNode::~CookieTreeMediaLicenseNode() {}
+
+void CookieTreeMediaLicenseNode::DeleteStoredObjects() {
+  LocalDataContainer* container = GetLocalDataContainerForNode(this);
+
+  if (container) {
+    container->media_license_helper_->DeleteMediaLicenseOrigin(
+        media_license_info_->origin);
+    container->media_license_info_list_.erase(media_license_info_);
+  }
+}
+
+CookieTreeNode::DetailedInfo CookieTreeMediaLicenseNode::GetDetailedInfo()
+    const {
+  return DetailedInfo().InitMediaLicense(&*media_license_info_);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // CookieTreeRootNode, public:
 
 CookieTreeRootNode::CookieTreeRootNode(CookiesTreeModel* model)
@@ -747,6 +783,15 @@ CookieTreeFlashLSONode* CookieTreeHostNode::GetOrCreateFlashLSONode(
   flash_lso_child_ = new CookieTreeFlashLSONode(domain);
   AddChildSortedByTitle(base::WrapUnique(flash_lso_child_));
   return flash_lso_child_;
+}
+
+CookieTreeMediaLicensesNode*
+CookieTreeHostNode::GetOrCreateMediaLicensesNode() {
+  if (media_licenses_child_)
+    return media_licenses_child_;
+  media_licenses_child_ = new CookieTreeMediaLicensesNode();
+  AddChildSortedByTitle(base::WrapUnique(media_licenses_child_));
+  return media_licenses_child_;
 }
 
 void CookieTreeHostNode::CreateContentException(
@@ -935,6 +980,18 @@ CookieTreeNode::DetailedInfo CookieTreeFlashLSONode::GetDetailedInfo() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// CookieTreeMediaLicensesNode
+CookieTreeMediaLicensesNode::CookieTreeMediaLicensesNode()
+    : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_MEDIA_LICENSES)) {}
+
+CookieTreeMediaLicensesNode::~CookieTreeMediaLicensesNode() {}
+
+CookieTreeNode::DetailedInfo CookieTreeMediaLicensesNode::GetDetailedInfo()
+    const {
+  return DetailedInfo().Init(DetailedInfo::TYPE_MEDIA_LICENSES);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // ScopedBatchUpdateNotifier
 CookiesTreeModel::ScopedBatchUpdateNotifier::ScopedBatchUpdateNotifier(
     CookiesTreeModel* model,
@@ -1028,6 +1085,7 @@ int CookiesTreeModel::GetIconIndex(ui::TreeModelNode* node) {
     case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
     case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:
     case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE:
+    case CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE:
       return DATABASE;
     case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
       return -1;
@@ -1169,6 +1227,11 @@ void CookiesTreeModel::PopulateFlashLSOInfo(
       LocalDataContainer* container) {
   ScopedBatchUpdateNotifier notifier(this, GetRoot());
   PopulateFlashLSOInfoWithFilter(container, &notifier, base::string16());
+}
+
+void CookiesTreeModel::PopulateMediaLicenseInfo(LocalDataContainer* container) {
+  ScopedBatchUpdateNotifier notifier(this, GetRoot());
+  PopulateMediaLicenseInfoWithFilter(container, &notifier, base::string16());
 }
 
 void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
@@ -1489,6 +1552,33 @@ void CookiesTreeModel::PopulateFlashLSOInfoWithFilter(
       GURL origin("http://" + *it);
       CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
       host_node->GetOrCreateFlashLSONode(*it);
+    }
+  }
+}
+
+void CookiesTreeModel::PopulateMediaLicenseInfoWithFilter(
+    LocalDataContainer* container,
+    ScopedBatchUpdateNotifier* notifier,
+    const base::string16& filter) {
+  CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
+
+  if (container->media_license_info_list_.empty())
+    return;
+
+  notifier->StartBatchUpdate();
+  for (MediaLicenseInfoList::iterator media_license_info =
+           container->media_license_info_list_.begin();
+       media_license_info != container->media_license_info_list_.end();
+       ++media_license_info) {
+    GURL origin(media_license_info->origin);
+
+    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin).find(
+                               filter) != base::string16::npos)) {
+      CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
+      CookieTreeMediaLicensesNode* media_licenses_node =
+          host_node->GetOrCreateMediaLicensesNode();
+      media_licenses_node->AddMediaLicenseNode(
+          base::MakeUnique<CookieTreeMediaLicenseNode>(media_license_info));
     }
   }
 }

@@ -299,6 +299,19 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyDomain, node.GetDetailedInfo().flash_lso_domain);
       break;
     }
+    case CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE: {
+      dict->SetString(kKeyType, "media_license");
+      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
+
+      const BrowsingDataMediaLicenseHelper::MediaLicenseInfo&
+          media_license_info = *node.GetDetailedInfo().media_license_info;
+      dict->SetString(kKeyOrigin, media_license_info.origin.spec());
+      dict->SetString(kKeySize, ui::FormatBytes(media_license_info.size));
+      dict->SetString(kKeyModified,
+                      base::UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
+                          media_license_info.last_modified_time)));
+      break;
+    }
     default:
 #if defined(OS_MACOSX)
       dict->SetString(kKeyIcon, "chrome://theme/IDR_BOOKMARK_BAR_FOLDER");

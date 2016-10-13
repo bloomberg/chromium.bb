@@ -26,7 +26,8 @@ LocalDataContainer::LocalDataContainer(
     scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper,
     scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper,
     scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper,
-    scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper)
+    scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper,
+    scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper)
     : appcache_helper_(std::move(appcache_helper)),
       cookie_helper_(std::move(cookie_helper)),
       database_helper_(std::move(database_helper)),
@@ -39,6 +40,7 @@ LocalDataContainer::LocalDataContainer(
       service_worker_helper_(std::move(service_worker_helper)),
       cache_storage_helper_(std::move(cache_storage_helper)),
       flash_lso_helper_(std::move(flash_lso_helper)),
+      media_license_helper_(std::move(media_license_helper)),
       weak_ptr_factory_(this) {}
 
 LocalDataContainer::~LocalDataContainer() {}
@@ -129,6 +131,13 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
     batches_started_++;
     flash_lso_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnFlashLSOInfoLoaded,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  if (media_license_helper_.get()) {
+    batches_started_++;
+    media_license_helper_->StartFetching(
+        base::Bind(&LocalDataContainer::OnMediaLicenseInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -233,4 +242,11 @@ void LocalDataContainer::OnFlashLSOInfoLoaded(
   flash_lso_domain_list_ = domains;
   DCHECK(model_);
   model_->PopulateFlashLSOInfo(this);
+}
+
+void LocalDataContainer::OnMediaLicenseInfoLoaded(
+    const MediaLicenseInfoList& media_license_info) {
+  media_license_info_list_ = media_license_info;
+  DCHECK(model_);
+  model_->PopulateMediaLicenseInfo(this);
 }
