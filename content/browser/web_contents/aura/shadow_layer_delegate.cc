@@ -4,7 +4,6 @@
 
 #include "content/browser/web_contents/aura/shadow_layer_delegate.h"
 
-#include "base/bind.h"
 #include "base/macros.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/aura/window.h"
@@ -57,10 +56,6 @@ void ShadowLayerDelegate::OnDelegatedFrameDamage(
 }
 
 void ShadowLayerDelegate::OnDeviceScaleFactorChanged(float scale_factor) {
-}
-
-base::Closure ShadowLayerDelegate::PrepareForLayerBoundsChange() {
-  return base::Bind(&base::DoNothing);
 }
 
 }  // namespace content

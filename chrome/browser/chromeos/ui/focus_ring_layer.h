@@ -68,7 +68,6 @@ class FocusRingLayer : public ui::LayerDelegate,
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-  base::Closure PrepareForLayerBoundsChange() override;
 
   // CompositorAnimationObserver overrides:
   void OnAnimationStep(base::TimeTicks timestamp) override;

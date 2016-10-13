@@ -444,15 +444,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // |source|.
   void NotifyAncestorWindowTransformed(Window* source);
 
-  // Invoked when the bounds of the window changes. This may be invoked directly
-  // by us, or from the closure returned by PrepareForLayerBoundsChange() after
-  // the bounds of the layer has changed. |old_bounds| is the previous bounds.
-  void OnWindowBoundsChanged(const gfx::Rect& old_bounds);
-
   // Overridden from ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
-  base::Closure PrepareForLayerBoundsChange() override;
+  void OnLayerBoundsChanged(const gfx::Rect& old_bounds) override;
 
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;

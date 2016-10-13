@@ -187,7 +187,6 @@ class TrayBubbleContentMask : public ui::LayerDelegate {
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-  base::Closure PrepareForLayerBoundsChange() override;
 
  private:
   ui::Layer layer_;
@@ -219,10 +218,6 @@ void TrayBubbleContentMask::OnPaintLayer(const ui::PaintContext& context) {
 void TrayBubbleContentMask::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
   // Redrawing will take care of scale factor change.
-}
-
-base::Closure TrayBubbleContentMask::PrepareForLayerBoundsChange() {
-  return base::Closure();
 }
 
 // Custom layout for the bubble-view. Does the default box-layout if there is

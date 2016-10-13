@@ -719,7 +719,7 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   // changed notification from the layer (this typically happens after animating
   // hidden). We must notify ourselves.
   if (layer()->delegate() != this)
-    OnWindowBoundsChanged(old_bounds);
+    OnLayerBoundsChanged(old_bounds);
 }
 
 void Window::SetVisible(bool visible) {
@@ -1019,17 +1019,6 @@ void Window::NotifyAncestorWindowTransformed(Window* source) {
   }
 }
 
-void Window::OnWindowBoundsChanged(const gfx::Rect& old_bounds) {
-  bounds_ = layer()->bounds();
-  if (layout_manager_)
-    layout_manager_->OnWindowResized();
-  if (delegate_)
-    delegate_->OnBoundsChanged(old_bounds, bounds());
-  FOR_EACH_OBSERVER(WindowObserver,
-                    observers_,
-                    OnWindowBoundsChanged(this, old_bounds, bounds()));
-}
-
 bool Window::CleanupGestureState() {
   bool state_modified = false;
   state_modified |= ui::GestureRecognizer::Get()->CancelActiveTouches(this);
@@ -1054,9 +1043,14 @@ void Window::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
                     OnDelegatedFrameDamage(this, damage_rect_in_dip));
 }
 
-base::Closure Window::PrepareForLayerBoundsChange() {
-  return base::Bind(&Window::OnWindowBoundsChanged, base::Unretained(this),
-                    bounds());
+void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds) {
+  bounds_ = layer()->bounds();
+  if (layout_manager_)
+    layout_manager_->OnWindowResized();
+  if (delegate_)
+    delegate_->OnBoundsChanged(old_bounds, bounds_);
+  for (auto& observer : observers_)
+    observer.OnWindowBoundsChanged(this, old_bounds, bounds_);
 }
 
 bool Window::CanAcceptEvent(const ui::Event& event) {

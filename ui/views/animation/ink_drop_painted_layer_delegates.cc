@@ -39,9 +39,6 @@ void BasePaintedLayerDelegate::OnDelegatedFrameDamage(
 void BasePaintedLayerDelegate::OnDeviceScaleFactorChanged(
     float device_scale_factor) {}
 
-base::Closure BasePaintedLayerDelegate::PrepareForLayerBoundsChange() {
-  return base::Closure();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //

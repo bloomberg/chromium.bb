@@ -55,10 +55,6 @@ class BootSplashScreen::CopyHostContentLayerDelegate
 
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
-  base::Closure PrepareForLayerBoundsChange() override {
-    return base::Closure();
-  }
-
  private:
 #if defined(USE_X11)
   aura::WindowTreeHost* host_;  // not owned

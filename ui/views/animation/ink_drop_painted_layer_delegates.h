@@ -5,7 +5,6 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_PAINTED_LAYER_DELEGATES_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_PAINTED_LAYER_DELEGATES_H_
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_delegate.h"
@@ -33,7 +32,6 @@ class VIEWS_EXPORT BasePaintedLayerDelegate : public ui::LayerDelegate {
   // ui::LayerDelegate:
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-  base::Closure PrepareForLayerBoundsChange() override;
 
  protected:
   explicit BasePaintedLayerDelegate(SkColor color);

@@ -53,9 +53,6 @@ class TestLayerDelegate : public ui::LayerDelegate {
   }
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
-  base::Closure PrepareForLayerBoundsChange() override {
-    return base::Closure();
-  }
 
   int paint_count_ = 0;
 

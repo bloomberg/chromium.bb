@@ -896,18 +896,16 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {
     return;
 
   base::Closure closure;
-  if (delegate_)
-    closure = delegate_->PrepareForLayerBoundsChange();
-  bool was_move = bounds_.size() == bounds.size();
+  const gfx::Rect old_bounds = bounds_;
   bounds_ = bounds;
 
   RecomputeDrawsContentAndUVRect();
   RecomputePosition();
 
-  if (!closure.is_null())
-    closure.Run();
+  if (delegate_)
+    delegate_->OnLayerBoundsChanged(old_bounds);
 
-  if (was_move) {
+  if (bounds.size() == old_bounds.size()) {
     // Don't schedule a draw if we're invisible. We'll schedule one
     // automatically when we get visible.
     if (IsDrawn())

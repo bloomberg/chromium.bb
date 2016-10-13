@@ -1108,10 +1108,6 @@ void BridgedNativeWidget::OnDeviceScaleFactorChanged(
       device_scale_factor);
 }
 
-base::Closure BridgedNativeWidget::PrepareForLayerBoundsChange() {
-  return base::Closure();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidget, AcceleratedWidgetMac:
 

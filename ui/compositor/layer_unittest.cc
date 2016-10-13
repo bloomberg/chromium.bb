@@ -87,10 +87,6 @@ class ColoredLayer : public Layer, public LayerDelegate {
 
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
-  base::Closure PrepareForLayerBoundsChange() override {
-    return base::Closure();
-  }
-
  private:
   SkColor color_;
 };
@@ -146,10 +142,6 @@ class DrawStringLayerDelegate : public LayerDelegate {
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
-
-  base::Closure PrepareForLayerBoundsChange() override {
-    return base::Closure();
-  }
 
  private:
   const SkColor background_color_;
@@ -339,10 +331,6 @@ class TestLayerDelegate : public LayerDelegate {
     device_scale_factor_ = device_scale_factor;
   }
 
-  base::Closure PrepareForLayerBoundsChange() override {
-    return base::Closure();
-  }
-
   void reset() {
     color_index_ = 0;
     device_scale_factor_ = 0.0f;
@@ -379,9 +367,6 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   }
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
-  base::Closure PrepareForLayerBoundsChange() override {
-    return base::Closure();
-  }
 
   bool painted_;
   const gfx::Rect layer_bounds_;
@@ -400,9 +385,6 @@ class NullLayerDelegate : public LayerDelegate {
   void OnPaintLayer(const ui::PaintContext& context) override {}
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
-  base::Closure PrepareForLayerBoundsChange() override {
-    return base::Closure();
-  }
 
   DISALLOW_COPY_AND_ASSIGN(NullLayerDelegate);
 };
@@ -1530,10 +1512,6 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
-
-  base::Closure PrepareForLayerBoundsChange() override {
-    return base::Closure();
-  }
 
   int paint_count_;
   Layer* layer_;

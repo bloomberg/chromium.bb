@@ -145,10 +145,6 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
 
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
-  base::Closure PrepareForLayerBoundsChange() override {
-    return base::Closure();
-  }
-
   // Mouse cursor may move sub DIP, so paint pseudo cursor instead of
   // using platform cursor so that it's aliend with the region.
   void DrawPseudoCursor(gfx::Canvas* canvas) {

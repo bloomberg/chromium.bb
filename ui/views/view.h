@@ -1123,7 +1123,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-  base::Closure PrepareForLayerBoundsChange() override;
 
   // Finds the layer that this view paints to (it may belong to an ancestor
   // view), then reorders the immediate children of that layer to match the

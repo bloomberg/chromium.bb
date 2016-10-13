@@ -45,6 +45,7 @@ component("compositor") {
     "layer_animator.h",
     "layer_animator_collection.cc",
     "layer_animator_collection.h",
+    "layer_delegate.cc",
     "layer_delegate.h",
     "layer_observer.h",
     "layer_owner.cc",

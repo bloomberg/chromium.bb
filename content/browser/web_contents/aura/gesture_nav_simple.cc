@@ -110,10 +110,6 @@ class ArrowLayerDelegate : public ui::LayerDelegate {
 
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
-  base::Closure PrepareForLayerBoundsChange() override {
-    return base::Closure();
-  }
-
   const gfx::Image& image_;
   const bool left_arrow_;
 

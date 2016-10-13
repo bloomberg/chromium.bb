@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 
-#include "base/bind.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/layer.h"
@@ -115,10 +114,6 @@ void FocusRingLayer::OnDelegatedFrameDamage(
 void FocusRingLayer::OnDeviceScaleFactorChanged(float device_scale_factor) {
   if (delegate_)
     delegate_->OnDeviceScaleFactorChanged();
-}
-
-base::Closure FocusRingLayer::PrepareForLayerBoundsChange() {
-  return base::Bind(&base::DoNothing);
 }
 
 void FocusRingLayer::OnAnimationStep(base::TimeTicks timestamp) {

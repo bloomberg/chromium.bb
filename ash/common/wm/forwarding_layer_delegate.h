@@ -33,7 +33,6 @@ class ForwardingLayerDelegate : public ui::LayerDelegate,
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-  base::Closure PrepareForLayerBoundsChange() override;
 
   // ui::LayerObserver:
   void DidPaintLayer(ui::Layer* layer, const gfx::Rect& rect) override;

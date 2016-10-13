@@ -5,7 +5,6 @@
 #include "ash/common/wm/forwarding_layer_delegate.h"
 
 #include "ash/common/wm_window.h"
-#include "base/callback.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_owner.h"
 
@@ -34,10 +33,6 @@ void ForwardingLayerDelegate::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
   // Don't tell the original delegate about device scale factor change
   // on cloned layer because the original layer is still on the same display.
-}
-
-base::Closure ForwardingLayerDelegate::PrepareForLayerBoundsChange() {
-  return base::Closure();
 }
 
 void ForwardingLayerDelegate::DidPaintLayer(ui::Layer* layer,
