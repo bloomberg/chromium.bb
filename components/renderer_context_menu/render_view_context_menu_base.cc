@@ -261,12 +261,9 @@ bool RenderViewContextMenuBase::IsCommandIdKnown(
     bool* enabled) const {
   // If this command is added by one of our observers, we dispatch
   // it to the observer.
-  base::ObserverListBase<RenderViewContextMenuObserver>::Iterator it(
-      &observers_);
-  RenderViewContextMenuObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    if (observer->IsCommandIdSupported(id)) {
-      *enabled = observer->IsCommandIdEnabled(id);
+  for (auto& observer : observers_) {
+    if (observer.IsCommandIdSupported(id)) {
+      *enabled = observer.IsCommandIdEnabled(id);
       return true;
     }
   }
@@ -285,12 +282,9 @@ bool RenderViewContextMenuBase::IsCommandIdKnown(
 bool RenderViewContextMenuBase::IsCommandIdChecked(int id) const {
   // If this command is is added by one of our observers, we dispatch it to the
   // observer.
-  base::ObserverListBase<RenderViewContextMenuObserver>::Iterator it(
-      &observers_);
-  RenderViewContextMenuObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    if (observer->IsCommandIdSupported(id))
-      return observer->IsCommandIdChecked(id);
+  for (auto& observer : observers_) {
+    if (observer.IsCommandIdSupported(id))
+      return observer.IsCommandIdChecked(id);
   }
 
   // Custom items.
@@ -306,12 +300,9 @@ void RenderViewContextMenuBase::ExecuteCommand(int id, int event_flags) {
 
   // If this command is is added by one of our observers, we dispatch
   // it to the observer.
-  base::ObserverListBase<RenderViewContextMenuObserver>::Iterator it(
-      &observers_);
-  RenderViewContextMenuObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    if (observer->IsCommandIdSupported(id))
-      return observer->ExecuteCommand(id);
+  for (auto& observer : observers_) {
+    if (observer.IsCommandIdSupported(id))
+      return observer.ExecuteCommand(id);
   }
 
   // Process custom actions range.
