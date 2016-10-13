@@ -202,15 +202,17 @@ static const char* const fontFamiliesWithInvalidCharWidth[] = {
 // avgCharWidth from the width of a '0'. This only seems to apply to a fixed
 // number of Mac fonts, but, in order to get similar rendering across platforms,
 // we do this check for all platforms.
-bool LayoutTextControl::hasValidAvgCharWidth(const SimpleFontData* font,
+bool LayoutTextControl::hasValidAvgCharWidth(const SimpleFontData* fontData,
                                              const AtomicString& family) {
   // Some fonts match avgCharWidth to CJK full-width characters.
   // Heuristic check to avoid such fonts.
-  DCHECK(font);
-  const FontMetrics& metrics = font->getFontMetrics();
-  if (metrics.hasZeroWidth() &&
-      font->avgCharWidth() > metrics.zeroWidth() * 1.7)
-    return false;
+  DCHECK(fontData);
+  if (fontData) {
+    const FontMetrics& metrics = fontData->getFontMetrics();
+    if (metrics.hasZeroWidth() &&
+        fontData->avgCharWidth() > metrics.zeroWidth() * 1.7)
+      return false;
+  }
 
   static HashSet<AtomicString>* fontFamiliesWithInvalidCharWidthMap = nullptr;
 
