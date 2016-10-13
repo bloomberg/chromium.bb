@@ -100,6 +100,12 @@ public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
         ArrayList<Integer> lengths = new ArrayList<Integer>();
 
         for (SentenceSuggestionsInfo result : results) {
+            if (result == null) {
+                // In some cases null can be returned by the selected spellchecking service,
+                // see crbug.com/651458. In this case skip to next result to avoid a
+                // NullPointerException later on.
+                continue;
+            }
             for (int i = 0; i < result.getSuggestionsCount(); i++) {
                 // If a word looks like a typo, record its offset and length.
                 if ((result.getSuggestionsInfoAt(i).getSuggestionsAttributes()
