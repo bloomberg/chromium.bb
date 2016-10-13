@@ -329,8 +329,8 @@ void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleTask(
       PRIORITY_NORMAL,
-      base::Bind(&HistoryBackend::SetOnBackendDestroyTask,
-                 history_backend_, base::MessageLoop::current(), task));
+      base::Bind(&HistoryBackend::SetOnBackendDestroyTask, history_backend_,
+                 base::ThreadTaskRunnerHandle::Get(), task));
 }
 
 void HistoryService::TopHosts(size_t num_hosts,

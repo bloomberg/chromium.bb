@@ -17,7 +17,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_enumerator.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
@@ -213,7 +212,6 @@ HistoryBackend::HistoryBackend(
       scheduled_kill_db_(false),
       expirer_(this, backend_client.get(), task_runner),
       recent_redirects_(kMaxRedirectCount),
-      backend_destroy_message_loop_(nullptr),
       segment_queried_(false),
       backend_client_(std::move(backend_client)),
       task_runner_(task_runner) {}
@@ -230,9 +228,8 @@ HistoryBackend::~HistoryBackend() {
 
   if (!backend_destroy_task_.is_null()) {
     // Notify an interested party (typically a unit test) that we're done.
-    DCHECK(backend_destroy_message_loop_);
-    backend_destroy_message_loop_->task_runner()->PostTask(
-        FROM_HERE, backend_destroy_task_);
+    DCHECK(backend_destroy_task_runner_);
+    backend_destroy_task_runner_->PostTask(FROM_HERE, backend_destroy_task_);
   }
 
 #if defined(OS_ANDROID)
@@ -257,11 +254,12 @@ void HistoryBackend::Init(
       base::Bind(&HistoryBackend::OnMemoryPressure, base::Unretained(this))));
 }
 
-void HistoryBackend::SetOnBackendDestroyTask(base::MessageLoop* message_loop,
-                                             const base::Closure& task) {
+void HistoryBackend::SetOnBackendDestroyTask(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const base::Closure& task) {
   if (!backend_destroy_task_.is_null())
     DLOG(WARNING) << "Setting more than one destroy task, overriding";
-  backend_destroy_message_loop_ = message_loop;
+  backend_destroy_task_runner_ = std::move(task_runner);
   backend_destroy_task_ = task;
 }
 
