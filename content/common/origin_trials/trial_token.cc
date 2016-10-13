@@ -157,6 +157,14 @@ std::unique_ptr<TrialToken> TrialToken::Parse(
     return nullptr;
   }
 
+  // The |isSubdomain| flag is optional. If found, ensure it is a valid boolean.
+  bool is_subdomain = false;
+  if (datadict->HasKey("isSubdomain")) {
+    if (!datadict->GetBoolean("isSubdomain", &is_subdomain)) {
+      return nullptr;
+    }
+  }
+
   // Ensure that the feature name is a valid string.
   if (feature_name.empty()) {
     return nullptr;
@@ -168,10 +176,15 @@ std::unique_ptr<TrialToken> TrialToken::Parse(
   }
 
   return base::WrapUnique(
-      new TrialToken(origin, feature_name, expiry_timestamp));
+      new TrialToken(origin, is_subdomain, feature_name, expiry_timestamp));
 }
 
 bool TrialToken::ValidateOrigin(const url::Origin& origin) const {
+  if (match_subdomains_) {
+    return origin.scheme() == origin_.scheme() &&
+           origin.DomainIs(origin_.host()) &&
+           origin.port() == origin_.port();
+  }
   return origin == origin_;
 }
 
@@ -203,9 +216,11 @@ bool TrialToken::ValidateSignature(base::StringPiece signature,
 }
 
 TrialToken::TrialToken(const url::Origin& origin,
+                       bool match_subdomains,
                        const std::string& feature_name,
                        uint64_t expiry_timestamp)
     : origin_(origin),
+      match_subdomains_(match_subdomains),
       feature_name_(feature_name),
       expiry_time_(base::Time::FromDoubleT(expiry_timestamp)) {}
 

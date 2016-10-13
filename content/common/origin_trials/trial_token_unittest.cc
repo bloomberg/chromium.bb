@@ -65,13 +65,39 @@ const char* kSampleToken =
     "eGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5"
     "IjogMTQ1ODc2NjI3N30=";
 
+// This is a good subdomain trial token, signed with the above test private key.
+// Generate this token with the command (in tools/origin_trials):
+// generate_token.py example.com Frobulate --is-subdomain
+//   --expire-timestamp=1458766277
+const char* kSampleSubdomainToken =
+    "Auu+j9nXAQoy5+t00MiWakZwFExcdNC8ENkRdK1gL4OMFHS0AbZCscslDTcP1fjN"
+    "FjpbmQG+VCPk1NrldVXZng4AAABoeyJvcmlnaW4iOiAiaHR0cHM6Ly9leGFtcGxl"
+    "LmNvbTo0NDMiLCAiaXNTdWJkb21haW4iOiB0cnVlLCAiZmVhdHVyZSI6ICJGcm9i"
+    "dWxhdGUiLCAiZXhwaXJ5IjogMTQ1ODc2NjI3N30=";
+
+// This is a good trial token, explicitly not a subdomain, signed with the above
+// test private key. Generate this token with the command:
+// generate_token.py valid.example.com Frobulate --no-subdomain
+//   --expire-timestamp=1458766277
+const char* kSampleNonSubdomainToken =
+    "AreD979D7tO0luSZTr1+/+J6E0SSj/GEUyLK41o1hXFzXw1R7Z1hCDHs0gXWVSu1"
+    "lvH52Winvy39tHbsU2gJJQYAAABveyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
+    "eGFtcGxlLmNvbTo0NDMiLCAiaXNTdWJkb21haW4iOiBmYWxzZSwgImZlYXR1cmUi"
+    "OiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6IDE0NTg3NjYyNzd9";
+
 const char* kExpectedFeatureName = "Frobulate";
 const char* kExpectedOrigin = "https://valid.example.com";
+const char* kExpectedSubdomainOrigin = "https://example.com";
+const char* kExpectedMultipleSubdomainOrigin =
+    "https://part1.part2.part3.example.com";
 const uint64_t kExpectedExpiry = 1458766277;
 
 // The token should not be valid for this origin, or for this feature.
 const char* kInvalidOrigin = "https://invalid.example.com";
 const char* kInsecureOrigin = "http://valid.example.com";
+const char* kIncorrectPortOrigin = "https://valid.example.com:444";
+const char* kIncorrectDomainOrigin = "https://valid.example2.com";
+const char* kInvalidTLDOrigin = "https://com";
 const char* kInvalidFeatureName = "Grokalyze";
 
 // The token should be valid if the current time is kValidTimestamp or earlier.
@@ -112,6 +138,14 @@ const char kSampleTokenJSON[] =
     "{\"origin\": \"https://valid.example.com:443\", \"feature\": "
     "\"Frobulate\", \"expiry\": 1458766277}";
 
+const char kSampleNonSubdomainTokenJSON[] =
+    "{\"origin\": \"https://valid.example.com:443\", \"isSubdomain\": false, "
+    "\"feature\": \"Frobulate\", \"expiry\": 1458766277}";
+
+const char kSampleSubdomainTokenJSON[] =
+    "{\"origin\": \"https://example.com:443\", \"isSubdomain\": true, "
+    "\"feature\": \"Frobulate\", \"expiry\": 1458766277}";
+
 // Various ill-formed trial tokens. These should all fail to parse.
 const char* kInvalidTokens[] = {
     // Invalid - Not JSON at all
@@ -126,13 +160,17 @@ const char* kInvalidTokens[] = {
     "{}",
     "{\"something\": 1}",
     "{\"origin\": \"https://a.a\"}",
-    "{\"origin\": \"https://a.a\", \"feature\": \"a\"}"
+    "{\"origin\": \"https://a.a\", \"feature\": \"a\"}",
     "{\"origin\": \"https://a.a\", \"expiry\": 1458766277}",
     "{\"feature\": \"FeatureName\", \"expiry\": 1458766277}",
     // Incorrect types
     "{\"origin\": 1, \"feature\": \"a\", \"expiry\": 1458766277}",
     "{\"origin\": \"https://a.a\", \"feature\": 1, \"expiry\": 1458766277}",
     "{\"origin\": \"https://a.a\", \"feature\": \"a\", \"expiry\": \"1\"}",
+    "{\"origin\": \"https://a.a\", \"isSubdomain\": \"true\", \"feature\": "
+    "\"a\", \"expiry\": 1458766277}",
+    "{\"origin\": \"https://a.a\", \"isSubdomain\": 1, \"feature\": \"a\", "
+    "\"expiry\": 1458766277}",
     // Negative expiry timestamp
     "{\"origin\": \"https://a.a\", \"feature\": \"a\", \"expiry\": -1}",
     // Origin not a proper origin URL
@@ -140,7 +178,8 @@ const char* kInvalidTokens[] = {
     "{\"origin\": \"data:text/plain,abcdef\", \"feature\": \"a\", \"expiry\": "
     "1458766277}",
     "{\"origin\": \"javascript:alert(1)\", \"feature\": \"a\", \"expiry\": "
-    "1458766277}"};
+    "1458766277}",
+};
 
 }  // namespace
 
@@ -148,8 +187,14 @@ class TrialTokenTest : public testing::TestWithParam<const char*> {
  public:
   TrialTokenTest()
       : expected_origin_(GURL(kExpectedOrigin)),
+        expected_subdomain_origin_(GURL(kExpectedSubdomainOrigin)),
+        expected_multiple_subdomain_origin_(
+            GURL(kExpectedMultipleSubdomainOrigin)),
         invalid_origin_(GURL(kInvalidOrigin)),
         insecure_origin_(GURL(kInsecureOrigin)),
+        incorrect_port_origin_(GURL(kIncorrectPortOrigin)),
+        incorrect_domain_origin_(GURL(kIncorrectDomainOrigin)),
+        invalid_tld_origin_(GURL(kInvalidTLDOrigin)),
         expected_expiry_(base::Time::FromDoubleT(kExpectedExpiry)),
         valid_timestamp_(base::Time::FromDoubleT(kValidTimestamp)),
         invalid_timestamp_(base::Time::FromDoubleT(kInvalidTimestamp)),
@@ -194,8 +239,13 @@ class TrialTokenTest : public testing::TestWithParam<const char*> {
   base::StringPiece incorrect_public_key() { return incorrect_public_key_; }
 
   const url::Origin expected_origin_;
+  const url::Origin expected_subdomain_origin_;
+  const url::Origin expected_multiple_subdomain_origin_;
   const url::Origin invalid_origin_;
   const url::Origin insecure_origin_;
+  const url::Origin incorrect_port_origin_;
+  const url::Origin incorrect_domain_origin_;
+  const url::Origin invalid_tld_origin_;
 
   const base::Time expected_expiry_;
   const base::Time valid_timestamp_;
@@ -218,6 +268,22 @@ TEST_F(TrialTokenTest, ValidateValidSignature) {
       Extract(kSampleToken, correct_public_key(), &token_payload);
   ASSERT_EQ(blink::WebOriginTrialTokenStatus::Success, status);
   EXPECT_STREQ(kSampleTokenJSON, token_payload.c_str());
+}
+
+TEST_F(TrialTokenTest, ValidateSubdomainValidSignature) {
+  std::string token_payload;
+  blink::WebOriginTrialTokenStatus status =
+      Extract(kSampleSubdomainToken, correct_public_key(), &token_payload);
+  ASSERT_EQ(blink::WebOriginTrialTokenStatus::Success, status);
+  EXPECT_STREQ(kSampleSubdomainTokenJSON, token_payload.c_str());
+}
+
+TEST_F(TrialTokenTest, ValidateNonSubdomainValidSignature) {
+  std::string token_payload;
+  blink::WebOriginTrialTokenStatus status =
+      Extract(kSampleNonSubdomainToken, correct_public_key(), &token_payload);
+  ASSERT_EQ(blink::WebOriginTrialTokenStatus::Success, status);
+  EXPECT_STREQ(kSampleNonSubdomainTokenJSON, token_payload.c_str());
 }
 
 TEST_F(TrialTokenTest, ValidateInvalidSignature) {
@@ -274,7 +340,27 @@ TEST_F(TrialTokenTest, ParseValidToken) {
   std::unique_ptr<TrialToken> token = Parse(kSampleTokenJSON);
   ASSERT_TRUE(token);
   EXPECT_EQ(kExpectedFeatureName, token->feature_name());
+  EXPECT_FALSE(token->match_subdomains());
   EXPECT_EQ(expected_origin_, token->origin());
+  EXPECT_EQ(expected_expiry_, token->expiry_time());
+}
+
+TEST_F(TrialTokenTest, ParseValidNonSubdomainToken) {
+  std::unique_ptr<TrialToken> token = Parse(kSampleNonSubdomainTokenJSON);
+  ASSERT_TRUE(token);
+  EXPECT_EQ(kExpectedFeatureName, token->feature_name());
+  EXPECT_FALSE(token->match_subdomains());
+  EXPECT_EQ(expected_origin_, token->origin());
+  EXPECT_EQ(expected_expiry_, token->expiry_time());
+}
+
+TEST_F(TrialTokenTest, ParseValidSubdomainToken) {
+  std::unique_ptr<TrialToken> token = Parse(kSampleSubdomainTokenJSON);
+  ASSERT_TRUE(token);
+  EXPECT_EQ(kExpectedFeatureName, token->feature_name());
+  EXPECT_TRUE(token->match_subdomains());
+  EXPECT_EQ(kExpectedSubdomainOrigin, token->origin().Serialize());
+  EXPECT_EQ(expected_subdomain_origin_, token->origin());
   EXPECT_EQ(expected_expiry_, token->expiry_time());
 }
 
@@ -284,6 +370,9 @@ TEST_F(TrialTokenTest, ValidateValidToken) {
   EXPECT_TRUE(ValidateOrigin(token.get(), expected_origin_));
   EXPECT_FALSE(ValidateOrigin(token.get(), invalid_origin_));
   EXPECT_FALSE(ValidateOrigin(token.get(), insecure_origin_));
+  EXPECT_FALSE(ValidateOrigin(token.get(), incorrect_port_origin_));
+  EXPECT_FALSE(ValidateOrigin(token.get(), incorrect_domain_origin_));
+  EXPECT_FALSE(ValidateOrigin(token.get(), invalid_tld_origin_));
   EXPECT_TRUE(ValidateFeatureName(token.get(), kExpectedFeatureName));
   EXPECT_FALSE(ValidateFeatureName(token.get(), kInvalidFeatureName));
   EXPECT_FALSE(ValidateFeatureName(
@@ -292,6 +381,18 @@ TEST_F(TrialTokenTest, ValidateValidToken) {
       token.get(), base::ToLowerASCII(kExpectedFeatureName).c_str()));
   EXPECT_TRUE(ValidateDate(token.get(), valid_timestamp_));
   EXPECT_FALSE(ValidateDate(token.get(), invalid_timestamp_));
+}
+
+TEST_F(TrialTokenTest, ValidateValidSubdomainToken) {
+  std::unique_ptr<TrialToken> token = Parse(kSampleSubdomainTokenJSON);
+  ASSERT_TRUE(token);
+  EXPECT_TRUE(ValidateOrigin(token.get(), expected_origin_));
+  EXPECT_TRUE(ValidateOrigin(token.get(), expected_subdomain_origin_));
+  EXPECT_TRUE(ValidateOrigin(token.get(), expected_multiple_subdomain_origin_));
+  EXPECT_FALSE(ValidateOrigin(token.get(), insecure_origin_));
+  EXPECT_FALSE(ValidateOrigin(token.get(), incorrect_port_origin_));
+  EXPECT_FALSE(ValidateOrigin(token.get(), incorrect_domain_origin_));
+  EXPECT_FALSE(ValidateOrigin(token.get(), invalid_tld_origin_));
 }
 
 TEST_F(TrialTokenTest, TokenIsValid) {
@@ -303,6 +404,28 @@ TEST_F(TrialTokenTest, TokenIsValid) {
             token->IsValid(invalid_origin_, valid_timestamp_));
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
             token->IsValid(insecure_origin_, valid_timestamp_));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+            token->IsValid(incorrect_port_origin_, valid_timestamp_));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Expired,
+            token->IsValid(expected_origin_, invalid_timestamp_));
+}
+
+TEST_F(TrialTokenTest, SubdomainTokenIsValid) {
+  std::unique_ptr<TrialToken> token = Parse(kSampleSubdomainTokenJSON);
+  ASSERT_TRUE(token);
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
+            token->IsValid(expected_origin_, valid_timestamp_));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
+            token->IsValid(expected_subdomain_origin_, valid_timestamp_));
+  EXPECT_EQ(
+      blink::WebOriginTrialTokenStatus::Success,
+      token->IsValid(expected_multiple_subdomain_origin_, valid_timestamp_));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+            token->IsValid(incorrect_domain_origin_, valid_timestamp_));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+            token->IsValid(insecure_origin_, valid_timestamp_));
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+            token->IsValid(incorrect_port_origin_, valid_timestamp_));
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::Expired,
             token->IsValid(expected_origin_, invalid_timestamp_));
 }

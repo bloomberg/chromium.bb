@@ -21,14 +21,13 @@ enum class WebOriginTrialTokenStatus;
 
 namespace content {
 
-// The Experimental Framework (EF) provides limited access to experimental
-// features, on a per-origin basis (origin trials). This class defines the trial
-// token data structure, used to securely provide access to an experimental
-// feature.
+// The Origin Trials Framework (OT) provides limited access to experimental
+// features, on a per-origin basis. This class defines the trial token data
+// structure, used to securely provide access to an experimental feature.
 //
-// Features are defined by string names, provided by the implementers. The EF
+// Features are defined by string names, provided by the implementers. The OT
 // code does not maintain an enum or constant list for feature names. Instead,
-// the EF validates the name provided by the feature implementation against any
+// it validates the name provided by the feature implementation against any
 // provided tokens.
 //
 // More documentation on the token format can be found at
@@ -58,6 +57,7 @@ class CONTENT_EXPORT TrialToken {
                                            const base::Time& now) const;
 
   url::Origin origin() { return origin_; }
+  bool match_subdomains() const { return match_subdomains_; }
   std::string feature_name() { return feature_name_; }
   base::Time expiry_time() { return expiry_time_; }
 
@@ -92,11 +92,15 @@ class CONTENT_EXPORT TrialToken {
 
  private:
   TrialToken(const url::Origin& origin,
+             bool match_subdomains,
              const std::string& feature_name,
              uint64_t expiry_timestamp);
 
   // The origin for which this token is valid. Must be a secure origin.
   url::Origin origin_;
+
+  // Indicates if the token should match all subdomains of the origin.
+  bool match_subdomains_;
 
   // The name of the experimental feature which this token enables.
   std::string feature_name_;

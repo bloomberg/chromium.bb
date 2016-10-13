@@ -3,8 +3,11 @@
 # found in the LICENSE file.
 
 "\"origin\""
+"\"isSubdomain\""
 "\"feature\""
 "\"expiry\""
 "https://"
 "example.com"
 ":443"
+"true"
+"false"
