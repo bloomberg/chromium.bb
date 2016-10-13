@@ -30,6 +30,8 @@ public class LocaleManager {
     public static final String PREF_WAS_IN_SPECIAL_LOCALE = "LocaleManager_WAS_IN_SPECIAL_LOCALE";
     public static final String SPECIAL_LOCALE_ID = "US";
 
+    private static final int SNACKBAR_DURATION_MS = 6000;
+
     private static LocaleManager sInstance;
 
     // LocaleManager is a singleton and it should not have strong reference to UI objects.
@@ -199,6 +201,7 @@ public class LocaleManager {
         Context context = ContextUtils.getApplicationContext();
         Snackbar snackbar = Snackbar.make(title, mSnackbarController, Snackbar.TYPE_NOTIFICATION,
                 Snackbar.UMA_SPECIAL_LOCALE);
+        snackbar.setDuration(SNACKBAR_DURATION_MS);
         snackbar.setAction(context.getString(R.string.preferences), null);
         manager.showSnackbar(snackbar);
     }
