@@ -28,6 +28,18 @@
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_AUTOLOGIN" file="infobar_autologin.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_SAVE_PASSWORD" file="infobar_save_password.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_TRANSLATE" file="infobar_translate.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_LOCATION_BAR_HTTP" file="omnibox_http.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HISTORY" file="omnibox_history.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HISTORY_INCOGNITO" file="omnibox_history_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTP" file="omnibox_http.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTPS_INVALID" file="omnibox_https_invalid.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTPS_POLICY_WARNING" file="controlled_setting_mandatory.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTPS_VALID" file="omnibox_https_valid.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTP_INCOGNITO" file="omnibox_http_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_SEARCH" file="omnibox_search.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_SEARCH_INCOGNITO" file="omnibox_search_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_STAR" file="omnibox_star.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_STAR_INCOGNITO" file="omnibox_star_incognito.png" />
     </structures>
   </release>
 </grit>

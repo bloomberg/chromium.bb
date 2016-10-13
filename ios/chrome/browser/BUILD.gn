@@ -507,8 +507,6 @@ source_set("browser") {
     "ui/keyboard/hardware_keyboard_watcher.mm",
     "ui/native_content_controller.h",
     "ui/native_content_controller.mm",
-    "ui/omnibox/web_omnibox_edit_controller.cc",
-    "ui/omnibox/web_omnibox_edit_controller.h",
     "ui/orientation_limiting_navigation_controller.h",
     "ui/orientation_limiting_navigation_controller.mm",
     "ui/prerender_final_status.h",
