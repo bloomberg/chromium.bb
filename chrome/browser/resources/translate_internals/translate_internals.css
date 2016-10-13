@@ -138,3 +138,7 @@ td.detection-logs-content div {
 .prefs-setting-disabled {
   display: none;
 }
+
+#country-override input {
+ margin-bottom: 1px;
+}
