@@ -431,16 +431,29 @@ void HTMLInputElement::updateType() {
 
   bool willStoreValue = m_inputType->storesValueSeparateFromAttribute();
 
+  // https://html.spec.whatwg.org/multipage/forms.html#input-type-change
+  //
+  // 1. If the previous state of the element's type attribute put the value IDL
+  // attribute in the value mode, and the element's value is not the empty
+  // string, and the new state of the element's type attribute puts the value
+  // IDL attribute in either the default mode or the default/on mode, then set
+  // the element's value content attribute to the element's value.
   if (didStoreValue && !willStoreValue && hasDirtyValue()) {
     setAttribute(valueAttr, AtomicString(m_valueIfDirty));
     m_valueIfDirty = String();
     m_hasDirtyValue = false;
   }
+  // 2. Otherwise, if the previous state of the element's type attribute put the
+  // value IDL attribute in any mode other than the value mode, and the new
+  // state of the element's type attribute puts the value IDL attribute in the
+  // value mode, then set the value of the element to the value of the value
+  // content attribute, if there is one, or the empty string otherwise, and then
+  // set the control's dirty value flag to false.
   if (!didStoreValue && willStoreValue) {
     AtomicString valueString = fastGetAttribute(valueAttr);
     m_inputType->warnIfValueIsInvalid(valueString);
-    m_valueIfDirty = sanitizeValue(valueString);
-    m_hasDirtyValue = !m_valueIfDirty.isNull();
+    m_valueIfDirty = String();
+    m_hasDirtyValue = false;
   } else {
     if (!hasDirtyValue())
       m_inputType->warnIfValueIsInvalid(

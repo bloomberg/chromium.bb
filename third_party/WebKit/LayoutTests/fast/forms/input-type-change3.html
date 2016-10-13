@@ -54,4 +54,13 @@ check("uri", "text", "uri");
 check("", "text", "");
 check("x-unknown", "text", "x-unknown");
 shouldBeNull("input.removeAttribute('type'); input.getAttribute('type')");
+
+debug("Check dirty flag behavior");
+input = document.createElement("input");
+input.type = "hidden";
+input.defaultValue = "Default";
+input.type = "text";
+// The dirty flag should be still false, and the defaultValue should be reflected
+// to value.
+shouldBeEqualToString("input.defaultValue = 'UpdatedDefault'; input.value", "UpdatedDefault");
 </script>

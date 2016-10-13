@@ -56,6 +56,8 @@ PASS input.getAttribute("type") for "" is correctly "".
 PASS input.type for "x-unknown" is correctly "text".
 PASS input.getAttribute("type") for "x-unknown" is correctly "x-unknown".
 PASS input.removeAttribute('type'); input.getAttribute('type') is null
+Check dirty flag behavior
+PASS input.defaultValue = 'UpdatedDefault'; input.value is "UpdatedDefault"
 PASS successfullyParsed is true
 
 TEST COMPLETE
