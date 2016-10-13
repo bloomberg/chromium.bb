@@ -12,6 +12,11 @@
 #define CLANG_BUILD
 #endif
 
+typedef union {
+  int32_t intVal;
+  float floatVal;
+} FloatInt;
+
 #ifdef CLANG_BUILD
 #define SRLI_B(a, b) __msa_srli_b((v16i8)a, b)
 #define SRLI_H(a, b) __msa_srli_h((v8i16)a, b)
@@ -664,10 +669,58 @@ MSA_STORE_FUNC(uint32_t, usw, msa_usw);
     DIV2(in4, in5, in6, in7, out2, out3);                                    \
   }
 
+/* Description : Logical AND of 4 pairs of vectors with mask
+   Arguments   : Inputs  - in0, in1, in2, in3, mask
+                 Outputs - in0, in1, in2, in3
+   Details     : Each element in 'in0' is logically AND'ed with mask
+                 Each element in 'in1' is logically AND'ed with mask
+                 Each element in 'in2' is logically AND'ed with mask
+                 Each element in 'in3' is logically AND'ed with mask
+*/
+#define AND_W4(RTYPE, in0, in1, in2, in3, mask) \
+  {                                             \
+    in0 = (RTYPE)((v16i8)in0 & (v16i8)mask);    \
+    in1 = (RTYPE)((v16i8)in1 & (v16i8)mask);    \
+    in2 = (RTYPE)((v16i8)in2 & (v16i8)mask);    \
+    in3 = (RTYPE)((v16i8)in3 & (v16i8)mask);    \
+  }
+#define AND_W4_SP(...) AND_W4(v4f32, __VA_ARGS__)
+
+/* Description : Addition of 2 pairs of vectors
+   Arguments   : Inputs  - in0, in1, in2, in3
+                 Outputs - out0, out1
+   Details     : Each element in 'in0' is added to 'in1' and result is written
+                 to 'out0'
+                 Each element in 'in2' is added to 'in3' and result is written
+                 to 'out1'
+*/
+#define ADD2(in0, in1, in2, in3, out0, out1) \
+  {                                          \
+    out0 = in0 + in1;                        \
+    out1 = in2 + in3;                        \
+  }
+
+/* Description : Addition of 4 pairs of vectors
+   Arguments   : Inputs  - in0, in1, in2, in3, in4, in5, in6, in7
+                 Outputs - out0, out1
+   Details     : Each element in 'in0' is added to 'in1' and result is written
+                 to 'out0'
+                 Each element in 'in2' is added to 'in3' and result is written
+                 to 'out1'
+                 Each element in 'in4' is added to 'in5' and result is written
+                 to 'out2'
+                 Each element in 'in6' is added to 'in7' and result is written
+                 to 'out3'
+*/
+#define ADD4(in0, in1, in2, in3, in4, in5, in6, in7, out0, out1, out2, out3) \
+  {                                                                          \
+    ADD2(in0, in1, in2, in3, out0, out1);                                    \
+    ADD2(in4, in5, in6, in7, out2, out3);                                    \
+  }
+
 /* Description : Vector Floating-Point Convert from Unsigned Integer
    Arguments   : Inputs  - in0, in1
                  Outputs - out0, out1
-   Details     :
 */
 #define FFINTU_W2(RTYPE, in0, in1, out0, out1) \
   {                                            \
@@ -676,6 +729,10 @@ MSA_STORE_FUNC(uint32_t, usw, msa_usw);
   }
 #define FFINTU_W2_SP(...) FFINTU_W2(v4f32, __VA_ARGS__)
 
+/* Description : Vector Floating-Point Convert from Unsigned Integer
+   Arguments   : Inputs  - in0, in1, in2, in3
+                 Outputs - out0, out1, out2, out3
+*/
 #define FFINTU_W4(RTYPE, in0, in1, in2, in3, out0, out1, out2, out3) \
   {                                                                  \
     FFINTU_W2(RTYPE, in0, in1, out0, out1);                          \
@@ -686,7 +743,6 @@ MSA_STORE_FUNC(uint32_t, usw, msa_usw);
 /* Description : Vector Floating-Point Truncate and Convert to Unsigned Integer
    Arguments   : Inputs  - in0, in1
                  Outputs - out0, out1
-   Details     :
 */
 #define FTRUNCU_W2(RTYPE, in0, in1, out0, out1) \
   {                                             \
@@ -695,11 +751,64 @@ MSA_STORE_FUNC(uint32_t, usw, msa_usw);
   }
 #define FTRUNCU_W2_UB(...) FTRUNCU_W2(v16u8, __VA_ARGS__)
 
+/* Description : Vector Floating-Point Truncate and Convert to Unsigned Integer
+   Arguments   : Inputs  - in0, in1, in2, in3
+                 Outputs - out0, out1, out2, out3
+*/
 #define FTRUNCU_W4(RTYPE, in0, in1, in2, in3, out0, out1, out2, out3) \
   {                                                                   \
     FTRUNCU_W2(RTYPE, in0, in1, out0, out1);                          \
     FTRUNCU_W2(RTYPE, in2, in3, out2, out3);                          \
   }
 #define FTRUNCU_W4_UB(...) FTRUNCU_W4(v16u8, __VA_ARGS__)
+
+/* Description : Vector Floating-Point multiply with scale and accumulate
+   Arguments   : Inputs  - in0, in1, in2, in3, out0, out1, out2, out3, scale
+                 Outputs - out0, out1, out2, out3
+*/
+#define VSMA4(in0, in1, in2, in3, out0, out1, out2, out3, scale) \
+  {                                                              \
+    out0 += in0 * scale;                                         \
+    out1 += in1 * scale;                                         \
+    out2 += in2 * scale;                                         \
+    out3 += in3 * scale;                                         \
+  }
+
+/* Description : Vector Floating-Point multiply with scale
+   Arguments   : Inputs  - in0, in1, in2, in3, scale
+                 Outputs - out0, out1, out2, out3
+*/
+#define VSMUL4(in0, in1, in2, in3, out0, out1, out2, out3, scale) \
+  {                                                               \
+    out0 = in0 * scale;                                           \
+    out1 = in1 * scale;                                           \
+    out2 = in2 * scale;                                           \
+    out3 = in3 * scale;                                           \
+  }
+
+/* Description : Vector Floating-Point max value
+   Arguments   : Inputs - in0, in1, in2, in3, max
+                 Output - max
+*/
+#define VMAX_W4(RTYPE, in0, in1, in2, in3, max)        \
+  {                                                    \
+    max = (RTYPE)__msa_fmax_w((v4f32)max, (v4f32)in0); \
+    max = (RTYPE)__msa_fmax_w((v4f32)max, (v4f32)in1); \
+    max = (RTYPE)__msa_fmax_w((v4f32)max, (v4f32)in2); \
+    max = (RTYPE)__msa_fmax_w((v4f32)max, (v4f32)in3); \
+  }
+#define VMAX_W4_SP(...) VMAX_W4(v4f32, __VA_ARGS__)
+
+/* Description : Vector Floating-Point clip to min max
+   Arguments   : Inputs  - in0, in1, in2, in3, min, max
+                 Outputs - out0, out1, out2, out3
+*/
+#define VCLIP4(in0, in1, in2, in3, min, max, out0, out1, out2, out3) \
+  {                                                                  \
+    out0 = __msa_fmax_w(__msa_fmin_w(in0, max), min);                \
+    out1 = __msa_fmax_w(__msa_fmin_w(in1, max), min);                \
+    out2 = __msa_fmax_w(__msa_fmin_w(in2, max), min);                \
+    out3 = __msa_fmax_w(__msa_fmin_w(in3, max), min);                \
+  }
 
 #endif  // CommonMacrosMSA_h
