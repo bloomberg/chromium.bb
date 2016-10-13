@@ -439,7 +439,8 @@ void NetworkScreen::OnLanguageListResolved(
                                               selected_language_code_);
   if (view_)
     view_->ReloadLocalizedContent();
-  FOR_EACH_OBSERVER(Observer, observers_, OnLanguageListReloaded());
+  for (auto& observer : observers_)
+    observer.OnLanguageListReloaded();
 }
 
 void NetworkScreen::OnSystemTimezoneChanged() {

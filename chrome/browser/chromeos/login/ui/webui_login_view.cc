@@ -233,9 +233,8 @@ WebUILoginView::WebUILoginView()
 }
 
 WebUILoginView::~WebUILoginView() {
-  FOR_EACH_OBSERVER(web_modal::ModalDialogHostObserver,
-                    observer_list_,
-                    OnHostDestroying());
+  for (auto& observer : observer_list_)
+    observer.OnHostDestroying();
 
   if (!chrome::IsRunningInMash() &&
       ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
@@ -443,9 +442,8 @@ void WebUILoginView::Layout() {
   DCHECK(webui_login_);
   webui_login_->SetBoundsRect(bounds());
 
-  FOR_EACH_OBSERVER(web_modal::ModalDialogHostObserver,
-                    observer_list_,
-                    OnPositionRequiresUpdate());
+  for (auto& observer : observer_list_)
+    observer.OnPositionRequiresUpdate();
 }
 
 void WebUILoginView::OnLocaleChanged() {

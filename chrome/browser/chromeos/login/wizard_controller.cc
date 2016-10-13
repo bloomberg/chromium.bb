@@ -620,7 +620,8 @@ void WizardController::RemoveObserver(Observer* observer) {
 }
 
 void WizardController::OnSessionStart() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnSessionStart());
+  for (auto& observer : observer_list_)
+    observer.OnSessionStart();
 }
 
 void WizardController::SkipUpdateEnrollAfterEula() {
@@ -917,7 +918,8 @@ void WizardController::ShowCurrentScreen() {
 
   smooth_show_timer_.Stop();
 
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnScreenChanged(current_screen_));
+  for (auto& observer : observer_list_)
+    observer.OnScreenChanged(current_screen_);
 
   current_screen_->Show();
 }

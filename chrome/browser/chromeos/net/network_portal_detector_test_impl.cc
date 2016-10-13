@@ -39,8 +39,8 @@ void NetworkPortalDetectorTestImpl::NotifyObserversForTesting() {
   CaptivePortalState state;
   if (default_network_ && portal_state_map_.count(default_network_->guid()))
     state = portal_state_map_[default_network_->guid()];
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnPortalDetectionCompleted(default_network_.get(), state));
+  for (auto& observer : observers_)
+    observer.OnPortalDetectionCompleted(default_network_.get(), state);
 }
 
 void NetworkPortalDetectorTestImpl::AddObserver(Observer* observer) {

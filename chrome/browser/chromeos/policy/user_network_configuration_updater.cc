@@ -156,9 +156,8 @@ void UserNetworkConfigurationUpdater::SetCertificateImporter(
 }
 
 void UserNetworkConfigurationUpdater::NotifyTrustAnchorsChanged() {
-  FOR_EACH_OBSERVER(WebTrustedCertsObserver,
-                    observer_list_,
-                    OnTrustAnchorsChanged(web_trust_certs_));
+  for (auto& observer : observer_list_)
+    observer.OnTrustAnchorsChanged(web_trust_certs_);
 }
 
 }  // namespace policy

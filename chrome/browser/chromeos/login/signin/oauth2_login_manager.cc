@@ -198,8 +198,8 @@ void OAuth2LoginManager::UpdateCredentials(const std::string& account_id) {
   GetTokenService()->UpdateCredentials(account_id, refresh_token_);
   FireRefreshTokensLoaded();
 
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnNewRefreshTokenAvaiable(user_profile_));
+  for (auto& observer : observer_list_)
+    observer.OnNewRefreshTokenAvaiable(user_profile_);
 }
 
 void OAuth2LoginManager::FireRefreshTokensLoaded() {
@@ -416,8 +416,8 @@ void OAuth2LoginManager::SetSessionRestoreState(
                         base::Time::Now() - session_restore_start_);
   }
 
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnSessionRestoreStateChanged(user_profile_, state_));
+  for (auto& observer : observer_list_)
+    observer.OnSessionRestoreStateChanged(user_profile_, state_);
 }
 
 void OAuth2LoginManager::SetSessionRestoreStartForTesting(

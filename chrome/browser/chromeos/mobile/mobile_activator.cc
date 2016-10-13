@@ -998,8 +998,8 @@ void MobileActivator::ChangeState(const NetworkState* network,
   state_ = new_state;
 
   // Signal to observers layer that the state is changing.
-  FOR_EACH_OBSERVER(Observer, observers_,
-      OnActivationStateChanged(network, state_, error_description));
+  for (auto& observer : observers_)
+    observer.OnActivationStateChanged(network, state_, error_description);
 
   // Pick action that should happen on entering the new state.
   switch (new_state) {

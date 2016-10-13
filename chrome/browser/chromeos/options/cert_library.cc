@@ -250,8 +250,8 @@ void CertLibrary::OnCertificatesLoaded(const net::CertificateList& cert_list,
   VLOG(1) << "server_certs_: " << server_certs_.size();
   VLOG(1) << "server_ca_certs_: " << server_ca_certs_.size();
 
-  FOR_EACH_OBSERVER(CertLibrary::Observer, observer_list_,
-                    OnCertificatesLoaded(initial_load));
+  for (auto& observer : observer_list_)
+    observer.OnCertificatesLoaded(initial_load);
 }
 
 net::X509Certificate* CertLibrary::GetCertificateAt(CertType type,

@@ -1043,8 +1043,8 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
   }
 
   // Update input method indicators (e.g. "US", "DV") in Chrome windows.
-  FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
-                    InputMethodChanged(this, profile, show_message));
+  for (auto& observer : observers_)
+    observer.InputMethodChanged(this, profile, show_message);
   // Update the current input method in IME menu.
   NotifyImeMenuListChanged();
 }
@@ -1166,15 +1166,13 @@ void InputMethodManagerImpl::CandidateClicked(int index) {
 }
 
 void InputMethodManagerImpl::CandidateWindowOpened() {
-  FOR_EACH_OBSERVER(InputMethodManager::CandidateWindowObserver,
-                    candidate_window_observers_,
-                    CandidateWindowOpened(this));
+  for (auto& observer : candidate_window_observers_)
+    observer.CandidateWindowOpened(this);
 }
 
 void InputMethodManagerImpl::CandidateWindowClosed() {
-  FOR_EACH_OBSERVER(InputMethodManager::CandidateWindowObserver,
-                    candidate_window_observers_,
-                    CandidateWindowClosed(this));
+  for (auto& observer : candidate_window_observers_)
+    observer.CandidateWindowClosed(this);
 }
 
 void InputMethodManagerImpl::ImeMenuActivationChanged(bool is_active) {
@@ -1185,8 +1183,8 @@ void InputMethodManagerImpl::ImeMenuActivationChanged(bool is_active) {
 }
 
 void InputMethodManagerImpl::NotifyImeMenuListChanged() {
-  FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
-                    ImeMenuListChanged());
+  for (auto& observer : ime_menu_observers_)
+    observer.ImeMenuListChanged();
 }
 
 void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
@@ -1201,8 +1199,8 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
 void InputMethodManagerImpl::NotifyImeMenuItemsChanged(
     const std::string& engine_id,
     const std::vector<InputMethodManager::MenuItem>& items) {
-  FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
-                    ImeMenuItemsChanged(engine_id, items));
+  for (auto& observer : ime_menu_observers_)
+    observer.ImeMenuItemsChanged(engine_id, items);
 }
 
 void InputMethodManagerImpl::MaybeNotifyImeMenuActivationChanged() {
@@ -1210,8 +1208,8 @@ void InputMethodManagerImpl::MaybeNotifyImeMenuActivationChanged() {
     return;
 
   is_ime_menu_activated_ = state_->menu_activated;
-  FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
-                    ImeMenuActivationChanged(is_ime_menu_activated_));
+  for (auto& observer : ime_menu_observers_)
+    observer.ImeMenuActivationChanged(is_ime_menu_activated_);
   UMA_HISTOGRAM_BOOLEAN("InputMethod.ImeMenu.ActivationChanged",
                         is_ime_menu_activated_);
 }

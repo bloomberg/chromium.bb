@@ -212,8 +212,8 @@ void SystemClock::UpdateClockType() {
   // a local owner.
   if (user_manager::UserManager::Get()->IsCurrentUserOwner())
     SetShouldUse24HourClock(ShouldUse24HourClock());
-  FOR_EACH_OBSERVER(SystemClockObserver, observer_list_,
-                    OnSystemClockChanged(this));
+  for (auto& observer : observer_list_)
+    observer.OnSystemClockChanged(this);
 }
 
 }  // namespace system

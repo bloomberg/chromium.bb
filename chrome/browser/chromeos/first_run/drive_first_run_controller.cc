@@ -425,7 +425,8 @@ void DriveFirstRunController::SetAppInfoForTest(
 
 void DriveFirstRunController::OnWebContentsTimedOut() {
   LOG(WARNING) << "Timed out waiting for web contents.";
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnTimedOut());
+  for (auto& observer : observer_list_)
+    observer.OnTimedOut();
   OnOfflineInit(false, OUTCOME_WEB_CONTENTS_TIMED_OUT);
 }
 
@@ -442,7 +443,8 @@ void DriveFirstRunController::OnOfflineInit(bool success, UMAOutcome outcome) {
     ShowNotification();
   UMA_HISTOGRAM_ENUMERATION("DriveOffline.CrosAutoEnableOutcome",
                             outcome, OUTCOME_MAX);
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnCompletion(success));
+  for (auto& observer : observer_list_)
+    observer.OnCompletion(success);
   CleanUp();
 }
 

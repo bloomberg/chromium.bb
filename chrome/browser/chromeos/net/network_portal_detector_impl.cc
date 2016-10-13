@@ -599,8 +599,8 @@ void NetworkPortalDetectorImpl::OnDetectionCompleted(
 void NetworkPortalDetectorImpl::NotifyDetectionCompleted(
     const NetworkState* network,
     const CaptivePortalState& state) {
-  FOR_EACH_OBSERVER(
-      Observer, observers_, OnPortalDetectionCompleted(network, state));
+  for (auto& observer : observers_)
+    observer.OnPortalDetectionCompleted(network, state);
 }
 
 bool NetworkPortalDetectorImpl::AttemptTimeoutIsCancelledForTesting() const {

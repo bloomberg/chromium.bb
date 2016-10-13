@@ -128,19 +128,20 @@ base::File::Error Service::MountFileSystemInternal(
   // If already exists a file system provided by the same extension with this
   // id, then abort.
   if (GetProvidedFileSystem(extension_id, options.file_system_id)) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_,
-        OnProvidedFileSystemMount(ProvidedFileSystemInfo(), context,
-                                  base::File::FILE_ERROR_EXISTS));
+    for (auto& observer : observers_) {
+      observer.OnProvidedFileSystemMount(ProvidedFileSystemInfo(), context,
+                                         base::File::FILE_ERROR_EXISTS);
+    }
     return base::File::FILE_ERROR_EXISTS;
   }
 
   // Restrict number of file systems to prevent system abusing.
   if (file_system_map_.size() + 1 > kMaxFileSystems) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_,
-        OnProvidedFileSystemMount(ProvidedFileSystemInfo(), context,
-                                  base::File::FILE_ERROR_TOO_MANY_OPENED));
+    for (auto& observer : observers_) {
+      observer.OnProvidedFileSystemMount(
+          ProvidedFileSystemInfo(), context,
+          base::File::FILE_ERROR_TOO_MANY_OPENED);
+    }
     return base::File::FILE_ERROR_TOO_MANY_OPENED;
   }
 
@@ -159,10 +160,11 @@ base::File::Error Service::MountFileSystemInternal(
           storage::FileSystemMountOption(
               storage::FlushPolicy::FLUSH_ON_COMPLETION),
           mount_path)) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_,
-        OnProvidedFileSystemMount(ProvidedFileSystemInfo(), context,
-                                  base::File::FILE_ERROR_INVALID_OPERATION));
+    for (auto& observer : observers_) {
+      observer.OnProvidedFileSystemMount(
+          ProvidedFileSystemInfo(), context,
+          base::File::FILE_ERROR_INVALID_OPERATION);
+    }
     return base::File::FILE_ERROR_INVALID_OPERATION;
   }
 
@@ -195,9 +197,10 @@ base::File::Error Service::MountFileSystemInternal(
       FileSystemKey(extension_id, options.file_system_id);
   registry_->RememberFileSystem(file_system_info, *file_system->GetWatchers());
 
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnProvidedFileSystemMount(file_system_info, context,
-                                              base::File::FILE_OK));
+  for (auto& observer : observers_) {
+    observer.OnProvidedFileSystemMount(file_system_info, context,
+                                       base::File::FILE_OK);
+  }
 
   return base::File::FILE_OK;
 }
@@ -211,11 +214,10 @@ base::File::Error Service::UnmountFileSystem(const std::string& extension_id,
       file_system_map_.find(FileSystemKey(extension_id, file_system_id));
   if (file_system_it == file_system_map_.end()) {
     const ProvidedFileSystemInfo empty_file_system_info;
-    FOR_EACH_OBSERVER(
-        Observer,
-        observers_,
-        OnProvidedFileSystemUnmount(empty_file_system_info,
-                                    base::File::FILE_ERROR_NOT_FOUND));
+    for (auto& observer : observers_) {
+      observer.OnProvidedFileSystemUnmount(empty_file_system_info,
+                                           base::File::FILE_ERROR_NOT_FOUND);
+    }
     return base::File::FILE_ERROR_NOT_FOUND;
   }
 
@@ -229,18 +231,15 @@ base::File::Error Service::UnmountFileSystem(const std::string& extension_id,
   const std::string mount_point_name =
       file_system_info.mount_path().BaseName().value();
   if (!mount_points->RevokeFileSystem(mount_point_name)) {
-    FOR_EACH_OBSERVER(
-        Observer,
-        observers_,
-        OnProvidedFileSystemUnmount(file_system_info,
-                                    base::File::FILE_ERROR_INVALID_OPERATION));
+    for (auto& observer : observers_) {
+      observer.OnProvidedFileSystemUnmount(
+          file_system_info, base::File::FILE_ERROR_INVALID_OPERATION);
+    }
     return base::File::FILE_ERROR_INVALID_OPERATION;
   }
 
-  FOR_EACH_OBSERVER(
-      Observer,
-      observers_,
-      OnProvidedFileSystemUnmount(file_system_info, base::File::FILE_OK));
+  for (auto& observer : observers_)
+    observer.OnProvidedFileSystemUnmount(file_system_info, base::File::FILE_OK);
 
   mount_point_name_to_key_map_.erase(mount_point_name);
 
@@ -437,9 +436,8 @@ void Service::OnRequestUnmountStatus(
   // called by the provided file system. In case of success mount() will be
   // invoked, and observers notified, so there is no need to call them now.
   if (error != base::File::FILE_OK) {
-    FOR_EACH_OBSERVER(Observer,
-                      observers_,
-                      OnProvidedFileSystemUnmount(file_system_info, error));
+    for (auto& observer : observers_)
+      observer.OnProvidedFileSystemUnmount(file_system_info, error);
   }
 }
 

@@ -266,8 +266,8 @@ bool OwnerSettingsServiceChromeOS::Set(const std::string& setting,
   em::PolicyData policy_data;
   policy_data.set_username(user_id_);
   CHECK(settings.SerializeToString(policy_data.mutable_policy_value()));
-  FOR_EACH_OBSERVER(OwnerSettingsService::Observer, observers_,
-                    OnTentativeChangesInPolicy(policy_data));
+  for (auto& observer : observers_)
+    observer.OnTentativeChangesInPolicy(policy_data);
   StorePendingChanges();
   return true;
 }
@@ -730,8 +730,8 @@ void OwnerSettingsServiceChromeOS::OnSignedPolicyStored(bool success) {
 void OwnerSettingsServiceChromeOS::ReportStatusAndContinueStoring(
     bool success) {
   store_settings_factory_.InvalidateWeakPtrs();
-  FOR_EACH_OBSERVER(OwnerSettingsService::Observer, observers_,
-                    OnSignedPolicyStored(success));
+  for (auto& observer : observers_)
+    observer.OnSignedPolicyStored(success);
   StorePendingChanges();
 }
 

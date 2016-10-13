@@ -578,14 +578,13 @@ void KioskAppManager::UpdateExternalCache() {
 }
 
 void KioskAppManager::OnKioskAppCacheUpdated(const std::string& app_id) {
-  FOR_EACH_OBSERVER(
-      KioskAppManagerObserver, observers_, OnKioskAppCacheUpdated(app_id));
+  for (auto& observer : observers_)
+    observer.OnKioskAppCacheUpdated(app_id);
 }
 
 void KioskAppManager::OnKioskAppExternalUpdateComplete(bool success) {
-  FOR_EACH_OBSERVER(KioskAppManagerObserver,
-                    observers_,
-                    OnKioskAppExternalUpdateComplete(success));
+  for (auto& observer : observers_)
+    observer.OnKioskAppExternalUpdateComplete(success);
 }
 
 void KioskAppManager::PutValidatedExternalExtension(
@@ -744,8 +743,8 @@ void KioskAppManager::UpdateAppData() {
   UpdateExternalCachePrefs();
   RetryFailedAppDataFetch();
 
-  FOR_EACH_OBSERVER(KioskAppManagerObserver, observers_,
-                    OnKioskAppsSettingsChanged());
+  for (auto& observer : observers_)
+    observer.OnKioskAppsSettingsChanged();
 }
 
 void KioskAppManager::ClearRemovedApps(
@@ -805,15 +804,13 @@ void KioskAppManager::GetKioskAppIconCacheDir(base::FilePath* cache_dir) {
 }
 
 void KioskAppManager::OnKioskAppDataChanged(const std::string& app_id) {
-  FOR_EACH_OBSERVER(KioskAppManagerObserver,
-                    observers_,
-                    OnKioskAppDataChanged(app_id));
+  for (auto& observer : observers_)
+    observer.OnKioskAppDataChanged(app_id);
 }
 
 void KioskAppManager::OnKioskAppDataLoadFailure(const std::string& app_id) {
-  FOR_EACH_OBSERVER(KioskAppManagerObserver,
-                    observers_,
-                    OnKioskAppDataLoadFailure(app_id));
+  for (auto& observer : observers_)
+    observer.OnKioskAppDataLoadFailure(app_id);
 }
 
 void KioskAppManager::OnExtensionListsUpdated(
@@ -830,10 +827,8 @@ void KioskAppManager::OnExtensionLoadedInCache(const std::string& id) {
   if (GetCachedCrx(id, &crx_path, &version))
     app_data->SetCachedCrx(crx_path);
 
-  FOR_EACH_OBSERVER(KioskAppManagerObserver,
-                    observers_,
-                    OnKioskExtensionLoadedInCache(id));
-
+  for (auto& observer : observers_)
+    observer.OnKioskExtensionLoadedInCache(id);
 }
 
 void KioskAppManager::OnExtensionDownloadFailed(
@@ -842,9 +837,8 @@ void KioskAppManager::OnExtensionDownloadFailed(
   KioskAppData* app_data = GetAppDataMutable(id);
   if (!app_data)
     return;
-  FOR_EACH_OBSERVER(KioskAppManagerObserver,
-                    observers_,
-                    OnKioskExtensionDownloadFailed(id));
+  for (auto& observer : observers_)
+    observer.OnKioskExtensionDownloadFailed(id);
 }
 
 KioskAppManager::AutoLoginState KioskAppManager::GetAutoLoginState() const {

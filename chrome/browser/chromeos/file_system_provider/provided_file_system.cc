@@ -687,13 +687,11 @@ AbortCallback ProvidedFileSystem::NotifyInQueue(
   }
 
   // Notify all observers.
-  FOR_EACH_OBSERVER(ProvidedFileSystemObserver,
-                    observers_,
-                    OnWatcherChanged(file_system_info_,
-                                     watcher_it->second,
-                                     change_type,
-                                     changes_ref,
-                                     auto_updater->CreateCallback()));
+  for (auto& observer : observers_) {
+    observer.OnWatcherChanged(file_system_info_, watcher_it->second,
+                              change_type, changes_ref,
+                              auto_updater->CreateCallback());
+  }
 
   return AbortCallback();
 }
@@ -728,9 +726,8 @@ void ProvidedFileSystem::OnAddWatcherInQueueCompleted(
   watcher->recursive = recursive;
   watcher->subscribers[subscriber.origin] = subscriber;
 
-  FOR_EACH_OBSERVER(ProvidedFileSystemObserver,
-                    observers_,
-                    OnWatcherListChanged(file_system_info_, watchers_));
+  for (auto& observer : observers_)
+    observer.OnWatcherListChanged(file_system_info_, watchers_);
 
   callback.Run(base::File::FILE_OK);
   watcher_queue_.Complete(token);
@@ -757,8 +754,8 @@ void ProvidedFileSystem::OnRemoveWatcherInQueueCompleted(
 
   it->second.subscribers.erase(origin);
 
-  FOR_EACH_OBSERVER(ProvidedFileSystemObserver, observers_,
-                    OnWatcherListChanged(file_system_info_, watchers_));
+  for (auto& observer : observers_)
+    observer.OnWatcherListChanged(file_system_info_, watchers_);
 
   // If there are no more subscribers, then remove the watcher.
   if (it->second.subscribers.empty())
@@ -788,9 +785,8 @@ void ProvidedFileSystem::OnNotifyInQueueCompleted(
 
   it->second.last_tag = args->tag;
 
-  FOR_EACH_OBSERVER(ProvidedFileSystemObserver,
-                    observers_,
-                    OnWatcherTagUpdated(file_system_info_, it->second));
+  for (auto& observer : observers_)
+    observer.OnWatcherTagUpdated(file_system_info_, it->second);
 
   // If the watched entry is deleted, then remove the watcher.
   if (args->change_type == storage::WatcherManager::DELETED) {

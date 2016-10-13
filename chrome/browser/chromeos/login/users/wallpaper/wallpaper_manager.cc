@@ -336,7 +336,7 @@ class WallpaperManager::PendingWallpaper :
     // The only known case for this check to fail is global destruction during
     // wallpaper load. It should never happen.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
-      return; // We are in a process of global destruction.
+      return;  // We are in a process of global destruction.
 
     timer.Stop();  // Erase reference to self.
 
@@ -881,8 +881,10 @@ void WallpaperManager::RemovePendingWallpaperFromList(
     }
   }
 
-  if (loading_.empty())
-    FOR_EACH_OBSERVER(Observer, observers_, OnPendingListEmptyForTesting());
+  if (loading_.empty()) {
+    for (auto& observer : observers_)
+      observer.OnPendingListEmptyForTesting();
+  }
 }
 
 void WallpaperManager::SetPolicyControlledWallpaper(

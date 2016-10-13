@@ -105,8 +105,8 @@ void UserImageSyncObserver::OnInitialSync() {
     UpdateLocalImageFromSynced();
     local_image_updated = true;
   }
-  FOR_EACH_OBSERVER(UserImageSyncObserver::Observer, observer_list_,
-      OnInitialSync(local_image_updated));
+  for (auto& observer : observer_list_)
+    observer.OnInitialSync(local_image_updated);
 }
 
 void UserImageSyncObserver::OnPreferenceChanged(const std::string& pref_name) {
@@ -199,4 +199,3 @@ bool UserImageSyncObserver::CanUpdateLocalImageNow() {
 }
 
 }  // namespace chromeos
-

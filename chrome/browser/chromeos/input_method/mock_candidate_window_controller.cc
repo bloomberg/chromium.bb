@@ -33,13 +33,13 @@ void MockCandidateWindowController::Hide() {
 }
 
 void MockCandidateWindowController::NotifyCandidateWindowOpened() {
-  FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
-                    CandidateWindowOpened());
+  for (auto& observer : observers_)
+    observer.CandidateWindowOpened();
 }
 
 void MockCandidateWindowController::NotifyCandidateWindowClosed() {
-  FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
-                    CandidateWindowClosed());
+  for (auto& observer : observers_)
+    observer.CandidateWindowClosed();
 }
 
 }  // namespace input_method

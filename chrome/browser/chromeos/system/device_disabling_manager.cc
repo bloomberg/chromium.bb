@@ -83,9 +83,8 @@ void DeviceDisablingManager::CacheDisabledMessageAndNotify(
     return;
 
   disabled_message_ = disabled_message;
-  FOR_EACH_OBSERVER(Observer,
-                    observers_,
-                    OnDisabledMessageChanged(disabled_message_));
+  for (auto& observer : observers_)
+    observer.OnDisabledMessageChanged(disabled_message_);
 }
 
 void DeviceDisablingManager::CheckWhetherDeviceDisabledDuringOOBE(

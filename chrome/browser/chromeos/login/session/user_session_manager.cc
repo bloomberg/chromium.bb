@@ -1521,9 +1521,8 @@ void UserSessionManager::NotifyPendingUserSessionsRestoreFinished() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   user_sessions_restored_ = true;
   user_sessions_restore_in_progress_ = false;
-  FOR_EACH_OBSERVER(chromeos::UserSessionStateObserver,
-                    session_state_observer_list_,
-                    PendingUserSessionsRestoreFinished());
+  for (auto& observer : session_state_observer_list_)
+    observer.PendingUserSessionsRestoreFinished();
 }
 
 void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {

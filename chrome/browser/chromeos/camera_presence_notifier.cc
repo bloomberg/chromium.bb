@@ -64,9 +64,8 @@ void CameraPresenceNotifier::OnCameraPresenceCheckDone() {
       CameraDetector::camera_presence() == CameraDetector::kCameraPresent;
   if (is_camera_present != camera_present_on_last_check_) {
     camera_present_on_last_check_ = is_camera_present;
-    FOR_EACH_OBSERVER(Observer,
-                      observers_,
-                      OnCameraPresenceCheckDone(camera_present_on_last_check_));
+    for (auto& observer : observers_)
+      observer.OnCameraPresenceCheckDone(camera_present_on_last_check_);
   }
 }
 

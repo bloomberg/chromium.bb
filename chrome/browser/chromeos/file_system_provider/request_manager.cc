@@ -73,7 +73,8 @@ int RequestManager::CreateRequest(RequestType type,
   requests_[request_id] = request;
   ResetTimer(request_id);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnRequestCreated(request_id, type));
+  for (auto& observer : observers_)
+    observer.OnRequestCreated(request_id, type);
 
   // Execute the request implementation. In case of an execution failure,
   // unregister and return 0. This may often happen, eg. if the providing
@@ -84,7 +85,8 @@ int RequestManager::CreateRequest(RequestType type,
     return 0;
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnRequestExecuted(request_id));
+  for (auto& observer : observers_)
+    observer.OnRequestExecuted(request_id);
 
   return request_id;
 }
@@ -98,9 +100,8 @@ base::File::Error RequestManager::FulfillRequest(
   if (request_it == requests_.end())
     return base::File::FILE_ERROR_NOT_FOUND;
 
-  FOR_EACH_OBSERVER(Observer,
-                    observers_,
-                    OnRequestFulfilled(request_id, *response.get(), has_more));
+  for (auto& observer : observers_)
+    observer.OnRequestFulfilled(request_id, *response.get(), has_more);
 
   request_it->second->handler->OnSuccess(request_id, std::move(response),
                                          has_more);
@@ -125,9 +126,8 @@ base::File::Error RequestManager::RejectRequest(
   if (request_it == requests_.end())
     return base::File::FILE_ERROR_NOT_FOUND;
 
-  FOR_EACH_OBSERVER(Observer,
-                    observers_,
-                    OnRequestRejected(request_id, *response.get(), error));
+  for (auto& observer : observers_)
+    observer.OnRequestRejected(request_id, *response.get(), error);
   request_it->second->handler->OnError(request_id, std::move(response), error);
   DestroyRequest(request_id);
 
@@ -165,7 +165,8 @@ RequestManager::Request::Request() {}
 RequestManager::Request::~Request() {}
 
 void RequestManager::OnRequestTimeout(int request_id) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnRequestTimeouted(request_id));
+  for (auto& observer : observers_)
+    observer.OnRequestTimeouted(request_id);
 
   if (!notification_manager_) {
     RejectRequest(request_id, std::unique_ptr<RequestValue>(new RequestValue()),
@@ -257,7 +258,8 @@ void RequestManager::DestroyRequest(int request_id) {
   if (notification_manager_)
     notification_manager_->HideUnresponsiveNotification(request_id);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnRequestDestroyed(request_id));
+  for (auto& observer : observers_)
+    observer.OnRequestDestroyed(request_id);
 
   TRACE_EVENT_ASYNC_END0(
       "file_system_provider", "RequestManager::Request", request_id);

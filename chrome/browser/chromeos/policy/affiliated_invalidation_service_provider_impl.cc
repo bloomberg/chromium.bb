@@ -254,7 +254,6 @@ void AffiliatedInvalidationServiceProviderImpl::OnInvalidationServiceConnected(
     // now, destroy the device-global one.
     DestroyDeviceInvalidationService();
   }
-
 }
 
 void
@@ -336,9 +335,8 @@ void AffiliatedInvalidationServiceProviderImpl::SetInvalidationService(
     invalidation::InvalidationService* invalidation_service) {
   DCHECK(!invalidation_service_);
   invalidation_service_ = invalidation_service;
-  FOR_EACH_OBSERVER(Consumer,
-                    consumers_,
-                    OnInvalidationServiceSet(invalidation_service_));
+  for (auto& observer : consumers_)
+    observer.OnInvalidationServiceSet(invalidation_service_);
 }
 
 void

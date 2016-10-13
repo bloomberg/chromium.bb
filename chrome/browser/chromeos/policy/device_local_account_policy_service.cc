@@ -532,7 +532,8 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
                                               component_policy_cache_root_,
                                               subdirectories_to_keep));
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnDeviceLocalAccountsChanged());
+  for (auto& observer : observers_)
+    observer.OnDeviceLocalAccountsChanged();
 }
 
 void DeviceLocalAccountPolicyService::DeleteBrokers(PolicyBrokerMap* map) {
@@ -566,7 +567,8 @@ DeviceLocalAccountPolicyBroker*
 
 void DeviceLocalAccountPolicyService::NotifyPolicyUpdated(
     const std::string& user_id) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnPolicyUpdated(user_id));
+  for (auto& observer : observers_)
+    observer.OnPolicyUpdated(user_id);
 }
 
 }  // namespace policy

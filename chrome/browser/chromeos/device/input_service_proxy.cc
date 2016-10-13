@@ -146,12 +146,14 @@ void InputServiceProxy::SetThreadIdForTesting(BrowserThread::ID thread_id) {
 void InputServiceProxy::OnDeviceAdded(
     const InputServiceLinux::InputDeviceInfo& info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(Observer, observers_, OnInputDeviceAdded(info));
+  for (auto& observer : observers_)
+    observer.OnInputDeviceAdded(info);
 }
 
 void InputServiceProxy::OnDeviceRemoved(const std::string& id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(Observer, observers_, OnInputDeviceRemoved(id));
+  for (auto& observer : observers_)
+    observer.OnInputDeviceRemoved(id);
 }
 
 }  // namespace chromeos
