@@ -1304,11 +1304,10 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   if (is_swapped_out_ && IPC_MESSAGE_ID_CLASS(message.type()) == InputMsgStart)
     return false;
 
-  base::ObserverListBase<RenderViewObserver>::Iterator it(&observers_);
-  RenderViewObserver* observer;
-  while ((observer = it.GetNext()) != NULL)
-    if (observer->OnMessageReceived(message))
+  for (auto& observer : observers_) {
+    if (observer.OnMessageReceived(message))
       return true;
+  }
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderViewImpl, message)

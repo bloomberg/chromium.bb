@@ -269,10 +269,8 @@ void MockRenderThread::OnCreateChildFrame(
 }
 
 bool MockRenderThread::OnControlMessageReceived(const IPC::Message& msg) {
-  base::ObserverListBase<RenderThreadObserver>::Iterator it(&observers_);
-  RenderThreadObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    if (observer->OnControlMessageReceived(msg))
+  for (auto& observer : observers_) {
+    if (observer.OnControlMessageReceived(msg))
       return true;
   }
   return OnMessageReceived(msg);

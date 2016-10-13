@@ -1031,10 +1031,11 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
     GlobalRequestID id(filter_->child_id(), request_id);
     DelegateMap::iterator it = delegate_map_.find(id);
     if (it != delegate_map_.end()) {
-      base::ObserverList<ResourceMessageDelegate>::Iterator del_it(it->second);
-      ResourceMessageDelegate* delegate;
-      while (!handled && (delegate = del_it.GetNext()) != NULL) {
-        handled = delegate->OnMessageReceived(message);
+      for (auto& delegate : *it->second) {
+        if (delegate.OnMessageReceived(message)) {
+          handled = true;
+          break;
+        }
       }
     }
 
@@ -1170,11 +1171,8 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     DelegateMap::iterator it = delegate_map_.find(old_request_id);
     if (it != delegate_map_.end()) {
       // Tell each delegate that the request ID has changed.
-      base::ObserverList<ResourceMessageDelegate>::Iterator del_it(it->second);
-      ResourceMessageDelegate* delegate;
-      while ((delegate = del_it.GetNext()) != NULL) {
-        delegate->set_request_id(new_request_id);
-      }
+      for (auto& delegate : *it->second)
+        delegate.set_request_id(new_request_id);
       // Now store the observer list under the new request ID.
       delegate_map_[new_request_id] = delegate_map_[old_request_id];
       delegate_map_.erase(old_request_id);

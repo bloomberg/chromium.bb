@@ -775,9 +775,8 @@ base::WeakPtr<EmbeddedWorkerInstance> EmbeddedWorkerInstance::AsWeakPtr() {
 }
 
 bool EmbeddedWorkerInstance::OnMessageReceived(const IPC::Message& message) {
-  ListenerList::Iterator it(&listener_list_);
-  while (Listener* listener = it.GetNext()) {
-    if (listener->OnMessageReceived(message))
+  for (auto& listener : listener_list_) {
+    if (listener.OnMessageReceived(message))
       return true;
   }
   return false;

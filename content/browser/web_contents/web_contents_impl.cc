@@ -675,16 +675,16 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     return true;
   }
 
-  base::ObserverListBase<WebContentsObserver>::Iterator it(&observers_);
-  WebContentsObserver* observer;
   if (render_frame_host) {
-    while ((observer = it.GetNext()) != NULL)
-      if (observer->OnMessageReceived(message, render_frame_host))
+    for (auto& observer : observers_) {
+      if (observer.OnMessageReceived(message, render_frame_host))
         return true;
+    }
   } else {
-    while ((observer = it.GetNext()) != NULL)
-      if (observer->OnMessageReceived(message))
+    for (auto& observer : observers_) {
+      if (observer.OnMessageReceived(message))
         return true;
+    }
   }
 
   // Message handlers should be aware of which
