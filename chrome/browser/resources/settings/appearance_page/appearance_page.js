@@ -23,26 +23,18 @@ Polymer({
     /** @private {!settings.AppearanceBrowserProxy} */
     browserProxy_: Object,
 
-    /**
-     * Preferences state.
-     */
     prefs: {
       type: Object,
       notify: true,
     },
 
-    /**
-     * @private
-     */
-    allowResetTheme_: {
-      notify: true,
+    /** @private */
+    useSystemTheme_: {
       type: Boolean,
-      value: false,
+      value: false,  // Can only be true on Linux, but value exists everywhere.
     },
 
-    /**
-     * @private
-     */
+    /** @private */
     defaultZoomLevel_: {
       notify: true,
       type: Object,
@@ -110,7 +102,13 @@ Polymer({
   },
 
   observers: [
-    'themeChanged_(prefs.extensions.theme.id.value)',
+    'themeChanged_(prefs.extensions.theme.id.value, useSystemTheme_)',
+
+<if expr="is_linux and not chromeos">
+    // NOTE: this pref only exists on Linux.
+    'useSystemThemePrefChanged_(prefs.extensions.theme.use_system.value)',
+</if>
+
     'zoomLevelChanged_(defaultZoomLevel_.value)',
   ],
 
@@ -127,17 +125,6 @@ Polymer({
         this.zoomPrefChanged_.bind(this));
   },
 
-  /** @override */
-  attached: function() {
-    // Query the initial state.
-    this.browserProxy_.getResetThemeEnabled().then(
-        this.setResetThemeEnabled.bind(this));
-
-    // Set up the change event listener.
-    cr.addWebUIListener('reset-theme-enabled-changed',
-                        this.setResetThemeEnabled.bind(this));
-  },
-
   /**
    * @param {boolean} isNtp Whether to use the NTP as the home page.
    * @param {string} homepage If not using NTP, use this URL.
@@ -150,13 +137,6 @@ Polymer({
     return homepage || this.i18n('exampleDotCom');
   },
 
-  /**
-   * @param {boolean} enabled Whether the theme reset is available.
-   */
-  setResetThemeEnabled: function(enabled) {
-    this.allowResetTheme_ = enabled;
-  },
-
   /** @private */
   onCustomizeFontsTap_: function() {
     settings.navigateTo(settings.Route.FONTS);
@@ -164,6 +144,8 @@ Polymer({
 
   /** @private */
   openThemesGallery_: function() {
+    // TODO(dbeam): open the theme detail page when a custom theme is installed
+    // (or otherwise handle the [//] open in new icon in a better way).
     window.open(loadTimeData.getString('themesGalleryUrl'));
   },
 
@@ -178,23 +160,67 @@ Polymer({
 </if>
 
   /** @private */
-  resetTheme_: function() {
-    this.browserProxy_.resetTheme();
+  onUseDefaultTap_: function() {
+    this.browserProxy_.useDefaultTheme();
+  },
+
+<if expr="is_linux and not chromeos">
+  /**
+   * @param {boolean} useSystemTheme
+   * @private
+   */
+  useSystemThemePrefChanged_: function(useSystemTheme) {
+    this.useSystemTheme_ = useSystemTheme;
   },
 
   /**
-   * @param {string} themeId The theme ID.
+   * @param {string} themeId
+   * @param {boolean} useSystemTheme
+   * @return {boolean} Whether to show the "USE CLASSIC" button.
    * @private
    */
-  themeChanged_: function(themeId) {
+  showUseClassic_: function(themeId, useSystemTheme) {
+    return !!themeId || useSystemTheme;
+  },
+
+  /**
+   * @param {string} themeId
+   * @param {boolean} useSystemTheme
+   * @return {boolean} Whether to show the "USE GTK+" button.
+   * @private
+   */
+  showUseSystem_: function(themeId, useSystemTheme) {
+    return !!themeId || !useSystemTheme;
+  },
+
+  /** @private */
+  onUseSystemTap_: function() {
+    this.browserProxy_.useSystemTheme();
+  },
+</if>
+
+  /**
+   * @param {string} themeId
+   * @param {boolean} useSystemTheme
+   * @private
+   */
+  themeChanged_: function(themeId, useSystemTheme) {
     if (themeId) {
-      chrome.management.get(themeId,
-          function(info) {
-            this.themeSublabel_ = info.name;
-          }.bind(this));
-    } else {
-      this.themeSublabel_ = this.i18n('chooseFromWebStore');
+      assert(!useSystemTheme);
+      this.browserProxy_.getThemeInfo(themeId).then(function(info) {
+        this.themeSublabel_ = info.name;
+      }.bind(this));
+      return;
     }
+
+    var i18nId;
+<if expr="is_linux and not chromeos">
+    i18nId = useSystemTheme ? 'systemTheme' : 'classicTheme';
+</if>
+<if expr="not is_linux or chromeos">
+    i18nId = 'chooseFromWebStore';
+</if>
+    this.themeSublabel_ = this.i18n(i18nId);
   },
 
   /**

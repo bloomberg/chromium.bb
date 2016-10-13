@@ -14,25 +14,20 @@ cr.define('settings_appearance', function() {
    */
   var TestAppearanceBrowserProxy = function() {
     settings.TestBrowserProxy.call(this, [
-      'getResetThemeEnabled',
+      'getThemeInfo',
       'openWallpaperManager',
-      'resetTheme',
+      'useDefaultTheme',
+      'useSystemTheme',
     ]);
-
-    /**
-     * @type {boolean}
-     * @private
-     */
-    this.allowResetTheme_ = false;
   };
 
   TestAppearanceBrowserProxy.prototype = {
     __proto__: settings.TestBrowserProxy.prototype,
 
     /** @override */
-    getResetThemeEnabled: function() {
-      this.methodCalled('getResetThemeEnabled');
-      return Promise.resolve(this.allowResetTheme_);
+    getThemeInfo: function(themeId) {
+      this.methodCalled('getThemeInfo', themeId);
+      return Promise.resolve({name: 'Sports car red'});
     },
 
     /** @override */
@@ -41,18 +36,14 @@ cr.define('settings_appearance', function() {
     },
 
     /** @override */
-    resetTheme: function() {
-      this.methodCalled('resetTheme');
+    useDefaultTheme: function() {
+      this.methodCalled('useDefaultTheme');
     },
 
-    /**
-     * @param {boolean} isEnabled Whether the user reset the theme.
-     */
-    setAllowResetTheme: function(isEnabled) {
-      this.allowResetTheme_ = isEnabled;
-      cr.webUIListenerCallback('reset-theme-enabled-changed', isEnabled);
-      Polymer.dom.flush();
-    }
+    /** @override */
+    useSystemTheme: function() {
+      this.methodCalled('useSystemTheme');
+    },
   };
 
   /**
@@ -110,7 +101,20 @@ cr.define('settings_appearance', function() {
         PolymerTest.clearBody();
 
         appearancePage = document.createElement('settings-appearance-page');
+        appearancePage.set('prefs', {
+          extensions: {
+            theme: {
+              id: {
+                value: 'asdf',
+              },
+              use_system: {
+                value: false,
+              },
+            },
+          },
+        });
         document.body.appendChild(appearancePage);
+        Polymer.dom.flush();
       });
 
       teardown(function() { appearancePage.remove(); });
@@ -130,13 +134,23 @@ cr.define('settings_appearance', function() {
         });
       }
 
-      test('resetTheme', function() {
-        appearanceBrowserProxy.setAllowResetTheme(true);
-        var button = appearancePage.$$('#resetTheme');
+      test('useDefaultTheme', function() {
+        var button = appearancePage.$$('#useDefault');
         assertTrue(!!button);
         MockInteractions.tap(button);
-        return appearanceBrowserProxy.whenCalled('resetTheme');
+        return appearanceBrowserProxy.whenCalled('useDefaultTheme');
       });
+
+      if (cr.isLinux && !cr.isChromeOS) {
+        test('useSystemTheme', function() {
+          Polymer.dom.flush();
+
+          var button = appearancePage.$$('#useSystem');
+          assertTrue(!!button);
+          MockInteractions.tap(button);
+          return appearanceBrowserProxy.whenCalled('useSystemTheme');
+        });
+      }
     });
   }
 

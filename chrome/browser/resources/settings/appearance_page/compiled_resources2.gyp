@@ -21,6 +21,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(EXTERNS_GYP):management',
         '<(EXTERNS_GYP):chrome_send',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -31,7 +32,6 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
-        '<(EXTERNS_GYP):management',
         '<(EXTERNS_GYP):settings_private',
         '<(EXTERNS_GYP):chrome_send',
         '../compiled_resources2.gyp:route',
