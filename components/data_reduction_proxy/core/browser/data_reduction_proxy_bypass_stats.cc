@@ -161,11 +161,10 @@ void DataReductionProxyBypassStats::OnUrlRequestCompleted(
     UMA_HISTOGRAM_COUNTS_100(
         "DataReductionProxy.SuccessfulRequestCompletionCounts",
         proxy_info.proxy_index);
-    UMA_HISTOGRAM_ENUMERATION(
-        "DataReductionProxy.ProxySchemeUsed",
-        ConvertNetProxySchemeToProxyScheme(
-            proxy_info.proxy_servers.at(proxy_info.proxy_index).scheme()),
-        PROXY_SCHEME_MAX);
+    UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.ProxySchemeUsed",
+                              ConvertNetProxySchemeToProxyScheme(
+                                  proxy_info.proxy_servers[0].scheme()),
+                              PROXY_SCHEME_MAX);
     if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
       UMA_HISTOGRAM_COUNTS_100(
           "DataReductionProxy.SuccessfulRequestCompletionCounts.MainFrame",
