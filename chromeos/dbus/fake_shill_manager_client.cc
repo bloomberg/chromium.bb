@@ -457,7 +457,7 @@ void FakeShillManagerClient::AddGeoNetwork(
     list_value = new base::ListValue;
     stub_geo_networks_.SetWithoutPathExpansion(technology, list_value);
   }
-  list_value->Append(network.DeepCopy());
+  list_value->Append(network.CreateDeepCopy());
 }
 
 void FakeShillManagerClient::AddProfile(const std::string& profile_path) {
@@ -867,8 +867,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     services->SetServiceProperty(kCellularServicePath,
                                  shill::kCellularLastGoodApnProperty, apn);
     base::ListValue apn_list;
-    apn_list.Append(apn.DeepCopy());
-    apn_list.Append(apn2.DeepCopy());
+    apn_list.Append(apn.CreateDeepCopy());
+    apn_list.Append(apn2.CreateDeepCopy());
     devices->SetDeviceProperty("/device/cellular1",
                                shill::kCellularApnListProperty, apn_list);
 
@@ -1041,7 +1041,7 @@ base::ListValue* FakeShillManagerClient::GetEnabledServiceList(
       std::string type;
       properties->GetString(shill::kTypeProperty, &type);
       if (TechnologyEnabled(type))
-        new_service_list->Append((*iter)->DeepCopy());
+        new_service_list->Append((*iter)->CreateDeepCopy());
     }
   }
   return new_service_list;

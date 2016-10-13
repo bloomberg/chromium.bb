@@ -8,9 +8,11 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -332,8 +334,7 @@ std::string SimpleGeolocationRequest::FormatRequestBody() const {
   request->SetWithoutPathExpansion(kWifiAccessPoints, wifi_access_points);
 
   for (const WifiAccessPoint& access_point : *wifi_data_) {
-    base::DictionaryValue* access_point_dictionary = new base::DictionaryValue;
-    wifi_access_points->Append(access_point_dictionary);
+    auto access_point_dictionary = base::MakeUnique<base::DictionaryValue>();
 
     access_point_dictionary->SetStringWithoutPathExpansion(
         kMacAddress, access_point.mac_address);
@@ -350,6 +351,8 @@ std::string SimpleGeolocationRequest::FormatRequestBody() const {
         kChannel, access_point.channel);
     access_point_dictionary->SetIntegerWithoutPathExpansion(
         kSignalToNoiseRatio, access_point.signal_to_noise);
+
+    wifi_access_points->Append(std::move(access_point_dictionary));
   }
   std::string result;
   if (!base::JSONWriter::Write(*request, &result)) {
