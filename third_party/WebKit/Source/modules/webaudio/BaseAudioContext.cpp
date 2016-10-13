@@ -50,6 +50,7 @@
 #include "modules/webaudio/BiquadFilterNode.h"
 #include "modules/webaudio/ChannelMergerNode.h"
 #include "modules/webaudio/ChannelSplitterNode.h"
+#include "modules/webaudio/ConstantSourceNode.h"
 #include "modules/webaudio/ConvolverNode.h"
 #include "modules/webaudio/DefaultAudioDestinationNode.h"
 #include "modules/webaudio/DelayNode.h"
@@ -326,6 +327,13 @@ AudioBufferSourceNode* BaseAudioContext::createBufferSource(
   // when start() is called.
 
   return node;
+}
+
+ConstantSourceNode* BaseAudioContext::createConstantSource(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+
+  return ConstantSourceNode::create(*this, exceptionState);
 }
 
 MediaElementAudioSourceNode* BaseAudioContext::createMediaElementSource(

@@ -173,6 +173,15 @@
             maxValue: mostPositiveFloat,
           }
         },
+      }, {
+        creator: "createConstantSource",
+        args: [],
+        limits: {
+          offset: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat
+          }
+        }
       },
       // These nodes don't have AudioParams, but we want to test them anyway.  Any arguments for the
       // constructor are pretty much arbitrary; they just need to be valid.

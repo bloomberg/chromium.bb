@@ -17,6 +17,7 @@
     [MeasureAs=WebAudioBiquadFilterNode] attribute BiquadFilterNodeConstructor BiquadFilterNode;
     [MeasureAs=WebAudioChannelMergerNode] attribute ChannelMergerNodeConstructor ChannelMergerNode;
     [MeasureAs=WebAudioChannelSplitterNode] attribute ChannelSplitterNodeConstructor ChannelSplitterNode;
+    [MeasureAs=WebAudioConstantSourceNode] attribute ConstantSourceNodeConstructor ConstantSourceNode;
     [MeasureAs=WebAudioConvolverNode] attribute ConvolverNodeConstructor ConvolverNode;
     [MeasureAs=WebAudioDelayNode] attribute DelayNodeConstructor DelayNode;
     [MeasureAs=WebAudioDynamicsCompressorNode] attribute DynamicsCompressorNodeConstructor DynamicsCompressorNode;

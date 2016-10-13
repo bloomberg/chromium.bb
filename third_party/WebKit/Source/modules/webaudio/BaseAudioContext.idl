@@ -36,6 +36,7 @@ enum AudioContextState {
 
     // Sources
     [RaisesException, MeasureAs=AudioContextCreateBufferSource] AudioBufferSourceNode createBufferSource();
+    [RaisesException, MeasureAs=AudioContextCreateConstantSource] ConstantSourceNode createConstantSource();
 
     // Processing nodes
     [RaisesException, MeasureAs=AudioContextCreateGain] GainNode createGain();

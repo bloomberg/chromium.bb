@@ -1369,6 +1369,8 @@ class CORE_EXPORT UseCounter {
     V8RTCPeerConnection_UpdateIce_Method = 1647,
     RTCPeerConnectionCreateDataChannelMaxRetransmitTime = 1648,
     RTCPeerConnectionCreateDataChannelMaxRetransmits = 1649,
+    AudioContextCreateConstantSource = 1650,
+    WebAudioConstantSourceNode = 1651,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

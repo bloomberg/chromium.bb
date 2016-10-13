@@ -135,6 +135,8 @@ String AudioParamHandler::getParamName() const {
       return "AudioListener.upY";
     case ParamTypeAudioListenerUpZ:
       return "AudioListener.upZ";
+    case ParamTypeConstantSourceValue:
+      return "ConstantSource.sourceValue";
   };
 
   NOTREACHED();

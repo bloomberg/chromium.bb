@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: ConstantSource</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (taskDone) {
+        Should("context = new OfflineAudioContext(...)", function () {
+          context = new OfflineAudioContext(1, 1, 48000);
+        }).notThrow();
+        taskDone();
+      });
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        succes = Should("new ConstantSourceNode()", function () {
+          node = new ConstantSourceNode();
+        }).throw("TypeError");
+        success = Should("new ConstantSourceNode(1)", function () {
+          node = new ConstantSourceNode(1);
+        }).throw("TypeError") && success;
+        success = Should("new ConstantSourceNode(context, 42)", function () {
+          node = new ConstantSourceNode(context, 42);
+        }).throw("TypeError") && success;
+
+        Should("*** Invalid constructors", success)
+          .summarize(
+            "correctly threw errors",
+            "did not throw errors in all cases");
+        taskDone();
+      });
+
+      audit.defineTask("default constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = new ConstantSourceNode(context)", function () {
+          node = new ConstantSourceNode(context);
+        }).notThrow();
+        success = Should("node instanceOf ConstantSourceNode", node instanceof ConstantSourceNode)
+          .beEqualTo(true) && success;
+        success = Should("node.offset.value", node.offset.value)
+          .beEqualTo(1) && success;
+
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(2) && success;
+        success = Should("node.channelCountMode", node.channelCountMode)
+          .beEqualTo("max") && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo("speakers") && success;
+
+        success = Should("*** new AnalyserNode(context)", success)
+            .summarize(
+                "constructed node with correct attributes",
+                "did not construct correct node correctly")
+
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

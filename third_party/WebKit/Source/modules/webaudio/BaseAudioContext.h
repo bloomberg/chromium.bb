@@ -57,6 +57,7 @@ class AudioSummingJunction;
 class BiquadFilterNode;
 class ChannelMergerNode;
 class ChannelSplitterNode;
+class ConstantSourceNode;
 class ConvolverNode;
 class DelayNode;
 class Dictionary;
@@ -169,6 +170,7 @@ class MODULES_EXPORT BaseAudioContext : public EventTargetWithInlineData,
   // The AudioNode create methods are called on the main thread (from
   // JavaScript).
   AudioBufferSourceNode* createBufferSource(ExceptionState&);
+  ConstantSourceNode* createConstantSource(ExceptionState&);
   MediaElementAudioSourceNode* createMediaElementSource(HTMLMediaElement*,
                                                         ExceptionState&);
   MediaStreamAudioSourceNode* createMediaStreamSource(MediaStream*,

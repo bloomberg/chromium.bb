@@ -81,6 +81,7 @@ enum AudioParamType {
   ParamTypeAudioListenerUpX,
   ParamTypeAudioListenerUpY,
   ParamTypeAudioListenerUpZ,
+  ParamTypeConstantSourceValue,
 };
 
 // AudioParamHandler is an actual implementation of web-exposed AudioParam

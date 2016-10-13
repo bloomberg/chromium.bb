@@ -95,7 +95,8 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
     NodeTypeDynamicsCompressor = 17,
     NodeTypeWaveShaper = 18,
     NodeTypeIIRFilter = 19,
-    NodeTypeEnd = 20
+    NodeTypeConstantSource = 20,
+    NodeTypeEnd = 21
   };
 
   AudioHandler(NodeType, AudioNode&, float sampleRate);

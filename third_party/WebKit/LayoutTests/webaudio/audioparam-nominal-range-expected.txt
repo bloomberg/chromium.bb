@@ -1,25 +1,25 @@
-CONSOLE WARNING: line 387: Delay.delayTime.value -1 outside nominal range [0, 1.5]; value will be clamped.
-CONSOLE WARNING: line 396: Delay.delayTime.value 4 outside nominal range [0, 1.5]; value will be clamped.
-CONSOLE WARNING: line 387: StereoPanner.pan.value -3 outside nominal range [-1, 1]; value will be clamped.
-CONSOLE WARNING: line 396: StereoPanner.pan.value 3 outside nominal range [-1, 1]; value will be clamped.
-CONSOLE WARNING: line 387: DynamicsCompressor.threshold.value -201 outside nominal range [-100, 0]; value will be clamped.
-CONSOLE WARNING: line 396: DynamicsCompressor.threshold.value 1 outside nominal range [-100, 0]; value will be clamped.
-CONSOLE WARNING: line 387: DynamicsCompressor.knee.value -1 outside nominal range [0, 40]; value will be clamped.
-CONSOLE WARNING: line 396: DynamicsCompressor.knee.value 81 outside nominal range [0, 40]; value will be clamped.
-CONSOLE WARNING: line 396: DynamicsCompressor.ratio.value 41 outside nominal range [1, 20]; value will be clamped.
-CONSOLE WARNING: line 387: DynamicsCompressor.attack.value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 396: DynamicsCompressor.attack.value 3 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 387: DynamicsCompressor.release.value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 396: DynamicsCompressor.release.value 3 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 387: BiquadFilter.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
-CONSOLE WARNING: line 396: BiquadFilter.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
-CONSOLE WARNING: line 387: Oscillator.frequency.value -48001 outside nominal range [-24000, 24000]; value will be clamped.
-CONSOLE WARNING: line 396: Oscillator.frequency.value 48001 outside nominal range [-24000, 24000]; value will be clamped.
-CONSOLE WARNING: line 316: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 317: Delay.delayTime.linearRampToValueAtTime value 2 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 318: Delay.delayTime.exponentialRampToValue value 3 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 319: Delay.delayTime.setTargetAtTime value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 320: Delay.delayTime.setValueCurveAtTime value 1.5 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 396: Delay.delayTime.value -1 outside nominal range [0, 1.5]; value will be clamped.
+CONSOLE WARNING: line 405: Delay.delayTime.value 4 outside nominal range [0, 1.5]; value will be clamped.
+CONSOLE WARNING: line 396: StereoPanner.pan.value -3 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: line 405: StereoPanner.pan.value 3 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: line 396: DynamicsCompressor.threshold.value -201 outside nominal range [-100, 0]; value will be clamped.
+CONSOLE WARNING: line 405: DynamicsCompressor.threshold.value 1 outside nominal range [-100, 0]; value will be clamped.
+CONSOLE WARNING: line 396: DynamicsCompressor.knee.value -1 outside nominal range [0, 40]; value will be clamped.
+CONSOLE WARNING: line 405: DynamicsCompressor.knee.value 81 outside nominal range [0, 40]; value will be clamped.
+CONSOLE WARNING: line 405: DynamicsCompressor.ratio.value 41 outside nominal range [1, 20]; value will be clamped.
+CONSOLE WARNING: line 396: DynamicsCompressor.attack.value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 405: DynamicsCompressor.attack.value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 396: DynamicsCompressor.release.value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 405: DynamicsCompressor.release.value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 396: BiquadFilter.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: line 405: BiquadFilter.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: line 396: Oscillator.frequency.value -48001 outside nominal range [-24000, 24000]; value will be clamped.
+CONSOLE WARNING: line 405: Oscillator.frequency.value 48001 outside nominal range [-24000, 24000]; value will be clamped.
+CONSOLE WARNING: line 325: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 326: Delay.delayTime.linearRampToValueAtTime value 2 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 327: Delay.delayTime.exponentialRampToValue value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 328: Delay.delayTime.setTargetAtTime value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 329: Delay.delayTime.setValueCurveAtTime value 1.5 outside nominal range [0, 1]; value will be clamped.
 Test AudioParam Nominal Range Values.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -199,6 +199,14 @@ PASS PannerNode.orientationZ.minValue is read-only.
 PASS PannerNode.orientationZ.maxValue = Math.PI is not equal to 3.141592653589793.
 PASS PannerNode.orientationZ.maxValue is read-only.
 PASS Nominal ranges for AudioParam(s) of PannerNode are correct.
+
+PASS ConstantSourceNode.offset.minValue is equal to -3.4028234663852886e+38.
+PASS ConstantSourceNode.offset.maxValue is equal to 3.4028234663852886e+38.
+PASS ConstantSourceNode.offset.minValue = Math.PI is not equal to 3.141592653589793.
+PASS ConstantSourceNode.offset.minValue is read-only.
+PASS ConstantSourceNode.offset.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS ConstantSourceNode.offset.maxValue is read-only.
+PASS Nominal ranges for AudioParam(s) of ConstantSourceNode are correct.
 
 PASS AudioBuffer has no AudioParams as expected.
 

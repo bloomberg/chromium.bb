@@ -865,6 +865,14 @@ interface CompositorWorker : EventTarget
     method terminate
     setter onerror
     setter onmessage
+interface ConstantSourceNode : AudioSourceNode
+    attribute @@toStringTag
+    getter offset
+    getter onended
+    method constructor
+    method start
+    method stop
+    setter onended
 interface ConvolverNode : AudioNode
     attribute @@toStringTag
     getter buffer

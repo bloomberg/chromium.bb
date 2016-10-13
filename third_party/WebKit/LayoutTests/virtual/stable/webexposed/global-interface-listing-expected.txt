@@ -532,6 +532,14 @@ interface CompositionEvent : UIEvent
     getter data
     method constructor
     method initCompositionEvent
+interface ConstantSourceNode : AudioSourceNode
+    attribute @@toStringTag
+    getter offset
+    getter onended
+    method constructor
+    method start
+    method stop
+    setter onended
 interface ConvolverNode : AudioNode
     attribute @@toStringTag
     getter buffer
