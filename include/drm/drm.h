@@ -59,6 +59,10 @@ typedef unsigned long drm_handle_t;
 
 #endif
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #define DRM_NAME	"drm"	  /**< Name in kernel, /dev, and /proc */
 #define DRM_MIN_ORDER	5	  /**< At least 2^5 bytes = 32 bytes */
 #define DRM_MAX_ORDER	22	  /**< Up to 2^22 bytes = 4MB */
@@ -636,6 +640,7 @@ struct drm_gem_open {
 #define DRM_CAP_CURSOR_WIDTH		0x8
 #define DRM_CAP_CURSOR_HEIGHT		0x9
 #define DRM_CAP_ADDFB2_MODIFIERS	0x10
+#define DRM_CAP_PAGE_FLIP_TARGET	0x11
 
 /** DRM_IOCTL_GET_CAP ioctl argument type */
 struct drm_get_cap {
@@ -685,7 +690,15 @@ struct drm_prime_handle {
 	__s32 fd;
 };
 
+#if defined(__cplusplus)
+}
+#endif
+
 #include "drm_mode.h"
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #define DRM_IOCTL_BASE			'd'
 #define DRM_IO(nr)			_IO(DRM_IOCTL_BASE,nr)
@@ -877,5 +890,9 @@ typedef struct drm_agp_binding drm_agp_binding_t;
 typedef struct drm_agp_info drm_agp_info_t;
 typedef struct drm_scatter_gather drm_scatter_gather_t;
 typedef struct drm_set_version drm_set_version_t;
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
