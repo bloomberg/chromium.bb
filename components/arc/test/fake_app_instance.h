@@ -91,7 +91,7 @@ class FakeAppInstance : public mojom::AppInstance {
       const mojo::String& intent_uri,
       const base::Optional<gfx::Rect>& dimension_on_screen) override;
   void RequestIcon(const mojo::String& icon_resource_id,
-                   arc::mojom::ScaleFactor scale_factor,
+                   mojom::ScaleFactor scale_factor,
                    const RequestIconCallback& callback) override;
   void RemoveCachedIcon(const mojo::String& icon_resource_id) override;
   void CanHandleResolution(

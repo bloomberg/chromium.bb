@@ -18,7 +18,7 @@ class FakeArcBridgeService : public ArcBridgeService {
   FakeArcBridgeService();
   ~FakeArcBridgeService() override;
 
-  // arc::ArcBridgeService
+  // ArcBridgeService
   void HandleStartup() override;
   void Shutdown() override;
 

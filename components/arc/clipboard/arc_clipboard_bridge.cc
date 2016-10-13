@@ -4,11 +4,10 @@
 
 #include "components/arc/clipboard/arc_clipboard_bridge.h"
 
-#include <utility>
-
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
+#include "components/arc/arc_bridge_service.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"

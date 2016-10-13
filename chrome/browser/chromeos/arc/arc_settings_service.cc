@@ -23,6 +23,7 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/timezone_settings.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/arc/intent_helper/font_size_util.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"

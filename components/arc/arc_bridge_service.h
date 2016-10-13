@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "components/arc/common/arc_bridge.mojom.h"
 #include "components/arc/instance_holder.h"
 
 namespace base {
@@ -24,6 +23,36 @@ class CommandLine;
 namespace arc {
 
 class ArcBridgeTest;
+
+namespace mojom {
+
+// Instead of including components/arc/common/arc_bridge.mojom.h, list all the
+// instance classes here for faster build.
+class AppInstance;
+class AudioInstance;
+class AuthInstance;
+class BluetoothInstance;
+class BootPhaseMonitorInstance;
+class ClipboardInstance;
+class CrashCollectorInstance;
+class EnterpriseReportingInstance;
+class FileSystemInstance;
+class ImeInstance;
+class IntentHelperInstance;
+class MetricsInstance;
+class NetInstance;
+class NotificationsInstance;
+class ObbMounterInstance;
+class PolicyInstance;
+class PowerInstance;
+class PrintInstance;
+class ProcessInstance;
+class StorageManagerInstance;
+class TtsInstance;
+class VideoInstance;
+class WallpaperInstance;
+
+}  // namespace mojom
 
 // The Chrome-side service that handles ARC instances and ARC bridge creation.
 // This service handles the lifetime of ARC instances and sets up the

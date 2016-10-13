@@ -5,13 +5,12 @@
 #ifndef COMPONENTS_ARC_CLIPBOARD_ARC_CLIPBOARD_BRIDGE_H_
 #define COMPONENTS_ARC_CLIPBOARD_ARC_CLIPBOARD_BRIDGE_H_
 
-#include <string>
-
 #include "base/macros.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/common/clipboard.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/string.h"
 
 namespace arc {
 

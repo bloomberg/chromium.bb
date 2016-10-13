@@ -7,13 +7,14 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/boot_phase_monitor.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
+
+class ArcBridgeService;
 
 // Receives boot phase notifications from ARC.
 class ArcBootPhaseMonitorBridge
@@ -28,7 +29,7 @@ class ArcBootPhaseMonitorBridge
   void OnInstanceReady() override;
   void OnInstanceClosed() override;
 
-  // arc::mojom::BootPhaseMonitorHost
+  // mojom::BootPhaseMonitorHost
   void OnBootCompleted() override;
 
  private:

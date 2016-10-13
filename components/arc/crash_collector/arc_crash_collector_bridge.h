@@ -9,16 +9,19 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/common/crash_collector.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/string.h"
 
 namespace base {
 class TaskRunner;
-}
+}  // namespace base
 
 namespace arc {
+
+class ArcBridgeService;
 
 // Relays dumps for non-native ARC crashes to the crash reporter in Chrome OS.
 class ArcCrashCollectorBridge

@@ -22,6 +22,7 @@
 #include "base/process/process_iterator.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
+#include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace arc {
@@ -57,8 +58,8 @@ base::ProcessId GetArcInitProcessId(
   return base::kNullProcessId;
 }
 
-std::vector<arc::ArcProcess> GetArcSystemProcessList() {
-  std::vector<arc::ArcProcess> ret_processes;
+std::vector<ArcProcess> GetArcSystemProcessList() {
+  std::vector<ArcProcess> ret_processes;
   const base::ProcessIterator::ProcessEntries& entry_list =
       base::ProcessIterator(nullptr).Snapshot();
   const base::ProcessId arc_init_pid = GetArcInitProcessId(entry_list);
@@ -140,7 +141,7 @@ void UpdateNspidToPidMap(
 
 std::vector<ArcProcess> FilterProcessList(
     const ArcProcessService::NSPidToPidMap& pid_map,
-    mojo::Array<arc::mojom::RunningAppProcessInfoPtr> processes) {
+    mojo::Array<mojom::RunningAppProcessInfoPtr> processes) {
   std::vector<ArcProcess> ret_processes;
   for (const auto& entry : processes) {
     const auto it = pid_map.find(entry->pid);
@@ -167,7 +168,7 @@ std::vector<ArcProcess> FilterProcessList(
 
 std::vector<ArcProcess> UpdateAndReturnProcessList(
     scoped_refptr<ArcProcessService::NSPidToPidMap> nspid_map,
-    mojo::Array<arc::mojom::RunningAppProcessInfoPtr> processes) {
+    mojo::Array<mojom::RunningAppProcessInfoPtr> processes) {
   ArcProcessService::NSPidToPidMap& pid_map = *nspid_map;
   // Cleanup dead pids in the cache |pid_map|.
   std::unordered_set<ProcessId> nspid_to_remove;
@@ -244,7 +245,7 @@ bool ArcProcessService::RequestAppProcessList(
     RequestProcessListCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  arc::mojom::ProcessInstance* process_instance =
+  mojom::ProcessInstance* process_instance =
       arc_bridge_service()->process()->GetInstanceForMethod(
           "RequestProcessList");
   if (!process_instance) {
@@ -258,7 +259,7 @@ bool ArcProcessService::RequestAppProcessList(
 
 void ArcProcessService::OnReceiveProcessList(
     const RequestProcessListCallback& callback,
-    mojo::Array<arc::mojom::RunningAppProcessInfoPtr> instance_processes) {
+    mojo::Array<mojom::RunningAppProcessInfoPtr> instance_processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::PostTaskAndReplyWithResult(

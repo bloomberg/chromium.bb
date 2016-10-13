@@ -19,51 +19,49 @@ namespace {
 constexpr uint32_t kMinVersionForOnKeyboardsBoundsChanging = 3;
 constexpr uint32_t kMinVersionForExtendSelectionAndDelete = 4;
 
-ui::TextInputType ConvertTextInputType(arc::mojom::TextInputType ipc_type) {
+ui::TextInputType ConvertTextInputType(mojom::TextInputType ipc_type) {
   // The two enum types are similar, but intentionally made not identical.
   // We cannot force them to be in sync. If we do, updates in ui::TextInputType
-  // must always be propagated to the arc::mojom::TextInputType mojo definition
-  // in
+  // must always be propagated to the mojom::TextInputType mojo definition in
   // ARC container side, which is in a different repository than Chromium.
   // We don't want such dependency.
   //
   // That's why we need a lengthy switch statement instead of static_cast
   // guarded by a static assert on the two enums to be in sync.
   switch (ipc_type) {
-    case arc::mojom::TextInputType::NONE:
+    case mojom::TextInputType::NONE:
       return ui::TEXT_INPUT_TYPE_NONE;
-    case arc::mojom::TextInputType::TEXT:
+    case mojom::TextInputType::TEXT:
       return ui::TEXT_INPUT_TYPE_TEXT;
-    case arc::mojom::TextInputType::PASSWORD:
+    case mojom::TextInputType::PASSWORD:
       return ui::TEXT_INPUT_TYPE_PASSWORD;
-    case arc::mojom::TextInputType::SEARCH:
+    case mojom::TextInputType::SEARCH:
       return ui::TEXT_INPUT_TYPE_SEARCH;
-    case arc::mojom::TextInputType::EMAIL:
+    case mojom::TextInputType::EMAIL:
       return ui::TEXT_INPUT_TYPE_EMAIL;
-    case arc::mojom::TextInputType::NUMBER:
+    case mojom::TextInputType::NUMBER:
       return ui::TEXT_INPUT_TYPE_NUMBER;
-    case arc::mojom::TextInputType::TELEPHONE:
+    case mojom::TextInputType::TELEPHONE:
       return ui::TEXT_INPUT_TYPE_TELEPHONE;
-    case arc::mojom::TextInputType::URL:
+    case mojom::TextInputType::URL:
       return ui::TEXT_INPUT_TYPE_URL;
-    case arc::mojom::TextInputType::DATE:
+    case mojom::TextInputType::DATE:
       return ui::TEXT_INPUT_TYPE_DATE;
-    case arc::mojom::TextInputType::TIME:
+    case mojom::TextInputType::TIME:
       return ui::TEXT_INPUT_TYPE_TIME;
-    case arc::mojom::TextInputType::DATETIME:
+    case mojom::TextInputType::DATETIME:
       return ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL;
     default:
       return ui::TEXT_INPUT_TYPE_TEXT;
   }
 }
 
-mojo::Array<arc::mojom::CompositionSegmentPtr> ConvertSegments(
+mojo::Array<mojom::CompositionSegmentPtr> ConvertSegments(
     const ui::CompositionText& composition) {
-  mojo::Array<arc::mojom::CompositionSegmentPtr> segments =
-      mojo::Array<arc::mojom::CompositionSegmentPtr>::New(0);
+  mojo::Array<mojom::CompositionSegmentPtr> segments =
+      mojo::Array<mojom::CompositionSegmentPtr>::New(0);
   for (const ui::CompositionUnderline& underline : composition.underlines) {
-    arc::mojom::CompositionSegmentPtr segment =
-        arc::mojom::CompositionSegment::New();
+    mojom::CompositionSegmentPtr segment = mojom::CompositionSegment::New();
     segment->start_offset = underline.start_offset;
     segment->end_offset = underline.end_offset;
     segment->emphasized =
@@ -142,11 +140,11 @@ void ArcImeBridgeImpl::SendExtendSelectionAndDelete(
   ime_instance->ExtendSelectionAndDelete(before, after);
 }
 
-void ArcImeBridgeImpl::OnTextInputTypeChanged(arc::mojom::TextInputType type) {
+void ArcImeBridgeImpl::OnTextInputTypeChanged(mojom::TextInputType type) {
   delegate_->OnTextInputTypeChanged(ConvertTextInputType(type));
 }
 
-void ArcImeBridgeImpl::OnCursorRectChanged(arc::mojom::CursorRectPtr rect) {
+void ArcImeBridgeImpl::OnCursorRectChanged(mojom::CursorRectPtr rect) {
   delegate_->OnCursorRectChanged(gfx::Rect(rect->left, rect->top,
                                            rect->right - rect->left,
                                            rect->bottom - rect->top));

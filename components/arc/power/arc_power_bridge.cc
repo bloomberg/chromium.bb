@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 
 namespace arc {

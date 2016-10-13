@@ -8,13 +8,15 @@
 #include <map>
 
 #include "base/macros.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/common/power.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/chromeos/display_configurator.h"
 
 namespace arc {
+
+class ArcBridgeService;
 
 // ARC Power Client sets power management policy based on requests from
 // ARC instances.

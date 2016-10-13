@@ -6,12 +6,14 @@
 #define COMPONENTS_ARC_OBB_MOUNTER_ARC_OBB_MOUNTER_BRIDGE_H_
 
 #include "base/macros.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/common/obb_mounter.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
+
+class ArcBridgeService;
 
 // This class handles OBB mount/unmount requests from Android.
 class ArcObbMounterBridge

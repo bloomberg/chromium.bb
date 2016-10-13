@@ -97,8 +97,8 @@ ash::ShelfDelegate* GetShelfDelegate() {
 }
 
 ProvisioningResult ConvertArcSignInFailureReasonToProvisioningResult(
-    arc::mojom::ArcSignInFailureReason reason) {
-  using ArcSignInFailureReason = arc::mojom::ArcSignInFailureReason;
+    mojom::ArcSignInFailureReason reason) {
+  using ArcSignInFailureReason = mojom::ArcSignInFailureReason;
 
 #define MAP_PROVISIONING_RESULT(name) \
   case ArcSignInFailureReason::name:  \
@@ -361,7 +361,7 @@ void ArcAuthService::OnSignInComplete() {
     observer.OnInitialStart();
 }
 
-void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {
+void ArcAuthService::OnSignInFailed(mojom::ArcSignInFailureReason reason) {
   OnSignInFailedInternal(
       ConvertArcSignInFailureReasonToProvisioningResult(reason));
 }

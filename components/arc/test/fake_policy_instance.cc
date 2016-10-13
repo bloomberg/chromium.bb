@@ -4,8 +4,8 @@
 
 #include <utility>
 
-#include "components/arc/test/fake_policy_instance.h"
 #include "base/run_loop.h"
+#include "components/arc/test/fake_policy_instance.h"
 
 namespace arc {
 

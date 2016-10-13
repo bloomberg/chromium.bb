@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/process/launch.h"
+#include "components/arc/arc_bridge_service.h"
 #include "mojo/edk/embedder/embedder.h"
 
 namespace {

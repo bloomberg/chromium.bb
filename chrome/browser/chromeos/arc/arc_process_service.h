@@ -16,11 +16,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/arc/arc_process.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/common/process.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "mojo/public/cpp/bindings/array.h"
 
 namespace arc {
+
+class ArcBridgeService;
 
 // A single global entry to get a list of ARC processes.
 //
@@ -97,8 +100,7 @@ class ArcProcessService
  private:
   void OnReceiveProcessList(
       const RequestProcessListCallback& callback,
-      const mojo::Array<arc::mojom::RunningAppProcessInfoPtr>
-          instance_processes);
+      const mojo::Array<mojom::RunningAppProcessInfoPtr> instance_processes);
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 

@@ -10,12 +10,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/common/enterprise_reporting.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
+
+class ArcBridgeService;
 
 // This class controls the ARC enterprise reporting.
 class ArcEnterpriseReportingService

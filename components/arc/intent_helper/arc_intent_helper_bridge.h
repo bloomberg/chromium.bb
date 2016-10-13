@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/instance_holder.h"
@@ -27,6 +26,7 @@ class LinkHandlerModel;
 namespace arc {
 
 class ActivityIconLoader;
+class ArcBridgeService;
 class LocalActivityResolver;
 class SetWallpaperDelegate;
 
@@ -56,7 +56,7 @@ class ArcIntentHelperBridge
   void OnInstanceReady() override;
   void OnInstanceClosed() override;
 
-  // arc::mojom::IntentHelperHost
+  // mojom::IntentHelperHost
   void OnIconInvalidated(const mojo::String& package_name) override;
   void OnIntentFiltersUpdated(
       mojo::Array<mojom::IntentFilterPtr> intent_filters) override;

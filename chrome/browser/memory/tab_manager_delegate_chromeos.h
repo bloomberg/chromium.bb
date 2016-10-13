@@ -21,7 +21,6 @@
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "content/public/browser/notification_observer.h"

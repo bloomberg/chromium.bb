@@ -9,11 +9,12 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/storage_manager.mojom.h"
 
 namespace arc {
+
+class ArcBridgeService;
 
 // This class represents as a simple proxy of StorageManager to Chrome OS.
 class ArcStorageManager : public ArcService {
@@ -32,7 +33,7 @@ class ArcStorageManager : public ArcService {
 
   // Gets storage usage of all application's APK, data, and cache size.
   using GetApplicationsSizeCallback =
-      base::Callback<void(bool succeeded, arc::mojom::ApplicationsSizePtr)>;
+      base::Callback<void(bool succeeded, mojom::ApplicationsSizePtr)>;
   bool GetApplicationsSize(const GetApplicationsSizeCallback& callback);
 
   // Deletes all applications' cache files.

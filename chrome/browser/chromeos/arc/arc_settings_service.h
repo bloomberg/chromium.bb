@@ -8,12 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/instance_holder.h"
 
 namespace arc {
 
+class ArcBridgeService;
 class ArcSettingsServiceImpl;
 
 class ArcSettingsService

@@ -147,7 +147,7 @@ class ArcAuthService : public ArcService,
   void GetAuthCodeAndAccountType(
       const GetAuthCodeAndAccountTypeCallback& callback) override;
   void OnSignInComplete() override;
-  void OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) override;
+  void OnSignInFailed(mojom::ArcSignInFailureReason reason) override;
   // Callback is called with a bool that indicates the management status of the
   // user.
   void GetIsAccountManaged(

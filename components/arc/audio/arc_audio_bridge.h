@@ -9,12 +9,14 @@
 
 #include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/common/audio.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
+
+class ArcBridgeService;
 
 class ArcAudioBridge : public ArcService,
                        public InstanceHolder<mojom::AudioInstance>::Observer,

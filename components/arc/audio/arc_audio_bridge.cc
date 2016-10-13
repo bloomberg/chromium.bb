@@ -8,6 +8,7 @@
 #include "ash/common/wm_shell.h"
 #include "base/logging.h"
 #include "chromeos/audio/audio_device.h"
+#include "components/arc/arc_bridge_service.h"
 
 namespace arc {
 

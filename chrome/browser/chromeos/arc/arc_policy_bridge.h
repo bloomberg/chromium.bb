@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_POLICY_BRIDGE_H_
 
 #include "base/macros.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/common/policy.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/policy/core/common/policy_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -17,6 +17,8 @@ class PolicyMap;
 }  // namespace policy
 
 namespace arc {
+
+class ArcBridgeService;
 
 // Constants for the ARC certs sync mode are defined in the policy, please keep
 // its in sync.

@@ -50,7 +50,7 @@ class OomKillsMonitor : public base::DelegateSimpleThread::Delegate {
   void Run() override;
 
   // A flag set when OomKillsMonitor is shutdown so that its thread can poll
-  // it and attempt to wind down from that point (to avoid unecessary work, not
+  // it and attempt to wind down from that point (to avoid unnecessary work, not
   // because it blocks shutdown).
   base::AtomicFlag is_shutting_down_;
 

@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/arc/arc_bridge_service.h"
 
 namespace {
 
@@ -86,7 +87,7 @@ void ArcMetricsService::RequestProcessList() {
 }
 
 void ArcMetricsService::ParseProcessList(
-    mojo::Array<arc::mojom::RunningAppProcessInfoPtr> processes) {
+    mojo::Array<mojom::RunningAppProcessInfoPtr> processes) {
   int running_app_count = 0;
   for (const auto& process : processes) {
     const mojo::String& process_name = process->process_name;
@@ -137,7 +138,7 @@ void ArcMetricsService::OnArcStartTimeRetrieved(
 }
 
 void ArcMetricsService::ReportBootProgress(
-    mojo::Array<arc::mojom::BootProgressEventPtr> events) {
+    mojo::Array<mojom::BootProgressEventPtr> events) {
   DCHECK(CalledOnValidThread());
   int64_t arc_start_time_in_ms =
       (arc_start_time_ - base::TimeTicks()).InMilliseconds();

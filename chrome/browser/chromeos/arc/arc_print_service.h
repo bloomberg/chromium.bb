@@ -6,11 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_PRINT_SERVICE_H_
 
 #include "base/macros.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/common/print.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
+
+class ArcBridgeService;
 
 class ArcPrintService : public ArcService,
                         public InstanceHolder<mojom::PrintInstance>::Observer,

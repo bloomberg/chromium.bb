@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -15,7 +16,6 @@
 
 #include "base/callback.h"
 #include "base/timer/timer.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/bluetooth.mojom.h"
 #include "components/arc/instance_holder.h"

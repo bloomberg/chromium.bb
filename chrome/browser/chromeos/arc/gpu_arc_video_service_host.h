@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_GPU_ARC_VIDEO_SERVICE_HOST_H_
 
 #include "base/macros.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/video.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
+
+class ArcBridgeService;
 
 // This class takes requests for creating channels of video accelerators from
 // arc::VideoInstance and forwards these requests to GpuArcVideoServce. It also
@@ -23,11 +24,11 @@ namespace arc {
 //
 // Lives on the UI thread.
 class GpuArcVideoServiceHost
-    : public arc::ArcService,
-      public arc::InstanceHolder<mojom::VideoInstance>::Observer,
-      public arc::mojom::VideoHost {
+    : public ArcService,
+      public InstanceHolder<mojom::VideoInstance>::Observer,
+      public mojom::VideoHost {
  public:
-  explicit GpuArcVideoServiceHost(arc::ArcBridgeService* bridge_service);
+  explicit GpuArcVideoServiceHost(ArcBridgeService* bridge_service);
   ~GpuArcVideoServiceHost() override;
 
   // arc::InstanceHolder<mojom::VideoInstance>::Observer implementation.
@@ -41,7 +42,7 @@ class GpuArcVideoServiceHost
       const OnBootstrapVideoAcceleratorFactoryCallback& callback) override;
 
  private:
-  mojo::Binding<arc::mojom::VideoHost> binding_;
+  mojo::Binding<mojom::VideoHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuArcVideoServiceHost);
 };

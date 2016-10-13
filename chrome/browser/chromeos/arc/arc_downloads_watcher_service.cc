@@ -10,7 +10,9 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_enumerator.h"
@@ -24,7 +26,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/array.h"
 
 using content::BrowserThread;
 

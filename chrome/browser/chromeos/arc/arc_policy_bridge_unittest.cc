@@ -118,12 +118,12 @@ class ArcPolicyBridgeTest : public testing::Test {
   // Not an unused variable. Unit tests do not have a message loop by themselves
   // and mojo needs a message loop for communication.
   base::MessageLoop loop_;
-  std::unique_ptr<arc::FakeArcBridgeService> bridge_service_;
-  std::unique_ptr<arc::ArcPolicyBridge> policy_bridge_;
+  std::unique_ptr<FakeArcBridgeService> bridge_service_;
+  std::unique_ptr<ArcPolicyBridge> policy_bridge_;
   // Always keep policy_instance_ below bridge_service_, so that
   // policy_instance_ is destructed first. It needs to remove itself as
   // observer.
-  std::unique_ptr<arc::FakePolicyInstance> policy_instance_;
+  std::unique_ptr<FakePolicyInstance> policy_instance_;
   policy::PolicyMap policy_map_;
   policy::MockPolicyService policy_service_;
 

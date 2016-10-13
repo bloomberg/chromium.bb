@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/task_manager/providers/task.h"
-#include "components/arc/arc_bridge_service.h"
+#include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_AUTH_CODE_FETCHER_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_AUTH_CODE_FETCHER_DELEGATE_H_
 
+#include <string>
+
 namespace arc {
 
 class ArcAuthCodeFetcherDelegate {
