@@ -233,11 +233,10 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
   // Indicates if we are capturing generated content, e.g. Tab or Desktop.
   const bool is_content_capture_;
 
-  // This is run once to report whether the device was successfully started
-  // after a call to StartCapture().
+  // These two are valid between StartCapture() and StopCapture().
+  // |running_call_back_| is run when capture is successfully started, and when
+  // it is stopped or error happens.
   RunningCallback running_callback_;
-
-  // This is valid between StartCapture() and StopCapture().
   base::Closure stop_capture_cb_;
 
   // Placeholder keeping the callback between asynchronous device enumeration
@@ -355,7 +354,7 @@ void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
     return;
   switch (state) {
     case VIDEO_CAPTURE_STATE_STARTED:
-      base::ResetAndReturn(&running_callback_).Run(true);
+      running_callback_.Run(true);
       break;
 
     case VIDEO_CAPTURE_STATE_STOPPING:
