@@ -334,7 +334,7 @@ void ToolbarActionsModel::AddExtension(const extensions::Extension* extension) {
 
 void ToolbarActionsModel::AddItem(const ToolbarItem& item) {
   // We only use AddItem() once the system is initialized.
-  DCHECK(actions_initialized_);
+  CHECK(actions_initialized_);
 
   // See if we have a last known good position for this extension.
   bool is_new_extension = !base::ContainsValue(last_known_positions_, item.id);
@@ -460,7 +460,7 @@ void ToolbarActionsModel::RemoveExtension(
 // 2. Create a vector of actions that did not have a pref value.
 // 3. Remove holes from the sorted vector and append the unsorted vector.
 void ToolbarActionsModel::InitializeActionList() {
-  DCHECK(toolbar_items_.empty());  // We shouldn't have any items yet.
+  CHECK(toolbar_items_.empty());  // We shouldn't have any items yet.
 
   last_known_positions_ = extension_prefs_->GetToolbarOrder();
   if (profile_->IsOffTheRecord())

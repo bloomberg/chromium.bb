@@ -444,22 +444,27 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   }
   [containerView_ setHighlight:std::move(highlight)];
 
-  std::vector<ToolbarActionViewController*> toolbar_actions =
+  std::vector<ToolbarActionViewController*> toolbarActions =
       toolbarActionsBar_->GetActions();
-  for (NSUInteger i = 0; i < [buttons_ count]; ++i) {
-    ToolbarActionViewController* controller =
-        [[self buttonAtIndex:i] viewController];
-    if (controller != toolbar_actions[i]) {
-      size_t j = i + 1;
-      while (true) {
-        ToolbarActionViewController* other_controller =
-            [[self buttonAtIndex:j] viewController];
-        if (other_controller == toolbar_actions[i])
-          break;
-        ++j;
-      }
-      [buttons_ exchangeObjectAtIndex:i withObjectAtIndex:j];
+  // Check that every button has an action in the referenced actions.
+  // Tracking down crbug.com/653100.
+  // TODO(devlin): Remove or relax this one the bug is fixed?
+  for (BrowserActionButton* button in buttons_.get()) {
+    CHECK(std::find(toolbarActions.begin(), toolbarActions.end(),
+                    [button viewController]) != toolbarActions.end());
+  }
+  // Reorder |buttons_| to reflect |toolbarActions|. (Ugly n^2 sort, but the
+  // data set should be tiny.)
+  for (size_t refIndex = 0; refIndex < toolbarActions.size(); ++refIndex) {
+    NSUInteger buttonIndex = refIndex;
+    ToolbarActionViewController* refAction = toolbarActions[refIndex];
+    for (; buttonIndex < [buttons_ count]; ++buttonIndex) {
+      if ([[self buttonAtIndex:buttonIndex] viewController] == refAction)
+        break;
     }
+    CHECK_LT(buttonIndex, [buttons_ count]);
+    if (buttonIndex != refIndex)
+      [buttons_ exchangeObjectAtIndex:buttonIndex withObjectAtIndex:refIndex];
   }
 
   NSUInteger startIndex = toolbarActionsBar_->GetStartIndexInBounds();

@@ -336,7 +336,7 @@ ToolbarActionsBar::GetActions() const {
 }
 
 void ToolbarActionsBar::CreateActions() {
-  DCHECK(toolbar_actions_.empty());
+  CHECK(toolbar_actions_.empty());
   // If the model isn't initialized, wait for it.
   if (!model_ || !model_->actions_initialized())
     return;
@@ -633,17 +633,14 @@ void ToolbarActionsBar::set_extension_bubble_appearance_wait_time_for_testing(
 void ToolbarActionsBar::OnToolbarActionAdded(
     const ToolbarActionsModel::ToolbarItem& item,
     int index) {
-  DCHECK(GetActionForId(item.id) == nullptr)
+  CHECK(model_->actions_initialized());
+  CHECK(GetActionForId(item.id) == nullptr)
       << "Asked to add a toolbar action view for an action that already "
          "exists";
 
   toolbar_actions_.insert(toolbar_actions_.begin() + index,
                           model_->CreateActionForItem(browser_, this, item));
   delegate_->AddViewForAction(toolbar_actions_[index], index);
-
-  // If we are still initializing the container, don't bother animating.
-  if (!model_->actions_initialized())
-    return;
 
   // We may need to resize (e.g. to show the new icon, or the chevron). We don't
   // need to check if an extension is upgrading here, because ResizeDelegate()
@@ -782,7 +779,7 @@ void ToolbarActionsBar::OnToolbarHighlightModeChanged(bool is_highlighting) {
 
 void ToolbarActionsBar::OnToolbarModelInitialized() {
   // We shouldn't have any actions before the model is initialized.
-  DCHECK(toolbar_actions_.empty());
+  CHECK(toolbar_actions_.empty());
   CreateActions();
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/463337 is
