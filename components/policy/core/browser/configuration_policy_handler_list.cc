@@ -32,6 +32,10 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs,
     PolicyErrorMap* errors) const {
+  // This function is used both to apply the policy settings, and to check them
+  // and list errors. As such it must get all the errors even if it isn't
+  // applying the policies.
+  // TODO (aberent) split into two functions.
   PolicyErrorMap scoped_errors;
   if (!errors)
     errors = &scoped_errors;
@@ -39,13 +43,11 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
   policy::PolicyHandlerParameters parameters;
   parameters_callback_.Run(&parameters);
 
-  if (prefs) {
-    std::vector<ConfigurationPolicyHandler*>::const_iterator handler;
-    for (handler = handlers_.begin(); handler != handlers_.end(); ++handler) {
-      if ((*handler)->CheckPolicySettings(policies, errors)) {
-        (*handler)
-            ->ApplyPolicySettingsWithParameters(policies, parameters, prefs);
-      }
+  std::vector<ConfigurationPolicyHandler*>::const_iterator handler;
+  for (handler = handlers_.begin(); handler != handlers_.end(); ++handler) {
+    if ((*handler)->CheckPolicySettings(policies, errors) && prefs) {
+      (*handler)
+          ->ApplyPolicySettingsWithParameters(policies, parameters, prefs);
     }
   }
 

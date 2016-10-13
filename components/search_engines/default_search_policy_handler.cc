@@ -301,11 +301,13 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 bool DefaultSearchPolicyHandler::CheckIndividualPolicies(
     const PolicyMap& policies,
     PolicyErrorMap* errors) {
+  bool all_ok = true;
   for (const auto& handler : handlers_) {
-    if (!handler->CheckPolicySettings(policies, errors))
-      return false;
+    // It's important to call CheckPolicySettings() on all handlers and not just
+    // exit on the first error, so we report all policy errors.
+    all_ok &= handler->CheckPolicySettings(policies, errors);
   }
-  return true;
+  return all_ok;
 }
 
 bool DefaultSearchPolicyHandler::HasDefaultSearchPolicy(
