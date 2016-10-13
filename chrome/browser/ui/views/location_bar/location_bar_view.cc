@@ -141,7 +141,8 @@ LocationBarView::LocationBarView(Browser* browser,
       template_url_service_(NULL),
       web_contents_null_at_last_refresh_(true),
       should_show_secure_state_(true),
-      should_animate_secure_state_(true) {
+      should_animate_secure_state_(false),
+      should_animate_nonsecure_state_(false) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
@@ -151,21 +152,23 @@ LocationBarView::LocationBarView(Browser* browser,
       ->AddZoomEventManagerObserver(this);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kMaterialSecurityVerbose)) {
-    std::string security_verbose_flag =
-        command_line->GetSwitchValueASCII(switches::kMaterialSecurityVerbose);
-
+  if (command_line->HasSwitch(switches::kSecurityChip)) {
+    std::string security_chip_flag =
+        command_line->GetSwitchValueASCII(switches::kSecurityChip);
     should_show_secure_state_ =
-        security_verbose_flag ==
-            switches::kMaterialSecurityVerboseShowAllAnimated ||
-        security_verbose_flag ==
-            switches::kMaterialSecurityVerboseShowAllNonAnimated;
+        security_chip_flag == switches::kSecurityChipShowAll;
+  }
 
+  if (command_line->HasSwitch(switches::kSecurityChipAnimation)) {
+    std::string security_chip_animation_flag =
+        command_line->GetSwitchValueASCII(switches::kSecurityChipAnimation);
     should_animate_secure_state_ =
-        security_verbose_flag ==
-            switches::kMaterialSecurityVerboseShowAllAnimated ||
-        security_verbose_flag ==
-            switches::kMaterialSecurityVerboseShowNonSecureAnimated;
+        security_chip_animation_flag == switches::kSecurityChipAnimationAll;
+
+    should_animate_nonsecure_state_ =
+        security_chip_animation_flag ==
+            switches::kSecurityChipAnimationNonSecureOnly ||
+        security_chip_animation_flag == switches::kSecurityChipAnimationAll;
   }
 }
 
@@ -770,9 +773,8 @@ void LocationBarView::Update(const WebContents* contents) {
   else
     omnibox_view_->Update();
 
-  bool should_show = ShouldShowSecurityChip();
   location_icon_view_->SetSecurityState(
-      should_show, should_show && !contents && should_animate_secure_state_);
+      ShouldShowSecurityChip(), !contents && ShouldAnimateSecurityChip());
 
   OnChanged();  // NOTE: Calls Layout().
 }
@@ -1017,6 +1019,17 @@ bool LocationBarView::ShouldShowSecurityChip() const {
            level == SecurityLevel::EV_SECURE) &&
           should_show_secure_state_) ||
          level == SecurityLevel::DANGEROUS;
+}
+
+bool LocationBarView::ShouldAnimateSecurityChip() const {
+  using SecurityLevel = security_state::SecurityStateModel::SecurityLevel;
+  SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
+  bool is_secure_level =
+      level == SecurityLevel::EV_SECURE || level == SecurityLevel::SECURE;
+  return ShouldShowSecurityChip() &&
+         ((level == SecurityLevel::DANGEROUS &&
+           should_animate_nonsecure_state_) ||
+          (is_secure_level && should_animate_secure_state_));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

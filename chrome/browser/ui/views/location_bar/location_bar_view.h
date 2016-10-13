@@ -328,6 +328,9 @@ class LocationBarView : public LocationBar,
   // In these cases, we should show the state of the security chip.
   bool ShouldShowSecurityChip() const;
 
+  // Returns true if the chip should be animated
+  bool ShouldAnimateSecurityChip() const;
+
   // Used to "reverse" the URL showing/hiding animations, since we use separate
   // animations whose curves are not true inverses of each other.  Based on the
   // current position of the omnibox, calculates what value the desired
@@ -480,6 +483,7 @@ class LocationBarView : public LocationBar,
   // These allow toggling the verbose security state behavior via flags.
   bool should_show_secure_state_;
   bool should_animate_secure_state_;
+  bool should_animate_nonsecure_state_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };

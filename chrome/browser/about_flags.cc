@@ -581,20 +581,23 @@ const FeatureEntry::Choice kSSLVersionMaxChoices[] = {
     {IDS_FLAGS_SSL_VERSION_MAX_TLS13, switches::kSSLVersionMax, "tls1.3"},
 };
 
-const FeatureEntry::Choice kSecurityVerboseChoices[] = {
-    {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DEFAULT, "", ""},
-    {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_ALL_ANIMATED,
-     switches::kMaterialSecurityVerbose,
-     switches::kMaterialSecurityVerboseShowAllAnimated},
-    {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_ALL_NONANIMATED,
-     switches::kMaterialSecurityVerbose,
-     switches::kMaterialSecurityVerboseShowAllNonAnimated},
-    {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_NONSECURE_ANIMATED,
-     switches::kMaterialSecurityVerbose,
-     switches::kMaterialSecurityVerboseShowNonSecureAnimated},
-    {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_NONSECURE_NONANIMATED,
-     switches::kMaterialSecurityVerbose,
-     switches::kMaterialSecurityVerboseShowNonSecureNonAnimated},
+const FeatureEntry::Choice kSecurityChipChoices[] = {
+    {IDS_FLAGS_SECURITY_CHIP_DEFAULT, "", ""},
+    {IDS_FLAGS_SECURITY_CHIP_SHOW_NONSECURE_ONLY, switches::kSecurityChip,
+     switches::kSecurityChipShowNonSecureOnly},
+    {IDS_FLAGS_SECURITY_CHIP_SHOW_ALL, switches::kSecurityChip,
+     switches::kSecurityChipShowAll},
+};
+
+const FeatureEntry::Choice kSecurityChipAnimationChoices[] = {
+    {IDS_FLAGS_SECURITY_CHIP_ANIMATION_DEFAULT, "", ""},
+    {IDS_FLAGS_SECURITY_CHIP_ANIMATION_NONE, switches::kSecurityChipAnimation,
+     switches::kSecurityChipAnimationNone},
+    {IDS_FLAGS_SECURITY_CHIP_ANIMATION_NONSECURE_ONLY,
+     switches::kSecurityChipAnimation,
+     switches::kSecurityChipAnimationNonSecureOnly},
+    {IDS_FLAGS_SECURITY_CHIP_ANIMATION_ALL, switches::kSecurityChipAnimation,
+     switches::kSecurityChipAnimationAll},
 };
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -2007,9 +2010,6 @@ const FeatureEntry kFeatureEntries[] = {
          "https://www-googleapis-staging.sandbox.google.com/oauth2/v4/"
          "ExchangeToken")},
 #endif  // OS_CHROMEOS
-    {"material-security-verbose", IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_NAME,
-     IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DESCRIPTION, kOsDesktop,
-     MULTI_VALUE_TYPE(kSecurityVerboseChoices)},
 #if defined(OS_CHROMEOS)
     {"arc-boot-completed-broadcast", IDS_FLAGS_ARC_BOOT_COMPLETED,
      IDS_FLAGS_ARC_BOOT_COMPLETED_DESCRIPTION, kOsCrOS,
@@ -2030,6 +2030,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPENSIVE_BACKGROUND_TIMER_THROTTLING_NAME,
      IDS_FLAGS_EXPENSIVE_BACKGROUND_TIMER_THROTTLING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kExpensiveBackgroundTimerThrottling)},
+     {"security-chip", IDS_FLAGS_SECURITY_CHIP_NAME,
+     IDS_FLAGS_SECURITY_CHIP_DESCRIPTION, kOsDesktop,
+     MULTI_VALUE_TYPE(kSecurityChipChoices)},
+    {"security-chip-animation", IDS_FLAGS_SECURITY_CHIP_ANIMATION_NAME,
+     IDS_FLAGS_SECURITY_CHIP_ANIMATION_DESCRIPTION, kOsDesktop,
+     MULTI_VALUE_TYPE(kSecurityChipAnimationChoices)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

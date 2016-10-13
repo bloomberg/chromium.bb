@@ -6863,27 +6863,41 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Group history by website domain (i.e. google.com) on chrome://history.
       </message>
 
-      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_NAME" desc="Title of the flag to set the animation and visibility of the material security verbose">
-        Material Security Verbose
+      <message name="IDS_FLAGS_SECURITY_CHIP_NAME" desc="Title of the flag to set the security chip's visibility in the omnibox.">
+        Security Chip
       </message>
-      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DESCRIPTION" desc="Description of the 'Material Security Verbose' in the Omnibox">
-        Sets the animation and visibility of the security verbose in Material Design.
+      <message name="IDS_FLAGS_SECURITY_CHIP_DESCRIPTION" desc="Description of the flag that sets security chip's visibility in the Omnibox">
+        Sets the visibility of the security chip in Material Design.
       </message>
-      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DEFAULT">
-        Default
+      <message name="IDS_FLAGS_SECURITY_CHIP_DEFAULT">
+       Default
       </message>
-      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_ALL_ANIMATED">
-        Show all, animated
+      <message name="IDS_FLAGS_SECURITY_CHIP_SHOW_NONSECURE_ONLY">
+       Show non-secure only
       </message>
-      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_ALL_NONANIMATED">
-        Show all, non-animated
+      <message name="IDS_FLAGS_SECURITY_CHIP_SHOW_ALL">
+       Show all
       </message>
-      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_NONSECURE_ANIMATED">
-        Show only non-secure, animated
+
+      <message name="IDS_FLAGS_SECURITY_CHIP_ANIMATION_NAME" desc="Title of the flag to set the security chip's animation in the omnibox.">
+       Security Chip Animation
       </message>
-      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_NONSECURE_NONANIMATED">
-        Show only non-secure, non-animated
+      <message name="IDS_FLAGS_SECURITY_CHIP_ANIMATION_DESCRIPTION" desc="Description of the flag that sets security chip's animation in the Omnibox">
+       Sets the animation of the security chip in Material Design.
       </message>
+      <message name="IDS_FLAGS_SECURITY_CHIP_ANIMATION_DEFAULT">
+       Default
+      </message>
+      <message name="IDS_FLAGS_SECURITY_CHIP_ANIMATION_NONE">
+       No animation
+      </message>
+      <message name="IDS_FLAGS_SECURITY_CHIP_ANIMATION_NONSECURE_ONLY">
+        Animate non-secure only
+      </message>
+      <message name="IDS_FLAGS_SECURITY_CHIP_ANIMATION_ALL">
+       Animate all
+      </message>
+
       <message name="IDS_FLAGS_SAVEAS_MENU_LABEL_EXPERIMENT_NAME" desc="Name of the flag to enable switching of 'Save as' menu label to 'Download'.">
         Switch 'Save as' menu labels to 'Download'
       </message>
