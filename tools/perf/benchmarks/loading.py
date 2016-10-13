@@ -12,7 +12,7 @@ from telemetry.page import cache_temperature
 from telemetry.page import traffic_setting
 
 
-@benchmark.Disabled('all')  # crbug.com/654215
+@benchmark.Enabled('android')
 class LoadingMobile(perf_benchmark.PerfBenchmark):
   """ A benchmark measuring loading performance of mobile sites. """
 
@@ -20,6 +20,18 @@ class LoadingMobile(perf_benchmark.PerfBenchmark):
 
   def CreateTimelineBasedMeasurementOptions(self):
     return page_cycler_v2.TimelineBasedMeasurementOptionsForLoadingMetric()
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    # crbug.com/619254
+    if possible_browser.browser_type == 'reference':
+      return True
+
+    # crbug.com/651188
+    if possible_browser.browser_type == 'android-webview':
+      return True
+
+    return False
 
   @classmethod
   def Name(cls):
