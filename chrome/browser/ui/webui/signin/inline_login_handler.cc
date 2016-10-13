@@ -198,13 +198,14 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
   signin_metrics::Reason reason =
       signin::GetSigninReasonForPromoURL(current_url);
 
-  if (reason != signin_metrics::Reason::REASON_REAUTHENTICATION ||
-      reason != signin_metrics::Reason::REASON_UNLOCK ||
+  if (reason != signin_metrics::Reason::REASON_REAUTHENTICATION &&
+      reason != signin_metrics::Reason::REASON_UNLOCK &&
       reason != signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT) {
     signin_metrics::LogSigninAccessPointStarted(access_point);
+    RecordSigninUserActionForAccessPoint(access_point);
+    content::RecordAction(base::UserMetricsAction("Signin_SigninPage_Loading"));
+    params.SetBoolean("isLoginPrimaryAccount", true);
   }
-  RecordSigninUserActionForAccessPoint(access_point);
-  content::RecordAction(base::UserMetricsAction("Signin_SigninPage_Loading"));
 
   params.SetString("continueUrl", signin::GetLandingURL(access_point).spec());
 

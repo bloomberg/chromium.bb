@@ -20,6 +20,11 @@ cr.define('inline.login', function() {
    */
   var authReadyFired;
 
+  /**
+  * Whether the login UI is loaded for signing in primary account.
+  */
+  var isLoginPrimaryAccount;
+
   function onResize(e) {
     chrome.send('switchToFullTab', [e.detail]);
   }
@@ -27,7 +32,8 @@ cr.define('inline.login', function() {
   function onAuthReady(e) {
     $('contents').classList.toggle('loading', false);
     authReadyFired = true;
-    chrome.send('metricsHandler:recordAction', ['Signin_SigninPage_Shown']);
+    if (isLoginPrimaryAccount)
+      chrome.send('metricsHandler:recordAction', ['Signin_SigninPage_Shown']);
   }
 
   function onDropLink(e) {
@@ -74,6 +80,7 @@ cr.define('inline.login', function() {
     $('contents').classList.toggle('loading',
         data.authMode != cr.login.GaiaAuthHost.AuthMode.DESKTOP ||
         data.constrained == '1');
+    isLoginPrimaryAccount = data.isLoginPrimaryAccount;
   }
 
   /**
