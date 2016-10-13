@@ -1,13 +1,8 @@
 include_rules = [
-    "+bindings",
-    "+core",
     "-modules",
     "+modules/EventModules.h",
     "+modules/EventTargetModules.h",
     "+modules/ModulesExport.h",
     "+modules/websockets",
     "+mojo/public/cpp/bindings",
-    "+platform",
-    "+public/platform",
-    "-web",
 ]

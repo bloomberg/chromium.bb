@@ -11,5 +11,6 @@ include_rules = [
     "+modules/vibration",
     "+platform",
     "+public/platform",
+    "+skia/ext",
     "-web",
 ]

@@ -1,12 +1,7 @@
 include_rules = [
-    "+bindings",
-    "+core",
     "+gin/public",
     "-modules",
     "+modules/ModulesExport.h",
     "+modules/fetch",
     "+modules/credentialmanager",
-    "+platform",
-    "+public/platform",
-    "-web",
 ]

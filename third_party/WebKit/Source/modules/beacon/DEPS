@@ -1,9 +1,4 @@
 include_rules = [
-    "+bindings",
-    "+core",
     "-modules",
     "+modules/beacon",
-    "+platform",
-    "+public/platform",
-    "-web",
 ]
