@@ -235,9 +235,13 @@ def get_fyi_waterfall_config():
     'win-low-end-2-core', 'win',
     swarming=[
       {
+       'gpu': '8086:22b1',
+       'os': 'Windows-10-10586',
        'device_ids': ['build187-b4']
       },
       {
+       'gpu': '1002:9874',
+       'os': 'Windows-10-10586',
        'device_ids': ['build171-b4', 'build186-b4']
       }
     ])
@@ -395,7 +399,10 @@ def generate_telemetry_tests(tester_config, benchmarks):
       # Id is unique within the swarming pool so it is the only needed
       # identifier for the bot to run the test on
       swarming_dimensions.append({
-        'id': device_id
+        'id': device_id,
+        'gpu': dimension['gpu'],
+        'os': dimension['os'],
+        'pool': 'Chrome-perf',
       })
 
     test = generate_telemetry_test(
