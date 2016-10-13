@@ -690,6 +690,7 @@
 }
 
 - (void)settingsClicked:(id)sender {
+  [NSApp activateIgnoringOtherApps:YES];
   messageCenter_->ClickOnSettingsButton([self notificationID]);
 }
 
