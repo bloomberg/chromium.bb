@@ -143,8 +143,6 @@ cr.define('settings_appearance', function() {
 
       if (cr.isLinux && !cr.isChromeOS) {
         test('useSystemTheme', function() {
-          Polymer.dom.flush();
-
           var button = appearancePage.$$('#useSystem');
           assertTrue(!!button);
           MockInteractions.tap(button);
