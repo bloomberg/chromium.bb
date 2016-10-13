@@ -116,9 +116,8 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
 #endif
 
   m_contentLayerDelegate = wrapUnique(new ContentLayerDelegate(this));
-  m_layer =
-      wrapUnique(Platform::current()->compositorSupport()->createContentLayer(
-          m_contentLayerDelegate.get()));
+  m_layer = Platform::current()->compositorSupport()->createContentLayer(
+      m_contentLayerDelegate.get());
   m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);
   m_layer->layer()->setLayerClient(this);
 }
@@ -1040,8 +1039,8 @@ void GraphicsLayer::setContentsToImage(
 
   if (image && skImage) {
     if (!m_imageLayer) {
-      m_imageLayer = wrapUnique(
-          Platform::current()->compositorSupport()->createImageLayer());
+      m_imageLayer =
+          Platform::current()->compositorSupport()->createImageLayer();
       registerContentsLayer(m_imageLayer->layer());
     }
     m_imageLayer->setImage(skImage.get());

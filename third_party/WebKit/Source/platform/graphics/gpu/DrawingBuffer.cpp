@@ -49,7 +49,6 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/CheckedNumeric.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
 #include <algorithm>
 #include <memory>
@@ -759,9 +758,9 @@ GLuint DrawingBuffer::framebuffer() const {
 
 WebLayer* DrawingBuffer::platformLayer() {
   if (!m_layer) {
-    m_layer = wrapUnique(
+    m_layer =
         Platform::current()->compositorSupport()->createExternalTextureLayer(
-            this));
+            this);
 
     m_layer->setOpaque(!m_wantAlphaChannel);
     m_layer->setBlendBackgroundColor(m_wantAlphaChannel);

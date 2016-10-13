@@ -4,6 +4,8 @@
 
 #include "cc/blink/web_scrollbar_layer_impl.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "cc/blink/scrollbar_impl.h"
 #include "cc/blink/web_layer_impl.h"
@@ -28,15 +30,13 @@ cc::ScrollbarOrientation ConvertOrientation(
 namespace cc_blink {
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
-    blink::WebScrollbar* scrollbar,
+    std::unique_ptr<blink::WebScrollbar> scrollbar,
     blink::WebScrollbarThemePainter painter,
-    blink::WebScrollbarThemeGeometry* geometry)
+    std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry)
     : layer_(new WebLayerImpl(PaintedScrollbarLayer::Create(
-
-          std::unique_ptr<cc::Scrollbar>(
-              new ScrollbarImpl(base::WrapUnique(scrollbar),
-                                painter,
-                                base::WrapUnique(geometry))),
+          base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
+                                          painter,
+                                          std::move(geometry)),
           0))) {}
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(

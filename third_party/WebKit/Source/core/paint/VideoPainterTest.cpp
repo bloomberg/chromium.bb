@@ -35,8 +35,7 @@ class StubWebMediaPlayer : public WebMediaPlayer {
     m_client->networkStateChanged();
     m_readyState = ReadyStateHaveEnoughData;
     m_client->readyStateChanged();
-    m_webLayer =
-        wrapUnique(Platform::current()->compositorSupport()->createLayer());
+    m_webLayer = Platform::current()->compositorSupport()->createLayer();
     m_client->setWebLayer(m_webLayer.get());
   }
   void play() override {}

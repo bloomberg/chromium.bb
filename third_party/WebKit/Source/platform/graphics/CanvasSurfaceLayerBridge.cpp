@@ -14,7 +14,6 @@
 #include "public/platform/WebLayer.h"
 #include "ui/gfx/geometry/size.h"
 #include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -40,9 +39,8 @@ bool CanvasSurfaceLayerBridge::createSurfaceLayer(int canvasWidth,
   m_surfaceLayer->SetSurfaceId(m_surfaceId, 1.f,
                                gfx::Size(canvasWidth, canvasHeight));
 
-  m_webLayer = wrapUnique(
-      Platform::current()->compositorSupport()->createLayerFromCCLayer(
-          m_surfaceLayer.get()));
+  m_webLayer = Platform::current()->compositorSupport()->createLayerFromCCLayer(
+      m_surfaceLayer.get());
   GraphicsLayer::registerContentsLayer(m_webLayer.get());
   return true;
 }

@@ -562,9 +562,9 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint) {
   }
 
   if (m_surface && surfaceIsAccelerated && !m_layer) {
-    m_layer = wrapUnique(
+    m_layer =
         Platform::current()->compositorSupport()->createExternalTextureLayer(
-            this));
+            this);
     m_layer->setOpaque(m_opacityMode == Opaque);
     m_layer->setBlendBackgroundColor(m_opacityMode != Opaque);
     GraphicsLayer::registerContentsLayer(m_layer->layer());

@@ -20,18 +20,18 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
   WebCompositorSupportImpl();
   ~WebCompositorSupportImpl() override;
 
-  blink::WebLayer* createLayer() override;
-  blink::WebLayer* createLayerFromCCLayer(cc::Layer*) override;
-  blink::WebContentLayer* createContentLayer(
+  std::unique_ptr<blink::WebLayer> createLayer() override;
+  std::unique_ptr<blink::WebLayer> createLayerFromCCLayer(cc::Layer*) override;
+  std::unique_ptr<blink::WebContentLayer> createContentLayer(
       blink::WebContentLayerClient* client) override;
-  blink::WebExternalTextureLayer* createExternalTextureLayer(
+  std::unique_ptr<blink::WebExternalTextureLayer> createExternalTextureLayer(
       cc::TextureLayerClient* client) override;
-  blink::WebImageLayer* createImageLayer() override;
-  blink::WebScrollbarLayer* createScrollbarLayer(
-      blink::WebScrollbar* scrollbar,
+  std::unique_ptr<blink::WebImageLayer> createImageLayer() override;
+  std::unique_ptr<blink::WebScrollbarLayer> createScrollbarLayer(
+      std::unique_ptr<blink::WebScrollbar> scrollbar,
       blink::WebScrollbarThemePainter painter,
-      blink::WebScrollbarThemeGeometry*) override;
-  blink::WebScrollbarLayer* createSolidColorScrollbarLayer(
+      std::unique_ptr<blink::WebScrollbarThemeGeometry>) override;
+  std::unique_ptr<blink::WebScrollbarLayer> createSolidColorScrollbarLayer(
       blink::WebScrollbar::Orientation orientation,
       int thumb_thickness,
       int track_start,

@@ -43,6 +43,10 @@
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "public/platform/WebContentLayer.h"
+#include "public/platform/WebExternalTextureLayer.h"
+#include "public/platform/WebImageLayer.h"
+#include "public/platform/WebScrollbarLayer.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
@@ -65,6 +69,45 @@ class DummyThread final : public blink::WebThread {
 };
 
 }  // namespace
+
+std::unique_ptr<WebLayer> TestingCompositorSupport::createLayer() {
+  return nullptr;
+}
+
+std::unique_ptr<WebLayer> TestingCompositorSupport::createLayerFromCCLayer(
+    cc::Layer*) {
+  return nullptr;
+}
+
+std::unique_ptr<WebContentLayer> TestingCompositorSupport::createContentLayer(
+    WebContentLayerClient*) {
+  return nullptr;
+}
+std::unique_ptr<WebExternalTextureLayer>
+TestingCompositorSupport::createExternalTextureLayer(cc::TextureLayerClient*) {
+  return nullptr;
+}
+
+std::unique_ptr<WebImageLayer> TestingCompositorSupport::createImageLayer() {
+  return nullptr;
+}
+
+std::unique_ptr<WebScrollbarLayer>
+TestingCompositorSupport::createScrollbarLayer(
+    std::unique_ptr<WebScrollbar>,
+    WebScrollbarThemePainter,
+    std::unique_ptr<WebScrollbarThemeGeometry>) {
+  return nullptr;
+}
+
+std::unique_ptr<WebScrollbarLayer>
+TestingCompositorSupport::createSolidColorScrollbarLayer(
+    WebScrollbar::Orientation,
+    int thumbThickness,
+    int trackStart,
+    bool isLeftSideVerticalScrollbar) {
+  return nullptr;
+}
 
 TestingPlatformSupport::TestingPlatformSupport()
     : TestingPlatformSupport(TestingPlatformSupport::Config()) {}

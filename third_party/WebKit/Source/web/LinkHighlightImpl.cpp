@@ -87,8 +87,8 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
   WebCompositorSupport* compositorSupport =
       Platform::current()->compositorSupport();
   DCHECK(compositorSupport);
-  m_contentLayer = wrapUnique(compositorSupport->createContentLayer(this));
-  m_clipLayer = wrapUnique(compositorSupport->createLayer());
+  m_contentLayer = compositorSupport->createContentLayer(this);
+  m_clipLayer = compositorSupport->createLayer();
   m_clipLayer->setTransformOrigin(WebFloatPoint3D());
   m_clipLayer->addChild(m_contentLayer->layer());
 

@@ -62,7 +62,24 @@ class TestingPlatformMockWebThread;
 class WebCompositorSupport;
 class WebThread;
 
-class TestingCompositorSupport : public WebCompositorSupport {};
+class TestingCompositorSupport : public WebCompositorSupport {
+  std::unique_ptr<WebLayer> createLayer() override;
+  std::unique_ptr<WebLayer> createLayerFromCCLayer(cc::Layer*) override;
+  std::unique_ptr<WebContentLayer> createContentLayer(
+      WebContentLayerClient*) override;
+  std::unique_ptr<WebExternalTextureLayer> createExternalTextureLayer(
+      cc::TextureLayerClient*) override;
+  std::unique_ptr<WebImageLayer> createImageLayer() override;
+  std::unique_ptr<WebScrollbarLayer> createScrollbarLayer(
+      std::unique_ptr<WebScrollbar>,
+      WebScrollbarThemePainter,
+      std::unique_ptr<WebScrollbarThemeGeometry>) override;
+  std::unique_ptr<WebScrollbarLayer> createSolidColorScrollbarLayer(
+      WebScrollbar::Orientation,
+      int thumbThickness,
+      int trackStart,
+      bool isLeftSideVerticalScrollbar) override;
+};
 
 class TestingPlatformMockScheduler : public WebScheduler {
   WTF_MAKE_NONCOPYABLE(TestingPlatformMockScheduler);

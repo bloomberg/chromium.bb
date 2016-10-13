@@ -64,9 +64,9 @@
 #include "public/platform/WebScrollbarLayer.h"
 #include "public/platform/WebScrollbarThemeGeometry.h"
 #include "public/platform/WebScrollbarThemePainter.h"
-#include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuilder.h"
 #include <memory>
+#include <utility>
 
 using blink::WebLayer;
 using blink::WebLayerPositionConstraint;
@@ -309,8 +309,8 @@ static std::unique_ptr<WebScrollbarLayer> createScrollbarLayer(
       WebScrollbarThemeGeometryNative::create(theme));
 
   std::unique_ptr<WebScrollbarLayer> scrollbarLayer =
-      wrapUnique(Platform::current()->compositorSupport()->createScrollbarLayer(
-          WebScrollbarImpl::create(&scrollbar), painter, geometry.release()));
+      Platform::current()->compositorSupport()->createScrollbarLayer(
+          WebScrollbarImpl::create(&scrollbar), painter, std::move(geometry));
   GraphicsLayer::registerContentsLayer(scrollbarLayer->layer());
   return scrollbarLayer;
 }
@@ -324,10 +324,10 @@ ScrollingCoordinator::createSolidColorScrollbarLayer(
   WebScrollbar::Orientation webOrientation =
       (orientation == HorizontalScrollbar) ? WebScrollbar::Horizontal
                                            : WebScrollbar::Vertical;
-  std::unique_ptr<WebScrollbarLayer> scrollbarLayer = wrapUnique(
+  std::unique_ptr<WebScrollbarLayer> scrollbarLayer =
       Platform::current()->compositorSupport()->createSolidColorScrollbarLayer(
           webOrientation, thumbThickness, trackStart,
-          isLeftSideVerticalScrollbar));
+          isLeftSideVerticalScrollbar);
   GraphicsLayer::registerContentsLayer(scrollbarLayer->layer());
   return scrollbarLayer;
 }

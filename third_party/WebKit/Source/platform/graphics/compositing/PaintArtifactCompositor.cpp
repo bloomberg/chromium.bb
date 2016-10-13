@@ -163,9 +163,8 @@ PaintArtifactCompositor::PaintArtifactCompositor() {
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
   m_rootLayer = cc::Layer::Create();
-  m_webLayer = wrapUnique(
-      Platform::current()->compositorSupport()->createLayerFromCCLayer(
-          m_rootLayer.get()));
+  m_webLayer = Platform::current()->compositorSupport()->createLayerFromCCLayer(
+      m_rootLayer.get());
   m_isTrackingRasterInvalidations = false;
 }
 

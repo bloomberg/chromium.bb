@@ -30,6 +30,9 @@
 #include "public/platform/WebScrollbar.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PtrUtil.h"
+
+#include <memory>
 
 namespace blink {
 
@@ -39,8 +42,8 @@ class PLATFORM_EXPORT WebScrollbarImpl final : public WebScrollbar {
   WTF_MAKE_NONCOPYABLE(WebScrollbarImpl);
 
  public:
-  static WebScrollbarImpl* create(Scrollbar* scrollbar) {
-    return new WebScrollbarImpl(scrollbar);
+  static std::unique_ptr<WebScrollbarImpl> create(Scrollbar* scrollbar) {
+    return wrapUnique(new WebScrollbarImpl(scrollbar));
   }
 
   // Implement WebScrollbar methods
