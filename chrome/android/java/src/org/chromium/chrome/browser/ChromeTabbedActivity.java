@@ -941,6 +941,15 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     }
 
     @Override
+    protected int getToolbarLayoutId() {
+        if (DeviceFormFactor.isTablet(getApplicationContext())) return R.layout.toolbar_tablet;
+
+        // TODO(mdjones): Replace with bottom_toolbar layout when available.
+        if (FeatureUtilities.isChromeHomeEnabled()) return R.layout.toolbar_phone;
+        return R.layout.toolbar_phone;
+    }
+
+    @Override
     public void postInflationStartup() {
         super.postInflationStartup();
 

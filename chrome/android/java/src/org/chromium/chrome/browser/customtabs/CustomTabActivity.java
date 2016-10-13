@@ -609,6 +609,11 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     @Override
+    protected int getToolbarLayoutId() {
+        return R.layout.custom_tabs_toolbar;
+    }
+
+    @Override
     public int getControlContainerHeightResource() {
         return R.dimen.custom_tabs_control_container_height;
     }

@@ -8,9 +8,10 @@
 
 <org.chromium.chrome.browser.toolbar.ToolbarPhone
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/toolbar"
     android:layout_width="match_parent"
     android:layout_height="@dimen/toolbar_height_no_shadow" >
 
-    <include layout="@layout/toolbar_common"/>
+    <include layout="@layout/toolbar_phone_common"/>
 
 </org.chromium.chrome.browser.toolbar.ToolbarPhone>

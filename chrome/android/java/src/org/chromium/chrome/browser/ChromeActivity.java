@@ -166,6 +166,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     static final int NO_CONTROL_CONTAINER = -1;
 
+    /**
+     * No toolbar layout to inflate during initialization.
+     */
+    static final int NO_TOOLBAR_LAYOUT = -1;
+
     private static final int RECORD_MULTI_WINDOW_SCREEN_WIDTH_DELAY_MS = 5000;
 
     /**
@@ -351,12 +356,19 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             // of our control, so we have to disable StrictMode to work. See crbug.com/639352.
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             try {
+                ControlContainer controlContainer = null;
                 setContentView(R.layout.main);
                 if (controlContainerLayoutId != NO_CONTROL_CONTAINER) {
                     ViewStub toolbarContainerStub =
                             ((ViewStub) findViewById(R.id.control_container_stub));
                     toolbarContainerStub.setLayoutResource(controlContainerLayoutId);
-                    toolbarContainerStub.inflate();
+                    controlContainer = (ControlContainer) toolbarContainerStub.inflate();
+                }
+
+                // Inflate the correct toolbar layout for the device.
+                int toolbarLayoutId = getToolbarLayoutId();
+                if (toolbarLayoutId != NO_TOOLBAR_LAYOUT && controlContainer != null) {
+                    controlContainer.initWithToolbar(toolbarLayoutId);
                 }
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
@@ -461,6 +473,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     protected int getControlContainerLayoutId() {
         return NO_CONTROL_CONTAINER;
+    }
+
+    /**
+     * @return The layout ID for the toolbar to use.
+     */
+    protected int getToolbarLayoutId() {
+        return NO_TOOLBAR_LAYOUT;
     }
 
     /**

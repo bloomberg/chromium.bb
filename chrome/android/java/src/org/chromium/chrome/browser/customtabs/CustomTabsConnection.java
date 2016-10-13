@@ -205,7 +205,7 @@ public class CustomTabsConnection {
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         ChromeBrowserInitializer.initNetworkChangeNotifier(context);
         WarmupManager.getInstance().initializeViewHierarchy(
-                context, R.layout.custom_tabs_control_container);
+                context, R.layout.custom_tabs_control_container, R.layout.custom_tabs_toolbar);
     }
 
     public boolean warmup(long flags) {
