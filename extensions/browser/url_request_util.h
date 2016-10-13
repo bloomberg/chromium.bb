@@ -5,6 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_URL_REQUEST_UTIL_H_
 #define EXTENSIONS_BROWSER_URL_REQUEST_UTIL_H_
 
+#include <string>
+
+#include "ui/base/page_transition_types.h"
+
 namespace net {
 class URLRequest;
 }
@@ -29,6 +33,19 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
 // Returns true if |request| corresponds to a resource request from a
 // <webview>.
 bool IsWebViewRequest(const net::URLRequest* request);
+
+// Helper method that is called by both AllowCrossRendererResourceLoad and
+// ExtensionNavigationThrottle to share logic.
+// Sets allowed=true to allow a chrome-extension:// resource request coming from
+// renderer A to access a resource in an extension running in renderer B.
+// Returns false when it couldn't determine if the resource is allowed or not
+bool AllowCrossRendererResourceLoadHelper(bool is_guest,
+                                          const Extension* extension,
+                                          const Extension* owner_extension,
+                                          const std::string& partition_id,
+                                          const std::string& resource_path,
+                                          ui::PageTransition page_transition,
+                                          bool* allowed);
 
 }  // namespace url_request_util
 }  // namespace extensions

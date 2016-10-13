@@ -7,6 +7,7 @@
 #include <string>
 
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
@@ -25,34 +26,31 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
                                     bool* allowed) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
-
-  // Extensions with webview: allow loading certain resources by guest renderers
-  // with privileged partition IDs as specified in owner's extension the
-  // manifest file.
-  std::string owner_extension_id;
-  int owner_process_id;
-  WebViewRendererState::GetInstance()->GetOwnerInfo(
-      info->GetChildID(), &owner_process_id, &owner_extension_id);
-  const Extension* owner_extension =
-      extension_info_map->extensions().GetByID(owner_extension_id);
-  std::string partition_id;
-  bool is_guest = WebViewRendererState::GetInstance()->GetPartitionID(
-      info->GetChildID(), &partition_id);
   std::string resource_path = request->url().path();
 
-  // |owner_extension == extension| needs to be checked because extension
-  // resources should only be accessible to WebViews owned by that extension.
-  if (is_guest && owner_extension == extension &&
-      WebviewInfo::IsResourceWebviewAccessible(extension, partition_id,
-                                               resource_path)) {
-    *allowed = true;
-    return true;
-  }
+  // PlzNavigate: this logic is performed for main frame requests in
+  // ExtensionNavigationThrottle::WillStartRequest.
+  if (info->GetChildID() != -1 ||
+      info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME ||
+      !content::IsBrowserSideNavigationEnabled()) {
+    // Extensions with webview: allow loading certain resources by guest
+    // renderers with privileged partition IDs as specified in owner's extension
+    // the manifest file.
+    std::string owner_extension_id;
+    int owner_process_id;
+    WebViewRendererState::GetInstance()->GetOwnerInfo(
+        info->GetChildID(), &owner_process_id, &owner_extension_id);
+    const Extension* owner_extension =
+        extension_info_map->extensions().GetByID(owner_extension_id);
+    std::string partition_id;
+    bool is_guest = WebViewRendererState::GetInstance()->GetPartitionID(
+        info->GetChildID(), &partition_id);
 
-  if (is_guest &&
-      !ui::PageTransitionIsWebTriggerable(info->GetPageTransition())) {
-    *allowed = false;
-    return true;
+    if (AllowCrossRendererResourceLoadHelper(
+            is_guest, extension, owner_extension, partition_id, resource_path,
+            info->GetPageTransition(), allowed)) {
+      return true;
+    }
   }
 
   // The following checks require that we have an actual extension object. If we
@@ -135,6 +133,30 @@ bool IsWebViewRequest(const net::URLRequest* request) {
   if (!info)
     return false;
   return WebViewRendererState::GetInstance()->IsGuest(info->GetChildID());
+}
+
+bool AllowCrossRendererResourceLoadHelper(bool is_guest,
+                                          const Extension* extension,
+                                          const Extension* owner_extension,
+                                          const std::string& partition_id,
+                                          const std::string& resource_path,
+                                          ui::PageTransition page_transition,
+                                          bool* allowed) {
+  // |owner_extension == extension| needs to be checked because extension
+  // resources should only be accessible to WebViews owned by that extension.
+  if (is_guest && owner_extension == extension &&
+      WebviewInfo::IsResourceWebviewAccessible(extension, partition_id,
+                                               resource_path)) {
+    *allowed = true;
+    return true;
+  }
+
+  if (is_guest && !ui::PageTransitionIsWebTriggerable(page_transition)) {
+    *allowed = false;
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace url_request_util

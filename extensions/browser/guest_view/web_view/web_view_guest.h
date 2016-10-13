@@ -255,20 +255,8 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
       const content::WebContents* web_contents) const final;
 
   // WebContentsObserver implementation.
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) final;
-  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
-                              const GURL& validated_url,
-                              int error_code,
-                              const base::string16& error_description,
-                              bool was_ignored_by_handler) final;
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) final;
+  void DidStartNavigation(content::NavigationHandle* navigation_handle) final;
+  void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
   void RenderProcessGone(base::TerminationStatus status) final;
   void UserAgentOverrideSet(const std::string& user_agent) final;
   void FrameNameChanged(content::RenderFrameHost* render_frame_host,
@@ -308,10 +296,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
 
   // Notification that a load in the guest resulted in abort. Note that |url|
   // may be invalid.
-  void LoadAbort(bool is_top_level,
-                 const GURL& url,
-                 int error_code,
-                 const std::string& error_type);
+  void LoadAbort(bool is_top_level, const GURL& url, int error_code);
 
   // Creates a new guest window owned by this WebViewGuest.
   void CreateNewGuestWebViewWindow(const content::OpenURLParams& params);
