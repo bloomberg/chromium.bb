@@ -31,8 +31,8 @@ namespace device {
 class OneWriterSeqLock {
  public:
   OneWriterSeqLock();
-  base::subtle::Atomic32 ReadBegin();
-  bool ReadRetry(base::subtle::Atomic32 version);
+  base::subtle::Atomic32 ReadBegin() const;
+  bool ReadRetry(base::subtle::Atomic32 version) const;
   void WriteBegin();
   void WriteEnd();
 

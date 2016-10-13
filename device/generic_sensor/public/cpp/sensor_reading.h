@@ -24,6 +24,8 @@ class SensorReadingField {
     return *this;
   }
   Data& value() { return storage_.value; }
+  const Data& value() const { return storage_.value; }
+
   operator Data() const { return storage_.value; }
 
  private:

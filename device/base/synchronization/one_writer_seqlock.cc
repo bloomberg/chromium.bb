@@ -8,7 +8,7 @@ namespace device {
 
 OneWriterSeqLock::OneWriterSeqLock() : sequence_(0) {}
 
-base::subtle::Atomic32 OneWriterSeqLock::ReadBegin() {
+base::subtle::Atomic32 OneWriterSeqLock::ReadBegin() const {
   base::subtle::Atomic32 version;
   for (;;) {
     version = base::subtle::NoBarrier_Load(&sequence_);
@@ -24,7 +24,7 @@ base::subtle::Atomic32 OneWriterSeqLock::ReadBegin() {
   return version;
 }
 
-bool OneWriterSeqLock::ReadRetry(base::subtle::Atomic32 version) {
+bool OneWriterSeqLock::ReadRetry(base::subtle::Atomic32 version) const {
   // If the sequence number was updated then a read should be re-attempted.
   // -- Load fence, read membarrier
   return base::subtle::Release_Load(&sequence_) != version;

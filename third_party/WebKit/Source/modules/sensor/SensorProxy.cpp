@@ -176,8 +176,9 @@ void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
 
 bool SensorProxy::tryReadFromBuffer() {
   DCHECK(isInitialized());
-  ReadingBuffer* buffer = static_cast<ReadingBuffer*>(m_sharedBuffer.get());
-  device::OneWriterSeqLock& seqlock = buffer->seqlock.value();
+  const ReadingBuffer* buffer =
+      static_cast<const ReadingBuffer*>(m_sharedBuffer.get());
+  const device::OneWriterSeqLock& seqlock = buffer->seqlock.value();
   auto version = seqlock.ReadBegin();
   auto reading = buffer->reading;
   if (seqlock.ReadRetry(version))
