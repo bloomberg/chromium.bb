@@ -295,17 +295,15 @@ AutofillWebDataService::~AutofillWebDataService() {
 
 void AutofillWebDataService::NotifyAutofillMultipleChangedOnUIThread() {
   DCHECK(ui_thread_->BelongsToCurrentThread());
-  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnUIThread,
-                    ui_observer_list_,
-                    AutofillMultipleChanged());
+  for (auto& ui_observer : ui_observer_list_)
+    ui_observer.AutofillMultipleChanged();
 }
 
 void AutofillWebDataService::NotifySyncStartedOnUIThread(
     syncer::ModelType model_type) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
-  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnUIThread,
-                    ui_observer_list_,
-                    SyncStarted(model_type));
+  for (auto& ui_observer : ui_observer_list_)
+    ui_observer.SyncStarted(model_type);
 }
 
 }  // namespace autofill

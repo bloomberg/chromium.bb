@@ -449,8 +449,8 @@ bool PersonalDataManager::ImportFormData(
   if (cc_import || address_import)
     return true;
 
-  FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
-                    OnInsufficientFormData());
+  for (PersonalDataManagerObserver& observer : observers_)
+    observer.OnInsufficientFormData();
   return false;
 }
 
@@ -1246,8 +1246,8 @@ std::string PersonalDataManager::SaveImportedProfile(
 }
 
 void PersonalDataManager::NotifyPersonalDataChanged() {
-  FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
-                    OnPersonalDataChanged());
+  for (PersonalDataManagerObserver& observer : observers_)
+    observer.OnPersonalDataChanged();
 }
 
 std::string PersonalDataManager::SaveImportedCreditCard(

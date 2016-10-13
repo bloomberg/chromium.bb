@@ -19,7 +19,8 @@ void LogRouter::ProcessLog(const std::string& text) {
   // inactive), because in that case the logs cannot be displayed.
   DCHECK(receivers_.might_have_observers());
   accumulated_logs_.append(text);
-  FOR_EACH_OBSERVER(LogReceiver, receivers_, LogSavePasswordProgress(text));
+  for (LogReceiver& receiver : receivers_)
+    receiver.LogSavePasswordProgress(text);
 }
 
 bool LogRouter::RegisterManager(LogManager* manager) {
@@ -38,8 +39,8 @@ std::string LogRouter::RegisterReceiver(LogReceiver* receiver) {
   DCHECK(accumulated_logs_.empty() || receivers_.might_have_observers());
 
   if (!receivers_.might_have_observers()) {
-    FOR_EACH_OBSERVER(LogManager, managers_,
-                      OnLogRouterAvailabilityChanged(true));
+    for (LogManager& manager : managers_)
+      manager.OnLogRouterAvailabilityChanged(true);
   }
   receivers_.AddObserver(receiver);
   return accumulated_logs_;
@@ -52,8 +53,8 @@ void LogRouter::UnregisterReceiver(LogReceiver* receiver) {
     // |accumulated_logs_| can become very long; use the swap instead of clear()
     // to ensure that the memory is freed.
     std::string().swap(accumulated_logs_);
-    FOR_EACH_OBSERVER(LogManager, managers_,
-                      OnLogRouterAvailabilityChanged(false));
+    for (LogManager& manager : managers_)
+      manager.OnLogRouterAvailabilityChanged(false);
   }
 }
 

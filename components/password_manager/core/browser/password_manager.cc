@@ -170,7 +170,8 @@ PasswordManager::PasswordManager(PasswordManagerClient* client)
 }
 
 PasswordManager::~PasswordManager() {
-  FOR_EACH_OBSERVER(LoginModelObserver, observers_, OnLoginModelDestroying());
+  for (LoginModelObserver& observer : observers_)
+    observer.OnLoginModelDestroying();
 }
 
 void PasswordManager::GenerationAvailableForForm(const PasswordForm& form) {
@@ -811,8 +812,8 @@ void PasswordManager::AutofillHttpAuth(
                        observers_.might_have_observers());
   }
 
-  FOR_EACH_OBSERVER(LoginModelObserver, observers_,
-                    OnAutofillDataAvailable(preferred_match));
+  for (LoginModelObserver& observer : observers_)
+    observer.OnAutofillDataAvailable(preferred_match);
   DCHECK(!best_matches.empty());
   client_->PasswordWasAutofilled(best_matches,
                                  best_matches.begin()->second->origin, nullptr);

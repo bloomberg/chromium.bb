@@ -71,8 +71,8 @@ void AutofillWebDataBackendImpl::NotifyOfMultipleAutofillChanges() {
   DCHECK(db_thread_->BelongsToCurrentThread());
 
   // DB thread notification.
-  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread, db_observer_list_,
-                    AutofillMultipleChanged());
+  for (auto& db_observer : db_observer_list_)
+    db_observer.AutofillMultipleChanged();
 
   // UI thread notification.
   ui_thread_->PostTask(FROM_HERE, on_changed_callback_);
@@ -114,9 +114,8 @@ WebDatabase::State AutofillWebDataBackendImpl::AddFormElements(
   // Post the notifications including the list of affected keys.
   // This is sent here so that work resulting from this notification will be
   // done on the DB thread, and not the UI thread.
-  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                    db_observer_list_,
-                    AutofillEntriesChanged(changes));
+  for (auto& db_observer : db_observer_list_)
+    db_observer.AutofillEntriesChanged(changes);
 
   return WebDatabase::COMMIT_NEEDED;
 }
@@ -148,9 +147,8 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveFormElementsAddedBetween(
       // Post the notifications including the list of affected keys.
       // This is sent here so that work resulting from this notification
       // will be done on the DB thread, and not the UI thread.
-      FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                        db_observer_list_,
-                        AutofillEntriesChanged(changes));
+      for (auto& db_observer : db_observer_list_)
+        db_observer.AutofillEntriesChanged(changes);
     }
     return WebDatabase::COMMIT_NEEDED;
   }
@@ -167,9 +165,8 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveFormValueForElementName(
         AutofillChange(AutofillChange::REMOVE, AutofillKey(name, value)));
 
     // Post the notifications including the list of affected keys.
-    FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                      db_observer_list_,
-                      AutofillEntriesChanged(changes));
+    for (auto& db_observer : db_observer_list_)
+      db_observer.AutofillEntriesChanged(changes);
 
     return WebDatabase::COMMIT_NEEDED;
   }
@@ -187,9 +184,8 @@ WebDatabase::State AutofillWebDataBackendImpl::AddAutofillProfile(
   // Send GUID-based notification.
   AutofillProfileChange change(
       AutofillProfileChange::ADD, profile.guid(), &profile);
-  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                    db_observer_list_,
-                    AutofillProfileChanged(change));
+  for (auto& db_observer : db_observer_list_)
+    db_observer.AutofillProfileChanged(change);
 
   return WebDatabase::COMMIT_NEEDED;
 }
@@ -213,9 +209,8 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillProfile(
   // Send GUID-based notification.
   AutofillProfileChange change(
       AutofillProfileChange::UPDATE, profile.guid(), &profile);
-  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                    db_observer_list_,
-                    AutofillProfileChanged(change));
+  for (auto& db_observer : db_observer_list_)
+    db_observer.AutofillProfileChanged(change);
 
   return WebDatabase::COMMIT_NEEDED;
 }
@@ -237,9 +232,8 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveAutofillProfile(
 
   // Send GUID-based notification.
   AutofillProfileChange change(AutofillProfileChange::REMOVE, guid, NULL);
-  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                    db_observer_list_,
-                    AutofillProfileChanged(change));
+  for (auto& db_observer : db_observer_list_)
+    db_observer.AutofillProfileChanged(change);
 
   return WebDatabase::COMMIT_NEEDED;
 }
@@ -299,10 +293,10 @@ WebDatabase::State AutofillWebDataBackendImpl::AddCreditCard(
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
 
-  FOR_EACH_OBSERVER(
-      AutofillWebDataServiceObserverOnDBThread, db_observer_list_,
-      CreditCardChanged(CreditCardChange(CreditCardChange::ADD,
-                                         credit_card.guid(), &credit_card)));
+  for (auto& db_observer : db_observer_list_) {
+    db_observer.CreditCardChanged(CreditCardChange(
+        CreditCardChange::ADD, credit_card.guid(), &credit_card));
+  }
   return WebDatabase::COMMIT_NEEDED;
 }
 
@@ -321,10 +315,10 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateCreditCard(
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
 
-  FOR_EACH_OBSERVER(
-      AutofillWebDataServiceObserverOnDBThread, db_observer_list_,
-      CreditCardChanged(CreditCardChange(CreditCardChange::UPDATE,
-                                         credit_card.guid(), &credit_card)));
+  for (auto& db_observer : db_observer_list_) {
+    db_observer.CreditCardChanged(CreditCardChange(
+        CreditCardChange::UPDATE, credit_card.guid(), &credit_card));
+  }
   return WebDatabase::COMMIT_NEEDED;
 }
 
@@ -336,9 +330,10 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveCreditCard(
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
 
-  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread, db_observer_list_,
-                    CreditCardChanged(CreditCardChange(CreditCardChange::REMOVE,
-                                                       guid, nullptr)));
+  for (auto& db_observer : db_observer_list_) {
+    db_observer.CreditCardChanged(
+        CreditCardChange(CreditCardChange::REMOVE, guid, nullptr));
+  }
   return WebDatabase::COMMIT_NEEDED;
 }
 
@@ -396,9 +391,10 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerCardUsageStats(
   if (!AutofillTable::FromWebDatabase(db)->UpdateServerCardUsageStats(card))
     return WebDatabase::COMMIT_NOT_NEEDED;
 
-  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread, db_observer_list_,
-                    CreditCardChanged(CreditCardChange(CreditCardChange::UPDATE,
-                                                       card.guid(), &card)));
+  for (auto& db_observer : db_observer_list_) {
+    db_observer.CreditCardChanged(
+        CreditCardChange(CreditCardChange::UPDATE, card.guid(), &card));
+  }
 
   return WebDatabase::COMMIT_NEEDED;
 }
@@ -412,10 +408,10 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerAddressUsageStats(
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
 
-  FOR_EACH_OBSERVER(
-      AutofillWebDataServiceObserverOnDBThread, db_observer_list_,
-      AutofillProfileChanged(AutofillProfileChange(
-          AutofillProfileChange::UPDATE, profile.guid(), &profile)));
+  for (auto& db_observer : db_observer_list_) {
+    db_observer.AutofillProfileChanged(AutofillProfileChange(
+        AutofillProfileChange::UPDATE, profile.guid(), &profile));
+  }
 
   return WebDatabase::COMMIT_NEEDED;
 }
@@ -429,9 +425,10 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerCardBillingAddress(
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
 
-  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread, db_observer_list_,
-                    CreditCardChanged(CreditCardChange(CreditCardChange::UPDATE,
-                                                       card.guid(), &card)));
+  for (auto& db_observer : db_observer_list_) {
+    db_observer.CreditCardChanged(
+        CreditCardChange(CreditCardChange::UPDATE, card.guid(), &card));
+  }
 
   return WebDatabase::COMMIT_NEEDED;
 }
@@ -460,16 +457,16 @@ WebDatabase::State
           &profile_guids,
           &credit_card_guids)) {
     for (const std::string& guid : profile_guids) {
-      FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                        db_observer_list_,
-                        AutofillProfileChanged(AutofillProfileChange(
-                            AutofillProfileChange::REMOVE, guid, nullptr)));
+      for (auto& db_observer : db_observer_list_) {
+        db_observer.AutofillProfileChanged(AutofillProfileChange(
+            AutofillProfileChange::REMOVE, guid, nullptr));
+      }
     }
     for (const std::string& guid : credit_card_guids) {
-      FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                        db_observer_list_,
-                        CreditCardChanged(CreditCardChange(
-                            CreditCardChange::REMOVE, guid, nullptr)));
+      for (auto& db_observer : db_observer_list_) {
+        db_observer.CreditCardChanged(
+            CreditCardChange(CreditCardChange::REMOVE, guid, nullptr));
+      }
     }
     // Note: It is the caller's responsibility to post notifications for any
     // changes, e.g. by calling the Refresh() method of PersonalDataManager.
@@ -491,9 +488,8 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveOriginURLsModifiedBetween(
 
   for (const AutofillProfile* it : profiles) {
     AutofillProfileChange change(AutofillProfileChange::UPDATE, it->guid(), it);
-    FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                      db_observer_list_,
-                      AutofillProfileChanged(change));
+    for (auto& db_observer : db_observer_list_)
+      db_observer.AutofillProfileChanged(change);
   }
   // Note: It is the caller's responsibility to post notifications for any
   // changes, e.g. by calling the Refresh() method of PersonalDataManager.
@@ -510,9 +506,8 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveExpiredFormElementsImpl(
       // Post the notifications including the list of affected keys.
       // This is sent here so that work resulting from this notification
       // will be done on the DB thread, and not the UI thread.
-      FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                        db_observer_list_,
-                        AutofillEntriesChanged(changes));
+      for (auto& db_observer : db_observer_list_)
+        db_observer.AutofillEntriesChanged(changes);
     }
     return WebDatabase::COMMIT_NEEDED;
   }
