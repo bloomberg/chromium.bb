@@ -15,13 +15,15 @@
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/model/fake_model_type_service.h"
+#include "components/sync/model/metadata_change_list.h"
+#include "components/sync/model/model_type_change_processor.h"
 
 using browser_sync::ChromeSyncClient;
 using browser_sync::ProfileSyncComponentsFactoryImpl;
 using syncer::ConflictResolution;
 using syncer::FakeModelTypeService;
+using syncer::ModelTypeChangeProcessor;
 using syncer::ModelTypeService;
-using syncer::SharedModelTypeProcessor;
 
 const char kKey1[] = "key1";
 const char kKey2[] = "key2";
@@ -55,8 +57,7 @@ class TestModelTypeService : public FakeModelTypeService {
   };
 
   TestModelTypeService()
-      : FakeModelTypeService(
-            base::Bind(&SharedModelTypeProcessor::CreateAsChangeProcessor)) {}
+      : FakeModelTypeService(base::Bind(&ModelTypeChangeProcessor::Create)) {}
 
   syncer::SyncError ApplySyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_changes,

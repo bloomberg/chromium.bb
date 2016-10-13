@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_PROCESSOR_ENTITY_TRACKER_H_
-#define COMPONENTS_SYNC_CORE_PROCESSOR_ENTITY_TRACKER_H_
+#ifndef COMPONENTS_SYNC_MODEL_IMPL_PROCESSOR_ENTITY_TRACKER_H_
+#define COMPONENTS_SYNC_MODEL_IMPL_PROCESSOR_ENTITY_TRACKER_H_
 
 #include <stdint.h>
 
@@ -150,4 +150,4 @@ class ProcessorEntityTracker {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_PROCESSOR_ENTITY_TRACKER_H_
+#endif  // COMPONENTS_SYNC_MODEL_IMPL_PROCESSOR_ENTITY_TRACKER_H_

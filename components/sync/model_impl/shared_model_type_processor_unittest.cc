@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/shared_model_type_processor.h"
+#include "components/sync/model_impl/shared_model_type_processor.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -75,8 +75,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
                                      public FakeModelTypeService {
  public:
   SharedModelTypeProcessorTest()
-      : FakeModelTypeService(
-            base::Bind(&SharedModelTypeProcessor::CreateAsChangeProcessor)) {}
+      : FakeModelTypeService(base::Bind(&ModelTypeChangeProcessor::Create)) {}
 
   void InitializeToMetadataLoaded() {
     CreateChangeProcessor();

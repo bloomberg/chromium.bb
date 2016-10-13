@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_SHARED_MODEL_TYPE_PROCESSOR_H_
-#define COMPONENTS_SYNC_CORE_SHARED_MODEL_TYPE_PROCESSOR_H_
+#ifndef COMPONENTS_SYNC_MODEL_IMPL_SHARED_MODEL_TYPE_PROCESSOR_H_
+#define COMPONENTS_SYNC_MODEL_IMPL_SHARED_MODEL_TYPE_PROCESSOR_H_
 
 #include <map>
 #include <memory>
@@ -40,30 +40,12 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   SharedModelTypeProcessor(ModelType type, ModelTypeService* service);
   ~SharedModelTypeProcessor() override;
 
-  // An easily bound function that constructs a SharedModelTypeProcessor.
-  static std::unique_ptr<ModelTypeChangeProcessor> CreateAsChangeProcessor(
-      ModelType type,
-      ModelTypeService* service);
-
   // Whether the processor is allowing changes to its model type. If this is
   // false, the service should not allow any changes to its data.
   bool IsAllowingChanges() const;
 
   // Returns true if the handshake with sync thread is complete.
   bool IsConnected() const;
-
-  // Returns a ListValue representing all nodes for data type |type| through
-  // |callback| on this thread.
-  // Used for populating nodes in Sync Node Browser of chrome://sync-internals.
-  // TODO(gangwu): GetAllNodes could be in a helper class.
-  void GetAllNodes(
-      const base::Callback<void(const ModelType type,
-                                std::unique_ptr<base::ListValue>)>& callback);
-
-  // Returns StatusCounters for data type to |callback|.
-  // Used for updating data type counters in chrome://sync-internals.
-  void GetStatusCounters(
-      const base::Callback<void(ModelType, const StatusCounters&)>& callback);
 
   // ModelTypeChangeProcessor implementation.
   void Put(const std::string& storage_key,
@@ -88,6 +70,7 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
                         const UpdateResponseDataList& updates) override;
 
  private:
+  friend class ModelTypeDebugInfo;
   friend class SharedModelTypeProcessorTest;
 
   using EntityMap =
@@ -155,14 +138,6 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // Version of the above that generates a tag for |data|.
   ProcessorEntityTracker* CreateEntity(const EntityData& data);
 
-  // This is callback function for ModelTypeService::GetAllData. This function
-  // will merge real data |batch| with metadata, then pass to |callback|.
-  void MergeDataWithMetadata(
-      const base::Callback<void(const ModelType,
-                                std::unique_ptr<base::ListValue>)>& callback,
-      SyncError error,
-      std::unique_ptr<DataBatch> batch);
-
   const ModelType type_;
   sync_pb::ModelTypeState model_type_state_;
 
@@ -212,4 +187,4 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_SHARED_MODEL_TYPE_PROCESSOR_H_
+#endif  // COMPONENTS_SYNC_MODEL_IMPL_SHARED_MODEL_TYPE_PROCESSOR_H_

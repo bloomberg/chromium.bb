@@ -46,7 +46,6 @@
 #include "components/sync/base/sync_db_util.h"
 #include "components/sync/base/system_encryptor.h"
 #include "components/sync/core/configure_reason.h"
-#include "components/sync/core/shared_model_type_processor.h"
 #include "components/sync/core/sync_encryption_handler.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_service.h"
@@ -69,6 +68,7 @@
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/js/js_event_details.h"
+#include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -103,10 +103,10 @@ using syncer::JsEventDetails;
 using syncer::JsEventHandler;
 using syncer::ModelSafeRoutingInfo;
 using syncer::ModelType;
+using syncer::ModelTypeChangeProcessor;
 using syncer::ModelTypeSet;
 using syncer::ModelTypeStore;
 using syncer::ProtocolEventObserver;
-using syncer::SharedModelTypeProcessor;
 using syncer::SyncBackendHost;
 using syncer::SyncCredentials;
 using syncer::SyncProtocolError;
@@ -298,7 +298,7 @@ void ProfileSyncService::Initialize() {
                    directory_path_.Append(base::FilePath(kLevelDBFolderName))
                        .AsUTF8Unsafe(),
                    blocking_task_runner),
-        base::Bind(&SharedModelTypeProcessor::CreateAsChangeProcessor)));
+        base::Bind(&ModelTypeChangeProcessor::Create)));
   } else {
     device_info_sync_service_.reset(
         new DeviceInfoSyncService(local_device_.get()));

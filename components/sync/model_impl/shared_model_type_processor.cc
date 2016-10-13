@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/shared_model_type_processor.h"
+#include "components/sync/model_impl/shared_model_type_processor.h"
 
 #include <utility>
 #include <vector>
@@ -14,9 +14,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/model_type_processor_proxy.h"
-#include "components/sync/core/processor_entity_tracker.h"
 #include "components/sync/engine/commit_queue.h"
-#include "components/sync/protocol/proto_value_conversions.h"
+#include "components/sync/model_impl/processor_entity_tracker.h"
 #include "components/sync/syncable/syncable_util.h"
 
 namespace syncer {
@@ -33,14 +32,6 @@ SharedModelTypeProcessor::SharedModelTypeProcessor(ModelType type,
 }
 
 SharedModelTypeProcessor::~SharedModelTypeProcessor() {}
-
-// static
-std::unique_ptr<ModelTypeChangeProcessor>
-SharedModelTypeProcessor::CreateAsChangeProcessor(ModelType type,
-                                                  ModelTypeService* service) {
-  return std::unique_ptr<ModelTypeChangeProcessor>(
-      new SharedModelTypeProcessor(type, service));
-}
 
 void SharedModelTypeProcessor::OnSyncStarting(
     std::unique_ptr<DataTypeErrorHandler> error_handler,
@@ -134,28 +125,6 @@ bool SharedModelTypeProcessor::IsAllowingChanges() const {
 bool SharedModelTypeProcessor::IsConnected() const {
   DCHECK(CalledOnValidThread());
   return !!worker_;
-}
-
-void SharedModelTypeProcessor::GetAllNodes(
-    const base::Callback<void(const ModelType,
-                              std::unique_ptr<base::ListValue>)>& callback) {
-  DCHECK(service_);
-  service_->GetAllData(
-      base::Bind(&SharedModelTypeProcessor::MergeDataWithMetadata,
-                 base::Unretained(this), callback));
-}
-
-void SharedModelTypeProcessor::GetStatusCounters(
-    const base::Callback<void(ModelType, const StatusCounters&)>& callback) {
-  DCHECK(CalledOnValidThread());
-  syncer::StatusCounters counters;
-  counters.num_entries_and_tombstones = entities_.size();
-  for (auto it = entities_.begin(); it != entities_.end(); ++it) {
-    if (!it->second->metadata().is_deleted()) {
-      ++counters.num_entries;
-    }
-  }
-  callback.Run(type_, counters);
 }
 
 void SharedModelTypeProcessor::DisableSync() {
@@ -668,47 +637,6 @@ ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
   // Verify the tag hash matches, may be relaxed in the future.
   DCHECK_EQ(data.client_tag_hash, GetHashForTag(service_->GetClientTag(data)));
   return CreateEntity(service_->GetStorageKey(data), data);
-}
-
-void SharedModelTypeProcessor::MergeDataWithMetadata(
-    const base::Callback<void(const ModelType,
-                              std::unique_ptr<base::ListValue>)>& callback,
-    SyncError error,
-    std::unique_ptr<DataBatch> batch) {
-  std::unique_ptr<base::ListValue> all_nodes =
-      base::MakeUnique<base::ListValue>();
-  std::string type_string = ModelTypeToString(type_);
-
-  while (batch->HasNext()) {
-    KeyAndData data = batch->Next();
-    std::unique_ptr<base::DictionaryValue> node =
-        data.second->ToDictionaryValue();
-    ProcessorEntityTracker* entity = GetEntityForStorageKey(data.first);
-    // Entity could be null if there are some unapplied changes.
-    if (entity != nullptr) {
-      node->Set("metadata", EntityMetadataToValue(entity->metadata()));
-    }
-    node->SetString("modelType", type_string);
-    all_nodes->Append(std::move(node));
-  }
-
-  // Create a permanent folder for this data type. Since sync server no longer
-  // create root folders, and USS won't migrate root folders from directory, we
-  // create root folders for each data type here.
-  std::unique_ptr<base::DictionaryValue> rootnode =
-      base::MakeUnique<base::DictionaryValue>();
-  // Function isTypeRootNode in sync_node_browser.js use PARENT_ID and
-  // UNIQUE_SERVER_TAG to check if the node is root node. isChildOf in
-  // sync_node_browser.js uses modelType to check if root node is parent of real
-  // data node. NON_UNIQUE_NAME will be the name of node to display.
-  rootnode->SetString("PARENT_ID", "r");
-  rootnode->SetString("UNIQUE_SERVER_TAG", type_string);
-  rootnode->SetBoolean("IS_DIR", true);
-  rootnode->SetString("modelType", type_string);
-  rootnode->SetString("NON_UNIQUE_NAME", type_string);
-  all_nodes->Append(std::move(rootnode));
-
-  callback.Run(type_, std::move(all_nodes));
 }
 
 }  // namespace syncer

@@ -20,7 +20,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/model_type_processor_proxy.h"
-#include "components/sync/core/shared_model_type_processor.h"
 #include "components/sync/core/test/fake_model_type_processor.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
 #include "components/sync/driver/fake_sync_client.h"

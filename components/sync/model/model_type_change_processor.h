@@ -8,19 +8,18 @@
 #include <memory>
 #include <string>
 
+#include "components/sync/base/model_type.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/model/data_type_error_handler.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/sync_error_factory.h"
 
 namespace syncer {
-class SyncError;
-}  // namespace syncer
-
-namespace syncer {
 
 class MetadataBatch;
 class MetadataChangeList;
+class ModelTypeService;
+class SyncError;
 
 // Interface used by the ModelTypeService to inform sync of local
 // changes.
@@ -28,6 +27,11 @@ class ModelTypeChangeProcessor : public SyncErrorFactory {
  public:
   typedef base::Callback<void(SyncError, std::unique_ptr<ActivationContext>)>
       StartCallback;
+
+  // A factory function to make an implementation of ModelTypeChangeProcessor.
+  static std::unique_ptr<ModelTypeChangeProcessor> Create(
+      ModelType type,
+      ModelTypeService* service);
 
   ModelTypeChangeProcessor();
   ~ModelTypeChangeProcessor() override;

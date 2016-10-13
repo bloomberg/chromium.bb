@@ -178,10 +178,10 @@ class ModelTypeWorkerTest : public ::testing::Test {
     DCHECK(!worker_);
 
     // We don't get to own this object. The |worker_| keeps a unique_ptr to it.
-    mock_type_processor_ = new MockModelTypeProcessor();
-    mock_type_processor_->SetDisconnectCallback(base::Bind(
+    auto processor = base::MakeUnique<MockModelTypeProcessor>();
+    mock_type_processor_ = processor.get();
+    processor->SetDisconnectCallback(base::Bind(
         &ModelTypeWorkerTest::DisconnectProcessor, base::Unretained(this)));
-    std::unique_ptr<ModelTypeProcessor> proxy(mock_type_processor_);
 
     std::unique_ptr<Cryptographer> cryptographer_copy;
     if (cryptographer_) {
@@ -189,9 +189,9 @@ class ModelTypeWorkerTest : public ::testing::Test {
     }
 
     // TODO(maxbogue): crbug.com/529498: Inject pending updates somehow.
-    worker_.reset(new ModelTypeWorker(kModelType, state,
-                                      std::move(cryptographer_copy),
-                                      &mock_nudge_handler_, std::move(proxy)));
+    worker_.reset(
+        new ModelTypeWorker(kModelType, state, std::move(cryptographer_copy),
+                            &mock_nudge_handler_, std::move(processor)));
   }
 
   // Introduce a new key that the local cryptographer can't decrypt.
