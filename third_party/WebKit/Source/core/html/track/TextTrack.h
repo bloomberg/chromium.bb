@@ -27,6 +27,7 @@
 #ifndef TextTrack_h
 #define TextTrack_h
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/CoreExport.h"
 #include "core/events/EventTarget.h"
 #include "core/html/track/TrackBase.h"
@@ -148,7 +149,7 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
 
   TextTrackCueList* ensureTextTrackCueList();
   Member<TextTrackCueList> m_cues;
-  Member<TextTrackCueList> m_activeCues;
+  TraceWrapperMember<TextTrackCueList> m_activeCues;
 
   VTTRegionList* ensureVTTRegionList();
   Member<VTTRegionList> m_regions;

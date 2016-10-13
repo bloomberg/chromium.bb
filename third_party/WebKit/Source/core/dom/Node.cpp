@@ -1816,7 +1816,7 @@ void Node::didMoveToNewDocument(Document& oldDocument) {
     EventHandlerRegistry::didMoveBetweenFrameHosts(
         *this, oldDocument.frameHost(), document().frameHost());
 
-  if (HeapVector<Member<MutationObserverRegistration>>* registry =
+  if (HeapVector<TraceWrapperMember<MutationObserverRegistration>>* registry =
           mutationObserverRegistry()) {
     for (size_t i = 0; i < registry->size(); ++i) {
       document().addMutationObserverTypes(registry->at(i)->mutationTypes());
@@ -1889,7 +1889,7 @@ EventTargetData& Node::ensureEventTargetData() {
   return *data;
 }
 
-HeapVector<Member<MutationObserverRegistration>>*
+HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
 Node::mutationObserverRegistry() {
   if (!hasRareData())
     return nullptr;
@@ -1961,7 +1961,7 @@ void Node::registerMutationObserver(
     MutationObserverOptions options,
     const HashSet<AtomicString>& attributeFilter) {
   MutationObserverRegistration* registration = nullptr;
-  HeapVector<Member<MutationObserverRegistration>>& registry =
+  HeapVector<TraceWrapperMember<MutationObserverRegistration>>& registry =
       ensureRareData().ensureMutationObserverData().registry;
   for (size_t i = 0; i < registry.size(); ++i) {
     if (&registry[i]->observer() == &observer) {
@@ -1971,10 +1971,10 @@ void Node::registerMutationObserver(
   }
 
   if (!registration) {
-    registry.append(MutationObserverRegistration::create(
-        observer, this, options, attributeFilter));
-    registration = registry.last().get();
-    ScriptWrappableVisitor::writeBarrier(this, registration);
+    registration = MutationObserverRegistration::create(observer, this, options,
+                                                        attributeFilter);
+    registry.append(
+        TraceWrapperMember<MutationObserverRegistration>(this, registration));
   }
 
   document().addMutationObserverTypes(registration->mutationTypes());
@@ -1982,7 +1982,7 @@ void Node::registerMutationObserver(
 
 void Node::unregisterMutationObserver(
     MutationObserverRegistration* registration) {
-  HeapVector<Member<MutationObserverRegistration>>* registry =
+  HeapVector<TraceWrapperMember<MutationObserverRegistration>>* registry =
       mutationObserverRegistry();
   DCHECK(registry);
   if (!registry)
@@ -2024,7 +2024,7 @@ void Node::notifyMutationObserversNodeWillDetach() {
 
   ScriptForbiddenScope forbidScriptDuringRawIteration;
   for (Node* node = parentNode(); node; node = node->parentNode()) {
-    if (HeapVector<Member<MutationObserverRegistration>>* registry =
+    if (HeapVector<TraceWrapperMember<MutationObserverRegistration>>* registry =
             node->mutationObserverRegistry()) {
       const size_t size = registry->size();
       for (size_t i = 0; i < size; ++i)

@@ -5,6 +5,7 @@
 #ifndef NodeIntersectionObserverData_h
 #define NodeIntersectionObserverData_h
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -32,7 +33,8 @@ class NodeIntersectionObserverData
   // IntersectionObservers for which the Node owning this data is root.
   HeapHashSet<WeakMember<IntersectionObserver>> m_intersectionObservers;
   // IntersectionObservations for which the Node owning this data is target.
-  HeapHashMap<Member<IntersectionObserver>, Member<IntersectionObservation>>
+  HeapHashMap<TraceWrapperMember<IntersectionObserver>,
+              Member<IntersectionObservation>>
       m_intersectionObservations;
 };
 

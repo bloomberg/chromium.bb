@@ -935,7 +935,8 @@ class CORE_EXPORT Node : public EventTarget {
 
   void trackForDebugging();
 
-  HeapVector<Member<MutationObserverRegistration>>* mutationObserverRegistry();
+  HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
+  mutationObserverRegistry();
   HeapHashSet<Member<MutationObserverRegistration>>*
   transientMutationObserverRegistry();
 

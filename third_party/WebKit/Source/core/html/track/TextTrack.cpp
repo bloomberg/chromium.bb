@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/CueTimeline.h"
@@ -94,6 +93,7 @@ TextTrack::TextTrack(const AtomicString& kind,
                      TextTrackType type)
     : TrackBase(WebMediaPlayer::TextTrack, kind, label, language, id),
       m_cues(nullptr),
+      m_activeCues(this, nullptr),
       m_regions(nullptr),
       m_trackList(nullptr),
       m_mode(disabledKeyword()),
@@ -209,7 +209,6 @@ TextTrackCueList* TextTrack::activeCues() {
 
   if (!m_activeCues) {
     m_activeCues = TextTrackCueList::create();
-    ScriptWrappableVisitor::writeBarrier(this, m_activeCues);
   }
 
   m_cues->collectActiveCues(*m_activeCues);

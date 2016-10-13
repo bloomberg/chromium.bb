@@ -91,9 +91,9 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
 
   Member<GenericEventQueue> m_asyncEventQueue;
 
-  HeapVector<Member<TextTrack>> m_addTrackTracks;
-  HeapVector<Member<TextTrack>> m_elementTracks;
-  HeapVector<Member<TextTrack>> m_inbandTracks;
+  HeapVector<TraceWrapperMember<TextTrack>> m_addTrackTracks;
+  HeapVector<TraceWrapperMember<TextTrack>> m_elementTracks;
+  HeapVector<TraceWrapperMember<TextTrack>> m_inbandTracks;
 };
 
 }  // namespace blink

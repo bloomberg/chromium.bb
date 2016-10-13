@@ -35,7 +35,7 @@ class NodeMutationObserverData final
   WTF_MAKE_NONCOPYABLE(NodeMutationObserverData);
 
  public:
-  HeapVector<Member<MutationObserverRegistration>> registry;
+  HeapVector<TraceWrapperMember<MutationObserverRegistration>> registry;
   HeapHashSet<Member<MutationObserverRegistration>> transientRegistry;
 
   static NodeMutationObserverData* create() {

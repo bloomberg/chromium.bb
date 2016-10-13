@@ -50,8 +50,7 @@ class TrackListBase : public EventTargetWithInlineData {
 
   void add(T* track) {
     track->setMediaElement(m_mediaElement);
-    m_tracks.append(track);
-    ScriptWrappableVisitor::writeBarrier(this, track);
+    m_tracks.append(TraceWrapperMember<T>(this, track));
     scheduleEvent(TrackEvent::create(EventTypeNames::addtrack, track));
   }
 
@@ -100,7 +99,7 @@ class TrackListBase : public EventTargetWithInlineData {
     m_mediaElement->scheduleEvent(event);
   }
 
-  HeapVector<Member<T>> m_tracks;
+  HeapVector<TraceWrapperMember<T>> m_tracks;
   Member<HTMLMediaElement> m_mediaElement;
 };
 
