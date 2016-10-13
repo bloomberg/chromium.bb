@@ -313,31 +313,39 @@ class V4Store {
 
   // Processes the FULL_UPDATE |response| from the server, and writes the
   // merged V4Store to disk. If processing the |response| succeeds, it returns
-  // APPLY_UPDATE_SUCCESS.
+  // APPLY_UPDATE_SUCCESS. The UMA metrics for all interesting sub-operations
+  // use the prefix |metric|.
   // This method is only called when we receive a FULL_UPDATE from the server.
   ApplyUpdateResult ProcessFullUpdateAndWriteToDisk(
+      const std::string& metric,
       std::unique_ptr<ListUpdateResponse> response);
 
   // Processes a FULL_UPDATE |response| and updates the V4Store. If processing
   // the |response| succeeds, it returns APPLY_UPDATE_SUCCESS.
   // This method is called when we receive a FULL_UPDATE from the server, and
-  // when we read a store file from disk on startup.
+  // when we read a store file from disk on startup. The UMA metrics for all
+  // interesting sub-operations use the prefix |metric|.
   ApplyUpdateResult ProcessFullUpdate(
+      const std::string& metric,
       const std::unique_ptr<ListUpdateResponse>& response);
 
   // Merges the hash prefixes in |hash_prefix_map_old| and |response|, updates
   // the |hash_prefix_map_| and |state_| in the V4Store, and writes the merged
   // store to disk. If processing succeeds, it returns APPLY_UPDATE_SUCCESS.
   // This method is only called when we receive a PARTIAL_UPDATE from the
-  // server.
+  // server. The UMA metrics for all interesting sub-operations use the prefix
+  // |metric|.
   ApplyUpdateResult ProcessPartialUpdateAndWriteToDisk(
+      const std::string& metric,
       const HashPrefixMap& hash_prefix_map_old,
       std::unique_ptr<ListUpdateResponse> response);
 
   // Merges the hash prefixes in |hash_prefix_map_old| and |response|, and
   // updates the |hash_prefix_map_| and |state_| in the V4Store. If processing
-  // succeeds, it returns APPLY_UPDATE_SUCCESS.
+  // succeeds, it returns APPLY_UPDATE_SUCCESS. The UMA metrics for all
+  // interesting sub-operations use the prefix |metric|.
   ApplyUpdateResult ProcessUpdate(
+      const std::string& metric,
       const HashPrefixMap& hash_prefix_map_old,
       const std::unique_ptr<ListUpdateResponse>& response);
 
@@ -346,8 +354,10 @@ class V4Store {
   StoreReadResult ReadFromDisk();
 
   // Updates the |additions_map| with the additions received in the partial
-  // update from the server.
+  // update from the server. The UMA metrics for all interesting sub-operations
+  // use the prefix |metric|.
   ApplyUpdateResult UpdateHashPrefixMapFromAdditions(
+      const std::string& metric,
       const ::google::protobuf::RepeatedPtrField<ThreatEntrySet>& additions,
       HashPrefixMap* additions_map);
 
