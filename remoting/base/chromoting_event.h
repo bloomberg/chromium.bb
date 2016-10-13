@@ -108,6 +108,7 @@ class ChromotingEvent {
   static const char kSessionStateKey[];
   static const char kTypeKey[];
   static const char kVideoBandwidthKey[];
+  static const char kWebAppVersionKey[];
 
   ChromotingEvent();
   explicit ChromotingEvent(Type type);

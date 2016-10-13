@@ -4,6 +4,7 @@
 
 #include "remoting/base/chromoting_event.h"
 
+#include "base/strings/stringize_macros.h"
 #include "base/sys_info.h"
 
 namespace remoting {
@@ -29,6 +30,7 @@ const char ChromotingEvent::kSessionIdKey[] = "session_id";
 const char ChromotingEvent::kSessionStateKey[] = "session_state";
 const char ChromotingEvent::kTypeKey[] = "type";
 const char ChromotingEvent::kVideoBandwidthKey[] = "video_bandwidth";
+const char ChromotingEvent::kWebAppVersionKey[] = "webapp_version";
 
 ChromotingEvent::ChromotingEvent() : values_map_(new base::DictionaryValue()) {}
 
@@ -82,7 +84,7 @@ void ChromotingEvent::SetDouble(const std::string& key, double value) {
 void ChromotingEvent::AddSystemInfo() {
   SetString(kCpuKey, base::SysInfo::OperatingSystemArchitecture());
   SetString(kOsVersionKey, base::SysInfo::OperatingSystemVersion());
-  std::string osName = base::SysInfo::OperatingSystemName();
+  SetString(kWebAppVersionKey, STRINGIZE(VERSION));
 #if defined(OS_LINUX)
   Os os = Os::CHROMOTING_LINUX;
 #elif defined(OS_CHROMEOS)
