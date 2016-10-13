@@ -981,6 +981,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
   "java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
   "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/NonPresentingGvrContextInterface.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShellDelegate.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShellInterface.java",
   "java/src/org/chromium/chrome/browser/webapps/ActivityAssigner.java",
@@ -1084,6 +1085,7 @@ chrome_java_sources = [
 ]
 
 chrome_vr_java_sources = [
+  "java/src/org/chromium/chrome/browser/vr_shell/NonPresentingGvrContext.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShell.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrWindowAndroid.java",
 ]

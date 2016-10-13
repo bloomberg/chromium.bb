@@ -15,18 +15,6 @@ class GvrApi;
 
 namespace device {
 
-class DEVICE_VR_EXPORT GvrDelegateProvider {
- public:
-  static void SetInstance(GvrDelegateProvider* delegate_provider);
-  static GvrDelegateProvider* GetInstance();
-
-  virtual bool RequestWebVRPresent(GvrDeviceProvider* device_provider) = 0;
-  virtual void ExitWebVRPresent() = 0;
-
- private:
-  static GvrDelegateProvider* delegate_provider_;
-};
-
 class DEVICE_VR_EXPORT GvrDelegate {
  public:
   virtual void SetWebVRSecureOrigin(bool secure_origin) = 0;
@@ -39,6 +27,20 @@ class DEVICE_VR_EXPORT GvrDelegate {
   virtual void SetGvrPoseForWebVr(const gvr::Mat4f& pose,
                                   uint32_t pose_index) = 0;
   virtual gvr::GvrApi* gvr_api() = 0;
+};
+
+class DEVICE_VR_EXPORT GvrDelegateProvider {
+ public:
+  static void SetInstance(GvrDelegateProvider* delegate_provider);
+  static GvrDelegateProvider* GetInstance();
+
+  virtual bool RequestWebVRPresent(GvrDeviceProvider* device_provider) = 0;
+  virtual void ExitWebVRPresent() = 0;
+  virtual GvrDelegate* GetNonPresentingDelegate() = 0;
+  virtual void DestroyNonPresentingDelegate() = 0;
+
+ private:
+  static GvrDelegateProvider* delegate_provider_;
 };
 
 }  // namespace device

@@ -18,7 +18,6 @@ namespace device {
 
 class GvrDelegate;
 class GvrDevice;
-class GvrNonPresentingDelegate;
 
 class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
  public:

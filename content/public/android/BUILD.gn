@@ -56,10 +56,6 @@ android_library("content_java") {
     "//ui/android:ui_java",
   ]
 
-  if (enable_webvr) {
-    deps += [ "//device/vr:java" ]
-  }
-
   srcjar_deps = [
     ":common_aidl",
     ":content_public_android_java_enums_srcjar",

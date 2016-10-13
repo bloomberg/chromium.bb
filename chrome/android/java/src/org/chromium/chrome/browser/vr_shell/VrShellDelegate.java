@@ -32,10 +32,12 @@ public class VrShellDelegate {
 
     private ChromeTabbedActivity mActivity;
 
-    private boolean mVrShellEnabled;
+    private boolean mVrEnabled;
 
     private Class<? extends VrShellInterface> mVrShellClass;
+    private Class<? extends NonPresentingGvrContextInterface> mNonPresentingGvrContextClass;
     private VrShellInterface mVrShell;
+    private NonPresentingGvrContextInterface mNonPresentingGvrContext;
     private boolean mInVr;
     private int mRestoreSystemUiVisibilityFlag = -1;
     private String mVrExtra;
@@ -44,14 +46,13 @@ public class VrShellDelegate {
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
 
-        mVrShellClass = maybeFindVrShell();
-        if (mVrShellClass != null) {
-            mVrShellEnabled = true;
+        mVrEnabled = maybeFindVrClasses();
+        if (mVrEnabled) {
             try {
                 mVrExtra = (String) mVrShellClass.getField("VR_EXTRA").get(null);
             } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException e) {
                 Log.e(TAG, "Unable to read VR_EXTRA field", e);
-                mVrShellEnabled = false;
+                mVrEnabled = false;
             }
         }
     }
@@ -61,18 +62,24 @@ public class VrShellDelegate {
      * class can be initialized.
      */
     public void onNativeLibraryReady() {
-        if (mVrShellEnabled) {
+        if (mVrEnabled) {
             mNativeVrShellDelegate = nativeInit();
         }
     }
 
     @SuppressWarnings("unchecked")
-    private Class<? extends VrShellInterface> maybeFindVrShell() {
+    private boolean maybeFindVrClasses() {
         try {
-            return (Class<? extends VrShellInterface>) Class
-                    .forName("org.chromium.chrome.browser.vr_shell.VrShell");
+            mVrShellClass = (Class<? extends VrShellInterface>) Class.forName(
+                    "org.chromium.chrome.browser.vr_shell.VrShell");
+            mNonPresentingGvrContextClass =
+                    (Class<? extends NonPresentingGvrContextInterface>) Class.forName(
+                            "org.chromium.chrome.browser.vr_shell.NonPresentingGvrContext");
+            return true;
         } catch (ClassNotFoundException e) {
-            return null;
+            mVrShellClass = null;
+            mNonPresentingGvrContextClass = null;
+            return false;
         }
     }
 
@@ -86,7 +93,7 @@ public class VrShellDelegate {
      */
     @CalledByNative
     public boolean enterVRIfNecessary(boolean inWebVR) {
-        if (!mVrShellEnabled || mNativeVrShellDelegate == 0) return false;
+        if (!mVrEnabled || mNativeVrShellDelegate == 0) return false;
         Tab tab = mActivity.getActivityTab();
         // TODO(mthiesse): When we have VR UI for opening new tabs, etc., allow VR Shell to be
         // entered without any current tabs.
@@ -124,23 +131,44 @@ public class VrShellDelegate {
     /**
      * Resumes VR Shell.
      */
-    public void resumeVR() {
-        setupVrModeWindowFlags();
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        try {
-            mVrShell.resume();
-        } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Unable to resume VrShell", e);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
+    public void maybeResumeVR() {
+        // TODO(bshe): Ideally, we do not need two gvr context exist at the same time. We can
+        // probably shutdown non presenting gvr when presenting and create a new one after exit
+        // presenting. See crbug.com/655242
+        if (mNonPresentingGvrContext != null) {
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+            try {
+                mNonPresentingGvrContext.resume();
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "Unable to resume mNonPresentingGvrContext", e);
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
+        }
+
+        if (mInVr) {
+            setupVrModeWindowFlags();
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+            try {
+                mVrShell.resume();
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "Unable to resume VrShell", e);
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
         }
     }
 
     /**
      * Pauses VR Shell.
      */
-    public void pauseVR() {
-        mVrShell.pause();
+    public void maybePauseVR() {
+        if (mNonPresentingGvrContext != null) {
+            mNonPresentingGvrContext.pause();
+        }
+        if (mInVr) {
+            mVrShell.pause();
+        }
     }
 
     /**
@@ -157,6 +185,30 @@ public class VrShellDelegate {
         }
 
         return true;
+    }
+
+    @CalledByNative
+    private long createNonPresentingNativeContext() {
+        if (!mVrEnabled) return 0;
+
+        try {
+            Constructor<?> nonPresentingGvrContextConstructor =
+                    mNonPresentingGvrContextClass.getConstructor(Activity.class);
+            mNonPresentingGvrContext =
+                    (NonPresentingGvrContextInterface)
+                            nonPresentingGvrContextConstructor.newInstance(mActivity);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException e) {
+            Log.e(TAG, "Unable to instantiate NonPresentingGvrContext", e);
+            return 0;
+        }
+        return mNonPresentingGvrContext.getNativeGvrContext();
+    }
+
+    @CalledByNative
+    private void shutdownNonPresentingNativeContext() {
+        mNonPresentingGvrContext.shutdown();
+        mNonPresentingGvrContext = null;
     }
 
     /**
@@ -256,7 +308,7 @@ public class VrShellDelegate {
      * @return Whether or not VR Shell is currently enabled.
      */
     public boolean isVrShellEnabled() {
-        return mVrShellEnabled;
+        return mVrEnabled;
     }
 
     /**

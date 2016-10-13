@@ -45,7 +45,6 @@ component("vr") {
     ]
 
     deps += [
-      ":jni_headers",
       "//device/gamepad",
       "//third_party/WebKit/public:blink_headers",
       "//third_party/gvr-android-sdk:libgvr",
@@ -78,23 +77,4 @@ mojom("mojo_bindings") {
   ]
 
   use_new_wrapper_types = false
-}
-
-if (is_android) {
-  java_sources_needing_jni =
-      [ "android/java/src/org/chromium/device/vr/GvrDeviceProvider.java" ]
-
-  generate_jni("jni_headers") {
-    sources = java_sources_needing_jni
-    jni_package = "vr"
-  }
-
-  android_library("java") {
-    java_files = java_sources_needing_jni
-    deps = [
-      "//base:base_java",
-      "//third_party/android_protobuf:protobuf_nano_javalib",
-      "//third_party/gvr-android-sdk:gvr_common_java",
-    ]
-  }
 }

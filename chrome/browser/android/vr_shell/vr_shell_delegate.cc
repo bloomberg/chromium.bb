@@ -13,6 +13,32 @@ using base::android::AttachCurrentThread;
 
 namespace vr_shell {
 
+// A non presenting delegate for magic window mode.
+class GvrNonPresentingDelegate : public device::GvrDelegate {
+ public:
+  explicit GvrNonPresentingDelegate(jlong context) {
+    gvr_api_ =
+        gvr::GvrApi::WrapNonOwned(reinterpret_cast<gvr_context*>(context));
+  }
+
+  virtual ~GvrNonPresentingDelegate() = default;
+
+  // GvrDelegate implementation
+  void SetWebVRSecureOrigin(bool secure_origin) override {}
+  void SubmitWebVRFrame() override {}
+  void UpdateWebVRTextureBounds(int eye,
+                                float left,
+                                float top,
+                                float width,
+                                float height) override {}
+  void SetGvrPoseForWebVr(const gvr::Mat4f& pose,
+                          uint32_t pose_index) override {}
+  gvr::GvrApi* gvr_api() override { return gvr_api_.get(); }
+
+ private:
+  std::unique_ptr<gvr::GvrApi> gvr_api_;
+};
+
 VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj)
     : device_provider_(nullptr) {
   j_vr_shell_delegate_.Reset(env, obj);
@@ -60,6 +86,26 @@ void VrShellDelegate::ExitWebVRPresent() {
   // being used elsewhere.
   JNIEnv* env = AttachCurrentThread();
   Java_VrShellDelegate_exitWebVR(env, j_vr_shell_delegate_.obj());
+}
+
+device::GvrDelegate* VrShellDelegate::GetNonPresentingDelegate() {
+  if (!non_presenting_delegate_) {
+    JNIEnv* env = AttachCurrentThread();
+    jlong context = Java_VrShellDelegate_createNonPresentingNativeContext(
+        env, j_vr_shell_delegate_.obj());
+    if (!context)
+      return nullptr;
+
+    non_presenting_delegate_.reset(new GvrNonPresentingDelegate(context));
+  }
+  return non_presenting_delegate_.get();
+}
+
+void VrShellDelegate::DestroyNonPresentingDelegate() {
+  non_presenting_delegate_.reset(nullptr);
+  JNIEnv* env = AttachCurrentThread();
+  Java_VrShellDelegate_shutdownNonPresentingNativeContext(
+      env, j_vr_shell_delegate_.obj());
 }
 
 void VrShellDelegate::OnVrShellReady(VrShell* vr_shell) {

@@ -416,7 +416,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
             mMergeTabsOnResume = false;
         }
-        if (mVrShellDelegate.isInVR()) mVrShellDelegate.resumeVR();
+        mVrShellDelegate.maybeResumeVR();
 
         mLocaleManager.setSnackbarManager(getSnackbarManager());
         mLocaleManager.startObservingPhoneChanges();
@@ -426,7 +426,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     public void onPauseWithNative() {
         mTabModelSelectorImpl.commitAllTabClosures();
         CookiesFetcher.persistCookies(this);
-        if (mVrShellDelegate.isInVR()) mVrShellDelegate.pauseVR();
+        mVrShellDelegate.maybePauseVR();
 
         mLocaleManager.setSnackbarManager(null);
         mLocaleManager.stopObservingPhoneChanges();
