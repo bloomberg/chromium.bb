@@ -1278,3 +1278,6 @@ crbug.com/655458 imported/wpt/workers/semantics/structured-clone/dedicated.html 
 crbug.com/655458 imported/wpt/workers/semantics/structured-clone/shared.html [ Crash Timeout ]
 
 crbug.com/652187 [ Win7 Debug ] http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
+
+crbug.com/653424 inspector/console/console-format.html [ NeedsManualRebaseline ]
+crbug.com/653424 inspector/console/console-log-side-effects.html [ NeedsManualRebaseline ]
