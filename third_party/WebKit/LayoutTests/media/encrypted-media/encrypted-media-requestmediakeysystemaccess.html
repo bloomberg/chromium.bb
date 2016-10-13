@@ -312,6 +312,23 @@
             expect_error('org.w3.clearkey', [{
                 videoCapabilities: [{contentType: 'video/webm; codecs=",vp8,"'}],
             }], 'NotSupportedError', 'Leading and trailing , in codecs');
+
+            // Verify 'temporary' sessionType.
+            expect_config('org.w3.clearkey', [{
+                sessionTypes: [ 'temporary' ]
+            }], {
+                sessionTypes: [ 'temporary' ]
+            }, 'temporary sessionType');
+
+            // Clear Key doesn't support persistent sessions.
+            expect_error('org.w3.clearkey', [{
+                sessionTypes: [ 'persistent-license' ]
+            }], 'NotSupportedError', 'persistent-license sessionType');
+
+            // Verify invalid sessionTypes.
+            expect_error('org.w3.clearkey', [{
+                sessionTypes: [ 'foo' ]
+            }], 'NotSupportedError', 'invalid sessionType');
         </script>
     </body>
 </html>

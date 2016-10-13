@@ -586,6 +586,11 @@ KeySystemConfigSelector::GetSupportedConfiguration(
   for (size_t i = 0; i < session_types.size(); i++) {
     // 13.1. Let session type be the value.
     blink::WebEncryptedMediaSessionType session_type = session_types[i];
+    if (session_type == blink::WebEncryptedMediaSessionType::Unknown) {
+      DVLOG(2) << "Rejecting requested configuration because "
+               << "session type was not recognized.";
+      return CONFIGURATION_NOT_SUPPORTED;
+    }
 
     // 13.2. If accumulated configuration's persistentState value is
     //       "not-allowed" and the Is persistent session type? algorithm
@@ -604,8 +609,7 @@ KeySystemConfigSelector::GetSupportedConfiguration(
     EmeConfigRule session_type_rule = EmeConfigRule::NOT_SUPPORTED;
     switch (session_type) {
       case blink::WebEncryptedMediaSessionType::Unknown:
-        DVLOG(2) << "Rejecting requested configuration because "
-                 << "a required session type was not recognized.";
+        NOTREACHED();
         return CONFIGURATION_NOT_SUPPORTED;
       case blink::WebEncryptedMediaSessionType::Temporary:
         session_type_rule = EmeConfigRule::SUPPORTED;
