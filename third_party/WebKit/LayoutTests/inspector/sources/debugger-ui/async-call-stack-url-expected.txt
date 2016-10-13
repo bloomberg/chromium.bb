@@ -2,11 +2,13 @@ Tests that call stack sidebar contains correct urls for call frames.
 
 Set timer for test function.
 Script execution paused.
-async-call-stack-url.html:14functionFoo
+f3unformatted-asy…s:formatted:11
 setTimeout (async)
-async-call-stack-url.html:9testFunction
+f2unformatted-asy…js:formatted:8
 setTimeout (async)
-debugger-test.js:3scheduleTestFunction
-VM:1(anonymous)
+testFunctionasync-call-stack-url.html:10
+setTimeout (async)
+scheduleTestFunctiondebugger-test.js:3
+(anonymous)VM:1
 Script execution resumed.
 
