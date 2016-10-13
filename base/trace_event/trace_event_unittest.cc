@@ -31,6 +31,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_buffer.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -520,10 +521,14 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
     TRACE_EVENT_SCOPED_CONTEXT("all", "TRACE_EVENT_SCOPED_CONTEXT call",
                                context_id);
 
-    TRACE_BIND_IDS("all", "TRACE_BIND_IDS simple call", 0x1000, 0x2000);
-    TRACE_BIND_IDS("all", "TRACE_BIND_IDS scoped call",
+    TRACE_LINK_IDS("all", "TRACE_LINK_IDS simple call", 0x1000, 0x2000);
+    TRACE_LINK_IDS("all", "TRACE_LINK_IDS scoped call",
                    TRACE_ID_WITH_SCOPE("scope 1", 0x1000),
                    TRACE_ID_WITH_SCOPE("scope 2", 0x2000));
+    TRACE_LINK_IDS("all", "TRACE_LINK_IDS to a local ID", 0x1000,
+                   TRACE_ID_LOCAL(0x2000));
+    TRACE_LINK_IDS("all", "TRACE_LINK_IDS to a global ID", 0x1000,
+                   TRACE_ID_GLOBAL(0x2000));
 
     TRACE_EVENT_ASYNC_BEGIN0("all", "async default process scope", 0x1000);
     TRACE_EVENT_ASYNC_BEGIN0("all", "async local id", TRACE_ID_LOCAL(0x2000));
@@ -972,42 +977,76 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_EQ("0x20151021", id);
   }
 
-  EXPECT_FIND_("TRACE_BIND_IDS simple call");
+  EXPECT_FIND_("TRACE_LINK_IDS simple call");
   {
     std::string ph;
     EXPECT_TRUE((item && item->GetString("ph", &ph)));
     EXPECT_EQ("=", ph);
 
     EXPECT_FALSE((item && item->HasKey("scope")));
-    std::string id;
-    EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("0x1000", id);
+    std::string id1;
+    EXPECT_TRUE((item && item->GetString("id", &id1)));
+    EXPECT_EQ("0x1000", id1);
 
-    EXPECT_FALSE((item && item->HasKey("args.bind_scope")));
-    std::string bind_id;
-    EXPECT_TRUE((item && item->GetString("bind_id", &id)));
-    EXPECT_EQ("0x2000", id);
+    EXPECT_FALSE((item && item->HasKey("args.linked_id.scope")));
+    std::string id2;
+    EXPECT_TRUE((item && item->GetString("args.linked_id.id", &id2)));
+    EXPECT_EQ("0x2000", id2);
   }
 
-  EXPECT_FIND_("TRACE_BIND_IDS scoped call");
+  EXPECT_FIND_("TRACE_LINK_IDS scoped call");
   {
     std::string ph;
     EXPECT_TRUE((item && item->GetString("ph", &ph)));
     EXPECT_EQ("=", ph);
 
-    std::string id_scope;
-    EXPECT_TRUE((item && item->GetString("scope", &id_scope)));
-    EXPECT_EQ("scope 1", id_scope);
-    std::string id;
-    EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("0x1000", id);
+    std::string scope1;
+    EXPECT_TRUE((item && item->GetString("scope", &scope1)));
+    EXPECT_EQ("scope 1", scope1);
+    std::string id1;
+    EXPECT_TRUE((item && item->GetString("id", &id1)));
+    EXPECT_EQ("0x1000", id1);
 
-    std::string bind_scope;
-    EXPECT_TRUE((item && item->GetString("args.bind_scope", &bind_scope)));
-    EXPECT_EQ("scope 2", bind_scope);
-    std::string bind_id;
-    EXPECT_TRUE((item && item->GetString("bind_id", &id)));
-    EXPECT_EQ("0x2000", id);
+    std::string scope2;
+    EXPECT_TRUE((item && item->GetString("args.linked_id.scope", &scope2)));
+    EXPECT_EQ("scope 2", scope2);
+    std::string id2;
+    EXPECT_TRUE((item && item->GetString("args.linked_id.id", &id2)));
+    EXPECT_EQ("0x2000", id2);
+  }
+
+  EXPECT_FIND_("TRACE_LINK_IDS to a local ID");
+  {
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ("=", ph);
+
+    EXPECT_FALSE((item && item->HasKey("scope")));
+    std::string id1;
+    EXPECT_TRUE((item && item->GetString("id", &id1)));
+    EXPECT_EQ("0x1000", id1);
+
+    EXPECT_FALSE((item && item->HasKey("args.linked_id.scope")));
+    std::string id2;
+    EXPECT_TRUE((item && item->GetString("args.linked_id.id2.local", &id2)));
+    EXPECT_EQ("0x2000", id2);
+  }
+
+  EXPECT_FIND_("TRACE_LINK_IDS to a global ID");
+  {
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ("=", ph);
+
+    EXPECT_FALSE((item && item->HasKey("scope")));
+    std::string id1;
+    EXPECT_TRUE((item && item->GetString("id", &id1)));
+    EXPECT_EQ("0x1000", id1);
+
+    EXPECT_FALSE((item && item->HasKey("args.linked_id.scope")));
+    std::string id2;
+    EXPECT_TRUE((item && item->GetString("args.linked_id.id2.global", &id2)));
+    EXPECT_EQ("0x2000", id2);
   }
 
   EXPECT_FIND_("async default process scope");

@@ -498,6 +498,7 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/trace_event/process_memory_totals.cc',
       'base/trace_event/trace_buffer.cc',
       'base/trace_event/trace_config.cc',
+      'base/trace_event/trace_event.cc',
       'base/trace_event/trace_event_argument.cc',
       'base/trace_event/trace_event_impl.cc',
       'base/trace_event/trace_event_memory_overhead.cc',
