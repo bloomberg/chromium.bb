@@ -4822,12 +4822,16 @@ interface RelatedEvent : Event
     method constructor
 interface RemotePlayback : EventTarget
     attribute @@toStringTag
-    getter onstatechange
+    getter onconnect
+    getter onconnecting
+    getter ondisconnect
     getter state
     method constructor
     method getAvailability
     method prompt
-    setter onstatechange
+    setter onconnect
+    setter onconnecting
+    setter ondisconnect
 interface RemotePlaybackAvailability : EventTarget
     attribute @@toStringTag
     getter onchange

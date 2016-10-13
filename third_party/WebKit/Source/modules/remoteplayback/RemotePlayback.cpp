@@ -19,10 +19,13 @@ namespace blink {
 namespace {
 
 const AtomicString& remotePlaybackStateToString(WebRemotePlaybackState state) {
+  DEFINE_STATIC_LOCAL(const AtomicString, connectingValue, ("connecting"));
   DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected"));
   DEFINE_STATIC_LOCAL(const AtomicString, disconnectedValue, ("disconnected"));
 
   switch (state) {
+    case WebRemotePlaybackState::Connecting:
+      return connectingValue;
     case WebRemotePlaybackState::Connected:
       return connectedValue;
     case WebRemotePlaybackState::Disconnected:
@@ -146,7 +149,17 @@ void RemotePlayback::stateChanged(WebRemotePlaybackState state) {
     return;
 
   m_state = state;
-  dispatchEvent(Event::create(EventTypeNames::statechange));
+  switch (m_state) {
+    case WebRemotePlaybackState::Connecting:
+      dispatchEvent(Event::create(EventTypeNames::connecting));
+      break;
+    case WebRemotePlaybackState::Connected:
+      dispatchEvent(Event::create(EventTypeNames::connect));
+      break;
+    case WebRemotePlaybackState::Disconnected:
+      dispatchEvent(Event::create(EventTypeNames::disconnect));
+      break;
+  }
 }
 
 void RemotePlayback::availabilityChanged(bool available) {

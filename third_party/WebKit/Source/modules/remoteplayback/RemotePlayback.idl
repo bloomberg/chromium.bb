@@ -15,7 +15,9 @@ enum RemotePlaybackState {
     RuntimeEnabled=RemotePlayback
 ] interface RemotePlayback : EventTarget {
     readonly attribute RemotePlaybackState state;
-    attribute EventHandler onstatechange;
+    attribute EventHandler onconnecting;
+    attribute EventHandler onconnect;
+    attribute EventHandler ondisconnect;
 
     [CallWith=ScriptState] Promise<RemotePlaybackAvailability> getAvailability();
     [CallWith=ScriptState] Promise<void> prompt();

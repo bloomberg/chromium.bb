@@ -46,7 +46,9 @@ class MODULES_EXPORT RemotePlayback final
   // ScriptWrappable implementation.
   bool hasPendingActivity() const final;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connecting);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
   DECLARE_VIRTUAL_TRACE();
 

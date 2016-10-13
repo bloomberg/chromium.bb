@@ -8,7 +8,8 @@
 namespace blink {
 
 enum class WebRemotePlaybackState {
-  Connected = 0,
+  Connecting = 0,
+  Connected,
   Disconnected,
 };
 
