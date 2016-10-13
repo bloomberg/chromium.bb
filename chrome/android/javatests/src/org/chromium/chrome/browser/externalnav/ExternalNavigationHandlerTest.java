@@ -785,6 +785,21 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+
+    @SmallTest
+    public void testPdfDownloadHappensInChrome() {
+        checkUrl(CALENDAR_URL + "/file.pdf")
+            .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
+
+    @SmallTest
+    public void testIntentToPdfFileOpensApp() {
+        checkUrl("intent://yoursite.com/mypdf.pdf#Intent;action=VIEW;category=BROWSABLE;"
+                + "scheme=http;package=com.adobe.reader;end;")
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
     @SmallTest
     public void testReferrerExtra() {
         String referrer = "http://www.google.com";
@@ -1161,7 +1176,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
 
         @Override
         public boolean isPdfDownload(String url) {
-            return false;
+            return url.endsWith(".pdf");
         }
 
         @Override
