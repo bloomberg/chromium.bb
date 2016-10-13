@@ -23,6 +23,10 @@
  * DAMAGE.
  */
 
+// https://w3c.github.io/webrtc-pc/#rtcdatachannelevent
+
+// TODO(foolip): RTCDataChannelEvent should have a constructor. See also
+// https://github.com/w3c/webrtc-pc/issues/817
 [
     NoInterfaceObject
 ] interface RTCDataChannelEvent : Event {

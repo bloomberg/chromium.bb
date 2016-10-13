@@ -23,22 +23,32 @@
  * DAMAGE.
  */
 
-// http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCDataChannel
+// https://w3c.github.io/webrtc-pc/#idl-def-rtcdatachannelstate
+
+enum RTCDataChannelState {
+    "connecting",
+    "open",
+    "closing",
+    "closed"
+};
+
+// https://w3c.github.io/webrtc-pc/#rtcdatachannel
 
 [
     ActiveScriptWrappable,
     DependentLifetime,
     NoInterfaceObject,
 ] interface RTCDataChannel : EventTarget {
-    readonly attribute DOMString label;
-    readonly attribute boolean reliable; // DEPRECATED
+    readonly attribute USVString label;
     readonly attribute boolean ordered;
-    readonly attribute unsigned short maxRetransmitTime;
-    readonly attribute unsigned short maxRetransmits;
-    readonly attribute DOMString protocol;
+    // TODO(foolip): |maxRetransmitTime| is called |maxPacketLifeTime| in the
+    // spec and both it and |maxRetransmits| are nullable.
+    [Measure] readonly attribute unsigned short maxRetransmitTime;
+    [Measure] readonly attribute unsigned short maxRetransmits;
+    readonly attribute USVString protocol;
     readonly attribute boolean negotiated;
     readonly attribute unsigned short id;
-    readonly attribute DOMString readyState;
+    readonly attribute RTCDataChannelState readyState;
     readonly attribute unsigned long bufferedAmount;
              attribute unsigned long bufferedAmountLowThreshold;
              attribute EventHandler onopen;
@@ -48,8 +58,12 @@
     void close();
              attribute EventHandler onmessage;
     [RaisesException=Setter] attribute DOMString binaryType;
+    // TODO(foolip): |data| should be USVString.
     [RaisesException] void send(DOMString data);
     [RaisesException] void send(Blob data);
     [RaisesException] void send(ArrayBuffer data);
     [RaisesException] void send(ArrayBufferView data);
+
+    // Non-standard APIs
+    [Measure] readonly attribute boolean reliable;
 };

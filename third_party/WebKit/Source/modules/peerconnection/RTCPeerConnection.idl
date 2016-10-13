@@ -114,21 +114,21 @@ enum RTCIceConnectionState {
     // https://w3c.github.io/webrtc-pc/#peer-to-peer-data-api
     // TODO(guidou): The label argument should have [TreatNullAs=EmptyString]
     // and be non-nullable.
-    [RaisesException] RTCDataChannel createDataChannel([TreatUndefinedAs=NullString] DOMString? label, optional Dictionary options);
+    [CallWith=ExecutionContext, RaisesException] RTCDataChannel createDataChannel([TreatUndefinedAs=NullString] DOMString? label, optional Dictionary options);
     attribute EventHandler ondatachannel;
 
+    // Certificate management
+    // https://w3c.github.io/webrtc-pc/#sec.cert-mgmt
+    [RaisesException, CallWith=ScriptState] static Promise<RTCCertificate> generateCertificate(AlgorithmIdentifier keygenAlgorithm);
+
     // Non-standard or removed from the spec:
-    [CallWith=ExecutionContext, RaisesException] void updateIce(optional Dictionary configuration, optional Dictionary mediaConstraints);
-    sequence<MediaStream> getLocalStreams();
-    sequence<MediaStream> getRemoteStreams();
-    MediaStream getStreamById(DOMString streamId);
-    [CallWith=ExecutionContext, RaisesException] void addStream(MediaStream? stream, optional Dictionary mediaConstraints);
-    [RaisesException] void removeStream(MediaStream? stream);
-    [RaisesException] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
+    [Measure, RaisesException] void updateIce(optional Dictionary configuration, optional Dictionary mediaConstraints);
+    [Measure] sequence<MediaStream> getLocalStreams();
+    [Measure] sequence<MediaStream> getRemoteStreams();
+    [Measure] MediaStream getStreamById(DOMString streamId);
+    [Measure, CallWith=ExecutionContext, RaisesException] void addStream(MediaStream? stream, optional Dictionary mediaConstraints);
+    [Measure, RaisesException] void removeStream(MediaStream? stream);
+    [Measure, RaisesException] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
     attribute EventHandler onaddstream;
     attribute EventHandler onremovestream;
-
-    // Certificate management
-    // http://w3c.github.io/webrtc-pc/#sec.cert-mgmt
-    [RaisesException, CallWith=ScriptState] static Promise<RTCCertificate> generateCertificate(AlgorithmIdentifier keygenAlgorithm);
 };

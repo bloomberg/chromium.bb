@@ -1357,6 +1357,18 @@ class CORE_EXPORT UseCounter {
     GamepadPoseAngularVelocity = 1635,
     GamepadPoseAngularAcceleration = 1636,
     DeprecatedBluetoothDeviceUUIDsAttribute = 1637,
+    V8RTCDataChannel_MaxRetransmitTime_AttributeGetter = 1638,
+    V8RTCDataChannel_MaxRetransmits_AttributeGetter = 1639,
+    V8RTCDataChannel_Reliable_AttributeGetter = 1640,
+    V8RTCPeerConnection_AddStream_Method = 1641,
+    V8RTCPeerConnection_CreateDTMFSender_Method = 1642,
+    V8RTCPeerConnection_GetLocalStreams_Method = 1643,
+    V8RTCPeerConnection_GetRemoteStreams_Method = 1644,
+    V8RTCPeerConnection_GetStreamById_Method = 1645,
+    V8RTCPeerConnection_RemoveStream_Method = 1646,
+    V8RTCPeerConnection_UpdateIce_Method = 1647,
+    RTCPeerConnectionCreateDataChannelMaxRetransmitTime = 1648,
+    RTCPeerConnectionCreateDataChannelMaxRetransmits = 1649,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

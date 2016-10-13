@@ -821,8 +821,7 @@ RTCSessionDescription* RTCPeerConnection::remoteDescription() {
   return RTCSessionDescription::create(webSessionDescription);
 }
 
-void RTCPeerConnection::updateIce(ExecutionContext* context,
-                                  const Dictionary& rtcConfiguration,
+void RTCPeerConnection::updateIce(const Dictionary& rtcConfiguration,
                                   const Dictionary& mediaConstraints,
                                   ExceptionState& exceptionState) {
   if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
@@ -1191,6 +1190,7 @@ ScriptPromise RTCPeerConnection::getStats(ScriptState* scriptState,
 }
 
 RTCDataChannel* RTCPeerConnection::createDataChannel(
+    ExecutionContext* context,
     String label,
     const Dictionary& options,
     ExceptionState& exceptionState) {
@@ -1204,10 +1204,17 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   unsigned short value = 0;
   if (DictionaryHelper::get(options, "id", value))
     init.id = value;
-  if (DictionaryHelper::get(options, "maxRetransmits", value))
+  if (DictionaryHelper::get(options, "maxRetransmits", value)) {
+    UseCounter::count(
+        context, UseCounter::RTCPeerConnectionCreateDataChannelMaxRetransmits);
     init.maxRetransmits = value;
-  if (DictionaryHelper::get(options, "maxRetransmitTime", value))
+  }
+  if (DictionaryHelper::get(options, "maxRetransmitTime", value)) {
+    UseCounter::count(
+        context,
+        UseCounter::RTCPeerConnectionCreateDataChannelMaxRetransmitTime);
     init.maxRetransmitTime = value;
+  }
 
   String protocolString;
   DictionaryHelper::get(options, "protocol", protocolString);
