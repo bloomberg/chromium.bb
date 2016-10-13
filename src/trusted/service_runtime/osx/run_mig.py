@@ -83,10 +83,13 @@ def Generate(src_defs, dst_header, dst_server):
 
 
 def Main(args):
-  if len(args) != 3:
+  if len(args) != 3 and len(args) != 4:
     sys.stderr.write(
-        'USAGE: %s <src.defs> <dst_header> <dst_server>\n' % sys.argv[0])
+        'USAGE: %s <src.defs> <dst_header> <dst_server> [DEVELOPER_DIR] \n'
+        % sys.argv[0])
     sys.exit(1)
+  if len(args) == 4:
+    os.environ['DEVELOPER_DIR'] = args[3]
   Generate(args[0], args[1], args[2])
 
 

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/toolchain/toolchain.gni")
 import("//native_client/src/trusted/asm.gni")
 
 source_set("sel_main") {
@@ -326,6 +327,9 @@ if (current_os == "mac") {
     ]
     args = rebase_path(sources, root_build_dir) +
            rebase_path(outputs, root_build_dir)
+    if (!use_system_xcode) {
+      args += [ hermetic_xcode_path ]
+    }
   }
 }
 
