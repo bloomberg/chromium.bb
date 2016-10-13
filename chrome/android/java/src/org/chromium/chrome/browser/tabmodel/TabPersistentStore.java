@@ -102,35 +102,35 @@ public class TabPersistentStore extends TabPersister {
     /**
      * Alerted at various stages of operation.
      */
-    public static interface TabPersistentStoreObserver {
+    public abstract static class TabPersistentStoreObserver {
         /**
          * To be called when the file containing the initial information about the TabModels has
          * been loaded.
          * @param tabCountAtStartup How many tabs there are in the TabModels.
          */
-        void onInitialized(int tabCountAtStartup);
+        void onInitialized(int tabCountAtStartup) {}
 
         /**
          * Called when details about a Tab are read from the metadata file.
          */
         void onDetailsRead(int index, int id, String url,
-                boolean isStandardActiveIndex, boolean isIncognitoActiveIndex);
+                boolean isStandardActiveIndex, boolean isIncognitoActiveIndex) {}
 
         /**
          * To be called when the TabStates have all been loaded.
          */
-        void onStateLoaded();
+        void onStateLoaded() {}
 
         /**
          * To be called when the TabState from another instance has been merged.
          */
-        void onStateMerged();
+        void onStateMerged() {}
 
         /**
          * Called when the metadata file has been saved out asynchronously.
          * This currently does not get called when the metadata file is saved out on the UI thread.
          */
-        void onMetadataSavedAsynchronously();
+        void onMetadataSavedAsynchronously() {}
     }
 
     /** Stores information about a TabModel. */
@@ -399,6 +399,7 @@ public class TabPersistentStore extends TabPersister {
             Log.d(TAG, "loadState exception: " + e.toString(), e);
         }
 
+        mPersistencePolicy.notifyStateLoaded(mTabsToRestore.size());
         if (mObserver != null) mObserver.onInitialized(mTabsToRestore.size());
     }
 

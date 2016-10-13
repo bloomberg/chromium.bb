@@ -208,7 +208,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         }
     }
 
-    static class MockTabPersistentStoreObserver implements TabPersistentStoreObserver {
+    static class MockTabPersistentStoreObserver extends TabPersistentStoreObserver {
         public final CallbackHelper initializedCallback = new CallbackHelper();
         public final CallbackHelper detailsReadCallback = new CallbackHelper();
         public final CallbackHelper stateLoadedCallback = new CallbackHelper();

@@ -360,6 +360,11 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     }
 
     @Override
+    public void notifyStateLoaded(int tabCountAtStartup) {
+        RecordHistogram.recordCountHistogram("Tabs.CountAtStartup", tabCountAtStartup);
+    }
+
+    @Override
     public void destroy() {
         mDestroyed = true;
     }

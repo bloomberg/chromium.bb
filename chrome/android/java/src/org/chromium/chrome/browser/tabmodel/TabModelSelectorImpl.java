@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tabmodel;
 import android.os.Handler;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -69,24 +68,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             @Override
             public void onStateLoaded() {
                 markTabStateInitialized();
-            }
-
-            @Override
-            public void onStateMerged() {
-            }
-
-            @Override
-            public void onDetailsRead(int index, int id, String url, boolean isStandardActiveIndex,
-                    boolean isIncognitoActiveIndex) {
-            }
-
-            @Override
-            public void onInitialized(int tabCountAtStartup) {
-                RecordHistogram.recordCountHistogram("Tabs.CountAtStartup", tabCountAtStartup);
-            }
-
-            @Override
-            public void onMetadataSavedAsynchronously() {
             }
         };
         mIsUndoSupported = supportUndo;

@@ -191,6 +191,10 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
     }
 
     @Override
+    public void notifyStateLoaded(int tabCountAtStartup) {
+    }
+
+    @Override
     public void destroy() {
         mDestroyed = true;
     }

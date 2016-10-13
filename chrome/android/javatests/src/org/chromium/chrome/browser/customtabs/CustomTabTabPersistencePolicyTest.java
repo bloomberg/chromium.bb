@@ -385,6 +385,10 @@ public class CustomTabTabPersistencePolicyTest extends InstrumentationTestCase {
             }
 
             @Override
+            public void notifyStateLoaded(int tabCountAtStartup) {
+            }
+
+            @Override
             public void destroy() {
             }
 

@@ -97,6 +97,12 @@ public interface TabPersistencePolicy {
     void setTabContentManager(TabContentManager cache);
 
     /**
+     * Notified when {@link TabPersistentStore#loadState(boolean)} has completed.
+     * @param tabCountAtStartup The number of tabs to be restored at startup.
+     */
+    void notifyStateLoaded(int tabCountAtStartup);
+
+    /**
      * Notify that persistent store has been destroyed.
      */
     void destroy();
