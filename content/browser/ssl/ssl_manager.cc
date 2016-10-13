@@ -371,22 +371,23 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry,
   SiteInstance* site_instance = entry->site_instance();
   // Note that |site_instance| can be NULL here because NavigationEntries don't
   // necessarily have site instances.  Without a process, the entry can't
-  // possibly have insecure content.  See bug http://crbug.com/12423.
-  if (site_instance && ssl_host_state_delegate_ &&
-      ssl_host_state_delegate_->DidHostRunInsecureContent(
-          entry->GetURL().host(), site_instance->GetProcess()->GetID(),
-          SSLHostStateDelegate::MIXED_CONTENT)) {
-    entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
-  }
+  // possibly have insecure content.  See bug https://crbug.com/12423.
+  if (site_instance && ssl_host_state_delegate_) {
+    std::string host = entry->GetURL().host();
+    int process_id = site_instance->GetProcess()->GetID();
+    if (ssl_host_state_delegate_->DidHostRunInsecureContent(
+            host, process_id, SSLHostStateDelegate::MIXED_CONTENT)) {
+      entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
+    }
 
-  // Only record information about subresources with cert errors if the
-  // main page is HTTPS with a certificate.
-  if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate &&
-      site_instance && ssl_host_state_delegate_ &&
-      ssl_host_state_delegate_->DidHostRunInsecureContent(
-          entry->GetURL().host(), site_instance->GetProcess()->GetID(),
-          SSLHostStateDelegate::CERT_ERRORS_CONTENT)) {
-    entry->GetSSL().content_status |= SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS;
+    // Only record information about subresources with cert errors if the
+    // main page is HTTPS with a certificate.
+    if (entry->GetURL().SchemeIsCryptographic() &&
+        entry->GetSSL().certificate &&
+        ssl_host_state_delegate_->DidHostRunInsecureContent(
+            host, process_id, SSLHostStateDelegate::CERT_ERRORS_CONTENT)) {
+      entry->GetSSL().content_status |= SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS;
+    }
   }
 
   if (!entry->GetSSL().Equals(original_ssl_status))
