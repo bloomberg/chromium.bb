@@ -153,6 +153,11 @@ class ThemeProperties {
     GRADIENT_TOOLBAR_BUTTON_PRESSED,
     GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE,
 #endif  // OS_MACOSX
+
+#if defined(OS_WIN)
+    // The color of the 1px border around the window on Windows 10.
+    COLOR_ACCENT_BORDER,
+#endif  // OS_WIN
   };
 
   // Used by the browser theme pack to parse alignments from something like

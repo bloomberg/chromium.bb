@@ -33,6 +33,9 @@ class ThemeServiceWin : public ThemeService {
   // The DWM frame color, if available; white otherwise.
   SkColor dwm_frame_color_;
 
+  // The DWM accent border color, if available; white otherwise.
+  SkColor dwm_accent_border_color_;
+
   DISALLOW_COPY_AND_ASSIGN(ThemeServiceWin);
 };
 

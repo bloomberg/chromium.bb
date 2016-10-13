@@ -353,12 +353,19 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
     case COLOR_TOOLBAR_STROKE_THEME_INACTIVE:
       return kDefaultColorToolbarStrokeThemeInactive;
 #endif
+#if defined(OS_WIN)
+    case COLOR_ACCENT_BORDER:
+      NOTREACHED();
+      return gfx::kPlaceholderColor;
+#endif
+
     case COLOR_FRAME_INCOGNITO:
     case COLOR_FRAME_INCOGNITO_INACTIVE:
       NOTREACHED() << "These values should be queried via their respective "
                       "non-incognito equivalents and an appropriate |otr| "
                       "value.";
-    default:
       return gfx::kPlaceholderColor;
   }
+
+  return gfx::kPlaceholderColor;
 }

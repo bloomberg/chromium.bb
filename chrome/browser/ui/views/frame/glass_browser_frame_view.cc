@@ -572,14 +572,36 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   // BrowserDesktopWindowTreeHostWin::UpdateDWMFrame()).
   const int y = IsMaximized() ? FrameTopBorderThicknessPx(false) : 1;
   SkPaint paint;
+
+  // Draw the top of the accent border.
+  //
+  // We let the DWM do this for the other sides of the window by insetting the
+  // client area to leave nonclient area available. However, along the top
+  // window edge, we have to have zero nonclient area or the DWM will draw a
+  // full native titlebar outside our client area. See
+  // BrowserDesktopWindowTreeHostWin::GetClientAreaInsets().
+  //
+  // We could ask the DWM to draw the top accent border in the client area (by
+  // calling DwmExtendFrameIntoClientArea() in
+  // BrowserDesktopWindowTreeHostWin::UpdateDWMFrame()), but this requires
+  // that we leave part of the client surface transparent. If we draw this
+  // ourselves, we can make the client surface fully opaque and avoid the
+  // power consumption needed for DWM to blend the window contents.
+  //
+  // So the accent border also has to be opaque, but native inactive borders
+  // are #565656 with 80% alpha. We copy Edge (which also custom-draws its top
+  // border) and use #A2A2A2 instead.
+  constexpr SkColor inactive_border_color = 0xFFA2A2A2;
+  paint.setColor(
+      ShouldPaintAsActive()
+          ? GetThemeProvider()->GetColor(ThemeProperties::COLOR_ACCENT_BORDER)
+          : inactive_border_color);
+  canvas->DrawRect(gfx::RectF(0, 0, width() * scale, y), paint);
+
   paint.setColor(frame_color);
   canvas->DrawRect(
       gfx::RectF(0, y, width() * scale, tabstrip_bounds.bottom() * scale - y),
       paint);
-
-  // The 1 pixel line at the top is drawn by Windows when we leave that section
-  // of the window blank because we have called DwmExtendFrameIntoClientArea()
-  // inside BrowserDesktopWindowTreeHostWin::UpdateDWMFrame().
 }
 
 void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
