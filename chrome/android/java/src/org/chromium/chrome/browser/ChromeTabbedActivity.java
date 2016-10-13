@@ -937,6 +937,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     @Override
     protected int getControlContainerLayoutId() {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
+            return R.layout.bottom_control_container;
+        }
         return R.layout.control_container;
     }
 
