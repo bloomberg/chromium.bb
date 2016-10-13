@@ -67,14 +67,16 @@ public class Clipboard {
     @SuppressWarnings("javadoc")
     @CalledByNative
     private String getCoercedText() {
-        final ClipData clip = mClipboardManager.getPrimaryClip();
-        if (clip != null && clip.getItemCount() > 0) {
-            final CharSequence sequence = clip.getItemAt(0).coerceToText(mContext);
-            if (sequence != null) {
-                return sequence.toString();
-            }
+        // getPrimaryClip() has been observed to throw unexpected exceptions for some devices (see
+        // crbug.com/654802 and b/31501780)
+        try {
+            return mClipboardManager.getPrimaryClip()
+                    .getItemAt(0)
+                    .coerceToText(mContext)
+                    .toString();
+        } catch (Exception e) {
+            return null;
         }
-        return null;
     }
 
     /**
@@ -85,11 +87,13 @@ public class Clipboard {
      */
     @CalledByNative
     private String getHTMLText() {
-        final ClipData clip = mClipboardManager.getPrimaryClip();
-        if (clip != null && clip.getItemCount() > 0) {
-            return clip.getItemAt(0).getHtmlText();
+        // getPrimaryClip() has been observed to throw unexpected exceptions for some devices (see
+        // crbug/654802 and b/31501780)
+        try {
+            return mClipboardManager.getPrimaryClip().getItemAt(0).getHtmlText();
+        } catch (Exception e) {
+            return null;
         }
-        return null;
     }
 
     /**
