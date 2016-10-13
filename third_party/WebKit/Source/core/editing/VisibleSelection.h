@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/TextGranularity.h"
@@ -60,12 +61,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
 
   // Note: |create()| should be used only by |createVisibleSelection| and
   // |selectionFromContentsOfNode|.
-  // TODO(xiaochengh): Use enum class instead of boolean parameter.
-  static VisibleSelectionTemplate create(
-      const PositionTemplate<Strategy>& base,
-      const PositionTemplate<Strategy>& extent,
-      TextAffinity,
-      bool isDirectional);
+  static VisibleSelectionTemplate create(const SelectionTemplate<Strategy>&);
 
   static VisibleSelectionTemplate selectionFromContentsOfNode(Node*);
 
@@ -74,6 +70,9 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   void setAffinity(TextAffinity affinity) { m_affinity = affinity; }
   TextAffinity affinity() const { return m_affinity; }
 
+  // TODO(yosin): To make |VisibleSelection| as immutable object, we should
+  // get rid of |setBase()| and |setExtent()| by replacing them with
+  // |createVisibleSelection()|.
   void setBase(const PositionTemplate<Strategy>&);
   void setBase(const VisiblePositionTemplate<Strategy>&);
   void setExtent(const PositionTemplate<Strategy>&);
@@ -161,10 +160,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
  private:
   friend class SelectionAdjuster;
 
-  VisibleSelectionTemplate(const PositionTemplate<Strategy>& base,
-                           const PositionTemplate<Strategy>& extent,
-                           TextAffinity,
-                           bool isDirectional);
+  VisibleSelectionTemplate(const SelectionTemplate<Strategy>&);
 
   void validate(TextGranularity = CharacterGranularity);
 
@@ -214,7 +210,9 @@ using VisibleSelection = VisibleSelectionTemplate<EditingStrategy>;
 using VisibleSelectionInFlatTree =
     VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
 
-// TODO(xiaochengh): Introduce builder class to get rid of these overloads.
+// TODO(yosin): We should get rid of |createVisibleSelection()| overloads
+// except for taking |SelectionInDOMTree| and |SelectionInFlatTree|.
+CORE_EXPORT VisibleSelection createVisibleSelection(const SelectionInDOMTree&);
 CORE_EXPORT VisibleSelection createVisibleSelection(const Position&,
                                                     TextAffinity,
                                                     bool isDirectional = false);
@@ -235,6 +233,8 @@ CORE_EXPORT VisibleSelection createVisibleSelection(const VisiblePosition&,
 CORE_EXPORT VisibleSelection createVisibleSelection(const PositionWithAffinity&,
                                                     bool isDirectional = false);
 
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelection(const SelectionInFlatTree&);
 CORE_EXPORT VisibleSelectionInFlatTree
 createVisibleSelection(const PositionInFlatTree&,
                        TextAffinity,
