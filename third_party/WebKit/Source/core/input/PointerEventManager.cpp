@@ -168,6 +168,13 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
       UseCounter::count(m_frame->document(),
                         UseCounter::PointerEventDispatchPointerDown);
 
+    std::unique_ptr<UserGestureIndicator> gestureIndicator;
+    if (eventType == EventTypeNames::pointerup &&
+        pointerEvent->pointerType() == "touch") {
+      gestureIndicator =
+          wrapUnique(new UserGestureIndicator(UserGestureToken::create()));
+    }
+
     DispatchEventResult dispatchResult = target->dispatchEvent(pointerEvent);
     return EventHandlingUtil::toWebInputEventResult(dispatchResult);
   }
