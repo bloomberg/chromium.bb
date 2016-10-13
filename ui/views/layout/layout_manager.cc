@@ -14,9 +14,6 @@ LayoutManager::~LayoutManager() {
 void LayoutManager::Installed(View* host) {
 }
 
-void LayoutManager::Uninstalled(View* host) {
-}
-
 int LayoutManager::GetPreferredHeightForWidth(const View* host,
                                               int width) const {
   return GetPreferredSize(host).height();

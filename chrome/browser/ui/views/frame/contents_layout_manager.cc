@@ -71,8 +71,3 @@ void ContentsLayoutManager::Installed(views::View* host) {
   DCHECK(!host_);
   host_ = host;
 }
-
-void ContentsLayoutManager::Uninstalled(views::View* host) {
-  DCHECK(host_ == host);
-  host_ = nullptr;
-}

@@ -783,10 +783,6 @@ void GridLayout::Installed(View* host) {
   DCHECK(host_ == host);
 }
 
-void GridLayout::Uninstalled(View* host) {
-  DCHECK(host_ == host);
-}
-
 void GridLayout::ViewAdded(View* host, View* view) {
   DCHECK(host_ == host && adding_view_);
 }

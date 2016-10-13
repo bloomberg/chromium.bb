@@ -281,10 +281,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // windows.
   virtual gfx::Size GetMaximumSize() const;
 
-  // Return the height necessary to display this view with the provided width.
-  // View's implementation returns the value from getPreferredSize.cy.
-  // Override if your View's preferred height depends upon the width (such
-  // as with Labels).
+  // Return the preferred height for a specific width. Override if the
+  // preferred height depends upon the width (such as a multi-line label). If
+  // a LayoutManger has been installed this returns the value of
+  // LayoutManager::GetPreferredHeightForWidth(), otherwise this returns
+  // GetPreferredSize().height().
   virtual int GetHeightForWidth(int w) const;
 
   // Sets whether this view is visible. Painting is scheduled as needed. Also,

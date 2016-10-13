@@ -165,10 +165,6 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   // is the same as the View supplied in the constructor.
   void Installed(View* host) override;
 
-  // Notification we've been uninstalled on a particular host. Checks that host
-  // is the same as the View supplied in the constructor.
-  void Uninstalled(View* host) override;
-
   // Notification that a view has been added.
   void ViewAdded(View* host, View* view) override;
 

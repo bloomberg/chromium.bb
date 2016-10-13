@@ -181,12 +181,6 @@ void BoxLayout::Installed(View* host) {
   host_ = host;
 }
 
-void BoxLayout::Uninstalled(View* host) {
-  DCHECK_EQ(host_, host);
-  host_ = NULL;
-  flex_map_.clear();
-}
-
 void BoxLayout::ViewRemoved(View* host, View* view) {
   ClearFlexForView(view);
 }

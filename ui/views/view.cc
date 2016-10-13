@@ -560,11 +560,11 @@ LayoutManager* View::GetLayoutManager() const {
 }
 
 void View::SetLayoutManager(LayoutManager* layout_manager) {
-  if (layout_manager_.get())
-    layout_manager_->Uninstalled(this);
+  if (layout_manager == layout_manager_.get())
+    return;
 
   layout_manager_.reset(layout_manager);
-  if (layout_manager_.get())
+  if (layout_manager_)
     layout_manager_->Installed(this);
 }
 

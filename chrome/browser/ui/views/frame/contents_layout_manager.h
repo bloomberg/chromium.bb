@@ -28,7 +28,6 @@ class ContentsLayoutManager : public views::LayoutManager {
   void Layout(views::View* host) override;
   gfx::Size GetPreferredSize(const views::View* host) const override;
   void Installed(views::View* host) override;
-  void Uninstalled(views::View* host) override;
 
  private:
   views::View* devtools_view_;
