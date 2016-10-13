@@ -11,6 +11,7 @@ import static android.opengl.GLES20.glBindTexture;
 import static android.opengl.GLES20.glGenTextures;
 import static android.opengl.GLES20.glTexParameteri;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
 import android.graphics.SurfaceTexture.OnFrameAvailableListener;
@@ -26,9 +27,11 @@ import android.widget.FrameLayout;
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -127,6 +130,18 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
         mNativeVrShell = nativeInit(mContentCVC.getWebContents(),
                 mContentVrWindowAndroid.getNativePointer(),
                 mUiContents, mUiVrWindowAndroid.getNativePointer());
+        mGlSurfaceView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            @SuppressLint("ClickableViewAccessibility")
+            public boolean onTouch(View v, MotionEvent event) {
+                if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_VR_SHELL_DEV)
+                        && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    nativeOnTriggerEvent(mNativeVrShell);
+                    return true;
+                }
+                return false;
+            }
+        });
 
         uiContentView.setVisibility(View.VISIBLE);
         mUiCVC.onShow();
@@ -251,11 +266,14 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+        // Normally, touch event is dispatched to presentation view only if the phone is paired with
+        // a Cardboard viewer. This is annoying when we just want to quickly verify a Cardboard
+        // behavior. This allows us to trigger cardboard trigger event without pair to a Cardboard.
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_VR_SHELL_DEV)
+                && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
             nativeOnTriggerEvent(mNativeVrShell);
         }
-        // Don't mark this as handled so that Daydream screen alignment still functions.
-        return false;
+        return super.dispatchTouchEvent(event);
     }
 
     @Override
@@ -286,6 +304,7 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
         super.shutdown();
         if (mNativeVrShell != 0) {
             nativeDestroy(mNativeVrShell);
+            mNativeVrShell = 0;
         }
         if (mContentFrameListener != null && mContentFrameListener.mSurfaceTexture != null) {
             mContentFrameListener.mSurfaceTexture.release();
