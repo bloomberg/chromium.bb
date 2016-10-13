@@ -1218,6 +1218,8 @@ const PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
 
 const PasswordForm* PasswordFormManager::FindBestSavedMatch(
     const PasswordForm* form) const {
+  if (!form->federation_origin.unique())
+    return nullptr;
   auto it = best_matches_.find(form->username_value);
   if (it != best_matches_.end())
     return it->second;

@@ -40,6 +40,7 @@ using content::BrowserContext;
 using content::WebContents;
 
 using testing::_;
+using testing::ElementsAre;
 using testing::Pointee;
 using testing::UnorderedElementsAre;
 
@@ -448,6 +449,41 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStoreFederated) {
   EXPECT_EQ(form_.icon_url, new_form.icon_url);
   EXPECT_FALSE(form_.skip_zero_click);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
+}
+
+TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
+  // Populate the PasswordStore with a form.
+  store_->AddLogin(form_);
+
+  autofill::PasswordForm federated = form_;
+  federated.password_value.clear();
+  federated.type = autofill::PasswordForm::TYPE_API;
+  federated.preferred = true;
+  federated.federation_origin = url::Origin(GURL("https://google.com/"));
+  federated.signon_realm = "federation://example.com/google.com";
+  CredentialInfo info(federated, CredentialType::CREDENTIAL_TYPE_FEDERATED);
+  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(
+                            _, CredentialSourceType::CREDENTIAL_SOURCE_API));
+  EXPECT_CALL(*client_, NotifyStorePasswordCalled());
+
+  bool called = false;
+  CallStore(info, base::Bind(&RespondCallback, &called));
+
+  // Allow the PasswordFormManager to talk to the password store, determine
+  // that the form is new, and set it as pending.
+  RunAllPendingTasks();
+
+  EXPECT_TRUE(called);
+  EXPECT_TRUE(client_->pending_manager()->HasCompletedMatching());
+  client_->pending_manager()->Save();
+
+  RunAllPendingTasks();
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_THAT(passwords["https://example.com/"], ElementsAre(form_));
+  federated.date_created =
+      passwords["federation://example.com/google.com"][0].date_created;
+  EXPECT_THAT(passwords["federation://example.com/google.com"],
+              ElementsAre(federated));
 }
 
 TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwrite) {
