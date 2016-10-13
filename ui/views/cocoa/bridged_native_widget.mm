@@ -589,7 +589,7 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
   // mouse clicks till then.
   // TODO(karandeepb): Investigate whether similar technique is needed for other
   // dialog types.
-  if (layer() && [window_ isOpaque] &&
+  if (layer() && [window_ isOpaque] && !window_visible_ &&
       !native_widget_mac_->GetWidget()->IsModal()) {
     initial_visibility_suppressed_ = true;
     [window_ setAlphaValue:0.0];
