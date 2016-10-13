@@ -1223,7 +1223,6 @@ test("ash_unittests") {
     "common/system/chromeos/session/logout_confirmation_controller_unittest.cc",
     "common/system/chromeos/session/tray_session_length_limit_unittest.cc",
     "common/system/chromeos/supervised/tray_supervised_user_unittest.cc",
-    "common/system/date/date_view_unittest.cc",
     "common/system/ime/tray_ime_chromeos_unittest.cc",
     "common/system/tiles/tray_tiles_unittest.cc",
     "common/system/tray/system_tray_unittest.cc",
