@@ -696,21 +696,24 @@ bool SchedulerWorkerPoolImpl::Initialize(
   AutoSchedulerLock auto_lock(idle_workers_stack_lock_);
 
   DCHECK(workers_.empty());
+  workers_.resize(max_threads);
 
-  for (size_t i = 0; i < max_threads; ++i) {
-    // The last SchedulerWorker added to the idle stack should be ALIVE.
+  // Create workers and push them to the idle stack in reverse order of index.
+  // This ensures that they are woken up in order of index and that the ALIVE
+  // worker is on top of the stack.
+  for (int index = max_threads - 1; index >= 0; --index) {
     const SchedulerWorker::InitialState initial_state =
-        (i == max_threads - 1) ? SchedulerWorker::InitialState::ALIVE
-                               : SchedulerWorker::InitialState::DETACHED;
+        (index == 0) ? SchedulerWorker::InitialState::ALIVE
+                     : SchedulerWorker::InitialState::DETACHED;
     std::unique_ptr<SchedulerWorker> worker = SchedulerWorker::Create(
-        priority_hint, MakeUnique<SchedulerWorkerDelegateImpl>(
-                           this, re_enqueue_sequence_callback,
-                           &shared_priority_queue_, static_cast<int>(i)),
+        priority_hint,
+        MakeUnique<SchedulerWorkerDelegateImpl>(
+            this, re_enqueue_sequence_callback, &shared_priority_queue_, index),
         task_tracker_, initial_state);
     if (!worker)
       break;
     idle_workers_stack_.Push(worker.get());
-    workers_.push_back(std::move(worker));
+    workers_[index] = std::move(worker);
   }
 
 #if DCHECK_IS_ON()
