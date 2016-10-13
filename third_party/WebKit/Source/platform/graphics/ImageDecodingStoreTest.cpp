@@ -45,7 +45,7 @@ class ImageDecodingStoreTest : public ::testing::Test,
 
   void decoderBeingDestroyed() override { ++m_decodersDestroyed; }
 
-  void decodeRequested(size_t, SkBitmap::Allocator*) override {
+  void decodeRequested() override {
     // Decoder is never used by ImageDecodingStore.
     ASSERT_TRUE(false);
   }

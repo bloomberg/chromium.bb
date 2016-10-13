@@ -286,8 +286,10 @@ bool ImageFrameGenerator::decode(SegmentReader* data,
 
   // Try to create an ImageDecoder if we are not given one.
   ASSERT(decoder);
+  bool newDecoder = false;
   bool shouldCallSetData = true;
   if (!*decoder) {
+    newDecoder = true;
     if (m_imageDecoderFactory)
       *decoder = m_imageDecoderFactory->create().release();
 
@@ -304,15 +306,15 @@ bool ImageFrameGenerator::decode(SegmentReader* data,
       return false;
   }
 
-  if (shouldCallSetData)
-    (*decoder)->setData(data, allDataReceived);
-  if (!(*decoder)->frameHasDependentFrame(index) && allDataReceived) {
+  if (!m_isMultiFrame && newDecoder && allDataReceived) {
     // If we're using an external memory allocator that means we're decoding
     // directly into the output memory and we can save one memcpy.
     ASSERT(allocator);
-    (*decoder)->setFrameMemoryAllocator(index, allocator);
+    (*decoder)->setMemoryAllocator(allocator);
   }
 
+  if (shouldCallSetData)
+    (*decoder)->setData(data, allDataReceived);
   ImageFrame* frame = (*decoder)->frameBufferAtIndex(index);
 
   // For multi-frame image decoders, we need to know how many frames are
@@ -325,7 +327,7 @@ bool ImageFrameGenerator::decode(SegmentReader* data,
   (*decoder)->setData(PassRefPtr<SegmentReader>(nullptr),
                       false);  // Unref SegmentReader from ImageDecoder.
   (*decoder)->clearCacheExceptFrame(index);
-  (*decoder)->setFrameMemoryAllocator(index, 0);
+  (*decoder)->setMemoryAllocator(0);
 
   if (!frame || frame->getStatus() == ImageFrame::FrameEmpty)
     return false;

@@ -36,7 +36,7 @@ class MockImageDecoderClient {
   MockImageDecoderClient() : m_firstFrameForcedToBeEmpty(false) {}
 
   virtual void decoderBeingDestroyed() = 0;
-  virtual void decodeRequested(size_t, SkBitmap::Allocator*) = 0;
+  virtual void decodeRequested() = 0;
   virtual ImageFrame::Status status() = 0;
   virtual size_t frameCount() = 0;
   virtual int repetitionCount() const = 0;
@@ -49,11 +49,6 @@ class MockImageDecoderClient {
   // MockImageDecoder::size(). See the precise implementation of
   // MockImageDecoder::decodedSize() below.
   virtual IntSize decodedSize() const { return IntSize(); }
-
-  // Clients can control frame dependency by overriding this method.
-  virtual size_t getRequiredPreviousFrameIndex(size_t) const {
-    return kNotFound;
-  }
 
   void forceFirstFrameToBeEmpty() { m_firstFrameForcedToBeEmpty = true; };
 
@@ -111,7 +106,7 @@ class MockImageDecoder : public ImageDecoder {
   size_t decodeFrameCount() override { return m_client->frameCount(); }
 
   void decode(size_t index) override {
-    m_client->decodeRequested(index, m_frameBufferCache[index].allocator());
+    m_client->decodeRequested();
     m_frameBufferCache[index].setStatus(m_client->status());
   }
 
@@ -119,8 +114,6 @@ class MockImageDecoder : public ImageDecoder {
     m_frameBufferCache[index].setSizeAndColorProfile(
         size().width(), size().height(), colorProfile());
     m_frameBufferCache[index].setHasAlpha(false);
-    m_frameBufferCache[index].setRequiredPreviousFrameIndex(
-        m_client->getRequiredPreviousFrameIndex(index));
   }
 
   MockImageDecoderClient* m_client;

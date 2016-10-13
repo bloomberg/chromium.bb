@@ -65,8 +65,6 @@ class ImageFrameGeneratorTest : public ::testing::Test,
     useMockImageDecoderFactory();
     m_decodersDestroyed = 0;
     m_decodeRequestCount = 0;
-    m_decodeRequestedForFrameIndex = kNotFound;
-    m_decodeRequestedWithFrameAllocator = nullptr;
     m_status = ImageFrame::FrameEmpty;
     m_frameCount = 1;
     m_requestedClearExceptFrame = kNotFound;
@@ -76,11 +74,7 @@ class ImageFrameGeneratorTest : public ::testing::Test,
 
   void decoderBeingDestroyed() override { ++m_decodersDestroyed; }
 
-  void decodeRequested(size_t index, SkBitmap::Allocator* allocator) override {
-    ++m_decodeRequestCount;
-    m_decodeRequestedForFrameIndex = index;
-    m_decodeRequestedWithFrameAllocator = allocator;
-  }
+  void decodeRequested() override { ++m_decodeRequestCount; }
 
   ImageFrame::Status status() override {
     ImageFrame::Status currentStatus = m_status;
@@ -97,10 +91,6 @@ class ImageFrameGeneratorTest : public ::testing::Test,
     return m_frameCount == 1 ? cAnimationNone : cAnimationLoopOnce;
   }
   float frameDuration() const override { return 0; }
-
-  size_t getRequiredPreviousFrameIndex(size_t frameIndex) const override {
-    return (frameIndex == 1) ? 0 : kNotFound;
-  }
 
  protected:
   void useMockImageDecoderFactory() {
@@ -130,8 +120,6 @@ class ImageFrameGeneratorTest : public ::testing::Test,
   RefPtr<ImageFrameGenerator> m_generator;
   int m_decodersDestroyed;
   int m_decodeRequestCount;
-  size_t m_decodeRequestedForFrameIndex;
-  SkBitmap::Allocator* m_decodeRequestedWithFrameAllocator;
   ImageFrame::Status m_status;
   ImageFrame::Status m_nextFrameStatus;
   size_t m_frameCount;
@@ -247,9 +235,6 @@ TEST_F(ImageFrameGeneratorTest, clearMultiFrameDecoder) {
   m_generator->decodeAndScale(m_segmentReader.get(), true, 0, imageInfo(),
                               buffer, 100 * 4);
   EXPECT_EQ(1, m_decodeRequestCount);
-  EXPECT_EQ(0u, m_decodeRequestedForFrameIndex);
-  // Frame 0 is not decoded directly to |buffer| since frame 1 depends on it.
-  EXPECT_EQ(nullptr, m_decodeRequestedWithFrameAllocator);
   EXPECT_EQ(0, m_decodersDestroyed);
   EXPECT_EQ(0U, m_requestedClearExceptFrame);
 
@@ -258,10 +243,6 @@ TEST_F(ImageFrameGeneratorTest, clearMultiFrameDecoder) {
   m_generator->decodeAndScale(m_segmentReader.get(), true, 1, imageInfo(),
                               buffer, 100 * 4);
   EXPECT_EQ(2, m_decodeRequestCount);
-  EXPECT_EQ(1u, m_decodeRequestedForFrameIndex);
-  // Non-null allocator means that frame 1 is decoded directly to |buffer|.
-  // This is because no other frame requires frame 1 data for decoding.
-  EXPECT_NE(nullptr, m_decodeRequestedWithFrameAllocator);
   EXPECT_EQ(0, m_decodersDestroyed);
   EXPECT_EQ(1U, m_requestedClearExceptFrame);
 
@@ -273,8 +254,6 @@ TEST_F(ImageFrameGeneratorTest, clearMultiFrameDecoder) {
   m_generator->decodeAndScale(m_segmentReader.get(), true, 2, imageInfo(),
                               buffer, 100 * 4);
   EXPECT_EQ(3, m_decodeRequestCount);
-  EXPECT_EQ(2u, m_decodeRequestedForFrameIndex);
-  EXPECT_NE(nullptr, m_decodeRequestedWithFrameAllocator);
   EXPECT_EQ(0, m_decodersDestroyed);
   EXPECT_EQ(kNotFound, m_requestedClearExceptFrame);
 }

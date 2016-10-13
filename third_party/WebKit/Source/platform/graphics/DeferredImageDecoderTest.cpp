@@ -113,9 +113,7 @@ class DeferredImageDecoderTest : public ::testing::Test,
 
   void decoderBeingDestroyed() override { m_actualDecoder = 0; }
 
-  void decodeRequested(size_t, SkBitmap::Allocator*) override {
-    ++m_decodeRequestCount;
-  }
+  void decodeRequested() override { ++m_decodeRequestCount; }
 
   size_t frameCount() override { return m_frameCount; }
 
