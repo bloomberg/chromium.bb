@@ -1,8 +1,9 @@
+#!/usr/bin/env python
+
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import argparse
 import client_api_generator
 import shutil
 import sys
@@ -453,6 +454,7 @@ class ClientApiGeneratorTest(unittest.TestCase):
     try:
       dirname = tempfile.mkdtemp()
       jinja_env = client_api_generator.InitializeJinjaEnv(dirname)
+      client_api_generator.CreateTypeDefinitions(json_api)
       client_api_generator.Generate(jinja_env, dirname, json_api, 'types',
                                     ['cc'])
       client_api_generator.Generate(jinja_env, dirname, json_api, 'types',
@@ -497,10 +499,4 @@ class ClientApiGeneratorTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  cmdline_parser = argparse.ArgumentParser()
-  cmdline_parser.add_argument('--stamp')
-  args = cmdline_parser.parse_args()
-  unittest.main(verbosity=2, exit=False, argv=sys.argv[:1])
-  if args.stamp:
-    with open(args.stamp, 'a') as f:
-      pass
+  unittest.main(verbosity=2, exit=False, argv=sys.argv)

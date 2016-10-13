@@ -9711,6 +9711,12 @@
         },
         "test": "headless_unittests"
       }
+    ],
+    "scripts": [
+      {
+        "name": "headless_python_unittests",
+        "script": "headless_python_unittests.py"
+      }
     ]
   },
   "LTO Linux": {

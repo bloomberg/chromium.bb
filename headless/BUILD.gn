@@ -255,7 +255,6 @@ group("headless_tests") {
   testonly = true
 
   deps = [
-    ":client_api_generator_tests",
     ":headless_browsertests",
     ":headless_unittests",
   ]
@@ -278,23 +277,6 @@ test("headless_unittests") {
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-}
-
-action("client_api_generator_tests") {
-  _stamp = "$target_gen_dir/client_api_generator_unittests.stamp"
-  inputs = [
-    "lib/browser/client_api_generator.py",
-    "lib/browser/client_api_generator_unittest.py",
-  ]
-  outputs = [
-    _stamp,
-  ]
-
-  script = "lib/browser/client_api_generator_unittest.py"
-  args = [
-    "--stamp",
-    rebase_path(_stamp, root_build_dir),
   ]
 }
 
