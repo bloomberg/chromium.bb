@@ -197,40 +197,40 @@ TEST_P(QuicSpdyStreamTest, ParseHeaderStatusCode) {
   int status_code = 0;
 
   // Valid status code.
-  headers_.ReplaceOrAppendHeader(":status", "404");
+  headers_[":status"] = "404";
   EXPECT_TRUE(stream_->ParseHeaderStatusCode(headers_, &status_code));
   EXPECT_EQ(404, status_code);
 
   // Invalid status codes.
-  headers_.ReplaceOrAppendHeader(":status", "010");
+  headers_[":status"] = "010";
   EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
-  headers_.ReplaceOrAppendHeader(":status", "600");
+  headers_[":status"] = "600";
   EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
-  headers_.ReplaceOrAppendHeader(":status", "200 ok");
+  headers_[":status"] = "200 ok";
   EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
-  headers_.ReplaceOrAppendHeader(":status", "2000");
+  headers_[":status"] = "2000";
   EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
-  headers_.ReplaceOrAppendHeader(":status", "+200");
+  headers_[":status"] = "+200";
   EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
-  headers_.ReplaceOrAppendHeader(":status", "+20");
+  headers_[":status"] = "+20";
   EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
   // Leading or trailing spaces are also invalid.
-  headers_.ReplaceOrAppendHeader(":status", " 200");
+  headers_[":status"] = " 200";
   EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
-  headers_.ReplaceOrAppendHeader(":status", "200 ");
+  headers_[":status"] = "200 ";
   EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
-  headers_.ReplaceOrAppendHeader(":status", " 200 ");
+  headers_[":status"] = " 200 ";
   EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 
-  headers_.ReplaceOrAppendHeader(":status", "  ");
+  headers_[":status"] = "  ";
   EXPECT_FALSE(stream_->ParseHeaderStatusCode(headers_, &status_code));
 }
 
