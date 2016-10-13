@@ -6,7 +6,6 @@ package org.chromium.webapk.shell_apk;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -31,6 +30,11 @@ public class MainActivity extends Activity {
      */
     private static final String HOST_BROWSER_LAUNCHER_CLASS_NAME =
             "org.chromium.webapk.lib.runtime_library.HostBrowserLauncher";
+
+    // Action for launching {@link WebappLauncherActivity}. Must stay in sync with
+    // {@link WebappLauncherActivity#ACTION_START_WEBAPP}.
+    public static final String ACTION_START_WEBAPK =
+            "com.google.android.apps.chrome.webapps.WebappManager.ACTION_START_WEBAPP";
 
     // Must stay in sync with
     // {@link org.chromium.chrome.browser.ShortcutHelper#REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB}.
@@ -88,8 +92,8 @@ public class MainActivity extends Activity {
         String runtimeHost = WebApkUtils.getHostBrowserPackageName(this);
         int source = getIntent().getIntExtra(WebApkConstants.EXTRA_SOURCE, 0);
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName(
-                runtimeHost, "org.chromium.chrome.browser.webapps.WebappLauncherActivity"));
+        intent.setAction(ACTION_START_WEBAPK);
+        intent.setPackage(runtimeHost);
         intent.putExtra(WebApkConstants.EXTRA_ID, WebApkConstants.WEBAPK_ID_PREFIX + packageName)
                 .putExtra(WebApkConstants.EXTRA_URL, startUrl)
                 .putExtra(WebApkConstants.EXTRA_SOURCE, source)
