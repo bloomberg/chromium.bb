@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "extensions/grit/extensions_browser_resources.h"
@@ -49,7 +50,9 @@ class ChromeShelfItemDelegate : public ash::mojom::ShelfItemDelegate {
   DISALLOW_COPY_AND_ASSIGN(ChromeShelfItemDelegate);
 };
 
-ChromeLauncherControllerMus::ChromeLauncherControllerMus() {}
+ChromeLauncherControllerMus::ChromeLauncherControllerMus() {
+  AttachProfile(ProfileManager::GetActiveUserProfile());
+}
 
 ChromeLauncherControllerMus::~ChromeLauncherControllerMus() {}
 
