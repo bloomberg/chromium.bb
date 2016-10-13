@@ -111,11 +111,19 @@ GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
 
 void GestureRecognizerImpl::CancelActiveTouchesExcept(
     GestureConsumer* not_cancelled) {
-  for (const auto& consumer_provider : consumer_gesture_provider_) {
-    if (consumer_provider.first == not_cancelled)
+  // Do not iterate directly over |consumer_gesture_provider_| because canceling
+  // active touches may cause the consumer to be removed from
+  // |consumer_gesture_provider_|. See crbug.com/651258 for more info.
+  std::vector<GestureConsumer*> consumers(consumer_gesture_provider_.size());
+  for (auto entry : consumer_gesture_provider_) {
+    if (entry.first == not_cancelled)
       continue;
-    CancelActiveTouches(consumer_provider.first);
+
+    consumers.push_back(entry.first);
   }
+
+  for (auto consumer : consumers)
+    CancelActiveTouches(consumer);
 }
 
 void GestureRecognizerImpl::TransferEventsTo(

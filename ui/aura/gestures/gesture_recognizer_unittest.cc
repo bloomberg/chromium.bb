@@ -685,6 +685,33 @@ class GestureRecognizerWithSwitchTest : public GestureRecognizerTest {
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerWithSwitchTest);
 };
 
+// Verify that we do not crash when removing a window during a cancel touch
+// event originating from CancelActiveTouchesExcept. This monitors for
+// regressions on crbug.com/651258.
+TEST_F(GestureRecognizerTest, TouchCancelCanDestroyWindow) {
+  auto delegate = base::MakeUnique<GestureEventConsumeDelegate>();
+  TimedEvents tes;
+  const int kTouchId = 1;
+
+  // Create a window that will remove itself from its parent on touch cancelled
+  // events.
+  std::unique_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, gfx::Rect(0, 0, 200, 200), root_window()));
+  auto handler = base::MakeUnique<RemoveOnTouchCancelHandler>();
+  window->AddPreTargetHandler(handler.get());
+
+  // Dispatch an event to |host_window| that will be cancelled.
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 101),
+                       kTouchId, tes.Now());
+  DispatchEventUsingWindowDispatcher(&press);
+
+  // Cancel event, verify there is no crash.
+  ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
+
+  EXPECT_EQ(1, handler->touch_cancelled_count());
+  EXPECT_EQ(nullptr, window->parent());
+}
+
 // Check that appropriate touch events generate tap gesture events.
 TEST_F(GestureRecognizerTest, GestureEventTap) {
   std::unique_ptr<GestureEventConsumeDelegate> delegate(
