@@ -98,12 +98,9 @@ void PlatformSensor::UpdateSensorReading(const SensorReading& reading,
 }
 
 void PlatformSensor::NotifySensorReadingChanged() {
-  using ClientsList = decltype(clients_);
-  ClientsList::Iterator it(&clients_);
-  Client* client;
-  while ((client = it.GetNext()) != nullptr) {
-    if (!client->IsNotificationSuspended())
-      client->OnSensorReadingChanged();
+  for (auto& client : clients_) {
+    if (!client.IsNotificationSuspended())
+      client.OnSensorReadingChanged();
   }
 }
 
