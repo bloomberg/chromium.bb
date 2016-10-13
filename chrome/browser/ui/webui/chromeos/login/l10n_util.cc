@@ -76,7 +76,7 @@ void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
   input_methods_list->Append(std::move(optgroup));
 }
 
-base::DictionaryValue* CreateLanguageEntry(
+std::unique_ptr<base::DictionaryValue> CreateLanguageEntry(
     const std::string& language_code,
     const base::string16& language_display_name,
     const base::string16& language_native_display_name) {
@@ -89,13 +89,12 @@ base::DictionaryValue* CreateLanguageEntry(
       base::i18n::StringContainsStrongRTLChars(display_name);
   const std::string directionality = has_rtl_chars ? "rtl" : "ltr";
 
-  std::unique_ptr<base::DictionaryValue> dictionary(
-      new base::DictionaryValue());
+  auto dictionary = base::MakeUnique<base::DictionaryValue>();
   dictionary->SetString("code", language_code);
   dictionary->SetString("displayName", language_display_name);
   dictionary->SetString("textDirection", directionality);
   dictionary->SetString("nativeDisplayName", language_native_display_name);
-  return dictionary.release();
+  return dictionary;
 }
 
 // Gets the list of languages with |descriptors| based on |base_language_codes|.

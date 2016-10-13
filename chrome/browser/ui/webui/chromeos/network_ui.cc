@@ -60,7 +60,7 @@ void SetDeviceProperties(base::DictionaryValue* dictionary) {
     std::unique_ptr<base::ListValue> ip_configs(new base::ListValue);
     for (base::DictionaryValue::Iterator iter(device_state->ip_configs());
          !iter.IsAtEnd(); iter.Advance()) {
-      ip_configs->Append(iter.value().DeepCopy());
+      ip_configs->Append(iter.value().CreateDeepCopy());
     }
     device_dictionary->SetWithoutPathExpansion(shill::kIPConfigsProperty,
                                                ip_configs.release());

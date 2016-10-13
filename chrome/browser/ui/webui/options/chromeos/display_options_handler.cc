@@ -158,12 +158,12 @@ scoped_refptr<display::ManagedDisplayMode> ConvertValueToManagedDisplayMode(
   return mode;
 }
 
-base::DictionaryValue* ConvertDisplayModeToValue(
+std::unique_ptr<base::DictionaryValue> ConvertDisplayModeToValue(
     int64_t display_id,
     const scoped_refptr<display::ManagedDisplayMode>& mode) {
   bool is_internal = display::Display::HasInternalDisplay() &&
                      display::Display::InternalDisplayId() == display_id;
-  base::DictionaryValue* result = new base::DictionaryValue();
+  auto result = base::MakeUnique<base::DictionaryValue>();
   gfx::Size size_dip = mode->GetSizeInDIP(is_internal);
   result->SetInteger("width", size_dip.width());
   result->SetInteger("height", size_dip.height());

@@ -70,7 +70,7 @@ void GetGCacheContents(const base::FilePath& root_path,
   DCHECK(gcache_summary);
 
   // Use this map to sort the result list by the path.
-  std::map<base::FilePath, base::DictionaryValue*> files;
+  std::map<base::FilePath, std::unique_ptr<base::DictionaryValue>> files;
 
   const int options = (base::FileEnumerator::FILES |
                        base::FileEnumerator::DIRECTORIES |
@@ -86,7 +86,7 @@ void GetGCacheContents(const base::FilePath& root_path,
     const bool is_symbolic_link = base::IsLink(info.GetName());
     const base::Time last_modified = info.GetLastModifiedTime();
 
-    base::DictionaryValue* entry = new base::DictionaryValue;
+    auto entry = base::MakeUnique<base::DictionaryValue>();
     entry->SetString("path", current.value());
     // Use double instead of integer for large files.
     entry->SetDouble("size", size);
@@ -99,16 +99,14 @@ void GetGCacheContents(const base::FilePath& root_path,
     entry->SetString(
         "permission",
         base::StringPrintf("%03o", info.stat().st_mode & 0x1ff));
-    files[current] = entry;
+    files[current] = std::move(entry);
 
     total_size += size;
   }
 
   // Convert |files| into |gcache_contents|.
-  for (std::map<base::FilePath, base::DictionaryValue*>::const_iterator
-           iter = files.begin(); iter != files.end(); ++iter) {
-    gcache_contents->Append(iter->second);
-  }
+  for (auto& it : files)
+    gcache_contents->Append(std::move(it.second));
 
   gcache_summary->SetDouble("total_size", total_size);
 }

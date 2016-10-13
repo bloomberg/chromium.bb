@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -232,13 +233,13 @@ void SupervisedUserCreationScreenHandler::Show() {
        it != users.end();
        ++it) {
     bool is_owner = ((*it)->email() == owner);
-    base::DictionaryValue* user_dict = new base::DictionaryValue();
+    auto user_dict = base::MakeUnique<base::DictionaryValue>();
     UserSelectionScreen::FillUserDictionary(
         *it, is_owner, false, /* is_signin_to_add */
         proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
         NULL, /* public_session_recommended_locales */
-        user_dict);
-    users_list->Append(user_dict);
+        user_dict.get());
+    users_list->Append(std::move(user_dict));
   }
   data->Set("managers", users_list.release());
   ShowScreenWithData(OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW,

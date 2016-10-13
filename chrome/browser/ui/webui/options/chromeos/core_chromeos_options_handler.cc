@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -69,10 +70,11 @@ bool IsSettingShared(const std::string& pref) {
 
 // Creates a user info dictionary to be stored in the |ListValue| that is
 // passed to Javascript for the |kAccountsPrefUsers| preference.
-base::DictionaryValue* CreateUserInfo(const std::string& username,
-                                      const std::string& display_email,
-                                      const std::string& display_name) {
-  base::DictionaryValue* user_dict = new base::DictionaryValue;
+std::unique_ptr<base::DictionaryValue> CreateUserInfo(
+    const std::string& username,
+    const std::string& display_email,
+    const std::string& display_name) {
+  auto user_dict = base::MakeUnique<base::DictionaryValue>();
   user_dict->SetString("username", username);
   user_dict->SetString("name", display_email);
   user_dict->SetString("email", display_name);
