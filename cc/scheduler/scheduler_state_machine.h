@@ -322,7 +322,6 @@ class CC_EXPORT SchedulerStateMachine {
   int prepare_tiles_funnel_;
 
   int consecutive_checkerboard_animations_;
-  int max_pending_swaps_;
   int pending_swaps_;
   int swaps_with_current_compositor_frame_sink_;
   bool needs_redraw_;
