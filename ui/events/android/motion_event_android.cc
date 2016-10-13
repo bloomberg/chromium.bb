@@ -12,6 +12,7 @@
 #include "jni/MotionEvent_jni.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 
 using base::android::AttachCurrentThread;
 using namespace JNI_MotionEvent;
@@ -94,7 +95,10 @@ int FromAndroidMetaState(int meta_state) {
 }
 
 base::TimeTicks FromAndroidTime(int64_t time_ms) {
-  return base::TimeTicks() + base::TimeDelta::FromMilliseconds(time_ms);
+  base::TimeTicks timestamp =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(time_ms);
+  ValidateEventTimeClock(&timestamp);
+  return timestamp;
 }
 
 float ToValidFloat(float x) {
