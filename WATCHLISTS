@@ -75,7 +75,8 @@
                   'chrome/android/java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java',
     },
     'android_webapk': {
-      'filepath': 'chrome/android/webapk/'
+      'filepath': 'chrome/android/webapk/|'\
+                  'chrome/browser/android/webapk/',
     },
     'android_webview': {
       'filepath': 'android_webview/',
