@@ -84,6 +84,21 @@ struct HarfBuzzFontData {
   HarfBuzzFontData()
       : m_paint(), m_simpleFontData(nullptr), m_rangeSet(nullptr) {}
 
+  ~HarfBuzzFontData() {
+    if (m_simpleFontData)
+      FontCache::fontCache()->releaseFontData(m_simpleFontData);
+  }
+
+  void updateSimpleFontData(FontPlatformData* platformData) {
+    SimpleFontData* simpleFontData =
+        FontCache::fontCache()
+            ->fontDataFromFontPlatformData(platformData)
+            .get();
+    if (m_simpleFontData)
+      FontCache::fontCache()->releaseFontData(m_simpleFontData);
+    m_simpleFontData = simpleFontData;
+  }
+
   SkPaint m_paint;
   SimpleFontData* m_simpleFontData;
   RefPtr<UnicodeRangeSet> m_rangeSet;
@@ -370,10 +385,7 @@ hb_font_t* HarfBuzzFace::getScaledFont(
   m_platformData->setupPaint(&m_harfBuzzFontData->m_paint);
   m_harfBuzzFontData->m_paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
   m_harfBuzzFontData->m_rangeSet = rangeSet;
-  m_harfBuzzFontData->m_simpleFontData =
-      FontCache::fontCache()
-          ->fontDataFromFontPlatformData(m_platformData)
-          .get();
+  m_harfBuzzFontData->updateSimpleFontData(m_platformData);
   ASSERT(m_harfBuzzFontData->m_simpleFontData);
   int scale = SkiaScalarToHarfBuzzPosition(m_platformData->size());
   hb_font_set_scale(m_unscaledFont, scale, scale);
