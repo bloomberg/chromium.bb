@@ -348,6 +348,12 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // control window in a negotiated config. Closes the connection if invalid.
   void OnNewSessionFlowControlWindow(QuicStreamOffset new_window);
 
+  // Debug helper for |OnCanWrite()|, check that OnStreamWrite() makes
+  // forward progress.  Returns false if busy loop detected.
+  bool CheckStreamNotBusyLooping(ReliableQuicStream* stream,
+                                 uint64_t previous_bytes_written,
+                                 bool previous_fin_sent);
+
   // Keep track of highest received byte offset of locally closed streams, while
   // waiting for a definitive final highest offset from the peer.
   std::map<QuicStreamId, QuicStreamOffset>

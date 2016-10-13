@@ -162,6 +162,36 @@ void QuicSession::OnBlockedFrame(const QuicBlockedFrame& frame) {
            << "Received BLOCKED frame with stream id: " << frame.stream_id;
 }
 
+bool QuicSession::CheckStreamNotBusyLooping(ReliableQuicStream* stream,
+                                            uint64_t previous_bytes_written,
+                                            bool previous_fin_sent) {
+  if (  // Stream should not be closed.
+      !stream->write_side_closed() &&
+      // Not connection flow control blocked.
+      !flow_controller_.IsBlocked() &&
+      // Detect lack of forward progress.
+      previous_bytes_written == stream->stream_bytes_written() &&
+      previous_fin_sent == stream->fin_sent()) {
+    stream->set_busy_counter(stream->busy_counter() + 1);
+    DVLOG(1) << "Suspected busy loop on stream id " << stream->id()
+             << " stream_bytes_written " << stream->stream_bytes_written()
+             << " fin " << stream->fin_sent() << " count "
+             << stream->busy_counter();
+    // Wait a few iterations before firing, the exact count is
+    // arbitrary, more than a few to cover a few test-only false
+    // positives.
+    if (stream->busy_counter() > 20) {
+      LOG(ERROR) << "Detected busy loop on stream id " << stream->id()
+                 << " stream_bytes_written " << stream->stream_bytes_written()
+                 << " fin " << stream->fin_sent();
+      return false;
+    }
+  } else {
+    stream->set_busy_counter(0);
+  }
+  return true;
+}
+
 void QuicSession::OnCanWrite() {
   // We limit the number of writes to the number of pending streams. If more
   // streams become pending, WillingAndAbleToWrite will be true, which will
@@ -205,7 +235,13 @@ void QuicSession::OnCanWrite() {
     if (stream != nullptr && !stream->flow_controller()->IsBlocked()) {
       // If the stream can't write all bytes it'll re-add itself to the blocked
       // list.
+      uint64_t previous_bytes_written = stream->stream_bytes_written();
+      bool previous_fin_sent = stream->fin_sent();
+      DVLOG(1) << "stream " << stream->id() << " bytes_written "
+               << previous_bytes_written << " fin " << previous_fin_sent;
       stream->OnCanWrite();
+      DCHECK(CheckStreamNotBusyLooping(stream, previous_bytes_written,
+                                       previous_fin_sent));
     }
     currently_writing_stream_id_ = 0;
   }
