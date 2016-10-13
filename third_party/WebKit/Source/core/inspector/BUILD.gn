@@ -6,6 +6,7 @@ import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 import(
     "//third_party/WebKit/Source/platform/inspector_protocol/inspector_protocol.gni")
+import("//v8/gni/v8.gni")
 
 blink_core_sources("inspector") {
   sources = [
@@ -128,10 +129,9 @@ inspector_protocol_generate("protocol_sources") {
 
   config_file = "inspector_protocol_config.json"
 
-  # TODO(dgozman): export js_protocol.json path from v8's build.
   inputs = [
     "browser_protocol.json",
-    "//v8/src/inspector/js_protocol.json",
+    v8_inspector_js_protocol,
     "inspector_protocol_config.json",
   ]
 
@@ -231,7 +231,7 @@ action("protocol_compatibility_check") {
 
   inputs = [
     "browser_protocol.json",
-    "//v8/src/inspector/js_protocol.json",
+    v8_inspector_js_protocol,
   ]
   _stamp = "$blink_core_output_dir/inspector/browser_protocol.stamp"
   outputs = [
@@ -242,7 +242,7 @@ action("protocol_compatibility_check") {
     "--stamp",
     rebase_path(_stamp, root_build_dir),
     rebase_path("browser_protocol.json", root_build_dir),
-    rebase_path("//v8/src/inspector/js_protocol.json", root_build_dir),
+    rebase_path(v8_inspector_js_protocol, root_build_dir),
   ]
 }
 
@@ -254,7 +254,7 @@ action("protocol_version") {
 
   inputs = [
     "browser_protocol.json",
-    "//v8/src/inspector/js_protocol.json",
+    v8_inspector_js_protocol,
   ]
   output_file = "$blink_core_output_dir/inspector/protocol.json"
   outputs = [
@@ -263,7 +263,7 @@ action("protocol_version") {
 
   args = [
     rebase_path("browser_protocol.json", root_build_dir),
-    rebase_path("//v8/src/inspector/js_protocol.json", root_build_dir),
+    rebase_path(v8_inspector_js_protocol, root_build_dir),
     rebase_path(output_file, root_build_dir),
   ]
 }
