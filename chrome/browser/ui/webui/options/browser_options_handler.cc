@@ -740,10 +740,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   cros_settings->GetBoolean(chromeos::kAllowBluetooth, &allow_bluetooth);
   values->SetBoolean("allowBluetooth", allow_bluetooth);
 
-  values->SetBoolean("enableStorageManager",
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableStorageManager));
-
   values->SetBoolean("showQuickUnlockSettings",
                      chromeos::IsQuickUnlockEnabled());
   if (chromeos::IsQuickUnlockEnabled()) {

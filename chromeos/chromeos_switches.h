@@ -69,7 +69,6 @@ CHROMEOS_EXPORT extern const char kDisableNewZIPUnpacker[];
 CHROMEOS_EXPORT extern const char kDisableOfficeEditingComponentApp[];
 CHROMEOS_EXPORT extern const char kDisablePhysicalKeyboardAutocorrect[];
 CHROMEOS_EXPORT extern const char kDisableRollbackOption[];
-CHROMEOS_EXPORT extern const char kDisableStorageManager[];
 CHROMEOS_EXPORT extern const char
     kDisableSystemTimezoneAutomaticDetectionPolicy[];
 CHROMEOS_EXPORT extern const char kDisableTimeZoneTrackingOption[];
@@ -91,7 +90,6 @@ CHROMEOS_EXPORT extern const char kEnableNetworkPortalNotification[];
 CHROMEOS_EXPORT extern const char kEnablePhysicalKeyboardAutocorrect[];
 CHROMEOS_EXPORT extern const char kEnableRequestTabletSite[];
 CHROMEOS_EXPORT extern const char kEnableScreenshotTestingWithMode[];
-CHROMEOS_EXPORT extern const char kEnableStorageManager[];
 CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];
 CHROMEOS_EXPORT extern const char kEnableVideoPlayerChromecastSupport[];
 CHROMEOS_EXPORT extern const char kEnterpriseDisableArc[];

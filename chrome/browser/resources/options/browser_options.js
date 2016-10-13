@@ -361,14 +361,11 @@ cr.define('options', function() {
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_ShowTouchpadSettings']);
         };
-        if (loadTimeData.getBoolean('enableStorageManager')) {
-          $('storage-manager-button').hidden = false;
-          $('storage-manager-button').onclick = function(evt) {
-            PageManager.showPageByName('storage');
-            chrome.send('coreOptionsUserMetricsAction',
-                        ['Options_ShowStorageManager']);
-          };
-        }
+        $('storage-manager-button').onclick = function(evt) {
+          PageManager.showPageByName('storage');
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_ShowStorageManager']);
+        };
       }
 
       // Search section.

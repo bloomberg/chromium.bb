@@ -196,9 +196,6 @@ const char kDisablePhysicalKeyboardAutocorrect[] =
 // Disables rollback option on reset screen.
 const char kDisableRollbackOption[] = "disable-rollback-option";
 
-// Disables experimental storage manager to manage local storage.
-const char kDisableStorageManager[] = "disable-storage-manager";
-
 // Disables SystemTimezoneAutomaticDetection policy.
 const char kDisableSystemTimezoneAutomaticDetectionPolicy[] =
     "disable-system-timezone-automatic-detection";
@@ -266,9 +263,6 @@ const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
 // Enables using screenshots in tests and seets mode.
 const char kEnableScreenshotTestingWithMode[] =
     "enable-screenshot-testing-with-mode";
-
-// Enables experimental storage manager to manage local storage.
-const char kEnableStorageManager[] = "enable-storage-manager";
 
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[] =
