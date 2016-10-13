@@ -926,17 +926,25 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
       subresource_filter::ContentSubresourceFilterDriverFactory::
           FromWebContents(web_contents);
 
-  EXPECT_EQ(0U, driver_factory->activation_set().size());
+  EXPECT_EQ(0U,
+            driver_factory->safe_browsing_blacklisted_patterns_set().size());
   chrome::NavigateParams params(browser(), bad_url, ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params);
-
-  EXPECT_EQ(1U, driver_factory->activation_set().size());
+  EXPECT_EQ(1U,
+            driver_factory->safe_browsing_blacklisted_patterns_set().size());
   EXPECT_TRUE(got_hit_report());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SocEngReportingBlacklistEmpty) {
   // Tests that URLS which doesn't belong to the SOCIAL_ENGINEERING_ADS threat
   // type aren't seen by the Subresource Filter.
+  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
+      scoped_feature_toggle(
+          base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+          subresource_filter::kActivationStateEnabled,
+          subresource_filter::kActivationScopeNoSites,
+          subresource_filter::kActivationListSocialEngineeringAdsInterstitial);
+
   GURL bad_url = embedded_test_server()->GetURL(kMalwarePage);
 
   SBFullHashResult malware_full_hash;
@@ -951,11 +959,12 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SocEngReportingBlacklistEmpty) {
       subresource_filter::ContentSubresourceFilterDriverFactory::
           FromWebContents(web_contents);
 
-  EXPECT_EQ(0U, driver_factory->activation_set().size());
+  EXPECT_EQ(0U,
+            driver_factory->safe_browsing_blacklisted_patterns_set().size());
   chrome::NavigateParams params(browser(), bad_url, ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params);
-
-  EXPECT_EQ(0U, driver_factory->activation_set().size());
+  EXPECT_EQ(0U,
+            driver_factory->safe_browsing_blacklisted_patterns_set().size());
   EXPECT_TRUE(got_hit_report());
 }
 

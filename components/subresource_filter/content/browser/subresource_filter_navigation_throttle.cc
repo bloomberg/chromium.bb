@@ -21,29 +21,9 @@ SubresourceFilterNavigationThrottle::Create(content::NavigationHandle* handle) {
 
 SubresourceFilterNavigationThrottle::SubresourceFilterNavigationThrottle(
     content::NavigationHandle* handle)
-    : content::NavigationThrottle(handle),
-      initial_url_(navigation_handle()->GetURL()) {}
+    : content::NavigationThrottle(handle) {}
 
 SubresourceFilterNavigationThrottle::~SubresourceFilterNavigationThrottle() {}
-
-content::NavigationThrottle::ThrottleCheckResult
-SubresourceFilterNavigationThrottle::WillRedirectRequest() {
-  if (!navigation_handle()->GetURL().SchemeIsHTTPOrHTTPS())
-    return NavigationThrottle::PROCEED;
-  ContentSubresourceFilterDriverFactory* driver_factory =
-      ContentSubresourceFilterDriverFactory::FromWebContents(
-          navigation_handle()->GetWebContents());
-  // Ensure that the activation state of the subresource filter is persisted
-  // beyond redirects. In case of the desktop platforms, where Safe Browsing
-  // check is performed synchronously it's guaranteed that |driver_factory| has
-  // the information about the activation set. But if the Safe Browsing check in
-  // asynchronous, then we night miss some redirects.
-  if (driver_factory->ShouldActivateForURL(initial_url_)) {
-    driver_factory->AddHostOfURLToActivationSet(navigation_handle()->GetURL());
-  }
-
-  return NavigationThrottle::PROCEED;
-}
 
 content::NavigationThrottle::ThrottleCheckResult
 SubresourceFilterNavigationThrottle::WillProcessResponse() {
@@ -53,7 +33,8 @@ SubresourceFilterNavigationThrottle::WillProcessResponse() {
   ContentSubresourceFilterDriverFactory::FromWebContents(
       navigation_handle()->GetWebContents())
       ->ReadyToCommitMainFrameNavigation(
-          navigation_handle()->GetRenderFrameHost(), initial_url_);
+          navigation_handle()->GetRenderFrameHost(),
+          navigation_handle()->GetURL());
 
   return NavigationThrottle::PROCEED;
 }

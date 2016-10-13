@@ -56,17 +56,12 @@ class ContentSubresourceFilterDriverFactory
   bool IsWhitelisted(const GURL& url) const;
   bool IsBlacklisted(const GURL& url) const;
 
-  // Returns true if the subresource filtering should be active for the |url|.
-  bool ShouldActivateForURL(const GURL& url) const;
-
-  // Adds the host of the |url| to the set of hosts for which Subresource
-  // Filtering should be active for the lifetime of this WebContents.
-  void AddHostOfURLToActivationSet(const GURL& url);
-
   // Whitelists the host of |url|, so that page loads with the main-frame
   // document being loaded from this host will be exempted from subresource
   // filtering for the lifetime of this WebContents.
   void AddHostOfURLToWhitelistSet(const GURL& url);
+
+  void AddToActivationHitsSet(const GURL& url);
 
   // Called when Safe Browsing detects that the |url| corresponding to the load
   // of the main frame belongs to the blacklist with |threat_type|. If the
@@ -96,7 +91,9 @@ class ContentSubresourceFilterDriverFactory
       content::RenderFrameHost* render_frame_host,
       const GURL& url);
 
-  const HostSet& activation_set() const { return activate_on_hosts_; }
+  const HostSet& safe_browsing_blacklisted_patterns_set() const {
+    return safe_browsing_blacklisted_patterns_;
+  }
   const HostSet& whitelisted_set() const { return whitelisted_hosts_; }
   ActivationState activation_state() { return activation_state_; }
 
@@ -136,13 +133,21 @@ class ContentSubresourceFilterDriverFactory
 
   void set_activation_state(const ActivationState& new_activation_state);
 
+  bool IsHit(const GURL& url) const;
+
   static const char kWebContentsUserDataKey[];
 
   FrameHostToOwnedDriverMap frame_drivers_;
   std::unique_ptr<SubresourceFilterClient> client_;
 
-  HostSet activate_on_hosts_;
   HostSet whitelisted_hosts_;
+
+  // Host+path list of the URLs, where the Safe Browsing detected hit to the
+  // threat list of interest. When the navigation is commited
+  // |safe_browsing_blacklisted_patterns_| is used to determine whenever
+  // the activation signal should be sent. All entities are deleted from the
+  // list on navigation commit event.
+  HostSet safe_browsing_blacklisted_patterns_;
 
   ActivationState activation_state_;
 

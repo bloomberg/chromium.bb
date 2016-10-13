@@ -74,15 +74,12 @@ bool ContentSubresourceFilterDriverFactory::IsWhitelisted(
   return whitelisted_set().find(url.host()) != whitelisted_set().end();
 }
 
-bool ContentSubresourceFilterDriverFactory::IsBlacklisted(
-    const GURL& url) const {
-  return activation_set().find(url.host()) != activation_set().end();
+bool ContentSubresourceFilterDriverFactory::IsHit(const GURL& url) const {
+  return safe_browsing_blacklisted_patterns_set().find(url.host() +
+                                                       url.path()) !=
+         safe_browsing_blacklisted_patterns_set().end();
 }
 
-bool ContentSubresourceFilterDriverFactory::ShouldActivateForURL(
-    const GURL& url) const {
-  return IsBlacklisted(url) && !IsWhitelisted(url);
-}
 
 void ContentSubresourceFilterDriverFactory::
     OnMainResourceMatchedSafeBrowsingBlacklist(
@@ -101,9 +98,7 @@ void ContentSubresourceFilterDriverFactory::
   }
   if (!proceed)
     return;
-  AddHostOfURLToActivationSet(url);
-  for (const auto& url : redirect_urls)
-    AddHostOfURLToActivationSet(url);
+  AddToActivationHitsSet(url);
 }
 
 void ContentSubresourceFilterDriverFactory::AddHostOfURLToWhitelistSet(
@@ -112,10 +107,10 @@ void ContentSubresourceFilterDriverFactory::AddHostOfURLToWhitelistSet(
     whitelisted_hosts_.insert(url.host());
 }
 
-void ContentSubresourceFilterDriverFactory::AddHostOfURLToActivationSet(
+void ContentSubresourceFilterDriverFactory::AddToActivationHitsSet(
     const GURL& url) {
   if (!url.host().empty() && url.SchemeIsHTTPOrHTTPS())
-    activate_on_hosts_.insert(url.host());
+    safe_browsing_blacklisted_patterns_.insert(url.host() + url.path());
 }
 
 void ContentSubresourceFilterDriverFactory::ReadyToCommitMainFrameNavigation(
@@ -132,7 +127,7 @@ bool ContentSubresourceFilterDriverFactory::ShouldActivateForMainFrameURL(
   if (GetCurrentActivationScope() == ActivationScope::ALL_SITES)
     return !IsWhitelisted(url);
   else if (GetCurrentActivationScope() == ActivationScope::ACTIVATION_LIST)
-    return ShouldActivateForURL(url);
+    return IsHit(url) && !IsWhitelisted(url);
   return false;
 }
 
@@ -182,6 +177,7 @@ void ContentSubresourceFilterDriverFactory::DidStartProvisionalLoadForFrame(
     const GURL& validated_url,
     bool is_error_page,
     bool is_iframe_srcdoc) {
+  safe_browsing_blacklisted_patterns_.clear();
   if (!render_frame_host->GetParent()) {
     client_->ToggleNotificationVisibility(false);
     set_activation_state(ActivationState::DISABLED);

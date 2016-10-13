@@ -34,14 +34,11 @@ class SubresourceFilterNavigationThrottle : public content::NavigationThrottle {
   ~SubresourceFilterNavigationThrottle() override;
 
   // content::NavigationThrottle implementation:
-  ThrottleCheckResult WillRedirectRequest() override;
   ThrottleCheckResult WillProcessResponse() override;
 
  private:
   explicit SubresourceFilterNavigationThrottle(
       content::NavigationHandle* navigation_handle);
-
-  GURL initial_url_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterNavigationThrottle);
 };

@@ -142,9 +142,6 @@ TEST_F(SubresourceFilterNavigationThrottleTest, RequestWithoutRedirects) {
       .Times(1);
   SimulateWillProcessResponse();
   ::testing::Mock::VerifyAndClearExpectations(driver());
-
-  EXPECT_EQ(1U, factory()->activation_set().size());
-  EXPECT_TRUE(factory()->ShouldActivateForURL(url));
 }
 
 TEST_F(SubresourceFilterNavigationThrottleTest,
@@ -169,10 +166,6 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
   SimulateWillProcessResponse();
   ::testing::Mock::VerifyAndClearExpectations(driver());
-
-  EXPECT_EQ(1U, factory()->activation_set().size());
-  EXPECT_TRUE(factory()->ShouldActivateForURL(url_with_activation));
-  EXPECT_FALSE(factory()->ShouldActivateForURL(url_without_activation));
 }
 
 TEST_F(SubresourceFilterNavigationThrottleTest,
@@ -196,9 +189,6 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
   SimulateWillProcessResponse();
   ::testing::Mock::VerifyAndClearExpectations(driver());
-
-  EXPECT_EQ(0U, factory()->activation_set().size());
-  EXPECT_FALSE(factory()->ShouldActivateForURL(non_web_url));
 }
 
 TEST_F(SubresourceFilterNavigationThrottleTest,
@@ -218,7 +208,7 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   SetUpNavigationHandleForURL(url);
   SimulateWillStart();
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-      url, std::vector<GURL>(), safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+      redirect, std::vector<GURL>(), safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
   SimulateRedirects(redirect);
 
@@ -226,18 +216,13 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
       .Times(1);
   SimulateWillProcessResponse();
   ::testing::Mock::VerifyAndClearExpectations(driver());
-
-  EXPECT_EQ(2U, factory()->activation_set().size());
-  EXPECT_TRUE(factory()->ShouldActivateForURL(url));
-  EXPECT_TRUE(factory()->ShouldActivateForURL(redirect));
 }
 
 TEST_F(SubresourceFilterNavigationThrottleTest,
        AddRedirectFromNavThrottleToServiceNonEmptyInitRedirects) {
   // Navigations |redirects| -> |url| -> |redirect_after_sb_classification|.
   // Safe Browsing classifies the |url| as containing deceptive content.
-  // Test checks that |url|, |redirects| and |redirect_after_sb_classification|
-  // are in the activation set.
+  // Test checks that |url| it doesn't lead to sending the activation signal.
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
@@ -255,24 +240,14 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
 
   std::vector<GURL> redirects = {first_redirect, second_redirect,
                                  third_redirect};
+  SimulateRedirects(redirect_after_sb_classification);
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
       url, redirects, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
-  SimulateRedirects(redirect_after_sb_classification);
-
-  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(ActivationState::ENABLED))
-      .Times(1);
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
   SimulateWillProcessResponse();
   ::testing::Mock::VerifyAndClearExpectations(driver());
-
-  EXPECT_EQ(redirects.size() + 2U, factory()->activation_set().size());
-  EXPECT_TRUE(factory()->ShouldActivateForURL(url));
-  EXPECT_TRUE(factory()->ShouldActivateForURL(first_redirect));
-  EXPECT_TRUE(factory()->ShouldActivateForURL(second_redirect));
-  EXPECT_TRUE(factory()->ShouldActivateForURL(third_redirect));
-  EXPECT_TRUE(
-      factory()->ShouldActivateForURL(redirect_after_sb_classification));
 }
 
 TEST_F(SubresourceFilterNavigationThrottleTest,
@@ -287,24 +262,17 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   const GURL redirect_with_match(kRedirectURLFirst);
   const GURL final_url(kRedirectURLSecond);
   std::vector<GURL> redirects = {redirect_with_match};
-  factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-      init_url, redirects, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
-
   SetUpNavigationHandleForURL(init_url);
   SimulateWillStart();
   SimulateRedirects(redirect_with_match);
   SimulateRedirects(final_url);
-
+  factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
+      final_url, redirects, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
   EXPECT_CALL(*driver(), ActivateForProvisionalLoad(ActivationState::ENABLED))
       .Times(1);
   SimulateWillProcessResponse();
   ::testing::Mock::VerifyAndClearExpectations(driver());
-
-  EXPECT_EQ(3U, factory()->activation_set().size());
-  EXPECT_TRUE(factory()->ShouldActivateForURL(init_url));
-  EXPECT_TRUE(factory()->ShouldActivateForURL(redirect_with_match));
-  EXPECT_TRUE(factory()->ShouldActivateForURL(final_url));
 }
 
 }  // namespace subresource_filter
