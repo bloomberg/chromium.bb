@@ -96,6 +96,15 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.light_mode_tint);
     }
 
+    /**
+     * Get the top margin of the progress bar relative to the toolbar layout. This is used to set
+     * the position of the progress bar (either top or bottom of the toolbar).
+     * @return The top margin of the progress bar.
+     */
+    protected int getProgressBarTopMargin() {
+        return mToolbarHeightWithoutShadow - mProgressBar.getLayoutParams().height;
+    }
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -103,7 +112,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mProgressBar = (ToolbarProgressBar) findViewById(R.id.progress);
         if (mProgressBar != null) {
             removeView(mProgressBar);
-            mProgressBar.prepareForAttach(mToolbarHeightWithoutShadow);
+            mProgressBar.prepareForAttach(getProgressBarTopMargin());
 
             if (isNativeLibraryReady()) mProgressBar.initializeAnimation();
         }

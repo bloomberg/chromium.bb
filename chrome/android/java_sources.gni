@@ -949,6 +949,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tabmodel/document/StorageDelegate.java",
   "java/src/org/chromium/chrome/browser/tabmodel/document/TabDelegate.java",
   "java/src/org/chromium/chrome/browser/toolbar/ActionModeController.java",
+  "java/src/org/chromium/chrome/browser/toolbar/BottomToolbarPhone.java",
   "java/src/org/chromium/chrome/browser/toolbar/CustomTabToolbar.java",
   "java/src/org/chromium/chrome/browser/toolbar/CustomTabToolbarAnimationDelegate.java",
   "java/src/org/chromium/chrome/browser/toolbar/HomePageButton.java",

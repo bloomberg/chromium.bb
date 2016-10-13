@@ -356,14 +356,18 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             // of our control, so we have to disable StrictMode to work. See crbug.com/639352.
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             try {
-                ControlContainer controlContainer = null;
                 setContentView(R.layout.main);
                 if (controlContainerLayoutId != NO_CONTROL_CONTAINER) {
                     ViewStub toolbarContainerStub =
                             ((ViewStub) findViewById(R.id.control_container_stub));
                     toolbarContainerStub.setLayoutResource(controlContainerLayoutId);
-                    controlContainer = (ControlContainer) toolbarContainerStub.inflate();
+                    toolbarContainerStub.inflate();
                 }
+
+                // It cannot be assumed that the result of toolbarContainerStub.inflate() will be
+                // the control container since it may be wrapped in another view.
+                ControlContainer controlContainer =
+                        (ControlContainer) findViewById(R.id.control_container);
 
                 // Inflate the correct toolbar layout for the device.
                 int toolbarLayoutId = getToolbarLayoutId();
