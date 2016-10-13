@@ -41,7 +41,7 @@ When you use Icecc, you need to [set some GN variables](https://www.chromium.org
 The `-B` option is not supported.
 [relevant commit](https://github.com/icecc/icecream/commit/b2ce5b9cc4bd1900f55c3684214e409fa81e7a92)
 
-    linux_use_debug_fission = false
+    use_debug_fission = false
 
 [debug fission](http://gcc.gnu.org/wiki/DebugFission) is not supported.
 [bug](https://github.com/icecc/icecream/issues/86)
