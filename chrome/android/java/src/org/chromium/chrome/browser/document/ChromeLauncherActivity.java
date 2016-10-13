@@ -556,6 +556,7 @@ public class ChromeLauncherActivity extends Activity
             // Add a PendingIntent so that the intent used to launch Chrome will be resent when
             // first run is completed or canceled.
             FirstRunFlowSequencer.addPendingIntent(this, freIntent, getIntent());
+            freIntent.putExtra(FirstRunActivity.EXTRA_FINISH_ON_TOUCH_OUTSIDE, !forTabbedMode);
             startActivity(freIntent);
         } else {
             Intent newIntent = new Intent(getIntent());
