@@ -81,7 +81,7 @@ public abstract class FullScreenActivity extends ChromeActivity {
                 (View) controlContainer, (ViewGroup) findViewById(android.R.id.content),
                 controlContainer);
 
-        getActivityTab().setFullscreenManager(getFullscreenManager());
+        if (getFullscreenManager() != null) getFullscreenManager().setTab(getActivityTab());
         super.finishNativeInitialization();
     }
 

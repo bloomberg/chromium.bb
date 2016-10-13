@@ -364,7 +364,7 @@ public class CustomTabActivity extends ChromeActivity {
                     }
                 });
 
-        mMainTab.setFullscreenManager(getFullscreenManager());
+        getFullscreenManager().setTab(mMainTab);
         mCustomTabContentHandler = new CustomTabContentHandler() {
             @Override
             public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {

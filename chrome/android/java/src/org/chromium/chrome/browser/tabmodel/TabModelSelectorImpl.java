@@ -11,6 +11,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -348,6 +349,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         if (mVisibleTab != tab && tab != null && !tab.isNativePage()) {
             TabModelImpl.startTabSwitchLatencyTiming(type);
         }
+        FullscreenManager fullscreenManager = mActivity.getFullscreenManager();
         if (mVisibleTab != null && mVisibleTab != tab && !mVisibleTab.needsReload()) {
             if (mVisibleTab.isInitialized() && !mVisibleTab.isDetachedForReparenting()) {
                 // TODO(dtrainor): Once we figure out why we can't grab a snapshot from the current
@@ -358,7 +360,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                     cacheTabBitmap(mVisibleTab);
                 }
                 mVisibleTab.hide();
-                mVisibleTab.setFullscreenManager(null);
+                if (fullscreenManager != null) fullscreenManager.setTab(null);
                 mTabSaver.addTabToSaveQueue(mVisibleTab);
             }
             mVisibleTab = null;
@@ -377,7 +379,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             return;
         }
 
-        tab.setFullscreenManager(mActivity.getFullscreenManager());
+        if (fullscreenManager != null) fullscreenManager.setTab(tab);
         mVisibleTab = tab;
 
         // Don't execute the tab display part if Chrome has just been sent to background. This

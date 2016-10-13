@@ -9,7 +9,6 @@ import android.view.Window;
 
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
 /**
  * Manages the basic fullscreen functionality required by a Tab.
@@ -19,20 +18,17 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 public abstract class FullscreenManager {
     public static final int INVALID_TOKEN = -1;
 
-    private final TabModelSelector mModelSelector;
     private final FullscreenHtmlApiHandler mHtmlApiHandler;
     private boolean mOverlayVideoMode;
+    private Tab mTab;
 
     /**
      * Constructs the basic ChromeTab oriented FullscreenManager.
      *
      * @param window Top-level window to turn to fullscreen.
-     * @param modelSelector The model selector providing access to the current tab.
      */
-    public FullscreenManager(Window window, TabModelSelector modelSelector) {
-        mModelSelector = modelSelector;
+    public FullscreenManager(Window window) {
         mHtmlApiHandler = new FullscreenHtmlApiHandler(window, createApiDelegate());
-        mOverlayVideoMode = false;
     }
 
     /**
@@ -46,13 +42,6 @@ public abstract class FullscreenManager {
      */
     protected FullscreenHtmlApiHandler getHtmlApiHandler() {
         return mHtmlApiHandler;
-    }
-
-    /**
-     * @return The selector for accessing the current Tab.
-     */
-    protected TabModelSelector getTabModelSelector() {
-        return mModelSelector;
     }
 
     /**
@@ -132,6 +121,28 @@ public abstract class FullscreenManager {
     public abstract void updateContentViewChildrenState();
 
     /**
+     * Sets the currently selected tab for fullscreen.
+     */
+    public void setTab(Tab tab) {
+        if (mTab == tab) return;
+
+        // Remove the fullscreen manager from the old tab before setting the new tab.
+        if (mTab != null) mTab.setFullscreenManager(null);
+
+        mTab = tab;
+
+        // Initialize the new tab with the correct fullscreen manager reference.
+        if (mTab != null) mTab.setFullscreenManager(this);
+    }
+
+    /**
+     * @return The currently selected tab for fullscreen.
+     */
+    public Tab getTab() {
+        return mTab;
+    }
+
+    /**
      * Enters or exits persistent fullscreen mode.  In this mode, the top controls will be
      * permanently hidden until this mode is exited.
      *
@@ -140,7 +151,7 @@ public abstract class FullscreenManager {
     public void setPersistentFullscreenMode(boolean enabled) {
         mHtmlApiHandler.setPersistentFullscreenMode(enabled);
 
-        Tab tab = mModelSelector.getCurrentTab();
+        Tab tab = getTab();
         if (tab != null) {
             tab.updateFullscreenEnabledState();
         }

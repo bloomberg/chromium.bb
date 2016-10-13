@@ -551,8 +551,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             // Bootstrap the first tab as it may have been created before initializing the
             // fullscreen manager.
-            if (mTabModelSelectorImpl != null && mTabModelSelectorImpl.getCurrentTab() != null) {
-                mTabModelSelectorImpl.getCurrentTab().setFullscreenManager(getFullscreenManager());
+            if (mTabModelSelectorImpl != null && mTabModelSelectorImpl.getCurrentTab() != null
+                    && getFullscreenManager() != null) {
+                getFullscreenManager().setTab(mTabModelSelectorImpl.getCurrentTab());
             }
 
             mFindToolbarManager = new FindToolbarManager(this,
