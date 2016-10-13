@@ -241,8 +241,7 @@ static ConditionalClip ComputeAccumulatedClip(
 
   // If target is not direct ancestor of clip, this will find least common
   // ancestor between the target and the clip.
-  while (target_node->id != EffectTree::kInvalidNodeId &&
-         clip_node->id != ClipTree::kInvalidNodeId) {
+  while (true) {
     while (target_node->clip_id > clip_node->id ||
            target_node->has_unclipped_descendants) {
       target_node = effect_tree.Node(target_node->target_id);
