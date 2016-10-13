@@ -5,6 +5,7 @@
 #ifndef ElementVisibilityObserver_h
 #define ElementVisibilityObserver_h
 
+#include "core/CoreExport.h"
 #include "core/dom/IntersectionObserver.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/Member.h"
@@ -22,7 +23,7 @@ class Element;
 // The ElementVisibilityObserver is implemented on top of IntersectionObserver.
 // It is a layer meant to simplify the usage for C++ Blink code checking for the
 // visibility of an element.
-class ElementVisibilityObserver final
+class CORE_EXPORT ElementVisibilityObserver final
     : public GarbageCollectedFinalized<ElementVisibilityObserver> {
   WTF_MAKE_NONCOPYABLE(ElementVisibilityObserver);
 

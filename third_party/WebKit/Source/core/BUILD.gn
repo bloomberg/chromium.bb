@@ -1035,6 +1035,7 @@ source_set("unit_tests") {
     "dom/DocumentStatisticsCollectorTest.cpp",
     "dom/DocumentTest.cpp",
     "dom/ElementTest.cpp",
+    "dom/ElementVisibilityObserverTest.cpp",
     "dom/ExecutionContextTaskTest.cpp",
     "dom/MainThreadTaskRunnerTest.cpp",
     "dom/NodeTest.cpp",

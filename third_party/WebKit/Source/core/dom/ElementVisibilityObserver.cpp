@@ -13,8 +13,9 @@ namespace blink {
 
 namespace {
 
-bool isInRemoteFrame(Element* element) {
-  Frame* mainFrame = element->document().frame()->tree().top();
+bool isInRemoteFrame(const Document& document) {
+  DCHECK(document.frame());
+  Frame* mainFrame = document.frame()->tree().top();
   return !mainFrame || mainFrame->isRemoteFrame();
 }
 
@@ -28,9 +29,13 @@ ElementVisibilityObserver::ElementVisibilityObserver(
 ElementVisibilityObserver::~ElementVisibilityObserver() = default;
 
 void ElementVisibilityObserver::start() {
+  ExecutionContext* context = m_element->getExecutionContext();
+  DCHECK(context->isDocument());
+  Document& document = toDocument(*context);
+
   // TODO(zqzhang): IntersectionObserver does not work for RemoteFrame.
   // Remove this early return when it's fixed. See https://crbug.com/615156
-  if (isInRemoteFrame(m_element)) {
+  if (isInRemoteFrame(document)) {
     m_element.release();
     return;
   }
@@ -38,9 +43,8 @@ void ElementVisibilityObserver::start() {
   DCHECK(!m_intersectionObserver);
   m_intersectionObserver = IntersectionObserver::create(
       Vector<Length>(), Vector<float>({std::numeric_limits<float>::min()}),
-      &m_element->document(),
-      WTF::bind(&ElementVisibilityObserver::onVisibilityChanged,
-                wrapWeakPersistent(this)));
+      &document, WTF::bind(&ElementVisibilityObserver::onVisibilityChanged,
+                           wrapWeakPersistent(this)));
   DCHECK(m_intersectionObserver);
   m_intersectionObserver->observe(m_element.release());
 }
