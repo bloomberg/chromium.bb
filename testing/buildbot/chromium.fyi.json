@@ -11300,6 +11300,37 @@
       }
     ]
   },
+  "Site Isolation Android": {
+    "gtest_tests": [
+      {
+        "override_isolate_target": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_type": "bullhead"
+            }
+          ],
+          "hard_timeout": 960
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "override_isolate_target": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_type": "bullhead"
+            }
+          ]
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
   "Site Isolation Linux": {
     "gtest_tests": [
       {
