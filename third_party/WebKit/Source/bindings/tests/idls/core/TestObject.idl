@@ -36,6 +36,7 @@ callback AnyCallbackFunctionOptionalAnyArg = any (optional any optionalAnyArg);
 callback LongCallbackFunction = long (long num1, long num2);
 callback VoidCallbackFunctionInterfaceArg = void (HTMLDivElement divElement);
 callback StringSequenceCallbackFunctionLongSequenceArg = sequence<DOMString> (sequence<long> arg);
+callback VoidCallbackFunctionTypedef = void (String arg);
 
 // No extended attributes on the interface; those go in TestInterface.idl
 interface TestObject {
