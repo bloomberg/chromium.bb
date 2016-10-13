@@ -3047,6 +3047,7 @@ Segment::Segment()
       size_position_(0),
       doc_type_version_(kDefaultDocTypeVersion),
       doc_type_version_written_(0),
+      duration_(0.0),
       writer_cluster_(NULL),
       writer_cues_(NULL),
       writer_header_(NULL) {
@@ -3220,21 +3221,25 @@ bool Segment::Finalize() {
     double duration =
         (static_cast<double>(last_timestamp_) + last_block_duration_) /
         segment_info_.timecode_scale();
-    if (last_block_duration_ == 0 && estimate_file_duration_) {
-      const int num_tracks = static_cast<int>(tracks_.track_entries_size());
-      for (int i = 0; i < num_tracks; ++i) {
-        if (track_frames_written_[i] < 2)
-          continue;
+    if (duration_ > 0.0) {
+      duration = duration_;
+    } else {
+      if (last_block_duration_ == 0 && estimate_file_duration_) {
+        const int num_tracks = static_cast<int>(tracks_.track_entries_size());
+        for (int i = 0; i < num_tracks; ++i) {
+          if (track_frames_written_[i] < 2)
+            continue;
 
-        // Estimate the duration for the last block of a Track.
-        const double nano_per_frame =
-            static_cast<double>(last_track_timestamp_[i]) /
-            (track_frames_written_[i] - 1);
-        const double track_duration =
-            (last_track_timestamp_[i] + nano_per_frame) /
-            segment_info_.timecode_scale();
-        if (track_duration > duration)
-          duration = track_duration;
+          // Estimate the duration for the last block of a Track.
+          const double nano_per_frame =
+              static_cast<double>(last_track_timestamp_[i]) /
+              (track_frames_written_[i] - 1);
+          const double track_duration =
+              (last_track_timestamp_[i] + nano_per_frame) /
+              segment_info_.timecode_scale();
+          if (track_duration > duration)
+            duration = track_duration;
+        }
       }
     }
     segment_info_.set_duration(duration);

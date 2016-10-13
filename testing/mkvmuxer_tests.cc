@@ -409,6 +409,22 @@ TEST_F(MuxerTest, SegmentDurationComputation) {
       CompareFiles(GetTestFilePath("segment_duration.webm"), filename_));
 }
 
+TEST_F(MuxerTest, SetSegmentDuration) {
+  EXPECT_TRUE(SegmentInit(false, false, false));
+  AddVideoTrack();
+  EXPECT_TRUE(segment_.AddFrame(dummy_data_, kFrameLength, kVideoTrackNumber, 0,
+                                false));
+  EXPECT_TRUE(segment_.AddFrame(dummy_data_, kFrameLength, kVideoTrackNumber,
+                                2000000, false));
+
+  segment_.set_duration(10500.0);
+  segment_.Finalize();
+  CloseWriter();
+
+  EXPECT_TRUE(
+      CompareFiles(GetTestFilePath("set_segment_duration.webm"), filename_));
+}
+
 TEST_F(MuxerTest, ForceNewCluster) {
   EXPECT_TRUE(SegmentInit(false, false, false));
   segment_.set_estimate_file_duration(false);

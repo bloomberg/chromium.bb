@@ -1688,6 +1688,8 @@ class Segment {
   }
   bool estimate_file_duration() const { return estimate_file_duration_; }
   const SegmentInfo* segment_info() const { return &segment_info_; }
+  void set_duration(double duration) { duration_ = duration; }
+  double duration() const { return duration_; }
 
   // Returns true when codec IDs are valid for WebM.
   bool DocTypeIsWebm() const;
@@ -1896,6 +1898,9 @@ class Segment {
   // differs from |doc_type_version_written_|.
   uint32_t doc_type_version_;
   uint32_t doc_type_version_written_;
+
+  // If |duration_| is > 0, then explicitly set the duration of the segment.
+  double duration_;
 
   // Pointer to the writer objects. Not owned by this class.
   IMkvWriter* writer_cluster_;

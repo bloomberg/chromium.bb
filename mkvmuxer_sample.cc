@@ -54,6 +54,7 @@ void Usage() {
   printf(">0 Writes the last frame in each cluster with Duration\n");
   printf("  -fixed_size_cluster_timecode <int> ");
   printf(">0 Writes the cluster timecode using exactly 8 bytes\n");
+  printf("  -copy_input_duration        >0 Copies the input duration\n");
   printf("\n");
   printf("Video options:\n");
   printf("  -display_width <int>        Display width in pixels\n");
@@ -170,6 +171,7 @@ int main(int argc, char* argv[]) {
   const char* chunk_name = NULL;
   bool accurate_cluster_duration = false;
   bool fixed_size_cluster_timecode = false;
+  bool copy_input_duration = false;
 
   bool output_cues_block_number = true;
 
@@ -234,6 +236,8 @@ int main(int argc, char* argv[]) {
                i < argc_check) {
       fixed_size_cluster_timecode =
           strtol(argv[++i], &end, 10) == 0 ? false : true;
+    } else if (!strcmp("-copy_input_duration", argv[i]) && i < argc_check) {
+      copy_input_duration = strtol(argv[++i], &end, 10) == 0 ? false : true;
     } else if (!strcmp("-display_width", argv[i]) && i < argc_check) {
       display_width = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-display_height", argv[i]) && i < argc_check) {
@@ -654,6 +658,12 @@ int main(int argc, char* argv[]) {
   // Flush any remaining metadata frames to the output file.
   if (!metadata.Write(-1))
     return EXIT_FAILURE;
+
+  if (copy_input_duration) {
+    const double input_duration =
+        static_cast<double>(segment_info->GetDuration()) / timeCodeScale;
+    muxer_segment.set_duration(input_duration);
+  }
 
   if (!muxer_segment.Finalize()) {
     printf("Finalization of segment failed.\n");
