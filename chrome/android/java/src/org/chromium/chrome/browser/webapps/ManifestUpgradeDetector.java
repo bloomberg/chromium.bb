@@ -69,24 +69,6 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
     private Callback mCallback;
 
     /**
-     * Gets the Murmur2 hash from a Bundle. Returns an empty string if the value could not be
-     * parsed.
-     */
-    private static String getMurmur2HashFromBundle(Bundle bundle) {
-        String value = bundle.getString(WebApkMetaDataKeys.ICON_MURMUR2_HASH);
-
-        // The Murmur2 hash should be terminated with 'L' to force the value to be a string.
-        // According to https://developer.android.com/guide/topics/manifest/meta-data-element.html
-        // numeric <meta-data> values can only be retrieved via {@link Bundle#getInt()} and
-        // {@link Bundle#getFloat()}. We cannot use {@link Bundle#getFloat()} due to loss of
-        // precision.
-        if (value == null || !value.endsWith("L")) {
-            return "";
-        }
-        return value.substring(0, value.length() - 1);
-    }
-
-    /**
      * Creates an instance of {@link ManifestUpgradeDetector}.
      *
      * @param tab WebAPK's tab.
@@ -137,7 +119,8 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
         mManifestUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.WEB_MANIFEST_URL);
         mStartUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.START_URL);
         mIconUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.ICON_URL);
-        mIconMurmur2Hash = getMurmur2HashFromBundle(metadata);
+        mIconMurmur2Hash = Long.toString(WebApkMetaDataUtils.getLongFromMetaData(
+                metadata, WebApkMetaDataKeys.ICON_MURMUR2_HASH, 0));
     }
 
     /**

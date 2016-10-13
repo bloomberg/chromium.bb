@@ -63,6 +63,19 @@ public class WebappLauncherActivity extends Activity {
         ChromeWebApkHost.init();
         boolean isValidWebApk = isValidWebApk(webApkPackageName, webappUrl);
 
+        if (isValidWebApk) {
+            // {@link #isValidWebApk} checks whether the start URL sent in the intent is in the
+            // scope of a WebAPK but it does not check that the intent was sent from Chrome. Unlike
+            // non-WebAPK web apps, WebAPK ids are predictable. A malicious actor may send an intent
+            // with a valid start URL and arbitrary other data. Only use the start URL, the package
+            // name and the ShortcutSource from the launch intent and extract the remaining data
+            // from the <meta-data> in the WebAPK's Android manifest.
+            webappInfo = WebApkMetaDataUtils.extractWebappInfoFromWebApk(
+                    webApkPackageName, webappUrl, webappInfo.source());
+
+            if (webappInfo == null) return;
+        }
+
         // Permit the launch to a standalone web app frame if any of the following are true:
         // - the request was for a WebAPK that is valid;
         // - the MAC is present and valid for the homescreen shortcut to be opened;

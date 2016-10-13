@@ -211,63 +211,19 @@ public class WebappInfoTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Webapps", "WebApk"})
     public void testIntentDisplayMode() {
-        {
-            Intent intent = createIntentWithUrlAndId();
-            intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MinimalUi);
-            WebappInfo info = WebappInfo.create(intent);
-            assertEquals(WebDisplayMode.MinimalUi, info.displayMode());
-        }
-        {
-            Intent intent = createIntentWithUrlAndId();
-            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_DISPLAY_MODE, "fullscreen");
-            WebappInfo info = WebappInfo.create(intent);
-            assertEquals(WebDisplayMode.Fullscreen, info.displayMode());
-        }
-        {
-            // EXTRA_WEBAPK_DISPLAY_MODE takes precedence over EXTRA_DISPLAY_MODE.
-            Intent intent = createIntentWithUrlAndId();
-            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_DISPLAY_MODE, "fullscreen");
-            intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MinimalUi);
-            WebappInfo info = WebappInfo.create(intent);
-            assertEquals(WebDisplayMode.Fullscreen, info.displayMode());
-        }
-        {
-            Intent intent = createIntentWithUrlAndId();
-            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_DISPLAY_MODE, "invalid");
-            WebappInfo info = WebappInfo.create(intent);
-            assertEquals(WebDisplayMode.Standalone, info.displayMode());
-        }
+        Intent intent = createIntentWithUrlAndId();
+        intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MinimalUi);
+        WebappInfo info = WebappInfo.create(intent);
+        assertEquals(WebDisplayMode.MinimalUi, info.displayMode());
     }
 
     @SmallTest
     @Feature({"Webapps", "WebApk"})
     public void testIntentOrientation() {
-        {
-            Intent intent = createIntentWithUrlAndId();
-            intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.LANDSCAPE);
-            WebappInfo info = WebappInfo.create(intent);
-            assertEquals(ScreenOrientationValues.LANDSCAPE, info.orientation());
-        }
-        {
-            Intent intent = createIntentWithUrlAndId();
-            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, "natural");
-            WebappInfo info = WebappInfo.create(intent);
-            assertEquals(ScreenOrientationValues.NATURAL, info.orientation());
-        }
-        {
-            // EXTRA_WEBAPK_ORIENTATION takes precedence over EXTRA_ORIENTATION.
-            Intent intent = createIntentWithUrlAndId();
-            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, "natural");
-            intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.LANDSCAPE);
-            WebappInfo info = WebappInfo.create(intent);
-            assertEquals(ScreenOrientationValues.NATURAL, info.orientation());
-        }
-        {
-            Intent intent = createIntentWithUrlAndId();
-            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, "invalid");
-            WebappInfo info = WebappInfo.create(intent);
-            assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
-        }
+        Intent intent = createIntentWithUrlAndId();
+        intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.LANDSCAPE);
+        WebappInfo info = WebappInfo.create(intent);
+        assertEquals(ScreenOrientationValues.LANDSCAPE, info.orientation());
     }
 
     @SmallTest
