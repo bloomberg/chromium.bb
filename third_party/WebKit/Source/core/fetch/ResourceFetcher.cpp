@@ -40,6 +40,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/mhtml/MHTMLArchive.h"
+#include "platform/network/NetworkUtils.h"
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/tracing/TraceEvent.h"
 #include "platform/tracing/TracedValue.h"
@@ -387,8 +388,8 @@ Resource* ResourceFetcher::resourceForStaticData(
     memoryCache()->remove(oldResource);
   }
 
-  WebString mimetype;
-  WebString charset;
+  AtomicString mimetype;
+  AtomicString charset;
   RefPtr<SharedBuffer> data;
   if (substituteData.isValid()) {
     mimetype = substituteData.mimeType();
@@ -396,7 +397,7 @@ Resource* ResourceFetcher::resourceForStaticData(
     data = substituteData.content();
   } else if (url.protocolIsData()) {
     data = PassRefPtr<SharedBuffer>(
-        Platform::current()->parseDataURL(url, mimetype, charset));
+        NetworkUtils::parseDataURL(url, mimetype, charset));
     if (!data)
       return nullptr;
   } else {

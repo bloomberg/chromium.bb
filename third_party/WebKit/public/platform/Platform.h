@@ -363,14 +363,6 @@ class BLINK_PLATFORM_EXPORT Platform {
       const blink::WebSecurityOrigin& cacheStorageOrigin,
       const WebString& cacheStorageCacheName) {}
 
-  // Returns the decoded data url if url had a supported mimetype and parsing
-  // was successful.
-  virtual WebData parseDataURL(const WebURL&,
-                               WebString& mimetype,
-                               WebString& charset) {
-    return WebData();
-  }
-
   virtual WebURLError cancelledError(const WebURL&) const {
     return WebURLError();
   }

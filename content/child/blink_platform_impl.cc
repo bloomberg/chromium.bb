@@ -49,7 +49,6 @@
 #include "content/child/web_url_request_util.h"
 #include "content/child/worker_thread_registry.h"
 #include "content/public/common/content_client.h"
-#include "net/base/data_url.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -418,19 +417,6 @@ BlinkPlatformImpl::~BlinkPlatformImpl() {
 
 WebString BlinkPlatformImpl::userAgent() {
   return blink::WebString::fromUTF8(GetContentClient()->GetUserAgent());
-}
-
-WebData BlinkPlatformImpl::parseDataURL(const WebURL& url,
-                                        WebString& mimetype_out,
-                                        WebString& charset_out) {
-  std::string mime_type, char_set, data;
-  if (net::DataURL::Parse(url, &mime_type, &char_set, &data) &&
-      mime_util::IsSupportedMimeType(mime_type)) {
-    mimetype_out = WebString::fromUTF8(mime_type);
-    charset_out = WebString::fromUTF8(char_set);
-    return data;
-  }
-  return WebData();
 }
 
 WebURLError BlinkPlatformImpl::cancelledError(

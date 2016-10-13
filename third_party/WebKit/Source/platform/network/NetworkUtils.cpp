@@ -4,9 +4,17 @@
 
 #include "platform/network/NetworkUtils.h"
 
+#include "components/mime_util/mime_util.h"
+#include "net/base/data_url.h"
 #include "net/base/ip_address.h"
+#include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
+#include "platform/SharedBuffer.h"
+#include "platform/weborigin/KURL.h"
+#include "public/platform/URLConversion.h"
+#include "public/platform/WebString.h"
+#include "url/gurl.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
 
@@ -51,6 +59,22 @@ String getDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
   std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
       hostUtf8.asStringPiece(), getNetPrivateRegistryFilter(filter));
   return String(domain.data(), domain.length());
+}
+
+PassRefPtr<SharedBuffer> parseDataURL(const KURL& url,
+                                      AtomicString& mimetype,
+                                      AtomicString& charset) {
+  std::string utf8MimeType;
+  std::string utf8Charset;
+  std::string data;
+  if (net::DataURL::Parse(WebStringToGURL(url.getString()), &utf8MimeType,
+                          &utf8Charset, &data) &&
+      mime_util::IsSupportedMimeType(utf8MimeType)) {
+    mimetype = WebString::fromUTF8(utf8MimeType);
+    charset = WebString::fromUTF8(utf8Charset);
+    return SharedBuffer::create(data.data(), data.size());
+  }
+  return nullptr;
 }
 
 }  // NetworkUtils
