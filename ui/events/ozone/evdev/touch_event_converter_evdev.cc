@@ -186,8 +186,6 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
       events_[i].slot = i;
 
       // Dirty the slot so we'll update the consumer at the first opportunity.
-      // We can't dispatch here as this is currently called on the worker pool.
-      // TODO(spang): Move initialization off worker pool.
       events_[i].altered = true;
 
       // Optional bits.

@@ -71,10 +71,10 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   void EnablePalmSuppression(bool enabled);
 
  private:
-  // Open device at path & starting processing events (on UI thread).
+  // Open device at path & starting processing events.
   void AttachInputDevice(std::unique_ptr<EventConverterEvdev> converter);
 
-  // Close device at path (on UI thread).
+  // Close device at path.
   void DetachInputDevice(const base::FilePath& file_path);
 
   // Sync input_device_settings_ to attached devices.

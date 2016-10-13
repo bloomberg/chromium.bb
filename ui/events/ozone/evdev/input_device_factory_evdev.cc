@@ -39,9 +39,6 @@ namespace ui {
 
 namespace {
 
-typedef base::Callback<void(std::unique_ptr<EventConverterEvdev>)>
-    OpenInputDeviceReplyCallback;
-
 struct OpenInputDeviceParams {
   // Unique identifier for the new device.
   int id;
@@ -49,10 +46,10 @@ struct OpenInputDeviceParams {
   // Device path to open.
   base::FilePath path;
 
-  // Dispatcher for events. Call on UI thread only.
+  // Dispatcher for events.
   DeviceEventDispatcherEvdev* dispatcher;
 
-  // State shared between devices. Must not be dereferenced on worker thread.
+  // State shared between devices.
   CursorDelegateEvdev* cursor;
 #if defined(USE_EVDEV_GESTURES)
   GesturePropertyProvider* gesture_property_provider;
@@ -120,26 +117,16 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
       fd, params.path, params.id, devinfo, params.cursor, params.dispatcher));
 }
 
-// Open an input device. Opening may put the calling thread to sleep, and
-// therefore should be run on a thread where latency is not critical. We
-// run it on a thread from the worker pool.
-//
-// This takes a TaskRunner and runs the reply on that thread, so that we
-// can hop threads if necessary (back to the UI thread).
-void OpenInputDevice(std::unique_ptr<OpenInputDeviceParams> params,
-                     scoped_refptr<base::TaskRunner> reply_runner,
-                     const OpenInputDeviceReplyCallback& reply_callback) {
-  const base::FilePath& path = params->path;
-  std::unique_ptr<EventConverterEvdev> converter;
-
+// Open an input device and construct an EventConverterEvdev.
+std::unique_ptr<EventConverterEvdev> OpenInputDevice(
+    const OpenInputDeviceParams& params) {
+  const base::FilePath& path = params.path;
   TRACE_EVENT1("evdev", "OpenInputDevice", "path", path.value());
 
   int fd = open(path.value().c_str(), O_RDWR | O_NONBLOCK);
   if (fd < 0) {
-    PLOG(ERROR) << "Cannot open '" << path.value();
-    reply_runner->PostTask(
-        FROM_HERE, base::Bind(reply_callback, base::Passed(&converter)));
-    return;
+    PLOG(ERROR) << "Cannot open " << path.value();
+    return nullptr;
   }
 
   // Use monotonic timestamps for events. The touch code in particular
@@ -153,25 +140,10 @@ void OpenInputDevice(std::unique_ptr<OpenInputDeviceParams> params,
   if (!devinfo.Initialize(fd, path)) {
     LOG(ERROR) << "Failed to get device information for " << path.value();
     close(fd);
-    reply_runner->PostTask(
-        FROM_HERE, base::Bind(reply_callback, base::Passed(&converter)));
-    return;
+    return nullptr;
   }
 
-  converter = CreateConverter(*params, fd, devinfo);
-
-  // Reply with the constructed converter.
-  reply_runner->PostTask(FROM_HERE,
-                         base::Bind(reply_callback, base::Passed(&converter)));
-}
-
-// Close an input device. Closing may put the calling thread to sleep, and
-// therefore should be run on a thread where latency is not critical. We
-// run it on the FILE thread.
-void CloseInputDevice(const base::FilePath& path,
-                      std::unique_ptr<EventConverterEvdev> converter) {
-  TRACE_EVENT1("evdev", "CloseInputDevice", "path", path.value());
-  converter.reset();
+  return CreateConverter(params, fd, devinfo);
 }
 
 }  // namespace
@@ -194,27 +166,24 @@ InputDeviceFactoryEvdev::~InputDeviceFactoryEvdev() {
 
 void InputDeviceFactoryEvdev::AddInputDevice(int id,
                                              const base::FilePath& path) {
-  std::unique_ptr<OpenInputDeviceParams> params(new OpenInputDeviceParams);
-  params->id = id;
-  params->path = path;
-  params->cursor = cursor_;
-  params->dispatcher = dispatcher_.get();
+  OpenInputDeviceParams params;
+  params.id = id;
+  params.path = path;
+  params.cursor = cursor_;
+  params.dispatcher = dispatcher_.get();
 
 #if defined(USE_EVDEV_GESTURES)
-  params->gesture_property_provider = gesture_property_provider_.get();
+  params.gesture_property_provider = gesture_property_provider_.get();
 #endif
 
-  OpenInputDeviceReplyCallback reply_callback =
+  std::unique_ptr<EventConverterEvdev> converter = OpenInputDevice(params);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
       base::Bind(&InputDeviceFactoryEvdev::AttachInputDevice,
-                 weak_ptr_factory_.GetWeakPtr());
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&converter)));
 
   ++pending_device_changes_;
-
-  // Dispatch task to open from the worker pool, since open may block.
-  base::WorkerPool::PostTask(FROM_HERE,
-                             base::Bind(&OpenInputDevice, base::Passed(&params),
-                                        task_runner_, reply_callback),
-                             false /* task_is_slow */);
 }
 
 void InputDeviceFactoryEvdev::RemoveInputDevice(const base::FilePath& path) {
@@ -272,17 +241,11 @@ void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
     // Disable the device (to release keys/buttons/etc).
     converter->SetEnabled(false);
 
-    // Cancel libevent notifications from this converter. This part must be
-    // on UI since the polling happens on UI.
+    // Cancel libevent notifications from this converter.
     converter->Stop();
 
     UpdateDirtyFlags(converter.get());
     NotifyDevicesUpdated();
-
-    // Dispatch task to close from the worker pool, since close may block.
-    base::WorkerPool::PostTask(
-        FROM_HERE,
-        base::Bind(&CloseInputDevice, path, base::Passed(&converter)), true);
   }
 }
 
