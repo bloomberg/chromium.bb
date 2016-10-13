@@ -1,0 +1,2 @@
+Legend in fieldset
+PASS

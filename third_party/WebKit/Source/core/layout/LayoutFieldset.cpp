@@ -174,26 +174,28 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren,
     LayoutUnit legendLogicalTop;
     LayoutUnit collapsedLegendExtent;
     LayoutUnit innerBlockPadding;
-    // FIXME: We need to account for the legend's margin before too.
-    if (fieldsetBorderBefore > legendLogicalHeight) {
-      // The <legend> is smaller than the associated fieldset before border
-      // so the latter determines positioning of the <legend>. The sizing
-      // depends on the legend's margins as we want to still follow the
-      // author's cues.
-      // Firefox completely ignores the margins in this case which seems wrong.
+
+    if (legendLogicalHeight < fieldsetBorderBefore) {
+      // Center legend in fieldset border
       legendLogicalTop = (fieldsetBorderBefore - legendLogicalHeight) / 2;
-      collapsedLegendExtent = max<LayoutUnit>(
-          fieldsetBorderBefore, legendLogicalTop + legendLogicalHeight +
-                                    marginAfterForChild(*legend));
-      innerBlockPadding = marginAfterForChild(*legend)
-                              ? marginAfterForChild(*legend) - legendLogicalTop
-                              : LayoutUnit();
-    } else {
-      collapsedLegendExtent =
-          legendLogicalHeight + marginAfterForChild(*legend);
-      innerBlockPadding =
-          legendLogicalHeight - borderAfter() + marginAfterForChild(*legend);
     }
+
+    // Calculate how much legend + bottom margin sticks below the fieldset
+    // border
+    innerBlockPadding = (legendLogicalTop + legendLogicalHeight +
+                         marginAfterForChild(*legend) - fieldsetBorderBefore)
+                            .clampNegativeToZero();
+
+    if (legendLogicalTop < marginBeforeForChild(*legend)) {
+      // legend margin pushes everything down
+      innerBlockPadding += marginBeforeForChild(*legend) - legendLogicalTop;
+      legendLogicalTop = marginBeforeForChild(*legend);
+    }
+
+    collapsedLegendExtent =
+        std::max(fieldsetBorderBefore, marginBeforeForChild(*legend) +
+                                           legendLogicalHeight +
+                                           marginAfterForChild(*legend));
 
     if (m_innerBlock)
       setInnerBlockPadding(isHorizontalWritingMode(), m_innerBlock,
