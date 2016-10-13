@@ -175,12 +175,12 @@ void MojoAudioDecoder::OnInitialized(bool success,
   base::ResetAndReturn(&init_cb_).Run(success);
 }
 
-void MojoAudioDecoder::OnDecodeStatus(mojom::DecodeStatus status) {
+void MojoAudioDecoder::OnDecodeStatus(DecodeStatus status) {
   DVLOG(1) << __FUNCTION__ << ": status:" << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   DCHECK(!decode_cb_.is_null());
-  base::ResetAndReturn(&decode_cb_).Run(static_cast<DecodeStatus>(status));
+  base::ResetAndReturn(&decode_cb_).Run(status);
 }
 
 void MojoAudioDecoder::OnResetDone() {

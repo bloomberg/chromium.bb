@@ -51,7 +51,7 @@ class MojoVideoDecoder final : public VideoDecoder,
 
  private:
   void OnInitializeDone(bool status);
-  void OnDecodeDone(mojom::DecodeStatus status);
+  void OnDecodeDone(DecodeStatus status);
   void OnResetDone();
 
   void BindRemoteDecoder();

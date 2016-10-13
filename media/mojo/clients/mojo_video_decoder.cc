@@ -102,10 +102,10 @@ void MojoVideoDecoder::OnVideoFrameDecoded(mojom::VideoFramePtr frame) {
   output_cb_.Run(frame.To<scoped_refptr<VideoFrame>>());
 }
 
-void MojoVideoDecoder::OnDecodeDone(mojom::DecodeStatus status) {
+void MojoVideoDecoder::OnDecodeDone(DecodeStatus status) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  base::ResetAndReturn(&decode_cb_).Run(static_cast<DecodeStatus>(status));
+  base::ResetAndReturn(&decode_cb_).Run(status);
 }
 
 void MojoVideoDecoder::Reset(const base::Closure& reset_cb) {

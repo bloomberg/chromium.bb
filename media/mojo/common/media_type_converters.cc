@@ -41,17 +41,6 @@ namespace mojo {
                                                media::mojom::mojo_enum_value), \
                 "Mismatched enum: " #media_enum_value " != " #mojo_enum_value)
 
-#define ASSERT_ENUM_CLASS_EQ(media_enum, value)                            \
-  static_assert(                                                           \
-      media::media_enum::value ==                                          \
-          static_cast<media::media_enum>(media::mojom::media_enum::value), \
-      "Mismatched enum: " #media_enum #value)
-
-// DecodeStatus.
-ASSERT_ENUM_CLASS_EQ(DecodeStatus, OK);
-ASSERT_ENUM_CLASS_EQ(DecodeStatus, ABORTED);
-ASSERT_ENUM_CLASS_EQ(DecodeStatus, DECODE_ERROR);
-
 // AudioCodec.
 ASSERT_ENUM_EQ_RAW(AudioCodec, kUnknownAudioCodec, AudioCodec::UNKNOWN);
 ASSERT_ENUM_EQ(AudioCodec, kCodec, , AAC);

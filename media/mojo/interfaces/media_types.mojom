@@ -12,12 +12,8 @@ import "mojo/common/common_custom_types.mojom";
 enum BufferingState;
 
 // See media/base/decode_status.h for descriptions.
-// Kept in sync with media::DecodeStatus via static_asserts.
-enum DecodeStatus {
-  OK,
-  ABORTED,
-  DECODE_ERROR,
-};
+[Native]
+enum DecodeStatus;
 
 // See media/base/audio_decoder_config.h for descriptions.
 // Kept in sync with media::AudioCodec via static_asserts.

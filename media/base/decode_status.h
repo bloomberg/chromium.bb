@@ -16,6 +16,7 @@ enum class DecodeStatus {
   ABORTED,       // Read aborted due to Reset() during pending read.
   DECODE_ERROR,  // Decoder returned decode error. Note: Prefixed by DECODE_
                  // since ERROR is a reserved name (special macro) on Windows.
+  DECODE_STATUS_MAX = DECODE_ERROR
 };
 
 // Helper function so that DecodeStatus can be printed easily.

@@ -52,7 +52,7 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
   void OnInitialized(bool success, bool needs_bitstream_conversion);
 
   // Called when |remote_decoder_| accepted or rejected DecoderBuffer.
-  void OnDecodeStatus(mojom::DecodeStatus decode_status);
+  void OnDecodeStatus(DecodeStatus decode_status);
 
   // called when |remote_decoder_| finished Reset() sequence.
   void OnResetDone();

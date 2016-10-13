@@ -8,6 +8,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/buffering_state.h"
+#include "media/base/decode_status.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_types.h"
@@ -20,6 +21,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::AudioParameters::Format,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::BufferingState,
                           media::BufferingState::BUFFERING_STATE_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::DecodeStatus,
+                          media::DecodeStatus::DECODE_STATUS_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
 

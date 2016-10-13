@@ -83,7 +83,7 @@ void MojoAudioDecoderService::Decode(mojom::DecoderBufferPtr buffer,
   scoped_refptr<DecoderBuffer> media_buffer =
       mojo_decoder_buffer_reader_->ReadDecoderBuffer(buffer);
   if (!media_buffer) {
-    callback.Run(mojom::DecodeStatus::DECODE_ERROR);
+    callback.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -112,10 +112,14 @@ void MojoAudioDecoderService::OnInitialized(const InitializeCallback& callback,
   }
 }
 
+// These two methods are needed so that we can bind them with a weak pointer to
+// avoid running the |callback| after connection error happens and |this| is
+// deleted. It's not safe to run the |callback| after a connection error.
+
 void MojoAudioDecoderService::OnDecodeStatus(const DecodeCallback& callback,
                                              media::DecodeStatus status) {
   DVLOG(3) << __FUNCTION__ << " status:" << status;
-  callback.Run(static_cast<mojom::DecodeStatus>(status));
+  callback.Run(status);
 }
 
 void MojoAudioDecoderService::OnResetDone(const ResetCallback& callback) {
