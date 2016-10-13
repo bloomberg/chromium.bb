@@ -116,6 +116,17 @@
         });
       }
 
+      // Displays a persistent notification with a reply button.
+      function DisplayPersistentNotificationWithReplyButton() {
+        DisplayPersistentNotification('action_button_click', {
+          body: 'Contents',
+          actions: [
+            { action: 'actionId1', title: 'actionTitle1', icon: 'icon.png',
+              type: 'text' }
+          ]
+        });
+      }
+
       // Returns the latest received message from the worker. If no message has
       // been received, nothing will be done. For successfully registered
       // Service Workers this is OK, however, since the "message" event handler

@@ -31,6 +31,8 @@ class PersistentNotificationDelegate : public WebNotificationDelegate {
   void Close(bool by_user) override;
   void Click() override;
   void ButtonClick(int button_index) override;
+  void ButtonClickWithReply(int button_index,
+                            const base::string16& reply) override;
 
  protected:
   ~PersistentNotificationDelegate() override;

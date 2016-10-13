@@ -13,6 +13,10 @@
 
 class GURL;
 
+namespace base {
+class NullableString16;
+}
+
 namespace content {
 
 class BrowserContext;
@@ -36,6 +40,7 @@ class CONTENT_EXPORT NotificationEventDispatcher {
       const std::string& notification_id,
       const GURL& origin,
       int action_index,
+      const base::NullableString16& reply,
       const NotificationDispatchCompleteCallback&
           dispatch_complete_callback) = 0;
 

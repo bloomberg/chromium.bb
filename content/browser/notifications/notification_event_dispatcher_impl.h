@@ -24,6 +24,7 @@ class NotificationEventDispatcherImpl : public NotificationEventDispatcher {
       const std::string& notification_id,
       const GURL& origin,
       int action_index,
+      const base::NullableString16& reply,
       const NotificationDispatchCompleteCallback& dispatch_complete_callback)
       override;
   void DispatchNotificationCloseEvent(

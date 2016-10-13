@@ -98,7 +98,8 @@ class ServiceWorkerGlobalScopeProxy final
   void dispatchNotificationClickEvent(int,
                                       const WebString& notificationID,
                                       const WebNotificationData&,
-                                      int actionIndex) override;
+                                      int actionIndex,
+                                      const WebString& reply) override;
   void dispatchNotificationCloseEvent(int,
                                       const WebString& notificationID,
                                       const WebNotificationData&) override;

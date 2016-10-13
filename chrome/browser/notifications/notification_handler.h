@@ -8,6 +8,10 @@
 #include <memory>
 #include <string>
 
+namespace base {
+class NullableString16;
+}
+
 class NotificationDelegate;
 class Profile;
 
@@ -28,7 +32,8 @@ class NotificationHandler {
   virtual void OnClick(Profile* profile,
                        const std::string& origin,
                        const std::string& notification_id,
-                       int action_index) = 0;
+                       int action_index,
+                       const base::NullableString16& reply) = 0;
 
   // Open notification settings.
   virtual void OpenSettings(Profile* profile) = 0;

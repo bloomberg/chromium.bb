@@ -557,6 +557,25 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       DisplayPersistentNotificationWithReplyButton) {
+  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
+
+  std::string script_result;
+  ASSERT_TRUE(RunScript("DisplayPersistentNotificationWithReplyButton()",
+                        &script_result));
+  EXPECT_EQ("ok", script_result);
+  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  ASSERT_EQ(1u, notification.buttons().size());
+  EXPECT_EQ("actionTitle1", base::UTF16ToUTF8(notification.buttons()[0].title));
+
+  notification.delegate()->ButtonClickWithReply(0, base::ASCIIToUTF16("hello"));
+  ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
+  EXPECT_EQ("action_button_click actionId1 hello", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        TestShouldDisplayNormal) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
   EnableFullscreenNotifications();

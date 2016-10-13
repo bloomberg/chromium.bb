@@ -4,6 +4,8 @@
 
 #include "ui/message_center/notification_delegate.h"
 
+#include "base/logging.h"
+
 namespace message_center {
 
 // NotificationDelegate:
@@ -17,6 +19,11 @@ bool NotificationDelegate::HasClickedListener() { return false; }
 void NotificationDelegate::Click() {}
 
 void NotificationDelegate::ButtonClick(int button_index) {}
+
+void NotificationDelegate::ButtonClickWithReply(int button_index,
+                                                const base::string16& reply) {
+  NOTIMPLEMENTED();
+}
 
 void NotificationDelegate::SettingsClick() {}
 

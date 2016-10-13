@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 
+#include "base/strings/nullable_string16.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "url/gurl.h"
 
@@ -26,7 +27,8 @@ void PersistentNotificationDelegate::Close(bool by_user) {
 
 void PersistentNotificationDelegate::Click() {
   PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
-      browser_context(), id(), origin(), -1 /* action_index */);
+      browser_context(), id(), origin(), -1 /* action_index */,
+      base::NullableString16() /* reply */);
 }
 
 void PersistentNotificationDelegate::ButtonClick(int button_index) {
@@ -37,5 +39,16 @@ void PersistentNotificationDelegate::ButtonClick(int button_index) {
   }
 
   PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
-      browser_context(), id(), origin(), button_index);
+      browser_context(), id(), origin(), button_index,
+      base::NullableString16() /* reply */);
+}
+
+void PersistentNotificationDelegate::ButtonClickWithReply(
+    int button_index,
+    const base::string16& reply) {
+  DCHECK_GE(button_index, 0);
+  DCHECK_NE(button_index, notification_settings_index_);
+  PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
+      browser_context(), id(), origin(), button_index,
+      base::NullableString16(reply, false /* is_null */));
 }

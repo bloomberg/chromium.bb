@@ -28,7 +28,8 @@ class NonPersistentNotificationHandler : public NotificationHandler {
   void OnClick(Profile* profile,
                const std::string& origin,
                const std::string& notification_id,
-               int action_index) override;
+               int action_index,
+               const base::NullableString16& reply) override;
 
   void OpenSettings(Profile* profile) override;
 

@@ -29,6 +29,10 @@ class NotificationDelegate;
 class NotificationDisplayService;
 class ScopedKeepAlive;
 
+namespace base {
+class NullableString16;
+}
+
 namespace content {
 class BrowserContext;
 struct NotificationResources;
@@ -53,7 +57,8 @@ class PlatformNotificationServiceImpl
   void OnPersistentNotificationClick(content::BrowserContext* browser_context,
                                      const std::string& notification_id,
                                      const GURL& origin,
-                                     int action_index);
+                                     int action_index,
+                                     const base::NullableString16& reply);
 
   // To be called when a persistent notification has been closed. The data
   // associated with the notification has to be pruned from the database in this

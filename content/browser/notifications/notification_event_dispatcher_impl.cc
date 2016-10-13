@@ -203,6 +203,7 @@ void DispatchNotificationClickEventOnWorker(
     const scoped_refptr<ServiceWorkerVersion>& service_worker,
     const NotificationDatabaseData& notification_database_data,
     int action_index,
+    const base::NullableString16& reply,
     const ServiceWorkerVersion::StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int request_id = service_worker->StartRequest(
@@ -212,12 +213,13 @@ void DispatchNotificationClickEventOnWorker(
       request_id,
       ServiceWorkerMsg_NotificationClickEvent(
           request_id, notification_database_data.notification_id,
-          notification_database_data.notification_data, action_index));
+          notification_database_data.notification_data, action_index, reply));
 }
 
 // Dispatches the notification click event on the |service_worker_registration|.
 void DoDispatchNotificationClickEvent(
     int action_index,
+    const base::NullableString16& reply,
     const NotificationDispatchCompleteCallback& dispatch_complete_callback,
     const scoped_refptr<PlatformNotificationContext>& notification_context,
     const ServiceWorkerRegistration* service_worker_registration,
@@ -229,7 +231,7 @@ void DoDispatchNotificationClickEvent(
       base::Bind(
           &DispatchNotificationClickEventOnWorker,
           make_scoped_refptr(service_worker_registration->active_version()),
-          notification_database_data, action_index, status_callback),
+          notification_database_data, action_index, reply, status_callback),
       status_callback);
 }
 
@@ -360,10 +362,11 @@ void NotificationEventDispatcherImpl::DispatchNotificationClickEvent(
     const std::string& notification_id,
     const GURL& origin,
     int action_index,
+    const base::NullableString16& reply,
     const NotificationDispatchCompleteCallback& dispatch_complete_callback) {
   DispatchNotificationEvent(
       browser_context, notification_id, origin,
-      base::Bind(&DoDispatchNotificationClickEvent, action_index,
+      base::Bind(&DoDispatchNotificationClickEvent, action_index, reply,
                  dispatch_complete_callback),
       dispatch_complete_callback);
 }

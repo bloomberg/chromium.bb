@@ -244,7 +244,8 @@ void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(
     int eventID,
     const WebString& notificationID,
     const WebNotificationData& data,
-    int actionIndex) {
+    int actionIndex,
+    const WebString& reply) {
   WaitUntilObserver* observer = WaitUntilObserver::create(
       workerGlobalScope(), WaitUntilObserver::NotificationClick, eventID);
   NotificationEventInit eventInit;
@@ -252,6 +253,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(
       workerGlobalScope(), notificationID, data, true /* showing */));
   if (0 <= actionIndex && actionIndex < static_cast<int>(data.actions.size()))
     eventInit.setAction(data.actions[actionIndex].action);
+  eventInit.setReply(reply);
   Event* event = NotificationEvent::create(EventTypeNames::notificationclick,
                                            eventInit, observer);
   workerGlobalScope()->dispatchExtendableEvent(event, observer);

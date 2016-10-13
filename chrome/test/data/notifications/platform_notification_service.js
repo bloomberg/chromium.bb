@@ -21,7 +21,8 @@ addEventListener('notificationclick', function (event) {
 
   if (message == 'action_button_click')
     message += ' ' + event.action;
-
+  if (event.reply)
+    message += ' ' + event.reply;
   messagePort.postMessage(message);
 });
 

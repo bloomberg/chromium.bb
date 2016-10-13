@@ -25,9 +25,12 @@ void NonPersistentNotificationHandler::OnClick(
     Profile* profile,
     const std::string& origin,
     const std::string& notification_id,
-    int action_index) {
-  // Buttons not supported for non persistent notifications.
+    int action_index,
+    const base::NullableString16& reply) {
+  // Buttons and replies not supported for non persistent notifications.
   DCHECK_EQ(action_index, -1);
+  DCHECK(reply.is_null());
+
   if (notifications_.find(notification_id) != notifications_.end()) {
     notifications_[notification_id]->Click();
   }

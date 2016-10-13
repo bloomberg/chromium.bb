@@ -487,11 +487,12 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_ActivateEvent,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ExtendableMessageEvent,
                      int /* request_id */,
                      ServiceWorkerMsg_ExtendableMessageEvent_Params)
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_NotificationClickEvent,
+IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_NotificationClickEvent,
                      int /* request_id */,
                      std::string /* notification_id */,
                      content::PlatformNotificationData /* notification_data */,
-                     int /* action_index */)
+                     int /* action_index */,
+                     base::NullableString16 /* notification reply */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_NotificationCloseEvent,
                      int /* request_id */,
                      std::string /* notification_id */,

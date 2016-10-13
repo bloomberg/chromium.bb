@@ -914,12 +914,14 @@ void ServiceWorkerContextClient::OnNotificationClickEvent(
     int request_id,
     const std::string& notification_id,
     const PlatformNotificationData& notification_data,
-    int action_index) {
+    int action_index,
+    const base::NullableString16& reply) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnNotificationClickEvent");
   proxy_->dispatchNotificationClickEvent(
       request_id, blink::WebString::fromUTF8(notification_id),
-      ToWebNotificationData(notification_data), action_index);
+      ToWebNotificationData(notification_data), action_index,
+      blink::WebString(reply));
 }
 
 void ServiceWorkerContextClient::OnNotificationCloseEvent(

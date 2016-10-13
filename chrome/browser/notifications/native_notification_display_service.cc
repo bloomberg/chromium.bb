@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/native_notification_display_service.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/non_persistent_notification_handler.h"
 #include "chrome/browser/notifications/notification.h"
@@ -84,7 +85,8 @@ void NativeNotificationDisplayService::ProcessNotificationOperation(
   CHECK(handler);
   switch (operation) {
     case NotificationCommon::CLICK:
-      handler->OnClick(profile_, origin, notification_id, action_index);
+      handler->OnClick(profile_, origin, notification_id, action_index,
+                       base::NullableString16() /* reply */);
       break;
     case NotificationCommon::CLOSE:
       handler->OnClose(profile_, origin, notification_id, true /* by_user */);

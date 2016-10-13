@@ -225,7 +225,8 @@ class ServiceWorkerContextClient
       int request_id,
       const std::string& notification_id,
       const PlatformNotificationData& notification_data,
-      int action_index);
+      int action_index,
+      const base::NullableString16& reply);
   void OnPushEvent(int request_id, const PushEventPayload& payload);
   void OnNotificationCloseEvent(
       int request_id,
