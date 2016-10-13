@@ -300,7 +300,7 @@ void EventPath::adjustForRelatedTarget(Node& target,
   if (target.document() != relatedNode->document())
     return;
   retargetRelatedTarget(*relatedNode);
-  shrinkForRelatedTarget(target, *relatedNode);
+  shrinkForRelatedTarget(target);
 }
 
 void EventPath::retargetRelatedTarget(const Node& relatedTargetNode) {
@@ -315,13 +315,22 @@ void EventPath::retargetRelatedTarget(const Node& relatedTargetNode) {
   }
 }
 
-void EventPath::shrinkForRelatedTarget(const Node& target,
-                                       const Node& relatedTarget) {
-  if (!target.isInShadowTree() && !relatedTarget.isInShadowTree())
-    return;
+bool EventPath::shouldStopEventPath(EventTarget& currentTarget,
+                                    EventTarget& currentRelatedTarget,
+                                    const Node& target) {
+  if (&currentTarget != &currentRelatedTarget)
+    return false;
+  if (m_event->isTrusted())
+    return true;
+  Node* currentTargetNode = currentTarget.toNode();
+  if (!currentTargetNode)
+    return false;
+  return currentTargetNode->treeScope() != target.treeScope();
+}
+
+void EventPath::shrinkForRelatedTarget(const Node& target) {
   for (size_t i = 0; i < size(); ++i) {
-    if (at(i).target() == at(i).relatedTarget()) {
-      // Event dispatching should be stopped here.
+    if (shouldStopEventPath(*at(i).target(), *at(i).relatedTarget(), target)) {
       shrink(i);
       break;
     }
