@@ -37,6 +37,9 @@ namespace {
 
 bool shell_operations_allowed = true;
 
+void IgnoreFileTaskExecuteResult(
+    extensions::api::file_manager_private::TaskResult result) {}
+
 // Executes the |task| for the file specified by |url|.
 void ExecuteFileTaskForUrl(Profile* profile,
                            const file_tasks::TaskDescriptor& task,
@@ -50,7 +53,7 @@ void ExecuteFileTaskForUrl(Profile* profile,
       profile,
       GetFileManagerMainPageUrl(),  // Executing task on behalf of Files.app.
       task, std::vector<FileSystemURL>(1, file_system_context->CrackURL(url)),
-      file_tasks::FileTaskFinishedCallback());
+      base::Bind(&IgnoreFileTaskExecuteResult));
 }
 
 // Opens the file manager for the specified |url|. Used to implement
