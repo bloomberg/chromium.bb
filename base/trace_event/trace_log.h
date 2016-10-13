@@ -44,9 +44,14 @@ struct BASE_EXPORT TraceLogStatus {
 
 class BASE_EXPORT TraceLog : public MemoryDumpProvider {
  public:
-  enum Mode {
-    DISABLED = 0,
-    RECORDING_MODE
+  // Argument passed to TraceLog::SetEnabled.
+  enum Mode : uint8_t {
+    // Enables normal tracing (recording trace events in the trace buffer).
+    RECORDING_MODE = 1 << 0,
+
+    // Trace events are enabled just for filtering but not for recording. Only
+    // event filters config of |trace_config| argument is used.
+    FILTERING_MODE = 1 << 1
   };
 
   // The pointer returned from GetCategoryGroupEnabledInternal() points to a
@@ -77,16 +82,30 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // if the current thread supports that (has a message loop).
   void InitializeThreadLocalEventBufferIfSupported();
 
-  // Enables normal tracing (recording trace events in the trace buffer).
-  // See TraceConfig comments for details on how to control what categories
-  // will be traced. If tracing has already been enabled, |category_filter| will
-  // be merged into the current category filter.
-  void SetEnabled(const TraceConfig& trace_config, Mode mode);
+  // See TraceConfig comments for details on how to control which categories
+  // will be traced. SetDisabled must be called distinctly for each mode that is
+  // enabled. If tracing has already been enabled for recording, category filter
+  // (enabled and disabled categories) will be merged into the current category
+  // filter. Enabling RECORDING_MODE does not enable filters. Trace event
+  // filters will be used only if FILTERING_MODE is set on |modes_to_enable|.
+  // Conversely to RECORDING_MODE, FILTERING_MODE doesn't support upgrading,
+  // i.e. filters can only be enabled if not previously enabled.
+  void SetEnabled(const TraceConfig& trace_config, uint8_t modes_to_enable);
 
-  // Disables normal tracing for all categories.
+  // TODO(ssid): Remove the default SetEnabled and IsEnabled. They should take
+  // Mode as argument.
+
+  // Disables tracing for all categories for the specified |modes_to_disable|
+  // only. Only RECORDING_MODE is taken as default |modes_to_disable|.
   void SetDisabled();
+  void SetDisabled(uint8_t modes_to_disable);
 
-  bool IsEnabled() { return mode_ != DISABLED; }
+  // Returns true if TraceLog is enabled on recording mode.
+  // Note: Returns false even if FILTERING_MODE is enabled.
+  bool IsEnabled() { return enabled_modes_ & RECORDING_MODE; }
+
+  // Returns a bitmap of enabled modes from TraceLog::Mode.
+  uint8_t enabled_modes() { return enabled_modes_; }
 
   // The number of times we have begun recording traces. If tracing is off,
   // returns -1. If tracing is on, then it returns the number of times we have
@@ -433,7 +452,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   TraceEvent* AddEventToThreadSharedChunkWhileLocked(TraceEventHandle* handle,
                                                      bool check_buffer_is_full);
   void CheckIfBufferIsFullWhileLocked();
-  void SetDisabledWhileLocked();
+  void SetDisabledWhileLocked(uint8_t modes);
 
   TraceEvent* GetEventByHandleInternal(TraceEventHandle handle,
                                        OptionalAutoLock* lock);
@@ -481,7 +500,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // This lock protects accesses to thread_names_, thread_event_start_times_
   // and thread_colors_.
   Lock thread_info_lock_;
-  Mode mode_;
+  uint8_t enabled_modes_;  // See TraceLog::Mode.
   int num_traces_recorded_;
   std::unique_ptr<TraceBuffer> logged_events_;
   std::vector<std::unique_ptr<TraceEvent>> metadata_events_;
@@ -519,6 +538,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
 
   TraceConfig trace_config_;
   TraceConfig event_callback_trace_config_;
+  TraceConfig::EventFilters enabled_event_filters_;
 
   ThreadLocalPointer<ThreadLocalEventBuffer> thread_local_event_buffer_;
   ThreadLocalBoolean thread_blocks_message_loop_;

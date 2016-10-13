@@ -137,7 +137,8 @@ class TraceEventTestFixture : public testing::Test {
   }
 
   void EndTraceAndFlushAsync(WaitableEvent* flush_complete_event) {
-    TraceLog::GetInstance()->SetDisabled();
+    TraceLog::GetInstance()->SetDisabled(TraceLog::RECORDING_MODE |
+                                         TraceLog::FILTERING_MODE);
     TraceLog::GetInstance()->Flush(
         base::Bind(&TraceEventTestFixture::OnTraceDataCollected,
                    base::Unretained(static_cast<TraceEventTestFixture*>(this)),
@@ -3245,11 +3246,15 @@ class TestEventFilter : public TraceLog::TraceEventFilter {
  public:
   bool FilterTraceEvent(const TraceEvent& trace_event) const override {
     filter_trace_event_hit_count_++;
-    return true;
+    return filter_return_value_;
   }
 
   void EndEvent(const char* category_group, const char* name) override {
     end_event_hit_count_++;
+  }
+
+  static void set_filter_return_value(bool value) {
+    filter_return_value_ = value;
   }
 
   static size_t filter_trace_event_hit_count() {
@@ -3257,16 +3262,124 @@ class TestEventFilter : public TraceLog::TraceEventFilter {
   }
   static size_t end_event_hit_count() { return end_event_hit_count_; }
 
+  static void clear_counts() {
+    filter_trace_event_hit_count_ = 0;
+    end_event_hit_count_ = 0;
+  }
+
  private:
   static size_t filter_trace_event_hit_count_;
   static size_t end_event_hit_count_;
+  static bool filter_return_value_;
 };
 
 size_t TestEventFilter::filter_trace_event_hit_count_ = 0;
 size_t TestEventFilter::end_event_hit_count_ = 0;
+bool TestEventFilter::filter_return_value_ = false;
 
 std::unique_ptr<TraceLog::TraceEventFilter> ConstructTestEventFilter() {
   return WrapUnique(new TestEventFilter);
+}
+
+TEST_F(TraceEventTestFixture, TraceFilteringMode) {
+  const char config_json[] =
+      "{"
+      "  \"event_filters\": ["
+      "     {"
+      "       \"filter_predicate\": \"testing_predicate\", "
+      "       \"included_categories\": [\"*\"]"
+      "     }"
+      "  ]"
+      "}";
+
+  // Run RECORDING_MODE within FILTERING_MODE:
+  TestEventFilter::set_filter_return_value(true);
+  TraceLog::SetTraceEventFilterConstructorForTesting(ConstructTestEventFilter);
+
+  // Only filtering mode is enabled with test filters.
+  TraceLog::GetInstance()->SetEnabled(TraceConfig(config_json),
+                                      TraceLog::FILTERING_MODE);
+  EXPECT_EQ(TraceLog::FILTERING_MODE, TraceLog::GetInstance()->enabled_modes());
+  {
+    void* ptr = this;
+    TRACE_EVENT0("c0", "name0");
+    TRACE_EVENT_ASYNC_BEGIN0("c1", "name1", ptr);
+    TRACE_EVENT_INSTANT0("c0", "name0", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_ASYNC_END0("c1", "name1", ptr);
+  }
+
+  // Recording mode is enabled when filtering mode is turned on.
+  TraceLog::GetInstance()->SetEnabled(TraceConfig("", ""),
+                                      TraceLog::RECORDING_MODE);
+  EXPECT_EQ(TraceLog::RECORDING_MODE | TraceLog::FILTERING_MODE,
+            TraceLog::GetInstance()->enabled_modes());
+  {
+    TRACE_EVENT0("c2", "name2");
+  }
+  // Only recording mode is disabled and filtering mode will continue to run.
+  TraceLog::GetInstance()->SetDisabled(TraceLog::RECORDING_MODE);
+  EXPECT_EQ(TraceLog::FILTERING_MODE, TraceLog::GetInstance()->enabled_modes());
+
+  {
+    TRACE_EVENT0("c0", "name0");
+  }
+  // Filtering mode is disabled and no tracing mode should be enabled.
+  TraceLog::GetInstance()->SetDisabled(TraceLog::FILTERING_MODE);
+  EXPECT_EQ(0, TraceLog::GetInstance()->enabled_modes());
+
+  EndTraceAndFlush();
+  EXPECT_FALSE(FindMatchingValue("cat", "c0"));
+  EXPECT_FALSE(FindMatchingValue("cat", "c1"));
+  EXPECT_FALSE(FindMatchingValue("name", "name0"));
+  EXPECT_FALSE(FindMatchingValue("name", "name1"));
+  EXPECT_TRUE(FindMatchingValue("cat", "c2"));
+  EXPECT_TRUE(FindMatchingValue("name", "name2"));
+  EXPECT_EQ(6u, TestEventFilter::filter_trace_event_hit_count());
+  EXPECT_EQ(3u, TestEventFilter::end_event_hit_count());
+  Clear();
+  TestEventFilter::clear_counts();
+
+  // Run FILTERING_MODE within RECORDING_MODE:
+  // Only recording mode is enabled and all events must be recorded.
+  TraceLog::GetInstance()->SetEnabled(TraceConfig("", ""),
+                                      TraceLog::RECORDING_MODE);
+  EXPECT_EQ(TraceLog::RECORDING_MODE, TraceLog::GetInstance()->enabled_modes());
+  {
+    TRACE_EVENT0("c0", "name0");
+  }
+
+  // Filtering mode is also enabled and all events must be filtered-out.
+  TestEventFilter::set_filter_return_value(false);
+  TraceLog::GetInstance()->SetEnabled(TraceConfig(config_json),
+                                      TraceLog::FILTERING_MODE);
+  EXPECT_EQ(TraceLog::RECORDING_MODE | TraceLog::FILTERING_MODE,
+            TraceLog::GetInstance()->enabled_modes());
+  {
+    TRACE_EVENT0("c1", "name1");
+  }
+  // Only filtering mode is disabled and recording mode should continue to run
+  // with all events being recorded.
+  TraceLog::GetInstance()->SetDisabled(TraceLog::FILTERING_MODE);
+  EXPECT_EQ(TraceLog::RECORDING_MODE, TraceLog::GetInstance()->enabled_modes());
+
+  {
+    TRACE_EVENT0("c2", "name2");
+  }
+  // Recording mode is disabled and no tracing mode should be enabled.
+  TraceLog::GetInstance()->SetDisabled(TraceLog::RECORDING_MODE);
+  EXPECT_EQ(0, TraceLog::GetInstance()->enabled_modes());
+
+  EndTraceAndFlush();
+  EXPECT_TRUE(FindMatchingValue("cat", "c0"));
+  EXPECT_TRUE(FindMatchingValue("cat", "c2"));
+  EXPECT_TRUE(FindMatchingValue("name", "name0"));
+  EXPECT_TRUE(FindMatchingValue("name", "name2"));
+  EXPECT_FALSE(FindMatchingValue("cat", "c1"));
+  EXPECT_FALSE(FindMatchingValue("name", "name1"));
+  EXPECT_EQ(1u, TestEventFilter::filter_trace_event_hit_count());
+  EXPECT_EQ(1u, TestEventFilter::end_event_hit_count());
+  Clear();
+  TestEventFilter::clear_counts();
 }
 
 TEST_F(TraceEventTestFixture, EventFiltering) {
@@ -3284,9 +3397,11 @@ TEST_F(TraceEventTestFixture, EventFiltering) {
       "  ]"
       "}";
 
+  TestEventFilter::set_filter_return_value(true);
   TraceLog::SetTraceEventFilterConstructorForTesting(ConstructTestEventFilter);
   TraceConfig trace_config(config_json);
-  TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
+  TraceLog::GetInstance()->SetEnabled(
+      trace_config, TraceLog::RECORDING_MODE | TraceLog::FILTERING_MODE);
   ASSERT_TRUE(TraceLog::GetInstance()->IsEnabled());
 
   TRACE_EVENT0("filtered_cat", "a snake");
@@ -3300,6 +3415,7 @@ TEST_F(TraceEventTestFixture, EventFiltering) {
 
   EXPECT_EQ(3u, TestEventFilter::filter_trace_event_hit_count());
   EXPECT_EQ(1u, TestEventFilter::end_event_hit_count());
+  TestEventFilter::clear_counts();
 }
 
 TEST_F(TraceEventTestFixture, EventWhitelistFiltering) {
@@ -3323,7 +3439,8 @@ TEST_F(TraceEventTestFixture, EventWhitelistFiltering) {
       TraceLog::TraceEventFilter::kEventWhitelistPredicate);
 
   TraceConfig trace_config(config_json);
-  TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
+  TraceLog::GetInstance()->SetEnabled(
+      trace_config, TraceLog::RECORDING_MODE | TraceLog::FILTERING_MODE);
   EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
 
   TRACE_EVENT0("filtered_cat", "a snake");
@@ -3354,7 +3471,8 @@ TEST_F(TraceEventTestFixture, HeapProfilerFiltering) {
       TraceLog::TraceEventFilter::kHeapProfilerPredicate);
 
   TraceConfig trace_config(config_json);
-  TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
+  TraceLog::GetInstance()->SetEnabled(
+      trace_config, TraceLog::RECORDING_MODE | TraceLog::FILTERING_MODE);
   EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
 
   TRACE_EVENT0("filtered_cat", "a snake");
