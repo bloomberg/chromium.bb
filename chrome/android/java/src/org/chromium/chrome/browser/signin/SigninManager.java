@@ -235,9 +235,9 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * Returns true if signin can be started now.
      */
     public boolean isSignInAllowed() {
-        return mSigninAllowedByPolicy && !mFirstRunCheckIsPending && mSignInState == null
+        return !mFirstRunCheckIsPending && mSignInState == null && mSigninAllowedByPolicy
                 && ChromeSigninController.get(mContext).getSignedInUser() == null
-                && !ApiCompatibilityUtils.isDemoUser(mContext);
+                && isSigninSupported();
     }
 
     /**
@@ -245,6 +245,15 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      */
     public boolean isSigninDisabledByPolicy() {
         return !mSigninAllowedByPolicy;
+    }
+
+    /**
+     * @return Whether true if the current user is not demo user and the user has a reasonable
+     *         Google Play Services installed.
+     */
+    public boolean isSigninSupported() {
+        return !ApiCompatibilityUtils.isDemoUser(mContext)
+                && !ExternalAuthUtils.getInstance().isGooglePlayServicesMissing(mContext);
     }
 
     /**

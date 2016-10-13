@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.chrome.R;
@@ -55,8 +54,6 @@ public class MainPreferences extends PreferenceFragment
     private SignInPreference mSignInPreference;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
-    private boolean mIsDemoUser;
-
     public MainPreferences() {
         setHasOptionsMenu(true);
         mManagedPreferenceDelegate = createManagedPreferenceDelegate();
@@ -65,8 +62,6 @@ public class MainPreferences extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mIsDemoUser = ApiCompatibilityUtils.isDemoUser(getActivity());
     }
 
     @Override
@@ -76,17 +71,16 @@ public class MainPreferences extends PreferenceFragment
         // the SignInPreference.
         updatePreferences();
 
-        if (!mIsDemoUser) {
+        if (SigninManager.get(getActivity()).isSigninSupported()) {
             SigninManager.get(getActivity()).addSignInStateObserver(this);
             setupSignInPref();
         }
-
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (!mIsDemoUser) {
+        if (SigninManager.get(getActivity()).isSigninSupported()) {
             SigninManager.get(getActivity()).removeSignInStateObserver(this);
             clearSignInPref();
         }
@@ -169,7 +163,7 @@ public class MainPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(dataReduction);
         }
 
-        if (mIsDemoUser) {
+        if (!SigninManager.get(getActivity()).isSigninSupported()) {
             getPreferenceScreen().removePreference(findPreference(PREF_SIGN_IN));
         }
     }

@@ -166,6 +166,21 @@ public class ExternalAuthUtils {
     }
 
     /**
+     * @return Whether the current device lacks proper Google Play Services. This will return true
+     *         if the service is not authentic or it is totally missing. Return false otherwise.
+     *         Note this method returns false if the service is only temporarily disabled, such as
+     *         when it is updating.
+     */
+    public boolean isGooglePlayServicesMissing(final Context context) {
+        final int resultCode = checkGooglePlayServicesAvailable(context);
+        if (resultCode == ConnectionResult.SERVICE_MISSING
+                || resultCode == ConnectionResult.SERVICE_INVALID) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Checks whether Google Play Services can be used, applying the specified error-handling
      * policy if a user-recoverable error occurs. This method is threadsafe. If the specified
      * error-handling policy requires UI interaction, it will be run on the UI thread.

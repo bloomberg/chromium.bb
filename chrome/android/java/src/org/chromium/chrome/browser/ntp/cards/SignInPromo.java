@@ -47,7 +47,8 @@ public class SignInPromo implements ItemGroup, StatusCardViewHolder.DataSource {
     public SignInPromo() {
         mDismissed = ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
                              .getNewTabPageSigninPromoDismissed();
-        mVisible = !SigninManager.get(ContextUtils.getApplicationContext()).isSignedInOnNative();
+        SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
+        mVisible = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
     }
 
     @Override
