@@ -84,19 +84,23 @@ base::scoped_nsobject<NSView> CreateMenuAnchorView(
 // static
 MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
     ui::MenuModel* menu_model,
-    int32_t run_types) {
+    int32_t run_types,
+    const base::Closure& on_menu_closed_callback) {
   if ((run_types & kNativeRunTypes) != 0 &&
       (run_types & MenuRunner::IS_NESTED) == 0) {
-    return new MenuRunnerImplCocoa(menu_model);
+    return new MenuRunnerImplCocoa(menu_model, on_menu_closed_callback);
   }
 
-  return new MenuRunnerImplAdapter(menu_model);
+  return new MenuRunnerImplAdapter(menu_model, on_menu_closed_callback);
 }
 
-MenuRunnerImplCocoa::MenuRunnerImplCocoa(ui::MenuModel* menu)
+MenuRunnerImplCocoa::MenuRunnerImplCocoa(
+    ui::MenuModel* menu,
+    const base::Closure& on_menu_closed_callback)
     : running_(false),
       delete_after_run_(false),
-      closing_event_time_(base::TimeTicks()) {
+      closing_event_time_(base::TimeTicks()),
+      on_menu_closed_callback_(on_menu_closed_callback) {
   menu_controller_.reset(
       [[MenuController alloc] initWithModel:menu useWithPopUpButtonCell:NO]);
 }
@@ -153,6 +157,11 @@ MenuRunner::RunResult MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
     delete this;
     return MenuRunner::MENU_DELETED;
   }
+
+  // Don't invoke the callback if Release() was called, since that usually means
+  // the owning instance is being destroyed.
+  if (!on_menu_closed_callback_.is_null())
+    on_menu_closed_callback_.Run();
 
   return MenuRunner::NORMAL_EXIT;
 }

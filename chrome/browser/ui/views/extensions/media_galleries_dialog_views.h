@@ -18,7 +18,6 @@
 namespace views {
 class Checkbox;
 class LabelButton;
-class MenuModelAdapter;
 class MenuRunner;
 class Widget;
 }
@@ -88,7 +87,7 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   // In unit tests, it may not.
   bool ControllerHasWebContents() const;
 
-  // Callback for MenuModelAdapter.
+  // Callback for MenuRunner.
   void OnMenuClosed();
 
   MediaGalleriesDialogController* controller_;
@@ -111,7 +110,6 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   // True if the user has pressed accept.
   bool accepted_;
 
-  std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogViews);

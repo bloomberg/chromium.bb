@@ -31,7 +31,6 @@ class MenuModel;
 }
 
 namespace views {
-class MenuModelAdapter;
 class MenuRunner;
 class View;
 }
@@ -143,7 +142,6 @@ class BrowserFrame
 
   // Used to show the system menu. Only used if
   // NativeBrowserFrame::UsesNativeSystemMenu() returns false.
-  std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
   std::unique_ptr<ui::EventHandler> browser_command_handler_;

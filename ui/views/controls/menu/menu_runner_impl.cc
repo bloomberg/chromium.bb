@@ -23,8 +23,9 @@ namespace internal {
 #if !defined(OS_MACOSX)
 MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
     ui::MenuModel* menu_model,
-    int32_t run_types) {
-  return new MenuRunnerImplAdapter(menu_model);
+    int32_t run_types,
+    const base::Closure& on_menu_closed_callback) {
+  return new MenuRunnerImplAdapter(menu_model, on_menu_closed_callback);
 }
 #endif
 

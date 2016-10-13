@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/base/ui_base_types.h"
@@ -105,9 +106,14 @@ class VIEWS_EXPORT MenuRunner {
     NORMAL_EXIT
   };
 
-  // Creates a new MenuRunner.
-  // |run_types| is a bitmask of RunTypes.
-  MenuRunner(ui::MenuModel* menu_model, int32_t run_types);
+  // Creates a new MenuRunner, which may use a native menu if available.
+  // |run_types| is a bitmask of RunTypes. If provided,
+  // |on_menu_closed_callback| is invoked when the menu is closed.
+  MenuRunner(ui::MenuModel* menu_model,
+             int32_t run_types,
+             const base::Closure& on_menu_closed_callback = base::Closure());
+
+  // Creates a runner for a custom-created toolkit-views menu.
   MenuRunner(MenuItemView* menu, int32_t run_types);
   ~MenuRunner();
 

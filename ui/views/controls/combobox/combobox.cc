@@ -37,7 +37,6 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/menu/menu_config.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/prefix_selector.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -923,12 +922,10 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   // Allow |menu_runner_| to be set by the testing API, but if this method is
   // ever invoked recursively, ensure the old menu is closed.
   if (!menu_runner_ || menu_runner_->IsRunning()) {
-    menu_model_adapter_.reset(new MenuModelAdapter(
-        menu_model_.get(), base::Bind(&Combobox::OnMenuClosed,
-                                      base::Unretained(this), original_state)));
-    menu_runner_.reset(
-        new MenuRunner(menu_model_adapter_->CreateMenu(),
-                       MenuRunner::COMBOBOX | MenuRunner::ASYNC));
+    menu_runner_.reset(new MenuRunner(
+        menu_model_.get(), MenuRunner::COMBOBOX | MenuRunner::ASYNC,
+        base::Bind(&Combobox::OnMenuClosed, base::Unretained(this),
+                   original_state)));
   }
   menu_runner_->RunMenuAt(GetWidget(), nullptr, bounds, anchor_position,
                           source_type);
@@ -936,7 +933,6 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
 
 void Combobox::OnMenuClosed(Button::ButtonState original_button_state) {
   menu_runner_.reset();
-  menu_model_adapter_.reset();
   if (arrow_button_)
     arrow_button_->SetState(original_button_state);
   closed_time_ = base::Time::Now();

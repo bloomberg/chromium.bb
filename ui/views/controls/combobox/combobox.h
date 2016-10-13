@@ -28,7 +28,6 @@ class ComboboxTestApi;
 
 class ComboboxListener;
 class CustomButton;
-class MenuModelAdapter;
 class MenuRunner;
 class Painter;
 class PrefixSelector;
@@ -211,7 +210,6 @@ class VIEWS_EXPORT Combobox : public View,
 
   // Set while the dropdown is showing. Ensures the menu is closed if |this| is
   // destroyed.
-  std::unique_ptr<MenuModelAdapter> menu_model_adapter_;
   std::unique_ptr<MenuRunner> menu_runner_;
 
   // The image to be drawn for this combobox's arrow.

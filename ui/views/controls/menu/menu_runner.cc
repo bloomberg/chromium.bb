@@ -11,9 +11,14 @@
 
 namespace views {
 
-MenuRunner::MenuRunner(ui::MenuModel* menu_model, int32_t run_types)
+MenuRunner::MenuRunner(ui::MenuModel* menu_model,
+                       int32_t run_types,
+                       const base::Closure& on_menu_closed_callback)
     : run_types_(run_types),
-      impl_(internal::MenuRunnerImplInterface::Create(menu_model, run_types)) {}
+      impl_(
+          internal::MenuRunnerImplInterface::Create(menu_model,
+                                                    run_types,
+                                                    on_menu_closed_callback)) {}
 
 MenuRunner::MenuRunner(MenuItemView* menu_view, int32_t run_types)
     : run_types_(run_types), impl_(new internal::MenuRunnerImpl(menu_view)) {}

@@ -28,7 +28,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/font_list.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/native_widget.h"
 
@@ -260,13 +259,11 @@ void BrowserFrame::ShowContextMenuForView(views::View* source,
   views::View::ConvertPointFromScreen(non_client_view(), &point_in_view_coords);
   int hit_test = non_client_view()->NonClientHitTest(point_in_view_coords);
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
-    menu_model_adapter_.reset(new views::MenuModelAdapter(
-        GetSystemMenuModel(),
-        base::Bind(&BrowserFrame::OnMenuClosed, base::Unretained(this))));
     menu_runner_.reset(new views::MenuRunner(
-        menu_model_adapter_->CreateMenu(), views::MenuRunner::HAS_MNEMONICS |
-                                               views::MenuRunner::CONTEXT_MENU |
-                                               views::MenuRunner::ASYNC));
+        GetSystemMenuModel(),
+        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU |
+            views::MenuRunner::ASYNC,
+        base::Bind(&BrowserFrame::OnMenuClosed, base::Unretained(this))));
     menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
                             gfx::Rect(p, gfx::Size(0, 0)),
                             views::MENU_ANCHOR_TOPLEFT, source_type);
@@ -298,6 +295,5 @@ views::View* BrowserFrame::GetNewAvatarMenuButton() {
 }
 
 void BrowserFrame::OnMenuClosed() {
-  menu_model_adapter_.reset();
   menu_runner_.reset();
 }
