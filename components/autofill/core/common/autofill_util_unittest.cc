@@ -99,4 +99,33 @@ TEST(AutofillUtilTest, GetTextSelectionStart) {
   }
 }
 
+// Tests for LowercaseAndTokenizeAttributeString
+TEST(AutofillUtilTest, LowercaseAndTokenizeAttributeString) {
+  const struct {
+    const char* const attribute;
+    std::vector<std::string> tokens;
+  } kTestCases[] = {
+      // Test leading and trailing whitespace, test tabs and newlines
+      {"foo bar baz", {"foo", "bar", "baz"}},
+      {" foo bar baz ", {"foo", "bar", "baz"}},
+      {"foo\tbar baz ", {"foo", "bar", "baz"}},
+      {"foo\nbar baz ", {"foo", "bar", "baz"}},
+
+      // Test different forms of capitalization
+      {"FOO BAR BAZ", {"foo", "bar", "baz"}},
+      {"foO baR bAz", {"foo", "bar", "baz"}},
+
+      // Test collapsing of multiple whitespace characters in a row
+      {"  \t\t\n\n   ", std::vector<std::string>()},
+      {"foO    baR bAz", {"foo", "bar", "baz"}},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    SCOPED_TRACE(testing::Message() << "attribute = "
+                                    << kTestCases[i].attribute);
+
+    EXPECT_EQ(kTestCases[i].tokens,
+              LowercaseAndTokenizeAttributeString(kTestCases[i].attribute));
+  }
+}
 }  // namespace autofill

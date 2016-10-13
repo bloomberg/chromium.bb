@@ -7,6 +7,9 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <vector>
+
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/form_field_data.h"
 
@@ -50,6 +53,12 @@ bool IsChecked(const FormFieldData::CheckStatus& check_status);
 void SetCheckStatus(FormFieldData* form_field_data,
                     bool isCheckable,
                     bool isChecked);
+
+// Lowercases and tokenizes a given |attribute| string.
+// Considers any ASCII whitespace character as a possible separator.
+// Also ignores empty tokens, resulting in a collapsing of whitespace.
+std::vector<std::string> LowercaseAndTokenizeAttributeString(
+    const std::string& attribute);
 
 }  // namespace autofill
 

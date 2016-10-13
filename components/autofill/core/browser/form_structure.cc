@@ -897,17 +897,14 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
     // section names.
     field->set_section(kDefaultSection);
 
-    // Canonicalize the attribute value by trimming whitespace, collapsing
-    // non-space characters (e.g. tab) to spaces, and converting to lowercase.
-    std::string autocomplete_attribute =
-        base::CollapseWhitespaceASCII(field->autocomplete_attribute, false);
-    autocomplete_attribute = base::ToLowerASCII(autocomplete_attribute);
+    std::vector<std::string> tokens =
+        LowercaseAndTokenizeAttributeString(field->autocomplete_attribute);
 
     // The autocomplete attribute is overloaded: it can specify either a field
     // type hint or whether autocomplete should be enabled at all.  Ignore the
     // latter type of attribute value.
-    if (autocomplete_attribute.empty() || autocomplete_attribute == "on" ||
-        autocomplete_attribute == "off") {
+    if (tokens.empty() ||
+        (tokens.size() == 1 && (tokens[0] == "on" || tokens[0] == "off"))) {
       continue;
     }
 
@@ -917,15 +914,11 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
     // the form.
     has_author_specified_types_ = true;
 
-    // Tokenize the attribute value.  Per the spec, the tokens are parsed in
-    // reverse order.
-    std::vector<std::string> tokens =
-        base::SplitString(autocomplete_attribute, " ", base::KEEP_WHITESPACE,
-                          base::SPLIT_WANT_NONEMPTY);
-
     // The final token must be the field type.
     // If it is not one of the known types, abort.
     DCHECK(!tokens.empty());
+
+    // Per the spec, the tokens are parsed in reverse order.
     std::string field_type_token = tokens.back();
     tokens.pop_back();
     HtmlFieldType field_type =

@@ -13,9 +13,12 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -702,9 +705,11 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
 
 bool HasAutocompleteAttributeValue(const blink::WebInputElement& element,
                                    const char* value_in_lowercase) {
-  return base::LowerCaseEqualsASCII(
-      base::StringPiece16(element.getAttribute("autocomplete")),
-      value_in_lowercase);
+  base::string16 autocomplete_attribute(element.getAttribute("autocomplete"));
+  std::vector<std::string> tokens = LowercaseAndTokenizeAttributeString(
+      base::UTF16ToUTF8(autocomplete_attribute));
+
+  return base::ContainsValue(tokens, value_in_lowercase);
 }
 
 }  // namespace autofill

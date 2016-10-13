@@ -5,7 +5,6 @@
 #include "components/autofill/core/common/autofill_util.h"
 
 #include <algorithm>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
@@ -130,6 +129,13 @@ void SetCheckStatus(FormFieldData* form_field_data,
       form_field_data->check_status = FormFieldData::CheckStatus::NOT_CHECKABLE;
     }
   }
+}
+
+std::vector<std::string> LowercaseAndTokenizeAttributeString(
+    const std::string& attribute) {
+  return base::SplitString(base::ToLowerASCII(attribute),
+                           base::kWhitespaceASCII, base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_NONEMPTY);
 }
 
 }  // namespace autofill
