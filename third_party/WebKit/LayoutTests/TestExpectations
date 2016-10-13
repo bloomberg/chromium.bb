@@ -1276,3 +1276,5 @@ crbug.com/655458 imported/wpt/workers/semantics/xhr/004.html [ Timeout ]
 
 crbug.com/655458 imported/wpt/workers/semantics/structured-clone/dedicated.html [ Crash Timeout ]
 crbug.com/655458 imported/wpt/workers/semantics/structured-clone/shared.html [ Crash Timeout ]
+
+crbug.com/652187 [ Win7 Debug ] http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
