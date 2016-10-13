@@ -858,7 +858,9 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testGetLogOnClosedWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    old_handles = self._driver.GetWindowHandles()
     self._driver.FindElement('id', 'link').Click()
+    self.WaitForNewWindow(self._driver, old_handles)
     self._driver.CloseWindow()
     try:
       self._driver.GetLog('browser')
