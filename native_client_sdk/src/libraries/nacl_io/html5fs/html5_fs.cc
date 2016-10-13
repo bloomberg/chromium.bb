@@ -14,6 +14,7 @@
 #include <ppapi/c/pp_completion_callback.h>
 #include <ppapi/c/pp_errors.h>
 
+#include "nacl_io/hash.h"
 #include "nacl_io/html5fs/html5_fs_node.h"
 #include "sdk_util/auto_lock.h"
 
@@ -29,29 +30,6 @@ int64_t strtoull(const char* nptr, char** endptr, int base) {
 
 }  // namespace
 
-// Continuing DJB2a hash
-ino_t Html5Fs::HashPathSegment(ino_t hash, const char *str, size_t len) {
-  // First add the path seperator
-  hash = (hash * static_cast<ino_t>(33)) ^ '/';
-  while (len--) {
-    hash = (hash * static_cast<ino_t>(33)) ^ *str++;
-  }
-  return hash;
-}
-
-ino_t Html5Fs::HashPath(const Path& path) {
-  // Prime the DJB2a hash
-  ino_t hash = 5381;
-
-  // Apply a running DJB2a to each part of the path
-  for (size_t segment = 0; segment < path.Size(); segment++) {
-    const std::string& part = path.Part(segment);
-    hash = HashPathSegment(hash, part.c_str(), part.length());
-  }
-  return hash;
-}
-
-
 // For HTML5, the INO should be the one used by the system, however PPAPI
 // does not provide access to the real INO.  Instead, since HTML5 does not
 // suport links, we assume that files are unique based on path to the base
@@ -62,8 +40,9 @@ void Html5Fs::OnNodeCreated(Node* node) {
 
 void Html5Fs::OnNodeDestroyed(Node* node) {}
 
-
-Error Html5Fs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
+Error Html5Fs::OpenWithMode(const Path& path,
+                            int open_flags,
+                            mode_t mode,
                             ScopedNode* out_node) {
   out_node->reset(NULL);
   Error error = BlockUntilFilesystemOpen();
@@ -114,9 +93,8 @@ Error Html5Fs::Mkdir(const Path& path, int permissions) {
     return EEXIST;
 
   ScopedResource fileref_resource(
-      ppapi(),
-      file_ref_iface_->Create(filesystem_resource_,
-                              GetFullPath(path).Join().c_str()));
+      ppapi(), file_ref_iface_->Create(filesystem_resource_,
+                                       GetFullPath(path).Join().c_str()));
   if (!fileref_resource.pp_resource())
     return ENOENT;
 
@@ -142,9 +120,8 @@ Error Html5Fs::RemoveInternal(const Path& path, int remove_type) {
     return error;
 
   ScopedResource fileref_resource(
-      ppapi(),
-      file_ref_iface_->Create(filesystem_resource_,
-                              GetFullPath(path).Join().c_str()));
+      ppapi(), file_ref_iface_->Create(filesystem_resource_,
+                                       GetFullPath(path).Join().c_str()));
   if (!fileref_resource.pp_resource())
     return ENOENT;
 
@@ -217,8 +194,7 @@ Html5Fs::Html5Fs()
       file_io_iface_(NULL),
       filesystem_resource_(0),
       filesystem_open_has_result_(false),
-      filesystem_open_error_(0) {
-}
+      filesystem_open_error_(0) {}
 
 Error Html5Fs::Init(const FsInitArgs& args) {
   pthread_cond_init(&filesystem_open_cond_, NULL);
@@ -239,8 +215,7 @@ Error Html5Fs::Init(const FsInitArgs& args) {
 
   if (!(core_iface_ && filesystem_iface_ && file_io_iface_ &&
         file_ref_iface_)) {
-    LOG_ERROR("Got NULL interface(s): %s%s%s%s",
-              core_iface_ ? "" : "Core ",
+    LOG_ERROR("Got NULL interface(s): %s%s%s%s", core_iface_ ? "" : "Core ",
               filesystem_iface_ ? "" : "FileSystem ",
               file_ref_iface_ ? "" : "FileRef",
               file_io_iface_ ? "" : "FileIo ");
@@ -251,8 +226,7 @@ Error Html5Fs::Init(const FsInitArgs& args) {
   PP_FileSystemType filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
   int64_t expected_size = 0;
   for (StringMap_t::const_iterator iter = args.string_map.begin();
-       iter != args.string_map.end();
-       ++iter) {
+       iter != args.string_map.end(); ++iter) {
     if (iter->first == "type") {
       if (iter->second == "PERSISTENT") {
         filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;

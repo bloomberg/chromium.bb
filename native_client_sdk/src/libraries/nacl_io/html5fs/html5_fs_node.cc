@@ -16,6 +16,7 @@
 
 #include "nacl_io/filesystem.h"
 #include "nacl_io/getdents_helper.h"
+#include "nacl_io/hash.h"
 #include "nacl_io/html5fs/html5_fs.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/osdirent.h"
@@ -129,8 +130,8 @@ Error Html5FsNode::GetDents(size_t offs,
       // The INO is based on the running hash of fully qualified path, so
       // a childs INO must be the parent directories hash, plus '/', plus
       // the filename.
-      ino_t child_ino = Html5Fs::HashPathSegment(stat_.st_ino, file_name,
-                                                 file_name_length);
+      ino_t child_ino =
+          HashPathSegment(stat_.st_ino, file_name, file_name_length);
 
       helper.AddDirent(child_ino, file_name, file_name_length);
     }
@@ -185,11 +186,9 @@ Error Html5FsNode::Read(const HandleAttr& attr,
   if (IsaDir())
     return EISDIR;
 
-  int32_t result = file_io_iface_->Read(fileio_resource_,
-                                        attr.offs,
-                                        static_cast<char*>(buf),
-                                        static_cast<int32_t>(count),
-                                        PP_BlockUntilComplete());
+  int32_t result = file_io_iface_->Read(
+      fileio_resource_, attr.offs, static_cast<char*>(buf),
+      static_cast<int32_t>(count), PP_BlockUntilComplete());
   if (result < 0)
     return PPERROR_TO_ERRNO(result);
 
@@ -201,8 +200,8 @@ Error Html5FsNode::FTruncate(off_t size) {
   if (IsaDir())
     return EISDIR;
 
-  int32_t result = file_io_iface_->SetLength(
-      fileio_resource_, size, PP_BlockUntilComplete());
+  int32_t result = file_io_iface_->SetLength(fileio_resource_, size,
+                                             PP_BlockUntilComplete());
   if (result != PP_OK)
     return PPERROR_TO_ERRNO(result);
   return 0;
@@ -217,11 +216,9 @@ Error Html5FsNode::Write(const HandleAttr& attr,
   if (IsaDir())
     return EISDIR;
 
-  int32_t result = file_io_iface_->Write(fileio_resource_,
-                                         attr.offs,
-                                         static_cast<const char*>(buf),
-                                         static_cast<int32_t>(count),
-                                         PP_BlockUntilComplete());
+  int32_t result = file_io_iface_->Write(
+      fileio_resource_, attr.offs, static_cast<const char*>(buf),
+      static_cast<int32_t>(count), PP_BlockUntilComplete());
   if (result < 0)
     return PPERROR_TO_ERRNO(result);
 
@@ -254,8 +251,7 @@ Error Html5FsNode::GetSize(off_t* out_size) {
 Html5FsNode::Html5FsNode(Filesystem* filesystem, PP_Resource fileref_resource)
     : Node(filesystem),
       fileref_resource_(fileref_resource),
-      fileio_resource_(0) {
-}
+      fileio_resource_(0) {}
 
 Error Html5FsNode::Init(int open_flags) {
   Error error = Node::Init(open_flags);
@@ -267,10 +263,8 @@ Error Html5FsNode::Init(int open_flags) {
   var_iface_ = filesystem_->ppapi()->GetVarInterface();
 
   if (!(file_io_iface_ && file_ref_iface_ && var_iface_)) {
-    LOG_ERROR("Got NULL interface(s): %s%s%s",
-              file_ref_iface_ ? "" : "FileRef",
-              file_io_iface_ ? "" : "FileIo ",
-              var_iface_ ? "" : "Var ");
+    LOG_ERROR("Got NULL interface(s): %s%s%s", file_ref_iface_ ? "" : "FileRef",
+              file_io_iface_ ? "" : "FileIo ", var_iface_ ? "" : "Var ");
     return EIO;
   }
 
@@ -279,8 +273,8 @@ Error Html5FsNode::Init(int open_flags) {
 
   // First query the FileRef to see if it is a file or directory.
   PP_FileInfo file_info;
-  int32_t query_result = file_ref_iface_->Query(
-      fileref_resource_, &file_info, PP_BlockUntilComplete());
+  int32_t query_result = file_ref_iface_->Query(fileref_resource_, &file_info,
+                                                PP_BlockUntilComplete());
   // If this is a directory, do not get a FileIO.
   if (query_result == PP_OK && file_info.type == PP_FILETYPE_DIRECTORY) {
     return 0;
@@ -293,11 +287,9 @@ Error Html5FsNode::Init(int open_flags) {
     return EIO;
   }
 
-  int32_t open_result =
-      file_io_iface_->Open(fileio_resource_,
-                           fileref_resource_,
-                           OpenFlagsToPPAPIOpenFlags(open_flags),
-                           PP_BlockUntilComplete());
+  int32_t open_result = file_io_iface_->Open(
+      fileio_resource_, fileref_resource_,
+      OpenFlagsToPPAPIOpenFlags(open_flags), PP_BlockUntilComplete());
   if (open_result != PP_OK)
     return PPERROR_TO_ERRNO(open_result);
   return 0;
