@@ -38,6 +38,20 @@ class MetadataTest(cros_test_lib.TestCase):
 
     self.assertEqual(expected_dict, metadata.GetDict()['my_dict'])
 
+  def testExtendKeyListWithList(self):
+    """Test ExtendKeyListWithList."""
+    m = multiprocessing.Manager()
+    metadata = metadata_lib.CBuildbotMetadata(multiprocess_manager=m)
+
+    expected_list = [str(x) for x in range(20)]
+    metadata.ExtendKeyListWithList('my_list', expected_list)
+    self.assertEqual(expected_list, metadata.GetDict()['my_list'])
+
+    sub_list_1 = [str(x) for x in range(0, 10)]
+    sub_list_2 = [str(x) for x in range(10, 20)]
+    metadata.ExtendKeyListWithList('my_list_2', sub_list_1)
+    metadata.ExtendKeyListWithList('my_list_2', sub_list_2)
+    self.assertEqual(expected_list, metadata.GetDict()['my_list_2'])
 
   def testUpdateKeyDictWithDictMultiprocess(self):
     expected_dict = {str(x): x for x in range(20)}

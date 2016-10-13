@@ -513,9 +513,12 @@ class SyncStage(generic_stages.BuilderStage):
         body, self._run.options.test_tryjob, dryrun)
 
     buildbucket_id = buildbucket_lib.GetBuildId(content)
+    created_ts = buildbucket_lib.GetBuildCreated_ts(content)
 
-    logging.info('Buildbucket_id for %s: %s' %
-                 (build_name, buildbucket_id))
+    logging.info('Build_name %s buildbucket_id %s created_timestamp %s',
+                 build_name, buildbucket_id, created_ts)
+
+    return (buildbucket_id, created_ts)
 
   def ScheduleSlaveBuildsViaBuildbucket(self, important_only, dryrun):
     """Schedule slave builds by sending PUT requests to Buildbucket.
@@ -542,18 +545,24 @@ class SyncStage(generic_stages.BuilderStage):
       logging.info('No build id. Skip scheduling slaves.')
       return
 
+    scheduled_slave_builds = []
+
     # Get all active slave build configs.
     slave_config_map = self._GetSlaveConfigMap(important_only)
     for slave_name, slave_config in slave_config_map.iteritems():
       try:
-        self.PostSlaveBuildToBuildbucket(slave_name, slave_config,
-                                         build_id, dryrun)
+        buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
+            slave_name, slave_config, build_id, dryrun)
+
+        scheduled_slave_builds.append((slave_name, buildbucket_id, created_ts))
       except buildbucket_lib.BuildbucketResponseException as e:
         if important_only or slave_config.important:
           raise
         else:
           logging.warning('Failed to schedule %s: %s' % (slave_name, e))
 
+    self._run.attrs.metadata.ExtendKeyListWithList(
+        'scheduled_slaves', scheduled_slave_builds)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):

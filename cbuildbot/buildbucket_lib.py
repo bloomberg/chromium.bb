@@ -345,6 +345,9 @@ def GetBuildStatus(content):
 def GetBuildResult(content):
   return GetNestedAttr(content, ['build', 'result'])
 
+def GetBuildCreated_ts(content):
+  return GetNestedAttr(content, ['build', 'created_ts'])
+
 def GetBuildIds(content):
   builds = GetNestedAttr(content, ['builds'], default=[])
   return [b.get('id') for b in builds]

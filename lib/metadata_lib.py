@@ -175,6 +175,28 @@ class CBuildbotMetadata(object):
 
     return self
 
+  def ExtendKeyListWithList(self, key, value_list):
+    """Update metadata for the given key with the value_list.
+
+    This method extends the mapped list in metadata_dict with value_list.
+    This method is multiprocess safe.
+
+    Args:
+      key: The key name of string type.
+      value_list: A list of values to be added to this metadata key.
+                  Keys should be strings, values should be a json-able list.
+
+    Returns:
+      self
+    """
+    with self._subdict_update_lock:
+      # If the key already exists, then use its list value
+      target_list = self._metadata_dict.setdefault(key, [])
+      target_list.extend(value_list)
+      self._metadata_dict[key] = target_list
+
+    return self
+
   def GetDict(self):
     """Returns a dictionary representation of metadata."""
     # CL actions are be stored in self._cl_action_list instead of
