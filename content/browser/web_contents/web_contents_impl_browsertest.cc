@@ -899,17 +899,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
 
 // TODO(clamy): Make the test work on Windows and on Mac. On Mac and Windows,
 // there seem to be an issue with the ShellJavascriptDialogManager.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_NoResetOnBeforeUnloadCanceledOnCommit \
-  DISABLED_NoResetOnBeforeUnloadCanceledOnCommit
-#else
-#define MAYBE_NoResetOnBeforeUnloadCanceledOnCommit \
-  NoResetOnBeforeUnloadCanceledOnCommit
-#endif
+// Flaky on all platforms: https://crbug.com/655628
 // Test that if a BeforeUnload dialog is destroyed due to the commit of a
 // cross-site navigation, it will not reset the loading state.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       MAYBE_NoResetOnBeforeUnloadCanceledOnCommit) {
+                       DISABLED_NoResetOnBeforeUnloadCanceledOnCommit) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL kStartURL(
       embedded_test_server()->GetURL("/hang_before_unload.html"));
