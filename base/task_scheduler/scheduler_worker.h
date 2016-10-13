@@ -10,6 +10,7 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/sequence.h"
@@ -136,8 +137,6 @@ class BASE_EXPORT SchedulerWorker {
 
   void CreateThreadAssertSynchronized();
 
-  bool ShouldExitForTesting() const;
-
   // Synchronizes access to |thread_|.
   mutable SchedulerLock thread_lock_;
 
@@ -152,11 +151,8 @@ class BASE_EXPORT SchedulerWorker {
   const std::unique_ptr<Delegate> delegate_;
   TaskTracker* const task_tracker_;
 
-  // Synchronizes access to |should_exit_for_testing_|.
-  mutable SchedulerLock should_exit_for_testing_lock_;
-
-  // True once JoinForTesting() has been called.
-  bool should_exit_for_testing_ = false;
+  // Set once JoinForTesting() has been called.
+  AtomicFlag should_exit_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorker);
 };

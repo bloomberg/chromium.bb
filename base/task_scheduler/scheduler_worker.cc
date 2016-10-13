@@ -45,7 +45,7 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
     WaitForWork();
 
     while (!outer_->task_tracker_->IsShutdownComplete() &&
-           !outer_->ShouldExitForTesting()) {
+           !outer_->should_exit_for_testing_.IsSet()) {
       DCHECK(outer_);
 
 #if defined(OS_MACOSX)
@@ -217,10 +217,11 @@ void SchedulerWorker::WakeUp() {
 }
 
 void SchedulerWorker::JoinForTesting() {
-  {
-    AutoSchedulerLock auto_lock(should_exit_for_testing_lock_);
-    should_exit_for_testing_ = true;
-  }
+  // It's not possible to have concurrent calls to this method because a DCHECK
+  // fails when AtomicFlag::Set() calls aren't sequenced.
+  DCHECK(!should_exit_for_testing_.IsSet());
+  should_exit_for_testing_.Set();
+
   WakeUp();
 
   // Normally holding a lock and joining is dangerous. However, since this is
@@ -250,7 +251,7 @@ SchedulerWorker::SchedulerWorker(ThreadPriority priority_hint,
 }
 
 std::unique_ptr<SchedulerWorker::Thread> SchedulerWorker::Detach() {
-  DCHECK(!ShouldExitForTesting()) << "Worker was already joined";
+  DCHECK(!should_exit_for_testing_.IsSet()) << "Worker was already joined";
   AutoSchedulerLock auto_lock(thread_lock_);
   // If a wakeup is pending, then a WakeUp() came in while we were deciding to
   // detach. This means we can't go away anymore since we would break the
@@ -268,11 +269,6 @@ void SchedulerWorker::CreateThread() {
 void SchedulerWorker::CreateThreadAssertSynchronized() {
   thread_lock_.AssertAcquired();
   CreateThread();
-}
-
-bool SchedulerWorker::ShouldExitForTesting() const {
-  AutoSchedulerLock auto_lock(should_exit_for_testing_lock_);
-  return should_exit_for_testing_;
 }
 
 }  // namespace internal
