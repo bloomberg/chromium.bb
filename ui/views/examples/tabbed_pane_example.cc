@@ -40,6 +40,7 @@ void TabbedPaneExample::CreateExampleView(View* container) {
   // Create a few tabs with a button first.
   AddButton("Tab 1");
   AddButton("Tab 2");
+  AddButton("Tab 3");
 
   // Add control buttons horizontally.
   const int button_column = 1;
@@ -76,7 +77,7 @@ void TabbedPaneExample::TabSelectedAt(int index) {
 void TabbedPaneExample::PrintStatus() {
   ExampleBase::PrintStatus("Tab Count:%d, Selected Tab:%d",
                            tabbed_pane_->GetTabCount(),
-                           tabbed_pane_->selected_tab_index());
+                           tabbed_pane_->GetSelectedTabIndex());
 }
 
 void TabbedPaneExample::AddButton(const std::string& label) {

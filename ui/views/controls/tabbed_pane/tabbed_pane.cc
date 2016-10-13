@@ -20,6 +20,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/widget/widget.h"
 
@@ -56,6 +57,7 @@ class MdTab : public Tab {
   void OnStateChanged() override;
 
   // Overridden from View:
+  gfx::Size GetPreferredSize() const override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
 
  private:
@@ -68,18 +70,19 @@ class TabStrip : public View {
   // Internal class name.
   static const char kViewClassName[];
 
-  explicit TabStrip(TabbedPane* tabbed_pane);
+  TabStrip();
   ~TabStrip() override;
 
   // Overridden from View:
-  gfx::Size GetPreferredSize() const override;
-  void Layout() override;
   const char* GetClassName() const override;
-  void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaintBorder(gfx::Canvas* canvas) override;
+
+  Tab* GetSelectedTab() const;
+  Tab* GetTabAtDeltaFromSelected(int delta) const;
+  Tab* GetTabAtIndex(int index) const;
+  int GetSelectedTabIndex() const;
 
  private:
-  TabbedPane* tabbed_pane_;
-
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
 
@@ -87,13 +90,11 @@ class TabStrip : public View {
 // class uses a BoxLayout to position tabs.
 class MdTabStrip : public TabStrip {
  public:
-  explicit MdTabStrip(TabbedPane* tabbed_pane);
+  MdTabStrip();
   ~MdTabStrip() override;
 
   // Overridden from View:
-  gfx::Size GetPreferredSize() const override;
-  void Layout() override;
-  void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaintBorder(gfx::Canvas* canvas) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MdTabStrip);
@@ -114,6 +115,13 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
       contents_(contents) {
   // Calculate this now while the font list is guaranteed to be bold.
   preferred_title_size_ = title_->GetPreferredSize();
+
+  const int kTabVerticalPadding = 5;
+  const int kTabHorizontalPadding = 10;
+
+  SetBorder(Border::CreateEmptyBorder(
+      gfx::Insets(kTabVerticalPadding, kTabHorizontalPadding)));
+  SetLayoutManager(new FillLayout);
 
   SetState(TAB_INACTIVE);
   AddChildView(title_);
@@ -187,18 +195,8 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
 
 gfx::Size Tab::GetPreferredSize() const {
   gfx::Size size(preferred_title_size_);
-  size.Enlarge(21, 9);
-  const int kTabMinWidth = 54;
-  if (size.width() < kTabMinWidth)
-    size.set_width(kTabMinWidth);
+  size.Enlarge(GetInsets().width(), GetInsets().height());
   return size;
-}
-
-void Tab::Layout() {
-  gfx::Rect bounds = GetLocalBounds();
-  bounds.Inset(0, 1, 0, 0);
-  bounds.ClampToCenteredSize(preferred_title_size_);
-  title_->SetBoundsRect(bounds);
 }
 
 const char* Tab::GetClassName() const {
@@ -211,10 +209,6 @@ void Tab::SetState(TabState tab_state) {
   tab_state_ = tab_state;
   OnStateChanged();
   SchedulePaint();
-}
-
-bool Tab::ContainerHasFocus() {
-  return tabbed_pane_->HasFocus();
 }
 
 void Tab::OnFocus() {
@@ -302,49 +296,38 @@ void MdTab::OnPaintBorder(gfx::Canvas* canvas) {
       base_color);
 }
 
+gfx::Size MdTab::GetPreferredSize() const {
+  return gfx::Size(Tab::GetPreferredSize().width(), kHarmonyTabStripTabHeight);
+}
+
 // static
 const char TabStrip::kViewClassName[] = "TabStrip";
 
-TabStrip::TabStrip(TabbedPane* tabbed_pane) : tabbed_pane_(tabbed_pane) {}
+TabStrip::TabStrip() {
+  const int kTabStripLeadingEdgePadding = 9;
+  BoxLayout* layout =
+      new BoxLayout(BoxLayout::kHorizontal, kTabStripLeadingEdgePadding, 0, 0);
+  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_END);
+  layout->SetDefaultFlex(0);
+  SetLayoutManager(layout);
+}
 
 TabStrip::~TabStrip() {}
-
-gfx::Size TabStrip::GetPreferredSize() const {
-  gfx::Size size;
-  for (int i = 0; i < child_count(); ++i) {
-    const gfx::Size child_size = child_at(i)->GetPreferredSize();
-    size.SetSize(size.width() + child_size.width(),
-                 std::max(size.height(), child_size.height()));
-  }
-  return size;
-}
-
-void TabStrip::Layout() {
-  const int kTabOffset = 9;
-  int x = kTabOffset;  // Layout tabs with an offset to the tabstrip border.
-  for (int i = 0; i < child_count(); ++i) {
-    gfx::Size ps = child_at(i)->GetPreferredSize();
-    child_at(i)->SetBounds(x, 0, ps.width(), ps.height());
-    x = child_at(i)->bounds().right();
-  }
-}
 
 const char* TabStrip::GetClassName() const {
   return kViewClassName;
 }
 
-void TabStrip::OnPaint(gfx::Canvas* canvas) {
-  OnPaintBackground(canvas);
-
-  // Draw the TabStrip border.
+void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setColor(kTabBorderColor);
   paint.setStrokeWidth(kTabBorderThickness);
   SkScalar line_y = SkIntToScalar(height()) - (kTabBorderThickness / 2);
   SkScalar line_end = SkIntToScalar(width());
-  int selected_tab_index = tabbed_pane_->selected_tab_index();
+  int selected_tab_index = GetSelectedTabIndex();
   if (selected_tab_index >= 0) {
-    Tab* selected_tab = tabbed_pane_->GetTabAt(selected_tab_index);
+    Tab* selected_tab = GetTabAtIndex(selected_tab_index);
     SkPath path;
     SkScalar tab_height =
         SkIntToScalar(selected_tab->height()) - kTabBorderThickness;
@@ -368,7 +351,30 @@ void TabStrip::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-MdTabStrip::MdTabStrip(TabbedPane* tabbed_pane) : TabStrip(tabbed_pane) {
+Tab* TabStrip::GetTabAtIndex(int index) const {
+  return static_cast<Tab*>(const_cast<View*>(child_at(index)));
+}
+
+int TabStrip::GetSelectedTabIndex() const {
+  for (int i = 0; i < child_count(); ++i)
+    if (GetTabAtIndex(i)->selected())
+      return i;
+  return -1;
+}
+
+Tab* TabStrip::GetSelectedTab() const {
+  int index = GetSelectedTabIndex();
+  return index >= 0 ? GetTabAtIndex(index) : nullptr;
+}
+
+Tab* TabStrip::GetTabAtDeltaFromSelected(int delta) const {
+  int index = (GetSelectedTabIndex() + delta) % child_count();
+  if (index < 0)
+    index += child_count();
+  return GetTabAtIndex(index);
+}
+
+MdTabStrip::MdTabStrip() {
   BoxLayout* layout =
       new BoxLayout(BoxLayout::kHorizontal, 0, kHarmonyTabStripVerticalPad, 0);
   layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
@@ -379,34 +385,24 @@ MdTabStrip::MdTabStrip(TabbedPane* tabbed_pane) : TabStrip(tabbed_pane) {
 
 MdTabStrip::~MdTabStrip() {}
 
-gfx::Size MdTabStrip::GetPreferredSize() const {
-  return gfx::Size(width(),
-                   kHarmonyTabStripVerticalPad * 2 + kHarmonyTabStripTabHeight);
-}
-
-// Let this class's LayoutManager handle the layout.
-void MdTabStrip::Layout() {
-  return View::Layout();
-}
-
-// The tab strip "border" is drawn as part of the tabs, so all this method needs
-// to do is paint the background.
-void MdTabStrip::OnPaint(gfx::Canvas* canvas) {
-  OnPaintBackground(canvas);
-}
+// The tab strip "border" is drawn as part of the tabs.
+void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {}
 
 TabbedPane::TabbedPane()
     : listener_(NULL),
       tab_strip_(ui::MaterialDesignController::IsSecondaryUiMaterial()
-                     ? new MdTabStrip(this)
-                     : new TabStrip(this)),
-      contents_(new View()),
-      selected_tab_index_(-1) {
+                     ? new MdTabStrip
+                     : new TabStrip),
+      contents_(new View()) {
   AddChildView(tab_strip_);
   AddChildView(contents_);
 }
 
 TabbedPane::~TabbedPane() {}
+
+int TabbedPane::GetSelectedTabIndex() const {
+  return tab_strip_->GetSelectedTabIndex();
+}
 
 int TabbedPane::GetTabCount() {
   DCHECK_EQ(tab_strip_->child_count(), contents_->child_count());
@@ -429,24 +425,18 @@ void TabbedPane::AddTabAtIndex(int index,
           : new Tab(this, title, contents),
       index);
   contents_->AddChildViewAt(contents, index);
-  // TODO(ellyjones): if index < selected_tab_index(), selected_tab_index() gets
-  // out of sync with which tab believes it is selected. This class should
-  // directly ask Tabs whether they are selected.
-  if (selected_tab_index() < 0)
+  if (!GetSelectedTab())
     SelectTabAt(index);
 
   PreferredSizeChanged();
 }
 
-void TabbedPane::SelectTabAt(int index) {
-  DCHECK(index >= 0 && index < GetTabCount());
-  if (index == selected_tab_index())
+void TabbedPane::SelectTab(Tab* new_selected_tab) {
+  Tab* old_selected_tab = tab_strip_->GetSelectedTab();
+  if (old_selected_tab == new_selected_tab)
     return;
 
-  Tab* old_selected_tab = GetSelectedTab();
-  Tab* new_selected_tab = GetTabAt(index);
   new_selected_tab->SetSelected(true);
-  selected_tab_index_ = index;
   if (old_selected_tab) {
     if (old_selected_tab->HasFocus())
       new_selected_tab->RequestFocus();
@@ -463,13 +453,13 @@ void TabbedPane::SelectTabAt(int index) {
   }
 
   if (listener())
-    listener()->TabSelectedAt(index);
+    listener()->TabSelectedAt(tab_strip_->GetIndexOf(new_selected_tab));
 }
 
-void TabbedPane::SelectTab(Tab* tab) {
-  const int index = tab_strip_->GetIndexOf(tab);
-  if (index >= 0)
-    SelectTabAt(index);
+void TabbedPane::SelectTabAt(int index) {
+  Tab* tab = tab_strip_->GetTabAtIndex(index);
+  if (tab)
+    SelectTab(tab);
 }
 
 gfx::Size TabbedPane::GetPreferredSize() const {
@@ -480,22 +470,14 @@ gfx::Size TabbedPane::GetPreferredSize() const {
   return size;
 }
 
-Tab* TabbedPane::GetTabAt(int index) {
-  return static_cast<Tab*>(tab_strip_->child_at(index));
-}
-
 Tab* TabbedPane::GetSelectedTab() {
-  return selected_tab_index() >= 0 ? GetTabAt(selected_tab_index()) : nullptr;
+  return tab_strip_->GetSelectedTab();
 }
 
 bool TabbedPane::MoveSelectionBy(int delta) {
-  const int tab_count = GetTabCount();
-  if (tab_count <= 1)
+  if (contents_->child_count() <= 1)
     return false;
-  int next_selected_index = (selected_tab_index() + delta) % tab_count;
-  if (next_selected_index < 0)
-    next_selected_index += tab_count;
-  SelectTabAt(next_selected_index);
+  SelectTab(tab_strip_->GetTabAtDeltaFromSelected(delta));
   return true;
 }
 

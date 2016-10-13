@@ -30,7 +30,9 @@ class VIEWS_EXPORT TabbedPane : public View {
   TabbedPaneListener* listener() const { return listener_; }
   void set_listener(TabbedPaneListener* listener) { listener_ = listener; }
 
-  int selected_tab_index() const { return selected_tab_index_; }
+  // Returns the index of the currently selected tab, or -1 if no tab is
+  // selected.
+  int GetSelectedTabIndex() const;
 
   // Returns the number of tabs.
   int GetTabCount();
@@ -118,7 +120,6 @@ class Tab : public View {
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   gfx::Size GetPreferredSize() const override;
-  void Layout() override;
   const char* GetClassName() const override;
   void OnFocus() override;
   void OnBlur() override;
@@ -129,9 +130,6 @@ class Tab : public View {
 
   // Called whenever |tab_state_| changes.
   virtual void OnStateChanged();
-
-  // Returns whether the containing TabStrip has focus.
-  bool ContainerHasFocus();
 
  private:
   enum TabState {

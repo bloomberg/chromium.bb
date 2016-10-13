@@ -74,20 +74,20 @@ TEST_F(TabbedPaneTest, AddAndSelect) {
     View* tab = new View();
     tabbed_pane->AddTab(ASCIIToUTF16("tab"), tab);
     EXPECT_EQ(i + 1, tabbed_pane->GetTabCount());
-    EXPECT_EQ(0, tabbed_pane->selected_tab_index());
+    EXPECT_EQ(0, tabbed_pane->GetSelectedTabIndex());
   }
 
   // Select each tab.
   for (int i = 0; i < tabbed_pane->GetTabCount(); ++i) {
     tabbed_pane->SelectTabAt(i);
-    EXPECT_EQ(i, tabbed_pane->selected_tab_index());
+    EXPECT_EQ(i, tabbed_pane->GetSelectedTabIndex());
   }
 
   // Add a tab at index 0, it should not be selected automatically.
   View* tab0 = new View();
   tabbed_pane->AddTabAtIndex(0, ASCIIToUTF16("tab0"), tab0);
   EXPECT_NE(tab0, tabbed_pane->GetSelectedTabContentView());
-  EXPECT_NE(0, tabbed_pane->selected_tab_index());
+  EXPECT_NE(0, tabbed_pane->GetSelectedTabIndex());
 }
 
 ui::KeyEvent MakeKeyPressedEvent(ui::KeyboardCode keyboard_code, int flags) {
@@ -104,27 +104,27 @@ TEST_F(TabbedPaneTest, ArrowKeyBindings) {
     EXPECT_EQ(i + 1, tabbed_pane->GetTabCount());
   }
 
-  EXPECT_EQ(0, tabbed_pane->selected_tab_index());
+  EXPECT_EQ(0, tabbed_pane->GetSelectedTabIndex());
 
   // Right arrow should select tab 1:
   tabbed_pane->GetSelectedTab()->OnKeyPressed(
       MakeKeyPressedEvent(ui::VKEY_RIGHT, 0));
-  EXPECT_EQ(1, tabbed_pane->selected_tab_index());
+  EXPECT_EQ(1, tabbed_pane->GetSelectedTabIndex());
 
   // Left arrow should select tab 0:
   tabbed_pane->GetSelectedTab()->OnKeyPressed(
       MakeKeyPressedEvent(ui::VKEY_LEFT, 0));
-  EXPECT_EQ(0, tabbed_pane->selected_tab_index());
+  EXPECT_EQ(0, tabbed_pane->GetSelectedTabIndex());
 
   // Left arrow again should wrap to tab 2:
   tabbed_pane->GetSelectedTab()->OnKeyPressed(
       MakeKeyPressedEvent(ui::VKEY_LEFT, 0));
-  EXPECT_EQ(2, tabbed_pane->selected_tab_index());
+  EXPECT_EQ(2, tabbed_pane->GetSelectedTabIndex());
 
   // Right arrow again should wrap to tab 0:
   tabbed_pane->GetSelectedTab()->OnKeyPressed(
       MakeKeyPressedEvent(ui::VKEY_RIGHT, 0));
-  EXPECT_EQ(0, tabbed_pane->selected_tab_index());
+  EXPECT_EQ(0, tabbed_pane->GetSelectedTabIndex());
 }
 
 }  // namespace views
