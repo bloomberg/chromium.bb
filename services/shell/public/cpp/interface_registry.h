@@ -81,7 +81,8 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
 
   // Construct an InterfaceRegistry with filtering rules as specified in
   // |capability_request| applied.
-  InterfaceRegistry(const Identity& remote_identity,
+  InterfaceRegistry(const Identity& local_identity,
+                    const Identity& remote_identity,
                     const CapabilityRequest& capability_request);
   ~InterfaceRegistry() override;
 
@@ -162,6 +163,7 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   mojom::InterfaceProviderRequest pending_request_;
 
   mojo::Binding<mojom::InterfaceProvider> binding_;
+  const Identity local_identity_;
   const Identity remote_identity_;
   const CapabilityRequest capability_request_;
   const bool allow_all_interfaces_;

@@ -10,6 +10,9 @@
   "name": "service:chrome_mash",
   "display_name": "Chrome Mash Packaged Services",
   "capabilities": {
+    "provided": {
+      "shell:service_factory": [ "shell::mojom::ServiceFactory" ]
+    },
     "required": {
       "service:mash_session": { "classes": [ "app" ] },
       "service:catalog": { "classes": [ "control" ] }

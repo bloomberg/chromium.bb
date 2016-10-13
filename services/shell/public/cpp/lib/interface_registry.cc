@@ -15,9 +15,11 @@ InterfaceRegistry::InterfaceRegistry()
     : binding_(this), allow_all_interfaces_(true), weak_factory_(this) {}
 
 InterfaceRegistry::InterfaceRegistry(
+    const Identity& local_identity,
     const Identity& remote_identity,
     const CapabilityRequest& capability_request)
     : binding_(this),
+      local_identity_(local_identity),
       remote_identity_(remote_identity),
       capability_request_(capability_request),
       allow_all_interfaces_(capability_request.interfaces.size() == 1 &&
@@ -95,13 +97,16 @@ void InterfaceRegistry::GetInterface(const std::string& interface_name,
   } else if (!CanBindRequestForInterface(interface_name)) {
     std::stringstream ss;
     ss << "Capability spec prevented service " << remote_identity_.name()
-       << " from binding interface: " << interface_name;
+       << " from binding interface: " << interface_name
+       << " exposed by: " << local_identity_.name();
     LOG(ERROR) << ss.str();
     mojo::ReportBadMessage(ss.str());
   } else if (!default_binder_.is_null()) {
     default_binder_.Run(interface_name, std::move(handle));
   } else {
-    LOG(ERROR) << "Failed to locate a binder for interface: " << interface_name;
+    LOG(ERROR) << "Failed to locate a binder for interface: " << interface_name
+               << " requested by: " << remote_identity_.name()
+               << " exposed by: " << local_identity_.name();
   }
 }
 
