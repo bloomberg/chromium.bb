@@ -99,18 +99,18 @@ bool IsStylusEvent(const WebInputEvent& event) {
 
 PP_InputEvent_Type ConvertEventTypes(const WebInputEvent& event) {
   if (IsStylusEvent(event)) {
+    const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
+    if (mouse_event.button != blink::WebMouseEvent::Button::Left &&
+        !(mouse_event.modifiers & blink::WebInputEvent::LeftButtonDown))
+      return PP_INPUTEVENT_TYPE_UNDEFINED;
+
     switch (event.type) {
       case WebInputEvent::MouseDown:
         return PP_INPUTEVENT_TYPE_TOUCHSTART;
       case WebInputEvent::MouseUp:
         return PP_INPUTEVENT_TYPE_TOUCHEND;
-      case WebInputEvent::MouseMove: {
-        const WebMouseEvent& mouse_event =
-            static_cast<const WebMouseEvent&>(event);
-        return (mouse_event.modifiers & blink::WebInputEvent::LeftButtonDown)
-                   ? PP_INPUTEVENT_TYPE_TOUCHMOVE
-                   : PP_INPUTEVENT_TYPE_UNDEFINED;
-      }
+      case WebInputEvent::MouseMove:
+        return PP_INPUTEVENT_TYPE_TOUCHMOVE;
       default:
         return PP_INPUTEVENT_TYPE_UNDEFINED;
     }
@@ -225,23 +225,21 @@ void AppendStylusTouchEvent(const WebInputEvent& event,
 
   InputEventData result = GetEventWithCommonFieldsAndType(event);
   result.event_modifiers = ConvertEventModifiers(event.modifiers);
+  if (result.event_type == PP_INPUTEVENT_TYPE_UNDEFINED)
+    return;
 
-  if (mouse_event.modifiers & blink::WebInputEvent::LeftButtonDown &&
-      (mouse_event.type == WebInputEvent::MouseDown ||
-       mouse_event.type == WebInputEvent::MouseMove)) {
-    PP_TouchPoint touch_point;
-    touch_point.id = 0;
-    touch_point.position.x = mouse_event.x;
-    touch_point.position.y = mouse_event.y;
-    touch_point.pressure = mouse_event.force;
+  PP_TouchPoint touch_point;
+  touch_point.id = 0;
+  touch_point.position.x = mouse_event.x;
+  touch_point.position.y = mouse_event.y;
+  touch_point.pressure = mouse_event.force;
 
+  result.changed_touches.push_back(touch_point);
+  result.target_touches.push_back(touch_point);
+  if (result.event_type != PP_INPUTEVENT_TYPE_TOUCHEND)
     result.touches.push_back(touch_point);
-    result.changed_touches.push_back(touch_point);
-    result.target_touches.push_back(touch_point);
-  }
 
-  if (result.event_type != PP_INPUTEVENT_TYPE_UNDEFINED)
-    result_events->push_back(result);
+  result_events->push_back(result);
 }
 
 void AppendMouseEvent(const WebInputEvent& event,
