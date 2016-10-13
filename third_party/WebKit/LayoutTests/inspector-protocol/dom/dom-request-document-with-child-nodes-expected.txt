@@ -1,0 +1,128 @@
+
+{
+    "nodeId": 19,
+    "nodeType": 1,
+    "nodeName": "BODY",
+    "localName": "body",
+    "nodeValue": "",
+    "childNodeCount": 1,
+    "children": [
+        {
+            "nodeId": 20,
+            "nodeType": 1,
+            "nodeName": "DIV",
+            "localName": "div",
+            "nodeValue": "",
+            "childNodeCount": 1,
+            "children": [
+                {
+                    "nodeId": 21,
+                    "nodeType": 1,
+                    "nodeName": "DIV",
+                    "localName": "div",
+                    "nodeValue": "",
+                    "childNodeCount": 1,
+                    "children": [
+                        {
+                            "nodeId": 22,
+                            "nodeType": 1,
+                            "nodeName": "DIV",
+                            "localName": "div",
+                            "nodeValue": "",
+                            "childNodeCount": 1,
+                            "children": [
+                                {
+                                    "nodeId": 23,
+                                    "nodeType": 1,
+                                    "nodeName": "IFRAME",
+                                    "localName": "iframe",
+                                    "nodeValue": "",
+                                    "childNodeCount": 0,
+                                    "children": [],
+                                    "attributes": [
+                                        "src",
+                                        "resources/iframe.html"
+                                    ],
+                                    "frameId": "???",
+                                    "contentDocument": {
+                                        "nodeId": 24,
+                                        "nodeType": 9,
+                                        "nodeName": "#document",
+                                        "localName": "",
+                                        "nodeValue": "",
+                                        "childNodeCount": 1,
+                                        "children": [
+                                            {
+                                                "nodeId": 25,
+                                                "nodeType": 1,
+                                                "nodeName": "HTML",
+                                                "localName": "html",
+                                                "nodeValue": "",
+                                                "childNodeCount": 2,
+                                                "children": [
+                                                    {
+                                                        "nodeId": 26,
+                                                        "nodeType": 1,
+                                                        "nodeName": "HEAD",
+                                                        "localName": "head",
+                                                        "nodeValue": "",
+                                                        "childNodeCount": 0,
+                                                        "children": [],
+                                                        "attributes": []
+                                                    },
+                                                    {
+                                                        "nodeId": 27,
+                                                        "nodeType": 1,
+                                                        "nodeName": "BODY",
+                                                        "localName": "body",
+                                                        "nodeValue": "",
+                                                        "childNodeCount": 1,
+                                                        "children": [
+                                                            {
+                                                                "nodeId": 28,
+                                                                "nodeType": 1,
+                                                                "nodeName": "DIV",
+                                                                "localName": "div",
+                                                                "nodeValue": "",
+                                                                "childNodeCount": 0,
+                                                                "children": [],
+                                                                "attributes": [
+                                                                    "id",
+                                                                    "element_in_an_iframe"
+                                                                ]
+                                                            }
+                                                        ],
+                                                        "attributes": []
+                                                    }
+                                                ],
+                                                "attributes": [],
+                                                "frameId": "???"
+                                            }
+                                        ],
+                                        "documentURL": "???",
+                                        "baseURL": "???",
+                                        "xmlVersion": ""
+                                    }
+                                }
+                            ],
+                            "attributes": [
+                                "id",
+                                "depth-3"
+                            ]
+                        }
+                    ],
+                    "attributes": [
+                        "id",
+                        "depth-2"
+                    ]
+                }
+            ],
+            "attributes": [
+                "id",
+                "depth-1"
+            ]
+        }
+    ],
+    "attributes": []
+}
+

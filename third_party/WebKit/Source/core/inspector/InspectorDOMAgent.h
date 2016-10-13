@@ -121,6 +121,8 @@ class CORE_EXPORT InspectorDOMAgent final
   void enable(ErrorString*) override;
   void disable(ErrorString*) override;
   void getDocument(ErrorString*,
+                   const Maybe<int>& depth,
+                   const Maybe<bool>& traverseFrames,
                    std::unique_ptr<protocol::DOM::Node>* root) override;
   void getLayoutTreeNodes(
       ErrorString*,
@@ -132,7 +134,8 @@ class CORE_EXPORT InspectorDOMAgent final
       std::unique_ptr<protocol::Array<String>>* classNames) override;
   void requestChildNodes(ErrorString*,
                          int nodeId,
-                         const Maybe<int>& depth) override;
+                         const Maybe<int>& depth,
+                         const Maybe<bool>& traverseFrames) override;
   void querySelector(ErrorString*,
                      int nodeId,
                      const String& selector,
@@ -322,18 +325,22 @@ class CORE_EXPORT InspectorDOMAgent final
   Element* assertEditableElement(ErrorString*, int nodeId);
 
   int pushNodePathToFrontend(Node*, NodeToIdMap* nodeMap);
-  void pushChildNodesToFrontend(int nodeId, int depth = 1);
+  void pushChildNodesToFrontend(int nodeId,
+                                int depth = 1,
+                                bool traverseFrames = false);
 
   void invalidateFrameOwnerElement(LocalFrame*);
 
   std::unique_ptr<protocol::DOM::Node> buildObjectForNode(Node*,
                                                           int depth,
+                                                          bool traverseFrames,
                                                           NodeToIdMap*);
   std::unique_ptr<protocol::Array<String>> buildArrayForElementAttributes(
       Element*);
   std::unique_ptr<protocol::Array<protocol::DOM::Node>>
   buildArrayForContainerChildren(Node* container,
                                  int depth,
+                                 bool traverseFrames,
                                  NodeToIdMap* nodesMap);
   std::unique_ptr<protocol::Array<protocol::DOM::Node>>
   buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);

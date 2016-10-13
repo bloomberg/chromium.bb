@@ -518,6 +518,8 @@ void InspectorDOMAgent::disable(ErrorString* errorString) {
 
 void InspectorDOMAgent::getDocument(
     ErrorString* errorString,
+    const Maybe<int>& depth,
+    const Maybe<bool>& traverseFrames,
     std::unique_ptr<protocol::DOM::Node>* root) {
   // Backward compatibility. Mark agent as enabled when it requests document.
   if (!enabled())
@@ -530,7 +532,13 @@ void InspectorDOMAgent::getDocument(
 
   discardFrontendBindings();
 
-  *root = buildObjectForNode(m_document.get(), 2, m_documentNodeToIdMap.get());
+  int sanitizedDepth = depth.fromMaybe(2);
+  if (sanitizedDepth == -1)
+    sanitizedDepth = INT_MAX;
+
+  *root = buildObjectForNode(m_document.get(), sanitizedDepth,
+                             traverseFrames.fromMaybe(false),
+                             m_documentNodeToIdMap.get());
 }
 
 void InspectorDOMAgent::getLayoutTreeNodes(
@@ -604,7 +612,9 @@ void InspectorDOMAgent::visitLayoutTreeNodes(
   }
 }
 
-void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId, int depth) {
+void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId,
+                                                 int depth,
+                                                 bool traverseFrames) {
   Node* node = nodeForId(nodeId);
   if (!node || (!node->isElementNode() && !node->isDocumentNode() &&
                 !node->isDocumentFragment()))
@@ -621,14 +631,14 @@ void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId, int depth) {
     for (node = innerFirstChild(node); node; node = innerNextSibling(node)) {
       int childNodeId = nodeMap->get(node);
       ASSERT(childNodeId);
-      pushChildNodesToFrontend(childNodeId, depth);
+      pushChildNodesToFrontend(childNodeId, depth, traverseFrames);
     }
 
     return;
   }
 
   std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
-      buildArrayForContainerChildren(node, depth, nodeMap);
+      buildArrayForContainerChildren(node, depth, traverseFrames, nodeMap);
   frontend()->setChildNodes(nodeId, std::move(children));
 }
 
@@ -685,9 +695,11 @@ void InspectorDOMAgent::collectClassNamesFromSubtree(
     (*classNames)->addItem(className);
 }
 
-void InspectorDOMAgent::requestChildNodes(ErrorString* errorString,
-                                          int nodeId,
-                                          const Maybe<int>& depth) {
+void InspectorDOMAgent::requestChildNodes(
+    ErrorString* errorString,
+    int nodeId,
+    const Maybe<int>& depth,
+    const Maybe<bool>& maybeTaverseFrames) {
   int sanitizedDepth = depth.fromMaybe(1);
   if (sanitizedDepth == 0 || sanitizedDepth < -1) {
     *errorString =
@@ -697,7 +709,8 @@ void InspectorDOMAgent::requestChildNodes(ErrorString* errorString,
   if (sanitizedDepth == -1)
     sanitizedDepth = INT_MAX;
 
-  pushChildNodesToFrontend(nodeId, sanitizedDepth);
+  pushChildNodesToFrontend(nodeId, sanitizedDepth,
+                           maybeTaverseFrames.fromMaybe(false));
 }
 
 void InspectorDOMAgent::querySelector(ErrorString* errorString,
@@ -797,7 +810,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush) {
   m_danglingNodeToIdMaps.append(newMap);
   std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
       protocol::Array<protocol::DOM::Node>::create();
-  children->addItem(buildObjectForNode(node, 0, danglingMap));
+  children->addItem(buildObjectForNode(node, 0, false, danglingMap));
   frontend()->setChildNodes(0, std::move(children));
 
   return pushNodePathToFrontend(nodeToPush, danglingMap);
@@ -1646,6 +1659,7 @@ static protocol::DOM::ShadowRootType shadowRootType(ShadowRoot* shadowRoot) {
 std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(
     Node* node,
     int depth,
+    bool traverseFrames,
     NodeToIdMap* nodesMap) {
   int id = bind(node, nodesMap);
   String localName;
@@ -1690,8 +1704,10 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(
                                   ? toLocalFrame(frameOwner->contentFrame())
                                   : nullptr)
         value->setFrameId(IdentifiersFactory::frameId(frame));
-      if (Document* doc = frameOwner->contentDocument())
-        value->setContentDocument(buildObjectForNode(doc, 0, nodesMap));
+      if (Document* doc = frameOwner->contentDocument()) {
+        value->setContentDocument(buildObjectForNode(
+            doc, traverseFrames ? depth : 0, traverseFrames, nodesMap));
+      }
     }
 
     if (node->parentNode() && node->parentNode()->isDocumentNode()) {
@@ -1705,8 +1721,10 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(
       std::unique_ptr<protocol::Array<protocol::DOM::Node>> shadowRoots =
           protocol::Array<protocol::DOM::Node>::create();
       for (ShadowRoot* root = &shadow->youngestShadowRoot(); root;
-           root = root->olderShadowRoot())
-        shadowRoots->addItem(buildObjectForNode(root, 0, nodesMap));
+           root = root->olderShadowRoot()) {
+        shadowRoots->addItem(
+            buildObjectForNode(root, 0, traverseFrames, nodesMap));
+      }
       value->setShadowRoots(std::move(shadowRoots));
       forcePushChildren = true;
     }
@@ -1714,15 +1732,17 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(
     if (isHTMLLinkElement(*element)) {
       HTMLLinkElement& linkElement = toHTMLLinkElement(*element);
       if (linkElement.isImport() && linkElement.import() &&
-          innerParentNode(linkElement.import()) == linkElement)
-        value->setImportedDocument(
-            buildObjectForNode(linkElement.import(), 0, nodesMap));
+          innerParentNode(linkElement.import()) == linkElement) {
+        value->setImportedDocument(buildObjectForNode(
+            linkElement.import(), 0, traverseFrames, nodesMap));
+      }
       forcePushChildren = true;
     }
 
     if (isHTMLTemplateElement(*element)) {
-      value->setTemplateContent(buildObjectForNode(
-          toHTMLTemplateElement(*element).content(), 0, nodesMap));
+      value->setTemplateContent(
+          buildObjectForNode(toHTMLTemplateElement(*element).content(), 0,
+                             traverseFrames, nodesMap));
       forcePushChildren = true;
     }
 
@@ -1777,7 +1797,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(
     if (forcePushChildren && !depth)
       depth = 1;
     std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
-        buildArrayForContainerChildren(node, depth, nodesMap);
+        buildArrayForContainerChildren(node, depth, traverseFrames, nodesMap);
     if (children->length() > 0 ||
         depth)  // Push children along with shadow in any case.
       value->setChildren(std::move(children));
@@ -1803,6 +1823,7 @@ InspectorDOMAgent::buildArrayForElementAttributes(Element* element) {
 std::unique_ptr<protocol::Array<protocol::DOM::Node>>
 InspectorDOMAgent::buildArrayForContainerChildren(Node* container,
                                                   int depth,
+                                                  bool traverseFrames,
                                                   NodeToIdMap* nodesMap) {
   std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
       protocol::Array<protocol::DOM::Node>::create();
@@ -1812,7 +1833,8 @@ InspectorDOMAgent::buildArrayForContainerChildren(Node* container,
     Node* firstChild = container->firstChild();
     if (firstChild && firstChild->getNodeType() == Node::kTextNode &&
         !firstChild->nextSibling()) {
-      children->addItem(buildObjectForNode(firstChild, 0, nodesMap));
+      children->addItem(
+          buildObjectForNode(firstChild, 0, traverseFrames, nodesMap));
       m_childrenRequested.add(bind(container, nodesMap));
     }
     return children;
@@ -1823,7 +1845,8 @@ InspectorDOMAgent::buildArrayForContainerChildren(Node* container,
   m_childrenRequested.add(bind(container, nodesMap));
 
   while (child) {
-    children->addItem(buildObjectForNode(child, depth, nodesMap));
+    children->addItem(
+        buildObjectForNode(child, depth, traverseFrames, nodesMap));
     child = innerNextSibling(child);
   }
   return children;
@@ -1838,12 +1861,14 @@ InspectorDOMAgent::buildArrayForPseudoElements(Element* element,
 
   std::unique_ptr<protocol::Array<protocol::DOM::Node>> pseudoElements =
       protocol::Array<protocol::DOM::Node>::create();
-  if (element->pseudoElement(PseudoIdBefore))
+  if (element->pseudoElement(PseudoIdBefore)) {
     pseudoElements->addItem(buildObjectForNode(
-        element->pseudoElement(PseudoIdBefore), 0, nodesMap));
-  if (element->pseudoElement(PseudoIdAfter))
-    pseudoElements->addItem(
-        buildObjectForNode(element->pseudoElement(PseudoIdAfter), 0, nodesMap));
+        element->pseudoElement(PseudoIdBefore), 0, false, nodesMap));
+  }
+  if (element->pseudoElement(PseudoIdAfter)) {
+    pseudoElements->addItem(buildObjectForNode(
+        element->pseudoElement(PseudoIdAfter), 0, false, nodesMap));
+  }
   return pseudoElements;
 }
 
@@ -1960,7 +1985,7 @@ void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame) {
   unbind(frameOwner, m_documentNodeToIdMap.get());
 
   std::unique_ptr<protocol::DOM::Node> value =
-      buildObjectForNode(frameOwner, 0, m_documentNodeToIdMap.get());
+      buildObjectForNode(frameOwner, 0, false, m_documentNodeToIdMap.get());
   Node* previousSibling = innerPreviousSibling(frameOwner);
   int prevId =
       previousSibling ? m_documentNodeToIdMap->get(previousSibling) : 0;
@@ -2002,7 +2027,7 @@ void InspectorDOMAgent::didInsertDOMNode(Node* node) {
     Node* prevSibling = innerPreviousSibling(node);
     int prevId = prevSibling ? m_documentNodeToIdMap->get(prevSibling) : 0;
     std::unique_ptr<protocol::DOM::Node> value =
-        buildObjectForNode(node, 0, m_documentNodeToIdMap.get());
+        buildObjectForNode(node, 0, false, m_documentNodeToIdMap.get());
     frontend()->childNodeInserted(parentId, prevId, std::move(value));
   }
 }
@@ -2121,7 +2146,7 @@ void InspectorDOMAgent::didPushShadowRoot(Element* host, ShadowRoot* root) {
 
   pushChildNodesToFrontend(hostId, 1);
   frontend()->shadowRootPushed(
-      hostId, buildObjectForNode(root, 0, m_documentNodeToIdMap.get()));
+      hostId, buildObjectForNode(root, 0, false, m_documentNodeToIdMap.get()));
 }
 
 void InspectorDOMAgent::willPopShadowRoot(Element* host, ShadowRoot* root) {
@@ -2186,7 +2211,7 @@ void InspectorDOMAgent::pseudoElementCreated(PseudoElement* pseudoElement) {
   pushChildNodesToFrontend(parentId, 1);
   frontend()->pseudoElementAdded(
       parentId,
-      buildObjectForNode(pseudoElement, 0, m_documentNodeToIdMap.get()));
+      buildObjectForNode(pseudoElement, 0, false, m_documentNodeToIdMap.get()));
 }
 
 void InspectorDOMAgent::pseudoElementDestroyed(PseudoElement* pseudoElement) {
@@ -2351,7 +2376,7 @@ bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(
     ErrorString* errorString) {
   if (!m_documentNodeToIdMap->contains(m_document)) {
     std::unique_ptr<protocol::DOM::Node> root;
-    getDocument(errorString, &root);
+    getDocument(errorString, Maybe<int>(), Maybe<bool>(), &root);
     return errorString->isEmpty();
   }
   return true;
