@@ -29,7 +29,12 @@ using content::NavigationThrottle;
 
 namespace {
 
-const char kFlashDownloadURL[] = "get.adobe.com/flash";
+const char kWwwPrefix[] = "www.";
+
+// URLs that will be intercepted with any www. prefix pruned.
+const char* kFlashDownloadURLs[] = {
+    "get.adobe.com/flash", "macromedia.com/go/getflashplayer",
+};
 
 void DoNothing(blink::mojom::PermissionStatus result) {}
 
@@ -84,18 +89,30 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
   if (!has_user_gesture)
     return false;
 
-  if (!base::StartsWith(target_url.GetContent(), kFlashDownloadURL,
-                        base::CompareCase::INSENSITIVE_ASCII)) {
-    return false;
+  std::string target_url_str = target_url.GetContent();
+  // Ignore www. if it's at the start of the URL.
+  if (base::StartsWith(target_url_str, kWwwPrefix,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    target_url_str =
+        target_url_str.substr(sizeof(kWwwPrefix) - 1, std::string::npos);
   }
 
-  ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-      host_content_settings_map, url::Origin(source_url), source_url, nullptr);
-  flash_setting = PluginsFieldTrial::EffectiveContentSetting(
-      host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
+  for (const char* flash_url : kFlashDownloadURLs) {
+    if (base::StartsWith(target_url_str, flash_url,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
+          host_content_settings_map, url::Origin(source_url), source_url,
+          nullptr);
+      flash_setting = PluginsFieldTrial::EffectiveContentSetting(
+          host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS,
+          flash_setting);
 
-  return flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
-         flash_setting == CONTENT_SETTING_BLOCK;
+      return flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
+             flash_setting == CONTENT_SETTING_BLOCK;
+    }
+  }
+
+  return false;
 }
 
 // static

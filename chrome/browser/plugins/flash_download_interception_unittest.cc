@@ -46,6 +46,14 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
       host_content_settings_map(), GURL("http://source-page.com"),
       GURL("http://get.adobe.com/flash"), true));
 
+  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL("http://source-page.com"),
+      GURL("http://www.macromedia.com/go/getflashplayer"), true));
+
+  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL("http://source-page.com"),
+      GURL("http://macromedia.com/go/getflashplayer"), true));
+
   EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
       host_content_settings_map(), GURL("http://source-page.com"),
       GURL("https://www.example.com"), true));
@@ -53,6 +61,10 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
   EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
       host_content_settings_map(), GURL("http://source-page.com"),
       GURL("http://example.com/get.adobe.com/flashplayer"), true));
+
+  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL("http://source-page.com"),
+      GURL("http://ww.macromedia.com/go/getflashplayer"), true));
 }
 
 TEST_F(FlashDownloadInterceptionTest, NavigationThrottleCancelsNavigation) {
