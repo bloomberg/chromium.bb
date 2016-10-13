@@ -12,7 +12,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/time/time.h"
 
-namespace media {
 namespace midi {
 
 class MidiOutputPortAndroid final {
@@ -30,6 +29,5 @@ class MidiOutputPortAndroid final {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_OUTPUT_PORT_ANDROID_H_

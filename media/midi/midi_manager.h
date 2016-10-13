@@ -23,7 +23,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace media {
 namespace midi {
 
 // A MidiManagerClient registers with the MidiManager to receive MIDI data.
@@ -210,6 +209,5 @@ class MIDI_EXPORT MidiManager {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MANAGER_H_

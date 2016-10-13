@@ -15,7 +15,6 @@ namespace base {
 class ThreadChecker;
 }
 
-namespace media {
 namespace midi {
 
 class MidiScheduler;
@@ -82,6 +81,5 @@ class MIDI_EXPORT MidiManagerWinrt final : public MidiManager {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MANAGER_WINRT_H_

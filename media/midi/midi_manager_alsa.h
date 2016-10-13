@@ -27,7 +27,6 @@ namespace base {
 class ThreadChecker;
 }
 
-namespace media {
 namespace midi {
 
 class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
@@ -457,6 +456,5 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MANAGER_ALSA_H_

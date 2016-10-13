@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.media.midi;
+package org.chromium.midi;
 
 import android.annotation.TargetApi;
 import android.media.midi.MidiDevice;
@@ -12,9 +12,9 @@ import android.os.Build;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
-@JNINamespace("media::midi")
+@JNINamespace("midi")
 /**
- * A class implementing media::midi::MidiDeviceAndroid functionality.
+ * A class implementing midi::MidiDeviceAndroid functionality.
  */
 @TargetApi(Build.VERSION_CODES.M)
 class MidiDeviceAndroid {

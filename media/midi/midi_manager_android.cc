@@ -18,7 +18,6 @@
 
 using base::android::JavaParamRef;
 
-namespace media {
 namespace midi {
 
 MidiManager* MidiManager::Create() {
@@ -187,4 +186,3 @@ bool MidiManagerAndroid::Register(JNIEnv* env) {
 }
 
 }  // namespace midi
-}  // namespace media

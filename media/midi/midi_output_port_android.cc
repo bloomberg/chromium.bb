@@ -9,7 +9,6 @@
 
 using base::android::ScopedJavaLocalRef;
 
-namespace media {
 namespace midi {
 
 MidiOutputPortAndroid::MidiOutputPortAndroid(JNIEnv* env, jobject raw)
@@ -41,4 +40,3 @@ void MidiOutputPortAndroid::Send(const std::vector<uint8_t>& data) {
 }
 
 }  // namespace midi
-}  // namespace media

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.media.midi;
+package org.chromium.midi;
 
 import android.annotation.TargetApi;
 import android.media.midi.MidiDevice;
@@ -16,11 +16,11 @@ import org.chromium.base.annotations.JNINamespace;
 import java.io.IOException;
 
 /**
- * A class implementing media::midi::MidiOutputPortAndroid functionality.
+ * A class implementing midi::MidiOutputPortAndroid functionality.
  */
 // Note "OutputPort" is named in the Web MIDI manner. It corresponds to MidiInputPort class in the
 // Android API.
-@JNINamespace("media::midi")
+@JNINamespace("midi")
 @TargetApi(Build.VERSION_CODES.M)
 class MidiOutputPortAndroid {
     /**
@@ -36,7 +36,7 @@ class MidiOutputPortAndroid {
      */
     private final int mIndex;
 
-    private static final String TAG = "media_midi";
+    private static final String TAG = "midi";
 
     /**
      * constructor

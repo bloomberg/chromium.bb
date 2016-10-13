@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "media/midi/midi_message_util.h"
 
-namespace media {
 namespace midi {
 namespace {
 
@@ -124,4 +123,3 @@ void MidiMessageQueue::Get(std::vector<uint8_t>* message) {
 }
 
 }  // namespace midi
-}  // namespace media

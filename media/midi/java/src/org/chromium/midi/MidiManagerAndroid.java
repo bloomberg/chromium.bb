@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.media.midi;
+package org.chromium.midi;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * A Java class implementing media::midi::MidiManagerAndroid functionality.
+ * A Java class implementing midi::MidiManagerAndroid functionality.
  */
-@JNINamespace("media::midi")
+@JNINamespace("midi")
 @TargetApi(Build.VERSION_CODES.M)
 class MidiManagerAndroid {
     /**
@@ -48,14 +48,14 @@ class MidiManagerAndroid {
      */
     private final Handler mHandler;
     /**
-     * The associated media::midi::MidiDeviceAndroid instance.
+     * The associated midi::MidiDeviceAndroid instance.
      */
     private final long mNativeManagerPointer;
 
     /**
      * A creation function called by C++.
      * @param context
-     * @param nativeManagerPointer The native pointer to a media::midi::MidiManagerAndroid object.
+     * @param nativeManagerPointer The native pointer to a midi::MidiManagerAndroid object.
      */
     @CalledByNative
     static MidiManagerAndroid create(Context context, long nativeManagerPointer) {
@@ -64,7 +64,7 @@ class MidiManagerAndroid {
 
     /**
      * @param context
-     * @param nativeManagerPointer The native pointer to a media::midi::MidiManagerAndroid object.
+     * @param nativeManagerPointer The native pointer to a midi::MidiManagerAndroid object.
      */
     private MidiManagerAndroid(Context context, long nativeManagerPointer) {
         assert ThreadUtils.runningOnUiThread();

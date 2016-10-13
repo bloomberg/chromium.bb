@@ -19,7 +19,6 @@
 
 using base::TimeTicks;
 
-namespace media {
 namespace midi {
 
 namespace {
@@ -170,4 +169,3 @@ TEST_F(UsbMidiInputStreamTest, DispatchForDevice2) {
 }  // namespace
 
 }  // namespace midi
-}  // namespace media

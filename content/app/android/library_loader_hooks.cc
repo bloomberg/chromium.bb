@@ -103,10 +103,10 @@ bool EnsureJniRegistered(JNIEnv* env) {
     if (!media::RegisterCaptureJni(env))
       return false;
 
-    if (!media::midi::RegisterJni(env))
+    if (!media::RegisterScreenCaptureJni(env))
       return false;
 
-    if (!media::RegisterScreenCaptureJni(env))
+    if (!midi::RegisterJni(env))
       return false;
 
     if (!ui::RegisterUIAndroidJni(env))

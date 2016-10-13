@@ -16,7 +16,6 @@
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-namespace media {
 namespace midi {
 
 UsbMidiDeviceAndroid::UsbMidiDeviceAndroid(
@@ -146,4 +145,3 @@ std::string UsbMidiDeviceAndroid::GetString(int index,
 }
 
 }  // namespace midi
-}  // namespace media

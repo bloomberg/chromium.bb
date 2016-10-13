@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
 namespace midi {
 namespace {
 
@@ -45,4 +44,3 @@ TEST(MidiMessageUtilTest, GetMidiMessageLength) {
 
 }  // namespace
 }  // namespace midi
-}  // namespace media

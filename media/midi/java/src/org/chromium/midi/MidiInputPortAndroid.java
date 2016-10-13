@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.media.midi;
+package org.chromium.midi;
 
 import android.annotation.TargetApi;
 import android.media.midi.MidiDevice;
@@ -18,9 +18,9 @@ import java.io.IOException;
 // Note "InputPort" is named in the Web MIDI manner. It corresponds to MidiOutputPort class in the
 // Android API.
 /**
- * A MidiInputPortAndroid provides data to the associated media::midi::MidiInputPortAndroid object.
+ * A MidiInputPortAndroid provides data to the associated midi::MidiInputPortAndroid object.
  */
-@JNINamespace("media::midi")
+@JNINamespace("midi")
 @TargetApi(Build.VERSION_CODES.M)
 class MidiInputPortAndroid {
     /**
@@ -28,7 +28,7 @@ class MidiInputPortAndroid {
      */
     private MidiOutputPort mPort;
     /**
-     * A pointer to a media::midi::MidiInputPortAndroid object.
+     * A pointer to a midi::MidiInputPortAndroid object.
      */
     private long mNativeReceiverPointer;
     /**
@@ -53,7 +53,7 @@ class MidiInputPortAndroid {
     /**
      * Registers this object to the underlying port so as to the C++ function will be called with
      * the given C++ object when data arrives.
-     * @param nativeReceiverPointer a pointer to a media::midi::MidiInputPortAndroid object.
+     * @param nativeReceiverPointer a pointer to a midi::MidiInputPortAndroid object.
      * @return true if this operation succeeds or the port is already open.
      */
     @CalledByNative

@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "media/midi/usb_midi_export.h"
 
-namespace media {
 namespace midi {
 
 class MidiManagerUsb;
@@ -87,6 +86,5 @@ class USB_MIDI_EXPORT UsbMidiDevice {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_USB_MIDI_DEVICE_H_

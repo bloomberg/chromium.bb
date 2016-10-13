@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "media/midi/midi_manager.h"
 
-namespace media {
 namespace midi {
 
 MidiScheduler::MidiScheduler(MidiManager* manager)
@@ -59,4 +58,3 @@ void MidiScheduler::InvokeClosure(MidiManagerClient* client,
 }
 
 }  // namespace midi
-}  // namespace media

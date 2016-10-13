@@ -5,7 +5,6 @@
 #ifndef MEDIA_MIDI_RESULT_H_
 #define MEDIA_MIDI_RESULT_H_
 
-namespace media {
 namespace midi {
 
 // Result codes for MIDI.
@@ -25,6 +24,5 @@ enum class Result {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_RESULT_H_

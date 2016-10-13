@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 
-namespace media {
 namespace midi {
 
 namespace {
@@ -287,4 +286,3 @@ void UsbMidiDescriptorParser::Clear() {
 }
 
 }  // namespace midi
-}  // namespace media

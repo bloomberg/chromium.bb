@@ -55,10 +55,10 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   }
 
   static blink::WebMIDIAccessorClient::MIDIPortState ToBlinkState(
-      media::midi::MidiPortState state) {
+      midi::MidiPortState state) {
     // "open" status is separately managed by blink per MIDIAccess instance.
-    if (state == media::midi::MIDI_PORT_OPENED)
-      state = media::midi::MIDI_PORT_CONNECTED;
+    if (state == midi::MIDI_PORT_OPENED)
+      state = midi::MIDI_PORT_CONNECTED;
     return static_cast<blink::WebMIDIAccessorClient::MIDIPortState>(state);
   }
 
@@ -85,21 +85,21 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   // Called when the browser process has approved (or denied) access to
   // MIDI hardware.
-  void OnSessionStarted(media::midi::Result result);
+  void OnSessionStarted(midi::Result result);
 
   // These functions are called in 2 cases:
   //  (1) Just before calling |OnSessionStarted|, to notify the recipient about
   //      existing ports.
   //  (2) To notify the recipient that a new device was connected and that new
   //      ports have been created.
-  void OnAddInputPort(media::midi::MidiPortInfo info);
-  void OnAddOutputPort(media::midi::MidiPortInfo info);
+  void OnAddInputPort(midi::MidiPortInfo info);
+  void OnAddOutputPort(midi::MidiPortInfo info);
 
   // These functions are called to notify the recipient that a device that is
   // notified via OnAddInputPort() or OnAddOutputPort() gets disconnected, or
   // connected again.
-  void OnSetInputPortState(uint32_t port, media::midi::MidiPortState state);
-  void OnSetOutputPortState(uint32_t port, media::midi::MidiPortState state);
+  void OnSetInputPortState(uint32_t port, midi::MidiPortState state);
+  void OnSetOutputPortState(uint32_t port, midi::MidiPortState state);
 
   // Called when the browser process has sent MIDI data containing one or
   // more messages.
@@ -113,13 +113,13 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   void OnAcknowledgeSentData(size_t bytes_sent);
 
   // Following methods, Handle*, run on |main_task_runner_|.
-  void HandleClientAdded(media::midi::Result result);
+  void HandleClientAdded(midi::Result result);
 
-  void HandleAddInputPort(media::midi::MidiPortInfo info);
-  void HandleAddOutputPort(media::midi::MidiPortInfo info);
-  void HandleSetInputPortState(uint32_t port, media::midi::MidiPortState state);
+  void HandleAddInputPort(midi::MidiPortInfo info);
+  void HandleAddOutputPort(midi::MidiPortInfo info);
+  void HandleSetInputPortState(uint32_t port, midi::MidiPortState state);
   void HandleSetOutputPortState(uint32_t port,
-                                media::midi::MidiPortState state);
+                                midi::MidiPortState state);
 
   void HandleDataReceived(uint32_t port,
                           const std::vector<uint8_t>& data,
@@ -153,11 +153,11 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   ClientsQueue clients_waiting_session_queue_;
 
   // Represents a result on starting a session. Can be accessed only on
-  media::midi::Result session_result_;
+  midi::Result session_result_;
 
   // Holds MidiPortInfoList for input ports and output ports.
-  media::midi::MidiPortInfoList inputs_;
-  media::midi::MidiPortInfoList outputs_;
+  midi::MidiPortInfoList inputs_;
+  midi::MidiPortInfoList outputs_;
 
   size_t unacknowledged_bytes_sent_;
 

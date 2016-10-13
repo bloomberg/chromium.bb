@@ -9,7 +9,6 @@
 
 #include "media/midi/usb_midi_export.h"
 
-namespace media {
 namespace midi {
 
 class UsbMidiDevice;
@@ -47,6 +46,5 @@ struct USB_MIDI_EXPORT UsbMidiJack {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_USB_MIDI_JACK_H_

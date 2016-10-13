@@ -12,7 +12,6 @@
 #include "base/memory/scoped_vector.h"
 #include "media/midi/midi_input_port_android.h"
 
-namespace media {
 namespace midi {
 
 class MidiOutputPortAndroid;
@@ -45,6 +44,5 @@ class MidiDeviceAndroid final {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_DEVICE_ANDROID_H_

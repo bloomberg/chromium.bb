@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "media/midi/midi_export.h"
 
-namespace media {
 namespace midi {
 
 // A simple message splitter for possibly unsafe/corrupted MIDI data stream.
@@ -72,6 +71,5 @@ class MIDI_EXPORT MidiMessageQueue {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MESSAGE_QUEUE_H_

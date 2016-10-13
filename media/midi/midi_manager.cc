@@ -12,7 +12,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
-namespace media {
 namespace midi {
 
 namespace {
@@ -274,4 +273,3 @@ void MidiManager::ShutdownOnSessionThread() {
 }
 
 }  // namespace midi
-}  // namespace media

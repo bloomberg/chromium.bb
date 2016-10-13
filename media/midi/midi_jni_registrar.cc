@@ -12,7 +12,6 @@
 #include "media/midi/usb_midi_device_android.h"
 #include "media/midi/usb_midi_device_factory_android.h"
 
-namespace media {
 namespace midi {
 
 static base::android::RegistrationMethod kMediaRegisteredMethods[] = {
@@ -29,4 +28,3 @@ bool RegisterJni(JNIEnv* env) {
 }
 
 }  // namespace midi
-}  // namespace media

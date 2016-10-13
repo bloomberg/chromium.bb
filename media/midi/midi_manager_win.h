@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "media/midi/midi_manager.h"
 
-namespace media {
 namespace midi {
 
 class MidiServiceWinDelegate {
@@ -73,6 +72,5 @@ class MidiManagerWin final : public MidiManager, public MidiServiceWinDelegate {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MANAGER_WIN_H_

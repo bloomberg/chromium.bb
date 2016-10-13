@@ -17,7 +17,6 @@
 #include "base/synchronization/lock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
 namespace midi {
 
 namespace {
@@ -171,4 +170,3 @@ TEST_F(MidiManagerMacTest, MidiNotification) {
 }  // namespace
 
 }  // namespace midi
-}  // namespace media

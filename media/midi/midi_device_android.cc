@@ -12,7 +12,6 @@
 
 using base::android::ScopedJavaLocalRef;
 
-namespace media {
 namespace midi {
 
 namespace {
@@ -68,4 +67,3 @@ std::string MidiDeviceAndroid::GetDeviceVersion() {
 }
 
 }  // namespace midi
-}  // namespace media

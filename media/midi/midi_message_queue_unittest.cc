@@ -9,7 +9,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
 namespace midi {
 namespace {
 
@@ -571,4 +570,3 @@ TEST(MidiMessageQueueTest, ReservedMessageInjectedInSysExMessage) {
 
 }  // namespace
 }  // namespace midi
-}  // namespace media

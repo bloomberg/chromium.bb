@@ -31,7 +31,6 @@
 #include "base/win/scoped_comptr.h"
 #include "media/midi/midi_scheduler.h"
 
-namespace media {
 namespace midi {
 namespace {
 
@@ -1046,4 +1045,3 @@ void MidiManagerWinrt::OnPortManagerReady() {
 }
 
 }  // namespace midi
-}  // namespace media

@@ -28,7 +28,6 @@
 #include "crypto/sha2.h"
 #include "media/midi/midi_port_info.h"
 
-namespace media {
 namespace midi {
 
 namespace {
@@ -1404,4 +1403,3 @@ MidiManager* MidiManager::Create() {
 }
 
 }  // namespace midi
-}  // namespace media

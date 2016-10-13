@@ -9,13 +9,11 @@
 
 #include "media/midi/midi_export.h"
 
-namespace media {
 namespace midi {
 
 // Register all JNI bindings necessary for media/midi.
 MIDI_EXPORT bool RegisterJni(JNIEnv* env);
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_JNI_REGISTRAR_H_

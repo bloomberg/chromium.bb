@@ -21,7 +21,6 @@
 #include "media/midi/midi_manager.h"
 #include "media/midi/midi_scheduler.h"
 
-namespace media {
 namespace midi {
 
 class MidiDeviceAndroid;
@@ -94,6 +93,5 @@ class MidiManagerAndroid final : public MidiManager,
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MANAGER_ANDROID_H_

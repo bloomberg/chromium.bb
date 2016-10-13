@@ -10,7 +10,6 @@
 
 using base::android::JavaParamRef;
 
-namespace media {
 namespace midi {
 
 MidiInputPortAndroid::MidiInputPortAndroid(JNIEnv* env,
@@ -58,4 +57,3 @@ bool MidiInputPortAndroid::Register(JNIEnv* env) {
 }
 
 }  // namespace midi
-}  // namespace media

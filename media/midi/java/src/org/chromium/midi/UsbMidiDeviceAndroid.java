@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.media.midi;
+package org.chromium.midi;
 
 import android.annotation.TargetApi;
 import android.hardware.usb.UsbConstants;
@@ -28,7 +28,7 @@ import java.util.Map;
  * Owned by its native counterpart declared in usb_midi_device_android.h.
  * Refer to that class for general comments.
  */
-@JNINamespace("media::midi")
+@JNINamespace("midi")
 class UsbMidiDeviceAndroid {
     /**
      * A connection handle for this device.

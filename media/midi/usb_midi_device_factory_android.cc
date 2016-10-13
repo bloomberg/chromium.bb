@@ -18,7 +18,6 @@
 
 using base::android::JavaParamRef;
 
-namespace media {
 namespace midi {
 
 namespace {
@@ -96,4 +95,3 @@ bool UsbMidiDeviceFactoryAndroid::RegisterUsbMidiDeviceFactory(JNIEnv* env) {
 }
 
 }  // namespace midi
-}  // namespace media

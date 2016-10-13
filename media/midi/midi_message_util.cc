@@ -5,7 +5,6 @@
 #include "base/logging.h"
 #include "media/midi/midi_message_util.h"
 
-namespace media {
 namespace midi {
 
 size_t GetMidiMessageLength(uint8_t status_byte) {
@@ -50,4 +49,3 @@ size_t GetMidiMessageLength(uint8_t status_byte) {
 }
 
 }  // namespace midi
-}  // namespace media

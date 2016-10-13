@@ -18,10 +18,10 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MidiMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::midi::MidiPortState,
-                          media::midi::MIDI_PORT_STATE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(midi::MidiPortState,
+                          midi::MIDI_PORT_STATE_LAST)
 
-IPC_STRUCT_TRAITS_BEGIN(media::midi::MidiPortInfo)
+IPC_STRUCT_TRAITS_BEGIN(midi::MidiPortInfo)
   IPC_STRUCT_TRAITS_MEMBER(id)
   IPC_STRUCT_TRAITS_MEMBER(manufacturer)
   IPC_STRUCT_TRAITS_MEMBER(name)
@@ -29,7 +29,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::midi::MidiPortInfo)
   IPC_STRUCT_TRAITS_MEMBER(state)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::midi::Result, media::midi::Result::MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(midi::Result, midi::Result::MAX)
 
 // Messages for IPC between MidiMessageFilter and MidiHost.
 
@@ -46,20 +46,20 @@ IPC_MESSAGE_CONTROL0(MidiHostMsg_EndSession)
 // Messages sent from the browser to the renderer.
 
 IPC_MESSAGE_CONTROL1(MidiMsg_AddInputPort,
-                     media::midi::MidiPortInfo /* input port */)
+                     midi::MidiPortInfo /* input port */)
 
 IPC_MESSAGE_CONTROL1(MidiMsg_AddOutputPort,
-                     media::midi::MidiPortInfo /* output port */)
+                     midi::MidiPortInfo /* output port */)
 
 IPC_MESSAGE_CONTROL2(MidiMsg_SetInputPortState,
                      uint32_t /* port */,
-                     media::midi::MidiPortState /* state */)
+                     midi::MidiPortState /* state */)
 
 IPC_MESSAGE_CONTROL2(MidiMsg_SetOutputPortState,
                      uint32_t /* port */,
-                     media::midi::MidiPortState /* state */)
+                     midi::MidiPortState /* state */)
 
-IPC_MESSAGE_CONTROL1(MidiMsg_SessionStarted, media::midi::Result /* result */)
+IPC_MESSAGE_CONTROL1(MidiMsg_SessionStarted, midi::Result /* result */)
 
 IPC_MESSAGE_CONTROL3(MidiMsg_DataReceived,
                      uint32_t /* port */,

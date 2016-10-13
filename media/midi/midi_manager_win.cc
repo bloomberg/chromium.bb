@@ -49,7 +49,6 @@
 #include "media/midi/midi_port_info.h"
 #include "media/midi/midi_switches.h"
 
-namespace media {
 namespace midi {
 namespace {
 
@@ -1201,4 +1200,3 @@ MidiManager* MidiManager::Create() {
 }
 
 }  // namespace midi
-}  // namespace media

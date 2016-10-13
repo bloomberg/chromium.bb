@@ -13,7 +13,6 @@
 
 #include "media/midi/midi_export.h"
 
-namespace media {
 namespace midi {
 
 // Returns the length of a MIDI message in bytes. Never returns 4 or greater.
@@ -33,6 +32,5 @@ const uint8_t kSysRTMessageBitMask = 0xf8;
 const uint8_t kSysRTMessageBitPattern = 0xf8;
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MESSAGE_UTIL_H_

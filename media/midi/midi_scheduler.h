@@ -14,7 +14,6 @@
 #include "base/threading/thread_checker.h"
 #include "media/midi/midi_export.h"
 
-namespace media {
 namespace midi {
 
 class MidiManager;
@@ -60,6 +59,5 @@ class MIDI_EXPORT MidiScheduler final {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_SCHEDULER_H_

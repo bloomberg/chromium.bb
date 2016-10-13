@@ -9,7 +9,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
 namespace midi {
 
 class MidiManagerAlsaTest : public ::testing::Test {
@@ -706,4 +705,3 @@ TEST_F(MidiManagerAlsaTest, AlsaCards) {
 // TODO(agoode): Test old -> new state event generation, using mocks.
 
 }  // namespace midi
-}  // namespace media

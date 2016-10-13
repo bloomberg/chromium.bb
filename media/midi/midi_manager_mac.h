@@ -19,7 +19,6 @@
 #include "media/midi/midi_manager.h"
 #include "media/midi/midi_port_info.h"
 
-namespace media {
 namespace midi {
 
 class MIDI_EXPORT MidiManagerMac final : public MidiManager {
@@ -90,6 +89,5 @@ class MIDI_EXPORT MidiManagerMac final : public MidiManager {
 };
 
 }  // namespace midi
-}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MANAGER_MAC_H_

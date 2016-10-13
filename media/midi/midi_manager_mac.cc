@@ -23,7 +23,6 @@ using std::string;
 // 64-bit. Therefore, the initialization is the simplest one that satisfies both
 // (if possible).
 
-namespace media {
 namespace midi {
 
 namespace {
@@ -387,4 +386,3 @@ void MidiManagerMac::SendMidiData(MidiManagerClient* client,
 }
 
 }  // namespace midi
-}  // namespace media

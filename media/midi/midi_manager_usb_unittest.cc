@@ -18,7 +18,6 @@
 #include "media/midi/usb_midi_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
 namespace midi {
 
 namespace {
@@ -574,4 +573,3 @@ TEST_F(MidiManagerUsbTest, AttachDevice) {
 }  // namespace
 
 }  // namespace midi
-}  // namespace media

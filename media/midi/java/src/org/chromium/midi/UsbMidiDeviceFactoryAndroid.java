@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.media.midi;
+package org.chromium.midi;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -28,7 +28,7 @@ import java.util.Set;
  * Owned by its native counterpart declared in
  * usb_midi_device_factory_android.h. Refer to that class for general comments.
  */
-@JNINamespace("media::midi")
+@JNINamespace("midi")
 class UsbMidiDeviceFactoryAndroid {
     /**
      * The UsbManager of this system.
@@ -60,7 +60,7 @@ class UsbMidiDeviceFactoryAndroid {
      */
     private long mNativePointer;
 
-    private static final String ACTION_USB_PERMISSION = "org.chromium.media.USB_PERMISSION";
+    private static final String ACTION_USB_PERMISSION = "org.chromium.midi.USB_PERMISSION";
 
     /**
      * Constructs a UsbMidiDeviceAndroid.
