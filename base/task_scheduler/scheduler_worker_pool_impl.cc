@@ -435,7 +435,7 @@ void SchedulerWorkerPoolImpl::PostTaskWithSequenceNow(
 
     // Wake up a worker to process |sequence|.
     if (worker)
-      worker->WakeUp();
+      WakeUpWorker(worker);
     else
       WakeUpOneWorker();
   }
@@ -718,6 +718,12 @@ bool SchedulerWorkerPoolImpl::Initialize(
 #endif
 
   return !workers_.empty();
+}
+
+void SchedulerWorkerPoolImpl::WakeUpWorker(SchedulerWorker* worker) {
+  DCHECK(worker);
+  RemoveFromIdleWorkersStack(worker);
+  worker->WakeUp();
 }
 
 void SchedulerWorkerPoolImpl::WakeUpOneWorker() {
