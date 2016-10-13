@@ -53,7 +53,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
-from chromite.lib import retry_util
+from chromite.lib import retry_stats
 from chromite.lib import timeout_util
 from chromite.scripts import cros_generate_breakpad_symbols
 
@@ -130,6 +130,9 @@ MAX_RETRIES = 6
 # Number of total errors, before uploads are no longer attempted.
 # This is used to avoid lots of errors causing unreasonable delays.
 MAX_TOTAL_ERRORS_FOR_RETRY = 30
+
+# Category to use for collection upload retry stats.
+UPLOAD_STATS = 'UPLOAD'
 
 
 def BatchGenerator(iterator, batch_size):
@@ -524,9 +527,12 @@ def PerformSymbolsFileUpload(symbols, upload_url, product_name='ChromeOS'):
       try:
         # This command retries the upload multiple times with growing delays. We
         # only consider the upload a failure if these retries fail.
+        def ShouldRetryUpload(exception):
+          return isinstance(exception, (urllib2.HTTPError, urllib2.URLError))
+
         with cros_build_lib.TimedSection() as timer:
-          retry_util.RetryException(
-              (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES,
+          retry_stats.RetryWithStats(
+              UPLOAD_STATS, ShouldRetryUpload, MAX_RETRIES,
               UploadSymbolFile,
               upload_url, s, product_name,
               sleep=INITIAL_RETRY_DELAY)
@@ -571,6 +577,11 @@ def ReportResults(symbols, failed_list):
     if s.status in [SymbolFile.INITIAL, SymbolFile.ERROR]:
       upload_failures.append(s)
 
+  # Report retry numbers.
+  _, _, retries = retry_stats.CategoryStats(UPLOAD_STATS)
+  if retries:
+    logging.warning('%d upload retries performed.', retries)
+
   logging.info('Uploaded %(uploaded)d, Skipped %(duplicate)d duplicates.',
                result_counts)
 
@@ -610,6 +621,8 @@ def UploadSymbols(sym_paths, upload_url, product_name, dedupe_namespace=None,
   Returns:
     The number of errors that were encountered.
   """
+  retry_stats.SetupStats()
+
   # Note: This method looks like each step of processing is performed
   # sequentially for all SymbolFiles, but instead each step is a generator that
   # produces the next iteration only when it's read. This means that (except for
