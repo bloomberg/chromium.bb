@@ -78,6 +78,7 @@
       'Android Cloud Tests': 'android_debug_static_bot_x86',
       'Android Tests (x86 emulator)': 'android_debug_static_bot_x86',
       'Android Builder (dbg)': 'android_debug_static_bot_vr_shell',
+      'Android Builder Goma Canary (dbg)': 'android_debug_bot',
       'Android deterministic': 'android_without_codecs_release_bot_minimal_symbols',
       'Android deterministic (dbg)': 'android_debug_bot',
       'Blimp Android Client':
@@ -156,6 +157,7 @@
       'CrWinClngLLD64dbg': 'clang_tot_minimal_symbols_shared_debug_use_lld',
       'CrWinClngLLDdbg': 'clang_tot_minimal_symbols_shared_debug_use_lld_x86',
       'EarlGreyiOS': 'ios',
+      'GomaCanaryiOS': 'ios',
       'Headless Linux (dbg)': '//build/args/bots/chromium.fyi/headless_linux_dbg.gn',
       'MD Top Chrome ChromeOS material-hybrid': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome ChromeOS non-material': 'chromeos_with_codecs_debug_bot',
