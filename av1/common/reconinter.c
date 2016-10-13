@@ -69,6 +69,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
   struct macroblockd_plane *const pd = &xd->plane[plane];
 #if CONFIG_MOTION_VAR
   const MODE_INFO *mi = xd->mi[mi_col_offset + xd->mi_stride * mi_row_offset];
+  const int build_for_obmc = !(mi_col_offset == 0 && mi_row_offset == 0);
 #else
   const MODE_INFO *mi = xd->mi[0];
 #endif  // CONFIG_MOTION_VAR
@@ -76,7 +77,11 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
   int ref;
 
 #if CONFIG_SUB8X8_MC
+#if CONFIG_MOTION_VAR
+  if (mi->mbmi.sb_type < BLOCK_8X8 && plane > 0 && !build_for_obmc) {
+#else
   if (mi->mbmi.sb_type < BLOCK_8X8 && plane > 0) {
+#endif  // CONFIG_MOTION_VAR
     // block size in log2
     const int b4_wl = b_width_log2_lookup[mi->mbmi.sb_type];
     const int b4_hl = b_height_log2_lookup[mi->mbmi.sb_type];
@@ -162,7 +167,12 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
     struct buf_2d *const dst_buf = &pd->dst;
     uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
     const MV mv = mi->mbmi.sb_type < BLOCK_8X8
+#if CONFIG_MOTION_VAR
+                      ? (build_for_obmc ? mi->bmi[block].as_mv[ref].as_mv
+                                        : average_split_mvs(pd, mi, ref, block))
+#else
                       ? average_split_mvs(pd, mi, ref, block)
+#endif  // CONFIG_SUB8X8_MC && CONFIG_MOTION_VAR
                       : mi->mbmi.mv[ref].as_mv;
 
     // TODO(jkoleszar): This clamping is done in the incorrect place for the
@@ -526,20 +536,19 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
         const PARTITION_TYPE bp = BLOCK_8X8 - mbmi->sb_type;
         const int have_vsplit = bp != PARTITION_HORZ;
         const int have_hsplit = bp != PARTITION_VERT;
-        const int num_4x4_w = 2 >> ((!have_vsplit) | pd->subsampling_x);
-        const int num_4x4_h = 2 >> ((!have_hsplit) | pd->subsampling_y);
-        const int pw = 8 >> (have_vsplit | pd->subsampling_x);
+        const int num_4x4_w = 2 >> (!have_vsplit);
+        const int num_4x4_h = 2 >> (!have_hsplit);
+        const int pw = 8 >> (have_vsplit + pd->subsampling_x);
         int x, y;
 
         for (y = 0; y < num_4x4_h; ++y)
           for (x = 0; x < num_4x4_w; ++x) {
-            if ((bp == PARTITION_HORZ || bp == PARTITION_SPLIT) && y == 0 &&
-                !pd->subsampling_y)
+            if ((bp == PARTITION_HORZ || bp == PARTITION_SPLIT) && y == 0)
               continue;
 
-            build_inter_predictors(xd, j, mi_col_offset, mi_row_offset,
-                                   y * 2 + x, bw, bh, 4 * x, 0, pw, bh, mi_x,
-                                   mi_y);
+            build_inter_predictors(
+                xd, j, mi_col_offset, mi_row_offset, y * 2 + x, bw, bh,
+                (4 * x) >> pd->subsampling_x, 0, pw, bh, mi_x, mi_y);
           }
       } else {
         build_inter_predictors(xd, j, mi_col_offset, mi_row_offset, 0, bw, bh,
@@ -608,20 +617,19 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
         const PARTITION_TYPE bp = BLOCK_8X8 - mbmi->sb_type;
         const int have_vsplit = bp != PARTITION_HORZ;
         const int have_hsplit = bp != PARTITION_VERT;
-        const int num_4x4_w = 2 >> ((!have_vsplit) | pd->subsampling_x);
-        const int num_4x4_h = 2 >> ((!have_hsplit) | pd->subsampling_y);
-        const int ph = 8 >> (have_hsplit | pd->subsampling_y);
+        const int num_4x4_w = 2 >> (!have_vsplit);
+        const int num_4x4_h = 2 >> (!have_hsplit);
+        const int ph = 8 >> (have_hsplit + pd->subsampling_y);
         int x, y;
 
         for (y = 0; y < num_4x4_h; ++y)
           for (x = 0; x < num_4x4_w; ++x) {
-            if ((bp == PARTITION_VERT || bp == PARTITION_SPLIT) && x == 0 &&
-                !pd->subsampling_x)
+            if ((bp == PARTITION_VERT || bp == PARTITION_SPLIT) && x == 0)
               continue;
 
-            build_inter_predictors(xd, j, mi_col_offset, mi_row_offset,
-                                   y * 2 + x, bw, bh, 0, 4 * y, bw, ph, mi_x,
-                                   mi_y);
+            build_inter_predictors(
+                xd, j, mi_col_offset, mi_row_offset, y * 2 + x, bw, bh, 0,
+                (4 * y) >> pd->subsampling_y, bw, ph, mi_x, mi_y);
           }
       } else {
         build_inter_predictors(xd, j, mi_col_offset, mi_row_offset, 0, bw, bh,
