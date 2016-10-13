@@ -204,6 +204,10 @@ class CORE_EXPORT ImageResource final
   bool m_hasDevicePixelRatioHeaderValue;
   HashCountedSet<ImageResourceObserver*> m_observers;
   HashCountedSet<ImageResourceObserver*> m_finishedObservers;
+
+  // Indicates if the ImageResource is currently scheduling a reload, e.g.
+  // because reloadIfLoFi() was called.
+  bool m_isSchedulingReload;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Image);

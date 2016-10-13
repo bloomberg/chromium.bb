@@ -51,6 +51,10 @@ class MockResourceClient : public GarbageCollectedFinalized<MockResourceClient>,
   String debugName() const override { return "MockResourceClient"; }
   virtual bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }
 
+  size_t encodedSizeOnNotifyFinished() const {
+    return m_encodedSizeOnNotifyFinished;
+  }
+
   virtual void removeAsClient();
   virtual void dispose();
 
@@ -59,6 +63,7 @@ class MockResourceClient : public GarbageCollectedFinalized<MockResourceClient>,
  protected:
   Member<Resource> m_resource;
   bool m_notifyFinishedCalled;
+  size_t m_encodedSizeOnNotifyFinished;
 };
 
 class MockImageResourceClient final : public MockResourceClient,
@@ -79,9 +84,18 @@ class MockImageResourceClient final : public MockResourceClient,
 
   int imageChangedCount() const { return m_imageChangedCount; }
 
+  size_t encodedSizeOnLastImageChanged() const {
+    return m_encodedSizeOnLastImageChanged;
+  }
+  size_t encodedSizeOnImageNotifyFinished() const {
+    return m_encodedSizeOnImageNotifyFinished;
+  }
+
  private:
   int m_imageChangedCount;
+  size_t m_encodedSizeOnLastImageChanged;
   int m_imageNotifyFinishedCount;
+  size_t m_encodedSizeOnImageNotifyFinished;
 };
 
 }  // namespace blink

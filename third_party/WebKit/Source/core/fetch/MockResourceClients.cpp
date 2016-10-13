@@ -10,16 +10,19 @@
 namespace blink {
 
 MockResourceClient::MockResourceClient(Resource* resource)
-    : m_resource(resource), m_notifyFinishedCalled(false) {
+    : m_resource(resource),
+      m_notifyFinishedCalled(false),
+      m_encodedSizeOnNotifyFinished(0) {
   ThreadState::current()->registerPreFinalizer(this);
   m_resource->addClient(this);
 }
 
 MockResourceClient::~MockResourceClient() {}
 
-void MockResourceClient::notifyFinished(Resource*) {
+void MockResourceClient::notifyFinished(Resource* resource) {
   ASSERT_FALSE(m_notifyFinishedCalled);
   m_notifyFinishedCalled = true;
+  m_encodedSizeOnNotifyFinished = resource->encodedSize();
 }
 
 void MockResourceClient::removeAsClient() {
@@ -42,7 +45,9 @@ DEFINE_TRACE(MockResourceClient) {
 MockImageResourceClient::MockImageResourceClient(ImageResource* resource)
     : MockResourceClient(resource),
       m_imageChangedCount(0),
-      m_imageNotifyFinishedCount(0) {
+      m_encodedSizeOnLastImageChanged(0),
+      m_imageNotifyFinishedCount(0),
+      m_encodedSizeOnImageNotifyFinished(0) {
   toImageResource(m_resource.get())->addObserver(this);
 }
 
@@ -59,13 +64,16 @@ void MockImageResourceClient::dispose() {
   MockResourceClient::dispose();
 }
 
-void MockImageResourceClient::imageChanged(ImageResource*, const IntRect*) {
+void MockImageResourceClient::imageChanged(ImageResource* image,
+                                           const IntRect*) {
   m_imageChangedCount++;
+  m_encodedSizeOnLastImageChanged = image->encodedSize();
 }
 
-void MockImageResourceClient::imageNotifyFinished(ImageResource*) {
+void MockImageResourceClient::imageNotifyFinished(ImageResource* image) {
   ASSERT_EQ(0, m_imageNotifyFinishedCount);
   m_imageNotifyFinishedCount++;
+  m_encodedSizeOnImageNotifyFinished = image->encodedSize();
 }
 
 bool MockImageResourceClient::notifyFinishedCalled() const {

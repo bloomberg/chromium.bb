@@ -71,7 +71,8 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest,
     : Resource(resourceRequest, Image, options),
       m_devicePixelRatioHeaderValue(1.0),
       m_image(nullptr),
-      m_hasDevicePixelRatioHeaderValue(false) {
+      m_hasDevicePixelRatioHeaderValue(false),
+      m_isSchedulingReload(false) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageResource(ResourceRequest) " << this;
 }
 
@@ -80,7 +81,8 @@ ImageResource::ImageResource(blink::Image* image,
     : Resource(ResourceRequest(""), Image, options),
       m_devicePixelRatioHeaderValue(1.0),
       m_image(image),
-      m_hasDevicePixelRatioHeaderValue(false) {
+      m_hasDevicePixelRatioHeaderValue(false),
+      m_isSchedulingReload(false) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageResource(Image) " << this;
   setStatus(Cached);
 }
@@ -98,6 +100,11 @@ DEFINE_TRACE(ImageResource) {
 }
 
 void ImageResource::checkNotify() {
+  // Don't notify observers and clients of completion if this ImageResource is
+  // about to be reloaded.
+  if (m_isSchedulingReload)
+    return;
+
   notifyObserversInternal(MarkFinishedOption::ShouldMarkFinished);
   Resource::checkNotify();
 }
@@ -125,6 +132,12 @@ void ImageResource::markObserverFinished(ImageResourceObserver* observer) {
 
 void ImageResource::didAddClient(ResourceClient* client) {
   DCHECK((m_multipartParser && isLoading()) || !data() || m_image);
+
+  // Don't notify observers and clients of completion if this ImageResource is
+  // about to be reloaded.
+  if (m_isSchedulingReload)
+    return;
+
   Resource::didAddClient(client);
 }
 
@@ -150,7 +163,7 @@ void ImageResource::addObserver(ImageResourceObserver* observer) {
     observer->imageChanged(this);
   }
 
-  if (isLoaded()) {
+  if (isLoaded() && !m_isSchedulingReload) {
     markObserverFinished(observer);
     observer->imageNotifyFinished(this);
   }
@@ -532,14 +545,31 @@ void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher) {
   if (isLoaded() &&
       !response().httpHeaderField("chrome-proxy").contains("q=low"))
     return;
+
+  // Prevent clients and observers from being notified of completion while the
+  // reload is being scheduled, so that e.g. canceling an existing load in
+  // progress doesn't cause clients and observers to be notified of completion
+  // prematurely.
+  DCHECK(!m_isSchedulingReload);
+  m_isSchedulingReload = true;
+
   setCachePolicyBypassingCache();
   setLoFiStateOff();
-  if (isLoading())
+  if (isLoading()) {
     loader()->cancel();
-  clear();
-  notifyObservers();
+    // Canceling the loader causes error() to be called, which in turn calls
+    // clear() and notifyObservers(), so there's no need to call these again
+    // here.
+  } else {
+    clear();
+    notifyObservers();
+  }
 
   setStatus(NotStarted);
+
+  DCHECK(m_isSchedulingReload);
+  m_isSchedulingReload = false;
+
   fetcher->startLoad(this);
 }
 

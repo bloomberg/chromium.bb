@@ -30,6 +30,8 @@
 
 #include "core/fetch/ImageResource.h"
 
+#include "core/fetch/FetchInitiatorInfo.h"
+#include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/MockResourceClients.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -162,7 +164,6 @@ void receiveResponse(ImageResource* imageResource,
                             data.size());
   imageResource->finish();
 }
-}
 
 class ImageResourceTestMockFetchContext : public FetchContext {
  public:
@@ -193,19 +194,41 @@ class ImageResourceTestMockFetchContext : public FetchContext {
   std::unique_ptr<scheduler::FakeWebTaskRunner> m_runner;
 };
 
+// Convenience class that registers a mocked URL load on construction, and
+// unregisters it on destruction. This allows for a test to use constructs like
+// ASSERT_TRUE() without needing to worry about unregistering the mocked URL
+// load to avoid putting other tests into inconsistent states in case the
+// assertion fails.
+class ScopedRegisteredURL {
+ public:
+  ScopedRegisteredURL(const KURL& url,
+                      const String& fileName = "cancelTest.html",
+                      const String& mimeType = "text/html")
+      : m_url(url) {
+    URLTestHelpers::registerMockedURLLoad(m_url, fileName, mimeType);
+  }
+
+  ~ScopedRegisteredURL() {
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(m_url);
+  }
+
+ private:
+  KURL m_url;
+};
+
+}  // namespace
+
 TEST(ImageResourceTest, MultipartImage) {
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
   KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html",
-                                        "text/html");
+  ScopedRegisteredURL scopedRegisteredURL(testURL);
 
   // Emulate starting a real load, but don't expect any "real"
   // WebURLLoaderClient callbacks.
   ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL));
   cachedImage->setIdentifier(createUniqueIdentifier());
   fetcher->startLoad(cachedImage);
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(testURL);
 
   Persistent<MockImageResourceClient> client =
       new MockImageResourceClient(cachedImage);
@@ -277,8 +300,7 @@ TEST(ImageResourceTest, MultipartImage) {
 
 TEST(ImageResourceTest, CancelOnDetach) {
   KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html",
-                                        "text/html");
+  ScopedRegisteredURL scopedRegisteredURL(testURL);
 
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
@@ -305,8 +327,6 @@ TEST(ImageResourceTest, CancelOnDetach) {
   blink::testing::runPendingTasks();
   EXPECT_EQ(Resource::LoadError, cachedImage->getStatus());
   EXPECT_FALSE(memoryCache()->resourceForURL(testURL));
-
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(testURL);
 }
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
@@ -374,10 +394,9 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
   EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
 }
 
-TEST(ImageResourceTest, ReloadIfLoFi) {
+TEST(ImageResourceTest, ReloadIfLoFiAfterFinished) {
   KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html",
-                                        "text/html");
+  ScopedRegisteredURL scopedRegisteredURL(testURL);
   ResourceRequest request = ResourceRequest(testURL);
   request.setLoFiState(WebURLRequest::LoFiOn);
   ImageResource* cachedImage = ImageResource::create(request);
@@ -402,11 +421,16 @@ TEST(ImageResourceTest, ReloadIfLoFi) {
   ASSERT_TRUE(cachedImage->hasImage());
   EXPECT_FALSE(cachedImage->getImage()->isNull());
   EXPECT_EQ(2, client->imageChangedCount());
+  EXPECT_EQ(jpeg.size(), client->encodedSizeOnLastImageChanged());
+  // The client should have been notified that the image load completed.
   EXPECT_TRUE(client->notifyFinishedCalled());
+  EXPECT_EQ(jpeg.size(), client->encodedSizeOnNotifyFinished());
+  EXPECT_EQ(jpeg.size(), client->encodedSizeOnImageNotifyFinished());
   EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
   EXPECT_EQ(1, cachedImage->getImage()->width());
   EXPECT_EQ(1, cachedImage->getImage()->height());
 
+  // Call reloadIfLoFi() after the image has finished loading.
   cachedImage->reloadIfLoFi(fetcher);
   EXPECT_FALSE(cachedImage->errorOccurred());
   EXPECT_FALSE(cachedImage->resourceBuffer());
@@ -423,7 +447,83 @@ TEST(ImageResourceTest, ReloadIfLoFi) {
   EXPECT_FALSE(cachedImage->errorOccurred());
   ASSERT_TRUE(cachedImage->hasImage());
   EXPECT_FALSE(cachedImage->getImage()->isNull());
+  EXPECT_EQ(jpeg2.size(), client->encodedSizeOnLastImageChanged());
   EXPECT_TRUE(client->notifyFinishedCalled());
+  // The client should not have been notified of completion again.
+  EXPECT_EQ(jpeg.size(), client->encodedSizeOnNotifyFinished());
+  EXPECT_EQ(jpeg.size(), client->encodedSizeOnImageNotifyFinished());
+  EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
+  EXPECT_EQ(50, cachedImage->getImage()->width());
+  EXPECT_EQ(50, cachedImage->getImage()->height());
+}
+
+TEST(ImageResourceTest, ReloadIfLoFiDuringFetch) {
+  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
+  ScopedRegisteredURL scopedRegisteredURL(testURL);
+
+  ResourceRequest request(testURL);
+  request.setLoFiState(WebURLRequest::LoFiOn);
+  FetchRequest fetchRequest(request, FetchInitiatorInfo());
+  ResourceFetcher* fetcher =
+      ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
+
+  ImageResource* cachedImage = ImageResource::fetch(fetchRequest, fetcher);
+  Persistent<MockImageResourceClient> client =
+      new MockImageResourceClient(cachedImage);
+
+  // Send the image response.
+  Vector<unsigned char> jpeg = jpegImage();
+
+  ResourceResponse initialResourceResponse(testURL, "image/jpeg", jpeg.size(),
+                                           nullAtom, String());
+  initialResourceResponse.addHTTPHeaderField("chrome-proxy", "q=low");
+
+  cachedImage->loader()->didReceiveResponse(
+      nullptr, WrappedResourceResponse(initialResourceResponse));
+  cachedImage->loader()->didReceiveData(
+      nullptr, reinterpret_cast<const char*>(jpeg.data()), jpeg.size(),
+      jpeg.size(), jpeg.size());
+
+  EXPECT_FALSE(cachedImage->errorOccurred());
+  ASSERT_TRUE(cachedImage->hasImage());
+  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  EXPECT_EQ(1, client->imageChangedCount());
+  EXPECT_EQ(jpeg.size(), client->encodedSizeOnLastImageChanged());
+  EXPECT_FALSE(client->notifyFinishedCalled());
+  EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
+  EXPECT_EQ(1, cachedImage->getImage()->width());
+  EXPECT_EQ(1, cachedImage->getImage()->height());
+
+  // Call reloadIfLoFi() while the image is still loading.
+  cachedImage->reloadIfLoFi(fetcher);
+  EXPECT_FALSE(cachedImage->errorOccurred());
+  EXPECT_FALSE(cachedImage->resourceBuffer());
+  EXPECT_FALSE(cachedImage->hasImage());
+  EXPECT_EQ(2, client->imageChangedCount());
+  EXPECT_EQ(0U, client->encodedSizeOnLastImageChanged());
+  // The client should not have been notified of completion yet, since the image
+  // is still loading.
+  EXPECT_FALSE(client->notifyFinishedCalled());
+
+  Vector<unsigned char> jpeg2 = jpegImage2();
+  cachedImage->loader()->didReceiveResponse(
+      nullptr, WrappedResourceResponse(ResourceResponse(
+                   testURL, "image/jpeg", jpeg.size(), nullAtom, String())),
+      nullptr);
+  cachedImage->loader()->didReceiveData(
+      nullptr, reinterpret_cast<const char*>(jpeg2.data()), jpeg2.size(),
+      jpeg2.size(), jpeg2.size());
+  cachedImage->loader()->didFinishLoading(nullptr, 0.0, jpeg2.size());
+
+  EXPECT_FALSE(cachedImage->errorOccurred());
+  ASSERT_TRUE(cachedImage->hasImage());
+  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  EXPECT_EQ(jpeg2.size(), client->encodedSizeOnLastImageChanged());
+  // The client should have been notified of completion only after the reload
+  // completed.
+  EXPECT_TRUE(client->notifyFinishedCalled());
+  EXPECT_EQ(jpeg2.size(), client->encodedSizeOnNotifyFinished());
+  EXPECT_EQ(jpeg2.size(), client->encodedSizeOnImageNotifyFinished());
   EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
   EXPECT_EQ(50, cachedImage->getImage()->width());
   EXPECT_EQ(50, cachedImage->getImage()->height());
@@ -672,14 +772,12 @@ TEST(ImageResourceTest, AddClientAfterPrune) {
 
 TEST(ImageResourceTest, CancelOnDecodeError) {
   KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html",
-                                        "text/html");
+  ScopedRegisteredURL scopedRegisteredURL(testURL);
 
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
   FetchRequest request(testURL, FetchInitiatorInfo());
   ImageResource* cachedImage = ImageResource::fetch(request, fetcher);
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(testURL);
 
   cachedImage->loader()->didReceiveResponse(
       nullptr, WrappedResourceResponse(ResourceResponse(
