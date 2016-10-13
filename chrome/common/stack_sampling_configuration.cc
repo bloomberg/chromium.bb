@@ -64,8 +64,15 @@ StackSamplingConfiguration::GetSamplingParamsForCurrentProcess() const {
 
 bool StackSamplingConfiguration::IsProfilerEnabledForCurrentProcess() const {
   if (IsBrowserProcess()) {
-    return configuration_ == PROFILE_BROWSER_PROCESS ||
-        configuration_ == PROFILE_BROWSER_AND_GPU_PROCESS;
+    switch (configuration_) {
+      case PROFILE_BROWSER_PROCESS:
+      case PROFILE_BROWSER_AND_GPU_PROCESS:
+      case PROFILE_CONTROL:
+        return true;
+
+      default:
+        return false;
+    }
   }
 
   DCHECK_EQ(PROFILE_FROM_COMMAND_LINE, configuration_);
@@ -134,6 +141,28 @@ StackSamplingConfiguration* StackSamplingConfiguration::Get() {
 
 // static
 StackSamplingConfiguration::ProfileConfiguration
+StackSamplingConfiguration::ChooseConfiguration(
+    const std::vector<Variation>& variations) {
+  int total_weight = 0;
+  for (const Variation& variation : variations)
+    total_weight += variation.weight;
+  DCHECK_EQ(100, total_weight);
+
+  int chosen = base::RandInt(0, total_weight - 1);  // Max is inclusive.
+  int cumulative_weight = 0;
+  for (const Variation& variation : variations) {
+    if (chosen >= cumulative_weight &&
+        chosen < cumulative_weight + variation.weight) {
+      return variation.config;
+    }
+    cumulative_weight += variation.weight;
+  }
+  NOTREACHED();
+  return PROFILE_DISABLED;
+}
+
+// static
+StackSamplingConfiguration::ProfileConfiguration
 StackSamplingConfiguration::GenerateConfiguration() {
   if (!IsBrowserProcess())
     return PROFILE_FROM_COMMAND_LINE;
@@ -141,44 +170,31 @@ StackSamplingConfiguration::GenerateConfiguration() {
   if (!IsProfilerSupported())
     return PROFILE_DISABLED;
 
-  // Enable the profiler in the ultimate production configuration for
-  // development/waterfall builds.
-  if (chrome::GetChannel() == version_info::Channel::UNKNOWN)
-    return PROFILE_BROWSER_AND_GPU_PROCESS;
+  switch (chrome::GetChannel()) {
+    // Enable the profiler in the ultimate production configuration for
+    // development/waterfall builds.
+    case version_info::Channel::UNKNOWN:
+      return PROFILE_BROWSER_AND_GPU_PROCESS;
 
-  // Enable according to the variations below in canary and dev.
-  if (chrome::GetChannel() == version_info::Channel::CANARY ||
-      chrome::GetChannel() == version_info::Channel::DEV) {
-    struct Variation {
-      ProfileConfiguration config;
-      int weight;
-    };
+    case version_info::Channel::CANARY:
+      return ChooseConfiguration({
+        { PROFILE_BROWSER_PROCESS, 80},
+        { PROFILE_GPU_PROCESS, 0},
+        { PROFILE_BROWSER_AND_GPU_PROCESS, 10},
+        { PROFILE_CONTROL, 10},
+        { PROFILE_DISABLED, 0}
+      });
 
-    // Generate a configuration according to the associated weights.
-    const Variation variations[] = {
-      { PROFILE_BROWSER_PROCESS, 100},
-      { PROFILE_GPU_PROCESS, 0},
-      { PROFILE_BROWSER_AND_GPU_PROCESS, 0},
-      { PROFILE_CONTROL, 0},
-      { PROFILE_DISABLED, 0}
-    };
+    case version_info::Channel::DEV:
+      return ChooseConfiguration({
+        { PROFILE_BROWSER_PROCESS, 100},
+        { PROFILE_GPU_PROCESS, 0},
+        { PROFILE_BROWSER_AND_GPU_PROCESS, 0},
+        { PROFILE_CONTROL, 0},
+        { PROFILE_DISABLED, 0}
+      });
 
-    int total_weight = 0;
-    for (const Variation& variation : variations)
-      total_weight += variation.weight;
-    DCHECK_EQ(100, total_weight);
-
-    int chosen = base::RandInt(0, total_weight - 1);  // Max is inclusive.
-    int cumulative_weight = 0;
-    for (const Variation& variation : variations) {
-      if (chosen >= cumulative_weight &&
-          chosen < cumulative_weight + variation.weight) {
-        return variation.config;
-      }
-      cumulative_weight += variation.weight;
-    }
-    NOTREACHED();
+    default:
+      return PROFILE_DISABLED;
   }
-
-  return PROFILE_DISABLED;
 }

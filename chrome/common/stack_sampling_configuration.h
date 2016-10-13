@@ -32,7 +32,8 @@ class StackSamplingConfiguration {
 
   // Get the synthetic field trial configuration. Returns true if a synthetic
   // field trial should be registered. This should only be called from the
-  // browser process.
+  // browser process. When run at startup, the profiler must use a synthetic
+  // field trial since it runs before the metrics field trials are initialized.
   bool GetSyntheticFieldTrial(std::string* trial_name,
                               std::string* group_name) const;
 
@@ -46,6 +47,7 @@ class StackSamplingConfiguration {
   static StackSamplingConfiguration* Get();
 
  private:
+  // Configuration to use for this Chrome instance.
   enum ProfileConfiguration {
     // Chrome-wide configurations set in the browser process.
     PROFILE_DISABLED,
@@ -58,6 +60,18 @@ class StackSamplingConfiguration {
     // state on the command line from the browser process.
     PROFILE_FROM_COMMAND_LINE
   };
+
+  // Configuration variations, along with weights to use when randomly choosing
+  // one of a set of variations.
+  struct Variation {
+    ProfileConfiguration config;
+    int weight;
+  };
+
+  // Randomly chooses a configuration from the weighted variations. Weights are
+  // expected to sum to 100 as a sanity check.
+  static ProfileConfiguration ChooseConfiguration(
+      const std::vector<Variation>& variations);
 
   // Generates sampling profiler configurations for all processes.
   static ProfileConfiguration GenerateConfiguration();
