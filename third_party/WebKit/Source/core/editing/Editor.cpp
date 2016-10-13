@@ -672,12 +672,6 @@ bool Editor::canDeleteRange(const EphemeralRange& range) const {
   return hasEditableStyle(*startContainer) && hasEditableStyle(*endContainer);
 }
 
-void Editor::notifyComponentsOnChangedSelection() {
-  client().respondToChangedSelection(m_frame,
-                                     frame().selection().getSelectionType());
-  setStartNewKillRingSequence(true);
-}
-
 void Editor::respondToChangedContents(const VisibleSelection& endingSelection) {
   if (frame().settings() && frame().settings()->accessibilityEnabled()) {
     Node* node = endingSelection.start().anchorNode();
@@ -1559,7 +1553,9 @@ void Editor::respondToChangedSelection(
     FrameSelection::SetSelectionOptions options) {
   spellChecker().respondToChangedSelection(oldSelection, options);
   frame().inputMethodController().cancelCompositionIfSelectionIsInvalid();
-  notifyComponentsOnChangedSelection();
+  client().respondToChangedSelection(&frame(),
+                                     frame().selection().getSelectionType());
+  setStartNewKillRingSequence(true);
 }
 
 SpellChecker& Editor::spellChecker() const {

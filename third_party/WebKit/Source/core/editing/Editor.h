@@ -343,7 +343,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
       RevealExtentOption = DoNotRevealExtent);
   void changeSelectionAfterCommand(const VisibleSelection& newSelection,
                                    FrameSelection::SetSelectionOptions);
-  void notifyComponentsOnChangedSelection();
 
   SpellChecker& spellChecker() const;
 
