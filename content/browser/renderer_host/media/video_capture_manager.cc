@@ -551,8 +551,9 @@ void VideoCaptureManager::OnDeviceStarted(
 
     auto request = photo_request_queue_.begin();
     while(request != photo_request_queue_.end()) {
-      if (GetDeviceEntryBySessionId(request->first)->video_capture_device()) {
-        request->second.Run(entry->video_capture_device());
+      DeviceEntry* maybe_entry = GetDeviceEntryBySessionId(request->first);
+      if (maybe_entry && maybe_entry->video_capture_device()) {
+        request->second.Run(maybe_entry->video_capture_device());
         photo_request_queue_.erase(request);
       }
       ++request;
