@@ -411,17 +411,15 @@ void VisibleSelectionTemplate<Strategy>::setBaseAndExtentToDeepEquivalents() {
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setStartRespectingGranularity(
+static PositionTemplate<Strategy> computeStartRespectingGranularity(
+    const PositionWithAffinityTemplate<Strategy>& passedStart,
     TextGranularity granularity) {
-  DCHECK(m_base.isNotNull());
-  DCHECK(m_extent.isNotNull());
-
-  m_start = m_baseIsFirst ? m_base : m_extent;
+  DCHECK(passedStart.isNotNull());
 
   switch (granularity) {
     case CharacterGranularity:
       // Don't do any expansion.
-      break;
+      return passedStart.position();
     case WordGranularity: {
       // General case: Select the word the caret is positioned inside of.
       // If the caret is on the word boundary, select the word according to
@@ -433,68 +431,54 @@ void VisibleSelectionTemplate<Strategy>::setStartRespectingGranularity(
       // from the the end of the last word to the line break (also
       // RightWordIfOnBoundary);
       const VisiblePositionTemplate<Strategy> visibleStart =
-          createVisiblePosition(m_start, m_affinity);
-      EWordSide side = RightWordIfOnBoundary;
+          createVisiblePosition(passedStart);
       if (isEndOfEditableOrNonEditableContent(visibleStart) ||
           (isEndOfLine(visibleStart) && !isStartOfLine(visibleStart) &&
-           !isEndOfParagraph(visibleStart)))
-        side = LeftWordIfOnBoundary;
-      m_start = startOfWord(visibleStart, side).deepEquivalent();
-      break;
+           !isEndOfParagraph(visibleStart))) {
+        return startOfWord(visibleStart, LeftWordIfOnBoundary).deepEquivalent();
+      }
+      return startOfWord(visibleStart, RightWordIfOnBoundary).deepEquivalent();
     }
-    case SentenceGranularity: {
-      m_start = startOfSentence(createVisiblePosition(m_start, m_affinity))
-                    .deepEquivalent();
-      break;
-    }
-    case LineGranularity: {
-      m_start = startOfLine(createVisiblePosition(m_start, m_affinity))
-                    .deepEquivalent();
-      break;
-    }
+    case SentenceGranularity:
+      return startOfSentence(createVisiblePosition(passedStart))
+          .deepEquivalent();
+    case LineGranularity:
+      return startOfLine(createVisiblePosition(passedStart)).deepEquivalent();
     case LineBoundary:
-      m_start = startOfLine(createVisiblePosition(m_start, m_affinity))
-                    .deepEquivalent();
-      break;
+      return startOfLine(createVisiblePosition(passedStart)).deepEquivalent();
     case ParagraphGranularity: {
-      VisiblePositionTemplate<Strategy> pos =
-          createVisiblePosition(m_start, m_affinity);
+      const VisiblePositionTemplate<Strategy> pos =
+          createVisiblePosition(passedStart);
       if (isStartOfLine(pos) && isEndOfEditableOrNonEditableContent(pos))
-        pos = previousPositionOf(pos);
-      m_start = startOfParagraph(pos).deepEquivalent();
-      break;
+        return startOfParagraph(previousPositionOf(pos)).deepEquivalent();
+      return startOfParagraph(pos).deepEquivalent();
     }
     case DocumentBoundary:
-      m_start = startOfDocument(createVisiblePosition(m_start, m_affinity))
-                    .deepEquivalent();
-      break;
+      return startOfDocument(createVisiblePosition(passedStart))
+          .deepEquivalent();
     case ParagraphBoundary:
-      m_start = startOfParagraph(createVisiblePosition(m_start, m_affinity))
-                    .deepEquivalent();
-      break;
+      return startOfParagraph(createVisiblePosition(passedStart))
+          .deepEquivalent();
     case SentenceBoundary:
-      m_start = startOfSentence(createVisiblePosition(m_start, m_affinity))
-                    .deepEquivalent();
-      break;
+      return startOfSentence(createVisiblePosition(passedStart))
+          .deepEquivalent();
   }
 
-  // Make sure we do not have a Null position.
-  if (m_start.isNull())
-    m_start = m_baseIsFirst ? m_base : m_extent;
+  NOTREACHED();
+  return passedStart.position();
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(
+static PositionTemplate<Strategy> computeEndRespectingGranularity(
+    const PositionTemplate<Strategy>& start,
+    const PositionWithAffinityTemplate<Strategy>& passedEnd,
     TextGranularity granularity) {
-  DCHECK(m_base.isNotNull());
-  DCHECK(m_extent.isNotNull());
-
-  m_end = m_baseIsFirst ? m_extent : m_base;
+  DCHECK(passedEnd.isNotNull());
 
   switch (granularity) {
     case CharacterGranularity:
       // Don't do any expansion.
-      break;
+      return passedEnd.position();
     case WordGranularity: {
       // General case: Select the word the caret is positioned inside of.
       // If the caret is on the word boundary, select the word according to
@@ -506,7 +490,7 @@ void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(
       // from the the end of the last word to the line break (also
       // |RightWordIfOnBoundary|);
       const VisiblePositionTemplate<Strategy> originalEnd =
-          createVisiblePosition(m_end, m_affinity);
+          createVisiblePosition(passedEnd);
       EWordSide side = RightWordIfOnBoundary;
       if (isEndOfEditableOrNonEditableContent(originalEnd) ||
           (isEndOfLine(originalEnd) && !isStartOfLine(originalEnd) &&
@@ -515,98 +499,89 @@ void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(
 
       const VisiblePositionTemplate<Strategy> wordEnd =
           endOfWord(originalEnd, side);
-      VisiblePositionTemplate<Strategy> end = wordEnd;
+      if (!isEndOfParagraph(originalEnd))
+        return wordEnd.deepEquivalent();
+      if (isEmptyTableCell(start.anchorNode()))
+        return wordEnd.deepEquivalent();
 
-      if (isEndOfParagraph(originalEnd) &&
-          !isEmptyTableCell(m_start.anchorNode())) {
-        // Select the paragraph break (the space from the end of a paragraph
-        // to the start of the next one) to match TextEdit.
-        end = nextPositionOf(wordEnd);
-
-        if (Element* table = tableElementJustBefore(end)) {
-          // The paragraph break after the last paragraph in the last cell
-          // of a block table ends at the start of the paragraph after the
-          // table.
-          if (isEnclosingBlock(table))
-            end = nextPositionOf(end, CannotCrossEditingBoundary);
-          else
-            end = wordEnd;
-        }
-
+      // Select the paragraph break (the space from the end of a paragraph
+      // to the start of the next one) to match TextEdit.
+      const VisiblePositionTemplate<Strategy> end = nextPositionOf(wordEnd);
+      Element* const table = tableElementJustBefore(end);
+      if (!table) {
         if (end.isNull())
-          end = wordEnd;
+          return wordEnd.deepEquivalent();
+        return end.deepEquivalent();
       }
 
-      m_end = end.deepEquivalent();
-      break;
+      if (!isEnclosingBlock(table))
+        return wordEnd.deepEquivalent();
+
+      // The paragraph break after the last paragraph in the last cell
+      // of a block table ends at the start of the paragraph after the
+      // table.
+      const VisiblePositionTemplate<Strategy> next =
+          nextPositionOf(end, CannotCrossEditingBoundary);
+      if (next.isNull())
+        return wordEnd.deepEquivalent();
+      return next.deepEquivalent();
     }
-    case SentenceGranularity: {
-      m_end = endOfSentence(createVisiblePosition(m_end, m_affinity))
-                  .deepEquivalent();
-      break;
-    }
+    case SentenceGranularity:
+      return endOfSentence(createVisiblePosition(passedEnd)).deepEquivalent();
     case LineGranularity: {
-      VisiblePositionTemplate<Strategy> end =
-          endOfLine(createVisiblePosition(m_end, m_affinity));
+      const VisiblePositionTemplate<Strategy> end =
+          endOfLine(createVisiblePosition(passedEnd));
+      if (!isEndOfParagraph(end))
+        return end.deepEquivalent();
       // If the end of this line is at the end of a paragraph, include the
       // space after the end of the line in the selection.
-      if (isEndOfParagraph(end)) {
-        VisiblePositionTemplate<Strategy> next = nextPositionOf(end);
-        if (next.isNotNull())
-          end = next;
-      }
-      m_end = end.deepEquivalent();
-      break;
+      const VisiblePositionTemplate<Strategy> next = nextPositionOf(end);
+      if (next.isNull())
+        return end.deepEquivalent();
+      return next.deepEquivalent();
     }
     case LineBoundary:
-      m_end =
-          endOfLine(createVisiblePosition(m_end, m_affinity)).deepEquivalent();
-      break;
+      return endOfLine(createVisiblePosition(passedEnd)).deepEquivalent();
     case ParagraphGranularity: {
       const VisiblePositionTemplate<Strategy> visibleParagraphEnd =
-          endOfParagraph(createVisiblePosition(m_end, m_affinity));
+          endOfParagraph(createVisiblePosition(passedEnd));
 
       // Include the "paragraph break" (the space from the end of this
       // paragraph to the start of the next one) in the selection.
-      VisiblePositionTemplate<Strategy> end =
+      const VisiblePositionTemplate<Strategy> end =
           nextPositionOf(visibleParagraphEnd);
 
-      if (Element* table = tableElementJustBefore(end)) {
-        // The paragraph break after the last paragraph in the last cell of
-        // a block table ends at the start of the paragraph after the table,
-        // not at the position just after the table.
-        if (isEnclosingBlock(table)) {
-          end = nextPositionOf(end, CannotCrossEditingBoundary);
-        } else {
-          // There is no parargraph break after the last paragraph in the
-          // last cell of an inline table.
-          end = visibleParagraphEnd;
-        }
+      Element* const table = tableElementJustBefore(end);
+      if (!table) {
+        if (end.isNull())
+          return visibleParagraphEnd.deepEquivalent();
+        return end.deepEquivalent();
       }
 
-      if (end.isNull())
-        end = visibleParagraphEnd;
+      if (!isEnclosingBlock(table)) {
+        // There is no paragraph break after the last paragraph in the
+        // last cell of an inline table.
+        return visibleParagraphEnd.deepEquivalent();
+      }
 
-      m_end = end.deepEquivalent();
-      break;
+      // The paragraph break after the last paragraph in the last cell of
+      // a block table ends at the start of the paragraph after the table,
+      // not at the position just after the table.
+      const VisiblePositionTemplate<Strategy> next =
+          nextPositionOf(end, CannotCrossEditingBoundary);
+      if (next.isNull())
+        return visibleParagraphEnd.deepEquivalent();
+      return next.deepEquivalent();
     }
     case DocumentBoundary:
-      m_end = endOfDocument(createVisiblePosition(m_end, m_affinity))
-                  .deepEquivalent();
-      break;
+      return endOfDocument(createVisiblePosition(passedEnd)).deepEquivalent();
     case ParagraphBoundary:
-      m_end = endOfParagraph(createVisiblePosition(m_end, m_affinity))
-                  .deepEquivalent();
-      break;
+      return endOfParagraph(createVisiblePosition(passedEnd)).deepEquivalent();
     case SentenceBoundary:
-      m_end = endOfSentence(createVisiblePosition(m_end, m_affinity))
-                  .deepEquivalent();
-      break;
+      return endOfSentence(createVisiblePosition(passedEnd)).deepEquivalent();
   }
-
-  // Make sure we do not have a Null position.
-  if (m_end.isNull())
-    m_end = m_baseIsFirst ? m_extent : m_base;
+  NOTREACHED();
+  return passedEnd.position();
 }
 
 template <typename Strategy>
@@ -633,12 +608,17 @@ void VisibleSelectionTemplate<Strategy>::validate(TextGranularity granularity) {
     return;
   }
 
-  m_start = m_baseIsFirst ? m_base : m_extent;
-  m_end = m_baseIsFirst ? m_extent : m_base;
-  setStartRespectingGranularity(granularity);
-  DCHECK(m_start.isNotNull());
-  setEndRespectingGranularity(granularity);
-  DCHECK(m_end.isNotNull());
+  const PositionTemplate<Strategy> start = m_baseIsFirst ? m_base : m_extent;
+  const PositionTemplate<Strategy> newStart = computeStartRespectingGranularity(
+      PositionWithAffinityTemplate<Strategy>(start, m_affinity), granularity);
+  m_start = newStart.isNotNull() ? newStart : start;
+
+  const PositionTemplate<Strategy> end = m_baseIsFirst ? m_extent : m_base;
+  const PositionTemplate<Strategy> newEnd = computeEndRespectingGranularity(
+      m_start, PositionWithAffinityTemplate<Strategy>(end, m_affinity),
+      granularity);
+  m_end = newEnd.isNotNull() ? newEnd : end;
+
   adjustSelectionToAvoidCrossingShadowBoundaries();
   adjustSelectionToAvoidCrossingEditingBoundaries();
   updateSelectionType();

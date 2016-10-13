@@ -172,8 +172,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   void setBaseAndExtentToDeepEquivalents();
   void adjustSelectionToAvoidCrossingShadowBoundaries();
   void adjustSelectionToAvoidCrossingEditingBoundaries();
-  void setEndRespectingGranularity(TextGranularity);
-  void setStartRespectingGranularity(TextGranularity);
   void updateSelectionType();
 
   // We need to store these as Positions because VisibleSelection is
