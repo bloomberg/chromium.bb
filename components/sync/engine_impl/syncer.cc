@@ -7,29 +7,21 @@
 #include <memory>
 
 #include "base/auto_reset.h"
-#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
-#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
-#include "components/sync/base/syncer_error.h"
-#include "components/sync/base/unique_position.h"
 #include "components/sync/engine_impl/apply_control_data_updates.h"
 #include "components/sync/engine_impl/clear_server_data.h"
 #include "components/sync/engine_impl/commit.h"
 #include "components/sync/engine_impl/commit_processor.h"
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
+#include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/get_updates_delegate.h"
 #include "components/sync/engine_impl/get_updates_processor.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/mutable_entry.h"
-
-using base::Time;
-using base::TimeDelta;
-using sync_pb::ClientCommand;
 
 namespace syncer {
 
@@ -145,7 +137,7 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
   return !ExitRequested();
 }
 
-SyncerError Syncer::BuildAndPostCommits(ModelTypeSet requested_types,
+SyncerError Syncer::BuildAndPostCommits(ModelTypeSet request_types,
                                         NudgeTracker* nudge_tracker,
                                         SyncCycle* cycle,
                                         CommitProcessor* commit_processor) {
@@ -154,7 +146,7 @@ SyncerError Syncer::BuildAndPostCommits(ModelTypeSet requested_types,
   // However, it doesn't hurt to check it anyway.
   while (!ExitRequested()) {
     std::unique_ptr<Commit> commit(
-        Commit::Init(requested_types, cycle->context()->GetEnabledTypes(),
+        Commit::Init(request_types, cycle->context()->GetEnabledTypes(),
                      cycle->context()->max_commit_batch_size(),
                      cycle->context()->account_name(),
                      cycle->context()->directory()->cache_guid(),

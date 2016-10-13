@@ -7,24 +7,21 @@
 
 #include <stdint.h>
 
-#include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/synchronization/lock.h"
-#include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/engine_impl/conflict_resolver.h"
-#include "components/sync/engine_impl/cycle/sync_cycle.h"
-#include "components/sync/engine_impl/syncer_types.h"
+#include "components/sync/base/syncer_error.h"
+#include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
 
 class CancelationSignal;
 class CommitProcessor;
 class GetUpdatesProcessor;
+class NudgeTracker;
+class SyncCycle;
 
 // A Syncer provides a control interface for driving the sync cycle.  These
 // cycles consist of downloading updates, parsing the response (aka. process

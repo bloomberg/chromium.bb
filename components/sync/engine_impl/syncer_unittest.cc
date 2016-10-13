@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/cryptographer.h"
+#include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/cycle/commit_counters.h"
@@ -44,7 +45,6 @@
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/nigori_util.h"
 #include "components/sync/syncable/syncable_delete_journal.h"
@@ -302,7 +302,7 @@ class SyncerTest : public testing::Test,
         syncer_));
 
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    syncable::Directory::Metahandles children;
+    Directory::Metahandles children;
     directory()->GetChildHandlesById(&trans, trans.root_id(), &children);
     ASSERT_EQ(0u, children.size());
     root_id_ = TestIdFactory::root();
@@ -529,7 +529,7 @@ class SyncerTest : public testing::Test,
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
   }
 
-  Cryptographer* GetCryptographer(syncable::BaseTransaction* trans) {
+  Cryptographer* GetCryptographer(BaseTransaction* trans) {
     return directory()->GetCryptographer(trans);
   }
 
@@ -629,7 +629,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   {
     // Nothing should have been committed as bookmarks is throttled.
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    Entry entryA(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(1));
+    Entry entryA(&rtrans, GET_BY_ID, ids_.FromNumber(1));
     ASSERT_TRUE(entryA.good());
     EXPECT_TRUE(entryA.GetIsUnsynced());
   }
@@ -640,7 +640,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   {
     // It should have been committed.
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    Entry entryA(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(1));
+    Entry entryA(&rtrans, GET_BY_ID, ids_.FromNumber(1));
     ASSERT_TRUE(entryA.good());
     EXPECT_FALSE(entryA.GetIsUnsynced());
   }
@@ -759,7 +759,7 @@ TEST_F(SyncerTest, DataUseHistogramsTest) {
 #define VERIFY_ENTRY(id, is_unapplied, is_unsynced, prev_initialized,         \
                      parent_id, version, server_version, id_fac, rtrans)      \
   do {                                                                        \
-    Entry entryA(rtrans, syncable::GET_BY_ID, id_fac.FromNumber(id));         \
+    Entry entryA(rtrans, GET_BY_ID, id_fac.FromNumber(id));                   \
     ASSERT_TRUE(entryA.good());                                               \
     /* We don't use EXPECT_EQ here because if the left side param is false,*/ \
     /* gcc 4.6 warns converting 'false' to pointer type for argument 1.*/     \
@@ -1005,7 +1005,7 @@ TEST_F(SyncerTest, GetCommitIds_VerifyDeletionCommitOrder) {
 
   {
     // Run GetCommitIds, the function being tested.
-    syncable::Directory::Metahandles result_handles;
+    Directory::Metahandles result_handles;
     syncable::ReadTransaction trans(FROM_HERE, directory());
     GetCommitIdsForType(&trans, BOOKMARKS, 100, &result_handles);
 
@@ -1051,7 +1051,7 @@ TEST_F(SyncerTest, GetCommitIds_VerifyDeletionCommitOrderMaxEntries) {
 
   {
     // Run GetCommitIds with a limit of 2 entries to commit.
-    syncable::Directory::Metahandles result_handles;
+    Directory::Metahandles result_handles;
     syncable::ReadTransaction trans(FROM_HERE, directory());
     GetCommitIdsForType(&trans, BOOKMARKS, 2, &result_handles);
 
@@ -1118,13 +1118,13 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
     VERIFY_ENTRY(3, false, false, false, 1, 10, 10, ids_, &rtrans);
     VERIFY_ENTRY(4, false, false, false, 0, 10, 10, ids_, &rtrans);
 
-    Entry entry1(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(1));
+    Entry entry1(&rtrans, GET_BY_ID, ids_.FromNumber(1));
     ASSERT_TRUE(
         entry1.GetUniquePosition().Equals(entry1.GetServerUniquePosition()));
     pos1 = entry1.GetUniquePosition();
-    Entry entry2(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(2));
+    Entry entry2(&rtrans, GET_BY_ID, ids_.FromNumber(2));
     pos2 = entry2.GetUniquePosition();
-    Entry entry3(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(3));
+    Entry entry3(&rtrans, GET_BY_ID, ids_.FromNumber(3));
     pos3 = entry3.GetUniquePosition();
   }
 
@@ -1292,7 +1292,7 @@ TEST_F(SyncerTest, TestGetUnsyncedAndSimpleCommit) {
   EXPECT_EQ(child_id_, mock_server_->committed_ids()[1]);
   {
     syncable::ReadTransaction rt(FROM_HERE, directory());
-    Entry entry(&rt, syncable::GET_BY_ID, child_id_);
+    Entry entry(&rt, GET_BY_ID, child_id_);
     ASSERT_TRUE(entry.good());
     VerifyTestDataInEntry(&rt, &entry);
   }
@@ -1339,14 +1339,14 @@ TEST_F(SyncerTest, TestPurgeWhileUnsynced) {
   EXPECT_EQ(child_id_, mock_server_->committed_ids()[1]);
   {
     syncable::ReadTransaction rt(FROM_HERE, directory());
-    Entry entry(&rt, syncable::GET_BY_ID, child_id_);
+    Entry entry(&rt, GET_BY_ID, child_id_);
     ASSERT_TRUE(entry.good());
     VerifyTestDataInEntry(&rt, &entry);
   }
   directory()->SaveChanges();
   {
     syncable::ReadTransaction rt(FROM_HERE, directory());
-    Entry entry(&rt, syncable::GET_BY_ID, pref_node_id);
+    Entry entry(&rt, GET_BY_ID, pref_node_id);
     ASSERT_FALSE(entry.good());
   }
 }
@@ -1373,7 +1373,7 @@ TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
   directory()->SaveChanges();
   {
     syncable::ReadTransaction rt(FROM_HERE, directory());
-    Entry entry(&rt, syncable::GET_BY_ID, parent_id_);
+    Entry entry(&rt, GET_BY_ID, parent_id_);
     ASSERT_FALSE(entry.good());
   }
 }
@@ -1866,13 +1866,13 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParent) {
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
     // Check that things committed correctly.
-    Entry entry_1(&rtrans, syncable::GET_BY_ID, parent_id_);
+    Entry entry_1(&rtrans, GET_BY_ID, parent_id_);
     EXPECT_EQ(parent1_name, entry_1.GetNonUniqueName());
     // Check that parent2 is a subfolder of parent1.
     EXPECT_EQ(1, CountEntriesWithName(&rtrans, parent_id_, parent2_name));
 
     // Parent2 was a local ID and thus should have changed on commit!
-    Entry pre_commit_entry_parent2(&rtrans, syncable::GET_BY_ID, parent2_id);
+    Entry pre_commit_entry_parent2(&rtrans, GET_BY_ID, parent2_id);
     ASSERT_FALSE(pre_commit_entry_parent2.good());
 
     // Look up the new ID.
@@ -1880,7 +1880,7 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParent) {
         GetOnlyEntryWithName(&rtrans, parent_id_, parent2_name);
     EXPECT_TRUE(parent2_committed_id.ServerKnows());
 
-    Entry child(&rtrans, syncable::GET_BY_ID, child_id);
+    Entry child(&rtrans, GET_BY_ID, child_id);
     EXPECT_EQ(parent2_committed_id, child.GetParentId());
   }
 }
@@ -1933,22 +1933,21 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParentAndChild) {
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
 
-    Entry parent(&rtrans, syncable::GET_BY_ID,
+    Entry parent(&rtrans, GET_BY_ID,
                  GetOnlyEntryWithName(&rtrans, rtrans.root_id(), parent_name));
     ASSERT_TRUE(parent.good());
     EXPECT_TRUE(parent.GetId().ServerKnows());
 
-    Entry parent2(&rtrans, syncable::GET_BY_ID,
+    Entry parent2(&rtrans, GET_BY_ID,
                   GetOnlyEntryWithName(&rtrans, parent.GetId(), parent2_name));
     ASSERT_TRUE(parent2.good());
     EXPECT_TRUE(parent2.GetId().ServerKnows());
 
     // Id changed on commit, so this should fail.
-    Entry local_parent2_id_entry(&rtrans, syncable::GET_BY_ID,
-                                 parent2_local_id);
+    Entry local_parent2_id_entry(&rtrans, GET_BY_ID, parent2_local_id);
     ASSERT_FALSE(local_parent2_id_entry.good());
 
-    Entry entry_b(&rtrans, syncable::GET_BY_HANDLE, meta_handle_b);
+    Entry entry_b(&rtrans, GET_BY_HANDLE, meta_handle_b);
     EXPECT_TRUE(entry_b.GetId().ServerKnows());
     EXPECT_TRUE(parent2.GetId() == entry_b.GetParentId());
   }
@@ -2181,7 +2180,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
   syncable::Id entry_id;
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    Entry entry(&trans, syncable::GET_BY_HANDLE, metahandle_entry);
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_entry);
     ASSERT_TRUE(entry.good());
     EXPECT_EQ(folder_id, entry.GetParentId());
     EXPECT_EQ("new_entry", entry.GetNonUniqueName());
@@ -2223,7 +2222,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
     EXPECT_FALSE(old_dead_folder.good());
 
     // The child's parent should have changed.
-    Entry entry(&trans, syncable::GET_BY_HANDLE, metahandle_entry);
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_entry);
     ASSERT_TRUE(entry.good());
     EXPECT_EQ("new_entry", entry.GetNonUniqueName());
     EXPECT_EQ(new_folder_id, entry.GetParentId());
@@ -2454,7 +2453,7 @@ class EntryCreatedInNewFolderTest : public SyncerTest {
   void CreateFolderInBob() {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry bob(
-        &trans, syncable::GET_BY_ID,
+        &trans, GET_BY_ID,
         GetOnlyEntryWithName(&trans, TestIdFactory::root(), "bob"));
     ASSERT_TRUE(bob.good());
 
@@ -2484,12 +2483,12 @@ TEST_F(EntryCreatedInNewFolderTest, EntryCreatedInNewFolderMidSync) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry parent_entry(
-        &trans, syncable::GET_BY_ID,
+        &trans, GET_BY_ID,
         GetOnlyEntryWithName(&trans, TestIdFactory::root(), "bob"));
     ASSERT_TRUE(parent_entry.good());
 
     Id child_id = GetOnlyEntryWithName(&trans, parent_entry.GetId(), "bob");
-    Entry child(&trans, syncable::GET_BY_ID, child_id);
+    Entry child(&trans, GET_BY_ID, child_id);
     ASSERT_TRUE(child.good());
     EXPECT_EQ(parent_entry.GetId(), child.GetParentId());
   }
@@ -2564,12 +2563,12 @@ TEST_F(SyncerTest, DoublyChangedWithResolver) {
                                   local_cache_guid(), local_id.GetServerId());
   mock_server_->set_conflict_all_commits(true);
   EXPECT_FALSE(SyncShareNudge());
-  syncable::Directory::Metahandles children;
+  Directory::Metahandles children;
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     directory()->GetChildHandlesById(&trans, parent_id_, &children);
     // We expect the conflict resolver to preserve the local entry.
-    Entry child(&trans, syncable::GET_BY_ID, child_id_);
+    Entry child(&trans, GET_BY_ID, child_id_);
     ASSERT_TRUE(child.good());
     EXPECT_TRUE(child.GetIsUnsynced());
     EXPECT_FALSE(child.GetIsUnappliedUpdate());
@@ -2605,7 +2604,7 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
   int64_t version;
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    Entry entry(&trans, syncable::GET_BY_HANDLE, entry_metahandle);
+    Entry entry(&trans, GET_BY_HANDLE, entry_metahandle);
     ASSERT_TRUE(entry.good());
     id = entry.GetId();
     EXPECT_TRUE(id.ServerKnows());
@@ -2621,7 +2620,7 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
   EXPECT_TRUE(SyncShareNudge());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    Entry entry(&trans, syncable::GET_BY_ID, id);
+    Entry entry(&trans, GET_BY_ID, id);
     ASSERT_TRUE(entry.good());
     EXPECT_EQ(test_time, entry.GetMtime());
   }
@@ -2679,7 +2678,7 @@ TEST_F(SyncerTest, ParentAndChildBothMatch) {
     std::vector<int64_t> unapplied;
     directory()->GetUnappliedUpdateMetaHandles(&trans, all_types, &unapplied);
     EXPECT_EQ(0u, unapplied.size());
-    syncable::Directory::Metahandles unsynced;
+    Directory::Metahandles unsynced;
     directory()->GetUnsyncedMetaHandles(&trans, &unsynced);
     EXPECT_EQ(0u, unsynced.size());
   }
@@ -3004,7 +3003,7 @@ TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {
   SyncShareConfigure();
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    Entry entry(&trans, syncable::GET_BY_HANDLE, newfolder_metahandle);
+    Entry entry(&trans, GET_BY_HANDLE, newfolder_metahandle);
     ASSERT_TRUE(entry.good());
   }
 }
@@ -4000,10 +3999,10 @@ TEST_F(SyncerTest, UpdateWhereParentIsNotAFolder) {
   EXPECT_TRUE(SyncShareNudge());
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    Entry good_entry(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(1));
+    Entry good_entry(&rtrans, GET_BY_ID, ids_.FromNumber(1));
     ASSERT_TRUE(good_entry.good());
     EXPECT_FALSE(good_entry.GetIsUnappliedUpdate());
-    Entry bad_parent(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(2));
+    Entry bad_parent(&rtrans, GET_BY_ID, ids_.FromNumber(2));
     ASSERT_TRUE(bad_parent.good());
     EXPECT_TRUE(bad_parent.GetIsUnappliedUpdate());
   }
@@ -4212,7 +4211,7 @@ TEST_F(SyncerTest, Test64BitVersionSupport) {
   }
   // Now read it back out and make sure the value is max int64_t.
   syncable::ReadTransaction rtrans(FROM_HERE, directory());
-  Entry entry(&rtrans, syncable::GET_BY_HANDLE, item_metahandle);
+  Entry entry(&rtrans, GET_BY_HANDLE, item_metahandle);
   ASSERT_TRUE(entry.good());
   EXPECT_EQ(really_big_int, entry.GetBaseVersion());
 }
@@ -4560,7 +4559,7 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
     Entry pref_root(&trans, GET_TYPE_ROOT, PREFERENCES);
     ASSERT_TRUE(pref_root.good());
 
-    syncable::Directory::Metahandles children;
+    Directory::Metahandles children;
     directory()->GetChildHandlesById(&trans, pref_root.GetId(), &children);
     ASSERT_EQ(2U, children.size());
   }
@@ -4604,7 +4603,7 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
     Entry pref_root(&trans, GET_TYPE_ROOT, PREFERENCES);
     ASSERT_TRUE(pref_root.good());
 
-    syncable::Directory::Metahandles children;
+    Directory::Metahandles children;
     directory()->GetChildHandlesById(&trans, pref_root.GetId(), &children);
     ASSERT_EQ(2U, children.size());
   }
@@ -4689,7 +4688,7 @@ TEST_F(SyncerTest, ClientTagClashWithinBatchOfUpdates) {
     ASSERT_TRUE(pref_root.good());
 
     // Verify that we have exactly 3 tagged nodes under the type root.
-    syncable::Directory::Metahandles children;
+    Directory::Metahandles children;
     directory()->GetChildHandlesById(&trans, pref_root.GetId(), &children);
     ASSERT_EQ(3U, children.size());
   }
@@ -4749,7 +4748,7 @@ TEST_F(SyncerTest, EntryWithParentIdUpdatedWithEntryWithoutParentId) {
     ASSERT_TRUE(pref_entry.GetParentId().IsNull());
 
     // Verify that there is still one node under the type root.
-    syncable::Directory::Metahandles children;
+    Directory::Metahandles children;
     directory()->GetChildHandlesById(&trans, pref_root_id, &children);
     ASSERT_EQ(1U, children.size());
   }
@@ -5011,7 +5010,7 @@ TEST_F(SyncerTest, ProgressMarkerOnlyUpdateCreatesRootFolder) {
 
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    syncable::Entry root(&trans, syncable::GET_TYPE_ROOT, PREFERENCES);
+    Entry root(&trans, GET_TYPE_ROOT, PREFERENCES);
     EXPECT_TRUE(root.good());
   }
 
