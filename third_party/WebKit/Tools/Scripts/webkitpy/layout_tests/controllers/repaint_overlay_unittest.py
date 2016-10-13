@@ -8,9 +8,12 @@ from webkitpy.layout_tests.controllers import repaint_overlay
 
 
 LAYER_TREE = """{
-  "bounds":[800.00,600.00],
-  "children":[
+  "layers": [
     {
+      "name": "layer1",
+      "bounds": [800.00, 600.00],
+    }, {
+      "name": "layer2",
       "position": [8.00, 80.00],
       "bounds": [800.00, 600.00],
       "contentsOpaque": true,

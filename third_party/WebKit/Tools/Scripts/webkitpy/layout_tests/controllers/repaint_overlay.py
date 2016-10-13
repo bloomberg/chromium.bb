@@ -66,10 +66,6 @@ def generate_repaint_overlay_html(test_name, actual_text, expected_text):
 <label><input id="show-test" type="checkbox" checked onchange="toggle_test(this.checked)">Show test</label>
 <label><input id="use-solid-colors" type="checkbox" onchange="toggle_solid_color(this.checked)">Use solid colors</label>
 <br>
-<button title="See fast/repaint/resources/text-based-repaint.js for how this works" onclick="highlight_under_repaint()">
-    Highlight under-repaint
-</button>
-<br>
 <span id='type'>Expected Invalidations</span>
 <div id=overlay>
     <canvas id='expected' width='2000' height='2000'></canvas>
@@ -85,13 +81,6 @@ function toggle_test(show_test) {
 function toggle_solid_color(use_solid_color) {
     overlay_opacity = use_solid_color ? 1 : 0.25;
     draw_repaint_rects();
-}
-
-function highlight_under_repaint() {
-    document.getElementById('show-test').checked = false;
-    toggle_test(false);
-    document.getElementById('use-solid-colors').checked = true;
-    toggle_solid_color(true);
 }
 
 var expected = %(expected)s;
@@ -127,11 +116,14 @@ function draw_layer_rects(context, result) {
         }
         draw_rects(context, rects);
     }
-    if (result.children) {
-        for (var i = 0; i < result.children.length; ++i)
-            draw_layer_rects(context, result.children[i]);
-    }
     context.restore();
+}
+
+function draw_result_rects(context, result) {
+    if (result.layers) {
+        for (var i = 0; i < result.layers.length; ++i)
+            draw_layer_rects(context, result.layers[i]);
+    }
 }
 
 var expected_canvas = document.getElementById('expected');
@@ -141,12 +133,12 @@ function draw_repaint_rects() {
     var expected_ctx = expected_canvas.getContext("2d");
     expected_ctx.clearRect(0, 0, 2000, 2000);
     expected_ctx.fillStyle = 'rgba(255, 0, 0, ' + overlay_opacity + ')';
-    draw_layer_rects(expected_ctx, expected);
+    draw_result_rects(expected_ctx, expected);
 
     var actual_ctx = actual_canvas.getContext("2d");
     actual_ctx.clearRect(0, 0, 2000, 2000);
     actual_ctx.fillStyle = 'rgba(0, 255, 0, ' + overlay_opacity + ')';
-    draw_layer_rects(actual_ctx, actual);
+    draw_result_rects(actual_ctx, actual);
 }
 
 draw_repaint_rects();
