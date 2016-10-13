@@ -325,7 +325,7 @@ imported/wpt/websockets [ Skip ]
 # imported/wpt/webstorage [ Pass ]
 imported/wpt/webvtt [ Skip ]
 ## Owners: nhiroki@chromium.org
-# imported/wpt/workers [ Pass ]
+# imported/wpt/workers [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the
 # upstream tests that we shouldn't bother importing until they are
