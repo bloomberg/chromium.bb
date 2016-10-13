@@ -205,8 +205,14 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
     # Tell Chrome to fetch the source locally.
     internal = constants.USE_CHROME_INTERNAL in build_config['useflags']
     chrome_src = 'chrome-src-internal' if internal else 'chrome-src'
-    options.chrome_root = os.path.join(options.cache_dir, 'distfiles', 'target',
-                                       chrome_src)
+    target_name = 'target'
+    if options.branch:
+      # Tie the cache per branch
+      target_name = 'target-%s' % options.branch
+    options.chrome_root = os.path.join(options.cache_dir, 'distfiles',
+                                       target_name, chrome_src)
+    # Create directory if in need
+    osutils.SafeMakedirsNonRoot(options.chrome_root)
   elif options.rietveld_patches:
     cros_build_lib.Die('This builder does not support Rietveld patches.')
 
