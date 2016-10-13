@@ -34,16 +34,12 @@ namespace chromeos {
 RendererFreezer::RendererFreezer(
     std::unique_ptr<RendererFreezer::Delegate> delegate)
     : delegate_(std::move(delegate)), weak_factory_(this) {
-  // TODO(derat): Remove after http://crbug.com/648580 is fixed.
-  VLOG(1) << "Creating RendererFreezer " << this;
   delegate_->CheckCanFreezeRenderers(
       base::Bind(&RendererFreezer::OnCheckCanFreezeRenderersComplete,
                  weak_factory_.GetWeakPtr()));
 }
 
 RendererFreezer::~RendererFreezer() {
-  // TODO(derat): Remove after http://crbug.com/648580 is fixed.
-  VLOG(1) << "Destroying RendererFreezer " << this;
   for (int rph_id : gcm_extension_processes_) {
     content::RenderProcessHost* host =
         content::RenderProcessHost::FromID(rph_id);
@@ -53,8 +49,6 @@ RendererFreezer::~RendererFreezer() {
 }
 
 void RendererFreezer::SuspendImminent() {
-  // TODO(derat): Remove after http://crbug.com/648580 is fixed.
-  VLOG(1) << "Asking delegate to freeze renderers";
   // All the delegate's operations are asynchronous so they may not complete
   // before the system suspends.  This is ok since the renderers only need to be
   // frozen in dark resume.  As long as they do get frozen soon after we enter
@@ -63,8 +57,6 @@ void RendererFreezer::SuspendImminent() {
 }
 
 void RendererFreezer::SuspendDone() {
-  // TODO(derat): Remove after http://crbug.com/648580 is fixed.
-  VLOG(1) << "Asking delegate to thaw renderers";
   delegate_->ThawRenderers(base::Bind(&RendererFreezer::OnThawRenderersComplete,
                                       weak_factory_.GetWeakPtr()));
 }
@@ -138,8 +130,6 @@ void RendererFreezer::OnCheckCanFreezeRenderersComplete(bool can_freeze) {
 }
 
 void RendererFreezer::OnThawRenderersComplete(bool success) {
-  // TODO(derat): Remove after http://crbug.com/648580 is fixed.
-  VLOG(1) << "Thawing renderers complete";
   if (success)
     return;
 

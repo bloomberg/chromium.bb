@@ -89,9 +89,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   void SetRenderProcessManagerDelegate(
       base::WeakPtr<RenderProcessManagerDelegate> delegate) override {
-    // TODO(derat): Remove after http://crbug.com/648580 is fixed.
-    VLOG(1) << "Setting RenderProcessManagerDelegate to " << delegate.get();
-    VLOG(1) << "vtable is " << *reinterpret_cast<uintptr_t*>(delegate.get());
     DCHECK(!render_process_manager_delegate_)
         << "There can be only one! ...RenderProcessManagerDelegate";
     render_process_manager_delegate_ = delegate;
@@ -528,10 +525,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
       return;
     }
 
-    // TODO(derat): Switch back to POWER_LOG(EVENT) after
-    // http://crbug.com/648580 is fixed.
-    VLOG(1) << "Got " << signal_name << " signal announcing suspend attempt "
-            << proto.suspend_id();
+    POWER_LOG(EVENT) << "Got " << signal_name
+                     << " signal announcing suspend attempt "
+                     << proto.suspend_id();
 
     // If a previous suspend is pending from the same state we are currently in
     // (fully powered on or in dark resume), then something's gone a little
@@ -575,31 +571,19 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     const base::TimeDelta duration =
         base::TimeDelta::FromInternalValue(proto.suspend_duration());
-    // TODO(derat): Switch back to POWER_LOG(EVENT) after
-    // http://crbug.com/648580 is fixed.
-    VLOG(1) << "Got " << power_manager::kSuspendDoneSignal << " signal:"
-            << " suspend_id=" << proto.suspend_id()
-            << " duration=" << duration.InSeconds() << " sec";
+    POWER_LOG(EVENT) << "Got " << power_manager::kSuspendDoneSignal
+                     << " signal:"
+                     << " suspend_id=" << proto.suspend_id()
+                     << " duration=" << duration.InSeconds() << " sec";
 
     // RenderProcessManagerDelegate is only notified that suspend is imminent
     // when readiness is being reported to powerd. If the suspend attempt was
     // cancelled before then, we shouldn't notify the delegate about completion.
     const bool cancelled_while_regular_suspend_pending =
         suspend_is_pending_ && !suspending_from_dark_resume_;
-    // TODO(derat): Remove VLOG(1)s after http://crbug.com/648580 is fixed.
-    VLOG(1) << "RenderProcessManagerDelegate is "
-            << render_process_manager_delegate_.get() << "; suspend is"
-            << (suspend_is_pending_ ? "" : "n't") << " pending and was"
-            << (suspending_from_dark_resume_ ? "" : "n't")
-            << " suspending from dark resume";
     if (render_process_manager_delegate_ &&
-        !cancelled_while_regular_suspend_pending) {
-      VLOG(1) << "Calling RenderProcessManagerDelegate::SuspendDone()";
-      VLOG(1) << "vtable is "
-              << *reinterpret_cast<uintptr_t*>(
-                     render_process_manager_delegate_.get());
+        !cancelled_while_regular_suspend_pending)
       render_process_manager_delegate_->SuspendDone();
-    }
 
     // powerd always pairs each SuspendImminent signal with SuspendDone before
     // starting the next suspend attempt, so we should no longer report
@@ -739,10 +723,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // GetSuspendReadinessCallback().
   void HandleObserverSuspendReadiness(int32_t suspend_id, bool in_dark_resume) {
     DCHECK(OnOriginThread());
-    // TODO(derat): Remove after http://crbug.com/648580 is fixed.
-    VLOG(1) << "Got notification of observer readiness for "
-            << (in_dark_resume ? "dark" : "regular") << " suspend ID "
-            << suspend_id << " (pending " << pending_suspend_id_ << ")";
     if (!suspend_is_pending_ || suspend_id != pending_suspend_id_ ||
         in_dark_resume != suspending_from_dark_resume_)
       return;
@@ -761,12 +741,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
     if (notifying_observers_about_suspend_imminent_)
       return;
 
-    if (num_pending_suspend_readiness_callbacks_ > 0) {
-      // TODO(derat): Remove after http://crbug.com/648580 is fixed.
-      VLOG(1) << "Not reporting suspend readiness; waiting for "
-              << num_pending_suspend_readiness_callbacks_ << " callback(s)";
+    if (num_pending_suspend_readiness_callbacks_ > 0)
       return;
-    }
 
     std::string method_name;
     int32_t delay_id = -1;
@@ -778,27 +754,15 @@ class PowerManagerClientImpl : public PowerManagerClient {
       delay_id = suspend_delay_id_;
     }
 
-    // TODO(derat): Remove VLOG(1)s after http://crbug.com/648580 is fixed.
-    VLOG(1) << "RenderProcessManagerDelegate is "
-            << render_process_manager_delegate_.get() << "; "
-            << (suspending_from_dark_resume_ ? "" : "not ")
-            << "suspending from dark resume";
-    if (render_process_manager_delegate_ && !suspending_from_dark_resume_) {
-      VLOG(1) << "Calling RenderProcessManagerDelegate::SuspendImminent()";
-      VLOG(1) << "vtable is "
-              << *reinterpret_cast<uintptr_t*>(
-                     render_process_manager_delegate_.get());
+    if (render_process_manager_delegate_ && !suspending_from_dark_resume_)
       render_process_manager_delegate_->SuspendImminent();
-    }
 
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface, method_name);
     dbus::MessageWriter writer(&method_call);
 
-    // TODO(derat): Switch back to POWER_LOG(EVENT) after
-    // http://crbug.com/648580 is fixed.
-    VLOG(1) << "Announcing readiness of suspend delay " << delay_id
-            << " for suspend attempt " << pending_suspend_id_;
+    POWER_LOG(EVENT) << "Announcing readiness of suspend delay " << delay_id
+                     << " for suspend attempt " << pending_suspend_id_;
     power_manager::SuspendReadinessInfo protobuf_request;
     protobuf_request.set_delay_id(delay_id);
     protobuf_request.set_suspend_id(pending_suspend_id_);
