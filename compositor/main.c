@@ -1577,7 +1577,7 @@ load_wayland_backend(struct weston_compositor *c,
 	config.cursor_size = 32;
 	config.cursor_theme = NULL;
 	config.display_name = NULL;
-	config.fullscreen = 0;
+	config.fullscreen = false;
 	config.sprawl = false;
 	config.use_pixman = false;
 

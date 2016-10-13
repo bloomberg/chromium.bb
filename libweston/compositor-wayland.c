@@ -77,7 +77,7 @@ struct wayland_backend {
 
 	bool use_pixman;
 	bool sprawl_across_outputs;
-	int fullscreen;
+	bool fullscreen;
 
 	struct theme *theme;
 	cairo_device_t *frame_device;

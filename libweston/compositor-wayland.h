@@ -41,7 +41,7 @@ struct weston_wayland_backend_config {
 	bool use_pixman;
 	bool sprawl;
 	char *display_name;
-	int fullscreen;
+	bool fullscreen;
 	char *cursor_theme;
 	int cursor_size;
 };
