@@ -32,4 +32,8 @@ std::string DisplayMode::ToString() const {
                             refresh_rate_);
 }
 
+void PrintTo(const DisplayMode& mode, std::ostream* os) {
+  *os << mode.ToString();
+}
+
 }  // namespace ui

@@ -4,6 +4,8 @@
 
 #include "ui/display/fake_display_delegate.h"
 
+#include <inttypes.h>
+
 #include <string>
 #include <utility>
 
@@ -47,7 +49,7 @@ int64_t FakeDisplayDelegate::AddDisplay(const gfx::Size& display_size) {
 
   FakeDisplaySnapshot::Builder builder;
   builder.SetId(id).SetNativeMode(display_size);
-  builder.SetName(base::StringPrintf("Fake Display %d", next_display_id_));
+  builder.SetName(base::StringPrintf("Fake Display %" PRId64, id));
 
   // Add the first display as internal.
   if (displays_.empty())
@@ -134,7 +136,15 @@ void FakeDisplayDelegate::Configure(const ui::DisplaySnapshot& output,
                                     const ui::DisplayMode* mode,
                                     const gfx::Point& origin,
                                     const ui::ConfigureCallback& callback) {
-  callback.Run(true);
+  // Check the display mode is appropriate for the display snapshot.
+  for (const auto& existing_mode : output.modes()) {
+    if (existing_mode.get() == mode) {
+      callback.Run(true);
+      return;
+    }
+  }
+
+  callback.Run(false);
 }
 
 void FakeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {}
@@ -199,44 +209,19 @@ bool FakeDisplayDelegate::InitFromCommandLine() {
   // Split on commas and parse each display string.
   for (std::string part : base::SplitString(
            command_string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    int64_t id = GenerateDisplayID(kReservedManufacturerID, kProductCodeHash,
+                                   next_display_id_);
     std::unique_ptr<ui::DisplaySnapshot> snapshot =
-        CreateSnapshotFromSpec(part);
+        FakeDisplaySnapshot::CreateFromSpec(id, part);
     if (snapshot) {
       AddDisplay(std::move(snapshot));
+      next_display_id_++;
     } else {
       LOG(ERROR) << "Failed to parse display \"" << part << "\"";
     }
   }
 
   return true;
-}
-
-std::unique_ptr<ui::DisplaySnapshot>
-FakeDisplayDelegate::CreateSnapshotFromSpec(const std::string& spec) {
-  int width = 0;
-  int height = 0;
-  int dpi = 0;
-
-  // Width and height are required but DPI is optional.
-  int found = sscanf(spec.c_str(), "%dx%d^%d", &width, &height, &dpi);
-  if (found < 2)
-    return nullptr;
-
-  int64_t id = GenerateDisplayID(kReservedManufacturerID, kProductCodeHash,
-                                 ++next_display_id_);
-
-  FakeDisplaySnapshot::Builder builder;
-  builder.SetId(id).SetNativeMode(gfx::Size(width, height));
-  builder.SetName(base::StringPrintf("Fake Display %d", next_display_id_));
-
-  if (found >= 3)
-    builder.SetDPI(dpi);
-
-  // TODO(kylechar): Add type to the spec string.
-  if (displays_.empty())
-    builder.SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL);
-
-  return builder.Build();
 }
 
 void FakeDisplayDelegate::OnConfigurationChanged() {

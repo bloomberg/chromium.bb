@@ -24,6 +24,8 @@ namespace ui {
 // identifiers required to configure this display.
 class DISPLAY_TYPES_EXPORT DisplaySnapshot {
  public:
+  using DisplayModeList = std::vector<std::unique_ptr<const DisplayMode>>;
+
   DisplaySnapshot(int64_t display_id,
                   const gfx::Point& origin,
                   const gfx::Size& physical_size,
@@ -33,7 +35,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
                   bool has_color_correction_matrix,
                   std::string display_name,
                   const base::FilePath& sys_path,
-                  std::vector<std::unique_ptr<const DisplayMode>> modes,
+                  DisplayModeList modes,
                   const std::vector<uint8_t>& edid,
                   const DisplayMode* current_mode,
                   const DisplayMode* native_mode);
@@ -56,9 +58,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   int64_t product_id() const { return product_id_; }
   const gfx::Size& maximum_cursor_size() const { return maximum_cursor_size_; }
 
-  const std::vector<std::unique_ptr<const DisplayMode>>& modes() const {
-    return modes_;
-  }
+  const DisplayModeList& modes() const { return modes_; }
   const std::vector<uint8_t>& edid() const { return edid_; }
 
   void set_current_mode(const DisplayMode* mode) { current_mode_ = mode; }
@@ -102,7 +102,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
   base::FilePath sys_path_;
 
-  std::vector<std::unique_ptr<const DisplayMode>> modes_;
+  DisplayModeList modes_;
 
   // The display's EDID. It can be empty if nothing extracted such as in the
   // case of a virtual display.
@@ -120,6 +120,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   // Maximum supported cursor size on this display.
   gfx::Size maximum_cursor_size_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(DisplaySnapshot);
 };
 

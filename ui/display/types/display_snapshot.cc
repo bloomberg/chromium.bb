@@ -18,20 +18,19 @@ const size_t kSerialNumberLengthInBytes = 4U;
 
 }  // namespace
 
-DisplaySnapshot::DisplaySnapshot(
-    int64_t display_id,
-    const gfx::Point& origin,
-    const gfx::Size& physical_size,
-    DisplayConnectionType type,
-    bool is_aspect_preserving_scaling,
-    bool has_overscan,
-    bool has_color_correction_matrix,
-    std::string display_name,
-    const base::FilePath& sys_path,
-    std::vector<std::unique_ptr<const DisplayMode>> modes,
-    const std::vector<uint8_t>& edid,
-    const DisplayMode* current_mode,
-    const DisplayMode* native_mode)
+DisplaySnapshot::DisplaySnapshot(int64_t display_id,
+                                 const gfx::Point& origin,
+                                 const gfx::Size& physical_size,
+                                 DisplayConnectionType type,
+                                 bool is_aspect_preserving_scaling,
+                                 bool has_overscan,
+                                 bool has_color_correction_matrix,
+                                 std::string display_name,
+                                 const base::FilePath& sys_path,
+                                 DisplayModeList modes,
+                                 const std::vector<uint8_t>& edid,
+                                 const DisplayMode* current_mode,
+                                 const DisplayMode* native_mode)
     : display_id_(display_id),
       origin_(origin),
       physical_size_(physical_size),

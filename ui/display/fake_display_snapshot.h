@@ -38,11 +38,21 @@ class DISPLAY_EXPORT FakeDisplaySnapshot : public ui::DisplaySnapshot {
     // Adds display mode with |size| and set as native mode. If a display mode
     // with |size| already exists then it will be reused.
     Builder& SetNativeMode(const gfx::Size& size);
+    // Adds display mode and set as native mode. If an existing display mode is
+    // equivalent to |mode| it will be set as native mode instead.
+    Builder& SetNativeMode(std::unique_ptr<ui::DisplayMode> mode);
     // Adds display mode with |size| and set as current mode. If a display mode
     // with |size| already exists then it will be reused.
     Builder& SetCurrentMode(const gfx::Size& size);
-    // Adds display mode with |size| if it doesn't exist.
+    // Adds display mode and set as current mode. If an existing display mode is
+    // equivalent to |mode| it will be set as current mode instead.
+    Builder& SetCurrentMode(std::unique_ptr<ui::DisplayMode> mode);
+    // Adds display mode with |size| if necessary. If a display mode with |size|
+    // already exists then it will be reused.
     Builder& AddMode(const gfx::Size& size);
+    // Adds |mode| if necessary. If an existing display mode is equivalent to
+    // |mode| it will not be added.
+    Builder& AddMode(std::unique_ptr<ui::DisplayMode> mode);
     Builder& SetOrigin(const gfx::Point& origin);
     Builder& SetType(ui::DisplayConnectionType type);
     Builder& SetIsAspectPerservingScaling(bool is_aspect_preserving_scaling);
@@ -60,8 +70,12 @@ class DISPLAY_EXPORT FakeDisplaySnapshot : public ui::DisplaySnapshot {
 
    private:
     // Returns a display mode with |size|. If there is no existing mode, insert
-    // a display mode with |size|.
+    // a display mode with |size| first.
     const ui::DisplayMode* AddOrFindDisplayMode(const gfx::Size& size);
+    // Returns a display mode equivalent to |mode|. If there is no equivalent
+    // display mode, insert |mode| first.
+    const ui::DisplayMode* AddOrFindDisplayMode(
+        std::unique_ptr<ui::DisplayMode> mode);
 
     int64_t id_ = Display::kInvalidDisplayID;
     gfx::Point origin_;
@@ -72,7 +86,7 @@ class DISPLAY_EXPORT FakeDisplaySnapshot : public ui::DisplaySnapshot {
     bool has_color_correction_matrix_ = false;
     std::string name_ = "Fake Display";
     int64_t product_id_ = DisplaySnapshot::kInvalidProductID;
-    std::vector<std::unique_ptr<const ui::DisplayMode>> modes_;
+    DisplayModeList modes_;
     const ui::DisplayMode* current_mode_ = nullptr;
     const ui::DisplayMode* native_mode_ = nullptr;
 
@@ -88,10 +102,17 @@ class DISPLAY_EXPORT FakeDisplaySnapshot : public ui::DisplaySnapshot {
                       bool has_color_correction_matrix,
                       std::string display_name,
                       int64_t product_id,
-                      std::vector<std::unique_ptr<const ui::DisplayMode>> modes,
+                      DisplayModeList modes,
                       const ui::DisplayMode* current_mode,
                       const ui::DisplayMode* native_mode);
   ~FakeDisplaySnapshot() override;
+
+  // Creates a display snapshot from the provided |spec| string. Returns null if
+  // |spec| is invalid. See fake_display_delegate.h for |spec| format
+  // description.
+  static std::unique_ptr<ui::DisplaySnapshot> CreateFromSpec(
+      int64_t id,
+      const std::string& spec);
 
   // DisplaySnapshot:
   std::string ToString() const override;

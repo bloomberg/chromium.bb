@@ -77,6 +77,7 @@ component("display") {
 
   deps = [
     "//base",
+    "//third_party/re2",
     "//ui/display/types",
     "//ui/display/util",
     "//ui/gfx",
@@ -158,6 +159,8 @@ static_library("test_support") {
     "chromeos/test/test_display_layout_manager.h",
     "chromeos/test/test_native_display_delegate.cc",
     "chromeos/test/test_native_display_delegate.h",
+    "test/display_matchers.cc",
+    "test/display_matchers.h",
     "test/display_test_util.h",
     "test/test_screen.cc",
     "test/test_screen.h",
@@ -170,6 +173,7 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//testing/gmock",
     "//ui/display/types",
     "//ui/gfx",
     "//ui/gfx:test_support",
@@ -190,6 +194,7 @@ test("display_unittests") {
     "display_change_notifier_unittest.cc",
     "display_list_unittest.cc",
     "display_unittest.cc",
+    "fake_display_snapshot_unittests.cc",
     "manager/display_layout_builder_unittest.cc",
     "manager/display_layout_unittest.cc",
     "manager/display_manager_utilities_unittest.cc",
@@ -207,6 +212,7 @@ test("display_unittests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/display/types",
     "//ui/display/util",

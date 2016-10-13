@@ -26,16 +26,40 @@ namespace display {
 // configuration and display management code.
 //
 // The size and number of displays can controlled via --screen-config=X
-// command line flag with the format:
-//   HxW[^dpi][,]
+// command line flag. The format is as follows, where [] are optional:
+//   native_mode[#other_modes][^dpi][/options]
+//
+// native_mode: the native display mode, with format:
+//   HxW[%R]
 //     H: display height in pixels [int]
 //     W: display width in pixels [int]
-//     dpi: display physical size set based on DPI [int]
+//     R: display refresh rate [float]
 //
-// Two 800x800 displays:
-//  --screen-config=800x800,800x800
-// One 1820x1080 display and one 400x400 display:
-//  --screen-config=1920x1080,400x400
+// other_modes: list of other of display modes, with format:
+//   #HxW[%R][:HxW[%R]]
+//     H,W,R: same meaning as in native_mode.
+//   Note: The first mode is delimited with '#' and any subsequent modes are
+//         delimited with ':'.
+//
+// dpi: display DPI used to set physical size, with format:
+//   ^D
+//     D: display DPI [int]
+//
+// options: options to set on display snapshot, with format:
+//   /[a][c][i][o]
+//     a: display is aspect preserving [literal a]
+//     c: display has color correction matrix [literal c]
+//     i: display is internal [literal i]
+//     o: display has overscan [literal o]
+//
+// Examples:
+//
+// Two 800x800 displays, with first display as internal display:
+//  --screen-config=800x800/i,800x800
+// One 1920x1080 display as internal display with alternate resolutions:
+//  --screen-config=1920x1080#1600x900:1280x720/i
+// One 1600x900 display with 120 refresh rate and high-DPI:
+//   --screen-config=1600x900%120^300
 // No displays:
 //  --screen-config=none
 //
@@ -89,11 +113,6 @@ class DISPLAY_EXPORT FakeDisplayDelegate : public ui::NativeDisplayDelegate,
   FakeDisplayController* GetFakeDisplayController() override;
 
  protected:
-  // Creates a display snapshot from the provided |spec| string. Return null if
-  // |spec| is invalid.
-  std::unique_ptr<ui::DisplaySnapshot> CreateSnapshotFromSpec(
-      const std::string& spec);
-
   // Sets initial display snapshots from command line flag. Returns true if
   // command line flag was provided.
   bool InitFromCommandLine();
