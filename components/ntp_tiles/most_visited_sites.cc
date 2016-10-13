@@ -97,26 +97,7 @@ bool ShouldShowPopularSites() {
 // Determine whether we need any tiles from PopularSites to fill up a grid of
 // |num_tiles| tiles.
 bool NeedPopularSites(const PrefService* prefs, int num_tiles) {
-  if (num_tiles <= prefs->GetInteger(prefs::kNumPersonalTiles))
-    return false;
-
-  // TODO(treib): Remove after M55.
-  const base::ListValue* source_list =
-      prefs->GetList(prefs::kDeprecatedNTPTilesIsPersonal);
-  // If there aren't enough previous tiles to fill the grid, we need tiles from
-  // PopularSites.
-  if (static_cast<int>(source_list->GetSize()) < num_tiles)
-    return true;
-  // Otherwise, if any of the previous tiles are not personal, then also
-  // get tiles from PopularSites.
-  for (int i = 0; i < num_tiles; ++i) {
-    bool is_personal = false;
-    if (source_list->GetBoolean(i, &is_personal) && !is_personal)
-      return true;
-  }
-  // The whole grid is already filled with personal tiles, no point in bothering
-  // with popular ones.
-  return false;
+  return prefs->GetInteger(prefs::kNumPersonalTiles) < num_tiles;
 }
 
 bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
@@ -276,9 +257,6 @@ void MostVisitedSites::OnBlockedSitesChanged() {
 void MostVisitedSites::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(prefs::kNumPersonalTiles, 0);
-  // TODO(treib): Remove after M55.
-  registry->RegisterListPref(prefs::kDeprecatedNTPTilesURL);
-  registry->RegisterListPref(prefs::kDeprecatedNTPTilesIsPersonal);
 }
 
 void MostVisitedSites::BuildCurrentTiles() {
@@ -478,9 +456,6 @@ void MostVisitedSites::SaveNewTiles(NTPTilesVector personal_tiles) {
       num_personal_tiles++;
   }
   prefs_->SetInteger(prefs::kNumPersonalTiles, num_personal_tiles);
-  // TODO(treib): Remove after M55.
-  prefs_->ClearPref(prefs::kDeprecatedNTPTilesIsPersonal);
-  prefs_->ClearPref(prefs::kDeprecatedNTPTilesURL);
 }
 
 // static
