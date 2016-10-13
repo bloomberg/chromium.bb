@@ -28,7 +28,7 @@ class FakeRemoteCompositorBridge : public RemoteCompositorBridge {
   void ProcessCompositorStateUpdate(
       std::unique_ptr<CompositorProtoState> compositor_proto_state) override {}
 
- private:
+ protected:
   void BeginMainFrame();
 
   RemoteCompositorBridgeClient* client_;

@@ -9,6 +9,7 @@
 #include "cc/blimp/compositor_proto_state.h"
 #include "cc/blimp/compositor_state_deserializer.h"
 #include "cc/blimp/remote_compositor_bridge.h"
+#include "cc/layers/layer.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/remote_client_layer_factory.h"
@@ -61,6 +62,8 @@ class LayerTreeHostRemoteForTesting::LayerTreeHostInProcessClient
 
   void WillBeginMainFrame() override {}
   void BeginMainFrame(const BeginFrameArgs& args) override {
+    // Send any scroll/scale updates first.
+    layer_tree_host_remote_->ApplyUpdatesFromInProcessHost();
     layer_tree_host_remote_->BeginMainFrame();
   }
   void BeginMainFrameNotExpectedSoon() override {}
@@ -72,9 +75,7 @@ class LayerTreeHostRemoteForTesting::LayerTreeHostInProcessClient
                            const gfx::Vector2dF& outer_delta,
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
-                           float top_controls_delta) override {
-    // TODO(khushalsagar): Hook up when scroll/scale sync is added.
-  }
+                           float top_controls_delta) override {}
   void RequestNewCompositorFrameSink() override {
     layer_tree_host_remote_->client()->RequestNewCompositorFrameSink();
   }
@@ -276,7 +277,16 @@ bool LayerTreeHostRemoteForTesting::ShouldRetainClientPageScale(
 }
 
 void LayerTreeHostRemoteForTesting::LayerDidScroll(int engine_layer_id) {
-  // TODO(khushalsagar): Hook up when scroll/scale sync is added.
+  layers_scrolled_[engine_layer_id] =
+      compositor_state_deserializer_->GetLayerForEngineId(engine_layer_id)
+          ->scroll_offset();
+}
+
+void LayerTreeHostRemoteForTesting::ApplyUpdatesFromInProcessHost() {
+  ApplyScrollAndScaleUpdateFromClient(
+      layers_scrolled_,
+      layer_tree_host_in_process_->GetLayerTree()->page_scale_factor());
+  layers_scrolled_.clear();
 }
 
 void LayerTreeHostRemoteForTesting::RemoteHostNeedsMainFrame() {

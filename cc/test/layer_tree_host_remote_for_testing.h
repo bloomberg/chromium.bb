@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "cc/blimp/compositor_state_deserializer_client.h"
 #include "cc/blimp/layer_tree_host_remote.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 
 namespace gpu {
 class GpuMemoryBufferManager;
@@ -89,6 +90,7 @@ class LayerTreeHostRemoteForTesting : public LayerTreeHostRemote,
   void DispatchDrawAndSwapCallbacks() override;
 
   void LayerDidScroll(int engine_layer_id);
+  void ApplyUpdatesFromInProcessHost();
 
   void RemoteHostNeedsMainFrame();
   void ProcessRemoteCompositorUpdate(
@@ -99,6 +101,7 @@ class LayerTreeHostRemoteForTesting : public LayerTreeHostRemote,
   std::unique_ptr<CompositorStateDeserializer> compositor_state_deserializer_;
 
   std::unique_ptr<CompositorProtoState> pending_compositor_proto_state_;
+  ScrollOffsetMap layers_scrolled_;
 
   std::unique_ptr<LayerTreeHostInProcessClient>
       layer_tree_host_in_process_client_;

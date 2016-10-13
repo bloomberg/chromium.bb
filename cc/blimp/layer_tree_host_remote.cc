@@ -5,6 +5,7 @@
 #include "cc/blimp/layer_tree_host_remote.h"
 
 #include "base/atomic_sequence_num.h"
+#include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/blimp/compositor_proto_state.h"
@@ -19,6 +20,7 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/task_runner_provider.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 
 namespace cc {
 namespace {
@@ -161,7 +163,11 @@ bool LayerTreeHostRemote::BeginMainFrameRequested() const {
 }
 
 bool LayerTreeHostRemote::CommitRequested() const {
-  return requested_pipeline_stage_for_next_frame_ == FramePipelineStage::COMMIT;
+  // We report that a commit is in progress when synchronizing scroll and scale
+  // updates because in threaded mode, scroll/scale synchronization from the
+  // impl thread happens only during the main frame.
+  return synchronizing_client_updates_ ||
+         requested_pipeline_stage_for_next_frame_ == FramePipelineStage::COMMIT;
 }
 
 void LayerTreeHostRemote::SetDeferCommits(bool defer_commits) {
@@ -410,6 +416,48 @@ void LayerTreeHostRemote::BeginMainFrame() {
   task_runner_provider_->MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&LayerTreeHostRemote::DispatchDrawAndSwapCallbacks,
                             weak_factory_.GetWeakPtr()));
+}
+
+bool LayerTreeHostRemote::ApplyScrollAndScaleUpdateFromClient(
+    const ScrollOffsetMap& client_scroll_map,
+    float client_page_scale) {
+  DCHECK(!synchronizing_client_updates_);
+
+  base::AutoReset<bool> synchronizing_updates(&synchronizing_client_updates_,
+                                              true);
+  bool layer_sync_successful = true;
+
+  gfx::Vector2dF inner_viewport_scroll_delta;
+  Layer* inner_viewport_scroll_layer =
+      layer_tree_->inner_viewport_scroll_layer();
+  for (const auto& client_scroll : client_scroll_map) {
+    Layer* layer = layer_tree_->LayerById(client_scroll.first);
+    const gfx::ScrollOffset& scroll_offset = client_scroll.second;
+
+    // Note the inner viewport scroll delta to report separately.
+    if (layer == inner_viewport_scroll_layer) {
+      inner_viewport_scroll_delta =
+          scroll_offset.DeltaFrom(layer->scroll_offset());
+    }
+
+    if (layer)
+      layer->SetScrollOffsetFromImplSide(scroll_offset);
+    else
+      layer_sync_successful = false;
+  }
+
+  float page_scale_delta = 1.0f;
+  if (client_page_scale != layer_tree_->page_scale_factor()) {
+    page_scale_delta = client_page_scale / layer_tree_->page_scale_factor();
+    layer_tree_->SetPageScaleFromImplSide(client_page_scale);
+  }
+
+  if (!inner_viewport_scroll_delta.IsZero() || page_scale_delta != 1.0f) {
+    client_->ApplyViewportDeltas(inner_viewport_scroll_delta, gfx::Vector2dF(),
+                                 gfx::Vector2dF(), page_scale_delta, 1.0f);
+  }
+
+  return layer_sync_successful;
 }
 
 void LayerTreeHostRemote::MainFrameComplete() {

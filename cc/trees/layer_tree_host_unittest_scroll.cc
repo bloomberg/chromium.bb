@@ -155,7 +155,7 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
   int outer_viewport_container_layer_id_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollSimple);
+REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollSimple);
 
 class LayerTreeHostScrollTestScrollMultipleRedraw
     : public LayerTreeHostScrollTest {

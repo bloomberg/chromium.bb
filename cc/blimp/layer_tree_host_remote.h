@@ -112,6 +112,9 @@ class CC_EXPORT LayerTreeHostRemote : public LayerTreeHost,
 
   // RemoteCompositorBridgeClient implementation.
   void BeginMainFrame() override;
+  bool ApplyScrollAndScaleUpdateFromClient(
+      const ScrollOffsetMap& client_scroll_map,
+      float client_page_scale) override;
 
  private:
   enum class FramePipelineStage { NONE, ANIMATE, UPDATE_LAYERS, COMMIT };
@@ -125,6 +128,12 @@ class CC_EXPORT LayerTreeHostRemote : public LayerTreeHost,
   int source_frame_number_ = 0;
   bool visible_ = false;
   bool defer_commits_ = false;
+
+  // In threaded/single-threaded mode, the LayerTree and Layers expect scroll/
+  // scale updates to come from the impl thread only during the main frame.
+  // Since we synchronize state outside of that, this is set so we can
+  // temporarily report that a commit is in progress.
+  bool synchronizing_client_updates_ = false;
 
   // Set to true if a main frame request is pending on the
   // RemoteCompositorBridge.
