@@ -13,6 +13,8 @@
 #include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "content/browser/browser_main_loop.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/browser/webrtc/webrtc_internals.h"
@@ -74,6 +76,23 @@ std::string GenerateGetUserMediaWithOptionalSourceID(
   const std::string video_constraint =
       "video: {optional: [{ sourceId:\"" + video_source_id + "\"}]}";
   return function_name + "({" + audio_constraint + video_constraint + "});";
+}
+
+std::string GenerateGetUserMediaWithDisableLocalEcho(
+    const std::string& function_name,
+    const std::string& disable_local_echo) {
+  const std::string audio_constraint =
+      "audio:{mandatory: { chromeMediaSource : 'system', disableLocalEcho : " +
+      disable_local_echo + " }},";
+
+  const std::string video_constraint =
+      "video: { mandatory: { chromeMediaSource:'screen' }}";
+  return function_name + "({" + audio_constraint + video_constraint + "});";
+}
+
+bool VerifyDisableLocalEcho(bool expect_value,
+                            const content::StreamControls& controls) {
+  return expect_value == controls.disable_local_echo;
 }
 
 }  // namespace
@@ -721,6 +740,34 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   NavigateToURL(shell(), url);
 
   ExecuteJavascriptAndWaitForOk(call);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       DisableLocalEchoParameter) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalWebPlatformFeatures);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  MediaStreamManager* manager =
+      BrowserMainLoop::GetInstance()->media_stream_manager();
+
+  manager->SetGenerateStreamCallbackForTesting(
+      base::Bind(&VerifyDisableLocalEcho, false));
+  std::string call = GenerateGetUserMediaWithDisableLocalEcho(
+      "getUserMediaAndExpectSuccess", "false");
+  ExecuteJavascriptAndWaitForOk(call);
+
+  manager->SetGenerateStreamCallbackForTesting(
+      base::Bind(&VerifyDisableLocalEcho, true));
+  call = GenerateGetUserMediaWithDisableLocalEcho(
+      "getUserMediaAndExpectSuccess", "true");
+  ExecuteJavascriptAndWaitForOk(call);
+
+  manager->SetGenerateStreamCallbackForTesting(
+      MediaStreamManager::GenerateStreamTestCallback());
 }
 
 }  // namespace content

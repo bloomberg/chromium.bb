@@ -53,7 +53,7 @@ class MediaAccessPermissionRequestTest : public testing::Test {
     content::MediaStreamRequest request(
         0, 0, 0, origin, false, content::MEDIA_GENERATE_STREAM, audio_id,
         video_id, content::MEDIA_DEVICE_AUDIO_CAPTURE,
-        content::MEDIA_DEVICE_VIDEO_CAPTURE);
+        content::MEDIA_DEVICE_VIDEO_CAPTURE, false /* disable_local_echo */);
 
     std::unique_ptr<TestMediaAccessPermissionRequest> permission_request;
     permission_request.reset(new TestMediaAccessPermissionRequest(

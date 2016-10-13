@@ -229,6 +229,7 @@ struct WebMediaTrackConstraintSet {
   DoubleConstraint latency;
   LongConstraint channelCount;
   StringConstraint deviceId;
+  BooleanConstraint disableLocalEcho;
   StringConstraint groupId;
   // Constraints not exposed in Blink at the moment, only through
   // the legacy name interface.

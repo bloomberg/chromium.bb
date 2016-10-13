@@ -349,22 +349,19 @@ WebContentsAudioInputStream* WebContentsAudioInputStream::Create(
     const std::string& device_id,
     const media::AudioParameters& params,
     const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
-    AudioMirroringManager* audio_mirroring_manager,
-    bool is_duplication) {
-  int render_process_id;
-  int main_render_frame_id;
-  if (!WebContentsMediaCaptureId::ExtractTabCaptureTarget(
-          device_id, &render_process_id, &main_render_frame_id)) {
+    AudioMirroringManager* audio_mirroring_manager) {
+  WebContentsMediaCaptureId media_id;
+  if (!WebContentsMediaCaptureId::Parse(device_id, &media_id)) {
     return NULL;
   }
 
   return new WebContentsAudioInputStream(
-      render_process_id, main_render_frame_id, audio_mirroring_manager,
-      new WebContentsTracker(false),
+      media_id.render_process_id, media_id.main_render_frame_id,
+      audio_mirroring_manager, new WebContentsTracker(false),
       new media::VirtualAudioInputStream(
           params, worker_task_runner,
           media::VirtualAudioInputStream::AfterCloseCallback()),
-      is_duplication);
+      !media_id.disable_local_echo);
 }
 
 WebContentsAudioInputStream::WebContentsAudioInputStream(

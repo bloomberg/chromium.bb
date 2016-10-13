@@ -86,6 +86,14 @@ void CopyBlinkRequestToStreamControls(const blink::WebUserMediaRequest& request,
         }
       }
     }
+
+    if (request.audioConstraints().basic().disableLocalEcho.hasExact()) {
+      controls->disable_local_echo =
+          request.audioConstraints().basic().disableLocalEcho.exact();
+    } else {
+      controls->disable_local_echo =
+          controls->audio.stream_source != kMediaStreamSourceDesktop;
+    }
   }
   if (!request.videoConstraints().isNull()) {
     const blink::WebMediaTrackConstraintSet& video_basic =

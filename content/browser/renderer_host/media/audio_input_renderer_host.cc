@@ -427,7 +427,7 @@ void AudioInputRendererHost::DoCreateStream(
   // If we have successfully created the SyncWriter then assign it to the
   // entry and construct an AudioInputController.
   entry->writer.reset(writer.release());
-  if (WebContentsMediaCaptureId::IsWebContentsDeviceId(device_id)) {
+  if (WebContentsMediaCaptureId::Parse(device_id, nullptr)) {
     // For MEDIA_DESKTOP_AUDIO_CAPTURE, the source is selected from picker
     // window, we do not mute the source audio.
     // For MEDIA_TAB_AUDIO_CAPTURE, the probable use case is Cast, we mute
@@ -438,7 +438,7 @@ void AudioInputRendererHost::DoCreateStream(
         audio_manager_->GetTaskRunner(), this,
         WebContentsAudioInputStream::Create(
             device_id, audio_params, audio_manager_->GetWorkerTaskRunner(),
-            audio_mirroring_manager_, type == MEDIA_DESKTOP_AUDIO_CAPTURE),
+            audio_mirroring_manager_),
         entry->writer.get(), user_input_monitor_);
     // Only count for captures from desktop media picker dialog.
     if (entry->controller.get() && type == MEDIA_DESKTOP_AUDIO_CAPTURE)

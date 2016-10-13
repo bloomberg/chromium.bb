@@ -78,6 +78,10 @@ class CONTENT_EXPORT MediaStreamManager
                               std::unique_ptr<MediaStreamUIProxy> ui)>
       MediaRequestResponseCallback;
 
+  // Callback for testing.
+  typedef base::Callback<bool(const StreamControls&)>
+      GenerateStreamTestCallback;
+
   // Adds |message| to native logs for outstanding device requests, for use by
   // render processes hosts whose corresponding render processes are requesting
   // logging from webrtcLoggingPrivate API. Safe to call from any thread.
@@ -274,6 +278,9 @@ class CONTENT_EXPORT MediaStreamManager
   // See http://crbug.com/648183.
   void NotifyDeviceChangeSubscribers(MediaStreamType type);
 
+  void SetGenerateStreamCallbackForTesting(
+      GenerateStreamTestCallback test_callback);
+
  private:
   // Contains all data needed to keep track of requests.
   class DeviceRequest;
@@ -449,6 +456,8 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Objects subscribed to changes in the set of media devices.
   std::vector<MediaStreamRequester*> device_change_subscribers_;
+
+  GenerateStreamTestCallback generate_stream_test_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };

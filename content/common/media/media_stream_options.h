@@ -57,6 +57,7 @@ struct CONTENT_EXPORT StreamControls {
   // Hotword functionality (chromeos only)
   // See crbug.com/564574 for discussion on possibly #ifdef'ing this out.
   bool hotword_enabled;  // kMediaStreamAudioHotword = "googHotword";
+  bool disable_local_echo;
 };
 
 // StreamDeviceInfo describes information about a device.

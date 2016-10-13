@@ -136,7 +136,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
                          : content::MEDIA_DEVICE_VIDEO_CAPTURE;
     return content::MediaStreamRequest(0, 0, 0, example_url(), false,
                                        request_type, audio_id, video_id,
-                                       audio_type, video_type);
+                                       audio_type, video_type, false);
   }
 
   content::MediaStreamRequest CreateRequest(const std::string& audio_id,

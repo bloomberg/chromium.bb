@@ -992,19 +992,18 @@ WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
 }
 
 // static
-media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
-    const std::string& device_id) {
+std::unique_ptr<media::VideoCaptureDevice>
+WebContentsVideoCaptureDevice::Create(const std::string& device_id) {
   // Parse device_id into render_process_id and main_render_frame_id.
-  int render_process_id = -1;
-  int main_render_frame_id = -1;
-  if (!WebContentsMediaCaptureId::ExtractTabCaptureTarget(
-          device_id, &render_process_id, &main_render_frame_id)) {
+  WebContentsMediaCaptureId media_id;
+  if (!WebContentsMediaCaptureId::Parse(device_id, &media_id)) {
     return NULL;
   }
 
-  return new WebContentsVideoCaptureDevice(
-      render_process_id, main_render_frame_id,
-      WebContentsMediaCaptureId::IsAutoThrottlingOptionSet(device_id));
+  return std::unique_ptr<media::VideoCaptureDevice>(
+      new WebContentsVideoCaptureDevice(media_id.render_process_id,
+                                        media_id.main_render_frame_id,
+                                        media_id.enable_auto_throttling));
 }
 
 void WebContentsVideoCaptureDevice::AllocateAndStart(

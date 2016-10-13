@@ -61,8 +61,7 @@ class CONTENT_EXPORT WebContentsAudioInputStream
       const std::string& device_id,
       const media::AudioParameters& params,
       const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
-      AudioMirroringManager* audio_mirroring_manager,
-      bool is_duplication);
+      AudioMirroringManager* audio_mirroring_manager);
 
  private:
   friend class WebContentsAudioInputStreamTest;

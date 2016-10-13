@@ -85,6 +85,7 @@ const char kMediaStreamAudioHotword[] = "googHotword";
 // TODO(hta): googHotword should go away. https://crbug.com/577627
 // From content/renderer/media/media_stream_audio_processor_options.cc
 const char kEchoCancellation[] = "echoCancellation";
+const char kDisableLocalEcho[] = "disableLocalEcho";
 const char kGoogEchoCancellation[] = "googEchoCancellation";
 const char kGoogExperimentalEchoCancellation[] = "googEchoCancellation2";
 const char kGoogAutoGainControl[] = "googAutoGainControl";
@@ -298,6 +299,10 @@ static void parseOldStyleNames(
       // represented as an enum, and cause type errors.
       // https://crbug.com/576582
       result.mediaStreamSource.setExact(constraint.m_value);
+    } else if (constraint.m_name.equals(kDisableLocalEcho) &&
+               RuntimeEnabledFeatures::
+                   desktopCaptureDisableLocalEchoControlEnabled()) {
+      result.disableLocalEcho.setExact(toBoolean(constraint.m_value));
     } else if (constraint.m_name.equals(kMediaStreamSourceId) ||
                constraint.m_name.equals(kMediaStreamSourceInfoId)) {
       result.deviceId.setExact(constraint.m_value);

@@ -129,8 +129,8 @@ bool DesktopMediaID::operator==(const DesktopMediaID& other) const {
 //                         window:"window_id:aura_id".
 DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
   // For WebContents type.
-  WebContentsMediaCaptureId web_id = WebContentsMediaCaptureId::Parse(str);
-  if (!web_id.is_null())
+  WebContentsMediaCaptureId web_id;
+  if (WebContentsMediaCaptureId::Parse(str, &web_id))
     return DesktopMediaID(TYPE_WEB_CONTENTS, 0, web_id);
 
   // For screen and window types.

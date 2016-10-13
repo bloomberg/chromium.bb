@@ -634,10 +634,9 @@ class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
     web_contents_.reset(
         TestWebContents::Create(browser_context_.get(), site_instance.get()));
     RenderFrameHost* const main_frame = web_contents_->GetMainFrame();
-    device_.reset(WebContentsVideoCaptureDevice::Create(
-        base::StringPrintf("web-contents-media-stream://%d:%d",
-                           main_frame->GetProcess()->GetID(),
-                           main_frame->GetRoutingID())));
+    device_ = WebContentsVideoCaptureDevice::Create(base::StringPrintf(
+        "web-contents-media-stream://%d:%d", main_frame->GetProcess()->GetID(),
+        main_frame->GetRoutingID()));
 
     base::RunLoop().RunUntilIdle();
   }

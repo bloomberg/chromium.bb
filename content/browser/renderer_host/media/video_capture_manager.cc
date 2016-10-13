@@ -594,7 +594,7 @@ VideoCaptureManager::DoStartTabCaptureOnDeviceThread(
   DCHECK(IsOnDeviceThread());
 
   std::unique_ptr<VideoCaptureDevice> video_capture_device;
-  video_capture_device.reset(WebContentsVideoCaptureDevice::Create(id));
+  video_capture_device = WebContentsVideoCaptureDevice::Create(id);
 
   if (!video_capture_device) {
     device_client->OnError(FROM_HERE, "Could not create capture device");
@@ -622,7 +622,7 @@ VideoCaptureManager::DoStartDesktopCaptureOnDeviceThread(
   }
 
   if (desktop_id.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
-    video_capture_device.reset(WebContentsVideoCaptureDevice::Create(id));
+    video_capture_device = WebContentsVideoCaptureDevice::Create(id);
     IncrementDesktopCaptureCounter(TAB_VIDEO_CAPTURER_CREATED);
     if (desktop_id.audio_share) {
       IncrementDesktopCaptureCounter(TAB_VIDEO_CAPTURER_CREATED_WITH_AUDIO);

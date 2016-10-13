@@ -149,7 +149,7 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     content::MediaStreamDevices* devices,
     content::DesktopMediaID media_id,
     bool capture_audio,
-    bool mute_system_audio,
+    bool disable_local_echo,
     bool display_notification,
     const base::string16& application_title,
     const base::string16& registered_extension_name) {
@@ -157,8 +157,8 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   std::unique_ptr<content::MediaStreamUI> ui;
 
   DVLOG(2) << __FUNCTION__ << ": media_id " << media_id.ToString()
-           << ", capture_audio " << capture_audio << ", mute_system_audio "
-           << mute_system_audio << ", display_notification "
+           << ", capture_audio " << capture_audio << ", disable_local_echo "
+           << disable_local_echo << ", display_notification "
            << display_notification << ", application_title "
            << application_title << ", extension_name "
            << registered_extension_name;
@@ -168,10 +168,12 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
       content::MEDIA_DESKTOP_VIDEO_CAPTURE, media_id.ToString(), "Screen"));
   if (capture_audio) {
     if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
+      content::WebContentsMediaCaptureId web_id = media_id.web_contents_id;
+      web_id.disable_local_echo = disable_local_echo;
       devices->push_back(
           content::MediaStreamDevice(content::MEDIA_DESKTOP_AUDIO_CAPTURE,
-                                     media_id.ToString(), "Tab audio"));
-    } else if (mute_system_audio) {
+                                     web_id.ToString(), "Tab audio"));
+    } else if (disable_local_echo) {
       // Use the special loopback device ID for system audio capture.
       devices->push_back(content::MediaStreamDevice(
           content::MEDIA_DESKTOP_AUDIO_CAPTURE,
@@ -325,9 +327,9 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
       // Determine if the extension is required to display a notification.
       const bool display_notification = ShouldDisplayNotification(extension);
 
-      ui = GetDevicesForDesktopCapture(&devices, screen_id, capture_audio, true,
-                                       display_notification, application_title,
-                                       application_title);
+      ui = GetDevicesForDesktopCapture(
+          &devices, screen_id, capture_audio, request.disable_local_echo,
+          display_notification, application_title, application_title);
       DCHECK(!devices.empty());
     }
 
@@ -445,7 +447,8 @@ void DesktopCaptureAccessHandler::HandleRequest(
   // Determine if the extension is required to display a notification.
   const bool display_notification = ShouldDisplayNotification(extension);
 
-  ui = GetDevicesForDesktopCapture(&devices, media_id, capture_audio, false,
+  ui = GetDevicesForDesktopCapture(&devices, media_id, capture_audio,
+                                   request.disable_local_echo,
                                    display_notification,
                                    GetApplicationTitle(web_contents, extension),
                                    base::UTF8ToUTF16(original_extension_name));

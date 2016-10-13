@@ -21,10 +21,12 @@ struct CONTENT_EXPORT WebContentsMediaCaptureId {
 
   WebContentsMediaCaptureId(int render_process_id,
                             int main_render_frame_id,
-                            bool enable_auto_throttling)
+                            bool enable_auto_throttling,
+                            bool disable_local_echo)
       : render_process_id(render_process_id),
         main_render_frame_id(main_render_frame_id),
-        enable_auto_throttling(enable_auto_throttling) {}
+        enable_auto_throttling(enable_auto_throttling),
+        disable_local_echo(disable_local_echo) {}
 
   bool operator<(const WebContentsMediaCaptureId& other) const;
   bool operator==(const WebContentsMediaCaptureId& other) const;
@@ -39,22 +41,15 @@ struct CONTENT_EXPORT WebContentsMediaCaptureId {
   int main_render_frame_id = MSG_ROUTING_NONE;
 
   bool enable_auto_throttling = false;
+  bool disable_local_echo = false;
 
+  // TODO(qiangchen): Pass structured ID along code paths, instead of doing
+  // string conversion back and forth. See crbug/648666.
   // Create WebContentsMediaCaptureId based on a string.
-  static WebContentsMediaCaptureId Parse(const std::string& str);
-
-  // Check whether the device id indicates that this is a web contents stream.
-  static bool IsWebContentsDeviceId(const std::string& device_id);
-
-  // Function to extract the target render frame id's from a media stream
-  // request's device id.
-  static bool ExtractTabCaptureTarget(const std::string& device_id,
-                                      int* render_process_id,
-                                      int* main_render_frame_id);
-
-  // Parses the media stream request |device_id| and returns true if both 1) the
-  // format is valid, and 2) the throttling option is set to auto.
-  static bool IsAutoThrottlingOptionSet(const std::string& device_id);
+  // Return false if the input string does not represent a
+  // WebContentsMediaCaptureId.
+  static bool Parse(const std::string& str,
+                    WebContentsMediaCaptureId* output_id);
 };
 
 }  // namespace content

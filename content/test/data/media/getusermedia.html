@@ -42,6 +42,15 @@
         failedCallback);
   }
 
+  // Requests getusermedia and expects it to succeed.
+  function getUserMediaAndExpectSuccess(constraints) {
+    console.log('Calling getUserMediaAndExpectSuccess.');
+    navigator.webkitGetUserMedia(
+        constraints,
+        reportTestSuccess,
+        failedCallback);
+  }
+
   // Requests getusermedia and expects it to fail. The error name is returned
   // to the test.
   function getUserMediaAndExpectFailure(constraints) {

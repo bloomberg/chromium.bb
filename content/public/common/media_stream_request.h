@@ -204,17 +204,17 @@ typedef std::map<MediaStreamType, MediaStreamDevices> MediaStreamDeviceMap;
 // Tab-only stuff and Pepper-only stuff being passed around to all clients,
 // which is icky.
 struct CONTENT_EXPORT MediaStreamRequest {
-  MediaStreamRequest(
-      int render_process_id,
-      int render_frame_id,
-      int page_request_id,
-      const GURL& security_origin,
-      bool user_gesture,
-      MediaStreamRequestType request_type,
-      const std::string& requested_audio_device_id,
-      const std::string& requested_video_device_id,
-      MediaStreamType audio_type,
-      MediaStreamType video_type);
+  MediaStreamRequest(int render_process_id,
+                     int render_frame_id,
+                     int page_request_id,
+                     const GURL& security_origin,
+                     bool user_gesture,
+                     MediaStreamRequestType request_type,
+                     const std::string& requested_audio_device_id,
+                     const std::string& requested_video_device_id,
+                     MediaStreamType audio_type,
+                     MediaStreamType video_type,
+                     bool disable_local_echo);
 
   MediaStreamRequest(const MediaStreamRequest& other);
 
@@ -255,6 +255,10 @@ struct CONTENT_EXPORT MediaStreamRequest {
 
   // Flag to indicate if the request contains video.
   MediaStreamType video_type;
+
+  // Flag for desktop or tab share to indicate whether to prevent the captured
+  // audio being played out locally.
+  bool disable_local_echo;
 
   // True if all ancestors of the requesting frame have the same origin.
   bool all_ancestors_have_same_origin;

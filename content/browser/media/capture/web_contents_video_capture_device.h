@@ -30,7 +30,8 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
  public:
   // Create a WebContentsVideoCaptureDevice instance from the given
   // |device_id|.  Returns NULL if |device_id| is invalid.
-  static media::VideoCaptureDevice* Create(const std::string& device_id);
+  static std::unique_ptr<media::VideoCaptureDevice> Create(
+      const std::string& device_id);
 
   ~WebContentsVideoCaptureDevice() override;
 

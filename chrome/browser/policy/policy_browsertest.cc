@@ -3253,12 +3253,10 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   void FinishAudioTest() {
-    content::MediaStreamRequest request(0, 0, 0,
-                                        request_url_.GetOrigin(), false,
-                                        content::MEDIA_DEVICE_ACCESS,
-                                        std::string(), std::string(),
-                                        content::MEDIA_DEVICE_AUDIO_CAPTURE,
-                                        content::MEDIA_NO_SERVICE);
+    content::MediaStreamRequest request(
+        0, 0, 0, request_url_.GetOrigin(), false, content::MEDIA_DEVICE_ACCESS,
+        std::string(), std::string(), content::MEDIA_DEVICE_AUDIO_CAPTURE,
+        content::MEDIA_NO_SERVICE, false);
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
     MediaStreamDevicesController controller(
@@ -3272,13 +3270,10 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   void FinishVideoTest() {
-    content::MediaStreamRequest request(0, 0, 0,
-                                        request_url_.GetOrigin(), false,
-                                        content::MEDIA_DEVICE_ACCESS,
-                                        std::string(),
-                                        std::string(),
-                                        content::MEDIA_NO_SERVICE,
-                                        content::MEDIA_DEVICE_VIDEO_CAPTURE);
+    content::MediaStreamRequest request(
+        0, 0, 0, request_url_.GetOrigin(), false, content::MEDIA_DEVICE_ACCESS,
+        std::string(), std::string(), content::MEDIA_NO_SERVICE,
+        content::MEDIA_DEVICE_VIDEO_CAPTURE, false);
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
     MediaStreamDevicesController controller(

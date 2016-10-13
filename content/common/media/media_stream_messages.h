@@ -37,6 +37,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::StreamControls)
   IPC_STRUCT_TRAITS_MEMBER(audio)
   IPC_STRUCT_TRAITS_MEMBER(video)
   IPC_STRUCT_TRAITS_MEMBER(hotword_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(disable_local_echo)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::StreamDeviceInfo)
