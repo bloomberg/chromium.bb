@@ -24,7 +24,7 @@ class PrerenderManager;
 // associated PrerenderManager.
 class PrerenderManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // Returns the PrerenderManager for |profile|.
+  // Returns the PrerenderManager for |context|.
   static PrerenderManager* GetForBrowserContext(
       content::BrowserContext* context);
 
