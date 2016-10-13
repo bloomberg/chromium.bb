@@ -172,6 +172,9 @@ void ProgressTracker::incrementProgress(unsigned long identifier, int length) {
 }
 
 void ProgressTracker::maybeSendProgress() {
+  if (!m_frame->isLoading())
+    return;
+
   m_progressValue = initialProgressValue + 0.1;  // +0.1 for committing
   if (m_finishedParsing)
     m_progressValue += 0.2;
