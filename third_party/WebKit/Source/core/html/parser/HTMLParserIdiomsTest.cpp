@@ -10,6 +10,26 @@ namespace blink {
 
 namespace {
 
+TEST(HTMLParserIdiomsTest, ParseHTMLInteger) {
+  int value = 0;
+
+  EXPECT_TRUE(parseHTMLInteger("2147483646", value));
+  EXPECT_EQ(2147483646, value);
+  EXPECT_TRUE(parseHTMLInteger("2147483647", value));
+  EXPECT_EQ(2147483647, value);
+  value = 12345;
+  EXPECT_FALSE(parseHTMLInteger("2147483648", value));
+  EXPECT_EQ(12345, value);
+
+  EXPECT_TRUE(parseHTMLInteger("-2147483647", value));
+  EXPECT_EQ(-2147483647, value);
+  EXPECT_TRUE(parseHTMLInteger("-2147483648", value));
+  EXPECT_EQ(0 - 2147483648, value);
+  value = 12345;
+  EXPECT_FALSE(parseHTMLInteger("-2147483649", value));
+  EXPECT_EQ(12345, value);
+}
+
 TEST(HTMLParserIdiomsTest, ParseHTMLNonNegativeInteger) {
   unsigned value = 0;
 

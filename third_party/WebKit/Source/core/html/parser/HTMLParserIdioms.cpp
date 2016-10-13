@@ -161,9 +161,7 @@ static bool parseHTMLIntegerInternal(const CharacterType* position,
                                      const CharacterType* end,
                                      int& value) {
   // Step 3
-  // We do not do this step and do not have a local sign
-  // variable since due to a bug in charactersToIntStrict
-  // we have to add the sign to the digits string.
+  bool isNegative = false;
 
   // Step 4
   while (position < end) {
@@ -178,9 +176,8 @@ static bool parseHTMLIntegerInternal(const CharacterType* position,
   ASSERT(position < end);
 
   // Step 6
-  StringBuilder digits;
   if (*position == '-') {
-    digits.append('-');
+    isNegative = true;
     ++position;
   } else if (*position == '+')
     ++position;
@@ -193,19 +190,22 @@ static bool parseHTMLIntegerInternal(const CharacterType* position,
     return false;
 
   // Step 8
-  while (position < end) {
-    if (!isASCIIDigit(*position))
-      break;
-    digits.append(*position++);
-  }
+  static const int intMax = std::numeric_limits<int>::max();
+  const int base = 10;
+  const int maxMultiplier = intMax / base;
 
+  unsigned temp = 0;
+  do {
+    int digitValue = *position - '0';
+    if (temp > maxMultiplier ||
+        (temp == maxMultiplier && digitValue > (intMax % base) + isNegative))
+      return false;
+    temp = temp * base + digitValue;
+    ++position;
+  } while (position < end && isASCIIDigit(*position));
   // Step 9
-  bool ok;
-  if (digits.is8Bit())
-    value = charactersToIntStrict(digits.characters8(), digits.length(), &ok);
-  else
-    value = charactersToIntStrict(digits.characters16(), digits.length(), &ok);
-  return ok;
+  value = isNegative ? (0 - temp) : temp;
+  return true;
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-integers

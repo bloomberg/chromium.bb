@@ -58,7 +58,7 @@ double parseToDoubleForNumberType(
     double fallbackValue = std::numeric_limits<double>::quiet_NaN());
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-integers
-bool parseHTMLInteger(const String&, int&);
+CORE_EXPORT bool parseHTMLInteger(const String&, int&);
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-non-negative-integers
 CORE_EXPORT bool parseHTMLNonNegativeInteger(const String&, unsigned&);
