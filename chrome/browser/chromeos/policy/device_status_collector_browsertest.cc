@@ -27,6 +27,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
@@ -80,6 +81,12 @@ const char kKioskAccountId[] = "kiosk_user@localhost";
 const char kKioskAppId[] = "kiosk_app_id";
 const char kExternalMountPoint[] = "/a/b/c";
 const char kPublicAccountId[] = "public_user@localhost";
+const char kArcStatus[] = "{\"applications\":[ { "
+    "\"packageName\":\"com.android.providers.telephony\","
+    "\"versionName\":\"6.0.1\","
+    "\"permissions\": [\"android.permission.INTERNET\"] }],"
+    "\"userEmail\":\"xxx@google.com\"}";
+const char kDroidGuardInfo[] = "{\"droid_guard_info\":42}";
 
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
@@ -223,6 +230,17 @@ void CallAndroidStatusReceiver(
     mojo::String status,
     mojo::String droid_guard_info) {
   receiver.Run(status, droid_guard_info);
+}
+
+bool GetFakeAndroidStatus(
+    mojo::String status,
+    mojo::String droid_guard_info,
+    const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver) {
+  // Post it to the thread because this call is expected to be asynchronous.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&CallAndroidStatusReceiver, receiver,
+          status, droid_guard_info));
+  return true;
 }
 
 bool GetEmptyAndroidStatus(
@@ -982,9 +1000,40 @@ TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
   EXPECT_EQ(0, device_status_.cpu_temp_info_size());
 }
 
-TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNotKioskMode) {
+TEST_F(DeviceStatusCollectorTest, TestAndroidReporting) {
+  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
+                         base::Bind(&GetEmptyCPUStatistics),
+                         base::Bind(&GetEmptyCPUTempInfo),
+                         base::Bind(&GetFakeAndroidStatus, kArcStatus,
+                             kDroidGuardInfo));
+  GetStatus();
+  EXPECT_EQ(kArcStatus, session_status_.android_status().status_payload());
+  EXPECT_EQ(kDroidGuardInfo,
+      session_status_.android_status().droid_guard_info());
+}
+
+TEST_F(DeviceStatusCollectorTest, NoAndroidReportingWhenDisabled) {
+  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
+                         base::Bind(&GetEmptyCPUStatistics),
+                         base::Bind(&GetEmptyCPUTempInfo),
+                         base::Bind(&GetFakeAndroidStatus, kArcStatus,
+                             kDroidGuardInfo));
+
+  prefs_.SetBoolean(prefs::kReportArcStatus, false);
+  // Mock Kiosk app, so some session status is reported
+  status_collector_->set_kiosk_account(
+      base::MakeUnique<DeviceLocalAccount>(fake_device_local_account_));
+  MockRunningKioskApp(fake_device_local_account_);
+
+  GetStatus();
+  EXPECT_TRUE(got_session_status_);
+  EXPECT_FALSE(session_status_.has_android_status());
+}
+
+TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNotKioskAndNoArcReporting) {
   // Should not report session status if we don't have an active kiosk app.
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, true);
+  prefs_.SetBoolean(prefs::kReportArcStatus, false);
   GetStatus();
   EXPECT_FALSE(got_session_status_);
 }
@@ -992,6 +1041,9 @@ TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNotKioskMode) {
 TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
   // Should not report session status if session status reporting is disabled.
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, false);
+  // ReportDeviceSessionStatus only controls Kiosk reporting, ARC reporting
+  // has to be disabled serarately.
+  prefs_.SetBoolean(prefs::kReportArcStatus, false);
   status_collector_->set_kiosk_account(
       base::MakeUnique<policy::DeviceLocalAccount>(fake_device_local_account_));
   // Set up a device-local account for single-app kiosk mode.

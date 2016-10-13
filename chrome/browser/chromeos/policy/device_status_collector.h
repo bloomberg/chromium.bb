@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/system/version_loader.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/prefs/pref_member.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "ui/base/idle/idle.h"
 
@@ -284,6 +285,7 @@ class DeviceStatusCollector {
       os_update_status_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       running_kiosk_app_subscription_;
+  BooleanPrefMember report_arc_status_pref_;
 
   // Task runner in the creation thread where responses are sent to.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

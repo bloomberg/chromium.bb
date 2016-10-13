@@ -2613,6 +2613,16 @@
     ]
   },
 
+  "ReportArcStatus": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "ReportArcStatus": false },
+    "pref_mappings": [
+      { "pref": "arc.status_reporting",
+        "local_state": true }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

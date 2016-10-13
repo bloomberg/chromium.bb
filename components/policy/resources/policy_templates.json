@@ -120,6 +120,8 @@
 #   'can_be_recommended' can be set to True to include that policy in the
 #   recommended policies templates. This only affects the template generation;
 #   all policies can be at the recommended level. The default is False.
+#   'per_profile' controls whether a user policy applies to every user logging
+#   into the browser or only one profile.
 #
 #   The 'max_size' key is used to specify the maximal size of the external data
 #   that a policy can reference, in bytes. This annotation is compulsory for
@@ -137,7 +139,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 348
+#   For your editing convenience: highest ID currently used: 349
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4994,8 +4996,8 @@
       'desc': '''Report information about the active kiosk session, such as
       application ID and version.
 
-      If the policy is set to false, the session information will not be
-      reported. If set to true or left unset, session information will be
+      If the policy is set to false, the kiosk session information will not be
+      reported. If set to true or left unset, kiosk session information will be
       reported.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
@@ -5017,6 +5019,27 @@
       If this policy is unset, the default frequency is 3 hours. The minimum
       allowed frequency is 60 seconds.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'ReportArcStatus',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:55-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 349,
+      'caption': '''Report information about status of Android''',
+      'tags': ['admin-sharing'],
+      'desc': '''Report information about the status of Android is send back to
+      the server.
+
+      If the policy is set to false, the information will not be reported.
+      If set to true or left unset, the information will be reported.
+
+      This policy only applies if Android apps are enabled.''',
     },
     {
       'name': 'HeartbeatEnabled',
