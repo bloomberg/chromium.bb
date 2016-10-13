@@ -49,10 +49,4 @@ std::string StubModelTypeService::GetStorageKey(const EntityData& entity_data) {
   return std::string();
 }
 
-void StubModelTypeService::OnChangeProcessorSet() {}
-
-bool StubModelTypeService::HasChangeProcessor() const {
-  return change_processor() != nullptr;
-}
-
 }  // namespace syncer

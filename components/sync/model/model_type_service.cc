@@ -6,19 +6,23 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
+#include "components/sync/model/metadata_batch.h"
+
 namespace syncer {
 
 ModelTypeService::ModelTypeService(
     const ChangeProcessorFactory& change_processor_factory,
     ModelType type)
-    : change_processor_factory_(change_processor_factory), type_(type) {}
+    : type_(type),
+      change_processor_factory_(change_processor_factory),
+      change_processor_(change_processor_factory_.Run(type_, this)) {}
 
 ModelTypeService::~ModelTypeService() {}
 
 ConflictResolution ModelTypeService::ResolveConflict(
     const EntityData& local_data,
     const EntityData& remote_data) const {
-  // TODO(maxbogue): Add tests once a file exists for them (crbug.com/543407).
   if (remote_data.is_deleted()) {
     DCHECK(!local_data.is_deleted());
     return ConflictResolution::UseLocal();
@@ -29,30 +33,23 @@ ConflictResolution ModelTypeService::ResolveConflict(
 void ModelTypeService::OnSyncStarting(
     std::unique_ptr<DataTypeErrorHandler> error_handler,
     const ModelTypeChangeProcessor::StartCallback& start_callback) {
-  CreateChangeProcessor();
   change_processor_->OnSyncStarting(std::move(error_handler), start_callback);
 }
 
 void ModelTypeService::DisableSync() {
   DCHECK(change_processor_);
   change_processor_->DisableSync();
-  change_processor_.reset();
-}
-
-void ModelTypeService::CreateChangeProcessor() {
-  if (!change_processor_) {
-    change_processor_ = change_processor_factory_.Run(type_, this);
-    DCHECK(change_processor_);
-    OnChangeProcessorSet();
-  }
+  change_processor_ = change_processor_factory_.Run(type_, this);
+  // DisableSync() should delete all metadata, so it'll be safe to tell the new
+  // processor that there is no metadata. DisableSync() should never be called
+  // while the models are loading, aka before the service has finished loading
+  // the initial metadata.
+  change_processor_->OnMetadataLoaded(SyncError(),
+                                      base::MakeUnique<MetadataBatch>());
 }
 
 ModelTypeChangeProcessor* ModelTypeService::change_processor() const {
   return change_processor_.get();
-}
-
-void ModelTypeService::clear_change_processor() {
-  change_processor_.reset();
 }
 
 }  // namespace syncer

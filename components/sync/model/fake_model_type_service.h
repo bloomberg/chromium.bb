@@ -112,7 +112,6 @@ class FakeModelTypeService : public ModelTypeService {
   void GetAllData(DataCallback callback) override;
   std::string GetClientTag(const EntityData& entity_data) override;
   std::string GetStorageKey(const EntityData& entity_data) override;
-  void OnChangeProcessorSet() override;
   ConflictResolution ResolveConflict(
       const EntityData& local_data,
       const EntityData& remote_data) const override;
@@ -124,14 +123,14 @@ class FakeModelTypeService : public ModelTypeService {
   // Sets the error that the next fallible call to the service will generate.
   void SetServiceError(SyncError::ErrorType error_type);
 
-  const Store& db() const { return db_; }
+  const Store& db() { return *db_; }
 
  protected:
   // Used to verify conditions upon destruction.
   virtual void CheckPostConditions();
 
   // Contains all of the data and metadata state.
-  Store db_;
+  std::unique_ptr<Store> db_;
 
  private:
   // Applies |change_list| to the metadata store.

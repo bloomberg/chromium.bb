@@ -66,6 +66,11 @@ class ModelTypeChangeProcessor : public SyncErrorFactory {
   // Indicates that sync is being disabled permanently for this data type. All
   // metadata should be erased from storage.
   virtual void DisableSync() = 0;
+
+  // Returns a boolean representing whether the processor's metadata is
+  // currently up to date and accurately tracking the model type's data. If
+  // false, calls to Put and Delete will no-op and can be omitted by services.
+  virtual bool IsTrackingMetadata() = 0;
 };
 
 }  // namespace syncer

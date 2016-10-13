@@ -32,9 +32,6 @@ class StubModelTypeService : public ModelTypeService {
   void GetAllData(DataCallback callback) override;
   std::string GetClientTag(const EntityData& entity_data) override;
   std::string GetStorageKey(const EntityData& entity_data) override;
-  void OnChangeProcessorSet() override;
-
-  bool HasChangeProcessor() const;
 };
 
 }  // namespace syncer

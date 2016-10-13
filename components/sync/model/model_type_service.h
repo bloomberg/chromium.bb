@@ -95,11 +95,6 @@ class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
   // should be.
   virtual std::string GetStorageKey(const EntityData& entity_data) = 0;
 
-  // Overridable notification for when the processor is set. This is typically
-  // when the service should start loading metadata and then subsequently giving
-  // it to the processor.
-  virtual void OnChangeProcessorSet() = 0;
-
   // Resolve a conflict between the client and server versions of data. They are
   // guaranteed not to match (both be deleted or have identical specifics). A
   // default implementation chooses the server data unless it is a deletion.
@@ -121,17 +116,12 @@ class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
 
   ModelTypeChangeProcessor* change_processor() const;
 
- protected:
-  void CreateChangeProcessor();
-
-  void clear_change_processor();
-
  private:
-  std::unique_ptr<ModelTypeChangeProcessor> change_processor_;
-
-  ChangeProcessorFactory change_processor_factory_;
-
   const ModelType type_;
+
+  const ChangeProcessorFactory change_processor_factory_;
+
+  std::unique_ptr<ModelTypeChangeProcessor> change_processor_;
 };
 
 }  // namespace syncer

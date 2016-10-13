@@ -45,6 +45,10 @@ void FakeModelTypeChangeProcessor::OnSyncStarting(
 
 void FakeModelTypeChangeProcessor::DisableSync() {}
 
+bool FakeModelTypeChangeProcessor::IsTrackingMetadata() {
+  return true;
+}
+
 SyncError FakeModelTypeChangeProcessor::CreateAndUploadError(
     const tracked_objects::Location& location,
     const std::string& message) {

@@ -106,7 +106,7 @@ void SharedModelTypeProcessor::ConnectIfReady() {
   std::unique_ptr<ActivationContext> activation_context;
 
   if (!start_error_.IsSet()) {
-    activation_context = base::WrapUnique(new ActivationContext);
+    activation_context = base::MakeUnique<ActivationContext>();
     activation_context->model_type_state = model_type_state_;
     activation_context->type_processor =
         base::MakeUnique<ModelTypeProcessorProxy>(
@@ -129,6 +129,7 @@ bool SharedModelTypeProcessor::IsConnected() const {
 
 void SharedModelTypeProcessor::DisableSync() {
   DCHECK(CalledOnValidThread());
+  DCHECK(is_metadata_loaded_);
   std::unique_ptr<MetadataChangeList> change_list =
       service_->CreateMetadataChangeList();
   for (auto it = entities_.begin(); it != entities_.end(); ++it) {
@@ -137,6 +138,10 @@ void SharedModelTypeProcessor::DisableSync() {
   change_list->ClearModelTypeState();
   // Nothing to do if this fails, so just ignore the error it might return.
   service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
+}
+
+bool SharedModelTypeProcessor::IsTrackingMetadata() {
+  return model_type_state_.initial_sync_done();
 }
 
 SyncError SharedModelTypeProcessor::CreateAndUploadError(

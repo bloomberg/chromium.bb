@@ -58,6 +58,7 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   void OnSyncStarting(std::unique_ptr<DataTypeErrorHandler> error_handler,
                       const StartCallback& callback) override;
   void DisableSync() override;
+  bool IsTrackingMetadata() override;
   SyncError CreateAndUploadError(const tracked_objects::Location& location,
                                  const std::string& message) override;
 

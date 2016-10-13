@@ -62,7 +62,6 @@ class DeviceInfoService : public ModelTypeService, public DeviceInfoTracker {
   void GetAllData(DataCallback callback) override;
   std::string GetClientTag(const EntityData& entity_data) override;
   std::string GetStorageKey(const EntityData& entity_data) override;
-  void OnChangeProcessorSet() override;
 
   // DeviceInfoTracker implementation.
   bool IsSyncing() const override;
@@ -167,8 +166,6 @@ class DeviceInfoService : public ModelTypeService, public DeviceInfoTracker {
   bool has_provider_initialized_ = false;
   // If data has been loaded from the store.
   bool has_data_loaded_ = false;
-  // if |change_processor()| has been given metadata.
-  bool has_metadata_loaded_ = false;
 
   // Used to update our local device info once every pulse interval.
   base::OneShotTimer pulse_timer_;

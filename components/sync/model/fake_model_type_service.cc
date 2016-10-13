@@ -137,7 +137,8 @@ void FakeModelTypeService::Store::Reset() {
 
 FakeModelTypeService::FakeModelTypeService(
     const ChangeProcessorFactory& change_processor_factory)
-    : ModelTypeService(change_processor_factory, PREFERENCES) {}
+    : ModelTypeService(change_processor_factory, PREFERENCES),
+      db_(base::MakeUnique<Store>()) {}
 
 FakeModelTypeService::~FakeModelTypeService() {
   CheckPostConditions();
@@ -154,7 +155,7 @@ EntitySpecifics FakeModelTypeService::WriteItem(const std::string& key,
 // Overloaded form to allow passing of custom entity data.
 void FakeModelTypeService::WriteItem(const std::string& key,
                                      std::unique_ptr<EntityData> entity_data) {
-  db_.PutData(key, *entity_data);
+  db_->PutData(key, *entity_data);
   if (change_processor()) {
     std::unique_ptr<MetadataChangeList> change_list(
         new SimpleMetadataChangeList());
@@ -164,7 +165,7 @@ void FakeModelTypeService::WriteItem(const std::string& key,
 }
 
 void FakeModelTypeService::DeleteItem(const std::string& key) {
-  db_.RemoveData(key);
+  db_->RemoveData(key);
   if (change_processor()) {
     std::unique_ptr<MetadataChangeList> change_list(
         new SimpleMetadataChangeList());
@@ -187,7 +188,7 @@ SyncError FakeModelTypeService::MergeSyncData(
     return error;
   }
   // Commit any local entities that aren't being overwritten by the server.
-  for (const auto& kv : db_.all_data()) {
+  for (const auto& kv : db_->all_data()) {
     if (data_map.find(kv.first) == data_map.end()) {
       change_processor()->Put(kv.first, CopyEntityData(*kv.second),
                               metadata_changes.get());
@@ -195,7 +196,7 @@ SyncError FakeModelTypeService::MergeSyncData(
   }
   // Store any new remote entities.
   for (const auto& kv : data_map) {
-    db_.PutData(kv.first, kv.second.value());
+    db_->PutData(kv.first, kv.second.value());
   }
   ApplyMetadataChangeList(std::move(metadata_changes));
   return SyncError();
@@ -212,16 +213,16 @@ SyncError FakeModelTypeService::ApplySyncChanges(
   for (const EntityChange& change : entity_changes) {
     switch (change.type()) {
       case EntityChange::ACTION_ADD:
-        EXPECT_FALSE(db_.HasData(change.storage_key()));
-        db_.PutData(change.storage_key(), change.data());
+        EXPECT_FALSE(db_->HasData(change.storage_key()));
+        db_->PutData(change.storage_key(), change.data());
         break;
       case EntityChange::ACTION_UPDATE:
-        EXPECT_TRUE(db_.HasData(change.storage_key()));
-        db_.PutData(change.storage_key(), change.data());
+        EXPECT_TRUE(db_->HasData(change.storage_key()));
+        db_->PutData(change.storage_key(), change.data());
         break;
       case EntityChange::ACTION_DELETE:
-        EXPECT_TRUE(db_.HasData(change.storage_key()));
-        db_.RemoveData(change.storage_key());
+        EXPECT_TRUE(db_->HasData(change.storage_key()));
+        db_->RemoveData(change.storage_key());
         break;
     }
   }
@@ -238,11 +239,11 @@ void FakeModelTypeService::ApplyMetadataChangeList(
   for (const auto& kv : metadata_changes) {
     switch (kv.second.type) {
       case SimpleMetadataChangeList::UPDATE:
-        db_.PutMetadata(kv.first, kv.second.metadata);
+        db_->PutMetadata(kv.first, kv.second.metadata);
         break;
       case SimpleMetadataChangeList::CLEAR:
-        EXPECT_TRUE(db_.HasMetadata(kv.first));
-        db_.RemoveMetadata(kv.first);
+        EXPECT_TRUE(db_->HasMetadata(kv.first));
+        db_->RemoveMetadata(kv.first);
         break;
     }
   }
@@ -251,10 +252,10 @@ void FakeModelTypeService::ApplyMetadataChangeList(
         changes->GetModelTypeStateChange();
     switch (state_change.type) {
       case SimpleMetadataChangeList::UPDATE:
-        db_.set_model_type_state(state_change.state);
+        db_->set_model_type_state(state_change.state);
         break;
       case SimpleMetadataChangeList::CLEAR:
-        db_.set_model_type_state(ModelTypeState());
+        db_->set_model_type_state(ModelTypeState());
         break;
     }
   }
@@ -268,8 +269,8 @@ void FakeModelTypeService::GetData(StorageKeyList keys, DataCallback callback) {
   }
   std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const std::string& key : keys) {
-    DCHECK(db_.HasData(key)) << "No data for " << key;
-    batch->Put(key, CopyEntityData(db_.GetData(key)));
+    DCHECK(db_->HasData(key)) << "No data for " << key;
+    batch->Put(key, CopyEntityData(db_->GetData(key)));
   }
   callback.Run(SyncError(), std::move(batch));
 }
@@ -281,7 +282,7 @@ void FakeModelTypeService::GetAllData(DataCallback callback) {
     return;
   }
   std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
-  for (const auto& kv : db_.all_data()) {
+  for (const auto& kv : db_->all_data()) {
     batch->Put(kv.first, CopyEntityData(*kv.second));
   }
   callback.Run(SyncError(), std::move(batch));
@@ -295,13 +296,6 @@ std::string FakeModelTypeService::GetStorageKey(const EntityData& entity_data) {
   return entity_data.specifics.preference().name();
 }
 
-void FakeModelTypeService::OnChangeProcessorSet() {}
-
-void FakeModelTypeService::SetServiceError(SyncError::ErrorType error_type) {
-  DCHECK(!service_error_.IsSet());
-  service_error_ = SyncError(FROM_HERE, error_type, "TestError", PREFERENCES);
-}
-
 ConflictResolution FakeModelTypeService::ResolveConflict(
     const EntityData& local_data,
     const EntityData& remote_data) const {
@@ -312,6 +306,11 @@ ConflictResolution FakeModelTypeService::ResolveConflict(
 void FakeModelTypeService::SetConflictResolution(
     ConflictResolution resolution) {
   conflict_resolution_.reset(new ConflictResolution(std::move(resolution)));
+}
+
+void FakeModelTypeService::SetServiceError(SyncError::ErrorType error_type) {
+  DCHECK(!service_error_.IsSet());
+  service_error_ = SyncError(FROM_HERE, error_type, "TestError", PREFERENCES);
 }
 
 void FakeModelTypeService::CheckPostConditions() {

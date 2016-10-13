@@ -54,6 +54,79 @@ SyncError CreateSyncError(SyncError::ErrorType error_type) {
   return SyncError(FROM_HERE, error_type, "TestError", PREFERENCES);
 }
 
+EntitySpecifics GenerateSpecifics(const std::string& key,
+                                  const std::string& value) {
+  return FakeModelTypeService::GenerateSpecifics(key, value);
+}
+
+std::unique_ptr<EntityData> GenerateEntityData(const std::string& key,
+                                               const std::string& value) {
+  return FakeModelTypeService::GenerateEntityData(key, value);
+}
+
+class TestModelTypeService : public FakeModelTypeService {
+ public:
+  TestModelTypeService()
+      : FakeModelTypeService(base::Bind(&ModelTypeChangeProcessor::Create)) {}
+
+  explicit TestModelTypeService(std::unique_ptr<TestModelTypeService> other)
+      : TestModelTypeService() {
+    std::swap(db_, other->db_);
+  }
+
+  void OnPendingCommitDataLoaded() {
+    DCHECK(!data_callback_.is_null());
+    data_callback_.Run();
+    data_callback_.Reset();
+  }
+
+  void InitializeToReadyState() {
+    if (!data_callback_.is_null()) {
+      OnPendingCommitDataLoaded();
+    }
+  }
+
+  void SetInitialSyncDone(bool is_done) {
+    ModelTypeState model_type_state(db().model_type_state());
+    model_type_state.set_initial_sync_done(is_done);
+    db_->set_model_type_state(model_type_state);
+  }
+
+  int merge_call_count() const { return merge_call_count_; }
+
+  // FakeModelTypeService overrides.
+
+  SyncError MergeSyncData(std::unique_ptr<MetadataChangeList> mcl,
+                          EntityDataMap entity_data_map) override {
+    merge_call_count_++;
+    return FakeModelTypeService::MergeSyncData(std::move(mcl), entity_data_map);
+  }
+
+  void GetData(StorageKeyList keys, DataCallback callback) override {
+    FakeModelTypeService::GetData(
+        keys, base::Bind(&TestModelTypeService::CaptureDataCallback,
+                         base::Unretained(this), callback));
+  }
+
+  void CheckPostConditions() override {
+    FakeModelTypeService::CheckPostConditions();
+    DCHECK(data_callback_.is_null());
+  }
+
+ private:
+  void CaptureDataCallback(DataCallback callback,
+                           SyncError error,
+                           std::unique_ptr<DataBatch> data) {
+    data_callback_ = base::Bind(callback, error, base::Passed(std::move(data)));
+  }
+
+  // The number of times MergeSyncData has been called.
+  int merge_call_count_ = 0;
+
+  // Stores the data callback between GetData() and OnPendingCommitDataLoaded().
+  base::Closure data_callback_;
+};
+
 }  // namespace
 
 // Tests the various functionality of SharedModelTypeProcessor.
@@ -71,38 +144,30 @@ SyncError CreateSyncError(SyncError::ErrorType error_type) {
 //   storage and the correct commit requests on the worker side.
 // - Updates and commit responses from the worker correctly affect data and
 //   metadata in storage on the service side.
-class SharedModelTypeProcessorTest : public ::testing::Test,
-                                     public FakeModelTypeService {
+class SharedModelTypeProcessorTest : public ::testing::Test {
  public:
   SharedModelTypeProcessorTest()
-      : FakeModelTypeService(base::Bind(&ModelTypeChangeProcessor::Create)) {}
+      : service_(base::MakeUnique<TestModelTypeService>()) {}
+
+  ~SharedModelTypeProcessorTest() override { CheckPostConditions(); }
 
   void InitializeToMetadataLoaded() {
-    CreateChangeProcessor();
-    ModelTypeState model_type_state(db_.model_type_state());
-    model_type_state.set_initial_sync_done(true);
-    db_.set_model_type_state(model_type_state);
+    service()->SetInitialSyncDone(true);
     OnMetadataLoaded();
   }
 
   // Initialize to a "ready-to-commit" state.
   void InitializeToReadyState() {
     InitializeToMetadataLoaded();
-    if (!data_callback_.is_null()) {
-      OnPendingCommitDataLoaded();
-    }
+    service()->InitializeToReadyState();
     OnSyncStarting();
   }
 
   void OnMetadataLoaded() {
-    type_processor()->OnMetadataLoaded(SyncError(), db_.CreateMetadataBatch());
+    type_processor()->OnMetadataLoaded(SyncError(), db().CreateMetadataBatch());
   }
 
-  void OnPendingCommitDataLoaded() {
-    DCHECK(!data_callback_.is_null());
-    data_callback_.Run();
-    data_callback_.Reset();
-  }
+  void OnPendingCommitDataLoaded() { service()->OnPendingCommitDataLoaded(); }
 
   void OnSyncStarting() {
     std::unique_ptr<DataTypeErrorHandlerMock> error_handler =
@@ -122,16 +187,17 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   // Writes data for |key| and simulates a commit response for it.
   EntitySpecifics WriteItemAndAck(const std::string& key,
                                   const std::string& value) {
-    EntitySpecifics specifics = WriteItem(key, value);
-    worker()->ExpectPendingCommits({TagHashFromKey(key)});
+    EntitySpecifics specifics = service()->WriteItem(key, value);
+    worker()->ExpectPendingCommits({FakeModelTypeService::TagHashFromKey(key)});
     worker()->AckOnePendingCommit();
     EXPECT_EQ(0U, worker()->GetNumPendingCommits());
     return specifics;
   }
 
-  void ResetState() {
-    clear_change_processor();
-    db_.Reset();
+  void ResetState(bool keep_db) {
+    service_ = keep_db
+                   ? base::MakeUnique<TestModelTypeService>(std::move(service_))
+                   : base::MakeUnique<TestModelTypeService>();
     worker_ = nullptr;
     CheckPostConditions();
   }
@@ -139,33 +205,30 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   // Wipes existing DB and simulates a pending update of a server-known item.
   EntitySpecifics ResetStateWriteItem(const std::string& name,
                                       const std::string& value) {
-    ResetState();
+    ResetState(false);
     InitializeToReadyState();
     EXPECT_EQ(0U, ProcessorEntityCount());
     WriteItemAndAck(name, "acked-value");
-    EntitySpecifics specifics = WriteItem(name, value);
+    EntitySpecifics specifics = service()->WriteItem(name, value);
     EXPECT_EQ(1U, ProcessorEntityCount());
-    clear_change_processor();
-    worker_ = nullptr;
+    ResetState(true);
     return specifics;
   }
 
   // Wipes existing DB and simulates a pending deletion of a server-known item.
   void ResetStateDeleteItem(const std::string& name, const std::string& value) {
-    ResetState();
+    ResetState(false);
     InitializeToReadyState();
     EXPECT_EQ(0U, ProcessorEntityCount());
     WriteItemAndAck(name, value);
     EXPECT_EQ(1U, ProcessorEntityCount());
-    DeleteItem(name);
+    service()->DeleteItem(name);
     EXPECT_EQ(1U, ProcessorEntityCount());
-    clear_change_processor();
-    worker_ = nullptr;
+    ResetState(true);
   }
 
   // Return the number of entities the processor has metadata for.
   size_t ProcessorEntityCount() const {
-    DCHECK(type_processor());
     return type_processor()->entities_.size();
   }
 
@@ -176,23 +239,24 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     expected_start_error_ = error_type;
   }
 
-  MockModelTypeWorker* worker() { return worker_; }
+  TestModelTypeService* service() const { return service_.get(); }
+
+  const FakeModelTypeService::Store& db() const { return service()->db(); }
+
+  MockModelTypeWorker* worker() const { return worker_; }
 
   SharedModelTypeProcessor* type_processor() const {
-    return static_cast<SharedModelTypeProcessor*>(change_processor());
+    return static_cast<SharedModelTypeProcessor*>(
+        service()->change_processor());
   }
 
-  DataTypeErrorHandlerMock* error_handler() {
+  DataTypeErrorHandlerMock* error_handler() const {
     DCHECK(error_handler_);
     return error_handler_;
   }
 
-  int merge_call_count() const { return merge_call_count_; }
-
  private:
-  void CheckPostConditions() override {
-    FakeModelTypeService::CheckPostConditions();
-    DCHECK(data_callback_.is_null());
+  void CheckPostConditions() {
     DCHECK_EQ(SyncError::UNSET, expected_start_error_);
   }
 
@@ -216,25 +280,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     type_processor()->ConnectSync(std::move(worker));
   }
 
-  // FakeModelTypeService overrides.
-
-  SyncError MergeSyncData(std::unique_ptr<MetadataChangeList> mcl,
-                          EntityDataMap entity_data_map) override {
-    merge_call_count_++;
-    return FakeModelTypeService::MergeSyncData(std::move(mcl), entity_data_map);
-  }
-
-  void CaptureDataCallback(DataCallback callback,
-                           SyncError error,
-                           std::unique_ptr<DataBatch> data) {
-    data_callback_ = base::Bind(callback, error, base::Passed(std::move(data)));
-  }
-
-  void GetData(StorageKeyList keys, DataCallback callback) override {
-    FakeModelTypeService::GetData(
-        keys, base::Bind(&SharedModelTypeProcessorTest::CaptureDataCallback,
-                         base::Unretained(this), callback));
-  }
+  std::unique_ptr<TestModelTypeService> service_;
 
   // This sets ThreadTaskRunnerHandle on the current thread, which the type
   // processor will pick up as the sync task runner.
@@ -243,27 +289,20 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   // The current mock queue, which is owned by |type_processor()|.
   MockModelTypeWorker* worker_;
 
-  // Stores the data callback between GetData() and OnPendingCommitDataLoaded().
-  base::Closure data_callback_;
-
   // The processor's error handler.
   DataTypeErrorHandlerMock* error_handler_;
 
   // The error to expect in OnReadyToConnect().
   SyncError::ErrorType expected_start_error_ = SyncError::UNSET;
-
-  // The number of times MergeSyncData has been called.
-  int merge_call_count_ = 0;
 };
 
 // Test that an initial sync handles local and remote items properly.
 TEST_F(SharedModelTypeProcessorTest, InitialSync) {
-  CreateChangeProcessor();
   OnMetadataLoaded();
   OnSyncStarting();
 
   // Local write before initial sync.
-  WriteItem(kKey1, kValue1);
+  service()->WriteItem(kKey1, kValue1);
 
   // Has data, but no metadata, entity in the processor, or commit request.
   EXPECT_EQ(1U, db().data_count());
@@ -271,10 +310,10 @@ TEST_F(SharedModelTypeProcessorTest, InitialSync) {
   EXPECT_EQ(0U, ProcessorEntityCount());
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 
-  EXPECT_EQ(0, merge_call_count());
+  EXPECT_EQ(0, service()->merge_call_count());
   // Initial sync with one server item.
   worker()->UpdateFromServer(kHash2, GenerateSpecifics(kKey2, kValue2));
-  EXPECT_EQ(1, merge_call_count());
+  EXPECT_EQ(1, service()->merge_call_count());
 
   // Now have data and metadata for both items, as well as a commit request for
   // the local item.
@@ -292,40 +331,37 @@ TEST_F(SharedModelTypeProcessorTest, NonInitialSync) {
   InitializeToMetadataLoaded();
 
   // Write an item before sync connects.
-  WriteItem(kKey1, kValue1);
+  service()->WriteItem(kKey1, kValue1);
   EXPECT_EQ(1U, db().data_count());
   EXPECT_EQ(1U, db().metadata_count());
 
   // Check that data coming from sync is treated as a normal GetUpdates.
   OnSyncStarting();
   worker()->UpdateFromServer(kHash2, GenerateSpecifics(kKey2, kValue2));
-  EXPECT_EQ(0, merge_call_count());
+  EXPECT_EQ(0, service()->merge_call_count());
   EXPECT_EQ(2U, db().data_count());
   EXPECT_EQ(2U, db().metadata_count());
 }
 
 // Test that an error during the merge is propagated to the error handler.
 TEST_F(SharedModelTypeProcessorTest, InitialSyncError) {
-  CreateChangeProcessor();
   OnMetadataLoaded();
   OnSyncStarting();
 
-  SetServiceError(SyncError::DATATYPE_ERROR);
+  service()->SetServiceError(SyncError::DATATYPE_ERROR);
   error_handler()->ExpectError(SyncError::DATATYPE_ERROR);
   worker()->UpdateFromServer();
 }
 
 // Test that errors before it's called are passed to |start_callback| correctly.
 TEST_F(SharedModelTypeProcessorTest, StartErrors) {
-  CreateChangeProcessor();
   type_processor()->OnMetadataLoaded(CreateSyncError(SyncError::DATATYPE_ERROR),
                                      nullptr);
   ExpectStartError(SyncError::DATATYPE_ERROR);
   OnSyncStarting();
 
   // Test OnSyncStarting happening first.
-  ResetState();
-  CreateChangeProcessor();
+  ResetState(false);
   OnSyncStarting();
   ExpectStartError(SyncError::DATATYPE_ERROR);
   type_processor()->OnMetadataLoaded(CreateSyncError(SyncError::DATATYPE_ERROR),
@@ -333,7 +369,7 @@ TEST_F(SharedModelTypeProcessorTest, StartErrors) {
 
   // Test an error loading pending data.
   ResetStateWriteItem(kKey1, kValue1);
-  SetServiceError(SyncError::DATATYPE_ERROR);
+  service()->SetServiceError(SyncError::DATATYPE_ERROR);
   InitializeToMetadataLoaded();
   OnPendingCommitDataLoaded();
   ExpectStartError(SyncError::DATATYPE_ERROR);
@@ -373,7 +409,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   OnPendingCommitDataLoaded();
   OnSyncStarting();
-  EntitySpecifics specifics4 = WriteItem(kKey1, kValue2);
+  EntitySpecifics specifics4 = service()->WriteItem(kKey1, kValue2);
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, specifics3);
   worker()->ExpectNthPendingCommit(1, kHash1, specifics4);
@@ -382,7 +418,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ResetStateWriteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
   OnPendingCommitDataLoaded();
-  EntitySpecifics specifics5 = WriteItem(kKey1, kValue2);
+  EntitySpecifics specifics5 = service()->WriteItem(kKey1, kValue2);
   OnSyncStarting();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, specifics5);
@@ -392,7 +428,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   OnSyncStarting();
   OnPendingCommitDataLoaded();
-  EntitySpecifics specifics7 = WriteItem(kKey1, kValue2);
+  EntitySpecifics specifics7 = service()->WriteItem(kKey1, kValue2);
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, specifics6);
   worker()->ExpectNthPendingCommit(1, kHash1, specifics7);
@@ -401,7 +437,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ResetStateWriteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
   OnSyncStarting();
-  EntitySpecifics specifics8 = WriteItem(kKey1, kValue2);
+  EntitySpecifics specifics8 = service()->WriteItem(kKey1, kValue2);
   EXPECT_EQ(nullptr, worker());
   OnPendingCommitDataLoaded();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
@@ -410,7 +446,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   // Put, data, connect.
   ResetStateWriteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
-  EntitySpecifics specifics9 = WriteItem(kKey1, kValue2);
+  EntitySpecifics specifics9 = service()->WriteItem(kKey1, kValue2);
   OnPendingCommitDataLoaded();
   OnSyncStarting();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
@@ -419,7 +455,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   // Put, connect, data.
   ResetStateWriteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
-  EntitySpecifics specifics10 = WriteItem(kKey1, kValue2);
+  EntitySpecifics specifics10 = service()->WriteItem(kKey1, kValue2);
   OnSyncStarting();
   EXPECT_EQ(nullptr, worker());
   OnPendingCommitDataLoaded();
@@ -431,7 +467,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   OnPendingCommitDataLoaded();
   OnSyncStarting();
-  DeleteItem(kKey1);
+  service()->DeleteItem(kKey1);
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, specifics11);
   worker()->ExpectNthPendingCommit(1, kHash1, kEmptySpecifics);
@@ -440,7 +476,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ResetStateWriteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
   OnPendingCommitDataLoaded();
-  DeleteItem(kKey1);
+  service()->DeleteItem(kKey1);
   OnSyncStarting();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, kEmptySpecifics);
@@ -450,7 +486,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   OnSyncStarting();
   OnPendingCommitDataLoaded();
-  DeleteItem(kKey1);
+  service()->DeleteItem(kKey1);
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, specifics12);
   worker()->ExpectNthPendingCommit(1, kHash1, kEmptySpecifics);
@@ -459,7 +495,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ResetStateWriteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
   OnSyncStarting();
-  DeleteItem(kKey1);
+  service()->DeleteItem(kKey1);
   EXPECT_EQ(nullptr, worker());
   OnPendingCommitDataLoaded();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
@@ -468,7 +504,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   // Delete, data, connect.
   ResetStateWriteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
-  DeleteItem(kKey1);
+  service()->DeleteItem(kKey1);
   OnPendingCommitDataLoaded();
   OnSyncStarting();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
@@ -477,7 +513,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   // Delete, connect, data.
   ResetStateWriteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
-  DeleteItem(kKey1);
+  service()->DeleteItem(kKey1);
   OnSyncStarting();
   EXPECT_EQ(nullptr, worker());
   OnPendingCommitDataLoaded();
@@ -508,7 +544,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingDelete) {
   InitializeToMetadataLoaded();
   OnSyncStarting();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
-  EntitySpecifics specifics1 = WriteItem(kKey1, kValue2);
+  EntitySpecifics specifics1 = service()->WriteItem(kKey1, kValue2);
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, kEmptySpecifics);
   worker()->ExpectNthPendingCommit(1, kHash1, specifics1);
@@ -516,7 +552,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingDelete) {
   // Put, connect.
   ResetStateDeleteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
-  EntitySpecifics specifics2 = WriteItem(kKey1, kValue2);
+  EntitySpecifics specifics2 = service()->WriteItem(kKey1, kValue2);
   OnSyncStarting();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, specifics2);
@@ -526,7 +562,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingDelete) {
   InitializeToMetadataLoaded();
   OnSyncStarting();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
-  DeleteItem(kKey1);
+  service()->DeleteItem(kKey1);
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, kEmptySpecifics);
   worker()->ExpectNthPendingCommit(1, kHash1, kEmptySpecifics);
@@ -534,7 +570,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingDelete) {
   // Delete, connect.
   ResetStateDeleteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
-  DeleteItem(kKey1);
+  service()->DeleteItem(kKey1);
   OnSyncStarting();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, kEmptySpecifics);
@@ -544,7 +580,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingDelete) {
 TEST_F(SharedModelTypeProcessorTest, LoadCommited) {
   InitializeToReadyState();
   WriteItemAndAck(kKey1, kValue1);
-  clear_change_processor();
+  ResetState(true);
 
   // Test that a new processor loads the metadata without committing.
   InitializeToReadyState();
@@ -558,7 +594,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalCreateItem) {
   InitializeToReadyState();
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 
-  WriteItem(kKey1, kValue1);
+  service()->WriteItem(kKey1, kValue1);
 
   // Verify the commit request this operation has triggered.
   worker()->ExpectPendingCommits({kHash1});
@@ -600,8 +636,8 @@ TEST_F(SharedModelTypeProcessorTest, LocalCreateItem) {
 // propagated to the error handler.
 TEST_F(SharedModelTypeProcessorTest, ErrorApplyingAck) {
   InitializeToReadyState();
-  WriteItem(kKey1, kValue1);
-  SetServiceError(SyncError::DATATYPE_ERROR);
+  service()->WriteItem(kKey1, kValue1);
+  service()->SetServiceError(SyncError::DATATYPE_ERROR);
   error_handler()->ExpectError(SyncError::DATATYPE_ERROR);
   worker()->AckOnePendingCommit();
 }
@@ -622,7 +658,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemWithOverrides) {
   entity_data->non_unique_name = kKey1;
   entity_data->client_tag_hash = kHash3;
   entity_data->id = kId1;
-  WriteItem(kKey1, std::move(entity_data));
+  service()->WriteItem(kKey1, std::move(entity_data));
 
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
   ASSERT_FALSE(worker()->HasPendingCommitForHash(kHash3));
@@ -647,7 +683,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemWithOverrides) {
   entity_data->client_tag_hash = kHash3;
   // Make sure ID isn't overwritten either.
   entity_data->id = kId2;
-  WriteItem(kKey1, std::move(entity_data));
+  service()->WriteItem(kKey1, std::move(entity_data));
 
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   ASSERT_FALSE(worker()->HasPendingCommitForHash(kHash3));
@@ -672,7 +708,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemWithOverrides) {
 TEST_F(SharedModelTypeProcessorTest, LocalUpdateItem) {
   InitializeToReadyState();
 
-  WriteItem(kKey1, kValue1);
+  service()->WriteItem(kKey1, kValue1);
   EXPECT_EQ(1U, db().metadata_count());
   worker()->ExpectPendingCommits({kHash1});
 
@@ -681,7 +717,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItem) {
   const EntityData& data_v1 = request_data_v1.entity.value();
   const EntityMetadata metadata_v1 = db().GetMetadata(kKey1);
 
-  WriteItem(kKey1, kValue2);
+  service()->WriteItem(kKey1, kValue2);
   EXPECT_EQ(1U, db().metadata_count());
   worker()->ExpectPendingCommits({kHash1, kHash1});
 
@@ -724,11 +760,11 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItem) {
 // commit request.
 TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemRedundant) {
   InitializeToReadyState();
-  WriteItem(kKey1, kValue1);
+  service()->WriteItem(kKey1, kValue1);
   EXPECT_EQ(1U, db().metadata_count());
   worker()->ExpectPendingCommits({kHash1});
 
-  WriteItem(kKey1, kValue1);
+  service()->WriteItem(kKey1, kValue1);
   worker()->ExpectPendingCommits({kHash1});
 }
 
@@ -766,7 +802,7 @@ TEST_F(SharedModelTypeProcessorTest, ServerCreateItem) {
 // propagated to the error handler.
 TEST_F(SharedModelTypeProcessorTest, ErrorApplyingUpdate) {
   InitializeToReadyState();
-  SetServiceError(SyncError::DATATYPE_ERROR);
+  service()->SetServiceError(SyncError::DATATYPE_ERROR);
   error_handler()->ExpectError(SyncError::DATATYPE_ERROR);
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue1));
 }
@@ -804,7 +840,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalDeleteItem) {
   EXPECT_EQ(1, metadata_v1.acked_sequence_number());
   EXPECT_EQ(1, metadata_v1.server_version());
 
-  DeleteItem(kKey1);
+  service()->DeleteItem(kKey1);
   EXPECT_EQ(0U, db().data_count());
   // Metadata is not removed until the commit response comes back.
   EXPECT_EQ(1U, db().metadata_count());
@@ -827,7 +863,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalDeleteItem) {
 // response, then getting the commit responses.
 TEST_F(SharedModelTypeProcessorTest, LocalDeleteItemInterleaved) {
   InitializeToReadyState();
-  WriteItem(kKey1, kValue1);
+  service()->WriteItem(kKey1, kValue1);
   worker()->ExpectPendingCommits({kHash1});
   const CommitRequestData& data_v1 =
       worker()->GetLatestPendingCommitForHash(kHash1);
@@ -838,7 +874,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalDeleteItemInterleaved) {
   EXPECT_EQ(0, metadata_v1.acked_sequence_number());
   EXPECT_EQ(kUncommittedVersion, metadata_v1.server_version());
 
-  DeleteItem(kKey1);
+  service()->DeleteItem(kKey1);
   EXPECT_EQ(0U, db().data_count());
   EXPECT_EQ(1U, db().metadata_count());
   EXPECT_EQ(1U, ProcessorEntityCount());
@@ -895,7 +931,7 @@ TEST_F(SharedModelTypeProcessorTest, ServerDeleteItem) {
 // Should have no effect and not crash.
 TEST_F(SharedModelTypeProcessorTest, LocalDeleteUnknown) {
   InitializeToReadyState();
-  DeleteItem(kKey1);
+  service()->DeleteItem(kKey1);
   EXPECT_EQ(0U, db().data_count());
   EXPECT_EQ(0U, db().metadata_count());
   EXPECT_EQ(0U, ProcessorEntityCount());
@@ -919,7 +955,7 @@ TEST_F(SharedModelTypeProcessorTest, TwoIndependentItems) {
   InitializeToReadyState();
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 
-  WriteItem(kKey1, kValue1);
+  service()->WriteItem(kKey1, kValue1);
   EXPECT_EQ(1U, db().data_count());
   EXPECT_EQ(1U, db().metadata_count());
   const EntityMetadata metadata1 = db().GetMetadata(kKey1);
@@ -927,7 +963,7 @@ TEST_F(SharedModelTypeProcessorTest, TwoIndependentItems) {
   // There should be one commit request for this item only.
   worker()->ExpectPendingCommits({kHash1});
 
-  WriteItem(kKey2, kValue2);
+  service()->WriteItem(kKey2, kValue2);
   EXPECT_EQ(2U, db().data_count());
   EXPECT_EQ(2U, db().metadata_count());
   const EntityMetadata metadata2 = db().GetMetadata(kKey2);
@@ -948,7 +984,7 @@ TEST_F(SharedModelTypeProcessorTest, TwoIndependentItems) {
 
 TEST_F(SharedModelTypeProcessorTest, ConflictResolutionChangesMatch) {
   InitializeToReadyState();
-  EntitySpecifics specifics = WriteItem(kKey1, kValue1);
+  EntitySpecifics specifics = service()->WriteItem(kKey1, kValue1);
   EXPECT_EQ(1U, db().data_change_count());
   EXPECT_EQ(kValue1, db().GetValue(kKey1));
   EXPECT_EQ(1U, db().metadata_change_count());
@@ -967,8 +1003,8 @@ TEST_F(SharedModelTypeProcessorTest, ConflictResolutionChangesMatch) {
 
 TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseLocal) {
   InitializeToReadyState();
-  EntitySpecifics specifics = WriteItem(kKey1, kValue1);
-  SetConflictResolution(ConflictResolution::UseLocal());
+  EntitySpecifics specifics = service()->WriteItem(kKey1, kValue1);
+  service()->SetConflictResolution(ConflictResolution::UseLocal());
 
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2));
 
@@ -982,8 +1018,8 @@ TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseLocal) {
 
 TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseRemote) {
   InitializeToReadyState();
-  WriteItem(kKey1, kValue1);
-  SetConflictResolution(ConflictResolution::UseRemote());
+  service()->WriteItem(kKey1, kValue1);
+  service()->SetConflictResolution(ConflictResolution::UseRemote());
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2));
 
   // Updated client data and metadata; no new commit request.
@@ -996,8 +1032,8 @@ TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseRemote) {
 
 TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseNew) {
   InitializeToReadyState();
-  WriteItem(kKey1, kValue1);
-  SetConflictResolution(
+  service()->WriteItem(kKey1, kValue1);
+  service()->SetConflictResolution(
       ConflictResolution::UseNew(GenerateEntityData(kKey1, kValue3)));
 
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2));
@@ -1021,13 +1057,13 @@ TEST_F(SharedModelTypeProcessorTest, Disconnect) {
   WriteItemAndAck(kKey1, kValue1);
 
   // The second item has a commit request in progress.
-  WriteItem(kKey2, kValue2);
+  service()->WriteItem(kKey2, kValue2);
   EXPECT_TRUE(worker()->HasPendingCommitForHash(kHash2));
 
   DisconnectSync();
 
   // The third item is added after stopping.
-  WriteItem(kKey3, kValue3);
+  service()->WriteItem(kKey3, kValue3);
 
   // Reconnect.
   OnSyncStarting();
@@ -1056,19 +1092,19 @@ TEST_F(SharedModelTypeProcessorTest, Disable) {
   WriteItemAndAck(kKey1, kValue1);
 
   // The second item has a commit request in progress.
-  WriteItem(kKey2, kValue2);
+  service()->WriteItem(kKey2, kValue2);
   EXPECT_TRUE(worker()->HasPendingCommitForHash(kHash2));
 
-  DisableSync();
+  service()->DisableSync();
+  EXPECT_FALSE(type_processor()->IsTrackingMetadata());
 
   // The third item is added after disable.
-  WriteItem(kKey3, kValue3);
+  service()->WriteItem(kKey3, kValue3);
 
   // Now we re-enable.
-  CreateChangeProcessor();
-  OnMetadataLoaded();
   OnSyncStarting();
   worker()->UpdateFromServer();
+  EXPECT_TRUE(type_processor()->IsTrackingMetadata());
 
   // Once we're ready to commit, all three local items should consider
   // themselves uncommitted and pending for commit.
@@ -1082,7 +1118,7 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptCommitsWithNewKey) {
   // Commit an item.
   EntitySpecifics specifics1 = WriteItemAndAck(kKey1, kValue1);
   // Create another item and don't wait for its commit response.
-  EntitySpecifics specifics2 = WriteItem(kKey2, kValue2);
+  EntitySpecifics specifics2 = service()->WriteItem(kKey2, kValue2);
   worker()->ExpectPendingCommits({kHash2});
   EXPECT_EQ(1U, db().GetMetadata(kKey1).sequence_number());
   EXPECT_EQ(1U, db().GetMetadata(kKey2).sequence_number());
@@ -1107,7 +1143,7 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptCommitsWithNewKey) {
 TEST_F(SharedModelTypeProcessorTest, ReEncryptErrorLoadingData) {
   InitializeToReadyState();
   WriteItemAndAck(kKey1, kValue1);
-  SetServiceError(SyncError::DATATYPE_ERROR);
+  service()->SetServiceError(SyncError::DATATYPE_ERROR);
   worker()->UpdateWithEncryptionKey("k1");
   error_handler()->ExpectError(SyncError::DATATYPE_ERROR);
   OnPendingCommitDataLoaded();
@@ -1154,10 +1190,10 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptUpdatesWithNewKey) {
 TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseLocal) {
   InitializeToReadyState();
   worker()->UpdateWithEncryptionKey("k1");
-  EntitySpecifics specifics = WriteItem(kKey1, kValue1);
+  EntitySpecifics specifics = service()->WriteItem(kKey1, kValue1);
   worker()->ExpectPendingCommits({kHash1});
 
-  SetConflictResolution(ConflictResolution::UseLocal());
+  service()->SetConflictResolution(ConflictResolution::UseLocal());
   // Unencrypted update needs to be re-commited with key k1.
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2), 1, "");
 
@@ -1171,9 +1207,9 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseLocal) {
 TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseRemote) {
   InitializeToReadyState();
   worker()->UpdateWithEncryptionKey("k1");
-  WriteItem(kKey1, kValue1);
+  service()->WriteItem(kKey1, kValue1);
 
-  SetConflictResolution(ConflictResolution::UseRemote());
+  service()->SetConflictResolution(ConflictResolution::UseRemote());
   // Unencrypted update needs to be re-commited with key k1.
   EntitySpecifics specifics = GenerateSpecifics(kKey1, kValue2);
   worker()->UpdateFromServer(kHash1, specifics, 1, "");
@@ -1188,9 +1224,9 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseRemote) {
 TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseNew) {
   InitializeToReadyState();
   worker()->UpdateWithEncryptionKey("k1");
-  WriteItem(kKey1, kValue1);
+  service()->WriteItem(kKey1, kValue1);
 
-  SetConflictResolution(
+  service()->SetConflictResolution(
       ConflictResolution::UseNew(GenerateEntityData(kKey1, kValue3)));
   // Unencrypted update needs to be re-commited with key k1.
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2), 1, "");
@@ -1242,7 +1278,7 @@ TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryption) {
   InitializeToReadyState();
   EntitySpecifics specifics1 = WriteItemAndAck(kKey1, kValue1);
 
-  EntitySpecifics specifics2 = WriteItem(kKey1, kValue2);
+  EntitySpecifics specifics2 = service()->WriteItem(kKey1, kValue2);
   UpdateResponseDataList update;
   update.push_back(worker()->GenerateUpdateData(kHash1, specifics1, 1, "k1"));
   worker()->UpdateWithEncryptionKey("k1", update);
@@ -1254,8 +1290,8 @@ TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryption) {
 // Same as above but with two commit requests before one ack.
 TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryptionInterleaved) {
   InitializeToReadyState();
-  EntitySpecifics specifics1 = WriteItem(kKey1, kValue1);
-  EntitySpecifics specifics2 = WriteItem(kKey1, kValue2);
+  EntitySpecifics specifics1 = service()->WriteItem(kKey1, kValue1);
+  EntitySpecifics specifics2 = service()->WriteItem(kKey1, kValue2);
   worker()->AckOnePendingCommit();
   // kValue1 is now the base value.
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());

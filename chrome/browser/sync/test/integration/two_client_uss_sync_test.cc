@@ -57,7 +57,10 @@ class TestModelTypeService : public FakeModelTypeService {
   };
 
   TestModelTypeService()
-      : FakeModelTypeService(base::Bind(&ModelTypeChangeProcessor::Create)) {}
+      : FakeModelTypeService(base::Bind(&ModelTypeChangeProcessor::Create)) {
+    change_processor()->OnMetadataLoaded(syncer::SyncError(),
+                                         db().CreateMetadataBatch());
+  }
 
   syncer::SyncError ApplySyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_changes,
@@ -66,11 +69,6 @@ class TestModelTypeService : public FakeModelTypeService {
         std::move(metadata_changes), entity_changes);
     NotifyObservers();
     return error;
-  }
-
-  void OnChangeProcessorSet() override {
-    change_processor()->OnMetadataLoaded(syncer::SyncError(),
-                                         db().CreateMetadataBatch());
   }
 
   void AddObserver(Observer* observer) { observers_.insert(observer); }

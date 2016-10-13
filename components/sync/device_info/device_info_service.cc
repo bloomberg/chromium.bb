@@ -67,8 +67,7 @@ SyncError DeviceInfoService::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityDataMap entity_data_map) {
   DCHECK(has_provider_initialized_);
-  DCHECK(has_metadata_loaded_);
-  DCHECK(change_processor());
+  DCHECK(change_processor()->IsTrackingMetadata());
 
   // Local data should typically be near empty, with the only possible value
   // corresponding to this device. This is because on signout all device info
@@ -122,7 +121,6 @@ SyncError DeviceInfoService::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
   DCHECK(has_provider_initialized_);
-  DCHECK(has_metadata_loaded_);
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   bool has_changes = false;
@@ -153,8 +151,6 @@ SyncError DeviceInfoService::ApplySyncChanges(
 
 void DeviceInfoService::GetData(StorageKeyList storage_keys,
                                 DataCallback callback) {
-  DCHECK(has_metadata_loaded_);
-
   std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& key : storage_keys) {
     const auto& iter = all_data_.find(key);
@@ -163,18 +159,14 @@ void DeviceInfoService::GetData(StorageKeyList storage_keys,
       batch->Put(key, CopyToEntityData(*iter->second));
     }
   }
-
   callback.Run(SyncError(), std::move(batch));
 }
 
 void DeviceInfoService::GetAllData(DataCallback callback) {
-  DCHECK(has_metadata_loaded_);
-
   std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& kv : all_data_) {
     batch->Put(kv.first, CopyToEntityData(*kv.second));
   }
-
   callback.Run(SyncError(), std::move(batch));
 }
 
@@ -188,20 +180,6 @@ std::string DeviceInfoService::GetStorageKey(const EntityData& entity_data) {
   return entity_data.specifics.device_info().cache_guid();
 }
 
-void DeviceInfoService::OnChangeProcessorSet() {
-  // We've recieved a new processor that needs metadata. If we're still in the
-  // process of loading data and/or metadata, then |has_metadata_loaded_| is
-  // false and we'll wait for those async reads to happen. If we've already
-  // loaded metadata and then subsequently we get a new processor, we must not
-  // have created the processor ourselves because we had no metadata. So there
-  // must not be any metadata on disk.
-  if (has_metadata_loaded_) {
-    change_processor()->OnMetadataLoaded(SyncError(),
-                                         base::MakeUnique<MetadataBatch>());
-    ReconcileLocalAndStored();
-  }
-}
-
 bool DeviceInfoService::IsSyncing() const {
   return !all_data_.empty();
 }
@@ -212,19 +190,16 @@ std::unique_ptr<DeviceInfo> DeviceInfoService::GetDeviceInfo(
   if (iter == all_data_.end()) {
     return std::unique_ptr<DeviceInfo>();
   }
-
   return CopyToModel(*iter->second);
 }
 
 std::vector<std::unique_ptr<DeviceInfo>> DeviceInfoService::GetAllDeviceInfo()
     const {
   std::vector<std::unique_ptr<DeviceInfo>> list;
-
   for (ClientIdToSpecifics::const_iterator iter = all_data_.begin();
        iter != all_data_.end(); ++iter) {
     list.push_back(CopyToModel(*iter->second));
   }
-
   return list;
 }
 
@@ -354,34 +329,11 @@ void DeviceInfoService::OnReadAllMetadata(
     Result result,
     std::unique_ptr<RecordList> metadata_records,
     const std::string& global_metadata) {
-  DCHECK(!has_metadata_loaded_);
-
   if (result != Result::SUCCESS) {
     // Store has encountered some serious error. We should still be able to
     // continue as a read only service, since if we got this far we must have
     // loaded all data out succesfully.
     ReportStartupErrorToSync("Load of metadata completely failed.");
-    return;
-  }
-
-  // If we have no metadata then we don't want to create a processor. The idea
-  // is that by not having a processor, the services will suffer less of a
-  // performance hit. This isn't terribly applicable for this model type, but
-  // we want this class to be as similar to other services as possible so follow
-  // the convention.
-  if (metadata_records->size() > 0 || !global_metadata.empty()) {
-    CreateChangeProcessor();
-  }
-
-  // Set this after OnChangeProcessorSet so that we can correctly avoid giving
-  // the processor empty metadata. We always want to set |has_metadata_loaded_|
-  // at this point so that we'll know to give a processor empty metadata if it
-  // is created later.
-  has_metadata_loaded_ = true;
-
-  if (!change_processor()) {
-    // This means we haven't been told to start syncing and we don't have any
-    // local metadata.
     return;
   }
 
@@ -430,8 +382,7 @@ void DeviceInfoService::ReconcileLocalAndStored() {
   // bother trying to track this case and act intelligently because simply not
   // much of a benefit in doing so.
   DCHECK(has_provider_initialized_);
-  DCHECK(has_metadata_loaded_);
-  DCHECK(change_processor());
+
   const DeviceInfo* current_info =
       local_device_info_provider_->GetLocalDeviceInfo();
   auto iter = all_data_.find(current_info->guid());
@@ -453,11 +404,6 @@ void DeviceInfoService::ReconcileLocalAndStored() {
 
 void DeviceInfoService::SendLocalData() {
   DCHECK(has_provider_initialized_);
-  // TODO(skym): Handle disconnecting and reconnecting, this will currently halt
-  // the pulse timer and never restart it.
-  if (!change_processor()) {
-    return;
-  }
 
   std::unique_ptr<DeviceInfoSpecifics> specifics =
       CopyToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo());
@@ -465,8 +411,11 @@ void DeviceInfoService::SendLocalData() {
 
   std::unique_ptr<MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
-  change_processor()->Put(specifics->cache_guid(), CopyToEntityData(*specifics),
-                          metadata_change_list.get());
+  if (change_processor()->IsTrackingMetadata()) {
+    change_processor()->Put(specifics->cache_guid(),
+                            CopyToEntityData(*specifics),
+                            metadata_change_list.get());
+  }
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   StoreSpecifics(std::move(specifics), batch.get());
@@ -500,13 +449,8 @@ int DeviceInfoService::CountActiveDevices(const Time now) const {
 }
 
 void DeviceInfoService::ReportStartupErrorToSync(const std::string& msg) {
-  DCHECK(!has_metadata_loaded_);
+  // TODO(skym): Shouldn't need to log this here, reporting should always log.
   LOG(WARNING) << msg;
-
-  // Create a processor and give it the error in case sync tries to start.
-  if (!change_processor()) {
-    CreateChangeProcessor();
-  }
   change_processor()->OnMetadataLoaded(
       change_processor()->CreateAndUploadError(FROM_HERE, msg), nullptr);
 }

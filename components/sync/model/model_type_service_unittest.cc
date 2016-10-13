@@ -4,16 +4,21 @@
 
 #include "components/sync/model/model_type_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/model/data_type_error_handler_mock.h"
 #include "components/sync/model/fake_model_type_change_processor.h"
+#include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/stub_model_type_service.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
-// A mock MTCP that lets us know when DisableSync is called.
+// A mock MTCP that lets verify DisableSync and OnMetadataLoaded were called in
+// the ways that we expect.
 class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
  public:
   explicit MockModelTypeChangeProcessor(const base::Closure& disabled_callback)
@@ -22,8 +27,29 @@ class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
 
   void DisableSync() override { disabled_callback_.Run(); }
 
+  void OnMetadataLoaded(SyncError error,
+                        std::unique_ptr<MetadataBatch> batch) override {
+    on_metadata_loaded_error_ = error;
+    on_metadata_loaded_batch_ = std::move(batch);
+  }
+
+  const SyncError& on_metadata_loaded_error() const {
+    return on_metadata_loaded_error_;
+  }
+  MetadataBatch* on_metadata_loaded_batch() {
+    return on_metadata_loaded_batch_.get();
+  }
+
  private:
+  // This callback is invoked when DisableSync() is called, instead of
+  // remembering that this event happened in our own state. The reason for this
+  // is that after DisableSync() is called on us, the service is going to
+  // destroy this processor instance, and any state would be lost. The callback
+  // allows this information to reach somewhere safe instead.
   base::Closure disabled_callback_;
+
+  SyncError on_metadata_loaded_error_;
+  std::unique_ptr<MetadataBatch> on_metadata_loaded_batch_;
 };
 
 class MockModelTypeService : public StubModelTypeService {
@@ -33,15 +59,11 @@ class MockModelTypeService : public StubModelTypeService {
                                         base::Unretained(this))) {}
   ~MockModelTypeService() override {}
 
-  void CreateChangeProcessor() { ModelTypeService::CreateChangeProcessor(); }
-
   MockModelTypeChangeProcessor* change_processor() const {
     return static_cast<MockModelTypeChangeProcessor*>(
         ModelTypeService::change_processor());
   }
 
-  bool on_processor_set_called() const { return on_processor_set_called_; }
-  void clear_on_processor_set_called() { on_processor_set_called_ = false; }
   bool processor_disable_sync_called() const {
     return processor_disable_sync_called_;
   }
@@ -54,11 +76,8 @@ class MockModelTypeService : public StubModelTypeService {
         &MockModelTypeService::OnProcessorDisableSync, base::Unretained(this)));
   }
 
-  void OnChangeProcessorSet() override { on_processor_set_called_ = true; }
-
   void OnProcessorDisableSync() { processor_disable_sync_called_ = true; }
 
-  bool on_processor_set_called_ = false;
   bool processor_disable_sync_called_ = false;
 };
 
@@ -84,32 +103,15 @@ class ModelTypeServiceTest : public ::testing::Test {
     start_callback_called_ = true;
   }
 
-  bool start_callback_called_;
+  bool start_callback_called_ = false;
   MockModelTypeService service_;
 };
 
-// CreateChangeProcessor should construct a processor and call
-// OnChangeProcessorSet if and only if one doesn't already exist.
-TEST_F(ModelTypeServiceTest, CreateChangeProcessor) {
-  EXPECT_FALSE(service()->change_processor());
-  EXPECT_FALSE(service()->on_processor_set_called());
-  service()->CreateChangeProcessor();
-  ModelTypeChangeProcessor* processor = service()->change_processor();
-  EXPECT_TRUE(processor);
-  EXPECT_TRUE(service()->on_processor_set_called());
-
-  // A second call shouldn't make a new processor.
-  service()->clear_on_processor_set_called();
-  service()->CreateChangeProcessor();
-  EXPECT_EQ(processor, service()->change_processor());
-  EXPECT_FALSE(service()->on_processor_set_called());
-}
-
 // OnSyncStarting should create a processor and call OnSyncStarting on it.
 TEST_F(ModelTypeServiceTest, OnSyncStarting) {
-  EXPECT_FALSE(service()->change_processor());
+  EXPECT_FALSE(start_callback_called());
   OnSyncStarting();
-  EXPECT_TRUE(service()->change_processor());
+
   // FakeModelTypeProcessor is the one that calls the callback, so if it was
   // called then we know the call on the processor was made.
   EXPECT_TRUE(start_callback_called());
@@ -117,13 +119,21 @@ TEST_F(ModelTypeServiceTest, OnSyncStarting) {
 
 // DisableSync should call DisableSync on the processor and then delete it.
 TEST_F(ModelTypeServiceTest, DisableSync) {
-  service()->CreateChangeProcessor();
-  EXPECT_TRUE(service()->change_processor());
   EXPECT_FALSE(service()->processor_disable_sync_called());
-
   service()->DisableSync();
-  EXPECT_FALSE(service()->change_processor());
+
+  // Disabling also wipes out metadata, and the service should have told the new
+  // processor about this.
   EXPECT_TRUE(service()->processor_disable_sync_called());
+
+  EXPECT_FALSE(
+      service()->change_processor()->on_metadata_loaded_error().IsSet());
+  MetadataBatch* batch =
+      service()->change_processor()->on_metadata_loaded_batch();
+  EXPECT_NE(nullptr, batch);
+  EXPECT_EQ(sync_pb::ModelTypeState().SerializeAsString(),
+            batch->GetModelTypeState().SerializeAsString());
+  EXPECT_EQ(0U, batch->TakeAllMetadata().size());
 }
 
 // ResolveConflicts should return USE_REMOTE unless the remote data is deleted.
