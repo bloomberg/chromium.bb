@@ -123,9 +123,9 @@ if (is_win) {
       } else {
         deps += [ "//courgette(//build/toolchain/win:x64)" ]
       }
-      if (is_chrome_branded) {
-        deps += [ "//remoting/host:remoting_host_installation" ]
-      }
+    }
+    if (is_chrome_branded) {
+      deps += [ "//remoting/host:remoting_host_installation" ]
     }
   }
 

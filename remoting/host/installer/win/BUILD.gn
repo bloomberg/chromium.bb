@@ -140,5 +140,9 @@ if (is_chrome_branded && !is_component_build && target_cpu == "x86") {
   }
 } else {
   group("remoting_host_installation") {
+    # We still want to build host archive under other configurations.
+    deps = [
+      "//remoting/host:remoting_me2me_host_archive",
+    ]
   }
 }
