@@ -141,7 +141,8 @@ void MaybeCreateHardwareFrameCallback(
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, VideoFrameOutputFormatUnknown) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
-  mock_gpu_factories_->SetVideoFrameOutputFormat(PIXEL_FORMAT_UNKNOWN);
+  mock_gpu_factories_->SetVideoFrameOutputFormat(
+      media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED);
   scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
@@ -218,7 +219,8 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, DropResourceWhenSizeIsDifferent) {
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareUYUVFrame) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
   scoped_refptr<VideoFrame> frame;
-  mock_gpu_factories_->SetVideoFrameOutputFormat(PIXEL_FORMAT_UYVY);
+  mock_gpu_factories_->SetVideoFrameOutputFormat(
+      media::GpuVideoAcceleratorFactories::OutputFormat::UYVY);
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
 
@@ -233,7 +235,8 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareUYUVFrame) {
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareNV12Frame) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
   scoped_refptr<VideoFrame> frame;
-  mock_gpu_factories_->SetVideoFrameOutputFormat(PIXEL_FORMAT_NV12);
+  mock_gpu_factories_->SetVideoFrameOutputFormat(
+      media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB);
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
       software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
 
@@ -241,6 +244,22 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareNV12Frame) {
 
   EXPECT_NE(software_frame.get(), frame.get());
   EXPECT_EQ(1u, gles2_->gen_textures);
+  EXPECT_TRUE(frame->metadata()->IsTrue(
+      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+}
+
+TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareNV12Frame2) {
+  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
+  scoped_refptr<VideoFrame> frame;
+  mock_gpu_factories_->SetVideoFrameOutputFormat(
+      media::GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB);
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
+
+  RunUntilIdle();
+
+  EXPECT_NE(software_frame.get(), frame.get());
+  EXPECT_EQ(2u, gles2_->gen_textures);
   EXPECT_TRUE(frame->metadata()->IsTrue(
       media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
 }

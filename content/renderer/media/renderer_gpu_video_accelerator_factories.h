@@ -80,7 +80,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
 
   bool ShouldUseGpuMemoryBuffersForVideoFrames() const override;
   unsigned ImageTextureTarget(gfx::BufferFormat format) override;
-  media::VideoPixelFormat VideoFrameOutputFormat() override;
+  OutputFormat VideoFrameOutputFormat() override;
   std::unique_ptr<media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
   GetGLContextLock() override;
   bool CheckContextLost();

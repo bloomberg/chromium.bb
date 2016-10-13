@@ -61,6 +61,7 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
     case media::PIXEL_FORMAT_NV12:
       switch (video_frame->mailbox_holder(0).texture_target) {
         case GL_TEXTURE_EXTERNAL_OES:
+        case GL_TEXTURE_2D:
           return VideoFrameExternalResources::YUV_RESOURCE;
         case GL_TEXTURE_RECTANGLE_ARB:
           return VideoFrameExternalResources::RGB_RESOURCE;

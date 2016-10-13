@@ -23,6 +23,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
         num_planes_(gfx::NumberOfPlanesForBufferFormat(format)),
         id_(g_next_gpu_memory_buffer_id++) {
     DCHECK(gfx::BufferFormat::R_8 == format_ ||
+           gfx::BufferFormat::RG_88 == format_ ||
            gfx::BufferFormat::YUV_420_BIPLANAR == format_ ||
            gfx::BufferFormat::UYVY_422 == format_);
     DCHECK(num_planes_ <= kMaxPlanes);

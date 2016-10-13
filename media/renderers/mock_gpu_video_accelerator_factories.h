@@ -57,15 +57,14 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
   bool ShouldUseGpuMemoryBuffersForVideoFrames() const override;
   unsigned ImageTextureTarget(gfx::BufferFormat format) override;
-  VideoPixelFormat VideoFrameOutputFormat() override {
+  OutputFormat VideoFrameOutputFormat() override {
     return video_frame_output_format_;
   };
 
   std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock>
   GetGLContextLock() override;
 
-  void SetVideoFrameOutputFormat(
-      const VideoPixelFormat video_frame_output_format) {
+  void SetVideoFrameOutputFormat(const OutputFormat video_frame_output_format) {
     video_frame_output_format_ = video_frame_output_format;
   };
 
@@ -89,7 +88,7 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   DISALLOW_COPY_AND_ASSIGN(MockGpuVideoAcceleratorFactories);
 
   base::Lock lock_;
-  VideoPixelFormat video_frame_output_format_ = PIXEL_FORMAT_I420;
+  OutputFormat video_frame_output_format_ = OutputFormat::I420;
 
   bool fail_to_allocate_gpu_memory_buffer_ = false;
 

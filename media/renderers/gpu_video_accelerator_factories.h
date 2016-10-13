@@ -59,6 +59,14 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
     DISALLOW_COPY_AND_ASSIGN(ScopedGLContextLock);
   };
 
+  enum class OutputFormat {
+    UNDEFINED = 0,    // Unset state
+    I420,             // 3 x R8 GMBs
+    UYVY,             // One 422 GMB
+    NV12_SINGLE_GMB,  // One NV12 GMB
+    NV12_DUAL_GMB,    // One R8, one RG88 GMB
+  };
+
   // Return whether GPU encoding/decoding is enabled.
   virtual bool IsGpuVideoAcceleratorEnabled() = 0;
   // Caller owns returned pointer, but should call Destroy() on it (instead of
@@ -93,7 +101,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   virtual unsigned ImageTextureTarget(gfx::BufferFormat format) = 0;
   // Pixel format of the hardware video frames created when GpuMemoryBuffers
   // video frames are enabled.
-  virtual VideoPixelFormat VideoFrameOutputFormat() = 0;
+  virtual OutputFormat VideoFrameOutputFormat() = 0;
 
   virtual std::unique_ptr<ScopedGLContextLock> GetGLContextLock() = 0;
 

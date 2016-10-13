@@ -245,20 +245,20 @@ unsigned RendererGpuVideoAcceleratorFactories::ImageTextureTarget(
   return found->second;
 }
 
-media::VideoPixelFormat
+media::GpuVideoAcceleratorFactories::OutputFormat
 RendererGpuVideoAcceleratorFactories::VideoFrameOutputFormat() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
-    return media::PIXEL_FORMAT_UNKNOWN;
+    return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
   cc::ContextProvider::ScopedContextLock lock(context_provider_);
   auto capabilities = context_provider_->ContextCapabilities();
   if (capabilities.image_ycbcr_420v)
-    return media::PIXEL_FORMAT_NV12;
+    return media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB;
   if (capabilities.image_ycbcr_422)
-    return media::PIXEL_FORMAT_UYVY;
+    return media::GpuVideoAcceleratorFactories::OutputFormat::UYVY;
   if (capabilities.texture_rg)
-    return media::PIXEL_FORMAT_I420;
-  return media::PIXEL_FORMAT_UNKNOWN;
+    return media::GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB;
+  return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
 }
 
 namespace {

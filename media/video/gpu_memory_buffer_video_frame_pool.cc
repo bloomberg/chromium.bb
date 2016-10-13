@@ -53,7 +53,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
       : media_task_runner_(media_task_runner),
         worker_task_runner_(worker_task_runner),
         gpu_factories_(gpu_factories),
-        output_format_(PIXEL_FORMAT_UNKNOWN) {
+        output_format_(GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED) {
     DCHECK(media_task_runner_);
     DCHECK(worker_task_runner_);
   }
@@ -128,8 +128,9 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // Get the resources needed for a frame out of the pool, or create them if
   // necessary.
   // This also drops the LRU resources that can't be reuse for this frame.
-  FrameResources* GetOrCreateFrameResources(const gfx::Size& size,
-                                            VideoPixelFormat format);
+  FrameResources* GetOrCreateFrameResources(
+      const gfx::Size& size,
+      GpuVideoAcceleratorFactories::OutputFormat format);
 
   // Callback called when a VideoFrame generated with GetFrameResources is no
   // longer referenced.
@@ -153,9 +154,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // Pool of resources.
   std::list<FrameResources*> resources_pool_;
 
-  // TODO(dcastagna): change the following type from VideoPixelFormat to
-  // BufferFormat.
-  VideoPixelFormat output_format_;
+  GpuVideoAcceleratorFactories::OutputFormat output_format_;
 
   DISALLOW_COPY_AND_ASSIGN(PoolImpl);
 };
@@ -168,52 +167,95 @@ const size_t kBytesPerCopyTarget = 1024 * 1024;  // 1MB
 
 // Return the GpuMemoryBuffer format to use for a specific VideoPixelFormat
 // and plane.
-gfx::BufferFormat GpuMemoryBufferFormat(VideoPixelFormat format, size_t plane) {
+gfx::BufferFormat GpuMemoryBufferFormat(
+    media::GpuVideoAcceleratorFactories::OutputFormat format,
+    size_t plane) {
   switch (format) {
-    case PIXEL_FORMAT_I420:
+    case GpuVideoAcceleratorFactories::OutputFormat::I420:
       DCHECK_LE(plane, 2u);
       return gfx::BufferFormat::R_8;
-    case PIXEL_FORMAT_NV12:
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB:
       DCHECK_LE(plane, 1u);
       return gfx::BufferFormat::YUV_420_BIPLANAR;
-    case PIXEL_FORMAT_UYVY:
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
+      DCHECK_LE(plane, 1u);
+      return plane == 0 ? gfx::BufferFormat::R_8 : gfx::BufferFormat::RG_88;
+    case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
       DCHECK_EQ(0u, plane);
       return gfx::BufferFormat::UYVY_422;
-    default:
+    case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
-      return gfx::BufferFormat::BGRA_8888;
+      break;
   }
+  return gfx::BufferFormat::BGRA_8888;
 }
 
-unsigned ImageInternalFormat(VideoPixelFormat format, size_t plane) {
+unsigned ImageInternalFormat(GpuVideoAcceleratorFactories::OutputFormat format,
+                             size_t plane) {
   switch (format) {
-    case PIXEL_FORMAT_I420:
+    case GpuVideoAcceleratorFactories::OutputFormat::I420:
       DCHECK_LE(plane, 2u);
       return GL_RED_EXT;
-    case PIXEL_FORMAT_NV12:
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
+      DCHECK_LE(plane, 1u);
+      return plane == 0 ? GL_RED_EXT : GL_RG_EXT;
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB:
       DCHECK_LE(plane, 1u);
       return GL_RGB_YCBCR_420V_CHROMIUM;
-    case PIXEL_FORMAT_UYVY:
+    case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
       DCHECK_EQ(0u, plane);
       return GL_RGB_YCBCR_422_CHROMIUM;
-    default:
+    case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
-      return 0;
+      break;
   }
+  return 0;
 }
 
 // The number of output planes to be copied in each iteration.
-size_t PlanesPerCopy(VideoPixelFormat format) {
+size_t PlanesPerCopy(GpuVideoAcceleratorFactories::OutputFormat format) {
   switch (format) {
-    case PIXEL_FORMAT_I420:
-    case PIXEL_FORMAT_UYVY:
+    case GpuVideoAcceleratorFactories::OutputFormat::I420:
+    case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
       return 1;
-    case PIXEL_FORMAT_NV12:
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB:
       return 2;
-    default:
+    case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
-      return 0;
+      break;
   }
+  return 0;
+}
+
+VideoPixelFormat VideoFormat(
+    GpuVideoAcceleratorFactories::OutputFormat format) {
+  switch (format) {
+    case GpuVideoAcceleratorFactories::OutputFormat::I420:
+      return PIXEL_FORMAT_I420;
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB:
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
+      return PIXEL_FORMAT_NV12;
+    case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
+      return PIXEL_FORMAT_UYVY;
+    case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
+      NOTREACHED();
+      break;
+  }
+  return PIXEL_FORMAT_UNKNOWN;
+}
+
+VideoPixelFormat FinalVideoFormat(
+    GpuVideoAcceleratorFactories::OutputFormat format) {
+  // Consumers should sample from NV12 textures as if they're XRGB.
+  if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB)
+    return PIXEL_FORMAT_XRGB;
+  return VideoFormat(format);
+}
+
+// The number of output planes to be copied in each iteration.
+size_t NumGpuMemoryBuffers(GpuVideoAcceleratorFactories::OutputFormat format) {
+  return VideoFrame::NumPlanes(FinalVideoFormat(format));
 }
 
 // The number of output rows to be copied in each iteration.
@@ -313,23 +355,24 @@ void CopyRowsToUYVYBuffer(int first_row,
 }
 
 gfx::Size CodedSize(const scoped_refptr<VideoFrame>& video_frame,
-                    VideoPixelFormat output_format) {
+                    GpuVideoAcceleratorFactories::OutputFormat output_format) {
   DCHECK(gfx::Rect(video_frame->coded_size())
              .Contains(video_frame->visible_rect()));
   DCHECK((video_frame->visible_rect().x() & 1) == 0);
   gfx::Size output;
   switch (output_format) {
-    case PIXEL_FORMAT_I420:
-    case PIXEL_FORMAT_NV12:
+    case GpuVideoAcceleratorFactories::OutputFormat::I420:
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB:
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
       DCHECK((video_frame->visible_rect().y() & 1) == 0);
       output = gfx::Size((video_frame->visible_rect().width() + 1) & ~1,
                          (video_frame->visible_rect().height() + 1) & ~1);
       break;
-    case PIXEL_FORMAT_UYVY:
+    case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
       output = gfx::Size((video_frame->visible_rect().width() + 1) & ~1,
                          video_frame->visible_rect().height());
       break;
-    default:
+    case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
   }
   DCHECK(gfx::Rect(video_frame->coded_size()).Contains(gfx::Rect(output)));
@@ -348,10 +391,10 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   // Lazily initialize output_format_ since VideoFrameOutputFormat() has to be
   // called on the media_thread while this object might be instantiated on any.
-  if (output_format_ == PIXEL_FORMAT_UNKNOWN)
+  if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED)
     output_format_ = gpu_factories_->VideoFrameOutputFormat();
 
-  if (output_format_ == PIXEL_FORMAT_UNKNOWN) {
+  if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED) {
     frame_ready_cb.Run(video_frame);
     return;
   }
@@ -466,25 +509,27 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
     FrameResources* frame_resources,
     const FrameReadyCB& frame_ready_cb) {
   // Compute the number of tasks to post and create the barrier.
-  const size_t num_planes = VideoFrame::NumPlanes(output_format_);
+  const size_t num_planes = VideoFrame::NumPlanes(VideoFormat(output_format_));
   const size_t planes_per_copy = PlanesPerCopy(output_format_);
   const gfx::Size coded_size = CodedSize(video_frame, output_format_);
   size_t copies = 0;
   for (size_t i = 0; i < num_planes; i += planes_per_copy) {
-    const int rows = VideoFrame::Rows(i, output_format_, coded_size.height());
+    const int rows =
+        VideoFrame::Rows(i, VideoFormat(output_format_), coded_size.height());
     const int rows_per_copy =
-        RowsPerCopy(i, output_format_, coded_size.width());
+        RowsPerCopy(i, VideoFormat(output_format_), coded_size.width());
     copies += rows / rows_per_copy;
     if (rows % rows_per_copy)
       ++copies;
   }
+
   const base::Closure copies_done =
       base::Bind(&PoolImpl::OnCopiesDone, this, video_frame, frame_resources,
                  frame_ready_cb);
   const base::Closure barrier = base::BarrierClosure(copies, copies_done);
 
-  // Post all the async tasks.
-  for (size_t i = 0; i < num_planes; i += planes_per_copy) {
+  // Map the buffers.
+  for (size_t i = 0; i < NumGpuMemoryBuffers(output_format_); i++) {
     gfx::GpuMemoryBuffer* buffer =
         frame_resources->plane_resources[i].gpu_memory_buffer.get();
 
@@ -492,19 +537,23 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
       DLOG(ERROR) << "Could not get or Map() buffer";
       return;
     }
-    DCHECK_EQ(planes_per_copy,
-              gfx::NumberOfPlanesForBufferFormat(buffer->GetFormat()));
+  }
 
-    const int rows = VideoFrame::Rows(i, output_format_, coded_size.height());
+  // Post all the async tasks.
+  for (size_t i = 0; i < num_planes; i += planes_per_copy) {
+    gfx::GpuMemoryBuffer* buffer =
+        frame_resources->plane_resources[i].gpu_memory_buffer.get();
+    const int rows =
+        VideoFrame::Rows(i, VideoFormat(output_format_), coded_size.height());
     const int rows_per_copy =
-        RowsPerCopy(i, output_format_, coded_size.width());
+        RowsPerCopy(i, VideoFormat(output_format_), coded_size.width());
 
     for (int row = 0; row < rows; row += rows_per_copy) {
       const int rows_to_copy = std::min(rows_per_copy, rows - row);
       switch (output_format_) {
-        case PIXEL_FORMAT_I420: {
-          const int bytes_per_row =
-              VideoFrame::RowBytes(i, output_format_, coded_size.width());
+        case GpuVideoAcceleratorFactories::OutputFormat::I420: {
+          const int bytes_per_row = VideoFrame::RowBytes(
+              i, VideoFormat(output_format_), coded_size.width());
           worker_task_runner_->PostTask(
               FROM_HERE, base::Bind(&CopyRowsToI420Buffer, row, rows_to_copy,
                                     bytes_per_row, video_frame->visible_data(i),
@@ -513,7 +562,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
                                     buffer->stride(0), barrier));
           break;
         }
-        case PIXEL_FORMAT_NV12:
+        case GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB:
           worker_task_runner_->PostTask(
               FROM_HERE, base::Bind(&CopyRowsToNV12Buffer, row, rows_to_copy,
                                     coded_size.width(), video_frame,
@@ -522,14 +571,27 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
                                     static_cast<uint8_t*>(buffer->memory(1)),
                                     buffer->stride(1), barrier));
           break;
-        case PIXEL_FORMAT_UYVY:
+        case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB: {
+          gfx::GpuMemoryBuffer* buffer2 =
+              frame_resources->plane_resources[1].gpu_memory_buffer.get();
+          worker_task_runner_->PostTask(
+              FROM_HERE, base::Bind(&CopyRowsToNV12Buffer, row, rows_to_copy,
+                                    coded_size.width(), video_frame,
+                                    static_cast<uint8_t*>(buffer->memory(0)),
+                                    buffer->stride(0),
+                                    static_cast<uint8_t*>(buffer2->memory(0)),
+                                    buffer2->stride(0), barrier));
+          break;
+        }
+
+        case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
           worker_task_runner_->PostTask(
               FROM_HERE, base::Bind(&CopyRowsToUYVYBuffer, row, rows_to_copy,
                                     coded_size.width(), video_frame,
                                     static_cast<uint8_t*>(buffer->memory(0)),
                                     buffer->stride(0), barrier));
           break;
-        default:
+        case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
           NOTREACHED();
       }
     }
@@ -549,24 +611,21 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   }
   gpu::gles2::GLES2Interface* gles2 = lock->ContextGL();
 
-  const size_t num_planes = VideoFrame::NumPlanes(output_format_);
-  const size_t planes_per_copy = PlanesPerCopy(output_format_);
   const gfx::Size coded_size = CodedSize(video_frame, output_format_);
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
   // Set up the planes creating the mailboxes needed to refer to the textures.
-  for (size_t i = 0; i < num_planes; i += planes_per_copy) {
+  for (size_t i = 0; i < NumGpuMemoryBuffers(output_format_); i++) {
     PlaneResource& plane_resource = frame_resources->plane_resources[i];
     const gfx::BufferFormat buffer_format =
         GpuMemoryBufferFormat(output_format_, i);
     unsigned texture_target = gpu_factories_->ImageTextureTarget(buffer_format);
     // Bind the texture and create or rebind the image.
     gles2->BindTexture(texture_target, plane_resource.texture_id);
-
     if (plane_resource.gpu_memory_buffer && !plane_resource.image_id) {
-      const size_t width =
-          VideoFrame::Columns(i, output_format_, coded_size.width());
+      const size_t width = VideoFrame::Columns(i, VideoFormat(output_format_),
+                                               coded_size.width());
       const size_t height =
-          VideoFrame::Rows(i, output_format_, coded_size.height());
+          VideoFrame::Rows(i, VideoFormat(output_format_), coded_size.height());
       plane_resource.image_id = gles2->CreateImageCHROMIUM(
           plane_resource.gpu_memory_buffer->AsClientBuffer(), width, height,
           ImageInternalFormat(output_format_, i));
@@ -587,17 +646,13 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
 
   gpu::SyncToken sync_token;
   gles2->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-  for (size_t i = 0; i < num_planes; i += planes_per_copy)
+  for (size_t i = 0; i < NumGpuMemoryBuffers(output_format_); i++)
     mailbox_holders[i].sync_token = sync_token;
-
 
   auto release_mailbox_callback = BindToCurrentLoop(
       base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources));
 
-  // Consumers should sample from NV12 textures as if they're XRGB.
-  VideoPixelFormat frame_format =
-      output_format_ == PIXEL_FORMAT_NV12 ? PIXEL_FORMAT_XRGB : output_format_;
-  DCHECK_EQ(VideoFrame::NumPlanes(frame_format) * planes_per_copy, num_planes);
+  VideoPixelFormat frame_format = FinalVideoFormat(output_format_);
 
   // Create the VideoFrame backed by native textures.
   gfx::Size visible_size = video_frame->visible_rect().size();
@@ -616,12 +671,12 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
 
   bool allow_overlay = false;
   switch (output_format_) {
-    case PIXEL_FORMAT_I420:
+    case GpuVideoAcceleratorFactories::OutputFormat::I420:
       allow_overlay =
           video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY);
       break;
-    case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_UYVY:
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB:
+    case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
       allow_overlay = true;
       break;
     default:
@@ -661,7 +716,7 @@ GpuMemoryBufferVideoFramePool::PoolImpl::~PoolImpl() {
 GpuMemoryBufferVideoFramePool::PoolImpl::FrameResources*
 GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
     const gfx::Size& size,
-    VideoPixelFormat format) {
+    GpuVideoAcceleratorFactories::OutputFormat format) {
   auto it = resources_pool_.begin();
   while (it != resources_pool_.end()) {
     FrameResources* frame_resources = *it;
@@ -687,13 +742,14 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
 
   gpu::gles2::GLES2Interface* gles2 = lock->ContextGL();
   gles2->ActiveTexture(GL_TEXTURE0);
-  size_t num_planes = VideoFrame::NumPlanes(format);
   FrameResources* frame_resources = new FrameResources(size);
   resources_pool_.push_back(frame_resources);
-  for (size_t i = 0; i < num_planes; i += PlanesPerCopy(format)) {
+  for (size_t i = 0; i < NumGpuMemoryBuffers(output_format_); i++) {
     PlaneResource& plane_resource = frame_resources->plane_resources[i];
-    const size_t width = VideoFrame::Columns(i, format, size.width());
-    const size_t height = VideoFrame::Rows(i, format, size.height());
+    const size_t width =
+        VideoFrame::Columns(i, VideoFormat(format), size.width());
+    const size_t height =
+        VideoFrame::Rows(i, VideoFormat(format), size.height());
     plane_resource.size = gfx::Size(width, height);
 
     const gfx::BufferFormat buffer_format = GpuMemoryBufferFormat(format, i);
