@@ -25,7 +25,6 @@ class CommonPaletteTool : public PaletteTool, public ash::ViewClickListener {
   ~CommonPaletteTool() override;
 
   // PaletteTool:
-  views::View* CreateView() override;
   void OnViewDestroyed() override;
   void OnEnable() override;
   void OnDisable() override;

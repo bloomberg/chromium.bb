@@ -19,9 +19,17 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/label.h"
 
 namespace ash {
 namespace {
+
+// Returns the font used by any displayed labels.
+const gfx::FontList& GetLabelFont() {
+  // TODO(tdanderson|jdufault): Use TrayPopupItemStyle instead.
+  return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+      1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM);
+}
 
 void AddHistogramTimes(PaletteToolId id, base::TimeDelta duration) {
   if (id == PaletteToolId::LASER_POINTER) {
@@ -42,12 +50,6 @@ CommonPaletteTool::CommonPaletteTool(Delegate* delegate)
 
 CommonPaletteTool::~CommonPaletteTool() {}
 
-views::View* CommonPaletteTool::CreateView() {
-  // TODO(jdufault): Use real strings.
-  return CreateDefaultView(
-      base::ASCIIToUTF16("[TODO] " + PaletteToolIdToString(GetToolId())));
-}
-
 void CommonPaletteTool::OnViewDestroyed() {
   highlight_view_ = nullptr;
 }
@@ -56,20 +58,16 @@ void CommonPaletteTool::OnEnable() {
   PaletteTool::OnEnable();
   start_time_ = base::TimeTicks::Now();
 
-  if (highlight_view_) {
-    highlight_view_->SetHighlight(true);
+  if (highlight_view_)
     highlight_view_->SetRightIconVisible(true);
-  }
 }
 
 void CommonPaletteTool::OnDisable() {
   PaletteTool::OnDisable();
   AddHistogramTimes(GetToolId(), base::TimeTicks::Now() - start_time_);
 
-  if (highlight_view_) {
-    highlight_view_->SetHighlight(false);
+  if (highlight_view_)
     highlight_view_->SetRightIconVisible(false);
-  }
 }
 
 void CommonPaletteTool::OnViewClicked(views::View* sender) {
@@ -93,16 +91,16 @@ views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
 
   highlight_view_ = new HoverHighlightView(this);
   highlight_view_->SetBorder(
-      views::Border::CreateEmptyBorder(0, kMenuSeparatorVerticalPadding, 0, 0));
+      views::Border::CreateEmptyBorder(0, kMenuExtraMarginFromLeftEdge, 0, 0));
   const int interior_button_padding = (kMenuButtonSize - kMenuIconSize) / 2;
-  highlight_view_->AddIconAndLabelCustomSize(
-      icon, name, false, kMenuIconSize, interior_button_padding,
-      interior_button_padding + kMenuSeparatorVerticalPadding);
+  highlight_view_->AddIconAndLabelCustomSize(icon, name, false, kMenuIconSize,
+                                             interior_button_padding,
+                                             kTrayPopupPaddingHorizontal);
   highlight_view_->AddRightIcon(check, kMenuIconSize);
+  highlight_view_->set_custom_height(kMenuButtonSize);
+  highlight_view_->text_label()->SetFontList(GetLabelFont());
 
-  if (enabled())
-    highlight_view_->SetHighlight(true);
-  else
+  if (!enabled())
     highlight_view_->SetRightIconVisible(false);
 
   return highlight_view_;

@@ -72,8 +72,6 @@ extern const int kNotificationIconWidth;
 extern const int kNotificationButtonWidth;
 extern const int kTrayNotificationContentsWidth;
 
-extern const int kMessageCenterBubblePadding;
-
 // Extra padding used to adjust hitting region around tray items.
 extern const int kHitRegionPadding;
 
@@ -99,6 +97,8 @@ extern const SkColor kMenuIconColor;
 extern const int kMenuButtonSize;
 // The vertical padding for the system menu separator.
 extern const int kMenuSeparatorVerticalPadding;
+// The horizontal padding for the system menu separator.
+extern const int kMenuExtraMarginFromLeftEdge;
 
 enum TrayConstant {
   // A legacy height value used in non-MD calculations for applying additional

@@ -79,6 +79,10 @@ class HoverHighlightView : public ActionableView {
   // just uses a bold font.
   void SetHighlight(bool hightlight);
 
+  // Set a custom height for the view. A value of 0 means that no custom height
+  // is set.
+  void set_custom_height(int custom_height) { custom_height_ = custom_height; }
+
   void set_highlight_color(SkColor color) { highlight_color_ = color; }
   void set_default_color(SkColor color) { default_color_ = color; }
   void set_text_highlight_color(SkColor c) { text_highlight_color_ = c; }
@@ -130,6 +134,7 @@ class HoverHighlightView : public ActionableView {
   bool expandable_ = false;
   bool checkable_ = false;
   bool checked_ = false;
+  int custom_height_ = 0;
   base::string16 tooltip_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);

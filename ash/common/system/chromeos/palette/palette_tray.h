@@ -110,8 +110,6 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // Called when the palette enabled pref has changed.
   void OnPaletteEnabledPrefChanged(bool enabled);
 
-  void AddToolsToView(views::View* host);
-
   std::unique_ptr<PaletteToolManager> palette_tool_manager_;
   std::unique_ptr<TrayBubbleWrapper> bubble_;
 

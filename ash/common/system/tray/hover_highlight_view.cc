@@ -225,9 +225,13 @@ void HoverHighlightView::GetAccessibleState(ui::AXViewState* state) {
 
 gfx::Size HoverHighlightView::GetPreferredSize() const {
   gfx::Size size = ActionableView::GetPreferredSize();
-  int height = GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
-  if (!expandable_ || size.height() < height)
-    size.set_height(height);
+  const int default_height = GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
+
+  if (custom_height_)
+    size.set_height(custom_height_);
+  else if (!expandable_ || size.height() < default_height)
+    size.set_height(default_height);
+
   return size;
 }
 
