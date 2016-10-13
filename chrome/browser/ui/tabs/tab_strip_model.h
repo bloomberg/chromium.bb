@@ -518,7 +518,7 @@ class TabStripModel {
   // Returns true if the tab represented by the specified data has an opener
   // that matches the specified one. If |use_group| is true, then this will
   // fall back to check the group relationship as well.
-  static bool OpenerMatches(const WebContentsData* data,
+  static bool OpenerMatches(const std::unique_ptr<WebContentsData>& data,
                             const content::WebContents* opener,
                             bool use_group);
 
@@ -530,8 +530,7 @@ class TabStripModel {
   TabStripModelDelegate* delegate_;
 
   // The WebContents data currently hosted within this TabStripModel.
-  typedef std::vector<WebContentsData*> WebContentsDataVector;
-  WebContentsDataVector contents_data_;
+  std::vector<std::unique_ptr<WebContentsData>> contents_data_;
 
   // A profile associated with this TabStripModel.
   Profile* profile_;
@@ -544,8 +543,7 @@ class TabStripModel {
   std::unique_ptr<TabStripModelOrderController> order_controller_;
 
   // Our observers.
-  typedef base::ObserverList<TabStripModelObserver> TabStripModelObservers;
-  TabStripModelObservers observers_;
+  base::ObserverList<TabStripModelObserver> observers_;
 
   ui::ListSelectionModel selection_model_;
 
