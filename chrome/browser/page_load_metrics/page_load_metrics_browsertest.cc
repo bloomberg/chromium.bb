@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortNewNavigation) {
       browser()->tab_strip_model()->GetActiveWebContents(), url);
 
   chrome::Navigate(&params);
-  EXPECT_TRUE(manager.WaitForWillStartRequest());
+  EXPECT_TRUE(manager.WaitForRequestStart());
 
   GURL url2(embedded_test_server()->GetURL("/title2.html"));
   chrome::NavigateParams params2(browser(), url2,
@@ -359,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortReload) {
       browser()->tab_strip_model()->GetActiveWebContents(), url);
 
   chrome::Navigate(&params);
-  EXPECT_TRUE(manager.WaitForWillStartRequest());
+  EXPECT_TRUE(manager.WaitForRequestStart());
 
   chrome::NavigateParams params2(browser(), url, ui::PAGE_TRANSITION_RELOAD);
   content::TestNavigationManager manager2(
@@ -380,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortClose) {
       browser()->tab_strip_model()->GetActiveWebContents(), url);
 
   chrome::Navigate(&params);
-  EXPECT_TRUE(manager.WaitForWillStartRequest());
+  EXPECT_TRUE(manager.WaitForRequestStart());
 
   browser()->tab_strip_model()->GetActiveWebContents()->Close();
 
@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortMultiple) {
       browser()->tab_strip_model()->GetActiveWebContents(), url);
 
   chrome::Navigate(&params);
-  EXPECT_TRUE(manager.WaitForWillStartRequest());
+  EXPECT_TRUE(manager.WaitForRequestStart());
 
   GURL url2(embedded_test_server()->GetURL("/title2.html"));
   chrome::NavigateParams params2(browser(), url2, ui::PAGE_TRANSITION_TYPED);
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortMultiple) {
       browser()->tab_strip_model()->GetActiveWebContents(), url2);
   chrome::Navigate(&params2);
 
-  EXPECT_TRUE(manager2.WaitForWillStartRequest());
+  EXPECT_TRUE(manager2.WaitForRequestStart());
   manager.WaitForNavigationFinished();
 
   GURL url3(embedded_test_server()->GetURL("/title3.html"));
@@ -416,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortMultiple) {
       browser()->tab_strip_model()->GetActiveWebContents(), url3);
   chrome::Navigate(&params3);
 
-  EXPECT_TRUE(manager3.WaitForWillStartRequest());
+  EXPECT_TRUE(manager3.WaitForRequestStart());
   manager2.WaitForNavigationFinished();
 
   manager3.WaitForNavigationFinished();
@@ -437,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortClientRedirect) {
   content::TestNavigationManager manager(
       browser()->tab_strip_model()->GetActiveWebContents(), second_url);
   chrome::Navigate(&params);
-  EXPECT_TRUE(manager.WaitForWillStartRequest());
+  EXPECT_TRUE(manager.WaitForRequestStart());
 
   {
     content::TestNavigationManager reload_manager(

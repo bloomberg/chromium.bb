@@ -1898,7 +1898,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                          "document.body.appendChild(iframe);";
     EXPECT_TRUE(ExecuteScript(root, script));
   }
-  EXPECT_TRUE(subframe_delayer.WaitForWillStartRequest());
+  EXPECT_TRUE(subframe_delayer.WaitForRequestStart());
 
   // Stop the request so that we can wait for load stop below, without ending up
   // with a commit for this frame.
@@ -4568,7 +4568,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // second page, though, causes it to do a replaceState().
   TestNavigationManager manager(shell()->web_contents(), start_url);
   controller.GoBack();
-  EXPECT_TRUE(manager.WaitForWillStartRequest());
+  EXPECT_TRUE(manager.WaitForRequestStart());
 
   // The navigation that just happened was the replaceState(), which should not
   // have changed the position into the navigation entry list. Make sure that
@@ -5491,9 +5491,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       frame_url_a2);
   TestNavigationManager mainframe_delayer(shell()->web_contents(), url_b);
   controller.GoForward();
-  EXPECT_TRUE(subframe_delayer.WaitForWillStartRequest());
+  EXPECT_TRUE(subframe_delayer.WaitForRequestStart());
   controller.GoForward();
-  EXPECT_TRUE(mainframe_delayer.WaitForWillStartRequest());
+  EXPECT_TRUE(mainframe_delayer.WaitForRequestStart());
   EXPECT_EQ(2, controller.GetPendingEntryIndex());
 
   // Let the subframe commit.
@@ -5543,7 +5543,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   TestNavigationManager delayer(shell()->web_contents(),
                                 embedded_test_server()->GetURL("/title3.html"));
   shell()->LoadURL(embedded_test_server()->GetURL("/title3.html"));
-  EXPECT_TRUE(delayer.WaitForWillStartRequest());
+  EXPECT_TRUE(delayer.WaitForRequestStart());
 
   NavigationController& controller = shell()->web_contents()->GetController();
 

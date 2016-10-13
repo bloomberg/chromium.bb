@@ -1645,63 +1645,34 @@ TestNavigationManager::TestNavigationManager(WebContents* web_contents,
                                              const GURL& url)
     : WebContentsObserver(web_contents),
       url_(url),
-      navigation_paused_in_will_start_(false),
-      navigation_paused_in_will_process_response_(false),
       handle_(nullptr),
-      handled_navigation_(false),
+      navigation_paused_(false),
+      current_state_(NavigationState::INITIAL),
+      desired_state_(NavigationState::STARTED),
       weak_factory_(this) {}
 
 TestNavigationManager::~TestNavigationManager() {
-  ResumeNavigation();
+  if (navigation_paused_)
+    handle_->Resume();
 }
 
-bool TestNavigationManager::WaitForWillStartRequest() {
-  DCHECK(!did_finish_loop_runner_);
-  if (!handle_ && handled_navigation_)
-    return true;
-  if (navigation_paused_in_will_start_)
-    return true;
-  DCHECK(!navigation_paused_in_will_process_response_);
-  will_start_loop_runner_ = new MessageLoopRunner();
-  will_start_loop_runner_->Run();
-  will_start_loop_runner_ = nullptr;
-
-  // This will only be false if DidFinishNavigation is called before
-  // OnWillStartRequest, which could occur if a throttle cancels the navigation
-  // before the TestNavigationManagerThrottle's method is called.
-  return !handled_navigation_;
+bool TestNavigationManager::WaitForRequestStart() {
+  // This is the default desired state. In PlzNavigate, a browser-initiated
+  // navigation can reach this state synchronously, so the TestNavigationManager
+  // is set to always pause navigations at WillStartRequest. This ensures the
+  // user can always call WaitForWillStartRequest.
+  DCHECK(desired_state_ == NavigationState::STARTED);
+  return WaitForDesiredState();
 }
 
-bool TestNavigationManager::WaitForWillProcessResponse() {
-  DCHECK(!did_finish_loop_runner_);
-  if (!handle_ && handled_navigation_)
-    return true;
-  if (navigation_paused_in_will_process_response_)
-    return true;
-  // Ensure the navigation is resumed if the manager paused it previously.
-  if (navigation_paused_in_will_start_)
-    ResumeNavigation();
-  will_process_response_loop_runner_ = new MessageLoopRunner();
-  will_process_response_loop_runner_->Run();
-  will_process_response_loop_runner_ = nullptr;
-
-  // This will only be false if DidFinishNavigation is called before
-  // OnWillProcessResponse.
-  return !handled_navigation_;
+bool TestNavigationManager::WaitForResponse() {
+  desired_state_ = NavigationState::RESPONSE;
+  return WaitForDesiredState();
 }
 
 void TestNavigationManager::WaitForNavigationFinished() {
-  DCHECK(!will_start_loop_runner_);
-  if (!handle_ && handled_navigation_)
-    return;
-  // Ensure the navigation is resumed if the manager paused it previously.
-  if (navigation_paused_in_will_start_ ||
-      navigation_paused_in_will_process_response_) {
-    ResumeNavigation();
-  }
-  did_finish_loop_runner_ = new MessageLoopRunner();
-  did_finish_loop_runner_->Run();
-  did_finish_loop_runner_ = nullptr;
+  desired_state_ = NavigationState::FINISHED;
+  WaitForDesiredState();
 }
 
 void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
@@ -1721,58 +1692,64 @@ void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
 void TestNavigationManager::DidFinishNavigation(NavigationHandle* handle) {
   if (handle != handle_)
     return;
+  current_state_ = NavigationState::FINISHED;
+  navigation_paused_ = false;
   handle_ = nullptr;
-  handled_navigation_ = true;
-  navigation_paused_in_will_start_ = false;
-  navigation_paused_in_will_process_response_ = false;
-
-  // Resume any clients that are waiting for the end of the navigation. Note
-  // that |will_start_loop_runner_| can be running if the navigation was
-  // cancelled while it was deferred.
-  if (did_finish_loop_runner_)
-    did_finish_loop_runner_->Quit();
-  if (will_start_loop_runner_)
-    will_start_loop_runner_->Quit();
-  if (will_process_response_loop_runner_)
-    will_process_response_loop_runner_->Quit();
+  OnNavigationStateChanged();
 }
 
 void TestNavigationManager::OnWillStartRequest() {
-  navigation_paused_in_will_start_ = true;
-  if (will_start_loop_runner_)
-    will_start_loop_runner_->Quit();
-
-  // If waiting for further events in the navigation, resume the navigation.
-  if (did_finish_loop_runner_ || will_process_response_loop_runner_)
-    ResumeNavigation();
+  current_state_ = NavigationState::STARTED;
+  navigation_paused_ = true;
+  OnNavigationStateChanged();
 }
 
 void TestNavigationManager::OnWillProcessResponse() {
-  navigation_paused_in_will_process_response_ = true;
-  DCHECK(!will_start_loop_runner_);
-  if (will_process_response_loop_runner_)
-    will_process_response_loop_runner_->Quit();
-
-  // If waiting for further events in the navigation, resume the navigation.
-  if (did_finish_loop_runner_)
-    ResumeNavigation();
+  current_state_ = NavigationState::RESPONSE;
+  navigation_paused_ = true;
+  OnNavigationStateChanged();
 }
 
-void TestNavigationManager::ResumeNavigation() {
-  if (!(navigation_paused_in_will_start_ ||
-        navigation_paused_in_will_process_response_) ||
-      !handle_) {
+bool TestNavigationManager::WaitForDesiredState() {
+  // If the desired state has laready been reached, just return.
+  if (current_state_ == desired_state_)
+    return true;
+
+  // Resume the navigation if it was paused.
+  if (navigation_paused_)
+     handle_->Resume();
+
+  // Wait for the desired state if needed.
+  if (current_state_ < desired_state_) {
+    DCHECK(!loop_runner_);
+    loop_runner_ = new MessageLoopRunner();
+    loop_runner_->Run();
+    loop_runner_ = nullptr;
+  }
+
+  // Return false if the navigation did not reach the state specified by the
+  // user.
+  return current_state_ == desired_state_;
+}
+
+void TestNavigationManager::OnNavigationStateChanged() {
+  // If the state the user was waiting for has been reached, exit the message
+  // loop.
+  if (current_state_ >= desired_state_) {
+    if (loop_runner_)
+      loop_runner_->Quit();
     return;
   }
-  navigation_paused_in_will_start_ = false;
-  navigation_paused_in_will_process_response_ = false;
-  handle_->Resume();
+
+  // Otherwise, the navigation should be resumed if it was previously paused.
+  if (navigation_paused_)
+    handle_->Resume();
 }
 
 bool TestNavigationManager::ShouldMonitorNavigation(NavigationHandle* handle) {
   if (handle_ || handle->GetURL() != url_)
     return false;
-  if (handled_navigation_)
+  if (current_state_ != NavigationState::INITIAL)
     return false;
   return true;
 }

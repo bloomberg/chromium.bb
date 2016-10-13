@@ -7960,7 +7960,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL stall_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestNavigationManager delayer(shell()->web_contents(), stall_url);
   shell()->LoadURL(stall_url);
-  EXPECT_TRUE(delayer.WaitForWillStartRequest());
+  EXPECT_TRUE(delayer.WaitForRequestStart());
 
   // The pending RFH should be in the same process as the popup.
   RenderFrameHostImpl* pending_rfh =
@@ -8022,7 +8022,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL stall_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestNavigationManager delayer(shell()->web_contents(), stall_url);
   shell()->LoadURL(stall_url);
-  EXPECT_TRUE(delayer.WaitForWillStartRequest());
+  EXPECT_TRUE(delayer.WaitForRequestStart());
 
   // Kill the b.com process, currently in use by the pending RenderFrameHost
   // and the popup.
@@ -8329,7 +8329,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                                            cross_site_url_1);
   shell()->web_contents()->GetController().LoadURL(
       cross_site_url_1, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  EXPECT_TRUE(cross_site_manager.WaitForWillProcessResponse());
+  EXPECT_TRUE(cross_site_manager.WaitForResponse());
 
   // Start a renderer-initiated navigation to a cross-process url and make sure
   // the navigation will be blocked before being transferred.
@@ -8339,7 +8339,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                                          cross_site_url_2);
   EXPECT_TRUE(ExecuteScript(
       root, "location.href = '" + cross_site_url_2.spec() + "';"));
-  EXPECT_TRUE(transfer_manager.WaitForWillProcessResponse());
+  EXPECT_TRUE(transfer_manager.WaitForResponse());
 
   // Now have the cross-process navigation commit and mark the current RFH as
   // pending deletion.
