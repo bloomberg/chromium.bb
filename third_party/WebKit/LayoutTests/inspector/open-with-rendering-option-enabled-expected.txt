@@ -11,6 +11,7 @@ Loaded modules:
     persistence
     platform
     sdk
+    services
     ui
     workspace
 
