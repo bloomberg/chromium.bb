@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_
 
 #include "base/environment.h"
+#include "base/memory/shared_memory.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
@@ -62,11 +63,13 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   ~BrowserChildProcessHost() override {}
 
   // Derived classes call this to launch the child process asynchronously.
-  // Takes ownership of |cmd_line| and |delegate|.
-  virtual void Launch(
-      SandboxedProcessLauncherDelegate* delegate,
-      base::CommandLine* cmd_line,
-      bool terminate_on_shutdown) = 0;
+  // Takes ownership of |cmd_line| and |delegate|. Takes in |field_trial_state|
+  // to explicitly pass its handle to be inherited on Windows to the child
+  // process via the command line.
+  virtual void Launch(SandboxedProcessLauncherDelegate* delegate,
+                      base::CommandLine* cmd_line,
+                      const base::SharedMemory* field_trial_state,
+                      bool terminate_on_shutdown) = 0;
 
   virtual const ChildProcessData& GetData() const = 0;
 

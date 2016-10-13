@@ -38,6 +38,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/process_type.h"
@@ -207,7 +208,8 @@ void BrowserChildProcessHostImpl::TerminateAll() {
 }
 
 // static
-void BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
+std::unique_ptr<base::SharedMemory>
+BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
     base::CommandLine* cmd_line) {
   std::string enabled_features;
   std::string disabled_features;
@@ -220,17 +222,14 @@ void BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
 
   // If we run base::FieldTrials, we want to pass to their state to the
   // child process so that it can act in accordance with each state.
-  std::string field_trial_states;
-  base::FieldTrialList::AllStatesToString(&field_trial_states);
-  if (!field_trial_states.empty()) {
-    cmd_line->AppendSwitchASCII(switches::kForceFieldTrials,
-                                field_trial_states);
-  }
+  return base::FieldTrialList::CopyFieldTrialStateToFlags(
+      switches::kFieldTrialHandle, cmd_line);
 }
 
 void BrowserChildProcessHostImpl::Launch(
     SandboxedProcessLauncherDelegate* delegate,
     base::CommandLine* cmd_line,
+    const base::SharedMemory* field_trial_state,
     bool terminate_on_shutdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -258,11 +257,7 @@ void BrowserChildProcessHostImpl::Launch(
 
   notify_child_disconnected_ = true;
   child_process_.reset(new ChildProcessLauncher(
-      delegate,
-      cmd_line,
-      data_.id,
-      this,
-      child_token_,
+      delegate, cmd_line, data_.id, this, field_trial_state, child_token_,
       base::Bind(&BrowserChildProcessHostImpl::OnMojoError,
                  weak_factory_.GetWeakPtr(),
                  base::ThreadTaskRunnerHandle::Get()),

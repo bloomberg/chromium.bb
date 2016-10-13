@@ -966,7 +966,7 @@ bool RenderProcessHostImpl::Init() {
     // at this stage.
     child_process_launcher_.reset(new ChildProcessLauncher(
         new RendererSandboxedProcessLauncherDelegate(channel_.get()), cmd_line,
-        GetID(), this, child_token_,
+        GetID(), this, field_trial_state_.get(), child_token_,
         base::Bind(&RenderProcessHostImpl::OnMojoError, id_)));
     channel_->Pause();
 
@@ -1579,7 +1579,7 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 }
 
 void RenderProcessHostImpl::AppendRendererCommandLine(
-    base::CommandLine* command_line) const {
+    base::CommandLine* command_line) {
   // Pass the process type first, so it shows first in process listings.
   command_line->AppendSwitchASCII(switches::kProcessType,
                                   switches::kRendererProcess);
@@ -1618,7 +1618,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 
 void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     const base::CommandLine& browser_cmd,
-    base::CommandLine* renderer_cmd) const {
+    base::CommandLine* renderer_cmd) {
   // Propagate the following switches to the renderer command line (along
   // with any associated values) if present in the browser command line.
   static const char* const kSwitchNames[] = {
@@ -1828,7 +1828,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
 
-  BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(renderer_cmd);
+  field_trial_state_ =
+      BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(renderer_cmd);
 
   if (browser_cmd.HasSwitch(switches::kTraceStartup) &&
       BrowserMainLoop::GetInstance()->is_tracing_startup_for_duration()) {

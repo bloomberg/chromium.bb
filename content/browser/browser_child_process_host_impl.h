@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
@@ -65,12 +66,14 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // Copies kEnableFeatures and kDisableFeatures to the command line. Generates
   // them from the FeatureList override state, to take into account overrides
   // from FieldTrials.
-  static void CopyFeatureAndFieldTrialFlags(base::CommandLine* cmd_line);
+  static std::unique_ptr<base::SharedMemory> CopyFeatureAndFieldTrialFlags(
+      base::CommandLine* cmd_line);
 
   // BrowserChildProcessHost implementation:
   bool Send(IPC::Message* message) override;
   void Launch(SandboxedProcessLauncherDelegate* delegate,
               base::CommandLine* cmd_line,
+              const base::SharedMemory* field_trial_state,
               bool terminate_on_shutdown) override;
   const ChildProcessData& GetData() const override;
   ChildProcessHost* GetHost() const override;

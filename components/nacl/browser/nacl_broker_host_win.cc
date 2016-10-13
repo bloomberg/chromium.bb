@@ -73,9 +73,8 @@ bool NaClBrokerHost::Init() {
   if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
-  process_->Launch(new NaClBrokerSandboxedProcessLauncherDelegate,
-                   cmd_line,
-                   true);
+  process_->Launch(new NaClBrokerSandboxedProcessLauncherDelegate, cmd_line,
+                   nullptr, true);
   return true;
 }
 

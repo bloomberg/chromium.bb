@@ -444,11 +444,9 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   // On posix, never use the zygote for the broker. Also, only use the zygote if
   // we are not using a plugin launcher - having a plugin launcher means we need
   // to use another process instead of just forking the zygote.
-  process_->Launch(
-      new PpapiPluginSandboxedProcessLauncherDelegate(is_broker_,
-                                                      process_->GetHost()),
-      cmd_line,
-      true);
+  process_->Launch(new PpapiPluginSandboxedProcessLauncherDelegate(
+                       is_broker_, process_->GetHost()),
+                   cmd_line, nullptr, true);
   return true;
 }
 

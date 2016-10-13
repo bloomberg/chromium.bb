@@ -121,6 +121,7 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
 #if defined(OS_ANDROID)
                             base::ScopedFD ipcfd,
 #endif
+                            const base::SharedMemory* field_trial_state,
                             mojo::edk::ScopedPlatformHandle client_handle,
                             base::CommandLine* cmd_line) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
@@ -152,6 +153,8 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
   } else {
     base::HandlesToInheritVector handles;
     handles.push_back(client_handle.get().handle);
+    if (field_trial_state)
+      handles.push_back(field_trial_state->handle().GetHandle());
     cmd_line->AppendSwitchASCII(
         mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch,
         base::UintToString(base::win::HandleToUint32(handles[0])));
@@ -397,6 +400,7 @@ ChildProcessLauncher::ChildProcessLauncher(
     base::CommandLine* cmd_line,
     int child_process_id,
     Client* client,
+    const base::SharedMemory* field_trial_state,
     const std::string& mojo_child_token,
     const mojo::edk::ProcessErrorCallback& process_error_callback,
     bool terminate_on_shutdown)
@@ -417,7 +421,7 @@ ChildProcessLauncher::ChildProcessLauncher(
       weak_factory_(this) {
   DCHECK(CalledOnValidThread());
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
-  Launch(delegate, cmd_line, child_process_id);
+  Launch(delegate, cmd_line, child_process_id, field_trial_state);
 }
 
 ChildProcessLauncher::~ChildProcessLauncher() {
@@ -431,10 +435,10 @@ ChildProcessLauncher::~ChildProcessLauncher() {
   }
 }
 
-void ChildProcessLauncher::Launch(
-    SandboxedProcessLauncherDelegate* delegate,
-    base::CommandLine* cmd_line,
-    int child_process_id) {
+void ChildProcessLauncher::Launch(SandboxedProcessLauncherDelegate* delegate,
+                                  base::CommandLine* cmd_line,
+                                  int child_process_id,
+                                  const base::SharedMemory* field_trial_state) {
   DCHECK(CalledOnValidThread());
 
 #if defined(OS_ANDROID)
@@ -483,7 +487,7 @@ void ChildProcessLauncher::Launch(
 #if defined(OS_ANDROID)
                  base::Passed(&ipcfd),
 #endif
-                 base::Passed(&client_handle), cmd_line));
+                 field_trial_state, base::Passed(&client_handle), cmd_line));
 }
 
 void ChildProcessLauncher::UpdateTerminationStatus(bool known_dead) {

@@ -530,6 +530,12 @@ const char kEnableZeroCopy[]                = "enable-zero-copy";
 // numbers.
 const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";
 
+// Handle to the shared memory segment containing field trial state that is to
+// be shared between processes. The argument to this switch is the handle id
+// (pointer on Windows) as a string, followed by a comma, then the size of the
+// shared memory segment as a string.
+const char kFieldTrialHandle[] = "field-trial-handle";
+
 // Always use the Skia GPU backend for drawing layer tiles. Only valid with GPU
 // accelerated compositing + impl-side painting. Overrides the
 // kEnableGpuRasterization flag.
