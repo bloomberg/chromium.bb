@@ -121,12 +121,13 @@ std::unique_ptr<Vector<char>> PictureSnapshot::replay(unsigned fromStep,
                                                       unsigned toStep,
                                                       double scale) const {
   const SkIRect bounds = m_picture->cullRect().roundOut();
+  int width = ceil(scale * bounds.width());
+  int height = ceil(scale * bounds.height());
 
   // TODO(fmalita): convert this to SkSurface/SkImage, drop the intermediate
   // SkBitmap.
   SkBitmap bitmap;
-  bitmap.allocPixels(
-      SkImageInfo::MakeN32Premul(bounds.width(), bounds.height()));
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(width, height));
   bitmap.eraseARGB(0, 0, 0, 0);
   {
     ReplayingCanvas canvas(bitmap, fromStep, toStep);

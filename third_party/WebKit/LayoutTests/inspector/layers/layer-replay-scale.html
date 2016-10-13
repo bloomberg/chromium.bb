@@ -1,0 +1,58 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/layers-test.js"></script>
+<script>
+function test()
+{
+    setTimeout(() => InspectorTest.completeTest(), 3000);
+    InspectorTest.requestLayers(onGotLayers);
+
+    function onGotLayers()
+    {
+        var layer = InspectorTest.findLayerByNodeIdAttribute("a");
+        layer.requestSnapshot(onSnapshotDone);
+    }
+
+    function onSnapshotDone(snapshot)
+    {
+        testImageForSnapshot(snapshot, undefined).then(() => testImageForSnapshot(snapshot, 0.5)).then(() => InspectorTest.completeTest());
+    }
+
+    function testImageForSnapshot(snapshot, scale)
+    {
+        return new Promise(fulfill => {
+            InspectorTest.LayerTreeAgent.replaySnapshot(snapshot._id, undefined, undefined, scale, InspectorBackend.wrapClientCallback(fulfill, "LayerTreeAgent.replaySnapshot(): "));
+        }).then(imageURL => new Promise(fulfill => {
+           var image = new Image();
+           image.addEventListener("load", () => fulfill(image), false);
+           image.src = imageURL;
+        })).then(image => {
+           InspectorTest.addResult(`Image dimensions at scale ${scale}: ${image.naturalWidth} x ${image.naturalHeight}`);
+        });
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that when layer snapshots are replayed with scaling applied the image dimensions are properly scaled.
+</p>
+<div id="a" style="background-color:blue; transform: translateZ(0px); overflow: hidden;">
+    <script>
+(function()
+{
+    var a = document.getElementById("a");
+    var size = (180 / window.devicePixelRatio) + "px";
+    a.style.width = size;
+    a.style.height = size;
+})();
+    </script>
+    <div style="width:50px; height:50px; background-color:red;"></div>
+    <img src="../tracing/resources/test.png">
+    <svg>
+        <rect x="0" y="0" width="10" height="10" style="opacity:0.5"/>
+    </svg>
+  </div>
+</body>
+</html>
