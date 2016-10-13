@@ -121,7 +121,7 @@ message CastLogsProto {
   repeated CastConnectionInfo cast_connection_info = 2;
 
   // Stores Cast-enabled device specific events with a various context data.
-  // Next tag: 12
+  // Next tag: 13
   message CastEventProto {
     // The name of the action, hashed by same logic used to hash user action
     // event and histogram.
@@ -157,6 +157,10 @@ message CastLogsProto {
     // For application events associated with an assistant session, identifies
     // the assistant conversation.
     optional string conversation_key = 11;
+
+    // Request ID of V2 Application Protocol, identifies a pair of request
+    // and response.
+    optional fixed32 request_id = 12;
   }
   repeated CastEventProto cast_event = 3;
 
