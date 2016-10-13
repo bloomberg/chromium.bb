@@ -170,17 +170,20 @@ void SelectFileDialogImplGTK::SelectFileImpl(
   params_map_[dialog] = params;
 
   // Disable input events handling in the host window to make this dialog modal.
-  aura::WindowTreeHost* host = owning_window->GetHost();
-  if (host) {
-    std::unique_ptr<base::Closure> callback =
-        views::DesktopWindowTreeHostX11::GetHostForXID(
-        host->GetAcceleratedWidget())->DisableEventListening(
-        GDK_WINDOW_XID(gtk_widget_get_window(dialog)));
-    // OnFilePickerDestroy() is called when |dialog| destroyed, which allows to
-    // invoke the callback function to re-enable events on the owning window.
-    g_object_set_data_full(G_OBJECT(dialog), "callback", callback.release(),
-        reinterpret_cast<GDestroyNotify>(OnFilePickerDestroy));
-    gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+  if (owning_window) {
+    aura::WindowTreeHost* host = owning_window->GetHost();
+    if (host) {
+      std::unique_ptr<base::Closure> callback =
+          views::DesktopWindowTreeHostX11::GetHostForXID(
+          host->GetAcceleratedWidget())->DisableEventListening(
+          GDK_WINDOW_XID(gtk_widget_get_window(dialog)));
+      // OnFilePickerDestroy() is called when |dialog| destroyed, which allows
+      // to invoke the callback function to re-enable event handling on the
+      // owning window.
+      g_object_set_data_full(G_OBJECT(dialog), "callback", callback.release(),
+          reinterpret_cast<GDestroyNotify>(OnFilePickerDestroy));
+      gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+    }
   }
 
   gtk_widget_show_all(dialog);
