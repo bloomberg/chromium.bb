@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
 
+#include <unordered_set>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -26,6 +28,33 @@ void RequestQueueInMemoryStore::GetRequests(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, true, base::Passed(std::move(result_requests))));
+}
+
+void RequestQueueInMemoryStore::GetRequestsByIds(
+    const std::vector<int64_t>& request_ids,
+    const UpdateCallback& callback) {
+  std::unique_ptr<UpdateRequestsResult> result(
+      new UpdateRequestsResult(state()));
+
+  ItemActionStatus status;
+  // Make sure not to include the same request multiple times, while preserving
+  // the order of non-duplicated IDs in the result.
+  std::unordered_set<int64_t> processed_ids;
+  for (const auto& request_id : request_ids) {
+    if (!processed_ids.insert(request_id).second)
+      continue;
+    RequestsMap::iterator iter = requests_.find(request_id);
+    if (iter != requests_.end()) {
+      status = ItemActionStatus::SUCCESS;
+      result->updated_items.push_back(iter->second);
+    } else {
+      status = ItemActionStatus::NOT_FOUND;
+    }
+    result->item_statuses.push_back(std::make_pair(request_id, status));
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, base::Passed(&result)));
 }
 
 void RequestQueueInMemoryStore::AddRequest(const SavePageRequest& request,

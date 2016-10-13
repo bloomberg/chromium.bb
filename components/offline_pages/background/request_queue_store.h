@@ -38,6 +38,11 @@ class RequestQueueStore {
   // Gets all of the requests from the store.
   virtual void GetRequests(const GetRequestsCallback& callback) = 0;
 
+  // Gets requests with specified IDs from the store. UpdateCallback is used
+  // instead of GetRequestsCallback to indicate which requests where not found.
+  virtual void GetRequestsByIds(const std::vector<int64_t>& request_ids,
+                                const UpdateCallback& callback) = 0;
+
   // Asynchronously adds request in store. Fails if request with the same
   // offline ID already exists.
   virtual void AddRequest(const SavePageRequest& offline_page,

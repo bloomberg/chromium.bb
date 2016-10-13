@@ -24,6 +24,7 @@ using UpdateStatus = RequestQueueStore::UpdateStatus;
 namespace {
 const int64_t kRequestId = 42;
 const int64_t kRequestId2 = 44;
+const int64_t kRequestId3 = 47;
 const GURL kUrl("http://example.com");
 const GURL kUrl2("http://another-example.com");
 const ClientId kClientId("bookmark", "1234");
@@ -196,6 +197,65 @@ TYPED_TEST(RequestQueueStoreTest, GetRequestsEmpty) {
   this->PumpLoop();
   ASSERT_EQ(LastResult::kTrue, this->last_result());
   ASSERT_TRUE(this->last_requests().empty());
+}
+
+TYPED_TEST(RequestQueueStoreTest, GetRequestsByIds) {
+  std::unique_ptr<RequestQueueStore> store(this->BuildStore());
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
+                           kUserRequested);
+  store->AddRequest(request1,
+                    base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
+                               base::Unretained(this)));
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+                           kUserRequested);
+  store->AddRequest(request2,
+                    base::Bind(&RequestQueueStoreTestBase::AddRequestDone,
+                               base::Unretained(this)));
+  this->PumpLoop();
+  this->ClearResults();
+
+  std::vector<int64_t> request_ids{kRequestId, kRequestId2};
+  store->GetRequestsByIds(
+      request_ids, base::Bind(&RequestQueueStoreTestBase::UpdateRequestDone,
+                              base::Unretained(this)));
+
+  ASSERT_FALSE(this->last_update_result());
+  this->PumpLoop();
+  ASSERT_TRUE(this->last_update_result());
+  EXPECT_EQ(2UL, this->last_update_result()->item_statuses.size());
+  EXPECT_EQ(kRequestId, this->last_update_result()->item_statuses[0].first);
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            this->last_update_result()->item_statuses[0].second);
+  EXPECT_EQ(kRequestId2, this->last_update_result()->item_statuses[1].first);
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            this->last_update_result()->item_statuses[1].second);
+  EXPECT_EQ(2UL, this->last_update_result()->updated_items.size());
+  EXPECT_EQ(request1, this->last_update_result()->updated_items.at(0));
+  EXPECT_EQ(request2, this->last_update_result()->updated_items.at(1));
+  this->ClearResults();
+
+  request_ids.clear();
+  request_ids.push_back(kRequestId);
+  request_ids.push_back(kRequestId3);
+  request_ids.push_back(kRequestId);
+
+  store->GetRequestsByIds(
+      request_ids, base::Bind(&RequestQueueStoreTestBase::UpdateRequestDone,
+                              base::Unretained(this)));
+
+  ASSERT_FALSE(this->last_update_result());
+  this->PumpLoop();
+  ASSERT_TRUE(this->last_update_result());
+  EXPECT_EQ(2UL, this->last_update_result()->item_statuses.size());
+  EXPECT_EQ(kRequestId, this->last_update_result()->item_statuses[0].first);
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            this->last_update_result()->item_statuses[0].second);
+  EXPECT_EQ(kRequestId3, this->last_update_result()->item_statuses[1].first);
+  EXPECT_EQ(ItemActionStatus::NOT_FOUND,
+            this->last_update_result()->item_statuses[1].second);
+  EXPECT_EQ(1UL, this->last_update_result()->updated_items.size());
+  EXPECT_EQ(request1, this->last_update_result()->updated_items.at(0));
 }
 
 TYPED_TEST(RequestQueueStoreTest, AddRequest) {

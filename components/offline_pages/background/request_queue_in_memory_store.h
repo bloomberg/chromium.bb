@@ -23,6 +23,8 @@ class RequestQueueInMemoryStore : public RequestQueueStore {
 
   // RequestQueueStore implementaiton.
   void GetRequests(const GetRequestsCallback& callback) override;
+  void GetRequestsByIds(const std::vector<int64_t>& request_ids,
+                        const UpdateCallback& callback) override;
   void AddRequest(const SavePageRequest& offline_page,
                   const AddCallback& callback) override;
   void UpdateRequests(const std::vector<SavePageRequest>& requests,

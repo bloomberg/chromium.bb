@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/background/request_queue_store_sql.h"
 
+#include <unordered_set>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -22,7 +24,6 @@ template class StoreUpdateResult<SavePageRequest>;
 
 namespace {
 
-using UpdateStatus = RequestQueueStore::UpdateStatus;
 using StoreStateCallback = base::Callback<void(StoreState)>;
 
 // This is a macro instead of a const so that
@@ -109,8 +110,9 @@ std::unique_ptr<SavePageRequest> GetOneRequest(sql::Connection* db,
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, request_id);
 
-  statement.Run();
-  return MakeSavePageRequest(statement);
+  if (statement.Step())
+    return MakeSavePageRequest(statement);
+  return std::unique_ptr<SavePageRequest>(nullptr);
 }
 
 ItemActionStatus DeleteRequestById(sql::Connection* db, int64_t request_id) {
@@ -245,6 +247,44 @@ void GetRequestsSync(sql::Connection* db,
 
   runner->PostTask(FROM_HERE, base::Bind(callback, statement.Succeeded(),
                                          base::Passed(&requests)));
+}
+
+void GetRequestsByIdsSync(sql::Connection* db,
+                          scoped_refptr<base::SingleThreadTaskRunner> runner,
+                          const std::vector<int64_t>& request_ids,
+                          const RequestQueueStore::UpdateCallback& callback) {
+  // TODO(fgorski): Perhaps add metrics here.
+  std::unique_ptr<UpdateRequestsResult> result(
+      new UpdateRequestsResult(StoreState::LOADED));
+
+  // If you create a transaction but don't Commit() it is automatically
+  // rolled back by its destructor when it falls out of scope.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin()) {
+    PostStoreErrorForAllIds(runner, request_ids, callback);
+    return;
+  }
+
+  // Make sure not to include the same request multiple times, preserving the
+  // order of non-duplicated IDs in the result.
+  std::unordered_set<int64_t> processed_ids;
+  for (int64_t request_id : request_ids) {
+    if (!processed_ids.insert(request_id).second)
+      continue;
+    std::unique_ptr<SavePageRequest> request = GetOneRequest(db, request_id);
+    if (request.get())
+      result->updated_items.push_back(*request);
+    ItemActionStatus status =
+        request.get() ? ItemActionStatus::SUCCESS : ItemActionStatus::NOT_FOUND;
+    result->item_statuses.push_back(std::make_pair(request_id, status));
+  }
+
+  if (!transaction.Commit()) {
+    PostStoreErrorForAllIds(runner, request_ids, callback);
+    return;
+  }
+
+  runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&result)));
 }
 
 void AddRequestSync(sql::Connection* db,
@@ -383,6 +423,21 @@ void RequestQueueStoreSQL::GetRequests(const GetRequestsCallback& callback) {
   background_task_runner_->PostTask(
       FROM_HERE, base::Bind(&GetRequestsSync, db_.get(),
                             base::ThreadTaskRunnerHandle::Get(), callback));
+}
+
+void RequestQueueStoreSQL::GetRequestsByIds(
+    const std::vector<int64_t>& request_ids,
+    const UpdateCallback& callback) {
+  if (!db_.get()) {
+    PostStoreErrorForAllIds(base::ThreadTaskRunnerHandle::Get(), request_ids,
+                            callback);
+    return;
+  }
+
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GetRequestsByIdsSync, db_.get(),
+                 base::ThreadTaskRunnerHandle::Get(), request_ids, callback));
 }
 
 void RequestQueueStoreSQL::AddRequest(const SavePageRequest& request,
