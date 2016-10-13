@@ -244,16 +244,15 @@ void LogPrivateAPI::PostPendingEntries() {
 void LogPrivateAPI::AddEntriesOnUI(std::unique_ptr<base::ListValue> value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  for (std::set<std::string>::iterator ix = net_internal_watches_.begin();
-       ix != net_internal_watches_.end(); ++ix) {
+  for (const std::string& extension_id : net_internal_watches_) {
     // Create the event's arguments value.
     std::unique_ptr<base::ListValue> event_args(new base::ListValue());
-    event_args->Append(value->DeepCopy());
+    event_args->Append(value->CreateDeepCopy());
     std::unique_ptr<Event> event(
         new Event(::extensions::events::LOG_PRIVATE_ON_CAPTURED_EVENTS,
                   ::events::kOnCapturedEvents, std::move(event_args)));
     EventRouter::Get(browser_context_)
-        ->DispatchEventToExtension(*ix, std::move(event));
+        ->DispatchEventToExtension(extension_id, std::move(event));
   }
 }
 

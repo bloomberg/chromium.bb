@@ -264,8 +264,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("PAYLOAD"));
   args->Append(StringToBinaryValue("KEY"));
-  base::DictionaryValue* options = new base::DictionaryValue();
-  args->Append(options);
+  auto options = base::MakeUnique<base::DictionaryValue>();
   options->Set("associatedData", StringToBinaryValue("ASSOCIATED_DATA"));
   options->Set("publicMetadata", StringToBinaryValue("PUBLIC_METADATA"));
   options->Set("verificationKeyId",
@@ -278,6 +277,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage) {
   options->SetString(
       "signType",
       api::ToString(api::SIGNATURE_TYPE_HMAC_SHA256));
+  args->Append(std::move(options));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
@@ -338,8 +338,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_AsymmetricSign) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("PAYLOAD"));
   args->Append(StringToBinaryValue("KEY"));
-  base::DictionaryValue* options = new base::DictionaryValue();
-  args->Append(options);
+  auto options = base::MakeUnique<base::DictionaryValue>();
   options->Set("associatedData",
                StringToBinaryValue("ASSOCIATED_DATA"));
   options->Set("verificationKeyId",
@@ -347,6 +346,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_AsymmetricSign) {
   options->SetString(
       "signType",
       api::ToString(api::SIGNATURE_TYPE_ECDSA_P256_SHA256));
+  args->Append(std::move(options));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
@@ -376,8 +376,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("MESSAGE"));
   args->Append(StringToBinaryValue("KEY"));
-  base::DictionaryValue* options = new base::DictionaryValue();
-  args->Append(options);
+  auto options = base::MakeUnique<base::DictionaryValue>();
   options->Set("associatedData", StringToBinaryValue("ASSOCIATED_DATA"));
   options->SetString(
       "encryptType",
@@ -385,6 +384,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage) {
   options->SetString(
       "signType",
       api::ToString(api::SIGNATURE_TYPE_HMAC_SHA256));
+  args->Append(std::move(options));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
@@ -444,13 +444,13 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_AsymmetricSign) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("MESSAGE"));
   args->Append(StringToBinaryValue("KEY"));
-  base::DictionaryValue* options = new base::DictionaryValue();
-  args->Append(options);
+  auto options = base::MakeUnique<base::DictionaryValue>();
   options->Set("associatedData",
                StringToBinaryValue("ASSOCIATED_DATA"));
   options->SetString(
       "signType",
       api::ToString(api::SIGNATURE_TYPE_ECDSA_P256_SHA256));
+  args->Append(std::move(options));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
