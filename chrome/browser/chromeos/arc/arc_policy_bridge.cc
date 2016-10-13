@@ -175,7 +175,7 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
 
     base::DictionaryValue data;
     data.SetString("X509", x509_data);
-    ca_certs->Append(data.DeepCopy());
+    ca_certs->Append(data.CreateDeepCopy());
   }
   filtered_policies->Set(kArcCaCerts, std::move(ca_certs));
 }

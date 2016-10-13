@@ -6,8 +6,11 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -393,18 +396,14 @@ void UserSelectionScreen::SendUserList() {
                                                           : OFFLINE_PASSWORD);
     user_auth_type_map_[account_id] = initial_auth_type;
 
-    base::DictionaryValue* user_dict = new base::DictionaryValue();
+    auto user_dict = base::MakeUnique<base::DictionaryValue>();
     const std::vector<std::string>* public_session_recommended_locales =
         public_session_recommended_locales_.find(account_id) ==
                 public_session_recommended_locales_.end()
             ? &kEmptyRecommendedLocales
             : &public_session_recommended_locales_[account_id];
-    FillUserDictionary(*it,
-                       is_owner,
-                       is_signin_to_add,
-                       initial_auth_type,
-                       public_session_recommended_locales,
-                       user_dict);
+    FillUserDictionary(*it, is_owner, is_signin_to_add, initial_auth_type,
+                       public_session_recommended_locales, user_dict.get());
     bool signed_in = (*it)->is_logged_in();
 
     // Single user check here is necessary because owner info might not be
@@ -414,7 +413,7 @@ void UserSelectionScreen::SendUserList() {
         ((!single_user || is_enterprise_managed) && account_id.is_valid() &&
          !is_owner && !is_public_account && !signed_in && !is_signin_to_add);
     user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
-    users_list.Append(user_dict);
+    users_list.Append(std::move(user_dict));
   }
 
   handler_->LoadUsers(users_list, show_guest_);

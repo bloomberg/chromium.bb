@@ -133,7 +133,7 @@ TEST_F(CrosSettingsTest, SetWhitelist) {
 TEST_F(CrosSettingsTest, SetWhitelistWithListOps) {
   base::ListValue* whitelist = new base::ListValue();
   base::StringValue hacky_user("h@xxor");
-  whitelist->Append(hacky_user.DeepCopy());
+  whitelist->Append(hacky_user.CreateDeepCopy());
   AddExpectation(kAccountsPrefAllowNewUser, new base::FundamentalValue(false));
   AddExpectation(kAccountsPrefUsers, whitelist);
   // Add some user to the whitelist.
@@ -146,9 +146,9 @@ TEST_F(CrosSettingsTest, SetWhitelistWithListOps2) {
   base::ListValue whitelist;
   base::StringValue hacky_user("h@xxor");
   base::StringValue lamy_user("l@mer");
-  whitelist.Append(hacky_user.DeepCopy());
+  whitelist.Append(hacky_user.CreateDeepCopy());
   base::ListValue* expected_list = whitelist.DeepCopy();
-  whitelist.Append(lamy_user.DeepCopy());
+  whitelist.Append(lamy_user.CreateDeepCopy());
   AddExpectation(kAccountsPrefAllowNewUser, new base::FundamentalValue(false));
   AddExpectation(kAccountsPrefUsers, whitelist.DeepCopy());
   SetPref(kAccountsPrefUsers, &whitelist);

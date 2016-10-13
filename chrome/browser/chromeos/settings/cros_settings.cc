@@ -152,7 +152,8 @@ void CrosSettings::AppendToList(const std::string& path,
   const base::Value* old_value = GetPref(path);
   std::unique_ptr<base::Value> new_value(old_value ? old_value->DeepCopy()
                                                    : new base::ListValue());
-  static_cast<base::ListValue*>(new_value.get())->Append(value->DeepCopy());
+  static_cast<base::ListValue*>(new_value.get())
+      ->Append(value->CreateDeepCopy());
   Set(path, *new_value);
 }
 

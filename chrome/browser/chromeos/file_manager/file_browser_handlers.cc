@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -388,24 +389,24 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue());
   event_args->AppendString(action_id_);
-  base::DictionaryValue* details = new base::DictionaryValue();
-  event_args->Append(details);
+  auto details = base::MakeUnique<base::DictionaryValue>();
   // Get file definitions. These will be replaced with Entry instances by
   // dispatchEvent() method from event_binding.js.
   base::ListValue* file_entries = new base::ListValue();
   details->Set("entries", file_entries);
+  event_args->Append(std::move(details));
 
   for (EntryDefinitionList::const_iterator iter =
            entry_definition_list->begin();
        iter != entry_definition_list->end();
        ++iter) {
-    base::DictionaryValue* file_def = new base::DictionaryValue();
-    file_entries->Append(file_def);
+    auto file_def = base::MakeUnique<base::DictionaryValue>();
     file_def->SetString("fileSystemName", iter->file_system_name);
     file_def->SetString("fileSystemRoot", iter->file_system_root_url);
     file_def->SetString("fileFullPath",
                         "/" + iter->full_path.AsUTF8Unsafe());
     file_def->SetBoolean("fileIsDirectory", iter->is_directory);
+    file_entries->Append(std::move(file_def));
   }
 
   std::unique_ptr<extensions::Event> event(new extensions::Event(

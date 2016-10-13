@@ -248,8 +248,8 @@ void WallpaperSetWallpaperFunction::ThumbnailGenerated(
     extensions::EventRouter* event_router =
         extensions::EventRouter::Get(profile);
     std::unique_ptr<base::ListValue> event_args(new base::ListValue());
-    event_args->Append(original_result->DeepCopy());
-    event_args->Append(thumbnail_result->DeepCopy());
+    event_args->Append(original_result->CreateDeepCopy());
+    event_args->Append(thumbnail_result->CreateDeepCopy());
     event_args->AppendString(
         extensions::api::wallpaper::ToString(params_->details.layout));
     // Setting wallpaper from right click menu in 'Files' app is a feature that

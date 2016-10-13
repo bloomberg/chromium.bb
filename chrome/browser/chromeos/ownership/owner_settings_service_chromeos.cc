@@ -281,7 +281,7 @@ bool OwnerSettingsServiceChromeOS::AppendToList(const std::string& setting,
   std::unique_ptr<base::ListValue> new_value(
       old_value ? static_cast<const base::ListValue*>(old_value)->DeepCopy()
                 : new base::ListValue());
-  new_value->Append(value.DeepCopy());
+  new_value->Append(value.CreateDeepCopy());
   return Set(setting, *new_value);
 }
 

@@ -185,10 +185,8 @@ std::string ValueToString(const base::Value& value) {
 }
 
 void AppendAll(const base::ListValue& from, base::ListValue* to) {
-  for (base::ListValue::const_iterator it = from.begin(); it != from.end();
-       ++it) {
-    to->Append((*it)->DeepCopy());
-  }
+  for (const auto& value : from)
+    to->Append(value->CreateDeepCopy());
 }
 
 // Matcher to match base::Value.

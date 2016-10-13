@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/app_launch_signin_screen.h"
 
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
@@ -211,15 +214,13 @@ void AppLaunchSigninScreen::HandleGetUsers() {
         UserSelectionScreen::ShouldForceOnlineSignIn(*it)
             ? proximity_auth::ScreenlockBridge::LockHandler::ONLINE_SIGN_IN
             : proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
-    base::DictionaryValue* user_dict = new base::DictionaryValue();
+    auto user_dict = base::MakeUnique<base::DictionaryValue>();
     UserSelectionScreen::FillUserDictionary(
-        *it,
-        true,   /* is_owner */
-        false,  /* is_signin_to_add */
-        initial_auth_type,
-        NULL,   /* public_session_recommended_locales */
-        user_dict);
-    users_list.Append(user_dict);
+        *it, true,               /* is_owner */
+        false,                   /* is_signin_to_add */
+        initial_auth_type, NULL, /* public_session_recommended_locales */
+        user_dict.get());
+    users_list.Append(std::move(user_dict));
   }
 
   webui_handler_->LoadUsers(users_list, false);

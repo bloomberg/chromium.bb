@@ -5,8 +5,10 @@
 #include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
 
 #include <string>
+#include <utility>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
@@ -434,12 +436,12 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   // Verify that a platform app with socket dictionary permission can be
   // installed.
   {
-    base::DictionaryValue* const socket = new base::DictionaryValue();
+    auto socket = base::MakeUnique<base::DictionaryValue>();
     base::ListValue* const tcp_list = new base::ListValue();
     tcp_list->AppendString("tcp-connect");
     socket->Set("socket", tcp_list);
     base::ListValue* const permissions = new base::ListValue();
-    permissions->Append(socket);
+    permissions->Append(std::move(socket));
     base::DictionaryValue values;
     values.Set(extensions::manifest_keys::kPermissions, permissions);
 
@@ -457,12 +459,12 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   // Verify that a platform app with unknown dictionary permission cannot be
   // installed.
   {
-    base::DictionaryValue* const socket = new base::DictionaryValue();
+    auto socket = base::MakeUnique<base::DictionaryValue>();
     base::ListValue* const tcp_list = new base::ListValue();
     tcp_list->AppendString("unknown_value");
     socket->Set("unknown_key", tcp_list);
     base::ListValue* const permissions = new base::ListValue();
-    permissions->Append(socket);
+    permissions->Append(std::move(socket));
     base::DictionaryValue values;
     values.Set(extensions::manifest_keys::kPermissions, permissions);
 
