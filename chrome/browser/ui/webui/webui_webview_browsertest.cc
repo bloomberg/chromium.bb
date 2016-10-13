@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ContextMenuInspectElement) {
 }
 
 #if !defined(OS_CHROMEOS) && defined(USE_AURA)
-IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DragAndDropToInput) {
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DISABLED_DragAndDropToInput) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
   ASSERT_TRUE(
       WebUIBrowserTest::RunJavascriptAsyncTest("testDragAndDropToInput"));
