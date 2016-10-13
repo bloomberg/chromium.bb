@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/EventSourceParser.h"
+#include "modules/eventsource/EventSourceParser.h"
 
 #include "core/EventTypeNames.h"
-#include "core/page/EventSource.h"
+#include "modules/eventsource/EventSource.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/Assertions.h"
 #include "wtf/NotFound.h"
@@ -34,7 +34,7 @@ void EventSourceParser::addBytes(const char* bytes, size_t size) {
         m_line.size() + (i - start) == WTF_ARRAY_LENGTH(kBOM)) {
       Vector<char> line = m_line;
       line.append(&bytes[start], i - start);
-      ASSERT(line.size() == WTF_ARRAY_LENGTH(kBOM));
+      DCHECK_EQ(line.size(), WTF_ARRAY_LENGTH(kBOM));
       m_isRecognizingBOM = false;
       if (memcmp(line.data(), kBOM, sizeof(kBOM)) == 0) {
         start = i;
@@ -68,7 +68,7 @@ void EventSourceParser::parseLine() {
     m_lastEventId = m_id;
     // We dispatch an event when seeing an empty line.
     if (!m_data.isEmpty()) {
-      ASSERT(m_data[m_data.size() - 1] == '\n');
+      DCHECK_EQ(m_data[m_data.size() - 1], '\n');
       String data = fromUTF8(m_data.data(), m_data.size() - 1);
       m_client->onMessageEvent(
           m_eventType.isEmpty() ? EventTypeNames::message : m_eventType, data,

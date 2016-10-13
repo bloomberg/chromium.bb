@@ -37,7 +37,8 @@
 #include "core/events/EventTarget.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/page/EventSourceParser.h"
+#include "modules/ModulesExport.h"
+#include "modules/eventsource/EventSourceParser.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -50,11 +51,11 @@ class EventSourceInit;
 class ExceptionState;
 class ResourceResponse;
 
-class CORE_EXPORT EventSource final : public EventTargetWithInlineData,
-                                      private ThreadableLoaderClient,
-                                      public ActiveScriptWrappable,
-                                      public ActiveDOMObject,
-                                      public EventSourceParser::Client {
+class MODULES_EXPORT EventSource final : public EventTargetWithInlineData,
+                                         private ThreadableLoaderClient,
+                                         public ActiveScriptWrappable,
+                                         public ActiveDOMObject,
+                                         public EventSourceParser::Client {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(EventSource);
 

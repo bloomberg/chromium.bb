@@ -1209,7 +1209,6 @@ source_set("unit_tests") {
     "origin_trials/OriginTrialContextTest.cpp",
     "page/ChromeClientTest.cpp",
     "page/ContextMenuControllerTest.cpp",
-    "page/EventSourceParserTest.cpp",
     "page/FocusControllerTest.cpp",
     "page/NetworkStateNotifierTest.cpp",
     "page/PagePopupClientTest.cpp",

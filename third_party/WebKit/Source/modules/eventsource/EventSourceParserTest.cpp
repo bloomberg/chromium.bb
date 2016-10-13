@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/EventSourceParser.h"
+#include "modules/eventsource/EventSourceParser.h"
 
-#include "core/page/EventSource.h"
+#include "modules/eventsource/EventSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/CharacterNames.h"
 

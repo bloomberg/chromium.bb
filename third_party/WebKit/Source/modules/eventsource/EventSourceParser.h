@@ -5,7 +5,7 @@
 #ifndef EventSourceParser_h
 #define EventSourceParser_h
 
-#include "core/CoreExport.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
@@ -15,10 +15,10 @@
 
 namespace blink {
 
-class CORE_EXPORT EventSourceParser final
+class MODULES_EXPORT EventSourceParser final
     : public GarbageCollectedFinalized<EventSourceParser> {
  public:
-  class CORE_EXPORT Client : public GarbageCollectedMixin {
+  class MODULES_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual ~Client() {}
     virtual void onMessageEvent(const AtomicString& type,

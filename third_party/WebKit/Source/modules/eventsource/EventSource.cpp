@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/EventSource.h"
+#include "modules/eventsource/EventSource.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
@@ -48,7 +48,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/page/EventSourceInit.h"
+#include "modules/eventsource/EventSourceInit.h"
 #include "platform/HTTPNames.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
