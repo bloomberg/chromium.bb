@@ -13,6 +13,9 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/native_theme/native_theme.h"
@@ -58,7 +61,8 @@ class MdTab : public Tab {
 
   // Overridden from View:
   gfx::Size GetPreferredSize() const override;
-  void OnPaintBorder(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MdTab);
@@ -72,6 +76,11 @@ class TabStrip : public View {
 
   TabStrip();
   ~TabStrip() override;
+
+  // Called by TabStrip when the selected tab changes. This function is only
+  // called if |from_tab| is not null, i.e., there was a previously selected
+  // tab.
+  virtual void OnSelectedTabChanged(Tab* from_tab, Tab* to_tab);
 
   // Overridden from View:
   const char* GetClassName() const override;
@@ -88,15 +97,34 @@ class TabStrip : public View {
 
 // A subclass of TabStrip that implements the Harmony visual styling. This
 // class uses a BoxLayout to position tabs.
-class MdTabStrip : public TabStrip {
+class MdTabStrip : public TabStrip, public gfx::AnimationDelegate {
  public:
   MdTabStrip();
   ~MdTabStrip() override;
 
+  // Overridden from TabStrip:
+  void OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) override;
+
   // Overridden from View:
   void OnPaintBorder(gfx::Canvas* canvas) override;
 
+  // Overridden from AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+
  private:
+  // Animations for expanding and contracting the selection bar. When changing
+  // selections, the selection bar first grows to encompass both the old and new
+  // selections, then shrinks to encompass only the new selection. The rates of
+  // expansion and contraction each follow the cubic bezier curves used in
+  // gfx::Tween; see MdTabStrip::OnPaintBorder for details.
+  std::unique_ptr<gfx::LinearAnimation> expand_animation_;
+  std::unique_ptr<gfx::LinearAnimation> contract_animation_;
+
+  // The x-coordinate ranges of the old selection and the new selection.
+  gfx::Range animating_from_;
+  gfx::Range animating_to_;
+
   DISALLOW_COPY_AND_ASSIGN(MdTabStrip);
 };
 
@@ -238,6 +266,8 @@ MdTab::MdTab(TabbedPane* tabbed_pane,
              const base::string16& title,
              View* contents)
     : Tab(tabbed_pane, title, contents) {
+  const int kBorderThickness = 2;
+  SetBorder(Border::CreateEmptyBorder(gfx::Insets(kBorderThickness)));
   OnStateChanged();
 }
 
@@ -262,42 +292,22 @@ void MdTab::OnStateChanged() {
                                                gfx::Font::NORMAL, font_weight));
 }
 
-void MdTab::OnPaintBorder(gfx::Canvas* canvas) {
-  const int kBorderStrokeWidth = 2;
-  if (!HasFocus()) {
-    SkColor color = GetNativeTheme()->GetSystemColor(
-        selected() ? ui::NativeTheme::kColorId_FocusedBorderColor
-                   : ui::NativeTheme::kColorId_UnfocusedBorderColor);
-    int thickness = selected() ? kBorderStrokeWidth : kBorderStrokeWidth / 2;
-    canvas->FillRect(gfx::Rect(0, height() - thickness, width(), thickness),
-                     color);
-    return;
-  }
-
-  // TODO(ellyjones): should this 0x66 be part of NativeTheme somehow?
-  SkColor base_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_FocusedBorderColor);
-  SkColor light_color = SkColorSetA(base_color, 0x66);
-
-  SkPaint paint;
-  paint.setColor(light_color);
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(kBorderStrokeWidth);
-
-  gfx::RectF bounds = gfx::RectF(GetLocalBounds());
-  bounds.Inset(gfx::Insets(kBorderStrokeWidth / 2.f));
-
-  // Draw the lighter-colored stroke first, then draw the heavier stroke over
-  // the bottom of it. This is fine because the heavier stroke has 1.0 alpha, so
-  // the lighter stroke won't show through.
-  canvas->DrawRect(bounds, paint);
-  canvas->FillRect(
-      gfx::Rect(0, height() - kBorderStrokeWidth, width(), kBorderStrokeWidth),
-      base_color);
-}
-
 gfx::Size MdTab::GetPreferredSize() const {
   return gfx::Size(Tab::GetPreferredSize().width(), kHarmonyTabStripTabHeight);
+}
+
+void MdTab::OnFocus() {
+  SetBorder(Border::CreateSolidBorder(
+      GetInsets().top(),
+      SkColorSetA(GetNativeTheme()->GetSystemColor(
+                      ui::NativeTheme::kColorId_FocusedBorderColor),
+                  0x66)));
+  SchedulePaint();
+}
+
+void MdTab::OnBlur() {
+  SetBorder(Border::CreateEmptyBorder(GetInsets()));
+  SchedulePaint();
 }
 
 // static
@@ -314,6 +324,8 @@ TabStrip::TabStrip() {
 }
 
 TabStrip::~TabStrip() {}
+
+void TabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {}
 
 const char* TabStrip::GetClassName() const {
   return kViewClassName;
@@ -381,12 +393,108 @@ MdTabStrip::MdTabStrip() {
   layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   layout->SetDefaultFlex(1);
   SetLayoutManager(layout);
+
+  // These durations are taken from the Paper Tabs source:
+  // https://github.com/PolymerElements/paper-tabs/blob/master/paper-tabs.html
+  // See |selectionBar.expand| and |selectionBar.contract|.
+  const int kExpandAnimationDurationMs = 150;
+  expand_animation_.reset(new gfx::LinearAnimation(this));
+  expand_animation_->SetDuration(kExpandAnimationDurationMs);
+
+  const int kContractAnimationDurationMs = 180;
+  contract_animation_.reset(new gfx::LinearAnimation(this));
+  contract_animation_->SetDuration(kContractAnimationDurationMs);
 }
 
 MdTabStrip::~MdTabStrip() {}
 
-// The tab strip "border" is drawn as part of the tabs.
-void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {}
+void MdTabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {
+  DCHECK(!from_tab->selected());
+  DCHECK(to_tab->selected());
+
+  animating_from_ =
+      gfx::Range(from_tab->x(), from_tab->x() + from_tab->width());
+  animating_to_ = gfx::Range(to_tab->x(), to_tab->x() + to_tab->width());
+
+  contract_animation_->Stop();
+  expand_animation_->Start();
+}
+
+void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
+  int max_y = child_at(0)->y() + child_at(0)->height();
+  const int kUnselectedBorderThickness = 1;
+  const int kSelectedBorderThickness = 2;
+
+  // First, draw the unselected border across the TabStrip's entire width. The
+  // area underneath the selected tab will be overdrawn later.
+  canvas->FillRect(gfx::Rect(0, max_y - kUnselectedBorderThickness, width(),
+                             kUnselectedBorderThickness),
+                   GetNativeTheme()->GetSystemColor(
+                       ui::NativeTheme::kColorId_UnfocusedBorderColor));
+
+  int min_x = 0;
+  int max_x = 0;
+
+  // Now, figure out the range to draw the selection marker underneath. There
+  // are three states here:
+  // 1) Expand animation is running: use FAST_OUT_LINEAR_IN to grow the
+  //    selection marker until it encompasses both the previously selected tab
+  //    and the currently selected tab;
+  // 2) Contract animation is running: use LINEAR_OUT_SLOW_IN to shrink the
+  //    selection marker until it encompasses only the currently selected tab;
+  // 3) No animations running: the selection marker is only under the currently
+  //    selected tab.
+  Tab* tab = GetSelectedTab();
+  if (!tab)
+    return;
+  if (expand_animation_->is_animating()) {
+    bool animating_left = animating_to_.start() < animating_from_.start();
+    double anim_value = gfx::Tween::CalculateValue(
+        gfx::Tween::FAST_OUT_LINEAR_IN, expand_animation_->GetCurrentValue());
+
+    if (animating_left) {
+      min_x = gfx::Tween::IntValueBetween(anim_value, animating_from_.start(),
+                                          animating_to_.start());
+      max_x = animating_from_.end();
+    } else {
+      min_x = animating_from_.start();
+      max_x = gfx::Tween::IntValueBetween(anim_value, animating_from_.end(),
+                                          animating_to_.end());
+    }
+  } else if (contract_animation_->is_animating()) {
+    bool animating_left = animating_to_.start() < animating_from_.start();
+    double anim_value = gfx::Tween::CalculateValue(
+        gfx::Tween::LINEAR_OUT_SLOW_IN, contract_animation_->GetCurrentValue());
+    if (animating_left) {
+      min_x = animating_to_.start();
+      max_x = gfx::Tween::IntValueBetween(anim_value, animating_from_.end(),
+                                          animating_to_.end());
+    } else {
+      min_x = gfx::Tween::IntValueBetween(anim_value, animating_from_.start(),
+                                          animating_to_.start());
+      max_x = animating_to_.end();
+    }
+  } else if (tab) {
+    min_x = tab->x();
+    max_x = tab->x() + tab->width();
+  }
+
+  DCHECK(min_x != max_x);
+  // Draw over the unselected border from above.
+  canvas->FillRect(gfx::Rect(min_x, max_y - kSelectedBorderThickness,
+                             max_x - min_x, kSelectedBorderThickness),
+                   GetNativeTheme()->GetSystemColor(
+                       ui::NativeTheme::kColorId_FocusedBorderColor));
+}
+
+void MdTabStrip::AnimationProgressed(const gfx::Animation* animation) {
+  SchedulePaint();
+}
+
+void MdTabStrip::AnimationEnded(const gfx::Animation* animation) {
+  if (animation == expand_animation_.get())
+    contract_animation_->Start();
+}
 
 TabbedPane::TabbedPane()
     : listener_(NULL),
@@ -441,6 +549,7 @@ void TabbedPane::SelectTab(Tab* new_selected_tab) {
     if (old_selected_tab->HasFocus())
       new_selected_tab->RequestFocus();
     old_selected_tab->SetSelected(false);
+    tab_strip_->OnSelectedTabChanged(old_selected_tab, new_selected_tab);
   }
   tab_strip_->SchedulePaint();
 
