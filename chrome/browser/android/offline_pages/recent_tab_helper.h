@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/downloads/download_ui_item.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/snapshot_controller.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -38,6 +39,7 @@ class RecentTabHelper
       content::NavigationHandle* navigation_handle) override;
   void DocumentAvailableInMainFrame() override;
   void DocumentOnLoadCompletedInMainFrame() override;
+  void WebContentsDestroyed() override;
 
   // SnapshotController::Client
   void StartSnapshot() override;
@@ -55,34 +57,69 @@ class RecentTabHelper
   };
   void SetDelegate(std::unique_ptr<RecentTabHelper::Delegate> delegate);
 
-  bool is_page_ready_for_snapshot() const {
-    return is_page_ready_for_snapshot_;
-  }
+  // Support for Download Page feature. The Download Page button does this:
+  // 1. Creates suspended request for Background Offliner.
+  // 2. Calls this method with properly filled ClientId.
+  // 3. This tab helper observes the page load and captures the page
+  //    if the load progresses far enough, as indicated by SnapshotController.
+  // 4. If capture is successful, this tab helper removes the suspended request.
+  //    Otherwise (navigation to other page, close tab) tab helper un-suspends
+  //    the request so the Background Offliner starts working on it.
+  // 5. If Chrome is killed at any point, next time Background Offliner loads
+  //    it converts all suspended requests from last session into active.
+  void ObserveAndDownloadCurrentPage(const ClientId& client_id,
+                                     int64_t request_id);
 
  private:
+  // Keeps client_id/request_id that will be used for the offline snapshot.
+  struct DownloadPageInfo {
+   public:
+    DownloadPageInfo(const ClientId& client_id,
+                     int64_t request_id)
+        : client_id_(client_id),
+          request_id_(request_id),
+          page_snapshot_completed_(false) {}
+
+    // The ClientID to go with the offline page.
+    ClientId client_id_;
+    // Id of the suspended request in Background Offliner. Used to un-suspend
+    // the request if the capture of the current page was not possible (e.g.
+    // the user navigated to another page before current one was loaded).
+    // 0 if this is a "last_1" info.
+    int64_t request_id_;
+    // True if there was at least one snapshot successfully completed.
+    bool page_snapshot_completed_;
+  };
+
   explicit RecentTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<RecentTabHelper>;
-
 
   void EnsureInitialized();
   void ContinueSnapshotWithIdsToPurge(const std::vector<int64_t>& page_ids);
   void ContinueSnapshotAfterPurge(OfflinePageModel::DeletePageResult result);
   void SavePageCallback(OfflinePageModel::SavePageResult result,
                         int64_t offline_id);
-
   void ReportSnapshotCompleted();
+  void ReportDownloadStatusToRequestCoordinator();
   bool IsSamePage() const;
-  ClientId client_id() const;
+  ClientId GetRecentPagesClientId() const;
 
   // Page model is a service, no ownership. Can be null - for example, in
   // case when tab is in incognito profile.
   OfflinePageModel* page_model_;
+
   // If false, never make snapshots off the attached WebContents.
   // Not page-specific.
   bool snapshots_enabled_;
+
   // Becomes true during navigation if the page is ready for snapshot as
   // indicated by at least one callback from SnapshotController.
   bool is_page_ready_for_snapshot_;
+
+  // Info for the offline page to capture. Null if the tab is not capturing
+  // current page.
+  std::unique_ptr<DownloadPageInfo> download_info_;
+
   // If empty, the tab does not have AndroidId and can not capture pages.
   std::string tab_id_;
 

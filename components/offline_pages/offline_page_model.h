@@ -81,10 +81,13 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
+  static const int64_t kInvalidOfflineId = 0;
+
   // Attempts to save a page addressed by |url| offline. Requires that the model
   // is loaded.  Generates a new offline id and returns
   // it. |proposed_offline_id| is used for the offline_id for the saved file if
-  // it is non-zero.  If it is zero, a new, random ID will be generated.
+  // it is non-zero.  If it is kInvalidOfflineId, a new, random ID will be
+  // generated.
   virtual void SavePage(const GURL& url,
                         const ClientId& client_id,
                         int64_t proposed_offline_id,

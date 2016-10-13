@@ -211,10 +211,8 @@ TEST_F(RecentTabHelperTest, Basic) {
 
 TEST_F(RecentTabHelperTest, SimpleCapture) {
   NavigateAndCommit(kTestPageUrl);
-  EXPECT_FALSE(recent_tab_helper()->is_page_ready_for_snapshot());
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   RunUntilIdle();
-  EXPECT_TRUE(recent_tab_helper()->is_page_ready_for_snapshot());
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
   EXPECT_EQ(1U, all_pages().size());
@@ -311,6 +309,22 @@ TEST_F(RecentTabHelperTest, FeatureNotEnabled) {
   GetAllPages();
   // No page should be captured.
   EXPECT_EQ(0U, all_pages().size());
+}
+
+TEST_F(RecentTabHelperTest, DownloadRequest) {
+  NavigateAndCommit(kTestPageUrl);
+  recent_tab_helper()->ObserveAndDownloadCurrentPage(
+      ClientId("download", "id1"), 153l);
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  RunUntilIdle();
+  EXPECT_TRUE(model()->is_loaded());
+  GetAllPages();
+  EXPECT_EQ(1U, all_pages().size());
+  const OfflinePageItem& page = all_pages()[0];
+  EXPECT_EQ(kTestPageUrl, page.url);
+  EXPECT_EQ("download", page.client_id.name_space);
+  EXPECT_EQ("id1", page.client_id.id);
+  EXPECT_EQ(153l, page.offline_id);
 }
 
 }  // namespace offline_pages

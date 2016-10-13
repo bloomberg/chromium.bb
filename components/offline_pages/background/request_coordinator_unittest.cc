@@ -948,10 +948,11 @@ TEST_F(RequestCoordinatorTest, MarkRequestCompleted) {
   // Add a request to the queue.
   offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
                                           base::Time::Now(), kUserRequested);
-  coordinator()->queue()->AddRequest(
-      request1, base::Bind(&RequestCoordinatorTest::AddRequestDone,
-                           base::Unretained(this)));
+  int64_t request_id = coordinator()->SavePageLater(
+      kUrl1, kClientId1, kUserRequested,
+      RequestCoordinator::RequestAvailability::DISABLED_FOR_OFFLINER);
   PumpLoop();
+  EXPECT_NE(request_id, 0l);
 
   // Ensure the start processing request stops before the completion callback.
   EnableOfflinerCallback(false);
@@ -963,7 +964,7 @@ TEST_F(RequestCoordinatorTest, MarkRequestCompleted) {
   EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
 
   // Call the method under test, making sure we send SUCCESS to the observer.
-  coordinator()->MarkRequestCompleted(kRequestId1);
+  coordinator()->MarkRequestCompleted(request_id);
   PumpLoop();
 
   // Our observer should have seen SUCCESS instead of REMOVED.

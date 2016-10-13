@@ -638,12 +638,22 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
 }
 
 void RequestCoordinator::EnableForOffliner(int64_t request_id) {
-    disabled_requests_.erase(request_id);
-    // If we are not busy, start processing right away.
-    StartProcessingIfConnected();
+  // Since the recent tab helper might call multiple times, ignore subsequent
+  // calls for a particular request_id.
+  if (disabled_requests_.find(request_id) == disabled_requests_.end())
+    return;
+  disabled_requests_.erase(request_id);
+  // If we are not busy, start processing right away.
+  StartProcessingIfConnected();
 }
 
 void RequestCoordinator::MarkRequestCompleted(int64_t request_id) {
+  // Since the recent tab helper might call multiple times, ignore subsequent
+  // calls for a particular request_id.
+  if (disabled_requests_.find(request_id) == disabled_requests_.end())
+    return;
+  disabled_requests_.erase(request_id);
+
   // Remove the request, but send out SUCCEEDED instead of removed.
   std::vector<int64_t> request_ids { request_id };
     queue_->RemoveRequests(
