@@ -243,6 +243,25 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
+  void SetBacklightsForcedOff(bool forced_off) override {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kSetBacklightsForcedOffMethod);
+    dbus::MessageWriter(&method_call).AppendBool(forced_off);
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+  void GetBacklightsForcedOff(
+      const GetBacklightsForcedOffCallback& callback) override {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kGetBacklightsForcedOffMethod);
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&PowerManagerClientImpl::OnGetBacklightsForcedOff,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
   base::Closure GetSuspendReadinessCallback() override {
     DCHECK(OnOriginThread());
     DCHECK(suspend_is_pending_);
@@ -468,10 +487,27 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
     dbus::MessageReader reader(response);
     double percent = 0.0;
-    if (!reader.PopDouble(&percent))
+    if (!reader.PopDouble(&percent)) {
       POWER_LOG(ERROR) << "Error reading response from powerd: "
                        << response->ToString();
+    }
     callback.Run(percent);
+  }
+
+  void OnGetBacklightsForcedOff(const GetBacklightsForcedOffCallback& callback,
+                                dbus::Response* response) {
+    if (!response) {
+      POWER_LOG(ERROR) << "Error calling "
+                       << power_manager::kGetBacklightsForcedOffMethod;
+      return;
+    }
+    dbus::MessageReader reader(response);
+    bool state = false;
+    if (!reader.PopBool(&state)) {
+      POWER_LOG(ERROR) << "Error reading response from powerd: "
+                       << response->ToString();
+    }
+    callback.Run(state);
   }
 
   void HandlePowerSupplyProperties(

@@ -63,6 +63,9 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   void SetPolicy(const power_manager::PowerManagementPolicy& policy) override;
   void SetIsProjecting(bool is_projecting) override;
   void SetPowerSource(const std::string& id) override;
+  void SetBacklightsForcedOff(bool forced_off) override;
+  void GetBacklightsForcedOff(
+      const GetBacklightsForcedOffCallback& callback) override;
   base::Closure GetSuspendReadinessCallback() override;
   int GetNumPendingSuspendReadinessCallbacks() override;
 
@@ -110,6 +113,10 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
 
   // Last projecting state set in SetIsProjecting().
   bool is_projecting_;
+
+  // Display and keyboard backlights (if present) forced off state set in
+  // SetBacklightsForcedOff().
+  bool backlights_forced_off_;
 
   // Video activity reports that we were requested to send, in the order they
   // were requested. True if fullscreen.

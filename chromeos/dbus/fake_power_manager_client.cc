@@ -24,6 +24,7 @@ FakePowerManagerClient::FakePowerManagerClient()
       num_set_is_projecting_calls_(0),
       num_pending_suspend_readiness_callbacks_(0),
       is_projecting_(false),
+      backlights_forced_off_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -132,6 +133,16 @@ void FakePowerManagerClient::SetPowerSource(const std::string& id) {
   }
 
   NotifyObservers();
+}
+
+void FakePowerManagerClient::SetBacklightsForcedOff(bool forced_off) {
+  backlights_forced_off_ = forced_off;
+}
+
+void FakePowerManagerClient::GetBacklightsForcedOff(
+    const GetBacklightsForcedOffCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, backlights_forced_off_));
 }
 
 base::Closure FakePowerManagerClient::GetSuspendReadinessCallback() {

@@ -27,6 +27,9 @@ namespace chromeos {
 // range [0.0, 100.0].
 typedef base::Callback<void(double)> GetScreenBrightnessPercentCallback;
 
+// Callback used for getting the current backlights forced off state.
+typedef base::Callback<void(bool)> GetBacklightsForcedOffCallback;
+
 // PowerManagerClient is used to communicate with the power manager.
 class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
  public:
@@ -183,6 +186,13 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   // Tells powerd to change the power source to the given ID. An empty string
   // causes powerd to switch to using the battery on devices with type-C ports.
   virtual void SetPowerSource(const std::string& id) = 0;
+
+  // Forces the display and keyboard backlights (if present) to |forced_off|.
+  virtual void SetBacklightsForcedOff(bool forced_off) = 0;
+
+  // Gets the display and keyboard backlights (if present) forced off state.
+  virtual void GetBacklightsForcedOff(
+      const GetBacklightsForcedOffCallback& callback) = 0;
 
   // Returns a callback that can be called by an observer to report
   // readiness for suspend.  See Observer::SuspendImminent().
