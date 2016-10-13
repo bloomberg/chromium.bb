@@ -1,0 +1,50 @@
+# Semantic character sequences
+# Prefix characters, only definitions as they should always occur as pairs with other characters.
+math \xf400 0
+math \xf401 0
+math \xf402 0
+math \xf403 0
+# Begin and end equations
+replace \xf32e
+replace \xf32f
+# Subscript and superscript
+math \xf320 26-126
+replace \xf401\xf320
+#always \xf402\xf320 345
+math \xf321 35-126
+replace \xf401\xf321
+#always \xf402\xf321 345
+# Underscript and overscript
+math \xf322 46-26-126
+replace \xf401\xf322
+#always \xf402\xf322 345
+math \xf323 46-35-126
+replace \xf401\xf323
+#always \xf402\xf323 345
+# Roots
+math \xf32a 146
+math \xf32b 346
+math \xf32c 146-35-126
+#always \xf403\xf32a 345
+# Fractions
+math \xf328 12356
+math \xf329 23456
+math \xf32d 46-34
+# Grouping symbols
+math \xf326 126
+#math \xf327 345
+
+# Protect against incorrect use of escapes or where escape not really needed
+# eg. brackets from mfenced
+replace \xf400
+replace \xf401
+replace \xf402
+replace \xf403
+
+# Corrections
+# Remove grouping from around superscripts and subscripts
+pass2 @35-126[$d1-5]@345 @35*
+pass2 @26-126[$d1-5]@345 @26*
+# Remove grouping from fractions
+pass2 @12356-126[$d1-5]@345-46-34_2 @12356*
+pass2 @46-34-126[$d1-5]@345-23456 @46-34*@23456
