@@ -29,6 +29,15 @@ static void runV8FullGc(v8::Isolate* isolate) {
   V8GCController::collectGarbage(isolate, false);
 }
 
+static bool DequeContains(const WTF::Deque<WrapperMarkingData>& deque,
+                          DeathAwareScriptWrappable* needle) {
+  for (auto item : deque) {
+    if (item.rawObjectPointer() == needle)
+      return true;
+  }
+  return false;
+}
+
 TEST(ScriptWrappableVisitorTest, ScriptWrappableVisitorTracesWrappers) {
   V8TestingScope scope;
   if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
@@ -40,7 +49,7 @@ TEST(ScriptWrappableVisitorTest, ScriptWrappableVisitorTracesWrappers) {
 
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::create();
   DeathAwareScriptWrappable* dependency = DeathAwareScriptWrappable::create();
-  target->setDependency(dependency);
+  target->setRawDependency(dependency);
 
   HeapObjectHeader* targetHeader = HeapObjectHeader::fromPayload(target);
   HeapObjectHeader* dependencyHeader =
@@ -209,7 +218,7 @@ TEST(ScriptWrappableVisitorTest, NonMarkedObjectDoesNothingOnWriteBarrierHit) {
 
   EXPECT_TRUE(visitor->getMarkingDeque()->isEmpty());
 
-  target->setDependency(dependency);
+  target->setRawDependency(dependency);
 
   EXPECT_TRUE(visitor->getMarkingDeque()->isEmpty());
 }
@@ -225,14 +234,22 @@ TEST(ScriptWrappableVisitorTest,
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
 
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::create();
-  DeathAwareScriptWrappable* dependency = DeathAwareScriptWrappable::create();
+  DeathAwareScriptWrappable* dependencies[] = {
+      DeathAwareScriptWrappable::create(), DeathAwareScriptWrappable::create(),
+      DeathAwareScriptWrappable::create(), DeathAwareScriptWrappable::create(),
+      DeathAwareScriptWrappable::create()};
 
   HeapObjectHeader::fromPayload(target)->markWrapperHeader();
-  HeapObjectHeader::fromPayload(dependency)->markWrapperHeader();
+  for (int i = 0; i < 5; i++) {
+    HeapObjectHeader::fromPayload(dependencies[i])->markWrapperHeader();
+  }
 
   EXPECT_TRUE(visitor->getMarkingDeque()->isEmpty());
 
-  target->setDependency(dependency);
+  target->setRawDependency(dependencies[0]);
+  target->setWrappedDependency(dependencies[1]);
+  target->addWrappedVectorDependency(dependencies[2]);
+  target->addWrappedHashMapDependency(dependencies[3], dependencies[4]);
 
   EXPECT_TRUE(visitor->getMarkingDeque()->isEmpty());
 }
@@ -248,15 +265,23 @@ TEST(ScriptWrappableVisitorTest,
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
 
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::create();
-  DeathAwareScriptWrappable* dependency = DeathAwareScriptWrappable::create();
+  DeathAwareScriptWrappable* dependencies[] = {
+      DeathAwareScriptWrappable::create(), DeathAwareScriptWrappable::create(),
+      DeathAwareScriptWrappable::create(), DeathAwareScriptWrappable::create(),
+      DeathAwareScriptWrappable::create()};
 
   HeapObjectHeader::fromPayload(target)->markWrapperHeader();
 
   EXPECT_TRUE(visitor->getMarkingDeque()->isEmpty());
 
-  target->setDependency(dependency);
+  target->setRawDependency(dependencies[0]);
+  target->setWrappedDependency(dependencies[1]);
+  target->addWrappedVectorDependency(dependencies[2]);
+  target->addWrappedHashMapDependency(dependencies[3], dependencies[4]);
 
-  EXPECT_EQ(visitor->getMarkingDeque()->first().rawObjectPointer(), dependency);
+  for (int i = 0; i < 5; i++) {
+    EXPECT_TRUE(DequeContains(*visitor->getMarkingDeque(), dependencies[i]));
+  }
 
   visitor->getMarkingDeque()->clear();
   visitor->getVerifierDeque()->clear();

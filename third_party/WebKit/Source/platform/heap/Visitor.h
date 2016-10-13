@@ -52,6 +52,8 @@ template <typename T>
 class TraceEagerlyTrait;
 class ThreadState;
 class Visitor;
+template <typename T>
+class TraceWrapperMember;
 
 // The TraceMethodDelegate is used to convert a trace method for type T to a
 // TraceCallback.  This allows us to pass a type's trace method as a parameter
@@ -156,6 +158,11 @@ class VisitorHelper {
   template <typename T>
   void trace(const Member<T>& t) {
     mark(t.get());
+  }
+
+  template <typename T>
+  void trace(const TraceWrapperMember<T>& t) {
+    trace(*(static_cast<const Member<T>*>(&t)));
   }
 
   // Fallback method used only when we need to trace raw pointers of T.

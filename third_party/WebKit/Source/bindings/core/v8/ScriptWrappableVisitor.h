@@ -256,5 +256,68 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
      */
   v8::EmbedderReachableReferenceReporter* m_reporter = nullptr;
 };
+
+/**
+ * TraceWrapperMember is used for Member fields that should participate in
+ * wrapper tracing, i.e., strongly hold a ScriptWrappable alive. All
+ * TraceWrapperMember fields must be traced in the class' traceWrappers method.
+ */
+template <class T>
+class TraceWrapperMember : public Member<T> {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
+ public:
+  TraceWrapperMember(void* parent, T* raw) : Member<T>(raw), m_parent(parent) {
+#if DCHECK_IS_ON()
+    DCHECK(!m_parent || HeapObjectHeader::fromPayload(m_parent)->checkHeader());
+#endif
+    ScriptWrappableVisitor::writeBarrier(m_parent, raw);
+  }
+  TraceWrapperMember(WTF::HashTableDeletedValueType x)
+      : Member<T>(x), m_parent(nullptr) {}
+
+  /**
+   * Copying a TraceWrapperMember means that its backpointer will also be
+   * copied.
+   */
+  TraceWrapperMember(const TraceWrapperMember& other) { *this = other; }
+
+  template <typename U>
+  TraceWrapperMember& operator=(const TraceWrapperMember<U>& other) {
+    DCHECK(other.m_parent);
+    m_parent = other.m_parent;
+    Member<T>::operator=(other);
+    ScriptWrappableVisitor::writeBarrier(m_parent, other);
+    return *this;
+  }
+
+  template <typename U>
+  TraceWrapperMember& operator=(const Member<U>& other) {
+    DCHECK(m_parent);
+    Member<T>::operator=(other);
+    ScriptWrappableVisitor::writeBarrier(m_parent, other);
+    return *this;
+  }
+
+  template <typename U>
+  TraceWrapperMember& operator=(U* other) {
+    DCHECK(m_parent);
+    Member<T>::operator=(other);
+    ScriptWrappableVisitor::writeBarrier(m_parent, other);
+    return *this;
+  }
+
+  TraceWrapperMember& operator=(std::nullptr_t) {
+    // No need for a write barrier when assigning nullptr.
+    Member<T>::operator=(nullptr);
+    return *this;
+  }
+
+ private:
+  /**
+   * The parent object holding strongly onto the actual Member.
+   */
+  void* m_parent;
+};
 }
 #endif

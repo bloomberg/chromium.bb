@@ -37,19 +37,51 @@ class DeathAwareScriptWrappable
     s_instance = instance;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_dependency); }
-
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-    visitor->traceWrappers(m_dependency);
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_rawDependency);
+    visitor->trace(m_wrappedDependency);
+    visitor->trace(m_wrappedVectorDependency);
+    visitor->trace(m_wrappedHashMapDependency);
   }
 
-  void setDependency(DeathAwareScriptWrappable* dependency) {
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->traceWrappers(m_rawDependency);
+    visitor->traceWrappers(m_wrappedDependency);
+    for (auto dep : m_wrappedVectorDependency) {
+      visitor->traceWrappers(dep);
+    }
+    for (auto pair : m_wrappedHashMapDependency) {
+      visitor->traceWrappers(pair.key);
+      visitor->traceWrappers(pair.value);
+    }
+  }
+
+  void setRawDependency(DeathAwareScriptWrappable* dependency) {
     ScriptWrappableVisitor::writeBarrier(this, dependency);
-    m_dependency = dependency;
+    m_rawDependency = dependency;
+  }
+
+  void setWrappedDependency(DeathAwareScriptWrappable* dependency) {
+    m_wrappedDependency = dependency;
+  }
+
+  void addWrappedVectorDependency(DeathAwareScriptWrappable* dependency) {
+    m_wrappedVectorDependency.append(Wrapper(this, dependency));
+  }
+
+  void addWrappedHashMapDependency(DeathAwareScriptWrappable* key,
+                                   DeathAwareScriptWrappable* value) {
+    m_wrappedHashMapDependency.add(Wrapper(this, key), Wrapper(this, value));
   }
 
  private:
-  Member<DeathAwareScriptWrappable> m_dependency;
+  typedef TraceWrapperMember<DeathAwareScriptWrappable> Wrapper;
+  DeathAwareScriptWrappable() : m_wrappedDependency(this, nullptr) {}
+
+  Member<DeathAwareScriptWrappable> m_rawDependency;
+  Wrapper m_wrappedDependency;
+  HeapVector<Wrapper> m_wrappedVectorDependency;
+  HeapHashMap<Wrapper, Wrapper> m_wrappedHashMapDependency;
 };
 
 }  // namespace blink
