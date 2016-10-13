@@ -42,7 +42,10 @@ class WPTServe(server_base.ServerBase):
         if self._port_obj.host.filesystem.exists(path_to_ws_handlers):
             start_cmd += ['--ws_doc_root', path_to_ws_handlers]
 
-        self._stdout = self._stderr = self._executive.DEVNULL
+        # TODO(tkent): Do not suppress console output on Windows until
+        # crbug.com/623613 is resolved.
+        if not self._platform.is_win():
+            self._stdout = self._stderr = self._executive.DEVNULL
         # TODO(burnik): We should stop setting the CWD once WPT can be run without it.
         self._cwd = path_to_wpt_root
         self._env = {'PYTHONPATH': path_to_thirdparty}
