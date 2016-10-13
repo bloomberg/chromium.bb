@@ -36,8 +36,7 @@ void CC_EXPORT ConcatInverseSurfaceContentsScale(const EffectNode* effect_node,
                                                  gfx::Transform* transform);
 // Computes combined clips for every node in |clip_tree|. This function requires
 // that |transform_tree| has been updated via |ComputeTransforms|.
-void CC_EXPORT ComputeClips(ClipTree* clip_tree,
-                            const TransformTree& transform_tree,
+void CC_EXPORT ComputeClips(PropertyTrees* property_trees,
                             bool non_root_surfaces_enabled);
 
 // Computes combined (screen space) transforms for every node in the transform
@@ -69,11 +68,6 @@ void CC_EXPORT FindLayersThatNeedUpdates(LayerTree* layer_tree,
                                          const TransformTree& transform_tree,
                                          const EffectTree& effect_tree,
                                          LayerList* update_layer_list);
-
-void CC_EXPORT
-ComputeVisibleRectsForTesting(PropertyTrees* property_trees,
-                              bool can_render_to_separate_surface,
-                              LayerList* visible_layer_list);
 
 void CC_EXPORT ComputeVisibleRects(LayerImpl* root_layer,
                                    PropertyTrees* property_trees,

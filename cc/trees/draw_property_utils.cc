@@ -320,11 +320,9 @@ static gfx::RectF ComputeAccumulatedClipInRootSpaceForVisibleRect(
   return accumulated_clip_rect;
 }
 
-template <typename LayerType>
-void CalculateClipRects(
-    const typename LayerType::LayerListType& visible_layer_list,
-    const PropertyTrees* property_trees,
-    bool non_root_surfaces_enabled) {
+void CalculateClipRects(const std::vector<LayerImpl*>& visible_layer_list,
+                        const PropertyTrees* property_trees,
+                        bool non_root_surfaces_enabled) {
   const ClipTree& clip_tree = property_trees->clip_tree;
   for (auto& layer : visible_layer_list) {
     const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
@@ -1118,8 +1116,8 @@ static void ComputeVisibleRectsInternal(
   FindLayersThatNeedUpdates(root_layer->layer_tree_impl(),
                             property_trees->transform_tree,
                             property_trees->effect_tree, visible_layer_list);
-  CalculateClipRects<LayerImpl>(*visible_layer_list, property_trees,
-                                can_render_to_separate_surface);
+  CalculateClipRects(*visible_layer_list, property_trees,
+                     can_render_to_separate_surface);
   CalculateVisibleRects(*visible_layer_list, property_trees,
                         can_render_to_separate_surface);
 }
@@ -1270,33 +1268,18 @@ bool LayerNeedsUpdate(LayerImpl* layer,
 gfx::Transform DrawTransform(const LayerImpl* layer,
                              const TransformTree& transform_tree,
                              const EffectTree& effect_tree) {
-  gfx::Transform xform;
-  const bool owns_non_root_surface =
-      !IsRootLayer(layer) && layer->render_surface();
-  if (!owns_non_root_surface) {
-    // If you're not the root, or you don't own a surface, you need to apply
-    // your local offset.
-    xform =
-        transform_tree.property_trees()->non_root_surfaces_enabled
-            ? transform_tree.ToTarget(layer->transform_tree_index(),
-                                      layer->render_target_effect_tree_index())
-            : transform_tree.ToScreen(layer->transform_tree_index());
-    if (layer->should_flatten_transform_from_property_tree())
-      xform.FlattenTo2d();
-    xform.Translate(layer->offset_to_transform_parent().x(),
-                    layer->offset_to_transform_parent().y());
-  } else {
-    // Surfaces need to apply their surface contents scale.
-    const EffectNode* effect_node =
-        effect_tree.Node(layer->effect_tree_index());
-    xform.Scale(effect_node->surface_contents_scale.x(),
-                effect_node->surface_contents_scale.y());
-#if DCHECK_IS_ON()
-    VerifySurfaceContentsScalesMatch(layer->effect_tree_index(),
-                                     layer->transform_tree_index(), effect_tree,
-                                     transform_tree);
-#endif
-  }
+  // TransformTree::ToTarget computes transform between the layer's transform
+  // node and surface's transform node and scales it by the surface's content
+  // scale.
+  gfx::Transform xform =
+      transform_tree.property_trees()->non_root_surfaces_enabled
+          ? transform_tree.ToTarget(layer->transform_tree_index(),
+                                    layer->render_target_effect_tree_index())
+          : transform_tree.ToScreen(layer->transform_tree_index());
+  if (layer->should_flatten_transform_from_property_tree())
+    xform.FlattenTo2d();
+  xform.Translate(layer->offset_to_transform_parent().x(),
+                  layer->offset_to_transform_parent().y());
   return xform;
 }
 

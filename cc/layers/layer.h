@@ -206,7 +206,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetScrollParent(Layer* parent);
 
   Layer* scroll_parent() { return inputs_.scroll_parent; }
-  const Layer* scroll_parent() const { return inputs_.scroll_parent; }
 
   std::set<Layer*>* scroll_children() { return scroll_children_.get(); }
   const std::set<Layer*>* scroll_children() const {
@@ -216,7 +215,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetClipParent(Layer* ancestor);
 
   Layer* clip_parent() { return inputs_.clip_parent; }
-  const Layer* clip_parent() const { return inputs_.clip_parent; }
 
   std::set<Layer*>* clip_children() { return clip_children_.get(); }
   const std::set<Layer*>* clip_children() const {
@@ -317,8 +315,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetFiltersOrigin(const gfx::PointF& origin);
   gfx::PointF filters_origin() const { return inputs_.filters_origin; }
-
-  bool has_mask() const { return !!inputs_.mask_layer.get(); }
 
   int NumDescendantsThatDrawContent() const;
 
@@ -460,8 +456,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     visible_layer_rect_ = rect;
   }
 
-  void set_clip_rect(const gfx::Rect& rect) {}
-
   void SetSubtreePropertyChanged();
   bool subtree_property_changed() const { return subtree_property_changed_; }
 
@@ -499,7 +493,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   Layer();
 
   LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
-  const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
   // These SetNeeds functions are in order of severity of update:
   //
