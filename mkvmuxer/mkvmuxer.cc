@@ -1403,6 +1403,8 @@ VideoTrack::VideoTrack(unsigned int* seed)
     : Track(seed),
       display_height_(0),
       display_width_(0),
+      pixel_height_(0),
+      pixel_width_(0),
       crop_left_(0),
       crop_right_(0),
       crop_top_(0),
@@ -1461,11 +1463,13 @@ bool VideoTrack::Write(IMkvWriter* writer) const {
   if (payload_position < 0)
     return false;
 
-  if (!WriteEbmlElement(writer, libwebm::kMkvPixelWidth,
-                        static_cast<uint64>(width_)))
+  if (!WriteEbmlElement(
+          writer, libwebm::kMkvPixelWidth,
+          static_cast<uint64>((pixel_width_ > 0) ? pixel_width_ : width_)))
     return false;
-  if (!WriteEbmlElement(writer, libwebm::kMkvPixelHeight,
-                        static_cast<uint64>(height_)))
+  if (!WriteEbmlElement(
+          writer, libwebm::kMkvPixelHeight,
+          static_cast<uint64>((pixel_height_ > 0) ? pixel_height_ : height_)))
     return false;
   if (display_width_ > 0) {
     if (!WriteEbmlElement(writer, libwebm::kMkvDisplayWidth,
@@ -1581,10 +1585,12 @@ bool VideoTrack::SetProjection(const Projection& projection) {
 }
 
 uint64_t VideoTrack::VideoPayloadSize() const {
-  uint64_t size =
-      EbmlElementSize(libwebm::kMkvPixelWidth, static_cast<uint64>(width_));
-  size +=
-      EbmlElementSize(libwebm::kMkvPixelHeight, static_cast<uint64>(height_));
+  uint64_t size = EbmlElementSize(
+      libwebm::kMkvPixelWidth,
+      static_cast<uint64>((pixel_width_ > 0) ? pixel_width_ : width_));
+  size += EbmlElementSize(
+      libwebm::kMkvPixelHeight,
+      static_cast<uint64>((pixel_height_ > 0) ? pixel_height_ : height_));
   if (display_width_ > 0)
     size += EbmlElementSize(libwebm::kMkvDisplayWidth,
                             static_cast<uint64>(display_width_));
@@ -3534,7 +3540,6 @@ bool Segment::AddGenericFrame(const Frame* frame) {
 
   if (frame_created)
     delete frame;
-
   return true;
 }
 

@@ -59,6 +59,8 @@ void Usage() {
   printf("Video options:\n");
   printf("  -display_width <int>        Display width in pixels\n");
   printf("  -display_height <int>       Display height in pixels\n");
+  printf("  -pixel_width <int>          Override pixel width\n");
+  printf("  -pixel_height <int>         Override pixel height\n");
   printf("  -stereo_mode <int>          3D video mode\n");
   printf("\n");
   printf("VP9 options:\n");
@@ -177,6 +179,8 @@ int main(int argc, char* argv[]) {
 
   uint64_t display_width = 0;
   uint64_t display_height = 0;
+  uint64_t pixel_width = 0;
+  uint64_t pixel_height = 0;
   uint64_t stereo_mode = 0;
   int vp9_profile = -1;  // No profile set.
   int vp9_level = -1;  // No level set.
@@ -242,6 +246,10 @@ int main(int argc, char* argv[]) {
       display_width = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-display_height", argv[i]) && i < argc_check) {
       display_height = strtol(argv[++i], &end, 10);
+    } else if (!strcmp("-pixel_width", argv[i]) && i < argc_check) {
+      pixel_width = strtol(argv[++i], &end, 10);
+    } else if (!strcmp("-pixel_height", argv[i]) && i < argc_check) {
+      pixel_height = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-stereo_mode", argv[i]) && i < argc_check) {
       stereo_mode = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-profile", argv[i]) && i < argc_check) {
@@ -447,6 +455,10 @@ int main(int argc, char* argv[]) {
         video->set_display_width(display_width);
       if (display_height > 0)
         video->set_display_height(display_height);
+      if (pixel_width > 0)
+        video->set_pixel_width(pixel_width);
+      if (pixel_height > 0)
+        video->set_pixel_height(pixel_height);
       if (stereo_mode > 0)
         video->SetStereoMode(stereo_mode);
 
