@@ -35,7 +35,8 @@ class InstallAttributes {
     LOCK_SET_ERROR = 5,        // Failed to set attributes.
     LOCK_FINALIZE_ERROR = 6,   // Backend failed to lock.
     LOCK_READBACK_ERROR = 7,   // Inconsistency reading back registration data.
-    LOCK_WRONG_DOMAIN = 8,     // Device already registered to another domain.
+    LOCK_WRONG_DOMAIN = 8,     // Device already registered to another domain or
+                               // other mismatch of other attributes.
     LOCK_WRONG_MODE = 9,       // Device already locked to a different mode.
   };
 
@@ -51,7 +52,7 @@ class InstallAttributes {
 
   // Tries to read install attributes from the cache file which is created early
   // during the boot process.  The cache file is used to work around slow
-  // cryptohome startup, which takes a while to register its DBus interface.
+  // cryptohome startup, which takes a while to register its D-Bus interface.
   // (See http://crosbug.com/37367 for background on this.)
   void Init(const base::FilePath& cache_file);
 
@@ -61,13 +62,15 @@ class InstallAttributes {
   // ReadAttributesIfReady().
   void ReadImmutableAttributes(const base::Closure& callback);
 
-  // Locks the device to be an enterprise device registered by the given user.
-  // This can also be called after the lock has already been taken, in which
-  // case it checks that the passed user agrees with the locked attribute.
+  // Locks the device into |device_mode|.  Depending on |device_mode|, a
+  // specific subset of |domain|, |realm| and |device_id| must be set.  Can also
+  // be called after the lock has already been taken, in which case it checks
+  // that the passed parameters fully agree with the locked attributes.
   // |callback| must not be null and is called with the result.  Must not be
   // called while a previous LockDevice() invocation is still pending.
-  void LockDevice(const std::string& user,
-                  policy::DeviceMode device_mode,
+  void LockDevice(policy::DeviceMode device_mode,
+                  const std::string& domain,
+                  const std::string& realm,
                   const std::string& device_id,
                   const LockResultCallback& callback);
 
@@ -77,41 +80,46 @@ class InstallAttributes {
   // Checks whether this is a consumer kiosk enabled device.
   bool IsConsumerKioskDeviceWithAutoLaunch();
 
-  // Gets the domain this device belongs to or an empty string if the device is
-  // not an enterprise device.
-  std::string GetDomain() const;
+  // Return the mode the device was enrolled to. The return value for devices
+  // that are not locked yet is DEVICE_MODE_UNKNOWN.
+  policy::DeviceMode GetMode() const { return registration_mode_; }
 
-  // Gets the device id that was generated when the device was registered.
+  // Return the domain this device belongs to or an empty string if the device
+  // is not a cloud-managed enterprise device.
+  std::string GetDomain() const { return registration_domain_; }
+
+  // Return the realm this device belongs to or an empty string if the device is
+  // not an AD enterprise device.
+  std::string GetRealm() const { return registration_realm_; }
+
+  // Return the device id that was generated when the device was registered.
   // Returns an empty string if the device is not an enterprise device or the
   // device id was not stored in the lockbox (prior to R19).
-  std::string GetDeviceId();
-
-  // Gets the mode the device was enrolled to. The return value for devices that
-  // are not locked yet will be DEVICE_MODE_UNKNOWN.
-  policy::DeviceMode GetMode();
+  std::string GetDeviceId() const { return registration_device_id_; }
 
  protected:
   // True if install attributes have been read successfully.  False if read
   // failed or no read attempt was made.
-  bool device_locked_;
+  bool device_locked_ = false;
 
   // Whether the TPM / install attributes consistency check is running.
-  bool consistency_check_running_;
+  bool consistency_check_running_ = false;
 
   // To be run after the consistency check has finished.
   base::Closure post_check_action_;
 
   // Wether the LockDevice() initiated TPM calls are running.
-  bool device_lock_running_;
+  bool device_lock_running_ = false;
 
-  std::string registration_user_;
+  // The actual install attributes.  Populated by DecodeInstallAttributes()
+  // exclusively.
+  policy::DeviceMode registration_mode_ = policy::DEVICE_MODE_PENDING;
   std::string registration_domain_;
+  std::string registration_realm_;
   std::string registration_device_id_;
-  policy::DeviceMode registration_mode_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstallAttributesTest, DeviceLockedFromOlderVersion);
-  FRIEND_TEST_ALL_PREFIXES(InstallAttributesTest, GetRegistrationUser);
   FRIEND_TEST_ALL_PREFIXES(InstallAttributesTest, Init);
   FRIEND_TEST_ALL_PREFIXES(InstallAttributesTest, InitForConsumerKiosk);
   FRIEND_TEST_ALL_PREFIXES(InstallAttributesTest, LockCanonicalize);
@@ -121,13 +129,14 @@ class InstallAttributes {
   // Constants for the possible device modes that can be stored in the lockbox.
   static const char kConsumerDeviceMode[];
   static const char kEnterpriseDeviceMode[];
+  static const char kEnterpriseADDeviceMode[];
   static const char kLegacyRetailDeviceMode[];
   static const char kConsumerKioskDeviceMode[];
-  static const char kUnknownDeviceMode[];
 
   // Field names in the lockbox.
   static const char kAttrEnterpriseDeviceId[];
   static const char kAttrEnterpriseDomain[];
+  static const char kAttrEnterpriseRealm[];
   static const char kAttrEnterpriseMode[];
   static const char kAttrEnterpriseOwned[];
   static const char kAttrEnterpriseUser[];
@@ -143,7 +152,9 @@ class InstallAttributes {
   // Translates strings used in the lockbox to DeviceMode values.
   policy::DeviceMode GetDeviceModeFromString(const std::string& mode);
 
-  // Decodes the install attributes provided in |attr_map|.
+  // Decode the install attributes provided in |attr_map| (including some
+  // normalization and processing for backward compatibility) and guarantee that
+  // |registration_*| members are set self-consistently.
   void DecodeInstallAttributes(
       const std::map<std::string, std::string>& attr_map);
 
@@ -154,15 +165,19 @@ class InstallAttributes {
 
   // Helper for LockDevice(). Handles the result of InstallAttributesIsReady()
   // and continue processing LockDevice if the result is true.
-  void LockDeviceIfAttributesIsReady(const std::string& user,
-                                     policy::DeviceMode device_mode,
+  void LockDeviceIfAttributesIsReady(policy::DeviceMode device_mode,
+                                     const std::string& domain,
+                                     const std::string& realm,
                                      const std::string& device_id,
                                      const LockResultCallback& callback,
                                      DBusMethodCallStatus call_status,
                                      bool result);
 
   // Confirms the registered user and invoke the callback.
-  void OnReadImmutableAttributes(const std::string& user,
+  void OnReadImmutableAttributes(policy::DeviceMode mode,
+                                 const std::string& domain,
+                                 const std::string& realm,
+                                 const std::string& device_id,
                                  const LockResultCallback& callback);
 
   // Check state of install attributes against TPM lock state and generate UMA
@@ -175,10 +190,6 @@ class InstallAttributes {
   void OnTpmOwnerCheckCompleted(int dbus_retries_remaining,
                                 DBusMethodCallStatus call_status,
                                 bool result);
-
-  // Gets the user that registered the device. Returns an empty string if the
-  // device is not an enterprise device.
-  std::string GetRegistrationUser() const;
 
   CryptohomeClient* cryptohome_client_;
 

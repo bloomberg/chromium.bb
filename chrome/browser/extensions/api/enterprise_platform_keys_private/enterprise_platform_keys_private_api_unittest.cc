@@ -170,11 +170,7 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
     ON_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
         .WillByDefault(Invoke(GetCertificateCallbackTrue));
 
-    // Set the Enterprise install attributes.
-    stub_install_attributes_.SetDomain("google.com");
-    stub_install_attributes_.SetRegistrationUser(kUserEmail);
-    stub_install_attributes_.SetDeviceId("device_id");
-    stub_install_attributes_.SetMode(policy::DEVICE_MODE_ENTERPRISE);
+    stub_install_attributes_.SetEnterprise("google.com", "device_id");
 
     settings_helper_.ReplaceProvider(chromeos::kDeviceAttestationEnabled);
     settings_helper_.SetBoolean(chromeos::kDeviceAttestationEnabled, true);
@@ -262,7 +258,7 @@ TEST_F(EPKPChallengeMachineKeyTest, ChallengeBadBase64) {
 }
 
 TEST_F(EPKPChallengeMachineKeyTest, NonEnterpriseDevice) {
-  stub_install_attributes_.SetRegistrationUser("");
+  stub_install_attributes_.SetConsumer();
 
   EXPECT_EQ(EPKPChallengeMachineKey::kNonEnterpriseDeviceError,
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
@@ -477,7 +473,7 @@ TEST_F(EPKPChallengeUserKeyTest, KeyNotRegistered) {
 }
 
 TEST_F(EPKPChallengeUserKeyTest, PersonalDevice) {
-  stub_install_attributes_.SetRegistrationUser("");
+  stub_install_attributes_.SetConsumer();
 
   // Currently personal devices are not supported.
   EXPECT_EQ(GetCertificateError(kUserRejected),

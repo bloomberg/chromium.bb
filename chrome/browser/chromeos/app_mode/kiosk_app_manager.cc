@@ -259,8 +259,9 @@ void KioskAppManager::EnableConsumerKioskAutoLaunch(
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   connector->GetInstallAttributes()->LockDevice(
-      std::string(),  // user
       policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,
+      std::string(),  // domain
+      std::string(),  // realm
       std::string(),  // device_id
       base::Bind(
           &KioskAppManager::OnLockDevice, base::Unretained(this), callback));

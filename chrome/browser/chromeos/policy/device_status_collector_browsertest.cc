@@ -251,10 +251,10 @@ class DeviceStatusCollectorTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
         io_thread_(content::BrowserThread::IO, &message_loop_),
-        install_attributes_("managed.com",
-                            "user@managed.com",
-                            "device_id",
-                            DEVICE_MODE_ENTERPRISE),
+        install_attributes_(
+            chromeos::ScopedStubInstallAttributes::CreateEnterprise(
+                "managed.com",
+                "device_id")),
         settings_helper_(false),
         user_manager_(new chromeos::MockUserManager()),
         user_manager_enabler_(user_manager_),

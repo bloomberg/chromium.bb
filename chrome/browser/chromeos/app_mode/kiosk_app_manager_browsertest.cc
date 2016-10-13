@@ -292,8 +292,9 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     connector->GetInstallAttributes()->LockDevice(
-        "user@domain.com",
         policy::DEVICE_MODE_ENTERPRISE,
+        "domain.com",
+        std::string(),  // realm
         "device-id",
         base::Bind(
             &OnEnterpriseDeviceLock, lock_result.get(), runner->QuitClosure()));

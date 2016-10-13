@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 
@@ -316,9 +317,10 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
     DeviceCloudPolicyValidator* validator) {
   CHECK_EQ(STEP_VALIDATION, enrollment_step_);
   if (validator->success()) {
-    policy_ = std::move(validator->policy());
-    username_ = validator->policy_data()->username();
+    std::string username = validator->policy_data()->username();
+    domain_ = gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
     device_id_ = validator->policy_data()->device_id();
+    policy_ = std::move(validator->policy());
     request_token_ = validator->policy_data()->request_token();
     enrollment_step_ = STEP_ROBOT_AUTH_FETCH;
     client_->FetchRobotAuthCodes(auth_token_);
@@ -405,7 +407,7 @@ void EnrollmentHandlerChromeOS::StartLockDevice() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   install_attributes_->LockDevice(
-      username_, device_mode_, device_id_,
+      device_mode_, domain_, std::string() /* realm */, device_id_,
       base::Bind(&EnrollmentHandlerChromeOS::HandleLockDeviceResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }

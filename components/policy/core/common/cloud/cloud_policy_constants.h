@@ -117,6 +117,7 @@ enum DeviceMode {
                                    // device.
   DEVICE_MODE_ENTERPRISE,          // The device is enrolled as an enterprise
                                    // device.
+  DEVICE_MODE_ENTERPRISE_AD,       // The device has joined AD.
   DEVICE_MODE_LEGACY_RETAIL_MODE,  // The device is enrolled as a retail kiosk
                                    // device. Even though retail mode is
                                    // deprecated, we still check for this device

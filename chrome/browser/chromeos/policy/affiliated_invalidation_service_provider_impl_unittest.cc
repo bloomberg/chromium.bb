@@ -193,10 +193,9 @@ AffiliatedInvalidationServiceProviderImplTest()
       profile_invalidation_service_(nullptr),
       fake_user_manager_(new chromeos::FakeChromeUserManager),
       user_manager_enabler_(fake_user_manager_),
-      install_attributes_("example.com",
-                          "user@example.com",
-                          "device_id",
-                          DEVICE_MODE_ENTERPRISE),
+      install_attributes_(
+          chromeos::ScopedStubInstallAttributes::CreateEnterprise(
+              "example.com", "device_id")),
       profile_manager_(TestingBrowserProcess::GetGlobal()) {
 }
 

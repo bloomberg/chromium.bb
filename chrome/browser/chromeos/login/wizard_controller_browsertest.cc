@@ -722,10 +722,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
  protected:
   WizardControllerDeviceStateTest()
-      : install_attributes_(std::string(),
-                            std::string(),
-                            std::string(),
-                            policy::DEVICE_MODE_NOT_SET) {
+      : install_attributes_(ScopedStubInstallAttributes::CreateUnset()) {
     fake_statistics_provider_.SetMachineStatistic(
         system::kSerialNumberKey, "test");
     fake_statistics_provider_.SetMachineStatistic(

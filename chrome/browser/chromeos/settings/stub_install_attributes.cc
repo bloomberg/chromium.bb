@@ -15,34 +15,58 @@ StubInstallAttributes::StubInstallAttributes() : InstallAttributes(nullptr) {
   device_locked_ = true;
 }
 
-void StubInstallAttributes::SetDomain(const std::string& domain) {
+void StubInstallAttributes::Clear() {
+  registration_mode_ = policy::DEVICE_MODE_NOT_SET;
+  registration_domain_.clear();
+  registration_realm_.clear();
+  registration_device_id_.clear();
+}
+
+void StubInstallAttributes::SetConsumer() {
+  registration_mode_ = policy::DEVICE_MODE_CONSUMER;
+  registration_domain_.clear();
+  registration_realm_.clear();
+  registration_device_id_.clear();
+}
+
+void StubInstallAttributes::SetEnterprise(const std::string& domain,
+                                          const std::string& device_id) {
+  registration_mode_ = policy::DEVICE_MODE_ENTERPRISE;
   registration_domain_ = domain;
+  registration_realm_.clear();
+  registration_device_id_ = device_id;
 }
 
-void StubInstallAttributes::SetRegistrationUser(const std::string& user) {
-  registration_user_ = user;
-}
-
-void StubInstallAttributes::SetDeviceId(const std::string& id) {
-  registration_device_id_ = id;
-}
-
-void StubInstallAttributes::SetMode(policy::DeviceMode mode) {
-  registration_mode_ = mode;
-}
-
-ScopedStubInstallAttributes::ScopedStubInstallAttributes(
-    const std::string& domain,
-    const std::string& registration_user,
-    const std::string& device_id,
-    policy::DeviceMode mode) {
+// static
+ScopedStubInstallAttributes ScopedStubInstallAttributes::CreateUnset() {
   StubInstallAttributes* attributes = new StubInstallAttributes();
-  attributes->SetDomain(domain);
-  attributes->SetRegistrationUser(registration_user);
-  attributes->SetDeviceId(device_id);
-  attributes->SetMode(mode);
+  attributes->Clear();
   policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
       attributes);
+  return ScopedStubInstallAttributes();
+}
+
+// static
+ScopedStubInstallAttributes ScopedStubInstallAttributes::CreateConsumer() {
+  StubInstallAttributes* attributes = new StubInstallAttributes();
+  attributes->SetConsumer();
+  policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
+      attributes);
+  return ScopedStubInstallAttributes();
+}
+
+// static
+ScopedStubInstallAttributes ScopedStubInstallAttributes::CreateEnterprise(
+    const std::string& domain,
+    const std::string& device_id) {
+  StubInstallAttributes* attributes = new StubInstallAttributes();
+  attributes->SetEnterprise(domain, device_id);
+  policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
+      attributes);
+  return ScopedStubInstallAttributes();
+}
+
+ScopedStubInstallAttributes::ScopedStubInstallAttributes() {
 }
 
 ScopedStubInstallAttributes::~ScopedStubInstallAttributes() {

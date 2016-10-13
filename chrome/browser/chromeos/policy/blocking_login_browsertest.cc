@@ -138,11 +138,11 @@ class BlockingLoginTest
         ->browser_policy_connector_chromeos();
   }
 
-  void EnrollDevice(const std::string& username) {
+  void EnrollDevice(const std::string& domain) {
     base::RunLoop loop;
     InstallAttributes::LockResult result;
     browser_policy_connector()->GetInstallAttributes()->LockDevice(
-        username, policy::DEVICE_MODE_ENTERPRISE, "100200300",
+        policy::DEVICE_MODE_ENTERPRISE, domain, std::string(), "100200300",
         base::Bind(&CopyLockResult, &loop, &result));
     loop.Run();
     EXPECT_EQ(InstallAttributes::LOCK_SUCCESS, result);
@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_P(BlockingLoginTest, LoginBlocksForUser) {
 
   // Enroll the device, if enrollment is enabled for this test instance.
   if (GetParam().enroll_device) {
-    EnrollDevice(kUsername);
+    EnrollDevice(kDomain);
 
     EXPECT_FALSE(user_manager->IsUserLoggedIn());
     EXPECT_TRUE(browser_policy_connector()->IsEnterpriseManaged());

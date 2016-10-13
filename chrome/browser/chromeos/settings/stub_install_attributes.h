@@ -13,17 +13,19 @@
 
 namespace chromeos {
 
-// This class allows tests to override specific values for easier testing.
-// To make IsEnterpriseDevice() return true, set a non-empty registration
-// user.
+// This class allows tests to set specific configurations for testing.
 class StubInstallAttributes : public InstallAttributes {
  public:
   StubInstallAttributes();
 
-  void SetDomain(const std::string& domain);
-  void SetRegistrationUser(const std::string& user);
-  void SetDeviceId(const std::string& id);
-  void SetMode(policy::DeviceMode mode);
+  // Setup as not-yet enrolled.
+  void Clear();
+
+  // Setup as consumer device.  (Clears existing configuration.)
+  void SetConsumer();
+
+  // Setup as enterprise enrolled.  (Clears existing configuration.)
+  void SetEnterprise(const std::string& domain, const std::string& device_id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubInstallAttributes);
@@ -32,11 +34,21 @@ class StubInstallAttributes : public InstallAttributes {
 // Helper class to set install attributes in the scope of a test.
 class ScopedStubInstallAttributes {
  public:
-  ScopedStubInstallAttributes(const std::string& domain,
-                              const std::string& registration_user,
-                              const std::string& device_id,
-                              policy::DeviceMode mode);
   ~ScopedStubInstallAttributes();
+
+  // Factory for empty (unset) ScopedStubInstallAttributes.
+  static ScopedStubInstallAttributes CreateUnset();
+
+  // Factory for consumer-type ScopedStubInstallAttributes.
+  static ScopedStubInstallAttributes CreateConsumer();
+
+  // Factory for enterprise-type ScopedStubInstallAttributes.
+  static ScopedStubInstallAttributes CreateEnterprise(
+      const std::string& domain,
+      const std::string& device_id);
+
+ private:
+  ScopedStubInstallAttributes();
 };
 
 }  // namespace chromeos

@@ -187,7 +187,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
 
   // The validated policy response info to be installed in the store.
   std::unique_ptr<enterprise_management::PolicyFetchResponse> policy_;
-  std::string username_;
+  std::string domain_;
   std::string device_id_;
   std::string request_token_;
 
