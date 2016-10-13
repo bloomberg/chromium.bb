@@ -88,6 +88,7 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
   https://goo.gl/Jek2NL.
   """
+  options = {'pageset_repeat': 3}
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
