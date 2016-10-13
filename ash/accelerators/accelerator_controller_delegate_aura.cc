@@ -357,7 +357,6 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
 #if defined(OS_CHROMEOS)
     case DEV_ADD_REMOVE_DISPLAY:
     case DEV_TOGGLE_UNIFIED_DESKTOP:
-    case TOGGLE_MIRROR_MODE:
       return debug::DeveloperAcceleratorsEnabled();
 
     case SWAP_PRIMARY_DISPLAY:
@@ -371,6 +370,7 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
     case LOCK_RELEASED:
     case POWER_PRESSED:
     case POWER_RELEASED:
+    case TOGGLE_MIRROR_MODE:
     case TOUCH_HUD_PROJECTION_TOGGLE:
       return true;
 #endif
