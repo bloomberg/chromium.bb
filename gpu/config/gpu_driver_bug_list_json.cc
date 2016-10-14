@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.07",
+  "version": "9.08",
   "entries": [
     {
       "id": 1,
@@ -2054,7 +2054,7 @@ LONG_STRING_CONST(
       ]
     },
     {
-      "id": 191,
+      "id": 192,
       "description": "Decode and encode before generateMipmap for srgb format textures on os except macosx",
       "cr_bugs": [634519],
       "gl_type": "gl",
@@ -2074,7 +2074,7 @@ LONG_STRING_CONST(
       ]
     },
     {
-      "id": 192,
+      "id": 193,
       "description": "Decode and encode before generateMipmap for srgb format textures on macosx",
       "cr_bugs": [634519],
       "os": {
@@ -2085,7 +2085,7 @@ LONG_STRING_CONST(
       ]
     },
     {
-      "id": 193,
+      "id": 194,
       "description": "Init first two levels before CopyTexImage2D for cube map texture on Intel Mac 10.12",
       "cr_bugs": [648197],
       "os": {
