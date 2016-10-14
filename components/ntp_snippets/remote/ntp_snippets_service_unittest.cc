@@ -753,10 +753,10 @@ TEST_F(NTPSnippetsServiceTest, PersistCategoryInfos) {
                      GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)},
                                           kUnknownRemoteCategoryId));
 
-  ASSERT_NE(observer().StatusForCategory(articles_category()),
-            CategoryStatus::NOT_PROVIDED);
-  ASSERT_NE(observer().StatusForCategory(unknown_category()),
-            CategoryStatus::NOT_PROVIDED);
+  ASSERT_EQ(observer().StatusForCategory(articles_category()),
+            CategoryStatus::AVAILABLE);
+  ASSERT_EQ(observer().StatusForCategory(unknown_category()),
+            CategoryStatus::AVAILABLE);
 
   CategoryInfo info_articles_before =
       service->GetCategoryInfo(articles_category());
@@ -771,6 +771,11 @@ TEST_F(NTPSnippetsServiceTest, PersistCategoryInfos) {
             CategoryStatus::NOT_PROVIDED);
   ASSERT_NE(observer().StatusForCategory(unknown_category()),
             CategoryStatus::NOT_PROVIDED);
+
+  EXPECT_EQ(observer().StatusForCategory(articles_category()),
+            CategoryStatus::AVAILABLE);
+  EXPECT_EQ(observer().StatusForCategory(unknown_category()),
+            CategoryStatus::AVAILABLE);
 
   CategoryInfo info_articles_after =
       service->GetCategoryInfo(articles_category());
@@ -787,15 +792,17 @@ TEST_F(NTPSnippetsServiceTest, PersistSuggestions) {
   LoadFromJSONString(service.get(),
                      GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)}));
 
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
-  ASSERT_THAT(service->GetSnippetsForTesting(other_category()), SizeIs(1));
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
+  ASSERT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(1));
 
   // Recreate the service to simulate a Chrome restart.
   ResetSnippetsService(&service);
 
   // The suggestions in both categories should have been restored.
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
-  EXPECT_THAT(service->GetSnippetsForTesting(other_category()), SizeIs(1));
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
+  EXPECT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(1));
 }
 
 TEST_F(NTPSnippetsServiceTest, Clear) {

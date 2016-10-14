@@ -314,8 +314,8 @@ CategoryInfo NTPSnippetsService::GetCategoryInfo(Category category) {
   const CategoryContent& content = categories_[category];
   return CategoryInfo(content.localized_title,
                       ContentSuggestionsCardLayout::FULL_CARD,
-                      /* has_more_button */ false,
-                      /* show_if_empty */ true);
+                      /*has_more_button=*/false,
+                      /*show_if_empty=*/true);
 }
 
 void NTPSnippetsService::DismissSuggestion(
@@ -836,11 +836,13 @@ void NTPSnippetsService::EnterStateReady() {
     fetch_when_ready_ = false;
   }
 
-  // FetchSnippets should set the status to |AVAILABLE_LOADING| if relevant,
-  // otherwise we transition to |AVAILABLE| here.
-  if (categories_[articles_category_].status !=
-      CategoryStatus::AVAILABLE_LOADING) {
-    UpdateCategoryStatus(articles_category_, CategoryStatus::AVAILABLE);
+  for (const auto& item : categories_) {
+    Category category = item.first;
+    const CategoryContent& content = item.second;
+    // FetchSnippets has set the status to |AVAILABLE_LOADING| if relevant,
+    // otherwise we transition to |AVAILABLE| here.
+    if (content.status != CategoryStatus::AVAILABLE_LOADING)
+      UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
   }
 }
 

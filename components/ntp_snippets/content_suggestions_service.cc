@@ -192,8 +192,11 @@ void ContentSuggestionsService::OnNewSuggestions(
   if (RegisterCategoryIfRequired(provider, category))
     NotifyCategoryStatusChanged(category);
 
-  if (!IsCategoryStatusAvailable(provider->GetCategoryStatus(category)))
+  if (!IsCategoryStatusAvailable(provider->GetCategoryStatus(category))) {
+    // A provider shouldn't send us suggestions while it's not available.
+    DCHECK(suggestions.empty());
     return;
+  }
 
   suggestions_by_category_[category] = std::move(suggestions);
 
