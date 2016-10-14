@@ -765,11 +765,6 @@ class CORE_EXPORT Node : public EventTarget {
   HTMLSlotElement* assignedSlot() const;
   HTMLSlotElement* assignedSlotForBinding();
 
-  void setAlreadySpellChecked(bool flag) {
-    setFlag(flag, AlreadySpellCheckedFlag);
-  }
-  bool isAlreadySpellChecked() { return getFlag(AlreadySpellCheckedFlag); }
-
   bool isFinishedParsingChildren() const {
     return getFlag(IsFinishedParsingChildrenFlag);
   }
@@ -835,18 +830,17 @@ class CORE_EXPORT Node : public EventTarget {
     HasWeakReferencesFlag = 1 << 24,
     V8CollectableDuringMinorGCFlag = 1 << 25,
     HasEventTargetDataFlag = 1 << 26,
-    AlreadySpellCheckedFlag = 1 << 27,
 
-    V0CustomElementFlag = 1 << 28,
-    V0CustomElementUpgradedFlag = 1 << 29,
+    V0CustomElementFlag = 1 << 27,
+    V0CustomElementUpgradedFlag = 1 << 28,
 
-    NeedsReattachLayoutTree = 1 << 30,
-    ChildNeedsReattachLayoutTree = 1 << 31,
+    NeedsReattachLayoutTree = 1 << 29,
+    ChildNeedsReattachLayoutTree = 1 << 30,
 
     DefaultNodeFlags = IsFinishedParsingChildrenFlag | NeedsReattachStyleChange
   };
 
-  // 0 bits remaining.
+  // 1 bit remaining.
 
   bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
   void setFlag(bool f, NodeFlags mask) {

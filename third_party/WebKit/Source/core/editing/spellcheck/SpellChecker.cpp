@@ -167,8 +167,10 @@ void SpellChecker::toggleSpellCheckingEnabled() {
     if (!frame->isLocalFrame())
       continue;
     for (Node& node :
-         NodeTraversal::startsAt(toLocalFrame(frame)->document()->rootNode()))
-      node.setAlreadySpellChecked(false);
+         NodeTraversal::startsAt(toLocalFrame(frame)->document()->rootNode())) {
+      if (node.isElementNode())
+        toElement(node).setAlreadySpellChecked(false);
+    }
   }
 }
 
