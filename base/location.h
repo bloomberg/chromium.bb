@@ -33,6 +33,11 @@ class BASE_EXPORT Location {
   // Copy constructor.
   Location(const Location& other);
 
+  static Location CreateForCurrentProgramCounter(
+      const char* function_name,
+      const char* file_name,
+      int line_number);
+
   // Comparator for hash map insertion.
   // No need to use |function_name_| since the other two fields uniquely
   // identify this location.
@@ -99,11 +104,9 @@ BASE_EXPORT const void* GetProgramCounter();
 // Define a macro to record the current source location.
 #define FROM_HERE FROM_HERE_WITH_EXPLICIT_FUNCTION(__func__)
 
-#define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name)                        \
-    ::tracked_objects::Location(function_name,                                 \
-                                __FILE__,                                      \
-                                __LINE__,                                      \
-                                ::tracked_objects::GetProgramCounter())
+#define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name)        \
+  ::tracked_objects::Location::CreateForCurrentProgramCounter( \
+       function_name, __FILE__, __LINE__)                      \
 
 }  // namespace tracked_objects
 
