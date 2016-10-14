@@ -48,7 +48,6 @@ struct TextInputState;
 // Utility function to initialize FrameHostMsg_DidCommitProvisionalLoad_Params
 // with given parameters.
 void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-                        int page_id,
                         int nav_entry_id,
                         bool did_create_new_entry,
                         const GURL& url,
@@ -215,22 +214,19 @@ class TestRenderViewHost
   bool CreateTestRenderView(const base::string16& frame_name,
                             int opener_frame_route_id,
                             int proxy_route_id,
-                            int32_t max_page_id,
                             bool window_was_created_with_opener) override;
 
   // RenderViewHost overrides --------------------------------------------------
 
   bool CreateRenderView(int opener_frame_route_id,
                         int proxy_route_id,
-                        int32_t max_page_id,
                         const FrameReplicationState& replicated_frame_state,
                         bool window_was_created_with_opener) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);
 
-  void SendNavigateWithTransitionAndResponseCode(int page_id,
-                                                 const GURL& url,
+  void SendNavigateWithTransitionAndResponseCode(const GURL& url,
                                                  ui::PageTransition transition,
                                                  int response_code);
 
@@ -238,7 +234,6 @@ class TestRenderViewHost
   // Sets the rest of the parameters in the message to the "typical" values.
   // This is a helper function for simulating the most common types of loads.
   void SendNavigateWithParameters(
-      int page_id,
       const GURL& url,
       ui::PageTransition transition,
       const GURL& original_request_url,

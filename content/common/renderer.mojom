@@ -54,11 +54,6 @@ struct CreateViewParams {
   // Whether the window associated with this view was created with an opener.
   bool window_was_created_with_opener;
 
-  // The initial page ID to use for this view, which must be larger than any
-  // existing navigation that might be loaded in the view.  Page IDs are unique
-  // to a view and are only updated by the renderer after this initial value.
-  int32 next_page_id;
-
   // The initial renderer size.
   ResizeParams initial_size;
 

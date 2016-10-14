@@ -570,48 +570,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // will have to suffice.
 }
 
-// Check that we will not trigger a DCHECK in renderer for cross-process
-// replacement navigations.
-// See https://crbug.com/611679.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       PageIDUpdatedOnPageReplacement) {
-  NavigationController& controller = shell()->web_contents()->GetController();
-  const GURL page_url = embedded_test_server()->GetURL(
-      "/navigation_controller/simple_page_1.html");
-
-  // Use a chrome:// url first so that the next page will be loaded
-  // in a separate site instance.
-  GURL initial_url(std::string(kChromeUIScheme) +
-                   url::kStandardSchemeSeparator + kChromeUIGpuHost);
-  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
-  EXPECT_EQ(1, controller.GetEntryCount());
-  EXPECT_NE(-1, shell()->web_contents()->GetMaxPageID());
-  int initial_renderer_id =
-      shell()->web_contents()->GetRenderProcessHost()->GetID();
-
-  // Now navigate and replace the current entry.
-  RendererLocationReplace(shell(), page_url);
-
-  // Verify that process swap actually occured.
-  EXPECT_NE(initial_renderer_id,
-            shell()->web_contents()->GetRenderProcessHost()->GetID());
-
-  // The navigation entry should have been replaced.
-  EXPECT_EQ(1, controller.GetEntryCount());
-
-  // Page ID should be updated.
-  EXPECT_NE(-1, shell()->web_contents()->GetMaxPageID());
-
-  // Reload the page and verify that we don't hit
-  // a DCHECK in |RenderFrameImpl::NavigateInternal|.
-  controller.Reload(false);
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-
-  // DCHECK shouldn't be triggered and we should have a valid page ID.
-  EXPECT_NE(-1, shell()->web_contents()->GetMaxPageID());
-  EXPECT_TRUE(shell()->web_contents()->GetMainFrame()->IsRenderFrameLive());
-}
-
 namespace {
 
 class NoNavigationsObserver : public WebContentsObserver {
@@ -3693,7 +3651,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
           NavigationControllerImpl::CreateNavigationEntry(
               main_url_a, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
               std::string(), controller.GetBrowserContext()));
-  restored_entry->SetPageID(0);
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry2->GetPageState());
 
@@ -3776,7 +3733,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
           NavigationControllerImpl::CreateNavigationEntry(
               main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
               std::string(), controller.GetBrowserContext()));
-  restored_entry->SetPageID(0);
   restored_entry->SetPageState(PageState::CreateFromURL(main_url));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
 
@@ -4352,7 +4308,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerOopifBrowserTest,
           NavigationControllerImpl::CreateNavigationEntry(
               main_url_a, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
               std::string(), controller.GetBrowserContext()));
-  restored_entry->SetPageID(0);
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry2->GetPageState());
 

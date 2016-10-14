@@ -82,9 +82,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // back with RendererDidNavigate on success or DiscardPendingEntry on failure.
   // The callbacks can be inside of this function, or at some future time.
   //
-  // The entry has a PageID of -1 if newly created (corresponding to navigation
-  // to a new URL).
-  //
   // If this method returns false, then the navigation is discarded (equivalent
   // to calling DiscardPendingEntry on the NavigationController).
   //

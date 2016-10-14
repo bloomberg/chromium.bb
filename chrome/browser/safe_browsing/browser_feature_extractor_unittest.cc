@@ -136,7 +136,6 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     int pending_id =
         web_contents()->GetController().GetPendingEntry()->GetUniqueID();
 
-    static int page_id = 0;
     content::RenderFrameHost* rfh =
         WebContentsTester::For(web_contents())->GetPendingMainFrame();
     if (!rfh) {
@@ -144,7 +143,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     }
     WebContentsTester::For(web_contents())->ProceedWithCrossSiteNavigation();
     WebContentsTester::For(web_contents())->TestDidNavigateWithReferrer(
-        rfh, ++page_id, pending_id, true, url,
+        rfh, pending_id, true, url,
         content::Referrer(referrer, blink::WebReferrerPolicyDefault), type);
   }
 

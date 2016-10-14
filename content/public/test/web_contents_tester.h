@@ -106,13 +106,11 @@ class WebContentsTester {
   //   created a new navigation entry; false for history navigations, reloads,
   //   and other navigations that don't affect the history list.
   virtual void TestDidNavigate(RenderFrameHost* render_frame_host,
-                               int page_id,
                                int nav_entry_id,
                                bool did_create_new_entry,
                                const GURL& url,
                                ui::PageTransition transition) = 0;
   virtual void TestDidNavigateWithReferrer(RenderFrameHost* render_frame_host,
-                                           int page_id,
                                            int nav_entry_id,
                                            bool did_create_new_entry,
                                            const GURL& url,

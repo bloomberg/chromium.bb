@@ -306,7 +306,6 @@ SiteInstanceImpl* RenderViewHostImpl::GetSiteInstance() const {
 bool RenderViewHostImpl::CreateRenderView(
     int opener_frame_route_id,
     int proxy_route_id,
-    int32_t max_page_id,
     const FrameReplicationState& replicated_frame_state,
     bool window_was_created_with_opener) {
   TRACE_EVENT0("renderer_host,navigation",
@@ -334,12 +333,6 @@ bool RenderViewHostImpl::CreateRenderView(
 
   GetWidget()->set_renderer_initialized(true);
 
-  // Ensure the RenderView starts with a next_page_id larger than any existing
-  // page ID it might be asked to render.
-  int32_t next_page_id = 1;
-  if (max_page_id > -1)
-    next_page_id = max_page_id + 1;
-
   mojom::CreateViewParamsPtr params = mojom::CreateViewParams::New();
   params->renderer_preferences =
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
@@ -366,7 +359,6 @@ bool RenderViewHostImpl::CreateRenderView(
   params->hidden = GetWidget()->is_hidden();
   params->never_visible = delegate_->IsNeverVisible();
   params->window_was_created_with_opener = window_was_created_with_opener;
-  params->next_page_id = next_page_id;
   params->enable_auto_resize = GetWidget()->auto_resize_enabled();
   params->min_size = GetWidget()->min_size_for_auto_resize();
   params->max_size = GetWidget()->max_size_for_auto_resize();

@@ -26,8 +26,8 @@ class IOSSerializedNavigationBuilder {
   static SerializedNavigationEntry FromNavigationItem(
       int index, const web::NavigationItem& item);
 
-  // Convert the given SerializedNavigationEntry into a NavigationItem with the
-  // given page ID.  The NavigationItem will have a transition type of
+  // Convert the given SerializedNavigationEntry into a NavigationItem. The
+  // NavigationItem will have a transition type of
   // PAGE_TRANSITION_RELOAD and a new unique ID.
   static std::unique_ptr<web::NavigationItem> ToNavigationItem(
       const SerializedNavigationEntry* navigation);

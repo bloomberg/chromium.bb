@@ -90,7 +90,7 @@ class SiteEngagementHelperTest : public ChromeRenderViewHostTestHarness {
                          std::string());
     int pending_id = controller().GetPendingEntry()->GetUniqueID();
     content::WebContentsTester::For(web_contents())
-        ->TestDidNavigate(web_contents()->GetMainFrame(), 1, pending_id, true,
+        ->TestDidNavigate(web_contents()->GetMainFrame(), pending_id, true,
                           url, ui::PAGE_TRANSITION_TYPED);
   }
 

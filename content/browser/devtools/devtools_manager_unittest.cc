@@ -178,7 +178,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
       url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   int pending_id = controller().GetPendingEntry()->GetUniqueID();
   contents()->GetMainFrame()->PrepareForCommit();
-  contents()->TestDidNavigate(contents()->GetMainFrame(), 1, pending_id, true,
+  contents()->TestDidNavigate(contents()->GetMainFrame(), pending_id, true,
                               url, ui::PAGE_TRANSITION_TYPED);
   contents()->GetMainFrame()->SimulateNavigationStop();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
@@ -201,7 +201,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
       url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   pending_id = controller().GetPendingEntry()->GetUniqueID();
   contents()->GetMainFrame()->PrepareForCommit();
-  contents()->TestDidNavigate(contents()->GetMainFrame(), 1, pending_id, false,
+  contents()->TestDidNavigate(contents()->GetMainFrame(), pending_id, false,
                               url, ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(client_host.agent_host(),

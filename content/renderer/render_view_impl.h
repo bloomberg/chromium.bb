@@ -747,13 +747,7 @@ class CONTENT_EXPORT RenderViewImpl
   // messages to send when the next |nav_state_sync_timer_| fires.
   std::set<int> frames_with_pending_state_;
 
-  // Page IDs ------------------------------------------------------------------
-  // See documentation in RenderView.
-  int32_t page_id_;
-
-  // The next available page ID to use for this RenderView.  These IDs are
-  // specific to a given RenderView and the frames within it.
-  int32_t next_page_id_;
+  // History list --------------------------------------------------------------
 
   // The offset of the current item in the history list.
   int history_list_offset_;

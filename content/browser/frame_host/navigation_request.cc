@@ -185,7 +185,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       false,                   // can_load_local_resources
       base::Time::Now(),       // request_time
       PageState(),             // page_state
-      -1,                      // page_id
       0,                       // nav_entry_id
       false,                   // is_same_document_history_load
       false,                   // is_history_navigation_in_new_child

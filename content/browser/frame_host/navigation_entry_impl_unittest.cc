@@ -26,7 +26,7 @@ class NavigationEntryTest : public testing::Test {
 
     instance_ = SiteInstanceImpl::Create(NULL);
     entry2_.reset(new NavigationEntryImpl(
-          instance_, 3,
+          instance_,
           GURL("test:url"),
           Referrer(GURL("from"), blink::WebReferrerPolicyDefault),
           ASCIIToUTF16("title"),
@@ -179,12 +179,6 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_FALSE(entry2_->GetPageState().IsValid());
   entry2_->SetPageState(PageState::CreateFromEncodedData("state"));
   EXPECT_EQ("state", entry2_->GetPageState().ToEncodedData());
-
-  // Page ID
-  EXPECT_EQ(-1, entry1_->GetPageID());
-  EXPECT_EQ(3, entry2_->GetPageID());
-  entry2_->SetPageID(2);
-  EXPECT_EQ(2, entry2_->GetPageID());
 
   // Transition type
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(

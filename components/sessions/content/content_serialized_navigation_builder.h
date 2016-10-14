@@ -29,15 +29,14 @@ class SESSIONS_EXPORT ContentSerializedNavigationBuilder {
       const content::NavigationEntry& entry);
 
   // Convert the given SerializedNavigationEntry into a NavigationEntry with the
-  // given page ID and context.  The NavigationEntry will have a transition type
-  // of PAGE_TRANSITION_RELOAD and a new unique ID.
+  // given context.  The NavigationEntry will have a transition type of
+  // PAGE_TRANSITION_RELOAD and a new unique ID.
   static std::unique_ptr<content::NavigationEntry> ToNavigationEntry(
       const SerializedNavigationEntry* navigation,
-      int page_id,
       content::BrowserContext* browser_context);
 
   // Converts a set of SerializedNavigationEntrys into a list of
-  // NavigationEntrys with sequential page IDs and the given context.
+  // NavigationEntrys with the given context.
   static std::vector<std::unique_ptr<content::NavigationEntry>>
   ToNavigationEntries(const std::vector<SerializedNavigationEntry>& navigations,
                       content::BrowserContext* browser_context);

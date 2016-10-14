@@ -105,12 +105,6 @@ class NavigationEntry {
   virtual void SetPageState(const PageState& state) = 0;
   virtual PageState GetPageState() const = 0;
 
-  // Describes the current page that the tab represents. This is the ID that the
-  // renderer generated for the page and is how we can tell new versus
-  // renavigations.
-  virtual void SetPageID(int page_id) = 0;
-  virtual int32_t GetPageID() const = 0;
-
   // Page-related helpers ------------------------------------------------------
 
   // Returns the title to be displayed on the tab. This could be the title of

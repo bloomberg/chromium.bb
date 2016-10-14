@@ -349,7 +349,6 @@ NavigationHandleImpl::CallWillProcessResponseForTesting(
 void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
 
-  params.page_id = 1;
   params.nav_entry_id = 1;
   params.url = url;
   params.referrer = content::Referrer();

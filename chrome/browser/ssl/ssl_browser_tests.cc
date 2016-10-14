@@ -3243,7 +3243,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, RestoreHasSSLState) {
       content::NavigationController::CreateNavigationEntry(
           url, content::Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
           std::string(), tab->GetBrowserContext());
-  restored_entry->SetPageID(0);
   restored_entry->SetPageState(entry->GetPageState());
 
   WebContents::CreateParams params(tab->GetBrowserContext());

@@ -843,7 +843,6 @@ void NavigatorImpl::RequestTransferURL(
     if (controller_->GetLastCommittedEntry()) {
       entry = controller_->GetLastCommittedEntry()->Clone();
       entry->set_extra_headers(extra_headers);
-      entry->SetPageID(-1);
     } else {
       // If there's no last committed entry, create an entry for about:blank
       // with a subframe entry for our destination.

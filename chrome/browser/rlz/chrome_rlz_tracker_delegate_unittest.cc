@@ -38,7 +38,6 @@ TEST_F(ChromeRLZTrackerDelegateTest, ObserveHandlesBadArgs) {
   std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
   details->entry = entry.get();
-  details->entry->SetPageID(0);
   details->entry->SetTransitionType(ui::PAGE_TRANSITION_LINK);
   SendNotification(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    content::NotificationService::AllSources(),

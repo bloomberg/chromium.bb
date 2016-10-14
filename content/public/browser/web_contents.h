@@ -331,16 +331,6 @@ class WebContents : public PageNavigator,
   virtual void UpdateTitleForEntry(NavigationEntry* entry,
                                    const base::string16& title) = 0;
 
-  // The max page ID for any page that the current SiteInstance has loaded in
-  // this WebContents.  Page IDs are specific to a given SiteInstance and
-  // WebContents, corresponding to a specific RenderView in the renderer.
-  // Page IDs increase with each new page that is loaded by a tab.
-  virtual int32_t GetMaxPageID() = 0;
-
-  // The max page ID for any page that the given SiteInstance has loaded in
-  // this WebContents.
-  virtual int32_t GetMaxPageIDForSiteInstance(SiteInstance* site_instance) = 0;
-
   // Returns the SiteInstance associated with the current page.
   virtual SiteInstance* GetSiteInstance() const = 0;
 

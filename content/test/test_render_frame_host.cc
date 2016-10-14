@@ -82,7 +82,7 @@ void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
   if (!render_view_host()->IsRenderViewLive()) {
     render_view_host()->GetProcess()->Init();
     RenderViewHostTester::For(render_view_host())->CreateTestRenderView(
-        base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, -1, false);
+        base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
   }
 }
 
@@ -134,7 +134,6 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
       GetParent() && !frame_tree_node()->has_committed_real_load();
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.page_id = ComputeNextPageID();
   params.nav_entry_id = 0;
   params.url = url;
   params.origin = url::Origin(url);
@@ -195,7 +194,6 @@ void TestRenderFrameHost::SimulateNavigationErrorPageCommit() {
   GURL error_url = GURL(kUnreachableWebDataURL);
   OnDidStartProvisionalLoad(error_url, base::TimeTicks::Now());
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.page_id = ComputeNextPageID();
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
   params.url = navigation_handle()->GetURL();
@@ -232,7 +230,6 @@ void TestRenderFrameHost::SimulateSwapOutACK() {
 }
 
 void TestRenderFrameHost::NavigateAndCommitRendererInitiated(
-    int page_id,
     bool did_create_new_entry,
     const GURL& url) {
   SendRendererInitiatedNavigationRequest(url, false);
@@ -244,58 +241,52 @@ void TestRenderFrameHost::NavigateAndCommitRendererInitiated(
   bool browser_side_navigation = IsBrowserSideNavigationEnabled();
   CHECK(!browser_side_navigation || is_loading());
   CHECK(!browser_side_navigation || !frame_tree_node()->navigation_request());
-  SendNavigate(page_id, 0, did_create_new_entry, url);
+  SendNavigate(0, did_create_new_entry, url);
 }
 
-void TestRenderFrameHost::SendNavigate(int page_id,
-                                       int nav_entry_id,
+void TestRenderFrameHost::SendNavigate(int nav_entry_id,
                                        bool did_create_new_entry,
                                        const GURL& url) {
-  SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, false,
+  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, false,
                              url, ui::PAGE_TRANSITION_LINK, 200,
                              ModificationCallback());
 }
 
-void TestRenderFrameHost::SendFailedNavigate(int page_id,
-                                             int nav_entry_id,
+void TestRenderFrameHost::SendFailedNavigate(int nav_entry_id,
                                              bool did_create_new_entry,
                                              const GURL& url) {
-  SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, false,
+  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, false,
                              url, ui::PAGE_TRANSITION_RELOAD, 500,
                              ModificationCallback());
 }
 
 void TestRenderFrameHost::SendNavigateWithTransition(
-    int page_id,
     int nav_entry_id,
     bool did_create_new_entry,
     const GURL& url,
     ui::PageTransition transition) {
-  SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, false,
+  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, false,
                              url, transition, 200, ModificationCallback());
 }
 
-void TestRenderFrameHost::SendNavigateWithReplacement(int page_id,
-                                                      int nav_entry_id,
+void TestRenderFrameHost::SendNavigateWithReplacement(int nav_entry_id,
                                                       bool did_create_new_entry,
                                                       const GURL& url) {
-  SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, true,
+  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, true,
                              url, ui::PAGE_TRANSITION_LINK, 200,
                              ModificationCallback());
 }
 
 void TestRenderFrameHost::SendNavigateWithModificationCallback(
-    int page_id,
     int nav_entry_id,
     bool did_create_new_entry,
     const GURL& url,
     const ModificationCallback& callback) {
-  SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, false,
+  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, false,
                              url, ui::PAGE_TRANSITION_LINK, 200, callback);
 }
 
 void TestRenderFrameHost::SendNavigateWithParameters(
-    int page_id,
     int nav_entry_id,
     bool did_create_new_entry,
     bool should_replace_entry,
@@ -313,7 +304,6 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   SimulateWillStartRequest(transition);
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.page_id = page_id;
   params.nav_entry_id = nav_entry_id;
   params.url = url_copy;
   params.transition = transition;
@@ -468,21 +458,6 @@ TestRenderFrameHost::CreateWebBluetoothServiceForTesting() {
       RenderFrameHostImpl::CreateWebBluetoothService(
           blink::mojom::WebBluetoothServiceRequest());
   return service;
-}
-
-int32_t TestRenderFrameHost::ComputeNextPageID() {
-  const NavigationEntryImpl* entry = static_cast<NavigationEntryImpl*>(
-      frame_tree_node()->navigator()->GetController()->GetPendingEntry());
-  DCHECK(!(entry && entry->site_instance()) ||
-         entry->site_instance() == GetSiteInstance());
-  // Entry can be null when committing an error page (the pending entry was
-  // cleared during DidFailProvisionalLoad).
-  int page_id = entry ? entry->GetPageID() : -1;
-  if (page_id == -1) {
-    WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(delegate());
-    page_id = web_contents->GetMaxPageIDForSiteInstance(GetSiteInstance()) + 1;
-  }
-  return page_id;
 }
 
 void TestRenderFrameHost::SimulateWillStartRequest(

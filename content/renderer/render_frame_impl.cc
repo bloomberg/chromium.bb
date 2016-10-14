@@ -3577,18 +3577,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   const RequestNavigationParams& request_params =
       navigation_state->request_params();
   bool is_new_navigation = commit_type == blink::WebStandardCommit;
-
-  // Ensure that we allocate a page ID if this is the first navigation for the
-  // page in this process.  This can happen even when is_new_navigation
-  // is false, such as after a cross-process location.replace navigation.
-  bool should_init_page_id = render_view_->page_id_ == -1 &&
-                             request_params.page_id == -1 &&
-                             request_params.nav_entry_id != 0 &&
-                             !navigation_state->IsContentInitiated();
-  if (is_new_navigation || should_init_page_id) {
-    // We bump our Page ID to correspond with the new session history entry.
-    render_view_->page_id_ = render_view_->next_page_id_++;
-
+  if (is_new_navigation) {
     DCHECK(!navigation_state->common_params().should_replace_current_entry ||
            render_view_->history_list_length_ > 0);
     if (!navigation_state->common_params().should_replace_current_entry) {
@@ -3604,8 +3593,6 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     if (request_params.nav_entry_id != 0 &&
         !request_params.intended_as_new_entry) {
       // This is a successful session history navigation!
-      render_view_->page_id_ = request_params.page_id;
-
       render_view_->history_list_offset_ =
           request_params.pending_history_list_offset;
     }
@@ -4732,7 +4719,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params.did_create_new_entry = commit_type == blink::WebStandardCommit;
   params.should_replace_current_entry = ds->replacesCurrentHistoryItem();
   params.post_id = -1;
-  params.page_id = render_view_->page_id_;
   params.nav_entry_id = navigation_state->request_params().nav_entry_id;
   // We need to track the RenderViewHost routing_id because of downstream
   // dependencies (crbug.com/392171 DownloadRequestHandle, SaveFileManager,
@@ -5716,8 +5702,6 @@ void RenderFrameImpl::NavigateInternal(
     }
     should_load_request = true;
   } else if (is_history_navigation) {
-    // We must know the page ID of the page we are navigating back to.
-    DCHECK_NE(request_params.page_id, -1);
     // We must know the nav entry ID of the page we are navigating back to,
     // which should be the case because history navigations are routed via the
     // browser.

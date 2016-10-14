@@ -303,8 +303,6 @@ class CONTENT_EXPORT WebContentsImpl
   const base::string16& GetTitle() const override;
   void UpdateTitleForEntry(NavigationEntry* entry,
                            const base::string16& title) override;
-  int32_t GetMaxPageID() override;
-  int32_t GetMaxPageIDForSiteInstance(SiteInstance* site_instance) override;
   SiteInstanceImpl* GetSiteInstance() const override;
   SiteInstanceImpl* GetPendingSiteInstance() const override;
   bool IsLoading() const override;
@@ -732,20 +730,6 @@ class CONTENT_EXPORT WebContentsImpl
   // first commit.
   bool HasAccessedInitialDocument() override;
 
-  // Updates the max page ID for the current SiteInstance in this
-  // WebContentsImpl to be at least |page_id|.
-  void UpdateMaxPageID(int32_t page_id) override;
-
-  // Updates the max page ID for the given SiteInstance in this WebContentsImpl
-  // to be at least |page_id|.
-  void UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
-                                      int32_t page_id) override;
-
-  // Copy the current map of SiteInstance ID to max page ID from another tab.
-  // This is necessary when this tab adopts the NavigationEntries from
-  // |web_contents|.
-  void CopyMaxPageIDsFrom(WebContents* web_contents) override;
-
   // Sets the history for this WebContentsImpl to |history_length| entries, with
   // an offset of |history_offset|.  This notifies all renderers involved in
   // rendering the current page about the new offset and length.
@@ -1039,12 +1023,6 @@ class CONTENT_EXPORT WebContentsImpl
   // not provided since it may be invalid/changed after being committed. The
   // current navigation entry is in the NavigationController at this point.
 
-  // If our controller was restored, update the max page ID associated with the
-  // given RenderViewHost to be larger than the number of restored entries.
-  // This is called in CreateRenderView before any navigations in the RenderView
-  // have begun, to prevent any races in updating RenderView::next_page_id.
-  void UpdateMaxPageIDIfNecessary(RenderViewHost* rvh);
-
   // Helper for CreateNewWidget/CreateNewFullscreenWidget.
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
@@ -1203,11 +1181,6 @@ class CONTENT_EXPORT WebContentsImpl
   // main resource of the page. This controls whether the throbber state is
   // "waiting" or "loading."
   bool waiting_for_response_;
-
-  // Map of SiteInstance ID to max page ID for this tab. A page ID is specific
-  // to a given tab and SiteInstance, and must be valid for the lifetime of the
-  // WebContentsImpl.
-  std::map<int32_t, int32_t> max_page_ids_;
 
   // The current load state and the URL associated with it.
   net::LoadStateWithParam load_state_;

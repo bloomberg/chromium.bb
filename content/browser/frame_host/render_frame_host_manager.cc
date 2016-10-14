@@ -1221,8 +1221,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
       ConvertToSiteInstance(new_instance_descriptor, candidate_instance);
   // If |force_swap| is true, we must use a different SiteInstance than the
   // current one. If we didn't, we would have two RenderFrameHosts in the same
-  // SiteInstance and the same frame, resulting in page_id conflicts for their
-  // NavigationEntries.
+  // SiteInstance and the same frame, breaking lookup of RenderFrameHosts by
+  // SiteInstance.
   if (force_swap)
     CHECK_NE(new_instance, current_instance);
 

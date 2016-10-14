@@ -176,7 +176,7 @@ TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
 
   const std::unique_ptr<content::NavigationEntry> new_navigation_entry(
       ContentSerializedNavigationBuilder::ToNavigationEntry(
-          &navigation, test_data::kPageID, NULL));
+          &navigation, NULL));
 
   EXPECT_EQ(test_data::kReferrerURL, new_navigation_entry->GetReferrer().url);
   EXPECT_EQ(test_data::kReferrerPolicy,
@@ -185,7 +185,6 @@ TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
   EXPECT_EQ(test_data::kTitle, new_navigation_entry->GetTitle());
   EXPECT_EQ(test_data::kEncodedPageState,
             new_navigation_entry->GetPageState().ToEncodedData());
-  EXPECT_EQ(test_data::kPageID, new_navigation_entry->GetPageID());
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       new_navigation_entry->GetTransitionType(), ui::PAGE_TRANSITION_RELOAD));
   EXPECT_EQ(test_data::kHasPostData, new_navigation_entry->GetHasPostData());

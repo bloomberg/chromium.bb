@@ -63,28 +63,23 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SimulateNavigationError(const GURL& url, int error_code) override;
   void SimulateNavigationErrorPageCommit() override;
   void SimulateNavigationStop() override;
-  void SendNavigate(int page_id,
-                    int nav_entry_id,
+  void SendNavigate(int nav_entry_id,
                     bool did_create_new_entry,
                     const GURL& url) override;
-  void SendFailedNavigate(int page_id,
-                          int nav_entry_id,
+  void SendFailedNavigate(int nav_entry_id,
                           bool did_create_new_entry,
                           const GURL& url) override;
-  void SendNavigateWithTransition(int page_id,
-                                  int nav_entry_id,
+  void SendNavigateWithTransition(int nav_entry_id,
                                   bool did_create_new_entry,
                                   const GURL& url,
                                   ui::PageTransition transition) override;
   void SetContentsMimeType(const std::string& mime_type) override;
   void SendBeforeUnloadACK(bool proceed) override;
   void SimulateSwapOutACK() override;
-  void NavigateAndCommitRendererInitiated(int page_id,
-                                          bool did_create_new_entry,
+  void NavigateAndCommitRendererInitiated(bool did_create_new_entry,
                                           const GURL& url) override;
 
-  void SendNavigateWithReplacement(int page_id,
-                                   int nav_entry_id,
+  void SendNavigateWithReplacement(int nav_entry_id,
                                    bool did_create_new_entry,
                                    const GURL& url);
 
@@ -92,7 +87,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       base::Callback<void(FrameHostMsg_DidCommitProvisionalLoad_Params*)>;
 
   void SendNavigateWithModificationCallback(
-      int page_id,
       int nav_entry_id,
       bool did_create_new_entry,
       const GURL& url,
@@ -145,8 +139,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   WebBluetoothServiceImpl* CreateWebBluetoothServiceForTesting();
 
  private:
-  void SendNavigateWithParameters(int page_id,
-                                  int nav_entry_id,
+  void SendNavigateWithParameters(int nav_entry_id,
                                   bool did_create_new_entry,
                                   bool should_replace_entry,
                                   const GURL& url,

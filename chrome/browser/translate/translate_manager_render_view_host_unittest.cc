@@ -994,7 +994,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ReloadFromLocationBar) {
   int pending_id =
       web_contents()->GetController().GetPendingEntry()->GetUniqueID();
   content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
-      ->SendNavigateWithTransition(0, pending_id, false, url,
+      ->SendNavigateWithTransition(pending_id, false, url,
                                    ui::PAGE_TRANSITION_TYPED);
 
   // Test that we are really getting a same page navigation, the test would be
@@ -1048,12 +1048,12 @@ TEST_F(TranslateManagerRenderViewHostTest, CloseInfoBarInSubframeNavigation) {
 
   // Simulate a sub-frame auto-navigating.
   subframe_tester->SendNavigateWithTransition(
-      0, 0, false, GURL("http://pub.com"), ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+      0, false, GURL("http://pub.com"), ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   EXPECT_FALSE(TranslateUiVisible());
 
   // Simulate the user navigating in a sub-frame.
   subframe_tester->SendNavigateWithTransition(
-      1, 0, true, GURL("http://pub.com"), ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+      1, true, GURL("http://pub.com"), ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
   EXPECT_FALSE(TranslateUiVisible());
 
   // This is deliberately different behavior for bubbles - same language

@@ -391,14 +391,6 @@ class NavigationController {
   // are migrated.
   virtual SessionStorageNamespace* GetDefaultSessionStorageNamespace() = 0;
 
-  // Sets the max restored page ID this NavigationController has seen, if it
-  // was restored from a previous session.
-  virtual void SetMaxRestoredPageID(int32_t max_id) = 0;
-
-  // Returns the largest restored page ID seen in this navigation controller,
-  // if it was restored from a previous session.  (-1 otherwise)
-  virtual int32_t GetMaxRestoredPageID() const = 0;
-
   // Returns true if a reload happens when activated (SetActive(true) is
   // invoked). This is true for session/tab restore, cloned tabs and tabs that
   // requested a reload (using SetNeedsReload()) after their renderer was

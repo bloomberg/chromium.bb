@@ -1119,12 +1119,6 @@ void RenderFrameHostImpl::OnDidFailLoadWithError(
 
 // Called when the renderer navigates.  For every frame loaded, we'll get this
 // notification containing parameters identifying the navigation.
-//
-// Subframes are identified by the page transition type.  For subframes loaded
-// as part of a wider page load, the page_id will be the same as for the top
-// level frame.  If the user explicitly requests a subframe navigation, we will
-// get a new page_id because we need to create a new navigation entry for that
-// action.
 void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   ScopedCommitStateResetter commit_state_resetter(this);
   RenderProcessHost* process = GetProcess();

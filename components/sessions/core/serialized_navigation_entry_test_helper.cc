@@ -38,7 +38,6 @@ const int kHttpStatusCode = 404;
 const GURL kRedirectURL0 = GURL("http://go/redirect0");
 const GURL kRedirectURL1 = GURL("http://go/redirect1");
 const GURL kOtherURL = GURL("http://other.com");
-const int kPageID = 10;
 const SerializedNavigationEntry::PasswordState kPasswordState =
     SerializedNavigationEntry::HAS_PASSWORD_FIELD;
 const std::string kExtendedInfoKey1 = "key 1";

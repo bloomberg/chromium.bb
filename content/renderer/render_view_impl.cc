@@ -673,8 +673,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       send_preferred_size_changes_(false),
       navigation_gesture_(NavigationGestureUnknown),
       opened_by_user_gesture_(true),
-      page_id_(-1),
-      next_page_id_(params.next_page_id),
       history_list_offset_(-1),
       history_list_length_(0),
       frames_in_progress_(0),
@@ -711,9 +709,6 @@ void RenderViewImpl::Initialize(const mojom::CreateViewParams& params,
     opener_id_ = opener_view_routing_id;
 
   display_mode_ = params.initial_size.display_mode;
-
-  // Ensure we start with a valid next_page_id_ from the browser.
-  DCHECK_GE(next_page_id_, 0);
 
   webview_ =
       WebView::create(this, is_hidden() ? blink::WebPageVisibilityStateHidden
@@ -1592,7 +1587,6 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   view_params.replicated_frame_state = FrameReplicationState();
   view_params.hidden = is_background_tab;
   view_params.never_visible = never_visible;
-  view_params.next_page_id = 1;
   view_params.initial_size = initial_size;
   view_params.enable_auto_resize = false;
   view_params.min_size = gfx::Size();

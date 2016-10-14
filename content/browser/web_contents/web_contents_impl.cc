@@ -1145,34 +1145,6 @@ const base::string16& WebContentsImpl::GetTitle() const {
   return page_title_when_no_navigation_entry_;
 }
 
-int32_t WebContentsImpl::GetMaxPageID() {
-  return GetMaxPageIDForSiteInstance(GetSiteInstance());
-}
-
-int32_t WebContentsImpl::GetMaxPageIDForSiteInstance(
-    SiteInstance* site_instance) {
-  if (max_page_ids_.find(site_instance->GetId()) == max_page_ids_.end())
-    max_page_ids_[site_instance->GetId()] = -1;
-
-  return max_page_ids_[site_instance->GetId()];
-}
-
-void WebContentsImpl::UpdateMaxPageID(int32_t page_id) {
-  UpdateMaxPageIDForSiteInstance(GetSiteInstance(), page_id);
-}
-
-void WebContentsImpl::UpdateMaxPageIDForSiteInstance(
-    SiteInstance* site_instance,
-    int32_t page_id) {
-  if (GetMaxPageIDForSiteInstance(site_instance) < page_id)
-    max_page_ids_[site_instance->GetId()] = page_id;
-}
-
-void WebContentsImpl::CopyMaxPageIDsFrom(WebContents* web_contents) {
-  WebContentsImpl* contents = static_cast<WebContentsImpl*>(web_contents);
-  max_page_ids_ = contents->max_page_ids_;
-}
-
 SiteInstanceImpl* WebContentsImpl::GetSiteInstance() const {
   return GetRenderManager()->current_host()->GetSiteInstance();
 }
@@ -3893,20 +3865,6 @@ bool WebContentsImpl::HasAccessedInitialDocument() {
   return has_accessed_initial_document_;
 }
 
-void WebContentsImpl::UpdateMaxPageIDIfNecessary(RenderViewHost* rvh) {
-  // If we are creating a RVH for a restored controller, then we need to make
-  // sure the RenderView starts with a next_page_id_ larger than the number
-  // of restored entries.  This must be called before the RenderView starts
-  // navigating (to avoid a race between the browser updating max_page_id and
-  // the renderer updating next_page_id_).  Because of this, we only call this
-  // from CreateRenderView and allow that to notify the RenderView for us.
-  int max_restored_page_id = controller_.GetMaxRestoredPageID();
-  if (max_restored_page_id >
-      GetMaxPageIDForSiteInstance(rvh->GetSiteInstance()))
-    UpdateMaxPageIDForSiteInstance(rvh->GetSiteInstance(),
-                                   max_restored_page_id);
-}
-
 void WebContentsImpl::UpdateTitleForEntry(NavigationEntry* entry,
                                           const base::string16& title) {
   // For file URLs without a title, use the pathname instead. In the case of a
@@ -4883,14 +4841,10 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   if (proxy_routing_id == MSG_ROUTING_NONE)
     CreateRenderWidgetHostViewForRenderManager(render_view_host);
 
-  // Make sure we use the correct starting page_id in the new RenderView.
-  UpdateMaxPageIDIfNecessary(render_view_host);
-  int32_t max_page_id =
-      GetMaxPageIDForSiteInstance(render_view_host->GetSiteInstance());
-
   if (!static_cast<RenderViewHostImpl*>(render_view_host)
-           ->CreateRenderView(opener_frame_routing_id, proxy_routing_id,
-                              max_page_id, replicated_frame_state,
+           ->CreateRenderView(opener_frame_routing_id,
+                              proxy_routing_id,
+                              replicated_frame_state,
                               created_with_opener_)) {
     return false;
   }

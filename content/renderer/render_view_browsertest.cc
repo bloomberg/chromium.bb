@@ -227,10 +227,6 @@ class RenderViewImplTest : public RenderViewTest {
     return static_cast<RenderViewImpl*>(view_);
   }
 
-  int view_page_id() {
-    return view()->page_id_;
-  }
-
   TestRenderFrame* frame() {
     return static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
   }
@@ -244,7 +240,6 @@ class RenderViewImplTest : public RenderViewTest {
     int pending_offset = offset + view()->history_list_offset_;
 
     request_params.page_state = state;
-    request_params.page_id = view()->page_id_ + offset;
     request_params.nav_entry_id = pending_offset + 1;
     request_params.pending_history_list_offset = pending_offset;
     request_params.current_history_list_offset = view()->history_list_offset_;
@@ -609,7 +604,6 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   common_params.transition = ui::PAGE_TRANSITION_TYPED;
   common_params.method = "POST";
-  request_params.page_id = -1;
 
   // Set up post data.
   const char raw_data[] = "post \0\ndata";
@@ -1012,7 +1006,6 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params_C.current_history_list_length = 4;
   request_params_C.current_history_list_offset = 3;
   request_params_C.pending_history_list_offset = 2;
-  request_params_C.page_id = 3;
   request_params_C.page_state = state_C;
   frame()->Navigate(common_params_C, StartNavigationParams(), request_params_C);
   ProcessPendingMessages();
@@ -1022,7 +1015,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // This leads to two changes to the back/forward list but only one change to
   // the RenderView's page ID.
 
-  // Back to page B (page_id 2), without committing.
+  // Back to page B without committing.
   CommonNavigationParams common_params_B;
   RequestNavigationParams request_params_B;
   common_params_B.navigation_type = FrameMsg_Navigate_Type::NORMAL;
@@ -1030,11 +1023,10 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params_B.current_history_list_length = 4;
   request_params_B.current_history_list_offset = 2;
   request_params_B.pending_history_list_offset = 1;
-  request_params_B.page_id = 2;
   request_params_B.page_state = state_B;
   frame()->Navigate(common_params_B, StartNavigationParams(), request_params_B);
 
-  // Back to page A (page_id 1) and commit.
+  // Back to page A and commit.
   CommonNavigationParams common_params;
   RequestNavigationParams request_params;
   common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
@@ -1042,13 +1034,12 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params.current_history_list_length = 4;
   request_params.current_history_list_offset = 2;
   request_params.pending_history_list_offset = 0;
-  request_params.page_id = 1;
   request_params.page_state = state_A;
   frame()->Navigate(common_params, StartNavigationParams(), request_params);
   ProcessPendingMessages();
 
   // Now ensure that the UpdateState message we receive is consistent
-  // and represents page C in both page_id and state.
+  // and represents page C in state.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg);
@@ -1733,7 +1724,6 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   request_params.current_history_list_length = 1;
   request_params.current_history_list_offset = 0;
   request_params.pending_history_list_offset = 1;
-  request_params.page_id = -1;
 
   TestRenderFrame* subframe =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromWebFrame(
@@ -2195,7 +2185,6 @@ TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
   RequestNavigationParams request_params;
   request_params.page_state =
       PageState::CreateForTesting(common_params.url, false, nullptr, nullptr);
-  request_params.page_id = 1;
   request_params.nav_entry_id = 42;
   request_params.pending_history_list_offset = 1;
   request_params.current_history_list_offset = 0;
@@ -2233,7 +2222,6 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
   request_params.current_history_list_length = 2;
   request_params.current_history_list_offset = 1;
   request_params.pending_history_list_offset = 2;
-  request_params.page_id = -1;
   frame()->Navigate(CommonNavigationParams(), StartNavigationParams(),
                     request_params);
 

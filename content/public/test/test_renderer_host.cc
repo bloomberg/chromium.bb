@@ -85,21 +85,14 @@ void RenderFrameHostTester::CommitPendingLoad(
   RenderFrameHost* test_rfh = pending_rfh ? pending_rfh : old_rfh;
   RenderFrameHostTester* test_rfh_tester = For(test_rfh);
 
-  // For new navigations, we need to send a larger page ID. For renavigations,
-  // we need to send the preexisting page ID. We can tell these apart because
-  // renavigations will have a pending_entry_index while new ones won't (they'll
-  // just have a standalong pending_entry that isn't in the list already).
   if (controller->GetPendingEntryIndex() >= 0) {
     test_rfh_tester->SendNavigateWithTransition(
-        controller->GetPendingEntry()->GetPageID(),
         controller->GetPendingEntry()->GetUniqueID(),
         false,
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
   } else {
     test_rfh_tester->SendNavigateWithTransition(
-        controller->GetWebContents()->GetMaxPageIDForSiteInstance(
-            test_rfh->GetSiteInstance()) + 1,
         controller->GetPendingEntry()->GetUniqueID(),
         true,
         controller->GetPendingEntry()->GetURL(),
@@ -219,7 +212,7 @@ void RenderViewHostTestHarness::Reload() {
   DCHECK(entry);
   controller().Reload(false);
   RenderFrameHostTester::For(main_rfh())
-      ->SendNavigateWithTransition(entry->GetPageID(), entry->GetUniqueID(),
+      ->SendNavigateWithTransition(entry->GetUniqueID(),
                                    false, entry->GetURL(),
                                    ui::PAGE_TRANSITION_RELOAD);
 }
@@ -229,8 +222,7 @@ void RenderViewHostTestHarness::FailedReload() {
   DCHECK(entry);
   controller().Reload(false);
   RenderFrameHostTester::For(main_rfh())
-      ->SendFailedNavigate(entry->GetPageID(), entry->GetUniqueID(), false,
-                           entry->GetURL());
+      ->SendFailedNavigate(entry->GetUniqueID(), false, entry->GetURL());
 }
 
 void RenderViewHostTestHarness::SetUp() {

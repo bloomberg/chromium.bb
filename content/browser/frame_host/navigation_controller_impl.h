@@ -77,8 +77,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   const SessionStorageNamespaceMap& GetSessionStorageNamespaceMap()
       const override;
   SessionStorageNamespace* GetDefaultSessionStorageNamespace() override;
-  void SetMaxRestoredPageID(int32_t max_id) override;
-  int32_t GetMaxRestoredPageID() const override;
   bool NeedsReload() const override;
   void SetNeedsReload() override;
   void CancelPendingReload() override;
@@ -111,17 +109,8 @@ class CONTENT_EXPORT NavigationControllerImpl
   // in this NavigationController.
   int GetIndexOfEntry(const NavigationEntryImpl* entry) const;
 
-  // Return the index of the entry with the corresponding instance and page_id,
-  // or -1 if not found.
-  int GetEntryIndexWithPageID(SiteInstance* instance, int32_t page_id) const;
-
   // Return the index of the entry with the given unique id, or -1 if not found.
   int GetEntryIndexWithUniqueID(int nav_entry_id) const;
-
-  // Return the entry with the corresponding instance and page_id, or null if
-  // not found.
-  NavigationEntryImpl* GetEntryWithPageID(SiteInstance* instance,
-                                          int32_t page_id) const;
 
   // Return the entry with the given unique id, or null if not found.
   NavigationEntryImpl* GetEntryWithUniqueID(int nav_entry_id) const;
@@ -404,11 +393,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   // The delegate associated with the controller. Possibly NULL during
   // setup.
   NavigationControllerDelegate* delegate_;
-
-  // The max restored page ID in this controller, if it was restored.  We must
-  // store this so that WebContentsImpl can tell any renderer in charge of one
-  // of the restored entries to update its max page ID.
-  int32_t max_restored_page_id_;
 
   // Manages the SSL security UI.
   SSLManager ssl_manager_;

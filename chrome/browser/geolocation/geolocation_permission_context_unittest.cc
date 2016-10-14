@@ -244,7 +244,7 @@ void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
       url, content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   content::NavigationEntry* entry = new_tab->GetController().GetPendingEntry();
   content::RenderFrameHostTester::For(new_tab->GetMainFrame())
-      ->SendNavigate(extra_tabs_.size() + 1, entry->GetUniqueID(), true, url);
+      ->SendNavigate(entry->GetUniqueID(), true, url);
 
   // Set up required helpers, and make this be as "tabby" as the code requires.
 #if defined(ENABLE_EXTENSIONS)

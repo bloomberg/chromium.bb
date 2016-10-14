@@ -174,17 +174,16 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // Set up the RenderView child process. Virtual because it is overridden by
   // TestRenderViewHost.
   // The |opener_route_id| parameter indicates which RenderView created this
-  // (MSG_ROUTING_NONE if none). If |max_page_id| is larger than -1, the
-  // RenderView is told to start issuing page IDs at |max_page_id| + 1.
+  // (MSG_ROUTING_NONE if none).
   // |window_was_created_with_opener| is true if this top-level frame was
   // created with an opener. (The opener may have been closed since.)
   // The |proxy_route_id| is only used when creating a RenderView in swapped out
-  // state.  |replicated_frame_state| contains replicated data for the
-  // top-level frame, such as its name and sandbox flags.
+  // state.
+  // |replicated_frame_state| contains replicated data for the top-level frame,
+  // such as its name and sandbox flags.
   virtual bool CreateRenderView(
       int opener_frame_route_id,
       int proxy_route_id,
-      int32_t max_page_id,
       const FrameReplicationState& replicated_frame_state,
       bool window_was_created_with_opener);
 

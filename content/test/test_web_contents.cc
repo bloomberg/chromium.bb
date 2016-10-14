@@ -97,13 +97,11 @@ int TestWebContents::DownloadImage(const GURL& url,
 }
 
 void TestWebContents::TestDidNavigate(RenderFrameHost* render_frame_host,
-                                      int page_id,
                                       int nav_entry_id,
                                       bool did_create_new_entry,
                                       const GURL& url,
                                       ui::PageTransition transition) {
   TestDidNavigateWithReferrer(render_frame_host,
-                              page_id,
                               nav_entry_id,
                               did_create_new_entry,
                               url,
@@ -113,7 +111,6 @@ void TestWebContents::TestDidNavigate(RenderFrameHost* render_frame_host,
 
 void TestWebContents::TestDidNavigateWithReferrer(
     RenderFrameHost* render_frame_host,
-    int page_id,
     int nav_entry_id,
     bool did_create_new_entry,
     const GURL& url,
@@ -128,7 +125,6 @@ void TestWebContents::TestDidNavigateWithReferrer(
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
 
-  params.page_id = page_id;
   params.nav_entry_id = nav_entry_id;
   params.url = url;
   params.referrer = referrer;
@@ -163,10 +159,9 @@ bool TestWebContents::CreateRenderViewForRenderManager(
     int opener_frame_routing_id,
     int proxy_routing_id,
     const FrameReplicationState& replicated_frame_state) {
-  UpdateMaxPageIDIfNecessary(render_view_host);
   // This will go to a TestRenderViewHost.
   static_cast<RenderViewHostImpl*>(render_view_host)
-      ->CreateRenderView(opener_frame_routing_id, proxy_routing_id, -1,
+      ->CreateRenderView(opener_frame_routing_id, proxy_routing_id,
                          replicated_frame_state, false);
   return true;
 }
@@ -243,13 +238,7 @@ void TestWebContents::CommitPendingNavigation() {
   CHECK(!browser_side_navigation ||
         !rfh->frame_tree_node()->navigation_request());
 
-  int page_id = entry->GetPageID();
-  if (page_id == -1) {
-    // It's a new navigation, assign a never-seen page id to it.
-    page_id = GetMaxPageIDForSiteInstance(rfh->GetSiteInstance()) + 1;
-  }
-
-  rfh->SendNavigateWithTransition(page_id, entry->GetUniqueID(),
+  rfh->SendNavigateWithTransition(entry->GetUniqueID(),
                                   GetController().GetPendingEntryIndex() == -1,
                                   entry->GetURL(), entry->GetTransitionType());
   // Simulate the SwapOut_ACK. This is needed when cross-site navigation

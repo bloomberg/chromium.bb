@@ -85,7 +85,6 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   NavigationEntryImpl();
   NavigationEntryImpl(scoped_refptr<SiteInstanceImpl> instance,
-                      int page_id,
                       const GURL& url,
                       const Referrer& referrer,
                       const base::string16& title,
@@ -114,8 +113,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   const base::string16& GetTitle() const override;
   void SetPageState(const PageState& state) override;
   PageState GetPageState() const override;
-  void SetPageID(int page_id) override;
-  int32_t GetPageID() const override;
   const base::string16& GetTitleForDisplay() const override;
   bool IsViewSourceMode() const override;
   void SetTransitionType(ui::PageTransition transition_type) override;
@@ -435,7 +432,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   bool update_virtual_url_with_url_;
   base::string16 title_;
   FaviconStatus favicon_;
-  int32_t page_id_;
   SSLStatus ssl_;
   ui::PageTransition transition_type_;
   GURL user_typed_url_;

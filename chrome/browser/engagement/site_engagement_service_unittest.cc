@@ -162,7 +162,7 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     controller().LoadURL(url, content::Referrer(), transition, std::string());
     int pending_id = controller().GetPendingEntry()->GetUniqueID();
     content::WebContentsTester::For(web_contents())
-        ->TestDidNavigate(web_contents()->GetMainFrame(), 1, pending_id, true,
+        ->TestDidNavigate(web_contents()->GetMainFrame(), pending_id, true,
                           url, transition);
     EXPECT_LT(prev_score, service->GetScore(url));
   }
@@ -175,7 +175,7 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     controller().LoadURL(url, content::Referrer(), transition, std::string());
     int pending_id = controller().GetPendingEntry()->GetUniqueID();
     content::WebContentsTester::For(web_contents())
-        ->TestDidNavigate(web_contents()->GetMainFrame(), 1, pending_id, true,
+        ->TestDidNavigate(web_contents()->GetMainFrame(), pending_id, true,
                           url, transition);
     EXPECT_EQ(prev_score, service->GetScore(url));
   }
