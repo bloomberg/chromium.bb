@@ -43,7 +43,8 @@ class LayerTreeHostDamageTestSetNeedsRedraw
   void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        layer_tree_host()->SetNeedsRedraw();
+        layer_tree_host()->SetNeedsRedrawRect(
+            gfx::Rect(layer_tree()->device_viewport_size()));
         break;
     }
   }

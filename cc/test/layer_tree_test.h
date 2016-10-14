@@ -102,20 +102,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   void RealEndTest();
 
-  virtual void DispatchAddAnimationToPlayer(
-      AnimationPlayer* player_to_receive_animation,
-      double animation_duration);
-  void DispatchSetDeferCommits(bool defer_commits);
-  void DispatchSetNeedsCommit();
-  void DispatchSetNeedsUpdateLayers();
-  void DispatchSetNeedsRedraw();
-  void DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect);
-  void DispatchSetVisible(bool visible);
-  void DispatchSetNextCommitForcesRedraw();
-  void DispatchDidAddAnimation();
-  void DispatchCompositeImmediately();
-  void DispatchNextCommitWaitsForActivation();
-
   std::unique_ptr<CompositorFrameSink>
   ReleaseCompositorFrameSinkOnLayerTreeHost();
   void SetVisibleOnLayerTreeHost(bool visible);
@@ -174,6 +160,20 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   gfx::Vector2dF ScrollDelta(LayerImpl* layer_impl);
 
  private:
+  virtual void DispatchAddAnimationToPlayer(
+      AnimationPlayer* player_to_receive_animation,
+      double animation_duration);
+  void DispatchSetDeferCommits(bool defer_commits);
+  void DispatchSetNeedsCommit();
+  void DispatchSetNeedsUpdateLayers();
+  void DispatchSetNeedsRedraw();
+  void DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect);
+  void DispatchSetVisible(bool visible);
+  void DispatchSetNextCommitForcesRedraw();
+  void DispatchDidAddAnimation();
+  void DispatchCompositeImmediately();
+  void DispatchNextCommitWaitsForActivation();
+
   LayerTreeSettings settings_;
 
   CompositorMode mode_;

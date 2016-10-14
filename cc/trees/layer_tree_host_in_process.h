@@ -151,7 +151,6 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   void SetDeferCommits(bool defer_commits) override;
   void LayoutAndUpdateLayers() override;
   void Composite(base::TimeTicks frame_begin_time) override;
-  void SetNeedsRedraw() override;
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
   void SetNextCommitForcesRedraw() override;
   void NotifyInputThrottledUntilCommit() override;

@@ -3004,7 +3004,8 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
       case 2:
         // Round 2 done.
         EXPECT_EQ(1, frame_);
-        layer_tree_host()->SetNeedsRedraw();
+        layer_tree_host()->SetNeedsRedrawRect(
+            gfx::Rect(layer_tree()->device_viewport_size()));
         break;
     }
   }

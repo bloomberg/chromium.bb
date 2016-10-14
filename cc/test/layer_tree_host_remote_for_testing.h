@@ -47,7 +47,6 @@ class LayerTreeHostRemoteForTesting : public LayerTreeHostRemote,
   void SetCompositorFrameSink(
       std::unique_ptr<CompositorFrameSink> compositor_frame_sink) override;
   std::unique_ptr<CompositorFrameSink> ReleaseCompositorFrameSink() override;
-  void SetNeedsRedraw() override;
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
   void SetNextCommitForcesRedraw() override;
   void NotifyInputThrottledUntilCommit() override;

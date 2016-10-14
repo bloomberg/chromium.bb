@@ -185,12 +185,6 @@ void LayerTreeHostRemote::Composite(base::TimeTicks frame_begin_time) {
                << " does not support single-thread since it is out of process";
 }
 
-void LayerTreeHostRemote::SetNeedsRedraw() {
-  // The engine shouldn't need to care about draws. CompositorFrames are never
-  // used here.
-  NOTREACHED();
-}
-
 void LayerTreeHostRemote::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   // The engine shouldn't need to care about draws. CompositorFrames are never
   // used here.

@@ -295,7 +295,8 @@ void Compositor::ScheduleFullRedraw() {
   // will also commit.  This should probably just redraw the screen
   // from damage and not commit.  ScheduleDraw/ScheduleRedraw need
   // better names.
-  host_->SetNeedsRedraw();
+  host_->SetNeedsRedrawRect(
+      gfx::Rect(host_->GetLayerTree()->device_viewport_size()));
   host_->SetNeedsCommit();
 }
 

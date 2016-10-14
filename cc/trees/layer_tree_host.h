@@ -143,9 +143,6 @@ class CC_EXPORT LayerTreeHost {
   // scheduling is disabled.
   virtual void Composite(base::TimeTicks frame_begin_time) = 0;
 
-  // Requests a redraw (compositor frame) for the complete viewport.
-  virtual void SetNeedsRedraw() = 0;
-
   // Requests a redraw (compositor frame) for the given rect.
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;
 

@@ -611,10 +611,6 @@ void LayerTreeHostInProcess::SetNeedsRecalculateRasterScales() {
   proxy_->SetNeedsCommit();
 }
 
-void LayerTreeHostInProcess::SetNeedsRedraw() {
-  SetNeedsRedrawRect(gfx::Rect(layer_tree_->device_viewport_size()));
-}
-
 void LayerTreeHostInProcess::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   proxy_->SetNeedsRedraw(damage_rect);
 }

@@ -174,11 +174,6 @@ LayerTreeHostRemoteForTesting::ReleaseCompositorFrameSink() {
   return layer_tree_host_in_process_->ReleaseCompositorFrameSink();
 }
 
-void LayerTreeHostRemoteForTesting::SetNeedsRedraw() {
-  // Draw requests pass through to the InProcessHost.
-  layer_tree_host_in_process_->SetNeedsRedraw();
-}
-
 void LayerTreeHostRemoteForTesting::SetNeedsRedrawRect(
     const gfx::Rect& damage_rect) {
   // Draw requests pass through to the InProcessHost.
