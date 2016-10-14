@@ -48,7 +48,8 @@ class WPTServe(server_base.ServerBase):
             self._stdout = self._stderr = self._executive.DEVNULL
         # TODO(burnik): We should stop setting the CWD once WPT can be run without it.
         self._cwd = path_to_wpt_root
-        self._env = {'PYTHONPATH': path_to_thirdparty}
+        self._env = port_obj.host.environ.copy()
+        self._env.update({'PYTHONPATH': path_to_thirdparty})
         self._keep_process_reference = True
         self._start_cmd = start_cmd
 
