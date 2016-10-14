@@ -2337,8 +2337,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     cq_label = data['labels'].get('Commit-Queue', {})
     if cq_label:
-      # Vote value is a stringified integer, which we expect from 0 to 2.
-      vote_value = cq_label.get('value', '0')
+      votes = cq_label.get('all', [])
+      highest_vote = 0
+      for v in votes:
+        highest_vote = max(highest_vote, v.get('value', 0))
+      vote_value = str(highest_vote)
+      if vote_value != '0':
+        # Add a '+' if the value is not 0 to match the values in the label.
+        # The cq_label does not have negatives.
+        vote_value = '+' + vote_value
       vote_text = cq_label.get('values', {}).get(vote_value, '')
       if vote_text.lower() == 'commit':
         return 'commit'
