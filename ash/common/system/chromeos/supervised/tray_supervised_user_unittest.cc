@@ -5,8 +5,8 @@
 #include "ash/common/system/chromeos/supervised/tray_supervised_user.h"
 
 #include "ash/common/login_status.h"
+#include "ash/common/test/ash_test.h"
 #include "ash/common/test/test_system_tray_delegate.h"
-#include "ash/test/ash_test_base.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
@@ -16,7 +16,7 @@ using message_center::NotificationList;
 
 namespace ash {
 
-class TraySupervisedUserTest : public test::AshTestBase {
+class TraySupervisedUserTest : public AshTest {
  public:
   TraySupervisedUserTest() {}
   ~TraySupervisedUserTest() override {}
@@ -42,25 +42,17 @@ message_center::Notification* TraySupervisedUserTest::GetPopup() {
 
 class TraySupervisedUserInitialTest : public TraySupervisedUserTest {
  public:
-  TraySupervisedUserInitialTest() {}
+  // Set the initial login status to supervised-user before AshTest::SetUp()
+  // constructs the system tray.
+  TraySupervisedUserInitialTest()
+      : scoped_initial_login_status_(LoginStatus::SUPERVISED) {}
   ~TraySupervisedUserInitialTest() override {}
 
-  void SetUp() override;
-  void TearDown() override;
-
  private:
+  test::ScopedInitialLoginStatus scoped_initial_login_status_;
+
   DISALLOW_COPY_AND_ASSIGN(TraySupervisedUserInitialTest);
 };
-
-void TraySupervisedUserInitialTest::SetUp() {
-  test::TestSystemTrayDelegate::SetInitialLoginStatus(LoginStatus::SUPERVISED);
-  test::AshTestBase::SetUp();
-}
-
-void TraySupervisedUserInitialTest::TearDown() {
-  test::AshTestBase::TearDown();
-  // SetInitialLoginStatus() is reset in AshTestHelper::TearDown().
-}
 
 TEST_F(TraySupervisedUserTest, SupervisedUserHasNotification) {
   test::TestSystemTrayDelegate* delegate = GetSystemTrayDelegate();

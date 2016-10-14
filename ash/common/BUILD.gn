@@ -26,6 +26,10 @@ source_set("unittests") {
   ]
 
   if (is_chromeos) {
-    sources += [ "system/chromeos/brightness/tray_brightness_unittest.cc" ]
+    sources += [
+      "system/chromeos/brightness/tray_brightness_unittest.cc",
+      "system/chromeos/supervised/tray_supervised_user_unittest.cc",
+    ]
+    deps += [ "//ui/message_center" ]
   }
 }

@@ -23,13 +23,6 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   // AshTestHelper::TearDown.
   static void SetSystemUpdateRequired(bool required);
 
-  // Changes the login status when initially the delegate is created. This will
-  // be called before AshTestBase::SetUp() to test the case when chrome is
-  // restarted right after the login (such like a flag is set).
-  // This value will be reset in AshTestHelper::TearDown,  most test fixtures
-  // don't need to care its lifecycle.
-  static void SetInitialLoginStatus(LoginStatus login_status);
-
   // Changes the current login status in the test. This also invokes
   // UpdateAfterLoginStatusChange(). Usually this is called in the test code to
   // set up a login status. This will fit to most of the test cases, but this
@@ -68,6 +61,20 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   IMEInfoList ime_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSystemTrayDelegate);
+};
+
+// Changes the initial login status before TestSystemTrayDelegate is created.
+// Allows testing the case when chrome is restarted right after login (such as
+// when a flag is set).
+class ScopedInitialLoginStatus {
+ public:
+  explicit ScopedInitialLoginStatus(LoginStatus status);
+  ~ScopedInitialLoginStatus();
+
+ private:
+  LoginStatus old_status_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedInitialLoginStatus);
 };
 
 }  // namespace test

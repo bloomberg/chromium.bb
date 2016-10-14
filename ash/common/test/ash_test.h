@@ -31,6 +31,10 @@ class SystemTray;
 class WmShelf;
 class WmWindow;
 
+namespace test {
+class TestSystemTrayDelegate;
+}
+
 // Wraps a WmWindow calling WmWindow::Destroy() from the destructor. WmWindow is
 // owned by the corresponding window implementation. The only way to delete
 // WmWindow is to call WmWindow::Destroy(), which deletes the corresponding
@@ -66,6 +70,8 @@ class AshTest : public testing::Test {
 
   // Returns the system tray on the primary display.
   static SystemTray* GetPrimarySystemTray();
+
+  static test::TestSystemTrayDelegate* GetSystemTrayDelegate();
 
   bool SupportsMultipleDisplays() const;
 

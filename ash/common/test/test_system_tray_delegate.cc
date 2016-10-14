@@ -28,11 +28,6 @@ TestSystemTrayDelegate::TestSystemTrayDelegate()
 TestSystemTrayDelegate::~TestSystemTrayDelegate() {}
 
 // static
-void TestSystemTrayDelegate::SetInitialLoginStatus(LoginStatus login_status) {
-  g_initial_status = login_status;
-}
-
-// static
 void TestSystemTrayDelegate::SetSystemUpdateRequired(bool required) {
   g_system_update_required = required;
 }
@@ -115,6 +110,17 @@ void TestSystemTrayDelegate::GetCurrentIME(IMEInfo* info) {
 
 void TestSystemTrayDelegate::GetAvailableIMEList(IMEInfoList* list) {
   *list = ime_list_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+ScopedInitialLoginStatus::ScopedInitialLoginStatus(LoginStatus new_status)
+    : old_status_(g_initial_status) {
+  g_initial_status = new_status;
+}
+
+ScopedInitialLoginStatus::~ScopedInitialLoginStatus() {
+  g_initial_status = old_status_;
 }
 
 }  // namespace test
