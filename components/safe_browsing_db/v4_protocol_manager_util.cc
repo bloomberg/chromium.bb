@@ -98,6 +98,10 @@ const ListIdentifier GetUrlSocEngId() {
                         SOCIAL_ENGINEERING_PUBLIC);
 }
 
+const ListIdentifier GetUrlUwsId() {
+  return ListIdentifier(GetCurrentPlatformType(), URL, UNWANTED_SOFTWARE);
+}
+
 // The Safe Browsing V4 server URL prefix.
 const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
 

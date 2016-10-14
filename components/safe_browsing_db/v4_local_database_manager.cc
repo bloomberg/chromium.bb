@@ -31,7 +31,9 @@ ListInfos GetListInfos() {
                 SB_THREAT_TYPE_URL_MALWARE),
        ListInfo(true, "UrlSoceng.store", GetUrlSocEngId(),
                 SB_THREAT_TYPE_URL_PHISHING),
-       ListInfo(false, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE)});
+       ListInfo(false, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
+       ListInfo(true, "UrlUws.store", GetUrlUwsId(),
+                SB_THREAT_TYPE_URL_UNWANTED)});
 }
 
 // Returns the severity information about a given SafeBrowsing list. The lowest

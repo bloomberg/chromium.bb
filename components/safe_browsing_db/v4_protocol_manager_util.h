@@ -133,6 +133,7 @@ PlatformType GetCurrentPlatformType();
 const ListIdentifier GetChromeUrlApiId();
 const ListIdentifier GetUrlMalwareId();
 const ListIdentifier GetUrlSocEngId();
+const ListIdentifier GetUrlUwsId();
 
 // Represents the state of each store.
 typedef base::hash_map<ListIdentifier, std::string> StoreStateMap;
