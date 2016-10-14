@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "chrome/browser/profile_resetter/profile_reset_report.pb.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 namespace base {
@@ -35,6 +36,10 @@ namespace settings {
 //  2) 'Powerwash' dialog (ChromeOS only)
 class ResetSettingsHandler : public SettingsPageUIHandler {
  public:
+  // Hash used by the Chrome Cleanup Tool when launching chrome with the reset
+  // profile settings URL.
+  static const char kCctResetSettingsHash[];
+
   ~ResetSettingsHandler() override;
 
   static ResetSettingsHandler* Create(
@@ -78,11 +83,16 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
 
   // Resets profile settings to default values. |send_settings| is true if user
   // gave their consent to upload broken settings to Google for analysis.
-  void ResetProfile(std::string callback_id, bool send_settings);
+  void ResetProfile(
+      const std::string& callback_id,
+      bool send_settings,
+      reset_report::ChromeResetReport::ResetRequestOrigin request_origin);
 
   // Closes the dialog once all requested settings has been reset.
-  void OnResetProfileSettingsDone(std::string callback_id,
-                                  bool send_feedback);
+  void OnResetProfileSettingsDone(
+      std::string callback_id,
+      bool send_feedback,
+      reset_report::ChromeResetReport::ResetRequestOrigin request_origin);
 
 #if defined(OS_CHROMEOS)
   // Will be called when powerwash dialog is shown.

@@ -56,7 +56,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/user_manager.h"
-#include "chrome/browser/ui/webui/options/reset_profile_settings_handler.h"
+#include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -538,7 +538,7 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     // On Windows, also allow a hash for the Chrome Cleanup Tool.
     const GURL reset_settings_url_with_cct_hash = reset_settings_url.Resolve(
         std::string("#") +
-        options::ResetProfileSettingsHandler::kCctResetSettingsHash);
+        settings::ResetSettingsHandler::kCctResetSettingsHash);
     url_points_to_an_approved_settings_page =
         url_points_to_an_approved_settings_page ||
         url == reset_settings_url_with_cct_hash;

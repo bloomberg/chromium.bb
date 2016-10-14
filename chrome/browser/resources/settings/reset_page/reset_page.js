@@ -52,7 +52,8 @@ Polymer({
 
   /** @private */
   onShowResetProfileDialog_: function() {
-    settings.navigateTo(settings.Route.RESET_DIALOG);
+    settings.navigateTo(settings.Route.RESET_DIALOG,
+                        new URLSearchParams('origin=userclick'));
   },
 
   /** @private */
