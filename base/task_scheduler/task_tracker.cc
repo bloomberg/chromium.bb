@@ -255,7 +255,7 @@ bool TaskTracker::RunTask(std::unique_ptr<Task> task,
                                                sequence_token));
 
       debug::TaskAnnotator task_annotator;
-      task_annotator.RunTask(kQueueFunctionName, *task);
+      task_annotator.RunTask(kQueueFunctionName, task.get());
     }
 
     AfterRunTask(shutdown_behavior);

@@ -38,6 +38,16 @@ void RecordImmediateTaskQueueingDuration(tracked_objects::Duration duration) {
 double MonotonicTimeInSeconds(base::TimeTicks timeTicks) {
   return (timeTicks - base::TimeTicks()).InSecondsF();
 }
+
+// Converts a OnceClosure to a RepeatingClosure. It hits CHECK failure to run
+// the resulting RepeatingClosure more than once.
+// TODO(tzik): This will be unneeded after the Closure-to-OnceClosure migration
+// on TaskRunner finished. Remove it once it gets unneeded.
+base::RepeatingClosure UnsafeConvertOnceClosureToRepeating(
+    base::OnceClosure cb) {
+  return base::BindRepeating([](base::OnceClosure cb) { std::move(cb).Run(); },
+                             base::Passed(&cb));
+}
 }
 
 TaskQueueManager::TaskQueueManager(
@@ -319,8 +329,11 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     // arbitrarily delayed so the additional delay should not be a problem.
     // TODO(skyostil): Figure out a way to not forget which task queue the
     // task is associated with. See http://crbug.com/522843.
-    delegate_->PostNonNestableTask(pending_task.posted_from,
-                                   std::move(pending_task.task));
+    // TODO(tzik): Remove base::UnsafeConvertOnceClosureToRepeating once
+    // TaskRunners have migrated to OnceClosure.
+    delegate_->PostNonNestableTask(
+        pending_task.posted_from,
+        UnsafeConvertOnceClosureToRepeating(std::move(pending_task.task)));
     return ProcessTaskResult::DEFERRED;
   }
 
@@ -341,7 +354,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   internal::TaskQueueImpl* prev_executing_task_queue =
       currently_executing_task_queue_;
   currently_executing_task_queue_ = queue;
-  task_annotator_.RunTask("TaskQueueManager::PostTask", pending_task);
+  task_annotator_.RunTask("TaskQueueManager::PostTask", &pending_task);
   // Detect if the TaskQueueManager just got deleted.  If this happens we must
   // not access any member variables after this point.
   if (protect->HasOneRef())

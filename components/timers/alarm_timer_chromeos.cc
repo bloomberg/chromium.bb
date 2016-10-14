@@ -131,7 +131,8 @@ void AlarmTimer::OnTimerFired() {
 
   // Run the task.
   TRACE_TASK_EXECUTION("AlarmTimer::OnTimerFired", *pending_user_task);
-  base::debug::TaskAnnotator().RunTask("AlarmTimer::Reset", *pending_user_task);
+  base::debug::TaskAnnotator().RunTask("AlarmTimer::Reset",
+                                       pending_user_task.get());
 
   // If the timer wasn't deleted, stopped or reset by the callback, reset or
   // stop it.

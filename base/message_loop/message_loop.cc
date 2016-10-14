@@ -387,15 +387,15 @@ bool MessageLoop::ProcessNextDelayedNonNestableTask() {
       std::move(deferred_non_nestable_work_queue_.front());
   deferred_non_nestable_work_queue_.pop();
 
-  RunTask(pending_task);
+  RunTask(&pending_task);
   return true;
 }
 
-void MessageLoop::RunTask(const PendingTask& pending_task) {
+void MessageLoop::RunTask(PendingTask* pending_task) {
   DCHECK(nestable_tasks_allowed_);
 
 #if defined(OS_WIN)
-  if (pending_task.is_high_res) {
+  if (pending_task->is_high_res) {
     pending_high_res_tasks_--;
     CHECK_GE(pending_high_res_tasks_, 0);
   }
@@ -404,20 +404,20 @@ void MessageLoop::RunTask(const PendingTask& pending_task) {
   // Execute the task and assume the worst: It is probably not reentrant.
   nestable_tasks_allowed_ = false;
 
-  TRACE_TASK_EXECUTION("MessageLoop::RunTask", pending_task);
+  TRACE_TASK_EXECUTION("MessageLoop::RunTask", *pending_task);
 
   FOR_EACH_OBSERVER(TaskObserver, task_observers_,
-                    WillProcessTask(pending_task));
+                    WillProcessTask(*pending_task));
   task_annotator_.RunTask("MessageLoop::PostTask", pending_task);
   FOR_EACH_OBSERVER(TaskObserver, task_observers_,
-                    DidProcessTask(pending_task));
+                    DidProcessTask(*pending_task));
 
   nestable_tasks_allowed_ = true;
 }
 
 bool MessageLoop::DeferOrRunPendingTask(PendingTask pending_task) {
   if (pending_task.nestable || run_loop_->run_depth_ == 1) {
-    RunTask(pending_task);
+    RunTask(&pending_task);
     // Show that we ran a task (Note: a new one might arrive as a
     // consequence!).
     return true;

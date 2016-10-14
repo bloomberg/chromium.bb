@@ -314,7 +314,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   debug::TaskAnnotator* task_annotator() { return &task_annotator_; }
 
   // Runs the specified PendingTask.
-  void RunTask(const PendingTask& pending_task);
+  void RunTask(PendingTask* pending_task);
 
   // Disallow nesting. After this is called, running a nested RunLoop or calling
   // Add/RemoveNestingObserver() on this MessageLoop will crash.
