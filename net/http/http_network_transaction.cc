@@ -652,7 +652,11 @@ int HttpNetworkTransaction::DoLoop(int result) {
         rv = DoCreateStream();
         break;
       case STATE_CREATE_STREAM_COMPLETE:
+        // TODO(zhongyi): remove liveness checks when crbug.com/652868 is
+        // solved.
+        net_log_.CrashIfInvalid();
         rv = DoCreateStreamComplete(rv);
+        net_log_.CrashIfInvalid();
         break;
       case STATE_INIT_STREAM:
         DCHECK_EQ(OK, rv);
