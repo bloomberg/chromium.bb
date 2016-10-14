@@ -529,35 +529,47 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         return new WebViewChromium(this, webView, privateAccess, mShouldDisableThreadChecking);
     }
 
-    // Check this as a workaround for crash issues.
+    // Workaround for IME thread crashes on grandfathered OEM apps.
     private boolean shouldDisableThreadChecking(Context context) {
+        String appName = context.getPackageName();
+        int versionCode = PackageUtils.getPackageVersion(context, appName);
+        int appTargetSdkVersion = context.getApplicationInfo().targetSdkVersion;
+
+        boolean shouldDisable = false;
+
         // crbug.com/651706
         final String lgeMailPackageId = "com.lge.email";
-        if (lgeMailPackageId.equals(context.getPackageName())) {
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M + 1) return false;
-            int versionCode = PackageUtils.getPackageVersion(context, lgeMailPackageId);
+        if (lgeMailPackageId.equals(appName)) {
             // The version code is provided by LGE.
             if (versionCode == -1 || versionCode >= 67700000) return false;
-            Log.w(TAG, "Disabling thread check in WebView (http://crbug.com/651706). "
-                    + "APK name: " + lgeMailPackageId + ", versionCode: " + versionCode);
-            return true;
+            shouldDisable = true;
+        }
+
+        // crbug.com/655759
+        // Also want to cover ".att" variant suffix package name.
+        final String yahooMailPackageId = "com.yahoo.mobile.client.android.mail";
+        if (appName.startsWith(yahooMailPackageId)) {
+            if (appTargetSdkVersion > Build.VERSION_CODES.M) return false;
+            if (versionCode == -1 || versionCode > 1315849) return false;
+            shouldDisable = true;
         }
 
         // crbug.com/622151
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) return false;
         final String htcMailPackageId = "com.htc.android.mail";
-        if (!htcMailPackageId.equals(context.getPackageName())) return false;
-        int versionCode = PackageUtils.getPackageVersion(context, htcMailPackageId);
-        if (versionCode == -1) return false;
-        // These values are provided by HTC.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M && versionCode >= 864021756) return false;
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M && versionCode >= 866001861) {
-            return false;
+        if (htcMailPackageId.equals(appName)) {
+            if (appTargetSdkVersion > Build.VERSION_CODES.M) return false;
+            if (versionCode == -1) return false;
+            // This value is provided by HTC.
+            if (versionCode >= 866001861) return false;
+            shouldDisable = true;
         }
 
-        Log.w(TAG, "Disabling thread check in WebView (http://crbug.com/622151). "
-                + "APK name: " + htcMailPackageId + ", versionCode: " + versionCode);
-        return true;
+        if (shouldDisable) {
+            Log.w(TAG, "Disabling thread check in WebView. "
+                            + "APK name: " + appName + ", versionCode: " + versionCode
+                            + ", targetSdkVersion: " + appTargetSdkVersion);
+        }
+        return shouldDisable;
     }
 
     @Override
