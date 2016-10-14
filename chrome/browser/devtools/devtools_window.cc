@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -791,6 +792,8 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   main_web_contents_->SetDelegate(this);
   // Bindings take ownership over devtools as its delegate.
   bindings_->SetDelegate(this);
+  data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
+      main_web_contents_);
   // DevTools uses PageZoom::Zoom(), so main_web_contents_ requires a
   // ZoomController.
   zoom::ZoomController::CreateForWebContents(main_web_contents_);
@@ -1016,6 +1019,8 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
     // Tag the DevTools toolbox WebContents with its TaskManager specific
     // UserData so that it shows up in the task manager.
     task_manager::WebContentsTags::CreateForDevToolsContents(
+        toolbox_web_contents_);
+    data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
         toolbox_web_contents_);
   }
 }
