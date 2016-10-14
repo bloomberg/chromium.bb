@@ -227,21 +227,11 @@ class WebFrameTest : public ::testing::Test {
 
   void applyViewportStyleOverride(
       FrameTestHelpers::WebViewHelper* webViewHelper) {
-    StyleSheetContents* styleSheet =
-        StyleSheetContents::create(CSSParserContext(UASheetMode, nullptr));
-    styleSheet->parseString(loadResourceAsASCIIString("viewportAndroid.css"));
-    RuleSet* ruleSet = RuleSet::create();
-    ruleSet->addRulesFromSheet(styleSheet, MediaQueryEvaluator("screen"));
-
-    Document* document =
-        toLocalFrame(webViewHelper->webView()->page()->mainFrame())->document();
-    document->ensureStyleResolver()
-        .viewportStyleResolver()
-        ->collectViewportRules(ruleSet, ViewportStyleResolver::UserAgentOrigin);
-    document->ensureStyleResolver().viewportStyleResolver()->resolve();
+    webViewHelper->webView()->settings()->setViewportStyle(
+        WebViewportStyle::Mobile);
   }
 
-  static void configueCompositingWebView(WebSettings* settings) {
+  static void configureCompositingWebView(WebSettings* settings) {
     settings->setAcceleratedCompositingEnabled(true);
     settings->setPreferCompositingToLCDTextEnabled(true);
   }
@@ -2912,7 +2902,7 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
       wrapUnique(new FakeCompositingWebViewClient());
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initialize(true, nullptr, fakeCompositingWebViewClient.get(),
-                           nullptr, &configueCompositingWebView);
+                           nullptr, &configureCompositingWebView);
 
   webViewHelper.resize(WebSize(viewWidth, viewHeight));
   FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(),
@@ -7167,7 +7157,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
       wrapUnique(new FakeCompositingWebViewClient());
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initialize(true, nullptr, fakeCompositingWebViewClient.get(),
-                           nullptr, &configueCompositingWebView);
+                           nullptr, &configureCompositingWebView);
 
   webViewHelper.resize(WebSize(100, 100));
   FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(),
