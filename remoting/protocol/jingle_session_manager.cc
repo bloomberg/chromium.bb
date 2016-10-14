@@ -67,31 +67,32 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
   if (!JingleMessage::IsJingleMessage(stanza))
     return false;
 
-  JingleMessage message;
+  std::unique_ptr<JingleMessage> message(new JingleMessage());
   std::string error;
-  if (!message.ParseXml(stanza, &error)) {
+  if (!message->ParseXml(stanza, &error)) {
     SendReply(stanza, JingleMessageReply::BAD_REQUEST);
     return true;
   }
 
-  if (message.action == JingleMessage::SESSION_INITIATE) {
+  if (message->action == JingleMessage::SESSION_INITIATE) {
     // Description must be present in session-initiate messages.
-    DCHECK(message.description.get());
+    DCHECK(message->description.get());
 
     SendReply(stanza, JingleMessageReply::NONE);
 
     std::unique_ptr<Authenticator> authenticator =
         authenticator_factory_->CreateAuthenticator(
-            signal_strategy_->GetLocalJid(), message.from.id());
+            signal_strategy_->GetLocalJid(), message->from.id());
 
     JingleSession* session = new JingleSession(this);
-    session->InitializeIncomingConnection(message, std::move(authenticator));
+    session->InitializeIncomingConnection(*message,
+                                          std::move(authenticator));
     sessions_[session->session_id_] = session;
 
     // Destroy the session if it was rejected due to incompatible protocol.
     if (session->state_ != Session::ACCEPTING) {
       delete session;
-      DCHECK(sessions_.find(message.sid) == sessions_.end());
+      DCHECK(sessions_.find(message->sid) == sessions_.end());
       return true;
     }
 
@@ -100,7 +101,7 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
       incoming_session_callback_.Run(session, &response);
 
     if (response == SessionManager::ACCEPT) {
-      session->AcceptIncomingConnection(message);
+      session->AcceptIncomingConnection(*message);
     } else {
       ErrorCode error;
       switch (response) {
@@ -119,19 +120,19 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
 
       session->Close(error);
       delete session;
-      DCHECK(sessions_.find(message.sid) == sessions_.end());
+      DCHECK(sessions_.find(message->sid) == sessions_.end());
     }
 
     return true;
   }
 
-  SessionsMap::iterator it = sessions_.find(message.sid);
+  SessionsMap::iterator it = sessions_.find(message->sid);
   if (it == sessions_.end()) {
     SendReply(stanza, JingleMessageReply::INVALID_SID);
     return true;
   }
 
-  it->second->OnIncomingMessage(message, base::Bind(
+  it->second->OnIncomingMessage(std::move(message), base::Bind(
       &JingleSessionManager::SendReply, base::Unretained(this), stanza));
   return true;
 }

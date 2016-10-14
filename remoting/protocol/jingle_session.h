@@ -66,7 +66,7 @@ class JingleSession : public Session {
   // Sends |message| to the peer. The session is closed if the send fails or no
   // response is received within a reasonable time. All other responses are
   // ignored.
-  void SendMessage(const JingleMessage& message);
+  void SendMessage(std::unique_ptr<JingleMessage> message);
 
   // Iq response handler.
   void OnMessageResponse(JingleMessage::ActionType request_type,
@@ -81,15 +81,15 @@ class JingleSession : public Session {
   // Called by JingleSessionManager on incoming |message|. Must call
   // |reply_callback| to send reply message before sending any other
   // messages.
-  void OnIncomingMessage(const JingleMessage& message,
+  void OnIncomingMessage(std::unique_ptr<JingleMessage> message,
                          const ReplyCallback& reply_callback);
 
   // Message handlers for incoming messages.
-  void OnAccept(const JingleMessage& message,
+  void OnAccept(std::unique_ptr<JingleMessage> message,
                 const ReplyCallback& reply_callback);
-  void OnSessionInfo(const JingleMessage& message,
+  void OnSessionInfo(std::unique_ptr<JingleMessage> message,
                      const ReplyCallback& reply_callback);
-  void OnTerminate(const JingleMessage& message,
+  void OnTerminate(std::unique_ptr<JingleMessage> message,
                    const ReplyCallback& reply_callback);
 
   // Called from OnAccept() to initialize session config.
