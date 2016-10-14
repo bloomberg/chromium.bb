@@ -107,6 +107,7 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   void removedFrom(ContainerNode*) override;
   void accessKeyAction(bool) override;
   void childrenChanged(const ChildrenChange&) override;
+  String innerText() override;
 
   // <option> never has a layoutObject so we manually manage a cached style.
   void updateNonComputedStyle();

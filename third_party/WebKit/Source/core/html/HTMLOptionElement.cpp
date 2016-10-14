@@ -452,4 +452,11 @@ bool HTMLOptionElement::isDisplayNone() const {
   return m_style->display() == EDisplay::None;
 }
 
+String HTMLOptionElement::innerText() {
+  // A workaround for crbug.com/424578. We add ShadowRoot to an OPTION, but
+  // innerText behavior for Shadow DOM is unclear.  We just return the same
+  // string before adding ShadowRoot.
+  return textContent();
+}
+
 }  // namespace blink

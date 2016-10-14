@@ -533,7 +533,7 @@ class CORE_EXPORT Element : public ContainerNode {
       Element* newFocusedElement,
       InputDeviceCapabilities* sourceCapabilities = nullptr);
 
-  String innerText();
+  virtual String innerText();
   String outerText();
   String innerHTML() const;
   String outerHTML() const;
