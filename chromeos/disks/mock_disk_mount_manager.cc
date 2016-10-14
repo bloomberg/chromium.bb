@@ -218,12 +218,14 @@ void MockDiskMountManager::EnsureMountInfoRefreshedInternal(
 void MockDiskMountManager::NotifyDiskChanged(
     DiskEvent event,
     const DiskMountManager::Disk* disk) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDiskEvent(event, disk));
+  for (auto& observer : observers_)
+    observer.OnDiskEvent(event, disk);
 }
 
 void MockDiskMountManager::NotifyDeviceChanged(DeviceEvent event,
                                                const std::string& path) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDeviceEvent(event, path));
+  for (auto& observer : observers_)
+    observer.OnDeviceEvent(event, path);
 }
 
 }  // namespace disks

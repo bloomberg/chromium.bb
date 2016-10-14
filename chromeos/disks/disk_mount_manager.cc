@@ -608,28 +608,30 @@ class DiskMountManagerImpl : public DiskMountManager {
   // Notifies all observers about disk status update.
   void NotifyDiskStatusUpdate(DiskEvent event,
                               const Disk* disk) {
-    FOR_EACH_OBSERVER(Observer, observers_, OnDiskEvent(event, disk));
+    for (auto& observer : observers_)
+      observer.OnDiskEvent(event, disk);
   }
 
   // Notifies all observers about device status update.
   void NotifyDeviceStatusUpdate(DeviceEvent event,
                                 const std::string& device_path) {
-    FOR_EACH_OBSERVER(Observer, observers_, OnDeviceEvent(event, device_path));
+    for (auto& observer : observers_)
+      observer.OnDeviceEvent(event, device_path);
   }
 
   // Notifies all observers about mount completion.
   void NotifyMountStatusUpdate(MountEvent event,
                                MountError error_code,
                                const MountPointInfo& mount_info) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnMountEvent(event, error_code, mount_info));
+    for (auto& observer : observers_)
+      observer.OnMountEvent(event, error_code, mount_info);
   }
 
   void NotifyFormatStatusUpdate(FormatEvent event,
                                 FormatError error_code,
                                 const std::string& device_path) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnFormatEvent(event, error_code, device_path));
+    for (auto& observer : observers_)
+      observer.OnFormatEvent(event, error_code, device_path);
   }
 
   // Finds system path prefix from |system_path|.

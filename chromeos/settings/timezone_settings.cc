@@ -393,7 +393,8 @@ void TimezoneSettingsImpl::SetTimezone(const icu::TimeZone& timezone) {
   base::WorkerPool::GetTaskRunner(true /* task is slow */)->
       PostTask(FROM_HERE, base::Bind(&SetTimezoneIDFromString, id));
   icu::TimeZone::setDefault(*known_timezone);
-  FOR_EACH_OBSERVER(Observer, observers_, TimezoneChanged(*known_timezone));
+  for (auto& observer : observers_)
+    observer.TimezoneChanged(*known_timezone);
 }
 
 // static
@@ -440,7 +441,8 @@ void TimezoneSettingsStubImpl::SetTimezone(const icu::TimeZone& timezone) {
   VLOG(1) << "Setting timezone to " << id;
   timezone_.reset(known_timezone->clone());
   icu::TimeZone::setDefault(*known_timezone);
-  FOR_EACH_OBSERVER(Observer, observers_, TimezoneChanged(*known_timezone));
+  for (auto& observer : observers_)
+    observer.TimezoneChanged(*known_timezone);
 }
 
 // static

@@ -113,8 +113,8 @@ void FakeCrasAudioClient::SetOutputNodeVolume(uint64_t node_id,
 
 void FakeCrasAudioClient::SetOutputUserMute(bool mute_on) {
   volume_state_.output_user_mute = mute_on;
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OutputMuteChanged(volume_state_.output_user_mute));
+  for (auto& observer : observers_)
+    observer.OutputMuteChanged(volume_state_.output_user_mute);
 }
 
 void FakeCrasAudioClient::SetInputNodeGain(uint64_t node_id,
@@ -122,8 +122,8 @@ void FakeCrasAudioClient::SetInputNodeGain(uint64_t node_id,
 
 void FakeCrasAudioClient::SetInputMute(bool mute_on) {
   volume_state_.input_mute = mute_on;
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    InputMuteChanged(volume_state_.input_mute));
+  for (auto& observer : observers_)
+    observer.InputMuteChanged(volume_state_.input_mute);
 }
 
 void FakeCrasAudioClient::SetActiveOutputNode(uint64_t node_id) {
@@ -137,7 +137,8 @@ void FakeCrasAudioClient::SetActiveOutputNode(uint64_t node_id) {
       node_list_[i].active = true;
   }
   active_output_node_id_ = node_id;
-  FOR_EACH_OBSERVER(Observer, observers_, ActiveOutputNodeChanged(node_id));
+  for (auto& observer : observers_)
+    observer.ActiveOutputNodeChanged(node_id);
 }
 
 void FakeCrasAudioClient::SetActiveInputNode(uint64_t node_id) {
@@ -151,7 +152,8 @@ void FakeCrasAudioClient::SetActiveInputNode(uint64_t node_id) {
       node_list_[i].active = true;
   }
   active_input_node_id_ = node_id;
-  FOR_EACH_OBSERVER(Observer, observers_, ActiveInputNodeChanged(node_id));
+  for (auto& observer : observers_)
+    observer.ActiveInputNodeChanged(node_id);
 }
 
 void FakeCrasAudioClient::AddActiveInputNode(uint64_t node_id) {
@@ -198,14 +200,16 @@ void FakeCrasAudioClient::InsertAudioNodeToList(const AudioNode& audio_node) {
     (*iter) = audio_node;
   else
     node_list_.push_back(audio_node);
-  FOR_EACH_OBSERVER(Observer, observers_, NodesChanged());
+  for (auto& observer : observers_)
+    observer.NodesChanged();
 }
 
 void FakeCrasAudioClient::RemoveAudioNodeFromList(const uint64_t& node_id) {
   auto iter = FindNode(node_id);
   if (iter != node_list_.end()) {
     node_list_.erase(iter);
-    FOR_EACH_OBSERVER(Observer, observers_, NodesChanged());
+    for (auto& observer : observers_)
+      observer.NodesChanged();
   }
 }
 
@@ -217,14 +221,15 @@ void FakeCrasAudioClient::SetAudioNodesForTesting(
 void FakeCrasAudioClient::SetAudioNodesAndNotifyObserversForTesting(
     const AudioNodeList& new_nodes) {
   SetAudioNodesForTesting(new_nodes);
-  FOR_EACH_OBSERVER(Observer, observers_, NodesChanged());
+  for (auto& observer : observers_)
+    observer.NodesChanged();
 }
 
 void FakeCrasAudioClient::NotifyOutputNodeVolumeChangedForTesting(
     uint64_t node_id,
     int volume) {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OutputNodeVolumeChanged(node_id, volume));
+  for (auto& observer : observers_)
+    observer.OutputNodeVolumeChanged(node_id, volume);
 }
 
 AudioNodeList::iterator FakeCrasAudioClient::FindNode(uint64_t node_id) {

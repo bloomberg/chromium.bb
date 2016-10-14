@@ -84,7 +84,8 @@ class SystemClockClientImpl : public SystemClockClient {
   void TimeUpdatedReceived(dbus::Signal* signal) {
     VLOG(1) << "TimeUpdated signal received: " << signal->ToString();
     dbus::MessageReader reader(signal);
-    FOR_EACH_OBSERVER(Observer, observers_, SystemClockUpdated());
+    for (auto& observer : observers_)
+      observer.SystemClockUpdated();
 
     // Check if the system clock can be changed now.
     GetCanSet();
@@ -119,8 +120,8 @@ class SystemClockClientImpl : public SystemClockClient {
     can_set_time_initialized_ = true;
     can_set_time_ = can_set_time;
 
-    FOR_EACH_OBSERVER(
-        Observer, observers_, SystemClockCanSetTimeChanged(can_set_time));
+    for (auto& observer : observers_)
+      observer.SystemClockCanSetTimeChanged(can_set_time);
   }
 
   // Check whether the time can be set.

@@ -604,9 +604,8 @@ void FakeShillDeviceClient::NotifyObserversPropertyChanged(
         << path << " : " << property;
     return;
   }
-  FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
-                    GetObserverList(device_path),
-                    OnPropertyChanged(property, *value));
+  for (auto& observer : GetObserverList(device_path))
+    observer.OnPropertyChanged(property, *value);
 }
 
 base::DictionaryValue* FakeShillDeviceClient::GetDeviceProperties(

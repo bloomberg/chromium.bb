@@ -156,8 +156,8 @@ void NetworkProfileHandler::GetProfilePropertiesCallback(
 void NetworkProfileHandler::AddProfile(const NetworkProfile& profile) {
   VLOG(2) << "Adding profile " << profile.ToDebugString() << ".";
   profiles_.push_back(profile);
-  FOR_EACH_OBSERVER(NetworkProfileObserver, observers_,
-                    OnProfileAdded(profiles_.back()));
+  for (auto& observer : observers_)
+    observer.OnProfileAdded(profiles_.back());
 }
 
 void NetworkProfileHandler::RemoveProfile(const std::string& profile_path) {
@@ -168,8 +168,8 @@ void NetworkProfileHandler::RemoveProfile(const std::string& profile_path) {
     return;
   NetworkProfile profile = *found;
   profiles_.erase(found);
-  FOR_EACH_OBSERVER(NetworkProfileObserver, observers_,
-                    OnProfileRemoved(profile));
+  for (auto& observer : observers_)
+    observer.OnProfileRemoved(profile);
 }
 
 const NetworkProfile* NetworkProfileHandler::GetProfileForPath(

@@ -348,9 +348,8 @@ void CrasAudioHandler::SetOutputMono(bool mono_on) {
         SetGlobalOutputChannelRemix(output_channels_, kStereoToStereo);
   }
 
-  FOR_EACH_OBSERVER(
-      AudioObserver, observers_,
-      OnOuputChannelRemixingChanged(mono_on));
+  for (auto& observer : observers_)
+    observer.OnOuputChannelRemixingChanged(mono_on);
 }
 
 bool CrasAudioHandler::IsOutputMonoEnabled() const {
@@ -413,9 +412,8 @@ void CrasAudioHandler::SetOutputMute(bool mute_on) {
     }
   }
 
-  FOR_EACH_OBSERVER(
-      AudioObserver, observers_,
-      OnOutputMuteChanged(output_mute_on_, false /* system_adjust */));
+  for (auto& observer : observers_)
+    observer.OnOutputMuteChanged(output_mute_on_, false /* system_adjust */);
 }
 
 void CrasAudioHandler::AdjustOutputVolumeToAudibleLevel() {
@@ -428,8 +426,8 @@ void CrasAudioHandler::AdjustOutputVolumeToAudibleLevel() {
 
 void CrasAudioHandler::SetInputMute(bool mute_on) {
   SetInputMuteInternal(mute_on);
-  FOR_EACH_OBSERVER(AudioObserver, observers_,
-                    OnInputMuteChanged(input_mute_on_));
+  for (auto& observer : observers_)
+    observer.OnInputMuteChanged(input_mute_on_);
 }
 
 void CrasAudioHandler::SetActiveDevice(const AudioDevice& active_device,
@@ -647,8 +645,8 @@ void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
     initializing_audio_state_ = false;
 
   if (should_notify) {
-    FOR_EACH_OBSERVER(AudioObserver, observers_,
-                      OnOutputNodeVolumeChanged(node_id, volume));
+    for (auto& observer : observers_)
+      observer.OnOutputNodeVolumeChanged(node_id, volume);
   }
 }
 
@@ -886,8 +884,8 @@ void CrasAudioHandler::SetInputNodeGainPercent(uint64_t node_id,
 
   if (device->active) {
     SetInputNodeGain(node_id, gain_percent);
-    FOR_EACH_OBSERVER(AudioObserver, observers_,
-                      OnInputNodeGainChanged(node_id, gain_percent));
+    for (auto& observer : observers_)
+      observer.OnInputNodeGainChanged(node_id, gain_percent);
   }
 }
 
@@ -1017,9 +1015,11 @@ CrasAudioHandler::DeviceStatus CrasAudioHandler::CheckDeviceStatus(
 
 void CrasAudioHandler::NotifyActiveNodeChanged(bool is_input) {
   if (is_input)
-    FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveInputNodeChanged());
+    for (auto& observer : observers_)
+      observer.OnActiveInputNodeChanged();
   else
-    FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveOutputNodeChanged());
+    for (auto& observer : observers_)
+      observer.OnActiveOutputNodeChanged();
 }
 
 bool CrasAudioHandler::GetActiveDeviceFromUserPref(bool is_input,
@@ -1300,7 +1300,8 @@ void CrasAudioHandler::HandleGetNodes(const chromeos::AudioNodeList& node_list,
   }
 
   UpdateDevicesAndSwitchActive(node_list);
-  FOR_EACH_OBSERVER(AudioObserver, observers_, OnAudioNodesChanged());
+  for (auto& observer : observers_)
+    observer.OnAudioNodesChanged();
 }
 
 void CrasAudioHandler::HandleGetNodesError(const std::string& error_name,
@@ -1374,9 +1375,10 @@ void CrasAudioHandler::UpdateAudioAfterHDMIRediscoverGracePeriod() {
     SetOutputMuteInternal(false);
 
     // Notify UI about the mute state change.
-    FOR_EACH_OBSERVER(
-        AudioObserver, observers_,
-        OnOutputMuteChanged(output_mute_on_, true /* system adjustment */));
+    for (auto& observer : observers_) {
+      observer.OnOutputMuteChanged(output_mute_on_,
+                                   true /* system adjustment */);
+    }
   }
 }
 

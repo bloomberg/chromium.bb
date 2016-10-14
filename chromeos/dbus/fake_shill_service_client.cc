@@ -521,9 +521,8 @@ void FakeShillServiceClient::NotifyObserversPropertyChanged(
                << path << " : " << property;
     return;
   }
-  FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
-                    GetObserverList(service_path),
-                    OnPropertyChanged(property, *value));
+  for (auto& observer : GetObserverList(service_path))
+    observer.OnPropertyChanged(property, *value);
 }
 
 base::DictionaryValue* FakeShillServiceClient::GetModifiableServiceProperties(

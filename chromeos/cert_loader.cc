@@ -170,8 +170,8 @@ void CertLoader::UpdateCertificates(
 }
 
 void CertLoader::NotifyCertificatesLoaded(bool initial_load) {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnCertificatesLoaded(*cert_list_, initial_load));
+  for (auto& observer : observers_)
+    observer.OnCertificatesLoaded(*cert_list_, initial_load);
 }
 
 void CertLoader::OnCertDBChanged(const net::X509Certificate* cert) {

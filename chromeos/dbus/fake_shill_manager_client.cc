@@ -966,14 +966,12 @@ void FakeShillManagerClient::NotifyObserversPropertyChanged(
   }
   if (property == shill::kServiceCompleteListProperty) {
     std::unique_ptr<base::ListValue> services(GetEnabledServiceList(property));
-    FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
-                      observer_list_,
-                      OnPropertyChanged(property, *(services.get())));
+    for (auto& observer : observer_list_)
+      observer.OnPropertyChanged(property, *(services.get()));
     return;
   }
-  FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
-                    observer_list_,
-                    OnPropertyChanged(property, *value));
+  for (auto& observer : observer_list_)
+    observer.OnPropertyChanged(property, *value);
 }
 
 base::ListValue* FakeShillManagerClient::GetListProperty(

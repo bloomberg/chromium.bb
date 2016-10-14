@@ -244,9 +244,8 @@ void AudioDevicesPrefHandlerImpl::MigrateDeviceVolumeSettings(
 }
 
 void AudioDevicesPrefHandlerImpl::NotifyAudioPolicyChange() {
-  FOR_EACH_OBSERVER(AudioPrefObserver,
-                    observers_,
-                    OnAudioPolicyPrefChanged());
+  for (auto& observer : observers_)
+    observer.OnAudioPolicyPrefChanged();
 }
 
 // static

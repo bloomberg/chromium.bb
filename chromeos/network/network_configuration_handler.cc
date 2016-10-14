@@ -401,9 +401,10 @@ void NetworkConfigurationHandler::RunCreateNetworkCallback(
     DCHECK(!guid.empty());
     callback.Run(service_path.value(), guid);
   }
-  FOR_EACH_OBSERVER(NetworkConfigurationObserver, observers_,
-                    OnConfigurationCreated(service_path.value(), profile_path,
-                                           *configure_properties, source));
+  for (auto& observer : observers_) {
+    observer.OnConfigurationCreated(service_path.value(), profile_path,
+                                    *configure_properties, source);
+  }
   // This may also get called when CreateConfiguration is used to update an
   // existing configuration, so request a service update just in case.
   // TODO(pneubeck): Separate 'Create' and 'Update' calls and only trigger
@@ -417,8 +418,8 @@ void NetworkConfigurationHandler::ProfileEntryDeleterCompleted(
     NetworkConfigurationObserver::Source source,
     bool success) {
   if (success) {
-    FOR_EACH_OBSERVER(NetworkConfigurationObserver, observers_,
-                      OnConfigurationRemoved(service_path, guid, source));
+    for (auto& observer : observers_)
+      observer.OnConfigurationRemoved(service_path, guid, source);
   }
   auto iter = profile_entry_deleters_.find(service_path);
   DCHECK(iter != profile_entry_deleters_.end());
@@ -432,9 +433,8 @@ void NetworkConfigurationHandler::SetNetworkProfileCompleted(
     const base::Closure& callback) {
   if (!callback.is_null())
     callback.Run();
-  FOR_EACH_OBSERVER(
-      NetworkConfigurationObserver, observers_,
-      OnConfigurationProfileChanged(service_path, profile_path, source));
+  for (auto& observer : observers_)
+    observer.OnConfigurationProfileChanged(service_path, profile_path, source);
 }
 
 void NetworkConfigurationHandler::GetPropertiesCallback(
@@ -488,9 +488,10 @@ void NetworkConfigurationHandler::SetPropertiesSuccessCallback(
   if (!network_state)
     return;  // Network no longer exists, do not notify or request update.
 
-  FOR_EACH_OBSERVER(NetworkConfigurationObserver, observers_,
-                    OnPropertiesSet(service_path, network_state->guid(),
-                                    *set_properties, source));
+  for (auto& observer : observers_) {
+    observer.OnPropertiesSet(service_path, network_state->guid(),
+                             *set_properties, source);
+  }
   network_state_handler_->RequestUpdateForNetwork(service_path);
 }
 

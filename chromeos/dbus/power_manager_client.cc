@@ -404,7 +404,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
       POWER_LOG(EVENT) << "Sending initial state to power manager";
       RegisterSuspendDelays();
       SetIsProjecting(last_is_projecting_);
-      FOR_EACH_OBSERVER(Observer, observers_, PowerManagerRestarted());
+      for (auto& observer : observers_)
+        observer.PowerManagerRestarted();
     }
   }
 
@@ -420,8 +421,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
     POWER_LOG(DEBUG) << "Brightness changed to " << brightness_level
                      << ": user initiated " << user_initiated;
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      BrightnessChanged(brightness_level, user_initiated));
+    for (auto& observer : observers_)
+      observer.BrightnessChanged(brightness_level, user_initiated);
   }
 
   void PeripheralBatteryStatusReceived(dbus::Signal* signal) {
@@ -441,8 +442,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
     POWER_LOG(DEBUG) << "Device battery status received " << level << " for "
                      << name << " at " << path;
 
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      PeripheralBatteryStatusReceived(path, name, level));
+    for (auto& observer : observers_)
+      observer.PeripheralBatteryStatusReceived(path, name, level);
   }
 
   void PowerSupplyPollReceived(dbus::Signal* signal) {
@@ -512,7 +513,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   void HandlePowerSupplyProperties(
       const power_manager::PowerSupplyProperties& proto) {
-    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(proto));
+    for (auto& observer : observers_)
+      observer.PowerChanged(proto);
     const bool on_battery = proto.external_power() ==
         power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
     base::PowerMonitorDeviceSource::SetPowerSource(on_battery);
@@ -587,9 +589,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
     // instead of asynchronously.
     notifying_observers_about_suspend_imminent_ = true;
     if (suspending_from_dark_resume_)
-      FOR_EACH_OBSERVER(Observer, observers_, DarkSuspendImminent());
+      for (auto& observer : observers_)
+        observer.DarkSuspendImminent();
     else
-      FOR_EACH_OBSERVER(Observer, observers_, SuspendImminent());
+      for (auto& observer : observers_)
+        observer.SuspendImminent();
     notifying_observers_about_suspend_imminent_ = false;
 
     base::PowerMonitorDeviceSource::HandleSystemSuspending();
@@ -629,8 +633,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
     suspending_from_dark_resume_ = false;
     num_pending_suspend_readiness_callbacks_ = 0;
 
-    FOR_EACH_OBSERVER(
-        PowerManagerClient::Observer, observers_, SuspendDone(duration));
+    for (auto& observer : observers_)
+      observer.SuspendDone(duration);
     base::PowerMonitorDeviceSource::HandleSystemResumed();
   }
 
@@ -642,13 +646,15 @@ class PowerManagerClientImpl : public PowerManagerClient {
                        << power_manager::kIdleActionImminentSignal << " signal";
       return;
     }
-    FOR_EACH_OBSERVER(Observer, observers_,
-        IdleActionImminent(base::TimeDelta::FromInternalValue(
-            proto.time_until_idle_action())));
+    for (auto& observer : observers_) {
+      observer.IdleActionImminent(
+          base::TimeDelta::FromInternalValue(proto.time_until_idle_action()));
+    }
   }
 
   void IdleActionDeferredReceived(dbus::Signal* signal) {
-    FOR_EACH_OBSERVER(Observer, observers_, IdleActionDeferred());
+    for (auto& observer : observers_)
+      observer.IdleActionDeferred();
   }
 
   void InputEventReceived(dbus::Signal* signal) {
@@ -670,8 +676,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
       case power_manager::InputEvent_Type_POWER_BUTTON_UP: {
         const bool down =
             (proto.type() == power_manager::InputEvent_Type_POWER_BUTTON_DOWN);
-        FOR_EACH_OBSERVER(PowerManagerClient::Observer, observers_,
-                          PowerButtonEventReceived(down, timestamp));
+        for (auto& observer : observers_)
+          observer.PowerButtonEventReceived(down, timestamp);
 
         // Tell powerd that Chrome has handled power button presses.
         if (down) {
@@ -691,16 +697,16 @@ class PowerManagerClientImpl : public PowerManagerClient {
       case power_manager::InputEvent_Type_LID_CLOSED: {
         bool open =
             (proto.type() == power_manager::InputEvent_Type_LID_OPEN);
-        FOR_EACH_OBSERVER(PowerManagerClient::Observer, observers_,
-                          LidEventReceived(open, timestamp));
+        for (auto& observer : observers_)
+          observer.LidEventReceived(open, timestamp);
         break;
       }
       case power_manager::InputEvent_Type_TABLET_MODE_ON:
       case power_manager::InputEvent_Type_TABLET_MODE_OFF: {
         bool on =
             (proto.type() == power_manager::InputEvent_Type_TABLET_MODE_ON);
-        FOR_EACH_OBSERVER(PowerManagerClient::Observer, observers_,
-                          TabletModeEventReceived(on, timestamp));
+        for (auto& observer : observers_)
+          observer.TabletModeEventReceived(on, timestamp);
         break;
       }
     }

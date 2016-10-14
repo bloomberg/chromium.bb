@@ -547,8 +547,8 @@ void ShillClientHelper::OnPropertyChanged(dbus::Signal* signal) {
   if (!value.get())
     return;
 
-  FOR_EACH_OBSERVER(ShillPropertyChangedObserver, observer_list_,
-                    OnPropertyChanged(name, *value));
+  for (auto& observer : observer_list_)
+    observer.OnPropertyChanged(name, *value);
 }
 
 }  // namespace chromeos

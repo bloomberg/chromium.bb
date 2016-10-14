@@ -464,8 +464,8 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
 
   old_per_network_config.clear();
   ApplyOrQueuePolicies(userhash, &modified_policies);
-  FOR_EACH_OBSERVER(NetworkPolicyObserver, observers_,
-                    PoliciesChanged(userhash));
+  for (auto& observer : observers_)
+    observer.PoliciesChanged(userhash);
 }
 
 bool ManagedNetworkConfigurationHandlerImpl::IsAnyPolicyApplicationRunning()
@@ -604,8 +604,8 @@ void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
     queued_modified_policies_.erase(userhash);
     ApplyOrQueuePolicies(userhash, &modified_policies);
   } else {
-    FOR_EACH_OBSERVER(
-        NetworkPolicyObserver, observers_, PoliciesApplied(userhash));
+    for (auto& observer : observers_)
+      observer.PoliciesApplied(userhash);
   }
 }
 
@@ -730,8 +730,8 @@ void ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork(
     const std::string& guid) {
   if (service_path.empty())
     return;
-  FOR_EACH_OBSERVER(
-      NetworkPolicyObserver, observers_, PolicyAppliedToNetwork(service_path));
+  for (auto& observer : observers_)
+    observer.PolicyAppliedToNetwork(service_path);
 }
 
 // Get{Managed}Properties helpers

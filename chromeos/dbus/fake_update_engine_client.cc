@@ -66,7 +66,8 @@ UpdateEngineClient::Status FakeUpdateEngineClient::GetLastStatus() {
 
 void FakeUpdateEngineClient::NotifyObserversThatStatusChanged(
     const UpdateEngineClient::Status& status) {
-  FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(status));
+  for (auto& observer : observers_)
+    observer.UpdateStatusChanged(status);
 }
 
 void FakeUpdateEngineClient::SetChannel(const std::string& target_channel,

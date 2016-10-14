@@ -328,7 +328,8 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     }
     status.status = UpdateStatusFromString(current_operation);
     last_status_ = status;
-    FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(status));
+    for (auto& observer : observers_)
+      observer.UpdateStatusChanged(status);
   }
 
   // Called when GetStatus call failed.
@@ -419,7 +420,8 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     status.new_size = new_size;
 
     last_status_ = status;
-    FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(status));
+    for (auto& observer : observers_)
+      observer.UpdateStatusChanged(status);
   }
 
   // Called when the status update signal is initially connected.
@@ -566,7 +568,8 @@ class UpdateEngineClientFakeImpl : public UpdateEngineClientStubImpl {
         break;
     }
     last_status_.status = next_status;
-    FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(last_status_));
+    for (auto& observer : observers_)
+      observer.UpdateStatusChanged(last_status_);
     if (last_status_.status != UPDATE_STATUS_IDLE) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&UpdateEngineClientFakeImpl::StateTransition,

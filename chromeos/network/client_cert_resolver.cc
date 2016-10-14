@@ -569,7 +569,8 @@ void ClientCertResolver::NotifyResolveRequestCompleted() {
   resolve_task_running_ = false;
   const bool changed = network_properties_changed_;
   network_properties_changed_ = false;
-  FOR_EACH_OBSERVER(Observer, observers_, ResolveRequestCompleted(changed));
+  for (auto& observer : observers_)
+    observer.ResolveRequestCompleted(changed);
 }
 
 base::Time ClientCertResolver::Now() const {

@@ -133,8 +133,8 @@ LoginState::~LoginState() {
 }
 
 void LoginState::NotifyObservers() {
-  FOR_EACH_OBSERVER(LoginState::Observer, observer_list_,
-                    LoggedInStateChanged());
+  for (auto& observer : observer_list_)
+    observer.LoggedInStateChanged();
 }
 
 }  // namespace chromeos

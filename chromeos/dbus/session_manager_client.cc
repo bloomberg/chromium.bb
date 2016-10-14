@@ -105,7 +105,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void EmitLoginPromptVisible() override {
     SimpleMethodCallToSessionManager(
         login_manager::kSessionManagerEmitLoginPromptVisible);
-    FOR_EACH_OBSERVER(Observer, observers_, EmitLoginPromptVisibleCalled());
+    for (auto& observer : observers_)
+      observer.EmitLoginPromptVisibleCalled();
   }
 
   void RestartJob(int socket_fd,
@@ -600,7 +601,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
     }
     const bool success = base::StartsWith(result_string, "success",
                                           base::CompareCase::INSENSITIVE_ASCII);
-    FOR_EACH_OBSERVER(Observer, observers_, OwnerKeySet(success));
+    for (auto& observer : observers_)
+      observer.OwnerKeySet(success);
   }
 
   // Called when the property change complete signal is received.
@@ -613,17 +615,20 @@ class SessionManagerClientImpl : public SessionManagerClient {
     }
     const bool success = base::StartsWith(result_string, "success",
                                           base::CompareCase::INSENSITIVE_ASCII);
-    FOR_EACH_OBSERVER(Observer, observers_, PropertyChangeComplete(success));
+    for (auto& observer : observers_)
+      observer.PropertyChangeComplete(success);
   }
 
   void ScreenIsLockedReceived(dbus::Signal* signal) {
     screen_is_locked_ = true;
-    FOR_EACH_OBSERVER(Observer, observers_, ScreenIsLocked());
+    for (auto& observer : observers_)
+      observer.ScreenIsLocked();
   }
 
   void ScreenIsUnlockedReceived(dbus::Signal* signal) {
     screen_is_locked_ = false;
-    FOR_EACH_OBSERVER(Observer, observers_, ScreenIsUnlocked());
+    for (auto& observer : observers_)
+      observer.ScreenIsUnlocked();
   }
 
   void ArcInstanceStoppedReceived(dbus::Signal* signal) {
@@ -633,7 +638,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    FOR_EACH_OBSERVER(Observer, observers_, ArcInstanceStopped(clean));
+    for (auto& observer : observers_)
+      observer.ArcInstanceStopped(clean);
   }
 
   // Called when the object is connected to the signal.
@@ -794,11 +800,13 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   }
   void NotifyLockScreenShown() override {
     screen_is_locked_ = true;
-    FOR_EACH_OBSERVER(Observer, observers_, ScreenIsLocked());
+    for (auto& observer : observers_)
+      observer.ScreenIsLocked();
   }
   void NotifyLockScreenDismissed() override {
     screen_is_locked_ = false;
-    FOR_EACH_OBSERVER(Observer, observers_, ScreenIsUnlocked());
+    for (auto& observer : observers_)
+      observer.ScreenIsUnlocked();
   }
   void RetrieveActiveSessions(const ActiveSessionsCallback& callback) override {
   }

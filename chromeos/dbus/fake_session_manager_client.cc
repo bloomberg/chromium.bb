@@ -124,7 +124,8 @@ void FakeSessionManagerClient::StoreDevicePolicy(
   device_policy_ = policy_blob;
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 base::Bind(callback, true));
-  FOR_EACH_OBSERVER(Observer, observers_, PropertyChangeComplete(true));
+  for (auto& observer : observers_)
+    observer.PropertyChangeComplete(true);
 }
 
 void FakeSessionManagerClient::StorePolicyForUser(
@@ -237,7 +238,8 @@ void FakeSessionManagerClient::set_device_local_account_policy(
 }
 
 void FakeSessionManagerClient::OnPropertyChangeComplete(bool success) {
-  FOR_EACH_OBSERVER(Observer, observers_, PropertyChangeComplete(success));
+  for (auto& observer : observers_)
+    observer.PropertyChangeComplete(success);
 }
 
 }  // namespace chromeos

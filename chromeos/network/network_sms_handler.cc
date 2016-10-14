@@ -392,7 +392,8 @@ void NetworkSmsHandler::AddReceivedMessage(
 
 void NetworkSmsHandler::NotifyMessageReceived(
     const base::DictionaryValue& message) {
-  FOR_EACH_OBSERVER(Observer, observers_, MessageReceived(message));
+  for (auto& observer : observers_)
+    observer.MessageReceived(message);
 }
 
 void NetworkSmsHandler::MessageReceived(const base::DictionaryValue& message) {
