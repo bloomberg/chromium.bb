@@ -575,7 +575,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
       var enableBackupRestore = doc.getElementById('enable-backup-restore');
       var enableLocationService = doc.getElementById('enable-location-service');
       sendNativeMessage('onAgreed', {
-        isMetricsEnabled: !enableMetrics.hidden && enableMetrics.checked,
+        isMetricsEnabled: enableMetrics.checked,
         isBackupRestoreEnabled: enableBackupRestore.checked,
         isLocationServiceEnabled: enableLocationService.checked
       });
