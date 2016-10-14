@@ -511,6 +511,8 @@ STDMETHODIMP AXPlatformNodeWin::get_states(AccessibleStates* states) {
   *states = IA2_STATE_OPAQUE;
   if (GetData().state & (1 << ui::AX_STATE_EDITABLE))
     *states |= IA2_STATE_EDITABLE;
+  if (GetData().state & (1 << ui::AX_STATE_VERTICAL))
+    *states |= IA2_STATE_VERTICAL;
 
   return S_OK;
 }

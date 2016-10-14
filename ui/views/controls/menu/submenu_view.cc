@@ -182,10 +182,13 @@ gfx::Size SubmenuView::GetPreferredSize() const {
 }
 
 void SubmenuView::GetAccessibleState(ui::AXViewState* state) {
-  // Inherit most of the state from the parent menu item, except the role.
+  // Inherit most of the state from the parent menu item, except the role and
+  // the orientation.
   if (GetMenuItem())
     GetMenuItem()->GetAccessibleState(state);
   state->role = ui::AX_ROLE_MENU_LIST_POPUP;
+  // Menus in Chrome are always traversed in a vertical direction.
+  state->AddStateFlag(ui::AX_STATE_VERTICAL);
 }
 
 void SubmenuView::PaintChildren(const ui::PaintContext& context) {

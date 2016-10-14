@@ -260,8 +260,6 @@ void MenuScrollViewContainer::GetAccessibleState(
     ui::AXViewState* state) {
   // Get the name from the submenu view.
   content_view_->GetAccessibleState(state);
-
-  // Now change the role.
   state->role = ui::AX_ROLE_MENU_BAR;
 }
 
