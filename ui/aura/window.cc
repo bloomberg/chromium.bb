@@ -906,17 +906,14 @@ void Window::NotifyWindowHierarchyChange(
     const WindowObserver::HierarchyChangeParams& params) {
   params.target->NotifyWindowHierarchyChangeDown(params);
   switch (params.phase) {
-  case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGING:
-    if (params.old_parent)
-      params.old_parent->NotifyWindowHierarchyChangeUp(params);
-    break;
-  case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGED:
-    if (params.new_parent)
-      params.new_parent->NotifyWindowHierarchyChangeUp(params);
-    break;
-  default:
-    NOTREACHED();
-    break;
+    case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGING:
+      if (params.old_parent)
+        params.old_parent->NotifyWindowHierarchyChangeUp(params);
+      break;
+    case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGED:
+      if (params.new_parent)
+        params.new_parent->NotifyWindowHierarchyChangeUp(params);
+      break;
   }
 }
 
@@ -941,25 +938,21 @@ void Window::NotifyWindowHierarchyChangeAtReceiver(
   local_params.receiver = this;
 
   switch (params.phase) {
-  case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGING:
-    FOR_EACH_OBSERVER(WindowObserver, observers_,
-                      OnWindowHierarchyChanging(local_params));
-    break;
-  case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGED:
-    FOR_EACH_OBSERVER(WindowObserver, observers_,
-                      OnWindowHierarchyChanged(local_params));
-    break;
-  default:
-    NOTREACHED();
-    break;
+    case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGING:
+      for (WindowObserver& observer : observers_)
+        observer.OnWindowHierarchyChanging(local_params);
+      break;
+    case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGED:
+      for (WindowObserver& observer : observers_)
+        observer.OnWindowHierarchyChanged(local_params);
+      break;
   }
 }
 
 void Window::NotifyWindowVisibilityChanged(aura::Window* target,
                                            bool visible) {
-  if (!NotifyWindowVisibilityChangedDown(target, visible)) {
+  if (!NotifyWindowVisibilityChangedDown(target, visible))
     return; // |this| has been deleted.
-  }
   NotifyWindowVisibilityChangedUp(target, visible);
 }
 
