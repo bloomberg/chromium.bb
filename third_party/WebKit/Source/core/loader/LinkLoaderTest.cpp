@@ -192,9 +192,10 @@ TEST(LinkLoaderTest, Preload) {
     HeapListHashSet<Member<Resource>>* preloads =
         dummyPageHolder->document().fetcher()->preloads();
     if (testCase.expectingLoad) {
-      if (!preloads)
+      if (!preloads) {
         fprintf(stderr, "Unexpected result %s %s %s\n", testCase.href,
                 testCase.as, testCase.type);
+      }
       EXPECT_TRUE(preloads);
     } else {
       EXPECT_FALSE(preloads);

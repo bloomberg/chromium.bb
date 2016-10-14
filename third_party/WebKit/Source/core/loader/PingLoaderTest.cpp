@@ -59,9 +59,10 @@ class PingLoaderTest : public ::testing::Test {
     PingLoader::sendLinkAuditPing(&m_pageHolder->frame(), pingURL,
                                   destinationURL);
     const ResourceRequest& pingRequest = m_client->pingRequest();
-    if (!pingRequest.isNull())
+    if (!pingRequest.isNull()) {
       EXPECT_EQ(destinationURL.getString(),
                 pingRequest.httpHeaderField("Ping-To"));
+    }
     return pingRequest;
   }
 

@@ -608,19 +608,21 @@ TEST_F(FrameFetchContextTest, PopulateRequestData) {
 
     ResourceRequest request("http://example.test/");
     request.setFrameType(test.frameType);
-    if (strlen(test.requestorOrigin) == 0)
+    if (strlen(test.requestorOrigin) == 0) {
       request.setRequestorOrigin(SecurityOrigin::createUnique());
-    else
+    } else {
       request.setRequestorOrigin(
           SecurityOrigin::create(KURL(ParsedURLString, test.requestorOrigin)));
+    }
 
     // Compare the populated |requestorOrigin| against |test.serializedOrigin|
     fetchContext->populateRequestData(request);
-    if (strlen(test.serializedOrigin) == 0)
+    if (strlen(test.serializedOrigin) == 0) {
       EXPECT_TRUE(request.requestorOrigin()->isUnique());
-    else
+    } else {
       EXPECT_EQ(String(test.serializedOrigin),
                 request.requestorOrigin()->toString());
+    }
 
     EXPECT_EQ(document->firstPartyForCookies(), request.firstPartyForCookies());
   }

@@ -247,11 +247,12 @@ void DocumentThreadableLoader::start(const ResourceRequest& request) {
             WebURLRequest::FetchRequestModeSameOrigin);
         break;
       case UseAccessControl:
-        if (m_options.preflightPolicy == ForcePreflight)
+        if (m_options.preflightPolicy == ForcePreflight) {
           newRequest.setFetchRequestMode(
               WebURLRequest::FetchRequestModeCORSWithForcedPreflight);
-        else
+        } else {
           newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
+        }
         break;
       case AllowCrossOriginRequests:
         SECURITY_CHECK(IsNoCORSAllowedContext(m_requestContext,
@@ -259,12 +260,13 @@ void DocumentThreadableLoader::start(const ResourceRequest& request) {
         newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeNoCORS);
         break;
     }
-    if (m_resourceLoaderOptions.allowCredentials == AllowStoredCredentials)
+    if (m_resourceLoaderOptions.allowCredentials == AllowStoredCredentials) {
       newRequest.setFetchCredentialsMode(
           WebURLRequest::FetchCredentialsModeInclude);
-    else
+    } else {
       newRequest.setFetchCredentialsMode(
           WebURLRequest::FetchCredentialsModeSameOrigin);
+    }
   }
 
   // We assume that ServiceWorker is skipped for sync requests and unsupported
@@ -541,9 +543,10 @@ bool DocumentThreadableLoader::redirectReceived(
   // Allow same origin requests to continue after allowing clients to audit the
   // redirect.
   if (isAllowedRedirect(request.url())) {
-    if (m_client->isDocumentThreadableLoaderClient())
+    if (m_client->isDocumentThreadableLoaderClient()) {
       return static_cast<DocumentThreadableLoaderClient*>(m_client)
           ->willFollowRedirect(request, redirectResponse);
+    }
     return true;
   }
 
@@ -986,9 +989,10 @@ void DocumentThreadableLoader::loadRequest(
     if (!m_actualRequest.isNull())
       resourceLoaderOptions.dataBufferingPolicy = BufferData;
 
-    if (m_options.timeoutMilliseconds > 0)
+    if (m_options.timeoutMilliseconds > 0) {
       m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0,
                                   BLINK_FROM_HERE);
+    }
 
     FetchRequest newRequest(request, m_options.initiator,
                             resourceLoaderOptions);

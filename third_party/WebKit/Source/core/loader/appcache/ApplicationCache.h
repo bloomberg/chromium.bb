@@ -27,8 +27,9 @@
 #define ApplicationCache_h
 
 #include "core/events/EventTarget.h"
-#include "core/loader/appcache/ApplicationCacheHost.h"
+
 #include "core/frame/DOMWindowProperty.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 

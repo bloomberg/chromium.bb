@@ -122,9 +122,10 @@ inline void TextResourceDecoderBuilder::setupEncoding(
   if (frame && frame->tree().parent() && frame->tree().parent()->isLocalFrame())
     parentFrame = toLocalFrame(frame->tree().parent());
 
-  if (!m_encoding.isEmpty())
+  if (!m_encoding.isEmpty()) {
     decoder->setEncoding(m_encoding.getString(),
                          TextResourceDecoder::EncodingFromHTTPHeader);
+  }
 
   // Set the hint encoding to the parent frame encoding only if the parent and
   // the current frames share the security origin. We impose this condition
@@ -138,9 +139,10 @@ inline void TextResourceDecoderBuilder::setupEncoding(
     if (parentFrame->document()->encodingWasDetectedHeuristically())
       decoder->setHintEncoding(parentFrame->document()->encoding());
 
-    if (m_encoding.isEmpty())
+    if (m_encoding.isEmpty()) {
       decoder->setEncoding(parentFrame->document()->encoding(),
                            TextResourceDecoder::EncodingFromParentFrame);
+    }
   }
 }
 

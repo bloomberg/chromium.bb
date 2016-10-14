@@ -472,9 +472,10 @@ void FrameLoader::receivedFirstData() {
                                HistoryNavigationType::DifferentDocument);
 
   if (!m_stateMachine.committedMultipleRealLoads() &&
-      m_loadType == FrameLoadTypeStandard)
+      m_loadType == FrameLoadTypeStandard) {
     m_stateMachine.advanceTo(
         FrameLoaderStateMachine::CommittedMultipleRealLoads);
+  }
 
   client()->dispatchDidCommitLoad(m_currentItem.get(), historyCommitType);
 
@@ -487,9 +488,10 @@ void FrameLoader::receivedFirstData() {
 
   // didObserveLoadingBehavior() must be called after dispatchDidCommitLoad() is
   // called for the metrics tracking logic to handle it properly.
-  if (client()->isControlledByServiceWorker(*m_documentLoader))
+  if (client()->isControlledByServiceWorker(*m_documentLoader)) {
     client()->didObserveLoadingBehavior(
         WebLoadingBehaviorServiceWorkerControlled);
+  }
 
   // Links with media values need more information (like viewport information).
   // This happens after the first chunk is parsed in HTMLDocumentParser.
@@ -518,9 +520,10 @@ void FrameLoader::didInstallNewDocument(bool dispatchWindowObjectAvailable) {
       m_documentLoader ? m_documentLoader->releaseContentSecurityPolicy()
                        : ContentSecurityPolicy::create());
 
-  if (m_provisionalItem && isBackForwardLoadType(m_loadType))
+  if (m_provisionalItem && isBackForwardLoadType(m_loadType)) {
     m_frame->document()->setStateForNewFormElements(
         m_provisionalItem->documentState());
+  }
 }
 
 void FrameLoader::didBeginDocument() {
@@ -537,10 +540,11 @@ void FrameLoader::didBeginDocument() {
       if (parseSuboriginHeader(suboriginHeader, &suborigin, messages))
         m_frame->document()->enforceSuborigin(suborigin);
 
-      for (auto& message : messages)
+      for (auto& message : messages) {
         m_frame->document()->addConsoleMessage(
             ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel,
                                    "Error with Suborigin header: " + message));
+      }
     }
     m_frame->document()->clientHintsPreferences().updateFrom(
         m_documentLoader->clientHintsPreferences());
@@ -568,9 +572,10 @@ void FrameLoader::didBeginDocument() {
           commaIndex);  // kNotFound == -1 == don't truncate
       headerContentLanguage =
           headerContentLanguage.stripWhiteSpace(isHTMLSpace<UChar>);
-      if (!headerContentLanguage.isEmpty())
+      if (!headerContentLanguage.isEmpty()) {
         m_frame->document()->setContentLanguage(
             AtomicString(headerContentLanguage));
+      }
     }
 
     OriginTrialContext::addTokensFromHeader(
@@ -600,9 +605,10 @@ void FrameLoader::finishedParsing() {
     client()->dispatchDidFinishDocumentLoad();
   }
 
-  if (client())
+  if (client()) {
     client()->runScriptsAtDocumentReady(
         m_documentLoader ? m_documentLoader->isCommittedButEmpty() : true);
+  }
 
   checkCompleted();
 
@@ -974,9 +980,10 @@ static NavigationType determineNavigationType(FrameLoadType frameLoadType,
                                               bool haveEvent) {
   bool isReload = isReloadLoadType(frameLoadType);
   bool isBackForward = isBackForwardLoadType(frameLoadType);
-  if (isFormSubmission)
+  if (isFormSubmission) {
     return (isReload || isBackForward) ? NavigationTypeFormResubmitted
                                        : NavigationTypeFormSubmitted;
+  }
   if (haveEvent)
     return NavigationTypeLinkClicked;
   if (isReload)
@@ -1188,9 +1195,11 @@ void FrameLoader::stopAllLoaders() {
   // It's possible that the above actions won't have stopped loading if load
   // completion had been blocked on parsing or if we were in the middle of
   // committing an empty document. In that case, emulate a failed navigation.
-  if (!m_provisionalDocumentLoader && m_documentLoader && m_frame->isLoading())
+  if (!m_provisionalDocumentLoader && m_documentLoader &&
+      m_frame->isLoading()) {
     loadFailed(m_documentLoader.get(),
                ResourceError::cancelledError(m_documentLoader->url()));
+  }
 
   m_inStopAllLoaders = false;
   takeObjectSnapshot();
@@ -1462,10 +1471,11 @@ void FrameLoader::processFragment(const KURL& url,
           : 0;
 
   // FIXME: Handle RemoteFrames
-  if (boundaryFrame && boundaryFrame->isLocalFrame())
+  if (boundaryFrame && boundaryFrame->isLocalFrame()) {
     toLocalFrame(boundaryFrame)
         ->view()
         ->setSafeToPropagateScrollToParent(false);
+  }
 
   // If scroll position is restored from history fragment then we should not
   // override it unless this is a same document reload.

@@ -140,10 +140,11 @@ static void dnsPrefetchIfNeeded(
     // <https://bugs.webkit.org/show_bug.cgi?id=48857>.
     if (settings && settings->dnsPrefetchingEnabled() && href.isValid() &&
         !href.isEmpty()) {
-      if (settings->logDnsPrefetchAndPreconnect())
+      if (settings->logDnsPrefetchAndPreconnect()) {
         document.addConsoleMessage(ConsoleMessage::create(
             OtherMessageSource, DebugMessageLevel,
             String("DNS prefetch triggered for " + href.host())));
+      }
       networkHintsInterface.dnsPrefetchHost(href.host());
     }
   }
@@ -283,10 +284,11 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
   if (!media.isEmpty()) {
     MediaValues* mediaValues =
         MediaValues::createDynamicIfFrameExists(document.frame());
-    if (viewportDescription)
+    if (viewportDescription) {
       mediaValues->overrideViewportDimensions(
           viewportDescription->maxWidth.getFloatValue(),
           viewportDescription->maxHeight.getFloatValue());
+    }
 
     // Preload only if media matches
     MediaQuerySet* mediaQueries = MediaQuerySet::create(media);
@@ -317,14 +319,16 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
   FetchRequest linkRequest(resourceRequest, FetchInitiatorTypeNames::link,
                            document.encodingName());
 
-  if (crossOrigin != CrossOriginAttributeNotSet)
+  if (crossOrigin != CrossOriginAttributeNotSet) {
     linkRequest.setCrossOriginAccessControl(document.getSecurityOrigin(),
                                             crossOrigin);
+  }
   Settings* settings = document.settings();
-  if (settings && settings->logPreload())
+  if (settings && settings->logPreload()) {
     document.addConsoleMessage(ConsoleMessage::create(
         OtherMessageSource, DebugMessageLevel,
         String("Preload triggered for " + href.host() + href.path())));
+  }
   linkRequest.setForPreload(true, monotonicallyIncreasingTime());
   linkRequest.setLinkPreload(true);
   return document.loader()->startPreload(resourceType, linkRequest);
@@ -400,10 +404,11 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute,
                      networkHintsInterface, LinkCalledFromMarkup);
 
   bool errorOccurred = false;
-  if (m_client->shouldLoadLink())
+  if (m_client->shouldLoadLink()) {
     createLinkPreloadResourceClient(preloadIfNeeded(
         relAttribute, href, document, as, type, media, crossOrigin,
         LinkCalledFromMarkup, errorOccurred, nullptr));
+  }
   if (errorOccurred)
     m_linkLoadingErrorTimer.startOneShot(0, BLINK_FROM_HERE);
 
@@ -418,9 +423,10 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute,
 
     FetchRequest linkRequest(ResourceRequest(document.completeURL(href)),
                              FetchInitiatorTypeNames::link);
-    if (crossOrigin != CrossOriginAttributeNotSet)
+    if (crossOrigin != CrossOriginAttributeNotSet) {
       linkRequest.setCrossOriginAccessControl(document.getSecurityOrigin(),
                                               crossOrigin);
+    }
     setResource(LinkFetchResource::fetch(Resource::LinkPrefetch, linkRequest,
                                          document.fetcher()));
   }

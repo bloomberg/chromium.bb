@@ -296,11 +296,12 @@ FrameLoadRequest FormSubmission::createFrameLoadRequest(
     frameRequest.resourceRequest().setHTTPBody(m_formData);
 
     // construct some user headers if necessary
-    if (m_boundary.isEmpty())
+    if (m_boundary.isEmpty()) {
       frameRequest.resourceRequest().setHTTPContentType(m_contentType);
-    else
+    } else {
       frameRequest.resourceRequest().setHTTPContentType(
           m_contentType + "; boundary=" + m_boundary);
+    }
   }
 
   frameRequest.resourceRequest().setURL(requestURL());

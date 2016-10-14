@@ -73,17 +73,19 @@ unsigned short ApplicationCache::status() const {
 void ApplicationCache::update(ExceptionState& exceptionState) {
   recordAPIUseType();
   ApplicationCacheHost* cacheHost = applicationCacheHost();
-  if (!cacheHost || !cacheHost->update())
+  if (!cacheHost || !cacheHost->update()) {
     exceptionState.throwDOMException(
         InvalidStateError, "there is no application cache to update.");
+  }
 }
 
 void ApplicationCache::swapCache(ExceptionState& exceptionState) {
   recordAPIUseType();
   ApplicationCacheHost* cacheHost = applicationCacheHost();
-  if (!cacheHost || !cacheHost->swapCache())
+  if (!cacheHost || !cacheHost->swapCache()) {
     exceptionState.throwDOMException(
         InvalidStateError, "there is no newer application cache to swap to.");
+  }
 }
 
 void ApplicationCache::abort() {

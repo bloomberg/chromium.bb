@@ -98,10 +98,11 @@ void ApplicationCacheHost::willStartLoadingMainResource(
   if (!spawningFrame || !spawningFrame->isLocalFrame())
     spawningFrame = &frame;
   if (DocumentLoader* spawningDocLoader =
-          toLocalFrame(spawningFrame)->loader().documentLoader())
+          toLocalFrame(spawningFrame)->loader().documentLoader()) {
     spawningHost = spawningDocLoader->applicationCacheHost()
                        ? spawningDocLoader->applicationCacheHost()->m_host.get()
                        : nullptr;
+  }
 
   m_host->willStartMainResourceRequest(wrapped, spawningHost);
 
@@ -198,9 +199,10 @@ void ApplicationCacheHost::notifyApplicationCache(
     const String& errorURL,
     int errorStatus,
     const String& errorMessage) {
-  if (id != kProgressEvent)
+  if (id != kProgressEvent) {
     InspectorInstrumentation::updateApplicationCacheStatus(
         m_documentLoader->frame());
+  }
 
   if (m_defersEvents) {
     // Event dispatching is deferred until document.onload has fired.
@@ -265,13 +267,14 @@ void ApplicationCacheHost::dispatchDOMEvent(
   if (eventType.isEmpty() || !m_domApplicationCache->getExecutionContext())
     return;
   Event* event = nullptr;
-  if (id == kProgressEvent)
+  if (id == kProgressEvent) {
     event = ProgressEvent::create(eventType, true, progressDone, progressTotal);
-  else if (id == kErrorEvent)
+  } else if (id == kErrorEvent) {
     event = ApplicationCacheErrorEvent::create(errorReason, errorURL,
                                                errorStatus, errorMessage);
-  else
+  } else {
     event = Event::create(eventType);
+  }
   m_domApplicationCache->dispatchEvent(event);
 }
 
@@ -285,9 +288,10 @@ bool ApplicationCacheHost::update() {
 
 bool ApplicationCacheHost::swapCache() {
   bool success = m_host ? m_host->swapCache() : false;
-  if (success)
+  if (success) {
     InspectorInstrumentation::updateApplicationCacheStatus(
         m_documentLoader->frame());
+  }
   return success;
 }
 

@@ -221,10 +221,11 @@ WorkerThreadableLoader::~WorkerThreadableLoader() {
 
 void WorkerThreadableLoader::start(const ResourceRequest& originalRequest) {
   ResourceRequest request(originalRequest);
-  if (!request.didSetHTTPReferrer())
+  if (!request.didSetHTTPReferrer()) {
     request.setHTTPReferrer(SecurityPolicy::generateReferrer(
         m_workerGlobalScope->getReferrerPolicy(), request.url(),
         m_workerGlobalScope->outgoingReferrer()));
+  }
 
   DCHECK(!isMainThread());
   RefPtr<WaitableEventWithTasks> eventWithTasks;

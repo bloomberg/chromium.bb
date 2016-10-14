@@ -67,16 +67,17 @@ void HttpEquiv::processHttpEquivContentSecurityPolicy(
     const AtomicString& content) {
   if (document.importLoader())
     return;
-  if (equalIgnoringCase(equiv, "content-security-policy"))
+  if (equalIgnoringCase(equiv, "content-security-policy")) {
     document.contentSecurityPolicy()->didReceiveHeader(
         content, ContentSecurityPolicyHeaderTypeEnforce,
         ContentSecurityPolicyHeaderSourceMeta);
-  else if (equalIgnoringCase(equiv, "content-security-policy-report-only"))
+  } else if (equalIgnoringCase(equiv, "content-security-policy-report-only")) {
     document.contentSecurityPolicy()->didReceiveHeader(
         content, ContentSecurityPolicyHeaderTypeReport,
         ContentSecurityPolicyHeaderSourceMeta);
-  else
+  } else {
     NOTREACHED();
+  }
 }
 
 void HttpEquiv::processHttpEquivAcceptCH(Document& document,
@@ -99,9 +100,10 @@ void HttpEquiv::processHttpEquivRefresh(Document& document,
   UseCounter::count(document, UseCounter::MetaRefresh);
   if (!document.contentSecurityPolicy()->allowInlineScript(
           KURL(), "", ParserInserted, OrdinalNumber(), "",
-          ContentSecurityPolicy::SuppressReport))
+          ContentSecurityPolicy::SuppressReport)) {
     UseCounter::count(document,
                       UseCounter::MetaRefreshWhenCSPBlocksInlineScript);
+  }
 
   document.maybeHandleHttpRefresh(content, Document::HttpRefreshFromMetaTag);
 }
@@ -116,9 +118,10 @@ void HttpEquiv::processHttpEquivSetCookie(Document& document,
   UseCounter::count(document, UseCounter::MetaSetCookie);
   if (!document.contentSecurityPolicy()->allowInlineScript(
           KURL(), "", ParserInserted, OrdinalNumber(), "",
-          ContentSecurityPolicy::SuppressReport))
+          ContentSecurityPolicy::SuppressReport)) {
     UseCounter::count(document,
                       UseCounter::MetaSetCookieWhenCSPBlocksInlineScript);
+  }
 
   // Exception (for sandboxed documents) ignored.
   document.setCookie(content, IGNORE_EXCEPTION);

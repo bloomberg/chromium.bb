@@ -98,9 +98,10 @@ void maybeLogScheduledNavigationClobber(ScheduledNavigationType type,
       ("Navigation.Scheduled.MaybeCausedAbort.Time", 1, 10000, 50));
   double navigationStart =
       frame->loader().provisionalDocumentLoader()->timing().navigationStart();
-  if (navigationStart)
+  if (navigationStart) {
     scheduledClobberAbortTimeHistogram.count(monotonicallyIncreasingTime() -
                                              navigationStart);
+  }
 }
 
 }  // namespace
@@ -164,9 +165,10 @@ class ScheduledURLNavigation : public ScheduledNavigation {
         m_url(url),
         m_shouldCheckMainWorldContentSecurityPolicy(
             CheckContentSecurityPolicy) {
-    if (ContentSecurityPolicy::shouldBypassMainWorld(originDocument))
+    if (ContentSecurityPolicy::shouldBypassMainWorld(originDocument)) {
       m_shouldCheckMainWorldContentSecurityPolicy =
           DoNotCheckContentSecurityPolicy;
+    }
   }
 
   void fire(LocalFrame* frame) override {
@@ -211,9 +213,10 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
     FrameLoadRequest request(originDocument(), url(), "_self");
     request.setReplacesCurrentItem(replacesCurrentItem());
     if (equalIgnoringFragmentIdentifier(frame->document()->url(),
-                                        request.resourceRequest().url()))
+                                        request.resourceRequest().url())) {
       request.resourceRequest().setCachePolicy(
           WebCachePolicy::ValidatingCacheData);
+    }
     request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
     maybeLogScheduledNavigationClobber(
         ScheduledNavigationType::ScheduledRedirect, frame);
@@ -348,9 +351,10 @@ NavigationScheduler::NavigationScheduler(LocalFrame* frame)
                       : WebScheduler::NavigatingFrameType::kChildFrame) {}
 
 NavigationScheduler::~NavigationScheduler() {
-  if (m_navigateTaskFactory->isPending())
+  if (m_navigateTaskFactory->isPending()) {
     Platform::current()->currentThread()->scheduler()->removePendingNavigation(
         m_frameType);
+  }
 }
 
 bool NavigationScheduler::locationChangePending() {
@@ -402,9 +406,10 @@ void NavigationScheduler::scheduleRedirect(double delay, const String& url) {
     return;
 
   // We want a new back/forward list item if the refresh timeout is > 1 second.
-  if (!m_redirect || delay <= m_redirect->delay())
+  if (!m_redirect || delay <= m_redirect->delay()) {
     schedule(
         ScheduledRedirect::create(delay, m_frame->document(), url, delay <= 1));
+  }
 }
 
 bool NavigationScheduler::mustReplaceCurrentItem(LocalFrame* targetFrame) {

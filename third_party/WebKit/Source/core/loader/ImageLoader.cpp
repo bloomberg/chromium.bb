@@ -231,9 +231,10 @@ static void configureRequest(
 
   CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(
       element.fastGetAttribute(HTMLNames::crossoriginAttr));
-  if (crossOrigin != CrossOriginAttributeNotSet)
+  if (crossOrigin != CrossOriginAttributeNotSet) {
     request.setCrossOriginAccessControl(element.document().getSecurityOrigin(),
                                         crossOrigin);
+  }
 
   if (clientHintsPreferences.shouldSendResourceWidth() &&
       isHTMLImageElement(element))
@@ -299,9 +300,10 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
       resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
     }
 
-    if (referrerPolicy != ReferrerPolicyDefault)
+    if (referrerPolicy != ReferrerPolicyDefault) {
       resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
           referrerPolicy, url, document.outgoingReferrer()));
+    }
 
     if (isHTMLPictureElement(element()->parentNode()) ||
         !element()->fastGetAttribute(HTMLNames::srcsetAttr).isNull())
@@ -486,9 +488,10 @@ void ImageLoader::imageNotifyFinished(ImageResource* resource) {
     loadEventSender().cancelEvent(this);
     m_hasPendingLoadEvent = false;
 
-    if (resource->resourceError().isAccessCheck())
+    if (resource->resourceError().isAccessCheck()) {
       crossSiteOrCSPViolationOccurred(
           AtomicString(resource->resourceError().failingURL()));
+    }
 
     // The error event should not fire if the image data update is a result of
     // environment change.
