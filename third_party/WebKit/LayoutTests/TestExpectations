@@ -456,6 +456,8 @@ crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-auto.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-auto-mock.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-locale.html [ Pass ]
 
+crbug.com/655963 inspector/console/console-dir.html [ NeedsManualRebaseline ]
+
 crbug.com/405389 imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
 crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ Failure ]
 crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-024.html [ Failure ]
