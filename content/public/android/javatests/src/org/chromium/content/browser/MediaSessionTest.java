@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -354,6 +355,7 @@ public class MediaSessionTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"MediaSession"})
+    @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)  // crbug.com/589176
     @RetryOnFailure
     public void testMediaResumeAfterTransientFocusLoss() throws Exception {
         assertEquals(AudioManager.AUDIOFOCUS_LOSS, mAudioFocusChangeListener.getAudioFocusState());
