@@ -8,14 +8,6 @@
       "backgroundColor": "#FF0000"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='positioned indicator'",
-      "position": [51, 50],
-      "bounds": [100, 100],
-      "contentsOpaque": true,
-      "drawsContent": true,
-      "backgroundColor": "#FF0000"
-    },
-    {
       "name": "LayoutBlockFlow (positioned) DIV class='positioned layer'",
       "position": [51, 50],
       "bounds": [100, 100],
