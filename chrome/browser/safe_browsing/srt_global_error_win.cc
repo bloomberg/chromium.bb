@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/srt_global_error_win.h"
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -52,6 +53,7 @@ const base::FilePath::CharType kExecutableExtension[] = L"exe";
 
 // Switches to add to the command line when executing the SRT.
 const char kChromePromptSwitch[] = "chrome-prompt";
+const char kChromeExePathSwitch[] = "chrome-exe-path";
 const char kChromeSystemInstallSwitch[] = "chrome-system-install";
 const char kUmaUserSwitch[] = "uma-user";
 
@@ -88,6 +90,7 @@ void MaybeExecuteSRTFromBlockingPool(
 
       base::FilePath chrome_exe_path;
       PathService::Get(base::FILE_EXE, &chrome_exe_path);
+      srt_command_line.AppendSwitchPath(kChromeExePathSwitch, chrome_exe_path);
       if (!InstallUtil::IsPerUserInstall(chrome_exe_path))
         srt_command_line.AppendSwitch(kChromeSystemInstallSwitch);
 
