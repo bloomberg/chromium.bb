@@ -226,6 +226,7 @@ static ConditionalClip ComputeCurrentClip(const ClipNode* clip_node,
 
 static ConditionalClip ComputeAccumulatedClip(
     const PropertyTrees* property_trees,
+    bool include_clip_applied_by_target,
     int local_clip_id,
     int target_id) {
   const ClipTree& clip_tree = property_trees->clip_tree;
@@ -241,25 +242,26 @@ static ConditionalClip ComputeAccumulatedClip(
 
   // If target is not direct ancestor of clip, this will find least common
   // ancestor between the target and the clip.
-  while (true) {
-    while (target_node->clip_id > clip_node->id ||
-           target_node->has_unclipped_descendants) {
-      target_node = effect_tree.Node(target_node->target_id);
-    }
-    if (target_node->clip_id == clip_node->id)
-      break;
-    while (target_node->clip_id < clip_node->id) {
-      parent_chain.push(clip_node);
-      clip_node = clip_tree.parent(clip_node);
-    }
-    if (target_node->clip_id == clip_node->id) {
-      // Target is responsible for applying this clip_node (id equals to
-      // target_node's clip id), no need to accumulate this as part of clip
-      // rect.
-      clip_node = parent_chain.top();
-      parent_chain.pop();
-      break;
-    }
+  while (target_node->clip_id > clip_node->id ||
+         target_node->has_unclipped_descendants) {
+    target_node = effect_tree.Node(target_node->target_id);
+  }
+
+  // Collect clip nodes up to the least common ancestor.
+  while (target_node->clip_id < clip_node->id) {
+    parent_chain.push(clip_node);
+    clip_node = clip_tree.parent(clip_node);
+  }
+  DCHECK_EQ(target_node->clip_id, clip_node->id);
+
+  if (!include_clip_applied_by_target && parent_chain.size() == 0) {
+    // There aren't any clips to apply.
+    return ConditionalClip{false, gfx::RectF()};
+  }
+
+  if (!include_clip_applied_by_target) {
+    clip_node = parent_chain.top();
+    parent_chain.pop();
   }
 
   // TODO(weiliangc): If we don't create clip for render surface, we don't need
@@ -304,20 +306,12 @@ static gfx::RectF ComputeAccumulatedClipInRootSpaceForVisibleRect(
     const PropertyTrees* property_trees,
     int local_clip_id) {
   const int root_effect_id = EffectTree::kContentsRootNodeId;
+  bool include_clip_applied_by_target = true;
   ConditionalClip accumulated_clip =
-      ComputeAccumulatedClip(property_trees, local_clip_id, root_effect_id);
-
-  gfx::RectF accumulated_clip_rect = accumulated_clip.clip_rect;
-  const ClipNode* root_effect_node =
-      property_trees->clip_tree.Node(root_effect_id);
-  if (accumulated_clip.is_clipped) {
-    accumulated_clip_rect.Intersect(root_effect_node->clip_in_target_space);
-  } else {
-    // In this case, we need only the viewport clip as the accumulated clip is
-    // unclipped.
-    accumulated_clip_rect = root_effect_node->clip_in_target_space;
-  }
-  return accumulated_clip_rect;
+      ComputeAccumulatedClip(property_trees, include_clip_applied_by_target,
+                             local_clip_id, root_effect_id);
+  DCHECK(accumulated_clip.is_clipped);
+  return accumulated_clip.clip_rect;
 }
 
 void CalculateClipRects(const std::vector<LayerImpl*>& visible_layer_list,
@@ -386,9 +380,10 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
         effect_tree.ClosestAncestorWithCopyRequest(layer->effect_tree_index());
     if (effect_ancestor_with_copy_request > 1) {
       // Non root copy request.
-      ConditionalClip accumulated_clip_rect =
-          ComputeAccumulatedClip(property_trees, layer->clip_tree_index(),
-                                 effect_ancestor_with_copy_request);
+      bool include_clip_applied_by_target = false;
+      ConditionalClip accumulated_clip_rect = ComputeAccumulatedClip(
+          property_trees, include_clip_applied_by_target,
+          layer->clip_tree_index(), effect_ancestor_with_copy_request);
       if (!accumulated_clip_rect.is_clipped) {
         layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
         continue;
@@ -997,8 +992,10 @@ static void ComputeClipsWithEffectTree(PropertyTrees* property_trees) {
   for (int i = 2; i < static_cast<int>(effect_tree->size()); ++i) {
     EffectNode* effect_node = effect_tree->Node(i);
     const EffectNode* target_node = effect_tree->Node(effect_node->target_id);
-    ConditionalClip accumulated_clip_rect = ComputeAccumulatedClip(
-        property_trees, effect_node->clip_id, target_node->id);
+    bool include_clip_applied_by_target = false;
+    ConditionalClip accumulated_clip_rect =
+        ComputeAccumulatedClip(property_trees, include_clip_applied_by_target,
+                               effect_node->clip_id, target_node->id);
     gfx::RectF accumulated_clip = accumulated_clip_rect.clip_rect;
     const RenderSurfaceImpl* render_surface = effect_node->render_surface;
     if (render_surface && render_surface->is_clipped()) {
@@ -1027,8 +1024,10 @@ static void ComputeLayerClipRect(const PropertyTrees* property_trees,
     target_node = effect_tree->Node(1);
   }
 
-  ConditionalClip accumulated_clip_rect = ComputeAccumulatedClip(
-      property_trees, layer->clip_tree_index(), target_node->id);
+  bool include_clip_applied_by_target = false;
+  ConditionalClip accumulated_clip_rect =
+      ComputeAccumulatedClip(property_trees, include_clip_applied_by_target,
+                             layer->clip_tree_index(), target_node->id);
 
   gfx::RectF accumulated_clip = accumulated_clip_rect.clip_rect;
 
@@ -1209,9 +1208,10 @@ gfx::Rect ComputeLayerVisibleRectDynamic(const PropertyTrees* property_trees,
   gfx::Rect layer_content_rect = gfx::Rect(layer->bounds());
   gfx::RectF accumulated_clip_in_root_space;
   if (non_root_copy_request) {
-    ConditionalClip accumulated_clip =
-        ComputeAccumulatedClip(property_trees, layer->clip_tree_index(),
-                               effect_ancestor_with_copy_request);
+    bool include_clip_applied_by_target = false;
+    ConditionalClip accumulated_clip = ComputeAccumulatedClip(
+        property_trees, include_clip_applied_by_target,
+        layer->clip_tree_index(), effect_ancestor_with_copy_request);
     if (!accumulated_clip.is_clipped)
       return layer_content_rect;
     accumulated_clip_in_root_space = accumulated_clip.clip_rect;
