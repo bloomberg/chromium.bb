@@ -653,8 +653,11 @@ void MagnificationControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
       SwitchTargetRootWindow(current_root, true);
     }
 
-    if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED)
+    if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED &&
+        event->pointer_details().pointer_type !=
+            ui::EventPointerType::POINTER_TYPE_PEN) {
       OnMouseMove(event->root_location());
+    }
   }
 }
 
