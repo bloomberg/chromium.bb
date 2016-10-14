@@ -163,6 +163,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // |this| may be dead after calling this method.
   void handleError(const ResourceError&);
 
+  void loadRequestAsync(const ResourceRequest&, ResourceLoaderOptions);
+  void loadRequestSync(const ResourceRequest&, ResourceLoaderOptions);
   void loadRequest(const ResourceRequest&, ResourceLoaderOptions);
   bool isAllowedRedirect(const KURL&) const;
   // Returns DoNotAllowStoredCredentials if m_forceDoNotAllowStoredCredentials

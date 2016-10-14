@@ -973,70 +973,61 @@ void DocumentThreadableLoader::handleError(const ResourceError& error) {
   client->didFail(copiedError);
 }
 
-void DocumentThreadableLoader::loadRequest(
+void DocumentThreadableLoader::loadRequestAsync(
     const ResourceRequest& request,
     ResourceLoaderOptions resourceLoaderOptions) {
-  // Any credential should have been removed from the cross-site requests.
-  const KURL& requestURL = request.url();
-  DCHECK(m_sameOriginRequest || requestURL.user().isEmpty());
-  DCHECK(m_sameOriginRequest || requestURL.pass().isEmpty());
+  if (!m_actualRequest.isNull())
+    resourceLoaderOptions.dataBufferingPolicy = BufferData;
 
-  // Update resourceLoaderOptions with enforced values.
-  if (m_forceDoNotAllowStoredCredentials)
-    resourceLoaderOptions.allowCredentials = DoNotAllowStoredCredentials;
-  resourceLoaderOptions.securityOrigin = m_securityOrigin;
-  if (m_async) {
-    if (!m_actualRequest.isNull())
-      resourceLoaderOptions.dataBufferingPolicy = BufferData;
+  if (m_options.timeoutMilliseconds > 0) {
+    m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0,
+                                BLINK_FROM_HERE);
+  }
 
-    if (m_options.timeoutMilliseconds > 0) {
-      m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0,
-                                  BLINK_FROM_HERE);
-    }
+  FetchRequest newRequest(request, m_options.initiator, resourceLoaderOptions);
+  if (m_options.crossOriginRequestPolicy == AllowCrossOriginRequests)
+    newRequest.setOriginRestriction(FetchRequest::NoOriginRestriction);
+  DCHECK(!resource());
 
-    FetchRequest newRequest(request, m_options.initiator,
-                            resourceLoaderOptions);
-    if (m_options.crossOriginRequestPolicy == AllowCrossOriginRequests)
-      newRequest.setOriginRestriction(FetchRequest::NoOriginRestriction);
-    DCHECK(!resource());
+  if (request.requestContext() == WebURLRequest::RequestContextVideo ||
+      request.requestContext() == WebURLRequest::RequestContextAudio)
+    setResource(RawResource::fetchMedia(newRequest, document().fetcher()));
+  else if (request.requestContext() == WebURLRequest::RequestContextManifest)
+    setResource(RawResource::fetchManifest(newRequest, document().fetcher()));
+  else
+    setResource(RawResource::fetch(newRequest, document().fetcher()));
 
-    if (request.requestContext() == WebURLRequest::RequestContextVideo ||
-        request.requestContext() == WebURLRequest::RequestContextAudio)
-      setResource(RawResource::fetchMedia(newRequest, document().fetcher()));
-    else if (request.requestContext() == WebURLRequest::RequestContextManifest)
-      setResource(RawResource::fetchManifest(newRequest, document().fetcher()));
-    else
-      setResource(RawResource::fetch(newRequest, document().fetcher()));
-
-    if (!resource()) {
-      InspectorInstrumentation::
-          documentThreadableLoaderFailedToStartLoadingForClient(m_document,
-                                                                m_client);
-      ThreadableLoaderClient* client = m_client;
-      clear();
-      // setResource() might call notifyFinished() and thus clear()
-      // synchronously, and in such cases ThreadableLoaderClient is already
-      // notified and |client| is null.
-      if (!client)
-        return;
-      client->didFail(ResourceError(errorDomainBlinkInternal, 0,
-                                    requestURL.getString(),
-                                    "Failed to start loading."));
+  if (!resource()) {
+    InspectorInstrumentation::
+        documentThreadableLoaderFailedToStartLoadingForClient(m_document,
+                                                              m_client);
+    ThreadableLoaderClient* client = m_client;
+    clear();
+    // setResource() might call notifyFinished() and thus clear()
+    // synchronously, and in such cases ThreadableLoaderClient is already
+    // notified and |client| is null.
+    if (!client)
       return;
-    }
-
-    if (resource()->isLoading()) {
-      unsigned long identifier = resource()->identifier();
-      InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(
-          m_document, identifier, m_client);
-    } else {
-      InspectorInstrumentation::
-          documentThreadableLoaderFailedToStartLoadingForClient(m_document,
-                                                                m_client);
-    }
+    client->didFail(ResourceError(errorDomainBlinkInternal, 0,
+                                  request.url().getString(),
+                                  "Failed to start loading."));
     return;
   }
 
+  if (resource()->isLoading()) {
+    unsigned long identifier = resource()->identifier();
+    InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(
+        m_document, identifier, m_client);
+  } else {
+    InspectorInstrumentation::
+        documentThreadableLoaderFailedToStartLoadingForClient(m_document,
+                                                              m_client);
+  }
+}
+
+void DocumentThreadableLoader::loadRequestSync(
+    const ResourceRequest& request,
+    ResourceLoaderOptions resourceLoaderOptions) {
   FetchRequest fetchRequest(request, m_options.initiator,
                             resourceLoaderOptions);
   if (m_options.crossOriginRequestPolicy == AllowCrossOriginRequests)
@@ -1059,6 +1050,8 @@ void DocumentThreadableLoader::loadRequest(
     client->didFail(error);
     return;
   }
+
+  const KURL& requestURL = request.url();
 
   // No exception for file:/// resources, see <rdar://problem/4962298>. Also, if
   // we have an HTTP response, then it wasn't a network error in fact.
@@ -1100,6 +1093,24 @@ void DocumentThreadableLoader::loadRequest(
     return;
 
   handleSuccessfulFinish(identifier, 0.0);
+}
+
+void DocumentThreadableLoader::loadRequest(
+    const ResourceRequest& request,
+    ResourceLoaderOptions resourceLoaderOptions) {
+  // Any credential should have been removed from the cross-site requests.
+  const KURL& requestURL = request.url();
+  DCHECK(m_sameOriginRequest || requestURL.user().isEmpty());
+  DCHECK(m_sameOriginRequest || requestURL.pass().isEmpty());
+
+  // Update resourceLoaderOptions with enforced values.
+  if (m_forceDoNotAllowStoredCredentials)
+    resourceLoaderOptions.allowCredentials = DoNotAllowStoredCredentials;
+  resourceLoaderOptions.securityOrigin = m_securityOrigin;
+  if (m_async)
+    loadRequestAsync(request, resourceLoaderOptions);
+  else
+    loadRequestSync(request, resourceLoaderOptions);
 }
 
 bool DocumentThreadableLoader::isAllowedRedirect(const KURL& url) const {
