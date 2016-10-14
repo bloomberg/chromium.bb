@@ -64,7 +64,8 @@ int ShelfModel::AddAt(int index, const ShelfItem& item) {
   index = ValidateInsertionIndex(item.type, index);
   items_.insert(items_.begin() + index, item);
   items_[index].id = next_id_++;
-  FOR_EACH_OBSERVER(ShelfModelObserver, observers_, ShelfItemAdded(index));
+  for (auto& observer : observers_)
+    observer.ShelfItemAdded(index);
   return index;
 }
 
@@ -77,10 +78,10 @@ void ShelfModel::RemoveItemAt(int index) {
   items_.erase(items_.begin() + index);
   RemoveShelfItemDelegate(id);
   // TODO(jamescook): Fold this into ShelfItemRemoved in existing observers.
-  FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
-                    OnSetShelfItemDelegate(id, nullptr));
-  FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
-                    ShelfItemRemoved(index, id));
+  for (auto& observer : observers_)
+    observer.OnSetShelfItemDelegate(id, nullptr);
+  for (auto& observer : observers_)
+    observer.ShelfItemRemoved(index, id);
 }
 
 void ShelfModel::Move(int index, int target_index) {
@@ -90,8 +91,8 @@ void ShelfModel::Move(int index, int target_index) {
   ShelfItem item(items_[index]);
   items_.erase(items_.begin() + index);
   items_.insert(items_.begin() + target_index, item);
-  FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
-                    ShelfItemMoved(index, target_index));
+  for (auto& observer : observers_)
+    observer.ShelfItemMoved(index, target_index);
 }
 
 void ShelfModel::Set(int index, const ShelfItem& item) {
@@ -103,8 +104,8 @@ void ShelfModel::Set(int index, const ShelfItem& item) {
   ShelfItem old_item(items_[index]);
   items_[index] = item;
   items_[index].id = old_item.id;
-  FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
-                    ShelfItemChanged(index, old_item));
+  for (auto& observer : observers_)
+    observer.ShelfItemChanged(index, old_item);
 
   // If the type changes confirm that the item is still in the right order.
   if (new_index != index) {
@@ -170,8 +171,8 @@ void ShelfModel::SetShelfItemDelegate(
   // |item_delegate|.
   RemoveShelfItemDelegate(id);
 
-  FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
-                    OnSetShelfItemDelegate(id, item_delegate.get()));
+  for (auto& observer : observers_)
+    observer.OnSetShelfItemDelegate(id, item_delegate.get());
 
   id_to_item_delegate_map_[id] = std::move(item_delegate);
 }

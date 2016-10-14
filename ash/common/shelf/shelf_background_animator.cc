@@ -88,14 +88,14 @@ void ShelfBackgroundAnimator::BackgroundAnimationEnded(
 void ShelfBackgroundAnimator::OnAlphaChanged(BackgroundAnimator* animator,
                                              int alpha) {
   if (animator == opaque_background_animator_.get()) {
-    FOR_EACH_OBSERVER(ShelfBackgroundAnimatorObserver, observers_,
-                      UpdateShelfOpaqueBackground(alpha));
+    for (auto& observer : observers_)
+      observer.UpdateShelfOpaqueBackground(alpha);
   } else if (animator == asset_background_animator_.get()) {
-    FOR_EACH_OBSERVER(ShelfBackgroundAnimatorObserver, observers_,
-                      UpdateShelfAssetBackground(alpha));
+    for (auto& observer : observers_)
+      observer.UpdateShelfAssetBackground(alpha);
   } else if (animator == item_background_animator_.get()) {
-    FOR_EACH_OBSERVER(ShelfBackgroundAnimatorObserver, observers_,
-                      UpdateShelfItemBackground(alpha));
+    for (auto& observer : observers_)
+      observer.UpdateShelfItemBackground(alpha);
   } else {
     NOTREACHED();
   }

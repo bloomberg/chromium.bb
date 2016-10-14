@@ -48,7 +48,8 @@ void VPNDelegate::RemoveObserver(Observer* observer) {
 }
 
 void VPNDelegate::NotifyObservers() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnVPNProvidersChanged());
+  for (auto& observer : observer_list_)
+    observer.OnVPNProvidersChanged();
 }
 
 }  // namespace ash

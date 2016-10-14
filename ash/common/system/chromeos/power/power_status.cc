@@ -511,7 +511,8 @@ void PowerStatus::PowerChanged(
     const power_manager::PowerSupplyProperties& proto) {
   proto_ = proto;
   SanitizeProto(&proto_);
-  FOR_EACH_OBSERVER(Observer, observers_, OnPowerStatusChanged());
+  for (auto& observer : observers_)
+    observer.OnPowerStatusChanged();
 }
 
 }  // namespace ash

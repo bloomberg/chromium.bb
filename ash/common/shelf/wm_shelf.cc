@@ -283,7 +283,8 @@ void WmShelf::RemoveObserver(WmShelfObserver* observer) {
 }
 
 void WmShelf::NotifyShelfIconPositionsChanged() {
-  FOR_EACH_OBSERVER(WmShelfObserver, observers_, OnShelfIconPositionsChanged());
+  for (auto& observer : observers_)
+    observer.OnShelfIconPositionsChanged();
 }
 
 StatusAreaWidget* WmShelf::GetStatusAreaWidget() const {
@@ -313,21 +314,21 @@ void WmShelf::WillDeleteShelfLayoutManager() {
 }
 
 void WmShelf::WillChangeVisibilityState(ShelfVisibilityState new_state) {
-  FOR_EACH_OBSERVER(WmShelfObserver, observers_,
-                    WillChangeVisibilityState(new_state));
+  for (auto& observer : observers_)
+    observer.WillChangeVisibilityState(new_state);
 }
 
 void WmShelf::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
-  FOR_EACH_OBSERVER(WmShelfObserver, observers_,
-                    OnAutoHideStateChanged(new_state));
+  for (auto& observer : observers_)
+    observer.OnAutoHideStateChanged(new_state);
 }
 
 void WmShelf::OnBackgroundUpdated(ShelfBackgroundType background_type,
                                   BackgroundAnimatorChangeType change_type) {
   if (background_type == GetBackgroundType())
     return;
-  FOR_EACH_OBSERVER(WmShelfObserver, observers_,
-                    OnBackgroundTypeChanged(background_type, change_type));
+  for (auto& observer : observers_)
+    observer.OnBackgroundTypeChanged(background_type, change_type);
 }
 
 }  // namespace ash

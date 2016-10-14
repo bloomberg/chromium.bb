@@ -131,8 +131,8 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   if (update_shelf_observer_)
     update_shelf_observer_->Detach();
 
-  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
-                    WillDeleteShelfLayoutManager());
+  for (auto& observer : observers_)
+    observer.WillDeleteShelfLayoutManager();
   WmShell::Get()->RemoveShellObserver(this);
   WmShell::Get()->RemoveLockStateObserver(this);
   WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(this);
@@ -176,8 +176,8 @@ void ShelfLayoutManager::LayoutShelfAndUpdateBounds(bool change_work_area) {
   UpdateBoundsAndOpacity(target_bounds, false, change_work_area, NULL);
 
   // Update insets in ShelfWindowTargeter when shelf bounds change.
-  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
-                    WillChangeVisibilityState(visibility_state()));
+  for (auto& observer : observers_)
+    observer.WillChangeVisibilityState(visibility_state());
 }
 
 void ShelfLayoutManager::LayoutShelf() {
@@ -461,8 +461,8 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   if (!force_update && state_.Equals(state))
     return;  // Nothing changed.
 
-  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
-                    WillChangeVisibilityState(visibility_state));
+  for (auto& observer : observers_)
+    observer.WillChangeVisibilityState(visibility_state);
 
   StopAutoHideTimer();
 
@@ -516,8 +516,8 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   if ((old_state.visibility_state != state_.visibility_state &&
        state_.visibility_state == SHELF_AUTO_HIDE) ||
       old_state.auto_hide_state != state_.auto_hide_state) {
-    FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
-                      OnAutoHideStateChanged(state_.auto_hide_state));
+    for (auto& observer : observers_)
+      observer.OnAutoHideStateChanged(state_.auto_hide_state);
   }
 }
 
@@ -790,8 +790,8 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 void ShelfLayoutManager::UpdateShelfBackground(
     BackgroundAnimatorChangeType type) {
   const ShelfBackgroundType background_type(GetShelfBackgroundType());
-  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
-                    OnBackgroundUpdated(background_type, type));
+  for (auto& observer : observers_)
+    observer.OnBackgroundUpdated(background_type, type);
 }
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {

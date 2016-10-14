@@ -1297,8 +1297,8 @@ void DockedWindowLayoutManager::UpdateDockBounds(
       dock_container_->GetBounds().y(), dock_inset, work_area.height());
   docked_bounds_ =
       bounds + dock_container_->GetBoundsInScreen().OffsetFromOrigin();
-  FOR_EACH_OBSERVER(DockedWindowLayoutManagerObserver, observer_list_,
-                    OnDockBoundsChanging(bounds, reason));
+  for (auto& observer : observer_list_)
+    observer.OnDockBoundsChanging(bounds, reason);
   // Show or hide background for docked area.
   gfx::Rect background_bounds(docked_bounds_);
   if (shelf_observer_)

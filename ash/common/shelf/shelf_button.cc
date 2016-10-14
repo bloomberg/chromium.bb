@@ -121,7 +121,8 @@ class ShelfButtonAnimation : public gfx::AnimationDelegate {
       return;
     if (!animation_.is_animating())
       return;
-    FOR_EACH_OBSERVER(Observer, observers_, AnimationProgressed());
+    for (auto& observer : observers_)
+      observer.AnimationProgressed();
   }
 
   gfx::ThrobAnimation animation_;

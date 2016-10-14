@@ -44,8 +44,8 @@ void SystemTrayNotifier::RemoveAccessibilityObserver(
 
 void SystemTrayNotifier::NotifyAccessibilityModeChanged(
     AccessibilityNotificationVisibility notify) {
-  FOR_EACH_OBSERVER(AccessibilityObserver, accessibility_observers_,
-                    OnAccessibilityModeChanged(notify));
+  for (auto& observer : accessibility_observers_)
+    observer.OnAccessibilityModeChanged(notify);
 }
 
 void SystemTrayNotifier::AddAudioObserver(AudioObserver* observer) {
@@ -58,28 +58,29 @@ void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
 
 void SystemTrayNotifier::NotifyAudioOutputVolumeChanged(uint64_t node_id,
                                                         double volume) {
-  FOR_EACH_OBSERVER(AudioObserver, audio_observers_,
-                    OnOutputNodeVolumeChanged(node_id, volume));
+  for (auto& observer : audio_observers_)
+    observer.OnOutputNodeVolumeChanged(node_id, volume);
 }
 
 void SystemTrayNotifier::NotifyAudioOutputMuteChanged(bool mute_on,
                                                       bool system_adjust) {
-  FOR_EACH_OBSERVER(AudioObserver, audio_observers_,
-                    OnOutputMuteChanged(mute_on, system_adjust));
+  for (auto& observer : audio_observers_)
+    observer.OnOutputMuteChanged(mute_on, system_adjust);
 }
 
 void SystemTrayNotifier::NotifyAudioNodesChanged() {
-  FOR_EACH_OBSERVER(AudioObserver, audio_observers_, OnAudioNodesChanged());
+  for (auto& observer : audio_observers_)
+    observer.OnAudioNodesChanged();
 }
 
 void SystemTrayNotifier::NotifyAudioActiveOutputNodeChanged() {
-  FOR_EACH_OBSERVER(AudioObserver, audio_observers_,
-                    OnActiveOutputNodeChanged());
+  for (auto& observer : audio_observers_)
+    observer.OnActiveOutputNodeChanged();
 }
 
 void SystemTrayNotifier::NotifyAudioActiveInputNodeChanged() {
-  FOR_EACH_OBSERVER(AudioObserver, audio_observers_,
-                    OnActiveInputNodeChanged());
+  for (auto& observer : audio_observers_)
+    observer.OnActiveInputNodeChanged();
 }
 
 void SystemTrayNotifier::AddClockObserver(ClockObserver* observer) {
@@ -91,21 +92,23 @@ void SystemTrayNotifier::RemoveClockObserver(ClockObserver* observer) {
 }
 
 void SystemTrayNotifier::NotifyRefreshClock() {
-  FOR_EACH_OBSERVER(ClockObserver, clock_observers_, Refresh());
+  for (auto& observer : clock_observers_)
+    observer.Refresh();
 }
 
 void SystemTrayNotifier::NotifyDateFormatChanged() {
-  FOR_EACH_OBSERVER(ClockObserver, clock_observers_, OnDateFormatChanged());
+  for (auto& observer : clock_observers_)
+    observer.OnDateFormatChanged();
 }
 
 void SystemTrayNotifier::NotifySystemClockTimeUpdated() {
-  FOR_EACH_OBSERVER(ClockObserver, clock_observers_,
-                    OnSystemClockTimeUpdated());
+  for (auto& observer : clock_observers_)
+    observer.OnSystemClockTimeUpdated();
 }
 
 void SystemTrayNotifier::NotifySystemClockCanSetTimeChanged(bool can_set_time) {
-  FOR_EACH_OBSERVER(ClockObserver, clock_observers_,
-                    OnSystemClockCanSetTimeChanged(can_set_time));
+  for (auto& observer : clock_observers_)
+    observer.OnSystemClockCanSetTimeChanged(can_set_time);
 }
 
 void SystemTrayNotifier::AddIMEObserver(IMEObserver* observer) {
@@ -117,12 +120,13 @@ void SystemTrayNotifier::RemoveIMEObserver(IMEObserver* observer) {
 }
 
 void SystemTrayNotifier::NotifyRefreshIME() {
-  FOR_EACH_OBSERVER(IMEObserver, ime_observers_, OnIMERefresh());
+  for (auto& observer : ime_observers_)
+    observer.OnIMERefresh();
 }
 
 void SystemTrayNotifier::NotifyRefreshIMEMenu(bool is_active) {
-  FOR_EACH_OBSERVER(IMEObserver, ime_observers_,
-                    OnIMEMenuActivationChanged(is_active));
+  for (auto& observer : ime_observers_)
+    observer.OnIMEMenuActivationChanged(is_active);
 }
 
 void SystemTrayNotifier::AddLocaleObserver(LocaleObserver* observer) {
@@ -137,9 +141,8 @@ void SystemTrayNotifier::NotifyLocaleChanged(LocaleObserver::Delegate* delegate,
                                              const std::string& cur_locale,
                                              const std::string& from_locale,
                                              const std::string& to_locale) {
-  FOR_EACH_OBSERVER(
-      LocaleObserver, locale_observers_,
-      OnLocaleChanged(delegate, cur_locale, from_locale, to_locale));
+  for (auto& observer : locale_observers_)
+    observer.OnLocaleChanged(delegate, cur_locale, from_locale, to_locale);
 }
 
 void SystemTrayNotifier::AddUpdateObserver(UpdateObserver* observer) {
@@ -151,8 +154,8 @@ void SystemTrayNotifier::RemoveUpdateObserver(UpdateObserver* observer) {
 }
 
 void SystemTrayNotifier::NotifyUpdateRecommended(const UpdateInfo& info) {
-  FOR_EACH_OBSERVER(UpdateObserver, update_observers_,
-                    OnUpdateRecommended(info));
+  for (auto& observer : update_observers_)
+    observer.OnUpdateRecommended(info);
 }
 
 void SystemTrayNotifier::AddUserObserver(UserObserver* observer) {
@@ -164,11 +167,13 @@ void SystemTrayNotifier::RemoveUserObserver(UserObserver* observer) {
 }
 
 void SystemTrayNotifier::NotifyUserUpdate() {
-  FOR_EACH_OBSERVER(UserObserver, user_observers_, OnUserUpdate());
+  for (auto& observer : user_observers_)
+    observer.OnUserUpdate();
 }
 
 void SystemTrayNotifier::NotifyUserAddedToSession() {
-  FOR_EACH_OBSERVER(UserObserver, user_observers_, OnUserAddedToSession());
+  for (auto& observer : user_observers_)
+    observer.OnUserAddedToSession();
 }
 
 #if defined(OS_CHROMEOS)
@@ -182,13 +187,13 @@ void SystemTrayNotifier::RemoveBluetoothObserver(BluetoothObserver* observer) {
 }
 
 void SystemTrayNotifier::NotifyRefreshBluetooth() {
-  FOR_EACH_OBSERVER(BluetoothObserver, bluetooth_observers_,
-                    OnBluetoothRefresh());
+  for (auto& observer : bluetooth_observers_)
+    observer.OnBluetoothRefresh();
 }
 
 void SystemTrayNotifier::NotifyBluetoothDiscoveringChanged() {
-  FOR_EACH_OBSERVER(BluetoothObserver, bluetooth_observers_,
-                    OnBluetoothDiscoveringChanged());
+  for (auto& observer : bluetooth_observers_)
+    observer.OnBluetoothDiscoveringChanged();
 }
 
 void SystemTrayNotifier::AddEnterpriseDomainObserver(
@@ -202,8 +207,8 @@ void SystemTrayNotifier::RemoveEnterpriseDomainObserver(
 }
 
 void SystemTrayNotifier::NotifyEnterpriseDomainChanged() {
-  FOR_EACH_OBSERVER(EnterpriseDomainObserver, enterprise_domain_observers_,
-                    OnEnterpriseDomainChanged());
+  for (auto& observer : enterprise_domain_observers_)
+    observer.OnEnterpriseDomainChanged();
 }
 
 void SystemTrayNotifier::AddLastWindowClosedObserver(
@@ -217,8 +222,8 @@ void SystemTrayNotifier::RemoveLastWindowClosedObserver(
 }
 
 void SystemTrayNotifier::NotifyLastWindowClosed() {
-  FOR_EACH_OBSERVER(LastWindowClosedObserver, last_window_closed_observers_,
-                    OnLastWindowClosed());
+  for (auto& observer : last_window_closed_observers_)
+    observer.OnLastWindowClosed();
 }
 
 void SystemTrayNotifier::AddLogoutButtonObserver(
@@ -232,14 +237,14 @@ void SystemTrayNotifier::RemoveLogoutButtonObserver(
 }
 
 void SystemTrayNotifier::NotifyShowLoginButtonChanged(bool show_login_button) {
-  FOR_EACH_OBSERVER(LogoutButtonObserver, logout_button_observers_,
-                    OnShowLogoutButtonInTrayChanged(show_login_button));
+  for (auto& observer : logout_button_observers_)
+    observer.OnShowLogoutButtonInTrayChanged(show_login_button);
 }
 
 void SystemTrayNotifier::NotifyLogoutDialogDurationChanged(
     base::TimeDelta duration) {
-  FOR_EACH_OBSERVER(LogoutButtonObserver, logout_button_observers_,
-                    OnLogoutDialogDurationChanged(duration));
+  for (auto& observer : logout_button_observers_)
+    observer.OnLogoutDialogDurationChanged(duration);
 }
 
 void SystemTrayNotifier::AddMediaCaptureObserver(
@@ -253,8 +258,8 @@ void SystemTrayNotifier::RemoveMediaCaptureObserver(
 }
 
 void SystemTrayNotifier::NotifyMediaCaptureChanged() {
-  FOR_EACH_OBSERVER(MediaCaptureObserver, media_capture_observers_,
-                    OnMediaCaptureChanged());
+  for (auto& observer : media_capture_observers_)
+    observer.OnMediaCaptureChanged();
 }
 
 void SystemTrayNotifier::AddNetworkObserver(NetworkObserver* observer) {
@@ -266,7 +271,8 @@ void SystemTrayNotifier::RemoveNetworkObserver(NetworkObserver* observer) {
 }
 
 void SystemTrayNotifier::NotifyRequestToggleWifi() {
-  FOR_EACH_OBSERVER(NetworkObserver, network_observers_, RequestToggleWifi());
+  for (auto& observer : network_observers_)
+    observer.RequestToggleWifi();
 }
 
 void SystemTrayNotifier::AddNetworkPortalDetectorObserver(
@@ -281,9 +287,8 @@ void SystemTrayNotifier::RemoveNetworkPortalDetectorObserver(
 
 void SystemTrayNotifier::NotifyOnCaptivePortalDetected(
     const std::string& service_path) {
-  FOR_EACH_OBSERVER(NetworkPortalDetectorObserver,
-                    network_portal_detector_observers_,
-                    OnCaptivePortalDetected(service_path));
+  for (auto& observer : network_portal_detector_observers_)
+    observer.OnCaptivePortalDetected(service_path);
 }
 
 void SystemTrayNotifier::AddScreenCaptureObserver(
@@ -299,13 +304,13 @@ void SystemTrayNotifier::RemoveScreenCaptureObserver(
 void SystemTrayNotifier::NotifyScreenCaptureStart(
     const base::Closure& stop_callback,
     const base::string16& sharing_app_name) {
-  FOR_EACH_OBSERVER(ScreenCaptureObserver, screen_capture_observers_,
-                    OnScreenCaptureStart(stop_callback, sharing_app_name));
+  for (auto& observer : screen_capture_observers_)
+    observer.OnScreenCaptureStart(stop_callback, sharing_app_name);
 }
 
 void SystemTrayNotifier::NotifyScreenCaptureStop() {
-  FOR_EACH_OBSERVER(ScreenCaptureObserver, screen_capture_observers_,
-                    OnScreenCaptureStop());
+  for (auto& observer : screen_capture_observers_)
+    observer.OnScreenCaptureStop();
 }
 
 void SystemTrayNotifier::AddScreenShareObserver(ScreenShareObserver* observer) {
@@ -320,13 +325,13 @@ void SystemTrayNotifier::RemoveScreenShareObserver(
 void SystemTrayNotifier::NotifyScreenShareStart(
     const base::Closure& stop_callback,
     const base::string16& helper_name) {
-  FOR_EACH_OBSERVER(ScreenShareObserver, screen_share_observers_,
-                    OnScreenShareStart(stop_callback, helper_name));
+  for (auto& observer : screen_share_observers_)
+    observer.OnScreenShareStart(stop_callback, helper_name);
 }
 
 void SystemTrayNotifier::NotifyScreenShareStop() {
-  FOR_EACH_OBSERVER(ScreenShareObserver, screen_share_observers_,
-                    OnScreenShareStop());
+  for (auto& observer : screen_share_observers_)
+    observer.OnScreenShareStop();
 }
 
 void SystemTrayNotifier::AddSessionLengthLimitObserver(
@@ -340,13 +345,13 @@ void SystemTrayNotifier::RemoveSessionLengthLimitObserver(
 }
 
 void SystemTrayNotifier::NotifySessionStartTimeChanged() {
-  FOR_EACH_OBSERVER(SessionLengthLimitObserver, session_length_limit_observers_,
-                    OnSessionStartTimeChanged());
+  for (auto& observer : session_length_limit_observers_)
+    observer.OnSessionStartTimeChanged();
 }
 
 void SystemTrayNotifier::NotifySessionLengthLimitChanged() {
-  FOR_EACH_OBSERVER(SessionLengthLimitObserver, session_length_limit_observers_,
-                    OnSessionLengthLimitChanged());
+  for (auto& observer : session_length_limit_observers_)
+    observer.OnSessionLengthLimitChanged();
 }
 
 void SystemTrayNotifier::AddTracingObserver(TracingObserver* observer) {
@@ -358,8 +363,8 @@ void SystemTrayNotifier::RemoveTracingObserver(TracingObserver* observer) {
 }
 
 void SystemTrayNotifier::NotifyTracingModeChanged(bool value) {
-  FOR_EACH_OBSERVER(TracingObserver, tracing_observers_,
-                    OnTracingModeChanged(value));
+  for (auto& observer : tracing_observers_)
+    observer.OnTracingModeChanged(value);
 }
 
 void SystemTrayNotifier::AddVirtualKeyboardObserver(
@@ -374,8 +379,8 @@ void SystemTrayNotifier::RemoveVirtualKeyboardObserver(
 
 void SystemTrayNotifier::NotifyVirtualKeyboardSuppressionChanged(
     bool suppressed) {
-  FOR_EACH_OBSERVER(VirtualKeyboardObserver, virtual_keyboard_observers_,
-                    OnKeyboardSuppressionChanged(suppressed));
+  for (auto& observer : virtual_keyboard_observers_)
+    observer.OnKeyboardSuppressionChanged(suppressed);
 }
 
 #endif  // defined(OS_CHROMEOS)

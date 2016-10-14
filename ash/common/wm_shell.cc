@@ -151,11 +151,13 @@ void WmShell::CreateShelfDelegate() {
 }
 
 void WmShell::OnMaximizeModeStarted() {
-  FOR_EACH_OBSERVER(ShellObserver, shell_observers_, OnMaximizeModeStarted());
+  for (auto& observer : shell_observers_)
+    observer.OnMaximizeModeStarted();
 }
 
 void WmShell::OnMaximizeModeEnded() {
-  FOR_EACH_OBSERVER(ShellObserver, shell_observers_, OnMaximizeModeEnded());
+  for (auto& observer : shell_observers_)
+    observer.OnMaximizeModeEnded();
 }
 
 void WmShell::UpdateAfterLoginStatusChange(LoginStatus status) {
@@ -167,33 +169,33 @@ void WmShell::UpdateAfterLoginStatusChange(LoginStatus status) {
 
 void WmShell::NotifyFullscreenStateChanged(bool is_fullscreen,
                                            WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
-                    OnFullscreenStateChanged(is_fullscreen, root_window));
+  for (auto& observer : shell_observers_)
+    observer.OnFullscreenStateChanged(is_fullscreen, root_window);
 }
 
 void WmShell::NotifyPinnedStateChanged(WmWindow* pinned_window) {
-  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
-                    OnPinnedStateChanged(pinned_window));
+  for (auto& observer : shell_observers_)
+    observer.OnPinnedStateChanged(pinned_window);
 }
 
 void WmShell::NotifyVirtualKeyboardActivated(bool activated) {
-  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
-                    OnVirtualKeyboardStateChanged(activated));
+  for (auto& observer : shell_observers_)
+    observer.OnVirtualKeyboardStateChanged(activated);
 }
 
 void WmShell::NotifyShelfCreatedForRootWindow(WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
-                    OnShelfCreatedForRootWindow(root_window));
+  for (auto& observer : shell_observers_)
+    observer.OnShelfCreatedForRootWindow(root_window);
 }
 
 void WmShell::NotifyShelfAlignmentChanged(WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
-                    OnShelfAlignmentChanged(root_window));
+  for (auto& observer : shell_observers_)
+    observer.OnShelfAlignmentChanged(root_window);
 }
 
 void WmShell::NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
-                    OnShelfAutoHideBehaviorChanged(root_window));
+  for (auto& observer : shell_observers_)
+    observer.OnShelfAutoHideBehaviorChanged(root_window);
 }
 
 void WmShell::AddShellObserver(ShellObserver* observer) {
@@ -205,8 +207,8 @@ void WmShell::RemoveShellObserver(ShellObserver* observer) {
 }
 
 void WmShell::OnLockStateEvent(LockStateObserver::EventType event) {
-  FOR_EACH_OBSERVER(LockStateObserver, lock_state_observers_,
-                    OnLockStateEvent(event));
+  for (auto& observer : lock_state_observers_)
+    observer.OnLockStateEvent(event);
 }
 
 void WmShell::AddLockStateObserver(LockStateObserver* observer) {

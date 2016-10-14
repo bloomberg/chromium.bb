@@ -79,8 +79,8 @@ bool WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
       image, GetMaxDisplaySizeInNative(), layout, task_runner_));
   current_wallpaper_->StartResize();
 
-  FOR_EACH_OBSERVER(WallpaperControllerObserver, observers_,
-                    OnWallpaperDataChanged());
+  for (auto& observer : observers_)
+    observer.OnWallpaperDataChanged();
   wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
   return true;
