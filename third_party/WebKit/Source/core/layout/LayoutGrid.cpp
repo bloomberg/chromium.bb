@@ -1790,12 +1790,11 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(
     availableSize = availableLogicalHeightForPercentageComputation();
     if (availableSize == -1) {
       const Length& maxLength = styleRef().logicalMaxHeight();
-      if (!maxLength.isMaxSizeNone())
-        availableSize =
-            computeContentLogicalHeight(MaxSize, maxLength, LayoutUnit(-1));
-    } else {
-      availableSize =
-          constrainLogicalHeightByMinMax(availableSize, LayoutUnit(-1));
+      if (!maxLength.isMaxSizeNone()) {
+        availableSize = constrainContentBoxLogicalHeightByMinMax(
+            availableLogicalHeightUsing(maxLength, ExcludeMarginBorderPadding),
+            LayoutUnit(-1));
+      }
     }
   }
 
