@@ -301,8 +301,11 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
         File tempImage = File.createTempFile("test_image", ".png", cacheDir);
         Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565);
         FileOutputStream fos = new FileOutputStream(tempImage);
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-        fos.close();
+        try {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } finally {
+            fos.close();
+        }
         String imagePath = tempImage.getAbsolutePath();
 
         AwSettings contentSettings = getAwSettingsOnUiThread(mAwContents);

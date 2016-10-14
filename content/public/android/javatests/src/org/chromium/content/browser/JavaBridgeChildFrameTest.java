@@ -26,6 +26,7 @@ import java.util.concurrent.TimeoutException;
  * Ensures that injected objects are exposed to child frames as well as the
  * main frame.
  */
+@SuppressFBWarnings("UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS")
 public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     private class TestController extends Controller {

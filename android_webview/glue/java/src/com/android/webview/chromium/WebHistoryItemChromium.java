@@ -82,7 +82,8 @@ public class WebHistoryItemChromium extends WebHistoryItem {
      */
     @SuppressFBWarnings({
             "CHROMIUM_SYNCHRONIZED_METHOD",
-            "CN_IDIOM_NO_SUPER_CALL"})
+            "CN_IDIOM_NO_SUPER_CALL",
+            "CN_IMPLEMENTS_CLONE_BUT_NOT_CLONEABLE"})
     @Override
     public synchronized WebHistoryItemChromium clone() {
         return new WebHistoryItemChromium(mUrl, mOriginalUrl, mTitle, mFavicon);
