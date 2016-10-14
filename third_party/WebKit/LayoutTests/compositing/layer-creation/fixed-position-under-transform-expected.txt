@@ -11,6 +11,7 @@
       "position": [108, 113],
       "transformOrigin": [284.5, -100],
       "bounds": [256, 256],
+      "contentsOpaque": true,
       "drawsContent": true,
       "transform": [
         [1, 0, 0, 0],
