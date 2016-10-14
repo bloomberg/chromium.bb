@@ -194,6 +194,8 @@ void QuicClientSessionBase::DeletePromised(QuicClientPromisedInfo* promised) {
   promised_by_id_.erase(promised->id());
 }
 
+void QuicClientSessionBase::OnPushStreamTimedOut(QuicStreamId stream_id) {}
+
 void QuicClientSessionBase::ResetPromised(QuicStreamId id,
                                           QuicRstStreamErrorCode error_code) {
   SendRstStream(id, error_code, 0);

@@ -25,6 +25,7 @@ QuicClientPromisedInfo::~QuicClientPromisedInfo() {}
 
 void QuicClientPromisedInfo::CleanupAlarm::OnAlarm() {
   DVLOG(1) << "self GC alarm for stream " << promised_->id_;
+  promised_->session()->OnPushStreamTimedOut(promised_->id_);
   if (FLAGS_quic_send_push_stream_timed_out_error) {
     promised_->Reset(QUIC_PUSH_STREAM_TIMED_OUT);
   } else {

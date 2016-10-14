@@ -32,6 +32,7 @@
 #include "net/quic/core/crypto/quic_server_info.h"
 #include "net/quic/core/quic_client_promised_info.h"
 #include "net/quic/core/quic_crypto_client_stream_factory.h"
+#include "net/quic/core/spdy_utils.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -244,6 +245,8 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       token_binding_signatures_(kTokenBindingSignatureMapSize),
       streams_pushed_count_(0),
       streams_pushed_and_claimed_count_(0),
+      bytes_pushed_count_(0),
+      bytes_pushed_and_unclaimed_count_(0),
       migration_pending_(false),
       weak_factory_(this) {
   sockets_.push_back(std::move(socket));
@@ -316,6 +319,11 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.Pushed", streams_pushed_count_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.PushedAndClaimed",
                        streams_pushed_and_claimed_count_);
+  UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.PushedBytes", bytes_pushed_count_);
+  DCHECK_LE(bytes_pushed_and_unclaimed_count_, bytes_pushed_count_);
+  UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.PushedAndUnclaimedBytes",
+                          bytes_pushed_and_unclaimed_count_);
+
   if (!IsCryptoHandshakeConfirmed())
     return;
 
@@ -740,6 +748,10 @@ void QuicChromiumClientSession::CloseStream(QuicStreamId stream_id) {
   if (stream) {
     logger_->UpdateReceivedFrameCounts(stream_id, stream->num_frames_received(),
                                        stream->num_duplicate_frames_received());
+    if (stream_id % 2 == 0) {
+      // Stream with even stream is initiated by server for PUSH.
+      bytes_pushed_count_ += stream->stream_bytes_read();
+    }
   }
   QuicSpdySession::CloseStream(stream_id);
   OnClosedStream();
@@ -1406,6 +1418,12 @@ void QuicChromiumClientSession::DeletePromised(
   if (IsOpenStream(promised->id()))
     streams_pushed_and_claimed_count_++;
   QuicClientSessionBase::DeletePromised(promised);
+}
+
+void QuicChromiumClientSession::OnPushStreamTimedOut(QuicStreamId stream_id) {
+  QuicSpdyStream* stream = GetPromisedStream(stream_id);
+  DCHECK(stream);
+  bytes_pushed_and_unclaimed_count_ += stream->stream_bytes_read();
 }
 
 const LoadTimingInfo::ConnectTiming&
