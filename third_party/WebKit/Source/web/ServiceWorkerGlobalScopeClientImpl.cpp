@@ -93,23 +93,23 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleExtendableMessageEvent(
 }
 
 void ServiceWorkerGlobalScopeClientImpl::respondToFetchEvent(
-    int responseID,
+    int fetchEventID,
     double eventDispatchTime) {
-  m_client.respondToFetchEvent(responseID, eventDispatchTime);
+  m_client.respondToFetchEvent(fetchEventID, eventDispatchTime);
 }
 
 void ServiceWorkerGlobalScopeClientImpl::respondToFetchEvent(
-    int responseID,
+    int fetchEventID,
     const WebServiceWorkerResponse& response,
     double eventDispatchTime) {
-  m_client.respondToFetchEvent(responseID, response, eventDispatchTime);
+  m_client.respondToFetchEvent(fetchEventID, response, eventDispatchTime);
 }
 
 void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(
-    int eventFinishID,
+    int fetchEventID,
     WebServiceWorkerEventResult result,
     double eventDispatchTime) {
-  m_client.didHandleFetchEvent(eventFinishID, result, eventDispatchTime);
+  m_client.didHandleFetchEvent(fetchEventID, result, eventDispatchTime);
 }
 
 void ServiceWorkerGlobalScopeClientImpl::didHandleInstallEvent(

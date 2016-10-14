@@ -32,7 +32,7 @@ class MODULES_EXPORT RespondWithObserver
   virtual ~RespondWithObserver();
 
   static RespondWithObserver* create(ExecutionContext*,
-                                     int eventID,
+                                     int fetchEventID,
                                      const KURL& requestURL,
                                      WebURLRequest::FetchRequestMode,
                                      WebURLRequest::FrameType,
@@ -55,7 +55,7 @@ class MODULES_EXPORT RespondWithObserver
 
  protected:
   RespondWithObserver(ExecutionContext*,
-                      int eventID,
+                      int fetchEventID,
                       const KURL& requestURL,
                       WebURLRequest::FetchRequestMode,
                       WebURLRequest::FrameType,
@@ -65,7 +65,7 @@ class MODULES_EXPORT RespondWithObserver
  private:
   class ThenFunction;
 
-  int m_eventID;
+  int m_fetchEventID;
   KURL m_requestURL;
   WebURLRequest::FetchRequestMode m_requestMode;
   WebURLRequest::FrameType m_frameType;

@@ -823,9 +823,9 @@ TEST_F(ServiceWorkerDispatcherHostTest, ReceivedTimedOutRequestResponse) {
 
   // Receive a response for a timed out request. The bad message count should
   // not increase.
-  const int kRequestId = 91;  // Dummy value
+  const int kFetchEventId = 91;  // Dummy value
   dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_FetchEventResponse(
-      version_->embedded_worker()->embedded_worker_id(), kRequestId,
+      version_->embedded_worker()->embedded_worker_id(), kFetchEventId,
       SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, ServiceWorkerResponse(),
       base::Time::Now()));
 

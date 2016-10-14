@@ -11,7 +11,7 @@ import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_
 struct ServiceWorkerFetchRequest;
 
 interface FetchEventDispatcher {
-  DispatchFetchEvent(int32 response_id, ServiceWorkerFetchRequest request)
+  DispatchFetchEvent(int32 fetch_event_id, ServiceWorkerFetchRequest request)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
 };

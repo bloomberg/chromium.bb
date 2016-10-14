@@ -235,7 +235,7 @@ class ServiceWorkerContextClient::FetchEventDispatcherImpl
 
   ~FetchEventDispatcherImpl() override {}
 
-  void DispatchFetchEvent(int response_id,
+  void DispatchFetchEvent(int fetch_event_id,
                           const ServiceWorkerFetchRequest& request,
                           const DispatchFetchEventCallback& callback) override {
     ServiceWorkerContextClient* client =
@@ -244,7 +244,7 @@ class ServiceWorkerContextClient::FetchEventDispatcherImpl
       callback.Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
       return;
     }
-    client->DispatchFetchEvent(response_id, request, callback);
+    client->DispatchFetchEvent(fetch_event_id, request, callback);
   }
 
  private:
@@ -586,15 +586,16 @@ void ServiceWorkerContextClient::didHandleInstallEvent(
 }
 
 void ServiceWorkerContextClient::respondToFetchEvent(
-    int response_id,
+    int fetch_event_id,
     double event_dispatch_time) {
   Send(new ServiceWorkerHostMsg_FetchEventResponse(
-      GetRoutingID(), response_id, SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
-      ServiceWorkerResponse(), base::Time::FromDoubleT(event_dispatch_time)));
+      GetRoutingID(), fetch_event_id,
+      SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, ServiceWorkerResponse(),
+      base::Time::FromDoubleT(event_dispatch_time)));
 }
 
 void ServiceWorkerContextClient::respondToFetchEvent(
-    int response_id,
+    int fetch_event_id,
     const blink::WebServiceWorkerResponse& web_response,
     double event_dispatch_time) {
   ServiceWorkerHeaderMap headers;
@@ -611,16 +612,17 @@ void ServiceWorkerContextClient::respondToFetchEvent(
       !web_response.cacheStorageCacheName().isNull(),
       web_response.cacheStorageCacheName().utf8(), cors_exposed_header_names);
   Send(new ServiceWorkerHostMsg_FetchEventResponse(
-      GetRoutingID(), response_id, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-      response, base::Time::FromDoubleT(event_dispatch_time)));
+      GetRoutingID(), fetch_event_id,
+      SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, response,
+      base::Time::FromDoubleT(event_dispatch_time)));
 }
 
 void ServiceWorkerContextClient::didHandleFetchEvent(
-    int event_finish_id,
+    int fetch_event_id,
     blink::WebServiceWorkerEventResult result,
     double event_dispatch_time) {
   const FetchCallback* callback =
-      context_->fetch_event_callbacks.Lookup(event_finish_id);
+      context_->fetch_event_callbacks.Lookup(fetch_event_id);
   if (!callback)
     return;
 
@@ -628,7 +630,7 @@ void ServiceWorkerContextClient::didHandleFetchEvent(
                     ? SERVICE_WORKER_OK
                     : SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
                 base::Time::FromDoubleT(event_dispatch_time));
-  context_->fetch_event_callbacks.Remove(event_finish_id);
+  context_->fetch_event_callbacks.Remove(fetch_event_id);
 }
 
 void ServiceWorkerContextClient::didHandleNotificationClickEvent(
@@ -869,14 +871,14 @@ void ServiceWorkerContextClient::OnInstallEvent(int request_id) {
 }
 
 void ServiceWorkerContextClient::DispatchFetchEvent(
-    int response_id,
+    int fetch_event_id,
     const ServiceWorkerFetchRequest& request,
     const FetchCallback& callback) {
   blink::WebServiceWorkerRequest webRequest;
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchFetchEvent");
-  int event_finish_id =
-      context_->fetch_event_callbacks.Add(new FetchCallback(callback));
+  context_->fetch_event_callbacks.AddWithID(new FetchCallback(callback),
+                                            fetch_event_id);
 
   webRequest.setURL(blink::WebURL(request.url));
   webRequest.setMethod(blink::WebString::fromUTF8(request.method));
@@ -904,9 +906,9 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
   webRequest.setClientId(blink::WebString::fromUTF8(request.client_id));
   webRequest.setIsReload(request.is_reload);
   if (request.fetch_type == ServiceWorkerFetchType::FOREIGN_FETCH) {
-    proxy_->dispatchForeignFetchEvent(response_id, event_finish_id, webRequest);
+    proxy_->dispatchForeignFetchEvent(fetch_event_id, webRequest);
   } else {
-    proxy_->dispatchFetchEvent(response_id, event_finish_id, webRequest);
+    proxy_->dispatchFetchEvent(fetch_event_id, webRequest);
   }
 }
 

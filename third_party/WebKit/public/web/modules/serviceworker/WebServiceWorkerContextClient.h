@@ -143,11 +143,12 @@ class WebServiceWorkerContextClient {
   // lifecycle. When no response is provided, the browser should fallback to
   // native fetch. EventIDs are the same with the ids passed from
   // dispatchFetchEvent respectively.
-  virtual void respondToFetchEvent(int responseID, double eventDispatchTime) {}
-  virtual void respondToFetchEvent(int responseID,
+  virtual void respondToFetchEvent(int fetchEventID, double eventDispatchTime) {
+  }
+  virtual void respondToFetchEvent(int fetchEventID,
                                    const WebServiceWorkerResponse& response,
                                    double eventDispatchTime) {}
-  virtual void didHandleFetchEvent(int eventFinishID,
+  virtual void didHandleFetchEvent(int fetchEventID,
                                    WebServiceWorkerEventResult result,
                                    double eventDispatchTime) {}
 

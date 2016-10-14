@@ -70,7 +70,7 @@ class ServiceWorkerGlobalScopeClientImpl final
   void respondToFetchEvent(int responseID,
                            const WebServiceWorkerResponse&,
                            double eventDispatchTime) override;
-  void didHandleFetchEvent(int eventFinishID,
+  void didHandleFetchEvent(int fetchEventID,
                            WebServiceWorkerEventResult,
                            double eventDispatchTime) override;
   void didHandleInstallEvent(int installEventID,

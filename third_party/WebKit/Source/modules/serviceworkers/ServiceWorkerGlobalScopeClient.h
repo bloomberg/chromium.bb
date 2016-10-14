@@ -82,12 +82,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
                                                double eventDispatchTime) = 0;
   // Calling respondToFetchEvent without response means no response was
   // provided by the service worker in the fetch events, so fallback to native.
-  virtual void respondToFetchEvent(int responseID,
+  virtual void respondToFetchEvent(int fetchEventID,
                                    double eventDispatchTime) = 0;
-  virtual void respondToFetchEvent(int responseID,
+  virtual void respondToFetchEvent(int fetchEventID,
                                    const WebServiceWorkerResponse&,
                                    double eventDispatchTime) = 0;
-  virtual void didHandleFetchEvent(int eventFinishID,
+  virtual void didHandleFetchEvent(int fetchEventID,
                                    WebServiceWorkerEventResult,
                                    double eventDispatchTime) = 0;
   virtual void didHandleInstallEvent(int installEventID,

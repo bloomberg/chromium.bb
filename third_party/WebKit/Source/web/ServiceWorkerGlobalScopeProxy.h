@@ -88,11 +88,9 @@ class ServiceWorkerGlobalScopeProxy final
       const WebSecurityOrigin& sourceOrigin,
       const WebMessagePortChannelArray&,
       std::unique_ptr<WebServiceWorker::Handle>) override;
-  void dispatchFetchEvent(int responseID,
-                          int eventFinishID,
+  void dispatchFetchEvent(int fetchEventID,
                           const WebServiceWorkerRequest&) override;
-  void dispatchForeignFetchEvent(int responseID,
-                                 int eventFinishID,
+  void dispatchForeignFetchEvent(int fetchEventID,
                                  const WebServiceWorkerRequest&) override;
   void dispatchInstallEvent(int) override;
   void dispatchNotificationClickEvent(int,

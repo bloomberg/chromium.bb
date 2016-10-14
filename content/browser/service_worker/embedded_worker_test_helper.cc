@@ -164,12 +164,12 @@ class EmbeddedWorkerTestHelper::MockFetchEventDispatcher
 
   ~MockFetchEventDispatcher() override {}
 
-  void DispatchFetchEvent(int response_id,
+  void DispatchFetchEvent(int fetch_event_id,
                           const ServiceWorkerFetchRequest& request,
                           const DispatchFetchEventCallback& callback) override {
     if (!helper_)
       return;
-    helper_->OnFetchEventStub(thread_id_, response_id, request, callback);
+    helper_->OnFetchEventStub(thread_id_, fetch_event_id, request, callback);
   }
 
  private:
@@ -335,11 +335,11 @@ void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(
     int embedded_worker_id,
-    int response_id,
+    int fetch_event_id,
     const ServiceWorkerFetchRequest& request,
     const FetchCallback& callback) {
   SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
-      embedded_worker_id, response_id,
+      embedded_worker_id, fetch_event_id,
       SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
       ServiceWorkerResponse(
           GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
@@ -496,13 +496,13 @@ void EmbeddedWorkerTestHelper::OnInstallEventStub(int request_id) {
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(
     int thread_id,
-    int response_id,
+    int fetch_event_id,
     const ServiceWorkerFetchRequest& request,
     const FetchCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnFetchEvent, AsWeakPtr(),
-                 thread_id_embedded_worker_id_map_[thread_id], response_id,
+                 thread_id_embedded_worker_id_map_[thread_id], fetch_event_id,
                  request, callback));
 }
 

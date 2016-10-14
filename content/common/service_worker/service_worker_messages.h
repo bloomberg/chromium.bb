@@ -271,7 +271,7 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_ExtendableMessageEventFinished,
                     blink::WebServiceWorkerEventResult,
                     base::Time /* dispatch_event_time */)
 IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_FetchEventResponse,
-                    int /* response_id */,
+                    int /* fetch_event_id */,
                     content::ServiceWorkerFetchEventResult,
                     content::ServiceWorkerResponse,
                     base::Time /* dispatch_event_time */)

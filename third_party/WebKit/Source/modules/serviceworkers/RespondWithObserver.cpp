@@ -174,13 +174,13 @@ RespondWithObserver::~RespondWithObserver() {}
 
 RespondWithObserver* RespondWithObserver::create(
     ExecutionContext* context,
-    int eventID,
+    int fetchEventID,
     const KURL& requestURL,
     WebURLRequest::FetchRequestMode requestMode,
     WebURLRequest::FrameType frameType,
     WebURLRequest::RequestContext requestContext,
     WaitUntilObserver* observer) {
-  return new RespondWithObserver(context, eventID, requestURL, requestMode,
+  return new RespondWithObserver(context, fetchEventID, requestURL, requestMode,
                                  frameType, requestContext, observer);
 }
 
@@ -209,7 +209,7 @@ void RespondWithObserver::didDispatchEvent(DispatchEventResult dispatchResult) {
   }
 
   ServiceWorkerGlobalScopeClient::from(getExecutionContext())
-      ->respondToFetchEvent(m_eventID, m_eventDispatchTime);
+      ->respondToFetchEvent(m_fetchEventID, m_eventDispatchTime);
   m_state = Done;
   m_observer.clear();
 }
@@ -242,7 +242,7 @@ void RespondWithObserver::responseWasRejected(
   WebServiceWorkerResponse webResponse;
   webResponse.setError(error);
   ServiceWorkerGlobalScopeClient::from(getExecutionContext())
-      ->respondToFetchEvent(m_eventID, webResponse, m_eventDispatchTime);
+      ->respondToFetchEvent(m_fetchEventID, webResponse, m_eventDispatchTime);
   m_state = Done;
   m_observer->decrementPendingActivity();
   m_observer.clear();
@@ -315,7 +315,7 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value) {
     }
   }
   ServiceWorkerGlobalScopeClient::from(getExecutionContext())
-      ->respondToFetchEvent(m_eventID, webResponse, m_eventDispatchTime);
+      ->respondToFetchEvent(m_fetchEventID, webResponse, m_eventDispatchTime);
   m_state = Done;
   m_observer->decrementPendingActivity();
   m_observer.clear();
@@ -323,14 +323,14 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value) {
 
 RespondWithObserver::RespondWithObserver(
     ExecutionContext* context,
-    int eventID,
+    int fetchEventID,
     const KURL& requestURL,
     WebURLRequest::FetchRequestMode requestMode,
     WebURLRequest::FrameType frameType,
     WebURLRequest::RequestContext requestContext,
     WaitUntilObserver* observer)
     : ContextLifecycleObserver(context),
-      m_eventID(eventID),
+      m_fetchEventID(fetchEventID),
       m_requestURL(requestURL),
       m_requestMode(requestMode),
       m_frameType(frameType),
