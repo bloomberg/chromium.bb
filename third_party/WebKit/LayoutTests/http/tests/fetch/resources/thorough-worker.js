@@ -27,7 +27,7 @@ self.addEventListener('fetch', function(event) {
         .then(function(message) {
             var response = message.response;
             message.response = undefined;
-            // Send the result to thorough-control-util.js.
+            // Send the result to |thorough-util.js|.
             port.postMessage(message);
             return response;
           })
