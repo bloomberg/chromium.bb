@@ -421,8 +421,7 @@ void LayerTreeHostInProcess::RequestMainFrameUpdate() {
 // this function, keep in mind that the function *runs* on the impl thread! Any
 // code that is logically a main thread operation, e.g. deletion of a Layer,
 // should be delayed until the LayerTreeHostInProcess::CommitComplete, which
-// will run
-// after the commit, but on the main thread.
+// will run after the commit, but on the main thread.
 void LayerTreeHostInProcess::FinishCommitOnImplThread(
     LayerTreeHostImpl* host_impl) {
   DCHECK(!IsRemoteServer());
@@ -478,6 +477,10 @@ void LayerTreeHostInProcess::FinishCommitOnImplThread(
 
     TreeSynchronizer::PushLayerProperties(layer_tree_.get(), sync_tree);
 
+    // This must happen after synchronizing property trees and after pushing
+    // properties, which updates the clobber_active_value flag.
+    sync_tree->UpdatePropertyTreeScrollOffset(layer_tree_->property_trees());
+
     // This must happen after synchronizing property trees and after push
     // properties, which updates property tree indices, but before animation
     // host pushes properties as animation host push properties can change
@@ -490,10 +493,6 @@ void LayerTreeHostInProcess::FinishCommitOnImplThread(
     layer_tree_->animation_host()->PushPropertiesTo(
         host_impl->animation_host());
   }
-
-  // This must happen after synchronizing property trees and after pushing
-  // properties, which updates the clobber_active_value flag.
-  sync_tree->UpdatePropertyTreeScrollOffset(layer_tree_->property_trees());
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
   layer_tree_->property_trees()->ResetAllChangeTracking();

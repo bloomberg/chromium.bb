@@ -25,6 +25,7 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
+#include "cc/trees/transform_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -1977,6 +1978,73 @@ class LayerTreeHostScrollTestElasticOverscroll
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestElasticOverscroll);
+
+class LayerTreeHostScrollTestPropertyTreeUpdate
+    : public LayerTreeHostScrollTest {
+ public:
+  LayerTreeHostScrollTestPropertyTreeUpdate()
+      : initial_scroll_(10, 20), second_scroll_(0, 0) {}
+
+  void BeginTest() override {
+    layer_tree()->inner_viewport_scroll_layer()->SetScrollOffset(
+        initial_scroll_);
+    layer_tree()->inner_viewport_scroll_layer()->SetBounds(gfx::Size(100, 100));
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void UpdateLayerTreeHost() override {
+    Layer* scroll_layer = layer_tree()->inner_viewport_scroll_layer();
+    if (layer_tree_host()->SourceFrameNumber() == 0) {
+      EXPECT_VECTOR_EQ(initial_scroll_, scroll_layer->scroll_offset());
+    } else {
+      EXPECT_VECTOR_EQ(
+          gfx::ScrollOffsetWithDelta(initial_scroll_, scroll_amount_),
+          scroll_layer->scroll_offset());
+      scroll_layer->SetScrollOffset(second_scroll_);
+      scroll_layer->SetOpacity(0.5f);
+    }
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* scroll_layer = impl->InnerViewportScrollLayer();
+
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_VECTOR_EQ(initial_scroll_, ScrollTreeForLayer(scroll_layer)
+                                              ->GetScrollOffsetBaseForTesting(
+                                                  scroll_layer->id()));
+        EXPECT_VECTOR_EQ(
+            initial_scroll_,
+            scroll_layer->layer_tree_impl()
+                ->property_trees()
+                ->transform_tree.Node(scroll_layer->transform_tree_index())
+                ->scroll_offset);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        EXPECT_VECTOR_EQ(second_scroll_, ScrollTreeForLayer(scroll_layer)
+                                             ->GetScrollOffsetBaseForTesting(
+                                                 scroll_layer->id()));
+        EXPECT_VECTOR_EQ(
+            second_scroll_,
+            scroll_layer->layer_tree_impl()
+                ->property_trees()
+                ->transform_tree.Node(scroll_layer->transform_tree_index())
+                ->scroll_offset);
+        EndTest();
+        break;
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  gfx::ScrollOffset initial_scroll_;
+  gfx::ScrollOffset second_scroll_;
+  gfx::Vector2dF scroll_amount_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestPropertyTreeUpdate);
 
 }  // namespace
 }  // namespace cc
