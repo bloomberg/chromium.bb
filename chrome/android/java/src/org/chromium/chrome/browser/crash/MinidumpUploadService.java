@@ -152,7 +152,7 @@ public class MinidumpUploadService extends IntentService {
 
     private void handleFindAndUploadLastCrash(Intent intent) {
         CrashFileManager fileManager = new CrashFileManager(getApplicationContext().getCacheDir());
-        File[] minidumpFiles = fileManager.getAllMinidumpFilesSorted();
+        File[] minidumpFiles = fileManager.getAllMinidumpFilesSorted(MAX_TRIES_ALLOWED);
         if (minidumpFiles.length == 0) {
             // Try again later. Maybe the minidump hasn't finished being written.
             Log.d(TAG, "Could not find any crash dumps to upload");
@@ -182,7 +182,7 @@ public class MinidumpUploadService extends IntentService {
 
     private void handleFindAndUploadAllCrashes() {
         CrashFileManager fileManager = new CrashFileManager(getApplicationContext().getCacheDir());
-        File[] minidumps = fileManager.getAllMinidumpFiles();
+        File[] minidumps = fileManager.getAllMinidumpFiles(MAX_TRIES_ALLOWED);
         File logfile = fileManager.getCrashUploadLogFile();
         Log.i(TAG, "Attempting to upload accumulated crash dumps.");
         for (File minidump : minidumps) {

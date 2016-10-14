@@ -27,12 +27,21 @@ public class CrashFileManagerTest extends CrashTestCase {
     private long mInitialModificationTimestamp;
     private long mModificationTimestamp;
 
+    private static final int MAX_TRIES_ALLOWED = 3;
+    private static final int MULTI_DIGIT_MAX_TRIES_ALLOWED = 20;
+
     private File mTmpFile1;
     private File mTmpFile2;
     private File mTmpFile3;
 
     private File mDmpFile1;
     private File mDmpFile2;
+
+    private File mOneBelowMaxTriesFile; // MAX_TRIES_ALLOWED-1 tries.
+    private File mMaxTriesFile; // MAX_TRIES_ALLOWED tries.
+
+    private File mOneBelowMultiDigitMaxTriesFile; // MULTI_DIGIT_MAX_TRIES_ALLOWED-1 tries.
+    private File mMultiDigitMaxTriesFile; // MULTI_DIGIT_MAX_TRIES_ALLOWED tries.
 
     private File mUpFile1;
     private File mUpFile2;
@@ -71,6 +80,30 @@ public class CrashFileManagerTest extends CrashTestCase {
         mDmpFile2 = new File(mCrashDir, "chromium-renderer_abc.dmp" + TEST_PID);
         mDmpFile2.createNewFile();
         mDmpFile2.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
+
+        mOneBelowMaxTriesFile = new File(mCrashDir,
+                "chromium-renderer_abc.dmp" + TEST_PID + ".try" + (MAX_TRIES_ALLOWED - 1));
+        mOneBelowMaxTriesFile.createNewFile();
+        mOneBelowMaxTriesFile.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
+
+        mMaxTriesFile = new File(
+                mCrashDir, "chromium-renderer_abc.dmp" + TEST_PID + ".try" + MAX_TRIES_ALLOWED);
+        mMaxTriesFile.createNewFile();
+        mMaxTriesFile.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
+
+        mOneBelowMultiDigitMaxTriesFile = new File(mCrashDir, "chromium-renderer_abc.dmp" + TEST_PID
+                        + ".try" + (MULTI_DIGIT_MAX_TRIES_ALLOWED - 1));
+        mOneBelowMultiDigitMaxTriesFile.createNewFile();
+        mOneBelowMultiDigitMaxTriesFile.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
+
+        mMultiDigitMaxTriesFile = new File(mCrashDir,
+                "chromium-renderer_abc.dmp" + TEST_PID + ".try" + MULTI_DIGIT_MAX_TRIES_ALLOWED);
+        mMultiDigitMaxTriesFile.createNewFile();
+        mMultiDigitMaxTriesFile.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
         mUpFile1 = new File(mCrashDir, "123_abcd.up0");
@@ -128,8 +161,8 @@ public class CrashFileManagerTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testGetAllMinidumpFilesSorted() {
         CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
-        File[] expectedFiles = new File[] {mDmpFile2, mDmpFile1};
-        File[] actualFiles = crashFileManager.getAllMinidumpFilesSorted();
+        File[] expectedFiles = new File[] {mOneBelowMaxTriesFile, mDmpFile2, mDmpFile1};
+        File[] actualFiles = crashFileManager.getAllMinidumpFilesSorted(MAX_TRIES_ALLOWED);
         assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to sort minidumps by modification time", expectedFiles,
                 actualFiles);
@@ -139,8 +172,9 @@ public class CrashFileManagerTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testGetAllFilesSorted() {
         CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
-        File[] expectedFiles = new File[] {mLogfile, mUpFile2, mUpFile1, mDmpFile2, mDmpFile1,
-                mTmpFile3, mTmpFile2, mTmpFile1};
+        File[] expectedFiles = new File[] {mLogfile, mUpFile2, mUpFile1, mMultiDigitMaxTriesFile,
+                mOneBelowMultiDigitMaxTriesFile, mMaxTriesFile, mOneBelowMaxTriesFile, mDmpFile2,
+                mDmpFile1, mTmpFile3, mTmpFile2, mTmpFile1};
         File[] actualFiles = crashFileManager.getAllFilesSorted();
         assertNotNull(actualFiles);
         MoreAsserts.assertEquals(
@@ -168,11 +202,40 @@ public class CrashFileManagerTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testGetAllMinidumpFiles() {
         CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
-        File[] expectedFiles = new File[] { mDmpFile1, mDmpFile2 };
-        File[] actualFiles = crashFileManager.getAllMinidumpFiles();
+        File[] expectedFiles = new File[] {mDmpFile1, mDmpFile2, mOneBelowMaxTriesFile};
+        File[] actualFiles = crashFileManager.getAllMinidumpFiles(MAX_TRIES_ALLOWED);
         assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to get the correct minidump files in directory",
                 expectedFiles, actualFiles);
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testGetAllMinidumpFilesMultiDigitMaxTries() {
+        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        File[] expectedFiles = new File[] {mDmpFile1, mDmpFile2, mOneBelowMaxTriesFile,
+                mMaxTriesFile, mOneBelowMultiDigitMaxTriesFile};
+        File[] actualFiles = crashFileManager.getAllMinidumpFiles(MULTI_DIGIT_MAX_TRIES_ALLOWED);
+        assertNotNull(actualFiles);
+        MoreAsserts.assertEquals("Failed to get the correct minidump files in directory",
+                expectedFiles, actualFiles);
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testGetFilesBelowMaxTries() {
+        // No files in input -> return empty
+        MoreAsserts.assertEquals(new File[0],
+                CrashFileManager.getFilesBelowMaxTries(new File[0], MAX_TRIES_ALLOWED));
+        // Only files above MAX_TRIES -> return empty
+        MoreAsserts.assertEquals(
+                new File[0], CrashFileManager.getFilesBelowMaxTries(
+                                     new File[] {mMaxTriesFile}, MAX_TRIES_ALLOWED));
+        // Keep only files below MAX_TRIES
+        MoreAsserts.assertEquals(new File[] {mDmpFile1, mDmpFile2, mOneBelowMaxTriesFile},
+                CrashFileManager.getFilesBelowMaxTries(
+                        new File[] {mDmpFile1, mDmpFile2, mOneBelowMaxTriesFile, mMaxTriesFile},
+                        MAX_TRIES_ALLOWED));
     }
 
     @SmallTest
@@ -199,6 +262,13 @@ public class CrashFileManagerTest extends CrashTestCase {
         assertEquals(2, CrashFileManager.readAttemptNumber("file.dmp.try2"));
         assertEquals(2, CrashFileManager.readAttemptNumber(".try2"));
         assertEquals(0, CrashFileManager.readAttemptNumber("file.tryN.dmp"));
+        assertEquals(9, CrashFileManager.readAttemptNumber("file.try9.dmp"));
+        assertEquals(10, CrashFileManager.readAttemptNumber("file.try10.dmp"));
+        assertEquals(9, CrashFileManager.readAttemptNumber("file.dmp.try9"));
+        assertEquals(10, CrashFileManager.readAttemptNumber("file.dmp.try10"));
+        assertEquals(300, CrashFileManager.readAttemptNumber("file.dmp.try300"));
+        assertEquals(0, CrashFileManager.readAttemptNumber("file.dmp202.try"));
+        assertEquals(0, CrashFileManager.readAttemptNumber("file.try.dmp1"));
     }
 
     @SmallTest
@@ -208,7 +278,9 @@ public class CrashFileManagerTest extends CrashTestCase {
                 CrashFileManager.filenameWithIncrementedAttemptNumber("file.dmp"));
         assertEquals("f.dmp.try2",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.dmp.try1"));
-        assertEquals("f.dmp.try20",
+        assertEquals(
+                "f.dmp.try10", CrashFileManager.filenameWithIncrementedAttemptNumber("f.dmp.try9"));
+        assertEquals("f.dmp.try11",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.dmp.try10"));
         assertEquals("f.try2.dmp",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.try1.dmp"));
@@ -347,6 +419,10 @@ public class CrashFileManagerTest extends CrashTestCase {
         assertFalse(mTmpFile3.exists());
         assertFalse(mDmpFile1.exists());
         assertFalse(mDmpFile2.exists());
+        assertFalse(mOneBelowMaxTriesFile.exists());
+        assertFalse(mMaxTriesFile.exists());
+        assertFalse(mOneBelowMultiDigitMaxTriesFile.exists());
+        assertFalse(mMultiDigitMaxTriesFile.exists());
         assertFalse(mUpFile1.exists());
         assertFalse(mUpFile2.exists());
         assertFalse(temp1.exists());

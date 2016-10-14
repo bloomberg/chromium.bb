@@ -10,13 +10,16 @@ import org.chromium.base.VisibleForTesting;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -41,7 +44,7 @@ public class CrashFileManager {
             Pattern.compile("\\.dmp([0-9]+)$\\z");
 
     private static final Pattern MINIDUMP_PATTERN =
-            Pattern.compile("\\.dmp([0-9]*)(\\.try[0-9])?\\z");
+            Pattern.compile("\\.dmp([0-9]*)(\\.try([0-9]+))?\\z");
 
     private static final Pattern UPLOADED_MINIDUMP_PATTERN = Pattern.compile("\\.up([0-9]*)\\z");
 
@@ -169,16 +172,14 @@ public class CrashFileManager {
         int tryIndex = filename.lastIndexOf(UPLOAD_ATTEMPT_DELIMITER);
         if (tryIndex >= 0) {
             tryIndex += UPLOAD_ATTEMPT_DELIMITER.length();
-            // To avoid out of bound exceptions
-            if (tryIndex < filename.length()) {
-                // We don't try more than 3 times.
-                String numTriesString = filename.substring(
-                        tryIndex, tryIndex + 1);
-                try {
-                    return Integer.parseInt(numTriesString);
-                } catch (NumberFormatException ignored) {
-                    return 0;
-                }
+            String numTriesString = filename.substring(tryIndex);
+            Scanner numTriesScanner = new Scanner(numTriesString).useDelimiter("[^0-9]+");
+            try {
+                int nextInt = numTriesScanner.nextInt();
+                // Only return the number if it occurs just after the UPLOAD_ATTEMPT_DELIMITER.
+                return numTriesString.indexOf(Integer.toString(nextInt)) == 0 ? nextInt : 0;
+            } catch (NoSuchElementException e) {
+                return 0;
             }
         }
         return 0;
@@ -237,12 +238,22 @@ public class CrashFileManager {
         mCacheDir = cacheDir;
     }
 
-    public File[] getAllMinidumpFiles() {
-        return getMatchingFiles(MINIDUMP_PATTERN);
+    /**
+     * Returns all minidump files that could still be uploaded through the normal pipeline.
+     * I.e. forced uploads are not included. Only returns files that we have tried to upload less
+     * than {@param maxTries} number of times.
+     */
+    public File[] getAllMinidumpFiles(int maxTries) {
+        return getFilesBelowMaxTries(getMatchingFiles(MINIDUMP_PATTERN), maxTries);
     }
 
-    public File[] getAllMinidumpFilesSorted() {
-        File[] minidumps = getAllMinidumpFiles();
+    /**
+     * Returns all minidump files that could still be uploaded, sorted by modification time stamp.
+     * Forced uploads are not included. Only returns files that we have tried to upload less
+     * than {@param maxTries} number of times.
+     */
+    public File[] getAllMinidumpFilesSorted(int maxTries) {
+        File[] minidumps = getAllMinidumpFiles(maxTries);
         Arrays.sort(minidumps, sFileComparator);
         return minidumps;
     }
@@ -295,6 +306,22 @@ public class CrashFileManager {
         }
     }
 
+    /**
+     * Filters a set of files to keep the ones we have tried to upload only a few times.
+     * Given a set of files {@param unfilteredFiles}, returns only the files in that set which we
+     * have tried to upload less than {@param maxTries} times.
+     */
+    @VisibleForTesting
+    static File[] getFilesBelowMaxTries(File[] unfilteredFiles, int maxTries) {
+        List<File> filesBelowMaxTries = new ArrayList<>();
+        for (File file : unfilteredFiles) {
+            if (readAttemptNumber(file.getName()) < maxTries) {
+                filesBelowMaxTries.add(file);
+            }
+        }
+        return filesBelowMaxTries.toArray(new File[filesBelowMaxTries.size()]);
+    }
+
     @VisibleForTesting
     File[] getMatchingFiles(final Pattern pattern) {
         // Get dump dir and get all files with specified suffix. The path
@@ -307,9 +334,7 @@ public class CrashFileManager {
         File[] minidumps = crashDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                Matcher match = pattern.matcher(filename);
-                int tries = readAttemptNumber(filename);
-                return match.find() && tries < MinidumpUploadService.MAX_TRIES_ALLOWED;
+                return pattern.matcher(filename).find();
             }
         });
         return minidumps;
