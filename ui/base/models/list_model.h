@@ -100,27 +100,23 @@ class ListModel {
   }
 
   void NotifyItemsAdded(size_t start, size_t count) {
-    FOR_EACH_OBSERVER(ListModelObserver,
-                      observers_,
-                      ListItemsAdded(start, count));
+    for (ListModelObserver& observer : observers_)
+      observer.ListItemsAdded(start, count);
   }
 
   void NotifyItemsRemoved(size_t start, size_t count) {
-    FOR_EACH_OBSERVER(ListModelObserver,
-                      observers_,
-                      ListItemsRemoved(start, count));
+    for (ListModelObserver& observer : observers_)
+      observer.ListItemsRemoved(start, count);
   }
 
   void NotifyItemMoved(size_t index, size_t target_index) {
-    FOR_EACH_OBSERVER(ListModelObserver,
-                      observers_,
-                      ListItemMoved(index, target_index));
+    for (ListModelObserver& observer : observers_)
+      observer.ListItemMoved(index, target_index);
   }
 
   void NotifyItemsChanged(size_t start, size_t count) {
-    FOR_EACH_OBSERVER(ListModelObserver,
-                      observers_,
-                      ListItemsChanged(start, count));
+    for (ListModelObserver& observer : observers_)
+      observer.ListItemsChanged(start, count);
   }
 
   size_t item_count() const { return items_.size(); }

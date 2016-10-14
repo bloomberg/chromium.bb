@@ -229,21 +229,18 @@ class TreeNodeModel : public TreeModel {
   }
 
   void NotifyObserverTreeNodesAdded(NodeType* parent, int start, int count) {
-    FOR_EACH_OBSERVER(TreeModelObserver,
-                      observer_list_,
-                      TreeNodesAdded(this, parent, start, count));
+    for (TreeModelObserver& observer : observer_list_)
+      observer.TreeNodesAdded(this, parent, start, count);
   }
 
   void NotifyObserverTreeNodesRemoved(NodeType* parent, int start, int count) {
-    FOR_EACH_OBSERVER(TreeModelObserver,
-                      observer_list_,
-                      TreeNodesRemoved(this, parent, start, count));
+    for (TreeModelObserver& observer : observer_list_)
+      observer.TreeNodesRemoved(this, parent, start, count);
   }
 
   void NotifyObserverTreeNodeChanged(TreeModelNode* node) {
-    FOR_EACH_OBSERVER(TreeModelObserver,
-                      observer_list_,
-                      TreeNodeChanged(this, node));
+    for (TreeModelObserver& observer : observer_list_)
+      observer.TreeNodeChanged(this, node);
   }
 
   // TreeModel:
