@@ -144,6 +144,7 @@ extern const char kEnableSettingsWindow[];
 extern const char kEnableSiteEngagementAppBanner[];
 extern const char kEnableSiteEngagementEvictionPolicy[];
 extern const char kEnableSiteEngagementService[];
+extern const char kEnableSiteSettings[];
 extern const char kEnableSupervisedUserManagedBookmarksFolder[];
 extern const char kEnableTabAudioMuting[];
 extern const char kEnableThumbnailRetargeting[];

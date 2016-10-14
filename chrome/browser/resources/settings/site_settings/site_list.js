@@ -26,6 +26,14 @@ Polymer({
   behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
   properties: {
+    /** @private */
+    enableSiteSettings_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableSiteSettings');
+      },
+    },
+
     /**
      * The site that was selected by the user in the dropdown list.
      * @type {SiteException}
@@ -418,6 +426,8 @@ Polymer({
    * @private
    */
   onOriginTap_: function(event) {
+    if (!this.enableSiteSettings_)
+      return;
     this.selectedSite = event.model.item;
     settings.navigateTo(settings.Route.SITE_SETTINGS_SITE_DETAILS,
         new URLSearchParams('site=' + this.selectedSite.origin));

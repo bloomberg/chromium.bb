@@ -307,14 +307,16 @@
         min-height: var(--settings-row-two-line-min-height);
       }
 
-      /*
-       * A single start-aligned column, generally but not necessarily used in
-       * combination with two-line.
-       */
+      /* A start-aligned column. */
       .single-column {
         align-items: flex-start;
         flex-direction: column;
         justify-content: center;
+      }
+
+      /* A settings-box with no height other than the separator line. */
+      .settings-box.line-only {
+        min-height: 0;
       }
 
       /* The lower line of text in a two-line row. */

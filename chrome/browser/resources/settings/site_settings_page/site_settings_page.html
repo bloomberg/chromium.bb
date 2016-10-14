@@ -10,13 +10,17 @@
 <dom-module id="settings-site-settings-page">
   <template>
     <style include="settings-shared"></style>
-    <div class="settings-box first" category$="[[ALL_SITES]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="settings:list"></iron-icon>
-      <div class="middle">$i18n{siteSettingsCategoryAllSites}</div>
-      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
-    </div>
-    <div class="settings-box two-line"
+    <template is="dom-if" if="[[enableSiteSettings_]]">
+      <div class="settings-box first" category$="[[ALL_SITES]]"
+          on-tap="onTapCategory" actionable>
+        <iron-icon icon="settings:list"></iron-icon>
+        <div class="middle">$i18n{siteSettingsCategoryAllSites}</div>
+        <button class="icon-arrow-right" is="paper-icon-button-light"></button>
+      </div>
+      <div class="settings-box line-only">
+      </div>
+    </template>
+    <div class="settings-box two-line first"
         category$="[[ContentSettingsTypes.COOKIES]]" on-tap="onTapCategory"
         actionable>
       <iron-icon icon="[[computeIconForContentCategory(

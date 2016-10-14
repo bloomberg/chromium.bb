@@ -5370,6 +5370,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TOP_CHROME_MD_MATERIAL_HYBRID" desc="Top Chrome material hybrid design option (for touchscreens).">
         Touch
       </message>
+      <message name="IDS_FLAGS_SITE_SETTINGS" desc="Title of the flag which enables the site settings all sites list and site details.">
+        Site settings with All sites and Site details
+      </message>
+      <message name="IDS_FLAGS_SITE_SETTINGS_DESCRIPTION" desc="Description of the flag which enables or disables the site settings all sites list and site details.">
+        Adds new ways of viewing Site settings.
+      </message>
       <message name="IDS_FLAGS_SECONDARY_UI_MD" desc="Title of the flag which enables or disables material design in the rest of the native UI of the browser (beyond top chrome).">
         Material Design in the rest of the browser's native UI
       </message>

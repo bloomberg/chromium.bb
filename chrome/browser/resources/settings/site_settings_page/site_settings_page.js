@@ -13,6 +13,14 @@ Polymer({
   behaviors: [SiteSettingsBehavior],
 
   properties: {
+    /** @private */
+    enableSiteSettings_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableSiteSettings');
+      },
+    },
+
     /**
      * The category selected by the user.
      */

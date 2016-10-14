@@ -474,6 +474,10 @@ const char kEnableSiteEngagementEvictionPolicy[] =
 // allocates certain resources accordingly.
 const char kEnableSiteEngagementService[]   = "enable-site-engagement-service";
 
+// Enables the site settings all sites list and site details pages in the Chrome
+// settings UI.
+const char kEnableSiteSettings[] = "enable-site-settings";
+
 // Enables the supervised user managed bookmarks folder.
 const char kEnableSupervisedUserManagedBookmarksFolder[] =
     "enable-supervised-user-managed-bookmarks-folder";

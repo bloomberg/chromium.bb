@@ -583,6 +583,7 @@ cr.define('site_list', function() {
             settings.PermissionValues.ALLOW, prefs);
         return browserProxy.whenCalled('getExceptionList').then(
             function(contentType) {
+              testElement.enableSiteSettings_ = true;
               assertEquals(
                   settings.ContentSettingsTypes.GEOLOCATION, contentType);
 
@@ -705,6 +706,7 @@ cr.define('site_list', function() {
               var resolver = new PromiseResolver();
               testElement.async(resolver.resolve);
               return resolver.promise.then(function() {
+                testElement.enableSiteSettings_ = true;
                 // All Sites calls getExceptionList for all categories, starting
                 // with Cookies.
                 assertEquals(
@@ -749,6 +751,7 @@ cr.define('site_list', function() {
               var resolver = new PromiseResolver();
               testElement.async(resolver.resolve);
               return resolver.promise.then(function() {
+                testElement.enableSiteSettings_ = true;
                 // All Sites calls getExceptionList for all categories, starting
                 // with Cookies.
                 assertEquals(
