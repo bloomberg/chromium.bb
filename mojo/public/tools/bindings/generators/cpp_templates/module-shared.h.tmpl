@@ -97,7 +97,7 @@ namespace internal {
 {%- from "enum_macros.tmpl" import enum_decl%}
 {%- for enum in all_enums %}
 {%-   if enum|is_native_only_kind %}
-using {{enum.name}} = mojo::NativeEnum;
+using {{enum|get_name_for_kind(flatten_nested_kind=True)}} = mojo::NativeEnum;
 {%-   else %}
 {{enum_decl(enum)}}
 {%-   endif %}
