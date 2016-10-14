@@ -30,6 +30,7 @@ ways:
 '''
 
 
+import errno
 import optparse
 import os
 import re
@@ -233,8 +234,11 @@ def LinkOrCopyFiles(sources, dest_dir):
   '''Copies a list of sources to a destination directory.'''
 
   def LinkOrCopyOneFile(src, dst):
-    if not os.path.exists(os.path.dirname(dst)):
+    try:
       os.makedirs(os.path.dirname(dst))
+    except OSError as err:
+      if err.errno != errno.EEXIST:
+        raise
     if os.path.exists(dst):
       os.unlink(dst)
     try:
