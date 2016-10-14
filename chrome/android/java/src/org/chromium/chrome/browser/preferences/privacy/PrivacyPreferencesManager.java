@@ -74,7 +74,12 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
                              .getString(DEPRECATED_PREF_CRASH_DUMP_UPLOAD, crashDumpNeverUpload)
                              .equals(crashDumpNeverUpload));
 
+            // Remove both this preference and the related one. If the related one is not removed
+            // now, later migrations could read from it and clobber the state.
             editor.remove(DEPRECATED_PREF_CRASH_DUMP_UPLOAD);
+            if (mSharedPreferences.contains(DEPRECATED_PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR)) {
+                editor.remove(DEPRECATED_PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR);
+            }
         } else if (mSharedPreferences.contains(DEPRECATED_PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR)) {
             setUsageAndCrashReporting(mSharedPreferences.getBoolean(
                     DEPRECATED_PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false));
