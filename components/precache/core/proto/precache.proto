@@ -88,5 +88,5 @@ message PrecacheConfigurationSettings {
   // The maximum number of bytes that can be fetched by precache on a single
   // day. After this limit is reached, no more resources will be downloaded,
   // until the quota gets replenished the next day.
-  optional uint64 daily_quota_total = 6 [default = 40000000 /* 10 MB */];
+  optional uint64 daily_quota_total = 6 [default = 40000000 /* 40 MB */];
 };
