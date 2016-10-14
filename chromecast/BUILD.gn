@@ -197,7 +197,13 @@ cast_test_group("cast_tests") {
 
   net_unittests_filter = {
     test_name = "net_unittests"
-    if (target_os == "linux" && !is_cast_desktop_build) {
+    if (using_sanitizer) {
+      # TODO(mbjorge): net_unittests do not complete when run with sanitizers,
+      # (in particular, TSAN and UBSAN), resulting in build machines getting stuck
+      # for many hours. Disable them for now, since these are getting run on
+      # Chromium bots anyway. (internal b/31279943)
+      gtest_excludes = [ "*" ]
+    } else if (target_os == "linux" && !is_cast_desktop_build) {
       # Run net_unittests first to avoid random failures due to slow python startup
       # KeygenHandlerTest.SmokeTest and KeygenHandlerTest.ConcurrencyTest fail due to
       # readonly certdb (b/8153161)
@@ -230,15 +236,6 @@ cast_test_group("cast_tests") {
     }
   }
   filters += [ net_unittests_filter ]
-
-  # TODO(mbjorge): net_unittests do not complete when run with sanitizers,
-  # (in particular, TSAN and UBSAN), resulting in build machines getting stuck
-  # for many hours. Disable them for now, since these are getting run on
-  # Chromium bots anyway. (internal b/31279943)
-  if (using_sanitizer) {
-    tests -= [ "//net:net_unittests" ]
-    filters -= [ net_unittests_filter ]
-  }
 }
 
 # Creates the build and run lists for all test targets.
