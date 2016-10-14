@@ -4,6 +4,7 @@
 
 #include "ui/android/resources/resource_manager_impl.h"
 
+#include <inttypes.h>
 #include <stddef.h>
 
 #include <utility>
@@ -12,6 +13,10 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/resources/ui_resource_manager.h"
@@ -44,9 +49,14 @@ ResourceManagerImpl::ResourceManagerImpl(gfx::NativeWindow native_window)
                                        reinterpret_cast<intptr_t>(this))
                .obj());
   DCHECK(!java_obj_.is_null());
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "android::ResourceManagerImpl",
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 ResourceManagerImpl::~ResourceManagerImpl() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
   Java_ResourceManager_destroy(base::android::AttachCurrentThread(), java_obj_);
 }
 
@@ -285,6 +295,44 @@ ResourceManagerImpl::ProcessCrushedSpriteFrameRects(
     src_dst_rects.push_back(frame_src_dst_rects);
   }
   return src_dst_rects;
+}
+
+bool ResourceManagerImpl::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  size_t size = 0;
+  for (const auto& resource_map : resources_) {
+    for (const auto& id_and_resource : resource_map) {
+      if (id_and_resource.second && id_and_resource.second->ui_resource)
+        size += id_and_resource.second->ui_resource->GetAllocatedSizeInBytes();
+    }
+  }
+  for (const auto& id_and_resource : crushed_sprite_resources_) {
+    if (id_and_resource.second)
+      size += id_and_resource.second->GetAllocatedSizeInBytes();
+  }
+  for (const auto& color_and_resources : tinted_resources_) {
+    for (const auto& id_and_resource : *color_and_resources.second) {
+      if (id_and_resource.second && id_and_resource.second->ui_resource)
+        size += id_and_resource.second->ui_resource->GetAllocatedSizeInBytes();
+    }
+  }
+
+  base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+      base::StringPrintf("ui/resource_manager_0x%" PRIXPTR,
+                         reinterpret_cast<uintptr_t>(this)));
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
+
+  // Bitmaps are allocated from malloc.
+  const char* system_allocator_name =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->system_allocator_pool_name();
+  if (system_allocator_name) {
+    pmd->AddSuballocation(dump->guid(), system_allocator_name);
+  }
+
+  return true;
 }
 
 void ResourceManagerImpl::OnCrushedSpriteResourceReloaded(

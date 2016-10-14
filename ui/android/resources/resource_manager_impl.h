@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/ui_android_export.h"
@@ -20,7 +21,9 @@ class UIResourceManager;
 
 namespace ui {
 
-class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
+class UI_ANDROID_EXPORT ResourceManagerImpl
+    : public ResourceManager,
+      public base::trace_event::MemoryDumpProvider {
  public:
   static ResourceManagerImpl* FromJavaObject(jobject jobj);
 
@@ -77,6 +80,10 @@ class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
   // Helper method for processing crushed sprite metadata; public for testing.
   CrushedSpriteResource::SrcDstRects ProcessCrushedSpriteFrameRects(
       std::vector<std::vector<int>> frame_rects_vector);
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
   friend class TestResourceManagerImpl;

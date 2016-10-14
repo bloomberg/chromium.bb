@@ -4,7 +4,6 @@
 
 #include "ui/android/resources/crushed_sprite_resource.h"
 
-#include "cc/resources/scoped_ui_resource.h"
 #include "cc/trees/layer_tree_host.h"
 #include "ui/gfx/android/java_bitmap.h"
 
@@ -58,6 +57,10 @@ gfx::Size CrushedSpriteResource::GetScaledSpriteSize() {
 
 int CrushedSpriteResource::GetFrameCount() {
   return src_dst_rects_.size();
+}
+
+size_t CrushedSpriteResource::GetAllocatedSizeInBytes() const {
+  return bitmap_.getSize();
 }
 
 }  // namespace ui

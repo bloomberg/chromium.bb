@@ -5,6 +5,9 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "cc/animation/animation_host.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_manager.h"
@@ -111,12 +114,12 @@ class ResourceManagerTest : public testing::Test {
   }
 
  private:
+  base::MessageLoop message_loop_;
   WindowAndroid* window_android_;
 
  protected:
   MockUIResourceManager ui_resource_manager_;
   TestResourceManagerImpl resource_manager_;
-  cc::TestTaskGraphRunner task_graph_runner_;
   cc::StubLayerTreeHostClient stub_client_;
 };
 
@@ -174,6 +177,27 @@ TEST_F(ResourceManagerTest, ProcessCrushedSpriteFrameRects) {
     for (size_t j = 0; j < actual_rects[i].size(); j++) {
       EXPECT_EQ(expected_rects[i][j], actual_rects[i][j]);
     }
+  }
+}
+
+TEST_F(ResourceManagerTest, TestOnMemoryDumpEmitsData) {
+  SetResourceAsLoaded(kTestResourceType);
+
+  base::trace_event::MemoryDumpArgs dump_args = {
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+  std::unique_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump =
+      base::MakeUnique<base::trace_event::ProcessMemoryDump>(nullptr,
+                                                             dump_args);
+  resource_manager_.OnMemoryDump(dump_args, process_memory_dump.get());
+  const auto& allocator_dumps = process_memory_dump->allocator_dumps();
+  const char* system_allocator_pool_name =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->system_allocator_pool_name();
+  size_t expected_dump_count = system_allocator_pool_name ? 2 : 1;
+  EXPECT_EQ(expected_dump_count, allocator_dumps.size());
+  for (const auto& dump : allocator_dumps) {
+    ASSERT_TRUE(dump.first.find("ui/resource_manager") == 0 ||
+                dump.first.find(system_allocator_pool_name) == 0);
   }
 }
 

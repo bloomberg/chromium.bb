@@ -51,6 +51,11 @@ class CC_EXPORT UIResourceBitmap {
   UIResourceBitmap(const UIResourceBitmap& other);
   ~UIResourceBitmap();
 
+  // Returns the memory usage of the bitmap.
+  size_t GetAllocatedSizeInBytes() const {
+    return pixel_ref_ ? pixel_ref_->rowBytes() * size_.height() : 0;
+  }
+
  private:
   friend class AutoLockUIResourceBitmap;
 

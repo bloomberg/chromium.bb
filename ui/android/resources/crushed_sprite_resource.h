@@ -16,7 +16,6 @@
 
 namespace cc {
 class LayerTreeHost;
-class ScopedUIResource;
 typedef int UIResourceId;
 }
 
@@ -71,9 +70,11 @@ class UI_ANDROID_EXPORT CrushedSpriteResource {
   // Returns the total number of frames in the sprite animation.
   int GetFrameCount();
 
+  // Returns the memory usage of the bitmap.
+  size_t GetAllocatedSizeInBytes() const;
+
  private:
   SkBitmap bitmap_;
-  std::unique_ptr<cc::ScopedUIResource> last_frame_resource_;
   SrcDstRects src_dst_rects_;
   gfx::Size unscaled_sprite_size_;
   gfx::Size scaled_sprite_size_;
