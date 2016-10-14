@@ -212,10 +212,6 @@ class WebFrameWidgetImpl final
 
   WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*) const;
 
-  WebString inputModeOfFocusedElement() const;
-
-  int textInputFlags() const;
-
   LocalFrame* focusedLocalFrameAvailableForIme() const;
 
   WebWidgetClient* m_client;

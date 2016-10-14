@@ -30,7 +30,6 @@
 
 #include "web/WebFrameWidgetImpl.h"
 
-#include "core/InputTypeNames.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -41,7 +40,6 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
@@ -598,138 +596,18 @@ WebRange WebFrameWidgetImpl::compositionRange() {
   return PlainTextRange::create(*editable, range);
 }
 
-// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
-// code needs to be refactored  (http://crbug.com/629721).
 WebTextInputInfo WebFrameWidgetImpl::textInputInfo() {
-  WebTextInputInfo info;
-
   LocalFrame* focused = focusedLocalFrameInWidget();
   if (!focused)
-    return info;
-
-  FrameSelection& selection = focused->selection();
-  if (!selection.isAvailable()) {
-    // plugins/mouse-capture-inside-shadow.html reaches here.
-    return info;
-  }
-  Element* element = selection.selection().rootEditableElement();
-  if (!element)
-    return info;
-
-  info.inputMode = inputModeOfFocusedElement();
-
-  info.type = textInputType();
-  info.flags = textInputFlags();
-  if (info.type == WebTextInputTypeNone)
-    return info;
-
-  if (!focused->editor().canEdit())
-    return info;
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  see http://crbug.com/590369 for more details.
-  focused->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  DocumentLifecycle::DisallowTransitionScope disallowTransition(
-      focused->document()->lifecycle());
-
-  // Emits an object replacement character for each replaced element so that
-  // it is exposed to IME and thus could be deleted by IME on android.
-  info.value = plainText(EphemeralRange::rangeOfContents(*element),
-                         TextIteratorEmitsObjectReplacementCharacter);
-
-  if (info.value.isEmpty())
-    return info;
-
-  EphemeralRange firstRange = firstEphemeralRangeOf(selection.selection());
-  if (firstRange.isNotNull()) {
-    PlainTextRange plainTextRange(PlainTextRange::create(*element, firstRange));
-    if (plainTextRange.isNotNull()) {
-      info.selectionStart = plainTextRange.start();
-      info.selectionEnd = plainTextRange.end();
-    }
-  }
-
-  EphemeralRange range =
-      focused->inputMethodController().compositionEphemeralRange();
-  if (range.isNotNull()) {
-    PlainTextRange plainTextRange(PlainTextRange::create(*element, range));
-    if (plainTextRange.isNotNull()) {
-      info.compositionStart = plainTextRange.start();
-      info.compositionEnd = plainTextRange.end();
-    }
-  }
-
-  return info;
+    return WebTextInputInfo();
+  return focused->inputMethodController().textInputInfo();
 }
 
-// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
-// code needs to be refactored  (http://crbug.com/629721).
 WebTextInputType WebFrameWidgetImpl::textInputType() {
-  LocalFrame* focusedFrame = focusedLocalFrameInWidget();
-  if (!focusedFrame)
+  LocalFrame* focused = focusedLocalFrameInWidget();
+  if (!focused)
     return WebTextInputTypeNone;
-
-  if (!focusedFrame->selection().isAvailable()) {
-    // "mouse-capture-inside-shadow.html" reaches here.
-    return WebTextInputTypeNone;
-  }
-
-  // It's important to preserve the equivalence of textInputInfo().type and
-  // textInputType(), so perform the same rootEditableElement() existence check
-  // here for consistency.
-  if (!focusedFrame->selection().selection().rootEditableElement())
-    return WebTextInputTypeNone;
-
-  Document* document = focusedFrame->document();
-  if (!document)
-    return WebTextInputTypeNone;
-
-  Element* element = document->focusedElement();
-  if (!element)
-    return WebTextInputTypeNone;
-
-  if (isHTMLInputElement(*element)) {
-    HTMLInputElement& input = toHTMLInputElement(*element);
-    const AtomicString& type = input.type();
-
-    if (input.isDisabledOrReadOnly())
-      return WebTextInputTypeNone;
-
-    if (type == InputTypeNames::password)
-      return WebTextInputTypePassword;
-    if (type == InputTypeNames::search)
-      return WebTextInputTypeSearch;
-    if (type == InputTypeNames::email)
-      return WebTextInputTypeEmail;
-    if (type == InputTypeNames::number)
-      return WebTextInputTypeNumber;
-    if (type == InputTypeNames::tel)
-      return WebTextInputTypeTelephone;
-    if (type == InputTypeNames::url)
-      return WebTextInputTypeURL;
-    if (type == InputTypeNames::text)
-      return WebTextInputTypeText;
-
-    return WebTextInputTypeNone;
-  }
-
-  if (isHTMLTextAreaElement(*element)) {
-    if (toHTMLTextAreaElement(*element).isDisabledOrReadOnly())
-      return WebTextInputTypeNone;
-    return WebTextInputTypeTextArea;
-  }
-
-  if (element->isHTMLElement()) {
-    if (toHTMLElement(element)->isDateTimeFieldElement())
-      return WebTextInputTypeDateTimeField;
-  }
-
-  document->updateStyleAndLayoutTree();
-  if (hasEditableStyle(*element))
-    return WebTextInputTypeContentEditable;
-
-  return WebTextInputTypeNone;
+  return focused->inputMethodController().textInputType();
 }
 
 WebColor WebFrameWidgetImpl::backgroundColor() const {
@@ -1445,81 +1323,6 @@ WebPlugin* WebFrameWidgetImpl::focusedPluginIfInputMethodSupported(
   if (container && container->supportsInputMethod())
     return container->plugin();
   return nullptr;
-}
-
-WebString WebFrameWidgetImpl::inputModeOfFocusedElement() const {
-  if (!RuntimeEnabledFeatures::inputModeAttributeEnabled())
-    return WebString();
-
-  Element* element = focusedElement();
-  if (!element)
-    return WebString();
-
-  if (isHTMLInputElement(*element)) {
-    const HTMLInputElement& input = toHTMLInputElement(*element);
-    if (input.supportsInputModeAttribute())
-      return input.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
-    return WebString();
-  }
-  if (isHTMLTextAreaElement(*element)) {
-    const HTMLTextAreaElement& textarea = toHTMLTextAreaElement(*element);
-    return textarea.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
-  }
-
-  return WebString();
-}
-
-int WebFrameWidgetImpl::textInputFlags() const {
-  Element* element = focusedElement();
-  if (!element)
-    return WebTextInputFlagNone;
-
-  DEFINE_STATIC_LOCAL(AtomicString, autocompleteString, ("autocomplete"));
-  DEFINE_STATIC_LOCAL(AtomicString, autocorrectString, ("autocorrect"));
-  int flags = 0;
-
-  const AtomicString& autocomplete = element->getAttribute(autocompleteString);
-  if (autocomplete == "on")
-    flags |= WebTextInputFlagAutocompleteOn;
-  else if (autocomplete == "off")
-    flags |= WebTextInputFlagAutocompleteOff;
-
-  const AtomicString& autocorrect = element->getAttribute(autocorrectString);
-  if (autocorrect == "on")
-    flags |= WebTextInputFlagAutocorrectOn;
-  else if (autocorrect == "off")
-    flags |= WebTextInputFlagAutocorrectOff;
-
-  SpellcheckAttributeState spellcheck = element->spellcheckAttributeState();
-  if (spellcheck == SpellcheckAttributeTrue)
-    flags |= WebTextInputFlagSpellcheckOn;
-  else if (spellcheck == SpellcheckAttributeFalse)
-    flags |= WebTextInputFlagSpellcheckOff;
-
-  if (isHTMLTextFormControlElement(element)) {
-    HTMLTextFormControlElement* formElement =
-        static_cast<HTMLTextFormControlElement*>(element);
-    if (formElement->supportsAutocapitalize()) {
-      DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
-      DEFINE_STATIC_LOCAL(const AtomicString, characters, ("characters"));
-      DEFINE_STATIC_LOCAL(const AtomicString, words, ("words"));
-      DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
-
-      const AtomicString& autocapitalize = formElement->autocapitalize();
-      if (autocapitalize == none)
-        flags |= WebTextInputFlagAutocapitalizeNone;
-      else if (autocapitalize == characters)
-        flags |= WebTextInputFlagAutocapitalizeCharacters;
-      else if (autocapitalize == words)
-        flags |= WebTextInputFlagAutocapitalizeWords;
-      else if (autocapitalize == sentences)
-        flags |= WebTextInputFlagAutocapitalizeSentences;
-      else
-        NOTREACHED();
-    }
-  }
-
-  return flags;
 }
 
 LocalFrame* WebFrameWidgetImpl::focusedLocalFrameAvailableForIme() const {

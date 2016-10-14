@@ -553,10 +553,6 @@ class WEB_EXPORT WebViewImpl final
   explicit WebViewImpl(WebViewClient*, WebPageVisibilityState);
   ~WebViewImpl() override;
 
-  int textInputFlags();
-
-  WebString inputModeOfFocusedElement();
-
   // Returns true if the event was actually processed.
   bool keyEventDefault(const WebKeyboardEvent&);
 

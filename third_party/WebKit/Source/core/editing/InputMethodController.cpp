@@ -26,6 +26,7 @@
 
 #include "core/editing/InputMethodController.h"
 
+#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
@@ -35,6 +36,7 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/CompositionEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutObject.h"
@@ -929,6 +931,203 @@ void InputMethodController::deleteSurroundingText(int before, int after) {
   }
 
   setSelectionOffsets(PlainTextRange(selectionStart, selectionEnd));
+}
+
+WebTextInputInfo InputMethodController::textInputInfo() const {
+  WebTextInputInfo info;
+  if (!frame().document())
+    return info;
+
+  if (!frame().selection().isAvailable()) {
+    // plugins/mouse-capture-inside-shadow.html reaches here.
+    return info;
+  }
+  Element* element = frame().selection().rootEditableElement();
+  if (!element)
+    return info;
+
+  info.inputMode = inputModeOfFocusedElement();
+  info.type = textInputType();
+  info.flags = textInputFlags();
+  if (info.type == WebTextInputTypeNone)
+    return info;
+
+  if (!frame().editor().canEdit())
+    return info;
+
+  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      frame().document()->lifecycle());
+
+  // Emits an object replacement character for each replaced element so that
+  // it is exposed to IME and thus could be deleted by IME on android.
+  info.value = plainText(EphemeralRange::rangeOfContents(*element),
+                         TextIteratorEmitsObjectReplacementCharacter);
+
+  if (info.value.isEmpty())
+    return info;
+
+  EphemeralRange firstRange =
+      firstEphemeralRangeOf(frame().selection().selection());
+  if (firstRange.isNotNull()) {
+    PlainTextRange plainTextRange(PlainTextRange::create(*element, firstRange));
+    if (plainTextRange.isNotNull()) {
+      info.selectionStart = plainTextRange.start();
+      info.selectionEnd = plainTextRange.end();
+    }
+  }
+
+  EphemeralRange range = compositionEphemeralRange();
+  if (range.isNotNull()) {
+    PlainTextRange plainTextRange(PlainTextRange::create(*element, range));
+    if (plainTextRange.isNotNull()) {
+      info.compositionStart = plainTextRange.start();
+      info.compositionEnd = plainTextRange.end();
+    }
+  }
+
+  return info;
+}
+
+int InputMethodController::textInputFlags() const {
+  Element* element = frame().document()->focusedElement();
+  if (!element)
+    return WebTextInputFlagNone;
+
+  int flags = 0;
+
+  const AtomicString& autocomplete =
+      element->getAttribute(HTMLNames::autocompleteAttr);
+  if (autocomplete == "on")
+    flags |= WebTextInputFlagAutocompleteOn;
+  else if (autocomplete == "off")
+    flags |= WebTextInputFlagAutocompleteOff;
+
+  const AtomicString& autocorrect =
+      element->getAttribute(HTMLNames::autocorrectAttr);
+  if (autocorrect == "on")
+    flags |= WebTextInputFlagAutocorrectOn;
+  else if (autocorrect == "off")
+    flags |= WebTextInputFlagAutocorrectOff;
+
+  SpellcheckAttributeState spellcheck = element->spellcheckAttributeState();
+  if (spellcheck == SpellcheckAttributeTrue)
+    flags |= WebTextInputFlagSpellcheckOn;
+  else if (spellcheck == SpellcheckAttributeFalse)
+    flags |= WebTextInputFlagSpellcheckOff;
+
+  if (isHTMLTextFormControlElement(element)) {
+    HTMLTextFormControlElement* formElement =
+        static_cast<HTMLTextFormControlElement*>(element);
+    if (formElement->supportsAutocapitalize()) {
+      DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
+      DEFINE_STATIC_LOCAL(const AtomicString, characters, ("characters"));
+      DEFINE_STATIC_LOCAL(const AtomicString, words, ("words"));
+      DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
+
+      const AtomicString& autocapitalize = formElement->autocapitalize();
+      if (autocapitalize == none)
+        flags |= WebTextInputFlagAutocapitalizeNone;
+      else if (autocapitalize == characters)
+        flags |= WebTextInputFlagAutocapitalizeCharacters;
+      else if (autocapitalize == words)
+        flags |= WebTextInputFlagAutocapitalizeWords;
+      else if (autocapitalize == sentences)
+        flags |= WebTextInputFlagAutocapitalizeSentences;
+      else
+        NOTREACHED();
+    }
+  }
+
+  return flags;
+}
+
+String InputMethodController::inputModeOfFocusedElement() const {
+  if (!RuntimeEnabledFeatures::inputModeAttributeEnabled())
+    return String();
+
+  Element* element = frame().document()->focusedElement();
+  if (!element)
+    return String();
+
+  if (isHTMLInputElement(*element)) {
+    const HTMLInputElement& input = toHTMLInputElement(*element);
+    if (input.supportsInputModeAttribute())
+      return input.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
+    return String();
+  }
+  if (isHTMLTextAreaElement(*element)) {
+    const HTMLTextAreaElement& textarea = toHTMLTextAreaElement(*element);
+    return textarea.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
+  }
+
+  return String();
+}
+
+WebTextInputType InputMethodController::textInputType() const {
+  if (!frame().selection().isAvailable()) {
+    // "mouse-capture-inside-shadow.html" reaches here.
+    return WebTextInputTypeNone;
+  }
+
+  // It's important to preserve the equivalence of textInputInfo().type and
+  // textInputType(), so perform the same rootEditableElement() existence check
+  // here for consistency.
+  if (!frame().selection().selection().rootEditableElement())
+    return WebTextInputTypeNone;
+
+  Document* document = frame().document();
+  if (!document)
+    return WebTextInputTypeNone;
+
+  Element* element = document->focusedElement();
+  if (!element)
+    return WebTextInputTypeNone;
+
+  if (isHTMLInputElement(*element)) {
+    HTMLInputElement& input = toHTMLInputElement(*element);
+    const AtomicString& type = input.type();
+
+    if (input.isDisabledOrReadOnly())
+      return WebTextInputTypeNone;
+
+    if (type == InputTypeNames::password)
+      return WebTextInputTypePassword;
+    if (type == InputTypeNames::search)
+      return WebTextInputTypeSearch;
+    if (type == InputTypeNames::email)
+      return WebTextInputTypeEmail;
+    if (type == InputTypeNames::number)
+      return WebTextInputTypeNumber;
+    if (type == InputTypeNames::tel)
+      return WebTextInputTypeTelephone;
+    if (type == InputTypeNames::url)
+      return WebTextInputTypeURL;
+    if (type == InputTypeNames::text)
+      return WebTextInputTypeText;
+
+    return WebTextInputTypeNone;
+  }
+
+  if (isHTMLTextAreaElement(*element)) {
+    if (toHTMLTextAreaElement(*element).isDisabledOrReadOnly())
+      return WebTextInputTypeNone;
+    return WebTextInputTypeTextArea;
+  }
+
+  if (element->isHTMLElement()) {
+    if (toHTMLElement(element)->isDateTimeFieldElement())
+      return WebTextInputTypeDateTimeField;
+  }
+
+  document->updateStyleAndLayoutTree();
+  if (hasEditableStyle(*element))
+    return WebTextInputTypeContentEditable;
+
+  return WebTextInputTypeNone;
 }
 
 DEFINE_TRACE(InputMethodController) {
