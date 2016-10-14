@@ -10,6 +10,7 @@
 // We use relative includes here to make this compatible with both the
 // Chromium OS and Chromium environment.
 #include "apmanager/dbus-constants.h"
+#include "authpolicy/dbus-constants.h"
 #include "cros-disks/dbus-constants.h"
 #include "cryptohome/dbus-constants.h"
 #include "debugd/dbus-constants.h"

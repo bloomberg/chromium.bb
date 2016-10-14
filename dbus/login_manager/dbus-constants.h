@@ -15,8 +15,11 @@ const char kSessionManagerStartSession[] = "StartSession";
 const char kSessionManagerStopSession[] = "StopSession";
 const char kSessionManagerRestartJob[] = "RestartJob";
 const char kSessionManagerStorePolicy[] = "StorePolicy";
+const char kSessionManagerStoreUnsignedPolicy[] = "StoreUnsignedPolicy";
 const char kSessionManagerRetrievePolicy[] = "RetrievePolicy";
 const char kSessionManagerStorePolicyForUser[] = "StorePolicyForUser";
+const char kSessionManagerStoreUnsignedPolicyForUser[] =
+    "StoreUnsignedPolicyForUser";
 const char kSessionManagerRetrievePolicyForUser[] = "RetrievePolicyForUser";
 const char kSessionManagerStoreDeviceLocalAccountPolicy[] =
     "StoreDeviceLocalAccountPolicy";
