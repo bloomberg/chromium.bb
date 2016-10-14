@@ -1513,7 +1513,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(
   // reuse it here.
   LocalFrame* frame = LocalFrame::create(
       webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner,
-      client ? client->interfaceProvider() : nullptr);
+      client ? client->interfaceProvider() : nullptr,
+      client ? client->interfaceRegistry() : nullptr);
   // Set the name and unique name directly, bypassing any of the normal logic
   // to calculate unique name.
   frame->tree().setPrecalculatedName(
@@ -1585,7 +1586,8 @@ void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host,
                                             const AtomicString& uniqueName) {
   setCoreFrame(
       LocalFrame::create(m_frameLoaderClientImpl.get(), host, owner,
-                         client() ? client()->interfaceProvider() : nullptr));
+                         client() ? client()->interfaceProvider() : nullptr,
+                         client() ? client()->interfaceRegistry() : nullptr));
   frame()->tree().setPrecalculatedName(name, uniqueName);
   // We must call init() after m_frame is assigned because it is referenced
   // during init(). Note that this may dispatch JS events; the frame may be

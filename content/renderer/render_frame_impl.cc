@@ -114,6 +114,7 @@
 #include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/media/web_media_element_source_utils.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
+#include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/mojo/interface_provider_js_wrapper.h"
 #include "content/renderer/mojo_bindings_controller.h"
 #include "content/renderer/navigation_state_impl.h"
@@ -1128,6 +1129,8 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
   remote_interfaces_->Bind(std::move(remote_interfaces));
   blink_interface_provider_.reset(new BlinkInterfaceProviderImpl(
       remote_interfaces_->GetWeakPtr()));
+  blink_interface_registry_.reset(
+      new BlinkInterfaceRegistryImpl(interface_registry_->GetWeakPtr()));
 
   std::pair<RoutingIDFrameMap::iterator, bool> result =
       g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
@@ -6430,6 +6433,10 @@ void RenderFrameImpl::checkIfAudioSinkExistsAndIsAuthorized(
 
 blink::InterfaceProvider* RenderFrameImpl::interfaceProvider() {
   return blink_interface_provider_.get();
+}
+
+blink::InterfaceRegistry* RenderFrameImpl::interfaceRegistry() {
+  return blink_interface_registry_.get();
 }
 
 blink::WebPageVisibilityState RenderFrameImpl::visibilityState() const {

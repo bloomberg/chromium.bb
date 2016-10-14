@@ -61,6 +61,7 @@ class FrameView;
 class HTMLPlugInElement;
 class InputMethodController;
 class InterfaceProvider;
+class InterfaceRegistry;
 class IntPoint;
 class IntSize;
 class InstrumentingAgents;
@@ -90,7 +91,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   static LocalFrame* create(FrameLoaderClient*,
                             FrameHost*,
                             FrameOwner*,
-                            InterfaceProvider* = nullptr);
+                            InterfaceProvider* = nullptr,
+                            InterfaceRegistry* = nullptr);
 
   void init();
   void setView(FrameView*);
@@ -213,6 +215,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool isNavigationAllowed() const { return m_navigationDisableCount == 0; }
 
   InterfaceProvider* interfaceProvider() { return m_interfaceProvider; }
+  InterfaceRegistry* interfaceRegistry() { return m_interfaceRegistry; }
 
   FrameLoaderClient* client() const;
 
@@ -225,7 +228,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
  private:
   friend class FrameNavigationDisabler;
 
-  LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*, InterfaceProvider*);
+  LocalFrame(FrameLoaderClient*,
+             FrameHost*,
+             FrameOwner*,
+             InterfaceProvider*,
+             InterfaceRegistry*);
 
   // Internal Frame helper overrides:
   WindowProxyManager* getWindowProxyManager() const override;
@@ -266,6 +273,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<InstrumentingAgents> m_instrumentingAgents;
 
   InterfaceProvider* const m_interfaceProvider;
+  InterfaceRegistry* const m_interfaceRegistry;
 };
 
 inline void LocalFrame::init() {

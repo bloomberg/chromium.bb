@@ -478,6 +478,7 @@ component("platform") {
     "credentialmanager/PlatformFederatedCredential.h",
     "credentialmanager/PlatformPasswordCredential.cpp",
     "credentialmanager/PlatformPasswordCredential.h",
+    "exported/InterfaceRegistry.cpp",
     "exported/Platform.cpp",
     "exported/ServiceRegistry.cpp",
     "exported/WebActiveGestureAnimation.cpp",

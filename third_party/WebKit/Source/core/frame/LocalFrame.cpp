@@ -85,6 +85,7 @@
 #include "platform/plugins/PluginData.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/InterfaceRegistry.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/WebViewScheduler.h"
@@ -246,11 +247,14 @@ template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
 LocalFrame* LocalFrame::create(FrameLoaderClient* client,
                                FrameHost* host,
                                FrameOwner* owner,
-                               InterfaceProvider* interfaceProvider) {
+                               InterfaceProvider* interfaceProvider,
+                               InterfaceRegistry* interfaceRegistry) {
   LocalFrame* frame = new LocalFrame(
       client, host, owner,
       interfaceProvider ? interfaceProvider
-                        : InterfaceProvider::getEmptyInterfaceProvider());
+                        : InterfaceProvider::getEmptyInterfaceProvider(),
+      interfaceRegistry ? interfaceRegistry
+                        : InterfaceRegistry::getEmptyInterfaceRegistry());
   InspectorInstrumentation::frameAttachedToParent(frame);
   return frame;
 }
@@ -840,7 +844,8 @@ bool LocalFrame::shouldThrottleRendering() const {
 inline LocalFrame::LocalFrame(FrameLoaderClient* client,
                               FrameHost* host,
                               FrameOwner* owner,
-                              InterfaceProvider* interfaceProvider)
+                              InterfaceProvider* interfaceProvider,
+                              InterfaceRegistry* interfaceRegistry)
     : Frame(client, host, owner),
       m_frameScheduler(page()->chromeClient().createFrameScheduler(
           client->frameBlameContext())),
@@ -857,7 +862,8 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client,
       m_pageZoomFactor(parentPageZoomFactor(this)),
       m_textZoomFactor(parentTextZoomFactor(this)),
       m_inViewSourceMode(false),
-      m_interfaceProvider(interfaceProvider) {
+      m_interfaceProvider(interfaceProvider),
+      m_interfaceRegistry(interfaceRegistry) {
   if (isLocalRoot())
     m_instrumentingAgents = new InstrumentingAgents();
   else

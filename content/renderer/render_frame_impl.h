@@ -82,6 +82,7 @@ class SyncMessage;
 }
 
 namespace blink {
+class InterfaceRegistry;
 class WebContentDecryptionModule;
 class WebMouseEvent;
 class WebPresentationClient;
@@ -124,6 +125,7 @@ class Origin;
 namespace content {
 
 class AssociatedInterfaceProviderImpl;
+class BlinkInterfaceRegistryImpl;
 class ChildFrameCompositingHelper;
 class CompositorDependencies;
 class DevToolsAgent;
@@ -645,6 +647,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
   blink::InterfaceProvider* interfaceProvider() override;
+  blink::InterfaceRegistry* interfaceRegistry() override;
   blink::WebPageVisibilityState visibilityState() const override;
 
   // WebFrameSerializerClient implementation:
@@ -1236,6 +1239,7 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
+  std::unique_ptr<BlinkInterfaceRegistryImpl> blink_interface_registry_;
   shell::mojom::InterfaceProviderRequest
       pending_remote_interface_provider_request_;
 
