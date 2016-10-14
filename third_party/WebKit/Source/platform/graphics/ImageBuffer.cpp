@@ -243,7 +243,6 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
   gpu::gles2::GLES2Interface* sharedGL = provider->contextGL();
 
   gpu::Mailbox mailbox;
-  IntSize textureSize(textureImage->width(), textureImage->height());
 
   // Contexts may be in a different share group. We must transfer the texture
   // through a mailbox first.
