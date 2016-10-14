@@ -952,8 +952,4 @@ std::unique_ptr<SSLServerSocket> SSLServerContextImpl::CreateSSLServerSocket(
       new SSLServerSocketImpl(std::move(socket), std::move(ssl)));
 }
 
-void EnableSSLServerSockets() {
-  // No-op because CreateSSLServerSocket() calls crypto::EnsureOpenSSLInit().
-}
-
 }  // namespace net

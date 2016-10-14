@@ -36,7 +36,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "net/socket/client_socket_factory.h"
-#include "net/socket/ssl_server_socket.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
@@ -1641,10 +1640,6 @@ int HostProcessMain() {
   // network thread. base::GetLinuxDistro() caches the result.
   base::GetLinuxDistro();
 #endif
-
-  // Enable support for SSL server sockets, which must be done while still
-  // single-threaded.
-  net::EnableSSLServerSockets();
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;

@@ -139,7 +139,6 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "net/base/network_change_notifier.h"
-#include "net/socket/ssl_server_socket.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/backend/print_backend.h"
@@ -377,10 +376,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   }
 
   dbus_services_.reset(new internal::DBusServices(parameters()));
-
-  // Enable support for SSL server sockets, which must be done while still
-  // single-threaded.  This is required for remote assistance host on Chrome OS.
-  net::EnableSSLServerSockets();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
 }

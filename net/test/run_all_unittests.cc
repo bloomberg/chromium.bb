@@ -7,8 +7,6 @@
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "net/socket/client_socket_pool_base.h"
-#include "net/socket/ssl_server_socket.h"
-#include "net/spdy/spdy_session.h"
 #include "net/test/net_test_suite.h"
 #include "url/url_features.h"
 
@@ -24,7 +22,6 @@
 #endif
 
 using net::internal::ClientSocketPoolBaseHelper;
-using net::SpdySession;
 
 int main(int argc, char** argv) {
   // Record histograms, so we can get histograms data in tests.
@@ -47,10 +44,6 @@ int main(int argc, char** argv) {
 
   NetTestSuite test_suite(argc, argv);
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
-
-  // Enable support for SSL server sockets, which must be done while
-  // single-threaded.
-  net::EnableSSLServerSockets();
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   mojo::edk::Init();
