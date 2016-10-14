@@ -188,7 +188,8 @@ NetworkTimeTracker::NetworkTimeTracker(
       getter_(std::move(getter)),
       clock_(std::move(clock)),
       tick_clock_(std::move(tick_clock)),
-      pref_service_(pref_service) {
+      pref_service_(pref_service),
+      time_query_completed_(false) {
   const base::DictionaryValue* time_mapping =
       pref_service_->GetDictionary(prefs::kNetworkTimeMapping);
   double time_js = 0;
@@ -310,7 +311,22 @@ NetworkTimeTracker::NetworkTimeResult NetworkTimeTracker::GetNetworkTime(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(network_time);
   if (network_time_at_last_measurement_.is_null()) {
-    return NETWORK_TIME_NO_SYNC;
+    if (time_query_completed_) {
+      // Time query attempts have been made in the past and failed.
+      if (time_fetcher_) {
+        // A fetch (not the first attempt) is in progress.
+        return NETWORK_TIME_SUBSEQUENT_SYNC_PENDING;
+      } else {
+        return NETWORK_TIME_NO_SUCCESSFUL_SYNC;
+      }
+    } else {
+      // No time queries have happened yet.
+      if (time_fetcher_) {
+        return NETWORK_TIME_FIRST_SYNC_PENDING;
+      } else {
+        return NETWORK_TIME_NO_SYNC_ATTEMPT;
+      }
+    }
   }
   DCHECK(!ticks_at_last_measurement_.is_null());
   DCHECK(!time_at_last_measurement_.is_null());
@@ -400,6 +416,7 @@ void NetworkTimeTracker::CheckTime() {
 bool NetworkTimeTracker::UpdateTimeFromResponse() {
   if (time_fetcher_->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
       time_fetcher_->GetResponseCode() != 200) {
+    time_query_completed_ = true;
     DVLOG(1) << "fetch failed, status=" << time_fetcher_->GetStatus().status()
              << ",code=" << time_fetcher_->GetResponseCode();
     // The error code is negated because net errors are negative, but
@@ -450,6 +467,7 @@ bool NetworkTimeTracker::UpdateTimeFromResponse() {
       base::TimeDelta::FromMilliseconds(1) +
       base::TimeDelta::FromSeconds(kTimeServerMaxSkewSeconds);
   base::TimeDelta latency = tick_clock_->NowTicks() - fetch_started_;
+  UMA_HISTOGRAM_TIMES("NetworkTimeTracker.TimeQueryLatency", latency);
   UpdateNetworkTime(current_time, resolution, latency, tick_clock_->NowTicks());
   return true;
 }
@@ -458,6 +476,8 @@ void NetworkTimeTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(time_fetcher_);
   DCHECK_EQ(source, time_fetcher_.get());
+
+  time_query_completed_ = true;
 
   // After completion of a query, whether succeeded or failed, go to sleep for a
   // long time.

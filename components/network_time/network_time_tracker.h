@@ -62,8 +62,20 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
     // of sync due to, for example, a suspend/resume.
     NETWORK_TIME_SYNC_LOST,
     // Network time is unavailable because the tracker has not yet
-    // retrieved a time from the network.
-    NETWORK_TIME_NO_SYNC,
+    // attempted to retrieve a time from the network.
+    NETWORK_TIME_NO_SYNC_ATTEMPT,
+    // Network time is unavailable because the tracker has not yet
+    // successfully retrieved a time from the network (at least one
+    // attempt has been made but all have failed).
+    NETWORK_TIME_NO_SUCCESSFUL_SYNC,
+    // Network time is unavailable because the tracker has not yet
+    // attempted to retrieve a time from the network, but the first
+    // attempt is currently pending.
+    NETWORK_TIME_FIRST_SYNC_PENDING,
+    // Network time is unavailable because the tracker has made failed
+    // attempts to retrieve a time from the network, but an attempt is
+    // currently pending.
+    NETWORK_TIME_SUBSEQUENT_SYNC_PENDING,
   };
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -174,6 +186,10 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
   // Uncertainty of |network_time_| based on added inaccuracies/resolution.  See
   // UpdateNetworkTime(...) implementation for details.
   base::TimeDelta network_time_uncertainty_;
+
+  // True if any time query has completed (but not necessarily succeeded) in
+  // this NetworkTimeTracker's lifetime.
+  bool time_query_completed_;
 
   base::ThreadChecker thread_checker_;
 

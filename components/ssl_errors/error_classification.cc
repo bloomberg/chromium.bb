@@ -42,19 +42,32 @@ namespace {
 // unavailable, why it was unavailable. This enum is being histogrammed
 // so do not reorder or remove values.
 enum NetworkClockState {
-  // The clock state relative to network time is unknown because the
-  // NetworkTimeTracker has no information from the network.
-  NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC = 0,
+  // Value 0 was NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC, which is obsolete
+  // in favor of the finer-grained values below.
+
   // The clock state relative to network time is unknown because the
   // user's clock has fallen out of sync with the latest information
   // from the network (due to e.g. suspend/resume).
-  NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST,
+  NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST = 1,
   // The clock is "close enough" to the network time.
   NETWORK_CLOCK_STATE_OK,
   // The clock is in the past relative to network time.
   NETWORK_CLOCK_STATE_CLOCK_IN_PAST,
   // The clock is in the future relative to network time.
   NETWORK_CLOCK_STATE_CLOCK_IN_FUTURE,
+  // The clock state relative to network time is unknown because no sync
+  // attempt has been made yet.
+  NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC_ATTEMPT,
+  // The clock state relative to network time is unknown because one or
+  // more sync attempts has failed.
+  NETWORK_CLOCK_STATE_UNKNOWN_NO_SUCCESSFUL_SYNC,
+  // The clock state relative to network time is unknown because the
+  // first sync attempt is still pending.
+  NETWORK_CLOCK_STATE_UNKNOWN_FIRST_SYNC_PENDING,
+  // The clock state relative to network time is unknown because one or
+  // more time query attempts have failed, and a subsequent sync attempt
+  // is still pending.
+  NETWORK_CLOCK_STATE_UNKNOWN_SUBSEQUENT_SYNC_PENDING,
   NETWORK_CLOCK_STATE_MAX
 };
 
@@ -243,8 +256,17 @@ ClockState GetClockState(
     case network_time::NetworkTimeTracker::NETWORK_TIME_SYNC_LOST:
       network_state = NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST;
       break;
-    case network_time::NetworkTimeTracker::NETWORK_TIME_NO_SYNC:
-      network_state = NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC;
+    case network_time::NetworkTimeTracker::NETWORK_TIME_NO_SYNC_ATTEMPT:
+      network_state = NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC_ATTEMPT;
+      break;
+    case network_time::NetworkTimeTracker::NETWORK_TIME_NO_SUCCESSFUL_SYNC:
+      network_state = NETWORK_CLOCK_STATE_UNKNOWN_NO_SUCCESSFUL_SYNC;
+      break;
+    case network_time::NetworkTimeTracker::NETWORK_TIME_FIRST_SYNC_PENDING:
+      network_state = NETWORK_CLOCK_STATE_UNKNOWN_FIRST_SYNC_PENDING;
+      break;
+    case network_time::NetworkTimeTracker::NETWORK_TIME_SUBSEQUENT_SYNC_PENDING:
+      network_state = NETWORK_CLOCK_STATE_UNKNOWN_SUBSEQUENT_SYNC_PENDING;
       break;
   }
 
@@ -264,8 +286,11 @@ ClockState GetClockState(
                             build_time_state, CLOCK_STATE_MAX);
 
   switch (network_state) {
-    case NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC:
     case NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST:
+    case NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC_ATTEMPT:
+    case NETWORK_CLOCK_STATE_UNKNOWN_NO_SUCCESSFUL_SYNC:
+    case NETWORK_CLOCK_STATE_UNKNOWN_FIRST_SYNC_PENDING:
+    case NETWORK_CLOCK_STATE_UNKNOWN_SUBSEQUENT_SYNC_PENDING:
       return build_time_state;
     case NETWORK_CLOCK_STATE_OK:
       return CLOCK_STATE_OK;
