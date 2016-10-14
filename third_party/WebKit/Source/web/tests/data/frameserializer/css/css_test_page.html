@@ -6,6 +6,17 @@
 
 <link rel="stylesheet" type="text/css" href="link_styles.css" />
 <link rel="stylesheet" type="text/css" href="encoding.css" />
+<!-- Data URL that contains an image URL. Note that it must be an absolute URL
+     as relative ones will not work from inside a data URL.
+     It's raw contents are:
+#divFuchsia {
+ background-image: url('http://www.dataurl.com/fuchsia_background.png');
+}
+-->
+<link rel="stylesheet" type="text/css" 
+      href="data:text/css;charset=utf-8,%23divFuchsia%20%7B%0D%0A%20%20background-image%3A%20url%28%27http%3A%2F%2Fwww.dataurl.com%2Ffuchsia_background.png%27%29%3B%0D%0A%7D" />
+<!-- This should be skipped for already being included from another frame -->
+<link rel="stylesheet" type="text/css" href="included_in_another_frame.css" />
 
 <style>
 @import url('import_styles.css');
@@ -59,6 +70,9 @@ ol {
     background-image: url('brown_background.png');
   }
 }
+
+// Tries to import a CSS that was already previously linked.
+@import url('link_styles.css');
 
 </style>
 
@@ -119,6 +133,11 @@ This div has a pink image as its background.
 <!-- Style is defined in a supports feature query -->
 <div id='divBrown'>
 This div has a brown image as its background.
+</div>
+
+<!-- Style is defined in linked data URL -->
+<div id='divFuchsia'>
+This div has a fuchsia image as its background.
 </div>
 
 Unordered list:<br>

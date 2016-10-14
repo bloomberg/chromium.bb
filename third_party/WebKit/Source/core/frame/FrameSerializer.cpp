@@ -411,8 +411,6 @@ void FrameSerializer::serializeCSSRule(CSSRule* rule) {
       KURL sheetBaseURL = rule->parentStyleSheet()->baseURL();
       ASSERT(sheetBaseURL.isValid());
       KURL importURL = KURL(sheetBaseURL, importRule->href());
-      if (m_resourceURLs.contains(importURL))
-        break;
       if (importRule->styleSheet())
         serializeCSSStyleSheet(*importRule->styleSheet(), importURL);
       break;

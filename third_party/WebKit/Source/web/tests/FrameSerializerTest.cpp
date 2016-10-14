@@ -79,9 +79,13 @@ class FrameSerializerTest : public testing::Test,
 
   void setRewriteURLFolder(const char* folder) { m_rewriteFolder = folder; }
 
+  void registerURL(const KURL& url, const char* file, const char* mimeType) {
+    registerMockedURLLoad(url, WebString::fromUTF8(file), m_folder,
+                          WebString::fromUTF8(mimeType));
+  }
+
   void registerURL(const char* url, const char* file, const char* mimeType) {
-    registerMockedURLLoad(KURL(m_baseUrl, url), WebString::fromUTF8(file),
-                          m_folder, WebString::fromUTF8(mimeType));
+    registerURL(KURL(m_baseUrl, url), file, mimeType);
   }
 
   void registerURL(const char* file, const char* mimeType) {
@@ -105,6 +109,10 @@ class FrameSerializerTest : public testing::Test,
     m_rewriteURLs.add(fromURL, toURL);
   }
 
+  void registerSkipURL(const char* url) {
+    m_skipURLs.append(KURL(m_baseUrl, url));
+  }
+
   void serialize(const char* url) {
     FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(),
                                 KURL(m_baseUrl, url).getString().utf8().data());
@@ -119,9 +127,7 @@ class FrameSerializerTest : public testing::Test,
 
   Vector<SerializedResource>& getResources() { return m_resources; }
 
-  const SerializedResource* getResource(const char* urlString,
-                                        const char* mimeType) {
-    const KURL url(m_baseUrl, urlString);
+  const SerializedResource* getResource(const KURL& url, const char* mimeType) {
     String mime(mimeType);
     for (size_t i = 0; i < m_resources.size(); ++i) {
       const SerializedResource& resource = m_resources[i];
@@ -130,6 +136,12 @@ class FrameSerializerTest : public testing::Test,
         return &resource;
     }
     return nullptr;
+  }
+
+  const SerializedResource* getResource(const char* urlString,
+                                        const char* mimeType) {
+    const KURL url(m_baseUrl, urlString);
+    return getResource(url, mimeType);
   }
 
   bool isSerialized(const char* url, const char* mimeType = 0) {
@@ -171,11 +183,16 @@ class FrameSerializerTest : public testing::Test,
     return true;
   }
 
+  bool shouldSkipResourceWithURL(const KURL& url) {
+    return m_skipURLs.contains(url);
+  }
+
   FrameTestHelpers::WebViewHelper m_helper;
   WebString m_folder;
   KURL m_baseUrl;
   Vector<SerializedResource> m_resources;
   HashMap<String, String> m_rewriteURLs;
+  Vector<String> m_skipURLs;
   String m_rewriteFolder;
 };
 
@@ -336,11 +353,19 @@ TEST_F(FrameSerializerTest, CSS) {
   registerURL("ul-dot.png", "image.png", "image/png");
   registerURL("ol-dot.png", "image.png", "image/png");
 
+  const KURL imageUrlFromDataUrl(toKURL("http://www.dataurl.com"),
+                                 "fuchsia_background.png");
+  registerURL(imageUrlFromDataUrl, "image.png", "image/png");
+
+  registerURL("included_in_another_frame.css", "text/css");
+  registerSkipURL("included_in_another_frame.css");
+
   serialize("css_test_page.html");
 
-  EXPECT_EQ(15U, getResources().size());
+  EXPECT_EQ(16U, getResources().size());
 
   EXPECT_FALSE(isSerialized("do_not_serialize.png", "image/png"));
+  EXPECT_FALSE(isSerialized("included_in_another_frame.css", "text/css"));
 
   EXPECT_TRUE(isSerialized("css_test_page.html", "text/html"));
   EXPECT_TRUE(isSerialized("link_styles.css", "text/css"));
@@ -357,6 +382,8 @@ TEST_F(FrameSerializerTest, CSS) {
   EXPECT_TRUE(isSerialized("brown_background.png", "image/png"));
   EXPECT_TRUE(isSerialized("ul-dot.png", "image/png"));
   EXPECT_TRUE(isSerialized("ol-dot.png", "image/png"));
+
+  EXPECT_TRUE(getResource(imageUrlFromDataUrl, "image/png"));
 
   // Ensure encodings are specified.
   EXPECT_TRUE(
