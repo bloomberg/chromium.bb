@@ -4,6 +4,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "extensions/renderer/argument_spec.h"
@@ -23,7 +24,7 @@ std::unique_ptr<base::Value> GetValue(const std::string& str) {
   std::string updated;
   base::ReplaceChars(str.c_str(), "'", "\"", &updated);
   std::unique_ptr<base::Value> value = base::JSONReader::Read(updated);
-  CHECK(value);
+  CHECK(value) << str;
   return value;
 }
 
@@ -56,6 +57,10 @@ class ArgumentSpecUnitTest : public gin::V8Test {
             expected_thrown_message);
   }
 
+  void AddTypeRef(const std::string& id, std::unique_ptr<ArgumentSpec> spec) {
+    type_refs_[id] = std::move(spec);
+  }
+
  private:
   enum class TestResult { PASS, FAIL, THROW, };
 
@@ -64,6 +69,8 @@ class ArgumentSpecUnitTest : public gin::V8Test {
                TestResult expected_result,
                const std::string& expected_json,
                const std::string& expected_thrown_message);
+
+  ArgumentSpec::RefMap type_refs_;
 
   DISALLOW_COPY_AND_ASSIGN(ArgumentSpecUnitTest);
 };
@@ -88,7 +95,7 @@ void ArgumentSpecUnitTest::RunTest(const ArgumentSpec& spec,
 
   std::string error;
   std::unique_ptr<base::Value> out_value =
-      spec.ConvertArgument(context, val, &error);
+      spec.ConvertArgument(context, val, type_refs_, &error);
   bool should_succeed = expected_result == TestResult::PASS;
   ASSERT_EQ(should_succeed, !!out_value) << script_source << ", " << error;
   bool should_throw = expected_result == TestResult::THROW;
@@ -133,6 +140,17 @@ TEST_F(ArgumentSpecUnitTest, Test) {
     ExpectFailure(spec, "1");
     ExpectFailure(spec, "{}");
     ExpectFailure(spec, "['foo']");
+  }
+
+  {
+    ArgumentSpec spec(*GetValue("{'type': 'string', 'enum': ['foo', 'bar']}"));
+    ExpectSuccess(spec, "'foo'", "'foo'");
+    ExpectSuccess(spec, "'bar'", "'bar'");
+    ExpectFailure(spec, "['foo']");
+    ExpectFailure(spec, "'fo'");
+    ExpectFailure(spec, "'foobar'");
+    ExpectFailure(spec, "'baz'");
+    ExpectFailure(spec, "''");
   }
 
   {
@@ -207,6 +225,65 @@ TEST_F(ArgumentSpecUnitTest, Test) {
         "    { get: () => { throw new Error('Badness'); } });\n"
         "x;",
         "Uncaught Error: Badness");
+  }
+}
+
+TEST_F(ArgumentSpecUnitTest, TypeRefsTest) {
+  const char kObjectType[] =
+      "{"
+      "  'id': 'refObj',"
+      "  'type': 'object',"
+      "  'properties': {"
+      "    'prop1': {'type': 'string'},"
+      "    'prop2': {'type': 'integer', 'optional': true}"
+      "  }"
+      "}";
+  const char kEnumType[] =
+      "{'id': 'refEnum', 'type': 'string', 'enum': ['alpha', 'beta']}";
+  AddTypeRef("refObj", base::MakeUnique<ArgumentSpec>(*GetValue(kObjectType)));
+  AddTypeRef("refEnum", base::MakeUnique<ArgumentSpec>(*GetValue(kEnumType)));
+
+  {
+    const char kObjectWithRefEnumSpec[] =
+        "{"
+        "  'name': 'objWithRefEnum',"
+        "  'type': 'object',"
+        "  'properties': {"
+        "    'e': {'$ref': 'refEnum'},"
+        "    'sub': {'type': 'integer'}"
+        "  }"
+        "}";
+    ArgumentSpec spec(*GetValue(kObjectWithRefEnumSpec));
+    ExpectSuccess(spec, "({e: 'alpha', sub: 1})", "{'e':'alpha','sub':1}");
+    ExpectSuccess(spec, "({e: 'beta', sub: 1})", "{'e':'beta','sub':1}");
+    ExpectFailure(spec, "({e: 'gamma', sub: 1})");
+    ExpectFailure(spec, "({e: 'alpha'})");
+  }
+
+  {
+    const char kObjectWithRefObjectSpec[] =
+        "{"
+        "  'name': 'objWithRefObject',"
+        "  'type': 'object',"
+        "  'properties': {"
+        "    'o': {'$ref': 'refObj'}"
+        "  }"
+        "}";
+    ArgumentSpec spec(*GetValue(kObjectWithRefObjectSpec));
+    ExpectSuccess(spec, "({o: {prop1: 'foo'}})", "{'o':{'prop1':'foo'}}");
+    ExpectSuccess(spec, "({o: {prop1: 'foo', prop2: 2}})",
+                  "{'o':{'prop1':'foo','prop2':2}}");
+    ExpectFailure(spec, "({o: {prop1: 1}})");
+  }
+
+  {
+    const char kRefEnumListSpec[] =
+        "{'type': 'array', 'items': {'$ref': 'refEnum'}}";
+    ArgumentSpec spec(*GetValue(kRefEnumListSpec));
+    ExpectSuccess(spec, "['alpha']", "['alpha']");
+    ExpectSuccess(spec, "['alpha', 'alpha']", "['alpha','alpha']");
+    ExpectSuccess(spec, "['alpha', 'beta']", "['alpha','beta']");
+    ExpectFailure(spec, "['alpha', 'beta', 'gamma']");
   }
 }
 

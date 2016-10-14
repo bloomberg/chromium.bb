@@ -33,6 +33,20 @@ ArgumentSpec::ArgumentSpec(const base::Value& value)
     : type_(ArgumentType::INTEGER), optional_(false) {
   const base::DictionaryValue* dict = nullptr;
   CHECK(value.GetAsDictionary(&dict));
+  dict->GetBoolean("optional", &optional_);
+  dict->GetString("name", &name_);
+
+  InitializeType(dict);
+}
+
+void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
+  std::string ref_string;
+  if (dict->GetString("$ref", &ref_string)) {
+    ref_ = std::move(ref_string);
+    type_ = ArgumentType::REF;
+    return;
+  }
+
   std::string type_string;
   CHECK(dict->GetString("type", &type_string));
   if (type_string == "integer")
@@ -54,9 +68,6 @@ ArgumentSpec::ArgumentSpec(const base::Value& value)
   else
     NOTREACHED();
 
-  dict->GetBoolean("optional", &optional_);
-  dict->GetString("name", &name_);
-
   int min = 0;
   if (dict->GetInteger("minimum", &min))
     minimum_ = min;
@@ -72,6 +83,20 @@ ArgumentSpec::ArgumentSpec(const base::Value& value)
     const base::DictionaryValue* item_value = nullptr;
     CHECK(dict->GetDictionary("items", &item_value));
     list_element_type_ = base::MakeUnique<ArgumentSpec>(*item_value);
+  } else if (type_ == ArgumentType::STRING) {
+    // Technically, there's no reason enums couldn't be other objects (e.g.
+    // numbers), but right now they seem to be exclusively strings. We could
+    // always update this if need be.
+    const base::ListValue* enums = nullptr;
+    if (dict->GetList("enum", &enums)) {
+      size_t size = enums->GetSize();
+      CHECK_GT(size, 0u);
+      for (size_t i = 0; i < size; ++i) {
+        std::string enum_value;
+        CHECK(enums->GetString(i, &enum_value));
+        enum_values_.insert(std::move(enum_value));
+      }
+    }
   }
 }
 
@@ -80,9 +105,17 @@ ArgumentSpec::~ArgumentSpec() {}
 std::unique_ptr<base::Value> ArgumentSpec::ConvertArgument(
     v8::Local<v8::Context> context,
     v8::Local<v8::Value> value,
+    const RefMap& refs,
     std::string* error) const {
   // TODO(devlin): Support functions?
   DCHECK_NE(type_, ArgumentType::FUNCTION);
+  if (type_ == ArgumentType::REF) {
+    DCHECK(ref_);
+    auto iter = refs.find(ref_.value());
+    DCHECK(iter != refs.end()) << ref_.value();
+    return iter->second->ConvertArgument(context, value, refs, error);
+  }
+
   if (IsFundamentalType())
     return ConvertArgumentToFundamental(context, value, error);
   if (type_ == ArgumentType::OBJECT) {
@@ -93,7 +126,7 @@ std::unique_ptr<base::Value> ArgumentSpec::ConvertArgument(
       return nullptr;
     }
     v8::Local<v8::Object> object = value.As<v8::Object>();
-    return ConvertArgumentToObject(context, object, error);
+    return ConvertArgumentToObject(context, object, refs, error);
   }
   if (type_ == ArgumentType::LIST) {
     if (!value->IsArray()) {
@@ -101,7 +134,7 @@ std::unique_ptr<base::Value> ArgumentSpec::ConvertArgument(
       return nullptr;
     }
     v8::Local<v8::Array> array = value.As<v8::Array>();
-    return ConvertArgumentToArray(context, array, error);
+    return ConvertArgumentToArray(context, array, refs, error);
   }
   if (type_ == ArgumentType::ANY)
     return ConvertArgumentToAny(context, value, error);
@@ -130,9 +163,12 @@ std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToFundamental(
       std::string s;
       // TODO(devlin): If base::StringValue ever takes a std::string&&, we could
       // use std::move to construct.
-      if (gin::Converter<std::string>::FromV8(context->GetIsolate(), value, &s))
-        return base::MakeUnique<base::StringValue>(s);
-      return nullptr;
+      if (!gin::Converter<std::string>::FromV8(context->GetIsolate(),
+                                               value, &s) ||
+          (!enum_values_.empty() && enum_values_.count(s) == 0)) {
+        return nullptr;
+      }
+      return base::MakeUnique<base::StringValue>(s);
     }
     case ArgumentType::BOOLEAN: {
       bool b = false;
@@ -151,6 +187,7 @@ std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToFundamental(
 std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToObject(
     v8::Local<v8::Context> context,
     v8::Local<v8::Object> object,
+    const RefMap& refs,
     std::string* error) const {
   DCHECK_EQ(ArgumentType::OBJECT, type_);
   auto result = base::MakeUnique<base::DictionaryValue>();
@@ -176,7 +213,7 @@ std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToObject(
       continue;
     }
     std::unique_ptr<base::Value> property =
-        kv.second->ConvertArgument(context, subvalue, error);
+        kv.second->ConvertArgument(context, subvalue, refs, error);
     if (!property)
       return nullptr;
     result->Set(kv.first, std::move(property));
@@ -187,6 +224,7 @@ std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToObject(
 std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToArray(
     v8::Local<v8::Context> context,
     v8::Local<v8::Array> value,
+    const RefMap& refs,
     std::string* error) const {
   DCHECK_EQ(ArgumentType::LIST, type_);
   auto result = base::MakeUnique<base::ListValue>();
@@ -204,7 +242,7 @@ std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToArray(
     if (!maybe_subvalue.ToLocal(&subvalue))
       return nullptr;
     std::unique_ptr<base::Value> item =
-        list_element_type_->ConvertArgument(context, subvalue, error);
+        list_element_type_->ConvertArgument(context, subvalue, refs, error);
     if (!item)
       return nullptr;
     result->Append(std::move(item));

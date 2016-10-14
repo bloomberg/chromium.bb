@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
+#include "extensions/renderer/argument_spec.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -24,8 +25,6 @@ class Arguments;
 }
 
 namespace extensions {
-
-class ArgumentSpec;
 
 // A class that vends v8::Objects for extension APIs. These APIs have function
 // interceptors for all exposed methods, which call back into the APIBinding.
@@ -44,9 +43,12 @@ class APIBinding {
                           std::unique_ptr<base::ListValue>)>;
   using HandlerCallback = base::Callback<void(gin::Arguments*)>;
 
+  // The ArgumentSpec::RefMap is required to outlive this object.
   APIBinding(const std::string& name,
              const base::ListValue& function_definitions,
-             const APIMethodCallback& callback);
+             const base::ListValue& type_definitions,
+             const APIMethodCallback& callback,
+             ArgumentSpec::RefMap* type_refs);
   ~APIBinding();
 
   // Returns a new v8::Object for the API this APIBinding represents.
@@ -77,6 +79,9 @@ class APIBinding {
 
   // The callback to use when an API is invoked with valid arguments.
   APIMethodCallback method_callback_;
+
+  // The reference map for all known types; required to outlive this object.
+  const ArgumentSpec::RefMap* type_refs_;
 
   base::WeakPtrFactory<APIBinding> weak_factory_;
 

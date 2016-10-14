@@ -6,6 +6,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -64,13 +65,15 @@ const char kFunctions[] =
     "  }]"
     "}]";
 
-// Helper to convert kFunctions into a ListValue of functions after replacing
-// single quotes with double quotes.
-std::unique_ptr<base::ListValue> GetFunctions() {
-  std::string functions_str;
-  base::ReplaceChars(kFunctions, "'", "\"", &functions_str);
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(functions_str);
-  EXPECT_TRUE(value);
+const char kError[] = "Uncaught TypeError: Invalid invocation";
+
+// Helper to convert |source| into a ListValue after replacing single quotes
+// with double quotes.
+std::unique_ptr<base::ListValue> GetListValue(const char* source) {
+  std::string str;
+  base::ReplaceChars(source, "'", "\"", &str);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(str);
+  EXPECT_TRUE(value) << source;
   return base::ListValue::From(std::move(value));
 }
 
@@ -153,7 +156,7 @@ void APIBindingTest::RunTest(v8::Local<v8::Object> object,
   if (should_pass) {
     EXPECT_FALSE(try_catch.HasCaught())
         << gin::V8ToString(try_catch.Message()->Get());
-    EXPECT_TRUE(arguments_);
+    ASSERT_TRUE(arguments_) << script_source;
     std::string actual_json;
     EXPECT_TRUE(base::JSONWriter::Write(*arguments_, &actual_json));
     EXPECT_EQ(expected_json_arguments, actual_json);
@@ -167,11 +170,14 @@ void APIBindingTest::RunTest(v8::Local<v8::Object> object,
 }
 
 TEST_F(APIBindingTest, Test) {
-  std::unique_ptr<base::ListValue> functions = GetFunctions();
+  std::unique_ptr<base::ListValue> functions = GetListValue(kFunctions);
   ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
   APIBinding binding(
-      "test", *functions,
-      base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)));
+      "test", *functions, base::ListValue(),
+      base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)),
+      &refs);
+  EXPECT_TRUE(refs.empty());
 
   v8::Isolate* isolate = instance_->isolate();
 
@@ -182,29 +188,28 @@ TEST_F(APIBindingTest, Test) {
   v8::Local<v8::Object> binding_object =
       binding.CreateInstance(context, isolate);
 
-  std::string error = "Uncaught TypeError: Invalid invocation";
   ExpectPass(binding_object, "obj.oneString('foo');", "['foo']");
   ExpectPass(binding_object, "obj.oneString('');", "['']");
-  ExpectFailure(binding_object, "obj.oneString(1);", error);
-  ExpectFailure(binding_object, "obj.oneString();", error);
-  ExpectFailure(binding_object, "obj.oneString({});", error);
-  ExpectFailure(binding_object, "obj.oneString('foo', 'bar');", error);
+  ExpectFailure(binding_object, "obj.oneString(1);", kError);
+  ExpectFailure(binding_object, "obj.oneString();", kError);
+  ExpectFailure(binding_object, "obj.oneString({});", kError);
+  ExpectFailure(binding_object, "obj.oneString('foo', 'bar');", kError);
 
   ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");
   ExpectPass(binding_object, "obj.stringAndInt('foo', -1);", "['foo',-1]");
-  ExpectFailure(binding_object, "obj.stringAndInt(1);", error);
-  ExpectFailure(binding_object, "obj.stringAndInt('foo');", error);
-  ExpectFailure(binding_object, "obj.stringAndInt(1, 'foo');", error);
-  ExpectFailure(binding_object, "obj.stringAndInt('foo', 'foo');", error);
-  ExpectFailure(binding_object, "obj.stringAndInt('foo', '1');", error);
-  ExpectFailure(binding_object, "obj.stringAndInt('foo', 2.3);", error);
+  ExpectFailure(binding_object, "obj.stringAndInt(1);", kError);
+  ExpectFailure(binding_object, "obj.stringAndInt('foo');", kError);
+  ExpectFailure(binding_object, "obj.stringAndInt(1, 'foo');", kError);
+  ExpectFailure(binding_object, "obj.stringAndInt('foo', 'foo');", kError);
+  ExpectFailure(binding_object, "obj.stringAndInt('foo', '1');", kError);
+  ExpectFailure(binding_object, "obj.stringAndInt('foo', 2.3);", kError);
 
   ExpectPass(binding_object, "obj.stringOptionalIntAndBool('foo', 42, true);",
              "['foo',42,true]");
   ExpectPass(binding_object, "obj.stringOptionalIntAndBool('foo', true);",
              "['foo',null,true]");
   ExpectFailure(binding_object,
-                "obj.stringOptionalIntAndBool('foo', 'bar', true);", error);
+                "obj.stringOptionalIntAndBool('foo', 'bar', true);", kError);
 
   ExpectPass(binding_object,
              "obj.oneObject({prop1: 'foo'});", "[{'prop1':'foo'}]");
@@ -212,6 +217,68 @@ TEST_F(APIBindingTest, Test) {
       binding_object,
       "obj.oneObject({ get prop1() { throw new Error('Badness'); } });",
       "Uncaught Error: Badness");
+}
+
+TEST_F(APIBindingTest, TypeRefsTest) {
+  const char kTypes[] =
+      "[{"
+      "  'id': 'refObj',"
+      "  'type': 'object',"
+      "  'properties': {"
+      "    'prop1': {'type': 'string'},"
+      "    'prop2': {'type': 'integer', 'optional': true}"
+      "  }"
+      "}, {"
+      "  'id': 'refEnum',"
+      "  'type': 'string',"
+      "  'enum': ['alpha', 'beta']"
+      "}]";
+  const char kRefFunctions[] =
+      "[{"
+      "  'name': 'takesRefObj',"
+      "  'parameters': [{"
+      "    'name': 'o',"
+      "    '$ref': 'refObj'"
+      "  }]"
+      "}, {"
+      "  'name': 'takesRefEnum',"
+      "  'parameters': [{"
+      "    'name': 'e',"
+      "    '$ref': 'refEnum'"
+      "   }]"
+      "}]";
+
+  std::unique_ptr<base::ListValue> functions = GetListValue(kRefFunctions);
+  ASSERT_TRUE(functions);
+  std::unique_ptr<base::ListValue> types = GetListValue(kTypes);
+  ASSERT_TRUE(types);
+  ArgumentSpec::RefMap refs;
+  APIBinding binding(
+      "test", *functions, *types,
+      base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)),
+      &refs);
+  EXPECT_EQ(2u, refs.size());
+  EXPECT_TRUE(base::ContainsKey(refs, "refObj"));
+  EXPECT_TRUE(base::ContainsKey(refs, "refEnum"));
+
+  v8::Isolate* isolate = instance_->isolate();
+
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate, context_);
+
+  v8::Local<v8::Object> binding_object =
+      binding.CreateInstance(context, isolate);
+
+  ExpectPass(binding_object, "obj.takesRefObj({prop1: 'foo'})",
+             "[{'prop1':'foo'}]");
+  ExpectPass(binding_object, "obj.takesRefObj({prop1: 'foo', prop2: 2})",
+             "[{'prop1':'foo','prop2':2}]");
+  ExpectFailure(binding_object, "obj.takesRefObj({prop1: 'foo', prop2: 'a'})",
+                kError);
+  ExpectPass(binding_object, "obj.takesRefEnum('alpha')", "['alpha']");
+  ExpectPass(binding_object, "obj.takesRefEnum('beta')", "['beta']");
+  ExpectFailure(binding_object, "obj.takesRefEnum('gamma')", kError);
 }
 
 }  // namespace extensions

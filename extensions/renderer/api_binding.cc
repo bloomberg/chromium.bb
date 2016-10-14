@@ -48,10 +48,12 @@ std::unique_ptr<APISignature> GetAPISignature(
 // returned.
 // If the argument does not match and it is not optional, returns null and
 // populates error.
-std::unique_ptr<base::Value> ParseArgument(const ArgumentSpec& spec,
-                                           v8::Local<v8::Context> context,
-                                           gin::Arguments* arguments,
-                                           std::string* error) {
+std::unique_ptr<base::Value> ParseArgument(
+    const ArgumentSpec& spec,
+    v8::Local<v8::Context> context,
+    gin::Arguments* arguments,
+    const ArgumentSpec::RefMap& type_refs,
+    std::string* error) {
   v8::Local<v8::Value> value = arguments->PeekNext();
   if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
     if (!spec.optional()) {
@@ -65,7 +67,7 @@ std::unique_ptr<base::Value> ParseArgument(const ArgumentSpec& spec,
   }
 
   std::unique_ptr<base::Value> result =
-      spec.ConvertArgument(context, value, error);
+      spec.ConvertArgument(context, value, type_refs, error);
   if (!result) {
     if (!spec.optional()) {
       *error = "Missing required argument: " + spec.name();
@@ -79,16 +81,18 @@ std::unique_ptr<base::Value> ParseArgument(const ArgumentSpec& spec,
 }
 
 // Parses |args| against |signature| and populates error with any errors.
-std::unique_ptr<base::ListValue> ParseArguments(const APISignature* signature,
-                                                gin::Arguments* arguments,
-                                                std::string* error) {
+std::unique_ptr<base::ListValue> ParseArguments(
+    const APISignature* signature,
+    gin::Arguments* arguments,
+    const ArgumentSpec::RefMap& type_refs,
+    std::string* error) {
   auto results = base::MakeUnique<base::ListValue>();
 
   v8::Local<v8::Context> context = arguments->isolate()->GetCurrentContext();
 
   for (const auto& argument_spec : *signature) {
     std::unique_ptr<base::Value> parsed =
-        ParseArgument(*argument_spec, context, arguments, error);
+        ParseArgument(*argument_spec, context, arguments, type_refs, error);
     if (!parsed)
       return nullptr;
     results->Append(std::move(parsed));
@@ -115,8 +119,10 @@ APIBinding::APIPerContextData::~APIPerContextData() {}
 
 APIBinding::APIBinding(const std::string& name,
                        const base::ListValue& function_definitions,
-                       const APIMethodCallback& callback)
-    : method_callback_(callback), weak_factory_(this) {
+                       const base::ListValue& type_definitions,
+                       const APIMethodCallback& callback,
+                       ArgumentSpec::RefMap* type_refs)
+    : method_callback_(callback), type_refs_(type_refs), weak_factory_(this) {
   DCHECK(!method_callback_.is_null());
   for (const auto& func : function_definitions) {
     const base::DictionaryValue* func_dict = nullptr;
@@ -125,6 +131,16 @@ APIBinding::APIBinding(const std::string& name,
     CHECK(func_dict->GetString("name", &name));
     std::unique_ptr<APISignature> spec = GetAPISignature(*func_dict);
     signatures_[name] = std::move(spec);
+  }
+  for (const auto& type : type_definitions) {
+    const base::DictionaryValue* type_dict = nullptr;
+    CHECK(type->GetAsDictionary(&type_dict));
+    std::string id;
+    CHECK(type_dict->GetString("id", &id));
+    DCHECK(type_refs->find(id) == type_refs->end());
+    // TODO(devlin): refs are sometimes preceeded by the API namespace; we might
+    // need to take that into account.
+    (*type_refs)[id] = base::MakeUnique<ArgumentSpec>(*type_dict);
   }
 }
 
@@ -174,7 +190,8 @@ void APIBinding::HandleCall(const std::string& name,
   std::unique_ptr<base::ListValue> parsed_arguments;
   {
     v8::TryCatch try_catch(arguments->isolate());
-    parsed_arguments = ParseArguments(signature, arguments, &error);
+    parsed_arguments = ParseArguments(signature, arguments,
+                                      *type_refs_, &error);
     if (try_catch.HasCaught()) {
       DCHECK(!parsed_arguments);
       try_catch.ReThrow();
