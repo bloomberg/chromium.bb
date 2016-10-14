@@ -1303,7 +1303,7 @@ void Node::setTextContent(const String& text) {
       // See crbug.com/352836 also.
       // No need to do anything if the text is identical.
       if (container->hasOneTextChild() &&
-          toText(container->firstChild())->data() == text)
+          toText(container->firstChild())->data() == text && !text.isEmpty())
         return;
 
       ChildListMutationScope mutation(*this);
