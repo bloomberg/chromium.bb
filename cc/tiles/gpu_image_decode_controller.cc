@@ -161,6 +161,9 @@ class ImageDecodeTaskImpl : public TileTask {
   void RunOnWorkerThread() override {
     TRACE_EVENT2("cc", "ImageDecodeTaskImpl::RunOnWorkerThread", "mode", "gpu",
                  "source_prepare_tiles_id", tracing_info_.prepare_tiles_id);
+    devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
+        image_.image().get(),
+        devtools_instrumentation::ScopedImageDecodeTask::GPU);
     controller_->DecodeImage(image_);
   }
 

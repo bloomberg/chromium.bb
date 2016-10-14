@@ -104,7 +104,8 @@ class ImageDecodeTaskImpl : public TileTask {
                  "software", "source_prepare_tiles_id",
                  tracing_info_.prepare_tiles_id);
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
-        image_.image().get());
+        image_.image().get(),
+        devtools_instrumentation::ScopedImageDecodeTask::SOFTWARE);
     controller_->DecodeImage(image_key_, image_);
   }
 

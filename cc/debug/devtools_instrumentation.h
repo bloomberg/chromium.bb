@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 
@@ -57,15 +58,32 @@ class ScopedLayerTask {
 
 class ScopedImageDecodeTask {
  public:
-  explicit ScopedImageDecodeTask(const void* imagePtr) {
+  enum Type { SOFTWARE, GPU };
+
+  ScopedImageDecodeTask(const void* imagePtr, Type type)
+      : type_(type), start_time_(base::TimeTicks::Now()) {
     TRACE_EVENT_BEGIN1(internal::kCategory, internal::kImageDecodeTask,
                        internal::kPixelRefId,
                        reinterpret_cast<uint64_t>(imagePtr));
   }
   ~ScopedImageDecodeTask() {
     TRACE_EVENT_END0(internal::kCategory, internal::kImageDecodeTask);
+    base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
+    switch (type_) {
+      case SOFTWARE:
+        UMA_HISTOGRAM_COUNTS_1M("Renderer4.ImageDecodeTaskDurationUs.Software",
+                                duration.InMicroseconds());
+        break;
+      case GPU:
+        UMA_HISTOGRAM_COUNTS_1M("Renderer4.ImageDecodeTaskDurationUs.Gpu",
+                                duration.InMicroseconds());
+        break;
+    }
   }
+
  private:
+  const Type type_;
+  const base::TimeTicks start_time_;
   DISALLOW_COPY_AND_ASSIGN(ScopedImageDecodeTask);
 };
 
