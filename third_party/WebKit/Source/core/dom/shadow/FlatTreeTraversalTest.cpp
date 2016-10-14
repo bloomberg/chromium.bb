@@ -571,26 +571,4 @@ TEST_F(FlatTreeTraversalTest, v1Redistribution) {
   EXPECT_EQ(nullptr, FlatTreeTraversal::parent(*d4));
 }
 
-TEST_F(FlatTreeTraversalTest, v1SlotInDocumentTree) {
-  const char* mainHTML =
-      "<div id='parent'>"
-      "<slot>"
-      "<div id='child1'></div>"
-      "<div id='child2'></div>"
-      "</slot>"
-      "</div>";
-
-  setupDocumentTree(mainHTML);
-  Element* body = document().body();
-  Element* parent = body->querySelector("#parent");
-  Element* child1 = body->querySelector("#child1");
-  Element* child2 = body->querySelector("#child2");
-
-  EXPECT_EQ(child1, FlatTreeTraversal::firstChild(*parent));
-  EXPECT_EQ(child2, FlatTreeTraversal::nextSibling(*child1));
-  EXPECT_EQ(nullptr, FlatTreeTraversal::nextSibling(*child2));
-  EXPECT_EQ(parent, FlatTreeTraversal::parent(*child1));
-  EXPECT_EQ(parent, FlatTreeTraversal::parent(*child2));
-}
-
 }  // namespace blink

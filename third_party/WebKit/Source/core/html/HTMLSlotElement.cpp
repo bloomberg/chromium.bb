@@ -72,8 +72,11 @@ const HeapVector<Member<Node>> HTMLSlotElement::assignedNodesForBinding(
   return m_assignedNodes;
 }
 
-void HTMLSlotElement::updateDistributedNodesManually() {
-  DCHECK(!supportsDistribution());
+const HeapVector<Member<Node>>& HTMLSlotElement::getDistributedNodes() {
+  DCHECK(!needsDistributionRecalc());
+  if (isInShadowTree())
+    return m_distributedNodes;
+
   // A slot is unlikely to be used outside of a shadow tree.
   // We do not need to optimize this case in most cases.
   // TODO(hayato): If this path causes a performance issue, we should move
@@ -93,12 +96,6 @@ void HTMLSlotElement::updateDistributedNodesManually() {
       child = NodeTraversal::nextSkippingChildren(*child, this);
     }
   }
-}
-
-const HeapVector<Member<Node>>& HTMLSlotElement::getDistributedNodes() {
-  DCHECK(!needsDistributionRecalc());
-  if (!supportsDistribution())
-    updateDistributedNodesManually();
   return m_distributedNodes;
 }
 
