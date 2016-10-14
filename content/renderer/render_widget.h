@@ -164,7 +164,6 @@ class CONTENT_EXPORT RenderWidget
   bool is_hidden() const { return is_hidden_; }
   // Temporary for debugging purposes...
   bool closing() const { return closing_; }
-  bool is_swapped_out() { return is_swapped_out_; }
   bool has_host_context_menu_location() {
     return has_host_context_menu_location_;
   }
@@ -181,6 +180,14 @@ class CONTENT_EXPORT RenderWidget
 
   // ScreenInfo exposed so it can be passed to subframe RenderWidgets.
   ScreenInfo screen_info() const { return screen_info_; }
+
+  // Sets whether this RenderWidget has been swapped out to be displayed by
+  // a RenderWidget in a different process.  If so, no new IPC messages will be
+  // sent (only ACKs) and the process is free to exit when there are no other
+  // active RenderWidgets.
+  void SetSwappedOut(bool is_swapped_out);
+
+  bool is_swapped_out() { return is_swapped_out_; }
 
   // Manage edit commands to be used for the next keyboard event.
   const EditCommands& edit_commands() const { return edit_commands_; }
@@ -438,12 +445,6 @@ class CONTENT_EXPORT RenderWidget
   bool DoInit(int32_t opener_id,
               blink::WebWidget* web_widget,
               IPC::SyncMessage* create_widget_message);
-
-  // Sets whether this RenderWidget has been swapped out to be displayed by
-  // a RenderWidget in a different process.  If so, no new IPC messages will be
-  // sent (only ACKs) and the process is free to exit when there are no other
-  // active RenderWidgets.
-  void SetSwappedOut(bool is_swapped_out);
 
   // Allows the process to exit once the unload handler has finished, if there
   // are no other active RenderWidgets.

@@ -8379,4 +8379,149 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   load_observer.Wait();
 }
 
+// Test that when canceling a pending RenderFrameHost in the middle of a
+// redirect, and then killing the corresponding RenderView's renderer process,
+// the RenderViewHost isn't reused in an improper state later.  Previously this
+// led to a crash in CreateRenderView when recreating the RenderView due to a
+// stale main frame routing ID.  See https://crbug.com/627400.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ReuseNonLiveRenderViewHostAfterCancelPending) {
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL c_url(embedded_test_server()->GetURL("c.com", "/title3.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+
+  // Open a popup and navigate it to b.com.
+  Shell* popup = OpenPopup(shell(), a_url, "popup");
+  EXPECT_TRUE(NavigateToURL(popup, b_url));
+
+  // Open a second popup and navigate it to b.com, which redirects to c.com.
+  // The navigation to b.com will create a pending RenderFrameHost, which will
+  // be canceled during the redirect to c.com.  Note that NavigateToURL will
+  // return false because the committed URL won't match the requested URL due
+  // to the redirect.
+  Shell* popup2 = OpenPopup(shell(), a_url, "popup2");
+  TestNavigationObserver observer(popup2->web_contents());
+  GURL redirect_url(embedded_test_server()->GetURL(
+      "b.com", "/server-redirect?" + c_url.spec()));
+  EXPECT_FALSE(NavigateToURL(popup2, redirect_url));
+  EXPECT_EQ(c_url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  // Kill the b.com process (which currently hosts a RenderFrameProxy that
+  // replaced the pending RenderFrame in |popup2|, as well as the RenderFrame
+  // for |popup|).
+  RenderProcessHost* b_process =
+      popup->web_contents()->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      b_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  b_process->Shutdown(0, false);
+  crash_observer.Wait();
+
+  // Navigate the second popup to b.com.  This used to crash when creating the
+  // RenderView, because it reused the RenderViewHost created by the canceled
+  // navigation to b.com, and that RenderViewHost had a stale main frame
+  // routing ID and active state.
+  EXPECT_TRUE(NavigateToURL(popup2, b_url));
+}
+
+// Check that after a pending RFH is canceled and replaced with a proxy (which
+// reuses the canceled RFH's RenderViewHost), navigating to a main frame in the
+// same site as the canceled RFH doesn't lead to a renderer crash.  The steps
+// here are similar to ReuseNonLiveRenderViewHostAfterCancelPending, but don't
+// involve crashing the renderer. See https://crbug.com/651980.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       RecreateMainFrameAfterCancelPending) {
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL c_url(embedded_test_server()->GetURL("c.com", "/title3.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+
+  // Open a popup and navigate it to b.com.
+  Shell* popup = OpenPopup(shell(), a_url, "popup");
+  EXPECT_TRUE(NavigateToURL(popup, b_url));
+
+  // Open a second popup and navigate it to b.com, which redirects to c.com.
+  // The navigation to b.com will create a pending RenderFrameHost, which will
+  // be canceled during the redirect to c.com.  Note that NavigateToURL will
+  // return false because the committed URL won't match the requested URL due
+  // to the redirect.
+  Shell* popup2 = OpenPopup(shell(), a_url, "popup2");
+  TestNavigationObserver observer(popup2->web_contents());
+  GURL redirect_url(embedded_test_server()->GetURL(
+      "b.com", "/server-redirect?" + c_url.spec()));
+  EXPECT_FALSE(NavigateToURL(popup2, redirect_url));
+  EXPECT_EQ(c_url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  // Navigate the second popup to b.com.  This used to crash the b.com renderer
+  // because it failed to delete the canceled RFH's RenderFrame, so this caused
+  // it to try to create a frame widget which already existed.
+  EXPECT_TRUE(NavigateToURL(popup2, b_url));
+}
+
+// Check that when a pending RFH is canceled and a proxy needs to be created in
+// its place, the proxy is properly initialized on the renderer side.  See
+// https://crbug.com/653746.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CommunicateWithProxyAfterCancelPending) {
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL c_url(embedded_test_server()->GetURL("c.com", "/title3.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+
+  // Open a popup and navigate it to b.com.
+  Shell* popup = OpenPopup(shell(), a_url, "popup");
+  EXPECT_TRUE(NavigateToURL(popup, b_url));
+
+  // Open a second popup and navigate it to b.com, which redirects to c.com.
+  // The navigation to b.com will create a pending RenderFrameHost, which will
+  // be canceled during the redirect to c.com.  Note that NavigateToURL will
+  // return false because the committed URL won't match the requested URL due
+  // to the redirect.
+  Shell* popup2 = OpenPopup(shell(), a_url, "popup2");
+  TestNavigationObserver observer(popup2->web_contents());
+  GURL redirect_url(embedded_test_server()->GetURL(
+      "b.com", "/server-redirect?" + c_url.spec()));
+  EXPECT_FALSE(NavigateToURL(popup2, redirect_url));
+  EXPECT_EQ(c_url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  // Because b.com has other active frames (namely, the frame in |popup|),
+  // there should be a proxy created for the canceled RFH, and it should be
+  // live.
+  SiteInstance* b_instance = popup->web_contents()->GetSiteInstance();
+  FrameTreeNode* popup2_root =
+      static_cast<WebContentsImpl*>(popup2->web_contents())
+          ->GetFrameTree()
+          ->root();
+  RenderFrameProxyHost* proxy =
+      popup2_root->render_manager()->GetRenderFrameProxyHost(b_instance);
+  EXPECT_TRUE(proxy);
+  EXPECT_TRUE(proxy->is_render_frame_proxy_live());
+
+  // Add a postMessage listener in |popup2| (currently at a c.com URL).
+  EXPECT_TRUE(
+      ExecuteScript(popup2,
+                    "window.addEventListener('message', function(event) {\n"
+                    "  document.title=event.data;\n"
+                    "});"));
+
+  // Check that a postMessage can be sent via |proxy| above.  This needs to be
+  // done from the b.com process.  |popup| is currently in b.com, but it can't
+  // reach the window reference for |popup2| due to a security restriction in
+  // Blink. So, navigate the main tab to b.com and then send a postMessage to
+  // |popup2|. This is allowed since the main tab is |popup2|'s opener.
+  EXPECT_TRUE(NavigateToURL(shell(), b_url));
+
+  base::string16 expected_title(base::UTF8ToUTF16("foo"));
+  TitleWatcher title_watcher(popup2->web_contents(), expected_title);
+  EXPECT_TRUE(ExecuteScript(
+      shell(), "window.open('','popup2').postMessage('foo', '*');"));
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
 }  // namespace content

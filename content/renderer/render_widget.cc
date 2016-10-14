@@ -385,6 +385,20 @@ void RenderWidget::SetRoutingID(int32_t routing_id) {
       GetRenderWidgetInputHandlerDelegate(this), this));
 }
 
+void RenderWidget::SetSwappedOut(bool is_swapped_out) {
+  // We should only toggle between states.
+  DCHECK(is_swapped_out_ != is_swapped_out);
+  is_swapped_out_ = is_swapped_out;
+
+  // If we are swapping out, we will call ReleaseProcess, allowing the process
+  // to exit if all of its RenderViews are swapped out.  We wait until the
+  // WasSwappedOut call to do this, to allow the unload handler to finish.
+  // If we are swapping in, we call AddRefProcess to prevent the process from
+  // exiting.
+  if (!is_swapped_out_)
+    RenderProcess::current()->AddRefProcess();
+}
+
 bool RenderWidget::Init(int32_t opener_id) {
   bool success = DoInit(
       opener_id, RenderWidget::CreateWebWidget(this),
@@ -429,20 +443,6 @@ bool RenderWidget::DoInit(int32_t opener_id,
     // The above Send can fail when the tab is closing.
     return false;
   }
-}
-
-void RenderWidget::SetSwappedOut(bool is_swapped_out) {
-  // We should only toggle between states.
-  DCHECK(is_swapped_out_ != is_swapped_out);
-  is_swapped_out_ = is_swapped_out;
-
-  // If we are swapping out, we will call ReleaseProcess, allowing the process
-  // to exit if all of its RenderViews are swapped out.  We wait until the
-  // WasSwappedOut call to do this, to allow the unload handler to finish.
-  // If we are swapping in, we call AddRefProcess to prevent the process from
-  // exiting.
-  if (!is_swapped_out_)
-    RenderProcess::current()->AddRefProcess();
 }
 
 void RenderWidget::WasSwappedOut() {

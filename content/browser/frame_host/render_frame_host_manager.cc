@@ -661,11 +661,12 @@ void RenderFrameHostManager::DiscardUnusedFrame(
   // TODO(carlosk): this code is very similar to what can be found in
   // SwapOutOldFrame and we should see that these are unified at some point.
 
-  // If the SiteInstance for the pending RFH is being used by others don't
-  // delete the RFH. Just swap it out and it can be reused at a later point.
-  // In --site-per-process, RenderFrameHosts are not kept around and are
-  // deleted when not used, replaced by RenderFrameProxyHosts.
+  // If the SiteInstance for the pending RFH is being used by others, ensure
+  // that it is replaced by a RenderFrameProxyHost to allow other frames to
+  // communicate to this frame.
   SiteInstanceImpl* site_instance = render_frame_host->GetSiteInstance();
+  RenderViewHostImpl* rvh = render_frame_host->render_view_host();
+  RenderFrameProxyHost* proxy = nullptr;
   if (site_instance->HasSite() && site_instance->active_frame_count() > 1) {
     // Any currently suspended navigations are no longer needed.
     render_frame_host->CancelSuspendedNavigations();
@@ -675,14 +676,30 @@ void RenderFrameHostManager::DiscardUnusedFrame(
     // |render_frame_host|, as this method is only called to discard a pending
     // or speculative RenderFrameHost, i.e. one that has never hosted an actual
     // document.
-    RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(site_instance);
-    if (!proxy) {
-      proxy = CreateRenderFrameProxyHost(site_instance,
-                                         render_frame_host->render_view_host());
-    }
+    proxy = GetRenderFrameProxyHost(site_instance);
+    if (!proxy)
+      proxy = CreateRenderFrameProxyHost(site_instance, rvh);
+  }
+
+  // Doing this is important in the case where the replacement proxy is created
+  // above, as the RenderViewHost will continue to exist and should be
+  // considered swapped out if it is ever reused.  When there's no replacement
+  // proxy, this doesn't really matter, as the RenderViewHost will be destroyed
+  // shortly, since |render_frame_host| is its last active frame and will be
+  // deleted below.  See https://crbug.com/627400.
+  if (frame_tree_node_->IsMainFrame()) {
+    rvh->set_main_frame_routing_id(MSG_ROUTING_NONE);
+    rvh->set_is_active(false);
+    rvh->set_is_swapped_out(true);
   }
 
   render_frame_host.reset();
+
+  // If a new RenderFrameProxyHost was created above, or if the old proxy isn't
+  // live, create the RenderFrameProxy in the renderer, so that other frames
+  // can still communicate with this frame.  See https://crbug.com/653746.
+  if (proxy && !proxy->is_render_frame_proxy_live())
+    proxy->InitRenderFrameProxy();
 }
 
 bool RenderFrameHostManager::DeleteFromPendingList(

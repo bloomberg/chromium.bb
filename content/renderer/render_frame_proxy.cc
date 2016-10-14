@@ -111,6 +111,14 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
                                               proxy.get(), opener);
     render_view->webview()->setMainFrame(web_frame);
     render_widget = render_view->GetWidget();
+
+    // If the RenderView is reused by this proxy after having been used for a
+    // pending RenderFrame that was discarded, its swapped out state needs to
+    // be updated, as the OnSwapOut flow which normally does this won't happen
+    // in that case.  See https://crbug.com/653746 and
+    // https://crbug.com/651980.
+    if (!render_view->is_swapped_out())
+      render_view->SetSwappedOut(true);
   } else {
     // Create a frame under an existing parent. The parent is always expected
     // to be a RenderFrameProxy, because navigations initiated by local frames

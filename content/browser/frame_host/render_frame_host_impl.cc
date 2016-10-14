@@ -370,10 +370,15 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   // If this RenderFrameHost is swapping with a RenderFrameProxyHost, the
   // RenderFrame will already be deleted in the renderer process. Main frame
-  // RenderFrames will be cleaned up as part of deleting its RenderView. In all
-  // other cases, the RenderFrame should be cleaned up (if it exists).
-  if (is_active() && !frame_tree_node_->IsMainFrame() && render_frame_created_)
+  // RenderFrames will be cleaned up as part of deleting its RenderView if the
+  // RenderView isn't in use by other frames. In all other cases, the
+  // RenderFrame should be cleaned up (if it exists).
+  bool will_render_view_clean_up_render_frame =
+      frame_tree_node_->IsMainFrame() && render_view_host_->ref_count() == 1;
+  if (is_active() && render_frame_created_ &&
+      !will_render_view_clean_up_render_frame) {
     Send(new FrameMsg_Delete(routing_id_));
+  }
 
   // Null out the swapout timer; in crash dumps this member will be null only if
   // the dtor has run.  (It may also be null in tests.)
