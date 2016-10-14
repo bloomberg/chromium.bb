@@ -108,7 +108,7 @@ void GpuMain::InitOnGpuThread() {
           gpu::GpuMemoryBufferFactory::CreateNativeType();
     }
     gpu_service_internal_.reset(new GpuServiceInternal(
-        gpu_init_->gpu_info(), gpu_init_->watchdog_thread(),
+        gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(),
         gpu_memory_buffer_factory_.get(), io_thread_.task_runner()));
   }
 }
@@ -116,8 +116,6 @@ void GpuMain::InitOnGpuThread() {
 void GpuMain::TearDownOnGpuThread() {
   gpu_service_internal_.reset();
   gpu_memory_buffer_factory_.reset();
-  if (gpu_init_->watchdog_thread())
-    gpu_init_->watchdog_thread()->Stop();
   gpu_init_.reset();
 }
 
@@ -130,7 +128,8 @@ void GpuMain::PreSandboxStartup() {
   // TODO(sad): https://crbug.com/645602
 }
 
-bool GpuMain::EnsureSandboxInitialized() {
+bool GpuMain::EnsureSandboxInitialized(
+    gpu::GpuWatchdogThread* watchdog_thread) {
   // TODO(sad): https://crbug.com/645602
   return true;
 }

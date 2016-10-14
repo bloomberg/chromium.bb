@@ -123,10 +123,6 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
   }
 #endif
 
-#if defined(OS_LINUX)
-  void set_gpu_init(gpu::GpuInit* gpu_init) { gpu_init_ = gpu_init; }
-#endif
-
  private:
   // SandboxHelper:
   void PreSandboxStartup() override {
@@ -147,9 +143,10 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 #endif
   }
 
-  bool EnsureSandboxInitialized() override {
+  bool EnsureSandboxInitialized(
+      gpu::GpuWatchdogThread* watchdog_thread) override {
 #if defined(OS_LINUX)
-    return StartSandboxLinux(gpu_init_->watchdog_thread());
+    return StartSandboxLinux(watchdog_thread);
 #elif defined(OS_WIN)
     return StartSandboxWindows(sandbox_info_);
 #elif defined(OS_MACOSX)
@@ -161,8 +158,6 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 
 #if defined(OS_WIN)
   const sandbox::SandboxInterfaceInfo* sandbox_info_ = nullptr;
-#elif defined(OS_LINUX)
-  gpu::GpuInit* gpu_init_ = nullptr;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ContentSandboxHelper);
@@ -240,8 +235,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   ContentSandboxHelper sandbox_helper;
 #if defined(OS_WIN)
   sandbox_helper.set_sandbox_info(parameters.sandbox_info);
-#elif defined(OS_LINUX)
-  sandbox_helper.set_gpu_init(&gpu_init);
 #endif
 
   gpu_init.set_sandbox_helper(&sandbox_helper);
@@ -272,7 +265,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   GpuProcess gpu_process(io_thread_priority);
   GpuChildThread* child_thread = new GpuChildThread(
-      gpu_init.watchdog_thread(), dead_on_arrival, gpu_init.gpu_info(),
+      gpu_init.TakeWatchdogThread(), dead_on_arrival, gpu_init.gpu_info(),
       deferred_messages.Get(), gpu_memory_buffer_factory.get());
   while (!deferred_messages.Get().empty())
     deferred_messages.Get().pop();
@@ -281,8 +274,8 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   gpu_process.set_main_thread(child_thread);
 
-  if (gpu_init.watchdog_thread())
-    gpu_init.watchdog_thread()->AddPowerObserver();
+  if (child_thread->watchdog_thread())
+    child_thread->watchdog_thread()->AddPowerObserver();
 
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

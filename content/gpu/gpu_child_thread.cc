@@ -143,18 +143,18 @@ ChildThreadImpl::Options GetOptions(
 }  // namespace
 
 GpuChildThread::GpuChildThread(
-    gpu::GpuWatchdogThread* watchdog_thread,
+    std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
     bool dead_on_arrival,
     const gpu::GPUInfo& gpu_info,
     const DeferredMessages& deferred_messages,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : ChildThreadImpl(GetOptions(gpu_memory_buffer_factory)),
       dead_on_arrival_(dead_on_arrival),
+      watchdog_thread_(std::move(watchdog_thread)),
       gpu_info_(gpu_info),
       deferred_messages_(deferred_messages),
       in_browser_process_(false),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
-  watchdog_thread_ = watchdog_thread;
 #if defined(OS_WIN)
   target_services_ = NULL;
 #endif

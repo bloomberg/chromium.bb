@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/service/gpu_watchdog_thread.h"
 
 namespace base {
 class CommandLine;
@@ -16,15 +17,13 @@ class CommandLine;
 
 namespace gpu {
 
-class GpuWatchdogThread;
-
 class GPU_EXPORT GpuSandboxHelper {
  public:
   virtual ~GpuSandboxHelper() {}
 
   virtual void PreSandboxStartup() = 0;
 
-  virtual bool EnsureSandboxInitialized() = 0;
+  virtual bool EnsureSandboxInitialized(GpuWatchdogThread* watchdog_thread) = 0;
 };
 
 class GPU_EXPORT GpuInit {
@@ -39,11 +38,13 @@ class GPU_EXPORT GpuInit {
   bool InitializeAndStartSandbox(const base::CommandLine& command_line);
 
   const GPUInfo& gpu_info() const { return gpu_info_; }
-  GpuWatchdogThread* watchdog_thread() { return watchdog_thread_.get(); }
+  std::unique_ptr<GpuWatchdogThread> TakeWatchdogThread() {
+    return std::move(watchdog_thread_);
+  }
 
  private:
   GpuSandboxHelper* sandbox_helper_ = nullptr;
-  scoped_refptr<GpuWatchdogThread> watchdog_thread_;
+  std::unique_ptr<GpuWatchdogThread> watchdog_thread_;
   GPUInfo gpu_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuInit);

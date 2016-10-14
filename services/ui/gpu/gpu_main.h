@@ -34,7 +34,8 @@ class GpuMain : public gpu::GpuSandboxHelper {
 
   // gpu::GpuSandboxHelper:
   void PreSandboxStartup() override;
-  bool EnsureSandboxInitialized() override;
+  bool EnsureSandboxInitialized(
+      gpu::GpuWatchdogThread* watchdog_thread) override;
 
   std::unique_ptr<gpu::GpuInit> gpu_init_;
   std::unique_ptr<GpuServiceInternal> gpu_service_internal_;

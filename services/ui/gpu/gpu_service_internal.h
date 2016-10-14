@@ -51,7 +51,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   friend class GpuMain;
 
   GpuServiceInternal(const gpu::GPUInfo& gpu_info,
-                     gpu::GpuWatchdogThread* watchdog,
+                     std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
                      gpu::GpuMemoryBufferFactory* memory_buffer_factory,
                      scoped_refptr<base::SingleThreadTaskRunner> io_runner);
 
@@ -103,7 +103,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   // An event that will be signalled when we shutdown.
   base::WaitableEvent shutdown_event_;
 
-  gpu::GpuWatchdogThread* watchdog_thread_;
+  std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread_;
 
   gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory_;
 
