@@ -21,10 +21,10 @@ import java.util.List;
 @JNINamespace("content")
 public class MediaMetadata {
     /**
-     * The Artwork class carries the artwork information in MediaMetadata. It is the Java
-     * counterpart of content::MediaMetadata::Artwork.
+     * The MediaImage class carries the artwork information in MediaMetadata. It is the Java
+     * counterpart of content::MediaMetadata::MediaImage.
      */
-    public static class Artwork {
+    public static class MediaImage {
         @NonNull
         private String mSrc;
 
@@ -34,16 +34,16 @@ public class MediaMetadata {
         private List<Rect> mSizes = new ArrayList<Rect>();
 
         /**
-         * Creates a new Artwork.
+         * Creates a new MediaImage.
          */
-        public Artwork(@NonNull String src, String type, List<Rect> sizes) {
+        public MediaImage(@NonNull String src, String type, List<Rect> sizes) {
             mSrc = src;
             mType = type;
             mSizes = sizes;
         }
 
         /**
-         * Returns the URL of this Artwork.
+         * @return The URL of this MediaImage.
          */
         @NonNull
         public String getSrc() {
@@ -51,35 +51,35 @@ public class MediaMetadata {
         }
 
         /**
-         * Returns the MIME type of this Artwork.
+         * @return The MIME type of this MediaImage.
          */
         public String getType() {
             return mType;
         }
 
         /**
-         * Returns the hinted sizes of this Artwork.
+         * @return The hinted sizes of this MediaImage.
          */
         public List<Rect> getSizes() {
             return mSizes;
         }
 
         /**
-         * Sets the URL of this Artwork.
+         * Sets the URL of this MediaImage.
          */
         public void setSrc(String src) {
             mSrc = src;
         }
 
         /**
-         * Sets the MIME type of this Artwork.
+         * Sets the MIME type of this MediaImage.
          */
         public void setType(String type) {
             mType = type;
         }
 
         /**
-         * Sets the sizes of this Artwork.
+         * Sets the sizes of this MediaImage.
          */
         public void setSizes(List<Rect> sizes) {
             mSizes = sizes;
@@ -96,7 +96,7 @@ public class MediaMetadata {
     private String mAlbum;
 
     @NonNull
-    private List<Artwork> mArtwork = new ArrayList<Artwork>();
+    private List<MediaImage> mArtwork = new ArrayList<MediaImage>();
 
     /**
      * Returns the title associated with the media session.
@@ -119,7 +119,7 @@ public class MediaMetadata {
         return mAlbum;
     }
 
-    public List<Artwork> getArtwork() {
+    public List<MediaImage> getArtwork() {
         return mArtwork;
     }
 
@@ -148,20 +148,20 @@ public class MediaMetadata {
     }
 
     /**
-     * Create a new MediaArtwork from the C++ code, and add it to the Metadata.
-     * @param src The URL of the artwork.
-     * @param type The MIME type of the artwork.
-     * @param flattenedSizes The flattened array of Artwork sizes. In native code, it is of type
+     * Create a new {@link MediaImage} from the C++ code, and add it to the Metadata.
+     * @param src The URL of the image.
+     * @param type The MIME type of the image.
+     * @param flattenedSizes The flattened array of image sizes. In native code, it is of type
      *         `std::vector<gfx::Size>` before flattening.
      */
     @CalledByNative
-    private void createAndAddArtwork(String src, String type, int[] flattenedSizes) {
+    private void createAndAddMediaImage(String src, String type, int[] flattenedSizes) {
         assert (flattenedSizes.length % 2) == 0;
         List<Rect> sizes = new ArrayList<Rect>();
         for (int i = 0; (i + 1) < flattenedSizes.length; i += 2) {
             sizes.add(new Rect(0, 0, flattenedSizes[i], flattenedSizes[i + 1]));
         }
-        mArtwork.add(new Artwork(src, type, sizes));
+        mArtwork.add(new MediaImage(src, type, sizes));
     }
 
     /**
