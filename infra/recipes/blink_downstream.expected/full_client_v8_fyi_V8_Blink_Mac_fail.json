@@ -193,6 +193,7 @@
     ],
     "cwd": "[BUILDER_CACHE]/V8_Blink_Mac/src",
     "env": {
+      "FORCE_MAC_TOOLCHAIN": "1",
       "GOMA_SERVICE_ACCOUNT_JSON_FILE": "/creds/service_accounts/service-account-goma-client.json",
       "GYP_CHROMIUM_NO_ACTION": "1",
       "GYP_DEFINES": "clang=1 component=static_library gomadir='[CACHE]/cipd/goma' target_arch=x64 use_goma=1",
@@ -218,6 +219,7 @@
     ],
     "cwd": "[BUILDER_CACHE]/V8_Blink_Mac/src",
     "env": {
+      "FORCE_MAC_TOOLCHAIN": "1",
       "GOMA_SERVICE_ACCOUNT_JSON_FILE": "/creds/service_accounts/service-account-goma-client.json"
     },
     "name": "generate_build_files (with patch)"
@@ -235,6 +237,7 @@
     ],
     "cwd": "[BUILDER_CACHE]/V8_Blink_Mac",
     "env": {
+      "FORCE_MAC_TOOLCHAIN": "1",
       "GOMA_SERVICE_ACCOUNT_JSON_FILE": "/creds/service_accounts/service-account-goma-client.json"
     },
     "name": "clang_revision",
@@ -284,6 +287,7 @@
     ],
     "cwd": "[BUILDER_CACHE]/V8_Blink_Mac",
     "env": {
+      "FORCE_MAC_TOOLCHAIN": "1",
       "GOMA_SERVICE_ACCOUNT_JSON_FILE": "/creds/service_accounts/service-account-goma-client.json"
     },
     "name": "compile (with patch)",
@@ -485,6 +489,7 @@
     ],
     "cwd": "[BUILDER_CACHE]/V8_Blink_Mac/src",
     "env": {
+      "FORCE_MAC_TOOLCHAIN": "1",
       "GOMA_SERVICE_ACCOUNT_JSON_FILE": "/creds/service_accounts/service-account-goma-client.json"
     },
     "name": "generate_build_files (without patch)"
@@ -502,6 +507,7 @@
     ],
     "cwd": "[BUILDER_CACHE]/V8_Blink_Mac",
     "env": {
+      "FORCE_MAC_TOOLCHAIN": "1",
       "GOMA_SERVICE_ACCOUNT_JSON_FILE": "/creds/service_accounts/service-account-goma-client.json"
     },
     "name": "clang_revision (2)",
@@ -551,6 +557,7 @@
     ],
     "cwd": "[BUILDER_CACHE]/V8_Blink_Mac",
     "env": {
+      "FORCE_MAC_TOOLCHAIN": "1",
       "GOMA_SERVICE_ACCOUNT_JSON_FILE": "/creds/service_accounts/service-account-goma-client.json"
     },
     "name": "compile (without patch)",
