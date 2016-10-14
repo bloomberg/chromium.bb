@@ -96,7 +96,7 @@ void VideoCaptureHost::OnBufferReady(
   video_frame->metadata()->MergeInternalValuesInto(&info->metadata);
 
   DCHECK_EQ(media::PIXEL_FORMAT_I420, video_frame->format());
-  info->pixel_format = media::mojom::VideoFormat::I420;
+  info->pixel_format = media::PIXEL_FORMAT_I420;
   info->storage_type = media::PIXEL_STORAGE_CPU;
   info->coded_size = video_frame->coded_size();
   info->visible_rect = video_frame->visible_rect();

@@ -14,6 +14,7 @@
 #include "media/base/sample_format.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_capture_types.h"
+#include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::AudioCodec, media::AudioCodec::kAudioCodecMax)
@@ -29,10 +30,18 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::BufferingState,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
 
+IPC_ENUM_TRAITS_MAX_VALUE(media::ColorSpace, media::COLOR_SPACE_MAX)
+
 IPC_ENUM_TRAITS_MAX_VALUE(media::DecodeStatus,
                           media::DecodeStatus::DECODE_STATUS_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::SampleFormat, media::kSampleFormatMax)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::VideoCodec, media::kVideoCodecMax)
+
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
+                              media::VIDEO_CODEC_PROFILE_MIN,
+                              media::VIDEO_CODEC_PROFILE_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 

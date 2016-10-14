@@ -135,7 +135,7 @@ class VideoCaptureImplTest : public ::testing::Test {
     frame_metadata.MergeInternalValuesInto(&info->metadata);
 
     info->timestamp = now - base::TimeTicks();
-    info->pixel_format = media::mojom::VideoFormat::I420;
+    info->pixel_format = media::PIXEL_FORMAT_I420;
     info->storage_type = media::PIXEL_STORAGE_CPU;
     info->coded_size = size;
     info->visible_rect = gfx::Rect(size);

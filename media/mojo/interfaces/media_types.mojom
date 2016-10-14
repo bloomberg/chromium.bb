@@ -28,96 +28,20 @@ enum ChannelLayout;
 enum SampleFormat;
 
 // See media/base/video_types.h for descriptions.
-// Kept in sync with media::VideoPixelFormat via static_asserts.
-enum VideoFormat {
-  UNKNOWN = 0,
-  I420,
-  YV12,
-  YV16,
-  YV12A,
-  YV24,
-  NV12,
-  NV21,
-  UYVY,
-  YUY2,
-  ARGB,
-  XRGB,
-  RGB24,
-  RGB32,
-  MJPEG,
-  MT21,
-  YUV420P9,
-  YUV420P10,
-  YUV422P9,
-  YUV422P10,
-  YUV444P9,
-  YUV444P10,
-  YUV420P12,
-  YUV422P12,
-  YUV444P12,
-  Y8,
-  Y16,
-  FORMAT_MAX = Y16,
-};
+[Native]
+enum VideoPixelFormat;
 
-// Kept in sync with media::ColorSpace via static_asserts.
-enum ColorSpace {
-  UNSPECIFIED = 0,
-  JPEG = 1,
-  HD_REC709 = 2,
-  SD_REC601 = 3,
-  MAX = SD_REC601,
-};
+// See media/base/video_types.h for descriptions.
+[Native]
+enum ColorSpace;
 
-// See media/base/video_decoder_config.h for descriptions.
-// Kept in sync with media::VideoCodec via static_asserts.
-enum VideoCodec {
-  UNKNOWN = 0,
-  H264,
-  VC1,
-  MPEG2,
-  MPEG4,
-  Theora,
-  VP8,
-  VP9,
-  HEVC,
-  Max = HEVC,
-};
+// See media/base/video_codecs.h for descriptions.
+[Native]
+enum VideoCodec;
 
-// See media/base/video_decoder_config.h for descriptions.
-// Kept in sync with media::VideoCodecProfile via static_asserts.
-enum VideoCodecProfile {
-  VIDEO_CODEC_PROFILE_UNKNOWN = -1,
-  VIDEO_CODEC_PROFILE_MIN = VIDEO_CODEC_PROFILE_UNKNOWN,
-  H264PROFILE_MIN = 0,
-  H264PROFILE_BASELINE = H264PROFILE_MIN,
-  H264PROFILE_MAIN,
-  H264PROFILE_EXTENDED,
-  H264PROFILE_HIGH,
-  H264PROFILE_HIGH10PROFILE,
-  H264PROFILE_HIGH422PROFILE,
-  H264PROFILE_HIGH444PREDICTIVEPROFILE,
-  H264PROFILE_SCALABLEBASELINE,
-  H264PROFILE_SCALABLEHIGH,
-  H264PROFILE_STEREOHIGH,
-  H264PROFILE_MULTIVIEWHIGH,
-  H264PROFILE_MAX = H264PROFILE_MULTIVIEWHIGH,
-  VP8PROFILE_MIN,
-  VP8PROFILE_ANY = VP8PROFILE_MIN,
-  VP8PROFILE_MAX = VP8PROFILE_ANY,
-  VP9PROFILE_MIN,
-  VP9PROFILE_PROFILE0 = VP9PROFILE_MIN,
-  VP9PROFILE_PROFILE1,
-  VP9PROFILE_PROFILE2,
-  VP9PROFILE_PROFILE3,
-  VP9PROFILE_MAX = VP9PROFILE_PROFILE3,
-  HEVCPROFILE_MIN,
-  HEVCPROFILE_MAIN = HEVCPROFILE_MIN,
-  HEVCPROFILE_MAIN10,
-  HEVCPROFILE_MAIN_STILL_PICTURE,
-  HEVCPROFILE_MAX = HEVCPROFILE_MAIN_STILL_PICTURE,
-  VIDEO_CODEC_PROFILE_MAX = HEVCPROFILE_MAX,
-};
+// See media/base/video_codecs.h for descriptions.
+[Native]
+enum VideoCodecProfile;
 
 // See media/base/encryption_scheme.h.
 // Kept in sync with media::CipherMode via static_asserts.
@@ -160,7 +84,7 @@ struct AudioDecoderConfig {
 struct VideoDecoderConfig {
   VideoCodec codec;
   VideoCodecProfile profile;
-  VideoFormat format;
+  VideoPixelFormat format;
   ColorSpace color_space;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
@@ -237,7 +161,7 @@ struct AudioBuffer {
 // This defines a mojo transport format for media::VideoFrame.
 struct VideoFrame {
   // Format of the frame.
-  VideoFormat format;
+  VideoPixelFormat format;
 
   // Width and height of the video frame, in pixels.
   gfx.mojom.Size coded_size;

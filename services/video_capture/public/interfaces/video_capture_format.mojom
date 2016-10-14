@@ -15,7 +15,7 @@ enum VideoPixelStorage {
 struct VideoCaptureFormat {
   gfx.mojom.Size frame_size;
   float frame_rate;
-  media.mojom.VideoFormat pixel_format;
+  media.mojom.VideoPixelFormat pixel_format;
   VideoPixelStorage pixel_storage;
 };
 

@@ -68,109 +68,6 @@ ASSERT_ENUM_EQ_RAW(DemuxerStream::Status,
                    DemuxerStream::kConfigChanged,
                    DemuxerStream::Status::CONFIG_CHANGED);
 
-// VideoFormat.
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_UNKNOWN,
-                   VideoFormat::UNKNOWN);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_I420, VideoFormat::I420);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV12, VideoFormat::YV12);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV16, VideoFormat::YV16);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV12A, VideoFormat::YV12A);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV24, VideoFormat::YV24);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_NV12, VideoFormat::NV12);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_NV21, VideoFormat::NV21);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_UYVY, VideoFormat::UYVY);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YUY2, VideoFormat::YUY2);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_ARGB, VideoFormat::ARGB);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_XRGB, VideoFormat::XRGB);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_RGB24, VideoFormat::RGB24);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_RGB32, VideoFormat::RGB32);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MJPEG, VideoFormat::MJPEG);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MT21, VideoFormat::MT21);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV420P9,
-                   VideoFormat::YUV420P9);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV422P9,
-                   VideoFormat::YUV422P9);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV444P9,
-                   VideoFormat::YUV444P9);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV420P10,
-                   VideoFormat::YUV420P10);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV422P10,
-                   VideoFormat::YUV422P10);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV444P10,
-                   VideoFormat::YUV444P10);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV420P12,
-                   VideoFormat::YUV420P12);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV422P12,
-                   VideoFormat::YUV422P12);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV444P12,
-                   VideoFormat::YUV444P12);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_Y8, VideoFormat::Y8);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_Y16, VideoFormat::Y16);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MAX, VideoFormat::FORMAT_MAX);
-
-// ColorSpace.
-ASSERT_ENUM_EQ_RAW(ColorSpace,
-                   COLOR_SPACE_UNSPECIFIED,
-                   ColorSpace::UNSPECIFIED);
-ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_JPEG, ColorSpace::JPEG);
-ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_HD_REC709, ColorSpace::HD_REC709);
-ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_SD_REC601, ColorSpace::SD_REC601);
-ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_MAX, ColorSpace::MAX);
-
-// VideoCodec
-ASSERT_ENUM_EQ_RAW(VideoCodec, kUnknownVideoCodec, VideoCodec::UNKNOWN);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, , H264);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, , HEVC);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, , VC1);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, , MPEG2);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, , MPEG4);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, , Theora);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, , VP8);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, , VP9);
-ASSERT_ENUM_EQ_RAW(VideoCodec, kVideoCodecMax, VideoCodec::Max);
-
-// VideoCodecProfile
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VIDEO_CODEC_PROFILE_UNKNOWN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VIDEO_CODEC_PROFILE_MIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_MIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_BASELINE);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_MAIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_EXTENDED);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_HIGH);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_HIGH10PROFILE);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_HIGH422PROFILE);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_HIGH444PREDICTIVEPROFILE);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_SCALABLEBASELINE);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_SCALABLEHIGH);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_STEREOHIGH);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_MULTIVIEWHIGH);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_MAX);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VP8PROFILE_MIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VP8PROFILE_ANY);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VP8PROFILE_MAX);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VP9PROFILE_MIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VP9PROFILE_PROFILE0);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VP9PROFILE_PROFILE1);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VP9PROFILE_PROFILE2);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VP9PROFILE_PROFILE3);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VP9PROFILE_MAX);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , HEVCPROFILE_MIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , HEVCPROFILE_MAIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , HEVCPROFILE_MAIN10);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , HEVCPROFILE_MAIN_STILL_PICTURE);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , HEVCPROFILE_MAX);
-ASSERT_ENUM_EQ(VideoCodecProfile, , , VIDEO_CODEC_PROFILE_MAX);
-
 // CipherMode
 ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,
                    EncryptionScheme::CipherMode::CIPHER_MODE_UNENCRYPTED,
@@ -446,12 +343,10 @@ TypeConverter<media::mojom::VideoDecoderConfigPtr, media::VideoDecoderConfig>::
     Convert(const media::VideoDecoderConfig& input) {
   media::mojom::VideoDecoderConfigPtr config(
       media::mojom::VideoDecoderConfig::New());
-  config->codec = static_cast<media::mojom::VideoCodec>(input.codec());
-  config->profile =
-      static_cast<media::mojom::VideoCodecProfile>(input.profile());
-  config->format = static_cast<media::mojom::VideoFormat>(input.format());
-  config->color_space =
-      static_cast<media::mojom::ColorSpace>(input.color_space());
+  config->codec = input.codec();
+  config->profile = input.profile();
+  config->format = input.format();
+  config->color_space = input.color_space();
   config->coded_size = input.coded_size();
   config->visible_rect = input.visible_rect();
   config->natural_size = input.natural_size();
@@ -466,12 +361,9 @@ media::VideoDecoderConfig
 TypeConverter<media::VideoDecoderConfig, media::mojom::VideoDecoderConfigPtr>::
     Convert(const media::mojom::VideoDecoderConfigPtr& input) {
   media::VideoDecoderConfig config;
-  config.Initialize(static_cast<media::VideoCodec>(input->codec),
-                    static_cast<media::VideoCodecProfile>(input->profile),
-                    static_cast<media::VideoPixelFormat>(input->format),
-                    static_cast<media::ColorSpace>(input->color_space),
-                    input->coded_size, input->visible_rect, input->natural_size,
-                    input->extra_data,
+  config.Initialize(input->codec, input->profile, input->format,
+                    input->color_space, input->coded_size, input->visible_rect,
+                    input->natural_size, input->extra_data,
                     input->encryption_scheme.To<media::EncryptionScheme>());
   return config;
 }
@@ -584,7 +476,7 @@ TypeConverter<media::mojom::VideoFramePtr, scoped_refptr<media::VideoFrame>>::
       input_frame->Handle().Clone();
   CHECK(duplicated_handle.is_valid());
 
-  frame->format = static_cast<media::mojom::VideoFormat>(input->format());
+  frame->format = input->format();
   frame->coded_size = input->coded_size();
   frame->visible_rect = input->visible_rect();
   frame->natural_size = input->natural_size();
@@ -608,8 +500,8 @@ TypeConverter<scoped_refptr<media::VideoFrame>, media::mojom::VideoFramePtr>::
     return media::VideoFrame::CreateEOSFrame();
 
   return media::MojoSharedBufferVideoFrame::Create(
-      static_cast<media::VideoPixelFormat>(input->format), input->coded_size,
-      input->visible_rect, input->natural_size, std::move(input->frame_data),
+      input->format, input->coded_size, input->visible_rect,
+      input->natural_size, std::move(input->frame_data),
       base::saturated_cast<size_t>(input->frame_data_size),
       base::saturated_cast<size_t>(input->y_offset),
       base::saturated_cast<size_t>(input->u_offset),

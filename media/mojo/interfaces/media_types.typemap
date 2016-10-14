@@ -11,6 +11,8 @@ public_headers = [
   "//media/base/decode_status.h",
   "//media/base/sample_format.h",
   "//media/base/subsample_entry.h",
+  "//media/base/video_codecs.h",
+  "//media/base/video_types.h",
 ]
 
 traits_headers = [ "//media/base/ipc/media_param_traits_macros.h" ]
@@ -24,7 +26,11 @@ type_mappings = [
   "media.mojom.AudioCodec=media::AudioCodec",
   "media.mojom.BufferingState=media::BufferingState",
   "media.mojom.ChannelLayout=media::ChannelLayout",
+  "media.mojom.ColorSpace=media::ColorSpace",
   "media.mojom.DecodeStatus=media::DecodeStatus",
   "media.mojom.SampleFormat=media::SampleFormat",
   "media.mojom.SubsampleEntry=media::SubsampleEntry",
+  "media.mojom.VideoCodec=media::VideoCodec",
+  "media.mojom.VideoCodecProfile=media::VideoCodecProfile",
+  "media.mojom.VideoPixelFormat=media::VideoPixelFormat",
 ]

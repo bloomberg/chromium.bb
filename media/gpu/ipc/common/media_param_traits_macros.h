@@ -7,18 +7,13 @@
 
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_message_macros.h"
-#include "media/base/decrypt_config.h"
 #include "media/base/ipc/media_param_traits_macros.h"
-#include "media/base/video_codecs.h"
 #include "media/gpu/ipc/common/create_video_encoder_params.h"
 #include "media/video/jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
-                              media::VIDEO_CODEC_PROFILE_MIN,
-                              media::VIDEO_CODEC_PROFILE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::JpegDecodeAccelerator::Error,
                           media::JpegDecodeAccelerator::LARGEST_ERROR_ENUM)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoEncodeAccelerator::Error,

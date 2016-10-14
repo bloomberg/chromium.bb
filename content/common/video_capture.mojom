@@ -20,7 +20,7 @@ struct VideoCaptureParams {
 struct VideoFrameInfo{
   mojo.common.mojom.TimeDelta timestamp;
   mojo.common.mojom.DictionaryValue metadata;
-  media.mojom.VideoFormat pixel_format;
+  media.mojom.VideoPixelFormat pixel_format;
   video_capture.mojom.VideoPixelStorage storage_type;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;

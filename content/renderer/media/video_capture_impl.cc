@@ -261,11 +261,11 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
   DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
 
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(media::mojom::VideoFormat::I420, info->pixel_format);
+  DCHECK_EQ(media::PIXEL_FORMAT_I420, info->pixel_format);
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, info->storage_type);
 
   if (state_ != VIDEO_CAPTURE_STATE_STARTED ||
-      info->pixel_format != media::mojom::VideoFormat::I420 ||
+      info->pixel_format != media::PIXEL_FORMAT_I420 ||
       info->storage_type != media::PIXEL_STORAGE_CPU) {
     GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
                                          gpu::SyncToken(), -1.0);

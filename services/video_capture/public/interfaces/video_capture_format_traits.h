@@ -22,9 +22,9 @@ struct StructTraits<video_capture::mojom::VideoCaptureFormatDataView,
     return format.frame_rate;
   }
 
-  static media::mojom::VideoFormat pixel_format(
+  static media::VideoPixelFormat pixel_format(
       const media::VideoCaptureFormat& format) {
-    return static_cast<media::mojom::VideoFormat>(format.pixel_format);
+    return format.pixel_format;
   }
 
   static video_capture::mojom::VideoPixelStorage pixel_storage(
