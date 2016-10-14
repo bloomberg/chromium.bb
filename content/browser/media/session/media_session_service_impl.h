@@ -32,8 +32,6 @@ class MediaSessionServiceImpl : public blink::mojom::MediaSessionService {
 
   RenderFrameHost* render_frame_host_;
 
-  base::Optional<MediaMetadata> metadata_;
-
   // RAII binding of |this| to an MediaSessionService interface request.
   // The binding is removed when binding_ is cleared or goes out of scope.
   std::unique_ptr<mojo::Binding<blink::mojom::MediaSessionService>> binding_;
