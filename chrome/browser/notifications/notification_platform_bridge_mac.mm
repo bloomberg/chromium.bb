@@ -48,7 +48,6 @@
 // Site settings button is implemented as NSUserNotification's action button
 // Not easy to implement:
 // -notification.requireInteraction
-// -The event associated to the close button
 
 // TODO(miguelg) implement the following features
 // - Sound names can be implemented by setting soundName in NSUserNotification
@@ -88,6 +87,7 @@ void DoProcessNotificationResponse(NotificationCommon::Operation operation,
                                    const std::string& notification_id,
                                    int32_t button_index) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   ProfileManager* profileManager = g_browser_process->profile_manager();
   DCHECK(profileManager);
 
@@ -372,6 +372,20 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
 @implementation NotificationCenterDelegate
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
        didActivateNotification:(NSUserNotification*)notification {
+  NSDictionary* notificationResponse =
+      [NotificationResponseBuilder buildDictionary:notification];
+  NotificationPlatformBridgeMac::ProcessNotificationResponse(
+      notificationResponse);
+}
+
+// Overriden from _NSUserNotificationCenterDelegatePrivate.
+// Emitted when a user clicks the "Close" button in the notification.
+// It not is emitted if the notification is closed from the notification
+// center or if the app is not running at the time the Close button is
+// pressed so it's essentially just a best effort way to detect
+// notifications closed by the user.
+- (void)userNotificationCenter:(NSUserNotificationCenter*)center
+               didDismissAlert:(NSUserNotification*)notification {
   NSDictionary* notificationResponse =
       [NotificationResponseBuilder buildDictionary:notification];
   NotificationPlatformBridgeMac::ProcessNotificationResponse(
