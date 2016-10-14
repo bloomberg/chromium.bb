@@ -37,9 +37,13 @@ class MediaCapabilities {
   static void ScreenResolutionChanged(const gfx::Size& res);
   static void ScreenInfoChanged(int hdcp_version,
                                 int supported_eotfs,
-                                int dolby_vision_flags);
+                                int dolby_vision_flags,
+                                bool cur_mode_supports_hdr,
+                                bool cur_mode_supports_dv);
   // HDCP version multiplied by 10, e.g. 22 means HDCP 2.2.
   static int GetHdcpVersion();
+  // HdmiSinkSupports* functions check for display support independent of
+  // current HDMI mode.
   static bool HdmiSinkSupportsEOTF_SDR();
   static bool HdmiSinkSupportsEOTF_HDR();
   static bool HdmiSinkSupportsEOTF_SMPTE_ST_2084();
@@ -47,6 +51,10 @@ class MediaCapabilities {
   static bool HdmiSinkSupportsDolbyVision();
   static bool HdmiSinkSupportsDolbyVision_4K_p60();
   static bool HdmiSinkSupportsDolbyVision_422_12bit();
+  // Check for HDR support (i.e. >= 10-bit) and DV support in current HDMI
+  // mode.
+  static bool CurrentHdmiModeSupportsHDR();
+  static bool CurrentHdmiModeSupportsDolbyVision();
   static gfx::Size GetScreenResolution();
 
  private:
@@ -54,6 +62,8 @@ class MediaCapabilities {
   static int g_hdcp_version;
   static int g_supported_eotfs;
   static int g_dolby_vision_flags;
+  static bool g_cur_mode_supports_hdr;
+  static bool g_cur_mode_supports_dv;
   static gfx::Size g_screen_resolution;
 };
 

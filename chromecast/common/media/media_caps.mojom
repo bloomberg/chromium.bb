@@ -9,9 +9,12 @@ interface MediaCaps {
 };
 
 interface MediaCapsObserver {
-  // Bitmask values defined in enum HdmiSinkCodec
+  // Bitmask values defined in enum HdmiSinkCodec (avsettings.h)
   SupportedHdmiSinkCodecsChanged(uint32 supported_codec_bitmask);
   ScreenResolutionChanged(uint32 width, uint32 height);
+
+  // EOTFs and Dolby Vision flags defined in avsettings.h
   ScreenInfoChanged(int32 hdcp_version, int32 supported_eotfs,
-                    int32 dolby_vision_flags);
+                    int32 dolby_vision_flags, bool current_mode_supports_hdr,
+                    bool current_mode_supports_dolby_vision);
 };

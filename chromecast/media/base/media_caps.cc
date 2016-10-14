@@ -13,6 +13,8 @@ unsigned int MediaCapabilities::g_hdmi_codecs = 0;
 int MediaCapabilities::g_hdcp_version = 0;
 int MediaCapabilities::g_supported_eotfs = 0;
 int MediaCapabilities::g_dolby_vision_flags = 0;
+bool MediaCapabilities::g_cur_mode_supports_hdr = false;
+bool MediaCapabilities::g_cur_mode_supports_dv = false;
 gfx::Size MediaCapabilities::g_screen_resolution(0, 0);
 
 void MediaCapabilities::SetHdmiSinkCodecs(unsigned int codecs_mask) {
@@ -46,13 +48,19 @@ void MediaCapabilities::ScreenResolutionChanged(const gfx::Size& res) {
 
 void MediaCapabilities::ScreenInfoChanged(int hdcp_version,
                                           int supported_eotfs,
-                                          int dolby_vision_flags) {
+                                          int dolby_vision_flags,
+                                          bool cur_mode_supports_hdr,
+                                          bool cur_mode_supports_dv) {
   VLOG(1) << __FUNCTION__ << " HDCP version=" << hdcp_version
           << " Supported EOTFs=" << supported_eotfs
-          << " DolbyVision flags=" << dolby_vision_flags;
+          << " DolbyVision flags=" << dolby_vision_flags
+          << " cur mode HDR=" << cur_mode_supports_hdr
+          << " cur mode DV=" << cur_mode_supports_dv;
   g_hdcp_version = hdcp_version;
   g_supported_eotfs = supported_eotfs;
   g_dolby_vision_flags = dolby_vision_flags;
+  g_cur_mode_supports_hdr = cur_mode_supports_hdr;
+  g_cur_mode_supports_dv = cur_mode_supports_dv;
 }
 
 int MediaCapabilities::GetHdcpVersion() {
@@ -85,6 +93,14 @@ bool MediaCapabilities::HdmiSinkSupportsDolbyVision_4K_p60() {
 
 bool MediaCapabilities::HdmiSinkSupportsDolbyVision_422_12bit() {
   return g_dolby_vision_flags & AvSettings::DOLBY_422_12BIT_SUPPORTED;
+}
+
+bool MediaCapabilities::CurrentHdmiModeSupportsHDR() {
+  return g_cur_mode_supports_hdr;
+}
+
+bool MediaCapabilities::CurrentHdmiModeSupportsDolbyVision() {
+  return g_cur_mode_supports_dv;
 }
 
 gfx::Size MediaCapabilities::GetScreenResolution() {

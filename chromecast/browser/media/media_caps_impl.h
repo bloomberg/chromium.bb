@@ -25,7 +25,9 @@ class MediaCapsImpl : public mojom::MediaCaps {
   void ScreenResolutionChanged(unsigned width, unsigned height);
   void ScreenInfoChanged(int hdcp_version,
                          int supported_eotfs,
-                         int dolby_vision_flags);
+                         int dolby_vision_flags,
+                         bool current_mode_supports_hdr,
+                         bool current_mode_supports_dv);
 
  private:
   // chromecast::mojom::MediaCaps implementation.
@@ -35,6 +37,8 @@ class MediaCapsImpl : public mojom::MediaCaps {
   int hdcp_version_;
   int supported_eotfs_;
   int dolby_vision_flags_;
+  bool current_mode_supports_hdr_;
+  bool current_mode_supports_dv_;
   gfx::Size screen_resolution_;
   mojo::InterfacePtrSet<mojom::MediaCapsObserver> observers_;
   mojo::BindingSet<mojom::MediaCaps> bindings_;
