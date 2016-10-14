@@ -4,7 +4,10 @@
 
 #include "components/offline_pages/background/request_coordinator.h"
 
+#include <limits>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -121,7 +124,7 @@ RequestCoordinator::RequestCoordinator(
         network_quality_estimator)
     : is_busy_(false),
       is_starting_(false),
-      is_stopped_(false),
+      processing_state_(ProcessingWindowState::STOPPED),
       use_test_connection_type_(false),
       test_connection_type_(),
       offliner_(nullptr),
@@ -133,8 +136,6 @@ RequestCoordinator::RequestCoordinator(
       network_quality_estimator_(network_quality_estimator),
       active_request_(nullptr),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
-      offliner_timeout_(base::TimeDelta::FromSeconds(
-          policy_->GetSinglePageTimeLimitInSeconds())),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
   picker_.reset(
@@ -206,7 +207,6 @@ void RequestCoordinator::StopPrerendering(Offliner::RequestStatus stop_status) {
     is_busy_ = false;
     active_request_.reset();
   }
-
 }
 
 void RequestCoordinator::GetRequestsForSchedulingCallback(
@@ -324,7 +324,7 @@ void RequestCoordinator::AddRequestResultCallback(
   scheduler_->Schedule(GetTriggerConditions(kUserRequest));
 
   if (request.user_requested())
-    StartProcessingIfConnected();
+    StartImmediatelyIfConnected();
 }
 
 // Called in response to updating a request in the request queue.
@@ -354,7 +354,7 @@ void RequestCoordinator::UpdateMultipleRequestsCallback(
   }
 
   if (available_user_request)
-    StartProcessingIfConnected();
+    StartImmediatelyIfConnected();
 }
 
 // When we successfully remove a request that completed successfully, move on to
@@ -392,7 +392,7 @@ void RequestCoordinator::ScheduleAsNeeded() {
 
 void RequestCoordinator::StopProcessing(
     Offliner::RequestStatus stop_status) {
-  is_stopped_ = true;
+  processing_state_ = ProcessingWindowState::STOPPED;
   StopPrerendering(stop_status);
 
   // Let the scheduler know we are done processing.
@@ -408,24 +408,31 @@ void RequestCoordinator::HandleWatchdogTimeout() {
 bool RequestCoordinator::StartProcessing(
     const DeviceConditions& device_conditions,
     const base::Callback<void(bool)>& callback) {
+  return StartProcessingInternal(ProcessingWindowState::SCHEDULED_WINDOW,
+                                 device_conditions, callback);
+}
+
+bool RequestCoordinator::StartProcessingInternal(
+    const ProcessingWindowState processing_state,
+    const DeviceConditions& device_conditions,
+    const base::Callback<void(bool)>& callback) {
   current_conditions_.reset(new DeviceConditions(device_conditions));
   if (is_starting_ || is_busy_)
     return false;
   is_starting_ = true;
+  processing_state_ = processing_state;
+  scheduler_callback_ = callback;
 
   // Mark the time at which we started processing so we can check our time
   // budget.
   operation_start_time_ = base::Time::Now();
-
-  is_stopped_ = false;
-  scheduler_callback_ = callback;
 
   TryNextRequest();
 
   return true;
 }
 
-void RequestCoordinator::StartProcessingIfConnected() {
+void RequestCoordinator::StartImmediatelyIfConnected() {
   OfflinerImmediateStartStatus immediate_start_status = TryImmediateStart();
   UMA_HISTOGRAM_ENUMERATION(
       "OfflinePages.Background.ImmediateStartStatus", immediate_start_status,
@@ -458,7 +465,9 @@ RequestCoordinator::TryImmediateStart() {
   // (i.e., assume no battery).
   // TODO(dougarnett): Obtain actual battery conditions (from Android/Java).
   DeviceConditions device_conditions(false, 0, GetConnectionType());
-  if (StartProcessing(device_conditions, base::Bind(&EmptySchedulerCallback)))
+  if (StartProcessingInternal(ProcessingWindowState::IMMEDIATE_WINDOW,
+                              device_conditions,
+                              base::Bind(&EmptySchedulerCallback)))
     return OfflinerImmediateStartStatus::STARTED;
   else
     return OfflinerImmediateStartStatus::NOT_ACCEPTED;
@@ -495,7 +504,7 @@ void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
   is_starting_ = false;
 
   // Make sure we were not stopped while picking.
-  if (!is_stopped_) {
+  if (processing_state_ != ProcessingWindowState::STOPPED) {
     // Send the request on to the offliner.
     SendRequestToOffliner(request);
   }
@@ -524,7 +533,7 @@ void RequestCoordinator::RequestNotPicked(
 void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
   // Check that offlining didn't get cancelled while performing some async
   // steps.
-  if (is_stopped_)
+  if (processing_state_ == ProcessingWindowState::STOPPED)
     return;
 
   GetOffliner();
@@ -550,8 +559,16 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
   if (offliner_->LoadAndSave(
           updated_request, base::Bind(&RequestCoordinator::OfflinerDoneCallback,
                                       weak_ptr_factory_.GetWeakPtr()))) {
-    // Start a watchdog timer to catch pre-renders running too long
-    watchdog_timer_.Start(FROM_HERE, offliner_timeout_, this,
+    base::TimeDelta timeout;
+    if (processing_state_ == ProcessingWindowState::SCHEDULED_WINDOW) {
+      timeout = base::TimeDelta::FromSeconds(
+          policy_->GetSinglePageTimeLimitWhenBackgroundScheduledInSeconds());
+    } else {
+      DCHECK(processing_state_ == ProcessingWindowState::IMMEDIATE_WINDOW);
+      timeout = base::TimeDelta::FromSeconds(
+          policy_->GetSinglePageTimeLimitForImmediateLoadInSeconds());
+    }
+    watchdog_timer_.Start(FROM_HERE, timeout, this,
                           &RequestCoordinator::HandleWatchdogTimeout);
   } else {
     is_busy_ = false;
@@ -644,7 +661,7 @@ void RequestCoordinator::EnableForOffliner(int64_t request_id) {
     return;
   disabled_requests_.erase(request_id);
   // If we are not busy, start processing right away.
-  StartProcessingIfConnected();
+  StartImmediatelyIfConnected();
 }
 
 void RequestCoordinator::MarkRequestCompleted(int64_t request_id) {

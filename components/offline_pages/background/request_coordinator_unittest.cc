@@ -5,6 +5,7 @@
 #include "components/offline_pages/background/request_coordinator.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -39,7 +40,6 @@ const ClientId kClientId1(kClientNamespace, kId1);
 const ClientId kClientId2(kClientNamespace, kId2);
 const int kRequestId1(1);
 const int kRequestId2(2);
-const long kTestTimeoutSeconds = 1;
 const long kTestTimeBudgetSeconds = 200;
 const int kBatteryPercentageHigh = 75;
 const bool kPowerRequired = true;
@@ -306,10 +306,6 @@ class RequestCoordinatorTest
     coordinator_->RequestNotPicked(non_user_requested_tasks_remaining);
   }
 
-  void SetOfflinerTimeoutForTest(const base::TimeDelta& timeout) {
-    coordinator_->SetOfflinerTimeoutForTest(timeout);
-  }
-
   void SetDeviceConditionsForTest(DeviceConditions device_conditions) {
     coordinator_->SetDeviceConditionsForTest(device_conditions);
   }
@@ -419,10 +415,10 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
 
 TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
   // Put the request on the queue.
-  EXPECT_TRUE(
+  EXPECT_NE(
       coordinator()->SavePageLater(
           kUrl1, kClientId1, kUserRequested,
-          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER), 0);
 
   // Set up for the call to StartProcessing by building arguments.
   DeviceConditions device_conditions(
@@ -445,10 +441,10 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLater) {
-  EXPECT_TRUE(
+  EXPECT_NE(
       coordinator()->SavePageLater(
           kUrl1, kClientId1, kUserRequested,
-          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER), 0);
 
   // Expect that a request got placed on the queue.
   coordinator()->queue()->GetRequests(
@@ -973,7 +969,7 @@ TEST_F(RequestCoordinatorTest, MarkRequestCompleted) {
   EXPECT_TRUE(observer().completed_called());
 }
 
-TEST_F(RequestCoordinatorTest, WatchdogTimeout) {
+TEST_F(RequestCoordinatorTest, WatchdogTimeoutForScheduledProcessing) {
   // Build a request to use with the pre-renderer, and put it on the queue.
   offline_pages::SavePageRequest request(
       kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
@@ -995,16 +991,15 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeout) {
   // in progress by asking it to skip making the completion callback.
   EnableOfflinerCallback(false);
 
-  // Ask RequestCoordinator to stop waiting for the offliner after this many
-  // seconds.
-  SetOfflinerTimeoutForTest(base::TimeDelta::FromSeconds(kTestTimeoutSeconds));
-
   // Sending the request to the offliner.
   EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
   PumpLoop();
 
   // Advance the mock clock far enough to cause a watchdog timeout
-  AdvanceClockBy(base::TimeDelta::FromSeconds(kTestTimeoutSeconds + 1));
+  AdvanceClockBy(base::TimeDelta::FromSeconds(
+      coordinator()
+          ->policy()
+          ->GetSinglePageTimeLimitWhenBackgroundScheduledInSeconds() + 1));
   PumpLoop();
 
   // Wait for timeout to expire.  Use a TaskRunner with a DelayedTaskRunner
@@ -1014,6 +1009,51 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeout) {
   PumpLoop();
 
   EXPECT_FALSE(is_starting());
+  EXPECT_TRUE(OfflinerWasCanceled());
+  EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT,
+            last_offlining_status());
+}
+
+TEST_F(RequestCoordinatorTest, WatchdogTimeoutForImmediateProcessing) {
+  // Test only applies on non-svelte device.
+  if (base::SysInfo::IsLowEndDevice())
+    return;
+
+  // Set good network connection so that adding request will trigger
+  // immediate processing.
+  SetEffectiveConnectionTypeForTest(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
+
+  // Ensure that the new request does not finish - we simulate it being
+  // in progress by asking it to skip making the completion callback.
+  EnableOfflinerCallback(false);
+
+  EXPECT_NE(
+      coordinator()->SavePageLater(
+          kUrl1, kClientId1, kUserRequested,
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER), 0);
+  PumpLoop();
+
+  // Verify that immediate start from adding the request did happen.
+  EXPECT_TRUE(coordinator()->is_busy());
+
+  // Advance the mock clock 1 second before the watchdog timeout.
+  AdvanceClockBy(base::TimeDelta::FromSeconds(
+      coordinator()
+          ->policy()
+          ->GetSinglePageTimeLimitForImmediateLoadInSeconds() - 1));
+  PumpLoop();
+
+  // Verify still busy.
+  EXPECT_TRUE(coordinator()->is_busy());
+  EXPECT_FALSE(OfflinerWasCanceled());
+
+  // Advance the mock clock past the watchdog timeout now.
+  AdvanceClockBy(base::TimeDelta::FromSeconds(2));
+  PumpLoop();
+
+  // Verify the request timed out.
+  EXPECT_FALSE(coordinator()->is_busy());
   EXPECT_TRUE(OfflinerWasCanceled());
   EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT,
             last_offlining_status());
@@ -1154,10 +1194,10 @@ TEST_F(RequestCoordinatorTest,
        SavePageStartsProcessingWhenConnectedAndNotLowEndDevice) {
   SetEffectiveConnectionTypeForTest(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
-  EXPECT_TRUE(
+  EXPECT_NE(
       coordinator()->SavePageLater(
           kUrl1, kClientId1, kUserRequested,
-          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER), 0);
   PumpLoop();
 
   // Now whether processing triggered immediately depends on whether test
@@ -1170,10 +1210,10 @@ TEST_F(RequestCoordinatorTest,
 }
 
 TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
-  EXPECT_TRUE(
+  EXPECT_NE(
       coordinator()->SavePageLater(
           kUrl1, kClientId1, kUserRequested,
-          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER), 0);
   PumpLoop();
   EXPECT_FALSE(is_busy());
 }
@@ -1182,17 +1222,16 @@ TEST_F(RequestCoordinatorTest,
        SavePageDoesntStartProcessingWhenPoorlyConnected) {
   SetEffectiveConnectionTypeForTest(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  EXPECT_TRUE(
+  EXPECT_NE(
       coordinator()->SavePageLater(
           kUrl1, kClientId1, kUserRequested,
-          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER), 0);
   PumpLoop();
   EXPECT_FALSE(is_busy());
 }
 
 TEST_F(RequestCoordinatorTest,
        ResumeStartsProcessingWhenConnectedAndNotLowEndDevice) {
-
   // Add a request to the queue.
   offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
                                           base::Time::Now(), kUserRequested);

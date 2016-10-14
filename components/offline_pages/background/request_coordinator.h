@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -41,7 +42,6 @@ class RequestCoordinator : public KeyedService,
                            public RequestNotifier,
                            public base::SupportsUserData {
  public:
-
   // Nested observer class.  To make sure that no events are missed, the client
   // code should first register for notifications, then |GetAllRequests|, and
   // ignore all events before the return from |GetAllRequests|, and consume
@@ -178,7 +178,7 @@ class RequestCoordinator : public KeyedService,
   // Tracks whether the last offlining attempt got canceled.  This is reset by
   // the next StartProcessing() call.
   bool is_canceled() {
-    return is_stopped_;
+    return processing_state_ == ProcessingWindowState::STOPPED;
   }
 
   OfflineEventLogger* GetLogger() {
@@ -206,6 +206,12 @@ class RequestCoordinator : public KeyedService,
     NOT_STARTED_ON_SVELTE = 5,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT = 6,
+  };
+
+  enum class ProcessingWindowState {
+    STOPPED,
+    SCHEDULED_WINDOW,
+    IMMEDIATE_WINDOW,
   };
 
   // Receives the results of a get from the request queue, and turns that into
@@ -242,9 +248,13 @@ class RequestCoordinator : public KeyedService,
   void HandleRemovedRequests(BackgroundSavePageResult status,
                              std::unique_ptr<UpdateRequestsResult> result);
 
+  bool StartProcessingInternal(const ProcessingWindowState processing_state,
+                               const DeviceConditions& device_conditions,
+                               const base::Callback<void(bool)>& callback);
+
   // Start processing now if connected (but with conservative assumption
   // as to other device conditions).
-  void StartProcessingIfConnected();
+  void StartImmediatelyIfConnected();
 
   OfflinerImmediateStartStatus TryImmediateStart();
 
@@ -300,11 +310,7 @@ class RequestCoordinator : public KeyedService,
     test_connection_type_ = connection;
   }
 
-  void SetOfflinerTimeoutForTest(const base::TimeDelta& timeout) {
-    offliner_timeout_ = timeout;
-  }
-
-  void SetDeviceConditionsForTest(DeviceConditions& current_conditions) {
+  void SetDeviceConditionsForTest(const DeviceConditions& current_conditions) {
     current_conditions_.reset(new DeviceConditions(current_conditions));
   }
 
@@ -320,8 +326,8 @@ class RequestCoordinator : public KeyedService,
   // There is more than one path to start processing so this flag is used
   // to avoid race conditions before is_busy_ is established.
   bool is_starting_;
-  // True if the current processing window has been canceled.
-  bool is_stopped_;
+  // Identifies the type of current processing window or if processing stopped.
+  ProcessingWindowState processing_state_;
   // True if we should use the test connection type instead of the actual type.
   bool use_test_connection_type_;
   // For use by tests, a fake network connection type
@@ -361,8 +367,6 @@ class RequestCoordinator : public KeyedService,
   RequestCoordinatorEventLogger event_logger_;
   // Timer to watch for pre-render attempts running too long.
   base::OneShotTimer watchdog_timer_;
-  // How long to wait for an offliner request before giving up.
-  base::TimeDelta offliner_timeout_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 
