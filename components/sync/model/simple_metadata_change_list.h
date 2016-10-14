@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_SIMPLE_METADATA_CHANGE_LIST_H_
-#define COMPONENTS_SYNC_CORE_SIMPLE_METADATA_CHANGE_LIST_H_
+#ifndef COMPONENTS_SYNC_MODEL_SIMPLE_METADATA_CHANGE_LIST_H_
+#define COMPONENTS_SYNC_MODEL_SIMPLE_METADATA_CHANGE_LIST_H_
 
 #include <map>
 #include <memory>
@@ -63,4 +63,4 @@ class SimpleMetadataChangeList : public MetadataChangeList {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_SIMPLE_METADATA_CHANGE_LIST_H_
+#endif  // COMPONENTS_SYNC_MODEL_SIMPLE_METADATA_CHANGE_LIST_H_

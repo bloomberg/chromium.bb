@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/model_type_store_impl.h"
+#include "components/sync/model_impl/model_type_store_impl.h"
 
 #include <utility>
 

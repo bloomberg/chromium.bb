@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "components/sync/core/data_batch_impl.h"
-#include "components/sync/core/simple_metadata_change_list.h"
+#include "components/sync/model/mutable_data_batch.h"
+#include "components/sync/model/simple_metadata_change_list.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -267,7 +267,8 @@ void FakeModelTypeService::GetData(StorageKeyList keys, DataCallback callback) {
     service_error_ = SyncError();
     return;
   }
-  std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
+
+  auto batch = base::MakeUnique<MutableDataBatch>();
   for (const std::string& key : keys) {
     DCHECK(db_->HasData(key)) << "No data for " << key;
     batch->Put(key, CopyEntityData(db_->GetData(key)));
@@ -281,7 +282,8 @@ void FakeModelTypeService::GetAllData(DataCallback callback) {
     service_error_ = SyncError();
     return;
   }
-  std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
+
+  auto batch = base::MakeUnique<MutableDataBatch>();
   for (const auto& kv : db_->all_data()) {
     batch->Put(kv.first, CopyEntityData(*kv.second));
   }

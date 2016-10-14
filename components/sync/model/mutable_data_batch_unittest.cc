@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/data_batch_impl.h"
+#include "components/sync/model/mutable_data_batch.h"
 
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
-TEST(DataBatchImplTest, PutAndNextWithReuse) {
+TEST(MutableDataBatchTest, PutAndNextWithReuse) {
   EntityData* entity1 = new EntityData();
   EntityData* entity2 = new EntityData();
 
-  DataBatchImpl batch;
+  MutableDataBatch batch;
   EXPECT_FALSE(batch.HasNext());
 
   batch.Put("one", base::WrapUnique(entity1));
@@ -33,12 +33,12 @@ TEST(DataBatchImplTest, PutAndNextWithReuse) {
   EXPECT_EQ(entity2, pair2.second.get());
 }
 
-TEST(DataBatchImplTest, PutAndNextInterleaved) {
+TEST(MutableDataBatchTest, PutAndNextInterleaved) {
   EntityData* entity1 = new EntityData();
   EntityData* entity2 = new EntityData();
   EntityData* entity3 = new EntityData();
 
-  DataBatchImpl batch;
+  MutableDataBatch batch;
   EXPECT_FALSE(batch.HasNext());
 
   batch.Put("one", base::WrapUnique(entity1));
@@ -65,11 +65,11 @@ TEST(DataBatchImplTest, PutAndNextInterleaved) {
   EXPECT_EQ(entity3, pair3.second.get());
 }
 
-TEST(DataBatchImplTest, PutAndNextSharedKey) {
+TEST(MutableDataBatchTest, PutAndNextSharedKey) {
   EntityData* entity1 = new EntityData();
   EntityData* entity2 = new EntityData();
 
-  DataBatchImpl batch;
+  MutableDataBatch batch;
   EXPECT_FALSE(batch.HasNext());
 
   batch.Put("same", base::WrapUnique(entity1));

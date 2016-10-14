@@ -7,4 +7,5 @@ include_rules = [
   # TODO(maxbogue): Move GenerateSyncableHash to base.
   "+components/sync/syncable",
   "+components/sync/test",
+  "+third_party/leveldatabase",
 ]

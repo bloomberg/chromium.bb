@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/simple_metadata_change_list.h"
+#include "components/sync/model/simple_metadata_change_list.h"
 
 namespace syncer {
 

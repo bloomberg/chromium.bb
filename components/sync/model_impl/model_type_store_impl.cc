@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/model_type_store_impl.h"
+#include "components/sync/model_impl/model_type_store_impl.h"
 
 #include <utility>
 
@@ -13,7 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/core/model_type_store_backend.h"
+#include "components/sync/model_impl/model_type_store_backend.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 

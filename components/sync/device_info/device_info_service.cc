@@ -13,10 +13,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "components/sync/base/time.h"
-#include "components/sync/core/data_batch_impl.h"
 #include "components/sync/device_info/device_info_util.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
+#include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -151,7 +151,7 @@ SyncError DeviceInfoService::ApplySyncChanges(
 
 void DeviceInfoService::GetData(StorageKeyList storage_keys,
                                 DataCallback callback) {
-  std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
+  auto batch = base::MakeUnique<MutableDataBatch>();
   for (const auto& key : storage_keys) {
     const auto& iter = all_data_.find(key);
     if (iter != all_data_.end()) {
@@ -163,7 +163,7 @@ void DeviceInfoService::GetData(StorageKeyList storage_keys,
 }
 
 void DeviceInfoService::GetAllData(DataCallback callback) {
-  std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
+  auto batch = base::MakeUnique<MutableDataBatch>();
   for (const auto& kv : all_data_) {
     batch->Put(kv.first, CopyToEntityData(*kv.second));
   }

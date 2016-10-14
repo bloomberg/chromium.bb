@@ -4,7 +4,7 @@
 
 #include "components/sync/model/model_type_store.h"
 
-#include "components/sync/core/model_type_store_impl.h"
+#include "components/sync/model_impl/model_type_store_impl.h"
 
 namespace syncer {
 

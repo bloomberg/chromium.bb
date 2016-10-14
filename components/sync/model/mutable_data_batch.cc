@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/data_batch_impl.h"
+#include "components/sync/model/mutable_data_batch.h"
 
 namespace syncer {
 
-DataBatchImpl::DataBatchImpl() {}
+MutableDataBatch::MutableDataBatch() {}
 
-DataBatchImpl::~DataBatchImpl() {}
+MutableDataBatch::~MutableDataBatch() {}
 
-void DataBatchImpl::Put(const std::string& storage_key,
-                        std::unique_ptr<EntityData> specifics) {
+void MutableDataBatch::Put(const std::string& storage_key,
+                           std::unique_ptr<EntityData> specifics) {
   key_data_pairs_.push_back(KeyAndData(storage_key, std::move(specifics)));
 }
 
-bool DataBatchImpl::HasNext() const {
+bool MutableDataBatch::HasNext() const {
   return key_data_pairs_.size() > read_index_;
 }
 
-KeyAndData DataBatchImpl::Next() {
+KeyAndData MutableDataBatch::Next() {
   DCHECK(HasNext());
   return std::move(key_data_pairs_[read_index_++]);
 }
