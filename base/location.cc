@@ -13,25 +13,6 @@
 #include "base/strings/stringprintf.h"
 
 namespace tracked_objects {
-namespace {
-
-#if defined(COMPILER_MSVC)
-__forceinline
-#elif defined(COMPILER_GCC) && !defined(OS_NACL)
-__attribute__((always_inline))
-inline
-#endif
-const void* GetReturnAddress() {
-#if defined(COMPILER_MSVC)
-  return _ReturnAddress();
-#elif defined(COMPILER_GCC) && !defined(OS_NACL)
-  return __builtin_extract_return_addr(__builtin_return_address(0));
-#else
-  return nullptr;
-#endif
-}
-
-}  // namespace
 
 Location::Location(const char* function_name,
                    const char* file_name,
@@ -55,18 +36,6 @@ Location::Location(const Location& other)
       file_name_(other.file_name_),
       line_number_(other.line_number_),
       program_counter_(other.program_counter_) {
-}
-
-// static
-#if defined(COMPILER_MSVC)
-__declspec(noinline)
-#endif
-Location Location::CreateForCurrentProgramCounter(
-      const char* function_name,
-      const char* file_name,
-      int line_number) {
-  const void* program_counter = GetReturnAddress();
-  return Location(function_name, file_name, line_number, program_counter);
 }
 
 std::string Location::ToString() const {
@@ -125,7 +94,13 @@ LocationSnapshot::~LocationSnapshot() {
 __declspec(noinline)
 #endif
 BASE_EXPORT const void* GetProgramCounter() {
-  return GetReturnAddress();
+#if defined(COMPILER_MSVC)
+  return _ReturnAddress();
+#elif defined(COMPILER_GCC) && !defined(OS_NACL)
+  return __builtin_extract_return_addr(__builtin_return_address(0));
+#else
+  return NULL;
+#endif
 }
 
 }  // namespace tracked_objects
