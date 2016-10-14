@@ -369,17 +369,23 @@ BookmarkButton* gDraggedButton = nil; // Weak
     [id(delegate_) mouseDragged:theEvent];
 }
 
-- (void)rightMouseDown:(NSEvent*)event {
-  // Ensure that right-clicking on a button while a context menu is open
+- (void)willOpenMenu:(NSMenu *)menu withEvent:(NSEvent *)event {
+  // Ensure that right-clicking on a button while a context menu is already open
   // highlights the new button.
+  [delegate_ mouseEnteredButton:self event:event];
+
   GradientButtonCell* cell =
       base::mac::ObjCCastStrict<GradientButtonCell>([self cell]);
-  [delegate_ mouseEnteredButton:self event:event];
-  [cell setMouseInside:YES animate:YES];
+  // Opt for animate:NO, otherwise the upcoming contextual menu's modal loop
+  // will block the animation and the button's state will visually never change
+  // ( https://crbug.com/649256 ).
+  [cell setMouseInside:YES animate:NO];
+}
 
-  // Keep a ref to |self|, in case -rightMouseDown: deletes this bookmark.
-  base::scoped_nsobject<BookmarkButton> keepAlive([self retain]);
-  [super rightMouseDown:event];
+- (void)didCloseMenu:(NSMenu *)menu withEvent:(NSEvent *)event {
+  // Update the highlight after the contextual menu closes.
+  GradientButtonCell* cell =
+      base::mac::ObjCCastStrict<GradientButtonCell>([self cell]);
 
   if (![cell isMouseReallyInside]) {
     [cell setMouseInside:NO animate:YES];
