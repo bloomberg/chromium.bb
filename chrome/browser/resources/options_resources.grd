@@ -18,6 +18,11 @@
                  allowexternalscript="true"
                  type="chrome_html" />
       <if expr="chromeos">
+        <structure name="IDR_OPTIONS_ICONS_HTML"
+                   file="settings/icons.html"
+                   type="chrome_html"
+                   flattenhtml="true"
+                   allowexternalscript="true" />
         <structure name="IDR_OPTIONS_PIN_KEYBOARD_HTML"
                    file="chromeos/quick_unlock/pin_keyboard.html"
                    type="chrome_html"

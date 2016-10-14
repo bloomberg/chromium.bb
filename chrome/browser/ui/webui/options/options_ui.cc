@@ -118,6 +118,7 @@ const char kLocalizedStringsFile[] = "strings.js";
 const char kOptionsBundleJsFile[]  = "options_bundle.js";
 
 #if defined(OS_CHROMEOS)
+constexpr char kIconsHTMLPath[] = "icons.html";
 constexpr char kPinKeyboardHTMLPath[] = "people_page/pin_keyboard.html";
 constexpr char kPinKeyboardJSPath[] = "people_page/pin_keyboard.js";
 constexpr char kPasswordPromptDialogHTMLPath[] =
@@ -249,6 +250,7 @@ OptionsUIHTMLSource::~OptionsUIHTMLSource() {}
 
 void OptionsUIHTMLSource::CreateDataSourceMap() {
 #if defined(OS_CHROMEOS)
+  path_to_idr_map_[kIconsHTMLPath] = IDR_OPTIONS_ICONS_HTML;
   path_to_idr_map_[kPinKeyboardHTMLPath] = IDR_OPTIONS_PIN_KEYBOARD_HTML;
   path_to_idr_map_[kPinKeyboardJSPath] = IDR_OPTIONS_PIN_KEYBOARD_JS;
   path_to_idr_map_[kPasswordPromptDialogHTMLPath] =

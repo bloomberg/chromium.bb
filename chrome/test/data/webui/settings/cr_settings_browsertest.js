@@ -158,6 +158,95 @@ TEST_F('CrSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
 GEN('#endif');
 
 GEN('#if defined(OS_CHROMEOS)');
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/people_page/password_prompt_dialog.html.
+ * This is ChromeOS only.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsPeoplePageQuickUnlockAuthenticateTest() {}
+
+CrSettingsPeoplePageQuickUnlockAuthenticateTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/people_page/password_prompt_dialog.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../fake_chrome_event.js',
+    'fake_quick_unlock_private.js',
+    'quick_unlock_authenticate_browsertest_chromeos.js'
+  ]),
+};
+
+TEST_F('CrSettingsPeoplePageQuickUnlockAuthenticateTest', 'Test', function() {
+  settings_people_page_quick_unlock.registerAuthenticateTests();
+  mocha.run();
+});
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/people_page/lock_screen.html
+ * This is ChromeOS only.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsPeoplePageLockScreenTest() {}
+
+CrSettingsPeoplePageLockScreenTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  //browsePreload: 'chrome://md-settings/settings_main/settings_main.html',
+  browsePreload: 'chrome://md-settings/people_page/lock_screen.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../fake_chrome_event.js',
+    'fake_quick_unlock_private.js',
+    'fake_settings_private.js',
+    'quick_unlock_authenticate_browsertest_chromeos.js'
+  ]),
+};
+
+TEST_F('CrSettingsPeoplePageLockScreenTest', 'Test', function() {
+  settings_people_page_quick_unlock.registerLockScreenTests();
+  mocha.run();
+});
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/people_page/setup_pin_dialog.html.
+ *
+ * This is ChromeOS only.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsPeoplePageSetupPinDialogTest() {}
+
+CrSettingsPeoplePageSetupPinDialogTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/people_page/setup_pin_dialog.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../fake_chrome_event.js',
+    'fake_quick_unlock_private.js',
+    'fake_settings_private.js',
+    'quick_unlock_authenticate_browsertest_chromeos.js'
+  ]),
+};
+
+TEST_F('CrSettingsPeoplePageSetupPinDialogTest', 'Test', function() {
+  settings_people_page_quick_unlock.registerSetupPinDialogTests();
+  mocha.run();
+});
+
 /**
  * Test fixture for
  * chrome/browser/resources/settings/people_page/change_picture.html.

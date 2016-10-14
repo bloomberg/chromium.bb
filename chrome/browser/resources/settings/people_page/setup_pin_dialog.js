@@ -102,7 +102,7 @@ Polymer({
   /** @private */
   onCancelTap_: function() {
     this.resetState_();
-    this.$.dialog.cancel();
+    this.$.dialog.close();
   },
 
   /**

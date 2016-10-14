@@ -29,21 +29,6 @@
 
 /** @const */ var PASSWORD_ACTIVE_DURATION_MS = 10 * 60 * 1000; // Ten minutes.
 
-/**
- * Helper method that checks if |password| is valid.
- * @param {string} password
- * @param {function(boolean):void} onCheck
- */
-function checkAccountPassword_(password, onCheck) {
-  // We check the account password by trying to update the active set of quick
-  // unlock modes without changing any credentials.
-  chrome.quickUnlockPrivate.getActiveModes(function(modes) {
-    var credentials =
-        /** @type {!Array<string>} */ (Array(modes.length).fill(''));
-    chrome.quickUnlockPrivate.setModes(password, modes, credentials, onCheck);
-  });
-}
-
 Polymer({
   is: 'settings-password-prompt-dialog',
 
@@ -52,7 +37,7 @@ Polymer({
      * A wrapper around chrome.quickUnlockPrivate.setModes with the account
      * password already supplied. If this is null, the authentication screen
      * needs to be redisplayed. This property will be cleared after
-     * PASSWORD_ACTIVE_DURATION_MS milliseconds.
+     * |this.passwordActiveDurationMs_| milliseconds.
      */
     setModes: {
       type: Object,
@@ -75,7 +60,25 @@ Polymer({
      * Helper property which marks password as valid/invalid.
      * @private
      */
-    passwordInvalid_: Boolean
+    passwordInvalid_: Boolean,
+
+    /**
+     * Interface for chrome.quickUnlockPrivate calls. May be overriden by tests.
+     * @private
+     */
+    quickUnlockPrivate_: {
+      type: Object,
+      value: chrome.quickUnlockPrivate
+    },
+
+    /**
+     * PASSWORD_ACTIVE_DURATION_MS value. May be overridden by tests.
+     * @private
+     */
+    passwordActiveDurationMs_: {
+      type: Number,
+      value: PASSWORD_ACTIVE_DURATION_MS
+    },
   },
 
   /**
@@ -137,14 +140,14 @@ Polymer({
 
       if (valid) {
         // Create the |this.setModes| closure and automatically clear it after
-        // |PASSWORD_ACTIVE_DURATION_MS|.
+        // |this.passwordActiveDurationMs_|.
         var password = this.password_;
         this.password_ = '';
 
         this.setModes = function(modes, credentials, onComplete) {
-          chrome.quickUnlockPrivate.setModes(
+          this.quickUnlockPrivate_.setModes(
               password, modes, credentials, onComplete);
-        };
+        }.bind(this);
 
         function clearSetModes() {
           // Reset the password so that any cached references to this.setModes
@@ -154,13 +157,16 @@ Polymer({
         }
 
         this.clearAccountPasswordTimeout_ = setTimeout(
-          clearSetModes.bind(this), PASSWORD_ACTIVE_DURATION_MS);
-        // Closing the dialog will clear this.password_.
-        this.$.dialog.close();
+          clearSetModes.bind(this), this.passwordActiveDurationMs_);
+
+        // Clear stored password state and close the dialog.
+        this.password_ = '';
+        if (this.$.dialog.open)
+          this.$.dialog.close();
       }
     }
 
-    checkAccountPassword_(this.password_, onPasswordChecked.bind(this));
+    this.checkAccountPassword_(onPasswordChecked.bind(this));
   },
 
   /** @private */
@@ -171,6 +177,21 @@ Polymer({
   /** @private */
   enableConfirm_: function() {
     return !!this.password_ && !this.passwordInvalid_;
+  },
+
+  /**
+  * Helper method that checks if the current password is valid.
+  * @param {function(boolean):void} onCheck
+  */
+  checkAccountPassword_: function(onCheck) {
+    // We check the account password by trying to update the active set of quick
+    // unlock modes without changing any credentials.
+    this.quickUnlockPrivate_.getActiveModes(function(modes) {
+      var credentials =
+          /** @type {!Array<string>} */ (Array(modes.length).fill(''));
+      this.quickUnlockPrivate_.setModes(
+          this.password_, modes, credentials, onCheck);
+    }.bind(this));
   }
 });
 

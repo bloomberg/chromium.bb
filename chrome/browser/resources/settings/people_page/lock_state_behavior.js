@@ -37,13 +37,22 @@ var LockStateBehavior = {
     hasPin: {
       type: Boolean,
       notify: true
-    }
+    },
+
+    /**
+     * Interface for chrome.quickUnlockPrivate calls. May be overriden by tests.
+     * @private
+     */
+    quickUnlockPrivate_: {
+      type: Object,
+      value: chrome.quickUnlockPrivate
+    },
   },
 
   /** @override */
   attached: function() {
     this.boundOnActiveModesChanged_ = this.updateUnlockType_.bind(this);
-    chrome.quickUnlockPrivate.onActiveModesChanged.addListener(
+    this.quickUnlockPrivate_.onActiveModesChanged.addListener(
         this.boundOnActiveModesChanged_);
 
     this.updateUnlockType_();
@@ -51,7 +60,7 @@ var LockStateBehavior = {
 
   /** @override */
   detached: function() {
-    chrome.quickUnlockPrivate.onActiveModesChanged.removeListener(
+    this.quickUnlockPrivate_.onActiveModesChanged.removeListener(
         this.boundOnActiveModesChanged_);
   },
 
@@ -63,7 +72,7 @@ var LockStateBehavior = {
    * @private
    */
   updateUnlockType_: function() {
-    chrome.quickUnlockPrivate.getActiveModes(function(modes) {
+    this.quickUnlockPrivate_.getActiveModes(function(modes) {
       if (modes.includes(chrome.quickUnlockPrivate.QuickUnlockMode.PIN)) {
         this.hasPin = true;
         this.selectedUnlockType = LockScreenUnlockType.PIN_PASSWORD;
