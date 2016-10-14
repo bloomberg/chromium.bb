@@ -17,6 +17,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
  public:
   virtual ~OffscreenCanvasFrameDispatcher(){};
   virtual void dispatchFrame(RefPtr<StaticBitmapImage>,
+                             double commitStartTime,
                              bool isWebGLSoftwareRendering = false) = 0;
 };
 

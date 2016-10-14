@@ -701,10 +701,12 @@ void WebGLRenderingContextBase::commit(ExceptionState& exceptionState) {
   }
   if (!drawingBuffer())
     return;
+  double commitStartTime = WTF::monotonicallyIncreasingTime();
   // TODO(crbug.com/646864): Make commit() work correctly with
   // { preserveDrawingBuffer : true }.
   getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame(
       std::move(drawingBuffer()->transferToStaticBitmapImage()),
+      commitStartTime,
       drawingBuffer()->contextProvider()->isSoftwareRendering());
 }
 
