@@ -32,7 +32,10 @@ class TestLeakDetectorController : public LeakDetectorController {
  public:
   using LeakDetectorController::OnLeaksFound;
 
-  TestLeakDetectorController() {}
+  // This constructor suppresses starting memory metrics job in the superclass.
+  TestLeakDetectorController() {
+    LeakDetectorController::set_enable_collect_memory_usage_step(false);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestLeakDetectorController);

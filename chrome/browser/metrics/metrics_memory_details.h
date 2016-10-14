@@ -17,7 +17,7 @@
 class MemoryGrowthTracker {
  public:
   MemoryGrowthTracker();
-  ~MemoryGrowthTracker();
+  virtual ~MemoryGrowthTracker();
 
   // If 30 minutes have passed since last UMA record, UpdateSample() computes
   // a difference between current memory usage |sample| of process |pid| and
@@ -27,7 +27,7 @@ class MemoryGrowthTracker {
   // If no memory usage of |pid| has not been recorded so far or 30 minutes
   // have not passed since last record, it just returns false.
   // |sample| is memory usage in kB.
-  bool UpdateSample(base::ProcessId pid, int sample, int* diff);
+  virtual bool UpdateSample(base::ProcessId pid, int sample, int* diff);
 
  private:
   // Latest metrics about record time and memory usage at that time per process.
@@ -46,6 +46,10 @@ class MetricsMemoryDetails : public MemoryDetails {
   MetricsMemoryDetails(const base::Closure& callback,
                        MemoryGrowthTracker* memory_growth_tracker);
 
+  void set_generate_histograms(bool generate_histograms) {
+    generate_histograms_ = generate_histograms;
+  }
+
  protected:
   ~MetricsMemoryDetails() override;
 
@@ -60,12 +64,20 @@ class MetricsMemoryDetails : public MemoryDetails {
   void UpdateSwapHistograms();
 #endif
 
+  // Notifies |memory_growth_tracker_| about the memory usage.
+  // Update histograms on memory growth or shrink in renderer processes.
+  void AnalyzeMemoryGrowth();
+
   base::Closure callback_;
 
   // A pointer to MemoryGrowthTracker which is contained in a longer-lived
   // owner of MetricsMemoryDetails, for example, ChromeMetricsServiceClient.
   // If it is null, nothing is tracked.
   MemoryGrowthTracker* memory_growth_tracker_;
+
+  // A flag indicating if histogram data should be generated. True on default.
+  // If false, then only MemoryGrowthTracker gets notified about memory usage.
+  bool generate_histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsMemoryDetails);
 };

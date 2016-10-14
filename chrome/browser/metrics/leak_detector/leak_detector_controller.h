@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
+#include "chrome/browser/metrics/metrics_memory_details.h"
 #include "components/metrics/leak_detector/leak_detector.h"
 #include "components/metrics/proto/memory_leak_report.pb.h"
 
@@ -40,7 +41,30 @@ class LeakDetectorController
       const std::vector<MemoryLeakReportProto>& reports) override;
   void OnRemoteProcessShutdown() override;
 
+  void set_enable_collect_memory_usage_step(bool enabled) {
+    enable_collect_memory_usage_step_ = enabled;
+  }
+
  private:
+  // Accumulates total memory usage info inside MetricsMemoryDetails.
+  class TotalMemoryGrowthTracker : public MemoryGrowthTracker {
+   public:
+    TotalMemoryGrowthTracker();
+    ~TotalMemoryGrowthTracker() override;
+
+    // Updates the inner counter by sample (in kb). Returns always false
+    // to suppress generating growth/shrink histograms in MetricsMemoryDetails.
+    bool UpdateSample(base::ProcessId pid, int sample, int* diff) override;
+
+    size_t total_usage_kb() const { return total_usage_kb_; }
+    void reset() { total_usage_kb_ = 0; }
+
+   private:
+    size_t total_usage_kb_;
+
+    DISALLOW_COPY_AND_ASSIGN(TotalMemoryGrowthTracker);
+  };
+
   // Returns true to indicate that LeakDetector should be enabled on a renderer
   // process. This is determined as follows:
   // 1. If the number of processes running LeakDetector is not at max, returns
@@ -54,6 +78,10 @@ class LeakDetectorController
   // come from the same process type.
   void StoreLeakReports(const std::vector<MemoryLeakReportProto>& reports,
                         MemoryLeakReportProto::ProcessType process_type);
+
+  // Method called from MetricsMemoryDetails when memory usage gets measured.
+  // Updates |memory_usage_info| in stored_reports_[i] for i >= |index|.
+  void OnMemoryDetailCollectionDone(size_t index);
 
   // All leak reports received through OnLeakFound() are stored in protobuf
   // format.
@@ -84,6 +112,19 @@ class LeakDetectorController
 
   // For thread safety.
   base::ThreadChecker thread_checker_;
+
+  // An object passed to MetricsMemoryDetails for collecting memory usage.
+  TotalMemoryGrowthTracker total_memory_growth_tracker_;
+
+  // A flag indicating if a task should be scheduled to populate memory usage
+  // information in the reports.
+  bool enable_collect_memory_usage_step_;
+
+  // Indicates that collecting memory usage is running.
+  bool waiting_for_collect_memory_usage_step_;
+
+  // For passing |this| into a callback.
+  base::WeakPtrFactory<LeakDetectorController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LeakDetectorController);
 };

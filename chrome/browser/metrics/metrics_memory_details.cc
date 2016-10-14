@@ -58,15 +58,17 @@ bool MemoryGrowthTracker::UpdateSample(base::ProcessId pid,
 MetricsMemoryDetails::MetricsMemoryDetails(
     const base::Closure& callback,
     MemoryGrowthTracker* memory_growth_tracker)
-    : callback_(callback), memory_growth_tracker_(memory_growth_tracker) {
-  memory_growth_tracker_ = memory_growth_tracker;
-}
+    : callback_(callback),
+      memory_growth_tracker_(memory_growth_tracker),
+      generate_histograms_(true) {}
 
 MetricsMemoryDetails::~MetricsMemoryDetails() {
 }
 
 void MetricsMemoryDetails::OnDetailsAvailable() {
-  UpdateHistograms();
+  if (generate_histograms_)
+    UpdateHistograms();
+  AnalyzeMemoryGrowth();
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback_);
 }
 
@@ -120,15 +122,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
                                           sample / 1024);
             UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Renderer.Committed",
                                           committed / 1024);
-            int diff;
-            if (memory_growth_tracker_ &&
-                memory_growth_tracker_->UpdateSample(
-                    browser.processes[index].pid, sample, &diff)) {
-              if (diff < 0)
-                UMA_HISTOGRAM_MEMORY_KB("Memory.RendererShrinkIn30Min", -diff);
-              else
-                UMA_HISTOGRAM_MEMORY_KB("Memory.RendererGrowthIn30Min", diff);
-            }
             renderer_count++;
             continue;
         }
@@ -311,3 +304,22 @@ void MetricsMemoryDetails::UpdateSwapHistograms() {
   }
 }
 #endif  // defined(OS_CHROMEOS)
+
+void MetricsMemoryDetails::AnalyzeMemoryGrowth() {
+  for (const auto& process_entry : ChromeBrowser()->processes) {
+    int sample = static_cast<int>(process_entry.working_set.priv);
+    int diff;
+
+    // UpdateSample changes state of |memory_growth_tracker_| and it should be
+    // called even if |generate_histograms_| is false.
+    if (memory_growth_tracker_ &&
+        memory_growth_tracker_->UpdateSample(process_entry.pid, sample,
+                                             &diff) &&
+        generate_histograms_) {
+      if (diff < 0)
+        UMA_HISTOGRAM_MEMORY_KB("Memory.RendererShrinkIn30Min", -diff);
+      else
+        UMA_HISTOGRAM_MEMORY_KB("Memory.RendererGrowthIn30Min", diff);
+    }
+  }
+}
