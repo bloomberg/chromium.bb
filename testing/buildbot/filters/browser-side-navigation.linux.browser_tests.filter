@@ -67,6 +67,7 @@
 -WebViewTests/WebViewTest.Shim_TestWebRequestAPIErrorOccurred/*
 -WebViewTests/WebViewTest.Shim_TestWebRequestAPIGoogleProperty/*
 -WebViewTests/WebViewTest.Shim_TestWebRequestAPIWithHeaders/*
+-WebViewTests/WebViewTest.Shim_TestWebRequestListenerSurvivesReparenting/*
 -WebViewTests/WebViewTest.Shim_TestWebViewInsideFrame/*
 
 # Errors related to forms submission.
