@@ -1580,7 +1580,7 @@ def ToolchainBuilders(site_config, board_configs, hw_test_list):
         name + '-gcc-toolchain',
         site_config.templates.gcc_toolchain,
         *args,
-        boards=[board],
+        boards=['peppy' if name == 'amd64' else board],
         important=True,
         active_waterfall=constants.WATERFALL_INTERNAL,
         **kwargs
