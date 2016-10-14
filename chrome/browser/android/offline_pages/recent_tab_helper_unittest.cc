@@ -311,7 +311,7 @@ TEST_F(RecentTabHelperTest, FeatureNotEnabled) {
   EXPECT_EQ(0U, all_pages().size());
 }
 
-TEST_F(RecentTabHelperTest, DownloadRequest) {
+TEST_F(RecentTabHelperTest, DISABLED_DownloadRequest) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->ObserveAndDownloadCurrentPage(
       ClientId("download", "id1"), 153l);
