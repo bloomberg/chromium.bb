@@ -177,14 +177,13 @@ void CheckSecureExplanations(
   int ssl_version =
       net::SSLConnectionStatusToVersion(security_info.connection_status);
   net::SSLVersionToString(&protocol, ssl_version);
-  bool is_aead, is_tls13;
+  bool is_aead;
   uint16_t cipher_suite =
       net::SSLConnectionStatusToCipherSuite(security_info.connection_status);
   net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
-                               &is_tls13, cipher_suite);
+                               cipher_suite);
   EXPECT_TRUE(is_aead);
-  EXPECT_EQ(nullptr, mac);  // The default secure cipher does not have a MAC.
-  EXPECT_FALSE(is_tls13);   // The default secure cipher is not TLS 1.3.
+  EXPECT_EQ(NULL, mac);  // The default secure cipher does not have a MAC.
 
   base::string16 key_exchange_name = base::ASCIIToUTF16(key_exchange);
   if (security_info.key_exchange_group != 0) {

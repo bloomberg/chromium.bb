@@ -104,8 +104,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     SecurityDetails() : validFrom(0), validTo(0) {}
     // All strings are human-readable values.
     String protocol;
-    // keyExchange is the empty string if not applicable for the connection's
-    // protocol.
     String keyExchange;
     // keyExchangeGroup is the empty string if not applicable for the
     // connection's key exchange.

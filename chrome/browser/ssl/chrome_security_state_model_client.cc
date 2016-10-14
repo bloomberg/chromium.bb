@@ -82,12 +82,12 @@ void AddConnectionExplanation(
   const char* cipher;
   const char* mac;
   bool is_aead;
-  bool is_tls13;
   uint16_t cipher_suite =
       net::SSLConnectionStatusToCipherSuite(security_info.connection_status);
   net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
-                               &is_tls13, cipher_suite);
+                               cipher_suite);
   base::string16 protocol_name = base::ASCIIToUTF16(protocol);
+  base::string16 key_exchange_name = base::ASCIIToUTF16(key_exchange);
   const base::string16 cipher_name =
       (mac == NULL) ? base::ASCIIToUTF16(cipher)
                     : l10n_util::GetStringFUTF16(IDS_CIPHER_WITH_MAC,
@@ -95,17 +95,15 @@ void AddConnectionExplanation(
                                                  base::ASCIIToUTF16(mac));
 
   // Include the key exchange group (previously known as curve) if specified.
-  base::string16 key_exchange_name;
-  if (is_tls13) {
-    key_exchange_name = base::ASCIIToUTF16(
-        SSL_get_curve_name(security_info.key_exchange_group));
-  } else if (security_info.key_exchange_group != 0) {
+  //
+  // TODO(davidben): When TLS 1.3's new negotiation is implemented, omit the
+  // "key exchange" if empty and only display the group, which is the true key
+  // exchange. See https://crbug.com/639495.
+  if (security_info.key_exchange_group != 0) {
     key_exchange_name = l10n_util::GetStringFUTF16(
-        IDS_SSL_KEY_EXCHANGE_WITH_GROUP, base::ASCIIToUTF16(key_exchange),
+        IDS_SSL_KEY_EXCHANGE_WITH_GROUP, key_exchange_name,
         base::ASCIIToUTF16(
             SSL_get_curve_name(security_info.key_exchange_group)));
-  } else {
-    key_exchange_name = base::ASCIIToUTF16(key_exchange);
   }
 
   if (security_info.obsolete_ssl_status == net::OBSOLETE_SSL_NONE) {

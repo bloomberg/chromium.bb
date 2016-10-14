@@ -1027,7 +1027,7 @@
                 "description": "Security details about a request.",
                 "properties": [
                     { "name": "protocol", "type": "string", "description": "Protocol name (e.g. \"TLS 1.2\" or \"QUIC\")." },
-                    { "name": "keyExchange", "type": "string", "description": "Key Exchange used by the connection, or the empty string if not applicable." },
+                    { "name": "keyExchange", "type": "string", "description": "Key Exchange used by the connection." },
                     { "name": "keyExchangeGroup", "type": "string", "optional": true, "description": "(EC)DH group used by the connection, if applicable." },
                     { "name": "cipher", "type": "string", "description": "Cipher name." },
                     { "name": "mac", "type": "string", "optional": true, "description": "TLS MAC. Note that AEAD ciphers do not have separate MACs." },
