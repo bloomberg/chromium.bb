@@ -137,9 +137,8 @@ class BindingSet {
   }
 
   void FlushForTesting() {
-    for (auto& binding : bindings_) {
-      binding.first->FlushForTesting();
-    }
+    for (auto& binding : bindings_)
+      binding.second->FlushForTesting();
   }
 
  private:
