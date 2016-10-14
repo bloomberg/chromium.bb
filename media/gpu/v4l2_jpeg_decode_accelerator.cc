@@ -449,7 +449,6 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
 
 void V4L2JpegDecodeAccelerator::DestroyInputBuffers() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
-  DCHECK(!input_streamon_);
 
   free_input_buffers_.clear();
 
@@ -479,7 +478,6 @@ void V4L2JpegDecodeAccelerator::DestroyInputBuffers() {
 
 void V4L2JpegDecodeAccelerator::DestroyOutputBuffers() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
-  DCHECK(!output_streamon_);
 
   free_output_buffers_.clear();
 
