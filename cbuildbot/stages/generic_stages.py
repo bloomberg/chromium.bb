@@ -12,6 +12,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import time
 import traceback
 
@@ -24,6 +25,7 @@ except ImportError:
 
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import topology
 from chromite.cbuildbot import repository
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -983,7 +985,28 @@ class ArchivingStageMixin(object):
         self._HandleExceptionAsWarning(sys.exc_info())
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
-  def UploadMetadata(self, upload_queue=None, filename=None):
+  def RunExportMetadata(self, filename):
+    """Export JSON file of the builder run's metadata to Cloud Datastore.
+
+    Args:
+      filename: Name of file to export.
+    """
+    creds_file = topology.topology.get(topology.DATASTORE_WRITER_CREDS_KEY)
+    if creds_file is None:
+      logging.warn('No known path to datastore credentials file.')
+      return
+
+    export_cmd = os.path.join(self._build_root, 'chromite', 'bin',
+                              'export_to_gcloud')
+    try:
+      cros_build_lib.RunCommand([export_cmd, creds_file, filename])
+    except cros_build_lib.RunCommandError as e:
+      logging.warn('Unable to export to datastore: %s', e)
+
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def UploadMetadata(self, upload_queue=None, filename=constants.METADATA_JSON,
+                     export=False):
     """Create and upload JSON file of the builder run's metadata, and to cidb.
 
     This uses the existing metadata stored in the builder run. The default
@@ -999,9 +1022,8 @@ class ArchivingStageMixin(object):
         this queue.  If None then upload it directly now.
       filename: Name of file to dump metadata to.
                 Defaults to constants.METADATA_JSON
+      export: If true, constants.METADATA_TAGS will be exported to gcloud.
     """
-    filename = filename or constants.METADATA_JSON
-
     metadata_json = os.path.join(self.archive_path, filename)
 
     # Stages may run in parallel, so we have to do atomic updates on this.
@@ -1021,5 +1043,14 @@ class ArchivingStageMixin(object):
       logging.info('Writing updated metadata to database for build_id %s.',
                    build_id)
       db.UpdateMetadata(build_id, self._run.attrs.metadata)
+      if export:
+        d = self._run.attrs.metadata.GetDict()
+        if constants.METADATA_TAGS in d:
+          with tempfile.NamedTemporaryFile() as f:
+            logging.info('Export tags to gcloud via %s.', f.name)
+            logging.debug('Exporting: %s' % d[constants.METADATA_TAGS])
+            osutils.WriteFile(f.name, json.dumps(d[constants.METADATA_TAGS]),
+                              atomic=True, makedirs=True)
+            self.RunExportMetadata(f.name)
     else:
       logging.info('Skipping database update, no database or build_id.')

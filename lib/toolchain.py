@@ -64,6 +64,21 @@ def GetToolchainsForBoard(board, buildroot=constants.SOURCE_ROOT):
   return targets
 
 
+def GetToolchainTupleForBoard(board, buildroot=constants.SOURCE_ROOT):
+  """Gets a tuple for the default and non-default toolchains for a board.
+
+  Args:
+    board: board name in question (e.g. 'daisy').
+    buildroot: path to buildroot.
+
+  Returns:
+    The tuples of toolchain targets ordered default, non-default for the board.
+  """
+  toolchains = GetToolchainsForBoard(board, buildroot)
+  return (FilterToolchains(toolchains, 'default', True).keys() +
+          FilterToolchains(toolchains, 'default', False).keys())
+
+
 def FilterToolchains(targets, key, value):
   """Filter out targets based on their attributes.
 

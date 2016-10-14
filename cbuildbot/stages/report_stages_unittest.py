@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import datetime as dt
+import json
 import mock
 import os
 
@@ -19,6 +20,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.lib import metadata_lib
 from chromite.lib import results_lib
 from chromite.cbuildbot import triage_lib
+from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import report_stages
 from chromite.lib import alerts
@@ -55,6 +57,8 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.PatchObject(cbuildbot_run._BuilderRunBase, 'GetVersionInfo',
                      return_value=fake_versioninfo)
     self.PatchObject(toolchain, 'GetToolchainsForBoard')
+    self.PatchObject(toolchain, 'GetToolchainTupleForBoard',
+                     return_value=['i686-pc-linux-gnu', 'arm-none-eabi'])
 
   def tearDown(self):
     cidb.CIDBConnectionFactory.SetupMockCidb()
@@ -62,6 +66,8 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
   def testPerformStage(self):
     """Test that a normal runs completes without error."""
     self.RunStage()
+    tags = self._run.attrs.metadata.GetValue(constants.METADATA_TAGS)
+    self.assertEqual(tags['version_full'], 'R39-4815.0.0-rc1')
 
   def testMasterSlaveVersionMismatch(self):
     """Test that master/slave version mismatch causes failure."""
@@ -146,6 +152,9 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
         'master_build', constants.WATERFALL_EXTERNAL, 1,
         'master_build_config', 'bot_hostname')
 
+    self.PatchObject(toolchain, 'GetToolchainsForBoard')
+    self.PatchObject(toolchain, 'GetArchForTarget', return_value='x86')
+
     self._Prepare(build_id=None, master_build_id=master_build_id)
 
   def testUnknownWaterfall(self):
@@ -208,6 +217,9 @@ class AbstractReportStageTestCase(
 
     self.PatchObject(report_stages.ReportStage, '_GetBuildDuration',
                      return_value=1000)
+    self.PatchObject(generic_stages.ArchivingStageMixin, 'RunExportMetadata')
+    self.PatchObject(toolchain, 'GetToolchainsForBoard')
+    self.PatchObject(toolchain, 'GetArchForTarget', return_value='x86')
 
     # Set up a general purpose cidb mock. Tests with more specific
     # mock requirements can replace this with a separate call to
@@ -297,13 +309,13 @@ class ReportStageTest(AbstractReportStageTestCase):
 
     # Verify build stages timeline contains the stages that were mocked.
     self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
-    timeline_content = osutils.WriteFile.call_args_list[1][0][1]
+    timeline_content = osutils.WriteFile.call_args_list[2][0][1]
     for s in stages:
       self.assertIn('["%s", new Date' % s['name'], timeline_content)
 
     # Verify slaves timeline contains the slaves that were mocked.
     self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
-    timeline_content = osutils.WriteFile.call_args_list[2][0][1]
+    timeline_content = osutils.WriteFile.call_args_list[3][0][1]
     for s in statuses:
       self.assertIn('["%s - %s", new Date' %
                     (s['build_config'], s['build_number']), timeline_content)
@@ -358,6 +370,26 @@ class ReportStageTest(AbstractReportStageTestCase):
                      generic_stages_unittest.DEFAULT_BUILD_NUMBER)
     self.assertTrue(metadata_dict.has_key('builder-name'))
     self.assertTrue(metadata_dict.has_key('bot-hostname'))
+
+  def testWriteTagMetadata(self):
+    """Test that WriteTagMetadata writes expected keys correctly."""
+    self.PatchObject(cros_build_lib, 'GetHostName', return_value='cros-wimpy2')
+    self._SetupUpdateStreakCounter()
+    report_stages.WriteTagMetadata(self._run)
+    tags_dict = self._run.attrs.metadata.GetValue(constants.METADATA_TAGS)
+    self.assertEqual(tags_dict['build_number'],
+                     generic_stages_unittest.DEFAULT_BUILD_NUMBER)
+    self.assertTrue(tags_dict.has_key('builder_name'))
+    self.assertTrue(tags_dict.has_key('bot_hostname'))
+    self.RunStage()
+    tags_content = osutils.WriteFile.call_args_list[1][0][1]
+    tags_content_dict = json.loads(tags_content)
+    self.assertEqual(tags_content_dict['build_number'],
+                     generic_stages_unittest.DEFAULT_BUILD_NUMBER)
+    self.assertEqual(
+        osutils.WriteFile.call_args_list[1][0][0],
+        (generic_stages.ArchivingStageMixin.RunExportMetadata.
+         call_args_list[0][0][0]))
 
   def testGetChildConfigsMetadataList(self):
     """Test that GetChildConfigListMetadata generates child config metadata."""

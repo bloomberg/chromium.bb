@@ -243,9 +243,17 @@ class CBuildbotMetadata(object):
     """
     return self._metadata_dict.get(key, default)
 
-  def GetJSON(self):
-    """Return a JSON string representation of metadata."""
-    return json.dumps(self.GetDict())
+  def GetJSON(self, key=None):
+    """Return a JSON string representation of metadata.
+
+    Args:
+      key: Key to return as JSON representation.  If None, returns all
+           metadata.  Default: None
+    """
+    if key:
+      return json.dumps(self.GetValue(key))
+    else:
+      return json.dumps(self.GetDict())
 
   def RecordCLAction(self, change, action, timestamp=None, reason=''):
     """Record an action that was taken on a CL, to the metadata.

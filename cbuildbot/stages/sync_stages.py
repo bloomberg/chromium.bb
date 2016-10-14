@@ -459,6 +459,23 @@ class SyncStage(generic_stages.BuilderStage):
                                          x[cros_patch.ATTR_PATCH_NUMBER],
                                          x[cros_patch.ATTR_REMOTE]))
     self._run.attrs.metadata.UpdateWithDict({'changes': changes_list})
+    change_ids = []
+    change_gerrit_ids = []
+    change_gerrit_numbers = []
+    for c in changes_list:
+      change_ids.append(c[cros_patch.ATTR_CHANGE_ID])
+      gerrit_number = c[cros_patch.ATTR_GERRIT_NUMBER]
+      gerrit_id = '/'.join([c[cros_patch.ATTR_REMOTE], gerrit_number,
+                            c[cros_patch.ATTR_PATCH_NUMBER]])
+      change_gerrit_ids.append(gerrit_id)
+      change_gerrit_numbers.append(gerrit_number)
+    tags = {
+        'change_ids': change_ids,
+        'change_gerrit_ids': change_gerrit_ids,
+        'change_gerrit_numbers': change_gerrit_numbers,
+    }
+    self._run.attrs.metadata.UpdateKeyDictWithDict(constants.METADATA_TAGS,
+                                                   tags)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):

@@ -88,28 +88,42 @@ def WriteTagMetadata(builder_run):
 
   This is a proof of concept for using tags to help find commonality
   in failures.
-
-  TODO(crbug.com/653342): Refactor to more appropriate locations, and add a lot
-  more data. Especially board family, and builder-type.
   """
+  build_id, _ = builder_run.GetCIDBHandle()
+
   # Yes, these values match general metadata values, but they are just
   # proof of concept, so far.
   tags = {
-      'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
-      'build-number': builder_run.buildnumber,
-      'builder-name': builder_run.GetBuilderName(),
-      'buildbot-url': os.environ.get('BUILDBOT_BUILDBOTURL', ''),
-      'buildbot-master-name':
+      'bot_config': builder_run.config['name'],
+      'bot_hostname': cros_build_lib.GetHostName(fully_qualified=True),
+      'build_id': build_id,
+      'build_number': builder_run.buildnumber,
+      'builder_name': builder_run.GetBuilderName(),
+      'buildbot_url': os.environ.get('BUILDBOT_BUILDBOTURL', ''),
+      'buildbot_master_name':
           os.environ.get('BUILDBOT_MASTERNAME', ''),
-      'bot-config': builder_run.config['name'],
+      'id': ('Build', build_id),
       'master_build_id': builder_run.options.master_build_id,
+      'important': builder_run.config['important'],
   }
+
+  # Guess type of bot.
+  tags['bot_type'] = 'unknown'
+  if '.golo.' in tags['bot_hostname']:
+    tags['bot_type'] = 'golo'
+  else:
+    gce_types = ['beefy', 'standard', 'wimpy']
+    for t in gce_types:
+      host_string = 'cros-%s' % t
+      if host_string in tags['bot_hostname']:
+        tags['bot_type'] = 'gce-%s' % t
+        break
 
   # Look up the git version.
   try:
     cmd_result = cros_build_lib.RunCommand(['git', '--version'],
                                            capture_output=True)
-    tags['git_version'] = cmd_result.output
+    tags['git_version'] = cmd_result.output.strip()
   except cros_build_lib.RunCommandError:
     pass  # If we fail, just don't include the tag.
 
@@ -131,7 +145,8 @@ def WriteTagMetadata(builder_run):
   except (cros_build_lib.RunCommandError, IndexError):
     pass  # If we fail, just don't include the tag.
 
-  builder_run.attrs.metadata.UpdateKeyDictWithDict('testing-tags', tags)
+  builder_run.attrs.metadata.UpdateKeyDictWithDict(constants.METADATA_TAGS,
+                                                   tags)
 
 def GetChildConfigListMetadata(child_configs, config_status_map):
   """Creates a list for the child configs metadata.
@@ -190,12 +205,11 @@ class BuildStartStage(generic_stages.BuilderStage):
                                 self._run.config['doc'])
 
     WriteBasicMetadata(self._run)
-    WriteTagMetadata(self._run)
 
     # This is a heuristic value for |important|, since patches that get applied
     # later in the build might change the config. We write it now anyway,
     # because in case the build fails before Sync, it is better to have this
-    # heuristic value than None. In BuildReexectuionFinishedStage, we re-write
+    # heuristic value than None. In BuildReexecutionFinishedStage, we re-write
     # the definitive value.
     self._run.attrs.metadata.UpdateWithDict(
         {'important': self._run.config['important']})
@@ -248,6 +262,9 @@ class BuildStartStage(generic_stages.BuilderStage):
               master_build_status['builder_name'],
               master_build_status['build_number'])
           logging.PrintBuildbotLink('Link to master build', master_url)
+
+    # Write the tag metadata last so that a build_id is available.
+    WriteTagMetadata(self._run)
 
   def HandleSkip(self):
     """Ensure that re-executions use the same db instance as initial db."""
@@ -395,19 +412,46 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     }
 
     if len(config['boards']) == 1:
-      toolchains = toolchain.GetToolchainsForBoard(config['boards'][0],
-                                                   buildroot=build_root)
-      metadata['toolchain-tuple'] = (
-          toolchain.FilterToolchains(toolchains, 'default', True).keys() +
-          toolchain.FilterToolchains(toolchains, 'default', False).keys())
+      metadata['toolchain-tuple'] = toolchain.GetToolchainTupleForBoard(
+          config['boards'][0], buildroot=build_root)
 
     logging.info('Metadata being written: %s', metadata)
     self._run.attrs.metadata.UpdateWithDict(metadata)
+
+    toolchains = set()
+    toolchain_tuples = []
+    primary_toolchains = []
+    for board in config['boards']:
+      toolchain_tuple = toolchain.GetToolchainTupleForBoard(
+          board, buildroot=build_root)
+      toolchains |= set(toolchain_tuple)
+      toolchain_tuples.append(','.join(toolchain_tuple))
+      if len(toolchain_tuple):
+        primary_toolchains.append(toolchain_tuple[0])
+
     # Update 'version' separately to avoid overwriting the existing
     # entries in it (e.g. PFQ builders may have written the Chrome
     # version to uprev).
     logging.info("Metadata 'version' being written: %s", version)
     self._run.attrs.metadata.UpdateKeyDictWithDict('version', version)
+
+    tags = {
+        'boards': config['boards'],
+        'child_config_names': [cc['name'] for cc in child_configs],
+        'build_type': config['build_type'],
+        'important': config['important'],
+
+        # Data for the toolchain used.
+        'sdk_version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),
+        'toolchain_url': sdk_verinfo.get('TC_PATH', '<unknown>'),
+        'toolchains': list(toolchains),
+        'toolchain_tuples': toolchain_tuples,
+        'primary_toolchains': primary_toolchains,
+    }
+    full_version = self._run.attrs.metadata.GetValue('version')
+    tags.update({'version_%s' % v: full_version[v] for v in full_version})
+    self._run.attrs.metadata.UpdateKeyDictWithDict(constants.METADATA_TAGS,
+                                                   tags)
 
     # Ensure that all boards and child config boards have a per-board
     # metadata subdict.
@@ -796,7 +840,7 @@ class ReportStage(generic_stages.BuilderStage,
 
     # Upload metadata, and update the pass/fail streak counter for the main
     # run only. These aren't needed for the child builder runs.
-    self.UploadMetadata()
+    self.UploadMetadata(export=True)
     self._UpdateRunStreak(self._run, final_status)
 
     # Alert if the Pre-CQ has infra failures.
@@ -899,6 +943,32 @@ class ReportStage(generic_stages.BuilderStage,
     self._run.attrs.metadata.UpdateWithDict(
         self.GetReportMetadata(final_status=final_status,
                                completion_instance=self._completion_instance))
+
+    # Add tags for the arches and statuses of the build.
+    # arches requires crossdev which isn't available at the early part of the
+    # build.
+    arches = []
+    for board in self._run.config['boards']:
+      toolchains = toolchain.GetToolchainsForBoard(
+          board, buildroot=self._build_root)
+      default = toolchain.FilterToolchains(toolchains, 'default', True).keys()
+      if len(default):
+        try:
+          arches.append(toolchain.GetArchForTarget(default[0]))
+        except cros_build_lib.RunCommandError as e:
+          logging.warning(
+              'Unable to retrieve arch for board %s default toolchain %s: %s' %
+              (board, default, e))
+    tags = {
+        'arches': arches,
+        'status': final_status,
+    }
+    results = self._run.attrs.metadata.GetValue('results')
+    for stage in results:
+      tags['stage_status:%s' % stage['name']] = stage['status']
+      tags['stage_summary:%s' % stage['name']] = stage['summary']
+    self._run.attrs.metadata.UpdateKeyDictWithDict(constants.METADATA_TAGS,
+                                                   tags)
 
     # Some operations can only be performed if a valid version is available.
     try:
