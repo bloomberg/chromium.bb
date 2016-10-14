@@ -876,6 +876,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *         {@link TabModel}.
      */
     ChromeActivity getActivity() {
+        if (getWindowAndroid() == null) return null;
         Activity activity = WindowAndroid.activityFromContext(
                 getWindowAndroid().getContext().get());
         if (activity instanceof ChromeActivity) return (ChromeActivity) activity;
@@ -1587,12 +1588,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(this));
         getAppBannerManager().setIsEnabledForTab(mDelegateFactory.canShowAppBanners(this));
 
+        reparentingParams.finalizeTabReparenting();
+        mIsDetachedForReparenting = false;
+
         // Reload the NativePage (if any), since the old NativePage has a reference to the old
         // activity.
         maybeShowNativePage(getUrl(), true);
 
-        reparentingParams.finalizeTabReparenting();
-        mIsDetachedForReparenting = false;
         mIsTabStateDirty = true;
 
         for (TabObserver observer : mObservers) {
@@ -1867,6 +1869,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return True, if a native page was displayed for url.
      */
     boolean maybeShowNativePage(String url, boolean forceReload) {
+        // While detached for reparenting we don't have an owning Activity, or TabModelSelector,
+        // so we can't create the native page. The native page will be created once reparenting is
+        // completed.
+        if (mIsDetachedForReparenting) return false;
         NativePage candidateForReuse = forceReload ? null : getNativePage();
         NativePage nativePage = NativePageFactory.createNativePageForURL(url, candidateForReuse,
                 this, getTabModelSelector(), getActivity());
