@@ -240,9 +240,12 @@ bool SupervisedUserService::AccessRequestsEnabled() {
 void SupervisedUserService::AddURLAccessRequest(
     const GURL& url,
     const SuccessCallback& callback) {
+  GURL effective_url = GetURLFilterForUIThread()->GetEmbeddedURL(url);
+  if (!effective_url.is_valid())
+    effective_url = url;
   AddPermissionRequestInternal(
       base::Bind(CreateURLAccessRequest,
-                 SupervisedUserURLFilter::Normalize(url)),
+                 SupervisedUserURLFilter::Normalize(effective_url)),
       callback, 0);
 }
 

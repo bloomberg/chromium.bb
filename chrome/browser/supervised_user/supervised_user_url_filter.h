@@ -81,6 +81,11 @@ class SupervisedUserURLFilter
   // Normalizes a URL for matching purposes.
   static GURL Normalize(const GURL& url);
 
+  // For known "cache" URLs (e.g. from the AMP project CDN), this returns the
+  // embedded URL. For all other URLs, returns an empty GURL.
+  // TODO(treib): Merge this with Normalize().
+  GURL GetEmbeddedURL(const GURL& url) const;
+
   // Returns true if the URL has a standard scheme. Only URLs with standard
   // schemes are filtered.
   // This method is public for testing.
@@ -177,10 +182,6 @@ class SupervisedUserURLFilter
   friend class base::RefCountedThreadSafe<SupervisedUserURLFilter>;
   friend class SupervisedUserURLFilterTest;
   ~SupervisedUserURLFilter();
-
-  // For known "cache" URLs (e.g. from the AMP project CDN), this returns the
-  // embedded URL. For all other URLs, returns an empty GURL.
-  GURL GetEmbeddedURL(const GURL& url) const;
 
   void SetContents(std::unique_ptr<Contents> url_matcher);
 
