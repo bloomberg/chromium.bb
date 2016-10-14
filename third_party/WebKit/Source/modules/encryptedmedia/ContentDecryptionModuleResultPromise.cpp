@@ -47,18 +47,24 @@ ContentDecryptionModuleResultPromise::~ContentDecryptionModuleResultPromise() {}
 
 void ContentDecryptionModuleResultPromise::complete() {
   NOTREACHED();
+  if (!isValidToFulfillPromise())
+    return;
   reject(InvalidStateError, "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::completeWithContentDecryptionModule(
     WebContentDecryptionModule* cdm) {
   NOTREACHED();
+  if (!isValidToFulfillPromise())
+    return;
   reject(InvalidStateError, "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::completeWithSession(
     WebContentDecryptionModuleResult::SessionStatus status) {
   NOTREACHED();
+  if (!isValidToFulfillPromise())
+    return;
   reject(InvalidStateError, "Unexpected completion.");
 }
 
@@ -66,6 +72,9 @@ void ContentDecryptionModuleResultPromise::completeWithError(
     WebContentDecryptionModuleException exceptionCode,
     unsigned long systemCode,
     const WebString& errorMessage) {
+  if (!isValidToFulfillPromise())
+    return;
+
   // Non-zero |systemCode| is appended to the |errorMessage|. If the
   // |errorMessage| is empty, we'll report "Rejected with system code
   // (systemCode)".
@@ -87,24 +96,8 @@ ScriptPromise ContentDecryptionModuleResultPromise::promise() {
 
 void ContentDecryptionModuleResultPromise::reject(ExceptionCode code,
                                                   const String& errorMessage) {
-  // Reject the promise asynchronously. This avoids problems when gc is
-  // destroying objects that result in unfulfilled promises being rejected.
-  // (Resolving promises is still done synchronously as there may be events
-  // already posted that need to happen only after the promise is resolved.)
-  // TODO(jrummell): Make resolving a promise asynchronous as well (including
-  // making sure events still happen after the promise is resolved).
-  if (getExecutionContext()) {
-    getExecutionContext()->postTask(
-        BLINK_FROM_HERE,
-        createSameThreadTask(
-            &ContentDecryptionModuleResultPromise::rejectInternal,
-            wrapPersistent(this), code, errorMessage));
-  }
-}
+  DCHECK(isValidToFulfillPromise());
 
-void ContentDecryptionModuleResultPromise::rejectInternal(
-    ExceptionCode code,
-    const String& errorMessage) {
   m_resolver->reject(DOMException::create(code, errorMessage));
   m_resolver.clear();
 }
@@ -112,6 +105,15 @@ void ContentDecryptionModuleResultPromise::rejectInternal(
 ExecutionContext* ContentDecryptionModuleResultPromise::getExecutionContext()
     const {
   return m_resolver->getExecutionContext();
+}
+
+bool ContentDecryptionModuleResultPromise::isValidToFulfillPromise() {
+  // getExecutionContext() is no longer valid once the context is destroyed.
+  // activeDOMObjectsAreStopped() is called to see if the context is in the
+  // process of being destroyed. If it is, there is no need to fulfill this
+  // promise which is about to go away anyway.
+  return getExecutionContext() &&
+         !getExecutionContext()->activeDOMObjectsAreStopped();
 }
 
 DEFINE_TRACE(ContentDecryptionModuleResultPromise) {

@@ -31,9 +31,9 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/html/HTMLMediaElement.h"
+#include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
-#include "modules/encryptedmedia/SimpleContentDecryptionModuleResultPromise.h"
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "wtf/RefPtr.h"
@@ -82,17 +82,26 @@ class MediaKeys::PendingAction final
 class SetCertificateResultPromise
     : public ContentDecryptionModuleResultPromise {
  public:
-  SetCertificateResultPromise(ScriptState* scriptState)
-      : ContentDecryptionModuleResultPromise(scriptState) {}
+  SetCertificateResultPromise(ScriptState* scriptState, MediaKeys* mediaKeys)
+      : ContentDecryptionModuleResultPromise(scriptState),
+        m_mediaKeys(mediaKeys) {}
 
   ~SetCertificateResultPromise() override {}
 
   // ContentDecryptionModuleResult implementation.
-  void complete() override { resolve(true); }
+  void complete() override {
+    if (!isValidToFulfillPromise())
+      return;
+
+    resolve(true);
+  }
 
   void completeWithError(WebContentDecryptionModuleException exceptionCode,
                          unsigned long systemCode,
                          const WebString& errorMessage) override {
+    if (!isValidToFulfillPromise())
+      return;
+
     // The EME spec specifies that "If the Key System implementation does
     // not support server certificates, return a promise resolved with
     // false." So convert any NOTSUPPORTEDERROR into resolving with false.
@@ -104,6 +113,14 @@ class SetCertificateResultPromise
     ContentDecryptionModuleResultPromise::completeWithError(
         exceptionCode, systemCode, errorMessage);
   }
+
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_mediaKeys);
+    ContentDecryptionModuleResultPromise::trace(visitor);
+  }
+
+ private:
+  Member<MediaKeys> m_mediaKeys;
 };
 
 MediaKeys* MediaKeys::create(
@@ -194,7 +211,7 @@ ScriptPromise MediaKeys::setServerCertificate(
 
   // 4. Let promise be a new promise.
   SetCertificateResultPromise* result =
-      new SetCertificateResultPromise(scriptState);
+      new SetCertificateResultPromise(scriptState, this);
   ScriptPromise promise = result->promise();
 
   // 5. Run the following steps asynchronously (documented in timerFired()).

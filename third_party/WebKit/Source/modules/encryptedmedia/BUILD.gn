@@ -29,7 +29,5 @@ blink_modules_sources("encryptedmedia") {
     "MediaKeysController.h",
     "NavigatorRequestMediaKeySystemAccess.cpp",
     "NavigatorRequestMediaKeySystemAccess.h",
-    "SimpleContentDecryptionModuleResultPromise.cpp",
-    "SimpleContentDecryptionModuleResultPromise.h",
   ]
 }

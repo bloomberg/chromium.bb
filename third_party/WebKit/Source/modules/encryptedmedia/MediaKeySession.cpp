@@ -38,7 +38,6 @@
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
-#include "modules/encryptedmedia/SimpleContentDecryptionModuleResultPromise.h"
 #include "platform/ContentDecryptionModuleResult.h"
 #include "platform/ContentType.h"
 #include "platform/Timer.h"
@@ -231,6 +230,9 @@ class NewSessionResultPromise : public ContentDecryptionModuleResultPromise {
   // ContentDecryptionModuleResult implementation.
   void completeWithSession(
       WebContentDecryptionModuleResult::SessionStatus status) override {
+    if (!isValidToFulfillPromise())
+      return;
+
     if (status != WebContentDecryptionModuleResult::NewSession) {
       NOTREACHED();
       reject(InvalidStateError, "Unexpected completion.");
@@ -264,6 +266,9 @@ class LoadSessionResultPromise : public ContentDecryptionModuleResultPromise {
   // ContentDecryptionModuleResult implementation.
   void completeWithSession(
       WebContentDecryptionModuleResult::SessionStatus status) override {
+    if (!isValidToFulfillPromise())
+      return;
+
     switch (status) {
       case WebContentDecryptionModuleResult::NewSession:
         m_session->finishLoad();
@@ -289,6 +294,36 @@ class LoadSessionResultPromise : public ContentDecryptionModuleResultPromise {
   }
 
  private:
+  Member<MediaKeySession> m_session;
+};
+
+// This class wraps the promise resolver used by update/close/remove. The
+// implementation of complete() will resolve the promise with void. All other
+// complete() methods are not expected to be called (and will reject the
+// promise).
+class SimpleResultPromise : public ContentDecryptionModuleResultPromise {
+ public:
+  SimpleResultPromise(ScriptState* scriptState, MediaKeySession* session)
+      : ContentDecryptionModuleResultPromise(scriptState), m_session(session) {}
+
+  ~SimpleResultPromise() override {}
+
+  // ContentDecryptionModuleResultPromise implementation.
+  void complete() override {
+    if (!isValidToFulfillPromise())
+      return;
+
+    resolve();
+  }
+
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_session);
+    ContentDecryptionModuleResultPromise::trace(visitor);
+  }
+
+ private:
+  // Keep track of the MediaKeySession that created this promise so that it
+  // remains reachable as long as this promise is reachable.
   Member<MediaKeySession> m_session;
 };
 
@@ -546,8 +581,7 @@ ScriptPromise MediaKeySession::update(ScriptState* scriptState,
       DOMArrayBuffer::create(response.data(), response.byteLength());
 
   // 4. Let promise be a new promise.
-  SimpleContentDecryptionModuleResultPromise* result =
-      new SimpleContentDecryptionModuleResultPromise(scriptState);
+  SimpleResultPromise* result = new SimpleResultPromise(scriptState, this);
   ScriptPromise promise = result->promise();
 
   // 5. Run the following steps asynchronously (documented in
@@ -580,8 +614,7 @@ ScriptPromise MediaKeySession::close(ScriptState* scriptState) {
     return ScriptPromise::cast(scriptState, ScriptValue());
 
   // 3. Let promise be a new promise.
-  SimpleContentDecryptionModuleResultPromise* result =
-      new SimpleContentDecryptionModuleResultPromise(scriptState);
+  SimpleResultPromise* result = new SimpleResultPromise(scriptState, this);
   ScriptPromise promise = result->promise();
 
   // 4. Run the following steps asynchronously (documented in
@@ -627,8 +660,7 @@ ScriptPromise MediaKeySession::remove(ScriptState* scriptState) {
   }
 
   // 4. Let promise be a new promise.
-  SimpleContentDecryptionModuleResultPromise* result =
-      new SimpleContentDecryptionModuleResultPromise(scriptState);
+  SimpleResultPromise* result = new SimpleResultPromise(scriptState, this);
   ScriptPromise promise = result->promise();
 
   // 5. Run the following steps asynchronously (documented in
