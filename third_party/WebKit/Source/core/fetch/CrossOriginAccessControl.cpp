@@ -63,6 +63,37 @@ void updateRequestForAccessControl(ResourceRequest& request,
     request.setHTTPOrigin(securityOrigin);
 }
 
+// Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
+static AtomicString createAccessControlRequestHeadersHeader(
+    const HTTPHeaderMap& headers) {
+  Vector<String> filteredHeaders;
+  for (const auto& header : headers) {
+    if (FetchUtils::isSimpleHeader(header.key, header.value)) {
+      // Exclude simple headers.
+      continue;
+    }
+    if (equalIgnoringCase(header.key, "referer")) {
+      // When the request is from a Worker, referrer header was added by
+      // WorkerThreadableLoader. But it should not be added to
+      // Access-Control-Request-Headers header.
+      continue;
+    }
+    filteredHeaders.append(header.key.lower());
+  }
+
+  // Sort header names lexicographically.
+  std::sort(filteredHeaders.begin(), filteredHeaders.end(),
+            WTF::codePointCompareLessThan);
+  StringBuilder headerBuffer;
+  for (const String& header : filteredHeaders) {
+    if (!headerBuffer.isEmpty())
+      headerBuffer.append(", ");
+    headerBuffer.append(header);
+  }
+
+  return AtomicString(headerBuffer.toString());
+}
+
 ResourceRequest createAccessControlPreflightRequest(
     const ResourceRequest& request,
     const SecurityOrigin* securityOrigin) {
@@ -81,35 +112,10 @@ ResourceRequest createAccessControlPreflightRequest(
         HTTPNames::Access_Control_Request_External, "true");
   }
 
-  const HTTPHeaderMap& requestHeaderFields = request.httpHeaderFields();
-
-  if (requestHeaderFields.size() > 0) {
-    // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
-    Vector<String> headers;
-    for (const auto& header : requestHeaderFields) {
-      if (FetchUtils::isSimpleHeader(header.key, header.value)) {
-        // Exclude simple headers.
-        continue;
-      }
-      if (equalIgnoringCase(header.key, "referer")) {
-        // When the request is from a Worker, referrer header was added by
-        // WorkerThreadableLoader. But it should not be added to
-        // Access-Control-Request-Headers header.
-        continue;
-      }
-      headers.append(header.key.lower());
-    }
-    // Sort header names lexicographically.
-    std::sort(headers.begin(), headers.end(), WTF::codePointCompareLessThan);
-    StringBuilder headerBuffer;
-    for (const String& header : headers) {
-      if (!headerBuffer.isEmpty())
-        headerBuffer.append(", ");
-      headerBuffer.append(header);
-    }
+  if (request.httpHeaderFields().size() > 0) {
     preflightRequest.setHTTPHeaderField(
         HTTPNames::Access_Control_Request_Headers,
-        AtomicString(headerBuffer.toString()));
+        createAccessControlRequestHeadersHeader(request.httpHeaderFields()));
   }
 
   return preflightRequest;
