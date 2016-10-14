@@ -538,6 +538,22 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(
   }
 }
 
+static void addMarker(Document* document,
+                      const EphemeralRange& checkingRange,
+                      DocumentMarker::MarkerType type,
+                      int location,
+                      int length,
+                      const String& description,
+                      uint32_t hash) {
+  DCHECK_GT(length, 0);
+  DCHECK_GE(location, 0);
+  const EphemeralRange& rangeToMark =
+      calculateCharacterSubrange(checkingRange, location, length);
+  document->markers().addMarker(rangeToMark.startPosition(),
+                                rangeToMark.endPosition(), type, description,
+                                hash);
+}
+
 void SpellChecker::markAndReplaceFor(
     SpellCheckRequest* request,
     const Vector<TextCheckingResult>& results) {
@@ -560,118 +576,84 @@ void SpellChecker::markAndReplaceFor(
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      frame().document()->lifecycle());
+
   TextCheckingParagraph paragraph(request->checkingRange(),
                                   request->checkingRange());
 
+  // TODO(xiaochengh): The following comment does not match the current behavior
+  // and should be rewritten.
   // Expand the range to encompass entire paragraphs, since text checking needs
   // that much context.
   int selectionOffset = 0;
   int ambiguousBoundaryOffset = -1;
-  bool selectionChanged = false;
-  bool restoreSelectionAfterChange = false;
-  bool adjustSelectionForParagraphBoundaries = false;
 
-  {
-    DocumentLifecycle::DisallowTransitionScope disallowTransition(
-        frame().document()->lifecycle());
-
-    if (frame().selection().isCaret()) {
-      // Attempt to save the caret position so we can restore it later if needed
-      Position caretPosition = frame().selection().end();
-      selectionOffset = paragraph.offsetTo(caretPosition);
-      restoreSelectionAfterChange = true;
-      if (selectionOffset > 0 &&
-          (static_cast<unsigned>(selectionOffset) > paragraph.text().length() ||
-           paragraph.textCharAt(selectionOffset - 1) == newlineCharacter))
-        adjustSelectionForParagraphBoundaries = true;
-      if (selectionOffset > 0 &&
-          static_cast<unsigned>(selectionOffset) <= paragraph.text().length() &&
-          isAmbiguousBoundaryCharacter(
-              paragraph.textCharAt(selectionOffset - 1)))
-        ambiguousBoundaryOffset = selectionOffset - 1;
-    }
-
-    for (unsigned i = 0; i < results.size(); i++) {
-      int spellingRangeEndOffset = paragraph.checkingEnd();
-      const TextCheckingResult* result = &results[i];
-      int resultLocation = result->location + paragraph.checkingStart();
-      int resultLength = result->length;
-      bool resultEndsAtAmbiguousBoundary =
-          ambiguousBoundaryOffset >= 0 &&
-          resultLocation + resultLength == ambiguousBoundaryOffset;
-
-      // Only mark misspelling if:
-      // 1. Current text checking isn't done for autocorrection.
-      // 2. Result falls within spellingRange.
-      // 3. The word in question doesn't end at an ambiguous boundary. For
-      //    instance, we would not mark "wouldn'" as misspelled right after
-      //    apostrophe is typed.
-      if (result->decoration == TextDecorationTypeSpelling &&
-          resultLocation >= paragraph.checkingStart() &&
-          resultLocation + resultLength <= spellingRangeEndOffset &&
-          !resultEndsAtAmbiguousBoundary) {
-        DCHECK_GT(resultLength, 0);
-        DCHECK_GE(resultLocation, 0);
-        const EphemeralRange misspellingRange = calculateCharacterSubrange(
-            paragraph.paragraphRange(), resultLocation, resultLength);
-        frame().document()->markers().addMarker(
-            misspellingRange.startPosition(), misspellingRange.endPosition(),
-            DocumentMarker::Spelling, result->replacement, result->hash);
-      } else if (result->decoration == TextDecorationTypeGrammar &&
-                 paragraph.checkingRangeCovers(resultLocation, resultLength)) {
-        DCHECK_GT(resultLength, 0);
-        DCHECK_GE(resultLocation, 0);
-        for (unsigned j = 0; j < result->details.size(); j++) {
-          const GrammarDetail* detail = &result->details[j];
-          DCHECK_GT(detail->length, 0);
-          DCHECK_GE(detail->location, 0);
-          if (paragraph.checkingRangeCovers(resultLocation + detail->location,
-                                            detail->length)) {
-            const EphemeralRange badGrammarRange = calculateCharacterSubrange(
-                paragraph.paragraphRange(), resultLocation + detail->location,
-                detail->length);
-            frame().document()->markers().addMarker(
-                badGrammarRange.startPosition(), badGrammarRange.endPosition(),
-                DocumentMarker::Grammar, detail->userDescription, result->hash);
-          }
-        }
-      } else if (result->decoration == TextDecorationTypeInvisibleSpellcheck &&
-                 resultLocation >= paragraph.checkingStart() &&
-                 resultLocation + resultLength <= spellingRangeEndOffset) {
-        DCHECK_GT(resultLength, 0);
-        DCHECK_GE(resultLocation, 0);
-        const EphemeralRange invisibleSpellcheckRange =
-            calculateCharacterSubrange(paragraph.paragraphRange(),
-                                       resultLocation, resultLength);
-        frame().document()->markers().addMarker(
-            invisibleSpellcheckRange.startPosition(),
-            invisibleSpellcheckRange.endPosition(),
-            DocumentMarker::InvisibleSpellcheck, result->replacement,
-            result->hash);
-      }
+  if (frame().selection().isCaret()) {
+    // TODO(xiaochengh): The following comment does not match the current
+    // behavior and should be rewritten.
+    // Attempt to save the caret position so we can restore it later if needed
+    const Position& caretPosition = frame().selection().end();
+    selectionOffset = paragraph.offsetTo(caretPosition);
+    if (selectionOffset > 0 &&
+        static_cast<unsigned>(selectionOffset) <= paragraph.text().length() &&
+        isAmbiguousBoundaryCharacter(
+            paragraph.textCharAt(selectionOffset - 1))) {
+      ambiguousBoundaryOffset = selectionOffset - 1;
     }
   }
 
-  if (selectionChanged) {
-    TextCheckingParagraph extendedParagraph(paragraph);
-    // Restore the caret position if we have made any replacements
-    extendedParagraph.expandRangeToNextEnd();
-    if (restoreSelectionAfterChange && selectionOffset >= 0 &&
-        selectionOffset <= extendedParagraph.rangeLength()) {
-      EphemeralRange selectionRange =
-          extendedParagraph.subrange(0, selectionOffset);
-      frame().selection().moveTo(selectionRange.endPosition(),
-                                 TextAffinity::Downstream);
-      if (adjustSelectionForParagraphBoundaries)
-        frame().selection().modify(FrameSelection::AlterationMove,
-                                   DirectionForward, CharacterGranularity);
-    } else {
-      // If this fails for any reason, the fallback is to go one position beyond
-      // the last replacement
-      frame().selection().moveTo(frame().selection().selection().visibleEnd());
-      frame().selection().modify(FrameSelection::AlterationMove,
-                                 DirectionForward, CharacterGranularity);
+  const int spellingRangeEndOffset = paragraph.checkingEnd();
+  for (const TextCheckingResult& result : results) {
+    const int resultLocation = result.location + paragraph.checkingStart();
+    const int resultLength = result.length;
+    const bool resultEndsAtAmbiguousBoundary =
+        ambiguousBoundaryOffset >= 0 &&
+        resultLocation + resultLength == ambiguousBoundaryOffset;
+
+    // Only mark misspelling if:
+    // 1. Result falls within spellingRange.
+    // 2. The word in question doesn't end at an ambiguous boundary. For
+    //    instance, we would not mark "wouldn'" as misspelled right after
+    //    apostrophe is typed.
+    switch (result.decoration) {
+      case TextDecorationTypeSpelling:
+        if (resultLocation < paragraph.checkingStart() ||
+            resultLocation + resultLength > spellingRangeEndOffset ||
+            resultEndsAtAmbiguousBoundary)
+          continue;
+        addMarker(frame().document(), paragraph.checkingRange(),
+                  DocumentMarker::Spelling, resultLocation, resultLength,
+                  result.replacement, result.hash);
+        continue;
+
+      case TextDecorationTypeGrammar:
+        if (!paragraph.checkingRangeCovers(resultLocation, resultLength))
+          continue;
+        DCHECK_GT(resultLength, 0);
+        DCHECK_GE(resultLocation, 0);
+        for (const GrammarDetail& detail : result.details) {
+          DCHECK_GT(detail.length, 0);
+          DCHECK_GE(detail.location, 0);
+          if (!paragraph.checkingRangeCovers(resultLocation + detail.location,
+                                             detail.length))
+            continue;
+          addMarker(frame().document(), paragraph.checkingRange(),
+                    DocumentMarker::Grammar, resultLocation + detail.location,
+                    detail.length, result.replacement, result.hash);
+        }
+        continue;
+
+      case TextDecorationTypeInvisibleSpellcheck:
+        if (resultLocation < paragraph.checkingStart() ||
+            resultLocation + resultLength > spellingRangeEndOffset)
+          continue;
+        addMarker(frame().document(), paragraph.checkingRange(),
+                  DocumentMarker::InvisibleSpellcheck, resultLocation,
+                  resultLength, result.replacement, result.hash);
+        continue;
     }
+    NOTREACHED();
   }
 }
 
