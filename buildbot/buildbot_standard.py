@@ -400,16 +400,18 @@ def BuildScript(status, context):
       # hoping that the host toolchain will provide support.
       configure_args = []
       if context.Linux():
-        cxx = 'CXX=../../third_party/llvm-build/Release+Asserts/bin/clang++ '
+        cc = 'CC=../../third_party/llvm-build/Release+Asserts/bin/clang'
+        cxx = 'CXX=../../third_party/llvm-build/Release+Asserts/bin/clang++'
+        flags = ''
         if context['arch'] == '32':
-          cxx += '-m32'
+          flags += ' -m32'
           sysroot_arch = 'i386'
         else:
-          cxx += '-m64'
+          flags += ' -m64'
           sysroot_arch = 'amd64'
-        cxx += (' --sysroot=../../build/linux/debian_wheezy_%s-sysroot' %
-                sysroot_arch)
-        configure_args += [cxx]
+        flags += (' --sysroot=../../build/linux/debian_wheezy_%s-sysroot' %
+                  sysroot_arch)
+        configure_args += [cc + flags, cxx + flags]
         configure_args += ['CXXFLAGS=-I../..']  # For third_party/lss
       Command(context, cwd='breakpad-out',
               cmd=['bash', '../../breakpad/configure'] + configure_args)
