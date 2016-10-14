@@ -232,6 +232,17 @@ void MimeHandlerStreamManager::EmbedderObserver::DidStartNavigation(
 void MimeHandlerStreamManager::EmbedderObserver::RenderFrameHostChanged(
     content::RenderFrameHost* old_host,
     content::RenderFrameHost* new_host) {
+  // If the old_host is null, then it means that a subframe is being created.
+  // Don't treat this like a host change.
+  if (!old_host)
+    return;
+
+  // If this is an unrelated host, ignore.
+  if ((old_host->GetRoutingID() != render_frame_id_) ||
+      (old_host->GetProcess()->GetID() != render_process_id_)) {
+    return;
+  }
+
   new_host_ = new_host;
   // Update the RFID, RPIDs to those of the new RFH. This ensures
   // that if the new RFH gets deleted before loading the stream, we will

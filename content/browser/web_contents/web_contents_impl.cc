@@ -309,6 +309,8 @@ WebContents* WebContents::FromRenderFrameHost(RenderFrameHost* rfh) {
 WebContents* WebContents::FromFrameTreeNodeId(int frame_tree_node_id) {
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  if (!frame_tree_node)
+    return nullptr;
   return FromRenderFrameHost(frame_tree_node->current_frame_host());
 }
 
