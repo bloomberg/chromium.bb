@@ -87,6 +87,16 @@ TEST_F(SupervisedUserURLFilterTest, EffectiveURL) {
   EXPECT_TRUE(IsURLWhitelisted("https://cdn.ampproject.org/c/s/example.com"));
   EXPECT_FALSE(IsURLWhitelisted("https://cdn.ampproject.org/c/other.com"));
 
+  EXPECT_FALSE(IsURLWhitelisted("https://sub.cdn.ampproject.org"));
+  EXPECT_TRUE(IsURLWhitelisted("https://sub.cdn.ampproject.org/c/example.com"));
+  EXPECT_TRUE(
+      IsURLWhitelisted("https://sub.cdn.ampproject.org/c/www.example.com"));
+  EXPECT_TRUE(
+      IsURLWhitelisted("https://sub.cdn.ampproject.org/c/example.com/path"));
+  EXPECT_TRUE(
+      IsURLWhitelisted("https://sub.cdn.ampproject.org/c/s/example.com"));
+  EXPECT_FALSE(IsURLWhitelisted("https://sub.cdn.ampproject.org/c/other.com"));
+
   EXPECT_FALSE(IsURLWhitelisted("https://www.google.com"));
   EXPECT_FALSE(IsURLWhitelisted("https://www.google.com/amp/"));
   EXPECT_TRUE(IsURLWhitelisted("https://www.google.com/amp/example.com"));

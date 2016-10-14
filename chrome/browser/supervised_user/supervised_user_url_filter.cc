@@ -562,8 +562,8 @@ void SupervisedUserURLFilter::SetBlockingTaskRunnerForTesting(
 }
 
 GURL SupervisedUserURLFilter::GetEmbeddedURL(const GURL& url) const {
-  // Check for "cdn.ampproject.org" URLs.
-  if (url.host_piece() == kAmpCacheHost) {
+  // Check for "*.cdn.ampproject.org" URLs.
+  if (url.DomainIs(kAmpCacheHost)) {
     std::string s;
     std::string embedded;
     if (re2::RE2::FullMatch(url.path(), amp_cache_path_regex_, &s, &embedded)) {
