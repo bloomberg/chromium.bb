@@ -95,19 +95,16 @@ void PointerWatcherAdapter::NotifyWatchers(
     const ui::LocatedEvent& original_event) {
   const gfx::Point screen_location(GetLocationInScreen(original_event));
   views::Widget* target_widget = GetTargetWidget(original_event);
-  FOR_EACH_OBSERVER(
-      views::PointerWatcher, drag_watchers_,
-      OnPointerEventObserved(event, screen_location, target_widget));
+  for (auto& observer : drag_watchers_)
+    observer.OnPointerEventObserved(event, screen_location, target_widget);
   if (original_event.type() != ui::ET_TOUCH_MOVED &&
       original_event.type() != ui::ET_MOUSE_DRAGGED) {
-    FOR_EACH_OBSERVER(
-        views::PointerWatcher, move_watchers_,
-        OnPointerEventObserved(event, screen_location, target_widget));
+    for (auto& observer : move_watchers_)
+      observer.OnPointerEventObserved(event, screen_location, target_widget);
   }
   if (event.type() != ui::ET_POINTER_MOVED) {
-    FOR_EACH_OBSERVER(
-        views::PointerWatcher, non_move_watchers_,
-        OnPointerEventObserved(event, screen_location, target_widget));
+    for (auto& observer : non_move_watchers_)
+      observer.OnPointerEventObserved(event, screen_location, target_widget);
   }
 }
 
