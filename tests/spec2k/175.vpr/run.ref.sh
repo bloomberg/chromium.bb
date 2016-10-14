@@ -16,10 +16,8 @@ if [[ "${EMU_HACK}" != "no" ]] ; then
   touch costs.out place.out route.out
 fi
 
-ARGS1="-nodisp -place_only -init_t 5 -exit_t 0x1.47ae147ae147bp-8 -alpha_t \
-        0x1.e1e4f765fd8aep-1 -inner_num 2"
-ARGS2="-nodisp -route_only -route_chan_width 15 -pres_fac_mult 2 -acc_fac 1 \
-       -first_iter_pres_fac 4 -initial_pres_fac 8"
+ARGS1="-nodisp -place_only -init_t 5 -exit_t 0.005 -alpha_t 0.9412 -inner_num 2"
+ARGS2="-nodisp -route_only -route_chan_width 15 -pres_fac_mult 2 -acc_fac 1 -first_iter_pres_fac 4 -initial_pres_fac 8"
 
 
 ${PREFIX} $1  ${DASHDASH} net.in arch.in place.out dum.out ${ARGS1} \

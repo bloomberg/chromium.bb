@@ -1,2 +1,0 @@
-// TODO: Revert when fixed in WebAssembly scanf(), both here and in run.*.sh
-Change float from decimal encoding to hexadecimal encoding to avoid scanf("%f") bug in WebAssembly
