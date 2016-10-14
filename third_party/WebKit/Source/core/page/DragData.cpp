@@ -131,7 +131,7 @@ DocumentFragment* DragData::asFragment(LocalFrame* frame) const {
     String html;
     KURL baseURL;
     m_platformDragData->htmlAndBaseURL(html, baseURL);
-    ASSERT(frame->document());
+    DCHECK(frame->document());
     if (DocumentFragment* fragment =
             createFragmentFromMarkup(*frame->document(), html, baseURL,
                                      DisallowScriptingAndPluginContent))
