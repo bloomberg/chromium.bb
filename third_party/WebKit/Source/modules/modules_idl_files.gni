@@ -11,18 +11,20 @@ bindings_modules_output_dir = "$bindings_output_dir/modules"
 blink_modules_output_dir = "$root_gen_dir/blink/modules"
 
 modules_core_global_constructors_original_interfaces = [
+  "AudioWorkletGlobalScope",
   "CompositorWorkerGlobalScope",
   "PaintWorkletGlobalScope",
   "ServiceWorkerGlobalScope",
 ]
 
 modules_global_constructors_original_interfaces = [
-  "Window",
+  "AudioWorkletGlobalScope",
   "CompositorWorkerGlobalScope",
   "DedicatedWorkerGlobalScope",
   "PaintWorkletGlobalScope",
   "ServiceWorkerGlobalScope",
   "SharedWorkerGlobalScope",
+  "Window",
 ]
 
 # The interfaces aren't technically files, but we can treat them as file names
@@ -274,6 +276,7 @@ modules_idl_files =
                     "webaudio/AudioParam.idl",
                     "webaudio/AudioProcessingEvent.idl",
                     "webaudio/AudioSourceNode.idl",
+                    "webaudio/AudioWorkletGlobalScope.idl",
                     "webaudio/BaseAudioContext.idl",
                     "webaudio/BiquadFilterNode.idl",
                     "webaudio/ChannelMergerNode.idl",

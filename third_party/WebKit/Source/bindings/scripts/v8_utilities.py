@@ -248,6 +248,7 @@ def deprecate_as(member):
 # [Exposed]
 EXPOSED_EXECUTION_CONTEXT_METHOD = {
     'AnimationWorklet': 'isAnimationWorkletGlobalScope',
+    'AudioWorklet': 'isAudioWorkletGlobalScope',
     'CompositorWorker': 'isCompositorWorkerGlobalScope',
     'DedicatedWorker': 'isDedicatedWorkerGlobalScope',
     'PaintWorklet': 'isPaintWorkletGlobalScope',

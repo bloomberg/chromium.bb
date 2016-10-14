@@ -272,6 +272,7 @@ source_set("unit_tests") {
     "remoteplayback/RemotePlaybackTest.cpp",
     "serviceworkers/ServiceWorkerContainerTest.cpp",
     "webaudio/AudioBasicProcessorHandlerTest.cpp",
+    "webaudio/AudioWorkletThreadTest.cpp",
     "webaudio/ConvolverNodeTest.cpp",
     "webaudio/DynamicsCompressorNodeTest.cpp",
     "webaudio/ScriptProcessorNodeTest.cpp",
