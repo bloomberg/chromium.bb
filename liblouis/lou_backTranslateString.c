@@ -440,7 +440,9 @@ isBegWord ()
 static int
 isEndWord ()
 {
-/*See if this is really the end of a word. */
+  if (mode & partialTrans)
+    return 0;
+  /*See if this is really the end of a word. */
   int k;
   const TranslationTableCharacter *dots;
   TranslationTableOffset testRuleOffset;
@@ -700,6 +702,8 @@ back_selectRule ()
 		    case CTO_LargeSign:
 		      return;
 		    case CTO_WholeWord:
+		      if (mode & partialTrans)
+			break;
 		      if (itsALetter || itsANumber)
 			break;
 		    case CTO_Contraction:
@@ -708,6 +712,8 @@ back_selectRule ()
 			return;
 		      break;
 		    case CTO_LowWord:
+		      if (mode & partialTrans)
+			break;
 		      if ((beforeAttributes & CTC_Space) && (afterAttributes
 							     & CTC_Space) &&
 			  (previousOpcode != CTO_JoinableWord))
@@ -717,7 +723,7 @@ back_selectRule ()
 		    case CTO_JoinableWord:
 		      if ((beforeAttributes & (CTC_Space |
 					       CTC_Punctuation))
-			  && !((afterAttributes & CTC_Space)))
+			  && (!(afterAttributes & CTC_Space) || mode & partialTrans))
 			return;
 		      break;
 		    case CTO_SuffixableWord:
