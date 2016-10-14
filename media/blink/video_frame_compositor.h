@@ -19,6 +19,12 @@
 #include "media/blink/media_blink_export.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace base {
+namespace trace_event {
+class AutoOpenCloseEvent;
+}
+}
+
 namespace media {
 class VideoFrame;
 
@@ -159,6 +165,9 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   // These values are updated and read from the media and compositor threads.
   base::Lock callback_lock_;
   VideoRendererSink::RenderCallback* callback_;
+
+  // AutoOpenCloseEvent for begin/end events.
+  std::unique_ptr<base::trace_event::AutoOpenCloseEvent> auto_open_close_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositor);
 };

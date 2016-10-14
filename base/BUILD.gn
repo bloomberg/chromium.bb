@@ -893,6 +893,8 @@ component("base") {
     "timer/mock_timer.h",
     "timer/timer.cc",
     "timer/timer.h",
+    "trace_event/auto_open_close_event.cc",
+    "trace_event/auto_open_close_event.h",
     "trace_event/blame_context.cc",
     "trace_event/blame_context.h",
     "trace_event/common/trace_event_common.h",
