@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -16,6 +17,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Records UMA stats for which actions the user takes on the NTP in the
@@ -63,6 +67,27 @@ public final class NewTabPageUma {
 
     // The number of possible NTP impression types
     private static final int NUM_NTP_IMPRESSION = 2;
+
+    /** Possible results when sizing the NewTabPageLayout.
+     * Do not remove or change existing values other than NUM_NTP_LAYOUT_RESULTS. */
+    @IntDef({NTP_LAYOUT_DOES_NOT_FIT, NTP_LAYOUT_FITS_WITHOUT_FIELD_TRIAL,
+             NTP_LAYOUT_FITS_WITH_FIELD_TRIAL, NUM_NTP_LAYOUT_RESULTS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface NTPLayoutResult {}
+    /** The NewTabPageLayout does not fit above the fold and it is displayed as is. */
+    public static final int NTP_LAYOUT_DOES_NOT_FIT = 0;
+    /** The NewTabPageLayout does not fit above the fold, but we added some extra space so that
+     * Most Likely is cut off, indicating to the user they can scroll. */
+    public static final int NTP_LAYOUT_DOES_NOT_FIT_PUSH_MOST_LIKELY = 1;
+    /** The NewTabPageLayout fits above the fold, the field trial is not enabled. */
+    public static final int NTP_LAYOUT_FITS_NO_FIELD_TRIAL = 2;
+    /** The NewTabPageLayout fits above the fold, but cannot allow space for the field trial
+     * experiment. */
+    public static final int NTP_LAYOUT_FITS_WITHOUT_FIELD_TRIAL = 3;
+    /** The NewTabPageLayout fits above the fold allowing space for the field trial experiment. */
+    public static final int NTP_LAYOUT_FITS_WITH_FIELD_TRIAL = 4;
+    /** The number of possible results for the NewTabPageLayout calculations. */
+    public static final int NUM_NTP_LAYOUT_RESULTS = 5;
 
     /**
      * Records an action taken by the user on the NTP.
@@ -125,6 +150,15 @@ public final class NewTabPageUma {
             default:
                 return;
         }
+    }
+
+    /**
+     * Records how the NewTabPageLayout fits on the user's screen.
+     * @param result result key, one of {@link NTPLayoutResult}'s values.
+     */
+    public static void recordNTPLayoutResult(@NTPLayoutResult int result) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "NewTabPage.Layout", result, NUM_NTP_LAYOUT_RESULTS);
     }
 
     /**

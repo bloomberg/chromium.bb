@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.NewTabPageUma.NTPLayoutResult;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 
@@ -56,6 +57,8 @@ public class NewTabPageLayout extends LinearLayout {
     private LogoView mSearchProviderLogoView;
     private View mSearchBoxView;
     private MostVisitedLayout mMostVisitedLayout;
+
+    private boolean mLayoutResultRecorded;
 
     /**
      * Constructor for inflating from XML.
@@ -136,16 +139,19 @@ public class NewTabPageLayout extends LinearLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         boolean hasSpaceForPeekingCard = false;
-        int maxAboveTheFoldHeight = mParentViewportHeight - mPeekingCardHeight - mTabStripHeight
-                - mFieldTrialLayoutAdjustment;
+        int spaceToFill = mParentViewportHeight - mPeekingCardHeight - mTabStripHeight;
+        @NTPLayoutResult int layoutResult;
 
         // We need to make sure we have just enough space to show the peeking card.
-        if (getMeasuredHeight() > maxAboveTheFoldHeight) {
+        if (getMeasuredHeight() > spaceToFill) {
+            layoutResult = NewTabPageUma.NTP_LAYOUT_DOES_NOT_FIT;
+
             // We don't have enough, we will push the peeking card completely below the fold
             // and let MostVisited get cut to make it clear that the page is scrollable.
             if (mMostVisitedLayout.getChildCount() > 0) {
-                // Add some extra space if needed.
-                int currentBleed = getMeasuredHeight() - mParentViewportHeight;
+                // Add some extra space if needed (the 'bleed' is the amount of the layout that
+                // will be cut off by the bottom of the screen).
+                int currentBleed = getMeasuredHeight() - mParentViewportHeight - mTabStripHeight;
                 int minimumBleed =
                         (int) (mMostVisitedLayout.getChildAt(0).getMeasuredHeight() * 0.44);
                 if (currentBleed < minimumBleed) {
@@ -156,17 +162,35 @@ public class NewTabPageLayout extends LinearLayout {
                     mSearchBoxSpacer.setVisibility(View.INVISIBLE);
                     mMostVisitedLayout.setExtraVerticalSpacing((int) (extraBleed * 0.5));
                     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+                    layoutResult = NewTabPageUma.NTP_LAYOUT_DOES_NOT_FIT_PUSH_MOST_LIKELY;
                 }
             }
+
         } else {
             hasSpaceForPeekingCard = true;
             // We leave more than or just enough space needed for the peeking card. Redistribute
             // any weighted space.
 
+            // There is a field trial experiment to determine the effect of raising the peeking
+            // card, allowing the user to see some of it's contents when scrolled to the top. This
+            // is achieved by making the NewTabPageLayout smaller.
+            // If there is enough space, reduce the space we are going to fill.
+            if (mFieldTrialLayoutAdjustment != 0f) {
+                if (getMeasuredHeight() < spaceToFill - mFieldTrialLayoutAdjustment) {
+                    spaceToFill -= mFieldTrialLayoutAdjustment;
+                    layoutResult = NewTabPageUma.NTP_LAYOUT_FITS_WITH_FIELD_TRIAL;
+                } else {
+                    layoutResult = NewTabPageUma.NTP_LAYOUT_FITS_WITHOUT_FIELD_TRIAL;
+                }
+            } else {
+                layoutResult = NewTabPageUma.NTP_LAYOUT_FITS_NO_FIELD_TRIAL;
+            }
+
             // Call super.onMeasure with mode EXACTLY and the target height to allow the top
             // spacer (which has a weight of 1) to grow and take up the remaining space.
             heightMeasureSpec =
-                    MeasureSpec.makeMeasureSpec(maxAboveTheFoldHeight, MeasureSpec.EXACTLY);
+                    MeasureSpec.makeMeasureSpec(spaceToFill, MeasureSpec.EXACTLY);
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
             distributeExtraSpace(mTopSpacer.getMeasuredHeight());
@@ -175,6 +199,13 @@ public class NewTabPageLayout extends LinearLayout {
         assert getParent() instanceof NewTabPageRecyclerView;
         NewTabPageRecyclerView recyclerView = (NewTabPageRecyclerView) getParent();
         recyclerView.setHasSpaceForPeekingCard(hasSpaceForPeekingCard);
+
+        // The first few runs of this method occur before the Most Visited layout has loaded it's
+        // contents. We want to record what the user sees when the layout has stabilized.
+        if (mMostVisitedLayout.getChildCount() > 0 && !mLayoutResultRecorded) {
+            mLayoutResultRecorded = true;
+            NewTabPageUma.recordNTPLayoutResult(layoutResult);
+        }
     }
 
     /**
