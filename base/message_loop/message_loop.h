@@ -320,6 +320,10 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Add/RemoveNestingObserver() on this MessageLoop will crash.
   void DisallowNesting() { allow_nesting_ = false; }
 
+  // Disallow task observers. After this is called, calling
+  // Add/RemoveTaskObserver() on this MessageLoop will crash.
+  void DisallowTaskObservers() { allow_task_observers_ = false; }
+
   //----------------------------------------------------------------------------
  protected:
   std::unique_ptr<MessagePump> pump_;
@@ -457,6 +461,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
   // Whether nesting is allowed.
   bool allow_nesting_ = true;
+
+  // Whether task observers are allowed.
+  bool allow_task_observers_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(MessageLoop);
 };

@@ -190,7 +190,9 @@ void BrowserThreadImpl::Init() {
       BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING) ||
       BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER) ||
       BrowserThread::CurrentlyOn(BrowserThread::CACHE)) {
-    base::MessageLoop::current()->DisallowNesting();
+    base::MessageLoop* message_loop = base::MessageLoop::current();
+    message_loop->DisallowNesting();
+    message_loop->DisallowTaskObservers();
   }
 
   using base::subtle::AtomicWord;
