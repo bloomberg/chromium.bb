@@ -94,8 +94,8 @@ uint32_t X11DesktopHandler::DispatchEvent(const ui::PlatformEvent& event) {
       if (event->xproperty.atom ==
           atom_cache_.GetAtom("_NET_CURRENT_DESKTOP")) {
         if (UpdateWorkspace()) {
-          FOR_EACH_OBSERVER(views::X11DesktopHandlerObserver, observers_,
-                            OnWorkspaceChanged(workspace_));
+          for (views::X11DesktopHandlerObserver& observer : observers_)
+            observer.OnWorkspaceChanged(workspace_);
         }
       }
       break;

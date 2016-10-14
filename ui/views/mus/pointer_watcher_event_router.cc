@@ -98,13 +98,11 @@ void PointerWatcherEventRouter::OnPointerEventObserved(
   // to store screen coordinates. Screen coordinates really should be returned
   // separately. See http://crbug.com/608547
   gfx::Point location_in_screen = event.AsLocatedEvent()->root_location();
-  FOR_EACH_OBSERVER(
-      PointerWatcher, move_watchers_,
-      OnPointerEventObserved(event, location_in_screen, target_widget));
+  for (PointerWatcher& observer : move_watchers_)
+    observer.OnPointerEventObserved(event, location_in_screen, target_widget);
   if (event.type() != ui::ET_POINTER_MOVED) {
-    FOR_EACH_OBSERVER(
-        PointerWatcher, non_move_watchers_,
-        OnPointerEventObserved(event, location_in_screen, target_widget));
+    for (PointerWatcher& observer : non_move_watchers_)
+      observer.OnPointerEventObserved(event, location_in_screen, target_widget);
   }
 }
 
@@ -127,10 +125,10 @@ void PointerWatcherEventRouter::OnWindowTreeCaptureChanged(
   const ui::PointerEvent event(mouse_event);
   gfx::Point location_in_screen =
       display::Screen::GetScreen()->GetCursorScreenPoint();
-  FOR_EACH_OBSERVER(PointerWatcher, move_watchers_,
-                    OnPointerEventObserved(event, location_in_screen, nullptr));
-  FOR_EACH_OBSERVER(PointerWatcher, non_move_watchers_,
-                    OnPointerEventObserved(event, location_in_screen, nullptr));
+  for (PointerWatcher& observer : move_watchers_)
+    observer.OnPointerEventObserved(event, location_in_screen, nullptr);
+  for (PointerWatcher& observer : non_move_watchers_)
+    observer.OnPointerEventObserved(event, location_in_screen, nullptr);
 }
 
 void PointerWatcherEventRouter::OnDidDestroyClient(

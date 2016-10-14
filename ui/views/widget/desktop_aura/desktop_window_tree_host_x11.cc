@@ -2170,9 +2170,8 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
     case MapNotify: {
       window_mapped_ = true;
 
-      FOR_EACH_OBSERVER(DesktopWindowTreeHostObserverX11,
-                        observer_list_,
-                        OnWindowMapped(xwindow_));
+      for (DesktopWindowTreeHostObserverX11& observer : observer_list_)
+        observer.OnWindowMapped(xwindow_);
 
       UpdateMinAndMaxSize();
 
@@ -2192,9 +2191,8 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       has_pointer_grab_ = false;
       has_pointer_focus_ = false;
       has_window_focus_ = false;
-      FOR_EACH_OBSERVER(DesktopWindowTreeHostObserverX11,
-                        observer_list_,
-                        OnWindowUnmapped(xwindow_));
+      for (DesktopWindowTreeHostObserverX11& observer : observer_list_)
+        observer.OnWindowUnmapped(xwindow_);
       break;
     }
     case ClientMessage: {

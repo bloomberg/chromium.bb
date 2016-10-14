@@ -53,9 +53,8 @@ class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
   void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
     switch (message) {
       case WM_WTSSESSION_CHANGE:
-        FOR_EACH_OBSERVER(WindowsSessionChangeObserver,
-                          observer_list_,
-                          OnSessionChange(wparam));
+        for (WindowsSessionChangeObserver& observer : observer_list_)
+          observer.OnSessionChange(wparam);
         break;
       case WM_DESTROY:
         RemoveSingletonHwndObserver();
@@ -96,9 +95,8 @@ class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
     // Under both cases we are in shutdown, which means no other worker threads
     // can be running.
     WTSUnRegisterSessionNotification(gfx::SingletonHwnd::GetInstance()->hwnd());
-    FOR_EACH_OBSERVER(WindowsSessionChangeObserver,
-                      observer_list_,
-                      ClearCallback());
+    for (WindowsSessionChangeObserver& observer : observer_list_)
+      observer.ClearCallback();
   }
 
   base::ObserverList<WindowsSessionChangeObserver, true> observer_list_;

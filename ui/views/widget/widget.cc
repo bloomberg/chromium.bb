@@ -435,9 +435,8 @@ void Widget::NotifyNativeViewHierarchyChanged() {
 }
 
 void Widget::NotifyWillRemoveView(View* view) {
-  FOR_EACH_OBSERVER(WidgetRemovalsObserver,
-                    removals_observers_,
-                    OnWillRemoveView(this, view));
+  for (WidgetRemovalsObserver& observer : removals_observers_)
+    observer.OnWillRemoveView(this, view);
 }
 
 // Converted methods (see header) ----------------------------------------------
@@ -579,14 +578,17 @@ void Widget::Close() {
     if (is_top_level() && focus_manager_.get())
       focus_manager_->SetFocusedView(NULL);
 
-    FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetClosing(this));
+    for (WidgetObserver& observer : observers_)
+      observer.OnWidgetClosing(this);
+
     native_widget_->Close();
     widget_closed_ = true;
   }
 }
 
 void Widget::CloseNow() {
-  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetClosing(this));
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetClosing(this);
   native_widget_->CloseNow();
 }
 
@@ -1026,8 +1028,8 @@ void Widget::OnNativeWidgetActivationChanged(bool active) {
   if (!active && native_widget_initialized_)
     SaveWindowPlacement();
 
-  FOR_EACH_OBSERVER(WidgetObserver, observers_,
-                    OnWidgetActivationChanged(this, active));
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetActivationChanged(this, active);
 
   if (non_client_view())
     non_client_view()->frame_view()->ActivationChanged(active);
@@ -1042,16 +1044,16 @@ void Widget::OnNativeBlur() {
 }
 
 void Widget::OnNativeWidgetVisibilityChanging(bool visible) {
-  FOR_EACH_OBSERVER(WidgetObserver, observers_,
-                    OnWidgetVisibilityChanging(this, visible));
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetVisibilityChanging(this, visible);
 }
 
 void Widget::OnNativeWidgetVisibilityChanged(bool visible) {
   View* root = GetRootView();
   if (root)
     root->PropagateVisibilityNotifications(root, visible);
-  FOR_EACH_OBSERVER(WidgetObserver, observers_,
-                    OnWidgetVisibilityChanged(this, visible));
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetVisibilityChanged(this, visible);
   if (GetCompositor() && root && root->layer())
     root->layer()->SetVisible(visible);
 }
@@ -1062,7 +1064,8 @@ void Widget::OnNativeWidgetCreated(bool desktop_widget) {
 
   native_widget_->InitModalType(widget_delegate_->GetModalType());
 
-  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetCreated(this));
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetCreated(this);
 }
 
 void Widget::OnNativeWidgetDestroying() {
@@ -1070,14 +1073,16 @@ void Widget::OnNativeWidgetDestroying() {
   // in case that the focused view is under this root view.
   if (GetFocusManager() && root_view_)
     GetFocusManager()->ViewRemoved(root_view_.get());
-  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetDestroying(this));
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetDestroying(this);
   if (non_client_view_)
     non_client_view_->WindowClosing();
   widget_delegate_->WindowClosing();
 }
 
 void Widget::OnNativeWidgetDestroyed() {
-  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetDestroyed(this));
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetDestroyed(this);
   widget_delegate_->DeleteDelegate();
   widget_delegate_ = NULL;
   native_widget_destroyed_ = true;
@@ -1095,9 +1100,8 @@ void Widget::OnNativeWidgetMove() {
   widget_delegate_->OnWidgetMove();
   NotifyCaretBoundsChanged(GetInputMethod());
 
-  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetBoundsChanged(
-    this,
-    GetWindowBoundsInScreen()));
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetBoundsChanged(this, GetWindowBoundsInScreen());
 }
 
 void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
@@ -1108,9 +1112,8 @@ void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   NotifyCaretBoundsChanged(GetInputMethod());
   SaveWindowPlacementIfInitialized();
 
-  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetBoundsChanged(
-    this,
-    GetWindowBoundsInScreen()));
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetBoundsChanged(this, GetWindowBoundsInScreen());
 }
 
 void Widget::OnNativeWidgetWorkspaceChanged() {}

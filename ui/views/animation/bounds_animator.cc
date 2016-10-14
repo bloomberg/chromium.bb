@@ -264,16 +264,14 @@ void BoundsAnimator::AnimationContainerProgressed(
     repaint_bounds_.SetRect(0, 0, 0, 0);
   }
 
-  FOR_EACH_OBSERVER(BoundsAnimatorObserver,
-                    observers_,
-                    OnBoundsAnimatorProgressed(this));
+  for (BoundsAnimatorObserver& observer : observers_)
+    observer.OnBoundsAnimatorProgressed(this);
 
   if (!IsAnimating()) {
     // Notify here rather than from AnimationXXX to avoid deleting the animation
     // while the animation is calling us.
-    FOR_EACH_OBSERVER(BoundsAnimatorObserver,
-                      observers_,
-                      OnBoundsAnimatorDone(this));
+    for (BoundsAnimatorObserver& observer : observers_)
+      observer.OnBoundsAnimatorDone(this);
   }
 }
 
