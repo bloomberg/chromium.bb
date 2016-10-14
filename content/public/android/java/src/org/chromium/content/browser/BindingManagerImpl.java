@@ -168,7 +168,8 @@ class BindingManagerImpl implements BindingManager {
      * for the same pid).
      */
     private class ManagedConnection {
-        // Set in constructor, cleared in clearConnection().
+        // Set in constructor, cleared in clearConnection() (on a separate thread).
+        // Need to keep a local reference to avoid it being cleared while using it.
         private ChildProcessConnection mConnection;
 
         // True iff there is a strong binding kept on the service because it is working in
@@ -187,9 +188,10 @@ class BindingManagerImpl implements BindingManager {
          * @return true if the binding was removed.
          */
         private boolean removeInitialBinding() {
-            if (mConnection == null || !mConnection.isInitialBindingBound()) return false;
+            ChildProcessConnection connection = mConnection;
+            if (connection == null || !connection.isInitialBindingBound()) return false;
 
-            mConnection.removeInitialBinding();
+            connection.removeInitialBinding();
             return true;
         }
 
@@ -251,8 +253,10 @@ class BindingManagerImpl implements BindingManager {
 
         /** Removes the moderate service binding. */
         private void removeModerateBinding() {
-            if (mConnection == null || !mConnection.isModerateBindingBound()) return;
-            mConnection.removeModerateBinding();
+            ChildProcessConnection connection = mConnection;
+            if (connection == null || !connection.isModerateBindingBound()) return;
+
+            connection.removeModerateBinding();
         }
 
         /** Adds the moderate service binding. */
@@ -321,16 +325,14 @@ class BindingManagerImpl implements BindingManager {
             // When a process crashes, we can be queried about its oom status before or after the
             // connection is cleared. For the latter case, the oom status is stashed in
             // mWasOomProtected.
-            return mConnection != null
-                    ? mConnection.isOomProtectedOrWasWhenDied() : mWasOomProtected;
+            ChildProcessConnection connection = mConnection;
+            return connection != null
+                    ? connection.isOomProtectedOrWasWhenDied() : mWasOomProtected;
         }
 
         void clearConnection() {
             mWasOomProtected = mConnection.isOomProtectedOrWasWhenDied();
-            ModerateBindingPool moderateBindingPool;
-            synchronized (mModerateBindingPoolLock) {
-                moderateBindingPool = mModerateBindingPool;
-            }
+            ModerateBindingPool moderateBindingPool = mModerateBindingPool;
             if (moderateBindingPool != null) moderateBindingPool.removeConnection(this);
             mConnection = null;
         }
