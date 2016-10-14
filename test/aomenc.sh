@@ -36,8 +36,8 @@ aomenc_verify_environment() {
   fi
 }
 
-aomenc_can_encode_aom() {
-  if [ "$(aom_encode_available)" = "yes" ]; then
+aomenc_can_encode_av1() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
     echo yes
   fi
 }
@@ -58,9 +58,9 @@ y4m_input_720p() {
 }
 
 # Echo default aomenc real time encoding params. $1 is the codec, which defaults
-# to aom if unspecified.
+# to av1 if unspecified.
 aomenc_rt_params() {
-  local readonly codec="${1:-aom}"
+  local readonly codec="${1:-av1}"
   echo "--codec=${codec}
     --buf-initial-sz=500
     --buf-optimal-sz=600
