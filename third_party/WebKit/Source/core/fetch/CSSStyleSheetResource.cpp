@@ -96,9 +96,10 @@ void CSSStyleSheetResource::didAddClient(ResourceClient* c) {
     static_cast<StyleSheetResourceClient*>(c)->didAppendFirstData(this);
 
   // |c| might be removed in didAppendFirstData, so ensure it is still a client.
-  if (hasClient(c) && !isLoading())
+  if (hasClient(c) && !isLoading()) {
     static_cast<StyleSheetResourceClient*>(c)->setCSSStyleSheet(
         resourceRequest().url(), response().url(), encoding(), this);
+  }
 }
 
 const String CSSStyleSheetResource::sheetText(

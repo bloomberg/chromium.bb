@@ -81,9 +81,10 @@ XSLStyleSheetResource::XSLStyleSheetResource(
 void XSLStyleSheetResource::didAddClient(ResourceClient* c) {
   DCHECK(StyleSheetResourceClient::isExpectedType(c));
   Resource::didAddClient(c);
-  if (!isLoading())
+  if (!isLoading()) {
     static_cast<StyleSheetResourceClient*>(c)->setXSLStyleSheet(
         resourceRequest().url(), response().url(), m_sheet);
+  }
 }
 
 void XSLStyleSheetResource::checkNotify() {

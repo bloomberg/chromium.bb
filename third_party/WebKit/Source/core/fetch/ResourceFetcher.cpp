@@ -325,10 +325,11 @@ void ResourceFetcher::requestLoadStarted(unsigned long identifier,
                                          bool isStaticData) {
   if (type == ResourceLoadingFromCache &&
       resource->getStatus() == Resource::Cached &&
-      !m_validatedURLs.contains(resource->url()))
+      !m_validatedURLs.contains(resource->url())) {
     context().dispatchDidLoadResourceFromMemoryCache(
         identifier, resource, request.resourceRequest().frameType(),
         request.resourceRequest().requestContext());
+  }
 
   if (isStaticData)
     return;
@@ -523,11 +524,12 @@ Resource* ResourceFetcher::requestResource(
   if (!request.forPreload()) {
     V8DOMActivityLogger* activityLogger = nullptr;
     if (request.options().initiatorInfo.name ==
-        FetchInitiatorTypeNames::xmlhttprequest)
+        FetchInitiatorTypeNames::xmlhttprequest) {
       activityLogger = V8DOMActivityLogger::currentActivityLogger();
-    else
+    } else {
       activityLogger =
           V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+    }
 
     if (activityLogger) {
       Vector<String> argv;
@@ -551,9 +553,10 @@ Resource* ResourceFetcher::requestResource(
     if (!resource && !isDataUrl && m_archive)
       return nullptr;
   }
-  if (!resource)
+  if (!resource) {
     resource =
         memoryCache()->resourceForURL(request.url(), getCacheIdentifier());
+  }
 
   // See if we can use an existing resource from the cache. If so, we need to
   // move it to be load blocking.
@@ -689,13 +692,15 @@ void ResourceFetcher::initializeRevalidation(
       resource->response().httpHeaderField(HTTPNames::ETag);
   if (!lastModified.isEmpty() || !eTag.isEmpty()) {
     DCHECK_NE(context().getCachePolicy(), CachePolicyReload);
-    if (context().getCachePolicy() == CachePolicyRevalidate)
+    if (context().getCachePolicy() == CachePolicyRevalidate) {
       revalidatingRequest.setHTTPHeaderField(HTTPNames::Cache_Control,
                                              "max-age=0");
+    }
   }
-  if (!lastModified.isEmpty())
+  if (!lastModified.isEmpty()) {
     revalidatingRequest.setHTTPHeaderField(HTTPNames::If_Modified_Since,
                                            lastModified);
+  }
   if (!eTag.isEmpty())
     revalidatingRequest.setHTTPHeaderField(HTTPNames::If_None_Match, eTag);
 
@@ -1221,9 +1226,10 @@ void ResourceFetcher::didReceiveResponse(Resource* resource,
       resource->resourceRequest().requestContext(), resource);
   resource->responseReceived(response, std::move(handle));
   if (resource->loader() && response.httpStatusCode() >= 400 &&
-      !resource->shouldIgnoreHTTPStatusCodeErrors())
+      !resource->shouldIgnoreHTTPStatusCodeErrors()) {
     resource->loader()->didFail(nullptr,
                                 ResourceError::cancelledError(response.url()));
+  }
 }
 
 void ResourceFetcher::didReceiveData(const Resource* resource,

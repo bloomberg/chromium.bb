@@ -267,12 +267,13 @@ Resource::ResourceCallback::ResourceCallback()
           CancellableTaskFactory::create(this, &ResourceCallback::runTask)) {}
 
 void Resource::ResourceCallback::schedule(Resource* resource) {
-  if (!m_callbackTaskFactory->isPending())
+  if (!m_callbackTaskFactory->isPending()) {
     Platform::current()
         ->currentThread()
         ->scheduler()
         ->loadingTaskRunner()
         ->postTask(BLINK_FROM_HERE, m_callbackTaskFactory->cancelAndCreate());
+  }
   m_resourcesWithPendingClients.add(resource);
 }
 
@@ -579,9 +580,10 @@ bool Resource::willFollowRedirect(const ResourceRequest& newRequest,
 
 void Resource::setResponse(const ResourceResponse& response) {
   m_response = response;
-  if (m_response.wasFetchedViaServiceWorker())
+  if (m_response.wasFetchedViaServiceWorker()) {
     m_cacheHandler = ServiceWorkerResponseCachedMetadataHandler::create(
         this, m_fetcherSecurityOrigin.get());
+  }
 }
 
 void Resource::responseReceived(const ResourceResponse& response,

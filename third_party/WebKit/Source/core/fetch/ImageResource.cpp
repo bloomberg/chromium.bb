@@ -48,9 +48,10 @@ namespace blink {
 ImageResource* ImageResource::fetch(FetchRequest& request,
                                     ResourceFetcher* fetcher) {
   if (request.resourceRequest().requestContext() ==
-      WebURLRequest::RequestContextUnspecified)
+      WebURLRequest::RequestContextUnspecified) {
     request.mutableResourceRequest().setRequestContext(
         WebURLRequest::RequestContextImage);
+  }
   if (fetcher->context().pageDismissalEventBeingDispatched()) {
     KURL requestURL = request.resourceRequest().url();
     if (requestURL.isValid() &&
@@ -229,12 +230,13 @@ void ImageResource::allClientsAndObserversRemoved() {
     // If possible, delay the resetting until back at the event loop. Doing so
     // after a conservative GC prevents resetAnimation() from upsetting ongoing
     // animation updates (crbug.com/613709)
-    if (!ThreadHeap::willObjectBeLazilySwept(this))
+    if (!ThreadHeap::willObjectBeLazilySwept(this)) {
       Platform::current()->currentThread()->getWebTaskRunner()->postTask(
           BLINK_FROM_HERE, WTF::bind(&ImageResource::doResetAnimation,
                                      wrapWeakPersistent(this)));
-    else
+    } else {
       m_image->resetAnimation();
+    }
   }
   if (m_multipartParser)
     m_multipartParser->cancel();
@@ -315,11 +317,12 @@ LayoutSize ImageResource::imageSize(
   LayoutSize size;
 
   if (m_image->isBitmapImage() &&
-      shouldRespectImageOrientation == RespectImageOrientation)
+      shouldRespectImageOrientation == RespectImageOrientation) {
     size =
         LayoutSize(toBitmapImage(m_image.get())->sizeRespectingOrientation());
-  else
+  } else {
     size = LayoutSize(m_image->size());
+  }
 
   if (sizeType == IntrinsicCorrectedToDPR && m_hasDevicePixelRatioHeaderValue &&
       m_devicePixelRatioHeaderValue > 0)
@@ -451,9 +454,10 @@ void ImageResource::responseReceived(
   DCHECK(!handle);
   DCHECK(!m_multipartParser);
   // If there's no boundary, just handle the request normally.
-  if (response.isMultipart() && !response.multipartBoundary().isEmpty())
+  if (response.isMultipart() && !response.multipartBoundary().isEmpty()) {
     m_multipartParser = new MultipartImageResourceParser(
         response, response.multipartBoundary(), this);
+  }
   Resource::responseReceived(response, std::move(handle));
   if (RuntimeEnabledFeatures::clientHintsEnabled()) {
     m_devicePixelRatioHeaderValue =
@@ -604,9 +608,10 @@ void ImageResource::multipartDataReceived(const char* bytes, size_t size) {
 }
 
 bool ImageResource::isAccessAllowed(SecurityOrigin* securityOrigin) {
-  if (response().wasFetchedViaServiceWorker())
+  if (response().wasFetchedViaServiceWorker()) {
     return response().serviceWorkerResponseType() !=
            WebServiceWorkerResponseTypeOpaque;
+  }
   if (!getImage()->currentFrameHasSingleSecurityOrigin())
     return false;
   if (passesAccessControlCheck(securityOrigin))

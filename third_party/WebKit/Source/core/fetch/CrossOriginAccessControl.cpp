@@ -76,9 +76,10 @@ ResourceRequest createAccessControlPreflightRequest(
   preflightRequest.setRequestContext(request.requestContext());
   preflightRequest.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::All);
 
-  if (request.isExternalRequest())
+  if (request.isExternalRequest()) {
     preflightRequest.setHTTPHeaderField(
         HTTPNames::Access_Control_Request_External, "true");
+  }
 
   const HTTPHeaderMap& requestHeaderFields = request.httpHeaderFields();
 
@@ -188,10 +189,11 @@ bool passesAccessControlCheck(const ResourceResponse& response,
           "header when the credentials flag is true.",
           securityOrigin);
 
-      if (context == WebURLRequest::RequestContextXMLHttpRequest)
+      if (context == WebURLRequest::RequestContextXMLHttpRequest) {
         errorDescription.append(
             " The credentials mode of an XMLHttpRequest is controlled by the "
             "withCredentials attribute.");
+      }
 
       return false;
     }
@@ -208,10 +210,11 @@ bool passesAccessControlCheck(const ResourceResponse& response,
         errorDescription.append('.');
       }
 
-      if (context == WebURLRequest::RequestContextFetch)
+      if (context == WebURLRequest::RequestContextFetch) {
         errorDescription.append(
             " If an opaque response serves your needs, set the request's mode "
             "to 'no-cors' to fetch the resource with CORS disabled.");
+      }
 
       return false;
     }
@@ -225,22 +228,24 @@ bool passesAccessControlCheck(const ResourceResponse& response,
           allowOriginHeaderValue + "', but only one is allowed.";
     } else {
       KURL headerOrigin(KURL(), allowOriginHeaderValue);
-      if (!headerOrigin.isValid())
+      if (!headerOrigin.isValid()) {
         detail =
             "The 'Access-Control-Allow-Origin' header contains the invalid "
             "value '" +
             allowOriginHeaderValue + "'.";
-      else
+      } else {
         detail = "The 'Access-Control-Allow-Origin' header has a value '" +
                  allowOriginHeaderValue +
                  "' that is not equal to the supplied origin.";
+      }
     }
     errorDescription = buildAccessControlFailureMessage(detail, securityOrigin);
-    if (context == WebURLRequest::RequestContextFetch)
+    if (context == WebURLRequest::RequestContextFetch) {
       errorDescription.append(
           " Have the server send the header with a valid value, or, if an "
           "opaque response serves your needs, set the request's mode to "
           "'no-cors' to fetch the resource with CORS disabled.");
+    }
     return false;
   }
 

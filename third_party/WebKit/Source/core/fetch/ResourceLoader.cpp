@@ -112,9 +112,10 @@ void ResourceLoader::didDownloadData(WebURLLoader*,
 
 void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority,
                                        int intraPriorityValue) {
-  if (m_loader)
+  if (m_loader) {
     m_loader->didChangePriority(
         static_cast<WebURLRequest::Priority>(loadPriority), intraPriorityValue);
+  }
 }
 
 void ResourceLoader::cancel() {
