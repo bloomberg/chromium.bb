@@ -135,8 +135,7 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		tiling_mode = I915_TILING_NONE;
 	else if (flags & DRV_BO_USE_SCANOUT)
 		tiling_mode = I915_TILING_X;
-	else if (flags & (DRV_BO_USE_RENDERING | DRV_BO_USE_SW_READ_RARELY |
-			  DRV_BO_USE_SW_WRITE_RARELY))
+	else
 		tiling_mode = I915_TILING_Y;
 
 	i915_align_dimensions(drv, tiling_mode, &width, &height, bpp);
