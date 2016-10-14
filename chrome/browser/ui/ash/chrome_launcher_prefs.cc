@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -309,10 +310,11 @@ void RegisterChromeLauncherUserPrefs(
   registry->RegisterBooleanPref(prefs::kShowLogoutButtonInTray, false);
 }
 
-base::DictionaryValue* CreateAppDict(const std::string& app_id) {
-  std::unique_ptr<base::DictionaryValue> app_value(new base::DictionaryValue);
+std::unique_ptr<base::DictionaryValue> CreateAppDict(
+    const std::string& app_id) {
+  auto app_value = base::MakeUnique<base::DictionaryValue>();
   app_value->SetString(kPinnedAppsPrefAppIDPath, app_id);
-  return app_value.release();
+  return app_value;
 }
 
 ShelfAutoHideBehavior GetShelfAutoHideBehaviorPref(PrefService* prefs,

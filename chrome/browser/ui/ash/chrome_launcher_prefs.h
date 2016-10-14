@@ -54,7 +54,7 @@ extern const char kShelfAlignmentRight[];
 void RegisterChromeLauncherUserPrefs(
     user_prefs::PrefRegistrySyncable* registry);
 
-base::DictionaryValue* CreateAppDict(const std::string& app_id);
+std::unique_ptr<base::DictionaryValue> CreateAppDict(const std::string& app_id);
 
 // Get or set the shelf auto hide behavior preference for a particular display.
 ShelfAutoHideBehavior GetShelfAutoHideBehaviorPref(PrefService* prefs,
