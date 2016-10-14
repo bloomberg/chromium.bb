@@ -7841,6 +7841,9 @@ the Bookmarks menu.">
       </if>
 
       <!-- MD Feedback Strings -->
+      <message name="IDS_MD_FEEDBACK_DIALOG_TITLE" desc="Text for feedback dialog. This appears in the OS taskbar and the top of the dialog window when the title is shown.">
+        Feedback
+      </message>
       <message name="IDS_MD_FEEDBACK_HEADING" desc="Header text of the feedback dialog.">
         Tell us what's happening
       </message>

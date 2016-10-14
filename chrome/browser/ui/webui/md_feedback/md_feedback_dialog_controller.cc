@@ -6,8 +6,10 @@
 
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "url/gurl.h"
 
@@ -25,7 +27,7 @@ class MdFeedbackDialogDelegate : public ui::WebDialogDelegate {
   }
 
   base::string16 GetDialogTitle() const override {
-    return base::string16();
+    return l10n_util::GetStringUTF16(IDS_MD_FEEDBACK_DIALOG_TITLE);
   }
 
   GURL GetDialogContentURL() const override {
