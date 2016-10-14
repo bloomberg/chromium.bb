@@ -25,12 +25,9 @@
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/intent_constants.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/entry_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "net/base/escape.h"
-#include "net/base/filename_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "url/gurl.h"
 
@@ -42,12 +39,6 @@ namespace {
 constexpr int kArcIntentHelperVersionWithUrlListSupport = 4;
 constexpr int kArcIntentHelperVersionWithFullActivityName = 5;
 
-constexpr base::FilePath::CharType kArcDownloadPath[] =
-    FILE_PATH_LITERAL("/sdcard/Download");
-constexpr base::FilePath::CharType kRemovableMediaPath[] =
-    FILE_PATH_LITERAL("/media/removable");
-constexpr char kArcRemovableMediaProviderUrl[] =
-    "content://org.chromium.arc.removablemediaprovider/";
 constexpr char kAppIdSeparator = '/';
 constexpr char kPngDataUrlPrefix[] = "data:image/png;base64,";
 
@@ -121,45 +112,6 @@ arc::mojom::ActivityNamePtr AppIdToActivityName(const std::string& id) {
     name->activity_name = id.substr(separator + 1);
   }
   return name;
-}
-
-// Converts the Chrome OS file path to ARC file URL.
-bool ConvertToArcUrl(const base::FilePath& path, GURL* arc_url) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Obtain the primary profile. This information is required because currently
-  // only the file systems for the primary profile is exposed to ARC.
-  if (!user_manager::UserManager::IsInitialized())
-    return false;
-  const user_manager::User* primary_user =
-      user_manager::UserManager::Get()->GetPrimaryUser();
-  if (!primary_user)
-    return false;
-  Profile* primary_profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
-  if (!primary_profile)
-    return false;
-
-  // Convert paths under primary profile's Downloads directory.
-  base::FilePath primary_downloads =
-      util::GetDownloadsFolderForProfile(primary_profile);
-  base::FilePath result_path(kArcDownloadPath);
-  if (primary_downloads.AppendRelativePath(path, &result_path)) {
-    *arc_url = net::FilePathToFileURL(result_path);
-    return true;
-  }
-
-  // Convert paths under /media/removable.
-  base::FilePath relative_path;
-  if (base::FilePath(kRemovableMediaPath)
-          .AppendRelativePath(path, &relative_path)) {
-    *arc_url = GURL(kArcRemovableMediaProviderUrl)
-                   .Resolve(net::EscapePath(relative_path.AsUTF8Unsafe()));
-    return true;
-  }
-
-  // TODO(kinaba): Add conversion logic once other file systems are supported.
-  return false;
 }
 
 // Below is the sequence of thread-hopping for loading ARC file tasks.
@@ -298,7 +250,7 @@ void FindArcTasks(Profile* profile,
     }
 
     GURL url;
-    if (!ConvertToArcUrl(entry.path, &url)) {
+    if (!util::ConvertPathToArcUrl(entry.path, &url)) {
       callback.Run(std::move(result_list));
       return;
     }
@@ -330,7 +282,7 @@ bool ExecuteArcTask(Profile* profile,
   mojo::Array<arc::mojom::UrlWithMimeTypePtr> urls;
   for (size_t i = 0; i < file_urls.size(); ++i) {
     GURL url;
-    if (!ConvertToArcUrl(file_urls[i].path(), &url)) {
+    if (!util::ConvertPathToArcUrl(file_urls[i].path(), &url)) {
       LOG(ERROR) << "File on unsuppored path";
       return false;
     }

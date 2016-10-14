@@ -7,6 +7,7 @@
 
 #include <string>
 
+class GURL;
 class Profile;
 
 namespace base {
@@ -38,6 +39,10 @@ bool MigratePathFromOldFormat(Profile* profile,
 
 // The canonical mount point name for "Downloads" folder.
 std::string GetDownloadsMountPointName(Profile* profile);
+
+// Converts a Chrome OS file path to an ARC file URL. Returns true if the path
+// was converted successfully and false otherwise.
+bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out);
 
 }  // namespace util
 }  // namespace file_manager

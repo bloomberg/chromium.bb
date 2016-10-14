@@ -13,7 +13,10 @@
 #include "components/drive/file_system_core_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
+#include "net/base/filename_util.h"
+#include "url/gurl.h"
 
 namespace file_manager {
 namespace util {
@@ -21,6 +24,13 @@ namespace util {
 namespace {
 
 const char kDownloadsFolderName[] = "Downloads";
+
+constexpr base::FilePath::CharType kArcDownloadPath[] =
+    FILE_PATH_LITERAL("/sdcard/Download");
+constexpr base::FilePath::CharType kRemovableMediaPath[] =
+    FILE_PATH_LITERAL("/media/removable");
+constexpr char kArcRemovableMediaProviderUrl[] =
+    "content://org.chromium.arc.removablemediaprovider/";
 
 }  // namespace
 
@@ -68,6 +78,44 @@ std::string GetDownloadsMountPointName(Profile* profile) {
           : NULL;
   const std::string id = user ? "-" + user->username_hash() : "";
   return net::EscapeQueryParamValue(kDownloadsFolderName + id, false);
+}
+
+bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Obtain the primary profile. This information is required because currently
+  // only the file systems for the primary profile is exposed to ARC.
+  if (!user_manager::UserManager::IsInitialized())
+    return false;
+  const user_manager::User* primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!primary_user)
+    return false;
+  Profile* primary_profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
+  if (!primary_profile)
+    return false;
+
+  // Convert paths under primary profile's Downloads directory.
+  base::FilePath primary_downloads =
+      GetDownloadsFolderForProfile(primary_profile);
+  base::FilePath result_path(kArcDownloadPath);
+  if (primary_downloads.AppendRelativePath(path, &result_path)) {
+    *arc_url_out = net::FilePathToFileURL(result_path);
+    return true;
+  }
+
+  // Convert paths under /media/removable.
+  base::FilePath relative_path;
+  if (base::FilePath(kRemovableMediaPath)
+          .AppendRelativePath(path, &relative_path)) {
+    *arc_url_out = GURL(kArcRemovableMediaProviderUrl)
+                       .Resolve(net::EscapePath(relative_path.AsUTF8Unsafe()));
+    return true;
+  }
+
+  // TODO(kinaba): Add conversion logic once other file systems are supported.
+  return false;
 }
 
 }  // namespace util
