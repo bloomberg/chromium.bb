@@ -244,11 +244,11 @@ void FocusController::SetFocusedWindow(aura::Window* window) {
   if (focused_window_ && !observer_manager_.IsObserving(focused_window_))
     observer_manager_.Add(focused_window_);
 
-  FOR_EACH_OBSERVER(aura::client::FocusChangeObserver,
-                    focus_observers_,
-                    OnWindowFocused(focused_window_,
-                                    window_tracker.Contains(lost_focus) ?
-                                    lost_focus : NULL));
+  for (auto& observer : focus_observers_) {
+    observer.OnWindowFocused(
+        focused_window_,
+        window_tracker.Contains(lost_focus) ? lost_focus : NULL);
+  }
   if (window_tracker.Contains(lost_focus)) {
     aura::client::FocusChangeObserver* observer =
         aura::client::GetFocusChangeObserver(lost_focus);
@@ -273,10 +273,8 @@ void FocusController::SetActiveWindow(
 
   if (window == active_window_) {
     if (requested_window) {
-      FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
-                        activation_observers_,
-                        OnAttemptToReactivateWindow(requested_window,
-                                                    active_window_));
+      for (auto& observer : activation_observers_)
+        observer.OnAttemptToReactivateWindow(requested_window, active_window_);
     }
     return;
   }
@@ -314,11 +312,11 @@ void FocusController::SetActiveWindow(
         reason, active_window_,
         window_tracker.Contains(lost_activation) ? lost_activation : NULL);
   }
-  FOR_EACH_OBSERVER(
-      aura::client::ActivationChangeObserver, activation_observers_,
-      OnWindowActivated(
-          reason, active_window_,
-          window_tracker.Contains(lost_activation) ? lost_activation : NULL));
+  for (auto& observer : activation_observers_) {
+    observer.OnWindowActivated(
+        reason, active_window_,
+        window_tracker.Contains(lost_activation) ? lost_activation : NULL);
+  }
 }
 
 void FocusController::StackActiveWindow() {
