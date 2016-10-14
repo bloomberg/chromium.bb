@@ -47,11 +47,18 @@ mojo::ScopedSharedBufferHandle getSharedBufferHandle(
       SkImageInfo::MakeN32(image->width(), image->height(), image->alphaType());
 
   const uint32_t allocationSize = skiaInfo.getSafeSize(skiaInfo.minRowBytes());
+
   mojo::ScopedSharedBufferHandle sharedBufferHandle =
       mojo::SharedBufferHandle::Create(allocationSize);
+  if (!sharedBufferHandle.is_valid()) {
+    // TODO(xianglu): Do something when the image is too large.
+    DLOG(ERROR) << "Failed to create a sharedBufferHandle. allocationSize = "
+                << allocationSize << "bytes. limit = 16777216";
+    return mojo::ScopedSharedBufferHandle();
+  }
+
   const mojo::ScopedSharedBufferMapping mappedBuffer =
       sharedBufferHandle->Map(allocationSize);
-  DCHECK(mappedBuffer);
 
   const SkPixmap pixmap(skiaInfo, mappedBuffer.get(), skiaInfo.minRowBytes());
   if (!image->readPixels(pixmap, 0, 0)) {
@@ -96,8 +103,8 @@ ScriptPromise FaceDetector::detect(ScriptState* scriptState,
   mojo::ScopedSharedBufferHandle sharedBufferHandle =
       getSharedBufferHandle(img);
   if (!sharedBufferHandle->is_valid()) {
-    resolver->reject(
-        DOMException::create(SyntaxError, "Failed to get sharedBufferHandle."));
+    resolver->reject(DOMException::create(
+        SyntaxError, "Request for sharedBufferHandle failed."));
     return promise;
   }
 
