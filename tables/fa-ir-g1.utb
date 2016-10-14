@@ -177,6 +177,9 @@ sign \x064C 26
 sign \x0651 6
 sign \x0652 25
 sign \xFDFC 4-1235
+sign \x066A 25-1234
+sign \x066B 2
+sign \x066C 3
 
 # --------------------------- end definitions ---------------------------------
 
@@ -196,7 +199,7 @@ endemph bold 4568
 begemph underline 78-78
 endemph underline 78
 begcomp 4568-3467
-endcomp 4568-1568
+# endcomp 4568-1568 (removed to save more cells)
 
 # the decimal digits
 include litdigits6Dots.uti
@@ -221,14 +224,10 @@ digit \x06F3 14
 digit \x06F4 145
 digit \x06F5 15
 digit \x06F6 124
-digit \x0667 1245
+digit \x06F7 1245
 digit \x06F8 125
 digit \x06F9 24
-sign \x066A 25-1234
-sign \x066B 2
-sign \x066C 3
 
-# Letters are defined in en-chardefs
 # punctuation
 
 prepunc ) 2356
@@ -237,10 +236,7 @@ prepunc " 57
 postpunc " 58
 prepunc ' 2367
 postpunc ' 3567
-word 'em = 
-word 'tis =
-word 'twas =
-begnum # 3456 print number sign before number
+begnum # 3456-4 print number sign before number
 midnum , 2
 postpunc , 2
 decpoint . 2
@@ -258,8 +254,10 @@ endnum % 25-1234
 midnum ^ 3468
 midnum * 246-135
 prepunc ` 48
+always ... 3-3-3
 
 # special character sequences
+
 compbrl :// URLs
 compbrl www.
 compbrl .com
@@ -268,15 +266,4 @@ compbrl .gov
 compbrl .mil
 compbrl .net
 compbrl .org
-# include countries.cti
-compbrl .doc
-compbrl .htm
-compbrl .html
-compbrl .tex
-compbrl .txt
-compbrl .gif
-compbrl .jpg
-compbrl .png
-compbrl .wav
-compbrl .tar
-compbrl .zip
+include countries.cti
