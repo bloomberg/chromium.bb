@@ -61,6 +61,13 @@ button:hover {
   margin-top: 1em;
 }
 
+.debugging-content-fixed-width {
+  display: block;
+  font-family: monospace;
+  font-size: 1.2em;
+  margin-top: 0.5em;
+}
+
 .debugging-title {
   font-weight: bold;
 }

@@ -68,8 +68,10 @@ function handleKeypress(e) {
  * (error-debugging-info) visible.
  * @param {string} title  The name of this debugging field.
  * @param {string} value  The value of the debugging field.
+ * @param {boolean=} fixedWidth If true, the value field is displayed fixed
+ *                              width.
  */
-function appendDebuggingField(title, value) {
+function appendDebuggingField(title, value, fixedWidth) {
   // The values input here are not trusted. Never use innerHTML on these
   // values!
   var spanTitle = document.createElement('span');
@@ -77,7 +79,10 @@ function appendDebuggingField(title, value) {
   spanTitle.innerText = title + ': ';
 
   var spanValue = document.createElement('span');
-  spanValue.classList.add('debugging-value');
+  spanValue.classList.add('debugging-content');
+  if (fixedWidth) {
+    spanValue.classList.add('debugging-content-fixed-width');
+  }
   spanValue.innerText = value;
 
   var pElem = document.createElement('p');

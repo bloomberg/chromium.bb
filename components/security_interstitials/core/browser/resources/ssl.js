@@ -12,7 +12,8 @@ function setupSSLDebuggingInfo() {
   appendDebuggingField('Issuer', loadTimeData.getString('issuer'));
   appendDebuggingField('Expires on', loadTimeData.getString('expirationDate'));
   appendDebuggingField('Current date', loadTimeData.getString('currentDate'));
-  appendDebuggingField('PEM encoded chain', loadTimeData.getString('pem'));
+  appendDebuggingField('PEM encoded chain', loadTimeData.getString('pem'),
+                       true);
 
   $('error-code').addEventListener('click', toggleDebuggingInfo);
 }
