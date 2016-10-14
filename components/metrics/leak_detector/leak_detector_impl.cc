@@ -173,7 +173,8 @@ void LeakDetectorImpl::RecordFree(const void* ptr) {
   address_map_.erase(iter);
 }
 
-void LeakDetectorImpl::TestForLeaks(InternalVector<LeakReport>* reports) {
+void LeakDetectorImpl::TestForLeaks(InternalVector<LeakReport>* reports,
+                                    size_t timestamp) {
   // Add net alloc counts for each size to a ranked list.
   RankedSet size_ranked_set(kRankedSetSize);
   for (size_t i = 0; i < size_entries_.size(); ++i) {
@@ -183,7 +184,7 @@ void LeakDetectorImpl::TestForLeaks(InternalVector<LeakReport>* reports) {
   }
   size_leak_analyzer_.AddSample(std::move(size_ranked_set));
 
-  RecordCurrentAllocationDataInHistory();
+  RecordCurrentAllocationDataInHistory(timestamp);
 
   UpdateLeakCooldowns();
 
@@ -230,7 +231,7 @@ void LeakDetectorImpl::TestForLeaks(InternalVector<LeakReport>* reports) {
         report->call_stack_[j] = GetOffset(call_stack->stack[j]);
       }
 
-      StoreHistoricalDataInReport(size, call_stack, report);
+      StoreHistoricalDataInReport(size, call_stack, report, timestamp);
       ResetLeakCooldown(size, call_stack);
     }
   }
@@ -253,7 +254,7 @@ uintptr_t LeakDetectorImpl::GetOffset(const void* ptr) const {
   return UINTPTR_MAX;
 }
 
-void LeakDetectorImpl::RecordCurrentAllocationDataInHistory() {
+void LeakDetectorImpl::RecordCurrentAllocationDataInHistory(size_t timestamp) {
   // Record a snapshot of the current size table.
   InternalVector<uint32_t> current_size_table_record;
   current_size_table_record.reserve(kNumSizeEntriesInHistory);
@@ -273,6 +274,7 @@ void LeakDetectorImpl::RecordCurrentAllocationDataInHistory() {
       continue;
     RankedSet top_call_stacks(kNumTopCallStacksInHistory);
     entry.stack_table->GetTopCallStacks(&top_call_stacks);
+    entry.stack_table->UpdateLastDropInfo(timestamp);
     entry.call_site_breakdown_history.push_back(std::move(top_call_stacks));
     if (entry.call_site_breakdown_history.size() > kMaxNumHistoryEntries)
       entry.call_site_breakdown_history.pop_front();
@@ -281,7 +283,8 @@ void LeakDetectorImpl::RecordCurrentAllocationDataInHistory() {
 
 void LeakDetectorImpl::StoreHistoricalDataInReport(size_t size,
                                                    const CallStack* call_site,
-                                                   LeakReport* report) {
+                                                   LeakReport* report,
+                                                   size_t timestamp) {
   using AllocationBreakdown = LeakReport::AllocationBreakdown;
   // Copy historical allocation data into the report.
   InternalVector<AllocationBreakdown>* dest = &report->alloc_breakdown_history_;
@@ -317,6 +320,10 @@ void LeakDetectorImpl::StoreHistoricalDataInReport(size_t size,
     ++src_iter;
     ++dest_iter;
   }
+
+  size_entries_[SizeToIndex(size)].stack_table->GetLastUptrendInfo(
+      call_site, timestamp, &report->num_rising_intervals_,
+      &report->num_allocs_increase_);
 }
 
 bool LeakDetectorImpl::ReadyToGenerateReport(

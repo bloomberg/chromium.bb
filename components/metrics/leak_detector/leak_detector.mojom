@@ -20,6 +20,8 @@ struct AllocationBreakdown {
 struct MemoryLeakReport {
   uint32 size_bytes;
   array<uint64> call_stack;
+  uint32 num_rising_intervals;
+  uint32 num_allocs_increase;
 
   array<AllocationBreakdown> alloc_breakdown_history;
 };
