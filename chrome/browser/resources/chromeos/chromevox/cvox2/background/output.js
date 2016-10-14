@@ -986,15 +986,18 @@ Output.prototype = {
     if (prevRange && !prevRange.isValid())
       prevRange = null;
 
-    // Scan ancestors to get the value of |outputContextFirst|.
+    // Scan unique ancestors to get the value of |outputContextFirst|.
     var parent = range.start.node;
-    while (parent && parent.root && parent.root.role != RoleType.desktop) {
+    var prevParent = prevRange ? prevRange.start.node : parent;
+    if (!parent || !prevParent)
+      return;
+    var uniqueAncestors = AutomationUtil.getUniqueAncestors(prevParent, parent);
+    for (var i = 0; parent = uniqueAncestors[i]; i++) {
       if (Output.ROLE_INFO_[parent.role] &&
           Output.ROLE_INFO_[parent.role].outputContextFirst) {
         this.outputContextFirst_ = true;
         break;
       }
-      parent = parent.parent;
     }
 
     if (range.isSubNode())
@@ -1394,9 +1397,29 @@ Output.prototype = {
    * @private
    */
   ancestry_: function(node, prevNode, type, buff) {
-    var prevUniqueAncestors =
-        AutomationUtil.getUniqueAncestors(node, prevNode);
-    var uniqueAncestors = AutomationUtil.getUniqueAncestors(prevNode, node);
+    // Expects |ancestors| to be ordered from root down to leaf. Outputs in
+    // reverse; place context first nodes at the end.
+    function byContextFirst(ancestors) {
+      var contextFirst = [];
+      var rest = [];
+      for (i = 0; i < ancestors.length - 1; i++) {
+        var node = ancestors[i];
+        // Discard ancestors of deepest window.
+        if (node.role == RoleType.window) {
+          contextFirst = [];
+          rest = [];
+        }
+        if ((Output.ROLE_INFO_[node.role] || {}).outputContextFirst)
+          contextFirst.push(node);
+        else
+          rest.push(node);
+      }
+      return rest.concat(contextFirst.reverse());
+    }
+    var prevUniqueAncestors = byContextFirst(AutomationUtil.getUniqueAncestors(
+        node, prevNode));
+    var uniqueAncestors = byContextFirst(AutomationUtil.getUniqueAncestors(
+        prevNode, node));
 
     // First, look up the event type's format block.
     // Navigate is the default event.
@@ -1416,7 +1439,7 @@ Output.prototype = {
 
     // Hash the roles we've entered.
     var enteredRoleSet = {};
-    for (var j = uniqueAncestors.length - 2, hashNode;
+    for (var j = uniqueAncestors.length - 1, hashNode;
          (hashNode = uniqueAncestors[j]);
          j--)
       enteredRoleSet[hashNode.role] = true;
@@ -1437,7 +1460,7 @@ Output.prototype = {
 
     var enterOutputs = [];
     var enterRole = {};
-    for (var j = uniqueAncestors.length - 2, formatNode;
+    for (var j = uniqueAncestors.length - 1, formatNode;
          (formatNode = uniqueAncestors[j]);
          j--) {
       var roleBlock = getMergedRoleBlock(formatNode.role);
@@ -1447,8 +1470,6 @@ Output.prototype = {
         enterRole[formatNode.role] = true;
         this.format_(formatNode, roleBlock.enter, buff, prevNode);
       }
-      if (formatNode.role == 'window')
-        break;
     }
   },
 
