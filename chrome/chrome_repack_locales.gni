@@ -71,11 +71,8 @@ template("chrome_repack_locales") {
       ]
     }
     if (enable_extensions) {
-      source_patterns += [
-        # TODO(jamescook): When Android stops building extensions code move
-        # this to the OS != 'ios' and OS != 'android' section.
-        "${root_gen_dir}/extensions/strings/extensions_strings_",
-      ]
+      source_patterns +=
+          [ "${root_gen_dir}/extensions/strings/extensions_strings_" ]
       deps += [ "//extensions/strings" ]
     }
 
