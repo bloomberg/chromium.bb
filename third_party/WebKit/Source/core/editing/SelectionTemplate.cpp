@@ -153,7 +153,7 @@ template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
 SelectionTemplate<Strategy>::Builder::collapse(
     const PositionTemplate<Strategy>& position) {
-  DCHECK(position.isConnected());
+  DCHECK(position.isConnected()) << position;
   m_selection.m_base = position;
   m_selection.m_extent = position;
 #if DCHECK_IS_ON()
@@ -175,9 +175,9 @@ template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
 SelectionTemplate<Strategy>::Builder::extend(
     const PositionTemplate<Strategy>& position) {
-  DCHECK(position.isConnected());
+  DCHECK(position.isConnected()) << position;
   DCHECK_EQ(m_selection.document(), position.document());
-  DCHECK(m_selection.base().isConnected());
+  DCHECK(m_selection.base().isConnected()) << m_selection.base();
   DCHECK(m_selection.assertValid());
   m_selection.m_extent = position;
   return *this;
