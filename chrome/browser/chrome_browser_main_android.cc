@@ -70,7 +70,10 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
     crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dump_dir));
   }
 
-  ui::SetLocalePaksStoredInApk(false);
+  // Auto-detect based on en-US whether locale .pak files are store uncompressed
+  // (monochrome) vs extracted (non-monochrome).
+  ui::SetLocalePaksStoredInApk(
+      !ui::GetPathForAndroidLocalePakWithinApk("en-US").empty());
 
   return ChromeBrowserMainParts::PreCreateThreads();
 }

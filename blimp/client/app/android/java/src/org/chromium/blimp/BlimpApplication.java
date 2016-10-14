@@ -11,7 +11,6 @@ import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.ResourceExtractor;
 
 /**
  * The {@link Application} for the Blimp client.
@@ -29,7 +28,6 @@ public class BlimpApplication extends BaseChromiumApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        ResourceExtractor.setResourcesToExtract(new ResourceExtractor.ResourceEntry[0]);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         initCommandLine();
     }

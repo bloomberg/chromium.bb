@@ -25,10 +25,6 @@ public class ContentShellApplication extends ContentApplication {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
-    }
-
-    @Override
-    protected void initializeLibraryDependencies() {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
     }
 
