@@ -201,8 +201,9 @@ TEST_F(PrerenderAdapterTest, StartPrerenderFailsForUnsupportedScheme) {
   if (base::SysInfo::IsLowEndDevice())
     return;
 
-  content::WebContents* session_contents = content::WebContents::Create(
-      content::WebContents::CreateParams(profile()));
+  std::unique_ptr<content::WebContents> session_contents(
+      content::WebContents::Create(
+          content::WebContents::CreateParams(profile())));
   content::SessionStorageNamespace* sessionStorageNamespace =
       session_contents->GetController().GetDefaultSessionStorageNamespace();
   gfx::Size renderWindowSize = session_contents->GetContainerBounds().size();
@@ -218,8 +219,9 @@ TEST_F(PrerenderAdapterTest, StartPrerenderSucceeds) {
   if (base::SysInfo::IsLowEndDevice())
     return;
 
-  content::WebContents* session_contents = content::WebContents::Create(
-      content::WebContents::CreateParams(profile()));
+  std::unique_ptr<content::WebContents> session_contents(
+      content::WebContents::Create(
+          content::WebContents::CreateParams(profile())));
   content::SessionStorageNamespace* sessionStorageNamespace =
       session_contents->GetController().GetDefaultSessionStorageNamespace();
   gfx::Size renderWindowSize = session_contents->GetContainerBounds().size();

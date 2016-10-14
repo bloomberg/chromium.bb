@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +28,6 @@ class TestAdapter : public PrerenderAdapter {
         disabled_(false),
         fail_start_(false),
         observer_(observer),
-        web_contents_(nullptr),
         final_status_(prerender::FINAL_STATUS_MAX) {}
   ~TestAdapter() override {}
 
@@ -62,7 +62,7 @@ class TestAdapter : public PrerenderAdapter {
   bool disabled_;
   bool fail_start_;
   PrerenderAdapter::Observer* observer_;
-  content::WebContents* web_contents_;
+  std::unique_ptr<content::WebContents> web_contents_;
   prerender::FinalStatus final_status_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAdapter);
@@ -78,7 +78,7 @@ void TestAdapter::FailStart() {
 
 void TestAdapter::Configure(content::WebContents* web_contents,
                             prerender::FinalStatus final_status) {
-  web_contents_ = web_contents;
+  web_contents_ = base::WrapUnique(web_contents);
   final_status_ = final_status;
 }
 
@@ -98,7 +98,7 @@ bool TestAdapter::StartPrerender(
 }
 
 content::WebContents* TestAdapter::GetWebContents() const {
-  return web_contents_;
+  return web_contents_.get();
 }
 
 prerender::FinalStatus TestAdapter::GetFinalStatus() const {
