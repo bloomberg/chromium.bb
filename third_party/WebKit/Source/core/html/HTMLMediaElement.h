@@ -29,6 +29,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExceptionCode.h"
@@ -639,9 +640,9 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   // Whether this element is in overlay fullscreen mode.
   bool m_inOverlayFullscreenVideo : 1;
 
-  Member<AudioTrackList> m_audioTracks;
-  Member<VideoTrackList> m_videoTracks;
-  Member<TextTrackList> m_textTracks;
+  TraceWrapperMember<AudioTrackList> m_audioTracks;
+  TraceWrapperMember<VideoTrackList> m_videoTracks;
+  TraceWrapperMember<TextTrackList> m_textTracks;
   HeapVector<Member<TextTrack>> m_textTracksWhenResourceSelectionBegan;
 
   Member<CueTimeline> m_cueTimeline;
