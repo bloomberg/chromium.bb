@@ -153,7 +153,7 @@ if (!is_chromeos && enable_remoting_host) {
 
       mac_xib_bundle_data("remote_assistance_host_xibs") {
         sources = [
-          "//remoting/host/disconnect_window.xib",
+          "//remoting/host/mac/disconnect_window.xib",
         ]
       }
 
@@ -214,7 +214,7 @@ if (!is_chromeos && enable_remoting_host) {
         foreach(locale, remoting_locales_with_underscores) {
           deps += [
             ":remote_assistance_host_strings_${locale}_bundle_data",
-            "//remoting/host:remoting_host_locale_${locale}_bundle_data",
+            "//remoting/host/mac:remoting_host_locale_${locale}_bundle_data",
           ]
         }
         deps += [
