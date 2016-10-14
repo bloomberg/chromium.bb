@@ -87,9 +87,6 @@ public class SuggestionsCategoryInfo {
      */
     public void performEmptyStateAction(NewTabPageManager manager, NewTabPageAdapter adapter) {
         switch (mCategory) {
-            case KnownCategories.ARTICLES:
-                adapter.reloadSnippets();
-                break;
             case KnownCategories.BOOKMARKS:
                 manager.navigateToBookmarks();
                 break;
@@ -99,8 +96,15 @@ public class SuggestionsCategoryInfo {
             case KnownCategories.FOREIGN_TABS:
                 manager.navigateToRecentTabs();
                 break;
-            default:
+            case KnownCategories.PHYSICAL_WEB_PAGES:
+            case KnownCategories.RECENT_TABS:
                 Log.wtf(TAG, "'Empty State' action called for unsupported category: %d", mCategory);
+                break;
+            case KnownCategories.ARTICLES:
+            default:
+                // TODO(dgn): For now, we assume any unknown sections are remote sections and just
+                // reload all remote sections. crbug.com/656008
+                adapter.reloadSnippets();
                 break;
         }
     }
@@ -112,13 +116,19 @@ public class SuggestionsCategoryInfo {
     @StringRes
     public int getNoSuggestionDescription() {
         switch (mCategory) {
-            case KnownCategories.ARTICLES:
-                return R.string.ntp_status_card_no_articles;
             case KnownCategories.BOOKMARKS:
                 return R.string.ntp_status_card_no_bookmarks;
-            default:
+            case KnownCategories.DOWNLOADS:
+            case KnownCategories.FOREIGN_TABS:
+            case KnownCategories.PHYSICAL_WEB_PAGES:
+            case KnownCategories.RECENT_TABS:
                 Log.wtf(TAG, "Requested description for unsupported category: %d", mCategory);
                 return 0;
+            case KnownCategories.ARTICLES:
+            default:
+                // TODO(dgn): For now, we assume any unknown sections are remote sections and just
+                // reuse the string for ARTICLES. crbug.com/656008
+                return R.string.ntp_status_card_no_articles;
         }
     }
 }
