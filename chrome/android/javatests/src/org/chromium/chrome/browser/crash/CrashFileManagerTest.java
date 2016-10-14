@@ -138,9 +138,9 @@ public class CrashFileManagerTest extends CrashTestCase {
     public void testGetMatchingFiles() {
         CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
         // Three files begin with 123.
-        File[] expectedFiles = new File[] { mTmpFile1, mDmpFile1, mUpFile1 };
+        File[] expectedFiles = new File[] { mUpFile1, mDmpFile1, mTmpFile1 };
         Pattern testPattern = Pattern.compile("^123");
-        File[] actualFiles = crashFileManager.getMatchingFiles(testPattern);
+        File[] actualFiles = crashFileManager.listCrashFiles(testPattern);
         assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to match file by pattern", expectedFiles, actualFiles);
     }
@@ -159,23 +159,12 @@ public class CrashFileManagerTest extends CrashTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testGetAllMinidumpFilesSorted() {
-        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
-        File[] expectedFiles = new File[] {mOneBelowMaxTriesFile, mDmpFile2, mDmpFile1};
-        File[] actualFiles = crashFileManager.getAllMinidumpFilesSorted(MAX_TRIES_ALLOWED);
-        assertNotNull(actualFiles);
-        MoreAsserts.assertEquals("Failed to sort minidumps by modification time", expectedFiles,
-                actualFiles);
-    }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
     public void testGetAllFilesSorted() {
         CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
         File[] expectedFiles = new File[] {mLogfile, mUpFile2, mUpFile1, mMultiDigitMaxTriesFile,
                 mOneBelowMultiDigitMaxTriesFile, mMaxTriesFile, mOneBelowMaxTriesFile, mDmpFile2,
                 mDmpFile1, mTmpFile3, mTmpFile2, mTmpFile1};
-        File[] actualFiles = crashFileManager.getAllFilesSorted();
+        File[] actualFiles = crashFileManager.listCrashFiles(null);
         assertNotNull(actualFiles);
         MoreAsserts.assertEquals(
                 "Failed to sort all files by modification time", expectedFiles, actualFiles);
@@ -202,7 +191,7 @@ public class CrashFileManagerTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testGetAllMinidumpFiles() {
         CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
-        File[] expectedFiles = new File[] {mDmpFile1, mDmpFile2, mOneBelowMaxTriesFile};
+        File[] expectedFiles = new File[] {mOneBelowMaxTriesFile, mDmpFile2, mDmpFile1};
         File[] actualFiles = crashFileManager.getAllMinidumpFiles(MAX_TRIES_ALLOWED);
         assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to get the correct minidump files in directory",
@@ -213,8 +202,8 @@ public class CrashFileManagerTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testGetAllMinidumpFilesMultiDigitMaxTries() {
         CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
-        File[] expectedFiles = new File[] {mDmpFile1, mDmpFile2, mOneBelowMaxTriesFile,
-                mMaxTriesFile, mOneBelowMultiDigitMaxTriesFile};
+        File[] expectedFiles = new File[] {mOneBelowMultiDigitMaxTriesFile, mMaxTriesFile,
+                mOneBelowMaxTriesFile, mDmpFile2, mDmpFile1};
         File[] actualFiles = crashFileManager.getAllMinidumpFiles(MULTI_DIGIT_MAX_TRIES_ALLOWED);
         assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to get the correct minidump files in directory",
@@ -242,7 +231,7 @@ public class CrashFileManagerTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testGetAllUploadedFiles() {
         CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
-        File[] expectedFiles = new File[] { mUpFile1, mUpFile2 };
+        File[] expectedFiles = new File[] { mUpFile2, mUpFile1 };
         File[] actualFiles = crashFileManager.getAllUploadedFiles();
         assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to get the correct uploaded files in directory",

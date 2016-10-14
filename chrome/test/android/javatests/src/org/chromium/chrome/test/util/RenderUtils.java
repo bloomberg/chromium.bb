@@ -177,8 +177,11 @@ public class RenderUtils {
      */
     private static void saveBitmap(Bitmap bitmap, File file) throws IOException {
         FileOutputStream out = new FileOutputStream(file);
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-        out.close();
+        try {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+        } finally {
+            out.close();
+        }
     }
 
     /**

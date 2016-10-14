@@ -118,13 +118,14 @@ public class CustomTabFromChromeExternalNavigationTest extends CustomTabActivity
             }
         });
 
-        Criteria.equals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                 new Callable<OverrideUrlLoadingResult>() {
                     @Override
                     public OverrideUrlLoadingResult call() throws Exception {
                         return navigationDelegate.get().getLastOverrideUrlLoadingResultForTests();
                     }
-                });
+                }));
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override

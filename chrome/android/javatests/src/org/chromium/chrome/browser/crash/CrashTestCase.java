@@ -11,8 +11,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Base case for Crash upload related tests.
@@ -38,7 +36,11 @@ public class CrashTestCase extends InstrumentationTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        List<File> crashFiles = Arrays.asList(mCrashDir.listFiles());
+        File[] crashFiles = mCrashDir.listFiles();
+        if (crashFiles == null) {
+            return;
+        }
+
         for (File crashFile : crashFiles) {
             if (!crashFile.delete()) {
                 Log.e(TAG, "Unable to delete: " + crashFile.getAbsolutePath());

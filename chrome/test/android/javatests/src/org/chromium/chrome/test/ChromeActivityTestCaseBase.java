@@ -483,7 +483,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
                 intent.putExtra(ChromeTabbedActivity.INTENT_EXTRA_TEST_RENDER_PROCESS_LIMIT,
                         limit.value());
             }
-        } catch (Exception ex) {
+        } catch (NoSuchMethodException ex) {
             // Ignore exception.
         }
         return intent;
@@ -856,7 +856,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
 
                 System.out.println(perfTagAnalysisString);
             }
-        } catch (Exception ex) {
+        } catch (NoSuchMethodException ex) {
             // Eat exception here.
         }
     }
