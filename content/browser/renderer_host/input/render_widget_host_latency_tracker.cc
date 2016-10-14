@@ -255,7 +255,7 @@ void ComputeTouchAndWheelScrollLatencyHistograms(
     // first scroll event in a sequence and the original timestamp of that
     // scroll event's underlying touch/wheel event.
     UMA_HISTOGRAM_TOUCH_WHEEL_TO_SCROLL_LATENCY(
-        "Event.Latency." + event_type_name +
+        "Event.Latency.ScrollUpdate." + event_type_name +
             ".TimeToFirstScrollUpdateSwapBegin2",
         original_component, gpu_swap_begin_component);
   } else if (latency.FindLatency(
@@ -266,7 +266,8 @@ void ComputeTouchAndWheelScrollLatencyHistograms(
     // First scroll events are excluded from this metric.
     if (event_type_name == "Touch") {
       UMA_HISTOGRAM_TOUCH_WHEEL_TO_SCROLL_LATENCY(
-          "Event.Latency." + event_type_name + ".TimeToScrollUpdateSwapBegin2",
+          "Event.Latency.ScrollUpdate." + event_type_name +
+              ".TimeToScrollUpdateSwapBegin2",
           original_component, gpu_swap_begin_component);
     }
   } else {

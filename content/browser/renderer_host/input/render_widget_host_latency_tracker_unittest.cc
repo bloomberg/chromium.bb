@@ -121,8 +121,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelHistograms) {
         EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelUI", 1));
         EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelAcked", 1));
 
-        EXPECT_TRUE(HistogramSizeEq(
-            "Event.Latency.Wheel.TimeToFirstScrollUpdateSwapBegin2", 1));
+        EXPECT_TRUE(
+            HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel."
+                            "TimeToFirstScrollUpdateSwapBegin2",
+                            1));
 
         EXPECT_TRUE(HistogramSizeEq(
             "Event.Latency.ScrollUpdate.Wheel.TimeToHandled2_Main",
@@ -225,10 +227,11 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchHistograms) {
           "Event.Latency.ScrollUpdate.BrowserNotifiedToBeforeGpuSwap", 1));
       EXPECT_TRUE(HistogramSizeEq("Event.Latency.ScrollUpdate.GpuSwap", 1));
       EXPECT_TRUE(HistogramSizeEq(
-          "Event.Latency.Touch.TimeToFirstScrollUpdateSwapBegin2", 1));
+          "Event.Latency.ScrollUpdate.Touch.TimeToFirstScrollUpdateSwapBegin2",
+          1));
 
       EXPECT_TRUE(HistogramSizeEq(
-          "Event.Latency.Touch.TimeToScrollUpdateSwapBegin2", 0));
+          "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin2", 0));
 
       EXPECT_TRUE(HistogramSizeEq(
           "Event.Latency.ScrollUpdate.Touch.TimeToHandled2_Main",
