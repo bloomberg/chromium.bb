@@ -74,6 +74,7 @@ class ActivityTrackerTest : public testing::Test {
     GlobalActivityTracker* global_tracker = GlobalActivityTracker::Get();
     if (!global_tracker)
       return 0;
+    base::AutoLock autolock(global_tracker->thread_tracker_allocator_lock_);
     return global_tracker->thread_tracker_allocator_.cache_used();
   }
 
