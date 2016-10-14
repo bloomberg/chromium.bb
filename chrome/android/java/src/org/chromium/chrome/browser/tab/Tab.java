@@ -1838,8 +1838,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             }
             mInfoBarContainer.setContentViewCore(mContentViewCore);
 
-            mSwipeRefreshHandler = new SwipeRefreshHandler(mThemedApplicationContext);
-            mSwipeRefreshHandler.setContentViewCore(mContentViewCore);
+            mSwipeRefreshHandler = new SwipeRefreshHandler(mThemedApplicationContext, this);
 
             updateThemeColorIfNeeded(false);
             notifyContentChanged();
@@ -2356,7 +2355,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mInfoBarContainer.setContentViewCore(null);
         }
         if (mSwipeRefreshHandler != null) {
-            mSwipeRefreshHandler.setContentViewCore(null);
+            mSwipeRefreshHandler.destroy();
             mSwipeRefreshHandler = null;
         }
         mContentViewParent = null;
