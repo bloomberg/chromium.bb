@@ -38,6 +38,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameView.h"
@@ -3880,8 +3881,8 @@ void HTMLMediaElement::scheduleResolvePlayPromises() {
   if (m_playPromiseResolveTask->isPending())
     return;
 
-  Platform::current()->currentThread()->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE, m_playPromiseResolveTask->cancelAndCreate());
+  TaskRunnerHelper::get(TaskType::MediaElementEvent, &document())
+      ->postTask(BLINK_FROM_HERE, m_playPromiseResolveTask->cancelAndCreate());
 }
 
 void HTMLMediaElement::scheduleRejectPlayPromises(ExceptionCode code) {
@@ -3905,8 +3906,8 @@ void HTMLMediaElement::scheduleRejectPlayPromises(ExceptionCode code) {
   // TODO(mlamouri): because cancellable tasks can't take parameters, the
   // error code needs to be saved.
   m_playPromiseErrorCode = code;
-  Platform::current()->currentThread()->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE, m_playPromiseRejectTask->cancelAndCreate());
+  TaskRunnerHelper::get(TaskType::MediaElementEvent, &document())
+      ->postTask(BLINK_FROM_HERE, m_playPromiseRejectTask->cancelAndCreate());
 }
 
 void HTMLMediaElement::scheduleNotifyPlaying() {
