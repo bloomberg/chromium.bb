@@ -410,7 +410,7 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void CheckIsUserSignedInToChromeAs(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // Checks whether the user sync his history.
+  // Checks whether the user syncs their history.
   static void CheckIsUserSyncingHistory(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 

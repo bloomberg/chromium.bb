@@ -110,7 +110,7 @@ def UpdateCache(single_data_source=None, commit=None):
   '''
   server_instance = _CreateServerInstance(commit)
 
-  # This is the guy that would be responsible for refreshing the cache of
+  # This is the thing that would be responsible for refreshing the cache of
   # examples. Here for posterity, hopefully it will be added to the targets
   # below someday.
   # render_refresher = RenderRefresher(server_instance, self._request)

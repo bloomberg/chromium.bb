@@ -178,7 +178,7 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
     return;
   }
 
-  // Swap Chrome app with any app in row |kMaxAppResults-1| iff his index is
+  // Swap Chrome app with any app in row |kMaxAppResults-1| iff its index is
   // bigger, thus ensuring the user can always see Chrome without scrolling.
   size_t chrome_app_index = 0;
   for (size_t i = 0; i < handlers.size(); ++i) {

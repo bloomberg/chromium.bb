@@ -107,7 +107,7 @@ namespace platformKeys {
     // are known to the platform, match <code>request</code> and for which the
     // extension has permission to access the certificate and its private key.
     // If <code>interactive</code> is true, the user is presented a dialog where
-    // he can select from matching certificates and grant the extension access
+    // they can select from matching certificates and grant the extension access
     // to the certificate.
     // The selected/filtered client certificates will be passed to
     // <code>callback</code>.

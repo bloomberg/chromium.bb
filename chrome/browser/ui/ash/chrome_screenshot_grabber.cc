@@ -398,7 +398,7 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
     const base::FilePath& screenshot_path) {
   // Do not show a notification that a screenshot was taken while no user is
   // logged in, since it is confusing for the user to get a message about it
-  // after he logs in (crbug.com/235217).
+  // after they log in (crbug.com/235217).
   if (!chromeos::LoginState::Get()->IsUserLoggedIn())
     return;
 

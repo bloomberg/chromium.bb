@@ -43,7 +43,7 @@ class PrintJobWorker {
   void SetNewOwner(PrintJobWorkerOwner* new_owner);
 
   // Initializes the print settings. If |ask_user_for_settings| is true, a
-  // Print... dialog box will be shown to ask the user his preference.
+  // Print... dialog box will be shown to ask the user their preference.
   // |is_scripted| should be true for calls coming straight from window.print().
   // |is_modifiable| implies HTML and not other formats like PDF.
   void GetSettings(bool ask_user_for_settings,

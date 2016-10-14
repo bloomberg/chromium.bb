@@ -358,7 +358,7 @@ bool ChromeShellDelegate::IsMultiProfilesEnabled() const {
     // in. For special cases like Kiosk mode and / or guest mode this isn't a
     // problem since either the browser gets restarted and / or the flag is not
     // allowed, but for an "ephermal" user (see crbug.com/312324) it is not
-    // decided yet if he could add other users to his session or not.
+    // decided yet if they could add other users to their session or not.
     // TODO(skuhne): As soon as the issue above needs to be resolved, this logic
     // should change.
     logged_in_users = 1;

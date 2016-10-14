@@ -73,8 +73,8 @@ class UserManager {
   // Hides the reauth dialog if it is showing.
   static void HideReauthDialog();
 
-  // Shows a dialog where the user login his or her profile by the first time
-  // via user manager.
+  // Shows a dialog where the user logs into their profile for the first time
+  // via the user manager.
   static void ShowSigninDialog(content::BrowserContext* browser_context,
                                const base::FilePath& profile_path);
 

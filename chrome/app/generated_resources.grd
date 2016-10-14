@@ -443,7 +443,7 @@ are declared in build/common.gypi.
         </message>
       </if>
 
-      <message name="IDS_ALTERNATE_NAV_URL_VIEW_LABEL" desc="Label displayed in an infobar when a user searches for a term he may have meant to navigate to.">
+      <message name="IDS_ALTERNATE_NAV_URL_VIEW_LABEL" desc="Label displayed in an infobar when a user searches for a term they may have meant to navigate to.">
         Did you mean to go to <ph name="SITE">$1<ex>http://intranetsite/</ex></ph>?
       </message>
 
@@ -8814,7 +8814,7 @@ I don't think this site should be blocked!
         <message name="IDS_PRINT_PREVIEW_REJECT_INVITE" desc="Text for the button to reject the printer-sharing invitation.">
           Reject
         </message>
-        <message name="IDS_PRINT_PREVIEW_GROUP_INVITE_TEXT" desc="Message to show when the user has pending printer-sharing invitation for the group of users he is a manager of.">
+        <message name="IDS_PRINT_PREVIEW_GROUP_INVITE_TEXT" desc="Message to show when the user has pending printer-sharing invitation for the group of users they are a manager of.">
           &lt;strong&gt;<ph name="SENDER">$1</ph>&lt;/strong&gt; wants to share a printer &lt;strong&gt;<ph name="PRINTER_NAME">$2</ph>&lt;/strong&gt; with a group you own: &lt;strong&gt;<ph name="GROUP_NAME">$3</ph>&lt;/strong&gt;. If you accept, all group members will be able to print to the printer.
         </message>
         <message name="IDS_PRINT_PREVIEW_INVITE_TEXT" desc="Message to show when the user has pending printer-sharing invitation.">
@@ -9544,7 +9544,7 @@ I don't think this site should be blocked!
         <message name="IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON" desc="The label of the 'Show Home button' checkbox">
           Show Home button
         </message>
-        <message name="IDS_OPTIONS_CHANGE_HOME_PAGE" desc="The text of the button that allows the user to change her home page">
+        <message name="IDS_OPTIONS_CHANGE_HOME_PAGE" desc="The text of the button that allows the user to change their home page">
           Change
         </message>
         <message name="IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR" desc="The label of the 'Show bookmarks bar' checkbox">
@@ -11444,7 +11444,7 @@ Tell us what happened exactly before you got the profile error message:
         Please start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as a normal user. To run as root, you must specify an alternate --user-data-dir for storage of profile information.
       </message>
       <if expr="is_win">
-        <message name="IDS_PROFILE_ON_NETWORK_WARNING" desc="Warning shown to the user when she is running Chrome on Windows with a profile located on a network share.">
+        <message name="IDS_PROFILE_ON_NETWORK_WARNING" desc="Warning shown to the user when they are running Chrome on Windows with a profile located on a network share.">
           Warning: your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings are stored on a network drive. This may result in slowdowns, crashes, or even loss of data.
         </message>
       </if>
@@ -13213,7 +13213,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_LEGACY_SUPERVISED_USER_ALREADY_ON_THIS_DEVICE" desc="Text shown in the list of supervised users beside the name of a supervised user that already exists on the current device.">
           (already on this device)
         </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_NO_EXISTING_ERROR" desc="Message shown to the custodian when he opens the 'supervised user import' overlay but he has no existing supervised users to import.">
+        <message name="IDS_LEGACY_SUPERVISED_USER_NO_EXISTING_ERROR" desc="Message shown to the custodian when they open the 'supervised user import' overlay but they have no existing supervised users to import.">
           Oops! Looks like you have no existing supervised users to import. Please create one or more from another device then you can import them here.
         </message>
         <message name="IDS_LEGACY_SUPERVISED_USER_IMPORT_LOCAL_ERROR" desc="Message shown when a local error (for example, a disk error) occurs during supervised user import.">

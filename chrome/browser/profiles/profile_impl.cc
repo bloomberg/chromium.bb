@@ -1067,7 +1067,7 @@ void ProfileImpl::ChangeAppLocale(
       GetPrefs()->ClearPref(prefs::kApplicationLocaleAccepted);
       // We maintain kApplicationLocale property in both a global storage
       // and user's profile.  Global property determines locale of login screen,
-      // while user's profile determines his personal locale preference.
+      // while user's profile determines their personal locale preference.
       break;
     }
     case APP_LOCALE_CHANGED_VIA_LOGIN:

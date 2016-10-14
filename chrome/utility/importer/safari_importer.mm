@@ -294,7 +294,7 @@ void SafariImporter::ImportPasswords() {
   // Safari stores it's passwords in the Keychain, same as us so we don't need
   // to import them.
   // Note: that we don't automatically pick them up, there is some logic around
-  // the user needing to explicitly input his username in a page and blurring
+  // the user needing to explicitly input their username in a page and blurring
   // the field before we pick it up, but the details of that are beyond the
   // scope of this comment.
 }

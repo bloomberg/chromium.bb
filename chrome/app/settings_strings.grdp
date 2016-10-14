@@ -1968,7 +1968,7 @@
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_INVALID_PASSWORD" desc="Text on a password field that tells the user the password is incorrect.">
       Invalid password
     </message>
-    <message name="IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TITLE" desc="Title of the subpage shown when user wants to change his/her picture.">
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TITLE" desc="Title of the subpage shown when user wants to change their picture.">
       Change picture
     </message>
     <message name="IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TEXT" desc="Text with description of what to do on Change picture subpage.">

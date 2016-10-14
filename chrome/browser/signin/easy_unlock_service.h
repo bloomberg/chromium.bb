@@ -78,7 +78,7 @@ class EasyUnlockService : public KeyedService {
   static EasyUnlockService* Get(Profile* profile);
 
   // Gets EasyUnlockService instance associated with a user if the user is
-  // logged in and his profile is initialized.
+  // logged in and their profile is initialized.
   static EasyUnlockService* GetForUser(const user_manager::User& user);
 
   // Registers Easy Unlock profile preferences.
