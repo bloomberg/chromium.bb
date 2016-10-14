@@ -158,3 +158,7 @@ QUIC_FLAG(bool, FLAGS_quic_remove_packet_number_from_public_reset, false)
 // If true, will send QUIC_PUSH_STREAM_TIMED_OUT when push stream is unclaimed
 // and times out.
 QUIC_FLAG(bool, FLAGS_quic_send_push_stream_timed_out_error, true)
+
+// If true, enable bugfix for FHOL experiment (fin-only
+// WritevStreamData).
+QUIC_FLAG(bool, FLAGS_quic_bugfix_fhol_writev_fin_only_v2, true)

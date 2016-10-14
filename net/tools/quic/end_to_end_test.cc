@@ -1757,9 +1757,11 @@ TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
 
   QuicHeadersStream* headers_stream =
       QuicSpdySessionPeer::GetHeadersStream(client_->client()->session());
-  EXPECT_LT(
-      QuicFlowControllerPeer::SendWindowSize(headers_stream->flow_controller()),
-      kStreamIFCW);
+  if (!client_->client()->session()->force_hol_blocking()) {
+    EXPECT_LT(QuicFlowControllerPeer::SendWindowSize(
+                  headers_stream->flow_controller()),
+              kStreamIFCW);
+  }
   EXPECT_EQ(kSessionIFCW, QuicFlowControllerPeer::SendWindowSize(
                               client_->client()->session()->flow_controller()));
 
@@ -1799,12 +1801,14 @@ TEST_P(EndToEndTest, FlowControlsSynced) {
       QuicSpdySessionPeer::GetHeadersStream(client_session)->flow_controller(),
       QuicSpdySessionPeer::GetHeadersStream(server_session)->flow_controller());
 
-  EXPECT_EQ(static_cast<float>(QuicFlowControllerPeer::ReceiveWindowSize(
-                client_session->flow_controller())) /
-                QuicFlowControllerPeer::ReceiveWindowSize(
-                    QuicSpdySessionPeer::GetHeadersStream(client_session)
-                        ->flow_controller()),
-            kSessionToStreamRatio);
+  if (!client_session->force_hol_blocking()) {
+    EXPECT_EQ(static_cast<float>(QuicFlowControllerPeer::ReceiveWindowSize(
+                  client_session->flow_controller())) /
+                  QuicFlowControllerPeer::ReceiveWindowSize(
+                      QuicSpdySessionPeer::GetHeadersStream(client_session)
+                          ->flow_controller()),
+              kSessionToStreamRatio);
+  }
 
   server_thread_->Resume();
 }
