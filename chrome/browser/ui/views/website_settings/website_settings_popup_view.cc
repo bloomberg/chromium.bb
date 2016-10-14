@@ -108,10 +108,12 @@ const int kPermissionImageSpacing = 6;
 // Spacing between rows in the site settings section
 const int kPermissionsVerticalSpacing = 12;
 
-// Button IDs ------------------------------------------------------------------
-
-const int BUTTON_RESET_CERTIFICATE_DECISIONS = 1337;
-const int BUTTON_SITE_SETTINGS = 1338;
+// Button/styled label/link IDs ------------------------------------------------
+const int BUTTON_CLOSE = 1337;
+const int STYLED_LABEL_SECURITY_DETAILS = 1338;
+const int STYLED_LABEL_RESET_CERTIFICATE_DECISIONS = 1339;
+const int LINK_COOKIE_DIALOG = 1340;
+const int LINK_SITE_SETTINGS = 1341;
 
 }  // namespace
 
@@ -226,6 +228,7 @@ PopupHeaderView::PopupHeaderView(
   layout->AddView(summary_label_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::TRAILING);
   views::ImageButton* close_button = new views::ImageButton(button_listener);
+  close_button->set_id(BUTTON_CLOSE);
   close_button->SetImage(views::CustomButton::STATE_NORMAL,
                          rb.GetImageNamed(IDR_CLOSE_2).ToImageSkia());
   close_button->SetImage(views::CustomButton::STATE_HOVERED,
@@ -250,6 +253,7 @@ PopupHeaderView::PopupHeaderView(
   layout->StartRow(0, label_column_status);
   details_label_ =
       new views::StyledLabel(base::string16(), styled_label_listener);
+  details_label_->set_id(STYLED_LABEL_SECURITY_DETAILS);
   layout->AddView(details_label_, 1, 1, views::GridLayout::FILL,
                   views::GridLayout::LEADING);
 
@@ -310,6 +314,7 @@ void PopupHeaderView::AddResetDecisionsLabel() {
   base::string16 text = base::ReplaceStringPlaceholders(
       base::ASCIIToUTF16("$1 $2"), subst, &offsets);
   reset_decisions_label_ = new views::StyledLabel(text, styled_label_listener_);
+  reset_decisions_label_->set_id(STYLED_LABEL_RESET_CERTIFICATE_DECISIONS);
   gfx::Range link_range(offsets[1], text.length());
 
   views::StyledLabel::RangeStyleInfo link_style =
@@ -319,11 +324,15 @@ void PopupHeaderView::AddResetDecisionsLabel() {
   link_style.disable_line_wrapping = false;
 
   reset_decisions_label_->AddStyleRange(link_range, link_style);
+  // Fit the styled label to occupy available width.
+  reset_decisions_label_->SizeToFit(0);
   reset_decisions_label_container_->AddChildView(reset_decisions_label_);
 
   // Now that it contains a label, the container needs padding at the top.
   reset_decisions_label_container_->SetBorder(
       views::Border::CreateEmptyBorder(8, 0, 0, 0));
+
+  InvalidateLayout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -532,26 +541,8 @@ int WebsiteSettingsPopupView::GetDialogButtons() const {
 
 void WebsiteSettingsPopupView::ButtonPressed(views::Button* button,
                                              const ui::Event& event) {
-  switch (button->id()) {
-    case BUTTON_RESET_CERTIFICATE_DECISIONS:
-      presenter_->OnRevokeSSLErrorBypassButtonPressed();
-      GetWidget()->Close();
-      break;
-    case BUTTON_SITE_SETTINGS:
-      // TODO(palmer): This opens the general Content Settings pane, which is OK
-      // for now. But on Android, it opens a page specific to a given origin
-      // that shows all of the settings for that origin. If/when that's
-      // available on desktop we should link to that here, too.
-      web_contents()->OpenURL(content::OpenURLParams(
-          GURL(chrome::kChromeUIContentSettingsURL), content::Referrer(),
-          WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-          false));
-      presenter_->RecordWebsiteSettingsAction(
-          WebsiteSettings::WEBSITE_SETTINGS_SITE_SETTINGS_OPENED);
-      break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(BUTTON_CLOSE, button->id());
+  GetWidget()->Close();
 }
 
 void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
@@ -598,6 +589,7 @@ void WebsiteSettingsPopupView::SetCookieInfo(
 
   if (!cookie_dialog_link_) {
     cookie_dialog_link_ = new views::Link(label_text);
+    cookie_dialog_link_->set_id(LINK_COOKIE_DIALOG);
     cookie_dialog_link_->set_listener(this);
   } else {
     cookie_dialog_link_->SetText(label_text);
@@ -709,6 +701,7 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
   // Add site settings link.
   views::Link* site_settings_link = new views::Link(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_SETTINGS_LINK));
+  site_settings_link->set_id(LINK_SITE_SETTINGS);
   site_settings_link->set_listener(this);
   views::View* link_section = new views::View();
   const int kLinkMarginTop = 4;
@@ -764,30 +757,58 @@ views::View* WebsiteSettingsPopupView::CreateSiteSettingsView() {
 }
 
 void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
+  // Both switch cases require accessing web_contents(), so we check it here.
   if (web_contents() == nullptr || web_contents()->IsBeingDestroyed())
     return;
-  DCHECK_EQ(source, cookie_dialog_link_);
-  // Count how often the Collected Cookies dialog is opened.
-  presenter_->RecordWebsiteSettingsAction(
-      WebsiteSettings::WEBSITE_SETTINGS_COOKIES_DIALOG_OPENED);
-  new CollectedCookiesViews(web_contents());
+  switch (source->id()) {
+    case LINK_SITE_SETTINGS:
+      // TODO(crbug.com/655876): This opens the general Content Settings pane,
+      // which is OK for now. But on Android, it opens a page specific to a
+      // given origin that shows all of the settings for that origin. If/when
+      // that's available on desktop we should link to that here, too.
+      web_contents()->OpenURL(content::OpenURLParams(
+          GURL(chrome::kChromeUIContentSettingsURL), content::Referrer(),
+          WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+          false));
+      presenter_->RecordWebsiteSettingsAction(
+          WebsiteSettings::WEBSITE_SETTINGS_SITE_SETTINGS_OPENED);
+      break;
+    case LINK_COOKIE_DIALOG:
+      // Count how often the Collected Cookies dialog is opened.
+      presenter_->RecordWebsiteSettingsAction(
+          WebsiteSettings::WEBSITE_SETTINGS_COOKIES_DIALOG_OPENED);
+      new CollectedCookiesViews(web_contents());
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void WebsiteSettingsPopupView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                       const gfx::Range& range,
                                                       int event_flags) {
-  presenter_->RecordWebsiteSettingsAction(
-      WebsiteSettings::WEBSITE_SETTINGS_SECURITY_DETAILS_OPENED);
+  switch (label->id()) {
+    case STYLED_LABEL_SECURITY_DETAILS:
+      presenter_->RecordWebsiteSettingsAction(
+          WebsiteSettings::WEBSITE_SETTINGS_SECURITY_DETAILS_OPENED);
 
-  if (is_devtools_disabled_) {
-    DCHECK(certificate_);
-    gfx::NativeWindow parent =
-        anchor_widget() ? anchor_widget()->GetNativeWindow() : nullptr;
-    presenter_->RecordWebsiteSettingsAction(
-        WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
-    ShowCertificateViewer(web_contents(), parent, certificate_.get());
-  } else {
-    DevToolsWindow::OpenDevToolsWindow(
-        web_contents(), DevToolsToggleAction::ShowSecurityPanel());
+      if (is_devtools_disabled_) {
+        DCHECK(certificate_);
+        gfx::NativeWindow parent =
+            anchor_widget() ? anchor_widget()->GetNativeWindow() : nullptr;
+        presenter_->RecordWebsiteSettingsAction(
+            WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
+        ShowCertificateViewer(web_contents(), parent, certificate_.get());
+      } else {
+        DevToolsWindow::OpenDevToolsWindow(
+            web_contents(), DevToolsToggleAction::ShowSecurityPanel());
+      }
+      break;
+    case STYLED_LABEL_RESET_CERTIFICATE_DECISIONS:
+      presenter_->OnRevokeSSLErrorBypassButtonPressed();
+      GetWidget()->Close();
+      break;
+    default:
+      NOTREACHED();
   }
 }
