@@ -1368,7 +1368,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   ThreadTicks thread_now = ThreadNow();
 
   ThreadLocalEventBuffer* thread_local_event_buffer = nullptr;
-  if (enabled_modes_ & RECORDING_MODE) {
+  if (*category_group_enabled & RECORDING_MODE) {
     // |thread_local_event_buffer_| can be null if the current thread doesn't
     // have a message loop or the message loop is blocked.
     InitializeThreadLocalEventBufferIfSupported();
