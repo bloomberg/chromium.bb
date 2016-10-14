@@ -276,11 +276,17 @@ void SetSecurityStyleAndDetails(const GURL& url,
   const char* cipher;
   const char* mac;
   bool is_aead;
+  bool is_tls13;
   uint16_t cipher_suite =
       net::SSLConnectionStatusToCipherSuite(info.ssl_connection_status);
   net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
-                               cipher_suite);
-  if (mac == NULL) {
+                               &is_tls13, cipher_suite);
+  if (key_exchange == nullptr) {
+    DCHECK(is_tls13);
+    key_exchange = "";
+  }
+
+  if (mac == nullptr) {
     DCHECK(is_aead);
     mac = "";
   }

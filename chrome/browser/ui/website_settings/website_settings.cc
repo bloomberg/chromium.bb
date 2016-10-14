@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/website_settings/website_settings.h"
 
+#include <openssl/ssl.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -647,12 +648,21 @@ void WebsiteSettings::Init(
         (security_info.connection_status &
          net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
     const char *key_exchange, *cipher, *mac;
-    bool is_aead;
-    net::SSLCipherSuiteToStrings(
-        &key_exchange, &cipher, &mac, &is_aead, cipher_suite);
+    bool is_aead, is_tls13;
+    net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
+                                 &is_tls13, cipher_suite);
 
     site_connection_details_ += ASCIIToUTF16("\n\n");
     if (is_aead) {
+      if (is_tls13) {
+        // For TLS 1.3 ciphers, report the group (historically, curve) as the
+        // key exchange.
+        key_exchange = SSL_get_curve_name(security_info.key_exchange_group);
+        if (!key_exchange) {
+          NOTREACHED();
+          key_exchange = "";
+        }
+      }
       site_connection_details_ += l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS_AEAD,
           ASCIIToUTF16(cipher), ASCIIToUTF16(key_exchange));
