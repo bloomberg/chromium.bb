@@ -6,12 +6,17 @@
 #define MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_MACROS_H_
 
 #include "ipc/ipc_message_macros.h"
+#include "media/base/audio_codecs.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/buffering_state.h"
+#include "media/base/channel_layout.h"
 #include "media/base/decode_status.h"
+#include "media/base/sample_format.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_types.h"
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::AudioCodec, media::AudioCodec::kAudioCodecMax)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::AudioLatency::LatencyType,
                           media::AudioLatency::LATENCY_COUNT)
@@ -22,10 +27,12 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::AudioParameters::Format,
 IPC_ENUM_TRAITS_MAX_VALUE(media::BufferingState,
                           media::BufferingState::BUFFERING_STATE_MAX)
 
+IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
+
 IPC_ENUM_TRAITS_MAX_VALUE(media::DecodeStatus,
                           media::DecodeStatus::DECODE_STATUS_MAX)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::SampleFormat, media::kSampleFormatMax)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 

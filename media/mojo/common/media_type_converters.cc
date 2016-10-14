@@ -13,7 +13,6 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_key_information.h"
-#include "media/base/decode_status.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/decryptor.h"
@@ -40,70 +39,6 @@ namespace mojo {
   static_assert(media::media_enum_value == static_cast<media::media_enum>(     \
                                                media::mojom::mojo_enum_value), \
                 "Mismatched enum: " #media_enum_value " != " #mojo_enum_value)
-
-// AudioCodec.
-ASSERT_ENUM_EQ_RAW(AudioCodec, kUnknownAudioCodec, AudioCodec::UNKNOWN);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , AAC);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , MP3);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , PCM);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , Vorbis);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , FLAC);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , AMR_NB);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , PCM_MULAW);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , GSM_MS);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , PCM_S16BE);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , PCM_S24BE);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , Opus);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , EAC3);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , PCM_ALAW);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , ALAC);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, , AC3);
-ASSERT_ENUM_EQ_RAW(AudioCodec, kAudioCodecMax, AudioCodec::MAX);
-
-// ChannelLayout.
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _NONE);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _UNSUPPORTED);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _MONO);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _STEREO);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _2_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _SURROUND);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _4_0);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _2_2);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _QUAD);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _5_0);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _5_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _5_0_BACK);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _5_1_BACK);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _7_0);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _7_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _7_1_WIDE);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _STEREO_DOWNMIX);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _2POINT1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _3_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _4_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _6_0);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _6_0_FRONT);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _HEXAGONAL);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _6_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _6_1_BACK);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _6_1_FRONT);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _7_0_FRONT);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _7_1_WIDE_BACK);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _OCTAGONAL);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _DISCRETE);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _STEREO_AND_KEYBOARD_MIC);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _4_1_QUAD_SIDE);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _MAX);
-
-// SampleFormat.
-ASSERT_ENUM_EQ_RAW(SampleFormat, kUnknownSampleFormat, SampleFormat::UNKNOWN);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , U8);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , S16);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , S32);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , F32);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , PlanarS16);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , PlanarF32);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , Max);
 
 // DemuxerStream Type.  Note: Mojo DemuxerStream's don't have the TEXT type.
 ASSERT_ENUM_EQ_RAW(DemuxerStream::Type,
@@ -480,11 +415,9 @@ TypeConverter<media::mojom::AudioDecoderConfigPtr, media::AudioDecoderConfig>::
     Convert(const media::AudioDecoderConfig& input) {
   media::mojom::AudioDecoderConfigPtr config(
       media::mojom::AudioDecoderConfig::New());
-  config->codec = static_cast<media::mojom::AudioCodec>(input.codec());
-  config->sample_format =
-      static_cast<media::mojom::SampleFormat>(input.sample_format());
-  config->channel_layout =
-      static_cast<media::mojom::ChannelLayout>(input.channel_layout());
+  config->codec = input.codec();
+  config->sample_format = input.sample_format();
+  config->channel_layout = input.channel_layout();
   config->samples_per_second = input.samples_per_second();
   config->extra_data = input.extra_data();
   config->seek_preroll = input.seek_preroll();
@@ -499,12 +432,11 @@ media::AudioDecoderConfig
 TypeConverter<media::AudioDecoderConfig, media::mojom::AudioDecoderConfigPtr>::
     Convert(const media::mojom::AudioDecoderConfigPtr& input) {
   media::AudioDecoderConfig config;
-  config.Initialize(static_cast<media::AudioCodec>(input->codec),
-                    static_cast<media::SampleFormat>(input->sample_format),
-                    static_cast<media::ChannelLayout>(input->channel_layout),
-                    input->samples_per_second, input->extra_data,
-                    input->encryption_scheme.To<media::EncryptionScheme>(),
-                    input->seek_preroll, input->codec_delay);
+  config.Initialize(
+      input->codec, static_cast<media::SampleFormat>(input->sample_format),
+      input->channel_layout, input->samples_per_second, input->extra_data,
+      input->encryption_scheme.To<media::EncryptionScheme>(),
+      input->seek_preroll, input->codec_delay);
   return config;
 }
 
@@ -594,10 +526,8 @@ media::mojom::AudioBufferPtr
 TypeConverter<media::mojom::AudioBufferPtr, scoped_refptr<media::AudioBuffer>>::
     Convert(const scoped_refptr<media::AudioBuffer>& input) {
   media::mojom::AudioBufferPtr buffer(media::mojom::AudioBuffer::New());
-  buffer->sample_format =
-      static_cast<media::mojom::SampleFormat>(input->sample_format_);
-  buffer->channel_layout =
-      static_cast<media::mojom::ChannelLayout>(input->channel_layout());
+  buffer->sample_format = input->sample_format_;
+  buffer->channel_layout = input->channel_layout();
   buffer->channel_count = input->channel_count();
   buffer->sample_rate = input->sample_rate();
   buffer->frame_count = input->frame_count();
@@ -630,9 +560,8 @@ TypeConverter<scoped_refptr<media::AudioBuffer>, media::mojom::AudioBufferPtr>::
 
   return media::AudioBuffer::CopyFrom(
       static_cast<media::SampleFormat>(input->sample_format),
-      static_cast<media::ChannelLayout>(input->channel_layout),
-      input->channel_count, input->sample_rate, input->frame_count,
-      &channel_ptrs[0], input->timestamp);
+      input->channel_layout, input->channel_count, input->sample_rate,
+      input->frame_count, &channel_ptrs[0], input->timestamp);
 }
 
 // static

@@ -15,81 +15,17 @@ enum BufferingState;
 [Native]
 enum DecodeStatus;
 
-// See media/base/audio_decoder_config.h for descriptions.
-// Kept in sync with media::AudioCodec via static_asserts.
-enum AudioCodec {
-  UNKNOWN = 0,
-  AAC = 1,
-  MP3 = 2,
-  PCM = 3,
-  Vorbis = 4,
-  FLAC = 5,
-  AMR_NB = 6,
-  AMR_WB = 7,
-  PCM_MULAW = 8,
-  GSM_MS = 9,
-  PCM_S16BE = 10,
-  PCM_S24BE = 11,
-  Opus = 12,
-  EAC3 = 13,
-  PCM_ALAW = 14,
-  ALAC = 15,
-  AC3 = 16,
-  MAX = AC3,
-};
+// See media/base/audio_codecs.h for descriptions.
+[Native]
+enum AudioCodec;
 
 // See media/base/channel_layout.h for descriptions.
-// Kept in sync with media::ChannelLayout via static_asserts.
-enum ChannelLayout {
-  k_NONE = 0,
-  k_UNSUPPORTED = 1,
-  k_MONO = 2,
-  k_STEREO = 3,
-  k_2_1 = 4,
-  k_SURROUND = 5,
-  k_4_0 = 6,
-  k_2_2 = 7,
-  k_QUAD = 8,
-  k_5_0 = 9,
-  k_5_1 = 10,
-  k_5_0_BACK = 11,
-  k_5_1_BACK = 12,
-  k_7_0 = 13,
-  k_7_1 = 14,
-  k_7_1_WIDE = 15,
-  k_STEREO_DOWNMIX = 16,
-  k_2POINT1 = 17,
-  k_3_1 = 18,
-  k_4_1 = 19,
-  k_6_0 = 20,
-  k_6_0_FRONT = 21,
-  k_HEXAGONAL = 22,
-  k_6_1 = 23,
-  k_6_1_BACK = 24,
-  k_6_1_FRONT = 25,
-  k_7_0_FRONT = 26,
-  k_7_1_WIDE_BACK = 27,
-  k_OCTAGONAL = 28,
-  k_DISCRETE = 29,
-  k_STEREO_AND_KEYBOARD_MIC = 30,
-  k_4_1_QUAD_SIDE = 31,
-  k_MAX = k_4_1_QUAD_SIDE,
-};
+[Native]
+enum ChannelLayout;
 
 // See media/base/sample_format.h for descriptions.
-// Kept in sync with media::SampleFormat via static_asserts.
-enum SampleFormat {
-  UNKNOWN = 0,
-  U8,
-  S16,
-  S32,
-  F32,
-  PlanarS16,
-  PlanarF32,
-  PlanarS32,
-  S24,
-  Max = S24,
-};
+[Native]
+enum SampleFormat;
 
 // See media/base/video_types.h for descriptions.
 // Kept in sync with media::VideoPixelFormat via static_asserts.
