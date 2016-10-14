@@ -639,13 +639,3 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RequestShowAppBanner,
 // Sent by the renderer to indicate that a fields trial has been activated.
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_FieldTrialActivated,
                      std::string /* name */)
-
-// Record a sample string to a Rappor metric.
-IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_RecordRappor,
-                     std::string /* metric */,
-                     std::string /* sample */)
-
-// Record a domain and registry of a url to a Rappor metric.
-IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_RecordRapporURL,
-                     std::string /* metric */,
-                     GURL /* sample url */)

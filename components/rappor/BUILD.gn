@@ -47,6 +47,23 @@ static_library("rappor") {
   ]
 }
 
+static_library("rappor_recorder") {
+  sources = [
+    "rappor_recorder_impl.cc",
+    "rappor_recorder_impl.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/rappor/public/interfaces",
+  ]
+
+  deps = [
+    ":rappor",
+    "//mojo/public/cpp/bindings",
+  ]
+}
+
 static_library("test_support") {
   testonly = true
   sources = [

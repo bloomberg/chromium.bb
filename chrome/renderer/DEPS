@@ -24,6 +24,7 @@ include_rules = [
   "+components/plugins/renderer",
   "+components/printing/common",
   "+components/printing/renderer",
+  "+components/rappor/public/interfaces",
   "+components/signin/core/common",
   "+components/spellcheck/common",
   "+components/spellcheck/renderer",

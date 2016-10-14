@@ -1337,12 +1337,16 @@ ChromeContentRendererClient::CreateBrowserPluginDelegate(
 
 void ChromeContentRendererClient::RecordRappor(const std::string& metric,
                                                const std::string& sample) {
-  RenderThread::Get()->Send(new ChromeViewHostMsg_RecordRappor(metric, sample));
+  if (!rappor_recorder_)
+    RenderThread::Get()->GetRemoteInterfaces()->GetInterface(&rappor_recorder_);
+  rappor_recorder_->RecordRappor(metric, sample);
 }
 
 void ChromeContentRendererClient::RecordRapporURL(const std::string& metric,
                                                   const GURL& url) {
-  RenderThread::Get()->Send(new ChromeViewHostMsg_RecordRapporURL(metric, url));
+  if (!rappor_recorder_)
+    RenderThread::Get()->GetRemoteInterfaces()->GetInterface(&rappor_recorder_);
+  rappor_recorder_->RecordRapporURL(metric, url);
 }
 
 std::unique_ptr<blink::WebAppBannerClient>

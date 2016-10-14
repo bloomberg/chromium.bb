@@ -1363,6 +1363,7 @@ split_static_library("browser") {
     "//components/proxy_config",
     "//components/query_parser",
     "//components/rappor",
+    "//components/rappor:rappor_recorder",
     "//components/renderer_context_menu",
     "//components/resources",
     "//components/safe_browsing_db",

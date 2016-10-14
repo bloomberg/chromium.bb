@@ -129,8 +129,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   // Called when a message is received from a renderer that a trial has been
   // activated (ChromeViewHostMsg_FieldTrialActivated).
   void OnFieldTrialActivated(const std::string& trial_name);
-  void OnRecordRappor(const std::string& metric, const std::string& sample);
-  void OnRecordRapporURL(const std::string& metric, const GURL& sample);
 
   const int render_process_id_;
 

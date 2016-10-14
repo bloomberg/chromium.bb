@@ -134,6 +134,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/rappor/rappor_recorder_impl.h"
 #include "components/rappor/rappor_utils.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -2894,6 +2895,10 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
       ui_task_runner);
   registry->AddInterface(
       base::Bind(&BudgetServiceImpl::Create, render_process_host->GetID()),
+      ui_task_runner);
+  registry->AddInterface(
+      base::Bind(&rappor::RapporRecorderImpl::Create,
+                 g_browser_process->rappor_service()),
       ui_task_runner);
 
 #if defined(OS_CHROMEOS)

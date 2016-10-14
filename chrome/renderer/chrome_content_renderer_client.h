@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "v8/include/v8.h"
@@ -227,6 +228,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                             blink::WebPluginParams* params);
 #endif
 
+  rappor::mojom::RapporRecorderPtr rappor_recorder_;
+
   std::unique_ptr<ChromeRenderThreadObserver> chrome_observer_;
   std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;
 
@@ -254,6 +257,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<LeakDetectorRemoteClient> leak_detector_remote_client_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeContentRendererClient);
 };
 
 #endif  // CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_

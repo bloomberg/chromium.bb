@@ -8,6 +8,7 @@
         "autofill::mojom::PasswordManagerDriver",
         "extensions::StashService",
         "metrics::mojom::LeakDetector",
+        "rappor::mojom::RapporRecorder",
         "startup_metric_utils::mojom::StartupMetricHost",
         "translate::mojom::ContentTranslateDriver"
       ],
