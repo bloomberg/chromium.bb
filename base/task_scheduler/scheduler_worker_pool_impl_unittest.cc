@@ -31,8 +31,11 @@
 #include "base/task_scheduler/task_tracker.h"
 #include "base/task_scheduler/test_task_factory.h"
 #include "base/test/gtest_util.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_checker_impl.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/threading/thread_restrictions.h"
@@ -56,51 +59,44 @@ constexpr TimeDelta kExtraTimeToWaitForDetach =
 
 using IORestriction = SchedulerWorkerPoolParams::IORestriction;
 
-class TestDelayedTaskManager : public DelayedTaskManager {
- public:
-  TestDelayedTaskManager() : DelayedTaskManager(Bind(&DoNothing)) {}
-
-  void SetCurrentTime(TimeTicks now) { now_ = now; }
-
-  // DelayedTaskManager:
-  TimeTicks Now() const override { return now_; }
-
- private:
-  TimeTicks now_ = TimeTicks::Now();
-
-  DISALLOW_COPY_AND_ASSIGN(TestDelayedTaskManager);
-};
-
 class TaskSchedulerWorkerPoolImplTest
     : public testing::TestWithParam<ExecutionMode> {
  protected:
-  TaskSchedulerWorkerPoolImplTest() = default;
+  TaskSchedulerWorkerPoolImplTest()
+      : service_thread_("TaskSchedulerServiceThread") {}
 
   void SetUp() override {
     InitializeWorkerPool(TimeDelta::Max(), kNumWorkersInWorkerPool);
   }
 
   void TearDown() override {
+    service_thread_.Stop();
     worker_pool_->WaitForAllWorkersIdleForTesting();
     worker_pool_->JoinForTesting();
   }
 
   void InitializeWorkerPool(const TimeDelta& suggested_reclaim_time,
                             size_t num_workers) {
+    ASSERT_FALSE(worker_pool_);
+    ASSERT_FALSE(delayed_task_manager_);
+    service_thread_.Start();
+    delayed_task_manager_ =
+        base::MakeUnique<DelayedTaskManager>(service_thread_.task_runner());
     worker_pool_ = SchedulerWorkerPoolImpl::Create(
         SchedulerWorkerPoolParams("TestWorkerPool", ThreadPriority::NORMAL,
                                   IORestriction::ALLOWED, num_workers,
                                   suggested_reclaim_time),
         Bind(&TaskSchedulerWorkerPoolImplTest::ReEnqueueSequenceCallback,
              Unretained(this)),
-        &task_tracker_, &delayed_task_manager_);
+        &task_tracker_, delayed_task_manager_.get());
     ASSERT_TRUE(worker_pool_);
   }
 
   std::unique_ptr<SchedulerWorkerPoolImpl> worker_pool_;
 
   TaskTracker task_tracker_;
-  TestDelayedTaskManager delayed_task_manager_;
+  Thread service_thread_;
+  std::unique_ptr<DelayedTaskManager> delayed_task_manager_;
 
  private:
   void ReEnqueueSequenceCallback(scoped_refptr<Sequence> sequence) {
@@ -306,32 +302,38 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTaskAfterShutdown) {
   EXPECT_FALSE(task_runner->PostTask(FROM_HERE, Bind(&ShouldNotRunCallback)));
 }
 
-// Verify that a Task posted with a delay is added to the DelayedTaskManager and
-// doesn't run before its delay expires.
-TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTask) {
-  EXPECT_TRUE(delayed_task_manager_.GetDelayedRunTime().is_null());
+// Verify that a Task doesn't run before its delay expires.
+TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTaskNeverRuns) {
+  // Post a task with a very long delay.
+  EXPECT_TRUE(worker_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam())
+                  ->PostDelayedTask(FROM_HERE, Bind([]() {
+                                      ADD_FAILURE()
+                                          << "The delayed task should not run.";
+                                    }),
+                                    TimeDelta::FromDays(30)));
 
-  // Post a delayed task.
+  // Wait a few milliseconds. The test will fail if the delayed task runs.
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+}
+
+// Verify that a Task runs shortly after its delay expires.
+TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTask) {
+  TimeTicks start_time = TimeTicks::Now();
+
+  // Post a task with a short delay.
   WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
                          WaitableEvent::InitialState::NOT_SIGNALED);
   EXPECT_TRUE(worker_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam())
                   ->PostDelayedTask(FROM_HERE, Bind(&WaitableEvent::Signal,
                                                     Unretained(&task_ran)),
-                                    TimeDelta::FromSeconds(10)));
+                                    TestTimeouts::tiny_timeout()));
 
-  // The task should have been added to the DelayedTaskManager.
-  EXPECT_FALSE(delayed_task_manager_.GetDelayedRunTime().is_null());
-
-  // The task shouldn't run.
-  EXPECT_FALSE(task_ran.IsSignaled());
-
-  // Fast-forward time and post tasks that are ripe for execution.
-  delayed_task_manager_.SetCurrentTime(
-      delayed_task_manager_.GetDelayedRunTime());
-  delayed_task_manager_.PostReadyTasks();
-
-  // The task should run.
+  // Wait until the task runs.
   task_ran.Wait();
+
+  // Expect the task to run less than 250 ms after its delay expires.
+  EXPECT_LT(TimeTicks::Now() - start_time,
+            TimeDelta::FromMilliseconds(250) + TestTimeouts::tiny_timeout());
 }
 
 // Verify that the RunsTasksOnCurrentThread() method of a SEQUENCED TaskRunner
@@ -403,7 +405,8 @@ class TaskSchedulerWorkerPoolImplIORestrictionTest
 
 TEST_P(TaskSchedulerWorkerPoolImplIORestrictionTest, IORestriction) {
   TaskTracker task_tracker;
-  DelayedTaskManager delayed_task_manager(Bind(&DoNothing));
+  DelayedTaskManager delayed_task_manager(
+      make_scoped_refptr(new TestSimpleTaskRunner));
 
   auto worker_pool = SchedulerWorkerPoolImpl::Create(
       SchedulerWorkerPoolParams("TestWorkerPoolWithParam",

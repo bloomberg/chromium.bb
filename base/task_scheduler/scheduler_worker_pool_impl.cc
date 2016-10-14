@@ -416,7 +416,7 @@ void SchedulerWorkerPoolImpl::PostTaskWithSequenceNow(
 
   // Confirm that |task| is ready to run (its delayed run time is either null or
   // in the past).
-  DCHECK_LE(task->delayed_run_time, delayed_task_manager_->Now());
+  DCHECK_LE(task->delayed_run_time, TimeTicks::Now());
 
   // Because |worker| belongs to this worker pool, we know that the type
   // of its delegate is SchedulerWorkerDelegateImpl.
