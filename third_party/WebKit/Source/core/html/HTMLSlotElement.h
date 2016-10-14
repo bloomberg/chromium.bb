@@ -93,6 +93,9 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void clearDistribution();
   void saveAndClearDistribution();
 
+  bool supportsDistribution() const { return isInShadowTree(); }
+  void updateDistributedNodesManually();
+
   static AtomicString normalizeSlotName(const AtomicString&);
 
   DECLARE_VIRTUAL_TRACE();
