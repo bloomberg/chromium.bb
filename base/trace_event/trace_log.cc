@@ -739,7 +739,8 @@ void TraceLog::SetEnabled(const TraceConfig& trace_config,
     InternalTraceOptions old_options = trace_options();
 
     if (dispatching_to_observer_list_) {
-      NOTREACHED()
+      // TODO(ssid): Change to NOTREACHED after fixing crbug.com/625170.
+      DLOG(ERROR)
           << "Cannot manipulate TraceLog::Enabled state from an observer.";
       return;
     }
@@ -868,7 +869,8 @@ void TraceLog::SetDisabledWhileLocked(uint8_t modes_to_disable) {
     return;
 
   if (dispatching_to_observer_list_) {
-    NOTREACHED()
+    // TODO(ssid): Change to NOTREACHED after fixing crbug.com/625170.
+    DLOG(ERROR)
         << "Cannot manipulate TraceLog::Enabled state from an observer.";
     return;
   }
