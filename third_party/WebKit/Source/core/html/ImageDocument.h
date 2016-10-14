@@ -25,6 +25,7 @@
 #ifndef ImageDocument_h
 #define ImageDocument_h
 
+#include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImageElement.h"
 #include "wtf/RefPtr.h"
@@ -65,6 +66,7 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
   // the window, taking into account page zoom and device scale.
   float scale() const;
 
+  Member<HTMLDivElement> m_divElement;
   Member<HTMLImageElement> m_imageElement;
 
   // Whether enough of the image has been loaded to determine its size

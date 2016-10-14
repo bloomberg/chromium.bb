@@ -38,6 +38,8 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLBodyElement.h"
+#include "core/html/HTMLContentElement.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -180,6 +182,7 @@ void ImageDocumentParser::finish() {
 
 ImageDocument::ImageDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer, ImageDocumentClass),
+      m_divElement(nullptr),
       m_imageElement(nullptr),
       m_imageSizeIsKnown(false),
       m_didShrinkImage(false),
@@ -212,12 +215,40 @@ void ImageDocument::createDocumentStructure() {
   head->appendChild(meta);
 
   HTMLBodyElement* body = HTMLBodyElement::create(*this);
-  body->setAttribute(styleAttr, "margin: 0px;");
+
+  if (shouldShrinkToFit()) {
+    // Display the image prominently centered in the frame.
+    body->setAttribute(styleAttr, "margin: 0px;");
+
+    // See w3c example on how to centering an element:
+    // https://www.w3.org/Style/Examples/007/center.en.html
+    m_divElement = HTMLDivElement::create(*this);
+    m_divElement->setAttribute(styleAttr,
+                               "display: flex;"
+                               "flex-direction: column;"
+                               "justify-content: center;"
+                               "align-items: center;"
+                               "min-height: min-content;"
+                               "min-width: min-content;"
+                               "height: 100%;"
+                               "width: 100%;");
+    HTMLContentElement* content = HTMLContentElement::create(*this);
+    m_divElement->appendChild(content);
+
+    ShadowRoot& shadowRoot = body->ensureUserAgentShadowRoot();
+    shadowRoot.appendChild(m_divElement);
+  } else {
+    body->setAttribute(styleAttr, "margin: 0px;");
+  }
 
   willInsertBody();
 
+  StringBuilder imageStyle;
+  imageStyle.append("-webkit-user-select: none;");
+  if (shouldShrinkToFit() && m_shrinkToFitMode == Viewport)
+    imageStyle.append("max-width: 100%");
   m_imageElement = HTMLImageElement::create(*this);
-  m_imageElement->setAttribute(styleAttr, "-webkit-user-select: none");
+  m_imageElement->setAttribute(styleAttr, imageStyle.toAtomicString());
   m_imageElement->setLoadingImageDocument();
   m_imageElement->setSrc(url().getString());
   body->appendChild(m_imageElement.get());
@@ -294,6 +325,11 @@ void ImageDocument::imageClicked(int x, int y) {
   if (m_shouldShrinkImage) {
     windowSizeChanged();
   } else {
+    // Adjust the coordinates to account for the fact that the image was
+    // centered on the screen.
+    float imageX = x - m_imageElement->offsetLeft();
+    float imageY = y - m_imageElement->offsetTop();
+
     restoreImageSize();
 
     updateStyleAndLayout();
@@ -301,9 +337,9 @@ void ImageDocument::imageClicked(int x, int y) {
     double scale = this->scale();
 
     float scrollX =
-        x / scale - static_cast<float>(frame()->view()->width()) / 2;
+        imageX / scale - static_cast<float>(frame()->view()->width()) / 2;
     float scrollY =
-        y / scale - static_cast<float>(frame()->view()->height()) / 2;
+        imageY / scale - static_cast<float>(frame()->view()->height()) / 2;
 
     frame()->view()->layoutViewportScrollableArea()->setScrollOffset(
         ScrollOffset(scrollX, scrollY), ProgrammaticScroll);
@@ -367,15 +403,36 @@ void ImageDocument::windowSizeChanged() {
     return;
 
   if (m_shrinkToFitMode == Viewport) {
-    // For huge images, minimum-scale=0.1 is still too big on small screens.
-    // Set max-width so that the image will shrink to fit the width of the
-    // screen when the scale is minimum.  Don't shrink height to fit because we
-    // use width=device-width in viewport meta tag, and expect a full-width
-    // reading mode for normal-width-huge-height images.
+    // Zooming in and out of an image being displayed within a viewport is done
+    // by changing the page scale factor of the page instead of changing the
+    // size of the image.  The size of the image is set so that:
+    // * Images wider than the viewport take the full width of the screen.
+    // * Images taller than the viewport are initially aligned with the top of
+    //   of the frame.
+    // * Images smaller in either dimension are centered along that axis.
+    LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(
+        LayoutObject::shouldRespectImageOrientation(
+            m_imageElement->layoutObject()),
+        1.f);
     int viewportWidth = frame()->host()->visualViewport().size().width();
-    m_imageElement->setInlineStyleProperty(CSSPropertyMaxWidth,
-                                           viewportWidth * 10,
-                                           CSSPrimitiveValue::UnitType::Pixels);
+    int viewportHeight = frame()->host()->visualViewport().size().height();
+    float viewportAspectRatio = (float)viewportWidth / viewportHeight;
+
+    // For huge images, minimum-scale=0.1 is still too big on small screens.
+    // Set the <div> width so that the image will shrink to fit the width of the
+    // screen when the scale is minimum.
+    int maxWidth = std::min(imageSize.width().toInt(), viewportWidth * 10);
+    int divWidth = std::max(viewportWidth, maxWidth);
+    m_divElement->setInlineStyleProperty(CSSPropertyWidth, divWidth,
+                                         CSSPrimitiveValue::UnitType::Pixels);
+
+    // Explicitly set the height of the <div> containing the <img> so that it
+    // can display the full image without shrinking it, allowing a full-width
+    // reading mode for normal-width-huge-height images.
+    int divHeight = std::max(imageSize.height().toInt(),
+                             (int)(divWidth / viewportAspectRatio));
+    m_divElement->setInlineStyleProperty(CSSPropertyHeight, divHeight,
+                                         CSSPrimitiveValue::UnitType::Pixels);
     return;
   }
 
@@ -425,6 +482,7 @@ bool ImageDocument::shouldShrinkToFit() const {
 }
 
 DEFINE_TRACE(ImageDocument) {
+  visitor->trace(m_divElement);
   visitor->trace(m_imageElement);
   HTMLDocument::trace(visitor);
 }
