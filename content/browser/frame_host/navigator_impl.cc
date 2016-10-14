@@ -423,10 +423,10 @@ bool NavigatorImpl::NavigateToEntry(
     CHECK_EQ(controller_->GetPendingEntry(), &entry);
 
   if (controller_->GetPendingEntryIndex() == -1 &&
-      IsRendererDebugURL(dest_url)) {
+      dest_url.SchemeIs(url::kJavaScriptScheme)) {
     // If the pending entry index is -1 (which means a new navigation rather
-    // than a history one), and the user typed in a debug URL, don't add it to
-    // the session history.
+    // than a history one), and the user typed in a javascript: URL, don't add
+    // it to the session history.
     //
     // This is a hack. What we really want is to avoid adding to the history any
     // URL that doesn't generate content, and what would be great would be if we
@@ -987,7 +987,12 @@ void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   DCHECK(navigation_request);
 
-  DiscardPendingEntryIfNeeded(navigation_request->navigation_handle());
+  // With PlzNavigate, debug URLs will give a failed navigation because the
+  // WebUI backend won't find a handler for them. They will be processed in the
+  // renderer, however do not discard the pending entry so that the URL bar
+  // shows them correctly.
+  if (!IsRendererDebugURL(navigation_request->navigation_handle()->GetURL()))
+    DiscardPendingEntryIfNeeded(navigation_request->navigation_handle());
 
   // If the request was canceled by the user do not show an error page.
   if (error_code == net::ERR_ABORTED) {
