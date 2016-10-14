@@ -51,7 +51,7 @@ class PLATFORM_EXPORT SecurityPolicy {
   // True if the referrer should be omitted according to the
   // ReferrerPolicyNoReferrerWhenDowngrade. If you intend to send a
   // referrer header, you should use generateReferrer instead.
-  static bool shouldHideReferrer(const KURL&, const String& referrer);
+  static bool shouldHideReferrer(const KURL&, const KURL& referrer);
 
   // Returns the referrer modified according to the referrer policy for a
   // navigation to a given URL. If the referrer returned is empty, the

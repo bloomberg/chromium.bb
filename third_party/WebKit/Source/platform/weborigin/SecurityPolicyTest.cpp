@@ -63,10 +63,10 @@ TEST(SecurityPolicyTest, GenerateReferrerRespectsReferrerSchemesRegistry) {
 
 TEST(SecurityPolicyTest, ShouldHideReferrerRespectsReferrerSchemesRegistry) {
   const KURL exampleHttpUrl = KURL(ParsedURLString, "http://example.com/");
-  const String foobarURL = String::fromUTF8("foobar://somepage/");
+  const KURL foobarURL = KURL(KURL(), "foobar://somepage/");
   const String foobarScheme = String::fromUTF8("foobar");
 
-  EXPECT_TRUE(SecurityPolicy::shouldHideReferrer(exampleHttpUrl, foobarScheme));
+  EXPECT_TRUE(SecurityPolicy::shouldHideReferrer(exampleHttpUrl, foobarURL));
   SchemeRegistry::registerURLSchemeAsAllowedForReferrer(foobarScheme);
   EXPECT_FALSE(SecurityPolicy::shouldHideReferrer(exampleHttpUrl, foobarURL));
   SchemeRegistry::removeURLSchemeAsAllowedForReferrer(foobarScheme);
