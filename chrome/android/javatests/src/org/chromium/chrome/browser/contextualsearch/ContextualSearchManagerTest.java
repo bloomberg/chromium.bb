@@ -79,9 +79,9 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests the Contextual Search Manager using instrumentation tests.
  */
-
+// NOTE: Disable online detection so we we'll default to online on test bots with no network.
+@CommandLineFlags.Add(ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED)
 public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-
     private static final String TEST_PAGE =
             "/chrome/test/data/android/contextualsearch/tap_test.html";
     private static final int TEST_TIMEOUT = 15000;
@@ -151,17 +151,47 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         super.tearDown();
     }
 
+    /**
+     * Sets the online status and reloads the current Tab with our test URL.
+     * @param isOnline Whether to go online.
+     * @throws InterruptedException
+     * @throws TimeoutException
+     */
+    private void setOnlineStatusAndReload(boolean isOnline)
+            throws InterruptedException, TimeoutException {
+        mFakeServer.setIsOnline(isOnline);
+        final String testUrl = mTestServer.getURL(TEST_PAGE);
+        final Tab tab = getActivity().getActivityTab();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                tab.reload();
+            }
+        });
+        // Make sure the page is fully loaded.
+        ChromeTabUtils.waitForTabPageLoaded(tab, testUrl);
+    }
+
     //============================================================================================
     // Public API
     //============================================================================================
 
     /**
-     * Simulates a long-press on the given node.
+     * Simulates a long-press on the given node without waiting for the panel to respond.
+     * @param nodeId A string containing the node ID.
+     */
+    public void longPressNodeWithoutWaiting(String nodeId)
+            throws InterruptedException, TimeoutException {
+        Tab tab = getActivity().getActivityTab();
+        DOMUtils.longPressNode(this, tab.getContentViewCore(), nodeId);
+    }
+
+    /**
+     * Simulates a long-press on the given node and waits for the panel to peek.
      * @param nodeId A string containing the node ID.
      */
     public void longPressNode(String nodeId) throws InterruptedException, TimeoutException {
-        Tab tab = getActivity().getActivityTab();
-        DOMUtils.longPressNode(this, tab.getContentViewCore(), nodeId);
+        longPressNodeWithoutWaiting(nodeId);
         waitForPanelToPeek();
     }
 
@@ -447,7 +477,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Fakes navigation of the Content View to the URL was previously requested.
+     * Fakes navigation of the Content View to the URL that was previously requested.
      * @param isFailure whether the request resulted in a failure.
      */
     private void fakeContentViewDidNavigate(boolean isFailure) {
@@ -557,6 +587,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             success = panelState == PanelState.CLOSED || panelState == PanelState.UNDEFINED;
         }
         assertTrue(success);
+    }
+
+    private void assertPanelPeeked() {
+        assertTrue(mPanel.getPanelState() == PanelState.PEEKED);
     }
 
     private void assertLoadedNoUrl() {
@@ -958,6 +992,13 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
                 mPanel.closePanel(StateChangeReason.UNKNOWN, false);
             }
         });
+    }
+
+    /**
+     * Waits for the Action Bar to be visible in response to a selection.
+     */
+    private void waitForSelectActionBarVisible() throws InterruptedException {
+        assertWaitForSelectActionBarVisible(true);
     }
 
     //============================================================================================
@@ -1945,6 +1986,11 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertEquals(1, observer.hideCount);
     }
 
+    /**
+     * Asserts that the action bar does or does not become visible in response to a selection.
+     * @param visible Whether the Action Bar must become visible or not.
+     * @throws InterruptedException
+     */
     private void assertWaitForSelectActionBarVisible(final boolean visible)
             throws InterruptedException {
         CriteriaHelper.pollUiThread(Criteria.equals(visible, new Callable<Boolean>() {
@@ -2703,4 +2749,29 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     // TODO(twellington): Add an end-to-end integration test for fetching a thumbnail based on a
     //                    a URL that is included with the resolution response.
+
+    /**
+     * Tests that Contextual Search is fully disabled when offline.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    // NOTE: Remove the flag so we will run just this test with onLine detection enabled.
+    @CommandLineFlags.Remove(ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED)
+    public void testNetworkDisconnectedDeactivatesSearch()
+            throws InterruptedException, TimeoutException {
+        setOnlineStatusAndReload(false);
+        longPressNodeWithoutWaiting("states");
+        waitForSelectActionBarVisible();
+        // Verify the panel didn't open.  It should open by now if CS has not been disabled.
+        // TODO(donnd): Consider waiting for some condition to be sure we'll catch all failures,
+        // e.g. in case the Bar is about to show but has not yet appeared.  Currently catches ~90%.
+        assertPanelClosedOrUndefined();
+
+        // Similar sequence with network connected should peek for Longpress.
+        setOnlineStatusAndReload(true);
+        longPressNodeWithoutWaiting("states");
+        waitForSelectActionBarVisible();
+        assertPanelPeeked();
+    }
 }
