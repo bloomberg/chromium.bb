@@ -96,7 +96,8 @@ Layer::Layer(LayerType type)
 }
 
 Layer::~Layer() {
-  FOR_EACH_OBSERVER(LayerObserver, observer_list_, LayerDestroyed(this));
+  for (auto& observer : observer_list_)
+    observer.LayerDestroyed(this);
 
   // Destroying the animator may cause observers to use the layer (and
   // indirectly the WebLayer). Destroy the animator first so that the WebLayer
@@ -592,7 +593,8 @@ void Layer::SetShowSurface(
   frame_size_in_dip_ = frame_size_in_dip;
   RecomputeDrawsContentAndUVRect();
 
-  FOR_EACH_OBSERVER(LayerObserver, observer_list_, SurfaceChanged(this));
+  for (auto& observer : observer_list_)
+    observer.SurfaceChanged(this);
 }
 
 void Layer::SetShowSolidColorContent() {
@@ -795,8 +797,8 @@ scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
         PaintContext(display_list.get(), device_scale_factor_, invalidation));
   }
   display_list->Finalize();
-  FOR_EACH_OBSERVER(LayerObserver, observer_list_,
-                    DidPaintLayer(this, invalidation));
+  for (auto& observer : observer_list_)
+    observer.DidPaintLayer(this, invalidation);
   return display_list;
 }
 

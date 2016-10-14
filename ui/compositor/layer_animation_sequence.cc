@@ -38,9 +38,8 @@ LayerAnimationSequence::LayerAnimationSequence(LayerAnimationElement* element)
 }
 
 LayerAnimationSequence::~LayerAnimationSequence() {
-  FOR_EACH_OBSERVER(LayerAnimationObserver,
-                    observers_,
-                    DetachedFromSequence(this, true));
+  for (auto& observer : observers_)
+    observer.DetachedFromSequence(this, true);
 }
 
 void LayerAnimationSequence::Start(LayerAnimationDelegate* delegate) {
@@ -254,26 +253,23 @@ LayerAnimationElement* LayerAnimationSequence::FirstElement() const {
 }
 
 void LayerAnimationSequence::NotifyScheduled() {
-  FOR_EACH_OBSERVER(LayerAnimationObserver,
-                    observers_,
-                    OnLayerAnimationScheduled(this));
+  for (auto& observer : observers_)
+    observer.OnLayerAnimationScheduled(this);
 }
 
 void LayerAnimationSequence::NotifyStarted() {
-  FOR_EACH_OBSERVER(LayerAnimationObserver, observers_,
-                    OnLayerAnimationStarted(this));
+  for (auto& observer : observers_)
+    observer.OnLayerAnimationStarted(this);
 }
 
 void LayerAnimationSequence::NotifyEnded() {
-  FOR_EACH_OBSERVER(LayerAnimationObserver,
-                    observers_,
-                    OnLayerAnimationEnded(this));
+  for (auto& observer : observers_)
+    observer.OnLayerAnimationEnded(this);
 }
 
 void LayerAnimationSequence::NotifyAborted() {
-  FOR_EACH_OBSERVER(LayerAnimationObserver,
-                    observers_,
-                    OnLayerAnimationAborted(this));
+  for (auto& observer : observers_)
+    observer.OnLayerAnimationAborted(this);
 }
 
 LayerAnimationElement* LayerAnimationSequence::CurrentElement() const {

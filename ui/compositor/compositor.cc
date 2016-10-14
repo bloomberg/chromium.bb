@@ -214,11 +214,11 @@ Compositor::~Compositor() {
   CancelCompositorLock();
   DCHECK(!compositor_lock_);
 
-  FOR_EACH_OBSERVER(CompositorObserver, observer_list_,
-                    OnCompositingShuttingDown(this));
+  for (auto& observer : observer_list_)
+    observer.OnCompositingShuttingDown(this);
 
-  FOR_EACH_OBSERVER(CompositorAnimationObserver, animation_observer_list_,
-                    OnCompositingShuttingDown(this));
+  for (auto& observer : animation_observer_list_)
+    observer.OnCompositingShuttingDown(this);
 
   if (root_layer_)
     root_layer_->ResetCompositor();
@@ -443,9 +443,8 @@ bool Compositor::HasAnimationObserver(
 }
 
 void Compositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
-  FOR_EACH_OBSERVER(CompositorAnimationObserver,
-                    animation_observer_list_,
-                    OnAnimationStep(args.frame_time));
+  for (auto& observer : animation_observer_list_)
+    observer.OnAnimationStep(args.frame_time);
   if (animation_observer_list_.might_have_observers())
     host_->SetNeedsAnimate();
 }
@@ -483,29 +482,27 @@ void Compositor::DidFailToInitializeCompositorFrameSink() {
 
 void Compositor::DidCommit() {
   DCHECK(!IsLocked());
-  FOR_EACH_OBSERVER(CompositorObserver,
-                    observer_list_,
-                    OnCompositingDidCommit(this));
+  for (auto& observer : observer_list_)
+    observer.OnCompositingDidCommit(this);
 }
 
 void Compositor::DidCommitAndDrawFrame() {
 }
 
 void Compositor::DidCompleteSwapBuffers() {
-  FOR_EACH_OBSERVER(CompositorObserver, observer_list_,
-                    OnCompositingEnded(this));
+  for (auto& observer : observer_list_)
+    observer.OnCompositingEnded(this);
 }
 
 void Compositor::DidPostSwapBuffers() {
   base::TimeTicks start_time = base::TimeTicks::Now();
-  FOR_EACH_OBSERVER(CompositorObserver, observer_list_,
-                    OnCompositingStarted(this, start_time));
+  for (auto& observer : observer_list_)
+    observer.OnCompositingStarted(this, start_time);
 }
 
 void Compositor::DidAbortSwapBuffers() {
-  FOR_EACH_OBSERVER(CompositorObserver,
-                    observer_list_,
-                    OnCompositingAborted(this));
+  for (auto& observer : observer_list_)
+    observer.OnCompositingAborted(this);
 }
 
 void Compositor::SetOutputIsSecure(bool output_is_secure) {
@@ -529,9 +526,8 @@ scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {
   if (!compositor_lock_) {
     compositor_lock_ = new CompositorLock(this);
     host_->SetDeferCommits(true);
-    FOR_EACH_OBSERVER(CompositorObserver,
-                      observer_list_,
-                      OnCompositingLockStateChanged(this));
+    for (auto& observer : observer_list_)
+      observer.OnCompositingLockStateChanged(this);
   }
   return compositor_lock_;
 }
@@ -540,9 +536,8 @@ void Compositor::UnlockCompositor() {
   DCHECK(compositor_lock_);
   compositor_lock_ = NULL;
   host_->SetDeferCommits(false);
-  FOR_EACH_OBSERVER(CompositorObserver,
-                    observer_list_,
-                    OnCompositingLockStateChanged(this));
+  for (auto& observer : observer_list_)
+    observer.OnCompositingLockStateChanged(this);
 }
 
 void Compositor::CancelCompositorLock() {

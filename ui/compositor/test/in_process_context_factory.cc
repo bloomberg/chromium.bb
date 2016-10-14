@@ -131,7 +131,8 @@ InProcessContextFactory::~InProcessContextFactory() {
 }
 
 void InProcessContextFactory::SendOnLostResources() {
-  FOR_EACH_OBSERVER(ContextFactoryObserver, observer_list_, OnLostResources());
+  for (auto& observer : observer_list_)
+    observer.OnLostResources();
 }
 
 void InProcessContextFactory::CreateCompositorFrameSink(
