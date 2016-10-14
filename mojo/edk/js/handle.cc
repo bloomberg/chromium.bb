@@ -37,7 +37,8 @@ void HandleWrapper::NotifyCloseObservers() {
   if (!handle_.is_valid())
     return;
 
-  FOR_EACH_OBSERVER(HandleCloseObserver, close_observers_, OnWillCloseHandle());
+  for (auto& observer : close_observers_)
+    observer.OnWillCloseHandle();
 }
 
 }  // namespace js
