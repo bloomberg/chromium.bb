@@ -30,7 +30,15 @@ void SendRulesetToRenderProcess(base::File* file,
 }
 
 // The file handle is closed when the argument goes out of scope.
-void FileCloser(base::File) {}
+void CloseFile(base::File) {}
+
+// Posts the |file| handle to the file thread so it can be closed.
+void CloseFileOnFileThread(base::File* file) {
+  if (!file->IsValid())
+    return;
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+                                   base::Bind(&CloseFile, base::Passed(file)));
+}
 
 }  // namespace
 
@@ -44,13 +52,12 @@ ContentRulesetDistributor::ContentRulesetDistributor() {
 }
 
 ContentRulesetDistributor::~ContentRulesetDistributor() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&FileCloser, base::Passed(&ruleset_data_)));
+  CloseFileOnFileThread(&ruleset_data_);
 }
 
 void ContentRulesetDistributor::PublishNewVersion(base::File ruleset_data) {
   DCHECK(ruleset_data.IsValid());
+  CloseFileOnFileThread(&ruleset_data_);
   ruleset_data_ = std::move(ruleset_data);
   for (auto it = content::RenderProcessHost::AllHostsIterator(); !it.IsAtEnd();
        it.Advance()) {

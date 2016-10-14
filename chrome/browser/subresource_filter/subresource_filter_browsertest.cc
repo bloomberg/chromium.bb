@@ -32,6 +32,8 @@ namespace subresource_filter {
 
 namespace {
 
+void CloseFile(base::File) {}
+
 class RulesetDistributionListener : public RulesetDistributor {
  public:
   RulesetDistributionListener() {}
@@ -44,7 +46,10 @@ class RulesetDistributionListener : public RulesetDistributor {
   }
 
  private:
-  void PublishNewVersion(base::File) override {
+  void PublishNewVersion(base::File file) override {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&CloseFile, base::Passed(&file)));
     if (!quit_closure_.is_null())
       quit_closure_.Run();
   }
