@@ -440,17 +440,20 @@ gfx::PointF RenderWidgetHostViewBase::TransformPointToRootCoordSpaceF(
       gfx::ToRoundedPoint(point)));
 }
 
-gfx::Point RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
+bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface) {
-  return point;
+    const cc::SurfaceId& original_surface,
+    gfx::Point* transformed_point) {
+  *transformed_point = point;
+  return true;
 }
 
-gfx::Point RenderWidgetHostViewBase::TransformPointToCoordSpaceForView(
+bool RenderWidgetHostViewBase::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
-    RenderWidgetHostViewBase* target_view) {
+    RenderWidgetHostViewBase* target_view,
+    gfx::Point* transformed_point) {
   NOTREACHED();
-  return point;
+  return true;
 }
 
 bool RenderWidgetHostViewBase::IsRenderWidgetHostViewGuest() {

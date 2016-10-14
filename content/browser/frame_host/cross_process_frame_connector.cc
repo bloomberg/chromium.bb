@@ -129,49 +129,58 @@ void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {
 gfx::Point CrossProcessFrameConnector::TransformPointToRootCoordSpace(
     const gfx::Point& point,
     const cc::SurfaceId& surface_id) {
-  return TransformPointToCoordSpaceForView(point, GetRootRenderWidgetHostView(),
-                                           surface_id);
+  gfx::Point transformed_point;
+  TransformPointToCoordSpaceForView(point, GetRootRenderWidgetHostView(),
+                                    surface_id, &transformed_point);
+  return transformed_point;
 }
 
-gfx::Point CrossProcessFrameConnector::TransformPointToLocalCoordSpace(
+bool CrossProcessFrameConnector::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
     const cc::SurfaceId& original_surface,
-    const cc::SurfaceId& local_surface_id) {
-  if (original_surface == local_surface_id)
-    return point;
+    const cc::SurfaceId& local_surface_id,
+    gfx::Point* transformed_point) {
+  if (original_surface == local_surface_id) {
+    *transformed_point = point;
+    return true;
+  }
 
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
-  gfx::Point transformed_point =
+  *transformed_point =
       gfx::ConvertPointToPixel(view_->current_surface_scale_factor(), point);
   cc::SurfaceHittest hittest(nullptr, GetSurfaceManager());
   if (!hittest.TransformPointToTargetSurface(original_surface, local_surface_id,
-                                             &transformed_point))
-    DCHECK(false);
+                                             transformed_point))
+    return false;
 
-  return gfx::ConvertPointToDIP(view_->current_surface_scale_factor(),
-                                transformed_point);
+  *transformed_point = gfx::ConvertPointToDIP(
+      view_->current_surface_scale_factor(), *transformed_point);
+  return true;
 }
 
-gfx::Point CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
+bool CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
     RenderWidgetHostViewBase* target_view,
-    const cc::SurfaceId& local_surface_id) {
+    const cc::SurfaceId& local_surface_id,
+    gfx::Point* transformed_point) {
   RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
   if (!root_view)
-    return point;
+    return false;
 
   // It is possible that neither the original surface or target surface is an
   // ancestor of the other in the RenderWidgetHostView tree (e.g. they could
-  // be siblings). To account for this, the point is first tranformed into the
+  // be siblings). To account for this, the point is first transformed into the
   // root coordinate space and then the root is asked to perform the conversion.
-  gfx::Point root_point =
-      root_view->TransformPointToLocalCoordSpace(point, local_surface_id);
+  if (!root_view->TransformPointToLocalCoordSpace(point, local_surface_id,
+                                                  transformed_point))
+    return false;
 
   if (target_view == root_view)
-    return root_point;
+    return true;
 
-  return root_view->TransformPointToCoordSpaceForView(point, target_view);
+  return root_view->TransformPointToCoordSpaceForView(
+      *transformed_point, target_view, transformed_point);
 }
 
 void CrossProcessFrameConnector::ForwardProcessAckedTouchEvent(

@@ -2063,27 +2063,31 @@ void RenderWidgetHostViewAura::ProcessGestureEvent(
   host_->ForwardGestureEventWithLatencyInfo(event, latency);
 }
 
-gfx::Point RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
+bool RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface) {
-  gfx::Point transformed_point;
+    const cc::SurfaceId& original_surface,
+    gfx::Point* transformed_point) {
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
   gfx::Point point_in_pixels =
       gfx::ConvertPointToPixel(device_scale_factor_, point);
-  transformed_point = delegated_frame_host_->TransformPointToLocalCoordSpace(
-      point_in_pixels, original_surface);
-  return gfx::ConvertPointToDIP(device_scale_factor_, transformed_point);
+  if (!delegated_frame_host_->TransformPointToLocalCoordSpace(
+          point_in_pixels, original_surface, transformed_point))
+    return false;
+  *transformed_point =
+      gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
+  return true;
 }
 
-gfx::Point RenderWidgetHostViewAura::TransformPointToCoordSpaceForView(
+bool RenderWidgetHostViewAura::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
-    RenderWidgetHostViewBase* target_view) {
+    RenderWidgetHostViewBase* target_view,
+    gfx::Point* transformed_point) {
   // In TransformPointToLocalCoordSpace() there is a Point-to-Pixel conversion,
   // but it is not necessary here because the final target view is responsible
   // for converting before computing the final transform.
-  return delegated_frame_host_->TransformPointToCoordSpaceForView(point,
-                                                                  target_view);
+  return delegated_frame_host_->TransformPointToCoordSpaceForView(
+      point, target_view, transformed_point);
 }
 
 void RenderWidgetHostViewAura::FocusedNodeChanged(

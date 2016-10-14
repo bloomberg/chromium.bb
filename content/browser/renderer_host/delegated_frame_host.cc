@@ -228,28 +228,31 @@ cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
   return target_local_frame_id;
 }
 
-gfx::Point DelegatedFrameHost::TransformPointToLocalCoordSpace(
+bool DelegatedFrameHost::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface) {
+    const cc::SurfaceId& original_surface,
+    gfx::Point* transformed_point) {
   cc::SurfaceId surface_id(frame_sink_id_, local_frame_id_);
-  if (surface_id.is_null() || original_surface == surface_id)
-    return point;
+  if (surface_id.is_null())
+    return false;
+  *transformed_point = point;
+  if (original_surface == surface_id)
+    return true;
 
-  gfx::Point transformed_point = point;
   cc::SurfaceHittest hittest(nullptr, GetSurfaceManager());
-  hittest.TransformPointToTargetSurface(original_surface, surface_id,
-                                        &transformed_point);
-  return transformed_point;
+  return hittest.TransformPointToTargetSurface(original_surface, surface_id,
+                                               transformed_point);
 }
 
-gfx::Point DelegatedFrameHost::TransformPointToCoordSpaceForView(
+bool DelegatedFrameHost::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
-    RenderWidgetHostViewBase* target_view) {
+    RenderWidgetHostViewBase* target_view,
+    gfx::Point* transformed_point) {
   if (local_frame_id_.is_null())
-    return point;
+    return false;
 
   return target_view->TransformPointToLocalCoordSpace(
-      point, cc::SurfaceId(frame_sink_id_, local_frame_id_));
+      point, cc::SurfaceId(frame_sink_id_, local_frame_id_), transformed_point);
 }
 
 bool DelegatedFrameHost::ShouldSkipFrame(gfx::Size size_in_dip) const {

@@ -257,18 +257,21 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // RenderWidget and needs to be translated to viewport coordinates for the
   // root RWHV, in which case this method is called on the root RWHV with the
   // out-of-process iframe's SurfaceId.
-  // This does not transform points between surfaces where one does not
-  // contain the other. To transform between sibling surfaces, the point must
-  // be transformed to the root's coordinate space as an intermediate step.
-  virtual gfx::Point TransformPointToLocalCoordSpace(
+  // Returns false when this attempts to transform a point between coordinate
+  // spaces of surfaces where one does not contain the other. To transform
+  // between sibling surfaces, the point must be transformed to the root's
+  // coordinate space as an intermediate step.
+  virtual bool TransformPointToLocalCoordSpace(
       const gfx::Point& point,
-      const cc::SurfaceId& original_surface);
+      const cc::SurfaceId& original_surface,
+      gfx::Point* transformed_point);
 
   // Transform a point that is in the coordinate space for the current
   // RenderWidgetHostView to the coordinate space of the target_view.
-  virtual gfx::Point TransformPointToCoordSpaceForView(
+  virtual bool TransformPointToCoordSpaceForView(
       const gfx::Point& point,
-      RenderWidgetHostViewBase* target_view);
+      RenderWidgetHostViewBase* target_view,
+      gfx::Point* transformed_point);
 
   // TODO(kenrb, wjmaclean): This is a temporary subclass identifier for
   // RenderWidgetHostViewGuests that is needed for special treatment during

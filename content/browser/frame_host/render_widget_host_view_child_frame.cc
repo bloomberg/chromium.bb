@@ -531,24 +531,29 @@ gfx::Point RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(
       point, cc::SurfaceId(frame_sink_id_, local_frame_id_));
 }
 
-gfx::Point RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
+bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface) {
+    const cc::SurfaceId& original_surface,
+    gfx::Point* transformed_point) {
+  *transformed_point = point;
   if (!frame_connector_ || local_frame_id_.is_null())
-    return point;
+    return false;
 
   return frame_connector_->TransformPointToLocalCoordSpace(
-      point, original_surface, cc::SurfaceId(frame_sink_id_, local_frame_id_));
+      point, original_surface, cc::SurfaceId(frame_sink_id_, local_frame_id_),
+      transformed_point);
 }
 
-gfx::Point RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
+bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
-    RenderWidgetHostViewBase* target_view) {
+    RenderWidgetHostViewBase* target_view,
+    gfx::Point* transformed_point) {
   if (!frame_connector_ || local_frame_id_.is_null() || target_view == this)
-    return point;
+    return false;
 
   return frame_connector_->TransformPointToCoordSpaceForView(
-      point, target_view, cc::SurfaceId(frame_sink_id_, local_frame_id_));
+      point, target_view, cc::SurfaceId(frame_sink_id_, local_frame_id_),
+      transformed_point);
 }
 
 bool RenderWidgetHostViewChildFrame::IsRenderWidgetHostViewChildFrame() {

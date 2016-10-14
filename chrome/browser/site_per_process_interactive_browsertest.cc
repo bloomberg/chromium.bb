@@ -388,14 +388,8 @@ void WaitForMultipleFullscreenEvents(
 // - fullscreenchange events fire in both frames.
 // - fullscreen CSS is applied correctly in both frames.
 //
-// Flaky on Windows: https://crbug.com/647311
-#if defined(OS_WIN)
-#define MAYBE_FullscreenElementInSubframe DISABLED_FullscreenElementInSubframe
-#else
-#define MAYBE_FullscreenElementInSubframe FullscreenElementInSubframe
-#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       MAYBE_FullscreenElementInSubframe) {
+                       FullscreenElementInSubframe) {
   // Start on a page with one subframe (id "child-0") that has
   // "allowfullscreen" enabled.
   GURL main_url(embedded_test_server()->GetURL(
@@ -588,14 +582,8 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   EXPECT_EQ("none", GetFullscreenElementId(grandchild));
 }
 
-// Flaky on Windows: https://crbug.com/647311
-#if defined(OS_WIN)
-#define MAYBE_FullscreenElementInABAAndExitViaEscapeKey DISABLED_FullscreenElementInABAAndExitViaEscapeKey
-#else
-#define MAYBE_FullscreenElementInABAAndExitViaEscapeKey FullscreenElementInABAAndExitViaEscapeKey
-#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       MAYBE_FullscreenElementInABAAndExitViaEscapeKey) {
+                       FullscreenElementInABAAndExitViaEscapeKey) {
   FullscreenElementInABA(FullscreenExitMethod::ESC_PRESS);
 }
 
