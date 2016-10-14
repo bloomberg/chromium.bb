@@ -15,6 +15,7 @@ LDADD =							\
 	$(LTLIBINTL)
 
 backtranslate_SOURCES = backtranslate.c
+backtranslate_noUndefinedDots_SOURCES = backtranslate_noUndefinedDots.c
 backtranslate_with_letsign_SOURCES = backtranslate_with_letsign.c
 capitalization_SOURCES = capitalization.c
 capitalized_word_SOURCES = default_table.h capitalized_word.c
@@ -71,6 +72,7 @@ program_TESTS =					\
 	hyphenate_straightforward		\
 	hyphenate_xxx				\
 	backtranslate_with_letsign		\
+	backtranslate_noUndefinedDots	\
 	backtranslate				\
 	pass1Only				\
 	outpos					\

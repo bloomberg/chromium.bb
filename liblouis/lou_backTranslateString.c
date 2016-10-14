@@ -896,7 +896,9 @@ back_updatePositions (const widechar * outChars, int inLength, int outLength)
 static int
 undefinedDots (widechar dots)
 {
-/*Print out dot numbers */
+  if (mode & noUndefinedDots)
+    return 1;
+  /*Print out dot numbers */
   widechar buffer[20];
   int k = 1;
   buffer[0] = '\\';

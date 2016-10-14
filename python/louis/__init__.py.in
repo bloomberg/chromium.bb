@@ -344,6 +344,7 @@ pass1Only = 16
 compbrlLeftCursor = 32
 otherTrans = 64
 ucBrl = 128
+noUndefinedDots = 256
 #}
 
 if __name__ == '__main__':
