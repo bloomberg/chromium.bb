@@ -219,6 +219,11 @@ ApplyUpdateResult V4Store::ProcessPartialUpdateAndWriteToDisk(
 
   ApplyUpdateResult result =
       ProcessUpdate(metric, hash_prefix_map_old, response);
+  if (result == APPLY_UPDATE_SUCCESS) {
+    Checksum checksum = response->checksum();
+    response.reset();
+    RecordStoreWriteResult(WriteToDisk(checksum));
+  }
   return result;
 }
 
@@ -227,7 +232,9 @@ ApplyUpdateResult V4Store::ProcessFullUpdateAndWriteToDisk(
     std::unique_ptr<ListUpdateResponse> response) {
   ApplyUpdateResult result = ProcessFullUpdate(metric, response);
   if (result == APPLY_UPDATE_SUCCESS) {
-    RecordStoreWriteResult(WriteToDisk(std::move(response)));
+    Checksum checksum = response->checksum();
+    response.reset();
+    RecordStoreWriteResult(WriteToDisk(checksum));
   }
   return result;
 }
@@ -627,20 +634,24 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
 StoreReadResult V4Store::ReadFromDisk() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  TimeTicks before = TimeTicks::Now();
-  std::string contents;
-  bool read_success = base::ReadFileToString(store_path_, &contents);
-  if (!read_success) {
-    return FILE_UNREADABLE_FAILURE;
-  }
-
-  if (contents.empty()) {
-    return FILE_EMPTY_FAILURE;
-  }
-
   V4StoreFileFormat file_format;
-  if (!file_format.ParseFromString(contents)) {
-    return PROTO_PARSING_FAILURE;
+  TimeTicks before = TimeTicks::Now();
+  {
+    // A temporary scope to make sure that |contents| get destroyed as soon as
+    // we are doing using it.
+    std::string contents;
+    bool read_success = base::ReadFileToString(store_path_, &contents);
+    if (!read_success) {
+      return FILE_UNREADABLE_FAILURE;
+    }
+
+    if (contents.empty()) {
+      return FILE_EMPTY_FAILURE;
+    }
+
+    if (!file_format.ParseFromString(contents)) {
+      return PROTO_PARSING_FAILURE;
+    }
   }
 
   if (file_format.magic_number() != kFileMagic) {
@@ -671,28 +682,27 @@ StoreReadResult V4Store::ReadFromDisk() {
   return READ_SUCCESS;
 }
 
-StoreWriteResult V4Store::WriteToDisk(
-    std::unique_ptr<ListUpdateResponse> response) const {
-  // Do not write partial updates to the disk.
-  // After merging the updates, the ListUpdateResponse passed to this method
-  // should be a FULL_UPDATE.
-  if (!response->has_response_type() ||
-      response->response_type() != ListUpdateResponse::FULL_UPDATE) {
-    DVLOG(1) << "Failure: response->has_response_type(): "
-             << response->has_response_type()
-             << " : response->response_type(): " << response->response_type();
-    return INVALID_RESPONSE_TYPE_FAILURE;
+StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) const {
+  V4StoreFileFormat file_format;
+  ListUpdateResponse* lur = file_format.mutable_list_update_response();
+  *(lur->mutable_checksum()) = checksum;
+  lur->set_new_client_state(state_);
+  lur->set_response_type(ListUpdateResponse::FULL_UPDATE);
+  for (auto map_iter : hash_prefix_map_) {
+    ThreatEntrySet* additions = lur->add_additions();
+    // TODO(vakh): Write RICE encoded hash prefixes on disk. Not doing so
+    // currently since it takes a long time to decode them on startup, which
+    // blocks resource load. See: http://crbug.com/654819
+    additions->set_compression_type(RAW);
+    additions->mutable_raw_hashes()->set_prefix_size(map_iter.first);
+    additions->mutable_raw_hashes()->set_raw_hashes(map_iter.second);
   }
 
   // Attempt writing to a temporary file first and at the end, swap the files.
   const base::FilePath new_filename = TemporaryFileForFilename(store_path_);
 
-  V4StoreFileFormat file_format;
   file_format.set_magic_number(kFileMagic);
   file_format.set_version_number(kFileVersion);
-  ListUpdateResponse* response_to_write =
-      file_format.mutable_list_update_response();
-  response_to_write->Swap(response.get());
   std::string file_format_string;
   file_format.SerializeToString(&file_format_string);
   size_t written = base::WriteFile(new_filename, file_format_string.data(),

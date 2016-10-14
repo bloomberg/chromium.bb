@@ -255,6 +255,7 @@ class V4Store {
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestRemovalsWithRiceEncodingSucceeds);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestMergeUpdatesFailsChecksum);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestChecksumErrorOnStartup);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, WriteToDiskFails);
   friend class V4StoreTest;
 
   // If |prefix_size| is within expected range, and |raw_hashes_length| is a
@@ -361,9 +362,9 @@ class V4Store {
       const ::google::protobuf::RepeatedPtrField<ThreatEntrySet>& additions,
       HashPrefixMap* additions_map);
 
-  // Writes the FULL_UPDATE |response| to disk as a V4StoreFileFormat proto.
-  StoreWriteResult WriteToDisk(
-      std::unique_ptr<ListUpdateResponse> response) const;
+  // Writes the hash_prefix_map_ to disk as a V4StoreFileFormat proto.
+  // |checksum| is used to set the |checksum| field in the final proto.
+  StoreWriteResult WriteToDisk(const Checksum& checksum) const;
 
   // The checksum value as read from the disk, until it is verified. Once
   // verified, it is cleared.
