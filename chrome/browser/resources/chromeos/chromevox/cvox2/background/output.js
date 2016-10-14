@@ -449,6 +449,9 @@ Output.RULES = {
       enter: '$nameFromNode',
       speak: '$name $description $descendants'
     },
+    embeddedObject: {
+      speak: '$name'
+    },
     grid: {
       enter: '$nameFromNode $role $description'
     },

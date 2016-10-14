@@ -314,6 +314,8 @@ DesktopAutomationHandler.prototype = {
       ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
       if (!this.shouldOutput_(evt))
         return;
+
+      Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
       o.withRichSpeechAndBraille(
           ChromeVoxState.instance.currentRange, null, evt.type).go();
     }.bind(this));
