@@ -41,7 +41,7 @@ body {
 
 @keyframes spin {
   from {
-    transform: rotate(-1440deg) scale(0.8);
+    transform: rotate(1440deg) scale(0.8);
   }
 }
 
@@ -175,11 +175,12 @@ body {
 
 .action {
   background: var(--google-blue-500);
+  border-radius: 2px;
   color: white;
-  font-size: .875em;
+  font-size: .8125em;
   font-weight: 500;
-  line-height: 2.5em;
-  padding: 0.1em 1.5em;
+  line-height: 2.25rem;
+  padding: 0 1.5em;
 }
 
 .action:active {
@@ -193,14 +194,10 @@ body {
 .link {
   color: var(--google-blue-700);
   display: inline-block;
-  font-size: .875em;
+  font-size: .8125em;
   margin: 1.5em;
   text-align: center;
   text-decoration: none;
-}
-
-.link:hover {
-  text-decoration: underline;
 }
 
 .watermark {
@@ -213,4 +210,10 @@ body {
   height: 24px;
   position: absolute;
   width: 74px;
+}
+
+@media(max-height: 608px) {
+  .watermark {
+    display: none;
+  }
 }

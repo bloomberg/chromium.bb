@@ -11,11 +11,24 @@ cr.define('welcome', function() {
 
   function onDecline(e) {
     chrome.send('handleUserDecline');
+    e.preventDefault();
   }
 
   function initialize() {
     $('accept-button').addEventListener('click', onAccept);
     $('decline-button').addEventListener('click', onDecline);
+
+    var logo = document.querySelector('.logo-icon');
+    logo.onclick = function(e) {
+      logo.animate({
+        transform: ['none', 'rotate(-10turn)'],
+      }, /** @type {!KeyframeEffectOptions} */({
+        duration: 500,
+        easing: 'cubic-bezier(1, 0, 0, 1)',
+      }));
+    };
+
+    document.fonts.load('bold .8125em Roboto');
   }
 
   return {
