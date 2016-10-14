@@ -14,12 +14,20 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.drawable.shapes.OvalShape;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -85,6 +93,7 @@ public class DownloadNotificationService extends Service {
     private int mNextNotificationId;
     private int mNumAutoResumptionAttemptLeft;
     private boolean mStopPostingProgressNotifications;
+    private Bitmap mDownloadSuccessLargeIcon;
 
    /**
      * Class for clients to access.
@@ -355,6 +364,12 @@ public class DownloadNotificationService extends Service {
         intent.setComponent(component);
         builder.setContentIntent(PendingIntent.getBroadcast(
                 mContext, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT));
+        if (mDownloadSuccessLargeIcon == null) {
+            Bitmap bitmap = BitmapFactory.decodeResource(
+                    mContext.getResources(), R.drawable.offline_pin);
+            mDownloadSuccessLargeIcon = getLargeNotificationIcon(bitmap);
+        }
+        builder.setLargeIcon(mDownloadSuccessLargeIcon);
         updateNotification(notificationId, builder.build());
         removeSharedPreferenceEntry(downloadGuid);
         mDownloadsInProgress.remove(downloadGuid);
@@ -455,6 +470,32 @@ public class DownloadNotificationService extends Service {
                 .setAutoCancel(true)
                 .setContentText(contentText);
         return builder;
+    }
+
+    private Bitmap getLargeNotificationIcon(Bitmap bitmap) {
+        Resources resources = mContext.getResources();
+        int height = (int) resources.getDimension(android.R.dimen.notification_large_icon_height);
+        int width = (int) resources.getDimension(android.R.dimen.notification_large_icon_width);
+        final OvalShape circle = new OvalShape();
+        circle.resize(width, height);
+        final Paint paint = new Paint();
+        paint.setColor(ApiCompatibilityUtils.getColor(resources, R.color.google_blue_grey_500));
+
+        final Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(result);
+        circle.draw(canvas, paint);
+        float leftOffset = (width - bitmap.getWidth()) / 2f;
+        float topOffset = (height - bitmap.getHeight()) / 2f;
+        if (leftOffset >= 0 && topOffset >= 0) {
+            canvas.drawBitmap(bitmap, leftOffset, topOffset, null);
+        } else {
+            // Scale down the icon into the notification icon dimensions
+            canvas.drawBitmap(bitmap,
+                    new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()),
+                    new Rect(0, 0, width, height),
+                    null);
+        }
+        return result;
     }
 
     /**
