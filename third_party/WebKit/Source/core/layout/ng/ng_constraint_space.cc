@@ -60,7 +60,7 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
       is_new_fc_(false) {
   physical_space_ =
       new NGPhysicalConstraintSpace(size.ConvertToPhysical(writing_mode));
-  for (const NGExclusion& exclusion : other.PhysicalSpace()->Exclusions()) {
+  for (const auto& exclusion : other.PhysicalSpace()->Exclusions()) {
     physical_space_->AddExclusion(exclusion);
   }
 }

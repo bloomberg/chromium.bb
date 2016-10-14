@@ -27,7 +27,7 @@ enum NGFragmentationType {
   FragmentRegion
 };
 
-struct NGExclusion {
+struct NGExclusion : public GarbageCollected<NGExclusion> {
   NGExclusion(LayoutUnit top,
               LayoutUnit right,
               LayoutUnit bottom,
@@ -41,6 +41,7 @@ struct NGExclusion {
   LayoutUnit Right() const { return rect.size.width + rect.location.left; }
   LayoutUnit Bottom() const { return rect.size.height + rect.location.top; }
   LayoutUnit Left() const { return rect.location.left; }
+
   String ToString() const {
     return String::format("%s,%s %sx%s",
                           rect.location.left.toString().ascii().data(),
@@ -49,6 +50,8 @@ struct NGExclusion {
                           rect.size.height.toString().ascii().data());
   }
   NGPhysicalRect rect;
+
+  DEFINE_INLINE_TRACE() {}
 };
 
 // The NGPhysicalConstraintSpace contains the underlying data for the
@@ -62,10 +65,11 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
 
   NGPhysicalSize ContainerSize() const { return container_size_; }
 
-  void AddExclusion(const NGExclusion, unsigned options = 0);
-  const Vector<NGExclusion>& Exclusions(unsigned options = 0) const;
+  void AddExclusion(const NGExclusion*, unsigned options = 0);
+  const HeapVector<Member<const NGExclusion>>& Exclusions(
+      unsigned options = 0) const;
 
-  DEFINE_INLINE_TRACE() {}
+  DEFINE_INLINE_TRACE() { visitor->trace(exclusions_); }
 
  private:
   friend class NGConstraintSpace;
@@ -79,7 +83,7 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
   unsigned width_direction_fragmentation_type_ : 2;
   unsigned height_direction_fragmentation_type_ : 2;
 
-  Vector<NGExclusion> exclusions_;
+  HeapVector<Member<const NGExclusion>> exclusions_;
 };
 
 }  // namespace blink

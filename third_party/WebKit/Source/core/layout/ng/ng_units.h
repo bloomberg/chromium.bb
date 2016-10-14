@@ -158,6 +158,12 @@ inline std::ostream& operator<<(std::ostream& stream,
   return stream << value.ToString();
 }
 
+// Struct to represent a simple edge that has start and end.
+struct NGEdge {
+  LayoutUnit start;
+  LayoutUnit end;
+};
+
 }  // namespace blink
 
 #endif  // NGUnits_h

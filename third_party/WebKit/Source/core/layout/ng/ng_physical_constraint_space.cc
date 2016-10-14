@@ -24,13 +24,13 @@ NGPhysicalConstraintSpace::NGPhysicalConstraintSpace()
       width_direction_fragmentation_type_(FragmentNone),
       height_direction_fragmentation_type_(FragmentNone) {}
 
-void NGPhysicalConstraintSpace::AddExclusion(const NGExclusion exclusion,
+void NGPhysicalConstraintSpace::AddExclusion(const NGExclusion* exclusion,
                                              unsigned options) {
   exclusions_.append(exclusion);
 }
 
-const Vector<NGExclusion>& NGPhysicalConstraintSpace::Exclusions(
-    unsigned options) const {
+const HeapVector<Member<const NGExclusion>>&
+NGPhysicalConstraintSpace::Exclusions(unsigned options) const {
   // TODO(layout-ng): Filter based on options? Perhaps layout Opportunities
   // should filter instead?
   return exclusions_;

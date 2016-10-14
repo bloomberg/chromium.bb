@@ -7,51 +7,40 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_layout_opportunity_tree_node.h"
+#include "core/layout/ng/ng_units.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
+typedef const NGConstraintSpace NGLayoutOpportunity;
+typedef HeapVector<Member<const NGLayoutOpportunity>> NGLayoutOpportunities;
+
 class CORE_EXPORT NGLayoutOpportunityIterator final
-    : public GarbageCollectedFinalized<NGLayoutOpportunityIterator> {
+    : public GarbageCollected<NGLayoutOpportunityIterator> {
  public:
   NGLayoutOpportunityIterator(NGConstraintSpace* space,
                               unsigned clear,
                               bool for_inline_or_bfc);
-  ~NGLayoutOpportunityIterator() {}
 
-  NGConstraintSpace* Next();
+  // Gets the next Layout Opportunity or nullptr if the search is exhausted.
+  // TODO(chrome-layout-team): Refactor with using C++ <iterator> library.
+  NGLayoutOpportunity* Next();
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(constraint_space_);
-    visitor->trace(current_opportunities_);
+    visitor->trace(opportunities_);
+    visitor->trace(opportunity_tree_root_);
   }
 
  private:
-  void FilterExclusions();
-  bool NextPosition();
-  bool IsValidPosition();
-  void FilterForPosition(Vector<NGExclusion>&);
-  void ComputeOpportunitiesForPosition();
-  LayoutUnit heightForOpportunity(const Vector<NGExclusion>&,
-                                  LayoutUnit left,
-                                  LayoutUnit top,
-                                  LayoutUnit right,
-                                  LayoutUnit bottom);
-  void addLayoutOpportunity(LayoutUnit left,
-                            LayoutUnit top,
-                            LayoutUnit right,
-                            LayoutUnit bottom);
-
   Member<NGConstraintSpace> constraint_space_;
-  unsigned clear_;
-  bool for_inline_or_bfc_;
-  Vector<NGExclusion> filtered_exclusions_;
-  HeapVector<Member<NGConstraintSpace>> current_opportunities_;
 
-  LayoutUnit current_x_;
-  LayoutUnit current_y_;
+  NGLayoutOpportunities opportunities_;
+  Vector<Member<NGLayoutOpportunity>>::const_iterator opportunity_iter_;
+  Member<NGLayoutOpportunityTreeNode> opportunity_tree_root_;
 };
 
 }  // namespace blink
