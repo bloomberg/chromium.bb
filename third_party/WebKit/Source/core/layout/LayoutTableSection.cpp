@@ -1183,7 +1183,8 @@ void LayoutTableSection::layoutRows() {
       // fragmented differently, which could change its height and thus violate
       // the requested alignment. Give up instead of risking circular
       // dependencies and unstable layout.
-      if (crossesPageBoundary(rowLogicalTop, LayoutUnit(rHeight)))
+      if (state.isPaginated() &&
+          crossesPageBoundary(rowLogicalTop, LayoutUnit(rHeight)))
         cellVerticalAlign = VerticalAlignTop;
       else
         cellVerticalAlign = cell->style()->verticalAlign();
