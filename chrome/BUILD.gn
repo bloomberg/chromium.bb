@@ -1067,7 +1067,7 @@ if (is_win) {
       ]
       if (!use_system_xcode) {
         args += [
-          "--developer-dir",
+          "--developer_dir",
           hermetic_xcode_path,
         ]
       }
