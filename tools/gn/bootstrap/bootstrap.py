@@ -299,7 +299,7 @@ def write_gn_ninja(path, root_gen_dir, options):
 
   # //base/allocator/allocator_extension.cc needs this macro defined,
   # otherwise there would be link errors.
-  cflags.extend(['-DNO_TCMALLOC'])
+  cflags.extend(['-DNO_TCMALLOC', '-D__STDC_FORMAT_MACROS'])
 
   if is_posix:
     if options.debug:
