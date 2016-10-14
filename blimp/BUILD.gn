@@ -102,6 +102,7 @@ if (is_linux) {
       "//ipc:ipc_tests",
       "//net:net_unittests",
       "//sandbox/linux:sandbox_linux_unittests",
+      "//blimp/test/fake_engine:fake_engine_app",
     ]
 
     write_runtime_deps = _blimp_engine_env_tests_runtime_deps
